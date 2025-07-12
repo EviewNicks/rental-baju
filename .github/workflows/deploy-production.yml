@@ -1,0 +1,76 @@
+name: Deploy to Production [DISABLED]
+
+# Mendefinisikan event yang akan memicu workflow ini
+on:
+  push:
+    branches: [main]
+  workflow_run:
+    workflows: ['CI Pipeline', 'Build Pipeline']
+    types:
+      - completed
+    branches: [main]
+
+# Definisikan jobs yang akan dijalankan
+jobs:
+  # Job untuk deploy aplikasi ke production
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    environment: production
+    # Menonaktifkan deployment untuk tahap pengembangan MVP
+    if: false # Deployment dinonaktifkan sampai MVP selesai
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build application
+        run: yarn build
+
+      - name: Deploy to Vercel (production)
+        id: deploy
+        uses: amondnet/vercel-action@v25
+        continue-on-error: true
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          vercel-args: '--prod'
+          working-directory: ./
+
+      - name: Retry deployment if failed
+        if: steps.deploy.outcome == 'failure'
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          vercel-args: '--prod'
+          working-directory: ./
+
+      - name: Create deployment summary
+        if: success()
+        run: |
+          echo "### Production Deployment Results 🚀" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Application deployed to Production environment" >> $GITHUB_STEP_SUMMARY
+          echo "🔗 URL: ${{ steps.deploy.outputs.preview-url || 'https://maguru.app' }}" >> $GITHUB_STEP_SUMMARY
+
+      - name: Post deployment status
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "Deployment successful! Application deployed to production environment."
+          else
+            echo "Deployment failed. Check logs for more information."
+          fi

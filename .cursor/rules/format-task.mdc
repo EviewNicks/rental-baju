@@ -1,0 +1,190 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# Panduan Dokumentasi Task (task-ops-xxx.md)
+
+## Tujuan Panduan
+
+Dokumen ini berisi panduan standar format dokumentasi task dalam project Maguru yang mengacu pada best practice JIRA Agile Scrum. Panduan ini memastikan konsistensi, kelengkapan, dan keseragaman dokumentasi antar task.
+
+## Format Standar task-ops-xxx.md
+
+# Task OPS-[ID]: [Judul Task]
+
+## Daftar Isi
+
+1. [Pendahuluan](mdc:#pendahuluan)
+2. [Perbandingan dengan Referensi](mdc:#perbandingan-dengan-referensi) (opsional)
+3. [Batasan dan Penyederhanaan](mdc:#batasan-dan-penyederhanaan)
+4. [Spesifikasi Teknis](mdc:#spesifikasi-teknis)
+5. [Implementasi Teknis](mdc:#implementasi-teknis)
+6. [Peningkatan UX](mdc:#peningkatan-ux) (opsional)
+7. [Test Plan](mdc:#test-plan)
+8. [Pertanyaan untuk Diklarifikasi](mdc:#pertanyaan-untuk-diklarifikasi) (opsional)
+
+## Pendahuluan
+
+[Deskripsi singkat task (1-2 paragraf) mencakup tujuan, konteks dalam sprint/project, dan nilai bisnis yang dihasilkan]
+
+> warning!! : dalam task docs jangan memberikan contoh pseudocode details
+
+## Perbandingan dengan Referensi
+
+[Jika task terinspirasi oleh fitur dari aplikasi lain, sertakan tabel perbandingan seperti ini]
+
+| Fitur        | Referensi (misal: Confluence) | Project Kita                        |
+| ------------ | ----------------------------- | ----------------------------------- |
+| [Nama Fitur] | [Implementasi di referensi]   | [Implementasi yang kita rencanakan] |
+| [Fitur lain] | [Deskripsi]                   | [Deskripsi]                         |
+
+## Batasan dan Penyederhanaan Implementasi
+
+1. **[Kategori Batasan]**:
+
+   - [Daftar batasan yang jelas]
+   - [Penjelasan mengapa batasan ini dibuat]
+
+2. **[Kategori Batasan Lain]**:
+   - [Daftar batasan yang jelas]
+   - [Penjelasan alasan]
+
+## Spesifikasi Teknis
+
+### Struktur Data (Opsional)
+
+[Deskripsi model/tipe data yang dibutuhkan, termasuk skema Prisma atau TypeScript interfaces]
+
+```prisma
+// Contoh skema Prisma
+model NamaModel {
+  id        String   @id @default(uuid())
+  field1    String
+  field2    Boolean  @default(false)
+  // ...lainnya
+}
+```
+
+### Flow Pengguna
+
+[Deskripsi step-by-step bagaimana pengguna berinteraksi dengan fitur]
+
+#### Menulis Pseudocode yang Jelas
+
+- **Gunakan Bahasa Sederhana**: Tulis seperti instruksi manusia, hindari sintaks spesifik.
+
+- **Fokus pada Logika**: Jelaskan apa yang dilakukan setiap langkah, bukan bagaimana.
+
+- **Struktur**: Gunakan kata kunci seperti BEGIN, END, IF, ELSE, LOOP.
+
+**Contoh Pseudocode (Unggah Kursus)**:
+
+```
+BEGIN
+  INPUT file_kursus
+  IF file_kursus.format IN ["mp4", "pdf"] THEN
+    UPLOAD file_kursus TO Azure_Blob_Storage
+    INSERT INTO courses (file_path) VALUES (file_kursus.path)
+    DISPLAY "Upload berhasil"
+  ELSE
+    DISPLAY "Format tidak valid"
+  ENDIF
+END
+```
+
+- **Pertanyaan Reflektif** : Apakah pseudocode ini mencakup semua skenario (misalnya, error handling)?
+
+#### [Nama Flow/Use Case]:
+
+1. Pengguna [melakukan aksi]
+2. Sistem [memberikan respon]
+3. Pengguna [melakukan aksi selanjutnya]
+4. ...
+
+**Happy Path**:
+
+- [Deskripsi alur normal]
+
+**Error Paths**:
+
+- [Deskripsi alur ketika terjadi error]
+
+## Implementasi Teknis
+
+### [Nama Bagian Implementasi]
+
+[Deskripsi high-level pendekatan implementasi yang direncanakan]
+
+### API Endpoints
+
+[Daftar API endpoints yang diperlukan dengan format, parameter, dan respons]
+
+1. `[METHOD] /api/[path]` - [Deskripsi singkat]
+   - **Request Body**: `{ field1: type, field2: type }`
+   - **Response**: `{ field1: type, field2: type }`
+   - **Status Codes**: 200 OK, 400 Bad Request, dll.
+
+## Peningkatan UX
+
+[Deskripsi peningkatan UX yang direncanakan untuk membuat fitur lebih user-friendly]
+
+### [Aspek UX 1]
+
+- [Deskripsi peningkatan]
+- [Expected user benefit]
+
+### [Aspek UX 2]
+
+- [Deskripsi peningkatan]
+- [Expected user benefit]
+
+
+
+## Pertanyaan untuk Diklarifikasi
+
+[Daftar pertanyaan yang perlu dijawab sebelum/selama implementasi]
+
+1. [Pertanyaan 1]
+2. [Pertanyaan 2]
+
+## Panduan Penggunaan
+
+### Penamaan File
+
+- Format: `task-ops-[ID].md` (contoh: `task-ops-173.md`)
+- Simpan di direktori `features/[feature-name]/docs/task-docs/`
+
+### Panduan Penulisan
+
+1. **Konsistensi Terminologi**: Gunakan terminologi yang konsisten sesuai dengan glossary project.
+2. **Spesifik dan Terukur**: Deskripsi task harus spesifik, terukur, dan fokus pada satu fitur/perubahan.
+3. **Referensi Visual**: Sertakan wireframe/mockup/diagram jika tersedia.
+4. **Acceptance Criteria**: Pastikan mencantumkan kriteria yang jelas agar task dianggap selesai.
+5. **Prioritas**:
+   - **Must Have**: Fitur yang wajib ada untuk release
+   - **Should Have**: Penting tapi tidak kritis
+   - **Could Have**: Diinginkan tapi dapat ditunda
+6. **Story Points**: Ikuti skala Fibonacci yang disepakati (1, 2, 3, 5, 8, 13)
+
+### Integrasi dengan JIRA
+
+1. Cantumkan kode task (OPS-xxx) dalam nama file dan judul dokumen
+2. Lampirkan link ke dokumen ini di deskripsi task JIRA
+3. Update status task di JIRA sesuai progres dokumentasi dan implementasi
+
+### Approval Process
+
+1. **Draft**: Dokumentasi awal dibuat oleh assignee
+2. **Review**: Ditinjau oleh minimal 1 developer dan 1 product owner
+3. **Final**: Disetujui dan siap untuk implementasi
+
+### Refresni:
+1. Daftar referensi yang dibutuhkan atau relevan dengan task yang dikerjakan
+
+### Contoh Task Documentation
+
+Lihat contoh dokumentasi task yang baik:
+
+- [task-ops-173.md](mdc:features/manage-module/docs/task-docs/task-ops-173.md)

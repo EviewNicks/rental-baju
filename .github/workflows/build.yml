@@ -1,0 +1,172 @@
+name: Build Pipeline
+
+# Mendefinisikan event yang akan memicu workflow ini
+on:
+  push:
+    branches: [develop, main, 'feature/*']
+  pull_request:
+    branches: [develop, main]
+
+# Set environment variables global
+env:
+  NEXT_TELEMETRY_DISABLED: 1
+  NODE_ENV: production
+  CI: true
+
+# Definisikan jobs yang akan dijalankan
+jobs:
+  # Job untuk build aplikasi
+  build:
+    name: Build Application
+    runs-on: ubuntu-latest
+    environment: development
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'yarn'
+          cache-dependency-path: yarn.lock
+
+      - name: Install dependencies
+        id: install
+        env:
+          SKIP_ENV_VALIDATION: true
+        run: |
+          echo "=== Installing dependencies ==="
+          yarn install --frozen-lockfile
+
+          # Install ALL required types explicitly
+          echo "=== Installing type definitions ==="
+          yarn add --dev @types/jest@^30.0.0 @types/node@^24.0.7 @testing-library/jest-dom@^6.6.3 @testing-library/react@^16.3.0
+
+          echo "✅ Dependencies installed successfully"
+
+      - name: Verify dependencies
+        id: verify-deps
+        run: |
+          echo "=== Verifying dependencies ==="
+          echo "TypeScript: $(yarn list typescript --depth=0)"
+          echo "Testing Library React: $(yarn list @testing-library/react --depth=0)"
+          echo "Testing Library Jest DOM: $(yarn list @testing-library/jest-dom --depth=0)"
+
+      - name: Type check
+        id: type-check
+        run: |
+          echo "=== Running TypeScript check ==="
+          # Gunakan tsc tanpa flag --exclude
+          yarn type-check
+          echo "✅ TypeScript check passed"
+
+      - name: Debug TypeScript on failure
+        if: failure() && steps.type-check.outcome == 'failure'
+        run: |
+          echo "=== TypeScript Debug Information ==="
+          echo "Node version: $(node --version)"
+          echo "TypeScript version: $(yarn list typescript --depth=0)"
+          echo "Types installed:"
+          yarn list --pattern="@types/*" --depth=0
+          echo "tsconfig.json:"
+          cat tsconfig.json
+
+      - name: Verify Tailwind CSS setup
+        id: tailwind-check
+        run: |
+          echo "=== Verifying Tailwind CSS setup ==="
+          yarn list @tailwindcss/postcss tailwindcss --depth=0
+
+          # Test if Tailwind can be required
+          node -e "
+            try {
+              require('tailwindcss');
+              console.log('✅ Tailwind CSS can be required');
+            } catch (e) {
+              console.error('❌ Tailwind CSS error:', e.message);
+              process.exit(1);
+            }
+          "
+
+      - name: Debug Tailwind on failure
+        if: failure() && steps.tailwind-check.outcome == 'failure'
+        run: |
+          echo "=== Tailwind CSS Debug Information ==="
+          echo "PostCSS version: $(yarn list postcss --depth=0)"
+          echo "Tailwind packages:"
+          yarn list --pattern="tailwind*" --depth=0
+          echo "PostCSS config:"
+          cat postcss.config.mjs || echo "No postcss.config.mjs found"
+          echo "Tailwind config:"
+          cat tailwind.config.ts || echo "No tailwind.config.ts found"
+
+      - name: Build application
+        id: build
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+          NODE_ENV: production
+          APP_ENV: prod
+          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL || 'https://maguru.vercel.app' }}
+          SKIP_ENV_VALIDATION: true
+        run: |
+          echo "=== Building Next.js application ==="
+          yarn build
+
+          if [ -d ".next" ]; then
+            BUILD_SIZE=$(du -sh .next/ | cut -f1)
+            echo "build_size=$BUILD_SIZE" >> $GITHUB_OUTPUT
+            echo "✅ Build completed successfully"
+          else
+            echo "❌ Build failed"
+            exit 1
+          fi
+
+      - name: Debug build on failure
+        if: failure() && steps.build.outcome == 'failure'
+        run: |
+          echo "=== Build Debug Information ==="
+          echo "Next.js version: $(yarn list next --depth=0)"
+          echo "React version: $(yarn list react --depth=0)"
+          echo "Build logs:"
+          cat .next/trace || echo "No trace file found"
+
+      - name: Create build summary
+        run: |
+          echo "### Build Results 🏗️" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.build.outcome }}" == "success" ]; then
+            echo "✅ Build completed successfully" >> $GITHUB_STEP_SUMMARY
+            echo "📂 Build size: ${{ steps.build.outputs.build_size }}" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Build failed" >> $GITHUB_STEP_SUMMARY
+            echo "Check the logs above for details" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Upload build artifacts
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-output
+          path: .next/
+          retention-days: 7
+
+      - name: Upload debug artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-info
+          path: |
+            .next/trace
+            npm-debug.log*
+            yarn-debug.log*
+            yarn-error.log*
+            package.json
+            yarn.lock
+            tsconfig.json
+            postcss.config.mjs
+            tailwind.config.ts
+          retention-days: 3

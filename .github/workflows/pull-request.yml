@@ -1,0 +1,313 @@
+name: CI Pipeline
+
+# Mendefinisikan event yang akan memicu workflow ini
+on:
+  pull_request:
+    branches: [develop, main]
+  schedule:
+    - cron: '0 0 * * *' # Menjalankan workflow setiap hari pada tengah malam
+
+# Set environment variables global
+env:
+  NEXT_TELEMETRY_DISABLED: 1
+  NODE_ENV: test
+  CI: true
+
+# Definisikan jobs yang akan dijalankan
+jobs:
+  # Job untuk menjalankan lint
+  lint:
+    name: ESLint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'yarn'
+          cache-dependency-path: yarn.lock
+
+      - name: Install dependencies
+        env:
+          SKIP_ENV_VALIDATION: true
+        run: |
+          echo "=== Installing dependencies for linting ==="
+          # Use GitHub Actions recommended approach with fallback
+          yarn install --frozen-lockfile || yarn install
+          echo "✅ Dependencies installed successfully"
+
+      - name: Run ESLint
+        run: |
+          echo "=== Running ESLint ==="
+          yarn lint
+          echo "✅ Linting completed successfully"
+
+      - name: Upload ESLint results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eslint-results
+          path: |
+            .eslintcache
+            eslint_report.json
+          retention-days: 5
+
+  # Job untuk menjalankan unit tests
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    needs: lint
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'yarn'
+          cache-dependency-path: yarn.lock
+
+      - name: Install dependencies
+        env:
+          SKIP_ENV_VALIDATION: true
+        run: |
+          echo "=== Installing dependencies for testing ==="
+          # Use GitHub Actions recommended approach with fallback
+          yarn install --frozen-lockfile || yarn install
+          echo "✅ Dependencies installed successfully"
+
+      - name: Run unit tests with coverage
+        id: test
+        env:
+          # Database Configuration untuk testing
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
+
+          # Clerk Authentication untuk integration tests
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+          CLERK_TEST_MODE: true
+
+          # App Configuration
+          NODE_ENV: test
+          APP_ENV: dev
+          NEXT_PUBLIC_APP_URL: https://localhost:3000
+          SKIP_ENV_VALIDATION: true
+        run: |
+          echo "=== Running unit tests with coverage ==="
+
+          # Run all unit tests across all features
+          yarn test:unit:all --ci --coverage --watchAll=false
+
+          # Parse test results dynamically
+          if [ -f "test-results/test-report.json" ]; then
+            TEST_PASSED=$(jq '.numPassedTests' test-results/test-report.json)
+            TEST_FAILED=$(jq '.numFailedTests' test-results/test-report.json)
+            TEST_TOTAL=$(jq '.numTotalTests' test-results/test-report.json)
+          else
+            TEST_PASSED="N/A"
+            TEST_FAILED="N/A" 
+            TEST_TOTAL="N/A"
+          fi
+
+          echo "test_passed=$TEST_PASSED" >> $GITHUB_OUTPUT
+          echo "test_failed=$TEST_FAILED" >> $GITHUB_OUTPUT
+          echo "test_total=$TEST_TOTAL" >> $GITHUB_OUTPUT
+
+          echo "✅ Unit tests completed"
+
+      - name: Create test summary
+        run: |
+          echo "### Unit Test Results 📊" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Passed: ${{ steps.test.outputs.test_passed }}" >> $GITHUB_STEP_SUMMARY
+          echo "❌ Failed: ${{ steps.test.outputs.test_failed }}" >> $GITHUB_STEP_SUMMARY
+          echo "📊 Total: ${{ steps.test.outputs.test_total }}" >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload test coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-coverage
+          path: coverage/
+          retention-days: 5
+
+  # Job untuk menjalankan integration tests
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: lint
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'yarn'
+          cache-dependency-path: yarn.lock
+
+      - name: Install dependencies
+        env:
+          SKIP_ENV_VALIDATION: true
+        run: |
+          echo "=== Installing dependencies for integration tests ==="
+          # Use GitHub Actions recommended approach with fallback
+          yarn install --frozen-lockfile || yarn install
+          echo "✅ Dependencies installed successfully"
+
+      - name: Run integration tests
+        env:
+          # Database Configuration untuk testing
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
+
+          # Clerk Authentication untuk integration tests
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+          CLERK_TEST_MODE: true
+
+          # App Configuration
+          NODE_ENV: test
+          APP_ENV: dev
+          NEXT_PUBLIC_APP_URL: https://localhost:3000
+          SKIP_ENV_VALIDATION: true
+        run: |
+          echo "=== Running integration tests ==="
+          yarn test:integration:all --ci --watchAll=false
+          echo "✅ Integration tests completed"
+
+      - name: Upload integration test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-results
+          path: |
+            coverage/
+            test-results/
+          retention-days: 5
+
+  # Job untuk E2E tests
+  e2e-tests:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: [unit-tests, integration-tests]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'yarn'
+          cache-dependency-path: yarn.lock
+
+      - name: Install dependencies
+        env:
+          SKIP_ENV_VALIDATION: true
+        run: |
+          echo "=== Installing dependencies for E2E tests ==="
+          # Use GitHub Actions recommended approach with fallback
+          yarn install --frozen-lockfile || yarn install
+          echo "✅ Dependencies installed successfully"
+
+      - name: Install Playwright browsers
+        run: |
+          echo "=== Installing Playwright browsers ==="
+          npx playwright install chromium --with-deps
+          echo "✅ Playwright browsers installed successfully"
+
+      - name: Run E2E tests
+        env:
+          # Database Configuration untuk testing
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
+
+          # Clerk Authentication untuk E2E tests
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+          E2E_CLERK_ADMIN_USERNAME: ${{ secrets.E2E_CLERK_ADMIN_USERNAME }}
+          E2E_CLERK_ADMIN_PASSWORD: ${{ secrets.E2E_CLERK_ADMIN_PASSWORD }}
+          E2E_CLERK_CREATOR_PASSWORD: ${{ secrets.E2E_CLERK_CREATOR_PASSWORD }}
+          E2E_CLERK_CREATOR_USERNAME: ${{ secrets.E2E_CLERK_CREATOR_USERNAME }}
+          E2E_CLERK_USER_EMAIL: ${{ secrets.E2E_CLERK_USER_EMAIL }}
+          E2E_CLERK_USER_PASSWORD: ${{ secrets.E2E_CLERK_USER_PASSWORD }}
+          E2E_CLERK_USER_USERNAME: ${{ secrets.E2E_CLERK_USER_USERNAME }}
+          CLERK_TEST_MODE: true
+
+          # App Configuration
+          NODE_ENV: test
+          APP_ENV: prod
+          NEXT_PUBLIC_APP_URL: http://localhost:3000
+          SKIP_ENV_VALIDATION: true
+          CI: true
+        run: |
+          echo "=== Running E2E tests ==="
+          yarn test:e2e:all --reporter=html,json
+          echo "✅ E2E tests completed"
+
+      - name: Upload E2E test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-test-results
+          path: |
+            services/playwright-report/
+            services/test-results/
+          retention-days: 7
+
+      - name: Upload E2E test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: services/playwright-report/
+          retention-days: 30
+
+  # Job untuk Security audit
+  security-audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'yarn'
+          cache-dependency-path: yarn.lock
+
+      - name: Install dependencies
+        env:
+          SKIP_ENV_VALIDATION: true
+        run: |
+          echo "=== Installing dependencies for security audit ==="
+          # Use GitHub Actions recommended approach with fallback
+          yarn install --frozen-lockfile || yarn install
+          echo "✅ Dependencies installed successfully"
+
+      - name: Run security audit
+        run: |
+          echo "=== Running security audit ==="
+          yarn audit --level moderate
+          echo "✅ Security audit completed"
+
+      - name: Upload audit results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-audit-results
+          path: yarn-audit.log
+          retention-days: 5
