@@ -28,7 +28,7 @@
     "env:validate": "tsx -e \"const { validateEnvSafe } = require('./lib/env-validation.ts'); const result = validateEnvSafe(); if (!result.success) { console.error(result.error); process.exit(1); } console.log('✅ Environment validation passed');\""
   },
   "dependencies": {
-    "@clerk/nextjs": "^6.23.0",
+    "@clerk/nextjs": "^6.24.0",
     "@prisma/client": "^6.10.1",
     "@radix-ui/react-slot": "^1.2.3",
     "@tailwindcss/postcss": "^4.1.11",
