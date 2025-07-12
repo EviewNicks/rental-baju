@@ -46,7 +46,7 @@
     "zod": "^3.25.67"
   },
   "devDependencies": {
-    "@clerk/testing": "^1.9.1",
+    "@clerk/testing": "^1.9.3",
     "@eslint/eslintrc": "^3",
     "@playwright/test": "^1.53.1",
     "@svgr/webpack": "^8.1.0",
