@@ -29,7 +29,7 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^6.23.0",
-    "@prisma/client": "^6.10.1",
+    "@prisma/client": "^6.11.1",
     "@radix-ui/react-slot": "^1.2.3",
     "@tailwindcss/postcss": "^4.1.11",
     "class-variance-authority": "^0.7.1",
