@@ -1,6 +1,6 @@
 ---
-description: 
-globs: 
+description:
+globs:
 alwaysApply: true
 ---
 
@@ -41,7 +41,7 @@ project/
 │       │   ├── service.ts
 │       │   └── service.test.ts        # Unit test (co-location)
 │       │── __tests__/
-│       │   
+│       │
         ├── docs/
 │           └── task/
 │               └── [feature-name]/
@@ -73,6 +73,14 @@ project/
 - **Siklus**: Red (gagal) → Green (implementasi minimal) → Refactor (optimasi)
 - **Struktur**: AAA (Arrange, Act, Assert)
 - **Target**: Komponen, fungsi, dan service individual
+- **rules** :
+  - buatlah unit test yang tidak terlalu compleks untuk unit test
+  - lakukan pengecekan pada file code dari unit tets dan file layer sebelumnya (service, component, etc) agar mengetahui letak masalahnya
+  - lakukan pengecekan pada file code dari unit tets dan file layer sebelumnya (service, component, etc) agar mengetahui letak masalahnya
+
+### Flow test
+
+jelaskan tugasmu -> berikan hasil evaluasimu -> update secara langsung dengan tools agent mode -> uji coba unit tets dan integration tets nya -> perbaiki tets failed yang tersisaa -> berikan hasil evaluasi akhirmu terkait tets failed ini
 
 ### Standar
 
@@ -87,7 +95,10 @@ project/
 
 - **Tujuan**: Verifikasi interaksi antar komponen dan layanan
 - **Struktur**: AAA (Arrange, Act, Assert)
-- **Target**: Alur kerja yang melibatkan beberapa komponen/service
+- **Target**: Alur kerja yang melibatkan relasi layer tertentu
+- **rules** :
+  - buatlah integration test yang tidak terlalu compleks untuk integration test
+  - lakukan pengecekan pada file code dari unit tets dan file layer sebelumnya (service, component, etc) agar mengetahui letak masalahnya
 
 ### Standar
 
@@ -170,7 +181,7 @@ project/
 ### Lokasi Mock
 
 - **Mock Global**: `__tests__/__mocks__/`
-- **Mock Lokal**: Berdampingan dengan file test   `features\manage-module\__tests__\__mocks__`
+- **Mock Lokal**: Berdampingan dengan file test `features\manage-module\__tests__\__mocks__`
 - **Mock Service Worker**: `src/mocks/handlers.ts`
 
 ## 7. Dokumentasi Test

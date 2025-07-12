@@ -12,6 +12,7 @@ alwaysApply: true
 - [Struktur Folder & Mapping Layer](mdc:#struktur-folder--mapping-layer)
 - [Modular Boundaries & Feature-First](mdc:#modular-boundaries--feature-first)
 - [Layered Architecture (3-Tier)](mdc:#layered-architecture-3-tier)
+- [State Management Strategy](mdc:#state-management-strategy)
 - [Event-Driven Hybrid](mdc:#event-driven-hybrid)
 - [Komponen Arsitektur Detil](mdc:#komponen-arsitektur-detil)
 - [Alur Data End-to-End](mdc:#alur-data-end-to-end)
@@ -90,8 +91,8 @@ Struktur folder utama dan pemetaan ke layer arsitektur proyek secara keseluruhan
 ├── features/           # Feature Modules (Modular Monolith - Semua layer per fitur)
 │   └── [feature-name]/ # Contoh: manage-module
 │       ├── components/ # Presentation Layer (UI Components)
-│       ├── context/    # State Management Layer (Client-side Business Logic)
-│       ├── hooks/      # Business Logic Layer (Client-side Orchestration)
+│       ├── context/    # Global State Layer (Cross-component state, app-wide settings)
+│       ├── hooks/      # Business Logic Layer (Client-side Orchestration, Feature State)
 │       ├── adapters/   # Data Access Layer (Client-side interface to API)
 │       ├── services/   # Business Logic Layer (Server-side Services)
 │       ├── lib/        # Feature-specific Utilities
@@ -108,12 +109,11 @@ Struktur folder utama dan pemetaan ke layer arsitektur proyek secara keseluruhan
 
 - **Presentation Layer:**
   - `app/` (Pages, Layouts)
-  - `features/*/components/`
-  - `features/*/context/` (Khusus untuk UI State Contexts)
+  - `features/*/components/` (Component State - Local UI state, form state)
+  - `features/*/context/` (Global State - Cross-component state, app-wide settings)
 - **Application/Business Logic Layer:**
   - `app/api/` (API Routes - Server-side Entry Point)
-  - `features/*/hooks/` (Client-side Logic Orchestration)
-  - `features/*/context/` (Khusus untuk State Management Logic & Data State Contexts seperti React Query context)
+  - `features/*/hooks/` (Feature State - Business logic, data fetching, feature-specific state)
   - `features/*/services/` (Server-side Business Logic)
   - `lib/` (Shared Business Logic Utilities)
 - **Data Access Layer:**
@@ -137,7 +137,7 @@ Tujuannya adalah untuk:
 - **Scalability:** Tim yang berbeda dapat bekerja pada fitur yang berbeda secara paralel.
 - **Testability:** Fitur dapat diuji sebagai unit yang relatif mandiri.
 
-Struktur di dalam direktori fitur (`features/[feature-name]`) mencerminkan Layered Architecture, memastikan bahwa bahkan di dalam modul monolit, tanggung jawab tetap terpisah.
+Struktur di dalam direktori fitur (`features/[feature-name]`) mencerminkan Layered Architecture, memastikan bahkan di dalam modul monolit, tanggung jawab tetap terpisah.
 
 ---
 
@@ -153,26 +153,28 @@ Lapisan ini menangani semua yang berhubungan dengan tampilan dan interaksi pengg
   - Menampilkan UI (User Interface)
   - Menerima dan memproses input dari user
   - Menampilkan data ke user
+  - Mengelola Component State (local UI state, form state, temporary state)
 
 - **Contoh implementasi di Maguru:**
   - **React Components**
     - Server Components: di folder `app/`
     - Client Components: di `features/*/components`
-  - **Context API** untuk state yang berkaitan langsung dengan UI (misal: status sidebar, tab aktif)
+  - **Component State**: Menggunakan `useState`, `useReducer` untuk state lokal komponen
+  - **Context API** untuk Global State (cross-component state, app-wide settings)
 
 ### 2. **Application/Business Logic Layer (Lapisan Logika Bisnis & Aplikasi)**
 
 Lapisan ini berisi aturan bisnis, proses utama aplikasi, dan mengatur alur data antara UI dan data.
 
 - **Tugas utama:**
-  - Menyimpan dan mengelola state aplikasi (bukan hanya UI)
+  - Menyimpan dan mengelola Feature State (business logic, data fetching, feature-specific state)
   - Menjalankan aturan bisnis
   - Mengorkestrasi proses (misal: validasi, transformasi data, workflow)
 
 - **Contoh implementasi di Maguru:**
   - **Client-side:**
     - Custom Hooks (`features/*/hooks`) untuk mengatur alur kerja user dan memanggil adapter
-    - State Management (React Query, Context API untuk state non-UI)
+    - Feature State Management (React Query, custom hooks untuk feature-specific state)
   - **Server-side:**
     - API Routes (`app/api/`) sebagai pintu masuk request, validasi, dan otentikasi
     - Services (`features/*/services`) yang berisi logika bisnis utama dan interaksi ke database
@@ -189,11 +191,203 @@ Lapisan ini bertanggung jawab untuk semua interaksi dengan sumber data (database
   - **Adapters** (`features/*/adapters`): antarmuka client-side ke API backend
   - **Prisma ORM** dan kode terkait di Services (server-side) untuk akses database
 
+- **Best Practice untuk Maguru (dan FE Modern):**
+  - Gunakan object literal untuk adapter/data-access layer, kecuali ada kebutuhan stateful/complex (jarang di FE).
+  - Pastikan semua method pure/stateless.
+  - Testing: Mock object, bukan instance class.
+  - Layer API dan Hooks: Tidak perlu tahu implementasi adapter, hanya perlu interface/contract-nya.
+
 **Alur Ketergantungan:**
 
 - Umumnya, alur data dan ketergantungan berjalan dari atas ke bawah:
   - Presentation Layer → Application/Business Logic Layer → Data Access Layer
 - Namun, ada juga komunikasi bolak-balik, misal saat Application Logic meminta data ke Data Access, lalu hasilnya dikirim kembali ke Presentation Layer.
+
+---
+
+## State Management Strategy
+
+Maguru mengadopsi pendekatan **Hierarchical State Management** yang membagi state menjadi tiga kategori utama berdasarkan scope dan tanggung jawabnya:
+
+### 1. **Global State (App-wide State)**
+
+**Implementasi:** Layer Context (`features/*/context/`)
+
+**Karakteristik:**
+
+- State yang digunakan oleh multiple komponen di berbagai fitur
+- State yang perlu di-share antar route atau layout
+- State yang mempengaruhi seluruh aplikasi
+
+**Contoh:**
+
+- User authentication state
+- Theme preferences
+- App-wide settings
+- Global notifications
+- User role/permissions
+
+**Best Practices:**
+
+- Gunakan Context API dengan useReducer untuk complex state
+- Implementasikan error boundaries
+- Optimize dengan useMemo dan useCallback
+- Batasi jumlah global state untuk menghindari performance issues
+
+### 2. **Feature State (Feature-specific State)**
+
+**Implementasi:** Layer Hooks (`features/*/hooks/`)
+
+**Karakteristik:**
+
+- State yang spesifik untuk satu fitur
+- Business logic dan data fetching
+- State yang digunakan oleh multiple komponen dalam satu fitur
+
+**Contoh:**
+
+- Course management state (courses list, pagination, filters)
+- Form state dengan validation
+- Data fetching state (loading, error, data)
+- Feature-specific UI state (modals, tabs, selections)
+
+**Best Practices:**
+
+- Gunakan custom hooks untuk encapsulate business logic
+- Implementasikan low-level hooks untuk data operations
+- Implementasikan high-level hooks untuk complex workflows
+- Gunakan React Query untuk server state management
+
+### 3. **Component State (Local UI State)**
+
+**Implementasi:** Component UI langsung
+
+**Karakteristik:**
+
+- State yang hanya digunakan oleh satu komponen
+- Temporary state yang tidak perlu di-share
+- UI-specific state (hover, focus, local form state)
+
+**Contoh:**
+
+- Form input state (sebelum submission)
+- UI interaction state (hover, focus, expanded/collapsed)
+- Temporary calculations atau derived state
+- Local loading states
+
+**Best Practices:**
+
+- Gunakan `useState` untuk simple state
+- Gunakan `useReducer` untuk complex local state
+- Jangan over-engineer dengan context untuk state lokal
+
+### State Management Flow
+
+```mermaid
+graph TD
+    A[Component State<br/>useState/useReducer] --> B[Feature State<br/>Custom Hooks]
+    B --> C[Global State<br/>Context API]
+
+    D[Component] --> A
+    D --> B
+    D --> C
+
+    E[Feature Hook] --> B
+    F[Context Provider] --> C
+
+    style A fill:#e1f5fe
+    style B fill:#f3e5f5
+    style C fill:#e8f5e8
+```
+
+### Implementation Guidelines
+
+#### 1. **Kapan Menggunakan Context (Global State)**
+
+```typescript
+// ✅ BENAR - Global state yang di-share antar fitur
+const UserAuthContext = createContext()
+
+// ❌ SALAH - Feature state yang hanya digunakan dalam satu fitur
+const CourseListContext = createContext() // Gunakan hooks sebagai gantinya
+```
+
+#### 2. **Kapan Menggunakan Hooks (Feature State)**
+
+```typescript
+// ✅ BENAR - Feature state dengan business logic
+export function useCourseManagement() {
+  const [courses, setCourses] = useState([])
+  const [loading, setLoading] = useState(false)
+
+  const fetchCourses = useCallback(async () => {
+    // Business logic here
+  }, [])
+
+  return { courses, loading, fetchCourses }
+}
+
+// ✅ BENAR - Low-level hook untuk data operations
+export function useCourse() {
+  // Direct adapter calls
+  return { fetchCourses, createCourse, updateCourse }
+}
+```
+
+#### 3. **Kapan Menggunakan Component State**
+
+```typescript
+// ✅ BENAR - Local UI state
+function CourseCard({ course }) {
+  const [isExpanded, setIsExpanded] = useState(false)
+  const [isHovered, setIsHovered] = useState(false)
+
+  return (
+    <div
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {/* Component content */}
+    </div>
+  )
+}
+```
+
+### Performance Considerations
+
+1. **Context Optimization:**
+   - Split large contexts into smaller, focused contexts
+   - Use `useMemo` untuk context value
+   - Implement selective re-rendering dengan multiple contexts
+
+2. **Hook Optimization:**
+   - Use `useCallback` untuk functions yang di-pass sebagai props
+   - Use `useMemo` untuk expensive calculations
+   - Implement proper dependency arrays
+
+3. **Component State:**
+   - Keep component state minimal
+   - Use local state for UI interactions
+   - Avoid prop drilling untuk local state
+
+### Migration Strategy
+
+Untuk fitur yang sudah menggunakan context untuk feature state:
+
+1. **Identifikasi state yang seharusnya di hooks:**
+   - State yang hanya digunakan dalam satu fitur
+   - Business logic state
+   - Data fetching state
+
+2. **Refactor ke hooks:**
+   - Buat custom hooks untuk feature state
+   - Pindahkan business logic dari context ke hooks
+   - Update komponen untuk menggunakan hooks langsung
+
+3. **Pertahankan context untuk global state:**
+   - User authentication
+   - App-wide settings
+   - Cross-feature state
 
 ---
 
@@ -230,11 +424,12 @@ Bagian ini menjelaskan komponen utama yang membangun arsitektur setiap fitur di 
    - Berada di lapisan Presentasi (Presentation Layer).
 
 2. **State Management**
-   - Mengelola data dan status aplikasi.
+   - Mengelola data dan status aplikasi dengan pendekatan hierarchical.
    - Terdiri dari:
-     - **UI State:** Menggunakan Context API untuk state yang berkaitan dengan tampilan (misal: sidebar, tab aktif).
-     - **Server State:** Menggunakan React Query untuk data dari API, termasuk caching, loading, dan error state.
-   - Berada di lapisan Presentasi & Logika Bisnis Aplikasi (Presentation & Application/Business Logic Layer).
+     - **Global State:** Menggunakan Context API untuk state yang di-share antar fitur (user auth, theme, app settings).
+     - **Feature State:** Menggunakan Custom Hooks untuk business logic dan feature-specific state.
+     - **Component State:** Menggunakan useState/useReducer untuk local UI state.
+   - Berada di berbagai layer sesuai dengan scope state (lihat State Management Strategy).
 
 3. **Custom Hooks**
    - Mengabstraksi logika komponen agar kode lebih modular dan mudah digunakan ulang.
@@ -267,6 +462,7 @@ Bagian ini menjelaskan komponen utama yang membangun arsitektur setiap fitur di 
    - Kumpulan fungsi pembantu (helper), tipe TypeScript, dan skema validasi (Zod).
    - Bisa bersifat umum (di `lib/`) atau spesifik fitur (di `features/*/lib` atau `features/*/types`).
    - Digunakan di berbagai layer sebagai cross-cutting concerns.
+   - menggunakan pendekatan functionalLayered Interface Pattern adalah pendekatan arsitektur untuk mengatasi masalah interface redundancy dan type safety di feature course. Pattern ini memisahkan interface berdasarkan layer dan tanggung jawab yang berbeda.
 
 ---
 
@@ -328,7 +524,7 @@ Berikut adalah penjelasan langkah demi langkah proses pengambilan data dan rende
       Contoh kode:
 
     ```ts
-    const data = await modulePageService.getModulePages(moduleId);
+    const data = await modulePageService.getModulePages(moduleId)
     ```
 
 4.  **Service mengambil data dari database**  
@@ -382,7 +578,7 @@ Arsitektur Maguru mendorong penggunaan pattern dan praktik terbaik untuk meningk
 - **Separation of Concerns:** Memastikan setiap modul, komponen, atau fungsi memiliki satu tanggung jawab yang jelas.
 - **Dependency Injection:** Menggunakan parameter fungsi atau React Context untuk menyediakan dependensi, memudahkan pengujian dan fleksibilitas.
 - **Error Handling:** Implementasi strategi "Designing for Failure", termasuk validasi input (client/server), graceful fallbacks, retry mechanisms, dan logging terpusat.
-- **State Management Strategy:** Menggunakan React Query untuk server state (fetching, caching, mutasi) dan Context API/useState untuk UI state lokal atau global yang sederhana.
+- **State Management Strategy:** Menggunakan pendekatan hierarchical state management dengan Context API untuk global state, custom hooks untuk feature state, dan useState/useReducer untuk component state.
 - **Type Safety:** Menggunakan TypeScript secara ketat di seluruh codebase, dibantu oleh Zod untuk validasi skema data.
 - **Progressive Loading:** Menggunakan fitur Next.js (seperti `loading.tsx`, `next/dynamic`) untuk meningkatkan persepsi performa.
 - **Testing:** Mengadopsi pendekatan TDD/BDD dengan strategi pengujian berlapis (Unit, Integration, E2E) untuk memastikan fungsionalitas dan mencegah regresi.
@@ -395,7 +591,7 @@ Proyek Maguru dibangun di atas tumpuan teknologi modern:
 
 - **Core Technologies:** Next.js (dengan App Router), React, TypeScript, Node.js.
 - **UI Libraries:** TailWindCSS (untuk styling), Shadcn/ui (untuk komponen UI).
-- **State Management:** React Query (untuk server state), React Context API (untuk UI state).
+- **State Management:** React Context API (untuk global state), Custom Hooks (untuk feature state), useState/useReducer (untuk component state), React Query (untuk server state caching).
 - **Form Management:** React Hook Form, Zod (untuk validasi skema).
 - **API Integration:** Fetch API (bawaan browser/Node.js), mungkin dibungkus dalam adapter.
 - **Database:** PostgreSQL (contoh), Prisma ORM.

@@ -1,6 +1,6 @@
 ---
-description: 
-globs: 
+description:
+globs:
 alwaysApply: true
 ---
 
@@ -43,7 +43,6 @@ Dokumen ini berisi panduan standar format dokumentasi task dalam project Maguru 
 ## Batasan dan Penyederhanaan Implementasi
 
 1. **[Kategori Batasan]**:
-
    - [Daftar batasan yang jelas]
    - [Penjelasan mengapa batasan ini dibuat]
 
@@ -140,8 +139,6 @@ END
 - [Deskripsi peningkatan]
 - [Expected user benefit]
 
-
-
 ## Pertanyaan untuk Diklarifikasi
 
 [Daftar pertanyaan yang perlu dijawab sebelum/selama implementasi]
@@ -181,9 +178,10 @@ END
 3. **Final**: Disetujui dan siap untuk implementasi
 
 ### Refresni:
+
 1. Daftar referensi yang dibutuhkan atau relevan dengan task yang dikerjakan
 
-### Contoh Task Documentation
+#### Contoh Task Documentation
 
 Lihat contoh dokumentasi task yang baik:
 
