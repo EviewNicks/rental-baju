@@ -1,0 +1,274 @@
+{
+  "course_detail_page_style": {
+    "perspective": "immersive web application",
+    "geometry": {
+      "proportions": "16:9 hero section, full-width content with max-width container",
+      "element_arrangement": "hero section at top, CTA section prominent, tabbed content below"
+    },
+    "composition": {
+      "element_count": "6 main sections: hero, CTA, tabs, content, sidebar, footer",
+      "spatial_depth": "layered with glass panels, subtle shadows, and backdrop blur effects",
+      "scale_consistency": "hierarchical typography scale, consistent component sizing",
+      "scene_density": "moderate to high information density with clear visual hierarchy"
+    },
+    "lighting": {
+      "type": "soft ambient lighting with magical glow effects",
+      "light_source": "top-down with subtle side illumination",
+      "shadow": "gentle drop shadows with magical glow on interactive elements",
+      "highlighting": "subtle edge illumination on glass panels and buttons"
+    },
+    "textures": {
+      "material_finish": "glass panel effects with backdrop blur",
+      "surface_treatment": "smooth surfaces with subtle texture variations",
+      "texture_realism": "stylized glass and paper textures for ancient fantasy theme"
+    },
+    "render_quality": {
+      "resolution": "high-resolution web rendering with crisp typography",
+      "edge_definition": "rounded corners with consistent border radius",
+      "visual_clarity": "clean, readable layout with proper contrast ratios"
+    },
+    "color_palette": {
+      "primary": {
+        "merah_aksi_500": "#FF4D4D",
+        "merah_aksi_600": "#FF3333",
+        "merah_aksi_700": "#E62E2E"
+      },
+      "secondary": {
+        "kuning_orange_400": "#FFB148",
+        "kuning_orange_500": "#FFA329",
+        "kuning_orange_600": "#FF950A"
+      },
+      "accent": {
+        "hijau_alam_400": "#70CE98",
+        "hijau_alam_500": "#5AC88A",
+        "hijau_alam_600": "#44C27C"
+      },
+      "background": {
+        "beige_50": "#F5EDE0",
+        "beige_100": "#F2EADC",
+        "beige_200": "#E8D9C6"
+      },
+      "text": {
+        "beige_900": "#7B5B2C",
+        "beige_700": "#8A6D42",
+        "gray_600": "#6B7280"
+      }
+    },
+    "background": {
+      "color": "gradient from beige-50 to beige-200",
+      "style": "ancient fantasy gradient with decorative elements",
+      "texture": "subtle pattern overlay for depth"
+    },
+    "stylistic_tone": "ancient fantasy Asia with modern web design, immersive and educational",
+    "page_behavior": {
+      "branding_alignment": "consistent with Maguru brand identity",
+      "scalability": "responsive design for all device sizes",
+      "accessibility": "WCAG 2.1 AA compliant with proper contrast and navigation"
+    }
+  },
+  "components_structure": {
+    "hero_section": {
+      "name": "CourseHeroSection",
+      "file": "features/course/components/course-detail/CourseHeroSection.tsx",
+      "elements": [
+        "large_thumbnail_16_9",
+        "glass_panel_overlay",
+        "course_title_gradient",
+        "creator_info_with_avatar",
+        "rating_stars_display",
+        "course_statistics",
+        "category_badge",
+        "breadcrumb_navigation"
+      ],
+      "style_rules": {
+        "background": "glass-panel with backdrop-blur-md",
+        "typography": "text-gradient-primary for title",
+        "spacing": "generous padding with proper hierarchy",
+        "responsive": "mobile-first with tablet and desktop breakpoints"
+      }
+    },
+    "enrollment_cta": {
+      "name": "EnrollmentCTA",
+      "file": "features/course/components/course-detail/EnrollmentCTA.tsx",
+      "elements": [
+        "prominent_enroll_button",
+        "status_indicator",
+        "price_display",
+        "loading_spinner",
+        "success_feedback"
+      ],
+      "style_rules": {
+        "button_states": {
+          "available": "bg-red-500 hover:bg-red-600 with magical-glow",
+          "enrolled": "bg-green-400 hover:bg-green-500",
+          "loading": "disabled with spinner animation"
+        },
+        "effects": "hover-lift and hover-glow on interaction"
+      }
+    },
+    "course_tabs": {
+      "name": "CourseTabs",
+      "file": "features/course/components/course-detail/CourseTabs.tsx",
+      "elements": [
+        "tab_navigation",
+        "active_state_indicator",
+        "smooth_transitions",
+        "responsive_dropdown_mobile"
+      ],
+      "style_rules": {
+        "container": "glass-panel with rounded corners",
+        "active_tab": "bg-red-500 text-white with shadow",
+        "inactive_tab": "bg-white/30 hover:bg-white/50",
+        "transitions": "smooth duration-200 transitions"
+      }
+    },
+    "tab_content": {
+      "overview_tab": {
+        "name": "CourseOverview",
+        "file": "features/course/components/course-detail/CourseOverview.tsx",
+        "elements": [
+          "course_description",
+          "learning_outcomes",
+          "requirements_list",
+          "target_audience",
+          "course_highlights"
+        ]
+      },
+      "lessons_tab": {
+        "name": "CourseLessons",
+        "file": "features/course/components/course-detail/CourseLessons.tsx",
+        "elements": [
+          "lesson_list",
+          "lesson_preview",
+          "progress_indicator",
+          "lesson_duration",
+          "lesson_type_badges"
+        ]
+      },
+      "reviews_tab": {
+        "name": "CourseReviews",
+        "file": "features/course/components/course-detail/CourseReviews.tsx",
+        "elements": [
+          "review_summary",
+          "rating_distribution",
+          "review_list",
+          "review_form",
+          "helpful_votes"
+        ]
+      }
+    },
+    "enrollment_dialog": {
+      "name": "EnrollmentDialog",
+      "file": "features/course/components/enrollment/EnrollmentDialog.tsx",
+      "elements": [
+        "modal_backdrop",
+        "course_preview",
+        "confirmation_message",
+        "action_buttons",
+        "keyboard_navigation"
+      ],
+      "style_rules": {
+        "modal": "glass-panel with backdrop-blur-lg",
+        "buttons": "primary and secondary button styling",
+        "accessibility": "focus management and keyboard support"
+      }
+    },
+    "additional_components": {
+      "course_sidebar": {
+        "name": "CourseSidebar",
+        "file": "features/course/components/course-detail/CourseSidebar.tsx",
+        "elements": [
+          "course_progress",
+          "next_lesson",
+          "course_stats",
+          "related_courses",
+          "instructor_info"
+        ]
+      },
+      "course_metadata": {
+        "name": "CourseMetadata",
+        "file": "features/course/components/course-detail/CourseMetadata.tsx",
+        "elements": [
+          "last_updated",
+          "language",
+          "certificate_info",
+          "access_duration",
+          "difficulty_level"
+        ]
+      },
+      "course_actions": {
+        "name": "CourseActions",
+        "file": "features/course/components/course-detail/CourseActions.tsx",
+        "elements": ["wishlist_button", "share_button", "download_resources", "report_issue"]
+      },
+      "course_preview": {
+        "name": "CoursePreview",
+        "file": "features/course/components/course-detail/CoursePreview.tsx",
+        "elements": ["video_preview", "sample_lesson", "preview_content", "preview_modal"]
+      },
+      "instructor_profile": {
+        "name": "InstructorProfile",
+        "file": "features/course/components/course-detail/InstructorProfile.tsx",
+        "elements": [
+          "instructor_avatar",
+          "instructor_bio",
+          "teaching_style",
+          "credentials",
+          "other_courses"
+        ]
+      },
+      "course_curriculum": {
+        "name": "CourseCurriculum",
+        "file": "features/course/components/course-detail/CourseCurriculum.tsx",
+        "elements": [
+          "curriculum_overview",
+          "section_list",
+          "lesson_count",
+          "estimated_time",
+          "curriculum_download"
+        ]
+      }
+    }
+  },
+  "responsive_breakpoints": {
+    "mobile": {
+      "max_width": "768px",
+      "layout": "single column, stacked elements",
+      "typography": "smaller font sizes, compact spacing"
+    },
+    "tablet": {
+      "min_width": "769px",
+      "max_width": "1024px",
+      "layout": "two column layout with sidebar",
+      "typography": "medium font sizes, balanced spacing"
+    },
+    "desktop": {
+      "min_width": "1025px",
+      "layout": "three column layout with full sidebar",
+      "typography": "large font sizes, generous spacing"
+    }
+  },
+  "interaction_patterns": {
+    "hover_effects": {
+      "buttons": "scale-105 with shadow elevation",
+      "cards": "hover-lift with glass-panel glow",
+      "links": "color transition with underline"
+    },
+    "loading_states": {
+      "skeleton": "animate-shimmer with glass-panel",
+      "spinner": "animate-spin with magical-glow",
+      "progress": "animate-pulse with color transitions"
+    },
+    "transitions": {
+      "duration": "200ms for micro-interactions",
+      "easing": "cubic-bezier(0.42, 0, 0.58, 1)",
+      "properties": "transform, opacity, color, box-shadow"
+    }
+  },
+  "accessibility_features": {
+    "keyboard_navigation": "full keyboard support with focus indicators",
+    "screen_reader": "semantic HTML with proper ARIA labels",
+    "color_contrast": "WCAG 2.1 AA compliant contrast ratios",
+    "reduced_motion": "respects prefers-reduced-motion media query"
+  }
+}
