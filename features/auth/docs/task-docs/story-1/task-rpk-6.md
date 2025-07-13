@@ -21,13 +21,8 @@ Halaman sign-up akan mendukung dua metode pendaftaran: email/password tradisiona
 
 1. **UI/UX**:
    - Menggunakan komponen Clerk bawaan sebagai dasar
-   - Custom styling minimal untuk menyesuaikan dengan design system
    - Responsive design untuk mobile dan desktop
 
-2. **OAuth Providers**:
-   - Fokus pada Google dan GitHub sebagai provider utama
-   - Provider lain dapat ditambahkan di masa depan
-   - Tidak mengimplementasikan OAuth custom
 
 3. **Validasi**:
    - Menggunakan validasi bawaan Clerk

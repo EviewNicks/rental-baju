@@ -104,23 +104,9 @@ interface SessionData {
 
 ```
 app/
-└── sign-in/
+└── sign-in/[[...sign-in]]
     ├── page.tsx (SignInPage)
     └── loading.tsx
-
-components/
-└── auth/
-    ├── SignInForm.tsx
-    ├── OAuthButtons.tsx
-    ├── SignInSuccess.tsx
-    ├── SignInError.tsx
-    └── ForgotPassword.tsx
-
-hooks/
-└── useSignIn.ts
-
-types/
-└── auth.ts
 ```
 
 ### API Endpoints

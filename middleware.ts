@@ -72,7 +72,8 @@ export default clerkMiddleware(
   },
   {
     // ✅ FIX: Include test environment untuk debug
-    debug: process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test',
+    // debug: process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test',
+    debug: false,
 
     // Fix clock skew issue - allow 30 seconds difference
     clockSkewInMs: 30000,
