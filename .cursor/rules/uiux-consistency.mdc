@@ -1,10 +1,5 @@
 # UI/UX Design System – Rental Software (v2)
 
-## Pendahuluan
-
-Dokumen ini mendefinisikan sistem desain UI/UX baru untuk aplikasi rental software, mengadopsi pendekatan visual dan teknik modern yang terinspirasi dari desain pada gambar referensi (component-style.png). Sistem ini bertujuan menciptakan pengalaman pengguna yang lebih hidup, profesional, dan mudah diakses, dengan tetap menjaga konsistensi, modularitas, dan kemudahan scaling.
-
----
 
 ## Rules & Instruksi Utama
 
@@ -16,6 +11,7 @@ Dokumen ini mendefinisikan sistem desain UI/UX baru untuk aplikasi rental softwa
 
 **Instruksi Penggunaan:**
 
+- first of All selalu gunakan compoentn SHadcn UI terlebih dahulu, kemudian custom sesuai dengan kebutuhan.
 - Selalu rujuk dokumen ini sebelum membuat, mengubah, atau mereview komponen UI/UX.
 - Semua token warna, radius, shadow, dan font WAJIB didefinisikan di Tailwind config.
 - Gunakan Shadcn UI sebagai basis, custom hanya jika tidak tersedia.
@@ -23,25 +19,28 @@ Dokumen ini mendefinisikan sistem desain UI/UX baru untuk aplikasi rental softwa
 
 ---
 
-## Filosofi & Gaya Visual
+## 1. **Gaya Visual**
 
-- **Flat Modern Minimalist dengan Sentuhan Soft Neumorphism**
-  - Flat, tanpa efek 3D/glass, namun dengan shadow subtle untuk depth minimal.
-  - Banyak whitespace, layout bersih, dan informasi ringkas.
-  - Card dan komponen dengan sudut membulat (rounded corners) dan outline tipis.
-  - Visual hierarchy jelas: judul besar, subjudul kecil, data/statistik menonjol.
-  - Penggunaan warna aksen cerah (lime/yellow) untuk highlight dan CTA, bukan hanya biru/abu-abu.
-  - Ikon dan avatar minimalis, micro-interaction implied (hover, active, badge).
+**Flat Modern Minimalist dengan Sentuhan Soft Neumorphism**
 
-## A. Prinsip Umum
+- **Flat Design:**
+  - Hampir seluruh elemen menggunakan warna solid tanpa efek 3D, emboss, atau glassmorphism.
+  - Tidak ada shadow berat, hanya shadow sangat halus untuk depth minimal.
+- **Minimalist:**
+  - Banyak whitespace, layout sangat bersih, tidak ada elemen dekoratif berlebihan.
+  - Informasi disajikan secara ringkas dan jelas.
+- **Soft Neumorphism Touch:**
+  - Beberapa card memiliki sudut rounded yang sangat lembut, dan ada sedikit efek inner/outer shadow yang sangat subtle, memberi kesan “floating” tanpa berat.
+- **Modern UI:**
+  - Komponen card, button, dan badge tampil dengan bentuk rounded dan outline tipis.
+  - Ikon-ikon minimalis, micro-interaction implied (misal: tombol dengan lingkaran solid, dropdown dengan arrow sederhana).
 
-- **Gaya Visual:** Flat Modern Minimalist dengan sentuhan soft neumorphism, card-based, modular, dan banyak whitespace.
-- **Aksen Warna:** Lime/yellow sebagai highlight utama, netral untuk background, hitam untuk teks utama.
-- **Komponen Modular:** Semua UI dibangun dari card, button, grid, chart, dsb, dengan konsistensi tinggi.
-- **Usability & Aksesibilitas:** Fokus pada kemudahan penggunaan, kontras tinggi, touch target besar, dan aksesibilitas ARIA.
-- **Responsif:** Layout grid modular, adaptif untuk desktop dan mobile.
-- **Token Design:** Semua warna, radius, shadow, dan font didefinisikan di Tailwind config.
-- **Shadcn UI First:** Gunakan Shadcn UI sebagai basis, custom hanya jika tidak tersedia.
+**Ciri Khas Visual:**
+
+- Sudut membulat (rounded corners) pada semua card dan komponen.
+- Grid modular, setiap informasi dalam card terpisah.
+- Visual hierarchy sangat jelas: judul besar, subjudul kecil, data/statistik menonjol.
+- Penggunaan icon dan avatar untuk memperkuat identitas dan affordance.
 
 ---
 
@@ -56,8 +55,32 @@ Dokumen ini mendefinisikan sistem desain UI/UX baru untuk aplikasi rental softwa
 | Hitam         | #111827         | Teks utama, angka, tombol       |
 | Biru/Olive    | #3B82F6/#84CC16 | Status sekunder, badge          |
 
-- Semua warna didefinisikan sebagai token di Tailwind config.
-- Gunakan lime/yellow sebagai aksen utama, biru/olive hanya untuk status sekunder.
+**Palet Warna:**
+
+- **Dominan:**
+  - Soft lime/yellow (#EFFF6B atau sejenis) sebagai warna aksen utama (highlight, progress, CTA).
+  - Putih dan abu-abu muda untuk background card dan area utama.
+  - Abu-abu kehijauan sebagai background utama (bukan putih polos, memberi nuansa modern dan tenang).
+- **Kontras:**
+  - Hitam untuk teks utama dan elemen penting (judul, angka, tombol utama).
+  - Aksen hitam solid pada tombol utama dan beberapa elemen interaktif.
+- **Hierarki Visual:**
+  - Warna aksen digunakan untuk menyorot status, progress, dan elemen penting (misal: tanggal terpilih, progress bar, AI Assistant).
+  - Warna netral untuk background agar konten mudah dibaca.
+
+**Tipografi:**
+
+- **Jenis Huruf:**
+  - Sans-serif modern, kemungkinan besar menggunakan font seperti Inter, Poppins, atau Graphik.
+- **Ukuran & Konsistensi:**
+  - Judul besar, tebal, sangat readable.
+  - Subjudul dan label lebih kecil, tipis, dan konsisten.
+  - Angka/statistik sangat menonjol (besar, bold).
+- **Konsistensi:**
+  - Semua teks rata kiri, spasi antar elemen sangat rapi.
+  - Tidak ada variasi font yang berlebihan, menjaga kesan profesional.
+
+---
 
 ## C. Usage Guidelines
 
@@ -68,12 +91,6 @@ Dokumen ini mendefinisikan sistem desain UI/UX baru untuk aplikasi rental softwa
 - **Kontras:** Pastikan teks hitam di atas warna terang, dan sebaliknya.
 
 ---
-
-## D. Font Family
-
-- **Sans-serif utama:** Inter, Poppins, Graphik (untuk heading, body, label)
-- **Monospace:** Fira Code (khusus data/angka jika diperlukan)
-- Semua font didefinisikan di Tailwind config.
 
 ## E. Border Radius & Shadow
 
@@ -89,6 +106,15 @@ Dokumen ini mendefinisikan sistem desain UI/UX baru untuk aplikasi rental softwa
 
 ## H. Interactive States
 
+**Interaksi:**
+
+- **Affordance Jelas:**
+  - Button dan dropdown sangat jelas bisa diklik (warna solid, ikon arrow).
+  - Card dengan highlight warna menandakan status aktif/terpilih.
+- **Micro-interaction (Implied):**
+  - Hover state kemungkinan berupa perubahan warna background atau shadow subtle.
+  - Tidak ada animasi berat, menjaga performa dan fokus pada konten.
+
 - **Hover:**
   - Button: bg-lime-400, scale(1.02), shadow-lg
   - Card: shadow-xl, border-lime-100
@@ -97,19 +123,32 @@ Dokumen ini mendefinisikan sistem desain UI/UX baru untuk aplikasi rental softwa
 - **Disabled:** opacity-50, cursor-not-allowed
 - Semua state diatur di Tailwind config dan utility class.
 
-## I. Visual Hierarchy & Typography
-
-- **H1:** `text-4xl font-bold text-gray-900`
-- **H2:** `text-3xl font-semibold text-gray-800`
-- **H3:** `text-2xl font-medium text-gray-700`
-- **Body:** `text-base text-gray-800`
-- **Caption:** `text-sm text-gray-500`
-- **Angka/statistik:** `text-3xl font-bold text-black`
-- Gunakan hierarchy ini secara konsisten di seluruh aplikasi.
-
 ---
 
 ## J. Komponen Utama
+
+**Struktur Layout:**
+
+- **Grid System Modular:**
+  - Layout menggunakan grid modular, setiap card adalah satu modul informasi.
+  - Spasi antar card besar, memberi ruang napas (breathing space).
+- **Card-Based:**
+  - Semua informasi utama ditempatkan dalam card dengan sudut membulat.
+  - Setiap card punya fungsi spesifik: user info, meetings, roadmap, statistik, AI assistant.
+- **Komponen:**
+  - **Button:**
+    - Bulat, solid, dengan ikon sederhana (arrow, plus).
+    - Ada juga tombol dengan outline tipis.
+  - **Dropdown:**
+    - Sangat minimal, hanya teks dan ikon panah.
+  - **Progress Bar:**
+    - Flat, tipis, warna aksen.
+  - **Avatar & Icon:**
+    - Avatar bulat, icon minimalis (notifikasi, waktu, telepon).
+  - **Form/Selector:**
+    - Dropdown dan date selector sangat sederhana, mudah di-scan.
+  - **Chart:**
+    - Line chart sederhana dengan warna aksen, tanpa grid berat.
 
 - **Card:** Rounded, shadow, padding, grid/list, modular.
 - **Button:** Solid, outline, ghost, icon button, bulat.
@@ -122,14 +161,15 @@ Dokumen ini mendefinisikan sistem desain UI/UX baru untuk aplikasi rental softwa
 
 ## K. Responsive & Accessibility
 
-- **Breakpoints:**
-  - Mobile: < 768px (stacked layout)
-  - Tablet: 768-1024px (2 kolom)
-  - Desktop: > 1024px (grid, sidebar)
-- **Touch Target:** Min 44x44px
-- **Contrast:** Min 4.5:1 untuk teks utama
-- **Focus Ring:** Selalu visible
-- **ARIA:** Untuk komponen interaktif
+- **Kontras Cukup:**
+  - Teks hitam di atas warna terang/putih, mudah dibaca.
+  - Angka/statistik sangat menonjol.
+- **Ukuran Font:**
+  - Cukup besar untuk keterbacaan, baik untuk desktop maupun tablet.
+- **Icon & Label:**
+  - Semua icon didampingi label, memudahkan pemahaman.
+- **Whitespace:**
+  - Spasi antar elemen besar, memudahkan navigasi visual.
 
 ## L. Performance & Utility
 

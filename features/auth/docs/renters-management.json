@@ -1,25 +1,25 @@
 {
   "page_structure": {
-    "perspective": "admin dashboard for renters management",
+    "perspective": "admin dashboard for renters management with flat modern minimalist design",
     "geometry": {
-      "proportions": "full-width layout with max-width container, header at top, content below",
+      "proportions": "full-width layout with max-width container, modular grid system",
       "element_arrangement": "header, navigation, search-actions, data-table, pagination"
     },
     "composition": {
       "element_count": "5 main sections: header, navigation, search-actions, data-table, pagination",
-      "spatial_depth": "layered with minimal shadows and clean card effects",
+      "spatial_depth": "layered with subtle soft neumorphism effects",
       "scale_consistency": "hierarchical typography scale, consistent component sizing",
-      "scene_density": "moderate information density with clear visual hierarchy and whitespace"
+      "scene_density": "moderate information density with clear visual hierarchy and generous whitespace"
     },
     "lighting": {
       "type": "soft ambient lighting with subtle highlights",
       "light_source": "top-down with gentle side illumination",
-      "shadow": "subtle drop shadows with soft edges",
+      "shadow": "very subtle shadows for soft neumorphism effect",
       "highlighting": "gentle edge illumination on interactive elements"
     },
     "textures": {
       "material_finish": "smooth surfaces with minimal texture",
-      "surface_treatment": "clean cards with minimal borders",
+      "surface_treatment": "clean cards with soft neumorphism",
       "texture_realism": "modern, professional finish"
     },
     "render_quality": {
@@ -29,36 +29,36 @@
     },
     "color_palette": {
       "primary": {
-        "blue_500": "#3B82F6",
-        "blue_600": "#2563EB",
-        "blue_700": "#1D4ED8"
+        "lime_yellow": "#EFFF6B",
+        "lime_400": "#A3E635",
+        "lime_600": "#65A30D"
       },
       "secondary": {
-        "green_500": "#10B981",
-        "green_600": "#059669",
-        "olive_500": "#84CC16"
+        "blue_500": "#3B82F6",
+        "olive_500": "#84CC16",
+        "green_500": "#10B981"
       },
       "accent": {
         "yellow_500": "#EAB308",
         "red_500": "#EF4444"
       },
       "background": {
-        "neutral_50": "#FFFFFF",
-        "neutral_100": "#F8FAFC",
-        "neutral_200": "#F1F5F9"
+        "white": "#FFFFFF",
+        "gray_50": "#F8FAFC",
+        "gray_100": "#E2E8F0"
       },
       "text": {
-        "neutral_900": "#1E293B",
-        "neutral_700": "#475569",
-        "neutral_600": "#64748B"
+        "black": "#111827",
+        "gray_700": "#374151",
+        "gray_600": "#4B5563"
       }
     },
     "background": {
-      "color": "neutral-50 background",
-      "style": "clean white background with subtle patterns",
+      "color": "gray-100 background (abu-abu kehijauan)",
+      "style": "clean modern background with subtle patterns",
       "texture": "minimal pattern overlay for depth"
     },
-    "stylistic_tone": "professional, trustworthy, modern admin dashboard",
+    "stylistic_tone": "professional, trustworthy, modern admin dashboard with lime accent",
     "page_behavior": {
       "branding_alignment": "consistent with RentalBaju brand identity",
       "scalability": "responsive design for all device sizes",
@@ -71,10 +71,11 @@
       "file": "features/renters/components/DashboardHeader.tsx",
       "elements": ["app_logo", "page_title", "user_button", "breadcrumb_navigation"],
       "style_rules": {
-        "background": "white background with border-b border-neutral-200",
-        "layout": "flex justify-between items-center p-4",
-        "typography": "text-2xl font-semibold text-gray-800 for page title",
-        "responsive": "mobile-first with tablet and desktop breakpoints"
+        "background": "white background with border-b border-gray-100",
+        "layout": "flex justify-between items-center p-6",
+        "typography": "text-3xl font-bold text-black for page title",
+        "responsive": "mobile-first with tablet and desktop breakpoints",
+        "shadow": "shadow-md for soft neumorphism effect"
       }
     },
     "navigation_section": {
@@ -82,9 +83,9 @@
       "file": "features/renters/components/NavigationTabs.tsx",
       "elements": ["tab_container", "active_tab", "inactive_tabs", "tab_indicators"],
       "style_rules": {
-        "container": "flex gap-4 p-4 bg-white border-b border-neutral-200",
-        "active_tab": "bg-blue-500 text-white px-4 py-2 rounded-lg font-medium",
-        "inactive_tab": "text-gray-600 hover:text-gray-900 px-4 py-2 rounded-lg font-medium",
+        "container": "flex gap-6 p-6 bg-white border-b border-gray-100",
+        "active_tab": "bg-lime-yellow text-black px-6 py-3 rounded-lg font-semibold shadow-md",
+        "inactive_tab": "text-gray-600 hover:text-black px-6 py-3 rounded-lg font-medium hover:bg-gray-50",
         "transitions": "smooth duration-200 transitions"
       }
     },
@@ -93,9 +94,9 @@
       "file": "features/renters/components/SearchActionsBar.tsx",
       "elements": ["search_input", "search_icon", "add_button", "filter_dropdown"],
       "style_rules": {
-        "container": "flex justify-between items-center p-4 bg-white",
-        "search_input": "rounded-lg border border-neutral-300 px-4 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-200",
-        "add_button": "bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium",
+        "container": "flex justify-between items-center p-6 bg-white rounded-lg shadow-md",
+        "search_input": "rounded-lg border border-gray-200 px-4 py-3 focus:border-lime-yellow focus:ring-2 focus:ring-lime-yellow/20",
+        "add_button": "bg-black hover:bg-gray-800 text-white px-6 py-3 rounded-lg font-semibold shadow-md",
         "layout": "flex gap-4 items-center"
       }
     },
@@ -111,13 +112,13 @@
         "empty_state"
       ],
       "style_rules": {
-        "container": "bg-white rounded-lg shadow-md border border-neutral-200 overflow-hidden",
+        "container": "bg-white rounded-lg shadow-md border border-gray-100 overflow-hidden",
         "table": "w-full border-collapse",
-        "header": "bg-neutral-50 border-b border-neutral-200",
-        "header_cell": "px-6 py-3 text-left text-sm font-medium text-gray-700",
-        "body_cell": "px-6 py-4 text-sm text-gray-800 border-b border-neutral-100",
-        "row_hover": "hover:bg-neutral-50",
-        "zebra_striping": "even:bg-neutral-50/50"
+        "header": "bg-gray-50 border-b border-gray-100",
+        "header_cell": "px-6 py-4 text-left text-sm font-semibold text-black",
+        "body_cell": "px-6 py-4 text-sm text-gray-700 border-b border-gray-50",
+        "row_hover": "hover:bg-lime-yellow/10",
+        "zebra_striping": "even:bg-gray-50/30"
       }
     },
     "pagination_section": {
@@ -125,9 +126,9 @@
       "file": "features/renters/components/Pagination.tsx",
       "elements": ["pagination_container", "page_info", "page_buttons", "per_page_selector"],
       "style_rules": {
-        "container": "flex justify-between items-center p-4 bg-white border-t border-neutral-200",
-        "button": "px-3 py-2 rounded-lg border border-neutral-300 hover:bg-neutral-50",
-        "active_button": "bg-blue-500 text-white border-blue-500",
+        "container": "flex justify-between items-center p-6 bg-white rounded-lg shadow-md",
+        "button": "px-4 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 hover:border-lime-yellow",
+        "active_button": "bg-lime-yellow text-black border-lime-yellow font-semibold",
         "disabled_button": "opacity-50 cursor-not-allowed"
       }
     },
@@ -145,9 +146,9 @@
       "style_rules": {
         "backdrop": "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center",
         "container": "bg-white rounded-lg shadow-xl max-w-md w-full mx-4",
-        "header": "px-6 py-4 border-b border-neutral-200",
-        "form": "px-6 py-4 space-y-4",
-        "actions": "px-6 py-4 border-t border-neutral-200 flex justify-end gap-3"
+        "header": "px-6 py-4 border-b border-gray-100",
+        "form": "px-6 py-6 space-y-6",
+        "actions": "px-6 py-4 border-t border-gray-100 flex justify-end gap-3"
       }
     },
     "delete_modal": {
@@ -164,7 +165,7 @@
         "backdrop": "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center",
         "container": "bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6",
         "warning_icon": "text-red-500 text-4xl mb-4",
-        "text": "text-gray-800 text-center mb-6",
+        "text": "text-black text-center mb-6 text-lg",
         "actions": "flex justify-end gap-3"
       }
     }
@@ -191,12 +192,12 @@
   "interaction_patterns": {
     "hover_effects": {
       "buttons": "scale-105 with shadow elevation",
-      "table_rows": "bg-neutral-50 with subtle border",
+      "table_rows": "bg-lime-yellow/10 with subtle border",
       "cards": "hover-lift with shadow increase"
     },
     "loading_states": {
-      "skeleton": "animate-pulse with neutral-200 background",
-      "spinner": "animate-spin with blue-500 color",
+      "skeleton": "animate-pulse with gray-200 background",
+      "spinner": "animate-spin with lime-yellow color",
       "progress": "animate-pulse with color transitions"
     },
     "transitions": {
@@ -210,7 +211,7 @@
     "screen_reader": "semantic HTML with proper ARIA labels",
     "color_contrast": "WCAG 2.1 AA compliant contrast ratios",
     "reduced_motion": "respects prefers-reduced-motion media query",
-    "focus_management": "visible focus indicators with blue-500 color",
+    "focus_management": "visible focus indicators with lime-yellow color",
     "table_accessibility": "proper headers, row associations, and captions"
   },
   "form_specifications": {
@@ -221,7 +222,8 @@
         "type": "text",
         "required": true,
         "validation": "min 2 characters, max 100 characters",
-        "placeholder": "Masukkan nama penyewa"
+        "placeholder": "Masukkan nama penyewa",
+        "style": "rounded-lg border border-gray-200 px-4 py-3 focus:border-lime-yellow focus:ring-2 focus:ring-lime-yellow/20"
       },
       {
         "name": "phone",
@@ -229,7 +231,8 @@
         "type": "tel",
         "required": true,
         "validation": "Indonesian phone number format",
-        "placeholder": "08123456789"
+        "placeholder": "08123456789",
+        "style": "rounded-lg border border-gray-200 px-4 py-3 focus:border-lime-yellow focus:ring-2 focus:ring-lime-yellow/20"
       },
       {
         "name": "address",
@@ -237,7 +240,8 @@
         "type": "textarea",
         "required": false,
         "validation": "max 500 characters",
-        "placeholder": "Masukkan alamat lengkap"
+        "placeholder": "Masukkan alamat lengkap",
+        "style": "rounded-lg border border-gray-200 px-4 py-3 focus:border-lime-yellow focus:ring-2 focus:ring-lime-yellow/20"
       },
       {
         "name": "identity_number",
@@ -245,7 +249,8 @@
         "type": "text",
         "required": false,
         "validation": "16 digits",
-        "placeholder": "1234567890123456"
+        "placeholder": "1234567890123456",
+        "style": "rounded-lg border border-gray-200 px-4 py-3 focus:border-lime-yellow focus:ring-2 focus:ring-lime-yellow/20"
       }
     ],
     "form_validation": {
