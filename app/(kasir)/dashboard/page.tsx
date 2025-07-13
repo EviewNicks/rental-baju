@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { DashboardHeader } from '@/features/rentals-manage/components/DashboardHeader'
+
 import { NavigationTabs } from '@/features/rentals-manage/components/NavigationTabs'
 import { SearchActionsBar } from '@/features/rentals-manage/components/SearchActionBar'
 import { RentersTable } from '@/features/rentals-manage/components/RentersTable'
@@ -164,12 +164,10 @@ export default function RentersManagementPage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-100">
-      <DashboardHeader isLoading={isPageLoading} />
+    <>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <NavigationTabs isLoading={isPageLoading} />
-
         <div className="mt-8 space-y-6">
           <SearchActionsBar
             searchQuery={searchQuery}
@@ -177,14 +175,12 @@ export default function RentersManagementPage() {
             onAddClick={handleAddRenter}
             isLoading={isPageLoading}
           />
-
           <RentersTable
             renters={currentRenters}
             onEdit={handleEditRenter}
             onDelete={handleDeleteRenter}
             isLoading={isLoading || isPageLoading}
           />
-
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}
@@ -196,7 +192,6 @@ export default function RentersManagementPage() {
           />
         </div>
       </main>
-
       <RenterFormModal
         isOpen={isFormModalOpen}
         onClose={() => setIsFormModalOpen(false)}
@@ -204,7 +199,6 @@ export default function RentersManagementPage() {
         renter={selectedRenter}
         isLoading={isLoading}
       />
-
       <DeleteConfirmationModal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
@@ -212,6 +206,6 @@ export default function RentersManagementPage() {
         renterName={renterToDelete?.name || ''}
         isLoading={isLoading}
       />
-    </div>
+    </>
   )
 }

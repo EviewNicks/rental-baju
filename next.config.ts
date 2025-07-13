@@ -46,6 +46,12 @@ const nextConfig = {
         port: '',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'localhost',
+        port: '',
+        pathname: '/**',
+      },
     ],
     // Modern image optimization
     formats: ['image/webp', 'image/avif'],

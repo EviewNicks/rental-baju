@@ -29,8 +29,8 @@ export function DashboardHeader({ isLoading = false }: DashboardHeaderProps) {
 
   return (
     <header className="bg-white border-b border-neutral-200 sticky top-0 z-50 shadow-md">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-20">
+      <div className="w-full flex justify-center">
+        <div className="w-full max-w-7xl px-4 sm:px-6 lg:px-8 flex justify-between items-center h-20">
           {/* Judul Halaman */}
           <div className="flex-1">
             <span className="text-2xl font-bold text-neutral-900">Manajemen Penyewa</span>

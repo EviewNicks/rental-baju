@@ -2,25 +2,17 @@ import { Skeleton } from '@/components/ui/skeleton'
 
 export default function Loading() {
   return (
-    <div className="min-h-screen bg-neutral-100">
+    <>
       {/* Header Skeleton */}
-      <div className="bg-white border-b border-neutral-200 sticky top-0 z-50 shadow-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-20">
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-3">
-                <Skeleton className="w-10 h-10 rounded-xl" />
-                <Skeleton className="w-32 h-8" />
-              </div>
-              <div className="hidden sm:block">
-                <Skeleton className="w-48 h-6" />
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Skeleton className="w-10 h-10 rounded-full" />
-              <Skeleton className="w-10 h-10 rounded-full" />
-              <Skeleton className="w-32 h-10 rounded-lg" />
-            </div>
+      <div className="bg-white border-b border-neutral-200 sticky top-0 z-50 shadow-md w-full flex justify-center">
+        <div className="w-full max-w-7xl px-4 sm:px-6 lg:px-8 flex justify-between items-center h-20">
+          <div className="flex-1">
+            <div className="w-48 h-8 bg-neutral-100 rounded-lg animate-pulse" />
+          </div>
+          <div className="flex items-center space-x-4">
+            <div className="w-10 h-10 rounded-full bg-neutral-100 animate-pulse" />
+            <div className="w-10 h-10 rounded-full bg-neutral-100 animate-pulse" />
+            <div className="w-32 h-10 rounded-lg bg-neutral-100 animate-pulse" />
           </div>
         </div>
       </div>
@@ -85,6 +77,6 @@ export default function Loading() {
           </div>
         </div>
       </main>
-    </div>
+    </>
   )
 }

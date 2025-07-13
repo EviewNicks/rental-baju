@@ -53,7 +53,7 @@ export default function StoreInfoSection() {
             <div className="relative">
               <div className="relative w-full h-96 rounded-2xl overflow-hidden bg-gradient-to-br from-blue-50 to-green-50 shadow-lg">
                 <Image
-                  src="/placeholder.svg?height=400&width=600"
+                  src="/products/image.png"
                   alt="Toko RentalBaju - Interior Modern"
                   fill
                   className="object-cover"
