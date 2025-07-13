@@ -1,0 +1,271 @@
+{
+  "homepage_style": {
+    "perspective": "modern business web application",
+    "geometry": {
+      "proportions": "full-width layout with max-width containers, 16:9 hero section",
+      "element_arrangement": "hero at top, categories, featured items, store info, contact, footer"
+    },
+    "composition": {
+      "element_count": "6 main sections: hero, categories, featured items, store info, contact, footer",
+      "spatial_depth": "layered with minimal shadows and clean card effects",
+      "scale_consistency": "hierarchical typography scale, consistent component sizing",
+      "scene_density": "moderate information density with clear visual hierarchy and whitespace"
+    },
+    "lighting": {
+      "type": "soft ambient lighting with subtle highlights",
+      "light_source": "top-down with gentle side illumination",
+      "shadow": "subtle drop shadows with soft edges",
+      "highlighting": "gentle edge illumination on interactive elements"
+    },
+    "textures": {
+      "material_finish": "smooth surfaces with minimal texture",
+      "surface_treatment": "clean cards with minimal borders",
+      "texture_realism": "modern, professional finish"
+    },
+    "render_quality": {
+      "resolution": "high-resolution web rendering with crisp typography",
+      "edge_definition": "rounded corners with consistent border radius",
+      "visual_clarity": "clean, readable layout with proper contrast ratios"
+    },
+    "color_palette": {
+      "primary": {
+        "blue_500": "#3B82F6",
+        "blue_600": "#2563EB",
+        "blue_700": "#1D4ED8"
+      },
+      "secondary": {
+        "green_500": "#10B981",
+        "green_600": "#059669",
+        "olive_500": "#84CC16"
+      },
+      "accent": {
+        "yellow_500": "#EAB308",
+        "red_500": "#EF4444"
+      },
+      "background": {
+        "neutral_50": "#FFFFFF",
+        "neutral_100": "#F8FAFC",
+        "neutral_200": "#F1F5F9"
+      },
+      "text": {
+        "neutral_900": "#1E293B",
+        "neutral_700": "#475569",
+        "neutral_600": "#64748B"
+      }
+    },
+    "background": {
+      "color": "gradient from neutral-50 to neutral-100",
+      "style": "clean modern gradient with subtle patterns",
+      "texture": "minimal pattern overlay for depth"
+    },
+    "stylistic_tone": "professional, trustworthy, modern business with rental focus",
+    "page_behavior": {
+      "branding_alignment": "consistent with RentalBaju brand identity",
+      "scalability": "responsive design for all device sizes",
+      "accessibility": "WCAG 2.1 AA compliant with proper contrast and navigation"
+    }
+  },
+  "components_structure": {
+    "hero_section": {
+      "name": "HeroSection",
+      "file": "features/homepage/components/HeroSection.tsx",
+      "elements": [
+        "store_logo",
+        "main_headline",
+        "subheadline",
+        "store_description",
+        "hero_image_or_illustration",
+        "trust_indicators",
+        "scroll_indicator"
+      ],
+      "style_rules": {
+        "background": "gradient from neutral-50 to blue-50",
+        "typography": "large, bold headline with blue-500 accent",
+        "spacing": "generous padding with proper hierarchy",
+        "responsive": "mobile-first with tablet and desktop breakpoints"
+      }
+    },
+    "categories_section": {
+      "name": "CategoriesSection",
+      "file": "features/homepage/components/CategoriesSection.tsx",
+      "elements": [
+        "section_title",
+        "category_cards",
+        "category_icons",
+        "category_names",
+        "category_descriptions"
+      ],
+      "style_rules": {
+        "container": "max-width container with grid layout",
+        "cards": "clean cards with minimal shadow, rounded-lg, border border-neutral-200",
+        "icons": "minimalist icons with blue-500 or green-500 color, micro-interactions on hover",
+        "grid": "responsive grid: 1 column mobile, 3 columns desktop for 3 categories"
+      }
+    },
+    "featured_items": {
+      "name": "FeaturedItemsSection",
+      "file": "features/homepage/components/FeaturedItemsSection.tsx",
+      "elements": [
+        "section_title",
+        "clothing_grid",
+        "clothing_cards",
+        "clothing_images",
+        "clothing_names",
+        "clothing_categories",
+        "clothing_prices"
+      ],
+      "style_rules": {
+        "container": "max-width container with grid layout",
+        "cards": "clean cards with minimal shadow, rounded-lg, border border-neutral-200",
+        "images": "aspect-square with rounded corners",
+        "grid": "responsive grid: 2 columns mobile, 3 columns tablet, 5 columns desktop for 10 items"
+      }
+    },
+    "store_info": {
+      "name": "StoreInfoSection",
+      "file": "features/homepage/components/StoreInfoSection.tsx",
+      "elements": [
+        "section_title",
+        "store_location",
+        "opening_hours",
+        "contact_info",
+        "delivery_info",
+        "store_image"
+      ],
+      "style_rules": {
+        "container": "max-width container with flex layout",
+        "cards": "clean cards with minimal shadow, rounded-lg, border border-neutral-200",
+        "layout": "two column layout on desktop, stacked on mobile",
+        "spacing": "consistent spacing between elements"
+      }
+    },
+    "contact_section": {
+      "name": "ContactSection",
+      "file": "features/homepage/components/ContactSection.tsx",
+      "elements": [
+        "contact_headline",
+        "contact_description",
+        "contact_button",
+        "whatsapp_button",
+        "background_pattern"
+      ],
+      "style_rules": {
+        "background": "gradient from blue-500 to blue-600",
+        "text": "white text with high contrast",
+        "buttons": "white background with blue-500 text, rounded-lg",
+        "pattern": "subtle geometric pattern overlay"
+      }
+    },
+    "footer": {
+      "name": "Footer",
+      "file": "features/homepage/components/Footer.tsx",
+      "elements": [
+        "footer_logo",
+        "footer_links",
+        "social_media_icons",
+        "copyright_text",
+        "store_address"
+      ],
+      "style_rules": {
+        "background": "neutral-900 background",
+        "text": "white and neutral-300 text",
+        "links": "hover effects with blue-500 color",
+        "layout": "grid layout with responsive columns"
+      }
+    },
+    "navigation": {
+      "name": "Navigation",
+      "file": "features/homepage/components/Navigation.tsx",
+      "elements": ["logo", "navigation_links", "contact_button", "mobile_menu", "hamburger_icon"],
+      "style_rules": {
+        "background": "clean background with minimal shadow, border border-neutral-200",
+        "links": "hover effects with blue-500 color",
+        "button": "blue-500 background with white text",
+        "mobile": "slide-down menu with smooth transitions"
+      }
+    }
+  },
+  "responsive_breakpoints": {
+    "mobile": {
+      "max_width": "768px",
+      "layout": "single column, stacked elements",
+      "typography": "smaller font sizes, compact spacing",
+      "navigation": "hamburger menu"
+    },
+    "tablet": {
+      "min_width": "769px",
+      "max_width": "1024px",
+      "layout": "two column layout where appropriate",
+      "typography": "medium font sizes, balanced spacing"
+    },
+    "desktop": {
+      "min_width": "1025px",
+      "layout": "full layout with optimal spacing",
+      "typography": "large font sizes, generous spacing",
+      "navigation": "horizontal menu"
+    }
+  },
+  "interaction_patterns": {
+    "hover_effects": {
+      "buttons": "scale-105 with shadow elevation",
+      "cards": "hover-lift with shadow increase",
+      "links": "color transition with underline"
+    },
+    "loading_states": {
+      "skeleton": "animate-pulse with neutral-200 background",
+      "spinner": "animate-spin with blue-500 color",
+      "progress": "animate-pulse with color transitions"
+    },
+    "transitions": {
+      "duration": "200ms for micro-interactions",
+      "easing": "cubic-bezier(0.42, 0, 0.58, 1)",
+      "properties": "transform, opacity, color, box-shadow"
+    }
+  },
+  "accessibility_features": {
+    "keyboard_navigation": "full keyboard support with focus indicators",
+    "screen_reader": "semantic HTML with proper ARIA labels",
+    "color_contrast": "WCAG 2.1 AA compliant contrast ratios",
+    "reduced_motion": "respects prefers-reduced-motion media query",
+    "focus_management": "visible focus indicators with blue-500 color"
+  },
+  "content_structure": {
+    "hero_content": {
+      "headline": "RentalBaju - Solusi Penyewaan Pakaian Terpercaya",
+      "subheadline": "Koleksi pakaian pesta, casual, dan tradisional untuk acara spesial Anda",
+      "description": "Temukan pakaian yang sempurna untuk pesta, foto, dan acara penting lainnya"
+    },
+    "categories_content": [
+      {
+        "title": "Pakaian Pesta",
+        "description": "Koleksi pakaian elegan untuk acara pesta dan formal",
+        "icon": "party-icon"
+      },
+      {
+        "title": "Pakaian Casual",
+        "description": "Pakaian nyaman untuk acara santai dan sehari-hari",
+        "icon": "casual-icon"
+      },
+      {
+        "title": "Pakaian Tradisional",
+        "description": "Koleksi pakaian tradisional untuk acara adat dan budaya",
+        "icon": "traditional-icon"
+      }
+    ],
+    "store_info_content": {
+      "location": "Toko RentalBaju",
+      "address": "[Alamat toko akan ditambahkan]",
+      "hours": "Senin - Minggu: 09:00 - 20:00",
+      "phone": "[Nomor telepon akan ditambahkan]",
+      "delivery": "Layanan delivery tersedia"
+    }
+  },
+  "technical_requirements": {
+    "framework": "Next.js 14 with App Router",
+    "styling": "Tailwind CSS with custom theme",
+    "components": "React components with TypeScript",
+    "animations": "CSS transitions and Framer Motion for complex animations",
+    "icons": "Lucide React or Heroicons",
+    "images": "Next.js Image component with optimization"
+  }
+}

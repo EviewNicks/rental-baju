@@ -30,9 +30,9 @@ const firaCode = Fira_Code({
 })
 
 export const metadata: Metadata = {
-  title: 'Maguru - Platform Course Online Terdepan',
+  title: 'RentalBaju - Solusi Penyewaan Pakaian Terpercaya',
   description:
-    'Belajar skill digital terbaru dengan mentor expert di Maguru. Ribuan course berkualitas tinggi untuk mengembangkan karir Anda.',
+    'Koleksi pakaian pesta, casual, dan tradisional untuk acara spesial Anda. Temukan pakaian yang sempurna dengan kualitas premium dan harga terjangkau.',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

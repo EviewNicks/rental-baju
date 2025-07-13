@@ -10,6 +10,7 @@ const config: Config = {
     './src/**/*.{ts,tsx}',
     '*.{js,ts,jsx,tsx,mdx}',
   ],
+
   prefix: '',
   plugins: [animate],
 } satisfies Config

@@ -14,7 +14,10 @@ export default function SignInPage() {
       </div>
 
       {/* Auth container */}
-      <div className="glass-panel p-8 rounded-lg shadow-glass w-full max-w-md relative z-10 backdrop-blur-sm">
+      <div
+        className="glass-panel p-8 rounded-lg shadow-glass w-full max-w-md relative z-10 backdrop-blur-sm"
+        data-testid="sign-in-container"
+      >
         <SignIn
           appearance={{
             elements: {
