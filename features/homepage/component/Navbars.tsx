@@ -40,6 +40,7 @@ export function Navbar() {
 
   return (
     <nav
+      data-testid="navbar"
       className={`sticky top-0 z-50 transition-all duration-200 ${
         isScrolled
           ? 'bg-white/95 backdrop-blur-sm shadow-sm border-b border-neutral-200'
@@ -49,7 +50,7 @@ export function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2 group">
+          <Link href="/" className="flex items-center space-x-2 group" data-testid="navbar-logo">
             <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center transition-transform duration-200 group-hover:scale-105">
               <Shirt className="w-5 h-5 text-white" />
             </div>
@@ -59,10 +60,11 @@ export function Navbar() {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden md:flex items-center space-x-8" data-testid="desktop-navigation">
             <Link
               href="#categories"
               className="text-neutral-700 hover:text-blue-500 transition-all duration-200 relative group"
+              data-testid="nav-categories"
             >
               Kategori
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-500 transition-all duration-200 group-hover:w-full"></span>
@@ -70,6 +72,7 @@ export function Navbar() {
             <Link
               href="#featured"
               className="text-neutral-700 hover:text-blue-500 transition-all duration-200 relative group"
+              data-testid="nav-featured"
             >
               Koleksi
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-500 transition-all duration-200 group-hover:w-full"></span>
@@ -77,6 +80,7 @@ export function Navbar() {
             <Link
               href="#store-info"
               className="text-neutral-700 hover:text-blue-500 transition-all duration-200 relative group"
+              data-testid="nav-store-info"
             >
               Toko
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-500 transition-all duration-200 group-hover:w-full"></span>
@@ -84,6 +88,7 @@ export function Navbar() {
             <Link
               href="#contact"
               className="text-neutral-700 hover:text-blue-500 transition-all duration-200 relative group"
+              data-testid="nav-contact"
             >
               Kontak
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-500 transition-all duration-200 group-hover:w-full"></span>
@@ -91,15 +96,15 @@ export function Navbar() {
           </div>
 
           {/* Desktop CTA */}
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="hidden md:flex items-center space-x-4" data-testid="desktop-auth-buttons">
             {!isSignedIn ? (
               <>
-                <Link href="/sign-in">
+                <Link href="/sign-in" data-testid="desktop-sign-in-link">
                   <Button variant="ghost" className="text-neutral-700 hover:text-blue-500">
                     Masuk
                   </Button>
                 </Link>
-                <Link href="/sign-up">
+                <Link href="/sign-up" data-testid="desktop-sign-up-link">
                   <Button className="bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-all duration-200 hover:scale-105 hover:shadow-lg">
                     Daftar Gratis
                   </Button>
@@ -108,7 +113,7 @@ export function Navbar() {
             ) : (
               <>
                 {/* Role-based Dashboard Link */}
-                <Link href={getDashboardUrl()}>
+                <Link href={getDashboardUrl()} data-testid="desktop-dashboard-link">
                   <Button variant="ghost" className="text-sm text-neutral-700 hover:text-blue-500">
                     Dashboard
                     {role && (
@@ -137,6 +142,7 @@ export function Navbar() {
             className="md:hidden p-2 rounded-lg hover:bg-neutral-100 transition-all duration-200"
             onClick={() => setIsOpen(!isOpen)}
             aria-label="Toggle Menu"
+            data-testid="mobile-menu-button"
           >
             {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
@@ -144,6 +150,7 @@ export function Navbar() {
 
         {/* Mobile Menu */}
         <div
+          data-testid="mobile-menu"
           className={`md:hidden transition-all duration-300 ease-in-out ${
             isOpen
               ? 'max-h-64 opacity-100 py-4 border-t border-neutral-200'
@@ -155,6 +162,7 @@ export function Navbar() {
               href="#categories"
               className="text-neutral-700 hover:text-blue-500 transition-colors duration-200 py-2"
               onClick={handleNavClick}
+              data-testid="mobile-nav-categories"
             >
               Kategori
             </Link>
@@ -162,6 +170,7 @@ export function Navbar() {
               href="#featured"
               className="text-neutral-700 hover:text-blue-500 transition-colors duration-200 py-2"
               onClick={handleNavClick}
+              data-testid="mobile-nav-featured"
             >
               Koleksi
             </Link>
@@ -169,6 +178,7 @@ export function Navbar() {
               href="#store-info"
               className="text-neutral-700 hover:text-blue-500 transition-colors duration-200 py-2"
               onClick={handleNavClick}
+              data-testid="mobile-nav-store-info"
             >
               Toko
             </Link>
@@ -176,13 +186,14 @@ export function Navbar() {
               href="#contact"
               className="text-neutral-700 hover:text-blue-500 transition-colors duration-200 py-2"
               onClick={handleNavClick}
+              data-testid="mobile-nav-contact"
             >
               Kontak
             </Link>
-            <div className="flex flex-col space-y-2 pt-4">
+            <div className="flex flex-col space-y-2 pt-4" data-testid="mobile-auth-buttons">
               {!isSignedIn ? (
                 <>
-                  <Link href="/sign-in">
+                  <Link href="/sign-in" data-testid="mobile-sign-in-link">
                     <Button
                       variant="ghost"
                       className="justify-start cursor-pointer text-neutral-700 hover:text-blue-500"
@@ -191,7 +202,7 @@ export function Navbar() {
                       Masuk
                     </Button>
                   </Link>
-                  <Link href="/sign-up">
+                  <Link href="/sign-up" data-testid="mobile-sign-up-link">
                     <Button
                       className="bg-blue-500 hover:bg-blue-600 text-white rounded-lg w-full transition-all duration-200"
                       onClick={handleNavClick}
@@ -203,7 +214,7 @@ export function Navbar() {
               ) : (
                 <>
                   {/* Mobile Role-based Dashboard Link */}
-                  <Link href={getDashboardUrl()}>
+                  <Link href={getDashboardUrl()} data-testid="mobile-dashboard-link">
                     <Button
                       variant="outline"
                       className="justify-start cursor-pointer w-full text-neutral-700 hover:text-blue-500"

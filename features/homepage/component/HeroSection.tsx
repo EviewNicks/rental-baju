@@ -13,7 +13,10 @@ export default function HeroSection() {
   }, [])
 
   return (
-    <section className="relative py-12 md:py-24 lg:py-32 overflow-hidden bg-gradient-to-br from-neutral-50 via-blue-50/30 to-neutral-100">
+    <section
+      data-testid="hero-section"
+      className="relative py-12 md:py-24 lg:py-32 overflow-hidden bg-gradient-to-br from-neutral-50 via-blue-50/30 to-neutral-100"
+    >
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute top-20 left-10 w-32 h-32 bg-blue-500 rounded-full blur-3xl"></div>
@@ -24,17 +27,24 @@ export default function HeroSection() {
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Content */}
           <div
+            data-testid="hero-content"
             className={`space-y-8 transition-all duration-1000 ${
               isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
             }`}
           >
             <div className="space-y-6">
-              <div className="inline-flex items-center px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
+              <div
+                className="inline-flex items-center px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-medium"
+                data-testid="hero-badge"
+              >
                 <Star className="w-4 h-4 mr-2" />
                 Terpercaya sejak 2020
               </div>
 
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-neutral-900 leading-tight">
+              <h1
+                data-testid="hero-title"
+                className="text-4xl md:text-5xl lg:text-6xl font-bold text-neutral-900 leading-tight"
+              >
                 <span className="bg-gradient-to-r from-blue-500 to-blue-600 bg-clip-text text-transparent">
                   RentalBaju
                 </span>
@@ -42,7 +52,10 @@ export default function HeroSection() {
                 Solusi Penyewaan Pakaian Terpercaya
               </h1>
 
-              <p className="text-xl text-neutral-600 leading-relaxed max-w-2xl">
+              <p
+                data-testid="hero-description"
+                className="text-xl text-neutral-600 leading-relaxed max-w-2xl"
+              >
                 Koleksi pakaian pesta, casual, dan tradisional untuk acara spesial Anda. Temukan
                 pakaian yang sempurna untuk pesta, foto, dan acara penting lainnya dengan kualitas
                 premium dan harga terjangkau.
@@ -50,8 +63,14 @@ export default function HeroSection() {
             </div>
 
             {/* Trust Indicators */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="flex items-center space-x-3 p-3 bg-white rounded-lg shadow-sm border border-neutral-200">
+            <div
+              data-testid="hero-trust-indicators"
+              className="grid grid-cols-2 md:grid-cols-4 gap-4"
+            >
+              <div
+                className="flex items-center space-x-3 p-3 bg-white rounded-lg shadow-sm border border-neutral-200"
+                data-testid="trust-rating"
+              >
                 <div className="w-10 h-10 bg-gradient-to-br from-green-100 to-green-200 rounded-lg flex items-center justify-center">
                   <Star className="w-5 h-5 text-green-600" />
                 </div>
@@ -61,7 +80,10 @@ export default function HeroSection() {
                 </div>
               </div>
 
-              <div className="flex items-center space-x-3 p-3 bg-white rounded-lg shadow-sm border border-neutral-200">
+              <div
+                className="flex items-center space-x-3 p-3 bg-white rounded-lg shadow-sm border border-neutral-200"
+                data-testid="trust-customers"
+              >
                 <div className="w-10 h-10 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center">
                   <Users className="w-5 h-5 text-blue-600" />
                 </div>
@@ -71,7 +93,10 @@ export default function HeroSection() {
                 </div>
               </div>
 
-              <div className="flex items-center space-x-3 p-3 bg-white rounded-lg shadow-sm border border-neutral-200">
+              <div
+                className="flex items-center space-x-3 p-3 bg-white rounded-lg shadow-sm border border-neutral-200"
+                data-testid="trust-hours"
+              >
                 <div className="w-10 h-10 bg-gradient-to-br from-green-100 to-green-200 rounded-lg flex items-center justify-center">
                   <Clock className="w-5 h-5 text-green-600" />
                 </div>
@@ -81,7 +106,10 @@ export default function HeroSection() {
                 </div>
               </div>
 
-              <div className="flex items-center space-x-3 p-3 bg-white rounded-lg shadow-sm border border-neutral-200">
+              <div
+                className="flex items-center space-x-3 p-3 bg-white rounded-lg shadow-sm border border-neutral-200"
+                data-testid="trust-security"
+              >
                 <div className="w-10 h-10 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center">
                   <Shield className="w-5 h-5 text-blue-600" />
                 </div>
@@ -93,10 +121,11 @@ export default function HeroSection() {
             </div>
 
             {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div data-testid="hero-cta-buttons" className="flex flex-col sm:flex-row gap-4">
               <Button
                 size="lg"
                 className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg transition-all duration-200 hover:scale-105 hover:shadow-lg"
+                data-testid="hero-view-collection-btn"
               >
                 Lihat Koleksi Lengkap
               </Button>
@@ -104,22 +133,26 @@ export default function HeroSection() {
                 size="lg"
                 variant="outline"
                 className="border-2 border-neutral-300 text-neutral-700 hover:bg-neutral-50 hover:border-blue-500 hover:text-blue-500 rounded-lg transition-all duration-200 bg-white"
+                data-testid="hero-whatsapp-btn"
               >
                 Hubungi WhatsApp
               </Button>
             </div>
 
             {/* Features List */}
-            <div className="flex flex-wrap gap-6 text-sm text-neutral-600">
-              <div className="flex items-center space-x-2">
+            <div
+              data-testid="hero-features"
+              className="flex flex-wrap gap-6 text-sm text-neutral-600"
+            >
+              <div className="flex items-center space-x-2" data-testid="feature-quality">
                 <CheckCircle className="w-4 h-4 text-green-500" />
                 <span>Kualitas Premium</span>
               </div>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2" data-testid="feature-price">
                 <CheckCircle className="w-4 h-4 text-green-500" />
                 <span>Harga Terjangkau</span>
               </div>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2" data-testid="feature-delivery">
                 <CheckCircle className="w-4 h-4 text-green-500" />
                 <span>Delivery Gratis</span>
               </div>
@@ -128,6 +161,7 @@ export default function HeroSection() {
 
           {/* Hero Image */}
           <div
+            data-testid="hero-image"
             className={`relative transition-all duration-1000 delay-300 ${
               isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
             }`}
@@ -144,7 +178,10 @@ export default function HeroSection() {
             </div>
 
             {/* Floating Cards */}
-            <div className="absolute -top-4 -left-4 bg-white rounded-xl shadow-lg p-4 border border-neutral-200 animate-pulse">
+            <div
+              className="absolute -top-4 -left-4 bg-white rounded-xl shadow-lg p-4 border border-neutral-200 animate-pulse"
+              data-testid="floating-quality-card"
+            >
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center">
                   <CheckCircle className="w-5 h-5 text-white" />
@@ -156,7 +193,10 @@ export default function HeroSection() {
               </div>
             </div>
 
-            <div className="absolute -bottom-4 -right-4 bg-white rounded-xl shadow-lg p-4 border border-neutral-200 animate-pulse">
+            <div
+              className="absolute -bottom-4 -right-4 bg-white rounded-xl shadow-lg p-4 border border-neutral-200 animate-pulse"
+              data-testid="floating-delivery-card"
+            >
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
                   <Truck className="w-5 h-5 text-white" />
@@ -175,7 +215,7 @@ export default function HeroSection() {
         </div>
 
         {/* Scroll Indicator */}
-        <div className="flex justify-center mt-16">
+        <div className="flex justify-center mt-16" data-testid="scroll-indicator">
           <div className="animate-bounce">
             <ArrowDown className="w-6 h-6 text-neutral-400" />
           </div>

@@ -20,8 +20,6 @@ Integrasi Playwright akan memastikan bahwa semua fitur autentikasi berfungsi den
 
 1. **Browser Support**:
    - Fokus pada Chromium sebagai browser utama
-   - Firefox dan Safari dapat ditambahkan di masa depan
-   - Tidak mengimplementasikan testing untuk browser lama
 
 2. **Test Environment**:
    - Menggunakan development environment untuk testing
