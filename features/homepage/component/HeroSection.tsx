@@ -168,7 +168,7 @@ export default function HeroSection() {
           >
             <div className="relative w-full h-96 md:h-[500px] rounded-2xl overflow-hidden bg-gradient-to-br from-blue-50 to-green-50 shadow-2xl">
               <Image
-                src="/images/hero-bg.png"
+                src="/products/image.png"
                 alt="RentalBaju - Koleksi Pakaian Premium"
                 fill
                 className="object-cover"
