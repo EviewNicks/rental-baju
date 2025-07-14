@@ -32,9 +32,9 @@ export function useUserRole(): UseUserRoleReturn {
    */
   const helpers = useMemo(
     () => ({
-      isAdmin: context.role === 'admin',
-      isCreator: context.role === 'creator',
-      isUser: context.role === 'user',
+      isOwner: context.role === 'owner',
+      isProducer: context.role === 'producer',
+      isKasir: context.role === 'kasir',
       hasRole: (role: UserRole) => context.role === role,
     }),
     [context.role],
@@ -67,27 +67,27 @@ function useRoleGuard() {
   return useMemo(
     () => ({
       // Basic role checks
-      canAccessAdmin: () => role === 'admin',
-      canAccessCreator: () => role === 'admin' || role === 'creator',
-      canAccessUser: () => role !== null,
+      canAccessOwner: () => role === 'owner',
+      canAccessProducer: () => role === 'owner' || role === 'producer',
+      canAccessKasir: () => role === 'owner' || role === 'producer' || role === 'kasir',
 
       // Permission-based checks
-      canManageUsers: () => role === 'admin',
-      canCreateContent: () => role === 'admin' || role === 'creator',
+      canManageUsers: () => role === 'owner',
+      canCreateContent: () => role === 'owner' || role === 'producer',
       canViewContent: () => role !== null,
-      canEditOwnContent: () => role === 'admin' || role === 'creator',
-      canDeleteContent: () => role === 'admin',
+      canEditOwnContent: () => role === 'owner' || role === 'producer',
+      canDeleteContent: () => role === 'owner',
 
       // Feature-specific checks
-      canAccessDashboard: () => role === 'admin' || role === 'creator',
-      canAccessAnalytics: () => role === 'admin',
-      canManageSettings: () => role === 'admin',
-      canInviteUsers: () => role === 'admin',
-      canModerateContent: () => role === 'admin' || role === 'creator',
+      canAccessDashboard: () => role === 'owner' || role === 'producer' || role === 'kasir',
+      canAccessAnalytics: () => role === 'owner',
+      canManageSettings: () => role === 'owner',
+      canInviteUsers: () => role === 'owner',
+      canModerateContent: () => role === 'owner' || role === 'producer',
 
       // Utility functions
       hasMinimumRole: (minimumRole: UserRole) => {
-        const roleHierarchy = { user: 1, creator: 2, admin: 3 }
+        const roleHierarchy = { kasir: 1, producer: 2, owner: 3 }
         const currentRoleLevel = role ? roleHierarchy[role] : 0
         const requiredLevel = roleHierarchy[minimumRole]
         return currentRoleLevel >= requiredLevel
@@ -99,13 +99,13 @@ function useRoleGuard() {
 
       // Context-aware guards
       canEditUser: (targetUserId: string, currentUserId: string) => {
-        if (role === 'admin') return true
-        if (role === 'creator' && targetUserId === currentUserId) return true
+        if (role === 'owner') return true
+        if (role === 'producer' && targetUserId === currentUserId) return true
         return false
       },
 
       canDeleteUser: (targetUserId: string, currentUserId: string) => {
-        if (role === 'admin' && targetUserId !== currentUserId) return true
+        if (role === 'owner' && targetUserId !== currentUserId) return true
         return false
       },
     }),
@@ -184,18 +184,18 @@ function useRoleDevelopment() {
   return useMemo(() => {
     if (process.env.NODE_ENV !== 'development') {
       return {
-        switchToAdmin: () => console.warn('Role switching only available in development'),
-        switchToCreator: () => console.warn('Role switching only available in development'),
-        switchToUser: () => console.warn('Role switching only available in development'),
+        switchToOwner: () => console.warn('Role switching only available in development'),
+        switchToProducer: () => console.warn('Role switching only available in development'),
+        switchToKasir: () => console.warn('Role switching only available in development'),
         getCurrentRole: () => role,
         isDevMode: false,
       }
     }
 
     return {
-      switchToAdmin: () => setRole('admin'),
-      switchToCreator: () => setRole('creator'),
-      switchToUser: () => setRole('user'),
+      switchToOwner: () => setRole('owner'),
+      switchToProducer: () => setRole('producer'),
+      switchToKasir: () => setRole('kasir'),
       getCurrentRole: () => role,
       isDevMode: true,
 
@@ -203,16 +203,16 @@ function useRoleDevelopment() {
       logRoleInfo: () => {
         console.group('🔐 Role Development Info')
         console.log('Current Role:', role)
-        console.log('Is Admin:', role === 'admin')
-        console.log('Is Creator:', role === 'creator')
-        console.log('Is User:', role === 'user')
-        console.log('Role Hierarchy Level:', role ? { user: 1, creator: 2, admin: 3 }[role] : 0)
+        console.log('Is Owner:', role === 'owner')
+        console.log('Is Producer:', role === 'producer')
+        console.log('Is Kasir:', role === 'kasir')
+        console.log('Role Hierarchy Level:', role ? { kasir: 1, producer: 2, owner: 3 }[role] : 0)
         console.groupEnd()
       },
 
       testRoleTransitions: () => {
         console.log('🧪 Testing role transitions...')
-        const roles: UserRole[] = ['user', 'creator', 'admin']
+        const roles: UserRole[] = ['kasir', 'producer', 'owner']
         let index = 0
 
         const interval = setInterval(() => {
@@ -256,12 +256,12 @@ function useRoleConditional() {
   return useMemo(
     () => ({
       // Render helpers
-      renderForAdmin: (component: React.ReactNode) => (role === 'admin' ? component : null),
+      renderForOwner: (component: React.ReactNode) => (role === 'owner' ? component : null),
 
-      renderForCreator: (component: React.ReactNode) =>
-        role === 'admin' || role === 'creator' ? component : null,
+      renderForProducer: (component: React.ReactNode) =>
+        role === 'owner' || role === 'producer' ? component : null,
 
-      renderForUser: (component: React.ReactNode) => (role !== null ? component : null),
+      renderForKasir: (component: React.ReactNode) => (role !== null ? component : null),
 
       renderForRole: (targetRole: UserRole, component: React.ReactNode) =>
         role === targetRole ? component : null,
@@ -289,13 +289,13 @@ function useRoleConditional() {
       // Feature flags
       isFeatureEnabled: (feature: string) => {
         const featureRoles: Record<string, UserRole[]> = {
-          analytics: ['admin'],
-          'content-management': ['admin', 'creator'],
-          'user-management': ['admin'],
-          'profile-editing': ['admin', 'creator', 'user'],
-          'advanced-settings': ['admin'],
-          'content-creation': ['admin', 'creator'],
-          dashboard: ['admin', 'creator'],
+          analytics: ['owner'],
+          'content-management': ['owner', 'producer'],
+          'user-management': ['owner'],
+          'profile-editing': ['owner', 'producer', 'kasir'],
+          'advanced-settings': ['owner'],
+          'content-creation': ['owner', 'producer'],
+          dashboard: ['owner', 'producer', 'kasir'],
         }
 
         const requiredRoles = featureRoles[feature]

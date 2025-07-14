@@ -6,7 +6,7 @@
  */
 
 // Core Role Types
-export type UserRole = 'admin' | 'creator' | 'user'
+export type UserRole = 'owner' | 'producer' | 'kasir'
 
 // Role State Interface
 export interface UserRoleState {
@@ -53,9 +53,9 @@ export interface RoleError {
 
 // Hook Return Type
 export interface UseUserRoleReturn extends UserRoleState, UserRoleActions {
-  isAdmin: boolean
-  isCreator: boolean
-  isUser: boolean
+  isOwner: boolean
+  isProducer: boolean
+  isKasir: boolean
   hasRole: (role: UserRole) => boolean
 }
 

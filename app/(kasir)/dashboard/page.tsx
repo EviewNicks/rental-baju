@@ -1,6 +1,8 @@
 'use client'
 
 import { useState } from 'react'
+import { useUser } from '@clerk/nextjs'
+import { useUserRole, useRoleLoadingState } from '@/features/auth'
 
 import { NavigationTabs } from '@/features/rentals-manage/components/NavigationTabs'
 import { SearchActionsBar } from '@/features/rentals-manage/components/SearchActionBar'
@@ -73,6 +75,10 @@ const mockRenters: Renter[] = [
 ]
 
 export default function RentersManagementPage() {
+  const { user, isLoaded } = useUser()
+  const { role } = useUserRole()
+  const { shouldShowLoader: roleLoading } = useRoleLoadingState()
+
   const [renters, setRenters] = useState<Renter[]>(mockRenters)
   const [searchQuery, setSearchQuery] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
@@ -83,6 +89,32 @@ export default function RentersManagementPage() {
   const [renterToDelete, setRenterToDelete] = useState<Renter | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [isPageLoading] = useState(false)
+
+  // Role-based protection
+  if (!isLoaded || roleLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50">
+        <div className="animate-pulse">
+          <div className="h-8 w-48 bg-gray-200 rounded mb-4"></div>
+          <div className="h-4 w-32 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+    )
+  }
+
+  // Tambahkan logic: jika role !== 'owner' && role !== 'producer' && role !== 'kasir', redirect ke /unauthorized
+  if (role !== 'owner' && role !== 'producer' && role !== 'kasir') {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-500 text-6xl mb-4">🚫</div>
+          <h1 className="text-2xl font-bold mb-2">Akses Ditolak</h1>
+          <p className="text-gray-600">Anda tidak memiliki izin untuk mengakses halaman kasir.</p>
+          <p className="text-sm text-gray-500 mt-2">Role saat ini: {role || 'Tidak ada'}</p>
+        </div>
+      </div>
+    )
+  }
 
   // Filter renters based on search query
   const filteredRenters = renters.filter(
@@ -165,6 +197,20 @@ export default function RentersManagementPage() {
 
   return (
     <>
+      {/* Header dengan Role Info */}
+      <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Kasir Dashboard</h1>
+              <p className="text-gray-600">
+                Selamat datang, {user?.firstName || 'Kasir'}! - Role:{' '}
+                <span className="font-semibold capitalize text-green-600">{role}</span>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <main className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <NavigationTabs isLoading={isPageLoading} />

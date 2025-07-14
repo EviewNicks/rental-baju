@@ -12,7 +12,7 @@ export function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const { isSignedIn } = useUser()
-  const { role, isAdmin, isCreator, isUser } = useUserRole()
+  const { role, isOwner, isProducer, isKasir } = useUserRole()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -30,12 +30,12 @@ export function Navbar() {
     setIsOpen(false)
   }
 
-  // Get dashboard URL based on role
+  // Get dashboard URL based on role - Updated untuk role baru
   const getDashboardUrl = () => {
-    if (isAdmin) return '/admin/dashboard'
-    if (isCreator) return '/creator/dashboard'
-    if (isUser) return '/dashboard'
-    return '/dashboard' // Default fallback
+    if (isOwner) return '/owner'
+    if (isProducer) return '/producer'
+    if (isKasir) return '/kasir/dashboard'
+    return '/kasir/dashboard' // Default fallback ke kasir
   }
 
   return (
@@ -112,12 +112,20 @@ export function Navbar() {
               </>
             ) : (
               <>
-                {/* Role-based Dashboard Link */}
+                {/* Role-based Dashboard Link - Updated untuk role baru */}
                 <Link href={getDashboardUrl()} data-testid="desktop-dashboard-link">
                   <Button variant="ghost" className="text-sm text-neutral-700 hover:text-blue-500">
                     Dashboard
                     {role && (
-                      <span className="ml-2 text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded-full">
+                      <span
+                        className={`ml-2 text-xs px-2 py-1 rounded-full ${
+                          role === 'owner'
+                            ? 'bg-red-100 text-red-600'
+                            : role === 'producer'
+                              ? 'bg-blue-100 text-blue-600'
+                              : 'bg-green-100 text-green-600'
+                        }`}
+                      >
                         {role}
                       </span>
                     )}
@@ -213,7 +221,7 @@ export function Navbar() {
                 </>
               ) : (
                 <>
-                  {/* Mobile Role-based Dashboard Link */}
+                  {/* Mobile Role-based Dashboard Link - Updated untuk role baru */}
                   <Link href={getDashboardUrl()} data-testid="mobile-dashboard-link">
                     <Button
                       variant="outline"
@@ -223,7 +231,15 @@ export function Navbar() {
                       <span className="flex items-center">
                         Dashboard
                         {role && (
-                          <span className="ml-2 text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded-full">
+                          <span
+                            className={`ml-2 text-xs px-2 py-1 rounded-full ${
+                              role === 'owner'
+                                ? 'bg-red-100 text-red-600'
+                                : role === 'producer'
+                                  ? 'bg-blue-100 text-blue-600'
+                                  : 'bg-green-100 text-green-600'
+                            }`}
+                          >
                             {role}
                           </span>
                         )}

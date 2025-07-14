@@ -21,64 +21,52 @@ import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 
 // Define protected routes using Clerk's createRouteMatcher
 const isProtectedRoute = createRouteMatcher([
-  '/dashboard(.*)',
-  '/admin(.*)',
-  '/creator(.*)',
+  '/owner(.*)',
+  '/producer(.*)',
+  '/kasir(.*)',
   '/settings(.*)',
   '/profile(.*)',
 ])
 
-// Define admin-only routes for role-based protection
-const isAdminRoute = createRouteMatcher(['/admin(.*)'])
-
-// Define creator routes (accessible by creator and admin)
-const isCreatorRoute = createRouteMatcher(['/creator(.*)'])
+// Define owner-only routes
+const isOwnerRoute = createRouteMatcher(['/owner(.*)'])
+// Define producer routes (owner & producer)
+const isProducerRoute = createRouteMatcher(['/producer(.*)'])
+// Define kasir routes (owner, producer, kasir)
+const isKasirRoute = createRouteMatcher(['/kasir(.*)'])
 
 export default clerkMiddleware(
   async (auth, req) => {
-    // Protect routes that require authentication using Clerk's auth.protect()
     if (isProtectedRoute(req)) {
       await auth.protect()
     }
-
-    // Additional role-based protection for admin routes
-    if (isAdminRoute(req)) {
-      const { sessionClaims } = await auth()
-
-      // Access role directly from custom session claims
-      // Based on Clerk Dashboard config: "role": "{{user.public_metadata.role || 'user'}}"
-      const userRole = sessionClaims?.role as string
-
-      if (userRole !== 'admin') {
-        // Redirect non-admin users to unauthorized page
+    const { sessionClaims } = await auth()
+    const userRole = sessionClaims?.role as string
+    // Owner-only
+    if (isOwnerRoute(req)) {
+      if (userRole !== 'owner') {
         const url = new URL('/unauthorized', req.url)
         return Response.redirect(url)
       }
     }
-
-    // Additional role-based protection for creator routes
-    if (isCreatorRoute(req)) {
-      const { sessionClaims } = await auth()
-
-      // Access role directly from custom session claims
-      const userRole = sessionClaims?.role as string
-
-      // Allow admin and creator roles
-      if (userRole !== 'admin' && userRole !== 'creator') {
+    // Producer (owner & producer)
+    if (isProducerRoute(req)) {
+      if (userRole !== 'owner' && userRole !== 'producer') {
+        const url = new URL('/unauthorized', req.url)
+        return Response.redirect(url)
+      }
+    }
+    // Kasir (owner, producer, kasir)
+    if (isKasirRoute(req)) {
+      if (userRole !== 'owner' && userRole !== 'producer' && userRole !== 'kasir') {
         const url = new URL('/unauthorized', req.url)
         return Response.redirect(url)
       }
     }
   },
   {
-    // ✅ FIX: Include test environment untuk debug
-    // debug: process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test',
     debug: false,
-
-    // Fix clock skew issue - allow 30 seconds difference
     clockSkewInMs: 30000,
-
-    // Ensure proper sign-in/sign-up URLs are set
     signInUrl: '/sign-in',
     signUpUrl: '/sign-up',
   },
