@@ -11,13 +11,12 @@ import React from 'react'
 import { useUser } from '@clerk/nextjs'
 import { Button } from '@/components/ui/button'
 import { Shield, Users, Settings, BarChart3, Database, AlertTriangle } from 'lucide-react'
-import { useUserRole, useRoleGuard, useRoleLoadingState } from '@/features/auth'
+import { useUserRole, useRoleLoadingState } from '@/features/auth'
 import Link from 'next/link'
 
 export default function AdminDashboardPage() {
   const { user, isLoaded } = useUser()
-  const { role, isAdmin } = useUserRole()
-  const { canAccessAdmin } = useRoleGuard()
+  const { role } = useUserRole()
   const { shouldShowLoader: roleLoading } = useRoleLoadingState()
 
   if (!isLoaded || roleLoading) {
@@ -31,8 +30,8 @@ export default function AdminDashboardPage() {
     )
   }
 
-  // Client-side role check
-  if (!canAccessAdmin()) {
+  // Tambahkan logic: jika role !== 'owner', redirect ke /unauthorized
+  if (role !== 'owner') {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -95,7 +94,10 @@ export default function AdminDashboardPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 via-pink-50 to-rose-50 p-6">
+    <div
+      className="min-h-screen bg-gradient-to-br from-red-50 via-pink-50 to-rose-50 p-6"
+      data-testid="owner-dashboard-root"
+    >
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="bg-white rounded-lg shadow-sm border p-6 mb-8">
@@ -315,10 +317,10 @@ export default function AdminDashboardPage() {
                 <strong>Current Role:</strong> {role}
               </div>
               <div>
-                <strong>Is Admin:</strong> {isAdmin ? 'Yes' : 'No'}
+                <strong>Is Admin:</strong> {role === 'owner' ? 'Yes' : 'No'}
               </div>
               <div>
-                <strong>Can Access Admin:</strong> {canAccessAdmin() ? 'Yes' : 'No'}
+                <strong>Can Access Admin:</strong> {role === 'owner' ? 'Yes' : 'No'}
               </div>
               <div>
                 <strong>Route:</strong> /admin/dashboard
@@ -327,7 +329,7 @@ export default function AdminDashboardPage() {
                 <strong>Middleware Check:</strong> Passed (reached this page)
               </div>
               <div>
-                <strong>Required Roles:</strong> [&lsquo;admin&rsquo;]
+                <strong>Required Roles:</strong> [&lsquo;owner&rsquo;]
               </div>
             </div>
           </div>

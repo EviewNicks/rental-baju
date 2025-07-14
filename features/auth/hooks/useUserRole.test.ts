@@ -55,7 +55,7 @@ describe('useUserRole hooks', () => {
     it('should return role state from context', () => {
       // Arrange
       const mockContext = createMockContext({
-        role: 'admin',
+        role: 'owner',
         isLoading: false,
         error: null,
         lastUpdated: Date.now(),
@@ -66,7 +66,7 @@ describe('useUserRole hooks', () => {
       const { result } = renderHook(() => useUserRole())
 
       // Assert
-      expect(result.current.role).toBe('admin')
+      expect(result.current.role).toBe('owner')
       expect(result.current.isLoading).toBe(false)
       expect(result.current.error).toBeNull()
       expect(result.current.lastUpdated).toBeDefined()
@@ -74,22 +74,22 @@ describe('useUserRole hooks', () => {
 
     it('should provide computed helper values', () => {
       // Arrange
-      const mockContext = createMockContext({ role: 'admin' })
+      const mockContext = createMockContext({ role: 'owner' })
       mockUseUserRoleContext.mockReturnValue(mockContext)
 
       // Act
       const { result } = renderHook(() => useUserRole())
 
       // Assert
-      expect(result.current.isAdmin).toBe(true)
-      expect(result.current.isCreator).toBe(false)
-      expect(result.current.isUser).toBe(false)
-      expect(result.current.hasRole('admin')).toBe(true)
-      expect(result.current.hasRole('creator')).toBe(false)
+      expect(result.current.isOwner).toBe(true)
+      expect(result.current.isProducer).toBe(false)
+      expect(result.current.isKasir).toBe(false)
+      expect(result.current.hasRole('owner')).toBe(true)
+      expect(result.current.hasRole('producer')).toBe(false)
     })
 
     it('should handle different roles correctly', () => {
-      const roles: UserRole[] = ['admin', 'creator', 'user']
+      const roles: UserRole[] = ['owner', 'producer', 'kasir']
 
       roles.forEach((role) => {
         // Arrange
@@ -101,9 +101,9 @@ describe('useUserRole hooks', () => {
 
         // Assert
         expect(result.current.role).toBe(role)
-        expect(result.current.isAdmin).toBe(role === 'admin')
-        expect(result.current.isCreator).toBe(role === 'creator')
-        expect(result.current.isUser).toBe(role === 'user')
+        expect(result.current.isOwner).toBe(role === 'owner')
+        expect(result.current.isProducer).toBe(role === 'producer')
+        expect(result.current.isKasir).toBe(role === 'kasir')
         expect(result.current.hasRole(role)).toBe(true)
       })
     })
@@ -124,41 +124,41 @@ describe('useUserRole hooks', () => {
   describe('useRoleGuard', () => {
     it('should provide basic role checks', () => {
       // Arrange
-      const mockContext = createMockContext({ role: 'admin' })
+      const mockContext = createMockContext({ role: 'owner' })
       mockUseUserRoleContext.mockReturnValue(mockContext)
 
       // Act
       const { result } = renderHook(() => useRoleGuard())
 
       // Assert
-      expect(result.current.canAccessAdmin()).toBe(true)
-      expect(result.current.canAccessCreator()).toBe(true)
-      expect(result.current.canAccessUser()).toBe(true)
+      expect(result.current.canAccessOwner()).toBe(true)
+      expect(result.current.canAccessProducer()).toBe(true)
+      expect(result.current.canAccessKasir()).toBe(true)
     })
 
     it('should implement role hierarchy correctly', () => {
-      // Test admin role
-      const adminContext = createMockContext({ role: 'admin' })
-      mockUseUserRoleContext.mockReturnValue(adminContext)
+      // Test owner role
+      const ownerContext = createMockContext({ role: 'owner' })
+      mockUseUserRoleContext.mockReturnValue(ownerContext)
 
-      const { result: adminResult } = renderHook(() => useRoleGuard())
-      expect(adminResult.current.hasMinimumRole('user')).toBe(true)
-      expect(adminResult.current.hasMinimumRole('creator')).toBe(true)
-      expect(adminResult.current.hasMinimumRole('admin')).toBe(true)
+      const { result: ownerResult } = renderHook(() => useRoleGuard())
+      expect(ownerResult.current.hasMinimumRole('kasir')).toBe(true)
+      expect(ownerResult.current.hasMinimumRole('producer')).toBe(true)
+      expect(ownerResult.current.hasMinimumRole('owner')).toBe(true)
 
-      // Test creator role
-      const creatorContext = createMockContext({ role: 'creator' })
-      mockUseUserRoleContext.mockReturnValue(creatorContext)
+      // Test producer role
+      const producerContext = createMockContext({ role: 'producer' })
+      mockUseUserRoleContext.mockReturnValue(producerContext)
 
-      const { result: creatorResult } = renderHook(() => useRoleGuard())
-      expect(creatorResult.current.hasMinimumRole('user')).toBe(true)
-      expect(creatorResult.current.hasMinimumRole('creator')).toBe(true)
-      expect(creatorResult.current.hasMinimumRole('admin')).toBe(false)
+      const { result: producerResult } = renderHook(() => useRoleGuard())
+      expect(producerResult.current.hasMinimumRole('kasir')).toBe(true)
+      expect(producerResult.current.hasMinimumRole('producer')).toBe(true)
+      expect(producerResult.current.hasMinimumRole('owner')).toBe(false)
     })
 
     it('should handle context-aware guards', () => {
       // Arrange
-      const mockContext = createMockContext({ role: 'admin' })
+      const mockContext = createMockContext({ role: 'owner' })
       mockUseUserRoleContext.mockReturnValue(mockContext)
 
       // Act
@@ -188,7 +188,7 @@ describe('useUserRole hooks', () => {
       // Test ready state
       const readyContext = createMockContext({
         isLoading: false,
-        role: 'user',
+        role: 'kasir',
         error: null,
       })
       mockUseUserRoleContext.mockReturnValue(readyContext)
@@ -210,21 +210,21 @@ describe('useUserRole hooks', () => {
 
   describe('useRoleConditional', () => {
     it('should provide conditional rendering helpers', () => {
-      // Test admin conditional rendering
-      const adminContext = createMockContext({ role: 'admin' })
-      mockUseUserRoleContext.mockReturnValue(adminContext)
+      // Test owner conditional rendering
+      const ownerContext = createMockContext({ role: 'owner' })
+      mockUseUserRoleContext.mockReturnValue(ownerContext)
 
       const { result } = renderHook(() => useRoleConditional())
-      const adminComponent = React.createElement('div', {}, 'Admin Content')
+      const ownerComponent = React.createElement('div', {}, 'Owner Content')
 
-      expect(result.current.renderForAdmin(adminComponent)).toEqual(adminComponent)
-      expect(result.current.renderForCreator(adminComponent)).toEqual(adminComponent)
+      expect(result.current.renderForOwner(ownerComponent)).toEqual(ownerComponent)
+      expect(result.current.renderForProducer(ownerComponent)).toEqual(ownerComponent)
     })
 
     it('should handle feature flags correctly', () => {
-      // Test admin feature access
-      const adminContext = createMockContext({ role: 'admin' })
-      mockUseUserRoleContext.mockReturnValue(adminContext)
+      // Test owner feature access
+      const ownerContext = createMockContext({ role: 'owner' })
+      mockUseUserRoleContext.mockReturnValue(ownerContext)
 
       const { result } = renderHook(() => useRoleConditional())
       expect(result.current.isFeatureEnabled('analytics')).toBe(true)
@@ -282,7 +282,7 @@ describe('useUserRole hooks', () => {
       // Kita akan mock implementation untuk testing development behavior
       const mockSetRole = jest.fn()
       const mockContext = createMockContext({
-        role: 'user',
+        role: 'kasir',
         setRole: mockSetRole,
       })
       mockUseUserRoleContext.mockReturnValue(mockContext)
@@ -292,24 +292,24 @@ describe('useUserRole hooks', () => {
 
       // Assert - Karena Jest test environment, isDevMode akan false
       // Tapi kita test bahwa function warning dipanggil dengan benar
-      expect(result.current.getCurrentRole()).toBe('user')
+      expect(result.current.getCurrentRole()).toBe('kasir')
 
-      result.current.switchToAdmin()
+      result.current.switchToOwner()
       expect(consoleSpy).toHaveBeenCalledWith('Role switching only available in development')
     })
 
     it('should return development functions structure correctly', () => {
       // Arrange
-      const mockContext = createMockContext({ role: 'admin' })
+      const mockContext = createMockContext({ role: 'owner' })
       mockUseUserRoleContext.mockReturnValue(mockContext)
 
       // Act
       const { result } = renderHook(() => useRoleDevelopment())
 
       // Assert - Verify all expected functions exist
-      expect(typeof result.current.switchToAdmin).toBe('function')
-      expect(typeof result.current.switchToCreator).toBe('function')
-      expect(typeof result.current.switchToUser).toBe('function')
+      expect(typeof result.current.switchToOwner).toBe('function')
+      expect(typeof result.current.switchToProducer).toBe('function')
+      expect(typeof result.current.switchToKasir).toBe('function')
       expect(typeof result.current.getCurrentRole).toBe('function')
       expect(typeof result.current.isDevMode).toBe('boolean')
     })
@@ -318,7 +318,7 @@ describe('useUserRole hooks', () => {
       // Arrange
       const mockSetRole = jest.fn()
       const mockContext = createMockContext({
-        role: 'creator',
+        role: 'producer',
         setRole: mockSetRole,
       })
       mockUseUserRoleContext.mockReturnValue(mockContext)
@@ -327,9 +327,9 @@ describe('useUserRole hooks', () => {
       const { result } = renderHook(() => useRoleDevelopment())
 
       // Test all switch functions
-      result.current.switchToAdmin()
-      result.current.switchToCreator()
-      result.current.switchToUser()
+      result.current.switchToOwner()
+      result.current.switchToProducer()
+      result.current.switchToKasir()
 
       // Assert - Should show warnings for all switch attempts in test env
       expect(consoleSpy).toHaveBeenCalledWith('Role switching only available in development')

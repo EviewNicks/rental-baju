@@ -50,7 +50,7 @@ describe('roleUtils', () => {
       iss: 'https://clerk.com',
       exp: Math.floor(Date.now() / 1000) + 3600, // 1 hour from now
       iat: Math.floor(Date.now() / 1000),
-      role: 'admin',
+      role: 'owner',
     }
 
     beforeEach(() => {
@@ -140,7 +140,7 @@ describe('roleUtils', () => {
     it('should handle missing required claims', () => {
       // Arrange
       const invalidPayload = {
-        role: 'admin',
+        role: 'owner',
         // missing sub, iss, exp
       }
       ;(global.atob as jest.Mock).mockImplementation(() => JSON.stringify(invalidPayload))
@@ -158,16 +158,19 @@ describe('roleUtils', () => {
   describe('isValidRole', () => {
     it('should validate correct role strings', () => {
       // Arrange & Act & Assert
-      expect(isValidRole('admin')).toBe(true)
-      expect(isValidRole('creator')).toBe(true)
-      expect(isValidRole('user')).toBe(true)
+      expect(isValidRole('owner')).toBe(true)
+      expect(isValidRole('producer')).toBe(true)
+      expect(isValidRole('kasir')).toBe(true)
     })
 
     it('should reject invalid role values', () => {
       // Arrange & Act & Assert
       const invalidCases = [
-        'Admin', // wrong case
-        'ADMIN', // wrong case
+        'Owner', // wrong case
+        'OWNER', // wrong case
+        'admin', // old role
+        'creator', // old role
+        'user', // old role
         'moderator', // not in enum
         'guest', // not in enum
         '', // empty string
@@ -192,14 +195,14 @@ describe('roleUtils', () => {
         iss: 'clerk',
         exp: Date.now(),
         iat: Date.now(),
-        role: 'admin',
+        role: 'owner',
       }
 
       // Act
       const result = extractRoleFromPayload(payload)
 
       // Assert
-      expect(result).toBe('admin')
+      expect(result).toBe('owner')
     })
 
     it('should return default role for invalid role in payload', () => {
@@ -228,7 +231,7 @@ describe('roleUtils', () => {
         iss: 'clerk',
         exp: Math.floor(Date.now() / 1000) + 3600,
         iat: Math.floor(Date.now() / 1000),
-        role: 'creator',
+        role: 'producer',
       }
       ;(global.atob as jest.Mock).mockImplementation(() => JSON.stringify(validPayload))
 
@@ -238,7 +241,7 @@ describe('roleUtils', () => {
       const result = getRoleFromToken(token)
 
       // Assert
-      expect(result).toBe('creator')
+      expect(result).toBe('producer')
     })
 
     it('should return default role for invalid token', () => {
@@ -331,7 +334,7 @@ describe('roleUtils', () => {
     it('should set and get role with TTL', () => {
       // Arrange
       const userId = 'user_123'
-      const role: UserRole = 'admin'
+      const role: UserRole = 'owner'
       const ttl = 60000 // 1 minute
       const mockSessionStorage = getMockSessionStorage()
 
@@ -350,7 +353,7 @@ describe('roleUtils', () => {
     it('should handle cache expiration', () => {
       // Arrange
       const userId = 'user_123'
-      const role: UserRole = 'admin'
+      const role: UserRole = 'owner'
       const shortTtl = 1000 // 1 second
 
       // Act
@@ -368,7 +371,7 @@ describe('roleUtils', () => {
     it('should integrate with sessionStorage', () => {
       // Arrange
       const userId = 'user_123'
-      const role: UserRole = 'creator'
+      const role: UserRole = 'producer'
       const mockSessionStorage = getMockSessionStorage()
 
       // Act
@@ -389,7 +392,7 @@ describe('roleUtils', () => {
       })
 
       const userId = 'user_123'
-      const role: UserRole = 'user'
+      const role: UserRole = 'kasir'
 
       // Act & Assert - should not throw
       expect(() => cacheManager.setRole(userId, role)).not.toThrow()
@@ -398,7 +401,7 @@ describe('roleUtils', () => {
     it('should clear role cache', () => {
       // Arrange
       const userId = 'user_123'
-      const role: UserRole = 'admin'
+      const role: UserRole = 'owner'
 
       cacheManager.setRole(userId, role)
       expect(cacheManager.getRole(userId)).toBe(role)
@@ -413,8 +416,8 @@ describe('roleUtils', () => {
     it('should clear all cache entries', () => {
       // Arrange
       const mockSessionStorage = getMockSessionStorage()
-      cacheManager.setRole('user_1', 'admin')
-      cacheManager.setRole('user_2', 'creator')
+      cacheManager.setRole('user_1', 'owner')
+      cacheManager.setRole('user_2', 'producer')
 
       // Act
       cacheManager.clearAll()
@@ -465,7 +468,7 @@ describe('roleUtils', () => {
     it('should initialize and broadcast role updates', () => {
       // Arrange
       syncManager.init()
-      const role: UserRole = 'admin'
+      const role: UserRole = 'owner'
 
       // Act
       syncManager.broadcastRoleUpdate(role)

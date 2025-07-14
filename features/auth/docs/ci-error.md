@@ -1,33 +1,33 @@
-User Story 1: TSK-01
-Title: Sebagai pengguna, saya ingin dapat mendaftar, masuk, dan keluar dari aplikasi agar dapat menggunakan layanan dengan aman.
+User Story 2: TSK-02
+Title: Sebagai Owner, saya ingin dapat mengontrol akses fitur berdasarkan peran pengguna (Kasir, Producer, Owner) agar aplikasi aman.
 
 Asumsi
-Aplikasi menggunakan Clerk untuk autentikasi.
+Autentikasi sudah diimplementasikan (dari TSK-01).
 
-Clerk sudah terintegrasi dengan proyek.
+Clerk mendukung otorisasi berbasis peran melalui custom claims.
 
-Pengguna memiliki akses internet.
+Aplikasi menggunakan Next.js untuk routing dan middleware.
 
 Detail
-Halaman Sign Up: Form dengan bidang email dan password, serta opsi untuk sign up menggunakan akun Google, GitHub, atau penyedia lain yang didukung Clerk.
+Konfigurasi custom claims di Clerk Dashboard untuk menyertakan atribut "role" dengan nilai Kasir, Producer, atau Owner.
 
-Halaman Sign In: Form dengan bidang email dan password, serta opsi untuk sign in menggunakan akun Google, GitHub, dll.
+Mengambil informasi peran dari session claims di aplikasi untuk digunakan dalam logika otorisasi.
 
-Fungsi Sign Out: Tombol untuk mengeluarkan pengguna dari aplikasi, mengakhiri sesi, dan mengarahkan kembali ke halaman sign in.
+Mengimplementasikan middleware untuk membatasi akses ke rute atau fitur tertentu berdasarkan peran pengguna, dengan fokus pada peran Admin untuk sprint ini.
 
 Kriteria Penerimaan
-Given saya adalah pengguna baru, When saya mengisi form sign up dengan email dan password yang valid, Then saya dapat masuk ke aplikasi dengan credential tersebut.
+Given custom claims untuk peran Admin, Producer, dan Owner dikonfigurasi di Clerk Dashboard, When pengguna masuk, Then aplikasi dapat mengidentifikasi peran mereka.
 
-Given saya adalah pengguna yang sudah terdaftar, When saya mengisi form sign in dengan email dan password yang benar, Then saya dapat mengakses aplikasi.
+Given saya adalah pengguna dengan peran Kasir, When saya mencoba mengakses fitur Kasir, Then saya diizinkan untuk mengaksesnya.
 
-Given saya adalah pengguna yang sudah masuk, When saya mengklik tombol sign out, Then saya diarahkan ke halaman sign in dan tidak dapat mengakses fitur yang memerlukan autentikasi.
+Given saya adalah pengguna non-Admin, When saya mencoba mengakses fitur admin, Then saya ditolak akses.
+
+Given sistem otorisasi diimplementasikan, Then sistem mendukung penambahan peran Producer dan Owner di masa depan tanpa perubahan besar.
 
 Flowchart
-Start -> [Sign Up] -> -> [Buat Akun] -> [Tampilkan Sukses] -> End
+Start -> [User Logs In] -> [Get User Role from Claims] -> <Is Role Admin?> -> [Yes] -> [Allow Access to Admin Features] -> End
 
-Start -> [Sign In] -> -> [Masuk] -> [Tampilkan Dashboard] -> End
-
-Start -> [Sign Out] -> [Keluar] -> [Tampilkan Sign In] -> End
+[No] -> [Deny Access to Admin Features] -> End
 
 Evaluasi INVEST
 Kriteria
@@ -36,205 +36,19 @@ Evaluasi
 
 Independent
 
-Ya, dapat dikerjakan secara mandiri tanpa ketergantungan pada user story lain.
+Bergantung pada TSK-01 untuk autentikasi, tetapi dapat diimplementasikan setelah autentikasi selesai.
 
 Negotiable
 
-Dapat didiskusikan, misalnya penambahan metode autentikasi seperti OAuth lainnya.
+Dapat didiskusikan, misalnya metode otorisasi atau fitur admin spesifik.
 
 Valuable
 
-Meningkatkan keamanan dan kenyamanan pengguna dengan autentikasi yang andal.
+Memastikan keamanan dengan kontrol akses berbasis peran.
 
 Estimable
 
-Dapat diestimasi dengan total 20 jam berdasarkan task breakdown.
-
-Small
-
-Dapat diselesaikan dalam satu sprint (2 minggu).
-
-Testable
-
-Dapat diuji dengan kriteria penerimaan di atas menggunakan alat seperti Playwright.
-
-Tasks untuk TSK-01
-Task 1.1: Menyiapkan Clerk di Proyek
-Task ID: T:01.1
-
-Kaitan User Story: US:01
-
-Deskripsi Detail: Menginstall Clerk SDK dan mengonfigurasi API keys di proyek untuk mengaktifkan fungsionalitas autentikasi.
-
-Checklist:
-
-Install Clerk SDK menggunakan npm atau yarn.
-
-Konfigurasi API keys di aplikasi melalui environment variables.
-
-Verifikasi bahwa Clerk terpasang dengan benar melalui tes awal.
-
-Estimasi Effort: 4 jam
-
-Owner: [Nama Pengembang]
-
-Definition of Done:
-
-Clerk SDK terpasang dan diimpor di proyek.
-
-API keys terkonfigurasi dengan benar di environment variables.
-
-Fungsionalitas autentikasi dapat diuji di lingkungan pengembangan.
-
-Dependensi: Tidak ada.
-
-Catatan Tambahan: Pastikan akun Clerk sudah dibuat dan API keys tersedia sebelum memulai. Simpan API keys dengan aman untuk mencegah kebocoran data.
-
-Task 1.2: Mengimplementasikan Halaman dan Alur Sign Up
-Task ID: T:01.2
-
-Kaitan User Story: US:01
-
-Deskripsi Detail: Membuat halaman sign up dengan form untuk email dan password, serta opsi login sosial (Google, GitHub, dll.) menggunakan Clerk.
-
-Checklist:
-
-Desain UI halaman sign up menggunakan Next.js dan Tailwind CSS.
-
-Integrasikan fungsionalitas sign up Clerk menggunakan komponen Clerk seperti <SignUp />.
-
-Tambahkan opsi login sosial (Google, GitHub).
-
-Uji alur sign up dengan email/password dan login sosial.
-
-Estimasi Effort: 8 jam
-
-Owner: [Nama Pengembang]
-
-Definition of Done:
-
-Halaman sign up dibuat dengan bidang email, password, dan opsi login sosial.
-
-Pengguna dapat mendaftar menggunakan email/password atau login sosial.
-
-Penanganan kesalahan (misalnya, email sudah terdaftar) diimplementasikan.
-
-Dependensi: T:01.1 (Clerk sudah terpasang).
-
-Catatan Tambahan: Pastikan UI ramah pengguna dan responsif di berbagai perangkat.
-
-Task 1.3: Mengimplementasikan Halaman dan Alur Sign In
-Task ID: T:01.3
-
-Kaitan User Story: US:01
-
-Deskripsi Detail: Membuat halaman sign in dengan form untuk email dan password, serta opsi login sosial menggunakan Clerk.
-
-Checklist:
-
-Desain UI halaman sign in menggunakan Next.js dan Tailwind CSS.
-
-Integrasikan fungsionalitas sign in Clerk menggunakan komponen seperti <SignIn />.
-
-Tambahkan opsi login sosial (Google, GitHub).
-
-Uji alur sign in dengan email/password dan login sosial.
-
-Estimasi Effort: 6 jam
-
-Owner: [Nama Pengembang]
-
-Definition of Done:
-
-Halaman sign in dibuat dengan bidang email, password, dan opsi login sosial.
-
-Pengguna dapat masuk menggunakan email/password atau login sosial.
-
-Penanganan kesalahan (misalnya, credential salah) diimplementasikan.
-
-Dependensi: T:01.1 (Clerk sudah terpasang).
-
-Catatan Tambahan: Pastikan alur sign in aman dan efisien, dengan pesan kesalahan yang jelas.
-
-Task 1.4: Mengimplementasikan Fungsi Sign Out
-Task ID: T:01.4
-
-Kaitan User Story: US:01
-
-Deskripsi Detail: Menambahkan tombol sign out yang mengeluarkan pengguna dari aplikasi dan mengarahkan mereka ke halaman sign in.
-
-Checklist:
-
-Tambahkan tombol sign out ke UI aplikasi.
-
-Implementasikan fungsionalitas sign out menggunakan Clerk API.
-
-Uji proses sign out untuk memastikan sesi berakhir.
-
-Estimasi Effort: 2 jam
-
-Owner: [Nama Pengembang]
-
-Definition of Done:
-
-Tombol sign out tersedia dan berfungsi di UI.
-
-Pengguna dikeluarkan dan diarahkan ke halaman sign in setelah mengklik tombol.
-
-Sesi pengguna diakhiri dengan benar tanpa data sisa.
-
-Dependensi: T:01.1 (Clerk sudah terpasang), T:01.2 dan T:01.3 (sign up dan sign in sudah diimplementasikan).
-
-Catatan Tambahan: Pastikan semua data sesi dihapus saat sign out untuk mencegah akses tidak sah.
-
-
-User Story 4: TSK-04
-Title: Sebagai tim QA, kami ingin memastikan bahwa fitur autentikasi dan otorisasi berfungsi dengan baik melalui testing end-to-end.
-
-Asumsi
-Fitur autentikasi (TSK-01) dan otorisasi (TSK-02) sudah diimplementasikan.
-
-Lingkungan testing sudah diatur (TSK-03).
-
-Playwright digunakan sebagai alat untuk pengujian end-to-end.
-
-Detail
-Mengintegrasikan Playwright dengan aplikasi untuk pengujian end-to-end.
-
-Menulis test case untuk memverifikasi alur sign up, sign in, dan sign out.
-
-Menulis test case untuk memverifikasi otorisasi berbasis peran, khususnya untuk peran Admin.
-
-Kriteria Penerimaan
-Given Playwright diintegrasikan dengan aplikasi, When tes dijalankan, Then tes dapat berjalan tanpa kesalahan konfigurasi.
-
-Given test case untuk autentikasi ditulis, When tes dijalankan di lingkungan staging, Then semua test case untuk sign up, sign in, dan sign out lulus.
-
-Given test case untuk otorisasi ditulis, When tes dijalankan di lingkungan staging, Then test case untuk akses berbasis peran (khususnya Admin) lulus.
-
-Flowchart
-Start -> [Set Up Playwright] -> [Write Authentication Tests] -> [Write Authorization Tests] -> [Run Tests in Staging] -> [Verify All Tests Pass] -> End
-
-Evaluasi INVEST
-Kriteria
-
-Evaluasi
-
-Independent
-
-Bergantung pada TSK-01, TSK-02, dan TSK-03 untuk fitur dan lingkungan testing.
-
-Negotiable
-
-Dapat didiskusikan, misalnya jumlah atau jenis test case yang diperlukan.
-
-Valuable
-
-Memastikan fitur autentikasi dan otorisasi bekerja dengan baik dari perspektif pengguna.
-
-Estimable
-
-Dapat diestimasi dengan total 15 jam berdasarkan task breakdown.
+Dapat diestimasi dengan total 11 jam berdasarkan task breakdown.
 
 Small
 
@@ -242,65 +56,96 @@ Dapat diselesaikan dalam satu sprint.
 
 Testable
 
-Tes itu sendiri memverifikasi keberhasilan fitur.
+Dapat diuji dengan skenario akses untuk berbagai peran.
 
-Tasks untuk TSK-04
-Task 4.1: Mengintegrasikan Playwright dengan Aplikasi
-Task ID: T:04.1
+Tasks untuk TSK-02
+Task 2.1: Mengonfigurasi Custom Claims di Clerk Dashboard
+Task ID: T:02.1
 
-Kaitan User Story: US:04
+Kaitan User Story: US:02
 
-Deskripsi Detail: Mengatur Playwright untuk pengujian end-to-end di proyek, termasuk instalasi dependensi dan konfigurasi skrip test.
+Deskripsi Detail: Mengatur custom claims di Clerk Dashboard untuk menyertakan atribut "role" dengan nilai Admin, Producer, dan Owner.
 
 Checklist:
 
-Install dependensi Playwright menggunakan npm atau yarn.
+Akses Clerk Dashboard melalui akun admin.
 
-Konfigurasi Playwright untuk berinteraksi dengan aplikasi Next.js.
+Konfigurasi custom claims untuk atribut "role" dengan nilai yang sesuai.
 
-Atur skrip test awal untuk memverifikasi integrasi.
+Buat pengguna tes dengan peran Admin, Producer, dan Owner untuk verifikasi.
+
+Estimasi Effort: 2 jam
+
+Owner: [Nama Pengembang]
+
+Definition of Done:
+
+Custom claims untuk peran Admin, Producer, dan Owner dikonfigurasi di Clerk.
+
+Pengguna tes memiliki peran yang benar sesuai konfigurasi.
+
+Dependensi: TSK-01 (autentikasi sudah diimplementasikan).
+
+Catatan Tambahan: Dokumentasikan konfigurasi claims untuk referensi tim.
+
+Task 2.2: Mengambil "role" dari Session Claims di Aplikasi
+Task ID: T:02.2
+
+Kaitan User Story: US:02
+
+Deskripsi Detail: Memodifikasi aplikasi untuk mengambil atribut "role" dari session claims yang disediakan oleh Clerk untuk digunakan dalam logika otorisasi.
+
+Checklist:
+
+Integrasikan Clerk session management di aplikasi Next.js.
+
+Gunakan Clerk SDK untuk mengakses dan mem-parsing session claims.
+
+Uji pengambilan peran untuk pengguna tes dengan peran berbeda.
 
 Estimasi Effort: 3 jam
 
-Owner: [Nama Anggota Tim QA]
+Owner: [Nama Pengembang]
 
 Definition of Done:
 
-Playwright terpasang dan dikonfigurasi dengan benar.
+Aplikasi dapat mengambil atribut "role" dari session claims.
 
-Skrip test awal dapat dijalankan tanpa kesalahan.
+Peran tersedia untuk digunakan dalam logika otorisasi.
 
-Dependensi: TSK-03 (lingkungan testing sudah diatur).
+Dependensi: T:02.1 (custom claims sudah dikonfigurasi).
 
-Catatan Tambahan: Pastikan Playwright kompatibel dengan struktur aplikasi dan lingkungan staging.
+Catatan Tambahan: Pastikan data peran ditangani dengan aman untuk mencegah manipulasi.
 
-Task 4.2: Menulis Test Case untuk Sign Up, Sign In, Sign Out
-Task ID: T:04.2
+Task 2.3: Mengimplementasikan Middleware Otorisasi Berdasarkan "role"
+Task ID: T:02.3
 
-Kaitan User Story: US:04
+Kaitan User Story: US:02
 
-Deskripsi Detail: Membuat test case end-to-end untuk memverifikasi alur autentikasi, termasuk sign up, sign in, dan sign out, menggunakan Playwright.
+Deskripsi Detail: Membuat middleware di Next.js yang memeriksa peran pengguna dan membatasi akses ke rute atau fitur tertentu, dengan fokus pada fitur admin.
 
 Checklist:
 
-Tulis test case untuk sign up yang berhasil dengan email/password.
+Desain logika otorisasi berdasarkan peran.
 
-Tulis test case untuk sign in yang berhasil dengan email/password.
+Implementasikan middleware untuk memeriksa atribut "role" dari session claims.
 
-Tulis test case untuk sign out yang berhasil.
+Terapkan middleware ke rute admin (misalnya, /admin/*).
 
-Tulis test case untuk kasus kesalahan (misalnya, email tidak valid, password salah).
+Uji kontrol akses dengan pengguna Admin dan non-Admin.
 
 Estimasi Effort: 6 jam
 
-Owner: [Nama Anggota Tim QA]
+Owner: [Nama Pengembang]
 
 Definition of Done:
 
-Test case ditulis untuk semua alur autentikasi.
+Middleware otorisasi diimplementasikan dan berfungsi.
 
-Semua test case lulus di lingkungan staging.
+Fitur admin hanya dapat diakses oleh pengguna dengan peran Admin.
 
-Dependensi: T:04.1 (Playwright terintegrasi), TSK-01 (autentikasi diimplementasikan).
+Pengguna non-Admin menerima respons penolakan (misalnya, 403 Forbidden).
 
-Catatan Tambahan: Pastikan test case mencakup jalur utama (happy path) dan kasus tepi (edge cases).
+Dependensi: T:02.1 dan T:02.2 (claims dikonfigurasi dan dapat diambil).
+
+Catatan Tambahan: Pastikan middleware fleksibel untuk mendukung peran Producer dan Owner di sprint berikutnya.

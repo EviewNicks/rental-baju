@@ -11,12 +11,11 @@ import React from 'react'
 import { useUser } from '@clerk/nextjs'
 import { Button } from '@/components/ui/button'
 import { PenTool, BookOpen, Video, FileText, BarChart3, Clock } from 'lucide-react'
-import { useUserRole, useRoleGuard, useRoleLoadingState } from '@/features/auth'
+import { useUserRole, useRoleLoadingState } from '@/features/auth'
 
 export default function CreatorDashboardPage() {
   const { user, isLoaded } = useUser()
-  const { role, isCreator } = useUserRole()
-  const { canAccessCreator } = useRoleGuard()
+  const { role } = useUserRole()
   const { shouldShowLoader: roleLoading } = useRoleLoadingState()
 
   if (!isLoaded || roleLoading) {
@@ -30,8 +29,8 @@ export default function CreatorDashboardPage() {
     )
   }
 
-  // Client-side role check
-  if (!canAccessCreator()) {
+  // Tambahkan logic: jika role !== 'owner' && role !== 'producer', redirect ke /unauthorized
+  if (role !== 'owner' && role !== 'producer') {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -106,7 +105,10 @@ export default function CreatorDashboardPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-violet-50 to-indigo-50 p-6">
+    <div
+      className="min-h-screen bg-gradient-to-br from-purple-50 via-violet-50 to-indigo-50 p-6"
+      data-testid="producer-dashboard-root"
+    >
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="bg-white rounded-lg shadow-sm border p-6 mb-8">
@@ -313,10 +315,12 @@ export default function CreatorDashboardPage() {
                 <strong>Current Role:</strong> {role}
               </div>
               <div>
-                <strong>Is Creator:</strong> {isCreator ? 'Yes' : 'No'}
+                <strong>Is Creator:</strong>{' '}
+                {role === 'owner' || role === 'producer' ? 'Yes' : 'No'}
               </div>
               <div>
-                <strong>Can Access Creator:</strong> {canAccessCreator() ? 'Yes' : 'No'}
+                <strong>Can Access Creator:</strong>{' '}
+                {role === 'owner' || role === 'producer' ? 'Yes' : 'No'}
               </div>
               <div>
                 <strong>Route:</strong> /creator/dashboard

@@ -7,12 +7,14 @@ import { Menu, X, Shirt } from 'lucide-react'
 import { useUser } from '@clerk/nextjs'
 import { SignOutButton, UserButton } from '@clerk/nextjs'
 import { useUserRole } from '@/features/auth'
+import { useRoleNavigation } from '@/features/auth/hooks/useUserRole'
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const { isSignedIn } = useUser()
-  const { role, isAdmin, isCreator, isUser } = useUserRole()
+  const { role } = useUserRole()
+  const { getDashboardUrl } = useRoleNavigation()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -28,14 +30,6 @@ export function Navbar() {
   // Handler untuk sign out dengan close mobile menu
   const handleSignOut = () => {
     setIsOpen(false)
-  }
-
-  // Get dashboard URL based on role
-  const getDashboardUrl = () => {
-    if (isAdmin) return '/admin/dashboard'
-    if (isCreator) return '/creator/dashboard'
-    if (isUser) return '/dashboard'
-    return '/dashboard' // Default fallback
   }
 
   return (
@@ -117,7 +111,15 @@ export function Navbar() {
                   <Button variant="ghost" className="text-sm text-neutral-700 hover:text-blue-500">
                     Dashboard
                     {role && (
-                      <span className="ml-2 text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded-full">
+                      <span
+                        className={`ml-2 text-xs px-2 py-1 rounded-full ${
+                          role === 'owner'
+                            ? 'bg-red-100 text-red-600'
+                            : role === 'producer'
+                              ? 'bg-blue-100 text-blue-600'
+                              : 'bg-green-100 text-green-600'
+                        }`}
+                      >
                         {role}
                       </span>
                     )}
@@ -223,7 +225,15 @@ export function Navbar() {
                       <span className="flex items-center">
                         Dashboard
                         {role && (
-                          <span className="ml-2 text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded-full">
+                          <span
+                            className={`ml-2 text-xs px-2 py-1 rounded-full ${
+                              role === 'owner'
+                                ? 'bg-red-100 text-red-600'
+                                : role === 'producer'
+                                  ? 'bg-blue-100 text-blue-600'
+                                  : 'bg-green-100 text-green-600'
+                            }`}
+                          >
                             {role}
                           </span>
                         )}
