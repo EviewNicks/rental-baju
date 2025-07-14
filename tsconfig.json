@@ -39,6 +39,7 @@
     "**/*.spec.ts",
     "**/*.spec.tsx",
     "__tests__/playwright/**/*",
+    "__tests__/integration/**/*",
     "playwright.config.ts"
   ]
 }
