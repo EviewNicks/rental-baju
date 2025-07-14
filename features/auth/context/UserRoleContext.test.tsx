@@ -51,7 +51,7 @@ jest.mock('../lib/roleUtils', () => ({
   },
   retryOperation: jest.fn((fn) => fn()),
   debounce: jest.fn((fn) => fn),
-  DEFAULT_ROLE: 'user',
+  DEFAULT_ROLE: 'kasir',
 }))
 
 const mockUseAuth = useAuth as jest.MockedFunction<typeof useAuth>
@@ -68,8 +68,8 @@ const TestConsumer = () => {
       <div data-testid="role">{context.role || 'null'}</div>
       <div data-testid="loading">{context.isLoading.toString()}</div>
       <div data-testid="error">{context.error || 'null'}</div>
-      <button onClick={() => context.setRole('admin')} data-testid="set-admin">
-        Set Admin
+      <button onClick={() => context.setRole('owner')} data-testid="set-owner">
+        Set Owner
       </button>
       <button onClick={() => context.clearRole()} data-testid="clear-role">
         Clear Role
@@ -150,7 +150,7 @@ describe('UserRoleContext', () => {
 
     it('should fetch role from Clerk session on mount', async () => {
       // Arrange
-      getRoleFromToken.mockReturnValue('admin')
+      getRoleFromToken.mockReturnValue('owner')
 
       // Act
       renderWithProvider(<TestConsumer />)
@@ -158,7 +158,7 @@ describe('UserRoleContext', () => {
       // Assert
       await waitFor(() => {
         expect(screen.getByTestId('loading')).toHaveTextContent('false')
-        expect(screen.getByTestId('role')).toHaveTextContent('admin')
+        expect(screen.getByTestId('role')).toHaveTextContent('owner')
       })
 
       expect(getRoleFromToken).toHaveBeenCalledWith('mock.jwt.token')
@@ -189,14 +189,14 @@ describe('UserRoleContext', () => {
 
     it('should integrate with cache manager', async () => {
       // Arrange
-      mockCacheManager.getRole.mockReturnValue('creator')
+      mockCacheManager.getRole.mockReturnValue('producer')
 
       // Act
       renderWithProvider(<TestConsumer />)
 
       // Assert
       await waitFor(() => {
-        expect(screen.getByTestId('role')).toHaveTextContent('creator')
+        expect(screen.getByTestId('role')).toHaveTextContent('producer')
       })
 
       expect(mockCacheManager.getRole).toHaveBeenCalledWith('user_123')
@@ -216,12 +216,12 @@ describe('UserRoleContext', () => {
 
       // Simulate cross-tab role update
       act(() => {
-        subscriberCallback('creator')
+        subscriberCallback('producer')
       })
 
       // Assert
       await waitFor(() => {
-        expect(screen.getByTestId('role')).toHaveTextContent('creator')
+        expect(screen.getByTestId('role')).toHaveTextContent('producer')
       })
 
       expect(mockSyncManager.init).toHaveBeenCalled()
@@ -245,7 +245,7 @@ describe('UserRoleContext', () => {
 
       // Assert - should show fallback UI
       expect(screen.getByText(/Role management tidak tersedia/i)).toBeInTheDocument()
-      expect(screen.getByText(/Menggunakan role default: user/i)).toBeInTheDocument()
+      expect(screen.getByText(/Menggunakan role default: kasir/i)).toBeInTheDocument()
 
       consoleSpy.mockRestore()
     })
@@ -256,7 +256,7 @@ describe('UserRoleContext', () => {
         devMode: {
           enabled: true,
           allowRoleSwitching: true,
-          mockRole: 'admin' as UserRole,
+          mockRole: 'owner' as UserRole,
         },
       }
 
@@ -265,7 +265,7 @@ describe('UserRoleContext', () => {
 
       // Assert - Test tersebut tidak akan show dev switcher karena NODE_ENV bukan development
       // Tapi kita test bahwa role mock berfungsi
-      expect(screen.getByTestId('role')).toHaveTextContent('admin')
+      expect(screen.getByTestId('role')).toHaveTextContent('owner')
     })
   })
 
@@ -275,18 +275,18 @@ describe('UserRoleContext', () => {
       renderWithProvider(<TestConsumer />)
 
       // Act
-      const setAdminButton = screen.getByTestId('set-admin')
+      const setOwnerButton = screen.getByTestId('set-owner')
       act(() => {
-        setAdminButton.click()
+        setOwnerButton.click()
       })
 
       // Assert
       await waitFor(() => {
-        expect(screen.getByTestId('role')).toHaveTextContent('admin')
+        expect(screen.getByTestId('role')).toHaveTextContent('owner')
       })
 
-      expect(mockCacheManager.setRole).toHaveBeenCalledWith('user_123', 'admin', 5 * 60 * 1000)
-      expect(mockSyncManager.broadcastRoleUpdate).toHaveBeenCalledWith('admin')
+      expect(mockCacheManager.setRole).toHaveBeenCalledWith('user_123', 'owner', 5 * 60 * 1000)
+      expect(mockSyncManager.broadcastRoleUpdate).toHaveBeenCalledWith('owner')
     })
 
     it('should provide clearRole action', async () => {
@@ -294,13 +294,13 @@ describe('UserRoleContext', () => {
       renderWithProvider(<TestConsumer />)
 
       // First set a role, then clear it
-      const setAdminButton = screen.getByTestId('set-admin')
+      const setOwnerButton = screen.getByTestId('set-owner')
       act(() => {
-        setAdminButton.click()
+        setOwnerButton.click()
       })
 
       await waitFor(() => {
-        expect(screen.getByTestId('role')).toHaveTextContent('admin')
+        expect(screen.getByTestId('role')).toHaveTextContent('owner')
       })
 
       // Act - clear role
@@ -408,7 +408,7 @@ describe('UserRoleContext', () => {
   //       await waitFor(
   //         () => {
   //           expect(screen.getByTestId('loading')).toHaveTextContent('false')
-  //           expect(screen.getByTestId('role')).toHaveTextContent('user') // fallback role
+  //           expect(screen.getByTestId('role')).toHaveTextContent('kasir') // fallback role
   //         },
   //         { timeout: 2000 },
   //       )

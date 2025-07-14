@@ -36,6 +36,56 @@ export default defineConfig({
       name: 'global setup',
       testMatch: /global\.setup\.ts/,
     },
+    // New role-specific projects sesuai dokumentasi Clerk
+    {
+      name: 'kasir tests',
+      testMatch: /.*kasir.*\.spec\.ts/,
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: '__tests__/playwright/.clerk/kasir.json',
+        launchOptions: {
+          args: [
+            '--disable-web-security',
+            '--disable-features=VizDisplayCompositor',
+            '--disable-blink-features=AutomationControlled',
+          ],
+        },
+      },
+      dependencies: ['global setup'],
+    },
+    {
+      name: 'producer tests',
+      testMatch: /.*producer.*\.spec\.ts/,
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: '__tests__/playwright/.clerk/producer.json',
+        launchOptions: {
+          args: [
+            '--disable-web-security',
+            '--disable-features=VizDisplayCompositor',
+            '--disable-blink-features=AutomationControlled',
+          ],
+        },
+      },
+      dependencies: ['global setup'],
+    },
+    {
+      name: 'owner tests',
+      testMatch: /.*owner.*\.spec\.ts/,
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: '__tests__/playwright/.clerk/owner.json',
+        launchOptions: {
+          args: [
+            '--disable-web-security',
+            '--disable-features=VizDisplayCompositor',
+            '--disable-blink-features=AutomationControlled',
+          ],
+        },
+      },
+      dependencies: ['global setup'],
+    },
+    // Keep existing for backward compatibility
     {
       name: 'chromium',
       use: {

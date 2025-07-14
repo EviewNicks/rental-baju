@@ -345,7 +345,7 @@ export function UserRoleProvider({
    */
   const ErrorFallback = (
     <div className="role-error-fallback">
-      <p>Role management tidak tersedia. Menggunakan role default: user</p>
+      <p>Role management tidak tersedia. Menggunakan role default: kasir</p>
     </div>
   )
 

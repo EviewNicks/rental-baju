@@ -1,13 +1,13 @@
 {
-  "numTotalTests": 83,
-  "numPassedTests": 83,
+  "numTotalTests": 64,
+  "numPassedTests": 64,
   "numFailedTests": 0,
   "numPendingTests": 0,
-  "startTime": "2025-06-29T07:26:58.254Z",
-  "endTime": "2025-06-29T07:27:03.019Z",
+  "startTime": "2025-07-14T05:16:44.794Z",
+  "endTime": "2025-07-14T05:16:49.288Z",
   "testResults": [
     {
-      "testFilePath": "D:\\2-Maguru\\maguru\\features\\auth\\lib\\roleUtils.test.ts",
+      "testFilePath": "D:\\.work\\rental-software\\features\\auth\\lib\\roleUtils.test.ts",
       "testFileResults": [
         {
           "ancestorTitles": [
@@ -18,7 +18,7 @@
           "status": "passed",
           "title": "should parse valid JWT token correctly",
           "failureMessages": [],
-          "duration": 8
+          "duration": 10
         },
         {
           "ancestorTitles": [
@@ -29,7 +29,7 @@
           "status": "passed",
           "title": "should return null for invalid JWT format",
           "failureMessages": [],
-          "duration": 4
+          "duration": 2
         },
         {
           "ancestorTitles": [
@@ -51,7 +51,7 @@
           "status": "passed",
           "title": "should handle malformed base64 payload",
           "failureMessages": [],
-          "duration": 2
+          "duration": 1
         },
         {
           "ancestorTitles": [
@@ -73,7 +73,7 @@
           "status": "passed",
           "title": "should handle missing required claims",
           "failureMessages": [],
-          "duration": 1
+          "duration": 0
         },
         {
           "ancestorTitles": [
@@ -84,7 +84,7 @@
           "status": "passed",
           "title": "should validate correct role strings",
           "failureMessages": [],
-          "duration": 1
+          "duration": 0
         },
         {
           "ancestorTitles": [
@@ -106,7 +106,7 @@
           "status": "passed",
           "title": "should extract valid role from payload",
           "failureMessages": [],
-          "duration": 2
+          "duration": 1
         },
         {
           "ancestorTitles": [
@@ -150,7 +150,7 @@
           "status": "passed",
           "title": "should return default role for missing role claim",
           "failureMessages": [],
-          "duration": 1
+          "duration": 2
         },
         {
           "ancestorTitles": [
@@ -161,7 +161,7 @@
           "status": "passed",
           "title": "should create standardized error object",
           "failureMessages": [],
-          "duration": 2
+          "duration": 3
         },
         {
           "ancestorTitles": [
@@ -194,7 +194,7 @@
           "status": "passed",
           "title": "should set and get role with TTL",
           "failureMessages": [],
-          "duration": 1
+          "duration": 2
         },
         {
           "ancestorTitles": [
@@ -205,7 +205,7 @@
           "status": "passed",
           "title": "should handle cache expiration",
           "failureMessages": [],
-          "duration": 2
+          "duration": 1
         },
         {
           "ancestorTitles": [
@@ -249,7 +249,7 @@
           "status": "passed",
           "title": "should clear all cache entries",
           "failureMessages": [],
-          "duration": 2
+          "duration": 1
         },
         {
           "ancestorTitles": [
@@ -260,7 +260,7 @@
           "status": "passed",
           "title": "should implement singleton pattern correctly",
           "failureMessages": [],
-          "duration": 1
+          "duration": 0
         },
         {
           "ancestorTitles": [
@@ -271,7 +271,7 @@
           "status": "passed",
           "title": "should initialize and broadcast role updates",
           "failureMessages": [],
-          "duration": 2
+          "duration": 1
         },
         {
           "ancestorTitles": [
@@ -304,7 +304,7 @@
           "status": "passed",
           "title": "should cleanup channel on destroy",
           "failureMessages": [],
-          "duration": 0
+          "duration": 1
         },
         {
           "ancestorTitles": [
@@ -326,7 +326,7 @@
           "status": "passed",
           "title": "should retry on failure and succeed",
           "failureMessages": [],
-          "duration": 60
+          "duration": 49
         },
         {
           "ancestorTitles": [
@@ -337,7 +337,7 @@
           "status": "passed",
           "title": "should throw after exhausting all retries",
           "failureMessages": [],
-          "duration": 71
+          "duration": 63
         },
         {
           "ancestorTitles": [
@@ -348,7 +348,7 @@
           "status": "passed",
           "title": "should respect delay between retries",
           "failureMessages": [],
-          "duration": 60
+          "duration": 55
         },
         {
           "ancestorTitles": [
@@ -359,7 +359,7 @@
           "status": "passed",
           "title": "should debounce function calls",
           "failureMessages": [],
-          "duration": 2
+          "duration": 3
         },
         {
           "ancestorTitles": [
@@ -387,7 +387,7 @@
       "failureMessage": null
     },
     {
-      "testFilePath": "D:\\2-Maguru\\maguru\\features\\auth\\hooks\\useUserRole.test.ts",
+      "testFilePath": "D:\\.work\\rental-software\\features\\auth\\hooks\\useUserRole.test.ts",
       "testFileResults": [
         {
           "ancestorTitles": [
@@ -398,7 +398,7 @@
           "status": "passed",
           "title": "should return role state from context",
           "failureMessages": [],
-          "duration": 31
+          "duration": 27
         },
         {
           "ancestorTitles": [
@@ -409,7 +409,7 @@
           "status": "passed",
           "title": "should provide computed helper values",
           "failureMessages": [],
-          "duration": 8
+          "duration": 4
         },
         {
           "ancestorTitles": [
@@ -420,7 +420,7 @@
           "status": "passed",
           "title": "should handle different roles correctly",
           "failureMessages": [],
-          "duration": 9
+          "duration": 14
         },
         {
           "ancestorTitles": [
@@ -431,7 +431,7 @@
           "status": "passed",
           "title": "should handle context unavailable error",
           "failureMessages": [],
-          "duration": 38
+          "duration": 58
         },
         {
           "ancestorTitles": [
@@ -442,7 +442,7 @@
           "status": "passed",
           "title": "should provide basic role checks",
           "failureMessages": [],
-          "duration": 2
+          "duration": 3
         },
         {
           "ancestorTitles": [
@@ -464,7 +464,7 @@
           "status": "passed",
           "title": "should handle context-aware guards",
           "failureMessages": [],
-          "duration": 2
+          "duration": 3
         },
         {
           "ancestorTitles": [
@@ -475,7 +475,7 @@
           "status": "passed",
           "title": "should provide loading state management",
           "failureMessages": [],
-          "duration": 2
+          "duration": 3
         },
         {
           "ancestorTitles": [
@@ -486,7 +486,7 @@
           "status": "passed",
           "title": "should generate appropriate status messages",
           "failureMessages": [],
-          "duration": 2
+          "duration": 4
         },
         {
           "ancestorTitles": [
@@ -497,7 +497,7 @@
           "status": "passed",
           "title": "should provide conditional rendering helpers",
           "failureMessages": [],
-          "duration": 2
+          "duration": 4
         },
         {
           "ancestorTitles": [
@@ -508,7 +508,7 @@
           "status": "passed",
           "title": "should handle feature flags correctly",
           "failureMessages": [],
-          "duration": 1
+          "duration": 2
         },
         {
           "ancestorTitles": [
@@ -519,7 +519,7 @@
           "status": "passed",
           "title": "should categorize errors correctly",
           "failureMessages": [],
-          "duration": 1
+          "duration": 2
         },
         {
           "ancestorTitles": [
@@ -530,7 +530,7 @@
           "status": "passed",
           "title": "should provide user-friendly error messages",
           "failureMessages": [],
-          "duration": 2
+          "duration": 1
         },
         {
           "ancestorTitles": [
@@ -541,7 +541,7 @@
           "status": "passed",
           "title": "should provide development utilities when NODE_ENV is development",
           "failureMessages": [],
-          "duration": 5
+          "duration": 2
         },
         {
           "ancestorTitles": [
@@ -563,228 +563,13 @@
           "status": "passed",
           "title": "should handle role switching warnings in production-like environment",
           "failureMessages": [],
-          "duration": 2
+          "duration": 7
         }
       ],
       "failureMessage": null
     },
     {
-      "testFilePath": "D:\\2-Maguru\\maguru\\features\\auth\\components\\RoleDisplay.test.tsx",
-      "testFileResults": [
-        {
-          "ancestorTitles": [
-            "RoleDisplay",
-            "Component Rendering"
-          ],
-          "fullName": "RoleDisplay Component Rendering should render loading state correctly",
-          "status": "passed",
-          "title": "should render loading state correctly",
-          "failureMessages": [],
-          "duration": 46
-        },
-        {
-          "ancestorTitles": [
-            "RoleDisplay",
-            "Component Rendering"
-          ],
-          "fullName": "RoleDisplay Component Rendering should render error state with retry button",
-          "status": "passed",
-          "title": "should render error state with retry button",
-          "failureMessages": [],
-          "duration": 19
-        },
-        {
-          "ancestorTitles": [
-            "RoleDisplay",
-            "Component Rendering"
-          ],
-          "fullName": "RoleDisplay Component Rendering should display role information correctly for admin",
-          "status": "passed",
-          "title": "should display role information correctly for admin",
-          "failureMessages": [],
-          "duration": 24
-        },
-        {
-          "ancestorTitles": [
-            "RoleDisplay",
-            "Component Rendering"
-          ],
-          "fullName": "RoleDisplay Component Rendering should display role information correctly for creator",
-          "status": "passed",
-          "title": "should display role information correctly for creator",
-          "failureMessages": [],
-          "duration": 9
-        },
-        {
-          "ancestorTitles": [
-            "RoleDisplay",
-            "Component Rendering"
-          ],
-          "fullName": "RoleDisplay Component Rendering should display role information correctly for user",
-          "status": "passed",
-          "title": "should display role information correctly for user",
-          "failureMessages": [],
-          "duration": 19
-        },
-        {
-          "ancestorTitles": [
-            "RoleDisplay",
-            "Component Rendering"
-          ],
-          "fullName": "RoleDisplay Component Rendering should show role status and flags correctly",
-          "status": "passed",
-          "title": "should show role status and flags correctly",
-          "failureMessages": [],
-          "duration": 22
-        },
-        {
-          "ancestorTitles": [
-            "RoleDisplay",
-            "User Interactions"
-          ],
-          "fullName": "RoleDisplay User Interactions should handle refresh role button",
-          "status": "passed",
-          "title": "should handle refresh role button",
-          "failureMessages": [],
-          "duration": 7
-        },
-        {
-          "ancestorTitles": [
-            "RoleDisplay",
-            "User Interactions"
-          ],
-          "fullName": "RoleDisplay User Interactions should disable refresh button when loading",
-          "status": "passed",
-          "title": "should disable refresh button when loading",
-          "failureMessages": [],
-          "duration": 15
-        },
-        {
-          "ancestorTitles": [
-            "RoleDisplay",
-            "User Interactions"
-          ],
-          "fullName": "RoleDisplay User Interactions should handle retry on error",
-          "status": "passed",
-          "title": "should handle retry on error",
-          "failureMessages": [],
-          "duration": 7
-        },
-        {
-          "ancestorTitles": [
-            "RoleDisplay",
-            "Permission Examples Display"
-          ],
-          "fullName": "RoleDisplay Permission Examples Display should display permission examples correctly for admin",
-          "status": "passed",
-          "title": "should display permission examples correctly for admin",
-          "failureMessages": [],
-          "duration": 18
-        },
-        {
-          "ancestorTitles": [
-            "RoleDisplay",
-            "Permission Examples Display"
-          ],
-          "fullName": "RoleDisplay Permission Examples Display should display permission examples correctly for user",
-          "status": "passed",
-          "title": "should display permission examples correctly for user",
-          "failureMessages": [],
-          "duration": 8
-        },
-        {
-          "ancestorTitles": [
-            "RoleDisplay",
-            "Feature Flags Status"
-          ],
-          "fullName": "RoleDisplay Feature Flags Status should show feature flags status correctly for admin",
-          "status": "passed",
-          "title": "should show feature flags status correctly for admin",
-          "failureMessages": [],
-          "duration": 13
-        },
-        {
-          "ancestorTitles": [
-            "RoleDisplay",
-            "Feature Flags Status"
-          ],
-          "fullName": "RoleDisplay Feature Flags Status should show feature flags status correctly for user",
-          "status": "passed",
-          "title": "should show feature flags status correctly for user",
-          "failureMessages": [],
-          "duration": 7
-        },
-        {
-          "ancestorTitles": [
-            "RoleDisplay",
-            "Conditional Content Rendering"
-          ],
-          "fullName": "RoleDisplay Conditional Content Rendering should render role-specific content for admin",
-          "status": "passed",
-          "title": "should render role-specific content for admin",
-          "failureMessages": [],
-          "duration": 10
-        },
-        {
-          "ancestorTitles": [
-            "RoleDisplay",
-            "Conditional Content Rendering"
-          ],
-          "fullName": "RoleDisplay Conditional Content Rendering should render role-specific content for creator",
-          "status": "passed",
-          "title": "should render role-specific content for creator",
-          "failureMessages": [],
-          "duration": 11
-        },
-        {
-          "ancestorTitles": [
-            "RoleDisplay",
-            "Conditional Content Rendering"
-          ],
-          "fullName": "RoleDisplay Conditional Content Rendering should display public content for all users",
-          "status": "passed",
-          "title": "should display public content for all users",
-          "failureMessages": [],
-          "duration": 7
-        },
-        {
-          "ancestorTitles": [
-            "RoleDisplay",
-            "Helper Components"
-          ],
-          "fullName": "RoleDisplay Helper Components should render PermissionItem with correct allowed state",
-          "status": "passed",
-          "title": "should render PermissionItem with correct allowed state",
-          "failureMessages": [],
-          "duration": 8
-        },
-        {
-          "ancestorTitles": [
-            "RoleDisplay",
-            "Helper Components"
-          ],
-          "fullName": "RoleDisplay Helper Components should render PermissionItem with correct denied state",
-          "status": "passed",
-          "title": "should render PermissionItem with correct denied state",
-          "failureMessages": [],
-          "duration": 7
-        },
-        {
-          "ancestorTitles": [
-            "RoleDisplay",
-            "Helper Components"
-          ],
-          "fullName": "RoleDisplay Helper Components should render FeatureFlag with correct enabled state",
-          "status": "passed",
-          "title": "should render FeatureFlag with correct enabled state",
-          "failureMessages": [],
-          "duration": 11
-        }
-      ],
-      "failureMessage": null
-    },
-    {
-      "testFilePath": "D:\\2-Maguru\\maguru\\features\\auth\\context\\UserRoleContext.test.tsx",
+      "testFilePath": "D:\\.work\\rental-software\\features\\auth\\context\\UserRoleContext.test.tsx",
       "testFileResults": [
         {
           "ancestorTitles": [
@@ -795,7 +580,7 @@
           "status": "passed",
           "title": "should initialize with loading state",
           "failureMessages": [],
-          "duration": 45
+          "duration": 54
         },
         {
           "ancestorTitles": [
@@ -806,7 +591,7 @@
           "status": "passed",
           "title": "should fetch role from Clerk session on mount",
           "failureMessages": [],
-          "duration": 26
+          "duration": 19
         },
         {
           "ancestorTitles": [
@@ -817,7 +602,7 @@
           "status": "passed",
           "title": "should handle Clerk session unavailable",
           "failureMessages": [],
-          "duration": 19
+          "duration": 25
         },
         {
           "ancestorTitles": [
@@ -828,7 +613,7 @@
           "status": "passed",
           "title": "should integrate with cache manager",
           "failureMessages": [],
-          "duration": 14
+          "duration": 24
         },
         {
           "ancestorTitles": [
@@ -839,7 +624,7 @@
           "status": "passed",
           "title": "should handle cross-tab synchronization",
           "failureMessages": [],
-          "duration": 17
+          "duration": 11
         },
         {
           "ancestorTitles": [
@@ -850,7 +635,7 @@
           "status": "passed",
           "title": "should handle error boundary with fallback UI",
           "failureMessages": [],
-          "duration": 36
+          "duration": 35
         },
         {
           "ancestorTitles": [
@@ -861,7 +646,7 @@
           "status": "passed",
           "title": "should support development mode",
           "failureMessages": [],
-          "duration": 4
+          "duration": 5
         },
         {
           "ancestorTitles": [
@@ -872,7 +657,7 @@
           "status": "passed",
           "title": "should provide setRole action",
           "failureMessages": [],
-          "duration": 7
+          "duration": 11
         },
         {
           "ancestorTitles": [
@@ -883,7 +668,7 @@
           "status": "passed",
           "title": "should provide clearRole action",
           "failureMessages": [],
-          "duration": 12
+          "duration": 13
         },
         {
           "ancestorTitles": [
@@ -894,7 +679,7 @@
           "status": "passed",
           "title": "should provide refreshRole action",
           "failureMessages": [],
-          "duration": 5
+          "duration": 12
         },
         {
           "ancestorTitles": [
@@ -905,7 +690,7 @@
           "status": "passed",
           "title": "should throw error when used outside provider",
           "failureMessages": [],
-          "duration": 31
+          "duration": 35
         },
         {
           "ancestorTitles": [
@@ -927,7 +712,7 @@
           "status": "passed",
           "title": "should cleanup resources on unmount",
           "failureMessages": [],
-          "duration": 4
+          "duration": 3
         },
         {
           "ancestorTitles": [
@@ -938,7 +723,7 @@
           "status": "passed",
           "title": "should handle auth state changes",
           "failureMessages": [],
-          "duration": 11
+          "duration": 6
         }
       ],
       "failureMessage": null

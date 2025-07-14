@@ -1,11 +1,16 @@
 /**
- * Test Helper Utilities untuk E2E Testing
+ * Unified Test Helper Utilities untuk E2E Testing
  *
  * Kumpulan utility functions yang membantu dalam menjalankan E2E tests
  * dengan Clerk authentication dan Next.js routing.
+ * Includes both general utilities and role-based authorization testing.
  */
 
 import { Page, expect } from '@playwright/test'
+import { setupClerkTestingToken } from '@clerk/testing/playwright'
+import { clerk } from '@clerk/testing/playwright'
+import { RoleTestUser, getRoleTestUser, hasAccess } from '../fixtures/test-users'
+import { UserRole } from '../../../features/auth/types'
 /**
  * Helper untuk logout user
  *
@@ -28,7 +33,6 @@ export async function logoutUser(page: Page) {
 
   // Wait for redirect ke homepage atau sign-in
   await page.waitForURL('/', { timeout: 5000 })
-
 }
 
 /**
@@ -269,4 +273,202 @@ export async function verifyUserLoggedOut(page: Page) {
   }
 
   expect(loggedOut).toBeTruthy()
+}
+
+// ============================================================================
+// ROLE-BASED AUTHORIZATION TESTING FUNCTIONS
+// ============================================================================
+
+/**
+ * Login dengan specific role menggunakan Clerk testing helpers
+ *
+ * @param page - Playwright Page object
+ * @param role - Role user yang akan digunakan untuk login ('kasir', 'producer', 'owner')
+ * @returns Promise<RoleTestUser> - Data user yang berhasil login
+ */
+export async function loginWithRole(page: Page, role: UserRole): Promise<RoleTestUser> {
+  const testUser = getRoleTestUser(role)
+
+  console.log(`🔐 Logging in as ${role}: ${testUser.identifier}`)
+
+  // Setup Clerk testing token
+  await setupClerkTestingToken({ page })
+
+  // Navigate to homepage first untuk inisialisasi Clerk
+  await page.goto('/')
+  await waitForPageLoad(page)
+
+  // Perform authentication dengan Clerk helper
+  await clerk.signIn({
+    page,
+    signInParams: {
+      strategy: 'password',
+      identifier: testUser.identifier,
+      password: testUser.password,
+    },
+  })
+
+  console.log(`✅ Successfully logged in as ${role}`)
+
+  // Verify login berhasil
+  await verifyUserSession(page)
+
+  return testUser
+}
+
+/**
+ * Test akses ke route dengan role tertentu
+ *
+ * @param page - Playwright Page object
+ * @param route - Route yang akan ditest
+ * @param role - Role user yang sedang digunakan
+ * @param shouldHaveAccess - Apakah user seharusnya punya akses (optional, akan dihitung otomatis)
+ */
+export async function testRoleBasedAccess(
+  page: Page,
+  route: string,
+  role: UserRole,
+  shouldHaveAccess?: boolean,
+) {
+  // Auto-determine access jika tidak dispesifikasi
+  const expectedAccess = shouldHaveAccess ?? hasAccess(role, route)
+
+  console.log(`🔍 Testing ${role} access to ${route}, expected access: ${expectedAccess}`)
+
+  await page.goto(route)
+  await waitForPageLoad(page)
+
+  if (expectedAccess) {
+    // User seharusnya punya akses
+    await expect(page).not.toHaveURL('/unauthorized')
+    await expect(page).not.toHaveURL('/sign-in')
+
+    // Check bahwa halaman berhasil dimuat
+    const mainSelectors = ['main', '[role="main"]', 'body']
+    let mainFound = false
+
+    for (const selector of mainSelectors) {
+      const element = page.locator(selector)
+      if ((await element.count()) > 0 && (await element.isVisible())) {
+        mainFound = true
+        break
+      }
+    }
+
+    if (!mainFound) {
+      // Fallback: check page content
+      const pageContent = await page.content()
+      const hasContent = pageContent.length > 1000
+      if (hasContent) {
+        mainFound = true
+      }
+    }
+
+    expect(mainFound).toBeTruthy()
+    console.log(`✅ ${role} successfully accessed ${route}`)
+  } else {
+    // User seharusnya tidak punya akses
+    await expect(page).toHaveURL('/unauthorized', { timeout: 10000 })
+    console.log(`✅ ${role} correctly blocked from ${route}`)
+  }
+
+  await takeScreenshot(
+    page,
+    `${role}-access-${route.replace(/\//g, '-')}-${expectedAccess ? 'allowed' : 'blocked'}`,
+  )
+}
+
+/**
+ * Test semua routes untuk role tertentu (allowed dan restricted)
+ *
+ * @param page - Playwright Page object
+ * @param role - Role yang akan ditest
+ */
+export async function testAllRoutesForRole(page: Page, role: UserRole) {
+  const testUser = getRoleTestUser(role)
+
+  console.log(`🧪 Testing all routes for ${role}`)
+
+  // Test allowed routes
+  for (const route of testUser.allowedRoutes) {
+    await testRoleBasedAccess(page, route, role, true)
+  }
+
+  // Test restricted routes
+  for (const route of testUser.restrictedRoutes) {
+    await testRoleBasedAccess(page, route, role, false)
+  }
+
+  console.log(`✅ All routes tested for ${role}`)
+}
+
+/**
+ * Logout user dari role-based session
+ *
+ * @param page - Playwright Page object
+ */
+export async function logoutFromRoleSession(page: Page) {
+  console.log('🚪 Logging out from role-based session...')
+
+  try {
+    // Use Clerk's signOut method
+    await clerk.signOut({ page })
+
+    // Clear browser state completely
+    await page.context().clearCookies()
+    await page.context().clearPermissions()
+
+    // Clear any client-side storage
+    await page.evaluate(() => {
+      localStorage.clear()
+      sessionStorage.clear()
+    })
+
+    // Wait for redirect to homepage atau sign-in
+    await waitForPageLoad(page)
+
+    // Navigate to home to ensure clean state
+    await page.goto('/')
+    await waitForPageLoad(page)
+
+    console.log('✅ Role-based logout completed successfully')
+  } catch (error) {
+    console.log(`⚠️ Logout error (continuing anyway): ${error}`)
+
+    // Force clear everything if normal logout fails
+    await page.context().clearCookies()
+    await page.context().clearPermissions()
+    await page.evaluate(() => {
+      localStorage.clear()
+      sessionStorage.clear()
+    })
+
+    console.log('✅ Force logout completed')
+  }
+}
+
+/**
+ * Basic role hierarchy testing
+ *
+ * @param page - Playwright Page object
+ */
+export async function testBasicRoleHierarchy(page: Page) {
+  console.log('🧪 Testing basic role hierarchy...')
+
+  // Test that owner has access to all areas
+  await testRoleBasedAccess(page, '/dashboard', 'owner', true)
+  await testRoleBasedAccess(page, '/producer', 'owner', true)
+  await testRoleBasedAccess(page, '/owner', 'owner', true)
+
+  // Test that producer has access to dashboard and producer
+  await testRoleBasedAccess(page, '/dashboard', 'producer', true)
+  await testRoleBasedAccess(page, '/producer', 'producer', true)
+  await testRoleBasedAccess(page, '/owner', 'producer', false)
+
+  // Test that kasir has access only to dashboard
+  await testRoleBasedAccess(page, '/dashboard', 'kasir', true)
+  await testRoleBasedAccess(page, '/producer', 'kasir', false)
+  await testRoleBasedAccess(page, '/owner', 'kasir', false)
+
+  console.log('✅ Basic role hierarchy testing completed')
 }
