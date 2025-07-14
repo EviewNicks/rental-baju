@@ -85,21 +85,5 @@ export default defineConfig({
       },
       dependencies: ['global setup'],
     },
-    // Keep existing for backward compatibility
-    {
-      name: 'chromium',
-      use: {
-        ...devices['Desktop Chrome'],
-        storageState: '__tests__/playwright/.clerk/user.json',
-        launchOptions: {
-          args: [
-            '--disable-web-security',
-            '--disable-features=VizDisplayCompositor',
-            '--disable-blink-features=AutomationControlled',
-          ],
-        },
-      },
-      dependencies: ['global setup'],
-    },
   ],
 })

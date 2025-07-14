@@ -159,7 +159,9 @@ export default function CreatorLayout({ children }: CreatorLayoutProps) {
         </aside>
 
         {/* Main Content */}
-        <main className="ml-64">{children}</main>
+        <main className="ml-64" data-testid="producer-dashboard-main">
+          {children}
+        </main>
 
         {/* Mobile overlay (hidden on desktop) */}
         <div

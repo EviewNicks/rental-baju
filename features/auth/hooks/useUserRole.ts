@@ -142,7 +142,7 @@ function useRoleNavigation() {
           case 'producer':
             return '/producer'
           case 'kasir':
-            return '/kasir/dashboard'
+            return '/dashboard'
           default:
             return '/unauthorized'
         }

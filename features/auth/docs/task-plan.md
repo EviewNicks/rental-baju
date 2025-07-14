@@ -433,14 +433,6 @@ test('owner can access all dashboards', async ({ page }) => {
 - ✅ Role hierarchy validation
 - ✅ Cross-area navigation
 
-#### 4.3 Cross-Role Verification Tests
-
-**File**: `__tests__/playwright/authorization/cross-role-verification.spec.ts`
-
-- Test role switching scenarios
-- Verify role hierarchy (Owner > Producer > Kasir)
-- Test concurrent role access
-- Validate role-based UI elements
 
 
 ### Phase 5: Documentation & Maintenance

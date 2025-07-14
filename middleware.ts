@@ -23,7 +23,7 @@ import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 const isProtectedRoute = createRouteMatcher([
   '/owner(.*)',
   '/producer(.*)',
-  '/kasir(.*)',
+  '/dashboard(.*)',
   '/settings(.*)',
   '/profile(.*)',
 ])
@@ -32,8 +32,8 @@ const isProtectedRoute = createRouteMatcher([
 const isOwnerRoute = createRouteMatcher(['/owner(.*)'])
 // Define producer routes (owner & producer)
 const isProducerRoute = createRouteMatcher(['/producer(.*)'])
-// Define kasir routes (owner, producer, kasir)
-const isKasirRoute = createRouteMatcher(['/kasir(.*)'])
+// Define kasir routes (owner, producer, kasir) - menggunakan /dashboard
+const isKasirRoute = createRouteMatcher(['/dashboard(.*)'])
 
 export default clerkMiddleware(
   async (auth, req) => {
@@ -60,7 +60,7 @@ export default clerkMiddleware(
       }
     }
 
-    // Kasir routes (owner, producer, kasir)
+    // Kasir routes (owner, producer, kasir) - menggunakan /dashboard
     if (isKasirRoute(req)) {
       if (userRole !== 'owner' && userRole !== 'producer' && userRole !== 'kasir') {
         const url = new URL('/unauthorized', req.url)
