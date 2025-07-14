@@ -7,12 +7,14 @@ import { Menu, X, Shirt } from 'lucide-react'
 import { useUser } from '@clerk/nextjs'
 import { SignOutButton, UserButton } from '@clerk/nextjs'
 import { useUserRole } from '@/features/auth'
+import { useRoleNavigation } from '@/features/auth/hooks/useUserRole'
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const { isSignedIn } = useUser()
-  const { role, isOwner, isProducer, isKasir } = useUserRole()
+  const { role } = useUserRole()
+  const { getDashboardUrl } = useRoleNavigation()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -28,14 +30,6 @@ export function Navbar() {
   // Handler untuk sign out dengan close mobile menu
   const handleSignOut = () => {
     setIsOpen(false)
-  }
-
-  // Get dashboard URL based on role - Updated untuk role baru
-  const getDashboardUrl = () => {
-    if (isOwner) return '/owner'
-    if (isProducer) return '/producer'
-    if (isKasir) return '/kasir/dashboard'
-    return '/kasir/dashboard' // Default fallback ke kasir
   }
 
   return (
@@ -112,7 +106,7 @@ export function Navbar() {
               </>
             ) : (
               <>
-                {/* Role-based Dashboard Link - Updated untuk role baru */}
+                {/* Role-based Dashboard Link */}
                 <Link href={getDashboardUrl()} data-testid="desktop-dashboard-link">
                   <Button variant="ghost" className="text-sm text-neutral-700 hover:text-blue-500">
                     Dashboard
@@ -221,7 +215,7 @@ export function Navbar() {
                 </>
               ) : (
                 <>
-                  {/* Mobile Role-based Dashboard Link - Updated untuk role baru */}
+                  {/* Mobile Role-based Dashboard Link */}
                   <Link href={getDashboardUrl()} data-testid="mobile-dashboard-link">
                     <Button
                       variant="outline"

@@ -23,9 +23,11 @@ Sistem otorisasi berbasis peran (role-based authorization) telah berhasil diimpl
 
 Sistem ini mendukung tiga peran utama: **Owner** (akses penuh), **Producer** (akses terbatas), dan **Kasir** (akses minimal), dengan hierarchy yang jelas dan validasi yang robust di client-side dan server-side.
 
+**Pendekatan Redirect yang Dioptimalkan**: Implementasi menggunakan pendekatan client-side redirect yang lebih fleksibel, di mana setiap halaman dashboard memiliki logic untuk redirect berdasarkan role, menghindari hard-coded redirects di sign-in/sign-up pages dan middleware yang kompleks.
+
 ### Ruang Lingkup
 
-Implementasi mencakup seluruh sistem otorisasi dari pengambilan data role hingga proteksi route, termasuk error handling, caching, dan cross-tab synchronization. Tidak termasuk implementasi UI untuk manajemen peran otomatis atau server-side role validation tambahan.
+Implementasi mencakup seluruh sistem otorisasi dari pengambilan data role hingga proteksi route, termasuk error handling, caching, dan cross-tab synchronization. Sistem redirect dioptimalkan untuk memberikan user experience yang lebih baik dengan client-side role-based navigation.
 
 #### 1. React Components
 
@@ -33,6 +35,7 @@ Implementasi mencakup seluruh sistem otorisasi dari pengambilan data role hingga
 
 - **RoleDisplay**: Komponen untuk menampilkan informasi role dan permission pengguna
 - **UserRoleContext**: Context provider untuk global state management role dengan caching dan cross-tab sync
+- **Navbars**: Komponen navigasi dengan role-based redirect logic
 
 #### 2. State Management
 
@@ -49,7 +52,7 @@ Implementasi mencakup seluruh sistem otorisasi dari pengambilan data role hingga
 **Feature Hooks**:
 
 - **useUserRole**: Hook utama untuk pengambilan dan validasi role dari session claims
-- **useUserRoleGuard**: Hook untuk role-based access control dengan redirect logic
+- **useRoleNavigation**: Hook untuk role-based navigation dan redirect logic
 
 **Utility Hooks**:
 
@@ -65,7 +68,7 @@ Implementasi mencakup seluruh sistem otorisasi dari pengambilan data role hingga
 
 **Middleware**:
 
-- **middleware.ts**: Next.js middleware untuk route protection berdasarkan role
+- **middleware.ts**: Next.js middleware untuk route protection berdasarkan role (disederhanakan)
 
 **Services**:
 
@@ -87,12 +90,14 @@ Implementasi mencakup seluruh sistem otorisasi dari pengambilan data role hingga
 
 ### Perubahan Desain
 
-| Komponen/Fitur   | Rencana Awal               | Implementasi Aktual                      | Justifikasi                                         |
-| ---------------- | -------------------------- | ---------------------------------------- | --------------------------------------------------- |
-| Role Types       | 'admin', 'creator', 'user' | 'owner', 'producer', 'kasir'             | Penyesuaian dengan kebutuhan bisnis rental software |
-| Role Hierarchy   | Admin > Creator > User     | Owner > Producer > Kasir                 | Nama yang lebih sesuai dengan konteks bisnis        |
-| Caching Strategy | Tidak disebutkan           | Implementasi caching dengan localStorage | Meningkatkan performa dan user experience           |
-| Cross-tab Sync   | Tidak disebutkan           | BroadcastChannel API                     | Konsistensi state antar tab browser                 |
+| Komponen/Fitur    | Rencana Awal               | Implementasi Aktual                      | Justifikasi                                         |
+| ----------------- | -------------------------- | ---------------------------------------- | --------------------------------------------------- |
+| Role Types        | 'admin', 'creator', 'user' | 'owner', 'producer', 'kasir'             | Penyesuaian dengan kebutuhan bisnis rental software |
+| Role Hierarchy    | Admin > Creator > User     | Owner > Producer > Kasir                 | Nama yang lebih sesuai dengan konteks bisnis        |
+| Redirect Strategy | Middleware-based redirects | Client-side role-based redirects         | Lebih fleksibel dan user-friendly                   |
+| Caching Strategy  | Tidak disebutkan           | Implementasi caching dengan localStorage | Meningkatkan performa dan user experience           |
+| Cross-tab Sync    | Tidak disebutkan           | BroadcastChannel API                     | Konsistensi state antar tab browser                 |
+| Navigation Logic  | Hard-coded redirects       | Dynamic role-based navigation            | Lebih maintainable dan extensible                   |
 
 ### Perubahan Teknis
 
@@ -100,7 +105,9 @@ Implementasi mencakup seluruh sistem otorisasi dari pengambilan data role hingga
 | ---------------- | -------------------- | -------------------------------------------- | -------------------------------- |
 | Error Handling   | Basic error handling | Comprehensive error handling dengan fallback | Meningkatkan reliability sistem  |
 | State Management | Simple hook          | Context + Hook combination                   | Better state sharing dan caching |
-| Route Protection | Basic middleware     | Advanced middleware dengan role hierarchy    | Lebih fleksibel dan maintainable |
+| Route Protection | Complex middleware   | Simplified middleware + client-side logic    | Lebih fleksibel dan maintainable |
+| Redirect Logic   | Server-side only     | Client-side role-based redirects             | Better user experience           |
+| Sign-in/Sign-up  | Hard-coded redirects | Clean pages tanpa redirect logic             | Mengikuti best practice Clerk    |
 
 ## Status Acceptance Criteria
 
@@ -109,11 +116,13 @@ Implementasi mencakup seluruh sistem otorisasi dari pengambilan data role hingga
 | Role dapat diambil dari session claims   | ✅     | Implementasi lengkap dengan useUserRole hook |
 | Validasi role berfungsi dengan benar     | ✅     | roleUtils dengan comprehensive validation    |
 | Error handling untuk berbagai skenario   | ✅     | Fallback mechanisms dan error boundaries     |
-| Middleware route protection berfungsi    | ✅     | Next.js middleware dengan role hierarchy     |
-| Redirect logic untuk unauthorized access | ✅     | Automatic redirect ke halaman yang sesuai    |
+| Middleware route protection berfungsi    | ✅     | Simplified Next.js middleware                |
+| Redirect logic untuk unauthorized access | ✅     | Client-side role-based redirects             |
 | Cross-tab synchronization                | ✅     | BroadcastChannel API implementation          |
 | Caching untuk performa                   | ✅     | localStorage caching dengan TTL              |
 | Type safety untuk role values            | ✅     | TypeScript interfaces dan validation         |
+| Clean sign-in/sign-up pages              | ✅     | Tidak ada hard-coded redirects               |
+| Role-based navigation                    | ✅     | Dynamic navigation berdasarkan role          |
 
 ## Detail Implementasi
 
@@ -136,6 +145,14 @@ Implementasi mengikuti struktur folder standar yang didefinisikan dalam arsitekt
 ├── types/              # TypeScript type definitions
 │   └── index.ts        # Role-related types
 └── ...
+
+/app/
+├── (kasir)/           # Kasir dashboard dengan role protection
+├── admin/             # Owner dashboard
+├── creator/           # Producer dashboard
+├── sign-in/           # Clean sign-in page
+├── sign-up/           # Clean sign-up page
+└── unauthorized/      # Unauthorized access page
 ```
 
 ### Komponen Utama
@@ -167,26 +184,40 @@ Custom hook untuk pengambilan dan validasi role dari session claims dengan error
 - **Validation Pattern**: Role validation dengan type safety
 - **Error Handling Pattern**: Graceful degradation dengan fallback
 
-#### Middleware
+#### Middleware (Simplified)
 
 **File**: `/middleware.ts`
 
 **Deskripsi**:
-Next.js middleware untuk proteksi route berdasarkan role hierarchy dengan automatic redirect.
+Next.js middleware yang disederhanakan untuk proteksi route berdasarkan role, tanpa complex redirect logic.
 
 **Pattern yang Digunakan**:
 
 - **Middleware Pattern**: Route protection at request level
 - **Authorization Pattern**: Role-based access control
-- **Redirect Pattern**: Automatic navigation untuk unauthorized access
+- **Simplified Logic**: Fokus pada protection, bukan redirect
+
+#### Role-Based Navigation
+
+**File**: `/features/homepage/component/Navbars.tsx`
+
+**Deskripsi**:
+Komponen navigasi dengan role-based redirect logic menggunakan useRoleNavigation hook.
+
+**Pattern yang Digunakan**:
+
+- **Client-side Navigation**: Dynamic redirects berdasarkan role
+- **Hook Pattern**: useRoleNavigation untuk navigation logic
+- **Conditional Rendering**: UI yang berbeda berdasarkan role
 
 ### Alur Data
 
 1. **Pengambilan Role**: Clerk session claims → useUserRole hook → UserRoleContext → Cached storage
 2. **Validasi Role**: roleUtils validation → Type checking → Hierarchy validation
-3. **Route Protection**: Request → Middleware → Role check → Allow/Redirect
-4. **State Management**: Context provider → Cross-tab sync → UI updates
-5. **Error Handling**: Error detection → Fallback mechanisms → User feedback
+3. **Route Protection**: Request → Simplified Middleware → Role check → Allow/Block
+4. **Navigation**: Client-side role detection → useRoleNavigation → Dynamic redirect
+5. **State Management**: Context provider → Cross-tab sync → UI updates
+6. **Error Handling**: Error detection → Fallback mechanisms → User feedback
 
 ### Database Schema
 
@@ -210,7 +241,18 @@ Tidak ada perubahan skema database karena role disimpan dalam Clerk custom claim
 
 ## Kendala dan Solusi
 
-### Kendala 1: Cross-tab State Synchronization
+### Kendala 1: Redirect Logic Complexity
+
+**Deskripsi**:
+Implementasi redirect logic di middleware dan sign-in/sign-up pages menjadi terlalu kompleks dan tidak mengikuti best practice Clerk.
+
+**Solusi**:
+Memindahkan redirect logic ke client-side dengan useRoleNavigation hook dan membersihkan sign-in/sign-up pages dari hard-coded redirects.
+
+**Pembelajaran**:
+Client-side redirects lebih fleksibel dan user-friendly daripada server-side redirects untuk role-based navigation.
+
+### Kendala 2: Cross-tab State Synchronization
 
 **Deskripsi**:
 Perlu memastikan state role konsisten antar tab browser untuk user experience yang baik.
@@ -221,48 +263,49 @@ Implementasi BroadcastChannel API untuk real-time synchronization antar tab deng
 **Pembelajaran**:
 Cross-tab synchronization penting untuk aplikasi multi-tab, BroadcastChannel API lebih efisien dari polling.
 
-### Kendala 2: Role Hierarchy Validation
+### Kendala 3: Middleware Performance dan Complexity
 
 **Deskripsi**:
-Perlu validasi yang robust untuk role hierarchy dan permission checking.
+Middleware menjadi terlalu kompleks dengan redirect logic yang menyebabkan performance issues dan maintenance problems.
 
 **Solusi**:
-Membuat utility functions yang comprehensive dengan type safety dan edge case handling.
+Menyederhanakan middleware untuk fokus hanya pada route protection, memindahkan redirect logic ke client-side.
 
 **Pembelajaran**:
-Type safety sangat penting untuk role validation, utility functions memudahkan testing dan maintenance.
+Middleware sebaiknya fokus pada satu tanggung jawab (protection), bukan multiple concerns (protection + redirects).
 
-### Kendala 3: Middleware Performance
+### Kendala 4: Sign-in/Sign-up Page Best Practices
 
 **Deskripsi**:
-Middleware perlu efisien untuk tidak mempengaruhi performance aplikasi.
+Hard-coded redirects di sign-in/sign-up pages tidak mengikuti best practice Clerk dan menyebabkan issues dengan authentication flow.
 
 **Solusi**:
-Implementasi caching di middleware dan optimasi logic untuk mengurangi overhead.
+Membersihkan sign-in/sign-up pages dari redirect logic, membiarkan Clerk menangani authentication flow secara natural.
 
 **Pembelajaran**:
-Middleware performance critical untuk user experience, caching dan optimization penting.
+Mengikuti best practice library (Clerk) lebih penting daripada custom logic yang kompleks.
 
 ## Rekomendasi Selanjutnya
 
 ### Peningkatan Fitur
 
-1. **Server-side Role Validation**: Implementasi validasi tambahan di server-side untuk keamanan yang lebih tinggi
-2. **Role Management UI**: Interface untuk admin mengelola peran pengguna secara visual
-3. **Audit Logging**: Logging untuk akses yang ditolak dan perubahan role
-4. **Dynamic Role Assignment**: Kemampuan mengubah role secara real-time tanpa logout
+1. **Enhanced Role Management**: Interface untuk admin mengelola peran pengguna secara visual
+2. **Audit Logging**: Logging untuk akses yang ditolak dan perubahan role
+3. **Dynamic Role Assignment**: Kemampuan mengubah role secara real-time tanpa logout
+4. **Role-based UI Components**: Komponen UI yang adaptif berdasarkan role
 
 ### Technical Debt
 
-1. **Performance Monitoring**: Implementasi monitoring untuk middleware performance
+1. **Performance Monitoring**: Implementasi monitoring untuk client-side navigation performance
 2. **Error Tracking**: Integrasi dengan error tracking service untuk role-related errors
-3. **Test Coverage**: Peningkatan test coverage untuk edge cases
+3. **Test Coverage**: Peningkatan test coverage untuk role-based navigation scenarios
 
 ### Potensi Refactoring
 
 1. **Role Configuration**: Externalize role configuration untuk easier maintenance
 2. **Permission System**: Implementasi permission-based system yang lebih granular
-3. **Caching Strategy**: Optimasi caching strategy berdasarkan usage patterns
+3. **Navigation Strategy**: Optimasi navigation strategy berdasarkan user behavior patterns
+4. **Caching Strategy**: Optimasi caching strategy berdasarkan usage patterns
 
 ## Lampiran
 
@@ -270,5 +313,6 @@ Middleware performance critical untuk user experience, caching dan optimization 
 - [Task RPK-11: Middleware Otorisasi](mdc:features/auth/docs/task-docs/story-2/task-rpk-11.md)
 - [Clerk Custom Claims Documentation](https://clerk.com/docs/guides/authorization-checks)
 - [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
+- [Clerk Authentication Best Practices](https://clerk.com/docs/guides/authentication)
 
-> **Catatan**: Sistem otorisasi role berbasis Clerk telah siap untuk production deployment dengan comprehensive error handling, caching, dan cross-tab synchronization.
+> **Catatan**: Sistem otorisasi role berbasis Clerk telah dioptimalkan dengan client-side navigation yang lebih fleksibel, middleware yang disederhanakan, dan sign-in/sign-up pages yang mengikuti best practice Clerk. Implementasi ini memberikan user experience yang lebih baik dengan maintainability yang tinggi.

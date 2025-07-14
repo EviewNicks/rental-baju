@@ -14,9 +14,9 @@ import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
  * - https://clerk.com/docs/backend-requests/jwt-templates
  *
  * App Structure:
- * - /dashboard = User area (default)
- * - /admin/* = Admin area
- * - /creator/* = Creator area
+ * - /owner/* = Owner area (hanya owner)
+ * - /producer/* = Producer area (owner & producer)
+ * - /kasir/* = Kasir area (owner, producer, kasir)
  */
 
 // Define protected routes using Clerk's createRouteMatcher
@@ -40,23 +40,27 @@ export default clerkMiddleware(
     if (isProtectedRoute(req)) {
       await auth.protect()
     }
+
     const { sessionClaims } = await auth()
     const userRole = sessionClaims?.role as string
-    // Owner-only
+
+    // Owner-only routes
     if (isOwnerRoute(req)) {
       if (userRole !== 'owner') {
         const url = new URL('/unauthorized', req.url)
         return Response.redirect(url)
       }
     }
-    // Producer (owner & producer)
+
+    // Producer routes (owner & producer)
     if (isProducerRoute(req)) {
       if (userRole !== 'owner' && userRole !== 'producer') {
         const url = new URL('/unauthorized', req.url)
         return Response.redirect(url)
       }
     }
-    // Kasir (owner, producer, kasir)
+
+    // Kasir routes (owner, producer, kasir)
     if (isKasirRoute(req)) {
       if (userRole !== 'owner' && userRole !== 'producer' && userRole !== 'kasir') {
         const url = new URL('/unauthorized', req.url)

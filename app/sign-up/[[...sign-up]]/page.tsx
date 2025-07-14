@@ -43,7 +43,6 @@ export default function SignUpPage() {
               borderRadius: '0.5rem',
             },
           }}
-          forceRedirectUrl="/dashboard"
           signInUrl="/sign-in"
         />
       </div>

@@ -102,15 +102,13 @@ export default function RentersManagementPage() {
     )
   }
 
-  // Tambahkan logic: jika role !== 'owner' && role !== 'producer' && role !== 'kasir', redirect ke /unauthorized
-  if (role !== 'owner' && role !== 'producer' && role !== 'kasir') {
+  // Jika role bukan kasir, tampilkan loading sambil redirect
+  if (role !== 'kasir') {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50">
         <div className="text-center">
-          <div className="text-red-500 text-6xl mb-4">🚫</div>
-          <h1 className="text-2xl font-bold mb-2">Akses Ditolak</h1>
-          <p className="text-gray-600">Anda tidak memiliki izin untuk mengakses halaman kasir.</p>
-          <p className="text-sm text-gray-500 mt-2">Role saat ini: {role || 'Tidak ada'}</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Mengalihkan ke halaman yang sesuai...</p>
         </div>
       </div>
     )

@@ -17,10 +17,10 @@ import type { UseUserRoleReturn, UserRole } from '../types'
  *
  * @example
  * ```tsx
- * const { role, isAdmin, isLoading, refreshRole } = useUserRole();
+ * const { role, isOwner, isLoading, refreshRole } = useUserRole();
  *
  * if (isLoading) return <Spinner />;
- * if (isAdmin) return <AdminPanel />;
+ * if (isOwner) return <AdminPanel />;
  * ```
  */
 export function useUserRole(): UseUserRoleReturn {
@@ -107,6 +107,116 @@ function useRoleGuard() {
       canDeleteUser: (targetUserId: string, currentUserId: string) => {
         if (role === 'owner' && targetUserId !== currentUserId) return true
         return false
+      },
+    }),
+    [role],
+  )
+}
+
+/**
+ * Hook untuk role-based navigation dan redirect
+ * Provides navigation helpers dan redirect logic berdasarkan role
+ *
+ * @returns Object dengan navigation functions dan redirect URLs
+ *
+ * @example
+ * ```tsx
+ * const { getDashboardUrl, canNavigateTo, getRedirectUrl } = useRoleNavigation();
+ *
+ * const dashboardUrl = getDashboardUrl();
+ * if (canNavigateTo('/admin')) {
+ *   return <AdminPanel />;
+ * }
+ * ```
+ */
+function useRoleNavigation() {
+  const { role } = useUserRole()
+
+  return useMemo(
+    () => ({
+      // Get dashboard URL berdasarkan role
+      getDashboardUrl: () => {
+        switch (role) {
+          case 'owner':
+            return '/owner'
+          case 'producer':
+            return '/producer'
+          case 'kasir':
+            return '/kasir/dashboard'
+          default:
+            return '/unauthorized'
+        }
+      },
+
+      // Check if user can navigate to specific route
+      canNavigateTo: (route: string) => {
+        if (!role) return false
+
+        // Owner can access everything
+        if (role === 'owner') return true
+
+        // Producer can access producer and kasir routes
+        if (role === 'producer') {
+          return route.startsWith('/producer') || route.startsWith('/kasir')
+        }
+
+        // Kasir can only access kasir routes
+        if (role === 'kasir') {
+          return route.startsWith('/kasir')
+        }
+
+        return false
+      },
+
+      // Get redirect URL for unauthorized access
+      getRedirectUrl: (attemptedRoute: string) => {
+        const dashboardUrl = (() => {
+          switch (role) {
+            case 'owner':
+              return '/owner'
+            case 'producer':
+              return '/producer'
+            case 'kasir':
+              return '/kasir/dashboard'
+            default:
+              return '/unauthorized'
+          }
+        })()
+        return `${dashboardUrl}?redirect=${encodeURIComponent(attemptedRoute)}`
+      },
+
+      // Get role-specific navigation items
+      getNavigationItems: () => {
+        const items = []
+
+        if (role === 'owner') {
+          items.push(
+            { label: 'Owner Dashboard', href: '/owner', icon: 'crown' },
+            { label: 'Producer Panel', href: '/producer', icon: 'edit' },
+            { label: 'Kasir Panel', href: '/kasir/dashboard', icon: 'users' },
+          )
+        } else if (role === 'producer') {
+          items.push(
+            { label: 'Producer Dashboard', href: '/producer', icon: 'edit' },
+            { label: 'Kasir Panel', href: '/kasir/dashboard', icon: 'users' },
+          )
+        } else if (role === 'kasir') {
+          items.push({ label: 'Kasir Dashboard', href: '/kasir/dashboard', icon: 'users' })
+        }
+
+        return items
+      },
+
+      // Check if route requires authentication
+      isProtectedRoute: (route: string) => {
+        const protectedRoutes = ['/owner', '/producer', '/kasir', '/dashboard']
+        return protectedRoutes.some((protectedRoute) => route.startsWith(protectedRoute))
+      },
+
+      // Get role hierarchy level
+      getRoleLevel: () => {
+        const hierarchy = { kasir: 1, producer: 2, owner: 3 }
+        return role ? hierarchy[role] : 0
       },
     }),
     [role],
@@ -392,6 +502,7 @@ function useRoleErrorHandling() {
 export {
   useUserRole as default,
   useRoleGuard,
+  useRoleNavigation,
   useRoleLoadingState,
   useRoleDevelopment,
   useRoleConditional,
