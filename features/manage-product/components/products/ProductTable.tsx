@@ -69,7 +69,7 @@ export function ProductTable({
                         alt={product.name}
                         width={48}
                         height={48}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover "
                       />
                     </div>
                   </TableCell>

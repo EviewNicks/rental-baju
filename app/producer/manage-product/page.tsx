@@ -10,7 +10,7 @@ import { ProductHeader } from '@/features/manage-product/components/products/Pro
 import { SearchFilterBar } from '@/features/manage-product/components/products/SearchFilterBar'
 import { ProductTable } from '@/features/manage-product/components/products/ProductTable'
 import { ProductGrid } from '@/features/manage-product/components/products/ProductGrid'
-// import { ProductDetailModal } from '@/features/manage-product/components/products-detail/ProductDetailModal'
+// import { ProductDetailPage } from '@/features/manage-product/components/product-detail/ProductDetailPage'
 import { EmptyState } from '@/features/manage-product/components/products/EmptyState'
 
 import { mockProducts } from '@/features/manage-product/data/mock-products'
@@ -33,12 +33,12 @@ export default function ProductManagement() {
     resetFilters,
   } = useProductFilters({ products })
 
-  //   const { isDetailModalOpen, selectedProduct, openDetailModal, closeDetailModal } =
-  //     useProductModal()
-
-  const { openDetailModal } = useProductModal()
+  const {
+    /* isDetailModalOpen, selectedProduct, openDetailModal, closeDetailModal */
+  } = useProductModal()
 
   const handleAddProduct = () => {
+    console.log('Navigating to add product page...')
     router.push('/producer/manage-product/add')
   }
 
@@ -47,11 +47,13 @@ export default function ProductManagement() {
   }
 
   const handleViewProduct = (product: Product) => {
-    openDetailModal(product)
+    // Navigate to the dedicated product detail page
+    router.push(`/producer/manage-product/${product.id}`)
   }
 
   const handleDeleteProduct = (product: Product) => {
     console.log('Delete product:', product.id)
+    // Implement actual delete logic or confirmation dialog here
   }
 
   return (
@@ -83,14 +85,6 @@ export default function ProductManagement() {
           <ProductGrid products={filteredProducts} onProductClick={handleViewProduct} />
         )}
       </div>
-
-      {/* <ProductDetailModal
-        isOpen={isDetailModalOpen}
-        onClose={closeDetailModal}
-        product={selectedProduct}
-        onEdit={handleEditProduct}
-        onDelete={handleDeleteProduct}
-      /> */}
     </div>
   )
 }

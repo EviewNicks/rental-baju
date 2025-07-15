@@ -21,7 +21,7 @@ export function ProductGrid({ products, onProductClick }: ProductGridProps) {
       {products.map((product) => (
         <Card
           key={product.id}
-          className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+          className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer py-0"
           onClick={() => onProductClick(product)}
         >
           <div className="aspect-square bg-gray-100">
