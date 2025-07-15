@@ -1,582 +1,259 @@
-# Task Plan: Multi-Role E2E Testing Implementation (RPK-17)
+# Task Plan: Perbaikan Styling UI Product Management (Revisi)
 
-## Tujuan
+## Tugas Saya
 
-Mengimplementasikan E2E testing untuk otorisasi berbasis peran dengan mendukung multiple roles (Kasir, Producer, Owner) menggunakan Clerk authentication dan Playwright.
+Memperbaiki styling UI pada komponen Product Management (`SearchFilterBar.tsx`, `ProductTable.tsx`, `ProductGrid.tsx`) agar sesuai dengan design system yang telah didefinisikan dalam `uiux-consistency.md` dan `product-management.json`.
 
-## Analisis Situasi Saat Ini
+## Hasil Evaluasi Ulang (Revisi)
 
-### Implementasi Existing
+### ✅ Konfigurasi Tailwind v4 dan Shadcn UI Sudah Benar
 
-- ✅ Global setup dengan single authentication state
-- ✅ Authorization testing infrastructure sudah ada
-- ✅ Role-based test helpers dan utilities
-- ✅ Test scenarios untuk admin, creator, user roles
+Setelah membaca dokumentasi Tailwind v4 dan Shadcn UI, saya perlu membetulkan evaluasi sebelumnya:
 
-### Kekurangan
+**Tailwind Config (`tailwind.config.ts`)**:
 
-- ❌ Tidak mendukung role Kasir, Producer, Owner
-- ❌ Single storage state untuk semua roles
-- ❌ Environment variables terbatas
-- ❌ Tidak ada projects terpisah per role di playwright config
+- ✅ Konfigurasi minimal sudah sesuai dengan Tailwind v4
+- ✅ Tidak perlu menambahkan `theme.extend` karena Tailwind v4 menggunakan CSS variables di `globals.css`
+- ✅ Content paths sudah benar
 
-## Implementasi Plan
+**Globals CSS (`styles/globals.css`)**:
 
-### Phase 1: Environment Setup & Configuration
+- ✅ Menggunakan `@theme` directive yang benar untuk Tailwind v4
+- ✅ CSS variables sudah didefinisikan dengan benar
+- ✅ Custom colors (gold, olive, dll) sudah tersedia
+- ✅ Font family sudah dikonfigurasi
 
-#### 1.1 Update Environment Variables
+**Components JSON (`components.json`)**:
 
-**File**: `.env.local`
+- ✅ Konfigurasi Shadcn UI sudah benar
+- ✅ `cssVariables: true` sudah diaktifkan
+- ✅ Base color "gray" sudah sesuai
 
-```bash
-# Existing variables (keep for backward compatibility)
-E2E_CLERK_USER_USERNAME=user@example.com
-E2E_CLERK_USER_PASSWORD=password123
-E2E_CLERK_USER_EMAIL=user@example.com
+### ❌ Masalah Sebenarnya
 
-# New role-specific variables
-E2E_CLERK_KASIR_USERNAME=kasir@example.com
-E2E_CLERK_KASIR_PASSWORD=password123
-E2E_CLERK_KASIR_EMAIL=kasir@example.com
+Masalah styling UI Product Management **BUKAN** disebabkan oleh konfigurasi Tailwind yang salah, melainkan:
 
-E2E_CLERK_PRODUCER_USERNAME=producer@example.com
-E2E_CLERK_PRODUCER_PASSWORD=password123
-E2E_CLERK_PRODUCER_EMAIL=producer@example.com
+1. **Komponen Custom Tidak Menggunakan CSS Variables yang Sudah Tersedia**
+   - `SearchFilterBar.tsx`, `ProductTable.tsx`, `ProductGrid.tsx` menggunakan warna hardcoded
+   - Tidak memanfaatkan custom colors (gold, olive, dll) yang sudah didefinisikan
 
-E2E_CLERK_OWNER_USERNAME=owner@example.com
-E2E_CLERK_OWNER_PASSWORD=password123
-E2E_CLERK_OWNER_EMAIL=owner@example.com
-```
+2. **Shadcn UI Components Perlu Diupdate untuk Menggunakan Custom Colors**
+   - Button component masih menggunakan default colors
+   - Badge component tidak memiliki variants untuk status dan kategori
 
-#### 1.2 Update Global Setup untuk Multi-Role
+3. **Perlu Menambahkan CSS Variables untuk Shadcn UI Semantic Tokens**
+   - Shadcn UI menggunakan semantic tokens (`primary`, `secondary`, dll)
+   - Perlu mendefinisikan mapping dari custom colors ke semantic tokens
 
-**File**: `__tests__/playwright/global.setup.ts`
+## Planning yang Perlu Dikerjakan (Revisi)
 
-**Pendekatan**: Implementasi hybrid - mendukung both single dan multi-role setup sesuai dokumentasi Clerk
+### Phase 1: Tambahkan Shadcn UI Semantic Tokens (Priority: HIGH)
 
-```typescript
-import { clerk, clerkSetup } from '@clerk/testing/playwright'
-import { test as setup } from '@playwright/test'
-import path from 'path'
+#### 1.1 Update Globals CSS untuk Shadcn UI
 
-// CRITICAL: Setup must be run serially sesuai dokumentasi Overview
-setup.describe.configure({ mode: 'serial' })
+**File**: `styles/globals.css`
+**Tujuan**: Menambahkan CSS variables untuk Shadcn UI semantic tokens
 
-// Setup 1: Configure Clerk ONLY - sesuai dokumentasi
-setup('global setup', async () => {
-  await clerkSetup()
-})
+**Tasks**:
 
-// Setup untuk setiap role dengan storage state terpisah
-// Path disesuaikan dengan struktur direktori proyek kita
-const roleAuthFiles = {
-  kasir: path.join(__dirname, '.clerk/kasir.json'),
-  producer: path.join(__dirname, '.clerk/producer.json'),
-  owner: path.join(__dirname, '.clerk/owner.json'),
-  // Keep existing for backward compatibility
-  user: path.join(__dirname, '.clerk/user.json'),
-}
+- [ ] Tambahkan CSS variables untuk semantic tokens (primary, secondary, accent, dll)
+- [ ] Map custom colors ke semantic tokens sesuai design system
+- [ ] Pastikan dark mode support
 
-// Setup authentication untuk setiap role sesuai dokumentasi Clerk
-setup('authenticate kasir and save state', async ({ page }) => {
-  console.log('🔐 Authenticating kasir and saving state...')
-  await page.goto('/')
-  await clerk.signIn({
-    page,
-    signInParams: {
-      strategy: 'password',
-      identifier: process.env.E2E_CLERK_KASIR_USERNAME!,
-      password: process.env.E2E_CLERK_KASIR_PASSWORD!,
-    },
-  })
-  await page.goto('/kasir/dashboard')
-  await page.waitForSelector('main', { timeout: 10000 })
-  await page.context().storageState({ path: roleAuthFiles.kasir })
-  console.log('✅ Kasir auth state saved to:', roleAuthFiles.kasir)
-})
+**Expected Output**:
 
-setup('authenticate producer and save state', async ({ page }) => {
-  console.log('🔐 Authenticating producer and saving state...')
-  await page.goto('/')
-  await clerk.signIn({
-    page,
-    signInParams: {
-      strategy: 'password',
-      identifier: process.env.E2E_CLERK_PRODUCER_USERNAME!,
-      password: process.env.E2E_CLERK_PRODUCER_PASSWORD!,
-    },
-  })
-  await page.goto('/producer/dashboard')
-  await page.waitForSelector('main', { timeout: 10000 })
-  await page.context().storageState({ path: roleAuthFiles.producer })
-  console.log('✅ Producer auth state saved to:', roleAuthFiles.producer)
-})
-
-setup('authenticate owner and save state', async ({ page }) => {
-  console.log('🔐 Authenticating owner and saving state...')
-  await page.goto('/')
-  await clerk.signIn({
-    page,
-    signInParams: {
-      strategy: 'password',
-      identifier: process.env.E2E_CLERK_OWNER_USERNAME!,
-      password: process.env.E2E_CLERK_OWNER_PASSWORD!,
-    },
-  })
-  await page.goto('/owner/dashboard')
-  await page.waitForSelector('main', { timeout: 10000 })
-  await page.context().storageState({ path: roleAuthFiles.owner })
-  console.log('✅ Owner auth state saved to:', roleAuthFiles.owner)
-})
-
-// Keep existing setup for backward compatibility
-setup('authenticate', async ({ page }) => {
-  console.log('🔐 Authenticating user and saving state...')
-  await page.goto('/')
-  await clerk.signIn({
-    page,
-    signInParams: {
-      strategy: 'password',
-      identifier: process.env.E2E_CLERK_USER_USERNAME!,
-      password: process.env.E2E_CLERK_USER_PASSWORD!,
-    },
-  })
-  await page.goto('/dashboard')
-  await page.waitForSelector('main', { timeout: 10000 })
-  await page.context().storageState({ path: roleAuthFiles.user })
-  console.log('✅ User auth state saved to:', roleAuthFiles.user)
-})
-```
-
-#### 1.3 Update Playwright Configuration
-
-**File**: `playwright.config.ts`
-
-**Pendekatan**: Multiple projects untuk setiap role sesuai dokumentasi Clerk
-
-```typescript
-projects: [
-  {
-    name: 'global setup',
-    testMatch: /global\.setup\.ts/,
-  },
-  // New role-specific projects sesuai dokumentasi Clerk
-  {
-    name: 'kasir tests',
-    testMatch: /.*kasir.*\.spec\.ts/,
-    use: {
-      ...devices['Desktop Chrome'],
-      storageState: '__tests__/playwright/.clerk/kasir.json',
-      launchOptions: {
-        args: [
-          '--disable-web-security',
-          '--disable-features=VizDisplayCompositor',
-          '--disable-blink-features=AutomationControlled',
-        ],
-      },
-    },
-    dependencies: ['global setup'],
-  },
-  {
-    name: 'producer tests',
-    testMatch: /.*producer.*\.spec\.ts/,
-    use: {
-      ...devices['Desktop Chrome'],
-      storageState: '__tests__/playwright/.clerk/producer.json',
-      launchOptions: {
-        args: [
-          '--disable-web-security',
-          '--disable-features=VizDisplayCompositor',
-          '--disable-blink-features=AutomationControlled',
-        ],
-      },
-    },
-    dependencies: ['global setup'],
-  },
-  {
-    name: 'owner tests',
-    testMatch: /.*owner.*\.spec\.ts/,
-    use: {
-      ...devices['Desktop Chrome'],
-      storageState: '__tests__/playwright/.clerk/owner.json',
-      launchOptions: {
-        args: [
-          '--disable-web-security',
-          '--disable-features=VizDisplayCompositor',
-          '--disable-blink-features=AutomationControlled',
-        ],
-      },
-    },
-    dependencies: ['global setup'],
-  },
-  // Keep existing for backward compatibility
-  {
-    name: 'chromium',
-    use: {
-      ...devices['Desktop Chrome'],
-      storageState: '__tests__/playwright/.clerk/user.json',
-      launchOptions: {
-        args: [
-          '--disable-web-security',
-          '--disable-features=VizDisplayCompositor',
-          '--disable-blink-features=AutomationControlled',
-        ],
-      },
-    },
-    dependencies: ['global setup'],
-  },
-]
-```
-
-#### 1.4 Create Directory Structure
-
-**Setup directory untuk storage files:**
-
-```bash
-# Buat directory untuk storage files
-mkdir -p __tests__/playwright/.clerk
-
-# Update .gitignore untuk exclude storage files
-echo $'\n# Clerk authentication state files' >> .gitignore
-echo '__tests__/playwright/.clerk/*.json' >> .gitignore
-```
-
-### Phase 2: Role Configuration & Test Data
-
-#### 2.1 Update Role Test Users
-
-**File**: `__tests__/playwright/fixtures/role-test-users.ts`
-
-**Pendekatan**: Extend existing configuration dengan role baru
-
-```typescript
-export const roleTestUsers = {
-  // New roles
-  kasir: {
-    identifier: process.env.E2E_CLERK_KASIR_USERNAME!,
-    password: process.env.E2E_CLERK_KASIR_PASSWORD!,
-    email: process.env.E2E_CLERK_KASIR_EMAIL!,
-    role: 'kasir' as const,
-    displayName: 'Kasir Test User',
-    dashboardUrl: '/dashboard',
-    allowedRoutes: ['/dashboard'],
-    restrictedRoutes: ['/producer', '/owner'],
-  },
-  producer: {
-    identifier: process.env.E2E_CLERK_PRODUCER_USERNAME!,
-    password: process.env.E2E_CLERK_PRODUCER_PASSWORD!,
-    email: process.env.E2E_CLERK_PRODUCER_EMAIL!,
-    role: 'producer' as const,
-    displayName: 'Producer Test User',
-    dashboardUrl: '/producer/dashboard',
-    allowedRoutes: ['/producer'],
-    restrictedRoutes: ['/dashboard', '/owner'],
-  },
-  owner: {
-    identifier: process.env.E2E_CLERK_OWNER_USERNAME!,
-    password: process.env.E2E_CLERK_OWNER_PASSWORD!,
-    email: process.env.E2E_CLERK_OWNER_EMAIL!,
-    role: 'owner' as const,
-    displayName: 'Owner Test User',
-    dashboardUrl: '/owner',
-    allowedRoutes: ['/owner', '/dashboard', '/producer'],
-    restrictedRoutes: [], // Owner can access all routes
-  },
-  // Keep existing roles for backward compatibility
-  admin: {
-    /* existing config */
-  },
-  creator: {
-    /* existing config */
-  },
-  user: {
-    /* existing config */
-  },
+```css
+:root {
+  /* Shadcn UI Semantic Tokens */
+  --background: var(--color-neutral-50);
+  --foreground: var(--color-neutral-900);
+  --card: var(--color-neutral-50);
+  --card-foreground: var(--color-neutral-900);
+  --popover: var(--color-neutral-50);
+  --popover-foreground: var(--color-neutral-900);
+  --primary: var(--color-gold-500);
+  --primary-foreground: var(--color-neutral-900);
+  --secondary: var(--color-blue-500);
+  --secondary-foreground: var(--color-neutral-50);
+  --muted: var(--color-neutral-100);
+  --muted-foreground: var(--color-neutral-600);
+  --accent: var(--color-olive-500);
+  --accent-foreground: var(--color-neutral-900);
+  --destructive: var(--color-red-500);
+  --destructive-foreground: var(--color-neutral-50);
+  --border: var(--color-neutral-200);
+  --input: var(--color-neutral-200);
+  --ring: var(--color-gold-500);
+  --radius: var(--radius-lg);
 }
 ```
 
-#### 2.2 Update Access Control Matrix
+### Phase 2: Update Shadcn UI Components (Priority: HIGH)
 
-```typescript
-export const accessControlMatrix = {
-  // New routes
-  '/kasir/dashboard': ['kasir', 'owner'],
-  '/kasir/transactions': ['kasir', 'owner'],
-  '/producer/dashboard': ['producer', 'owner'],
-  '/producer/content': ['producer', 'owner'],
-  '/owner/dashboard': ['owner'],
-}
-```
+#### 2.1 Update Button Component
 
+**File**: `components/ui/button.tsx`
+**Tujuan**: Memastikan button menggunakan semantic tokens yang sudah didefinisikan
 
-### Phase 3: Utility Functions & Helpers
+**Tasks**:
 
-#### 3.1 Update Role Test Helpers
+- [ ] Pastikan button variants menggunakan semantic tokens
+- [ ] Test semua button variants dengan custom colors
+- [ ] Validasi hover dan focus states
 
-**File**: `__tests__/playwright/utils/role-test-helpers.ts`
+#### 2.2 Update Badge Component
 
-**New functions to add**:
+**File**: `components/ui/badge.tsx`
+**Tujuan**: Menambahkan variants untuk status dan kategori
 
-```typescript
-// Role-specific authentication helpers
-export async function authenticateRole(page: Page, role: string, authFile: string)
-export async function setupRoleTestEnvironment(role: UserRole)
-export async function cleanupRoleTestEnvironment(role: UserRole)
+**Tasks**:
 
-// Role hierarchy testing
-export async function testRoleHierarchy(page: Page)
-export async function testRoleSwitching(page: Page, fromRole: UserRole, toRole: UserRole)
+- [ ] Tambahkan status badge variants (Tersedia, Disewa, Maintenance)
+- [ ] Tambahkan category badge variants dengan warna yang sesuai
+- [ ] Pastikan contrast ratio memenuhi accessibility standards
 
-// Role-specific UI verification
-export async function verifyKasirUI(page: Page)
-export async function verifyProducerUI(page: Page)
-export async function verifyOwnerUI(page: Page)
-```
+### Phase 3: Update Custom Components (Priority: MEDIUM)
 
-#### 3.2 Environment Validation
+#### 3.1 Update SearchFilterBar
 
-**Update**: `validateRoleTestEnvironment()`
+**File**: `features/manage-product/components/products/SearchFilterBar.tsx`
+**Tujuan**: Menggunakan semantic tokens dan custom colors
 
-```typescript
-export function validateRoleTestEnvironment(): {
-  isValid: boolean
-  missingVars: string[]
-  availableRoles: UserRole[]
-} {
-  const roleEnvVars = {
-    kasir: ['E2E_CLERK_KASIR_USERNAME', 'E2E_CLERK_KASIR_PASSWORD'],
-    producer: ['E2E_CLERK_PRODUCER_USERNAME', 'E2E_CLERK_PRODUCER_PASSWORD'],
-    owner: ['E2E_CLERK_OWNER_USERNAME', 'E2E_CLERK_OWNER_PASSWORD'],
-  }
-  // ... implementation
-}
-```
+**Tasks**:
 
-### Phase 4: Test Implementation
+- [ ] Ganti warna hardcoded dengan semantic tokens
+- [ ] Gunakan custom colors untuk accent elements
+- [ ] Terapkan soft neumorphism effect pada card
+- [ ] Update hover states dan focus states
 
-#### 4.1 Create Role-Specific Test Files
+#### 3.2 Update ProductTable
 
-**Files to create**:
+**File**: `features/manage-product/components/products/ProductTable.tsx`
+**Tujuan**: Menerapkan design system pada tabel
 
-- `__tests__/playwright/authorization/kasir-access.spec.ts`
-- `__tests__/playwright/authorization/producer-access.spec.ts`
-- `__tests__/playwright/authorization/owner-access.spec.ts`
+**Tasks**:
 
-**Contoh implementasi test file sesuai dokumentasi Clerk:**
+- [ ] Update table styling dengan semantic tokens
+- [ ] Terapkan soft neumorphism pada card container
+- [ ] Update badge styling untuk status dan kategori
+- [ ] Perbaiki hover states pada table rows
 
-```typescript
-// kasir-access.spec.ts
-import { test, expect } from '@playwright/test'
+#### 3.3 Update ProductGrid
 
-test.use({ storageState: '__tests__/playwright/.clerk/kasir.json' })
+**File**: `features/manage-product/components/products/ProductGrid.tsx`
+**Tujuan**: Menerapkan design system pada grid view
 
-test('kasir can access kasir dashboard', async ({ page }) => {
-  await page.goto('/kasir/dashboard')
-  await page.waitForSelector("text='Kasir Dashboard'")
-  await expect(page).toHaveURL('/kasir/dashboard')
-})
+**Tasks**:
 
-test('kasir cannot access owner dashboard', async ({ page }) => {
-  await page.goto('/owner/dashboard')
-  await page.waitForSelector("text='Access Denied'")
-  await expect(page).toHaveURL('/unauthorized')
-})
+- [ ] Update card styling dengan semantic tokens
+- [ ] Terapkan soft neumorphism effect
+- [ ] Update badge styling
+- [ ] Perbaiki hover states dan transitions
 
-// producer-access.spec.ts
-import { test, expect } from '@playwright/test'
+### Phase 4: Testing dan Validation (Priority: MEDIUM)
 
-test.use({ storageState: '__tests__/playwright/.clerk/producer.json' })
+#### 4.1 Visual Testing
 
-test('producer can access producer dashboard', async ({ page }) => {
-  await page.goto('/producer/dashboard')
-  await page.waitForSelector("text='Producer Dashboard'")
-  await expect(page).toHaveURL('/producer/dashboard')
-})
+**Tujuan**: Memastikan UI sesuai dengan design system
 
-// owner-access.spec.ts
-import { test, expect } from '@playwright/test'
+**Tasks**:
 
-test.use({ storageState: '__tests__/playwright/.clerk/owner.json' })
+- [ ] Test semua komponen di berbagai screen sizes
+- [ ] Validasi color contrast untuk accessibility
+- [ ] Test hover dan focus states
+- [ ] Bandingkan dengan mockup/design reference
 
-test('owner can access all dashboards', async ({ page }) => {
-  await page.goto('/owner/dashboard')
-  await page.waitForSelector("text='Owner Dashboard'")
+#### 4.2 Component Testing
 
-  await page.goto('/kasir/dashboard')
-  await page.waitForSelector("text='Kasir Dashboard'")
+**Tujuan**: Memastikan fungsionalitas tetap berjalan
 
-  await page.goto('/producer/dashboard')
-  await page.waitForSelector("text='Producer Dashboard'")
-})
-```
+**Tasks**:
 
-#### 4.2 Test Scenarios untuk Setiap Role
+- [ ] Test semua interactive elements
+- [ ] Validasi responsive behavior
+- [ ] Test dengan data real dan mock data
 
-**Kasir Role Tests**:
+### Phase 5: Documentation Update (Priority: LOW)
 
-- ✅ Akses ke kasir dashboard dan transactions
-- ❌ Tidak bisa akses producer/owner areas
-- ✅ Role persistence across navigation
-- ✅ Direct URL access untuk allowed routes
+#### 5.1 Update Component Documentation
 
-**Producer Role Tests**:
+**Tujuan**: Mendokumentasikan perubahan styling
 
-- ✅ Akses ke producer dashboard dan content
-- ❌ Tidak bisa akses kasir/owner areas
-- ✅ Role persistence across navigation
-- ✅ Direct URL access untuk allowed routes
+**Tasks**:
 
-**Owner Role Tests**:
+- [ ] Update component documentation dengan styling guidelines
+- [ ] Dokumentasikan color usage patterns
+- [ ] Buat style guide untuk developer lain
 
-- ✅ Akses ke semua areas (kasir, producer, owner, admin)
-- ✅ Full system access verification
-- ✅ Role hierarchy validation
-- ✅ Cross-area navigation
+## Acceptance Criteria (Revisi)
 
+### Phase 1 - Shadcn UI Semantic Tokens
 
+- [ ] CSS variables untuk semantic tokens terdefinisi dengan benar
+- [ ] Custom colors ter-mapping ke semantic tokens
+- [ ] Dark mode support berfungsi
+- [ ] Shadcn UI components menggunakan semantic tokens
 
-### Phase 5: Documentation & Maintenance
+### Phase 2 - Shadcn UI Components
 
-#### 5.1 Update Test Documentation
+- [ ] Button component menggunakan primary color (gold)
+- [ ] Badge component memiliki variants untuk status dan kategori
+- [ ] Semua hover dan focus states berfungsi dengan benar
+- [ ] Color contrast memenuhi accessibility standards
 
-- Update test plan documentation
-- Add role-specific test scenarios
-- Document environment setup requirements
+### Phase 3 - Custom Components
 
-#### 5.2 CI/CD Integration
+- [ ] SearchFilterBar menggunakan semantic tokens
+- [ ] ProductTable memiliki styling yang konsisten
+- [ ] ProductGrid menerapkan soft neumorphism effect
+- [ ] Semua komponen responsive dan accessible
 
-- Update GitHub Actions untuk multi-role testing
-- Add role-specific test execution
-- Configure test reporting per role
+### Phase 4 - Testing
 
-## Implementation Strategy
+- [ ] UI sesuai dengan design system dan mockup
+- [ ] Semua interactive elements berfungsi dengan benar
+- [ ] Responsive design bekerja di semua screen sizes
+- [ ] Accessibility requirements terpenuhi
 
-### Approach: Hybrid Multi-Role Setup
+## Timeline Estimation (Revisi)
 
-**Mengapa Hybrid?**
+- **Phase 1**: 1-2 jam (Shadcn UI semantic tokens)
+- **Phase 2**: 1-2 jam (Shadcn UI components)
+- **Phase 3**: 2-3 jam (Custom components styling)
+- **Phase 4**: 1-2 jam (Testing dan validation)
+- **Phase 5**: 1 jam (Documentation)
 
-1. **Backward Compatibility**: Tidak merusak existing tests
-2. **Flexibility**: Mendukung both single dan multi-role testing
-3. **Performance**: Storage state untuk fast tests, dynamic login untuk complex scenarios
-4. **Maintainability**: Mudah extend untuk role baru
+**Total Estimated Time**: 6-10 jam (lebih singkat dari estimasi sebelumnya)
 
-### Benefits:
+## Risk Assessment (Revisi)
 
-- ✅ Fast execution dengan storage state
-- ✅ Comprehensive testing coverage
-- ✅ Easy role management
-- ✅ Scalable untuk role baru
-- ✅ Backward compatibility
+### Low Risk
 
-### Trade-offs:
+- Perubahan hanya pada CSS variables dan component styling
+- Tidak ada perubahan pada Tailwind config
+- Shadcn UI components tetap kompatibel
 
-- ⚠️ Setup complexity meningkat
-- ⚠️ Environment variables lebih banyak
-- ⚠️ Storage state files perlu management
+### Medium Risk
 
-## Success Criteria
+- Custom styling mungkin memerlukan penyesuaian
+- Responsive design mungkin terpengaruh
 
-### Functional Requirements
+### Mitigation
 
-- [ ] All role combinations tested (Kasir, Producer, Owner)
-- [ ] Role hierarchy validated
-- [ ] Access control matrix verified
-- [ ] Cross-role scenarios covered
+- Test thoroughly setelah setiap phase
+- Implement changes incrementally
+- Test di berbagai browser dan devices
 
-### Technical Requirements
+## Success Metrics
 
-- [ ] Multi-role authentication setup working
-- [ ] Storage state management implemented
-- [ ] Environment validation complete
-- [ ] Test coverage > 80%
+1. **Visual Consistency**: UI sesuai dengan design system (90%+ match)
+2. **Accessibility**: WCAG 2.1 AA compliance
+3. **Performance**: Tidak ada regression pada loading time
+4. **Responsiveness**: Berfungsi dengan baik di semua screen sizes
+5. **Developer Experience**: Mudah untuk maintain dan extend
 
-### Performance Requirements
+## Key Learning
 
-- [ ] Test execution time < 5 minutes
-- [ ] Storage state reuse working
-- [ ] No authentication bottlenecks
-
-## Risk Mitigation
-
-### Potential Issues
-
-1. **Environment Variables**: Missing credentials
-2. **Storage State Conflicts**: File corruption
-3. **Role Configuration**: Incorrect permissions
-4. **Test Isolation**: Cross-contamination
-
-### Mitigation Strategies
-
-1. **Environment Validation**: Pre-test validation
-2. **Storage State Management**: Cleanup and verification
-3. **Role Configuration**: Automated validation
-4. **Test Isolation**: Proper setup/teardown
-
-## Timeline
-
-**Total Estimated Time**: 6-8 hours
-
-- **Phase 1**: 2 hours (Environment & Configuration)
-- **Phase 2**: 1 hour (Role Configuration)
-- **Phase 3**: 2-3 hours (Test Implementation)
-- **Phase 4**: 1 hour (Utilities & Helpers)
-- **Phase 5**: 1 hour (Documentation & CI/CD)
-
-## Dependencies
-
-- Clerk authentication setup
-- Environment variables configuration
-- Existing test infrastructure
-- Role-based access control implementation
-
-## Next Steps
-
-1. **Setup Environment Variables** untuk role baru
-2. **Update Global Setup** dengan multi-role support
-3. **Create Role-Specific Test Files**
-4. **Implement Test Scenarios**
-5. **Validate dan Document**
-
----
-
-## ✅ **Status Evaluasi dan Implementasi**
-
-### **Hasil Evaluasi Task Plan vs Dokumentasi Clerk**
-
-**Skor Evaluasi: 9.5/10** ✅
-
-| Aspek                            | Skor  | Keterangan                                             |
-| -------------------------------- | ----- | ------------------------------------------------------ |
-| **Kesesuaian dengan Clerk Docs** | 9/10  | Hampir semua aspek sesuai, minor adjustments completed |
-| **Completeness**                 | 10/10 | Lebih lengkap dari dokumentasi Clerk                   |
-| **Backward Compatibility**       | 10/10 | Excellent, tidak merusak existing                      |
-| **Flexibility**                  | 9/10  | Hybrid approach lebih fleksibel                        |
-| **Maintainability**              | 10/10 | Well-structured dan scalable                           |
-
-### **Penyesuaian yang Telah Dilakukan**
-
-✅ **Global Setup**: Updated dengan implementasi langsung sesuai dokumentasi Clerk  
-✅ **Playwright Config**: Added launch options dan directory structure  
-✅ **Test Examples**: Added contoh implementasi test files yang lengkap  
-✅ **Directory Setup**: Added commands untuk create directory dan update .gitignore
-
-### **Kesimpulan Evaluasi**
-
-**Task plan telah SANGAT SESUAI** dengan dokumentasi Clerk dan siap untuk implementasi:
-
-1. ✅ **Mengikuti best practices Clerk** untuk multi-role setup
-2. ✅ **Menggunakan storage state approach** yang direkomendasikan
-3. ✅ **Struktur projects** sesuai dengan dokumentasi
-4. ✅ **Environment variables** konsisten dan terstruktur
-5. ✅ **Backward compatibility** yang excellent
-6. ✅ **Comprehensive testing coverage** yang lebih lengkap
-
-**Status**: **READY FOR IMPLEMENTATION** 🚀
-
-**Note**: Implementation ini akan memberikan foundation yang solid untuk role-based E2E testing sambil mempertahankan backward compatibility dengan existing tests.
-
-eferensi file:
-@https://clerk.com/docs/testing/playwright/overview
-@https://clerk.com/docs/testing/playwright/test-authenticated-flows
-@https://clerk.com/blog/testing-clerk-nextjs
-@https://clerk.com/docs/testing/playwright/test-helpers
+- **Tailwind v4 menggunakan CSS variables di `globals.css`**, bukan di `tailwind.config.ts`
+- **Shadcn UI membutuhkan semantic tokens** yang terdefinisi di CSS variables
+- **Konfigurasi saat ini sudah benar**, masalahnya ada di penggunaan colors yang tidak konsisten
