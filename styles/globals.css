@@ -15,17 +15,17 @@
   --color-neutral-800: #334155;
   --color-neutral-900: #1E293B;
 
-  /* Lime/Yellow (Aksen utama) */
-  --color-lime-50: #F7FEE7;
-  --color-lime-100: #ECFCCB;
-  --color-lime-200: #D9F99D;
-  --color-lime-300: #BEF264;
-  --color-lime-400: #A3E635;
-  --color-lime-500: #EFFF6B;
-  --color-lime-600: #CA8A04;
-  --color-lime-700: #A16207;
-  --color-lime-800: #854D0E;
-  --color-lime-900: #713F12;
+  /* Gold (Aksen utama) */
+  --color-gold-50: #FFFBEA;
+  --color-gold-100: #FFF3C4;
+  --color-gold-200: #FCE588;
+  --color-gold-300: #FADB5F;
+  --color-gold-400: #F7C948;
+  --color-gold-500: #FFD700;
+  --color-gold-600: #F0B429;
+  --color-gold-700: #DE911D;
+  --color-gold-800: #B44D12;
+  --color-gold-900: #8D2B0B;
 
   /* Olive */
   --color-olive-500: #84CC16;
@@ -63,7 +63,7 @@
   --color-neutral-700: #E4E4E7;
   --color-neutral-800: #F4F4F5;
   --color-neutral-900: #FAFAFA;
-  /* Lime/Yellow, Olive, Blue, Green, Red bisa diadjust jika ingin dark accent */
+  /* Gold, Olive, Blue, Green, Red bisa diadjust jika ingin dark accent */
 }
 
 html {
@@ -87,7 +87,7 @@ body {
 }
 
 .btn-primary {
-  background: var(--color-lime-500);
+  background: var(--color-gold-500);
   color: #111827;
   border-radius: var(--radius-lg);
   padding: 0.5rem 1.25rem;
@@ -96,7 +96,7 @@ body {
 }
 
 .btn-primary:hover {
-  background: var(--color-lime-400);
+  background: var(--color-gold-400);
 }
 
 .btn-secondary {
@@ -144,4 +144,3 @@ body {
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 }
-
