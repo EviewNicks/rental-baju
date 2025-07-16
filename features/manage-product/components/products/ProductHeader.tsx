@@ -2,15 +2,15 @@
 
 import { Plus, Settings } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-// import { CategoryManagementModal } from '@/components/category/category-management-modal'
-// import { useCategoryModal } from '@/hooks/use-category-modal'
+import { CategoryManagementModal } from '@/features/manage-product/components/category/CategoryManagementModal'
+import { useCategoryModal } from '@/features/manage-product/hooks/usecategoryModal'
 
 interface ProductHeaderProps {
   onAddProduct: () => void
 }
 
 export function ProductHeader({ onAddProduct }: ProductHeaderProps) {
-  // const { isOpen, openModal, closeModal } = useCategoryModal()
+  const { isOpen, openModal, closeModal } = useCategoryModal()
 
   return (
     <>
@@ -25,7 +25,7 @@ export function ProductHeader({ onAddProduct }: ProductHeaderProps) {
               <Button
                 variant="outline"
                 className="flex items-center gap-2 bg-transparent"
-                // onClick={openModal}
+                onClick={openModal}
               >
                 <Settings className="w-4 h-4" />
                 Kelola Kategori
@@ -42,7 +42,7 @@ export function ProductHeader({ onAddProduct }: ProductHeaderProps) {
         </div>
       </div>
 
-      {/* <CategoryManagementModal isOpen={isOpen} onClose={closeModal} /> */}
+      <CategoryManagementModal isOpen={isOpen} onClose={closeModal} />
     </>
   )
 }
