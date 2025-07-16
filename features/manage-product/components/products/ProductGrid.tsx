@@ -4,11 +4,9 @@ import Image from 'next/image'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import type { Product } from '@/features/manage-product/types'
-import {
-  getStatusBadge,
-  getCategoryBadge,
-  formatCurrency,
-} from '@/features/manage-product/lib/utils/product'
+import { getStatusBadge, formatCurrency } from '@/features/manage-product/lib/utils/product'
+import { lightenColor } from '../../lib/utils/color'
+import { getContrastTextColor } from '../../lib/utils/color'
 
 interface ProductGridProps {
   products: Product[]
@@ -26,7 +24,7 @@ export function ProductGrid({ products, onProductClick }: ProductGridProps) {
         >
           <div className="aspect-square bg-gray-100">
             <Image
-              src={product.image_url || '/placeholder.svg?height=200&width=200'}
+              src={product.imageUrl || '/placeholder.svg?height=200&width=200'}
               alt={product.name}
               width={200}
               height={200}
@@ -42,18 +40,26 @@ export function ProductGrid({ products, onProductClick }: ProductGridProps) {
                 </Badge>
               </div>
               <h3 className="font-medium text-sm line-clamp-2">{product.name}</h3>
-              <Badge variant="outline" className={getCategoryBadge(product.category)}>
-                {product.category}
+              <Badge
+                variant="outline"
+                style={{
+                  backgroundColor: lightenColor(product.category.color, 85),
+                  color: getContrastTextColor(lightenColor(product.category.color, 85)),
+                  borderColor: product.category.color,
+                }}
+                className="font-medium rounded-full"
+              >
+                {product.category.name}
               </Badge>
               <div className="space-y-1 text-xs text-gray-600">
                 <div className="flex justify-between">
                   <span>Harga Sewa:</span>
-                  <span className="font-medium">{formatCurrency(product.harga_sewa)}</span>
+                  <span className="font-medium">{formatCurrency(product.hargaSewa)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Pendapatan:</span>
                   <span className="font-medium text-green-600">
-                    {formatCurrency(product.pendapatan)}
+                    {formatCurrency(product.totalPendapatan)}
                   </span>
                 </div>
               </div>

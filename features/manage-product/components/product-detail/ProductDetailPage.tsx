@@ -139,7 +139,7 @@ export function ProductDetailPage({
           <CardContent className="p-6 md:p-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Image Section */}
-              <ProductImageSection imageUrl={product.image_url} productName={product.name} />
+              <ProductImageSection imageUrl={product.imageUrl} productName={product.name} />
 
               {/* Info Section */}
               <ProductInfoSection product={product} />

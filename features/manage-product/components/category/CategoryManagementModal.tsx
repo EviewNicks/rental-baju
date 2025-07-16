@@ -70,9 +70,10 @@ export function CategoryManagementModal({ isOpen, onClose }: CategoryManagementM
           id: Date.now().toString(),
           name: formData.name,
           ...colors,
-          product_count: 0,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
+          products: [],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          createdBy: 'user-1',
         }
 
         setCategories((prev) => [...prev, newCategory])
@@ -87,7 +88,7 @@ export function CategoryManagementModal({ isOpen, onClose }: CategoryManagementM
                   ...cat,
                   name: formData.name,
                   ...colors,
-                  updated_at: new Date().toISOString(),
+                  updatedAt: new Date(),
                 }
               : cat,
           ),

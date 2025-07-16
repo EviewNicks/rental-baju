@@ -4,6 +4,7 @@ import { Edit, Trash2, Tag } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import type { Category } from '@/features/manage-product/types'
+import { getContrastTextColor, lightenColor } from '@/features/manage-product/lib/utils/color'
 
 interface CategoryListProps {
   categories: Category[]
@@ -34,15 +35,15 @@ export function CategoryList({ categories, onEdit, onDelete, loading }: Category
               <Badge
                 variant="outline"
                 style={{
-                  backgroundColor: category.bg_color,
-                  color: category.text_color,
+                  backgroundColor: lightenColor(category.color, 85),
+                  color: getContrastTextColor(lightenColor(category.color, 85)),
                   borderColor: category.color,
                 }}
-                className="font-medium"
+                className="font-medium rounded-full"
               >
                 {category.name}
               </Badge>
-              <span className="text-sm text-gray-500">{category.product_count} produk</span>
+              <span className="text-sm text-gray-500">{category.products.length} produk</span>
             </div>
 
             <div className="flex items-center space-x-2">

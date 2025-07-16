@@ -20,11 +20,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import type { Product } from '@/features/manage-product/types'
-import {
-  getStatusBadge,
-  getCategoryBadge,
-  formatCurrency,
-} from '@/features/manage-product/lib/utils/product'
+import { getStatusBadge, formatCurrency } from '@/features/manage-product/lib/utils/product'
+import { lightenColor } from '../../lib/utils/color'
+import { getContrastTextColor } from '../../lib/utils/color'
 
 interface ProductTableProps {
   products: Product[]
@@ -65,7 +63,7 @@ export function ProductTable({
                   <TableCell className="text-center">
                     <div className="w-12 h-12 mx-auto rounded-lg overflow-hidden bg-gray-100">
                       <Image
-                        src={product.image_url || '/placeholder.svg?height=48&width=48'}
+                        src={product.imageUrl || '/placeholder.svg?height=48&width=48'}
                         alt={product.name}
                         width={48}
                         height={48}
@@ -76,19 +74,27 @@ export function ProductTable({
                   <TableCell className="font-mono text-sm">{product.code}</TableCell>
                   <TableCell className="font-medium">{product.name}</TableCell>
                   <TableCell className="text-center">
-                    <Badge variant="outline" className={getCategoryBadge(product.category)}>
-                      {product.category}
+                    <Badge
+                      variant="outline"
+                      style={{
+                        backgroundColor: lightenColor(product.category.color, 85),
+                        color: getContrastTextColor(lightenColor(product.category.color, 85)),
+                        borderColor: product.category.color,
+                      }}
+                      className="font-medium rounded-full"
+                    >
+                      {product.category.name}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-right">{formatCurrency(product.modal_awal)}</TableCell>
-                  <TableCell className="text-right">{formatCurrency(product.harga_sewa)}</TableCell>
+                  <TableCell className="text-right">{formatCurrency(product.modalAwal)}</TableCell>
+                  <TableCell className="text-right">{formatCurrency(product.hargaSewa)}</TableCell>
                   <TableCell className="text-center">
                     <Badge variant="outline" className={getStatusBadge(product.status)}>
                       {product.status}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right font-medium text-green-600">
-                    {formatCurrency(product.pendapatan)}
+                    {formatCurrency(product.totalPendapatan)}
                   </TableCell>
                   <TableCell className="text-center">
                     <DropdownMenu>

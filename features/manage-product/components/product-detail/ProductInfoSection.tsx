@@ -44,8 +44,8 @@ interface ProductInfoSectionProps {
 }
 
 export function ProductInfoSection({ product, className }: ProductInfoSectionProps) {
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('id-ID', {
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString('id-ID', {
       day: '2-digit',
       month: 'short',
       year: 'numeric',
@@ -68,8 +68,8 @@ export function ProductInfoSection({ product, className }: ProductInfoSectionPro
           </InfoField>
 
           <InfoField label="Kategori">
-            <Badge variant="outline" className={getCategoryBadge(product.category)}>
-              {product.category}
+            <Badge variant="outline" className={getCategoryBadge(product.category.color)}>
+              {product.category.name}
             </Badge>
           </InfoField>
 
@@ -86,13 +86,13 @@ export function ProductInfoSection({ product, className }: ProductInfoSectionPro
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <InfoField label="Modal Awal">
             <p className="text-lg font-semibold text-gray-900">
-              {formatCurrency(product.modal_awal)}
+              {formatCurrency(product.modalAwal)}
             </p>
           </InfoField>
 
           <InfoField label="Harga Sewa">
             <p className="text-lg font-semibold text-yellow-600">
-              {formatCurrency(product.harga_sewa)}
+              {formatCurrency(product.hargaSewa)}
             </p>
           </InfoField>
         </div>
@@ -113,7 +113,7 @@ export function ProductInfoSection({ product, className }: ProductInfoSectionPro
 
           <InfoField label="Total Pendapatan">
             <p className="text-lg font-semibold text-green-600">
-              {formatCurrency(product.pendapatan)}
+              {formatCurrency(product.totalPendapatan)}
             </p>
           </InfoField>
         </div>
@@ -123,11 +123,11 @@ export function ProductInfoSection({ product, className }: ProductInfoSectionPro
       <InfoSection title="Informasi Sistem">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <InfoField label="Dibuat Pada">
-            <p className="text-sm text-gray-600">{formatDate(product.created_at)}</p>
+            <p className="text-sm text-gray-600">{formatDate(product.createdAt)}</p>
           </InfoField>
 
           <InfoField label="Terakhir Diupdate">
-            <p className="text-sm text-gray-600">{formatDate(product.updated_at)}</p>
+            <p className="text-sm text-gray-600">{formatDate(product.updatedAt)}</p>
           </InfoField>
         </div>
       </InfoSection>

@@ -13,3 +13,45 @@ model User {
   name  String
   email String @unique
 }
+
+model Product {
+  id              String        @id @default(uuid())
+  code            String        @unique // 4 digit alfanumerik uppercase (PRD1, DRES2, dll)
+  name            String
+  description     String?
+  modalAwal       Decimal       @db.Decimal(10, 2) // Biaya pembuatan baju
+  hargaSewa       Decimal       @db.Decimal(10, 2) // Harga sewa per sekali
+  quantity        Int
+  imageUrl        String?
+  categoryId      String
+  category        Category      @relation(fields: [categoryId], references: [id])
+  status          ProductStatus @default(AVAILABLE)
+  totalPendapatan Decimal       @db.Decimal(10, 2) @default(0) // Pendapatan kumulatif
+  isActive        Boolean       @default(true)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  createdBy       String        // User ID dari Clerk
+
+  @@index([isActive])
+  @@index([categoryId])
+  @@index([status])
+  @@index([createdBy])
+}
+
+model Category {
+  id        String    @id @default(uuid())
+  name      String    @unique
+  color     String    // Hex color untuk badge
+  products  Product[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  createdBy String    // User ID dari Clerk
+
+  @@index([createdBy])
+}
+
+enum ProductStatus {
+  AVAILABLE    // Tersedia
+  RENTED       // Disewa
+  MAINTENANCE  // Maintenance
+}

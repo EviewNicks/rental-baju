@@ -8,43 +8,85 @@ export interface Product {
   code: string
   name: string
   description?: string
-  category: string
-  modal_awal: number
-  harga_sewa: number
+  categoryId: string
+  category: Category
+  modalAwal: number
+  hargaSewa: number
   quantity: number
-  status: 'Tersedia' | 'Disewa' | 'Maintenance' | 'Habis'
-  image_url?: string
-  pendapatan: number
-  created_at: string
-  updated_at: string
+  status: ProductStatus
+  imageUrl?: string
+  totalPendapatan: number
+  isActive: boolean
+  createdAt: Date
+  updatedAt: Date
+  createdBy: string
 }
 
 export interface Category {
   id: string
   name: string
   color: string
-  created_at: string
+  products: Product[]
+  createdAt: Date
+  updatedAt: Date
+  createdBy: string
 }
 
 export type ViewMode = 'table' | 'card'
-export type ProductStatus = 'Tersedia' | 'Disewa' | 'Maintenance' | 'Habis'
-export type ProductCategory = 'Dress' | 'Kemeja' | 'Jas' | 'Celana' | 'Aksesoris'
+export type ProductStatus = 'AVAILABLE' | 'RENTED' | 'MAINTENANCE'
+
+/**
+ * API Request/Response Types
+ */
+
+export interface CreateProductRequest {
+  code: string
+  name: string
+  description?: string
+  modalAwal: number
+  hargaSewa: number
+  quantity: number
+  categoryId: string
+  image?: File
+}
+
+export interface UpdateProductRequest {
+  name?: string
+  description?: string
+  modalAwal?: number
+  hargaSewa?: number
+  quantity?: number
+  categoryId?: string
+  image?: File
+}
+
+export interface ProductListResponse {
+  products: Product[]
+  pagination: {
+    page: number
+    limit: number
+    total: number
+    totalPages: number
+  }
+}
 
 /**
  * Category Management Types
- *
  */
 
-export interface Category {
-  id: string
+export interface CreateCategoryRequest {
   name: string
   color: string
-  bg_color: string
-  text_color: string
-  product_count: number
-  created_at: string
-  updated_at: string
 }
+
+export interface UpdateCategoryRequest {
+  name?: string
+  color?: string
+}
+
+/**
+ * Category Management Types
+ */
 
 export interface CategoryFormData {
   name: string
@@ -52,3 +94,16 @@ export interface CategoryFormData {
 }
 
 export type CategoryModalMode = 'add' | 'edit' | 'view'
+
+// =============
+
+export interface ProductFormData {
+  code: string
+  name: string
+  categoryId: string
+  quantity: number
+  modalAwal: number
+  hargaSewa: number
+  description: string
+  imageUrl: string | null
+}

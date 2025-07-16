@@ -13,18 +13,9 @@ import {
 } from '@/components/ui/breadcrumb'
 import { ProductForm } from '@/features/manage-product/components/form-product/ProductForm'
 import { useFormValidation } from '@/features/manage-product/hooks/useFormValidation'
-import type { Product } from '@/features/manage-product/types'
-
-interface ProductFormData {
-  code: string
-  name: string
-  category: string
-  quantity: number
-  modal_awal: number
-  harga_sewa: number
-  description: string
-  image: string | null
-}
+import type { Product, Category, ProductFormData } from '@/features/manage-product/types'
+// Jika ingin menggunakan mock data saat development, import mock-categories
+// import { mockCategories } from '@/features/manage-product/data/mock-categories'
 
 interface ProductFormPageProps {
   mode: 'add' | 'edit'
@@ -32,6 +23,7 @@ interface ProductFormPageProps {
   breadcrumbItems: Array<{ label: string; href?: string; current?: boolean }>
   title: string
   subtitle: string
+  categories: Category[]
 }
 
 const validationRules = {
@@ -50,7 +42,7 @@ const validationRules = {
     minLength: 3,
     maxLength: 100,
   },
-  category: {
+  categoryId: {
     required: true,
     custom: (value: string) => {
       if (!value || value.trim() === '') {
@@ -59,11 +51,11 @@ const validationRules = {
       return null
     },
   },
-  modal_awal: {
+  modalAwal: {
     required: true,
     min: 0,
   },
-  harga_sewa: {
+  hargaSewa: {
     required: true,
     min: 0,
   },
@@ -83,6 +75,7 @@ export function ProductFormPage({
   breadcrumbItems,
   title,
   subtitle,
+  categories,
 }: ProductFormPageProps) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
@@ -90,12 +83,12 @@ export function ProductFormPage({
   const [formData, setFormData] = useState<ProductFormData>({
     code: product?.code || '',
     name: product?.name || '',
-    category: product?.category || '',
+    categoryId: product?.categoryId || '',
     quantity: product?.quantity || 1,
-    modal_awal: product?.modal_awal || 0,
-    harga_sewa: product?.harga_sewa || 0,
+    modalAwal: product?.modalAwal || 0,
+    hargaSewa: product?.hargaSewa || 0,
     description: product?.description || '',
-    image: product?.image_url || null,
+    imageUrl: product?.imageUrl || null,
   })
 
   const { errors, touched, validate, validateSingleField } = useFormValidation(validationRules)
@@ -188,6 +181,7 @@ export function ProductFormPage({
             onInputChange={handleInputChange}
             onBlur={handleBlur}
             formatCurrency={formatCurrency}
+            categories={categories ?? []} // Defensive: fallback ke array kosong
           />
 
           {/* Action Buttons */}

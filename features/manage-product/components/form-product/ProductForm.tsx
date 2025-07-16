@@ -4,16 +4,17 @@ import { Card, CardContent } from '@/components/ui/card'
 import { FormField } from '@/features/manage-product/components/form-product/FormField'
 import { FormSection } from '@/features/manage-product/components/form-product/FormSection'
 import { ImageUpload } from '@/features/manage-product/components/products/ImageUpload'
+import type { Category } from '@/features/manage-product/types'
 
 interface ProductFormData {
   code: string
   name: string
-  category: string
+  categoryId: string
   quantity: number
-  modal_awal: number
-  harga_sewa: number
+  modalAwal: number
+  hargaSewa: number
   description: string
-  image: string | null
+  imageUrl: string | null
 }
 
 interface ProductFormProps {
@@ -25,15 +26,8 @@ interface ProductFormProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onBlur: (name: string, value: any) => void
   formatCurrency: (value: string) => string
+  categories: Category[]
 }
-
-const categories = [
-  { value: 'dress', label: 'Dress', color: '#EC4899' },
-  { value: 'kemeja', label: 'Kemeja', color: '#3B82F6' },
-  { value: 'jas', label: 'Jas', color: '#8B5CF6' },
-  { value: 'celana', label: 'Celana', color: '#A16207' },
-  { value: 'aksesoris', label: 'Aksesoris', color: '#FFD700' },
-]
 
 export function ProductForm({
   formData,
@@ -42,7 +36,16 @@ export function ProductForm({
   onInputChange,
   onBlur,
   formatCurrency,
+  categories,
 }: ProductFormProps) {
+  // Transform categories for select options
+  // Defensive: categories fallback ke array kosong jika undefined/null
+  const categoryOptions = (categories ?? []).map((category) => ({
+    value: category.id,
+    label: category.name,
+    color: category.color,
+  }))
+
   return (
     <Card className="shadow-md">
       <CardContent className="p-6 md:p-8">
@@ -86,15 +89,15 @@ export function ProductForm({
 
               <FormField
                 type="select"
-                name="category"
+                name="categoryId"
                 label="Kategori"
                 icon={Tag}
-                value={formData.category}
-                onChange={(value) => onInputChange('category', value)}
-                options={categories}
+                value={formData.categoryId}
+                onChange={(value) => onInputChange('categoryId', value)}
+                options={categoryOptions}
                 placeholder="Pilih kategori"
-                error={errors.category}
-                touched={touched.category}
+                error={errors.categoryId}
+                touched={touched.categoryId}
                 required
                 helpText="Pilih kategori yang sesuai dengan produk"
               />
@@ -124,24 +127,24 @@ export function ProductForm({
               <div className="space-y-2">
                 <FormField
                   type="text"
-                  name="modal_awal"
+                  name="modalAwal"
                   label="Modal Awal (Rp)"
                   icon={DollarSign}
-                  value={formatCurrency(formData.modal_awal.toString())}
+                  value={formatCurrency(formData.modalAwal.toString())}
                   onChange={(value) => {
                     const numValue =
                       typeof value === 'string' ? value.replace(/\D/g, '') : value.toString()
-                    onInputChange('modal_awal', Number(numValue))
+                    onInputChange('modalAwal', Number(numValue))
                   }}
                   onBlur={(value) => {
                     const numValue =
                       typeof value === 'string' ? value.replace(/\D/g, '') : value.toString()
-                    onBlur('modal_awal', Number(numValue))
+                    onBlur('modalAwal', Number(numValue))
                   }}
                   placeholder="800,000"
                   prefix="Rp"
-                  error={errors.modal_awal}
-                  touched={touched.modal_awal}
+                  error={errors.modalAwal}
+                  touched={touched.modalAwal}
                   required
                   helpText="Biaya pembuatan/pembelian produk"
                 />
@@ -150,24 +153,24 @@ export function ProductForm({
               <div className="space-y-2">
                 <FormField
                   type="text"
-                  name="harga_sewa"
+                  name="hargaSewa"
                   label="Harga Sewa (Rp)"
                   icon={CreditCard}
-                  value={formatCurrency(formData.harga_sewa.toString())}
+                  value={formatCurrency(formData.hargaSewa.toString())}
                   onChange={(value) => {
                     const numValue =
                       typeof value === 'string' ? value.replace(/\D/g, '') : value.toString()
-                    onInputChange('harga_sewa', Number(numValue))
+                    onInputChange('hargaSewa', Number(numValue))
                   }}
                   onBlur={(value) => {
                     const numValue =
                       typeof value === 'string' ? value.replace(/\D/g, '') : value.toString()
-                    onBlur('harga_sewa', Number(numValue))
+                    onBlur('hargaSewa', Number(numValue))
                   }}
                   placeholder="150,000"
                   prefix="Rp"
-                  error={errors.harga_sewa}
-                  touched={touched.harga_sewa}
+                  error={errors.hargaSewa}
+                  touched={touched.hargaSewa}
                   required
                   helpText="Harga sewa per sekali pakai"
                 />
@@ -194,8 +197,8 @@ export function ProductForm({
 
           {/* Image Upload */}
           <ImageUpload
-            value={formData.image || '/products/image.png'}
-            onChange={(value) => onInputChange('image', value)}
+            value={formData.imageUrl || '/products/image.png'}
+            onChange={(value) => onInputChange('imageUrl', value)}
           />
         </div>
       </CardContent>

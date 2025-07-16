@@ -1,10 +1,10 @@
 export const CATEGORIES = ['Semua', 'Dress', 'Kemeja', 'Jas', 'Celana', 'Aksesoris'] as const
-export const STATUSES = ['Semua', 'Tersedia', 'Disewa', 'Maintenance', 'Habis'] as const
+export const STATUSES = ['Semua', 'AVAILABLE', 'RENTED', 'MAINTENANCE', 'Habis'] as const
 
 export const STATUS_COLORS = {
-  Tersedia: 'bg-green-100 text-green-800 border-green-200',
-  Disewa: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-  Maintenance: 'bg-red-100 text-red-800 border-red-200',
+  AVAILABLE: 'bg-green-100 text-green-800 border-green-200',
+  RENTED: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+  MAINTENANCE: 'bg-red-100 text-red-800 border-red-200',
   Habis: 'bg-gray-100 text-gray-800 border-gray-200',
 } as const
 

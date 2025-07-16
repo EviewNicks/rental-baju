@@ -32,7 +32,7 @@ export function ProductDetailModal({
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Image Section */}
-          <ProductImageSection imageUrl={product.image_url} productName={product.name} />
+          <ProductImageSection imageUrl={product.imageUrl} productName={product.name} />
 
           {/* Info Section */}
           <ProductInfoSection product={product} />

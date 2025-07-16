@@ -45,7 +45,7 @@ export function DeleteConfirmationDialog({
               <strong>&quot;{category.name}&quot;</strong>?
             </p>
             <p className="text-sm text-red-600">
-              Tindakan ini tidak dapat dibatalkan dan akan mempengaruhi {category.product_count}{' '}
+              Tindakan ini tidak dapat dibatalkan dan akan mempengaruhi {category.products.length}{' '}
               produk yang menggunakan kategori ini.
             </p>
           </AlertDialogDescription>
