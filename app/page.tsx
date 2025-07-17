@@ -10,7 +10,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-neutral-50 to-neutral-100">
       <Navbar />
-      <main>
+      <main className="space-y-0">
         <HeroSection />
         <CategoriesSection />
         <FeaturedItemsSection />

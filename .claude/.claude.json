@@ -1,27 +1,30 @@
-// Example: ~/.claude.json (recommended for reliability)
 {
-    "projects": {
-      "/path/to/your/project": {
-        "mcpServers": {
-          "filesystem": {
-            "command": "npx",
-            "args": ["-y", "@modelcontextprotocol/server-filesystem", "/Users/username/Desktop", "/path/to/allowed/dir"]
-          }
-        },
-        "allowedTools": [
-          "Task",              
-          "Bash(git log:*)",   // Safer: only allows git log commands
-          "Glob",
-          "Grep",
-          "LS",
-          "Read",
-          "Edit",
-          "MultiEdit",
-          "Write",
-          "WebFetch",
-          "WebSearch"
-        ]
-      }
-    },
-    ...
+  "projects": {
+    "/path/to/your/project": {
+      "mcpServers": {
+        "filesystem": {
+          "command": "npx",
+          "args": [
+            "-y",
+            "@modelcontextprotocol/server-filesystem",
+            "/Users/username/Desktop",
+            "/path/to/allowed/dir"
+          ]
+        }
+      },
+      "allowedTools": [
+        "Task",
+        "Bash(git log:*)",
+        "Glob",
+        "Grep",
+        "LS",
+        "Read",
+        "Edit",
+        "MultiEdit",
+        "Write",
+        "WebFetch",
+        "WebSearch"
+      ]
+    }
   }
+}
