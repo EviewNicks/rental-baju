@@ -1,842 +1,242 @@
 {
-  "numTotalTests": 72,
-  "numPassedTests": 64,
-  "numFailedTests": 8,
+  "numTotalTests": 22,
+  "numPassedTests": 22,
+  "numFailedTests": 0,
   "numPendingTests": 0,
-  "startTime": "2025-07-14T23:33:43.051Z",
-  "endTime": "2025-07-14T23:33:54.551Z",
+  "startTime": "2025-07-17T01:36:06.437Z",
+  "endTime": "2025-07-17T01:36:10.095Z",
   "testResults": [
     {
-      "testFilePath": "D:\\.work\\rental-software\\features\\auth\\lib\\roleUtils.test.ts",
+      "testFilePath": "D:\\.work\\rental-software\\features\\manage-product\\services\\categoryService.test.ts",
       "testFileResults": [
         {
           "ancestorTitles": [
-            "roleUtils",
-            "parseJWT"
+            "CategoryService"
           ],
-          "fullName": "roleUtils parseJWT should parse valid JWT token correctly",
+          "fullName": "CategoryService should return list of categories",
           "status": "passed",
-          "title": "should parse valid JWT token correctly",
-          "failureMessages": [],
-          "duration": 11
-        },
-        {
-          "ancestorTitles": [
-            "roleUtils",
-            "parseJWT"
-          ],
-          "fullName": "roleUtils parseJWT should return null for invalid JWT format",
-          "status": "passed",
-          "title": "should return null for invalid JWT format",
-          "failureMessages": [],
-          "duration": 3
-        },
-        {
-          "ancestorTitles": [
-            "roleUtils",
-            "parseJWT"
-          ],
-          "fullName": "roleUtils parseJWT should return null for expired token",
-          "status": "passed",
-          "title": "should return null for expired token",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "roleUtils",
-            "parseJWT"
-          ],
-          "fullName": "roleUtils parseJWT should handle malformed base64 payload",
-          "status": "passed",
-          "title": "should handle malformed base64 payload",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "roleUtils",
-            "parseJWT"
-          ],
-          "fullName": "roleUtils parseJWT should handle invalid JSON in payload",
-          "status": "passed",
-          "title": "should handle invalid JSON in payload",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "roleUtils",
-            "parseJWT"
-          ],
-          "fullName": "roleUtils parseJWT should handle missing required claims",
-          "status": "passed",
-          "title": "should handle missing required claims",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "roleUtils",
-            "isValidRole"
-          ],
-          "fullName": "roleUtils isValidRole should validate correct role strings",
-          "status": "passed",
-          "title": "should validate correct role strings",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "roleUtils",
-            "isValidRole"
-          ],
-          "fullName": "roleUtils isValidRole should reject invalid role values",
-          "status": "passed",
-          "title": "should reject invalid role values",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "roleUtils",
-            "extractRoleFromPayload"
-          ],
-          "fullName": "roleUtils extractRoleFromPayload should extract valid role from payload",
-          "status": "passed",
-          "title": "should extract valid role from payload",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "roleUtils",
-            "extractRoleFromPayload"
-          ],
-          "fullName": "roleUtils extractRoleFromPayload should return default role for invalid role in payload",
-          "status": "passed",
-          "title": "should return default role for invalid role in payload",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "roleUtils",
-            "getRoleFromToken"
-          ],
-          "fullName": "roleUtils getRoleFromToken should extract role from valid token",
-          "status": "passed",
-          "title": "should extract role from valid token",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "roleUtils",
-            "getRoleFromToken"
-          ],
-          "fullName": "roleUtils getRoleFromToken should return default role for invalid token",
-          "status": "passed",
-          "title": "should return default role for invalid token",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "roleUtils",
-            "getRoleFromToken"
-          ],
-          "fullName": "roleUtils getRoleFromToken should return default role for missing role claim",
-          "status": "passed",
-          "title": "should return default role for missing role claim",
-          "failureMessages": [],
-          "duration": 0
-        },
-        {
-          "ancestorTitles": [
-            "roleUtils",
-            "createRoleError"
-          ],
-          "fullName": "roleUtils createRoleError should create standardized error object",
-          "status": "passed",
-          "title": "should create standardized error object",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "roleUtils",
-            "createRoleError"
-          ],
-          "fullName": "roleUtils createRoleError should work without original error",
-          "status": "passed",
-          "title": "should work without original error",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "roleUtils",
-            "RoleCacheManager"
-          ],
-          "fullName": "roleUtils RoleCacheManager should implement singleton pattern correctly",
-          "status": "passed",
-          "title": "should implement singleton pattern correctly",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "roleUtils",
-            "RoleCacheManager"
-          ],
-          "fullName": "roleUtils RoleCacheManager should set and get role with TTL",
-          "status": "passed",
-          "title": "should set and get role with TTL",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "roleUtils",
-            "RoleCacheManager"
-          ],
-          "fullName": "roleUtils RoleCacheManager should handle cache expiration",
-          "status": "passed",
-          "title": "should handle cache expiration",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "roleUtils",
-            "RoleCacheManager"
-          ],
-          "fullName": "roleUtils RoleCacheManager should integrate with sessionStorage",
-          "status": "passed",
-          "title": "should integrate with sessionStorage",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "roleUtils",
-            "RoleCacheManager"
-          ],
-          "fullName": "roleUtils RoleCacheManager should handle sessionStorage errors gracefully",
-          "status": "passed",
-          "title": "should handle sessionStorage errors gracefully",
-          "failureMessages": [],
-          "duration": 3
-        },
-        {
-          "ancestorTitles": [
-            "roleUtils",
-            "RoleCacheManager"
-          ],
-          "fullName": "roleUtils RoleCacheManager should clear role cache",
-          "status": "passed",
-          "title": "should clear role cache",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "roleUtils",
-            "RoleCacheManager"
-          ],
-          "fullName": "roleUtils RoleCacheManager should clear all cache entries",
-          "status": "passed",
-          "title": "should clear all cache entries",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "roleUtils",
-            "RoleSyncManager"
-          ],
-          "fullName": "roleUtils RoleSyncManager should implement singleton pattern correctly",
-          "status": "passed",
-          "title": "should implement singleton pattern correctly",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "roleUtils",
-            "RoleSyncManager"
-          ],
-          "fullName": "roleUtils RoleSyncManager should initialize and broadcast role updates",
-          "status": "passed",
-          "title": "should initialize and broadcast role updates",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "roleUtils",
-            "RoleSyncManager"
-          ],
-          "fullName": "roleUtils RoleSyncManager should broadcast role clearing",
-          "status": "passed",
-          "title": "should broadcast role clearing",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "roleUtils",
-            "RoleSyncManager"
-          ],
-          "fullName": "roleUtils RoleSyncManager should handle subscription and unsubscription",
-          "status": "passed",
-          "title": "should handle subscription and unsubscription",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "roleUtils",
-            "RoleSyncManager"
-          ],
-          "fullName": "roleUtils RoleSyncManager should cleanup channel on destroy",
-          "status": "passed",
-          "title": "should cleanup channel on destroy",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "roleUtils",
-            "retryOperation"
-          ],
-          "fullName": "roleUtils retryOperation should execute operation successfully on first try",
-          "status": "passed",
-          "title": "should execute operation successfully on first try",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "roleUtils",
-            "retryOperation"
-          ],
-          "fullName": "roleUtils retryOperation should retry on failure and succeed",
-          "status": "passed",
-          "title": "should retry on failure and succeed",
-          "failureMessages": [],
-          "duration": 52
-        },
-        {
-          "ancestorTitles": [
-            "roleUtils",
-            "retryOperation"
-          ],
-          "fullName": "roleUtils retryOperation should throw after exhausting all retries",
-          "status": "passed",
-          "title": "should throw after exhausting all retries",
-          "failureMessages": [],
-          "duration": 82
-        },
-        {
-          "ancestorTitles": [
-            "roleUtils",
-            "retryOperation"
-          ],
-          "fullName": "roleUtils retryOperation should respect delay between retries",
-          "status": "passed",
-          "title": "should respect delay between retries",
-          "failureMessages": [],
-          "duration": 54
-        },
-        {
-          "ancestorTitles": [
-            "roleUtils",
-            "debounce"
-          ],
-          "fullName": "roleUtils debounce should debounce function calls",
-          "status": "passed",
-          "title": "should debounce function calls",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "roleUtils",
-            "debounce"
-          ],
-          "fullName": "roleUtils debounce should reset debounce timer on each call",
-          "status": "passed",
-          "title": "should reset debounce timer on each call",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "roleUtils",
-            "debounce"
-          ],
-          "fullName": "roleUtils debounce should maintain function context",
-          "status": "passed",
-          "title": "should maintain function context",
-          "failureMessages": [],
-          "duration": 1
-        }
-      ],
-      "failureMessage": null
-    },
-    {
-      "testFilePath": "D:\\.work\\rental-software\\features\\auth\\hooks\\useUserRole.test.ts",
-      "testFileResults": [
-        {
-          "ancestorTitles": [
-            "useUserRole hooks",
-            "useUserRole (main hook)"
-          ],
-          "fullName": "useUserRole hooks useUserRole (main hook) should return role state from context",
-          "status": "passed",
-          "title": "should return role state from context",
-          "failureMessages": [],
-          "duration": 28
-        },
-        {
-          "ancestorTitles": [
-            "useUserRole hooks",
-            "useUserRole (main hook)"
-          ],
-          "fullName": "useUserRole hooks useUserRole (main hook) should provide computed helper values",
-          "status": "passed",
-          "title": "should provide computed helper values",
-          "failureMessages": [],
-          "duration": 3
-        },
-        {
-          "ancestorTitles": [
-            "useUserRole hooks",
-            "useUserRole (main hook)"
-          ],
-          "fullName": "useUserRole hooks useUserRole (main hook) should handle different roles correctly",
-          "status": "passed",
-          "title": "should handle different roles correctly",
-          "failureMessages": [],
-          "duration": 16
-        },
-        {
-          "ancestorTitles": [
-            "useUserRole hooks",
-            "useUserRole (main hook)"
-          ],
-          "fullName": "useUserRole hooks useUserRole (main hook) should handle context unavailable error",
-          "status": "passed",
-          "title": "should handle context unavailable error",
-          "failureMessages": [],
-          "duration": 68
-        },
-        {
-          "ancestorTitles": [
-            "useUserRole hooks",
-            "useRoleGuard"
-          ],
-          "fullName": "useUserRole hooks useRoleGuard should provide basic role checks",
-          "status": "passed",
-          "title": "should provide basic role checks",
-          "failureMessages": [],
-          "duration": 3
-        },
-        {
-          "ancestorTitles": [
-            "useUserRole hooks",
-            "useRoleGuard"
-          ],
-          "fullName": "useUserRole hooks useRoleGuard should implement role hierarchy correctly",
-          "status": "passed",
-          "title": "should implement role hierarchy correctly",
-          "failureMessages": [],
-          "duration": 9
-        },
-        {
-          "ancestorTitles": [
-            "useUserRole hooks",
-            "useRoleGuard"
-          ],
-          "fullName": "useUserRole hooks useRoleGuard should handle context-aware guards",
-          "status": "passed",
-          "title": "should handle context-aware guards",
-          "failureMessages": [],
-          "duration": 3
-        },
-        {
-          "ancestorTitles": [
-            "useUserRole hooks",
-            "useRoleLoadingState"
-          ],
-          "fullName": "useUserRole hooks useRoleLoadingState should provide loading state management",
-          "status": "passed",
-          "title": "should provide loading state management",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "useUserRole hooks",
-            "useRoleLoadingState"
-          ],
-          "fullName": "useUserRole hooks useRoleLoadingState should generate appropriate status messages",
-          "status": "passed",
-          "title": "should generate appropriate status messages",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "useUserRole hooks",
-            "useRoleConditional"
-          ],
-          "fullName": "useUserRole hooks useRoleConditional should provide conditional rendering helpers",
-          "status": "passed",
-          "title": "should provide conditional rendering helpers",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "useUserRole hooks",
-            "useRoleConditional"
-          ],
-          "fullName": "useUserRole hooks useRoleConditional should handle feature flags correctly",
-          "status": "passed",
-          "title": "should handle feature flags correctly",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "useUserRole hooks",
-            "useRoleErrorHandling"
-          ],
-          "fullName": "useUserRole hooks useRoleErrorHandling should categorize errors correctly",
-          "status": "passed",
-          "title": "should categorize errors correctly",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "useUserRole hooks",
-            "useRoleErrorHandling"
-          ],
-          "fullName": "useUserRole hooks useRoleErrorHandling should provide user-friendly error messages",
-          "status": "passed",
-          "title": "should provide user-friendly error messages",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "useUserRole hooks",
-            "useRoleDevelopment"
-          ],
-          "fullName": "useUserRole hooks useRoleDevelopment should provide development utilities when NODE_ENV is development",
-          "status": "passed",
-          "title": "should provide development utilities when NODE_ENV is development",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "useUserRole hooks",
-            "useRoleDevelopment"
-          ],
-          "fullName": "useUserRole hooks useRoleDevelopment should return development functions structure correctly",
-          "status": "passed",
-          "title": "should return development functions structure correctly",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "useUserRole hooks",
-            "useRoleDevelopment"
-          ],
-          "fullName": "useUserRole hooks useRoleDevelopment should handle role switching warnings in production-like environment",
-          "status": "passed",
-          "title": "should handle role switching warnings in production-like environment",
-          "failureMessages": [],
-          "duration": 7
-        }
-      ],
-      "failureMessage": null
-    },
-    {
-      "testFilePath": "D:\\.work\\rental-software\\features\\auth\\context\\UserRoleContext.test.tsx",
-      "testFileResults": [
-        {
-          "ancestorTitles": [
-            "UserRoleContext",
-            "UserRoleProvider"
-          ],
-          "fullName": "UserRoleContext UserRoleProvider should initialize with loading state",
-          "status": "passed",
-          "title": "should initialize with loading state",
-          "failureMessages": [],
-          "duration": 56
-        },
-        {
-          "ancestorTitles": [
-            "UserRoleContext",
-            "UserRoleProvider"
-          ],
-          "fullName": "UserRoleContext UserRoleProvider should fetch role from Clerk session on mount",
-          "status": "passed",
-          "title": "should fetch role from Clerk session on mount",
-          "failureMessages": [],
-          "duration": 26
-        },
-        {
-          "ancestorTitles": [
-            "UserRoleContext",
-            "UserRoleProvider"
-          ],
-          "fullName": "UserRoleContext UserRoleProvider should handle Clerk session unavailable",
-          "status": "passed",
-          "title": "should handle Clerk session unavailable",
+          "title": "should return list of categories",
           "failureMessages": [],
           "duration": 8
         },
         {
           "ancestorTitles": [
-            "UserRoleContext",
-            "UserRoleProvider"
+            "CategoryService"
           ],
-          "fullName": "UserRoleContext UserRoleProvider should integrate with cache manager",
+          "fullName": "CategoryService should return category detail by id",
           "status": "passed",
-          "title": "should integrate with cache manager",
+          "title": "should return category detail by id",
           "failureMessages": [],
-          "duration": 11
+          "duration": 1
         },
         {
           "ancestorTitles": [
-            "UserRoleContext",
-            "UserRoleProvider"
+            "CategoryService"
           ],
-          "fullName": "UserRoleContext UserRoleProvider should handle cross-tab synchronization",
+          "fullName": "CategoryService should create category with valid data",
           "status": "passed",
-          "title": "should handle cross-tab synchronization",
+          "title": "should create category with valid data",
           "failureMessages": [],
-          "duration": 16
+          "duration": 1
         },
         {
           "ancestorTitles": [
-            "UserRoleContext",
-            "UserRoleProvider"
+            "CategoryService"
           ],
-          "fullName": "UserRoleContext UserRoleProvider should handle error boundary with fallback UI",
+          "fullName": "CategoryService should not create category with duplicate name",
           "status": "passed",
-          "title": "should handle error boundary with fallback UI",
+          "title": "should not create category with duplicate name",
           "failureMessages": [],
-          "duration": 53
+          "duration": 13
         },
         {
           "ancestorTitles": [
-            "UserRoleContext",
-            "UserRoleProvider"
+            "CategoryService"
           ],
-          "fullName": "UserRoleContext UserRoleProvider should support development mode",
+          "fullName": "CategoryService should update category with valid data",
           "status": "passed",
-          "title": "should support development mode",
+          "title": "should update category with valid data",
           "failureMessages": [],
-          "duration": 18
+          "duration": 2
         },
         {
           "ancestorTitles": [
-            "UserRoleContext",
-            "Context Actions"
+            "CategoryService"
           ],
-          "fullName": "UserRoleContext Context Actions should provide setRole action",
+          "fullName": "CategoryService should not update non-existent category",
           "status": "passed",
-          "title": "should provide setRole action",
+          "title": "should not update non-existent category",
           "failureMessages": [],
-          "duration": 15
+          "duration": 2
         },
         {
           "ancestorTitles": [
-            "UserRoleContext",
-            "Context Actions"
+            "CategoryService"
           ],
-          "fullName": "UserRoleContext Context Actions should provide clearRole action",
+          "fullName": "CategoryService should delete category if not in use",
           "status": "passed",
-          "title": "should provide clearRole action",
+          "title": "should delete category if not in use",
           "failureMessages": [],
-          "duration": 30
+          "duration": 1
         },
         {
           "ancestorTitles": [
-            "UserRoleContext",
-            "Context Actions"
+            "CategoryService"
           ],
-          "fullName": "UserRoleContext Context Actions should provide refreshRole action",
+          "fullName": "CategoryService should not delete category if in use",
           "status": "passed",
-          "title": "should provide refreshRole action",
+          "title": "should not delete category if in use",
           "failureMessages": [],
-          "duration": 10
+          "duration": 0
         },
         {
           "ancestorTitles": [
-            "UserRoleContext",
-            "useUserRoleContext hook"
+            "CategoryService"
           ],
-          "fullName": "UserRoleContext useUserRoleContext hook should throw error when used outside provider",
+          "fullName": "CategoryService should validate unique category name",
           "status": "passed",
-          "title": "should throw error when used outside provider",
+          "title": "should validate unique category name",
           "failureMessages": [],
-          "duration": 35
+          "duration": 1
         },
         {
           "ancestorTitles": [
-            "UserRoleContext",
-            "useUserRoleContext hook"
+            "CategoryService"
           ],
-          "fullName": "UserRoleContext useUserRoleContext hook should return context value when used within provider",
+          "fullName": "CategoryService should check if category is in use",
           "status": "passed",
-          "title": "should return context value when used within provider",
+          "title": "should check if category is in use",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "CategoryService"
+          ],
+          "fullName": "CategoryService should throw validation error for invalid data",
+          "status": "passed",
+          "title": "should throw validation error for invalid data",
           "failureMessages": [],
           "duration": 4
-        },
-        {
-          "ancestorTitles": [
-            "UserRoleContext",
-            "Lifecycle and Cleanup"
-          ],
-          "fullName": "UserRoleContext Lifecycle and Cleanup should cleanup resources on unmount",
-          "status": "passed",
-          "title": "should cleanup resources on unmount",
-          "failureMessages": [],
-          "duration": 4
-        },
-        {
-          "ancestorTitles": [
-            "UserRoleContext",
-            "Lifecycle and Cleanup"
-          ],
-          "fullName": "UserRoleContext Lifecycle and Cleanup should handle auth state changes",
-          "status": "passed",
-          "title": "should handle auth state changes",
-          "failureMessages": [],
-          "duration": 26
         }
       ],
       "failureMessage": null
     },
     {
-      "testFilePath": "D:\\.work\\rental-software\\features\\homepage\\component\\Navbars.test.tsx",
+      "testFilePath": "D:\\.work\\rental-software\\features\\manage-product\\services\\productService.test.ts",
       "testFileResults": [
         {
           "ancestorTitles": [
-            "Navbar Component",
-            "when user is not signed in"
+            "ProductService"
           ],
-          "fullName": "Navbar Component when user is not signed in renders logo and brand name",
-          "status": "failed",
-          "title": "renders logo and brand name",
-          "failureMessages": [
-            "Error: useUserRoleContext must be used within a UserRoleProvider\n    at useUserRoleContext (D:\\.work\\rental-software\\features\\auth\\context\\UserRoleContext.tsx:375:11)\n    at useUserRole (D:\\.work\\rental-software\\features\\auth\\hooks\\useUserRole.ts:27:37)\n    at useUserRole (D:\\.work\\rental-software\\features\\auth\\hooks\\useUserRole.ts:133:20)\n    at Navbar (D:\\.work\\rental-software\\features\\homepage\\component\\Navbars.tsx:17:48)\n    at Object.react-stack-bottom-frame (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:23863:20)\n    at renderWithHooks (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:5529:22)\n    at updateFunctionComponent (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:8897:19)\n    at beginWork (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:10522:18)\n    at runWithFiberInDEV (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:1522:13)\n    at performUnitOfWork (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:15140:22)\n    at workLoopSync (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:14956:41)\n    at renderRootSync (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:14936:11)\n    at performWorkOnRoot (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:14462:44)\n    at performWorkOnRootViaSchedulerTask (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:16216:7)\n    at flushActQueue (D:\\.work\\rental-software\\node_modules\\react\\cjs\\react.development.js:566:34)\n    at process.env.NODE_ENV.exports.act (D:\\.work\\rental-software\\node_modules\\react\\cjs\\react.development.js:859:10)\n    at D:\\.work\\rental-software\\node_modules\\@testing-library\\react\\dist\\act-compat.js:47:25\n    at renderRoot (D:\\.work\\rental-software\\node_modules\\@testing-library\\react\\dist\\pure.js:190:26)\n    at render (D:\\.work\\rental-software\\node_modules\\@testing-library\\react\\dist\\pure.js:292:10)\n    at Object.<anonymous> (D:\\.work\\rental-software\\features\\homepage\\component\\Navbars.test.tsx:40:13)\n    at Promise.finally.completed (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1559:28)\n    at new Promise (<anonymous>)\n    at callAsyncCircusFn (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1499:10)\n    at _callCircusTest (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1009:40)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at _runTest (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:949:3)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:839:13)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at run (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:757:3)\n    at runAndTransformResultsToJestFormat (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1920:21)\n    at jestAdapter (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\runner.js:101:19)\n    at runTestInternal (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:272:16)\n    at runTest (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:340:7)\n    at Object.worker (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:494:12)"
-          ],
-          "duration": 63
-        },
-        {
-          "ancestorTitles": [
-            "Navbar Component",
-            "when user is not signed in"
-          ],
-          "fullName": "Navbar Component when user is not signed in renders desktop menu items",
-          "status": "failed",
-          "title": "renders desktop menu items",
-          "failureMessages": [
-            "Error: useUserRoleContext must be used within a UserRoleProvider\n    at useUserRoleContext (D:\\.work\\rental-software\\features\\auth\\context\\UserRoleContext.tsx:375:11)\n    at useUserRole (D:\\.work\\rental-software\\features\\auth\\hooks\\useUserRole.ts:27:37)\n    at useUserRole (D:\\.work\\rental-software\\features\\auth\\hooks\\useUserRole.ts:133:20)\n    at Navbar (D:\\.work\\rental-software\\features\\homepage\\component\\Navbars.tsx:17:48)\n    at Object.react-stack-bottom-frame (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:23863:20)\n    at renderWithHooks (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:5529:22)\n    at updateFunctionComponent (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:8897:19)\n    at beginWork (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:10522:18)\n    at runWithFiberInDEV (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:1522:13)\n    at performUnitOfWork (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:15140:22)\n    at workLoopSync (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:14956:41)\n    at renderRootSync (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:14936:11)\n    at performWorkOnRoot (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:14462:44)\n    at performWorkOnRootViaSchedulerTask (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:16216:7)\n    at flushActQueue (D:\\.work\\rental-software\\node_modules\\react\\cjs\\react.development.js:566:34)\n    at process.env.NODE_ENV.exports.act (D:\\.work\\rental-software\\node_modules\\react\\cjs\\react.development.js:859:10)\n    at D:\\.work\\rental-software\\node_modules\\@testing-library\\react\\dist\\act-compat.js:47:25\n    at renderRoot (D:\\.work\\rental-software\\node_modules\\@testing-library\\react\\dist\\pure.js:190:26)\n    at render (D:\\.work\\rental-software\\node_modules\\@testing-library\\react\\dist\\pure.js:292:10)\n    at Object.<anonymous> (D:\\.work\\rental-software\\features\\homepage\\component\\Navbars.test.tsx:51:13)\n    at Promise.finally.completed (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1559:28)\n    at new Promise (<anonymous>)\n    at callAsyncCircusFn (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1499:10)\n    at _callCircusTest (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1009:40)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at _runTest (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:949:3)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:839:13)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at run (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:757:3)\n    at runAndTransformResultsToJestFormat (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1920:21)\n    at jestAdapter (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\runner.js:101:19)\n    at runTestInternal (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:272:16)\n    at runTest (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:340:7)\n    at Object.worker (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:494:12)"
-          ],
-          "duration": 4
-        },
-        {
-          "ancestorTitles": [
-            "Navbar Component",
-            "when user is not signed in"
-          ],
-          "fullName": "Navbar Component when user is not signed in renders desktop CTA buttons as links",
-          "status": "failed",
-          "title": "renders desktop CTA buttons as links",
-          "failureMessages": [
-            "Error: useUserRoleContext must be used within a UserRoleProvider\n    at useUserRoleContext (D:\\.work\\rental-software\\features\\auth\\context\\UserRoleContext.tsx:375:11)\n    at useUserRole (D:\\.work\\rental-software\\features\\auth\\hooks\\useUserRole.ts:27:37)\n    at useUserRole (D:\\.work\\rental-software\\features\\auth\\hooks\\useUserRole.ts:133:20)\n    at Navbar (D:\\.work\\rental-software\\features\\homepage\\component\\Navbars.tsx:17:48)\n    at Object.react-stack-bottom-frame (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:23863:20)\n    at renderWithHooks (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:5529:22)\n    at updateFunctionComponent (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:8897:19)\n    at beginWork (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:10522:18)\n    at runWithFiberInDEV (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:1522:13)\n    at performUnitOfWork (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:15140:22)\n    at workLoopSync (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:14956:41)\n    at renderRootSync (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:14936:11)\n    at performWorkOnRoot (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:14462:44)\n    at performWorkOnRootViaSchedulerTask (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:16216:7)\n    at flushActQueue (D:\\.work\\rental-software\\node_modules\\react\\cjs\\react.development.js:566:34)\n    at process.env.NODE_ENV.exports.act (D:\\.work\\rental-software\\node_modules\\react\\cjs\\react.development.js:859:10)\n    at D:\\.work\\rental-software\\node_modules\\@testing-library\\react\\dist\\act-compat.js:47:25\n    at renderRoot (D:\\.work\\rental-software\\node_modules\\@testing-library\\react\\dist\\pure.js:190:26)\n    at render (D:\\.work\\rental-software\\node_modules\\@testing-library\\react\\dist\\pure.js:292:10)\n    at Object.<anonymous> (D:\\.work\\rental-software\\features\\homepage\\component\\Navbars.test.tsx:61:13)\n    at Promise.finally.completed (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1559:28)\n    at new Promise (<anonymous>)\n    at callAsyncCircusFn (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1499:10)\n    at _callCircusTest (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1009:40)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at _runTest (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:949:3)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:839:13)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at run (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:757:3)\n    at runAndTransformResultsToJestFormat (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1920:21)\n    at jestAdapter (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\runner.js:101:19)\n    at runTestInternal (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:272:16)\n    at runTest (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:340:7)\n    at Object.worker (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:494:12)"
-          ],
+          "fullName": "ProductService should return paginated list of products with filters",
+          "status": "passed",
+          "title": "should return paginated list of products with filters",
+          "failureMessages": [],
           "duration": 6
         },
         {
           "ancestorTitles": [
-            "Navbar Component",
-            "when user is not signed in"
+            "ProductService"
           ],
-          "fullName": "Navbar Component when user is not signed in toggles mobile menu and links close menu on click",
-          "status": "failed",
-          "title": "toggles mobile menu and links close menu on click",
-          "failureMessages": [
-            "Error: useUserRoleContext must be used within a UserRoleProvider\n    at useUserRoleContext (D:\\.work\\rental-software\\features\\auth\\context\\UserRoleContext.tsx:375:11)\n    at useUserRole (D:\\.work\\rental-software\\features\\auth\\hooks\\useUserRole.ts:27:37)\n    at useUserRole (D:\\.work\\rental-software\\features\\auth\\hooks\\useUserRole.ts:133:20)\n    at Navbar (D:\\.work\\rental-software\\features\\homepage\\component\\Navbars.tsx:17:48)\n    at Object.react-stack-bottom-frame (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:23863:20)\n    at renderWithHooks (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:5529:22)\n    at updateFunctionComponent (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:8897:19)\n    at beginWork (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:10522:18)\n    at runWithFiberInDEV (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:1522:13)\n    at performUnitOfWork (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:15140:22)\n    at workLoopSync (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:14956:41)\n    at renderRootSync (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:14936:11)\n    at performWorkOnRoot (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:14462:44)\n    at performWorkOnRootViaSchedulerTask (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:16216:7)\n    at flushActQueue (D:\\.work\\rental-software\\node_modules\\react\\cjs\\react.development.js:566:34)\n    at process.env.NODE_ENV.exports.act (D:\\.work\\rental-software\\node_modules\\react\\cjs\\react.development.js:859:10)\n    at D:\\.work\\rental-software\\node_modules\\@testing-library\\react\\dist\\act-compat.js:47:25\n    at renderRoot (D:\\.work\\rental-software\\node_modules\\@testing-library\\react\\dist\\pure.js:190:26)\n    at render (D:\\.work\\rental-software\\node_modules\\@testing-library\\react\\dist\\pure.js:292:10)\n    at Object.<anonymous> (D:\\.work\\rental-software\\features\\homepage\\component\\Navbars.test.tsx:69:13)\n    at Promise.finally.completed (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1559:28)\n    at new Promise (<anonymous>)\n    at callAsyncCircusFn (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1499:10)\n    at _callCircusTest (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1009:40)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at _runTest (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:949:3)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:839:13)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at run (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:757:3)\n    at runAndTransformResultsToJestFormat (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1920:21)\n    at jestAdapter (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\runner.js:101:19)\n    at runTestInternal (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:272:16)\n    at runTest (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:340:7)\n    at Object.worker (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:494:12)"
-          ],
-          "duration": 3
+          "fullName": "ProductService should return product detail by id",
+          "status": "passed",
+          "title": "should return product detail by id",
+          "failureMessages": [],
+          "duration": 1
         },
         {
           "ancestorTitles": [
-            "Navbar Component",
-            "when user is signed in"
+            "ProductService"
           ],
-          "fullName": "Navbar Component when user is signed in renders sign out button and user button in desktop",
-          "status": "failed",
-          "title": "renders sign out button and user button in desktop",
-          "failureMessages": [
-            "Error: useUserRoleContext must be used within a UserRoleProvider\n    at useUserRoleContext (D:\\.work\\rental-software\\features\\auth\\context\\UserRoleContext.tsx:375:11)\n    at useUserRole (D:\\.work\\rental-software\\features\\auth\\hooks\\useUserRole.ts:27:37)\n    at useUserRole (D:\\.work\\rental-software\\features\\auth\\hooks\\useUserRole.ts:133:20)\n    at Navbar (D:\\.work\\rental-software\\features\\homepage\\component\\Navbars.tsx:17:48)\n    at Object.react-stack-bottom-frame (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:23863:20)\n    at renderWithHooks (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:5529:22)\n    at updateFunctionComponent (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:8897:19)\n    at beginWork (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:10522:18)\n    at runWithFiberInDEV (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:1522:13)\n    at performUnitOfWork (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:15140:22)\n    at workLoopSync (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:14956:41)\n    at renderRootSync (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:14936:11)\n    at performWorkOnRoot (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:14462:44)\n    at performWorkOnRootViaSchedulerTask (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:16216:7)\n    at flushActQueue (D:\\.work\\rental-software\\node_modules\\react\\cjs\\react.development.js:566:34)\n    at process.env.NODE_ENV.exports.act (D:\\.work\\rental-software\\node_modules\\react\\cjs\\react.development.js:859:10)\n    at D:\\.work\\rental-software\\node_modules\\@testing-library\\react\\dist\\act-compat.js:47:25\n    at renderRoot (D:\\.work\\rental-software\\node_modules\\@testing-library\\react\\dist\\pure.js:190:26)\n    at render (D:\\.work\\rental-software\\node_modules\\@testing-library\\react\\dist\\pure.js:292:10)\n    at Object.<anonymous> (D:\\.work\\rental-software\\features\\homepage\\component\\Navbars.test.tsx:100:13)\n    at Promise.finally.completed (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1559:28)\n    at new Promise (<anonymous>)\n    at callAsyncCircusFn (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1499:10)\n    at _callCircusTest (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1009:40)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at _runTest (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:949:3)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:839:13)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at run (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:757:3)\n    at runAndTransformResultsToJestFormat (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1920:21)\n    at jestAdapter (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\runner.js:101:19)\n    at runTestInternal (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:272:16)\n    at runTest (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:340:7)\n    at Object.worker (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:494:12)"
-          ],
-          "duration": 6
-        },
-        {
-          "ancestorTitles": [
-            "Navbar Component",
-            "when user is signed in"
-          ],
-          "fullName": "Navbar Component when user is signed in renders sign out button and user button in mobile menu",
-          "status": "failed",
-          "title": "renders sign out button and user button in mobile menu",
-          "failureMessages": [
-            "Error: useUserRoleContext must be used within a UserRoleProvider\n    at useUserRoleContext (D:\\.work\\rental-software\\features\\auth\\context\\UserRoleContext.tsx:375:11)\n    at useUserRole (D:\\.work\\rental-software\\features\\auth\\hooks\\useUserRole.ts:27:37)\n    at useUserRole (D:\\.work\\rental-software\\features\\auth\\hooks\\useUserRole.ts:133:20)\n    at Navbar (D:\\.work\\rental-software\\features\\homepage\\component\\Navbars.tsx:17:48)\n    at Object.react-stack-bottom-frame (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:23863:20)\n    at renderWithHooks (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:5529:22)\n    at updateFunctionComponent (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:8897:19)\n    at beginWork (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:10522:18)\n    at runWithFiberInDEV (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:1522:13)\n    at performUnitOfWork (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:15140:22)\n    at workLoopSync (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:14956:41)\n    at renderRootSync (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:14936:11)\n    at performWorkOnRoot (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:14462:44)\n    at performWorkOnRootViaSchedulerTask (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:16216:7)\n    at flushActQueue (D:\\.work\\rental-software\\node_modules\\react\\cjs\\react.development.js:566:34)\n    at process.env.NODE_ENV.exports.act (D:\\.work\\rental-software\\node_modules\\react\\cjs\\react.development.js:859:10)\n    at D:\\.work\\rental-software\\node_modules\\@testing-library\\react\\dist\\act-compat.js:47:25\n    at renderRoot (D:\\.work\\rental-software\\node_modules\\@testing-library\\react\\dist\\pure.js:190:26)\n    at render (D:\\.work\\rental-software\\node_modules\\@testing-library\\react\\dist\\pure.js:292:10)\n    at Object.<anonymous> (D:\\.work\\rental-software\\features\\homepage\\component\\Navbars.test.tsx:113:13)\n    at Promise.finally.completed (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1559:28)\n    at new Promise (<anonymous>)\n    at callAsyncCircusFn (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1499:10)\n    at _callCircusTest (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1009:40)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at _runTest (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:949:3)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:839:13)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at run (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:757:3)\n    at runAndTransformResultsToJestFormat (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1920:21)\n    at jestAdapter (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\runner.js:101:19)\n    at runTestInternal (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:272:16)\n    at runTest (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:340:7)\n    at Object.worker (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:494:12)"
-          ],
+          "fullName": "ProductService should create product with valid data",
+          "status": "passed",
+          "title": "should create product with valid data",
+          "failureMessages": [],
           "duration": 2
         },
         {
           "ancestorTitles": [
-            "Navbar Component",
-            "when user is signed in"
+            "ProductService"
           ],
-          "fullName": "Navbar Component when user is signed in closes mobile menu when sign out button is clicked",
-          "status": "failed",
-          "title": "closes mobile menu when sign out button is clicked",
-          "failureMessages": [
-            "Error: useUserRoleContext must be used within a UserRoleProvider\n    at useUserRoleContext (D:\\.work\\rental-software\\features\\auth\\context\\UserRoleContext.tsx:375:11)\n    at useUserRole (D:\\.work\\rental-software\\features\\auth\\hooks\\useUserRole.ts:27:37)\n    at useUserRole (D:\\.work\\rental-software\\features\\auth\\hooks\\useUserRole.ts:133:20)\n    at Navbar (D:\\.work\\rental-software\\features\\homepage\\component\\Navbars.tsx:17:48)\n    at Object.react-stack-bottom-frame (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:23863:20)\n    at renderWithHooks (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:5529:22)\n    at updateFunctionComponent (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:8897:19)\n    at beginWork (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:10522:18)\n    at runWithFiberInDEV (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:1522:13)\n    at performUnitOfWork (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:15140:22)\n    at workLoopSync (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:14956:41)\n    at renderRootSync (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:14936:11)\n    at performWorkOnRoot (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:14462:44)\n    at performWorkOnRootViaSchedulerTask (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:16216:7)\n    at flushActQueue (D:\\.work\\rental-software\\node_modules\\react\\cjs\\react.development.js:566:34)\n    at process.env.NODE_ENV.exports.act (D:\\.work\\rental-software\\node_modules\\react\\cjs\\react.development.js:859:10)\n    at D:\\.work\\rental-software\\node_modules\\@testing-library\\react\\dist\\act-compat.js:47:25\n    at renderRoot (D:\\.work\\rental-software\\node_modules\\@testing-library\\react\\dist\\pure.js:190:26)\n    at render (D:\\.work\\rental-software\\node_modules\\@testing-library\\react\\dist\\pure.js:292:10)\n    at Object.<anonymous> (D:\\.work\\rental-software\\features\\homepage\\component\\Navbars.test.tsx:130:13)\n    at Promise.finally.completed (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1559:28)\n    at new Promise (<anonymous>)\n    at callAsyncCircusFn (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1499:10)\n    at _callCircusTest (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1009:40)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at _runTest (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:949:3)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:839:13)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at run (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:757:3)\n    at runAndTransformResultsToJestFormat (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1920:21)\n    at jestAdapter (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\runner.js:101:19)\n    at runTestInternal (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:272:16)\n    at runTest (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:340:7)\n    at Object.worker (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:494:12)"
-          ],
-          "duration": 4
+          "fullName": "ProductService should not create product with duplicate code",
+          "status": "passed",
+          "title": "should not create product with duplicate code",
+          "failureMessages": [],
+          "duration": 20
         },
         {
           "ancestorTitles": [
-            "Navbar Component",
-            "when user is signed in"
+            "ProductService"
           ],
-          "fullName": "Navbar Component when user is signed in sign out button has correct redirect configuration",
-          "status": "failed",
-          "title": "sign out button has correct redirect configuration",
-          "failureMessages": [
-            "Error: useUserRoleContext must be used within a UserRoleProvider\n    at useUserRoleContext (D:\\.work\\rental-software\\features\\auth\\context\\UserRoleContext.tsx:375:11)\n    at useUserRole (D:\\.work\\rental-software\\features\\auth\\hooks\\useUserRole.ts:27:37)\n    at useUserRole (D:\\.work\\rental-software\\features\\auth\\hooks\\useUserRole.ts:133:20)\n    at Navbar (D:\\.work\\rental-software\\features\\homepage\\component\\Navbars.tsx:17:48)\n    at Object.react-stack-bottom-frame (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:23863:20)\n    at renderWithHooks (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:5529:22)\n    at updateFunctionComponent (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:8897:19)\n    at beginWork (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:10522:18)\n    at runWithFiberInDEV (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:1522:13)\n    at performUnitOfWork (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:15140:22)\n    at workLoopSync (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:14956:41)\n    at renderRootSync (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:14936:11)\n    at performWorkOnRoot (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:14462:44)\n    at performWorkOnRootViaSchedulerTask (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:16216:7)\n    at flushActQueue (D:\\.work\\rental-software\\node_modules\\react\\cjs\\react.development.js:566:34)\n    at process.env.NODE_ENV.exports.act (D:\\.work\\rental-software\\node_modules\\react\\cjs\\react.development.js:859:10)\n    at D:\\.work\\rental-software\\node_modules\\@testing-library\\react\\dist\\act-compat.js:47:25\n    at renderRoot (D:\\.work\\rental-software\\node_modules\\@testing-library\\react\\dist\\pure.js:190:26)\n    at render (D:\\.work\\rental-software\\node_modules\\@testing-library\\react\\dist\\pure.js:292:10)\n    at Object.<anonymous> (D:\\.work\\rental-software\\features\\homepage\\component\\Navbars.test.tsx:148:13)\n    at Promise.finally.completed (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1559:28)\n    at new Promise (<anonymous>)\n    at callAsyncCircusFn (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1499:10)\n    at _callCircusTest (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1009:40)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at _runTest (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:949:3)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:839:13)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at run (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:757:3)\n    at runAndTransformResultsToJestFormat (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1920:21)\n    at jestAdapter (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\runner.js:101:19)\n    at runTestInternal (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:272:16)\n    at runTest (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:340:7)\n    at Object.worker (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:494:12)"
+          "fullName": "ProductService should update product with valid data",
+          "status": "passed",
+          "title": "should update product with valid data",
+          "failureMessages": [],
+          "duration": 3
+        },
+        {
+          "ancestorTitles": [
+            "ProductService"
           ],
-          "duration": 4
+          "fullName": "ProductService should not update non-existent product",
+          "status": "passed",
+          "title": "should not update non-existent product",
+          "failureMessages": [],
+          "duration": 2
+        },
+        {
+          "ancestorTitles": [
+            "ProductService"
+          ],
+          "fullName": "ProductService should soft delete product",
+          "status": "passed",
+          "title": "should soft delete product",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "ProductService"
+          ],
+          "fullName": "ProductService should validate unique product code",
+          "status": "passed",
+          "title": "should validate unique product code",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "ProductService"
+          ],
+          "fullName": "ProductService should update product status",
+          "status": "passed",
+          "title": "should update product status",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "ProductService"
+          ],
+          "fullName": "ProductService should update total pendapatan",
+          "status": "passed",
+          "title": "should update total pendapatan",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "ProductService"
+          ],
+          "fullName": "ProductService should throw validation error for invalid data",
+          "status": "passed",
+          "title": "should throw validation error for invalid data",
+          "failureMessages": [],
+          "duration": 0
         }
       ],
-      "failureMessage": "\u001b[1m\u001b[31m  \u001b[1m● \u001b[22m\u001b[1mNavbar Component › when user is not signed in › renders logo and brand name\u001b[39m\u001b[22m\n\n    useUserRoleContext must be used within a UserRoleProvider\n\u001b[2m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m 373 |\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 374 |\u001b[39m   \u001b[36mif\u001b[39m (context \u001b[33m===\u001b[39m undefined) {\u001b[22m\n\u001b[2m    \u001b[31m\u001b[1m>\u001b[22m\u001b[2m\u001b[39m\u001b[90m 375 |\u001b[39m     \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\u001b[32m'useUserRoleContext must be used within a UserRoleProvider'\u001b[39m)\u001b[22m\n\u001b[2m     \u001b[90m     |\u001b[39m           \u001b[31m\u001b[1m^\u001b[22m\u001b[2m\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 376 |\u001b[39m   }\u001b[22m\n\u001b[2m     \u001b[90m 377 |\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 378 |\u001b[39m   \u001b[36mreturn\u001b[39m context\u001b[0m\u001b[22m\n\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat useUserRoleContext (\u001b[22m\u001b[2mfeatures/auth/context/UserRoleContext.tsx\u001b[2m:375:11)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat useUserRole (\u001b[22m\u001b[2mfeatures/auth/hooks/useUserRole.ts\u001b[2m:27:37)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat useUserRole (\u001b[22m\u001b[2mfeatures/auth/hooks/useUserRole.ts\u001b[2m:133:20)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat Navbar (\u001b[22m\u001b[2mfeatures/homepage/component/Navbars.tsx\u001b[2m:17:48)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat Object.react-stack-bottom-frame (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:23863:20)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat renderWithHooks (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:5529:22)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat updateFunctionComponent (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:8897:19)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat beginWork (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:10522:18)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat runWithFiberInDEV (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:1522:13)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat performUnitOfWork (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:15140:22)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat workLoopSync (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:14956:41)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat renderRootSync (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:14936:11)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat performWorkOnRoot (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:14462:44)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat performWorkOnRootViaSchedulerTask (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:16216:7)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat flushActQueue (\u001b[22m\u001b[2mnode_modules/react/cjs/react.development.js\u001b[2m:566:34)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat process.env.NODE_ENV.exports.act (\u001b[22m\u001b[2mnode_modules/react/cjs/react.development.js\u001b[2m:859:10)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat \u001b[22m\u001b[2mnode_modules/@testing-library/react/dist/act-compat.js\u001b[2m:47:25\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat renderRoot (\u001b[22m\u001b[2mnode_modules/@testing-library/react/dist/pure.js\u001b[2m:190:26)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat render (\u001b[22m\u001b[2mnode_modules/@testing-library/react/dist/pure.js\u001b[2m:292:10)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat Object.<anonymous> (\u001b[22m\u001b[2m\u001b[0m\u001b[36mfeatures/homepage/component/Navbars.test.tsx\u001b[39m\u001b[0m\u001b[2m:40:13)\u001b[22m\u001b[2m\u001b[22m\n\n\u001b[1m\u001b[31m  \u001b[1m● \u001b[22m\u001b[1mNavbar Component › when user is not signed in › renders desktop menu items\u001b[39m\u001b[22m\n\n    useUserRoleContext must be used within a UserRoleProvider\n\u001b[2m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m 373 |\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 374 |\u001b[39m   \u001b[36mif\u001b[39m (context \u001b[33m===\u001b[39m undefined) {\u001b[22m\n\u001b[2m    \u001b[31m\u001b[1m>\u001b[22m\u001b[2m\u001b[39m\u001b[90m 375 |\u001b[39m     \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\u001b[32m'useUserRoleContext must be used within a UserRoleProvider'\u001b[39m)\u001b[22m\n\u001b[2m     \u001b[90m     |\u001b[39m           \u001b[31m\u001b[1m^\u001b[22m\u001b[2m\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 376 |\u001b[39m   }\u001b[22m\n\u001b[2m     \u001b[90m 377 |\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 378 |\u001b[39m   \u001b[36mreturn\u001b[39m context\u001b[0m\u001b[22m\n\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat useUserRoleContext (\u001b[22m\u001b[2mfeatures/auth/context/UserRoleContext.tsx\u001b[2m:375:11)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat useUserRole (\u001b[22m\u001b[2mfeatures/auth/hooks/useUserRole.ts\u001b[2m:27:37)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat useUserRole (\u001b[22m\u001b[2mfeatures/auth/hooks/useUserRole.ts\u001b[2m:133:20)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat Navbar (\u001b[22m\u001b[2mfeatures/homepage/component/Navbars.tsx\u001b[2m:17:48)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat Object.react-stack-bottom-frame (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:23863:20)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat renderWithHooks (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:5529:22)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat updateFunctionComponent (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:8897:19)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat beginWork (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:10522:18)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat runWithFiberInDEV (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:1522:13)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat performUnitOfWork (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:15140:22)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat workLoopSync (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:14956:41)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat renderRootSync (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:14936:11)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat performWorkOnRoot (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:14462:44)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat performWorkOnRootViaSchedulerTask (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:16216:7)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat flushActQueue (\u001b[22m\u001b[2mnode_modules/react/cjs/react.development.js\u001b[2m:566:34)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat process.env.NODE_ENV.exports.act (\u001b[22m\u001b[2mnode_modules/react/cjs/react.development.js\u001b[2m:859:10)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat \u001b[22m\u001b[2mnode_modules/@testing-library/react/dist/act-compat.js\u001b[2m:47:25\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat renderRoot (\u001b[22m\u001b[2mnode_modules/@testing-library/react/dist/pure.js\u001b[2m:190:26)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat render (\u001b[22m\u001b[2mnode_modules/@testing-library/react/dist/pure.js\u001b[2m:292:10)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat Object.<anonymous> (\u001b[22m\u001b[2m\u001b[0m\u001b[36mfeatures/homepage/component/Navbars.test.tsx\u001b[39m\u001b[0m\u001b[2m:51:13)\u001b[22m\u001b[2m\u001b[22m\n\n\u001b[1m\u001b[31m  \u001b[1m● \u001b[22m\u001b[1mNavbar Component › when user is not signed in › renders desktop CTA buttons as links\u001b[39m\u001b[22m\n\n    useUserRoleContext must be used within a UserRoleProvider\n\u001b[2m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m 373 |\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 374 |\u001b[39m   \u001b[36mif\u001b[39m (context \u001b[33m===\u001b[39m undefined) {\u001b[22m\n\u001b[2m    \u001b[31m\u001b[1m>\u001b[22m\u001b[2m\u001b[39m\u001b[90m 375 |\u001b[39m     \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\u001b[32m'useUserRoleContext must be used within a UserRoleProvider'\u001b[39m)\u001b[22m\n\u001b[2m     \u001b[90m     |\u001b[39m           \u001b[31m\u001b[1m^\u001b[22m\u001b[2m\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 376 |\u001b[39m   }\u001b[22m\n\u001b[2m     \u001b[90m 377 |\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 378 |\u001b[39m   \u001b[36mreturn\u001b[39m context\u001b[0m\u001b[22m\n\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat useUserRoleContext (\u001b[22m\u001b[2mfeatures/auth/context/UserRoleContext.tsx\u001b[2m:375:11)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat useUserRole (\u001b[22m\u001b[2mfeatures/auth/hooks/useUserRole.ts\u001b[2m:27:37)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat useUserRole (\u001b[22m\u001b[2mfeatures/auth/hooks/useUserRole.ts\u001b[2m:133:20)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat Navbar (\u001b[22m\u001b[2mfeatures/homepage/component/Navbars.tsx\u001b[2m:17:48)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat Object.react-stack-bottom-frame (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:23863:20)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat renderWithHooks (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:5529:22)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat updateFunctionComponent (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:8897:19)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat beginWork (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:10522:18)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat runWithFiberInDEV (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:1522:13)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat performUnitOfWork (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:15140:22)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat workLoopSync (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:14956:41)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat renderRootSync (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:14936:11)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat performWorkOnRoot (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:14462:44)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat performWorkOnRootViaSchedulerTask (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:16216:7)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat flushActQueue (\u001b[22m\u001b[2mnode_modules/react/cjs/react.development.js\u001b[2m:566:34)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat process.env.NODE_ENV.exports.act (\u001b[22m\u001b[2mnode_modules/react/cjs/react.development.js\u001b[2m:859:10)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat \u001b[22m\u001b[2mnode_modules/@testing-library/react/dist/act-compat.js\u001b[2m:47:25\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat renderRoot (\u001b[22m\u001b[2mnode_modules/@testing-library/react/dist/pure.js\u001b[2m:190:26)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat render (\u001b[22m\u001b[2mnode_modules/@testing-library/react/dist/pure.js\u001b[2m:292:10)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat Object.<anonymous> (\u001b[22m\u001b[2m\u001b[0m\u001b[36mfeatures/homepage/component/Navbars.test.tsx\u001b[39m\u001b[0m\u001b[2m:61:13)\u001b[22m\u001b[2m\u001b[22m\n\n\u001b[1m\u001b[31m  \u001b[1m● \u001b[22m\u001b[1mNavbar Component › when user is not signed in › toggles mobile menu and links close menu on click\u001b[39m\u001b[22m\n\n    useUserRoleContext must be used within a UserRoleProvider\n\u001b[2m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m 373 |\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 374 |\u001b[39m   \u001b[36mif\u001b[39m (context \u001b[33m===\u001b[39m undefined) {\u001b[22m\n\u001b[2m    \u001b[31m\u001b[1m>\u001b[22m\u001b[2m\u001b[39m\u001b[90m 375 |\u001b[39m     \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\u001b[32m'useUserRoleContext must be used within a UserRoleProvider'\u001b[39m)\u001b[22m\n\u001b[2m     \u001b[90m     |\u001b[39m           \u001b[31m\u001b[1m^\u001b[22m\u001b[2m\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 376 |\u001b[39m   }\u001b[22m\n\u001b[2m     \u001b[90m 377 |\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 378 |\u001b[39m   \u001b[36mreturn\u001b[39m context\u001b[0m\u001b[22m\n\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat useUserRoleContext (\u001b[22m\u001b[2mfeatures/auth/context/UserRoleContext.tsx\u001b[2m:375:11)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat useUserRole (\u001b[22m\u001b[2mfeatures/auth/hooks/useUserRole.ts\u001b[2m:27:37)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat useUserRole (\u001b[22m\u001b[2mfeatures/auth/hooks/useUserRole.ts\u001b[2m:133:20)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat Navbar (\u001b[22m\u001b[2mfeatures/homepage/component/Navbars.tsx\u001b[2m:17:48)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat Object.react-stack-bottom-frame (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:23863:20)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat renderWithHooks (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:5529:22)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat updateFunctionComponent (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:8897:19)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat beginWork (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:10522:18)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat runWithFiberInDEV (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:1522:13)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat performUnitOfWork (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:15140:22)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat workLoopSync (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:14956:41)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat renderRootSync (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:14936:11)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat performWorkOnRoot (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:14462:44)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat performWorkOnRootViaSchedulerTask (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:16216:7)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat flushActQueue (\u001b[22m\u001b[2mnode_modules/react/cjs/react.development.js\u001b[2m:566:34)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat process.env.NODE_ENV.exports.act (\u001b[22m\u001b[2mnode_modules/react/cjs/react.development.js\u001b[2m:859:10)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat \u001b[22m\u001b[2mnode_modules/@testing-library/react/dist/act-compat.js\u001b[2m:47:25\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat renderRoot (\u001b[22m\u001b[2mnode_modules/@testing-library/react/dist/pure.js\u001b[2m:190:26)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat render (\u001b[22m\u001b[2mnode_modules/@testing-library/react/dist/pure.js\u001b[2m:292:10)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat Object.<anonymous> (\u001b[22m\u001b[2m\u001b[0m\u001b[36mfeatures/homepage/component/Navbars.test.tsx\u001b[39m\u001b[0m\u001b[2m:69:13)\u001b[22m\u001b[2m\u001b[22m\n\n\u001b[1m\u001b[31m  \u001b[1m● \u001b[22m\u001b[1mNavbar Component › when user is signed in › renders sign out button and user button in desktop\u001b[39m\u001b[22m\n\n    useUserRoleContext must be used within a UserRoleProvider\n\u001b[2m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m 373 |\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 374 |\u001b[39m   \u001b[36mif\u001b[39m (context \u001b[33m===\u001b[39m undefined) {\u001b[22m\n\u001b[2m    \u001b[31m\u001b[1m>\u001b[22m\u001b[2m\u001b[39m\u001b[90m 375 |\u001b[39m     \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\u001b[32m'useUserRoleContext must be used within a UserRoleProvider'\u001b[39m)\u001b[22m\n\u001b[2m     \u001b[90m     |\u001b[39m           \u001b[31m\u001b[1m^\u001b[22m\u001b[2m\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 376 |\u001b[39m   }\u001b[22m\n\u001b[2m     \u001b[90m 377 |\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 378 |\u001b[39m   \u001b[36mreturn\u001b[39m context\u001b[0m\u001b[22m\n\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat useUserRoleContext (\u001b[22m\u001b[2mfeatures/auth/context/UserRoleContext.tsx\u001b[2m:375:11)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat useUserRole (\u001b[22m\u001b[2mfeatures/auth/hooks/useUserRole.ts\u001b[2m:27:37)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat useUserRole (\u001b[22m\u001b[2mfeatures/auth/hooks/useUserRole.ts\u001b[2m:133:20)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat Navbar (\u001b[22m\u001b[2mfeatures/homepage/component/Navbars.tsx\u001b[2m:17:48)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat Object.react-stack-bottom-frame (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:23863:20)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat renderWithHooks (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:5529:22)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat updateFunctionComponent (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:8897:19)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat beginWork (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:10522:18)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat runWithFiberInDEV (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:1522:13)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat performUnitOfWork (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:15140:22)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat workLoopSync (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:14956:41)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat renderRootSync (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:14936:11)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat performWorkOnRoot (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:14462:44)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat performWorkOnRootViaSchedulerTask (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:16216:7)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat flushActQueue (\u001b[22m\u001b[2mnode_modules/react/cjs/react.development.js\u001b[2m:566:34)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat process.env.NODE_ENV.exports.act (\u001b[22m\u001b[2mnode_modules/react/cjs/react.development.js\u001b[2m:859:10)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat \u001b[22m\u001b[2mnode_modules/@testing-library/react/dist/act-compat.js\u001b[2m:47:25\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat renderRoot (\u001b[22m\u001b[2mnode_modules/@testing-library/react/dist/pure.js\u001b[2m:190:26)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat render (\u001b[22m\u001b[2mnode_modules/@testing-library/react/dist/pure.js\u001b[2m:292:10)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat Object.<anonymous> (\u001b[22m\u001b[2m\u001b[0m\u001b[36mfeatures/homepage/component/Navbars.test.tsx\u001b[39m\u001b[0m\u001b[2m:100:13)\u001b[22m\u001b[2m\u001b[22m\n\n\u001b[1m\u001b[31m  \u001b[1m● \u001b[22m\u001b[1mNavbar Component › when user is signed in › renders sign out button and user button in mobile menu\u001b[39m\u001b[22m\n\n    useUserRoleContext must be used within a UserRoleProvider\n\u001b[2m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m 373 |\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 374 |\u001b[39m   \u001b[36mif\u001b[39m (context \u001b[33m===\u001b[39m undefined) {\u001b[22m\n\u001b[2m    \u001b[31m\u001b[1m>\u001b[22m\u001b[2m\u001b[39m\u001b[90m 375 |\u001b[39m     \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\u001b[32m'useUserRoleContext must be used within a UserRoleProvider'\u001b[39m)\u001b[22m\n\u001b[2m     \u001b[90m     |\u001b[39m           \u001b[31m\u001b[1m^\u001b[22m\u001b[2m\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 376 |\u001b[39m   }\u001b[22m\n\u001b[2m     \u001b[90m 377 |\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 378 |\u001b[39m   \u001b[36mreturn\u001b[39m context\u001b[0m\u001b[22m\n\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat useUserRoleContext (\u001b[22m\u001b[2mfeatures/auth/context/UserRoleContext.tsx\u001b[2m:375:11)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat useUserRole (\u001b[22m\u001b[2mfeatures/auth/hooks/useUserRole.ts\u001b[2m:27:37)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat useUserRole (\u001b[22m\u001b[2mfeatures/auth/hooks/useUserRole.ts\u001b[2m:133:20)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat Navbar (\u001b[22m\u001b[2mfeatures/homepage/component/Navbars.tsx\u001b[2m:17:48)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat Object.react-stack-bottom-frame (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:23863:20)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat renderWithHooks (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:5529:22)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat updateFunctionComponent (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:8897:19)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat beginWork (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:10522:18)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat runWithFiberInDEV (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:1522:13)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat performUnitOfWork (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:15140:22)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat workLoopSync (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:14956:41)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat renderRootSync (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:14936:11)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat performWorkOnRoot (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:14462:44)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat performWorkOnRootViaSchedulerTask (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:16216:7)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat flushActQueue (\u001b[22m\u001b[2mnode_modules/react/cjs/react.development.js\u001b[2m:566:34)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat process.env.NODE_ENV.exports.act (\u001b[22m\u001b[2mnode_modules/react/cjs/react.development.js\u001b[2m:859:10)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat \u001b[22m\u001b[2mnode_modules/@testing-library/react/dist/act-compat.js\u001b[2m:47:25\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat renderRoot (\u001b[22m\u001b[2mnode_modules/@testing-library/react/dist/pure.js\u001b[2m:190:26)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat render (\u001b[22m\u001b[2mnode_modules/@testing-library/react/dist/pure.js\u001b[2m:292:10)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat Object.<anonymous> (\u001b[22m\u001b[2m\u001b[0m\u001b[36mfeatures/homepage/component/Navbars.test.tsx\u001b[39m\u001b[0m\u001b[2m:113:13)\u001b[22m\u001b[2m\u001b[22m\n\n\u001b[1m\u001b[31m  \u001b[1m● \u001b[22m\u001b[1mNavbar Component › when user is signed in › closes mobile menu when sign out button is clicked\u001b[39m\u001b[22m\n\n    useUserRoleContext must be used within a UserRoleProvider\n\u001b[2m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m 373 |\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 374 |\u001b[39m   \u001b[36mif\u001b[39m (context \u001b[33m===\u001b[39m undefined) {\u001b[22m\n\u001b[2m    \u001b[31m\u001b[1m>\u001b[22m\u001b[2m\u001b[39m\u001b[90m 375 |\u001b[39m     \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\u001b[32m'useUserRoleContext must be used within a UserRoleProvider'\u001b[39m)\u001b[22m\n\u001b[2m     \u001b[90m     |\u001b[39m           \u001b[31m\u001b[1m^\u001b[22m\u001b[2m\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 376 |\u001b[39m   }\u001b[22m\n\u001b[2m     \u001b[90m 377 |\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 378 |\u001b[39m   \u001b[36mreturn\u001b[39m context\u001b[0m\u001b[22m\n\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat useUserRoleContext (\u001b[22m\u001b[2mfeatures/auth/context/UserRoleContext.tsx\u001b[2m:375:11)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat useUserRole (\u001b[22m\u001b[2mfeatures/auth/hooks/useUserRole.ts\u001b[2m:27:37)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat useUserRole (\u001b[22m\u001b[2mfeatures/auth/hooks/useUserRole.ts\u001b[2m:133:20)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat Navbar (\u001b[22m\u001b[2mfeatures/homepage/component/Navbars.tsx\u001b[2m:17:48)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat Object.react-stack-bottom-frame (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:23863:20)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat renderWithHooks (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:5529:22)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat updateFunctionComponent (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:8897:19)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat beginWork (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:10522:18)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat runWithFiberInDEV (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:1522:13)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat performUnitOfWork (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:15140:22)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat workLoopSync (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:14956:41)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat renderRootSync (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:14936:11)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat performWorkOnRoot (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:14462:44)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat performWorkOnRootViaSchedulerTask (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:16216:7)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat flushActQueue (\u001b[22m\u001b[2mnode_modules/react/cjs/react.development.js\u001b[2m:566:34)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat process.env.NODE_ENV.exports.act (\u001b[22m\u001b[2mnode_modules/react/cjs/react.development.js\u001b[2m:859:10)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat \u001b[22m\u001b[2mnode_modules/@testing-library/react/dist/act-compat.js\u001b[2m:47:25\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat renderRoot (\u001b[22m\u001b[2mnode_modules/@testing-library/react/dist/pure.js\u001b[2m:190:26)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat render (\u001b[22m\u001b[2mnode_modules/@testing-library/react/dist/pure.js\u001b[2m:292:10)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat Object.<anonymous> (\u001b[22m\u001b[2m\u001b[0m\u001b[36mfeatures/homepage/component/Navbars.test.tsx\u001b[39m\u001b[0m\u001b[2m:130:13)\u001b[22m\u001b[2m\u001b[22m\n\n\u001b[1m\u001b[31m  \u001b[1m● \u001b[22m\u001b[1mNavbar Component › when user is signed in › sign out button has correct redirect configuration\u001b[39m\u001b[22m\n\n    useUserRoleContext must be used within a UserRoleProvider\n\u001b[2m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m 373 |\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 374 |\u001b[39m   \u001b[36mif\u001b[39m (context \u001b[33m===\u001b[39m undefined) {\u001b[22m\n\u001b[2m    \u001b[31m\u001b[1m>\u001b[22m\u001b[2m\u001b[39m\u001b[90m 375 |\u001b[39m     \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\u001b[32m'useUserRoleContext must be used within a UserRoleProvider'\u001b[39m)\u001b[22m\n\u001b[2m     \u001b[90m     |\u001b[39m           \u001b[31m\u001b[1m^\u001b[22m\u001b[2m\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 376 |\u001b[39m   }\u001b[22m\n\u001b[2m     \u001b[90m 377 |\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 378 |\u001b[39m   \u001b[36mreturn\u001b[39m context\u001b[0m\u001b[22m\n\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat useUserRoleContext (\u001b[22m\u001b[2mfeatures/auth/context/UserRoleContext.tsx\u001b[2m:375:11)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat useUserRole (\u001b[22m\u001b[2mfeatures/auth/hooks/useUserRole.ts\u001b[2m:27:37)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat useUserRole (\u001b[22m\u001b[2mfeatures/auth/hooks/useUserRole.ts\u001b[2m:133:20)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat Navbar (\u001b[22m\u001b[2mfeatures/homepage/component/Navbars.tsx\u001b[2m:17:48)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat Object.react-stack-bottom-frame (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:23863:20)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat renderWithHooks (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:5529:22)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat updateFunctionComponent (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:8897:19)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat beginWork (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:10522:18)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat runWithFiberInDEV (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:1522:13)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat performUnitOfWork (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:15140:22)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat workLoopSync (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:14956:41)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat renderRootSync (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:14936:11)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat performWorkOnRoot (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:14462:44)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat performWorkOnRootViaSchedulerTask (\u001b[22m\u001b[2mnode_modules/react-dom/cjs/react-dom-client.development.js\u001b[2m:16216:7)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat flushActQueue (\u001b[22m\u001b[2mnode_modules/react/cjs/react.development.js\u001b[2m:566:34)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat process.env.NODE_ENV.exports.act (\u001b[22m\u001b[2mnode_modules/react/cjs/react.development.js\u001b[2m:859:10)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat \u001b[22m\u001b[2mnode_modules/@testing-library/react/dist/act-compat.js\u001b[2m:47:25\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat renderRoot (\u001b[22m\u001b[2mnode_modules/@testing-library/react/dist/pure.js\u001b[2m:190:26)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat render (\u001b[22m\u001b[2mnode_modules/@testing-library/react/dist/pure.js\u001b[2m:292:10)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat Object.<anonymous> (\u001b[22m\u001b[2m\u001b[0m\u001b[36mfeatures/homepage/component/Navbars.test.tsx\u001b[39m\u001b[0m\u001b[2m:148:13)\u001b[22m\u001b[2m\u001b[22m\n"
+      "failureMessage": null
     }
   ]
 }

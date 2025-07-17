@@ -183,6 +183,8 @@ const categorySchema = z.object({
 Mengikuti arsitektur 3-tier Maguru:
 
 ```
+Adapter Layer (Client Point)
+    ↓
 API Routes (Entry Point)
     ↓
 Services (Business Logic)
