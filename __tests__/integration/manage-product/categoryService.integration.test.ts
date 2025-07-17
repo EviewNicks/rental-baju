@@ -5,6 +5,15 @@ import {
 } from '../../../features/manage-product/services/categoryService'
 import { ProductService } from '../../../features/manage-product/services/productService'
 
+// Mock Supabase storageUtils untuk integration testing
+jest.mock('../../../lib/supabase', () => ({
+  storageUtils: {
+    uploadProductImage: jest.fn(),
+    deleteProductImage: jest.fn(),
+    extractFilePathFromUrl: jest.fn(),
+  },
+}))
+
 // Mock Prisma untuk integration testing
 jest.mock('@/lib/prisma', () => ({
   prisma: {

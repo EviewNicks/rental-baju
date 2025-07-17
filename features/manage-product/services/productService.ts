@@ -1,13 +1,16 @@
 import { PrismaClient, Prisma, ProductStatus } from '@prisma/client'
-import { productSchema, updateProductSchema } from '../lib/validation/productSchema'
+import { createProductSchema, updateProductSchema } from '../lib/validation/productSchema'
 import { CreateProductRequest, UpdateProductRequest } from '../types'
 import { logger } from '../../../services/logger'
+import { storageUtils } from '@/lib/supabase'
 
 export const ERROR_MESSAGES = {
   DATABASE_CONNECTION: 'Gagal mengambil daftar produk',
   UNIQUE_CONSTRAINT: 'Kode produk sudah digunakan',
   CATEGORY_NOT_FOUND: 'Kategori tidak ditemukan',
   VALIDATION_FAILED: 'Validasi produk gagal',
+  FILE_UPLOAD_FAILED: 'Gagal mengupload file',
+  FILE_DELETE_FAILED: 'Gagal menghapus file',
 }
 
 export class ProductService {
@@ -106,13 +109,14 @@ export class ProductService {
 
   /**
    * Membuat produk baru dengan validasi dan logika bisnis
+   * Mendukung file upload untuk image produk
    *
-   * @param data - Data produk yang akan dibuat
+   * @param data - Data produk yang akan dibuat (bisa berisi File untuk image)
    * @param createdBy - ID pengguna yang membuat produk
    * @returns Produk yang berhasil dibuat
    * @throws {Error} Jika validasi gagal, kategori tidak ditemukan, atau kode produk sudah digunakan
    */
-  async createProduct(data: CreateProductRequest, createdBy: string) {
+  async createProduct(data: CreateProductRequest & { image?: File }, createdBy: string) {
     try {
       // Cek kategori terlebih dahulu
       const category = await this.prisma.category.findUnique({
@@ -134,8 +138,8 @@ export class ProductService {
         throw new Error(ERROR_MESSAGES.UNIQUE_CONSTRAINT)
       }
 
-      // Validasi skema input
-      const parsed = productSchema.safeParse(data)
+      // Validasi skema input dengan support file upload
+      const parsed = createProductSchema.safeParse(data)
       if (!parsed.success) {
         this.log.warn('createProduct', 'Validasi produk gagal', {
           errors: parsed.error.errors,
@@ -143,16 +147,46 @@ export class ProductService {
         throw new Error(ERROR_MESSAGES.VALIDATION_FAILED)
       }
 
-      // Buat produk
+      let imageUrl: string | undefined
+
+      // Upload image jika ada
+      if (data.image) {
+        try {
+          this.log.info('createProduct', 'Uploading product image', {
+            fileName: data.image.name,
+            fileSize: data.image.size,
+          })
+
+          imageUrl = await storageUtils.uploadProductImage(data.image)
+          this.log.info('createProduct', 'Image uploaded successfully', { imageUrl })
+        } catch (uploadError) {
+          this.log.error('createProduct', 'Failed to upload image', { uploadError })
+          throw new Error(ERROR_MESSAGES.FILE_UPLOAD_FAILED)
+        }
+      }
+
+      // Buat produk dengan imageUrl jika ada
+      // Pisahkan data produk dari file untuk menghindari serialization error
+      const productData = {
+        code: parsed.data.code,
+        name: parsed.data.name,
+        description: parsed.data.description,
+        modalAwal: parsed.data.modalAwal,
+        hargaSewa: parsed.data.hargaSewa,
+        quantity: parsed.data.quantity,
+        categoryId: parsed.data.categoryId,
+        imageUrl,
+        createdBy,
+        status: ProductStatus.AVAILABLE,
+        isActive: true,
+      }
+
       const product = await this.prisma.product.create({
-        data: {
-          ...data,
-          createdBy,
-          status: ProductStatus.AVAILABLE,
-          isActive: true,
-        },
+        data: productData,
+        include: { category: true },
       })
 
+      this.log.info('createProduct', 'Product created successfully', { productId: product.id })
       return product
     } catch (error) {
       // Tangani error transaksi atau validasi
@@ -169,13 +203,14 @@ export class ProductService {
 
   /**
    * Memperbarui detail produk yang sudah ada
+   * Mendukung file upload untuk image produk
    *
    * @param id - ID produk yang akan diperbarui
-   * @param data - Data produk yang akan diupdate
+   * @param data - Data produk yang akan diupdate (bisa berisi File untuk image)
    * @returns Produk yang berhasil diperbarui
    * @throws {Error} Jika validasi gagal, produk tidak ditemukan, atau kode produk sudah digunakan
    */
-  async updateProduct(id: string, data: UpdateProductRequest) {
+  async updateProduct(id: string, data: UpdateProductRequest & { image?: File }) {
     try {
       const parsed = updateProductSchema.safeParse(data)
       if (!parsed.success) {
@@ -209,15 +244,57 @@ export class ProductService {
         }
       }
 
+      let imageUrl: string | undefined = product.imageUrl || undefined
+      let oldImagePath: string | null = null
+
+      // Handle image upload jika ada file baru
+      if (data.image) {
+        try {
+          this.log.info('updateProduct', 'Uploading new product image', {
+            fileName: data.image.name,
+            fileSize: data.image.size,
+          })
+
+          // Upload image baru
+          imageUrl = await storageUtils.uploadProductImage(data.image)
+          this.log.info('updateProduct', 'New image uploaded successfully', { imageUrl })
+
+          // Simpan path image lama untuk cleanup
+          if (product.imageUrl) {
+            oldImagePath = storageUtils.extractFilePathFromUrl(product.imageUrl)
+          }
+        } catch (uploadError) {
+          this.log.error('updateProduct', 'Failed to upload new image', { uploadError })
+          throw new Error(ERROR_MESSAGES.FILE_UPLOAD_FAILED)
+        }
+      }
+
+      // Update produk
       const updatedProduct = await this.prisma.product.update({
         where: { id },
         data: {
           ...parsed.data,
+          imageUrl,
           updatedAt: new Date(),
         },
         include: { category: true },
       })
 
+      // Cleanup image lama jika berhasil update
+      if (oldImagePath) {
+        try {
+          await storageUtils.deleteProductImage(oldImagePath)
+          this.log.info('updateProduct', 'Old image deleted successfully', { oldImagePath })
+        } catch (deleteError) {
+          this.log.warn('updateProduct', 'Failed to delete old image', {
+            deleteError,
+            oldImagePath,
+          })
+          // Tidak throw error karena ini bukan critical operation
+        }
+      }
+
+      this.log.info('updateProduct', 'Product updated successfully', { productId: id })
       return updatedProduct
     } catch (error) {
       this.log.error('updateProduct', 'Failed to update product', { error })
@@ -227,6 +304,7 @@ export class ProductService {
 
   /**
    * Menghapus produk secara soft delete
+   * Juga menghapus image file dari storage jika ada
    *
    * @param id - ID produk yang akan dihapus
    * @returns Boolean yang menandakan keberhasilan operasi
@@ -240,6 +318,7 @@ export class ProductService {
         throw new Error('Produk tidak ditemukan')
       }
 
+      // Soft delete produk
       await this.prisma.product.update({
         where: { id },
         data: {
@@ -249,6 +328,21 @@ export class ProductService {
         },
       })
 
+      // Cleanup image file jika ada
+      if (product.imageUrl) {
+        try {
+          const imagePath = storageUtils.extractFilePathFromUrl(product.imageUrl)
+          if (imagePath) {
+            await storageUtils.deleteProductImage(imagePath)
+            this.log.info('deleteProduct', 'Product image deleted successfully', { imagePath })
+          }
+        } catch (deleteError) {
+          this.log.warn('deleteProduct', 'Failed to delete product image', { deleteError })
+          // Tidak throw error karena ini bukan critical operation
+        }
+      }
+
+      this.log.info('deleteProduct', 'Product deleted successfully', { productId: id })
       return true
     } catch (error) {
       this.log.error('deleteProduct', 'Failed to delete product', { error })

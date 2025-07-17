@@ -1,239 +1,228 @@
 {
-  "numTotalTests": 22,
-  "numPassedTests": 22,
+  "numTotalTests": 19,
+  "numPassedTests": 19,
   "numFailedTests": 0,
   "numPendingTests": 0,
-  "startTime": "2025-07-17T01:36:06.437Z",
-  "endTime": "2025-07-17T01:36:10.095Z",
+  "startTime": "2025-07-17T08:52:41.990Z",
+  "endTime": "2025-07-17T08:52:48.253Z",
   "testResults": [
     {
-      "testFilePath": "D:\\.work\\rental-software\\features\\manage-product\\services\\categoryService.test.ts",
+      "testFilePath": "D:\\.work\\rental-software\\__tests__\\integration\\manage-product\\categoryService.integration.test.ts",
       "testFileResults": [
         {
           "ancestorTitles": [
-            "CategoryService"
+            "CategoryService ↔ Database Integration",
+            "Database Connection Handling"
           ],
-          "fullName": "CategoryService should return list of categories",
+          "fullName": "CategoryService ↔ Database Integration Database Connection Handling should handle database connection failure gracefully",
           "status": "passed",
-          "title": "should return list of categories",
+          "title": "should handle database connection failure gracefully",
           "failureMessages": [],
-          "duration": 8
+          "duration": 22
         },
         {
           "ancestorTitles": [
-            "CategoryService"
+            "CategoryService ↔ Database Integration",
+            "Transaction Management"
           ],
-          "fullName": "CategoryService should return category detail by id",
+          "fullName": "CategoryService ↔ Database Integration Transaction Management should handle transaction rollback on partial failure",
           "status": "passed",
-          "title": "should return category detail by id",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "CategoryService"
-          ],
-          "fullName": "CategoryService should create category with valid data",
-          "status": "passed",
-          "title": "should create category with valid data",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "CategoryService"
-          ],
-          "fullName": "CategoryService should not create category with duplicate name",
-          "status": "passed",
-          "title": "should not create category with duplicate name",
-          "failureMessages": [],
-          "duration": 13
-        },
-        {
-          "ancestorTitles": [
-            "CategoryService"
-          ],
-          "fullName": "CategoryService should update category with valid data",
-          "status": "passed",
-          "title": "should update category with valid data",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "CategoryService"
-          ],
-          "fullName": "CategoryService should not update non-existent category",
-          "status": "passed",
-          "title": "should not update non-existent category",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "CategoryService"
-          ],
-          "fullName": "CategoryService should delete category if not in use",
-          "status": "passed",
-          "title": "should delete category if not in use",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "CategoryService"
-          ],
-          "fullName": "CategoryService should not delete category if in use",
-          "status": "passed",
-          "title": "should not delete category if in use",
-          "failureMessages": [],
-          "duration": 0
-        },
-        {
-          "ancestorTitles": [
-            "CategoryService"
-          ],
-          "fullName": "CategoryService should validate unique category name",
-          "status": "passed",
-          "title": "should validate unique category name",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "CategoryService"
-          ],
-          "fullName": "CategoryService should check if category is in use",
-          "status": "passed",
-          "title": "should check if category is in use",
-          "failureMessages": [],
-          "duration": 0
-        },
-        {
-          "ancestorTitles": [
-            "CategoryService"
-          ],
-          "fullName": "CategoryService should throw validation error for invalid data",
-          "status": "passed",
-          "title": "should throw validation error for invalid data",
-          "failureMessages": [],
-          "duration": 4
-        }
-      ],
-      "failureMessage": null
-    },
-    {
-      "testFilePath": "D:\\.work\\rental-software\\features\\manage-product\\services\\productService.test.ts",
-      "testFileResults": [
-        {
-          "ancestorTitles": [
-            "ProductService"
-          ],
-          "fullName": "ProductService should return paginated list of products with filters",
-          "status": "passed",
-          "title": "should return paginated list of products with filters",
+          "title": "should handle transaction rollback on partial failure",
           "failureMessages": [],
           "duration": 6
         },
         {
           "ancestorTitles": [
-            "ProductService"
+            "CategoryService ↔ Database Integration",
+            "Transaction Management"
           ],
-          "fullName": "ProductService should return product detail by id",
+          "fullName": "CategoryService ↔ Database Integration Transaction Management should handle successful transaction completion",
           "status": "passed",
-          "title": "should return product detail by id",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "ProductService"
-          ],
-          "fullName": "ProductService should create product with valid data",
-          "status": "passed",
-          "title": "should create product with valid data",
+          "title": "should handle successful transaction completion",
           "failureMessages": [],
           "duration": 2
         },
         {
           "ancestorTitles": [
-            "ProductService"
+            "CategoryService ↔ Database Integration",
+            "Concurrent Access Handling"
           ],
-          "fullName": "ProductService should not create product with duplicate code",
+          "fullName": "CategoryService ↔ Database Integration Concurrent Access Handling should handle concurrent category updates",
+          "status": "passed",
+          "title": "should handle concurrent category updates",
+          "failureMessages": [],
+          "duration": 2
+        },
+        {
+          "ancestorTitles": [
+            "CategoryService ↔ Database Integration",
+            "Constraint Violation Handling"
+          ],
+          "fullName": "CategoryService ↔ Database Integration Constraint Violation Handling should handle unique category name constraint",
+          "status": "passed",
+          "title": "should handle unique category name constraint",
+          "failureMessages": [],
+          "duration": 2
+        },
+        {
+          "ancestorTitles": [
+            "CategoryService ↔ Database Integration",
+            "Constraint Violation Handling"
+          ],
+          "fullName": "CategoryService ↔ Database Integration Constraint Violation Handling should prevent deleting category with associated products",
+          "status": "passed",
+          "title": "should prevent deleting category with associated products",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "CategoryService ↔ Database Integration",
+            "Error Propagation"
+          ],
+          "fullName": "CategoryService ↔ Database Integration Error Propagation should propagate database errors with meaningful messages",
+          "status": "passed",
+          "title": "should propagate database errors with meaningful messages",
+          "failureMessages": [],
+          "duration": 3
+        }
+      ],
+      "failureMessage": null
+    },
+    {
+      "testFilePath": "D:\\.work\\rental-software\\__tests__\\integration\\manage-product\\productService.integration.test.ts",
+      "testFileResults": [
+        {
+          "ancestorTitles": [
+            "ProductService ↔ Database Integration",
+            "Product-Category Integration"
+          ],
+          "fullName": "ProductService ↔ Database Integration Product-Category Integration should create product and assign to category without image",
+          "status": "passed",
+          "title": "should create product and assign to category without image",
+          "failureMessages": [],
+          "duration": 91
+        },
+        {
+          "ancestorTitles": [
+            "ProductService ↔ Database Integration",
+            "Product-Category Integration"
+          ],
+          "fullName": "ProductService ↔ Database Integration Product-Category Integration should create product with image upload",
+          "status": "passed",
+          "title": "should create product with image upload",
+          "failureMessages": [],
+          "duration": 8
+        },
+        {
+          "ancestorTitles": [
+            "ProductService ↔ Database Integration",
+            "Product-Category Integration"
+          ],
+          "fullName": "ProductService ↔ Database Integration Product-Category Integration should handle image upload failure during product creation",
+          "status": "passed",
+          "title": "should handle image upload failure during product creation",
+          "failureMessages": [],
+          "duration": 29
+        },
+        {
+          "ancestorTitles": [
+            "ProductService ↔ Database Integration",
+            "Constraint Violation Handling"
+          ],
+          "fullName": "ProductService ↔ Database Integration Constraint Violation Handling should not create product with non-existent category",
+          "status": "passed",
+          "title": "should not create product with non-existent category",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "ProductService ↔ Database Integration",
+            "Constraint Violation Handling"
+          ],
+          "fullName": "ProductService ↔ Database Integration Constraint Violation Handling should not create product with duplicate code",
           "status": "passed",
           "title": "should not create product with duplicate code",
           "failureMessages": [],
-          "duration": 20
+          "duration": 1
         },
         {
           "ancestorTitles": [
-            "ProductService"
+            "ProductService ↔ Database Integration",
+            "Concurrent Operation Handling"
           ],
-          "fullName": "ProductService should update product with valid data",
+          "fullName": "ProductService ↔ Database Integration Concurrent Operation Handling should handle concurrent product creation with same code",
           "status": "passed",
-          "title": "should update product with valid data",
-          "failureMessages": [],
-          "duration": 3
-        },
-        {
-          "ancestorTitles": [
-            "ProductService"
-          ],
-          "fullName": "ProductService should not update non-existent product",
-          "status": "passed",
-          "title": "should not update non-existent product",
+          "title": "should handle concurrent product creation with same code",
           "failureMessages": [],
           "duration": 2
         },
         {
           "ancestorTitles": [
-            "ProductService"
+            "ProductService ↔ Database Integration",
+            "Update and Delete Operations"
           ],
-          "fullName": "ProductService should soft delete product",
+          "fullName": "ProductService ↔ Database Integration Update and Delete Operations should update product and reflect changes without image",
           "status": "passed",
-          "title": "should soft delete product",
+          "title": "should update product and reflect changes without image",
           "failureMessages": [],
-          "duration": 1
+          "duration": 4
         },
         {
           "ancestorTitles": [
-            "ProductService"
+            "ProductService ↔ Database Integration",
+            "Update and Delete Operations"
           ],
-          "fullName": "ProductService should validate unique product code",
+          "fullName": "ProductService ↔ Database Integration Update and Delete Operations should update product with new image and cleanup old image",
           "status": "passed",
-          "title": "should validate unique product code",
+          "title": "should update product with new image and cleanup old image",
           "failureMessages": [],
-          "duration": 1
+          "duration": 17
         },
         {
           "ancestorTitles": [
-            "ProductService"
+            "ProductService ↔ Database Integration",
+            "Update and Delete Operations"
           ],
-          "fullName": "ProductService should update product status",
+          "fullName": "ProductService ↔ Database Integration Update and Delete Operations should handle image upload failure during update",
           "status": "passed",
-          "title": "should update product status",
+          "title": "should handle image upload failure during update",
           "failureMessages": [],
-          "duration": 1
+          "duration": 5
         },
         {
           "ancestorTitles": [
-            "ProductService"
+            "ProductService ↔ Database Integration",
+            "Update and Delete Operations"
           ],
-          "fullName": "ProductService should update total pendapatan",
+          "fullName": "ProductService ↔ Database Integration Update and Delete Operations should soft delete product without image cleanup",
           "status": "passed",
-          "title": "should update total pendapatan",
+          "title": "should soft delete product without image cleanup",
           "failureMessages": [],
-          "duration": 1
+          "duration": 2
         },
         {
           "ancestorTitles": [
-            "ProductService"
+            "ProductService ↔ Database Integration",
+            "Update and Delete Operations"
           ],
-          "fullName": "ProductService should throw validation error for invalid data",
+          "fullName": "ProductService ↔ Database Integration Update and Delete Operations should soft delete product with image cleanup",
           "status": "passed",
-          "title": "should throw validation error for invalid data",
+          "title": "should soft delete product with image cleanup",
           "failureMessages": [],
-          "duration": 0
+          "duration": 2
+        },
+        {
+          "ancestorTitles": [
+            "ProductService ↔ Database Integration",
+            "Update and Delete Operations"
+          ],
+          "fullName": "ProductService ↔ Database Integration Update and Delete Operations should handle image cleanup failure gracefully during delete",
+          "status": "passed",
+          "title": "should handle image cleanup failure gracefully during delete",
+          "failureMessages": [],
+          "duration": 2
         }
       ],
       "failureMessage": null

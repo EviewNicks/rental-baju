@@ -1,6 +1,12 @@
 import { z } from 'zod'
 
-export const productSchema = z.object({
+// ============== BASE SCHEMAS ==============
+
+/**
+ * Base schema untuk produk yang bisa di-extend
+ * Berisi validasi dasar yang digunakan di semua operasi produk
+ */
+export const productBaseSchema = z.object({
   code: z
     .string()
     .min(1, 'Kode produk wajib diisi')
@@ -20,6 +26,51 @@ export const productSchema = z.object({
   categoryId: z.string().uuid('ID kategori tidak valid'),
 })
 
+/**
+ * Schema untuk file validation yang bisa digunakan di berbagai tempat
+ * Perbaikan: Handle undefined dan null dengan lebih baik
+ */
+export const imageFileSchema = z
+  .union([z.instanceof(File), z.undefined(), z.null()])
+  .refine((file) => {
+    if (!file) return true // Allow undefined/null
+    if (!(file instanceof File)) return false
+    return file.size <= 5 * 1024 * 1024
+  }, 'Ukuran file maksimal 5MB')
+  .refine((file) => {
+    if (!file) return true // Allow undefined/null
+    if (!(file instanceof File)) return false
+    return ['image/jpeg', 'image/png', 'image/webp'].includes(file.type)
+  }, 'Format file harus JPG, PNG, atau WebP')
+
+// ============== PRODUCT SCHEMAS ==============
+
+/**
+ * Schema untuk produk dengan imageUrl (hasil dari database)
+ * Digunakan untuk response dan validasi data yang sudah ada
+ */
+export const productSchema = productBaseSchema.extend({
+  imageUrl: z.string().url('URL gambar tidak valid').optional(),
+})
+
+/**
+ * Schema untuk create product dengan file upload
+ * Perbaikan: Gunakan union type untuk handle optional file dengan lebih baik
+ */
+export const createProductSchema = productBaseSchema.extend({
+  image: z.union([z.instanceof(File), z.undefined(), z.null()]).optional(),
+})
+
+/**
+ * Schema untuk update product dengan file upload
+ * Digunakan untuk multipart form data saat update
+ */
+export const updateProductSchema = productBaseSchema.partial().extend({
+  image: imageFileSchema.optional(),
+})
+
+// ============== CATEGORY SCHEMAS ==============
+
 export const categorySchema = z.object({
   name: z
     .string()
@@ -30,4 +81,42 @@ export const categorySchema = z.object({
 
 export const updateCategorySchema = categorySchema.partial()
 
-export const updateProductSchema = productSchema.partial()
+// ============== QUERY & PARAMS SCHEMAS ==============
+
+/**
+ * Skema validasi query parameter untuk endpoint produk
+ * Memastikan tipe dan batasan parameter yang diterima
+ */
+export const productQuerySchema = z.object({
+  page: z.coerce.number().min(1).default(1),
+  limit: z.coerce.number().min(1).max(100).default(10),
+  search: z.string().optional(),
+  categoryId: z.string().optional(),
+  status: z.enum(['AVAILABLE', 'RENTED', 'MAINTENANCE']).optional(),
+  isActive: z.coerce.boolean().optional(),
+})
+
+/**
+ * Skema validasi parameter route untuk produk
+ * Memastikan ID produk valid
+ */
+export const productParamsSchema = z.object({
+  id: z.string().uuid('ID produk tidak valid'),
+})
+
+/**
+ * Skema validasi query parameter untuk endpoint kategori
+ * Memastikan tipe dan batasan parameter yang diterima
+ */
+export const categoryQuerySchema = z.object({
+  search: z.string().optional(),
+  includeProducts: z.coerce.boolean().optional().default(false),
+})
+
+/**
+ * Skema validasi parameter route untuk kategori
+ * Memastikan ID kategori valid
+ */
+export const categoryParamsSchema = z.object({
+  id: z.string().uuid('ID kategori tidak valid'),
+})

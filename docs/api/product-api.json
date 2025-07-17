@@ -1,0 +1,369 @@
+{
+  "info": {
+    "name": "Product Management API",
+    "description": "API untuk manajemen produk dan kategori rental software",
+    "version": "1.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Products",
+      "item": [
+        {
+          "name": "Get All Products",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/products?page=1&limit=10&search=&categoryId=&status=&isActive=",
+              "host": ["{{baseUrl}}"],
+              "path": ["products"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Halaman yang diminta (default: 1)"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Jumlah produk per halaman (default: 10, max: 100)"
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "description": "Pencarian berdasarkan nama atau kode produk (opsional)"
+                },
+                {
+                  "key": "categoryId",
+                  "value": "",
+                  "description": "Filter berdasarkan ID kategori (opsional)"
+                },
+                {
+                  "key": "status",
+                  "value": "",
+                  "description": "Filter berdasarkan status (AVAILABLE, RENTED, MAINTENANCE) (opsional)"
+                },
+                {
+                  "key": "isActive",
+                  "value": "",
+                  "description": "Filter berdasarkan status aktif (true/false) (opsional)"
+                }
+              ]
+            },
+            "description": "Mendapatkan daftar produk dengan pagination dan filtering"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Product by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/products/{productId}",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "{productId}"],
+              "variable": [
+                {
+                  "key": "productId",
+                  "value": "uuid-product-id",
+                  "description": "ID produk yang akan diambil"
+                }
+              ]
+            },
+            "description": "Mendapatkan detail produk berdasarkan ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Product",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "multipart/form-data"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "code", "value": "PRD1", "type": "text" },
+                { "key": "name", "value": "Baju Pesta Merah", "type": "text" },
+                {
+                  "key": "description",
+                  "value": "Baju pesta warna merah dengan model elegan",
+                  "type": "text"
+                },
+                { "key": "modalAwal", "value": "150000", "type": "text" },
+                { "key": "hargaSewa", "value": "50000", "type": "text" },
+                { "key": "quantity", "value": "5", "type": "text" },
+                { "key": "categoryId", "value": "uuid-category-id", "type": "text" },
+                { "key": "image", "type": "file", "src": "" }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/products",
+              "host": ["{{baseUrl}}"],
+              "path": ["products"]
+            },
+            "description": "Membuat produk baru dengan validasi ketat.\n\nMendukung dua format:\n- JSON (tanpa gambar)\n- multipart/form-data (dengan gambar, field 'image' bertipe File, opsional)"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Product",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "multipart/form-data"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "name", "value": "Baju Pesta Merah Updated", "type": "text" },
+                {
+                  "key": "description",
+                  "value": "Baju pesta warna merah dengan model elegan yang diperbarui",
+                  "type": "text"
+                },
+                { "key": "modalAwal", "value": "160000", "type": "text" },
+                { "key": "hargaSewa", "value": "55000", "type": "text" },
+                { "key": "quantity", "value": "6", "type": "text" },
+                { "key": "categoryId", "value": "uuid-category-id", "type": "text" },
+                { "key": "image", "type": "file", "src": "" }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/products/{productId}",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "{productId}"],
+              "variable": [
+                {
+                  "key": "productId",
+                  "value": "uuid-product-id",
+                  "description": "ID produk yang akan diupdate"
+                }
+              ]
+            },
+            "description": "Memperbarui detail produk yang sudah ada.\n\nMendukung dua format:\n- JSON (tanpa gambar)\n- multipart/form-data (dengan gambar, field 'image' bertipe File, opsional)"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Product",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/products/{productId}",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "{productId}"],
+              "variable": [
+                {
+                  "key": "productId",
+                  "value": "uuid-product-id",
+                  "description": "ID produk yang akan dihapus (soft delete)"
+                }
+              ]
+            },
+            "description": "Melakukan soft delete pada produk"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Categories",
+      "item": [
+        {
+          "name": "Get All Categories",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/categories?search=&includeProducts=false",
+              "host": ["{{baseUrl}}"],
+              "path": ["categories"],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "",
+                  "description": "Pencarian berdasarkan nama kategori (opsional)"
+                },
+                {
+                  "key": "includeProducts",
+                  "value": "false",
+                  "description": "Menyertakan daftar produk dalam response (opsional)"
+                }
+              ]
+            },
+            "description": "Mendapatkan daftar kategori dengan opsi opsional untuk menyertakan produk"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Category by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/categories/{categoryId}",
+              "host": ["{{baseUrl}}"],
+              "path": ["categories", "{categoryId}"],
+              "variable": [
+                {
+                  "key": "categoryId",
+                  "value": "uuid-category-id",
+                  "description": "ID kategori yang akan diambil"
+                }
+              ]
+            },
+            "description": "Mendapatkan detail kategori berdasarkan ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Category",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Baju Pesta\",\n  \"color\": \"#FF0000\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/categories",
+              "host": ["{{baseUrl}}"],
+              "path": ["categories"]
+            },
+            "description": "Membuat kategori baru dengan validasi ketat"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Category",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Baju Pesta Updated\",\n  \"color\": \"#FF4444\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/categories/{categoryId}",
+              "host": ["{{baseUrl}}"],
+              "path": ["categories", "{categoryId}"],
+              "variable": [
+                {
+                  "key": "categoryId",
+                  "value": "uuid-category-id",
+                  "description": "ID kategori yang akan diupdate"
+                }
+              ]
+            },
+            "description": "Memperbarui detail kategori yang sudah ada"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Category",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/categories/{categoryId}",
+              "host": ["{{baseUrl}}"],
+              "path": ["categories", "{categoryId}"],
+              "variable": [
+                {
+                  "key": "categoryId",
+                  "value": "uuid-category-id",
+                  "description": "ID kategori yang akan dihapus"
+                }
+              ]
+            },
+            "description": "Menghapus kategori dari database (jika tidak digunakan oleh produk aktif)"
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Pre-request script untuk menambahkan authorization header jika diperlukan",
+          "// pm.request.headers.add({",
+          "//   key: 'Authorization',",
+          "//   value: 'Bearer ' + pm.environment.get('token')",
+          "// });"
+        ]
+      }
+    }
+  ]
+}

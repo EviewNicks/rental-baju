@@ -10,7 +10,7 @@ export default function HeroSection() {
 
   useEffect(() => {
     setIsVisible(true)
-  }, [])
+  }, [])=
 
   return (
     <section
