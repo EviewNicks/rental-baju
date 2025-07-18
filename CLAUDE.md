@@ -11,7 +11,7 @@
 ## Arsitektur Utama
 
 - **Feature-First:** Kode diorganisir di `/features/[feature-name]/`
-- **3-Tier:** Presentation → Business Logic → Data Access
+- **3-Tier:** Presentation → Business Logic -> api layer -> service layer → Data Access
 - **State Management:** Feature Context (global Feature) + Custom Hooks (feature) + useState (component)
 
 ## Struktur Folder
@@ -98,3 +98,8 @@ yarn test:e2e     # E2E tests
 - Reference implemented patterns for consistency
 - Apply learned solutions to similar problems
 - Maintain awareness of project constraints and requirements
+
+## Architecture Documentation
+
+- Referensi arsitektur project tersimpan di `/docs/rules/architecture.md`
+- Dokumentasi menjelaskan detail arsitektur, struktur folder, dan aturan pengembangan
