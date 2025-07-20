@@ -2,7 +2,11 @@
   "permissions": {
     "allow": [
       "Bash(SuperClaude install:*)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(yarn test:*)",
+      "Bash(yarn lint:*)",
+      "Bash(npx tsc:*)",
+      "Bash(yarn tsc:*)"
     ],
     "deny": []
   }

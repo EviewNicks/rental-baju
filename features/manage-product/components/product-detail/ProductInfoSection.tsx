@@ -86,13 +86,13 @@ export function ProductInfoSection({ product, className }: ProductInfoSectionPro
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <InfoField label="Modal Awal">
             <p className="text-lg font-semibold text-gray-900">
-              {formatCurrency(product.modalAwal)}
+              {formatCurrency(Number(product.modalAwal))}
             </p>
           </InfoField>
 
           <InfoField label="Harga Sewa">
             <p className="text-lg font-semibold text-yellow-600">
-              {formatCurrency(product.hargaSewa)}
+              {formatCurrency(Number(product.hargaSewa))}
             </p>
           </InfoField>
         </div>
@@ -113,7 +113,7 @@ export function ProductInfoSection({ product, className }: ProductInfoSectionPro
 
           <InfoField label="Total Pendapatan">
             <p className="text-lg font-semibold text-green-600">
-              {formatCurrency(product.totalPendapatan)}
+              {formatCurrency(Number(product.totalPendapatan))}
             </p>
           </InfoField>
         </div>

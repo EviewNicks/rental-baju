@@ -66,7 +66,7 @@ export function ColorPicker({ value, onChange, className }: ColorPickerProps) {
           Atau Pilih Warna Kustom
         </Label>
         <div className="flex items-center space-x-3">
-          <input
+          <Input
             id="custom-color"
             type="color"
             value={customColor}

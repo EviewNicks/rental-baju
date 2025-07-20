@@ -18,7 +18,7 @@ export function useProductFilters({ products }: UseProductFiltersProps) {
       const matchesSearch =
         product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         product.code.toLowerCase().includes(searchTerm.toLowerCase())
-      const matchesCategory = selectedCategory === 'Semua' || product.category === selectedCategory
+      const matchesCategory = selectedCategory === 'Semua' || product.category.name === selectedCategory
       const matchesStatus = selectedStatus === 'Semua' || product.status === selectedStatus
 
       return matchesSearch && matchesCategory && matchesStatus

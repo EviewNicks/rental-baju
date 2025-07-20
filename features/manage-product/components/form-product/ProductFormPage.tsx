@@ -13,7 +13,19 @@ import {
 } from '@/components/ui/breadcrumb'
 import { ProductForm } from '@/features/manage-product/components/form-product/ProductForm'
 import { useFormValidation } from '@/features/manage-product/hooks/useFormValidation'
-import type { Product, Category, ProductFormData } from '@/features/manage-product/types'
+import type { Product, Category } from '@/features/manage-product/types'
+
+// Local form data interface with numbers for form handling
+interface ProductFormData {
+  code: string
+  name: string
+  categoryId: string
+  quantity: number
+  modalAwal: number
+  hargaSewa: number
+  description: string
+  imageUrl: string | null
+}
 // Jika ingin menggunakan mock data saat development, import mock-categories
 // import { mockCategories } from '@/features/manage-product/data/mock-categories'
 
@@ -85,8 +97,8 @@ export function ProductFormPage({
     name: product?.name || '',
     categoryId: product?.categoryId || '',
     quantity: product?.quantity || 1,
-    modalAwal: product?.modalAwal || 0,
-    hargaSewa: product?.hargaSewa || 0,
+    modalAwal: product?.modalAwal ? Number(product.modalAwal) : 0,
+    hargaSewa: product?.hargaSewa ? Number(product.hargaSewa) : 0,
     description: product?.description || '',
     imageUrl: product?.imageUrl || null,
   })

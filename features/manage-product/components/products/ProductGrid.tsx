@@ -54,12 +54,12 @@ export function ProductGrid({ products, onProductClick }: ProductGridProps) {
               <div className="space-y-1 text-xs text-gray-600">
                 <div className="flex justify-between">
                   <span>Harga Sewa:</span>
-                  <span className="font-medium">{formatCurrency(product.hargaSewa)}</span>
+                  <span className="font-medium">{formatCurrency(Number(product.hargaSewa))}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Pendapatan:</span>
                   <span className="font-medium text-green-600">
-                    {formatCurrency(product.totalPendapatan)}
+                    {formatCurrency(Number(product.totalPendapatan))}
                   </span>
                 </div>
               </div>

@@ -1,6 +1,6 @@
 # Generate Unit Tests for Architecture Layers
 
-Buat unit tests untuk architecture layers (Service, Hook, Adapter) dalam proyek ini, menggunakan pendekatan sederhana namun comprehensive. Test akan mencakup happy path, edge cases, error handling, dan best practices.
+Buat unit tests untuk architecture layers (Service, Hook, Adapter) dalam proyek ini, menggunakan pendekatan sederhana namun comprehensive. Test akan mencakup happy path, edge cases, error handling, dan best practices.kita menggunakan pendekatan TDD jadi buatlah  unit tets seelum mengerjakan file code nya 
 
 ## Instruksi
 
