@@ -1,13 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { CategoryList } from './CategoryList'
 import { CategoryForm } from './CategoryForm'
 import { DeleteConfirmationDialog } from './DeleteConfirmationDialog'
-import { mockCategories } from '@/features/manage-product/data/mock-categories'
-import { generateCategoryColors } from '@/features/manage-product/lib/utils/color'
+import { useCategories, useCreateCategory, useUpdateCategory, useDeleteCategory } from '@/features/manage-product/hooks/useCategories'
+import { showSuccess, showError } from '@/lib/notifications'
 import type { Category, CategoryFormData, CategoryModalMode } from '@/features/manage-product/types'
 
 interface CategoryManagementModalProps {
@@ -16,32 +16,17 @@ interface CategoryManagementModalProps {
 }
 
 export function CategoryManagementModal({ isOpen, onClose }: CategoryManagementModalProps) {
-  const [categories, setCategories] = useState<Category[]>([])
-  const [loading, setLoading] = useState(true)
   const [mode, setMode] = useState<CategoryModalMode>('view')
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [deleteLoading, setDeleteLoading] = useState(false)
 
-  // Load categories on modal open
-  useEffect(() => {
-    if (isOpen) {
-      loadCategories()
-    }
-  }, [isOpen])
+  // API hooks
+  const { data: categoriesData, isLoading: loading, error } = useCategories()
+  const createCategoryMutation = useCreateCategory()
+  const updateCategoryMutation = useUpdateCategory()
+  const deleteCategoryMutation = useDeleteCategory()
 
-  const loadCategories = async () => {
-    setLoading(true)
-    try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      setCategories(mockCategories)
-    } catch (error) {
-      console.error('Error loading categories:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
+  const categories = categoriesData?.categories || []
 
   const handleAddCategory = () => {
     setSelectedCategory(null)
@@ -60,44 +45,28 @@ export function CategoryManagementModal({ isOpen, onClose }: CategoryManagementM
 
   const handleFormSubmit = async (formData: CategoryFormData) => {
     try {
-      const colors = generateCategoryColors(formData.color)
-
       if (mode === 'add') {
-        // Simulate API call for adding category
-        await new Promise((resolve) => setTimeout(resolve, 1500))
-
-        const newCategory: Category = {
-          id: Date.now().toString(),
+        await createCategoryMutation.mutateAsync({
           name: formData.name,
-          ...colors,
-          products: [],
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          createdBy: 'user-1',
-        }
-
-        setCategories((prev) => [...prev, newCategory])
+          color: formData.color,
+        })
+        showSuccess('Kategori berhasil ditambahkan', `Kategori ${formData.name} telah dibuat`)
       } else if (mode === 'edit' && selectedCategory) {
-        // Simulate API call for updating category
-        await new Promise((resolve) => setTimeout(resolve, 1500))
-
-        setCategories((prev) =>
-          prev.map((cat) =>
-            cat.id === selectedCategory.id
-              ? {
-                  ...cat,
-                  name: formData.name,
-                  ...colors,
-                  updatedAt: new Date(),
-                }
-              : cat,
-          ),
-        )
+        await updateCategoryMutation.mutateAsync({
+          id: selectedCategory.id,
+          data: {
+            name: formData.name,
+            color: formData.color,
+          },
+        })
+        showSuccess('Kategori berhasil diperbarui', `Perubahan pada kategori ${formData.name} telah disimpan`)
       }
 
       setMode('view')
       setSelectedCategory(null)
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Gagal menyimpan kategori'
+      showError('Gagal menyimpan kategori', errorMessage)
       console.error('Error saving category:', error)
       throw error
     }
@@ -111,18 +80,15 @@ export function CategoryManagementModal({ isOpen, onClose }: CategoryManagementM
   const handleConfirmDelete = async () => {
     if (!selectedCategory) return
 
-    setDeleteLoading(true)
     try {
-      // Simulate API call for deleting category
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-
-      setCategories((prev) => prev.filter((cat) => cat.id !== selectedCategory.id))
+      await deleteCategoryMutation.mutateAsync(selectedCategory.id)
+      showSuccess('Kategori berhasil dihapus', `Kategori ${selectedCategory.name} telah dihapus`)
       setDeleteDialogOpen(false)
       setSelectedCategory(null)
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Gagal menghapus kategori'
+      showError('Gagal menghapus kategori', errorMessage)
       console.error('Error deleting category:', error)
-    } finally {
-      setDeleteLoading(false)
     }
   }
 
@@ -164,7 +130,7 @@ export function CategoryManagementModal({ isOpen, onClose }: CategoryManagementM
                   <Button
                     onClick={handleAddCategory}
                     className="bg-yellow-400 hover:bg-yellow-500 text-black"
-                    disabled={loading}
+                    disabled={loading || createCategoryMutation.isPending || updateCategoryMutation.isPending}
                   >
                     Tambah Kategori
                   </Button>
@@ -177,6 +143,7 @@ export function CategoryManagementModal({ isOpen, onClose }: CategoryManagementM
                 onSubmit={handleFormSubmit}
                 onCancel={handleFormCancel}
                 existingCategories={categories}
+                loading={createCategoryMutation.isPending || updateCategoryMutation.isPending}
               />
             )}
           </div>
@@ -188,7 +155,7 @@ export function CategoryManagementModal({ isOpen, onClose }: CategoryManagementM
         onClose={() => setDeleteDialogOpen(false)}
         onConfirm={handleConfirmDelete}
         category={selectedCategory}
-        loading={deleteLoading}
+        loading={deleteCategoryMutation.isPending}
       />
     </>
   )

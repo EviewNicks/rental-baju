@@ -9,7 +9,16 @@
       "Bash(yarn tsc:*)",
       "Bash(mkdir:*)",
       "Bash(find:*)",
-      "Bash(yarn type-check)"
+      "Bash(yarn type-check)",
+      "Bash(grep:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run type-check:*)",
+      "Bash(npm run build:*)",
+      "Bash(dir /b /a D:.workrental-software.claude*.json)",
+      "Bash(ls:*)",
+      "Bash(node:*)",
+      "Bash(npm:*)",
+      "Bash(claude mcp:*)"
     ],
     "deny": []
   }

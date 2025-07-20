@@ -29,6 +29,7 @@ interface ProductTableProps {
   onViewProduct: (product: Product) => void
   onEditProduct: (product: Product) => void
   onDeleteProduct: (product: Product) => void
+  loading?: boolean
 }
 
 export function ProductTable({
@@ -86,8 +87,12 @@ export function ProductTable({
                       {product.category.name}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-right">{formatCurrency(Number(product.modalAwal))}</TableCell>
-                  <TableCell className="text-right">{formatCurrency(Number(product.hargaSewa))}</TableCell>
+                  <TableCell className="text-right">
+                    {formatCurrency(Number(product.modalAwal))}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {formatCurrency(Number(product.hargaSewa))}
+                  </TableCell>
                   <TableCell className="text-center">
                     <Badge variant="outline" className={getStatusBadge(product.status)}>
                       {product.status}

@@ -1,8 +1,9 @@
 ---
-description: 
-globs: 
+description:
+globs:
 alwaysApply: true
 ---
+
 # 📐 Arsitektur Proyek Maguru
 
 ## Daftar Isi
@@ -315,7 +316,6 @@ graph TD
    - Keep component state minimal
    - Use local state for UI interactions
    - Avoid prop drilling untuk local state
-
 
 ---
 

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -16,6 +16,8 @@ import {
 import { ProductImageSection } from './ProductImageSection'
 import { ProductInfoSection } from './ProductInfoSection'
 import { ProductActionButtons } from './ProductActionButton'
+import { useProduct, useDeleteProduct } from '@/features/manage-product/hooks/useProduct'
+import { showSuccess, showError } from '@/lib/notifications'
 import type { Product } from '@/features/manage-product/types'
 
 interface ProductDetailPageProps {
@@ -30,63 +32,60 @@ export function ProductDetailPage({
   breadcrumbItems,
 }: ProductDetailPageProps) {
   const router = useRouter()
-  const [product, setProduct] = useState<Product | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    const fetchProduct = async () => {
-      try {
-        setLoading(true)
-        setError(null)
+  // Use real API data through hooks
+  const { data: product, isLoading, error: productError, refetch } = useProduct(productId)
 
-        // Simulate API call - replace with actual API call
-        await new Promise((resolve) => setTimeout(resolve, 1000))
+  const deleteProductMutation = useDeleteProduct()
 
-        // Mock data - replace with actual API call
-        const mockProducts = (await import('@/features/manage-product/data/mock-products'))
-          .mockProducts
-        const foundProduct = mockProducts.find((p) => p.id === productId)
-
-        if (!foundProduct) {
-          setError('Produk tidak ditemukan')
-          return
-        }
-
-        setProduct(foundProduct)
-        onProductLoad?.(foundProduct)
-      } catch (err) {
-        setError('Gagal memuat detail produk')
-        console.error('Error fetching product:', err)
-      } finally {
-        setLoading(false)
-      }
+  // Call onProductLoad when product is loaded
+  React.useEffect(() => {
+    if (product && onProductLoad) {
+      onProductLoad(product)
     }
-
-    if (productId) {
-      fetchProduct()
-    }
-  }, [productId, onProductLoad])
+  }, [product, onProductLoad])
 
   const handleEdit = (product: Product) => {
     router.push(`/producer/manage-product/edit/${product.id}`)
   }
 
-  const handleDelete = (product: Product) => {
-    // Implement delete confirmation dialog
-    console.log('Delete product:', product.id)
+  const handleDelete = async (product: Product) => {
+    try {
+      // Show confirmation dialog
+      const confirmed = window.confirm(
+        `Apakah Anda yakin ingin menghapus produk "${product.name}"? Tindakan ini tidak dapat dibatalkan.`,
+      )
+
+      if (!confirmed) return
+
+      await deleteProductMutation.mutateAsync(product.id)
+      showSuccess('Produk berhasil dihapus', `Produk ${product.name} telah dihapus dari inventaris`)
+
+      // Navigate back to product list
+      router.push('/producer/manage-product')
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Gagal menghapus produk'
+      showError('Gagal menghapus produk', errorMessage)
+      console.error('Failed to delete product:', error)
+    }
   }
 
   const handleBack = () => {
     router.back()
   }
 
-  if (loading) {
+  const handleRetry = () => {
+    refetch()
+  }
+
+  if (isLoading) {
     return <ProductDetailSkeleton />
   }
 
-  if (error || !product) {
-    return <ProductDetailError error={error} onRetry={() => window.location.reload()} />
+  if (productError || !product) {
+    const errorMessage =
+      productError instanceof Error ? productError.message : 'Produk tidak ditemukan'
+    return <ProductDetailError error={errorMessage} onRetry={handleRetry} />
   }
 
   const defaultBreadcrumbItems = [

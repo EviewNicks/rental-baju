@@ -11,7 +11,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
-import { CATEGORIES, STATUSES } from '@/features/manage-product/lib/constants'
+import { STATUSES } from '@/features/manage-product/lib/constants'
+import { useCategories } from '@/features/manage-product/hooks/useCategories'
 import type { ViewMode } from '@/features/manage-product/types'
 
 interface SearchFilterBarProps {
@@ -35,6 +36,15 @@ export function SearchFilterBar({
   viewMode,
   onViewModeChange,
 }: SearchFilterBarProps) {
+  // Fetch categories from API
+  const { data: categoriesData, isLoading: isLoadingCategories } = useCategories()
+  const categories = categoriesData?.categories || []
+
+  // Create category options with "Semua" option
+  const categoryOptions = [
+    { id: '', name: 'Semua' },
+    ...categories
+  ]
   return (
     <Card className="mb-6 shadow-md border-0 bg-card">
       <CardContent className="px-6 py-2">
@@ -56,21 +66,27 @@ export function SearchFilterBar({
               <Filter className="w-4 h-4 text-muted-foreground" />
               <Select value={selectedCategory} onValueChange={onCategoryChange}>
                 <SelectTrigger className="w-32 border">
-                  <SelectValue />
+                  <SelectValue placeholder="Kategori" />
                 </SelectTrigger>
                 <SelectContent>
-                  {CATEGORIES.map((category) => (
-                    <SelectItem key={category} value={category}>
-                      {category}
+                  {isLoadingCategories ? (
+                    <SelectItem value="" disabled>
+                      Loading...
                     </SelectItem>
-                  ))}
+                  ) : (
+                    categoryOptions.map((category) => (
+                      <SelectItem key={category.id || 'all'} value={category.id}>
+                        {category.name}
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
             </div>
 
             <Select value={selectedStatus} onValueChange={onStatusChange}>
               <SelectTrigger className="w-32">
-                <SelectValue />
+                <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
                 {STATUSES.map((status) => (
