@@ -63,8 +63,8 @@ describe('ProductService', () => {
       code: 'DRS1',
       name: 'Dress Elegant',
       description: 'Dress untuk acara formal',
-      modalAwal: new Decimal(150000),
-      hargaSewa: new Decimal(50000),
+      modalAwal: 150000,
+      hargaSewa: 50000,
       quantity: 5,
       categoryId: 'cat-123',
       image: undefined,
@@ -179,7 +179,7 @@ describe('ProductService', () => {
     const productId = 'prod-123'
     const mockUpdateRequest: UpdateProductRequest = {
       name: 'Updated Dress Name',
-      hargaSewa: new Decimal(60000),
+      hargaSewa: 60000,
     }
 
     const mockExistingProduct = {

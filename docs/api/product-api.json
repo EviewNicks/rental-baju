@@ -1,15 +1,35 @@
 {
   "info": {
     "name": "Product Management API",
-    "description": "API untuk manajemen produk dan kategori rental software",
+    "description": "API untuk manajemen produk dan kategori dengan authentication Clerk",
     "version": "1.0.0",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
+  "auth": {
+    "type": "cookie",
+    "cookie": [
+      {
+        "key": "__session",
+        "value": "{{clerk_session_token}}",
+        "description": "Clerk session token dari browser"
+      }
+    ]
+  },
   "variable": [
     {
-      "key": "baseUrl",
-      "value": "http://localhost:3000/api",
-      "type": "string"
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "description": "Base URL aplikasi"
+    },
+    {
+      "key": "product_id",
+      "value": "",
+      "description": "ID produk untuk testing"
+    },
+    {
+      "key": "category_id",
+      "value": "",
+      "description": "ID kategori untuk testing"
     }
   ],
   "item": [
@@ -27,43 +47,43 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/products?page=1&limit=10&search=&categoryId=&status=&isActive=",
-              "host": ["{{baseUrl}}"],
-              "path": ["products"],
+              "raw": "{{base_url}}/api/products?page=1&limit=10&search=&categoryId=&status=&isActive=true",
+              "host": ["{{base_url}}"],
+              "path": ["api", "products"],
               "query": [
                 {
                   "key": "page",
                   "value": "1",
-                  "description": "Halaman yang diminta (default: 1)"
+                  "description": "Halaman yang diminta"
                 },
                 {
                   "key": "limit",
                   "value": "10",
-                  "description": "Jumlah produk per halaman (default: 10, max: 100)"
+                  "description": "Jumlah item per halaman"
                 },
                 {
                   "key": "search",
                   "value": "",
-                  "description": "Pencarian berdasarkan nama atau kode produk (opsional)"
+                  "description": "Pencarian berdasarkan nama/kode produk"
                 },
                 {
                   "key": "categoryId",
                   "value": "",
-                  "description": "Filter berdasarkan ID kategori (opsional)"
+                  "description": "Filter berdasarkan kategori"
                 },
                 {
                   "key": "status",
                   "value": "",
-                  "description": "Filter berdasarkan status (AVAILABLE, RENTED, MAINTENANCE) (opsional)"
+                  "description": "Filter berdasarkan status (AVAILABLE/RENTED/MAINTENANCE)"
                 },
                 {
                   "key": "isActive",
-                  "value": "",
-                  "description": "Filter berdasarkan status aktif (true/false) (opsional)"
+                  "value": "true",
+                  "description": "Filter produk aktif/nonaktif"
                 }
               ]
             },
-            "description": "Mendapatkan daftar produk dengan pagination dan filtering"
+            "description": "Mendapatkan daftar produk dengan pagination dan filter"
           },
           "response": []
         },
@@ -78,16 +98,9 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/products/{productId}",
-              "host": ["{{baseUrl}}"],
-              "path": ["products", "{productId}"],
-              "variable": [
-                {
-                  "key": "productId",
-                  "value": "uuid-product-id",
-                  "description": "ID produk yang akan diambil"
-                }
-              ]
+              "raw": "{{base_url}}/api/products/{{product_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "products", "{{product_id}}"]
             },
             "description": "Mendapatkan detail produk berdasarkan ID"
           },
@@ -97,35 +110,65 @@
           "name": "Create Product",
           "request": {
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "multipart/form-data"
-              }
-            ],
+            "header": [],
             "body": {
               "mode": "formdata",
               "formdata": [
-                { "key": "code", "value": "PRD1", "type": "text" },
-                { "key": "name", "value": "Baju Pesta Merah", "type": "text" },
                 {
-                  "key": "description",
-                  "value": "Baju pesta warna merah dengan model elegan",
+                  "key": "code",
+                  "value": "DRS1",
+                  "description": "Kode produk (4 digit alfanumerik uppercase)",
                   "type": "text"
                 },
-                { "key": "modalAwal", "value": "150000", "type": "text" },
-                { "key": "hargaSewa", "value": "50000", "type": "text" },
-                { "key": "quantity", "value": "5", "type": "text" },
-                { "key": "categoryId", "value": "uuid-category-id", "type": "text" },
-                { "key": "image", "type": "file", "src": "" }
+                {
+                  "key": "name",
+                  "value": "Dress Elegant",
+                  "description": "Nama produk",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "Dress untuk acara formal",
+                  "description": "Deskripsi produk (opsional)",
+                  "type": "text"
+                },
+                {
+                  "key": "modalAwal",
+                  "value": "150000",
+                  "description": "Biaya pembuatan produk",
+                  "type": "text"
+                },
+                {
+                  "key": "hargaSewa",
+                  "value": "50000",
+                  "description": "Harga sewa per sekali",
+                  "type": "text"
+                },
+                {
+                  "key": "quantity",
+                  "value": "5",
+                  "description": "Jumlah stok",
+                  "type": "text"
+                },
+                {
+                  "key": "categoryId",
+                  "value": "{{category_id}}",
+                  "description": "ID kategori",
+                  "type": "text"
+                },
+                {
+                  "key": "image",
+                  "type": "file",
+                  "description": "Gambar produk (opsional)"
+                }
               ]
             },
             "url": {
-              "raw": "{{baseUrl}}/products",
-              "host": ["{{baseUrl}}"],
-              "path": ["products"]
+              "raw": "{{base_url}}/api/products",
+              "host": ["{{base_url}}"],
+              "path": ["api", "products"]
             },
-            "description": "Membuat produk baru dengan validasi ketat.\n\nMendukung dua format:\n- JSON (tanpa gambar)\n- multipart/form-data (dengan gambar, field 'image' bertipe File, opsional)"
+            "description": "Membuat produk baru dengan upload gambar"
           },
           "response": []
         },
@@ -133,41 +176,35 @@
           "name": "Update Product",
           "request": {
             "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "multipart/form-data"
-              }
-            ],
+            "header": [],
             "body": {
               "mode": "formdata",
               "formdata": [
-                { "key": "name", "value": "Baju Pesta Merah Updated", "type": "text" },
                 {
-                  "key": "description",
-                  "value": "Baju pesta warna merah dengan model elegan yang diperbarui",
+                  "key": "name",
+                  "value": "Dress Elegant Updated",
+                  "description": "Nama produk baru",
                   "type": "text"
                 },
-                { "key": "modalAwal", "value": "160000", "type": "text" },
-                { "key": "hargaSewa", "value": "55000", "type": "text" },
-                { "key": "quantity", "value": "6", "type": "text" },
-                { "key": "categoryId", "value": "uuid-category-id", "type": "text" },
-                { "key": "image", "type": "file", "src": "" }
-              ]
-            },
-            "url": {
-              "raw": "{{baseUrl}}/products/{productId}",
-              "host": ["{{baseUrl}}"],
-              "path": ["products", "{productId}"],
-              "variable": [
                 {
-                  "key": "productId",
-                  "value": "uuid-product-id",
-                  "description": "ID produk yang akan diupdate"
+                  "key": "hargaSewa",
+                  "value": "60000",
+                  "description": "Harga sewa baru",
+                  "type": "text"
+                },
+                {
+                  "key": "image",
+                  "type": "file",
+                  "description": "Gambar produk baru (opsional)"
                 }
               ]
             },
-            "description": "Memperbarui detail produk yang sudah ada.\n\nMendukung dua format:\n- JSON (tanpa gambar)\n- multipart/form-data (dengan gambar, field 'image' bertipe File, opsional)"
+            "url": {
+              "raw": "{{base_url}}/api/products/{{product_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "products", "{{product_id}}"]
+            },
+            "description": "Mengupdate produk berdasarkan ID"
           },
           "response": []
         },
@@ -182,18 +219,11 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/products/{productId}",
-              "host": ["{{baseUrl}}"],
-              "path": ["products", "{productId}"],
-              "variable": [
-                {
-                  "key": "productId",
-                  "value": "uuid-product-id",
-                  "description": "ID produk yang akan dihapus (soft delete)"
-                }
-              ]
+              "raw": "{{base_url}}/api/products/{{product_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "products", "{{product_id}}"]
             },
-            "description": "Melakukan soft delete pada produk"
+            "description": "Soft delete produk berdasarkan ID"
           },
           "response": []
         }
@@ -213,23 +243,23 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/categories?search=&includeProducts=false",
-              "host": ["{{baseUrl}}"],
-              "path": ["categories"],
+              "raw": "{{base_url}}/api/categories?search=&includeProducts=false",
+              "host": ["{{base_url}}"],
+              "path": ["api", "categories"],
               "query": [
                 {
                   "key": "search",
                   "value": "",
-                  "description": "Pencarian berdasarkan nama kategori (opsional)"
+                  "description": "Pencarian berdasarkan nama kategori"
                 },
                 {
                   "key": "includeProducts",
                   "value": "false",
-                  "description": "Menyertakan daftar produk dalam response (opsional)"
+                  "description": "Include produk dalam response"
                 }
               ]
             },
-            "description": "Mendapatkan daftar kategori dengan opsi opsional untuk menyertakan produk"
+            "description": "Mendapatkan daftar kategori"
           },
           "response": []
         },
@@ -244,16 +274,9 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/categories/{categoryId}",
-              "host": ["{{baseUrl}}"],
-              "path": ["categories", "{categoryId}"],
-              "variable": [
-                {
-                  "key": "categoryId",
-                  "value": "uuid-category-id",
-                  "description": "ID kategori yang akan diambil"
-                }
-              ]
+              "raw": "{{base_url}}/api/categories/{{category_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "categories", "{{category_id}}"]
             },
             "description": "Mendapatkan detail kategori berdasarkan ID"
           },
@@ -271,7 +294,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Baju Pesta\",\n  \"color\": \"#FF0000\"\n}",
+              "raw": "{\n  \"name\": \"Dress\",\n  \"color\": \"#FF5733\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -279,11 +302,11 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/categories",
-              "host": ["{{baseUrl}}"],
-              "path": ["categories"]
+              "raw": "{{base_url}}/api/categories",
+              "host": ["{{base_url}}"],
+              "path": ["api", "categories"]
             },
-            "description": "Membuat kategori baru dengan validasi ketat"
+            "description": "Membuat kategori baru"
           },
           "response": []
         },
@@ -299,7 +322,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Baju Pesta Updated\",\n  \"color\": \"#FF4444\"\n}",
+              "raw": "{\n  \"name\": \"Dress Updated\",\n  \"color\": \"#FF8C42\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -307,18 +330,11 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/categories/{categoryId}",
-              "host": ["{{baseUrl}}"],
-              "path": ["categories", "{categoryId}"],
-              "variable": [
-                {
-                  "key": "categoryId",
-                  "value": "uuid-category-id",
-                  "description": "ID kategori yang akan diupdate"
-                }
-              ]
+              "raw": "{{base_url}}/api/categories/{{category_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "categories", "{{category_id}}"]
             },
-            "description": "Memperbarui detail kategori yang sudah ada"
+            "description": "Mengupdate kategori berdasarkan ID"
           },
           "response": []
         },
@@ -333,18 +349,11 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/categories/{categoryId}",
-              "host": ["{{baseUrl}}"],
-              "path": ["categories", "{categoryId}"],
-              "variable": [
-                {
-                  "key": "categoryId",
-                  "value": "uuid-category-id",
-                  "description": "ID kategori yang akan dihapus"
-                }
-              ]
+              "raw": "{{base_url}}/api/categories/{{category_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "categories", "{{category_id}}"]
             },
-            "description": "Menghapus kategori dari database (jika tidak digunakan oleh produk aktif)"
+            "description": "Menghapus kategori berdasarkan ID"
           },
           "response": []
         }
@@ -357,11 +366,40 @@
       "script": {
         "type": "text/javascript",
         "exec": [
-          "// Pre-request script untuk menambahkan authorization header jika diperlukan",
-          "// pm.request.headers.add({",
-          "//   key: 'Authorization',",
-          "//   value: 'Bearer ' + pm.environment.get('token')",
-          "// });"
+          "// Set default headers",
+          "pm.request.headers.add({",
+          "  key: 'User-Agent',",
+          "  value: 'PostmanRuntime/7.32.3'",
+          "});"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Common test script",
+          "pm.test('Status code is 200 or 201', function () {",
+          "  pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+          "});",
+          "",
+          "pm.test('Response has required structure', function () {",
+          "  const response = pm.response.json();",
+          "  pm.expect(response).to.have.property('id');",
+          "});",
+          "",
+          "// Store IDs for subsequent requests",
+          "if (pm.response.code === 201 || pm.response.code === 200) {",
+          "  const response = pm.response.json();",
+          "  if (response.id) {",
+          "    if (pm.request.url.path.includes('products')) {",
+          "      pm.collectionVariables.set('product_id', response.id);",
+          "    } else if (pm.request.url.path.includes('categories')) {",
+          "      pm.collectionVariables.set('category_id', response.id);",
+          "    }",
+          "  }",
+          "}"
         ]
       }
     }

@@ -46,17 +46,17 @@ export class ProductService {
       throw new ConflictError(`Kode produk ${validatedData.code} sudah digunakan`)
     }
 
-    // Create product
+    // Create product with Decimal conversion
     const prismaProduct = await this.prisma.product.create({
       data: {
         code: validatedData.code,
         name: validatedData.name,
         description: validatedData.description,
-        modalAwal: validatedData.modalAwal,
-        hargaSewa: validatedData.hargaSewa,
+        modalAwal: new Decimal(validatedData.modalAwal), // ✅ Konversi number ke Decimal
+        hargaSewa: new Decimal(validatedData.hargaSewa), // ✅ Konversi number ke Decimal
         quantity: validatedData.quantity,
         categoryId: validatedData.categoryId,
-        imageUrl: validatedData.image ? undefined : undefined, // Will be updated after file upload
+        imageUrl: request.imageUrl || undefined, // ✅ Gunakan imageUrl dari request
         status: 'AVAILABLE',
         totalPendapatan: new Decimal(0),
         isActive: true,
@@ -91,13 +91,29 @@ export class ProductService {
       throw new NotFoundError('Produk tidak ditemukan')
     }
 
+    // Prepare update data with Decimal conversion
+    const updateData: Record<string, unknown> = {
+      updatedAt: new Date(),
+    }
+
+    // Add fields with proper type conversion
+    if (validatedData.name !== undefined) updateData.name = validatedData.name
+    if (validatedData.description !== undefined) updateData.description = validatedData.description
+    if (validatedData.quantity !== undefined) updateData.quantity = validatedData.quantity
+    if (validatedData.categoryId !== undefined) updateData.categoryId = validatedData.categoryId
+
+    // Convert number to Decimal for monetary fields
+    if (validatedData.modalAwal !== undefined) {
+      updateData.modalAwal = new Decimal(validatedData.modalAwal) // ✅ Konversi number ke Decimal
+    }
+    if (validatedData.hargaSewa !== undefined) {
+      updateData.hargaSewa = new Decimal(validatedData.hargaSewa) // ✅ Konversi number ke Decimal
+    }
+
     // Update product
     const updatedProduct = await this.prisma.product.update({
       where: { id: validatedId },
-      data: {
-        ...validatedData,
-        updatedAt: new Date(),
-      },
+      data: updateData,
       include: {
         category: true,
       },

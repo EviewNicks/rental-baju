@@ -3,604 +3,9 @@
   "numPassedTests": 109,
   "numFailedTests": 0,
   "numPendingTests": 0,
-  "startTime": "2025-07-20T00:32:21.593Z",
-  "endTime": "2025-07-20T00:32:26.182Z",
+  "startTime": "2025-07-20T00:43:38.445Z",
+  "endTime": "2025-07-20T00:43:42.519Z",
   "testResults": [
-    {
-      "testFilePath": "D:\\.work\\rental-software\\features\\manage-product\\lib\\validation\\productSchema.test.ts",
-      "testFileResults": [
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "productBaseSchema"
-          ],
-          "fullName": "Product Schema Validation productBaseSchema should validate valid product data - happy path",
-          "status": "passed",
-          "title": "should validate valid product data - happy path",
-          "failureMessages": [],
-          "duration": 12
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "productBaseSchema",
-            "code validation"
-          ],
-          "fullName": "Product Schema Validation productBaseSchema code validation should accept valid 4-character alphanumeric uppercase code",
-          "status": "passed",
-          "title": "should accept valid 4-character alphanumeric uppercase code",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "productBaseSchema",
-            "code validation"
-          ],
-          "fullName": "Product Schema Validation productBaseSchema code validation should reject code that is too short",
-          "status": "passed",
-          "title": "should reject code that is too short",
-          "failureMessages": [],
-          "duration": 22
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "productBaseSchema",
-            "code validation"
-          ],
-          "fullName": "Product Schema Validation productBaseSchema code validation should reject code that is too long",
-          "status": "passed",
-          "title": "should reject code that is too long",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "productBaseSchema",
-            "code validation"
-          ],
-          "fullName": "Product Schema Validation productBaseSchema code validation should reject code with lowercase characters",
-          "status": "passed",
-          "title": "should reject code with lowercase characters",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "productBaseSchema",
-            "code validation"
-          ],
-          "fullName": "Product Schema Validation productBaseSchema code validation should reject code with special characters",
-          "status": "passed",
-          "title": "should reject code with special characters",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "productBaseSchema",
-            "code validation"
-          ],
-          "fullName": "Product Schema Validation productBaseSchema code validation should reject empty code",
-          "status": "passed",
-          "title": "should reject empty code",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "productBaseSchema",
-            "name validation"
-          ],
-          "fullName": "Product Schema Validation productBaseSchema name validation should accept valid product names",
-          "status": "passed",
-          "title": "should accept valid product names",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "productBaseSchema",
-            "name validation"
-          ],
-          "fullName": "Product Schema Validation productBaseSchema name validation should reject empty name",
-          "status": "passed",
-          "title": "should reject empty name",
-          "failureMessages": [],
-          "duration": 0
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "productBaseSchema",
-            "name validation"
-          ],
-          "fullName": "Product Schema Validation productBaseSchema name validation should reject name that is too long",
-          "status": "passed",
-          "title": "should reject name that is too long",
-          "failureMessages": [],
-          "duration": 0
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "productBaseSchema",
-            "description validation"
-          ],
-          "fullName": "Product Schema Validation productBaseSchema description validation should accept valid descriptions",
-          "status": "passed",
-          "title": "should accept valid descriptions",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "productBaseSchema",
-            "description validation"
-          ],
-          "fullName": "Product Schema Validation productBaseSchema description validation should reject description that is too long",
-          "status": "passed",
-          "title": "should reject description that is too long",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "productBaseSchema",
-            "modalAwal validation"
-          ],
-          "fullName": "Product Schema Validation productBaseSchema modalAwal validation should accept positive numbers",
-          "status": "passed",
-          "title": "should accept positive numbers",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "productBaseSchema",
-            "modalAwal validation"
-          ],
-          "fullName": "Product Schema Validation productBaseSchema modalAwal validation should reject zero or negative numbers",
-          "status": "passed",
-          "title": "should reject zero or negative numbers",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "productBaseSchema",
-            "modalAwal validation"
-          ],
-          "fullName": "Product Schema Validation productBaseSchema modalAwal validation should reject values that are too large",
-          "status": "passed",
-          "title": "should reject values that are too large",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "productBaseSchema",
-            "hargaSewa validation"
-          ],
-          "fullName": "Product Schema Validation productBaseSchema hargaSewa validation should accept positive numbers",
-          "status": "passed",
-          "title": "should accept positive numbers",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "productBaseSchema",
-            "hargaSewa validation"
-          ],
-          "fullName": "Product Schema Validation productBaseSchema hargaSewa validation should reject zero or negative numbers",
-          "status": "passed",
-          "title": "should reject zero or negative numbers",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "productBaseSchema",
-            "hargaSewa validation"
-          ],
-          "fullName": "Product Schema Validation productBaseSchema hargaSewa validation should reject values that are too large",
-          "status": "passed",
-          "title": "should reject values that are too large",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "productBaseSchema",
-            "quantity validation"
-          ],
-          "fullName": "Product Schema Validation productBaseSchema quantity validation should accept valid integer quantities",
-          "status": "passed",
-          "title": "should accept valid integer quantities",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "productBaseSchema",
-            "quantity validation"
-          ],
-          "fullName": "Product Schema Validation productBaseSchema quantity validation should reject negative quantities",
-          "status": "passed",
-          "title": "should reject negative quantities",
-          "failureMessages": [],
-          "duration": 0
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "productBaseSchema",
-            "quantity validation"
-          ],
-          "fullName": "Product Schema Validation productBaseSchema quantity validation should reject quantities that are too large",
-          "status": "passed",
-          "title": "should reject quantities that are too large",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "productBaseSchema",
-            "quantity validation"
-          ],
-          "fullName": "Product Schema Validation productBaseSchema quantity validation should reject decimal quantities",
-          "status": "passed",
-          "title": "should reject decimal quantities",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "productBaseSchema",
-            "categoryId validation"
-          ],
-          "fullName": "Product Schema Validation productBaseSchema categoryId validation should accept valid UUID",
-          "status": "passed",
-          "title": "should accept valid UUID",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "productBaseSchema",
-            "categoryId validation"
-          ],
-          "fullName": "Product Schema Validation productBaseSchema categoryId validation should reject invalid UUID formats",
-          "status": "passed",
-          "title": "should reject invalid UUID formats",
-          "failureMessages": [],
-          "duration": 6
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "imageFileSchema"
-          ],
-          "fullName": "Product Schema Validation imageFileSchema should accept valid image files",
-          "status": "passed",
-          "title": "should accept valid image files",
-          "failureMessages": [],
-          "duration": 3
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "imageFileSchema"
-          ],
-          "fullName": "Product Schema Validation imageFileSchema should accept undefined and null values",
-          "status": "passed",
-          "title": "should accept undefined and null values",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "imageFileSchema"
-          ],
-          "fullName": "Product Schema Validation imageFileSchema should reject files that are too large",
-          "status": "passed",
-          "title": "should reject files that are too large",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "imageFileSchema"
-          ],
-          "fullName": "Product Schema Validation imageFileSchema should reject unsupported file types",
-          "status": "passed",
-          "title": "should reject unsupported file types",
-          "failureMessages": [],
-          "duration": 4
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "imageFileSchema"
-          ],
-          "fullName": "Product Schema Validation imageFileSchema should accept supported file types",
-          "status": "passed",
-          "title": "should accept supported file types",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "createProductSchema"
-          ],
-          "fullName": "Product Schema Validation createProductSchema should validate create product data with image",
-          "status": "passed",
-          "title": "should validate create product data with image",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "createProductSchema"
-          ],
-          "fullName": "Product Schema Validation createProductSchema should validate create product data without image",
-          "status": "passed",
-          "title": "should validate create product data without image",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "updateProductSchema"
-          ],
-          "fullName": "Product Schema Validation updateProductSchema should validate partial product updates",
-          "status": "passed",
-          "title": "should validate partial product updates",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "updateProductSchema"
-          ],
-          "fullName": "Product Schema Validation updateProductSchema should validate update with image",
-          "status": "passed",
-          "title": "should validate update with image",
-          "failureMessages": [],
-          "duration": 0
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "productQuerySchema"
-          ],
-          "fullName": "Product Schema Validation productQuerySchema should validate query parameters with defaults",
-          "status": "passed",
-          "title": "should validate query parameters with defaults",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "productQuerySchema"
-          ],
-          "fullName": "Product Schema Validation productQuerySchema should validate complete query parameters",
-          "status": "passed",
-          "title": "should validate complete query parameters",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "productQuerySchema"
-          ],
-          "fullName": "Product Schema Validation productQuerySchema should enforce page and limit boundaries",
-          "status": "passed",
-          "title": "should enforce page and limit boundaries",
-          "failureMessages": [],
-          "duration": 3
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "productQuerySchema"
-          ],
-          "fullName": "Product Schema Validation productQuerySchema should validate status enum values",
-          "status": "passed",
-          "title": "should validate status enum values",
-          "failureMessages": [],
-          "duration": 3
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "productParamsSchema"
-          ],
-          "fullName": "Product Schema Validation productParamsSchema should validate valid UUID parameter",
-          "status": "passed",
-          "title": "should validate valid UUID parameter",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "productParamsSchema"
-          ],
-          "fullName": "Product Schema Validation productParamsSchema should reject invalid UUID parameter",
-          "status": "passed",
-          "title": "should reject invalid UUID parameter",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "Category Schema Validation",
-            "categorySchema"
-          ],
-          "fullName": "Category Schema Validation categorySchema should validate valid category data - happy path",
-          "status": "passed",
-          "title": "should validate valid category data - happy path",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "Category Schema Validation",
-            "categorySchema",
-            "name validation"
-          ],
-          "fullName": "Category Schema Validation categorySchema name validation should accept valid category names",
-          "status": "passed",
-          "title": "should accept valid category names",
-          "failureMessages": [],
-          "duration": 0
-        },
-        {
-          "ancestorTitles": [
-            "Category Schema Validation",
-            "categorySchema",
-            "name validation"
-          ],
-          "fullName": "Category Schema Validation categorySchema name validation should reject empty name",
-          "status": "passed",
-          "title": "should reject empty name",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "Category Schema Validation",
-            "categorySchema",
-            "name validation"
-          ],
-          "fullName": "Category Schema Validation categorySchema name validation should reject name that is too long",
-          "status": "passed",
-          "title": "should reject name that is too long",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "Category Schema Validation",
-            "categorySchema",
-            "color validation"
-          ],
-          "fullName": "Category Schema Validation categorySchema color validation should accept valid hex colors",
-          "status": "passed",
-          "title": "should accept valid hex colors",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "Category Schema Validation",
-            "categorySchema",
-            "color validation"
-          ],
-          "fullName": "Category Schema Validation categorySchema color validation should reject invalid color formats",
-          "status": "passed",
-          "title": "should reject invalid color formats",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "Category Schema Validation",
-            "updateCategorySchema"
-          ],
-          "fullName": "Category Schema Validation updateCategorySchema should validate partial category updates",
-          "status": "passed",
-          "title": "should validate partial category updates",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "Category Schema Validation",
-            "categoryQuerySchema"
-          ],
-          "fullName": "Category Schema Validation categoryQuerySchema should validate query parameters with defaults",
-          "status": "passed",
-          "title": "should validate query parameters with defaults",
-          "failureMessages": [],
-          "duration": 0
-        },
-        {
-          "ancestorTitles": [
-            "Category Schema Validation",
-            "categoryQuerySchema"
-          ],
-          "fullName": "Category Schema Validation categoryQuerySchema should validate complete query parameters",
-          "status": "passed",
-          "title": "should validate complete query parameters",
-          "failureMessages": [],
-          "duration": 0
-        },
-        {
-          "ancestorTitles": [
-            "Category Schema Validation",
-            "categoryQuerySchema"
-          ],
-          "fullName": "Category Schema Validation categoryQuerySchema should coerce includeProducts to boolean",
-          "status": "passed",
-          "title": "should coerce includeProducts to boolean",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "Category Schema Validation",
-            "categoryParamsSchema"
-          ],
-          "fullName": "Category Schema Validation categoryParamsSchema should validate valid UUID parameter",
-          "status": "passed",
-          "title": "should validate valid UUID parameter",
-          "failureMessages": [],
-          "duration": 0
-        },
-        {
-          "ancestorTitles": [
-            "Category Schema Validation",
-            "categoryParamsSchema"
-          ],
-          "fullName": "Category Schema Validation categoryParamsSchema should reject invalid UUID parameter",
-          "status": "passed",
-          "title": "should reject invalid UUID parameter",
-          "failureMessages": [],
-          "duration": 1
-        }
-      ],
-      "failureMessage": null
-    },
     {
       "testFilePath": "D:\\.work\\rental-software\\features\\manage-product\\services\\fileUploadService.test.ts",
       "testFileResults": [
@@ -613,7 +18,7 @@
           "status": "passed",
           "title": "should validate file successfully - happy path",
           "failureMessages": [],
-          "duration": 16
+          "duration": 6
         },
         {
           "ancestorTitles": [
@@ -624,7 +29,7 @@
           "status": "passed",
           "title": "should reject file that is too large",
           "failureMessages": [],
-          "duration": 22
+          "duration": 15
         },
         {
           "ancestorTitles": [
@@ -635,7 +40,7 @@
           "status": "passed",
           "title": "should reject unsupported file format",
           "failureMessages": [],
-          "duration": 2
+          "duration": 1
         },
         {
           "ancestorTitles": [
@@ -646,7 +51,7 @@
           "status": "passed",
           "title": "should handle null file gracefully",
           "failureMessages": [],
-          "duration": 1
+          "duration": 0
         },
         {
           "ancestorTitles": [
@@ -668,7 +73,7 @@
           "status": "passed",
           "title": "should generate valid image path with timestamp",
           "failureMessages": [],
-          "duration": 1
+          "duration": 0
         },
         {
           "ancestorTitles": [
@@ -690,7 +95,7 @@
           "status": "passed",
           "title": "should include user ID in path for isolation",
           "failureMessages": [],
-          "duration": 1
+          "duration": 0
         },
         {
           "ancestorTitles": [
@@ -701,7 +106,7 @@
           "status": "passed",
           "title": "should extract path from storage URL correctly",
           "failureMessages": [],
-          "duration": 3
+          "duration": 2
         },
         {
           "ancestorTitles": [
@@ -723,7 +128,7 @@
           "status": "passed",
           "title": "should handle invalid URLs gracefully",
           "failureMessages": [],
-          "duration": 2
+          "duration": 1
         },
         {
           "ancestorTitles": [
@@ -734,7 +139,7 @@
           "status": "passed",
           "title": "should handle empty URL",
           "failureMessages": [],
-          "duration": 6
+          "duration": 1
         },
         {
           "ancestorTitles": [
@@ -745,7 +150,7 @@
           "status": "passed",
           "title": "should handle null URL",
           "failureMessages": [],
-          "duration": 2
+          "duration": 4
         },
         {
           "ancestorTitles": [
@@ -756,7 +161,7 @@
           "status": "passed",
           "title": "should handle null file input",
           "failureMessages": [],
-          "duration": 1
+          "duration": 0
         },
         {
           "ancestorTitles": [
@@ -767,7 +172,7 @@
           "status": "passed",
           "title": "should handle undefined file input",
           "failureMessages": [],
-          "duration": 0
+          "duration": 1
         },
         {
           "ancestorTitles": [
@@ -778,7 +183,7 @@
           "status": "passed",
           "title": "should handle empty image path gracefully",
           "failureMessages": [],
-          "duration": 3
+          "duration": 0
         },
         {
           "ancestorTitles": [
@@ -789,7 +194,7 @@
           "status": "passed",
           "title": "should handle null image path gracefully",
           "failureMessages": [],
-          "duration": 1
+          "duration": 0
         }
       ],
       "failureMessage": null
@@ -806,7 +211,7 @@
           "status": "passed",
           "title": "should create category successfully - happy path",
           "failureMessages": [],
-          "duration": 12
+          "duration": 7
         },
         {
           "ancestorTitles": [
@@ -817,7 +222,7 @@
           "status": "passed",
           "title": "should throw error when category name already exists",
           "failureMessages": [],
-          "duration": 35
+          "duration": 17
         },
         {
           "ancestorTitles": [
@@ -828,7 +233,7 @@
           "status": "passed",
           "title": "should handle case-insensitive name checking",
           "failureMessages": [],
-          "duration": 2
+          "duration": 1
         },
         {
           "ancestorTitles": [
@@ -839,7 +244,7 @@
           "status": "passed",
           "title": "should handle validation error gracefully",
           "failureMessages": [],
-          "duration": 7
+          "duration": 8
         },
         {
           "ancestorTitles": [
@@ -850,7 +255,7 @@
           "status": "passed",
           "title": "should handle database error during creation",
           "failureMessages": [],
-          "duration": 2
+          "duration": 1
         },
         {
           "ancestorTitles": [
@@ -861,7 +266,7 @@
           "status": "passed",
           "title": "should update category successfully - happy path",
           "failureMessages": [],
-          "duration": 3
+          "duration": 1
         },
         {
           "ancestorTitles": [
@@ -872,7 +277,7 @@
           "status": "passed",
           "title": "should throw error when category not found",
           "failureMessages": [],
-          "duration": 1
+          "duration": 0
         },
         {
           "ancestorTitles": [
@@ -894,7 +299,7 @@
           "status": "passed",
           "title": "should handle partial update (only color)",
           "failureMessages": [],
-          "duration": 1
+          "duration": 0
         },
         {
           "ancestorTitles": [
@@ -905,7 +310,7 @@
           "status": "passed",
           "title": "should handle empty update request gracefully",
           "failureMessages": [],
-          "duration": 2
+          "duration": 1
         },
         {
           "ancestorTitles": [
@@ -927,7 +332,7 @@
           "status": "passed",
           "title": "should get categories with products when requested",
           "failureMessages": [],
-          "duration": 2
+          "duration": 1
         },
         {
           "ancestorTitles": [
@@ -971,7 +376,7 @@
           "status": "passed",
           "title": "should get category by ID successfully - happy path",
           "failureMessages": [],
-          "duration": 1
+          "duration": 0
         },
         {
           "ancestorTitles": [
@@ -982,7 +387,7 @@
           "status": "passed",
           "title": "should throw error when category not found",
           "failureMessages": [],
-          "duration": 0
+          "duration": 1
         },
         {
           "ancestorTitles": [
@@ -993,7 +398,7 @@
           "status": "passed",
           "title": "should handle invalid ID format",
           "failureMessages": [],
-          "duration": 1
+          "duration": 0
         },
         {
           "ancestorTitles": [
@@ -1004,7 +409,7 @@
           "status": "passed",
           "title": "should delete category successfully when no products exist - happy path",
           "failureMessages": [],
-          "duration": 1
+          "duration": 0
         },
         {
           "ancestorTitles": [
@@ -1026,7 +431,7 @@
           "status": "passed",
           "title": "should throw error when category has active products",
           "failureMessages": [],
-          "duration": 0
+          "duration": 2
         },
         {
           "ancestorTitles": [
@@ -1037,7 +442,7 @@
           "status": "passed",
           "title": "should allow deletion when category has only inactive products",
           "failureMessages": [],
-          "duration": 0
+          "duration": 1
         },
         {
           "ancestorTitles": [
@@ -1065,7 +470,7 @@
           "status": "passed",
           "title": "should create product successfully - happy path",
           "failureMessages": [],
-          "duration": 12
+          "duration": 11
         },
         {
           "ancestorTitles": [
@@ -1076,7 +481,7 @@
           "status": "passed",
           "title": "should throw error when product code already exists",
           "failureMessages": [],
-          "duration": 15
+          "duration": 23
         },
         {
           "ancestorTitles": [
@@ -1087,7 +492,7 @@
           "status": "passed",
           "title": "should handle validation error gracefully",
           "failureMessages": [],
-          "duration": 10
+          "duration": 5
         },
         {
           "ancestorTitles": [
@@ -1098,7 +503,7 @@
           "status": "passed",
           "title": "should handle database error during creation",
           "failureMessages": [],
-          "duration": 1
+          "duration": 2
         },
         {
           "ancestorTitles": [
@@ -1109,7 +514,7 @@
           "status": "passed",
           "title": "should update product successfully - happy path",
           "failureMessages": [],
-          "duration": 6
+          "duration": 2
         },
         {
           "ancestorTitles": [
@@ -1120,7 +525,7 @@
           "status": "passed",
           "title": "should throw error when product not found",
           "failureMessages": [],
-          "duration": 1
+          "duration": 0
         },
         {
           "ancestorTitles": [
@@ -1131,7 +536,7 @@
           "status": "passed",
           "title": "should handle empty update request gracefully",
           "failureMessages": [],
-          "duration": 2
+          "duration": 0
         },
         {
           "ancestorTitles": [
@@ -1175,7 +580,7 @@
           "status": "passed",
           "title": "should get product by ID successfully - happy path",
           "failureMessages": [],
-          "duration": 0
+          "duration": 1
         },
         {
           "ancestorTitles": [
@@ -1186,7 +591,7 @@
           "status": "passed",
           "title": "should throw error when product not found",
           "failureMessages": [],
-          "duration": 1
+          "duration": 0
         },
         {
           "ancestorTitles": [
@@ -1208,7 +613,7 @@
           "status": "passed",
           "title": "should soft delete product successfully - happy path",
           "failureMessages": [],
-          "duration": 0
+          "duration": 1
         },
         {
           "ancestorTitles": [
@@ -1241,7 +646,7 @@
           "status": "passed",
           "title": "should throw error when trying to set same status",
           "failureMessages": [],
-          "duration": 0
+          "duration": 1
         },
         {
           "ancestorTitles": [
@@ -1251,6 +656,601 @@
           "fullName": "ProductService updateProductStatus should handle invalid status value",
           "status": "passed",
           "title": "should handle invalid status value",
+          "failureMessages": [],
+          "duration": 0
+        }
+      ],
+      "failureMessage": null
+    },
+    {
+      "testFilePath": "D:\\.work\\rental-software\\features\\manage-product\\lib\\validation\\productSchema.test.ts",
+      "testFileResults": [
+        {
+          "ancestorTitles": [
+            "Product Schema Validation",
+            "productBaseSchema"
+          ],
+          "fullName": "Product Schema Validation productBaseSchema should validate valid product data - happy path",
+          "status": "passed",
+          "title": "should validate valid product data - happy path",
+          "failureMessages": [],
+          "duration": 7
+        },
+        {
+          "ancestorTitles": [
+            "Product Schema Validation",
+            "productBaseSchema",
+            "code validation"
+          ],
+          "fullName": "Product Schema Validation productBaseSchema code validation should accept valid 4-character alphanumeric uppercase code",
+          "status": "passed",
+          "title": "should accept valid 4-character alphanumeric uppercase code",
+          "failureMessages": [],
+          "duration": 3
+        },
+        {
+          "ancestorTitles": [
+            "Product Schema Validation",
+            "productBaseSchema",
+            "code validation"
+          ],
+          "fullName": "Product Schema Validation productBaseSchema code validation should reject code that is too short",
+          "status": "passed",
+          "title": "should reject code that is too short",
+          "failureMessages": [],
+          "duration": 19
+        },
+        {
+          "ancestorTitles": [
+            "Product Schema Validation",
+            "productBaseSchema",
+            "code validation"
+          ],
+          "fullName": "Product Schema Validation productBaseSchema code validation should reject code that is too long",
+          "status": "passed",
+          "title": "should reject code that is too long",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "Product Schema Validation",
+            "productBaseSchema",
+            "code validation"
+          ],
+          "fullName": "Product Schema Validation productBaseSchema code validation should reject code with lowercase characters",
+          "status": "passed",
+          "title": "should reject code with lowercase characters",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "Product Schema Validation",
+            "productBaseSchema",
+            "code validation"
+          ],
+          "fullName": "Product Schema Validation productBaseSchema code validation should reject code with special characters",
+          "status": "passed",
+          "title": "should reject code with special characters",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "Product Schema Validation",
+            "productBaseSchema",
+            "code validation"
+          ],
+          "fullName": "Product Schema Validation productBaseSchema code validation should reject empty code",
+          "status": "passed",
+          "title": "should reject empty code",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "Product Schema Validation",
+            "productBaseSchema",
+            "name validation"
+          ],
+          "fullName": "Product Schema Validation productBaseSchema name validation should accept valid product names",
+          "status": "passed",
+          "title": "should accept valid product names",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "Product Schema Validation",
+            "productBaseSchema",
+            "name validation"
+          ],
+          "fullName": "Product Schema Validation productBaseSchema name validation should reject empty name",
+          "status": "passed",
+          "title": "should reject empty name",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "Product Schema Validation",
+            "productBaseSchema",
+            "name validation"
+          ],
+          "fullName": "Product Schema Validation productBaseSchema name validation should reject name that is too long",
+          "status": "passed",
+          "title": "should reject name that is too long",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "Product Schema Validation",
+            "productBaseSchema",
+            "description validation"
+          ],
+          "fullName": "Product Schema Validation productBaseSchema description validation should accept valid descriptions",
+          "status": "passed",
+          "title": "should accept valid descriptions",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "Product Schema Validation",
+            "productBaseSchema",
+            "description validation"
+          ],
+          "fullName": "Product Schema Validation productBaseSchema description validation should reject description that is too long",
+          "status": "passed",
+          "title": "should reject description that is too long",
+          "failureMessages": [],
+          "duration": 2
+        },
+        {
+          "ancestorTitles": [
+            "Product Schema Validation",
+            "productBaseSchema",
+            "modalAwal validation"
+          ],
+          "fullName": "Product Schema Validation productBaseSchema modalAwal validation should accept positive numbers",
+          "status": "passed",
+          "title": "should accept positive numbers",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "Product Schema Validation",
+            "productBaseSchema",
+            "modalAwal validation"
+          ],
+          "fullName": "Product Schema Validation productBaseSchema modalAwal validation should reject zero or negative numbers",
+          "status": "passed",
+          "title": "should reject zero or negative numbers",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "Product Schema Validation",
+            "productBaseSchema",
+            "modalAwal validation"
+          ],
+          "fullName": "Product Schema Validation productBaseSchema modalAwal validation should reject values that are too large",
+          "status": "passed",
+          "title": "should reject values that are too large",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "Product Schema Validation",
+            "productBaseSchema",
+            "hargaSewa validation"
+          ],
+          "fullName": "Product Schema Validation productBaseSchema hargaSewa validation should accept positive numbers",
+          "status": "passed",
+          "title": "should accept positive numbers",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "Product Schema Validation",
+            "productBaseSchema",
+            "hargaSewa validation"
+          ],
+          "fullName": "Product Schema Validation productBaseSchema hargaSewa validation should reject zero or negative numbers",
+          "status": "passed",
+          "title": "should reject zero or negative numbers",
+          "failureMessages": [],
+          "duration": 5
+        },
+        {
+          "ancestorTitles": [
+            "Product Schema Validation",
+            "productBaseSchema",
+            "hargaSewa validation"
+          ],
+          "fullName": "Product Schema Validation productBaseSchema hargaSewa validation should reject values that are too large",
+          "status": "passed",
+          "title": "should reject values that are too large",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "Product Schema Validation",
+            "productBaseSchema",
+            "quantity validation"
+          ],
+          "fullName": "Product Schema Validation productBaseSchema quantity validation should accept valid integer quantities",
+          "status": "passed",
+          "title": "should accept valid integer quantities",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "Product Schema Validation",
+            "productBaseSchema",
+            "quantity validation"
+          ],
+          "fullName": "Product Schema Validation productBaseSchema quantity validation should reject negative quantities",
+          "status": "passed",
+          "title": "should reject negative quantities",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "Product Schema Validation",
+            "productBaseSchema",
+            "quantity validation"
+          ],
+          "fullName": "Product Schema Validation productBaseSchema quantity validation should reject quantities that are too large",
+          "status": "passed",
+          "title": "should reject quantities that are too large",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "Product Schema Validation",
+            "productBaseSchema",
+            "quantity validation"
+          ],
+          "fullName": "Product Schema Validation productBaseSchema quantity validation should reject decimal quantities",
+          "status": "passed",
+          "title": "should reject decimal quantities",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "Product Schema Validation",
+            "productBaseSchema",
+            "categoryId validation"
+          ],
+          "fullName": "Product Schema Validation productBaseSchema categoryId validation should accept valid UUID",
+          "status": "passed",
+          "title": "should accept valid UUID",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "Product Schema Validation",
+            "productBaseSchema",
+            "categoryId validation"
+          ],
+          "fullName": "Product Schema Validation productBaseSchema categoryId validation should reject invalid UUID formats",
+          "status": "passed",
+          "title": "should reject invalid UUID formats",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "Product Schema Validation",
+            "imageFileSchema"
+          ],
+          "fullName": "Product Schema Validation imageFileSchema should accept valid image files",
+          "status": "passed",
+          "title": "should accept valid image files",
+          "failureMessages": [],
+          "duration": 2
+        },
+        {
+          "ancestorTitles": [
+            "Product Schema Validation",
+            "imageFileSchema"
+          ],
+          "fullName": "Product Schema Validation imageFileSchema should accept undefined and null values",
+          "status": "passed",
+          "title": "should accept undefined and null values",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "Product Schema Validation",
+            "imageFileSchema"
+          ],
+          "fullName": "Product Schema Validation imageFileSchema should reject files that are too large",
+          "status": "passed",
+          "title": "should reject files that are too large",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "Product Schema Validation",
+            "imageFileSchema"
+          ],
+          "fullName": "Product Schema Validation imageFileSchema should reject unsupported file types",
+          "status": "passed",
+          "title": "should reject unsupported file types",
+          "failureMessages": [],
+          "duration": 2
+        },
+        {
+          "ancestorTitles": [
+            "Product Schema Validation",
+            "imageFileSchema"
+          ],
+          "fullName": "Product Schema Validation imageFileSchema should accept supported file types",
+          "status": "passed",
+          "title": "should accept supported file types",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "Product Schema Validation",
+            "createProductSchema"
+          ],
+          "fullName": "Product Schema Validation createProductSchema should validate create product data with image",
+          "status": "passed",
+          "title": "should validate create product data with image",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "Product Schema Validation",
+            "createProductSchema"
+          ],
+          "fullName": "Product Schema Validation createProductSchema should validate create product data without image",
+          "status": "passed",
+          "title": "should validate create product data without image",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "Product Schema Validation",
+            "updateProductSchema"
+          ],
+          "fullName": "Product Schema Validation updateProductSchema should validate partial product updates",
+          "status": "passed",
+          "title": "should validate partial product updates",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "Product Schema Validation",
+            "updateProductSchema"
+          ],
+          "fullName": "Product Schema Validation updateProductSchema should validate update with image",
+          "status": "passed",
+          "title": "should validate update with image",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "Product Schema Validation",
+            "productQuerySchema"
+          ],
+          "fullName": "Product Schema Validation productQuerySchema should validate query parameters with defaults",
+          "status": "passed",
+          "title": "should validate query parameters with defaults",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "Product Schema Validation",
+            "productQuerySchema"
+          ],
+          "fullName": "Product Schema Validation productQuerySchema should validate complete query parameters",
+          "status": "passed",
+          "title": "should validate complete query parameters",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "Product Schema Validation",
+            "productQuerySchema"
+          ],
+          "fullName": "Product Schema Validation productQuerySchema should enforce page and limit boundaries",
+          "status": "passed",
+          "title": "should enforce page and limit boundaries",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "Product Schema Validation",
+            "productQuerySchema"
+          ],
+          "fullName": "Product Schema Validation productQuerySchema should validate status enum values",
+          "status": "passed",
+          "title": "should validate status enum values",
+          "failureMessages": [],
+          "duration": 2
+        },
+        {
+          "ancestorTitles": [
+            "Product Schema Validation",
+            "productParamsSchema"
+          ],
+          "fullName": "Product Schema Validation productParamsSchema should validate valid UUID parameter",
+          "status": "passed",
+          "title": "should validate valid UUID parameter",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "Product Schema Validation",
+            "productParamsSchema"
+          ],
+          "fullName": "Product Schema Validation productParamsSchema should reject invalid UUID parameter",
+          "status": "passed",
+          "title": "should reject invalid UUID parameter",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "Category Schema Validation",
+            "categorySchema"
+          ],
+          "fullName": "Category Schema Validation categorySchema should validate valid category data - happy path",
+          "status": "passed",
+          "title": "should validate valid category data - happy path",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "Category Schema Validation",
+            "categorySchema",
+            "name validation"
+          ],
+          "fullName": "Category Schema Validation categorySchema name validation should accept valid category names",
+          "status": "passed",
+          "title": "should accept valid category names",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "Category Schema Validation",
+            "categorySchema",
+            "name validation"
+          ],
+          "fullName": "Category Schema Validation categorySchema name validation should reject empty name",
+          "status": "passed",
+          "title": "should reject empty name",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "Category Schema Validation",
+            "categorySchema",
+            "name validation"
+          ],
+          "fullName": "Category Schema Validation categorySchema name validation should reject name that is too long",
+          "status": "passed",
+          "title": "should reject name that is too long",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "Category Schema Validation",
+            "categorySchema",
+            "color validation"
+          ],
+          "fullName": "Category Schema Validation categorySchema color validation should accept valid hex colors",
+          "status": "passed",
+          "title": "should accept valid hex colors",
+          "failureMessages": [],
+          "duration": 4
+        },
+        {
+          "ancestorTitles": [
+            "Category Schema Validation",
+            "categorySchema",
+            "color validation"
+          ],
+          "fullName": "Category Schema Validation categorySchema color validation should reject invalid color formats",
+          "status": "passed",
+          "title": "should reject invalid color formats",
+          "failureMessages": [],
+          "duration": 3
+        },
+        {
+          "ancestorTitles": [
+            "Category Schema Validation",
+            "updateCategorySchema"
+          ],
+          "fullName": "Category Schema Validation updateCategorySchema should validate partial category updates",
+          "status": "passed",
+          "title": "should validate partial category updates",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "Category Schema Validation",
+            "categoryQuerySchema"
+          ],
+          "fullName": "Category Schema Validation categoryQuerySchema should validate query parameters with defaults",
+          "status": "passed",
+          "title": "should validate query parameters with defaults",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "Category Schema Validation",
+            "categoryQuerySchema"
+          ],
+          "fullName": "Category Schema Validation categoryQuerySchema should validate complete query parameters",
+          "status": "passed",
+          "title": "should validate complete query parameters",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "Category Schema Validation",
+            "categoryQuerySchema"
+          ],
+          "fullName": "Category Schema Validation categoryQuerySchema should coerce includeProducts to boolean",
+          "status": "passed",
+          "title": "should coerce includeProducts to boolean",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "Category Schema Validation",
+            "categoryParamsSchema"
+          ],
+          "fullName": "Category Schema Validation categoryParamsSchema should validate valid UUID parameter",
+          "status": "passed",
+          "title": "should validate valid UUID parameter",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "Category Schema Validation",
+            "categoryParamsSchema"
+          ],
+          "fullName": "Category Schema Validation categoryParamsSchema should reject invalid UUID parameter",
+          "status": "passed",
+          "title": "should reject invalid UUID parameter",
           "failureMessages": [],
           "duration": 1
         }

@@ -56,24 +56,26 @@ export type ProductStatus = 'AVAILABLE' | 'RENTED' | 'MAINTENANCE'
 
 /**
  * API Request/Response Types
+ * Menggunakan number untuk API layer, Decimal untuk database layer
  */
 
 export interface CreateProductRequest {
   code: string
   name: string
   description?: string
-  modalAwal: Decimal
-  hargaSewa: Decimal
+  modalAwal: number // ✅ Ubah dari Decimal ke number
+  hargaSewa: number // ✅ Ubah dari Decimal ke number
   quantity: number
   categoryId: string
   image?: File
+  imageUrl?: string
 }
 
 export interface UpdateProductRequest {
   name?: string
   description?: string
-  modalAwal?: Decimal
-  hargaSewa?: Decimal
+  modalAwal?: number // ✅ Ubah dari Decimal ke number
+  hargaSewa?: number // ✅ Ubah dari Decimal ke number
   quantity?: number
   categoryId?: string
   image?: File
@@ -121,8 +123,8 @@ export interface ProductFormData {
   name: string
   categoryId: string
   quantity: number
-  modalAwal: Decimal
-  hargaSewa: Decimal
+  modalAwal: number // ✅ Ubah dari Decimal ke number
+  hargaSewa: number // ✅ Ubah dari Decimal ke number
   description: string
   imageUrl: string | null
 }

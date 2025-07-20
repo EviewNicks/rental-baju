@@ -1,5 +1,4 @@
 import { z } from 'zod'
-import { Decimal } from '@prisma/client/runtime/library'
 
 // ============== BASE SCHEMAS ==============
 
@@ -18,13 +17,11 @@ export const productBaseSchema = z.object({
   modalAwal: z
     .number()
     .positive('Modal awal harus positif')
-    .max(999999999, 'Modal maksimal 999,999,999')
-    .transform(val => new Decimal(val)),
+    .max(999999999, 'Modal maksimal 999,999,999'),
   hargaSewa: z
     .number()
     .positive('Harga sewa harus positif')
-    .max(999999999, 'Harga sewa maksimal 999,999,999')
-    .transform(val => new Decimal(val)),
+    .max(999999999, 'Harga sewa maksimal 999,999,999'),
   quantity: z.number().int().min(0, 'Jumlah minimal 0').max(9999, 'Jumlah maksimal 9999'),
   categoryId: z.string().uuid('ID kategori tidak valid'),
 })

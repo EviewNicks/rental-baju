@@ -17,7 +17,7 @@ export interface UploadResult {
 }
 
 export class FileUploadService {
-  private readonly bucket = 'product-images'
+  private readonly bucket = 'products'
   private readonly maxRetries = 3
 
   constructor(private readonly userId: string) {}
@@ -39,11 +39,11 @@ export class FileUploadService {
    */
   async uploadProductImage(
     file: File | null | undefined,
-    productCode: string
+    productCode: string,
   ): Promise<UploadResult | null> {
     // Validate file
     const validatedFile = imageFileSchema.parse(file)
-    
+
     // Return null for null/undefined files
     if (!validatedFile) {
       return null
@@ -55,7 +55,7 @@ export class FileUploadService {
 
     // Upload with retry logic
     let lastError: Error | null = null
-    
+
     for (let attempt = 1; attempt <= this.maxRetries; attempt++) {
       try {
         const { data, error } = await supabase.storage
@@ -74,9 +74,7 @@ export class FileUploadService {
           }
         } else if (data) {
           // Get public URL
-          const { data: urlData } = supabase.storage
-            .from(this.bucket)
-            .getPublicUrl(imagePath)
+          const { data: urlData } = supabase.storage.from(this.bucket).getPublicUrl(imagePath)
 
           return {
             url: urlData.publicUrl,
@@ -94,10 +92,14 @@ export class FileUploadService {
 
     // All retries failed
     if (lastError) {
-      if (lastError.message.includes('Storage quota') || 
-          lastError.message.includes('Temporary server error') ||
-          lastError.message.includes('Persistent error')) {
-        throw new Error(`Gagal mengupload gambar setelah ${this.maxRetries} percobaan: ${lastError.message}`)
+      if (
+        lastError.message.includes('Storage quota') ||
+        lastError.message.includes('Temporary server error') ||
+        lastError.message.includes('Persistent error')
+      ) {
+        throw new Error(
+          `Gagal mengupload gambar setelah ${this.maxRetries} percobaan: ${lastError.message}`,
+        )
       } else {
         throw new Error(`Gagal mengupload gambar: ${lastError.message}`)
       }
@@ -115,9 +117,7 @@ export class FileUploadService {
     }
 
     try {
-      const { error } = await supabase.storage
-        .from(this.bucket)
-        .remove([imagePath])
+      const { error } = await supabase.storage.from(this.bucket).remove([imagePath])
 
       if (error) {
         throw new Error(`Gagal menghapus gambar: ${error.message}`)
@@ -135,7 +135,7 @@ export class FileUploadService {
   async updateProductImage(
     file: File | null | undefined,
     productCode: string,
-    oldImagePath?: string
+    oldImagePath?: string,
   ): Promise<UploadResult | null> {
     // Delete old image if exists (but don't fail if deletion fails)
     if (oldImagePath) {
@@ -170,7 +170,7 @@ export class FileUploadService {
     try {
       const urlObj = new URL(url)
       const pathParts = urlObj.pathname.split('/')
-      
+
       // Find the bucket name in path and extract everything after it
       const bucketIndex = pathParts.indexOf(this.bucket)
       if (bucketIndex === -1) {
@@ -195,6 +195,6 @@ export class FileUploadService {
    * Delay utility for retry logic
    */
   private delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms))
+    return new Promise((resolve) => setTimeout(resolve, ms))
   }
 }
