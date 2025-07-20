@@ -6,9 +6,10 @@ import { SearchFilterBar } from '@/features/manage-product/components/products/S
 import { ProductTable } from '@/features/manage-product/components/products/ProductTable'
 import { ProductGrid } from '@/features/manage-product/components/products/ProductGrid'
 import { EmptyState } from '@/features/manage-product/components/products/EmptyState'
-import { ProductDetailModal } from '@/features/manage-product/components/product-detail/ProductDetailModal'
+import { ManageProductErrorBoundary } from '@/features/manage-product/components/shared/ManageProductErrorBoundary'
+import { SearchFilterErrorBoundary } from '@/features/manage-product/components/shared/SearchFilterErrorBoundary'
 
-export default function ProductManagement() {
+function ProductManagementContent() {
   const {
     // Data
     products,
@@ -19,8 +20,7 @@ export default function ProductManagement() {
     setViewMode,
     isDeleteDialogOpen,
     productToDelete,
-    isDetailModalOpen,
-    selectedProductId,
+
 
     // Loading & Error States
     isLoading,
@@ -39,9 +39,7 @@ export default function ProductManagement() {
     handleEditProduct,
     handleViewProduct,
 
-    // Modal Management
-    handleCloseDetailModal,
-    handleProductDeleted,
+
 
     // Filtering
     filters,
@@ -79,22 +77,27 @@ export default function ProductManagement() {
       <ProductHeader onAddProduct={handleAddProduct} />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <SearchFilterBar
-          searchTerm={filters.search || ''}
-          onSearchChange={handleSearch}
-          selectedCategory={filters.categoryId || ''}
-          onCategoryChange={handleCategoryFilter}
-          selectedStatus={filters.status || ''}
-          onStatusChange={(value: string) => {
-            const statusValue =
-              value === 'Semua'
-                ? undefined
-                : (value as 'AVAILABLE' | 'RENTED' | 'MAINTENANCE' | undefined)
-            handleStatusFilter(statusValue)
+        <SearchFilterErrorBoundary
+          onError={(error, errorInfo) => {
+            console.error('SearchFilterBar error:', error, errorInfo)
           }}
-          viewMode={viewMode}
-          onViewModeChange={setViewMode}
-        />
+          onReset={() => {
+            // Optional: Add any reset logic specific to search filters
+            console.log('SearchFilterBar reset')
+          }}
+        >
+          <SearchFilterBar
+            searchTerm={filters.search || ''}
+            onSearchChange={handleSearch}
+            selectedCategory={filters.categoryId}
+            onCategoryChange={handleCategoryFilter}
+            selectedStatus={filters.status}
+            onStatusChange={handleStatusFilter}
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
+            isLoading={isLoading}
+          />
+        </SearchFilterErrorBoundary>
 
         {/* Loading State */}
         {isLoadingProducts && (
@@ -164,16 +167,20 @@ export default function ProductManagement() {
             </div>
           </div>
         )}
-
-        {/* Product Detail Modal */}
-        <ProductDetailModal
-          productId={selectedProductId}
-          isOpen={isDetailModalOpen}
-          onClose={handleCloseDetailModal}
-          onEdit={handleEditProduct}
-          onProductDeleted={handleProductDeleted}
-        />
       </div>
     </div>
+  )
+}
+
+export default function ProductManagement() {
+  return (
+    <ManageProductErrorBoundary
+      onReset={() => {
+        // Optional: Add any reset logic here
+        window.location.reload()
+      }}
+    >
+      <ProductManagementContent />
+    </ManageProductErrorBoundary>
   )
 }

@@ -13,17 +13,18 @@ import {
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { STATUSES } from '@/features/manage-product/lib/constants'
 import { useCategories } from '@/features/manage-product/hooks/useCategories'
-import type { ViewMode } from '@/features/manage-product/types'
+import type { ViewMode, CategoryFilterValue, StatusFilterValue } from '@/features/manage-product/types'
 
 interface SearchFilterBarProps {
   searchTerm: string
   onSearchChange: (value: string) => void
-  selectedCategory: string
-  onCategoryChange: (value: string) => void
-  selectedStatus: string
-  onStatusChange: (value: string) => void
+  selectedCategory: CategoryFilterValue
+  onCategoryChange: (value: CategoryFilterValue) => void
+  selectedStatus: StatusFilterValue
+  onStatusChange: (value: StatusFilterValue) => void
   viewMode: ViewMode
   onViewModeChange: (value: ViewMode) => void
+  isLoading?: boolean
 }
 
 export function SearchFilterBar({
@@ -35,6 +36,7 @@ export function SearchFilterBar({
   onStatusChange,
   viewMode,
   onViewModeChange,
+  isLoading = false,
 }: SearchFilterBarProps) {
   // Fetch categories from API
   const { data: categoriesData, isLoading: isLoadingCategories } = useCategories()
@@ -42,7 +44,7 @@ export function SearchFilterBar({
 
   // Create category options with "Semua" option
   const categoryOptions = [
-    { id: '', name: 'Semua' },
+    { id: 'all', name: 'Semua' },
     ...categories
   ]
   return (
@@ -57,6 +59,7 @@ export function SearchFilterBar({
                 value={searchTerm}
                 onChange={(e) => onSearchChange(e.target.value)}
                 className="pl-10 border-border focus:ring-2 focus:ring-ring/20"
+                disabled={isLoading}
               />
             </div>
           </div>
@@ -64,18 +67,22 @@ export function SearchFilterBar({
           <div className="flex flex-wrap gap-3 items-center">
             <div className="flex items-center gap-2">
               <Filter className="w-4 h-4 text-muted-foreground" />
-              <Select value={selectedCategory} onValueChange={onCategoryChange}>
+              <Select 
+                value={selectedCategory || 'all'} 
+                onValueChange={(value) => onCategoryChange(value === 'all' ? '' : value)}
+                disabled={isLoading || isLoadingCategories}
+              >
                 <SelectTrigger className="w-32 border">
                   <SelectValue placeholder="Kategori" />
                 </SelectTrigger>
                 <SelectContent>
                   {isLoadingCategories ? (
-                    <SelectItem value="" disabled>
+                    <SelectItem value="loading" disabled>
                       Loading...
                     </SelectItem>
                   ) : (
                     categoryOptions.map((category) => (
-                      <SelectItem key={category.id || 'all'} value={category.id}>
+                      <SelectItem key={category.id} value={category.id}>
                         {category.name}
                       </SelectItem>
                     ))
@@ -84,7 +91,11 @@ export function SearchFilterBar({
               </Select>
             </div>
 
-            <Select value={selectedStatus} onValueChange={onStatusChange}>
+            <Select 
+              value={selectedStatus || 'Semua'} 
+              onValueChange={(value) => onStatusChange(value === 'Semua' ? '' : value)}
+              disabled={isLoading}
+            >
               <SelectTrigger className="w-32">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
@@ -101,6 +112,7 @@ export function SearchFilterBar({
               type="single"
               value={viewMode}
               onValueChange={(value) => value && onViewModeChange(value as ViewMode)}
+              disabled={isLoading}
             >
               <ToggleGroupItem value="table" aria-label="Table view">
                 <Table className="w-4 h-4" />

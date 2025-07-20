@@ -42,7 +42,7 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'cdn.dribbble.com',
+        hostname: 'pmjxdencfgkbjuyjndbp.supabase.co',
         port: '',
         pathname: '/**',
       },

@@ -54,6 +54,29 @@ export interface PrismaCategory extends BaseCategory {
 export type ViewMode = 'table' | 'card'
 export type ProductStatus = 'AVAILABLE' | 'RENTED' | 'MAINTENANCE'
 
+// Filter types untuk UI components
+export type CategoryFilterValue = string | undefined
+export type StatusFilterValue = ProductStatus | undefined | 'Semua'
+
+// Type guards
+export function isValidProductStatus(status: string): status is ProductStatus {
+  return ['AVAILABLE', 'RENTED', 'MAINTENANCE'].includes(status)
+}
+
+export function normalizeStatusFilter(status: string | undefined): ProductStatus | undefined {
+  if (!status || status === 'Semua' || status === '') {
+    return undefined
+  }
+  return isValidProductStatus(status) ? status : undefined
+}
+
+export function normalizeCategoryFilter(categoryId: string | undefined): string | undefined {
+  if (!categoryId || categoryId === '' || categoryId === 'all') {
+    return undefined
+  }
+  return categoryId
+}
+
 /**
  * API Request/Response Types
  * Menggunakan number untuk API layer, Decimal untuk database layer

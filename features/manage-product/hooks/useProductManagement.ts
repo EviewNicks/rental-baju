@@ -13,7 +13,13 @@ import type {
   UpdateProductRequest,
   GetProductsParams,
 } from '../adapters/types/requests'
-import type { Product, ViewMode } from '../types'
+import type { 
+  Product, 
+  ViewMode, 
+  CategoryFilterValue, 
+  StatusFilterValue,
+} from '../types'
+import { normalizeStatusFilter, normalizeCategoryFilter } from '../types'
 
 interface UseProductManagementOptions {
   initialFilters?: GetProductsParams
@@ -53,24 +59,27 @@ export function useProductManagement(options: UseProductManagementOptions = {}) 
   const updateProductMutation = useUpdateProduct()
   const deleteProductMutation = useDeleteProduct()
 
-  // Extract data with safe defaults
-  const products = productsData?.products || []
-  const pagination = productsData?.pagination || {
-    page: 1,
-    limit: 10,
-    total: 0,
-    totalPages: 0,
-  }
+  // Extract data with safe defaults and memoize
+  const { products, pagination, filteredProducts } = useMemo(() => {
+    const productsArray = productsData?.products || []
+    const paginationData = productsData?.pagination || {
+      page: 1,
+      limit: 10,
+      total: 0,
+      totalPages: 0,
+    }
 
-  // Filter products client-side if needed (for additional filtering not handled by API)
-  const filteredProducts = useMemo(() => {
-    const result = [...products]
-
+    // Filter products client-side if needed (for additional filtering not handled by API)
+    const filtered = [...productsArray]
     // Add any client-side filtering logic here if needed
     // For now, rely on server-side filtering
 
-    return result
-  }, [products])
+    return {
+      products: productsArray,
+      pagination: paginationData,
+      filteredProducts: filtered,
+    }
+  }, [productsData])
 
   // Navigation handlers
   const handleAddProduct = useCallback(() => {
@@ -156,16 +165,16 @@ export function useProductManagement(options: UseProductManagementOptions = {}) 
     setFilters((prev) => ({ ...prev, search: searchTerm, page: 1 }))
   }, [])
 
-  const handleCategoryFilter = useCallback((categoryId: string | undefined) => {
-    // Convert empty string to undefined for API call
-    const actualCategoryId = categoryId === '' ? undefined : categoryId
+  const handleCategoryFilter = useCallback((categoryId: CategoryFilterValue) => {
+    // Use type-safe normalization
+    const actualCategoryId = normalizeCategoryFilter(categoryId)
     setFilters((prev) => ({ ...prev, categoryId: actualCategoryId, page: 1 }))
   }, [])
 
   const handleStatusFilter = useCallback(
-    (status: 'AVAILABLE' | 'RENTED' | 'MAINTENANCE' | undefined) => {
-      // Convert "Semua" or empty string to undefined for API call
-      const actualStatus = status ? undefined : status
+    (status: StatusFilterValue) => {
+      // Use type-safe normalization
+      const actualStatus = normalizeStatusFilter(status as string)
       setFilters((prev) => ({ ...prev, status: actualStatus, page: 1 }))
     },
     [],

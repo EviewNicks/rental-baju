@@ -23,6 +23,7 @@ import type { Product } from '@/features/manage-product/types'
 import { getStatusBadge, formatCurrency } from '@/features/manage-product/lib/utils/product'
 import { lightenColor } from '../../lib/utils/color'
 import { getContrastTextColor } from '../../lib/utils/color'
+import { getValidImageUrl } from '../../lib/utils/imageValidate'
 
 interface ProductTableProps {
   products: Product[]
@@ -64,11 +65,11 @@ export function ProductTable({
                   <TableCell className="text-center">
                     <div className="w-12 h-12 mx-auto rounded-lg overflow-hidden bg-gray-100">
                       <Image
-                        src={product.imageUrl || '/placeholder.svg?height=48&width=48'}
+                        src={getValidImageUrl(product.imageUrl)}
                         alt={product.name}
                         width={48}
                         height={48}
-                        className="w-full h-full object-cover "
+                        className="w-full h-full object-cover"
                       />
                     </div>
                   </TableCell>

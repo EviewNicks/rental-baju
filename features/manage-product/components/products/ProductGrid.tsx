@@ -7,6 +7,7 @@ import type { Product } from '@/features/manage-product/types'
 import { getStatusBadge, formatCurrency } from '@/features/manage-product/lib/utils/product'
 import { lightenColor } from '../../lib/utils/color'
 import { getContrastTextColor } from '../../lib/utils/color'
+import { getValidImageUrl } from '../../lib/utils/imageValidate'
 
 interface ProductGridProps {
   products: Product[]
@@ -24,7 +25,7 @@ export function ProductGrid({ products, onProductClick }: ProductGridProps) {
         >
           <div className="aspect-square bg-gray-100">
             <Image
-              src={product.imageUrl || '/placeholder.svg?height=200&width=200'}
+              src={getValidImageUrl(product.imageUrl)}
               alt={product.name}
               width={200}
               height={200}
