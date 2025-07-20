@@ -6,7 +6,8 @@
       "Bash(yarn test:*)",
       "Bash(yarn lint:*)",
       "Bash(npx tsc:*)",
-      "Bash(yarn tsc:*)"
+      "Bash(yarn tsc:*)",
+      "Bash(mkdir:*)"
     ],
     "deny": []
   }
