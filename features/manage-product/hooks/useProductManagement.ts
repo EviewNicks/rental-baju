@@ -13,12 +13,7 @@ import type {
   UpdateProductRequest,
   GetProductsParams,
 } from '../adapters/types/requests'
-import type { 
-  Product, 
-  ViewMode, 
-  CategoryFilterValue, 
-  StatusFilterValue,
-} from '../types'
+import type { Product, ViewMode, CategoryFilterValue, StatusFilterValue } from '../types'
 import { normalizeStatusFilter, normalizeCategoryFilter } from '../types'
 
 interface UseProductManagementOptions {
@@ -60,7 +55,7 @@ export function useProductManagement(options: UseProductManagementOptions = {}) 
   const deleteProductMutation = useDeleteProduct()
 
   // Extract data with safe defaults and memoize
-  const { products, pagination, filteredProducts } = useMemo(() => {
+  const { pagination, filteredProducts } = useMemo(() => {
     const productsArray = productsData?.products || []
     const paginationData = productsData?.pagination || {
       page: 1,
@@ -93,9 +88,12 @@ export function useProductManagement(options: UseProductManagementOptions = {}) 
     [router],
   )
 
-  const handleViewProduct = useCallback((product: Product) => {
-    router.push(`/producer/manage-product/${product.id}`)
-  }, [router])
+  const handleViewProduct = useCallback(
+    (product: Product) => {
+      router.push(`/producer/manage-product/${product.id}`)
+    },
+    [router],
+  )
 
   // CRUD operations
   const handleCreateProduct = useCallback(
@@ -170,14 +168,11 @@ export function useProductManagement(options: UseProductManagementOptions = {}) 
     setFilters((prev) => ({ ...prev, categoryId: actualCategoryId, page: 1 }))
   }, [])
 
-  const handleStatusFilter = useCallback(
-    (status: StatusFilterValue) => {
-      // Use type-safe normalization
-      const actualStatus = normalizeStatusFilter(status as string)
-      setFilters((prev) => ({ ...prev, status: actualStatus, page: 1 }))
-    },
-    [],
-  )
+  const handleStatusFilter = useCallback((status: StatusFilterValue) => {
+    // Use type-safe normalization
+    const actualStatus = normalizeStatusFilter(status as string)
+    setFilters((prev) => ({ ...prev, status: actualStatus, page: 1 }))
+  }, [])
 
   const handlePagination = useCallback((page: number) => {
     setFilters((prev) => ({ ...prev, page }))

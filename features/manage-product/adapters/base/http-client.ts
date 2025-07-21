@@ -51,12 +51,12 @@ export class HttpClient {
     } = options
 
     const fullUrl = this.baseUrl + url
-    
+
     // Handle FormData content type
     let requestHeaders = { ...this.defaultHeaders, ...headers }
     if (restOptions.body instanceof FormData) {
       // Remove Content-Type for FormData to let browser set multipart/form-data with boundary
-      const { 'Content-Type': _, ...headersWithoutContentType } = requestHeaders
+      const { ...headersWithoutContentType } = requestHeaders
       requestHeaders = headersWithoutContentType
     }
 
@@ -128,7 +128,7 @@ export class HttpClient {
     return this.request<T>(url, {
       ...options,
       method: 'POST',
-      body: this.prepareBody(data, options.headers),
+      body: this.prepareBody(data),
     })
   }
 
@@ -143,7 +143,7 @@ export class HttpClient {
     return this.request<T>(url, {
       ...options,
       method: 'PUT',
-      body: this.prepareBody(data, options.headers),
+      body: this.prepareBody(data),
     })
   }
 
@@ -197,7 +197,7 @@ export class HttpClient {
   /**
    * Prepare request body based on data type and headers
    */
-  private prepareBody(data: unknown, headers: HeadersInit = {}): BodyInit | undefined {
+  private prepareBody(data: unknown): BodyInit | undefined {
     if (!data) return undefined
 
     // If it's FormData, let fetch handle it

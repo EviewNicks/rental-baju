@@ -8,6 +8,7 @@ import type { ClientCategory, ClientProduct } from '../../types'
 /**
  * Convert product data to ClientProduct (safe for frontend)
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function toClientProduct(product: any, skipCategory = false): ClientProduct {
   return {
     id: product.id || '',
@@ -25,17 +26,23 @@ export function toClientProduct(product: any, skipCategory = false): ClientProdu
     createdAt: product.createdAt ? new Date(product.createdAt) : new Date(),
     updatedAt: product.updatedAt ? new Date(product.updatedAt) : new Date(),
     createdBy: product.createdBy || '',
-    category: !skipCategory && product.category ? toClientCategory(product.category) : {} as ClientCategory,
+    category:
+      !skipCategory && product.category
+        ? toClientCategory(product.category)
+        : ({} as ClientCategory),
   }
 }
 
 /**
  * Convert any category data to ClientCategory (safe for frontend)
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function toClientCategory(category: any): ClientCategory {
-  const products = category.products && Array.isArray(category.products) 
-    ? category.products.map((product: any) => toClientProduct(product, true)) // Skip category to avoid circular ref
-    : []
+  const products =
+    category.products && Array.isArray(category.products)
+      ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        category.products.map((product: any) => toClientProduct(product, true)) // Skip category to avoid circular ref
+      : []
 
   return {
     id: category.id || '',
@@ -51,6 +58,7 @@ export function toClientCategory(category: any): ClientCategory {
 /**
  * Convert array of category data to ClientCategory array
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function toClientCategories(categories: any[]): ClientCategory[] {
   if (!Array.isArray(categories)) return []
   return categories.map(toClientCategory)
@@ -59,6 +67,7 @@ export function toClientCategories(categories: any[]): ClientCategory[] {
 /**
  * Safe number conversion for monetary values
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function toSafeNumber(value: any): number {
   if (typeof value === 'number') return value
   if (typeof value === 'string') return parseFloat(value) || 0

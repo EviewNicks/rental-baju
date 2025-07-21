@@ -6,9 +6,18 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { CategoryList } from './CategoryList'
 import { CategoryForm } from './CategoryForm'
 import { DeleteConfirmationDialog } from './DeleteConfirmationDialog'
-import { useCategories, useCreateCategory, useUpdateCategory, useDeleteCategory } from '@/features/manage-product/hooks/useCategories'
+import {
+  useCategories,
+  useCreateCategory,
+  useUpdateCategory,
+  useDeleteCategory,
+} from '@/features/manage-product/hooks/useCategories'
 import { showSuccess, showError } from '@/lib/notifications'
-import type { ClientCategory, CategoryFormData, CategoryModalMode } from '@/features/manage-product/types'
+import type {
+  ClientCategory,
+  CategoryFormData,
+  CategoryModalMode,
+} from '@/features/manage-product/types'
 
 interface CategoryManagementModalProps {
   isOpen: boolean
@@ -21,7 +30,7 @@ export function CategoryManagementModal({ isOpen, onClose }: CategoryManagementM
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
 
   // API hooks
-  const { data: categoriesData, isLoading: loading, error } = useCategories({ includeProducts: true })
+  const { data: categoriesData, isLoading: loading } = useCategories({ includeProducts: true })
   const createCategoryMutation = useCreateCategory()
   const updateCategoryMutation = useUpdateCategory()
   const deleteCategoryMutation = useDeleteCategory()
@@ -59,7 +68,10 @@ export function CategoryManagementModal({ isOpen, onClose }: CategoryManagementM
             color: formData.color,
           },
         })
-        showSuccess('Kategori berhasil diperbarui', `Perubahan pada kategori ${formData.name} telah disimpan`)
+        showSuccess(
+          'Kategori berhasil diperbarui',
+          `Perubahan pada kategori ${formData.name} telah disimpan`,
+        )
       }
 
       setMode('view')
@@ -130,7 +142,11 @@ export function CategoryManagementModal({ isOpen, onClose }: CategoryManagementM
                   <Button
                     onClick={handleAddCategory}
                     className="bg-yellow-400 hover:bg-yellow-500 text-black"
-                    disabled={loading || createCategoryMutation.isPending || updateCategoryMutation.isPending}
+                    disabled={
+                      loading ||
+                      createCategoryMutation.isPending ||
+                      updateCategoryMutation.isPending
+                    }
                   >
                     Tambah Kategori
                   </Button>

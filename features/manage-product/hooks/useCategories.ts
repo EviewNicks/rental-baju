@@ -7,7 +7,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { categoryAdapter } from '../adapters/categoryAdapter'
 import { queryKeys } from '@/lib/react-query'
 import { toClientCategories, toClientCategory } from '../lib/utils/clientSafeConverters'
-import type { ClientCategory, CreateCategoryRequest, UpdateCategoryRequest } from '../types'
+import type { CreateCategoryRequest, UpdateCategoryRequest } from '../types'
 
 /**
  * Hook for fetching categories list
@@ -128,6 +128,7 @@ export function useDeleteCategory() {
           if (!oldData?.categories) return oldData
           return {
             ...oldData,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             categories: oldData.categories.filter((category: any) => category.id !== id),
           }
         },

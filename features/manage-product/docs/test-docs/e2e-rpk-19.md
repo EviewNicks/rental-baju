@@ -1,385 +1,379 @@
 # Test Summary Report - RPK-19 E2E Testing Manage-Product
 
 ## 1. Identifikasi Dokumen
-
-- **Judul Dokumen:** Test Summary Report - RPK-19 E2E Testing Manage-Product
-- **Identifikasi Versi dan Tanggal:**
-  - Versi: 1.0
-  - Tanggal: 2024-12-19
-- **Author:** [Nama Tester/Developer]
-- **Reviewer:** [Nama Reviewer]
+- **Judul Dokumen:** Test Summary Report - [RPK-19] E2E Testing Manage-Product
+- **Identifikasi Versi dan Tanggal:**  
+  - Versi: 1.0  
+  - Tanggal: 2025-07-21
+- **Author:** Ardiansyah Arifin
+- **Reviewer:** -
 
 ## 2. Pendahuluan
 
-- **Tujuan:**  
-  Mendokumentasikan hasil pengujian end-to-end untuk fitur Manage-Product (RPK-19) sesuai dengan pendekatan Behavior-Driven Development (BDD) menggunakan Playwright.
+### Tujuan
+Mendokumentasikan skenario pengujian end-to-end untuk fitur manajemen produk (RPK-3) menggunakan Playwright dengan integrasi Clerk Authentication, memastikan semua workflow utama berfungsi dengan baik untuk role Producer dan Admin.
 
-- **Ruang Lingkup:**  
-  Laporan ini mencakup hasil pengujian E2E untuk implementasi fitur manajemen produk yang meliputi:
-  - CRUD operations (Create, Read, Update, Delete)
-  - Form validation dan error handling
-  - Image upload functionality
-  - Search dan filter capabilities
-  - Responsive design testing
-  - Authentication dan authorization
+### Ruang Lingkup
+Laporan ini mencakup skenario E2E testing untuk implementasi manage-product yang meliputi:
+- CRUD operations untuk produk (Create, Read, Update, Delete)
+- Upload dan validasi gambar produk
+- Manajemen kategori produk
+- Authorization testing (Producer dan Admin access)
+- Form validation dan user experience flows
 
-- **Referensi:**
-  - Task RPK-12: [Link ke task-rpk-12.md]
-  - Task RPK-13: [Link ke task-rpk-13.md]
-  - Task RPK-14: [Link ke task-rpk-14.md]
-  - User Story RPK-3: [Link ke story-3.md]
+### Referensi
+- Task RPK-19: [task-rpk-19.md](../task/story-3/task-rpk-19.md)
+- User Story: [story-3.md](../story-3.md)
+- Frontend Implementation: [result-rpk-14.md](../result-docs/result-rpk-14.md)
+- Backend Implementation: [result-rpk-13.md](../result-docs/result-rpk-13.md)
 
-## 3. Ringkasan Pengujian
+## 3. E2E Testing (BDD) - Playwright
 
-### 3.1 E2E Testing (BDD)
+### 3.1 Test Environment Setup
+- **Framework:** Playwright + Clerk Authentication
+- **Browser Coverage:** Chrome, Firefox, Edge
+- **Authentication:** Clerk test users dengan roles Producer/Admin
+- **Base URL:** `http://localhost:3000`
 
-#### Statistik
+### 3.2 Test Scenarios Overview
 
-- **Total Scenarios:** 15
-- **Scenarios Berhasil:** 15 (100%)
-- **Scenarios Gagal:** 0 (0%)
-- **Test Duration:** ~45 menit
-- **Browsers Tested:** Chrome, Firefox, Safari
+#### 3.2.1 Authentication & Authorization Tests
+| Scenario | Priority | Status | Estimated Duration |
+|----------|----------|--------|-------------------|
+| Producer dapat mengakses halaman manage-product | High | Pending | 2 menit |
+| Admin dapat mengakses halaman manage-product | High | Pending | 2 menit |
+| Kasir tidak dapat mengakses halaman manage-product | High | Pending | 2 menit |
 
-#### Metodologi
+#### 3.2.2 Product Management Tests
+| Scenario | Priority | Status | Estimated Duration |
+|----------|----------|--------|-------------------|
+| Producer dapat menambah produk baru dengan upload foto | High | Pending | 5 menit |
+| Producer dapat melihat daftar produk | High | Pending | 3 menit |
+| Producer dapat melihat detail produk | Medium | Pending | 3 menit |
+| Producer dapat mengedit produk yang ada | High | Pending | 4 menit |
+| Producer dapat menghapus produk dengan konfirmasi | High | Pending | 3 menit |
 
-- Menggunakan Playwright untuk browser automation
-- Format Given-When-Then (BDD)
-- Testing pada browser sungguhan (Chrome, Firefox, Safari)
-- Cross-browser compatibility testing
-- Responsive design testing pada berbagai device sizes
+#### 3.2.3 Category Management Tests  
+| Scenario | Priority | Status | Estimated Duration |
+|----------|----------|--------|-------------------|
+| Producer dapat mengelola kategori produk | Medium | Pending | 4 menit |
+| Producer dapat menambah kategori baru | Medium | Pending | 3 menit |
 
-#### Test Scenarios
+#### 3.2.4 Search & Filter Tests
+| Scenario | Priority | Status | Estimated Duration |
+|----------|----------|--------|-------------------|
+| Producer dapat mencari produk berdasarkan nama | Medium | Pending | 2 menit |
+| Producer dapat memfilter produk berdasarkan kategori | Medium | Pending | 2 menit |
 
-| Scenario                                                  | File Test                | Status | Browser Coverage        |
-| --------------------------------------------------------- | ------------------------ | ------ | ----------------------- |
-| Producer dapat login dan mengakses halaman manage-product | `manage-product.spec.ts` | ✅     | Chrome, Firefox, Safari |
-| Producer dapat melihat daftar produk dalam format tabel   | `manage-product.spec.ts` | ✅     | Chrome, Firefox, Safari |
-| Producer dapat menambah produk baru dengan data valid     | `manage-product.spec.ts` | ✅     | Chrome, Firefox, Safari |
-| Producer dapat mengedit produk yang ada                   | `manage-product.spec.ts` | ✅     | Chrome, Firefox, Safari |
-| Producer dapat menghapus produk dengan konfirmasi         | `manage-product.spec.ts` | ✅     | Chrome, Firefox, Safari |
-| Producer dapat upload gambar produk                       | `manage-product.spec.ts` | ✅     | Chrome, Firefox, Safari |
-| Producer dapat mencari produk berdasarkan nama/kode       | `manage-product.spec.ts` | ✅     | Chrome, Firefox, Safari |
-| Producer dapat filter produk berdasarkan kategori         | `manage-product.spec.ts` | ✅     | Chrome, Firefox, Safari |
-| Producer dapat navigasi pagination                        | `manage-product.spec.ts` | ✅     | Chrome, Firefox, Safari |
-| Form validation menampilkan error untuk data invalid      | `manage-product.spec.ts` | ✅     | Chrome, Firefox, Safari |
-| Responsive design berfungsi di mobile device              | `manage-product.spec.ts` | ✅     | Chrome, Firefox, Safari |
-| Responsive design berfungsi di tablet device              | `manage-product.spec.ts` | ✅     | Chrome, Firefox, Safari |
-| Responsive design berfungsi di desktop device             | `manage-product.spec.ts` | ✅     | Chrome, Firefox, Safari |
-| Error handling untuk network failures                     | `manage-product.spec.ts` | ✅     | Chrome, Firefox, Safari |
-| Loading states ditampilkan dengan benar                   | `manage-product.spec.ts` | ✅     | Chrome, Firefox, Safari |
+### 3.3 Detailed Test Scenarios
 
-#### Sample BDD Test
-
+#### Scenario 1: Producer Login dan Akses Halaman
 ```typescript
-/**
- * E2E Test: Manage Product Feature
- *
- * Test ini bertujuan untuk memverifikasi fungsionalitas lengkap fitur manajemen produk
- * dari perspektif pengguna end-to-end, termasuk CRUD operations, form validation,
- * image upload, dan responsive design.
- *
- * Catatan:
- * - Test menggunakan data test yang diisolasi
- * - Setiap test scenario independen dan dapat dijalankan terpisah
- * - Cross-browser testing untuk memastikan kompatibilitas
- */
-
-test.describe('Manage Product Feature', () => {
-  test.beforeEach(async ({ page }) => {
-    // Setup: Login sebagai producer
-    await page.goto('/sign-in')
-    await page.fill('[data-testid="email-input"]', 'producer@test.com')
-    await page.fill('[data-testid="password-input"]', 'password123')
-    await page.click('[data-testid="sign-in-button"]')
-    await page.waitForURL('/producer')
-  })
-
-  test('Producer dapat menambah produk baru dengan data valid', async ({ page }) => {
-    // Given
-    await page.goto('/producer/manage-product')
-    await page.waitForSelector('[data-testid="product-table"]')
-
-    // When
-    await page.click('[data-testid="add-product-button"]')
-    await page.fill('[data-testid="product-code-input"]', 'PRD001')
-    await page.fill('[data-testid="product-name-input"]', 'Dress Pesta')
-    await page.fill('[data-testid="product-description-input"]', 'Dress pesta elegan')
-    await page.fill('[data-testid="product-price-input"]', '500000')
-    await page.fill('[data-testid="product-quantity-input"]', '10')
-    await page.selectOption('[data-testid="product-category-select"]', 'Dress')
-
-    // Upload image
-    const fileChooserPromise = page.waitForEvent('filechooser')
-    await page.click('[data-testid="image-upload-button"]')
-    const fileChooser = await fileChooserPromise
-    await fileChooser.setFiles('test-assets/product-image.jpg')
-
-    await page.click('[data-testid="save-product-button"]')
-
-    // Then
-    await expect(page.locator('[data-testid="success-message"]')).toBeVisible()
-    await expect(page.locator('text=PRD001')).toBeVisible()
-    await expect(page.locator('text=Dress Pesta')).toBeVisible()
-  })
-
-  test('Producer dapat mengedit produk yang ada', async ({ page }) => {
-    // Given
-    await page.goto('/producer/manage-product')
-    await page.waitForSelector('[data-testid="product-table"]')
-
-    // When
-    await page.click('[data-testid="edit-product-button-1"]')
-    await page.fill('[data-testid="product-name-input"]', 'Dress Pesta Updated')
-    await page.fill('[data-testid="product-price-input"]', '600000')
-    await page.click('[data-testid="save-product-button"]')
-
-    // Then
-    await expect(page.locator('[data-testid="success-message"]')).toBeVisible()
-    await expect(page.locator('text=Dress Pesta Updated')).toBeVisible()
-    await expect(page.locator('text=Rp 600.000')).toBeVisible()
-  })
-
-  test('Producer dapat menghapus produk dengan konfirmasi', async ({ page }) => {
-    // Given
-    await page.goto('/producer/manage-product')
-    await page.waitForSelector('[data-testid="product-table"]')
-
-    // When
-    await page.click('[data-testid="delete-product-button-1"]')
-    await page.click('[data-testid="confirm-delete-button"]')
-
-    // Then
-    await expect(page.locator('[data-testid="success-message"]')).toBeVisible()
-    await expect(page.locator('text=PRD001')).not.toBeVisible()
-  })
-
-  test('Form validation menampilkan error untuk data invalid', async ({ page }) => {
-    // Given
-    await page.goto('/producer/manage-product')
-    await page.click('[data-testid="add-product-button"]')
-
-    // When
-    await page.click('[data-testid="save-product-button"]')
-
-    // Then
-    await expect(page.locator('text=Kode produk wajib diisi')).toBeVisible()
-    await expect(page.locator('text=Nama produk wajib diisi')).toBeVisible()
-    await expect(page.locator('text=Harga harus positif')).toBeVisible()
-  })
-
-  test('Producer dapat mencari produk berdasarkan nama/kode', async ({ page }) => {
-    // Given
-    await page.goto('/producer/manage-product')
-    await page.waitForSelector('[data-testid="product-table"]')
-
-    // When
-    await page.fill('[data-testid="search-input"]', 'Dress')
-    await page.keyboard.press('Enter')
-
-    // Then
-    await expect(page.locator('[data-testid="product-table"]')).toContainText('Dress')
-    await expect(page.locator('[data-testid="product-table"]')).not.toContainText('Pants')
-  })
-
-  test('Responsive design berfungsi di mobile device', async ({ page }) => {
-    // Given
-    await page.setViewportSize({ width: 375, height: 667 })
-    await page.goto('/producer/manage-product')
-
-    // When & Then
-    await expect(page.locator('[data-testid="product-card-view"]')).toBeVisible()
-    await expect(page.locator('[data-testid="product-table-view"]')).not.toBeVisible()
-
-    // Test mobile navigation
-    await page.click('[data-testid="mobile-menu-button"]')
-    await expect(page.locator('[data-testid="mobile-menu"]')).toBeVisible()
-  })
-})
+test('Producer dapat mengakses halaman manage-product', async ({ page }) => {
+  // Given: Producer login dengan Clerk
+  await page.goto('/sign-in');
+  await page.fill('[name="identifier"]', 'producer@test.com');
+  await page.fill('[name="password"]', 'testpassword');
+  await page.click('[type="submit"]');
+  
+  // When: Navigate ke manage-product
+  await page.goto('/producer/manage-product');
+  
+  // Then: Halaman berhasil dimuat
+  await expect(page.locator('h1')).toContainText('Kelola Produk');
+  await expect(page.locator('[data-testid="product-table"]')).toBeVisible();
+});
 ```
 
-#### Catatan Penting
-
-- **Cross-browser Compatibility**: Semua test berhasil di Chrome, Firefox, dan Safari
-- **Responsive Design**: Layout beradaptasi dengan baik di mobile, tablet, dan desktop
-- **Performance**: Loading time rata-rata < 2 detik untuk semua operasi
-- **Error Handling**: Error states ditangani dengan baik dan user-friendly
-- **Accessibility**: Keyboard navigation dan screen reader compatibility berfungsi
-
-### 3.2 Performance Testing
-
-#### Statistik
-
-- **Total Metrics Diukur:** 8
-- **Metrics Memenuhi Target:** 8 (100%)
-- **Metrics Gagal Memenuhi Target:** 0 (0%)
-
-#### Metodologi
-
-- Menggunakan Playwright + Web Performance API
-- Testing pada browser Chrome dan Firefox
-- Pengukuran Core Web Vitals dan custom metrics
-
-#### Hasil Pengukuran
-
-| Metric                   | Baseline | Hasil  | Target   | Status |
-| ------------------------ | -------- | ------ | -------- | ------ |
-| First Contentful Paint   | 800ms    | 650ms  | < 1000ms | ✅     |
-| Largest Contentful Paint | 1200ms   | 950ms  | < 1500ms | ✅     |
-| Time to Interactive      | 1500ms   | 1200ms | < 2000ms | ✅     |
-| Cumulative Layout Shift  | 0.05     | 0.03   | < 0.1    | ✅     |
-| Product List Load Time   | 1000ms   | 750ms  | < 1500ms | ✅     |
-| Form Submission Time     | 2000ms   | 1500ms | < 3000ms | ✅     |
-| Image Upload Time        | 3000ms   | 2200ms | < 5000ms | ✅     |
-| Search Response Time     | 500ms    | 350ms  | < 800ms  | ✅     |
-
-#### Catatan Penting
-
-- **Performance Optimization**: Implementasi lazy loading dan image optimization
-- **Network Efficiency**: API calls dioptimasi dengan proper caching
-- **User Experience**: Loading states dan skeleton screens memberikan feedback yang baik
-
-## 4. Analisis Bug dan Defect
-
-### 4.1 Ringkasan Bug
-
-- **Total Bug:** 0
-- **Critical:** 0
-- **Major:** 0
-- **Minor:** 0
-
-### 4.2 Bug Penting
-
-Tidak ada bug yang ditemukan selama pengujian E2E.
-
-### 4.3 Root Cause Analysis
-
-Karena tidak ada bug yang ditemukan, tidak ada root cause analysis yang diperlukan.
-
-## 5. Laporan Coverage
-
-### 5.1 Feature Coverage
-
-| Feature           | E2E | Performance | Status   |
-| ----------------- | --- | ----------- | -------- |
-| Product List View | ✅  | ✅          | Complete |
-| Product Creation  | ✅  | ✅          | Complete |
-| Product Update    | ✅  | ✅          | Complete |
-| Product Deletion  | ✅  | ✅          | Complete |
-| Image Upload      | ✅  | ✅          | Complete |
-| Search & Filter   | ✅  | ✅          | Complete |
-| Pagination        | ✅  | ✅          | Complete |
-| Form Validation   | ✅  | ✅          | Complete |
-| Responsive Design | ✅  | ✅          | Complete |
-| Error Handling    | ✅  | ✅          | Complete |
-
-### 5.2 User Flow Coverage
-
-| User Flow                     | Test Coverage | Status   |
-| ----------------------------- | ------------- | -------- |
-| Login → Access Manage Product | ✅            | Complete |
-| View Product List             | ✅            | Complete |
-| Create New Product            | ✅            | Complete |
-| Edit Existing Product         | ✅            | Complete |
-| Delete Product                | ✅            | Complete |
-| Search Products               | ✅            | Complete |
-| Filter Products               | ✅            | Complete |
-| Upload Product Image          | ✅            | Complete |
-| Form Validation               | ✅            | Complete |
-| Error Recovery                | ✅            | Complete |
-
-## 6. Conclusi dan Rekomendasi
-
-### 6.1 Status Kelulusan
-
-- [x] **Lulus tanpa syarat** - Semua pengujian berhasil dan tidak ada bug kritis
-
-### 6.2 Rekomendasi
-
-1. **Performance Monitoring**: Implementasi monitoring berkelanjutan untuk memantau performa di production
-2. **Load Testing**: Pertimbangkan load testing untuk skenario dengan banyak produk
-3. **Accessibility Audit**: Lakukan audit accessibility independen untuk memastikan compliance
-4. **User Acceptance Testing**: Lakukan UAT dengan pengguna nyata untuk validasi UX
-
-### 6.3 Technical Debt yang Teridentifikasi
-
-Tidak ada technical debt yang teridentifikasi dari pengujian E2E.
-
-## 7. Lampiran
-
-### 7.1 Screenshot Hasil Testing
-
-- [Link ke screenshot test results]
-- [Link ke video recording test scenarios]
-
-### 7.2 Test Recording
-
-- [Link ke video recording E2E test scenarios]
-
-### 7.3 Artifacts
-
-- [Link ke test result di CI/CD]
-- [Link ke performance benchmarks]
-- [Link ke accessibility audit report]
-
-### 7.4 Test Environment
-
+#### Scenario 2: Menambah Produk Baru
 ```typescript
-// playwright.config.ts
-export default defineConfig({
-  testDir: './__tests__/playwright',
-  use: {
-    baseURL: 'http://localhost:3000',
-    trace: 'on-first-retry',
-    screenshot: 'only-on-failure',
-    video: 'retain-on-failure',
-  },
-  projects: [
-    {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
-    },
-    {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-    },
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
-    },
-    {
-      name: 'Mobile Chrome',
-      use: { ...devices['Pixel 5'] },
-    },
-    {
-      name: 'Mobile Safari',
-      use: { ...devices['iPhone 12'] },
-    },
-  ],
-})
+test('Producer dapat menambah produk baru dengan upload foto', async ({ page }) => {
+  // Given: Producer sudah login dan di halaman manage-product
+  await authenticateAsProducer(page);
+  await page.goto('/producer/manage-product');
+  
+  // When: Klik tombol Tambah Produk
+  await page.click('[data-testid="add-product-button"]');
+  await expect(page).toHaveURL(/\/producer\/manage-product\/add/);
+  
+  // And: Mengisi form produk
+  await page.fill('[name="code"]', 'TEST001');
+  await page.fill('[name="name"]', 'Test Product');
+  await page.fill('[name="description"]', 'Deskripsi test product');
+  await page.fill('[name="modalAwal"]', '100000');
+  await page.fill('[name="hargaSewa"]', '50000');
+  await page.fill('[name="quantity"]', '5');
+  
+  // And: Upload gambar
+  await page.setInputFiles('[data-testid="image-upload"]', 'test-image.jpg');
+  
+  // And: Pilih kategori
+  await page.selectOption('[name="categoryId"]', { label: 'Pakaian Formal' });
+  
+  // When: Submit form
+  await page.click('[data-testid="submit-button"]');
+  
+  // Then: Produk berhasil ditambahkan
+  await expect(page).toHaveURL(/\/producer\/manage-product/);
+  await expect(page.locator('text=Produk berhasil ditambahkan')).toBeVisible();
+  await expect(page.locator('text=TEST001')).toBeVisible();
+});
 ```
 
-### 7.5 Test Data
-
+#### Scenario 3: Mengedit Produk
 ```typescript
-// test-data/products.ts
+test('Producer dapat mengedit produk yang ada', async ({ page }) => {
+  // Given: Producer sudah login dan ada produk yang bisa diedit
+  await authenticateAsProducer(page);
+  await page.goto('/producer/manage-product');
+  
+  // When: Klik tombol Edit pada produk pertama
+  await page.click('[data-testid="edit-product-button"]:first-child');
+  await expect(page).toHaveURL(/\/producer\/manage-product\/edit/);
+  
+  // And: Ubah nama produk
+  await page.fill('[name="name"]', 'Updated Product Name');
+  await page.fill('[name="hargaSewa"]', '75000');
+  
+  // When: Submit perubahan
+  await page.click('[data-testid="submit-button"]');
+  
+  // Then: Perubahan berhasil disimpan
+  await expect(page).toHaveURL(/\/producer\/manage-product/);
+  await expect(page.locator('text=Produk berhasil diperbarui')).toBeVisible();
+  await expect(page.locator('text=Updated Product Name')).toBeVisible();
+});
+```
+
+#### Scenario 4: Menghapus Produk
+```typescript
+test('Producer dapat menghapus produk dengan konfirmasi', async ({ page }) => {
+  // Given: Producer sudah login dan melihat detail produk
+  await authenticateAsProducer(page);
+  await page.goto('/producer/manage-product');
+  await page.click('[data-testid="product-row"]:first-child');
+  
+  // When: Klik tombol Hapus
+  await page.click('[data-testid="delete-product-button"]');
+  
+  // And: Konfirmasi penghapusan
+  await expect(page.locator('text=Apakah Anda yakin ingin menghapus produk ini?')).toBeVisible();
+  await page.click('[data-testid="confirm-delete-button"]');
+  
+  // Then: Produk berhasil dihapus
+  await expect(page.locator('text=Produk berhasil dihapus')).toBeVisible();
+  await expect(page.locator('[data-testid="product-detail-modal"]')).not.toBeVisible();
+});
+```
+
+#### Scenario 5: Authorization Test - Kasir Access
+```typescript
+test('Kasir tidak dapat mengakses halaman manage-product', async ({ page }) => {
+  // Given: Kasir login dengan Clerk
+  await page.goto('/sign-in');
+  await page.fill('[name="identifier"]', 'kasir@test.com');
+  await page.fill('[name="password"]', 'testpassword');
+  await page.click('[type="submit"]');
+  
+  // When: Mencoba akses manage-product
+  await page.goto('/producer/manage-product');
+  
+  // Then: Diarahkan ke halaman unauthorized atau error
+  await expect(page).toHaveURL(/\/(unauthorized|403|sign-in)/);
+  await expect(page.locator('text=Akses ditolak')).toBeVisible();
+});
+```
+
+#### Scenario 6: Mengelola Kategori
+```typescript
+test('Producer dapat mengelola kategori produk', async ({ page }) => {
+  // Given: Producer sudah login di halaman manage-product
+  await authenticateAsProducer(page);
+  await page.goto('/producer/manage-product');
+  
+  // When: Klik tombol Kelola Kategori
+  await page.click('[data-testid="manage-categories-button"]');
+  
+  // And: Tambah kategori baru
+  await page.fill('[data-testid="category-name-input"]', 'Kategori Test');
+  await page.click('[data-testid="color-picker-red"]');
+  await page.click('[data-testid="add-category-button"]');
+  
+  // Then: Kategori berhasil ditambahkan
+  await expect(page.locator('text=Kategori berhasil ditambahkan')).toBeVisible();
+  await expect(page.locator('text=Kategori Test')).toBeVisible();
+});
+```
+
+### 3.4 Form Validation Tests
+
+#### Scenario 7: Validasi Form Produk
+```typescript
+test('Form produk menampilkan error untuk input tidak valid', async ({ page }) => {
+  // Given: Producer di halaman tambah produk
+  await authenticateAsProducer(page);
+  await page.goto('/producer/manage-product/add');
+  
+  // When: Submit form kosong
+  await page.click('[data-testid="submit-button"]');
+  
+  // Then: Error validation muncul
+  await expect(page.locator('text=Kode produk harus diisi')).toBeVisible();
+  await expect(page.locator('text=Nama produk harus diisi')).toBeVisible();
+  await expect(page.locator('text=Modal awal harus diisi')).toBeVisible();
+  
+  // When: Isi dengan format yang salah
+  await page.fill('[name="code"]', 'invalid-code-too-long');
+  await page.fill('[name="modalAwal"]', '-100');
+  await page.fill('[name="hargaSewa"]', 'bukan-angka');
+  
+  await page.click('[data-testid="submit-button"]');
+  
+  // Then: Specific validation errors muncul
+  await expect(page.locator('text=Kode produk maksimal 10 karakter')).toBeVisible();
+  await expect(page.locator('text=Modal awal harus bernilai positif')).toBeVisible();
+  await expect(page.locator('text=Harga sewa harus berupa angka')).toBeVisible();
+});
+```
+
+### 3.5 Search & Filter Tests
+
+#### Scenario 8: Pencarian dan Filter Produk
+```typescript
+test('Producer dapat mencari dan memfilter produk', async ({ page }) => {
+  // Given: Producer di halaman manage-product dengan beberapa produk
+  await authenticateAsProducer(page);
+  await page.goto('/producer/manage-product');
+  
+  // When: Melakukan pencarian
+  await page.fill('[data-testid="search-input"]', 'TEST001');
+  await page.keyboard.press('Enter');
+  
+  // Then: Hanya produk yang cocok ditampilkan
+  await expect(page.locator('[data-testid="product-row"]')).toHaveCount(1);
+  await expect(page.locator('text=TEST001')).toBeVisible();
+  
+  // When: Clear search dan filter berdasarkan kategori
+  await page.fill('[data-testid="search-input"]', '');
+  await page.selectOption('[data-testid="category-filter"]', { label: 'Pakaian Formal' });
+  
+  // Then: Hanya produk dengan kategori tersebut ditampilkan
+  await expect(page.locator('[data-testid="category-badge"]:has-text("Pakaian Formal")')).toHaveCount({ min: 1 });
+});
+```
+
+## 4. Test Utilities & Helpers
+
+### 4.1 Authentication Helper
+```typescript
+// test-helpers.ts
+export async function authenticateAsProducer(page: Page) {
+  await page.goto('/sign-in');
+  await page.fill('[name="identifier"]', process.env.PRODUCER_TEST_EMAIL);
+  await page.fill('[name="password"]', process.env.PRODUCER_TEST_PASSWORD);
+  await page.click('[type="submit"]');
+  await page.waitForURL('/producer/dashboard');
+}
+
+export async function authenticateAsAdmin(page: Page) {
+  await page.goto('/sign-in');
+  await page.fill('[name="identifier"]', process.env.ADMIN_TEST_EMAIL);
+  await page.fill('[name="password"]', process.env.ADMIN_TEST_PASSWORD);
+  await page.click('[type="submit"]');
+  await page.waitForURL('/admin/dashboard');
+}
+```
+
+### 4.2 Test Data Setup
+```typescript
+// test-data.ts
 export const testProducts = [
   {
-    code: 'PRD001',
-    name: 'Dress Pesta',
-    description: 'Dress pesta elegan untuk acara formal',
-    price: 500000,
-    quantity: 10,
-    category: 'Dress',
-  },
-  {
-    code: 'PRD002',
-    name: 'Kemeja Pria',
-    description: 'Kemeja formal untuk pria',
-    price: 300000,
-    quantity: 15,
-    category: 'Kemeja',
-  },
-  // ... more test data
-]
+    code: 'TEST001',
+    name: 'Test Product 1',
+    description: 'Deskripsi test product 1',
+    modalAwal: '100000',
+    hargaSewa: '50000',
+    quantity: '5',
+    category: 'Pakaian Formal'
+  }
+];
+
+export const testCategories = [
+  { name: 'Pakaian Formal', color: '#3B82F6' },
+  { name: 'Pakaian Casual', color: '#10B981' }
+];
 ```
+
+## 5. Success Criteria & Definition of Done
+
+### 5.1 Acceptance Criteria
+- [ ] Producer dapat menambah produk baru dengan upload foto
+- [ ] Producer dapat melihat, edit, dan hapus produk yang ada
+- [ ] Producer dapat mengelola kategori produk
+- [ ] Hanya producer dan admin yang dapat mengakses fitur
+- [ ] Form validation berfungsi dengan baik
+- [ ] Search dan filter produk bekerja dengan benar
+
+### 5.2 Technical Requirements
+- [ ] Semua test scenarios berhasil dijalankan
+- [ ] Test coverage mencapai minimal 80%
+- [ ] Tidak ada critical bugs ditemukan
+- [ ] Performance loading halaman < 3 detik
+- [ ] Responsive design berfungsi di mobile dan desktop
+
+## 6. Implementation Notes
+
+### 6.1 File Structure
+```
+__tests__/playwright/manage-product/
+   manage-product.spec.ts          # Main E2E test scenarios
+   authorization.spec.ts           # Authorization specific tests  
+   form-validation.spec.ts         # Form validation tests
+   performance.spec.ts            # Performance tests (optional)
+```
+
+### 6.2 Test Data Dependencies
+- Test users dengan roles Producer, Admin, Kasir sudah dikonfigurasi di Clerk
+- Test images untuk upload functionality
+- Sample categories dan products untuk testing
+
+### 6.3 Environment Configuration
+- Test database terpisah dari development
+- Environment variables untuk test credentials
+- Mock external services jika diperlukan
+
+## 7. Risk Assessment
+
+### 7.1 Potential Issues
+- **Clerk Authentication:** Flaky authentication tests karena network latency
+- **File Upload:** Test image files consistency across environments  
+- **Database State:** Cleanup test data antar test runs
+- **Timing Issues:** Async operations dan loading states
+
+### 7.2 Mitigation Strategies
+- Gunakan proper wait strategies (waitForSelector, waitForURL)
+- Implement test data cleanup di beforeEach/afterEach
+- Use stable selectors (data-testid) instead of text-based selectors
+- Add retry logic untuk network-dependent operations
+
+## 8. Estimasi Effort
+
+### 8.1 Development Time
+- **Test Setup & Configuration:** 2 jam
+- **Core CRUD Test Scenarios:** 3 jam  
+- **Authorization Tests:** 1 jam
+- **Form Validation Tests:** 1 jam
+- **Search & Filter Tests:** 1 jam
+- **Debugging & Refinement:** 2 jam
+
+**Total Estimasi:** 10 jam (sesuai dengan task estimation 6 jam + buffer)
+
+### 8.2 Maintenance
+- Monthly test review dan update
+- Update test data sesuai dengan perubahan business requirements
+- Monitor dan fix flaky tests
+
+---
+
+**Note:** Dokumentasi ini fokus pada skenario E2E testing yang sederhana namun comprehensive untuk memastikan semua functionality utama manage-product berfungsi dengan baik. Implementation actual dari test scenarios akan mengikuti pattern yang sudah ada di `__tests__/playwright/` dengan fokus pada user workflows yang realistic.
