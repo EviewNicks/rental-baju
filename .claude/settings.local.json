@@ -22,7 +22,14 @@
       "Bash(curl:*)",
       "Bash(rm:*)",
       "Bash(yarn build)",
-      "Bash(od:*)"
+      "Bash(od:*)",
+      "Bash(npx playwright test:*)",
+      "Bash(mv:*)",
+      "Bash(cross-env:*)",
+      "Bash(yarn --version)",
+      "Bash(NODE_ENV=test yarn playwright test __tests__/playwright/manage-product/product-listing.spec.ts --ui)",
+      "Bash(NODE_ENV=test npx playwright test __tests__/playwright/manage-product/product-listing.spec.ts --headed)",
+      "Bash(NODE_ENV=test npx playwright test __tests__/playwright/manage-product/product-listing.spec.ts --headed --ignore-pattern=\"webServer\")"
     ],
     "deny": []
   }

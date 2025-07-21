@@ -73,10 +73,10 @@ function ProductManagementContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50" data-testid="manage-product-page">
       <ProductHeader onAddProduct={handleAddProduct} />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" data-testid="manage-product-content">
         <SearchFilterErrorBoundary
           onError={(error, errorInfo) => {
             console.error('SearchFilterBar error:', error, errorInfo)
@@ -141,18 +141,19 @@ function ProductManagementContent() {
 
         {/* Delete Confirmation Dialog */}
         {isDeleteDialogOpen && productToDelete && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-lg max-w-md mx-4">
-              <h3 className="text-lg font-semibold mb-4">Konfirmasi Hapus</h3>
-              <p className="text-gray-600 mb-6">
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" data-testid="delete-confirmation-overlay">
+            <div className="bg-white p-6 rounded-lg max-w-md mx-4" data-testid="delete-confirmation-dialog">
+              <h3 className="text-lg font-semibold mb-4" data-testid="delete-confirmation-title">Konfirmasi Hapus</h3>
+              <p className="text-gray-600 mb-6" data-testid="delete-confirmation-message">
                 Apakah Anda yakin ingin menghapus produk &quot;{productToDelete.name}?&quot;
                 Tindakan ini tidak dapat dibatalkan.
               </p>
-              <div className="flex justify-end space-x-3">
+              <div className="flex justify-end space-x-3" data-testid="delete-confirmation-actions">
                 <button
                   onClick={cancelDeleteProduct}
                   className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
                   disabled={isLoading}
+                  data-testid="delete-confirmation-cancel"
                 >
                   Batal
                 </button>
@@ -160,6 +161,7 @@ function ProductManagementContent() {
                   onClick={confirmDeleteProduct}
                   className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
                   disabled={isLoading}
+                  data-testid="delete-confirmation-confirm"
                 >
                   {isLoading ? 'Menghapus...' : 'Hapus'}
                 </button>

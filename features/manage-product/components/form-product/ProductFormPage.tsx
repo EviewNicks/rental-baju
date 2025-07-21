@@ -198,22 +198,23 @@ export function ProductFormPage({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50" data-testid={`product-form-page-${mode}`}>
       {/* Header */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-white border-b border-gray-200" data-testid="product-form-header">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between mb-4">
             <Button
               variant="ghost"
               onClick={() => router.back()}
               className="flex items-center gap-2"
+              data-testid="back-button"
             >
               <ArrowLeft className="w-4 h-4" />
               Kembali
             </Button>
           </div>
 
-          <Breadcrumb className="mb-4">
+          <Breadcrumb className="mb-4" data-testid="breadcrumb">
             <BreadcrumbList>
               {breadcrumbItems.map((item) => (
                 <BreadcrumbItem key={item.label}>
@@ -223,15 +224,15 @@ export function ProductFormPage({
             </BreadcrumbList>
           </Breadcrumb>
 
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">{title}</h1>
-            <p className="text-gray-600 mt-1">{subtitle}</p>
+          <div data-testid="page-title-section">
+            <h1 className="text-3xl font-bold text-gray-900" data-testid="page-title">{title}</h1>
+            <p className="text-gray-600 mt-1" data-testid="page-subtitle">{subtitle}</p>
           </div>
         </div>
       </div>
 
       {/* Form */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8" data-testid="product-form-content">
         {/* Show errors */}
         {(categoriesError || mutations.create.error || mutations.update.error) && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md">
@@ -243,7 +244,7 @@ export function ProductFormPage({
           </div>
         )}
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} data-testid="product-form">
           <ProductForm
             formData={formData}
             errors={errors}
@@ -255,12 +256,12 @@ export function ProductFormPage({
           />
 
           {/* Action Buttons */}
-          <div className="flex justify-end space-x-4 mt-8">
-            <Button type="button" variant="outline" onClick={() => router.back()}>
+          <div className="flex justify-end space-x-4 mt-8" data-testid="form-actions">
+            <Button type="button" variant="outline" onClick={() => router.back()} data-testid="cancel-button">
               <X className="w-4 h-4 mr-2" />
               Batal
             </Button>
-            <Button type="button" variant="secondary" onClick={handleSaveDraft}>
+            <Button type="button" variant="secondary" onClick={handleSaveDraft} data-testid="save-draft-button">
               <Save className="w-4 h-4 mr-2" />
               Simpan Draft
             </Button>
@@ -272,6 +273,7 @@ export function ProductFormPage({
                 isLoadingCategories
               }
               className="bg-yellow-400 hover:bg-yellow-500 text-black"
+              data-testid="submit-button"
             >
               {mutations.create.isPending || mutations.update.isPending ? (
                 <>

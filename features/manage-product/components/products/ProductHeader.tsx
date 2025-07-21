@@ -14,18 +14,19 @@ export function ProductHeader({ onAddProduct }: ProductHeaderProps) {
 
   return (
     <>
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-white border-b border-gray-200" data-testid="product-header">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Manajemen Produk</h1>
-              <p className="text-gray-600 mt-1">Kelola inventaris produk rental pakaian Anda</p>
+            <div data-testid="product-header-title-section">
+              <h1 className="text-3xl font-bold text-gray-900" data-testid="product-header-title">Manajemen Produk</h1>
+              <p className="text-gray-600 mt-1" data-testid="product-header-subtitle">Kelola inventaris produk rental pakaian Anda</p>
             </div>
-            <div className="flex gap-3">
+            <div className="flex gap-3" data-testid="product-header-actions">
               <Button
                 variant="outline"
                 className="flex items-center gap-2 bg-transparent"
                 onClick={openModal}
+                data-testid="manage-categories-button"
               >
                 <Settings className="w-4 h-4" />
                 Kelola Kategori
@@ -33,6 +34,7 @@ export function ProductHeader({ onAddProduct }: ProductHeaderProps) {
               <Button
                 className="flex items-center gap-2 bg-yellow-400 hover:bg-yellow-500 text-black"
                 onClick={onAddProduct}
+                data-testid="add-product-button"
               >
                 <Plus className="w-4 h-4" />
                 Tambah Produk

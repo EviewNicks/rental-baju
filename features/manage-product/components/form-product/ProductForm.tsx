@@ -48,11 +48,11 @@ export function ProductForm({
   }))
 
   return (
-    <Card className="shadow-md">
+    <Card className="shadow-md" data-testid="product-form-container">
       <CardContent className="p-6 md:p-8">
-        <div className="space-y-8">
+        <div className="space-y-8" data-testid="product-form">
           {/* Informasi Dasar */}
-          <FormSection title="Informasi Dasar">
+          <FormSection title="Informasi Dasar" data-testid="basic-info-section">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
                 type="text"
@@ -70,6 +70,7 @@ export function ProductForm({
                 touched={touched.code}
                 required
                 helpText="Masukkan 4 digit kode alfanumerik (contoh: PRD1, DRES2)"
+                data-testid="product-code-field"
               />
 
               <FormField
@@ -86,6 +87,7 @@ export function ProductForm({
                 touched={touched.name}
                 required
                 helpText="Masukkan nama produk yang jelas dan deskriptif"
+                data-testid="product-name-field"
               />
 
               <FormField
@@ -101,6 +103,7 @@ export function ProductForm({
                 touched={touched.categoryId}
                 required
                 helpText="Pilih kategori yang sesuai dengan produk"
+                data-testid="product-category-field"
               />
 
               <FormField
@@ -118,12 +121,13 @@ export function ProductForm({
                 touched={touched.quantity}
                 required
                 helpText="Masukkan jumlah stok yang tersedia"
+                data-testid="product-quantity-field"
               />
             </div>
           </FormSection>
 
           {/* Informasi Harga */}
-          <FormSection title="Informasi Harga">
+          <FormSection title="Informasi Harga" data-testid="price-info-section">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <FormField
@@ -148,6 +152,7 @@ export function ProductForm({
                   touched={touched.modalAwal}
                   required
                   helpText="Biaya pembuatan/pembelian produk"
+                  data-testid="product-modal-field"
                 />
               </div>
 
@@ -174,6 +179,7 @@ export function ProductForm({
                   touched={touched.hargaSewa}
                   required
                   helpText="Harga sewa per sekali pakai"
+                  data-testid="product-price-field"
                 />
               </div>
             </div>
@@ -194,6 +200,7 @@ export function ProductForm({
             error={errors.description}
             touched={touched.description}
             helpText="Deskripsi opsional untuk detail produk"
+            data-testid="product-description-field"
           />
 
           {/* Image Upload */}
@@ -201,6 +208,7 @@ export function ProductForm({
             value={formData.imageUrl || '/products/image.png'}
             onChange={(value) => onInputChange('imageUrl', value)}
             onFileChange={(file) => onInputChange('image', file)}
+            data-testid="product-image-upload"
           />
         </div>
       </CardContent>

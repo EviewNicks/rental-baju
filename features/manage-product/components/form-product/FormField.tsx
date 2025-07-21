@@ -22,6 +22,7 @@ interface BaseFieldProps {
   error?: string | null
   touched?: boolean
   required?: boolean
+  'data-testid'?: string
 }
 
 interface TextFieldProps extends BaseFieldProps {
@@ -58,6 +59,7 @@ type FormFieldProps = TextFieldProps | TextareaFieldProps | SelectFieldProps
 
 export function FormField(props: FormFieldProps) {
   const { name, label, icon: Icon, helpText, error, touched, required } = props
+  const testId = props['data-testid']
 
   const hasError = error && touched
   const hasSuccess = !error && touched && props.value
@@ -65,8 +67,8 @@ export function FormField(props: FormFieldProps) {
   const fieldClassName = cn(hasError && 'border-red-500', hasSuccess && 'border-green-500')
 
   return (
-    <div className="space-y-2">
-      <Label htmlFor={name} className="flex items-center gap-2">
+    <div className="space-y-2" data-testid={testId}>
+      <Label htmlFor={name} className="flex items-center gap-2" data-testid={testId ? `${testId}-label` : undefined}>
         {Icon && <Icon className="w-4 h-4" />}
         {label}
         {required && <span className="text-red-500">*</span>}
@@ -88,6 +90,7 @@ export function FormField(props: FormFieldProps) {
             placeholder={props.placeholder}
             maxLength={props.maxLength}
             className={cn(fieldClassName, props.prefix && 'pl-10')}
+            data-testid={testId ? `${testId}-input` : undefined}
           />
         </div>
       )}
@@ -109,6 +112,7 @@ export function FormField(props: FormFieldProps) {
             min={props.min}
             max={props.max}
             className={cn(fieldClassName, props.prefix && 'pl-10')}
+            data-testid={testId ? `${testId}-input` : undefined}
           />
         </div>
       )}
@@ -123,17 +127,18 @@ export function FormField(props: FormFieldProps) {
           maxLength={props.maxLength}
           rows={props.rows}
           className={fieldClassName}
+          data-testid={testId ? `${testId}-input` : undefined}
         />
       )}
 
       {props.type === 'select' && (
         <Select value={props.value || undefined} onValueChange={props.onChange}>
-          <SelectTrigger className={fieldClassName}>
+          <SelectTrigger className={fieldClassName} data-testid={testId ? `${testId}-trigger` : undefined}>
             <SelectValue placeholder={props.placeholder} />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent data-testid={testId ? `${testId}-content` : undefined}>
             {props.options.map((option) => (
-              <SelectItem key={option.value} value={option.value} disabled={option.disabled}>
+              <SelectItem key={option.value} value={option.value} disabled={option.disabled} data-testid={testId ? `${testId}-option-${option.value}` : undefined}>
                 <div className="flex items-center gap-2">
                   {option.color && (
                     <div
