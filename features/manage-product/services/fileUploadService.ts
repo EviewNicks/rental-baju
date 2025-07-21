@@ -156,7 +156,7 @@ export class FileUploadService {
    */
   generateImagePath(productCode: string, extension: string): string {
     const timestamp = Date.now()
-    return `products/${this.userId}/${productCode}/${timestamp}.${extension}`
+    return `products/${productCode}/${timestamp}.${extension}`
   }
 
   /**

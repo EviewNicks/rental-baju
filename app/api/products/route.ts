@@ -52,6 +52,19 @@ export async function GET(request: NextRequest) {
       )
     }
 
+    // Handle Prisma connection errors
+    if (error instanceof Error && error.message.includes('connection pool')) {
+      return NextResponse.json(
+        {
+          error: {
+            message: 'Database connection timeout. Please try again.',
+            code: 'CONNECTION_ERROR',
+          },
+        },
+        { status: 503 },
+      )
+    }
+
     return NextResponse.json(
       { error: { message: 'Internal server error', code: 'INTERNAL_ERROR' } },
       { status: 500 },
@@ -169,6 +182,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: { message: error.message, code: 'VALIDATION_ERROR' } },
         { status: 400 },
+      )
+    }
+
+    // Handle Prisma connection errors
+    if (error instanceof Error && error.message.includes('connection pool')) {
+      return NextResponse.json(
+        {
+          error: {
+            message: 'Database connection timeout. Please try again.',
+            code: 'CONNECTION_ERROR',
+          },
+        },
+        { status: 503 },
       )
     }
 

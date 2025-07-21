@@ -23,13 +23,13 @@ export function ProductGrid({ products, onProductClick }: ProductGridProps) {
           className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer py-0"
           onClick={() => onProductClick(product)}
         >
-          <div className="aspect-square bg-gray-100">
+          <div className="aspect-[4/3] bg-gray-100 relative overflow-hidden">
             <Image
               src={getValidImageUrl(product.imageUrl)}
               alt={product.name}
-              width={200}
-              height={200}
-              className="w-full h-full object-cover"
+              fill
+              className="object-cover"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
             />
           </div>
           <CardContent className="p-4">

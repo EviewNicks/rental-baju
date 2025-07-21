@@ -51,6 +51,19 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       )
     }
 
+    // Handle Prisma connection errors
+    if (error instanceof Error && error.message.includes('connection pool')) {
+      return NextResponse.json(
+        {
+          error: {
+            message: 'Database connection timeout. Please try again.',
+            code: 'CONNECTION_ERROR',
+          },
+        },
+        { status: 503 },
+      )
+    }
+
     return NextResponse.json(
       { error: { message: 'Internal server error', code: 'INTERNAL_ERROR' } },
       { status: 500 },
@@ -111,7 +124,25 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     // Handle image upload if provided
     if (image && image.size > 0) {
       try {
-        const uploadResult = await fileUploadService.uploadProductImage(image, 'UPDATE')
+        // Get current product data to extract code and old image path
+        const currentProduct = await productService.getProductById(id)
+
+        // Extract old image path from current imageUrl for deletion
+        let oldImagePath: string | undefined
+        if (currentProduct.imageUrl) {
+          try {
+            oldImagePath = fileUploadService.extractPathFromUrl(currentProduct.imageUrl)
+          } catch (error) {
+            console.warn('Failed to extract old image path:', error)
+          }
+        }
+
+        // Use updateProductImage to delete old and upload new
+        const uploadResult = await fileUploadService.updateProductImage(
+          image,
+          currentProduct.code,
+          oldImagePath,
+        )
         updateData.imageUrl = uploadResult?.url
       } catch (uploadError) {
         console.error('Image upload error:', uploadError)
@@ -122,7 +153,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       }
     }
 
-    // Update product
+    // Update product (this will also validate category existence)
     const product = await productService.updateProduct(id, updateData)
 
     return NextResponse.json(product, { status: 200 })
@@ -140,6 +171,19 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       return NextResponse.json(
         { error: { message: error.message, code: 'VALIDATION_ERROR' } },
         { status: 400 },
+      )
+    }
+
+    // Handle Prisma connection errors
+    if (error instanceof Error && error.message.includes('connection pool')) {
+      return NextResponse.json(
+        {
+          error: {
+            message: 'Database connection timeout. Please try again.',
+            code: 'CONNECTION_ERROR',
+          },
+        },
+        { status: 503 },
       )
     }
 
@@ -190,6 +234,19 @@ export async function DELETE(
       return NextResponse.json(
         { error: { message: error.message, code: 'INTERNAL_ERROR' } },
         { status: 500 },
+      )
+    }
+
+    // Handle Prisma connection errors
+    if (error instanceof Error && error.message.includes('connection pool')) {
+      return NextResponse.json(
+        {
+          error: {
+            message: 'Database connection timeout. Please try again.',
+            code: 'CONNECTION_ERROR',
+          },
+        },
+        { status: 503 },
       )
     }
 

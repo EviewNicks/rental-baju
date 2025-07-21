@@ -46,6 +46,15 @@ export class ProductService {
       throw new ConflictError(`Kode produk ${validatedData.code} sudah digunakan`)
     }
 
+    // Validate category existence
+    const categoryExists = await this.prisma.category.findUnique({
+      where: { id: validatedData.categoryId },
+    })
+
+    if (!categoryExists) {
+      throw new NotFoundError(`Category dengan ID ${validatedData.categoryId} tidak ditemukan`)
+    }
+
     // Create product with Decimal conversion
     const prismaProduct = await this.prisma.product.create({
       data: {
@@ -79,16 +88,30 @@ export class ProductService {
     const { id: validatedId } = productParamsSchema.parse({ id })
     const validatedData = updateProductSchema.parse(request)
 
-    // Check if product exists
+    // Check if product exists and get current data in one query
     const existingProduct = await this.prisma.product.findUnique({
       where: {
         id: validatedId,
         isActive: true,
       },
+      include: {
+        category: true,
+      },
     })
 
     if (!existingProduct) {
       throw new NotFoundError('Produk tidak ditemukan')
+    }
+
+    // Validate category existence if categoryId is being updated
+    if (validatedData.categoryId && validatedData.categoryId !== existingProduct.categoryId) {
+      const categoryExists = await this.prisma.category.findUnique({
+        where: { id: validatedData.categoryId },
+      })
+
+      if (!categoryExists) {
+        throw new NotFoundError(`Category dengan ID ${validatedData.categoryId} tidak ditemukan`)
+      }
     }
 
     // Prepare update data with Decimal conversion
@@ -101,6 +124,11 @@ export class ProductService {
     if (validatedData.description !== undefined) updateData.description = validatedData.description
     if (validatedData.quantity !== undefined) updateData.quantity = validatedData.quantity
     if (validatedData.categoryId !== undefined) updateData.categoryId = validatedData.categoryId
+
+    // Handle imageUrl update (added from API layer)
+    if ('imageUrl' in request && request.imageUrl !== undefined) {
+      updateData.imageUrl = request.imageUrl
+    }
 
     // Convert number to Decimal for monetary fields
     if (validatedData.modalAwal !== undefined) {
