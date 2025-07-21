@@ -15,7 +15,6 @@ export default function AddProductPage() {
       breadcrumbItems={breadcrumbItems}
       title="Tambah Produk Baru"
       subtitle="Lengkapi informasi produk untuk menambah ke inventaris"
-      categories={[]}
     />
   )
 }

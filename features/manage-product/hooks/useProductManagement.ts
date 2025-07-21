@@ -94,9 +94,8 @@ export function useProductManagement(options: UseProductManagementOptions = {}) 
   )
 
   const handleViewProduct = useCallback((product: Product) => {
-    setSelectedProductId(product.id)
-    setIsDetailModalOpen(true)
-  }, [])
+    router.push(`/producer/manage-product/${product.id}`)
+  }, [router])
 
   // CRUD operations
   const handleCreateProduct = useCallback(

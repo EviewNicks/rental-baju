@@ -12,13 +12,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import type { Category } from '@/features/manage-product/types'
+import type { ClientCategory } from '@/features/manage-product/types'
 
 interface DeleteConfirmationDialogProps {
   isOpen: boolean
   onClose: () => void
   onConfirm: () => void
-  category: Category | null
+  category: ClientCategory | null
   loading?: boolean
 }
 

@@ -10,10 +10,11 @@ import Image from 'next/image'
 interface ImageUploadProps {
   value?: string
   onChange: (value: string | null) => void
+  onFileChange?: (file: File | null) => void
   className?: string
 }
 
-export function ImageUpload({ value, onChange, className }: ImageUploadProps) {
+export function ImageUpload({ value, onChange, onFileChange, className }: ImageUploadProps) {
   const [preview, setPreview] = useState<string | null>(value || null)
 
   const onDrop = useCallback(
@@ -24,12 +25,17 @@ export function ImageUpload({ value, onChange, className }: ImageUploadProps) {
         reader.onload = () => {
           const result = reader.result as string
           setPreview(result)
-          onChange(result)
+          onChange(result) // For preview display
         }
         reader.readAsDataURL(file)
+        
+        // Pass the actual File object for upload
+        if (onFileChange) {
+          onFileChange(file)
+        }
       }
     },
-    [onChange],
+    [onChange, onFileChange],
   )
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -44,6 +50,9 @@ export function ImageUpload({ value, onChange, className }: ImageUploadProps) {
   const removeImage = () => {
     setPreview(null)
     onChange(null)
+    if (onFileChange) {
+      onFileChange(null)
+    }
   }
 
   return (

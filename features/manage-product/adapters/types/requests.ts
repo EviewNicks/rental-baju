@@ -22,6 +22,7 @@ export interface CreateProductRequest {
   quantity: number
   categoryId: string
   image?: File
+  imageUrl?: string
 }
 
 export interface UpdateProductRequest {
@@ -32,6 +33,7 @@ export interface UpdateProductRequest {
   quantity?: number
   categoryId?: string
   image?: File
+  imageUrl?: string
 }
 
 export interface UpdateProductStatusRequest {

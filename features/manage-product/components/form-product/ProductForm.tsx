@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { FormField } from '@/features/manage-product/components/form-product/FormField'
 import { FormSection } from '@/features/manage-product/components/form-product/FormSection'
 import { ImageUpload } from '@/features/manage-product/components/products/ImageUpload'
-import type { Category } from '@/features/manage-product/types'
+import type { ClientCategory } from '@/features/manage-product/types'
 
 interface ProductFormData {
   code: string
@@ -15,6 +15,7 @@ interface ProductFormData {
   hargaSewa: number
   description: string
   imageUrl: string | null
+  image?: File | null
 }
 
 interface ProductFormProps {
@@ -26,7 +27,7 @@ interface ProductFormProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onBlur: (name: string, value: any) => void
   formatCurrency: (value: string) => string
-  categories: Category[]
+  categories: ClientCategory[]
 }
 
 export function ProductForm({
@@ -199,6 +200,7 @@ export function ProductForm({
           <ImageUpload
             value={formData.imageUrl || '/products/image.png'}
             onChange={(value) => onInputChange('imageUrl', value)}
+            onFileChange={(file) => onInputChange('image', file)}
           />
         </div>
       </CardContent>

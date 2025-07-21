@@ -4,6 +4,7 @@
  */
 
 import { PrismaClient } from '@prisma/client'
+import { Decimal } from '@prisma/client/runtime/library'
 import {
   categorySchema,
   updateCategorySchema,
@@ -17,12 +18,11 @@ import type {
   UpdateCategoryRequest,
   ProductStatus,
 } from '../types'
-import { Decimal } from '@prisma/client/runtime/library'
 
 export class CategoryService {
   constructor(
     private readonly prisma: PrismaClient,
-    private readonly userId: string
+    private readonly userId: string,
   ) {}
 
   /**
@@ -133,7 +133,7 @@ export class CategoryService {
       },
     })
 
-    return categories.map(category => this.convertPrismaCategoryToCategory(category))
+    return categories.map((category) => this.convertPrismaCategoryToCategory(category))
   }
 
   /**
@@ -181,7 +181,7 @@ export class CategoryService {
     // Check if category has active products
     if (categoryWithProducts.products.length > 0) {
       throw new ConflictError(
-        `Kategori tidak dapat dihapus karena masih memiliki ${categoryWithProducts.products.length} produk aktif`
+        `Kategori tidak dapat dihapus karena masih memiliki ${categoryWithProducts.products.length} produk aktif`,
       )
     }
 
@@ -201,24 +201,28 @@ export class CategoryService {
       id: prismaCategory.id as string,
       name: prismaCategory.name as string,
       color: prismaCategory.color as string,
-      products: prismaCategory.products ? (prismaCategory.products as Record<string, unknown>[]).map((product: Record<string, unknown>) => ({
-        id: product.id as string,
-        code: product.code as string,
-        name: product.name as string,
-        description: product.description as string,
-        categoryId: product.categoryId as string,
-        category: {} as Category, // Avoid circular reference
-        modalAwal: product.modalAwal as Decimal,
-        hargaSewa: product.hargaSewa as Decimal,
-        quantity: product.quantity as number,
-        status: product.status as ProductStatus,
-        imageUrl: product.imageUrl as string | undefined,
-        totalPendapatan: product.totalPendapatan as Decimal,
-        isActive: product.isActive as boolean,
-        createdAt: product.createdAt as Date,
-        updatedAt: product.updatedAt as Date,
-        createdBy: product.createdBy as string,
-      })) : [],
+      products: prismaCategory.products
+        ? (prismaCategory.products as Record<string, unknown>[]).map(
+            (product: Record<string, unknown>) => ({
+              id: product.id as string,
+              code: product.code as string,
+              name: product.name as string,
+              description: product.description as string,
+              categoryId: product.categoryId as string,
+              category: {} as Category, // Avoid circular reference
+              modalAwal: new Decimal(product.modalAwal as number),
+              hargaSewa: new Decimal(product.hargaSewa as number),
+              quantity: product.quantity as number,
+              status: product.status as ProductStatus,
+              imageUrl: product.imageUrl as string | undefined,
+              totalPendapatan: new Decimal(product.totalPendapatan as number),
+              isActive: product.isActive as boolean,
+              createdAt: product.createdAt as Date,
+              updatedAt: product.updatedAt as Date,
+              createdBy: product.createdBy as string,
+            }),
+          )
+        : [],
       createdAt: prismaCategory.createdAt as Date,
       updatedAt: prismaCategory.updatedAt as Date,
       createdBy: prismaCategory.createdBy as string,

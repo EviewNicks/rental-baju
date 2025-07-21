@@ -6,7 +6,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { categoryAdapter } from '../adapters/categoryAdapter'
 import { queryKeys } from '@/lib/react-query'
-import type { Category, CreateCategoryRequest, UpdateCategoryRequest } from '../types'
+import { toClientCategories, toClientCategory } from '../lib/utils/clientSafeConverters'
+import type { ClientCategory, CreateCategoryRequest, UpdateCategoryRequest } from '../types'
 
 /**
  * Hook for fetching categories list
@@ -17,7 +18,7 @@ export function useCategories(params: { search?: string; includeProducts?: boole
     queryFn: () => categoryAdapter.getCategories(),
     staleTime: 10 * 60 * 1000, // 10 minutes - categories don't change often
     select: (data) => ({
-      categories: data.categories || [],
+      categories: toClientCategories(data.categories || []),
       total: data.categories?.length || 0,
     }),
   })
@@ -32,6 +33,7 @@ export function useCategory(id: string, options?: { enabled?: boolean }) {
     queryFn: () => categoryAdapter.getCategory(id),
     enabled: !!id && options?.enabled !== false,
     staleTime: 10 * 60 * 1000,
+    select: (data) => toClientCategory(data),
   })
 }
 
@@ -126,7 +128,7 @@ export function useDeleteCategory() {
           if (!oldData?.categories) return oldData
           return {
             ...oldData,
-            categories: oldData.categories.filter((category: Category) => category.id !== id),
+            categories: oldData.categories.filter((category: any) => category.id !== id),
           }
         },
       )

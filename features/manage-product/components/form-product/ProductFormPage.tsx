@@ -13,7 +13,10 @@ import {
 } from '@/components/ui/breadcrumb'
 import { ProductForm } from '@/features/manage-product/components/form-product/ProductForm'
 import { useFormValidation } from '@/features/manage-product/hooks/useFormValidation'
-import type { Product, Category } from '@/features/manage-product/types'
+import { useCategories } from '@/features/manage-product/hooks/useCategories'
+import { useProductManagement } from '@/features/manage-product/hooks/useProductManagement'
+import type { ClientProduct } from '@/features/manage-product/types'
+import type { CreateProductRequest, UpdateProductRequest } from '@/features/manage-product/adapters/types/requests'
 
 // Local form data interface with numbers for form handling
 interface ProductFormData {
@@ -25,17 +28,17 @@ interface ProductFormData {
   hargaSewa: number
   description: string
   imageUrl: string | null
+  image?: File | null
 }
 // Jika ingin menggunakan mock data saat development, import mock-categories
 // import { mockCategories } from '@/features/manage-product/data/mock-categories'
 
 interface ProductFormPageProps {
   mode: 'add' | 'edit'
-  product?: Product | null
+  product?: ClientProduct | null
   breadcrumbItems: Array<{ label: string; href?: string; current?: boolean }>
   title: string
   subtitle: string
-  categories: Category[]
 }
 
 const validationRules = {
@@ -87,10 +90,24 @@ export function ProductFormPage({
   breadcrumbItems,
   title,
   subtitle,
-  categories,
 }: ProductFormPageProps) {
   const router = useRouter()
-  const [isLoading, setIsLoading] = useState(false)
+
+  // Fetch categories using hooks layer
+  const {
+    data: categoriesData,
+    isLoading: isLoadingCategories,
+    error: categoriesError,
+  } = useCategories()
+
+  // Product management hooks for CRUD operations
+  const {
+    handleCreateProduct,
+    handleUpdateProduct,
+    mutations,
+  } = useProductManagement()
+
+  const categories = categoriesData?.categories ?? []
 
   const [formData, setFormData] = useState<ProductFormData>({
     code: product?.code || '',
@@ -101,6 +118,7 @@ export function ProductFormPage({
     hargaSewa: product?.hargaSewa ? Number(product.hargaSewa) : 0,
     description: product?.description || '',
     imageUrl: product?.imageUrl || null,
+    image: null,
   })
 
   const { errors, touched, validate, validateSingleField } = useFormValidation(validationRules)
@@ -125,18 +143,47 @@ export function ProductFormPage({
       return
     }
 
-    setIsLoading(true)
-
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000))
+      if (mode === 'add') {
+        // Create new product
+        const createData: CreateProductRequest = {
+          code: formData.code,
+          name: formData.name,
+          description: formData.description,
+          modalAwal: formData.modalAwal,
+          hargaSewa: formData.hargaSewa,
+          quantity: formData.quantity,
+          categoryId: formData.categoryId,
+          image: formData.image || undefined,
+          imageUrl: formData.imageUrl || undefined,
+        }
+
+        await handleCreateProduct(createData)
+      } else {
+        // Update existing product
+        if (!product?.id) {
+          throw new Error('Product ID is required for update')
+        }
+
+        const updateData: UpdateProductRequest = {
+          name: formData.name,
+          description: formData.description,
+          modalAwal: formData.modalAwal,
+          hargaSewa: formData.hargaSewa,
+          quantity: formData.quantity,
+          categoryId: formData.categoryId,
+          image: formData.image || undefined,
+          imageUrl: formData.imageUrl || undefined,
+        }
+
+        await handleUpdateProduct(product.id, updateData)
+      }
 
       // Success - redirect to product list
       router.push('/producer/manage-product')
     } catch (error) {
-      console.error(`Error ${mode === 'add' ? 'saving' : 'updating'} product:`, error)
-    } finally {
-      setIsLoading(false)
+      console.error(`Error ${mode === 'add' ? 'creating' : 'updating'} product:`, error)
+      // Error handling is already done in the hooks (showError)
     }
   }
 
@@ -185,6 +232,17 @@ export function ProductFormPage({
 
       {/* Form */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Show errors */}
+        {(categoriesError || mutations.create.error || mutations.update.error) && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md">
+            <p className="text-red-600 text-sm">
+              {categoriesError && 'Gagal memuat data kategori. Silakan refresh halaman.'}
+              {mutations.create.error && `Error creating product: ${mutations.create.error.message}`}
+              {mutations.update.error && `Error updating product: ${mutations.update.error.message}`}
+            </p>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit}>
           <ProductForm
             formData={formData}
@@ -193,7 +251,7 @@ export function ProductFormPage({
             onInputChange={handleInputChange}
             onBlur={handleBlur}
             formatCurrency={formatCurrency}
-            categories={categories ?? []} // Defensive: fallback ke array kosong
+            categories={categories}
           />
 
           {/* Action Buttons */}
@@ -208,13 +266,22 @@ export function ProductFormPage({
             </Button>
             <Button
               type="submit"
-              disabled={isLoading}
+              disabled={
+                mutations.create.isPending || 
+                mutations.update.isPending || 
+                isLoadingCategories
+              }
               className="bg-yellow-400 hover:bg-yellow-500 text-black"
             >
-              {isLoading ? (
+              {mutations.create.isPending || mutations.update.isPending ? (
                 <>
                   <div className="w-4 h-4 mr-2 animate-spin rounded-full border-2 border-black border-t-transparent" />
                   {mode === 'add' ? 'Menyimpan...' : 'Mengupdate...'}
+                </>
+              ) : isLoadingCategories ? (
+                <>
+                  <div className="w-4 h-4 mr-2 animate-spin rounded-full border-2 border-black border-t-transparent" />
+                  Memuat kategori...
                 </>
               ) : (
                 <>

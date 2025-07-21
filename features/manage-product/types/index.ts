@@ -3,21 +3,25 @@
  *
  */
 
-import { Decimal } from '@prisma/client/runtime/library'
+// Note: Decimal type is only used on server-side
+// Frontend uses regular numbers for all monetary values
 
-// Base types that match Prisma output
+// Base types that match Prisma output (server-side)
 export interface BaseProduct {
   id: string
   code: string
   name: string
   description?: string
   categoryId: string
-  modalAwal: Decimal
-  hargaSewa: Decimal
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  modalAwal: any // Prisma Decimal (server-side only)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  hargaSewa: any // Prisma Decimal (server-side only)
   quantity: number
   status: ProductStatus
   imageUrl?: string
-  totalPendapatan: Decimal
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  totalPendapatan: any // Prisma Decimal (server-side only)
   isActive: boolean
   createdAt: Date
   updatedAt: Date
@@ -33,12 +37,47 @@ export interface BaseCategory {
   createdBy: string
 }
 
+// Client-side types (frontend-safe with regular numbers)
+export interface ClientProduct {
+  id: string
+  code: string
+  name: string
+  description?: string
+  categoryId: string
+  modalAwal: number
+  hargaSewa: number
+  quantity: number
+  status: ProductStatus
+  imageUrl?: string
+  totalPendapatan: number
+  isActive: boolean
+  createdAt: Date | string
+  updatedAt: Date | string
+  createdBy: string
+  category: ClientCategory
+}
+
+export interface ClientCategory {
+  id: string
+  name: string
+  color: string
+  createdAt: Date | string
+  updatedAt: Date | string
+  createdBy: string
+  products: ClientProduct[]
+}
+
 // Full types with relationships
 export interface Product extends BaseProduct {
   category: Category
 }
 
 export interface Category extends BaseCategory {
+  products: Product[]
+}
+
+// Client-side category type for frontend usage
+export interface CategoryWithClientProducts extends BaseCategory {
   products: Product[]
 }
 

@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { Maximize2, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
+import { getValidImageUrl } from '../../lib/utils/imageValidate'
 
 interface ProductImageSectionProps {
   imageUrl?: string
@@ -25,7 +26,7 @@ export function ProductImageSection({
         <div className="aspect-[4/3] bg-gray-100 rounded-lg overflow-hidden relative group">
           <Image
             // src={imageUrl || '/products/image.png'}
-            src={'/products/image.png'}
+            src={getValidImageUrl(imageUrl)}
             alt={productName}
             width={400}
             height={300}

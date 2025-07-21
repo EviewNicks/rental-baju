@@ -1,34 +1,19 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import { ProductFormPage } from '@/features/manage-product/components/form-product/ProductFormPage'
-import { mockProducts } from '@/features/manage-product/data/mock-products'
-import type { Product } from '@/features/manage-product/types'
+import { useProduct } from '@/features/manage-product/hooks/useProduct'
 
 export default function EditProductPage() {
   const params = useParams()
-  const [product, setProduct] = useState<Product | null>(null)
-  const [loading, setLoading] = useState(true)
+  const productId = String(params.id)
 
-  useEffect(() => {
-    // Simulate API call to fetch product
-    const fetchProduct = async () => {
-      try {
-        // In real app, this would be an API call
-        const foundProduct = mockProducts.find((p) => p.id === params.id)
-        setProduct(foundProduct || null)
-      } catch (error) {
-        console.error('Error fetching product:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    if (params.id) {
-      fetchProduct()
-    }
-  }, [params.id])
+  // Use the proper hooks layer instead of mock data
+  const { 
+    data: product, 
+    isLoading: loading, 
+    error 
+  } = useProduct(productId)
 
   const breadcrumbItems = [
     { label: 'Dashboard', href: '/producer' },
@@ -36,17 +21,33 @@ export default function EditProductPage() {
     { label: 'Edit Produk', current: true },
   ]
 
+  // Handle loading state
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="w-8 h-8 mx-auto mb-4 animate-spin rounded-full border-2 border-yellow-400 border-t-transparent" />
-          <p className="text-gray-600">Loading product...</p>
+          <p className="text-gray-600">Memuat data produk...</p>
         </div>
       </div>
     )
   }
 
+  // Handle error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold text-red-600 mb-2">Error</h2>
+          <p className="text-gray-600">
+            {error instanceof Error ? error.message : 'Gagal memuat data produk'}
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  // Handle not found state
   if (!product) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">

@@ -51,9 +51,13 @@ export class HttpClient {
     } = options
 
     const fullUrl = this.baseUrl + url
-    const requestHeaders = {
-      ...this.defaultHeaders,
-      ...headers,
+    
+    // Handle FormData content type
+    let requestHeaders = { ...this.defaultHeaders, ...headers }
+    if (restOptions.body instanceof FormData) {
+      // Remove Content-Type for FormData to let browser set multipart/form-data with boundary
+      const { 'Content-Type': _, ...headersWithoutContentType } = requestHeaders
+      requestHeaders = headersWithoutContentType
     }
 
     // Create AbortController for timeout
@@ -198,10 +202,6 @@ export class HttpClient {
 
     // If it's FormData, let fetch handle it
     if (data instanceof FormData) {
-      // Remove Content-Type header for FormData to let browser set it with boundary
-      if (headers && typeof headers === 'object' && 'Content-Type' in headers) {
-        delete (headers as Record<string, string>)['Content-Type']
-      }
       return data
     }
 

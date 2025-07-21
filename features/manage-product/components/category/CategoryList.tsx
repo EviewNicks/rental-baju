@@ -3,13 +3,13 @@
 import { Edit, Trash2, Tag } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import type { Category } from '@/features/manage-product/types'
+import type { ClientCategory } from '@/features/manage-product/types'
 import { getContrastTextColor, lightenColor } from '@/features/manage-product/lib/utils/color'
 
 interface CategoryListProps {
-  categories: Category[]
-  onEdit: (category: Category) => void
-  onDelete: (category: Category) => void
+  categories: ClientCategory[]
+  onEdit: (category: ClientCategory) => void
+  onDelete: (category: ClientCategory) => void
   loading?: boolean
 }
 

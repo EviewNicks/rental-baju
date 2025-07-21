@@ -8,7 +8,7 @@ import { CategoryForm } from './CategoryForm'
 import { DeleteConfirmationDialog } from './DeleteConfirmationDialog'
 import { useCategories, useCreateCategory, useUpdateCategory, useDeleteCategory } from '@/features/manage-product/hooks/useCategories'
 import { showSuccess, showError } from '@/lib/notifications'
-import type { Category, CategoryFormData, CategoryModalMode } from '@/features/manage-product/types'
+import type { ClientCategory, CategoryFormData, CategoryModalMode } from '@/features/manage-product/types'
 
 interface CategoryManagementModalProps {
   isOpen: boolean
@@ -17,7 +17,7 @@ interface CategoryManagementModalProps {
 
 export function CategoryManagementModal({ isOpen, onClose }: CategoryManagementModalProps) {
   const [mode, setMode] = useState<CategoryModalMode>('view')
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null)
+  const [selectedCategory, setSelectedCategory] = useState<ClientCategory | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
 
   // API hooks
@@ -33,12 +33,12 @@ export function CategoryManagementModal({ isOpen, onClose }: CategoryManagementM
     setMode('add')
   }
 
-  const handleEditCategory = (category: Category) => {
+  const handleEditCategory = (category: ClientCategory) => {
     setSelectedCategory(category)
     setMode('edit')
   }
 
-  const handleDeleteCategory = (category: Category) => {
+  const handleDeleteCategory = (category: ClientCategory) => {
     setSelectedCategory(category)
     setDeleteDialogOpen(true)
   }
@@ -143,7 +143,6 @@ export function CategoryManagementModal({ isOpen, onClose }: CategoryManagementM
                 onSubmit={handleFormSubmit}
                 onCancel={handleFormCancel}
                 existingCategories={categories}
-                loading={createCategoryMutation.isPending || updateCategoryMutation.isPending}
               />
             )}
           </div>

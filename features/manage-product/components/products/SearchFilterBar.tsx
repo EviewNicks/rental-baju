@@ -93,7 +93,7 @@ export function SearchFilterBar({
 
             <Select 
               value={selectedStatus || 'Semua'} 
-              onValueChange={(value) => onStatusChange(value === 'Semua' ? '' : value)}
+              onValueChange={(value) => onStatusChange(value === 'Semua' ? undefined : value as StatusFilterValue)}
               disabled={isLoading}
             >
               <SelectTrigger className="w-32">

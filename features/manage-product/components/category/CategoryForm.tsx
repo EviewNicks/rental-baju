@@ -10,15 +10,15 @@ import { Label } from '@/components/ui/label'
 import { ColorPicker } from './ColorPicker'
 import { CategoryBadgePreview } from './CategoryBadgePreview'
 import { useFormValidation } from '@/features/manage-product/hooks/useFormValidation'
-import type { Category, CategoryFormData, CategoryModalMode } from '@/features/manage-product/types'
+import type { ClientCategory, CategoryFormData, CategoryModalMode } from '@/features/manage-product/types'
 import { cn } from '@/lib/utils'
 
 interface CategoryFormProps {
   mode: CategoryModalMode
-  category?: Category | null
+  category?: ClientCategory | null
   onSubmit: (data: CategoryFormData) => Promise<void>
   onCancel: () => void
-  existingCategories: Category[]
+  existingCategories: ClientCategory[]
 }
 
 const validationRules = {
@@ -27,7 +27,7 @@ const validationRules = {
     minLength: 2,
     maxLength: 50,
     pattern: /^[a-zA-Z0-9\s-]+$/,
-    custom: (value: string, existingCategories: Category[], editingId?: string) => {
+    custom: (value: string, existingCategories: ClientCategory[], editingId?: string) => {
       if (value) {
         const exists = existingCategories.some(
           (cat) => cat.name.toLowerCase() === value.toLowerCase() && cat.id !== editingId,

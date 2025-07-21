@@ -44,14 +44,32 @@ interface ProductInfoSectionProps {
 }
 
 export function ProductInfoSection({ product, className }: ProductInfoSectionProps) {
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString('id-ID', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    })
+  // Utility function untuk memastikan tanggal valid
+  const formatDate = (date: Date | string | null | undefined): string => {
+    if (!date) {
+      return 'Tidak tersedia'
+    }
+
+    try {
+      // Konversi ke Date object jika string
+      const dateObj = typeof date === 'string' ? new Date(date) : date
+
+      // Validasi apakah Date valid
+      if (isNaN(dateObj.getTime())) {
+        return 'Tanggal tidak valid'
+      }
+
+      return dateObj.toLocaleDateString('id-ID', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      })
+    } catch (error) {
+      console.error('Error formatting date:', error)
+      return 'Tanggal tidak valid'
+    }
   }
 
   return (
