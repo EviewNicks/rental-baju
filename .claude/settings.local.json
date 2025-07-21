@@ -18,7 +18,10 @@
       "Bash(ls:*)",
       "Bash(node:*)",
       "Bash(npm:*)",
-      "Bash(claude mcp:*)"
+      "Bash(claude mcp:*)",
+      "Bash(curl:*)",
+      "Bash(rm:*)",
+      "Bash(yarn build)"
     ],
     "deny": []
   }

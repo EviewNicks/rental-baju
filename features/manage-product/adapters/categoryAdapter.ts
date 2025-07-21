@@ -15,8 +15,22 @@ export const categoryAdapter = {
   /**
    * Get all categories
    */
-  async getCategories(): Promise<CategoryListResponse> {
-    const response = await httpClient.get<CategoryResponse[]>('/api/categories')
+  async getCategories(params: { search?: string; includeProducts?: boolean } = {}): Promise<CategoryListResponse> {
+    const queryParams = new URLSearchParams()
+    
+    if (params.search) {
+      queryParams.append('search', params.search)
+    }
+    
+    if (params.includeProducts) {
+      queryParams.append('includeProducts', 'true')
+    }
+
+    const url = queryParams.toString() 
+      ? `/api/categories?${queryParams.toString()}`
+      : '/api/categories'
+
+    const response = await httpClient.get<CategoryResponse[]>(url)
 
     // Transform response to match expected format
     const categories = Array.isArray(response.data) ? response.data : []

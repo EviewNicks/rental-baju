@@ -43,7 +43,29 @@ export function CategoryList({ categories, onEdit, onDelete, loading }: Category
               >
                 {category.name}
               </Badge>
-              <span className="text-sm text-gray-500">{category.products.length} produk</span>
+              <div className="flex items-center space-x-2">
+                {category.products && category.products.length > 0 && (
+                  <div className="flex items-center space-x-1">
+                    <Badge variant="secondary" className="text-xs py-0 px-2">
+                      {category.products.filter((p) => p.status === 'AVAILABLE').length} tersedia
+                    </Badge>
+                    {category.products.filter((p) => p.status === 'RENTED').length > 0 && (
+                      <Badge
+                        variant="outline"
+                        className="text-xs py-0 px-2 border-orange-300 text-orange-600"
+                      >
+                        {category.products.filter((p) => p.status === 'RENTED').length} disewa
+                      </Badge>
+                    )}
+                    {category.products.filter((p) => p.status === 'MAINTENANCE').length > 0 && (
+                      <Badge variant="destructive" className="text-xs py-0 px-2">
+                        {category.products.filter((p) => p.status === 'MAINTENANCE').length}{' '}
+                        maintenance
+                      </Badge>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="flex items-center space-x-2">

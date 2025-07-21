@@ -7,7 +7,6 @@ import {
   AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
-  AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
@@ -39,17 +38,18 @@ export function DeleteConfirmationDialog({
             <AlertTriangle className="w-5 h-5 text-red-500" />
             Hapus Kategori
           </AlertDialogTitle>
-          <AlertDialogDescription className="space-y-2">
-            <p>
-              Apakah Anda yakin ingin menghapus kategori{' '}
-              <strong>&quot;{category.name}&quot;</strong>?
-            </p>
-            <p className="text-sm text-red-600">
-              Tindakan ini tidak dapat dibatalkan dan akan mempengaruhi {category.products.length}{' '}
-              produk yang menggunakan kategori ini.
-            </p>
-          </AlertDialogDescription>
         </AlertDialogHeader>
+
+        <div className="px-6 space-y-3">
+          <p className="text-sm text-muted-foreground">
+            Apakah Anda yakin ingin menghapus kategori <strong>{category.name}</strong>?
+          </p>
+          <p className="text-sm text-red-600">
+            Tindakan ini tidak dapat dibatalkan dan akan mempengaruhi {category.products.length}{' '}
+            produk yang menggunakan kategori ini.
+          </p>
+        </div>
+
         <AlertDialogFooter>
           <AlertDialogCancel disabled={loading}>Batal</AlertDialogCancel>
           <AlertDialogAction asChild>

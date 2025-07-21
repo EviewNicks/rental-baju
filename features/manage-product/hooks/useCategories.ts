@@ -15,7 +15,7 @@ import type { ClientCategory, CreateCategoryRequest, UpdateCategoryRequest } fro
 export function useCategories(params: { search?: string; includeProducts?: boolean } = {}) {
   return useQuery({
     queryKey: queryKeys.categories.list(params),
-    queryFn: () => categoryAdapter.getCategories(),
+    queryFn: () => categoryAdapter.getCategories(params),
     staleTime: 10 * 60 * 1000, // 10 minutes - categories don't change often
     select: (data) => ({
       categories: toClientCategories(data.categories || []),

@@ -21,7 +21,7 @@ export function CategoryManagementModal({ isOpen, onClose }: CategoryManagementM
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
 
   // API hooks
-  const { data: categoriesData, isLoading: loading, error } = useCategories()
+  const { data: categoriesData, isLoading: loading, error } = useCategories({ includeProducts: true })
   const createCategoryMutation = useCreateCategory()
   const updateCategoryMutation = useUpdateCategory()
   const deleteCategoryMutation = useDeleteCategory()
