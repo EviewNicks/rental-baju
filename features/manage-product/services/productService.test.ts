@@ -43,6 +43,9 @@ const mockPrisma = {
     findFirst: jest.fn(),
     count: jest.fn(),
   },
+  category: {
+    findUnique: jest.fn(),
+  },
 } as unknown as jest.Mocked<PrismaClient>
 
 describe('ProductService', () => {
@@ -101,6 +104,7 @@ describe('ProductService', () => {
       // Arrange
       ;(createProductSchema.parse as jest.Mock).mockReturnValue(mockCreateRequest)
       ;(mockPrisma.product.findFirst as jest.Mock).mockResolvedValue(null) // Code tidak duplicate
+      ;(mockPrisma.category.findUnique as jest.Mock).mockResolvedValue({ id: 'cat-123' }) // Category exists
       ;(mockPrisma.product.create as jest.Mock).mockResolvedValue(mockCreatedProduct)
 
       // Act
@@ -137,6 +141,7 @@ describe('ProductService', () => {
       // Arrange
       ;(createProductSchema.parse as jest.Mock).mockReturnValue(mockCreateRequest)
       ;(mockPrisma.product.findFirst as jest.Mock).mockResolvedValue(mockCreatedProduct)
+      ;(mockPrisma.category.findUnique as jest.Mock).mockResolvedValue({ id: 'cat-123' }) // Category exists
 
       // Act & Assert
       await expect(productService.createProduct(mockCreateRequest)).rejects.toThrow(
@@ -151,6 +156,7 @@ describe('ProductService', () => {
       ;(createProductSchema.parse as jest.Mock).mockImplementation(() => {
         throw new Error('Kode harus 4 digit alfanumerik uppercase')
       })
+      ;(mockPrisma.category.findUnique as jest.Mock).mockResolvedValue({ id: 'cat-123' }) // Category exists
 
       // Act & Assert
       await expect(productService.createProduct(invalidRequest)).rejects.toThrow(
@@ -164,6 +170,7 @@ describe('ProductService', () => {
       // Arrange
       ;(createProductSchema.parse as jest.Mock).mockReturnValue(mockCreateRequest)
       ;(mockPrisma.product.findFirst as jest.Mock).mockResolvedValue(null)
+      ;(mockPrisma.category.findUnique as jest.Mock).mockResolvedValue({ id: 'cat-123' }) // Category exists
       ;(mockPrisma.product.create as jest.Mock).mockRejectedValue(
         new Error('Database connection failed'),
       )
@@ -231,6 +238,7 @@ describe('ProductService', () => {
       expect(updateProductSchema.parse).toHaveBeenCalledWith(mockUpdateRequest)
       expect(mockPrisma.product.findUnique).toHaveBeenCalledWith({
         where: { id: productId, isActive: true },
+        include: { category: true },
       })
       expect(mockPrisma.product.update).toHaveBeenCalledWith({
         where: { id: productId },

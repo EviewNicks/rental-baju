@@ -1,7 +1,7 @@
 /**
  * Unit Tests untuk FileUploadService
  * Testing file upload operations dengan fokus pada fungsi utama
- * 
+ *
  * Coverage:
  * - File validation
  * - Path generation utilities
@@ -68,7 +68,9 @@ describe('FileUploadService', () => {
       })
 
       // Act & Assert
-      expect(() => fileUploadService.validateFile(mockFile)).toThrow('Format file harus JPG, PNG, atau WebP')
+      expect(() => fileUploadService.validateFile(mockFile)).toThrow(
+        'Format file harus JPG, PNG, atau WebP',
+      )
     })
 
     it('should handle null file gracefully', () => {
@@ -106,13 +108,13 @@ describe('FileUploadService', () => {
       const path = fileUploadService.generateImagePath(productCode, extension)
 
       // Assert
-      expect(path).toBe(`products/${mockUserId}/${productCode}/${timestamp}.${extension}`)
+      expect(path).toBe(`products/${productCode}/${timestamp}.${extension}`)
     })
 
     it('should handle different file extensions', () => {
       // Arrange
       const productCode = 'DRS1'
-      
+
       // Act
       const jpegPath = fileUploadService.generateImagePath(productCode, 'jpeg')
       const pngPath = fileUploadService.generateImagePath(productCode, 'png')
@@ -123,41 +125,31 @@ describe('FileUploadService', () => {
       expect(pngPath).toContain('.png')
       expect(webpPath).toContain('.webp')
     })
-
-    it('should include user ID in path for isolation', () => {
-      // Arrange
-      const productCode = 'DRS1'
-      const extension = 'jpg'
-
-      // Act
-      const path = fileUploadService.generateImagePath(productCode, extension)
-
-      // Assert
-      expect(path).toContain(`/${mockUserId}/`)
-    })
   })
 
   describe('extractPathFromUrl', () => {
     it('should extract path from storage URL correctly', () => {
       // Arrange
-      const storageUrl = 'https://storage.supabase.com/bucket/product-images/products/user123/DRS1/image.jpg'
+      const storageUrl =
+        'https://storage.supabase.com/bucket/product-images/products/DRS1/image.jpg'
 
       // Act
       const path = fileUploadService.extractPathFromUrl(storageUrl)
 
       // Assert
-      expect(path).toBe('products/user123/DRS1/image.jpg')
+      expect(path).toBe('DRS1/image.jpg')
     })
 
     it('should handle URLs with query parameters', () => {
       // Arrange
-      const urlWithParams = 'https://storage.supabase.com/bucket/product-images/products/user123/DRS1/image.jpg?v=1643723400'
+      const urlWithParams =
+        'https://storage.supabase.com/bucket/product-images/products/DRS1/image.jpg?v=1643723400'
 
       // Act
       const path = fileUploadService.extractPathFromUrl(urlWithParams)
 
       // Assert
-      expect(path).toBe('products/user123/DRS1/image.jpg')
+      expect(path).toBe('DRS1/image.jpg')
     })
 
     it('should handle invalid URLs gracefully', () => {
