@@ -158,25 +158,25 @@ test.describe('Product Creation Flow', () => {
 
     // Test product code validation
     await page.fill('[data-testid="product-code-field-input"]', '123') // Too short
-    await page.blur('[data-testid="product-code-field-input"]')
+    await page.press('[data-testid="product-code-field-input"]', 'Tab')
     // Should show validation error for short code
 
     await page.fill('[data-testid="product-code-field-input"]', 'TOOLONG') // Too long
-    await page.blur('[data-testid="product-code-field-input"]')
+    await page.press('[data-testid="product-code-field-input"]', 'Tab')
     // Should show validation error for long code
 
     // Test valid code format
     await page.fill('[data-testid="product-code-field-input"]', 'PR01')
-    await page.blur('[data-testid="product-code-field-input"]')
+    await page.press('[data-testid="product-code-field-input"]', 'Tab')
     
     // Test negative quantity
     await page.fill('[data-testid="product-quantity-field-input"]', '-1')
-    await page.blur('[data-testid="product-quantity-field-input"]')
+    await page.press('[data-testid="product-quantity-field-input"]', 'Tab')
     // Should show validation error for negative quantity
 
     // Test negative price
     await page.fill('[data-testid="product-price-field-input"]', '-1000')
-    await page.blur('[data-testid="product-price-field-input"]')
+    await page.press('[data-testid="product-price-field-input"]', 'Tab')
     // Should show validation error for negative price
 
     await takeScreenshot(page, 'field-validations')
@@ -305,10 +305,10 @@ test.describe('Product Creation Flow', () => {
 
     // When: User enters various price formats
     await page.fill('[data-testid="product-modal-field-input"]', '1000000')
-    await page.blur('[data-testid="product-modal-field-input"]')
+    await page.press('[data-testid="product-modal-field-input"]', 'Tab')
 
     await page.fill('[data-testid="product-price-field-input"]', '150000')
-    await page.blur('[data-testid="product-price-field-input"]')
+    await page.press('[data-testid="product-price-field-input"]', 'Tab')
 
     // Then: Values should be properly formatted
     const modalValue = await page.locator('[data-testid="product-modal-field-input"]').inputValue()

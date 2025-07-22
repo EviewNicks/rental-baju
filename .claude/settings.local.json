@@ -29,7 +29,22 @@
       "Bash(yarn --version)",
       "Bash(NODE_ENV=test yarn playwright test __tests__/playwright/manage-product/product-listing.spec.ts --ui)",
       "Bash(NODE_ENV=test npx playwright test __tests__/playwright/manage-product/product-listing.spec.ts --headed)",
-      "Bash(NODE_ENV=test npx playwright test __tests__/playwright/manage-product/product-listing.spec.ts --headed --ignore-pattern=\"webServer\")"
+      "Bash(NODE_ENV=test npx playwright test __tests__/playwright/manage-product/product-listing.spec.ts --headed --ignore-pattern=\"webServer\")",
+      "mcp__playwright__playwright_navigate",
+      "Bash(yarn app:*)",
+      "mcp__playwright__playwright_screenshot",
+      "mcp__playwright__playwright_get_visible_text",
+      "mcp__playwright__playwright_click",
+      "mcp__playwright__playwright_fill",
+      "mcp__playwright__playwright_get_visible_html",
+      "mcp__playwright__playwright_press_key",
+      "mcp__playwright__playwright_evaluate",
+      "mcp__playwright__playwright_close",
+      "Bash(powershell:*)",
+      "Bash(where yarn)",
+      "Bash(cmd /c:*)",
+      "Bash(npx playwright:*)",
+      "Bash(set NODE_ENV=test)"
     ],
     "deny": []
   }

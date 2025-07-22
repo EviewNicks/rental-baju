@@ -81,6 +81,19 @@ Pastikan `playwright` muncul di daftar.
   - Cek konfigurasi `.mcp.json`
   - Lihat log output Claude Code untuk error detail
 
+### 4. 📁 **Login Account with MCP **
+
+USERNAME = producer01
+PASSWORD = akunproducer01
+
+//Kasir Role
+USERNAME = kasir01
+PASSWORD = kasir01rentalbaju
+
+//Owner Role
+USERNAME = owner01
+PASSWORD = ardi14mei2005
+
 ---
 
 **Referensi:**

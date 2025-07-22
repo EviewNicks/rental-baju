@@ -226,12 +226,17 @@ test.describe('Product Management - Owner Access', () => {
 })
 
 /**
- * Access Restriction Tests
+ * Kasir Access Restriction Tests
  * 
- * These tests validate that unauthorized roles are properly
- * restricted from accessing product management functionality.
+ * These tests validate that kasir role is properly restricted
+ * from accessing product management functionality.
  */
-test.describe('Product Management - Access Restrictions', () => {
+test.describe('Product Management - Kasir Access Restrictions', () => {
+  test.use({ storageState: '../.clerk/kasir.json' })
+
+  test.beforeEach(async ({ page }) => {
+    await verifyUserSession(page)
+  })
   
   /**
    * Test Case: Kasir Role Access Restriction
@@ -252,18 +257,20 @@ test.describe('Product Management - Access Restrictions', () => {
    * product and pricing data.
    */
   test('kasir should not access manage-product', async ({ page }) => {
-    // Note: This test would need kasir storage state
-    // For demonstration, we'll test the expected behavior
-    
-    // Simulate kasir trying to access manage-product
+    // Kasir trying to access producer manage-product route
     await testRoleBasedAccess(page, '/producer/manage-product', 'kasir', false)
-
-    // Should be redirected to unauthorized page
-    await expect(page).toHaveURL('/unauthorized')
 
     await takeScreenshot(page, 'kasir-access-blocked')
   })
+})
 
+/**
+ * Unauthenticated Access Restriction Tests
+ * 
+ * These tests validate that unauthenticated users are properly
+ * restricted from accessing any protected functionality.
+ */
+test.describe('Product Management - Unauthenticated Access Restrictions', () => {
   /**
    * Test Case: Unauthenticated User Access Restriction
    * 

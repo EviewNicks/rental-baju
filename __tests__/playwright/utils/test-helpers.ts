@@ -335,7 +335,11 @@ export async function testRoleBasedAccess(
 
   console.log(`🔍 Testing ${role} access to ${route}, expected access: ${expectedAccess}`)
 
-  await page.goto(route)
+  // Ensure absolute URL for navigation
+  const baseUrl = 'http://localhost:3000'
+  const absoluteUrl = route.startsWith('http') ? route : `${baseUrl}${route}`
+  
+  await page.goto(absoluteUrl)
   await waitForPageLoad(page)
 
   if (expectedAccess) {

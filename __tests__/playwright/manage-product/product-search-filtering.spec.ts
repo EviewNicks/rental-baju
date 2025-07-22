@@ -158,7 +158,7 @@ test.describe('Product Search & Filtering', () => {
     await expect(page.locator('[data-testid="status-filter-content"]')).toBeVisible()
 
     // When: User selects a status
-    await page.click('[data-testid="status-option-tersedia"]')
+    await page.click('[role="option"]:has-text("AVAILABLE")')
     await waitForPageLoad(page)
 
     await takeScreenshot(page, 'status-filtering')
@@ -198,7 +198,7 @@ test.describe('Product Search & Filtering', () => {
     // And: User applies status filter
     await page.click('[data-testid="status-filter-trigger"]')
     await waitForPageLoad(page)
-    await page.click('[data-testid="status-option-tersedia"]')
+    await page.click('[role="option"]:has-text("AVAILABLE")')
     await waitForPageLoad(page)
 
     // Then: All filters should be active
