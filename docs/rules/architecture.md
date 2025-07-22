@@ -1,509 +1,217 @@
----
-description: 
-globs: 
-alwaysApply: true
----
-# 📐 Arsitektur Proyek Maguru
-
-## Daftar Isi
-
-- [Pendahuluan](mdc:#pendahuluan)
-- [High Level Architecture](mdc:#high-level-architecture)
-- [Struktur Folder & Mapping Layer](mdc:#struktur-folder--mapping-layer)
-- [Modular Boundaries & Feature-First](mdc:#modular-boundaries--feature-first)
-- [Layered Architecture (3-Tier)](mdc:#layered-architecture-3-tier)
-- [State Management Strategy](mdc:#state-management-strategy)
-- [Komponen Arsitektur Detil](mdc:#komponen-arsitektur-detil)
-- [Alur Data End-to-End](mdc:#alur-data-end-to-end)
-- [Konvensi Penamaan](mdc:#konvensi-penamaan)
-- [Patterns dan Best Practices](mdc:#patterns-dan-best-practices)
-- [Tech Stack dan Dependencies](mdc:#tech-stack-dan-dependencies)
-- [Best Practice & Onboarding](mdc:#best-practice--onboarding)
+# 📐 Arsitektur Baru Proyek Rental Baju (Sederhana & Efisien)
 
 ---
 
-## Pendahuluan
+## 1. Prinsip Utama
 
-Dokumen ini menjelaskan arsitektur proyek Maguru yang mengadopsi kombinasi pendekatan **Modular Monolith (Feature-First)**, **Layered (3-Tier)**, dan **Event-Driven Hybrid**. Arsitektur ini dirancang untuk membangun aplikasi web yang scalable, maintainable, dan kokoh menggunakan Next.js App Router dan TypeScript. Tujuannya adalah agar setiap kontributor baru dapat memahami alur kerja, standar, dan struktur kode dengan cepat dan konsisten.
-
-Arsitektur ini dirancang untuk:
-
-- Mengorganisir kode berdasarkan fitur (Feature-First) di dalam struktur Modular Monolith.
-- Memisahkan tanggung jawab secara vertikal (Layered 3-Tier) untuk meningkatkan maintainability.
-- Mendukung komunikasi event-driven antar bagian aplikasi untuk fleksibilitas dan decoupling (Event-Driven Hybrid).
-- Memastikan kualitas kode melalui konvensi, pengujian, dan proses review.
+- **Modular Monolith** tetap digunakan, namun dengan struktur dan layer yang lebih ringkas.
+- **Layer N-tier**: Hanya 3 layer utama (Presentation, Logic, Data), tanpa subdivisi hooks/adapter/service yang berlebihan.
+- **Sederhana, maintainable, scalable** untuk tim kecil dan kebutuhan bisnis rental baju.
 
 ---
 
-## High Level Architecture
-
-Maguru menggunakan kombinasi arsitektur berikut:
-
-- **Modular Monolith (Feature-First):** Aplikasi dibangun sebagai monolit, namun kode diorganisir menjadi modul-modul fitur yang relatif independen di dalam direktori `/features`. Setiap fitur mencakup semua lapisan yang diperlukan (UI, logika, akses data) untuk mengurangi ketergantungan antar fitur.
-- **Layered (3-Tier):** Kode dipecah menjadi lapisan horizontal logis untuk memisahkan tanggung jawab: Presentation, Application/Business Logic, dan Data Access. Ini membatasi ketergantungan antar lapisan (umumnya hanya ke bawah).
-- **Event-Driven Hybrid:** Selain komunikasi request/response sinkron, aplikasi juga dapat menggunakan mekanisme event (seperti event bus, message queue, atau React Context for UI events) untuk komunikasi asinkron antar bagian yang berbeda, mendukung decoupling dan skalabilitas.
-
-### Diagram Arsitektur Tingkat Tinggi
+## 2. High Level Architecture
 
 ```mermaid
 graph TD
-    User --> Presentation;
-    Presentation --> Application_BL;
-    Application_BL --> Data_Access;
-    Data_Access --> Database;
-    Application_BL <--> Event_Bus;
-    Other_Services --> Event_Bus;
-    Event_Bus --> Application_BL;
-
-    subgraph Frontend
-        Presentation(Presentation Layer<br><i>React Components, UI Context</i>);
-        Application_BL_Client(Application/Business Logic<br><i>Custom Hooks, State Management, Client-Side Logic</i>);
-        Presentation --> Application_BL_Client;
-        Application_BL_Client --> API_Gateway(API Gateway<br><i>Next.js API Routes</i>);
-    end
-
-    subgraph Backend
-        API_Gateway --> Application_BL_Server(Application/Business Logic<br><i>Services, Server-Side Logic</i>);
-        Application_BL_Server --> Data_Access(Data Access Layer<br><i>Prisma ORM</i>);
-        Data_Access --> Database[(Database)];
-    end
-
-    Event_Bus((Event Bus));
-    Application_BL_Server <--> Event_Bus;
-    Other_Services[(Other Services/Integrations)] --> Event_Bus;
-
-    classDef layer fill:#f9f,stroke:#333,stroke-width:2px;
-    class Presentation,Application_BL_Client,API_Gateway,Application_BL_Server,Data_Access,Database,Event_Bus,Other_Services layer;
+    User --> UI[Next.js UI (React)]
+    UI --> Logic[Custom Hook/Logic]
+    Logic --> API[API Route (Next.js)]
+    API --> DB[(Database)]
+    UI -->|Static| Public[Public Assets]
 ```
+
+- **Frontend & Backend** dalam satu codebase (monorepo Next.js)
+- **API Routes** untuk backend CRUD sederhana
+- **Database**: PostgreSQL/SQLite via Prisma ORM
+- **Static Assets**: Gambar produk, dsb di `/public`
 
 ---
 
-## Struktur Folder & Mapping Layer
-
-Struktur folder utama dan pemetaan ke layer arsitektur proyek secara keseluruhan:
+## 3. Struktur Folder
 
 ```
 /
-├── app/                # Next.js App Router: Routing, Root Layout, API Routes
-│   ├── [...]/          # Route segments (Presentation Layer)
-│   └── api/            # API Routes (Entry point to Application/Business Logic Layer)
-├── features/           # Feature Modules (Modular Monolith - Semua layer per fitur)
-│   └── [feature-name]/ # Contoh: manage-module
-│       ├── components/ # Presentation Layer (UI Components)
-│       ├── context/    # Global State Layer (Cross-component state, app-wide settings)
-│       ├── hooks/      # Business Logic Layer (Client-side Orchestration, Feature State)
-│       ├── adapters/   # Data Access Layer (Client-side interface to API)
-│       ├── services/   # Business Logic Layer (Server-side Services)
-│       ├── lib/        # Feature-specific Utilities
-│       └── types/      # Feature-specific Types & Schemas
-├── docs/               # Dokumentasi, Arsitektur Global, dll.
-├── lib/                # Shared Utilities & Libraries (Cross-cutting Concerns)
-├── prisma/             # Database Schema & Migrations (Data Access Layer configuration)
-├── public/             # Static Assets
-├── __tests__/          # Testing (mocks, integration, e2e)
-└── tsconfig.json       # TypeScript Configuration (Type Safety)
+├── app/                # Routing, layout, halaman utama (Next.js App Router)
+│   ├── api/            # API Routes (backend logic)
+│   └── ...             # Halaman (page.tsx), layout, dsb
+├── features/           # Modular Feature (per fitur utama)
+│   └── [feature]/      # Contoh: manage-product, auth, kasir
+│       ├── components/ # Komponen UI
+│       ├── hooks/      # Custom hooks (state, logic)
+│       ├── api.ts      # API client/fetcher untuk fitur ini
+│       ├── types.ts    # TypeScript types untuk fitur ini
+├── prisma/             # Skema database & seed
+├── public/             # Static files (gambar, dsb)
+├── lib/                # Utilitas global
+├── styles/             # CSS/SCSS/Tailwind config
+└── ...                 # Config, test, dsb
 ```
 
-**Mapping Layer pada Arsitektur 3-Tier Proyek:**
+---
 
-- **Presentation Layer:**
-  - `app/` (Pages, Layouts)
-  - `features/*/components/` (Component State - Local UI state, form state)
-  - `features/*/context/` (Global State - Cross-component state, app-wide settings)
-- **Application/Business Logic Layer:**
-  - `app/api/` (API Routes - Server-side Entry Point)
-  - `features/*/hooks/` (Feature State - Business logic, data fetching, feature-specific state)
-  - `features/*/services/` (Server-side Business Logic)
-  - `lib/` (Shared Business Logic Utilities)
-- **Data Access Layer:**
-  - `features/*/adapters/` (Client-side interface to API)
-  - `features/*/services/` (Interaksi dengan ORM/DB)
-  - `prisma/` (ORM configuration)
-  - Database (Eksternal)
+## 4. Layer N-Tier (3-Tier Saja)
 
-Diagram Alur Data End-to-End di bagian selanjutnya akan memberikan pemetaan yang lebih visual.
+### 1. **Presentation Layer**
+
+- Komponen React (UI), form, tabel, dsb.
+- State lokal pakai `useState`/`useReducer`.
+- Context hanya jika benar-benar perlu global state (misal: user login).
+
+### 2. **Logic Layer**
+
+- Custom hook per fitur (`useProduct`, `useRental`, dsb).
+- Logic fetching, validasi, transformasi data.
+- Panggil API via fetcher sederhana (misal: `productApi.ts`).
+
+### 3. **Data Layer**
+
+- API Route Next.js (`app/api/fitur/route.ts`): CRUD, validasi, otentikasi.
+- Prisma ORM untuk query ke database.
 
 ---
 
-## Modular Boundaries & Feature-First
+## 5. Alur Data Sederhana
 
-Modular Boundaries & Feature-First adalah konsep kunci dalam mengorganisir kode di Maguru. Setiap fitur utama (misalnya, `manage-module`, `user-profile`, `notification-settings`) memiliki direktori sendiri di dalam `/features`. Direktori fitur ini berisi semua kode yang diperlukan untuk fitur tersebut, mencakup komponen UI, logika bisnis (hooks, services), akses data (adapters), types, dan utilitas khusus fitur.
-
-Tujuannya adalah untuk:
-
-- **Isolasi:** Membatasi ketergantungan langsung antar fitur. Fitur seharusnya hanya berinteraksi melalui API (request/response) atau Event Bus.
-- **Maintainability:** Perubahan dalam satu fitur memiliki dampak minimal pada fitur lain.
-- **Scalability:** Tim yang berbeda dapat bekerja pada fitur yang berbeda secara paralel.
-- **Testability:** Fitur dapat diuji sebagai unit yang relatif mandiri.
-
-Struktur di dalam direktori fitur (`features/[feature-name]`) mencerminkan Layered Architecture, memastikan bahkan di dalam modul monolit, tanggung jawab tetap terpisah.
+1. **User** berinteraksi di UI (misal: klik "Sewa Baju").
+2. **Komponen** memanggil custom hook (misal: `useRental`).
+3. **Hook** memanggil API fetcher (`rentalApi.ts`).
+4. **API Route** proses request, query ke database via Prisma.
+5. **Response** dikirim ke frontend, update state/UI.
 
 ---
 
-## Layered Architecture (3-Tier)
+## 6. Contoh Modularisasi Fitur
 
-Arsitektur 3-Tier di Maguru bertujuan untuk memisahkan tanggung jawab aplikasi menjadi tiga lapisan utama agar kode lebih terstruktur, mudah dipelihara, dan scalable. Berikut penjelasan singkat dan jelas tiap lapisan beserta contoh implementasinya di Maguru:
-
-### 1. **Presentation Layer (Lapisan Presentasi/UI)**
-
-Lapisan ini menangani semua yang berhubungan dengan tampilan dan interaksi pengguna.
-
-- **Tugas utama:**
-  - Menampilkan UI (User Interface)
-  - Menerima dan memproses input dari user
-  - Menampilkan data ke user
-  - Mengelola Component State (local UI state, form state, temporary state)
-
-- **Contoh implementasi di Maguru:**
-  - **React Components**
-    - Server Components: di folder `app/`
-    - Client Components: di `features/*/components`
-  - **Component State**: Menggunakan `useState`, `useReducer` untuk state lokal komponen
-  - **Context API** untuk Global State (cross-component state, app-wide settings)
-
-### 2. **Application/Business Logic Layer (Lapisan Logika Bisnis & Aplikasi)**
-
-Lapisan ini berisi aturan bisnis, proses utama aplikasi, dan mengatur alur data antara UI dan data.
-
-- **Tugas utama:**
-  - Menyimpan dan mengelola Feature State (business logic, data fetching, feature-specific state)
-  - Menjalankan aturan bisnis
-  - Mengorkestrasi proses (misal: validasi, transformasi data, workflow)
-
-- **Contoh implementasi di Maguru:**
-  - **Client-side:**
-    - Custom Hooks (`features/*/hooks`) untuk mengatur alur kerja user dan memanggil adapter
-    - Feature State Management (React Query, custom hooks untuk feature-specific state)
-  - **Server-side:**
-    - API Routes (`app/api/`) sebagai pintu masuk request, validasi, dan otentikasi
-    - Services (`features/*/services`) yang berisi logika bisnis utama dan interaksi ke database
-
-### 3. **Data Access Layer (Lapisan Akses Data)**
-
-Lapisan ini bertanggung jawab untuk semua interaksi dengan sumber data (database, API eksternal, dsb).
-
-- **Tugas utama:**
-  - Mengambil, menyimpan, dan memodifikasi data di database atau sumber data lain
-  - Mengabstraksi detail teknis data dari lapisan di atasnya
-
-- **Contoh implementasi di Maguru:**
-  - **Adapters** (`features/*/adapters`): antarmuka client-side ke API backend
-  - **Prisma ORM** dan kode terkait di Services (server-side) untuk akses database
-
-- **Best Practice untuk Maguru (dan FE Modern):**
-  - Gunakan object literal untuk adapter/data-access layer, kecuali ada kebutuhan stateful/complex (jarang di FE).
-  - Pastikan semua method pure/stateless.
-  - Testing: Mock object, bukan instance class.
-  - Layer API dan Hooks: Tidak perlu tahu implementasi adapter, hanya perlu interface/contract-nya.
-
-**Alur Ketergantungan:**
-
-- Umumnya, alur data dan ketergantungan berjalan dari atas ke bawah:
-  - Presentation Layer → Application/Business Logic Layer → Data Access Layer
-- Namun, ada juga komunikasi bolak-balik, misal saat Application Logic meminta data ke Data Access, lalu hasilnya dikirim kembali ke Presentation Layer.
-
----
-
-## State Management Strategy
-
-Maguru mengadopsi pendekatan **Hierarchical State Management** yang membagi state menjadi tiga kategori utama berdasarkan scope dan tanggung jawabnya:
-
-### 1. **Global State (App-wide State)**
-
-**Implementasi:** Layer Context (`features/*/context/`)
-
-**Karakteristik:**
-
-- State yang digunakan oleh multiple komponen di berbagai fitur
-- State yang perlu di-share antar route atau layout
-- State yang mempengaruhi seluruh aplikasi
-
-**Contoh:**
-
-- User authentication state
-- Theme preferences
-- App-wide settings
-- Global notifications
-- User role/permissions
-
-**Best Practices:**
-
-- Gunakan Context API dengan useReducer untuk complex state
-- Implementasikan error boundaries
-- Optimize dengan useMemo dan useCallback
-- Batasi jumlah global state untuk menghindari performance issues
-
-### 2. **Feature State (Feature-specific State)**
-
-**Implementasi:** Layer Hooks (`features/*/hooks/`)
-
-**Karakteristik:**
-
-- State yang spesifik untuk satu fitur
-- Business logic dan data fetching
-- State yang digunakan oleh multiple komponen dalam satu fitur
-
-**Contoh:**
-
-- Course management state (courses list, pagination, filters)
-- Form state dengan validation
-- Data fetching state (loading, error, data)
-- Feature-specific UI state (modals, tabs, selections)
-
-**Best Practices:**
-
-- Gunakan custom hooks untuk encapsulate business logic
-- Implementasikan low-level hooks untuk data operations
-- Implementasikan high-level hooks untuk complex workflows
-- Gunakan React Query untuk server state management
-
-### 3. **Component State (Local UI State)**
-
-**Implementasi:** Component UI langsung
-
-**Karakteristik:**
-
-- State yang hanya digunakan oleh satu komponen
-- Temporary state yang tidak perlu di-share
-- UI-specific state (hover, focus, local form state)
-
-**Contoh:**
-
-- Form input state (sebelum submission)
-- UI interaction state (hover, focus, expanded/collapsed)
-- Temporary calculations atau derived state
-- Local loading states
-
-**Best Practices:**
-
-- Gunakan `useState` untuk simple state
-- Gunakan `useReducer` untuk complex local state
-- Jangan over-engineer dengan context untuk state lokal
-
-### State Management Flow
-
-```mermaid
-graph TD
-    A[Component State<br/>useState/useReducer] --> B[Feature State<br/>Custom Hooks]
-    B --> C[Global State<br/>Context API]
-
-    D[Component] --> A
-    D --> B
-    D --> C
-
-    E[Feature Hook] --> B
-    F[Context Provider] --> C
-
-    style A fill:#e1f5fe
-    style B fill:#f3e5f5
-    style C fill:#e8f5e8
+```
+features/
+  manage-product/
+    components/
+      ProductList.tsx
+      ProductForm.tsx
+    hooks/
+      useProduct.ts
+    api.ts
+    types.ts
+  kasir/
+    components/
+      RentalForm.tsx
+      RentalTable.tsx
+    hooks/
+      useRental.ts
+    api.ts
+    types.ts
 ```
 
-### Performance Considerations
-
-1. **Context Optimization:**
-   - Split large contexts into smaller, focused contexts
-   - Use `useMemo` untuk context value
-   - Implement selective re-rendering dengan multiple contexts
-
-2. **Hook Optimization:**
-   - Use `useCallback` untuk functions yang di-pass sebagai props
-   - Use `useMemo` untuk expensive calculations
-   - Implement proper dependency arrays
-
-3. **Component State:**
-   - Keep component state minimal
-   - Use local state for UI interactions
-   - Avoid prop drilling untuk local state
-
+- Satu custom hook per fitur, satu file API per fitur, satu file types per fitur.
+- Komponen UI langsung konsumsi hook.
 
 ---
 
-## Komponen Arsitektur Detail
+## 7a. Pembagian Area Kerja FE & BE pada Struktur Folder
 
-Bagian ini menjelaskan komponen utama yang membangun arsitektur setiap fitur di Maguru, baik di tingkat fitur maupun proyek secara keseluruhan. Penjelasan berikut bertujuan agar lebih mudah dipahami dan jelas.
+### **Frontend Developer (FE)**
 
-1. **React Components**
-   - Bertugas membangun tampilan (UI) aplikasi.
-   - Terbagi menjadi dua jenis sesuai praktik Next.js:
-     - **Server Components:** Untuk rendering awal, data fetching, dan SEO.
-     - **Client Components:** Untuk interaktivitas, event handling, dan state lokal.
-   - Berada di lapisan Presentasi (Presentation Layer).
+- Fokus di:
+  - `features/[fitur]/components/` → Membangun komponen UI (React)
+  - `features/[fitur]/hooks/` → Membuat custom hook untuk logic fitur (state, data fetching, dsb)
+  - `app/` (App Router) → Mengatur routing, layout, dan halaman Next.js
 
-2. **State Management**
-   - Mengelola data dan status aplikasi dengan pendekatan hierarchical.
-   - Terdiri dari:
-     - **Global State:** Menggunakan Context API untuk state yang di-share antar fitur (user auth, theme, app settings).
-     - **Feature State:** Menggunakan Custom Hooks untuk business logic dan feature-specific state.
-     - **Component State:** Menggunakan useState/useReducer untuk local UI state.
-   - Berada di berbagai layer sesuai dengan scope state (lihat State Management Strategy).
+### **Backend Developer (BE)**
 
-3. **Custom Hooks**
-   - Mengabstraksi logika komponen agar kode lebih modular dan mudah digunakan ulang.
-   - Terdiri dari dua tipe:
-     - **Low-Level Hooks:** Berinteraksi langsung dengan Adapter atau API (misal: mengambil data, melakukan mutasi).
-     - **High-Level Hooks:** Menggabungkan beberapa low-level hooks untuk menjalankan logika bisnis yang lebih kompleks.
-   - Berada di lapisan Logika Bisnis Aplikasi (Application/Business Logic Layer).
+- Fokus di:
+  - `features/[fitur]/api.ts` → Membuat API client/fetcher (opsional, biasanya dibuat FE, tapi BE bisa bantu jika logic fetch kompleks)
+  - `app/api/[fitur]/route.ts` → Membangun API Route Next.js (handler CRUD, validasi, otentikasi)
+  - `prisma/` → Mendesain dan memelihara schema database, migration, dan query
 
-4. **Adapters**
-   - Berfungsi sebagai jembatan antara frontend dan backend (API).
-   - Bertanggung jawab mengirim request ke API, memformat data, dan menangani error dasar.
-   - Berada di lapisan Akses Data (Data Access Layer).
+### **Alur Kolaborasi**
 
-5. **API Routes**
-   - Merupakan handler API di Next.js yang menerima request HTTP dari frontend.
-   - Menjadi entry point ke Service Layer di backend.
-   - Berada di lapisan Logika Bisnis Aplikasi (Application/Business Logic Layer entry point).
+- **FE** membangun UI dan logic fitur, konsumsi API dari backend.
+- **BE** menyediakan endpoint API dan logic backend, serta database.
 
-6. **Services**
-   - Menyimpan logika bisnis inti aplikasi.
-   - Berinteraksi dengan database (melalui ORM seperti Prisma).
-   - Dapat memancarkan event jika ada aksi penting.
-   - Berada di lapisan Logika Bisnis Aplikasi (Application/Business Logic Layer).
+**Kesimpulan:**
 
-7. **Prisma ORM**
-   - Digunakan di Service Layer untuk berinteraksi dengan database secara type-safe.
-   - Berada di lapisan Akses Data (Data Access Layer).
-
-8. **Utils & Types**
-   - Kumpulan fungsi pembantu (helper), tipe TypeScript, dan skema validasi (Zod).
-   - Bisa bersifat umum (di `lib/`) atau spesifik fitur (di `features/*/lib` atau `features/*/types`).
-   - Digunakan di berbagai layer sebagai cross-cutting concerns.
-   - menggunakan pendekatan functionalLayered Interface Pattern adalah pendekatan arsitektur untuk mengatasi masalah interface redundancy dan type safety di feature course. Pattern ini memisahkan interface berdasarkan layer dan tanggung jawab yang berbeda.
+- **FE**: `components/`, `hooks/`, `app/`
+- **BE**: `api.ts` (opsional), `app/api/`, `prisma/`
 
 ---
 
-## Alur Data End-to-End
+## 7. Best Practice
 
-Memahami alur data sangat penting. Berikut adalah contoh alur data tipikal dalam arsitektur Maguru:
-
-### 1. Alur Interaksi Pengguna (Aksi dari Client)
-
-Berikut adalah penjelasan langkah demi langkah bagaimana data mengalir ketika pengguna melakukan aksi di aplikasi (misal: klik tombol "Save"):
-
-1.  **Pengguna melakukan aksi di UI**  
-    Contoh: Pengguna mengklik tombol "Save" pada halaman.
-
-2.  **Komponen Client menangkap event**  
-    Komponen React di sisi client (Client Component) memiliki event handler (misal: `onClick`) yang akan dijalankan saat aksi terjadi.
-
-3.  **Komponen memanggil Custom Hook**  
-    Di dalam event handler, komponen akan memanggil custom hook yang sudah dibuat untuk menangani logika bisnis terkait aksi tersebut.
-
-4.  **Custom Hook menjalankan operasi data**  
-    Custom hook ini bisa menggunakan React Query (untuk mutasi data) atau memanggil fungsi adapter untuk berkomunikasi dengan backend.
-
-5.  **Adapter mengirim request ke API**  
-    Adapter bertugas membuat request HTTP (seperti POST atau PUT) ke API Route di backend, sekaligus memformat data yang dikirim.
-
-6.  **API Route menerima dan memproses request**  
-    API Route di Next.js menerima request dari adapter, lalu melakukan validasi data, otentikasi, dan memanggil service yang sesuai untuk memproses permintaan.
-
-7.  **Service menjalankan logika bisnis**  
-    Service di backend menjalankan aturan bisnis utama, melakukan validasi tambahan jika perlu, dan menyiapkan data untuk disimpan atau diambil dari database.
-
-8.  **Service berinteraksi dengan database**  
-    Service menggunakan Prisma ORM untuk membaca atau menulis data ke database secara aman dan type-safe.
-
-9.  **(Opsional) Service memancarkan event**  
-    Jika aksi yang dilakukan penting (misal: data baru berhasil disimpan), service dapat memancarkan event ke Event Bus untuk diproses lebih lanjut (misal: notifikasi, logging, dsb).
-
-10. **Response dikembalikan ke client**  
-    Hasil dari operasi (berhasil/gagal, data baru, dsb) dikembalikan secara berurutan: dari Service → API Route → Adapter → Custom Hook → Komponen Client.
-
-11. **UI diperbarui sesuai hasil**  
-    State aplikasi di client (misal: melalui React Query atau Context API) diperbarui berdasarkan response, sehingga UI menampilkan perubahan terbaru kepada pengguna.
-
-### 2. Alur Server-side Rendering & Data Fetching (SSR)
-
-Berikut adalah penjelasan langkah demi langkah proses pengambilan data dan rendering halaman di server menggunakan Next.js:
-
-1.  **Browser meminta halaman**  
-    Pengguna mengakses atau menavigasi ke halaman tertentu, misalnya `/manage-module/[moduleId]`.
-
-2.  **Next.js menerima dan merutekan permintaan ke Server Component**  
-    Next.js akan mengarahkan permintaan tersebut ke file Server Component yang sesuai, misalnya `app/manage-module/[moduleId]/page.tsx`.
-
-3.  **Server Component mengambil data awal (Data Fetching)**  
-    Di dalam Server Component, dilakukan pemanggilan ke Service atau Adapter untuk mengambil data yang dibutuhkan.
-    - Jika Adapter digunakan di server, maka Adapter akan dipanggil.
-    - Jika tidak, bisa langsung fetch ke API internal atau langsung ke Service.  
-      Contoh kode:
-
-    ```ts
-    const data = await modulePageService.getModulePages(moduleId)
-    ```
-
-4.  **Service mengambil data dari database**  
-    Service (lapisan logika aplikasi di server) akan menggunakan Prisma (Data Access Layer) untuk mengambil data dari database secara aman dan terstruktur.
-
-5.  **Data dikembalikan ke Server Component**  
-    Data hasil query dari Service atau database akan diterima kembali oleh Server Component.
-
-6.  **Server Component merender HTML beserta data**  
-    Server Component akan merender halaman beserta data yang sudah diambil.
-    - Jika ada Client Component di dalamnya, data awal bisa diberikan melalui props atau state management (misal: React Query).
-    - Hasil render berupa HTML dikirim ke browser.
-
-7.  **Client Hydration (Aktivasi interaktivitas di browser)**  
-    Setelah HTML diterima browser, JavaScript akan dimuat.
-    - Client Component menjadi interaktif (bisa menangani event, dsb).
-    - Jika menggunakan React Query, data awal dari server akan digunakan sebagai initial data, lalu React Query akan melanjutkan pengelolaan state data di sisi client.
-
-Dengan alur ini, pengguna akan mendapatkan halaman yang sudah berisi data sejak awal (cepat dan SEO-friendly), serta tetap mendapatkan interaktivitas penuh setelah JavaScript termuat.
+- **Keep it simple!**
+- Modularisasi per fitur, tapi jangan over-engineer layer.
+- Gunakan TypeScript untuk type safety.
+- Error handling: tampilkan pesan error/fallback UI.
+- Testing: minimal unit test untuk logic utama.
+- Context hanya jika benar-benar perlu global state.
 
 ---
 
-## Konvensi Penamaan
+## 8. FAQ Developer
 
-Konsistensi penamaan sangat penting untuk maintainability dan pemahaman kode. Berikut adalah konvensi umum yang diadopsi:
+**Q: Apakah boleh menambah layer jika fitur makin kompleks?**
+A: Boleh, tapi mulai dari yang sederhana dulu. Tambah layer hanya jika benar-benar dibutuhkan.
 
-- **File dan Direktori:** Lowercase dengan hyphen (`kebab-case`). Contoh: `folder-item`, `use-module-page`, `folder-service`. Direktori fitur di `/features` juga menggunakan `kebab-case`.
-- **React Components (Files & Nama):** PascalCase. Contoh: `FolderItem.tsx`, `ModulePageSidebar`.
-- **Props Types:** Nama Komponen + `Props`. Contoh: `FolderItemProps`.
-- **Event Handlers:** Prefix `handle` + Nama Event (CamelCase). Contoh: `handleFolderClick`, `handlePageSelect`.
-- **Context (Files & Nama):** Deskripsi Tujuan + `Context`. Contoh: `ModulePageUIContext.tsx`.
-- **Provider (Nama):** Deskripsi Tujuan + `Provider`. Contoh: `ModulePageUIProvider`.
-- **Hooks (Files & Nama):** Prefix `use` + Nama Fungsi/Fitur (CamelCase). Contoh: `useModulePageOperation.ts`, `useInlineEditing`.
-  - Low-Level Hooks: `use<Entity>Data` atau `use<Entity><Operation>`. Contoh: `useFolderData`, `useGetPage`.
-  - High-Level Hooks: `use<Feature>Operation` atau `use<Feature>UI`. Contoh: `useManageModuleOperation`, `useModulePageUI`.
-- **Adapters (Files & Nama):** Deskripsi Entitas + `Adapter.ts`. Contoh: `folderAdapter.ts`, `pageAdapter.ts`. Fungsi di dalamnya menggunakan `camelCase` dan sering diakhiri dengan `Adapter` jika ada potensi kebingungan dengan service function (misal: `createFolderAdapter`).
-- **Services (Files & Nama):** Deskripsi Entitas + `Service.ts`. Contoh: `folderService.ts`, `pageService.ts`. Fungsi di dalamnya menggunakan `camelCase` dan sering diakhiri dengan `Service` untuk membedakan dari adapter atau hooks (misal: `createFolderService`).
-- **Types (Files & Nama):** PascalCase untuk nama tipe/interface. File menggunakan `kebab-case` atau `index.ts` untuk ekspor. Contoh: `FolderData`, `PageType`, `module-page-types.ts`, `index.ts`. Skema validasi Zod menggunakan suffix `Schema` (e.g., `folderSchema`).
-- **API Routes (Files):** Mengikuti konvensi Next.js (`route.ts`). Fungsi handler menggunakan nama HTTP method (GET, POST, PUT, DELETE).
-- **Utilitas (Files & Nama):** Deskriptif, camelCase atau PascalCase tergantung apakah itu file fungsi atau kelas. Contoh: `formatDate.ts`, `ApiResponse.ts`.
+**Q: Bagaimana jika ada logic yang dipakai banyak fitur?**
+A: Taruh di `/lib` sebagai utilitas global.
+
+**Q: Apakah tetap bisa scaling ke project menengah?**
+A: Ya, karena modularisasi per fitur tetap dipertahankan. Tinggal tambah layer jika aplikasi berkembang.
 
 ---
 
-## Patterns dan Best Practices
+## 9. Penutup
 
-Arsitektur Maguru mendorong penggunaan pattern dan praktik terbaik untuk meningkatkan kualitas kode:
+Dengan arsitektur ini, tim dapat:
 
-- **Feature-First Structure:** Seperti dijelaskan sebelumnya, organisasi kode berdasarkan fitur adalah kunci.
-- **Layered Architecture:** Pemisahan tanggung jawab antar layer (Presentation, Application Logic, Data Access).
-- **Composition Pattern:** Membangun UI dan logika dari komponen-komponen yang lebih kecil dan dapat digunakan kembali.
-- **Separation of Concerns:** Memastikan setiap modul, komponen, atau fungsi memiliki satu tanggung jawab yang jelas.
-- **Dependency Injection:** Menggunakan parameter fungsi atau React Context untuk menyediakan dependensi, memudahkan pengujian dan fleksibilitas.
-- **Error Handling:** Implementasi strategi "Designing for Failure", termasuk validasi input (client/server), graceful fallbacks, retry mechanisms, dan logging terpusat.
-- **State Management Strategy:** Menggunakan pendekatan hierarchical state management dengan Context API untuk global state, custom hooks untuk feature state, dan useState/useReducer untuk component state.
-- **Type Safety:** Menggunakan TypeScript secara ketat di seluruh codebase, dibantu oleh Zod untuk validasi skema data.
-- **Progressive Loading:** Menggunakan fitur Next.js (seperti `loading.tsx`, `next/dynamic`) untuk meningkatkan persepsi performa.
-- **Testing:** Mengadopsi pendekatan TDD/BDD dengan strategi pengujian berlapis (Unit, Integration, E2E) untuk memastikan fungsionalitas dan mencegah regresi.
+- Mudah menambah fitur baru (tinggal tambah folder di `features/`)
+- Menjaga codebase tetap rapi & scalable
+- Memanfaatkan kekuatan Next.js untuk SSR/SSG/API dalam satu tempat
 
 ---
 
-## Tech Stack dan Dependencies
+**Jika ada pertanyaan atau butuh contoh implementasi, silakan diskusi di tim!**
 
-Proyek Maguru dibangun di atas tumpuan teknologi modern:
+---
 
-- **Core Technologies:** Next.js (dengan App Router), React, TypeScript, Node.js.
-- **UI Libraries:** TailWindCSS (untuk styling), Shadcn/ui (untuk komponen UI).
-- **State Management:** React Context API (untuk global state), Custom Hooks (untuk feature state), useState/useReducer (untuk component state), React Query (untuk server state caching).
-- **Form Management:** React Hook Form, Zod (untuk validasi skema).
-- **API Integration:** Fetch API (bawaan browser/Node.js), mungkin dibungkus dalam adapter.
-- **Database:** PostgreSQL (contoh), Prisma ORM.
-- **Editor Tools:** Tiptap (untuk rich text editing).
-- **Testing Tools:** Jest, React Testing Library, MSW (Mock Service Worker), Playwright (untuk E2E).
-- **Linting & Formatting:** ESLint, Prettier.
+## 10. Pembagian Tugas Developer
+
+### 1. **UI/UX Designer**
+
+- Bertanggung jawab pada desain tampilan, wireframe, dan user flow.
+- Hasil utama: file desain (Figma/Sketch), guideline komponen, dan dokumentasi style.
+- Kolaborasi:
+  - Memberikan aset, wireframe, dan prototype ke FE Developer.
+  - Review implementasi UI agar sesuai desain.
+
+### 2. **Frontend Developer (FE)**
+
+- Fokus pada folder `features/[fitur]/components/`, `hooks/`, dan integrasi API.
+- Tugas utama:
+  - Membangun komponen React sesuai desain UI/UX.
+  - Membuat custom hook untuk logic fitur.
+  - Menghubungkan UI dengan API (fetcher di `api.ts`).
+  - Menulis unit test untuk komponen/hook.
+- Kolaborasi:
+  - Diskusi dengan UI/UX untuk validasi tampilan.
+  - Diskusi dengan BE untuk kontrak API dan data.
+
+### 3. **Backend Developer (BE)**
+
+- Fokus pada folder `app/api/`, `prisma/`, dan query database.
+- Tugas utama:
+  - Membuat API Route Next.js untuk CRUD, validasi, otentikasi.
+  - Menulis logic query di API Route (atau utilitas di `/lib` jika reusable).
+  - Mendesain dan memelihara schema database (Prisma).
+  - Menulis unit test untuk API dan logic backend.
+- Kolaborasi:
+  - Diskusi dengan FE untuk kontrak API (request/response).
+  - Diskusi dengan UI/UX jika ada kebutuhan data khusus untuk tampilan.
+
+### 4. **Kolaborasi & Alur Kerja**
+
+- UI/UX → FE: Handover desain, review implementasi.
+- FE ↔ BE: Sepakati kontrak API (endpoint, request, response, error).
+- Semua developer: Review code, testing, dan dokumentasi.
 
 ---
