@@ -1,0 +1,228 @@
+{
+  "dashboard_kasir_style": {
+    "perspective": "modern rental management dashboard",
+    "geometry": {
+      "proportions": "header with stats cards, two-column main content, full-width footer",
+      "element_arrangement": "stats header at top, transactions left, customer list right, quick actions prominent"
+    },
+    "composition": {
+      "element_count": "5 main sections: header, stats, transactions, customers, actions",
+      "spatial_depth": "layered cards with soft shadows, floating action buttons",
+      "scale_consistency": "hierarchical sizing, consistent card proportions",
+      "scene_density": "moderate density optimized for quick scanning and workflow efficiency"
+    },
+    "lighting": {
+      "type": "soft ambient lighting with gold accent highlights",
+      "light_source": "top-down natural light simulation",
+      "shadow": "subtle drop shadows on cards and interactive elements",
+      "highlighting": "gold accent glow on primary actions and important stats"
+    },
+    "textures": {
+      "material_finish": "clean flat surfaces with subtle depth",
+      "surface_treatment": "rounded corners with consistent radius",
+      "texture_realism": "minimal textures, focus on clean modern aesthetics"
+    },
+    "render_quality": {
+      "resolution": "high-resolution web rendering with crisp typography",
+      "edge_definition": "rounded-lg corners with consistent 8px radius",
+      "visual_clarity": "clear information hierarchy with proper spacing"
+    },
+    "color_palette": {
+      "primary": {
+        "gold_400": "#F7C948",
+        "gold_500": "#FFD700",
+        "gold_600": "#F0B429"
+      },
+      "secondary": {
+        "blue_500": "#3B82F6",
+        "green_500": "#10B981",
+        "red_500": "#EF4444"
+      },
+      "neutral": {
+        "white": "#FFFFFF",
+        "gray_50": "#F8FAFC",
+        "gray_200": "#F1F5F9",
+        "gray_900": "#1F2937"
+      }
+    },
+    "background": {
+      "color": "light gray gradient from neutral-50 to neutral-100",
+      "style": "clean minimalist background with subtle texture",
+      "texture": "very subtle noise pattern for depth"
+    },
+    "stylistic_tone": "professional business dashboard with modern flat design and efficient workflow focus",
+    "page_behavior": {
+      "branding_alignment": "consistent with rental software brand identity",
+      "scalability": "responsive design optimized for cashier workflow",
+      "accessibility": "WCAG 2.1 AA compliant with keyboard navigation"
+    }
+  },
+  "v0_prompt": "Create a modern rental management dashboard for cashiers with the following requirements:\n\n**Layout & Design:**\n- Clean, minimalist dashboard with gold (#FFD700) accent color\n- White/light gray background (#F8FAFC) with rounded cards (rounded-lg)\n- Soft shadows (shadow-md) for depth\n- Two-column grid layout on desktop, single column on mobile\n\n**Header Section:**\n- Welcome message with cashier name\n- Current date and time\n- Quick stats cards showing:\n  - Total active rentals (with count badge)\n  - Today's new rentals\n  - Pending returns\n  - Revenue today (IDR format)\n\n**Main Content Areas:**\n\n1. **Recent Transactions Table (Left Column):**\n   - Compact table with essential columns only:\n     - Transaction Code (TXN-YYYYMMDD-XXX format)\n     - Customer Name\n     - Rental Date\n     - Status (badge with colors: active=green, overdue=red, returned=gray)\n   - Max 5 recent entries with 'View All' button\n   - Search bar at top\n   - Pagination controls\n\n2. **Customer List (Right Column):**\n   - Card-based list showing:\n     - Customer name and phone\n     - Current rental status\n     - Last rental date\n     - Quick action button to 'Create New Rental'\n   - Search functionality\n   - 'Add New Customer' button (gold primary)\n\n**Action Buttons:**\n- Primary: 'New Rental Transaction' (gold, prominent)\n- Secondary: 'Register New Customer' (blue)\n- Tertiary: 'View All Reports' (outline)\n\n**Technical Requirements:**\n- Responsive design (mobile-first)\n- Loading states with skeleton UI\n- Error states with retry functionality\n- Accessibility compliant (WCAG AA)\n- Touch-friendly on tablets\n\n**Component Structure:**\n- Use shadcn/ui components as base\n- Custom components: StatsCard, TransactionTable, CustomerList\n- Icons from Lucide React\n- Tailwind CSS for styling\n\n**Color Palette:**\n- Primary: Gold (#FFD700)\n- Background: White (#FFFFFF), Light Gray (#F8FAFC)\n- Text: Dark Gray (#1F2937)\n- Status Colors: Green (#10B981), Red (#EF4444), Blue (#3B82F6)\n\n**Typography:**\n- Font: Poppins (headings), Inter (body)\n- Clear hierarchy with proper spacing\n- Readable font sizes (16px+ for body text)\n\nThe design should feel professional, efficient, and easy to use during busy rental periods.",
+  "components_structure": {
+    "dashboard_header": {
+      "name": "DashboardHeader",
+      "file": "features/kasir/components/dashboard/DashboardHeader.tsx",
+      "elements": [
+        "welcome_message_with_cashier_name",
+        "current_date_time_display",
+        "quick_stats_grid",
+        "notification_bell",
+        "user_avatar_dropdown"
+      ],
+      "style_rules": {
+        "background": "white card with subtle shadow",
+        "typography": "Poppins semibold for welcome, Inter regular for stats",
+        "spacing": "generous padding with proper visual hierarchy",
+        "responsive": "stack on mobile, inline on desktop"
+      }
+    },
+    "stats_cards": {
+      "name": "StatsCard",
+      "file": "features/kasir/components/dashboard/StatsCard.tsx",
+      "elements": [
+        "stat_icon_with_background",
+        "stat_value_large_typography",
+        "stat_title_descriptive",
+        "trend_indicator_arrow",
+        "comparison_text_small"
+      ],
+      "style_rules": {
+        "card_variants": {
+          "active_rentals": "bg-blue-50 with blue-500 accent",
+          "today_rentals": "bg-green-50 with green-500 accent",
+          "pending_returns": "bg-yellow-50 with yellow-500 accent",
+          "revenue": "bg-gold-50 with gold-500 accent"
+        },
+        "hover_effects": "subtle lift with enhanced shadow"
+      }
+    },
+    "recent_transactions": {
+      "name": "RecentTransactionsTable",
+      "file": "features/kasir/components/dashboard/RecentTransactionsTable.tsx",
+      "elements": [
+        "search_bar_with_filters",
+        "table_headers_sortable",
+        "transaction_rows_with_status",
+        "status_badges_colored",
+        "view_all_button",
+        "pagination_controls"
+      ],
+      "style_rules": {
+        "table": "clean borders with zebra striping",
+        "status_badges": "rounded-full with appropriate colors",
+        "hover_states": "row highlight with pointer cursor",
+        "loading_skeleton": "animated shimmer for loading states"
+      }
+    },
+    "customer_list": {
+      "name": "CustomerListCard",
+      "file": "features/kasir/components/dashboard/CustomerListCard.tsx",
+      "elements": [
+        "customer_search_input",
+        "customer_cards_list",
+        "customer_avatar_placeholder",
+        "rental_status_indicator",
+        "quick_action_buttons",
+        "add_customer_button"
+      ],
+      "style_rules": {
+        "customer_cards": "white background with subtle border",
+        "action_buttons": "small size with appropriate variants",
+        "search_input": "with search icon and clear functionality",
+        "empty_state": "friendly illustration with call-to-action"
+      }
+    },
+    "quick_actions": {
+      "name": "QuickActions",
+      "file": "features/kasir/components/dashboard/QuickActions.tsx",
+      "elements": [
+        "new_rental_button_primary",
+        "register_customer_button",
+        "view_reports_button",
+        "floating_action_menu"
+      ],
+      "style_rules": {
+        "primary_button": "bg-gold-500 hover:bg-gold-400 with shadow",
+        "secondary_buttons": "outline style with hover states",
+        "floating_menu": "positioned bottom-right on mobile",
+        "icons": "Lucide React icons with proper sizing"
+      }
+    }
+  },
+
+  "data_structure": {
+    "stats": {
+      "activeRentals": "number",
+      "todayRentals": "number", 
+      "pendingReturns": "number",
+      "todayRevenue": "number"
+    },
+    "recentTransactions": [
+      {
+        "transactionCode": "string (TXN-YYYYMMDD-XXX)",
+        "customerName": "string",
+        "rentalDate": "date",
+        "status": "enum (active|overdue|returned)"
+      }
+    ],
+    "customers": [
+      {
+        "id": "string",
+        "name": "string", 
+        "phone": "string",
+        "currentRentalStatus": "string",
+        "lastRentalDate": "date"
+      }
+    ]
+  },
+
+  "user_flows": [
+    "Kasir login � Dashboard overview � Quick stats review",
+    "Dashboard � Search customer � Create new rental", 
+    "Dashboard � View recent transactions � Check status",
+    "Dashboard � Register new customer � Fill form"
+  ],
+
+  "responsive_breakpoints": {
+    "mobile": {
+      "max_width": "768px",
+      "layout": "single column stack, collapsible sections",
+      "typography": "smaller font sizes, compact spacing",
+      "interactions": "touch-friendly buttons and swipe gestures"
+    },
+    "tablet": {
+      "min_width": "769px",
+      "max_width": "1024px",
+      "layout": "two column layout with adjusted proportions",
+      "typography": "medium font sizes, balanced spacing"
+    },
+    "desktop": {
+      "min_width": "1025px",
+      "layout": "full two column grid with sidebar potential",
+      "typography": "large font sizes, generous spacing"
+    }
+  },
+  "interaction_patterns": {
+    "hover_effects": {
+      "cards": "subtle lift with enhanced shadow",
+      "buttons": "color transition with scale-105",
+      "table_rows": "background highlight with pointer cursor"
+    },
+    "loading_states": {
+      "skeleton": "animate-pulse with proper aspect ratios",
+      "spinner": "gold-colored spinner for form submissions",
+      "progressive": "fade-in animations for content loading"
+    },
+    "transitions": {
+      "duration": "200ms for micro-interactions",
+      "easing": "cubic-bezier(0.4, 0, 0.2, 1)",
+      "properties": "transform, opacity, background-color, box-shadow"
+    }
+  },
+  "accessibility_features": {
+    "keyboard_navigation": "full keyboard support with visible focus indicators",
+    "screen_reader": "semantic HTML with proper ARIA labels and live regions",
+    "color_contrast": "WCAG 2.1 AA compliant contrast ratios throughout",
+    "reduced_motion": "respects prefers-reduced-motion for animations"
+  }
+}

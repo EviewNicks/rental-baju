@@ -1,0 +1,313 @@
+{
+  "form_penyewaan_style": {
+    "perspective": "comprehensive rental transaction form system",
+    "geometry": {
+      "proportions": "modal overlay for customer registration, three-section page for transaction",
+      "element_arrangement": "customer info top, product selection center, transaction summary bottom"
+    },
+    "composition": {
+      "element_count": "8 main sections: modal, breadcrumb, customer panel, product grid, summary, payment, actions",
+      "spatial_depth": "layered modal with backdrop blur, elevated form sections with shadows",
+      "scale_consistency": "consistent form field sizing, proportional button hierarchy",
+      "scene_density": "moderate density optimized for form completion efficiency"
+    },
+    "lighting": {
+      "type": "soft form-focused lighting with gold accent highlights",
+      "light_source": "ambient top-down with focused highlights on active sections",
+      "shadow": "soft shadows on form sections and modal overlay",
+      "highlighting": "gold accent on primary actions and active form states"
+    },
+    "textures": {
+      "material_finish": "clean form surfaces with subtle input field styling",
+      "surface_treatment": "consistent rounded corners on inputs and cards",
+      "texture_realism": "minimal textures focusing on form usability"
+    },
+    "render_quality": {
+      "resolution": "high-resolution form rendering with crisp input fields",
+      "edge_definition": "rounded-lg corners with consistent border styling",
+      "visual_clarity": "clear form hierarchy with proper field grouping"
+    },
+    "color_palette": {
+      "primary": {
+        "gold_400": "#F7C948",
+        "gold_500": "#FFD700",
+        "gold_600": "#F0B429"
+      },
+      "secondary": {
+        "blue_500": "#3B82F6",
+        "green_500": "#10B981",
+        "red_500": "#EF4444"
+      },
+      "form_states": {
+        "success_green": "#10B981",
+        "error_red": "#EF4444",
+        "warning_yellow": "#F59E0B",
+        "info_blue": "#3B82F6"
+      }
+    },
+    "background": {
+      "color": "white with light gray section backgrounds",
+      "style": "clean form background with modal overlay blur",
+      "texture": "subtle texture for visual separation between sections"
+    },
+    "stylistic_tone": "professional form design optimized for transaction workflow efficiency",
+    "page_behavior": {
+      "branding_alignment": "consistent with rental software design system",
+      "scalability": "responsive form design for all device sizes",
+      "accessibility": "WCAG 2.1 AA compliant with proper form labeling"
+    }
+  },
+  "v0_prompt": "Create a comprehensive rental transaction form system with the following requirements:\n\n**Design Style:**\n- Clean, flat modern minimalist design with gold (#FFD700) accent color\n- White background with subtle shadows (shadow-md) for depth\n- Rounded corners (rounded-lg) for all components\n- Professional and efficient workflow for high-volume rental periods\n\n**Component 1: Customer Registration Modal**\n- Modal overlay with backdrop blur\n- Two-column form layout on desktop, single column on mobile\n- Required fields with real-time validation:\n  - Full Name (Nama Lengkap)\n  - Phone Number (No. Telepon)\n  - Address (Alamat)\n- Optional fields:\n  - Email\n  - ID Number (NIK/KTP)\n- Form validation with error states (red border, descriptive messages)\n- Success state with green checkmark\n- Gold primary button for 'Register Customer'\n- Blue secondary button for 'Cancel'\n\n**Component 2: Transaction Form Page**\n- Three-section layout: Customer Info, Product Selection, Transaction Summary\n- Breadcrumb navigation showing current step\n- Auto-generated transaction code display (TXN-YYYYMMDD-XXX format)\n\n**Section 1: Customer Information Panel**\n- Search and select existing customer\n- Display selected customer details in card format\n- Edit customer info option\n- 'Add New Customer' button (opens registration modal)\n\n**Section 2: Product Selection Interface**\n- Grid layout showing available products\n- Product cards with:\n  - Product image placeholder\n  - Product name and code\n  - Availability status (Available/Out of Stock badges)\n  - Size/category information\n  - Quick add button\n- Filter options: Category, Size, Availability\n- Search functionality\n- Selected products summary sidebar with quantity controls\n\n**Section 3: Transaction Summary**\n- Customer info preview\n- Selected products list with quantities\n- Rental duration selector (dropdown: 1-7 days, default 4 days)\n- Payment method selection:\n  - QRIS (with QR code placeholder)\n  - Cash\n  - Bank Transfer\n- Total calculation display\n- Payment status toggle (Paid/Unpaid)\n- Rental dates (pickup date selector, return date auto-calculated)\n- Notes/Comments text area\n- Large 'Create Transaction' button (gold primary)\n\n**Interactive Elements:**\n- Real-time form validation\n- Product quantity increment/decrement buttons\n- Date picker with calendar interface\n- Payment method icons\n- Loading states during form submission\n- Success modal with transaction details\n\n**Data Structure for Transaction:**\n```json\n{\n  \"transactionCode\": \"TXN-20241122-001\",\n  \"customer\": {\n    \"name\": \"string\",\n    \"phone\": \"string\",\n    \"address\": \"string\"\n  },\n  \"products\": [\n    {\n      \"code\": \"string\",\n      \"name\": \"string\",\n      \"quantity\": \"number\",\n      \"available\": \"number\"\n    }\n  ],\n  \"rental\": {\n    \"duration\": \"number (days)\",\n    \"pickupDate\": \"date\",\n    \"returnDate\": \"date (auto-calculated)\"\n  },\n  \"payment\": {\n    \"method\": \"QRIS | Cash | Transfer\",\n    \"amount\": \"number\",\n    \"status\": \"Paid | Unpaid\"\n  },\n  \"notes\": \"string\"\n}\n```\n\n**Technical Requirements:**\n- Responsive design (mobile-first approach)\n- Touch-friendly interface for tablets\n- Accessibility compliant (WCAG AA)\n- Loading skeletons for product grid\n- Error handling with retry mechanisms\n- Form persistence (save draft)\n- Print transaction receipt option\n\n**Component Library:**\n- Use shadcn/ui components as base\n- Custom components: CustomerSearchSelect, ProductGrid, TransactionSummary\n- Icons from Lucide React\n- Form validation with React Hook Form\n- Date picker component\n\n**Color Scheme:**\n- Primary: Gold (#FFD700)\n- Secondary: Blue (#3B82F6)\n- Success: Green (#10B981)\n- Error: Red (#EF4444)\n- Background: White (#FFFFFF), Light Gray (#F8FAFC)\n- Text: Dark Gray (#1F2937)\n\n**Typography:**\n- Font: Poppins (headings), Inter (body text)\n- Clear visual hierarchy\n- Readable font sizes (16px+ for body)\n- Consistent spacing and alignment\n\n**User Flow:**\n1. Select/register customer → 2. Choose products → 3. Set rental details → 4. Select payment → 5. Confirm transaction\n\nThe interface should feel intuitive for cashiers during busy periods while maintaining data accuracy and professional appearance.",
+  
+  "components_structure": {
+    "customer_registration_modal": {
+      "name": "CustomerRegistrationModal",
+      "file": "features/kasir/components/forms/CustomerRegistrationModal.tsx",
+      "elements": [
+        "modal_backdrop_blur",
+        "modal_container_centered",
+        "form_header_with_title",
+        "two_column_form_layout",
+        "required_fields_validation",
+        "optional_fields_section",
+        "action_buttons_footer"
+      ],
+      "style_rules": {
+        "modal": "backdrop-blur-sm with centered container",
+        "form_layout": "grid-cols-2 on desktop, single column on mobile",
+        "validation": "real-time with red borders and error messages",
+        "buttons": "gold primary for submit, blue secondary for cancel"
+      }
+    },
+    "customer_search_select": {
+      "name": "CustomerSearchSelect",
+      "file": "features/kasir/components/forms/CustomerSearchSelect.tsx",
+      "elements": [
+        "search_input_with_icon",
+        "dropdown_customer_list",
+        "selected_customer_card",
+        "customer_details_preview",
+        "add_new_customer_button"
+      ],
+      "style_rules": {
+        "search_input": "with magnifying glass icon and clear button",
+        "dropdown": "max-height with scroll, hover states",
+        "customer_card": "clean layout with avatar and contact info",
+        "add_button": "prominent gold styling with plus icon"
+      }
+    },
+    "product_selection_grid": {
+      "name": "ProductSelectionGrid",
+      "file": "features/kasir/components/forms/ProductSelectionGrid.tsx",
+      "elements": [
+        "filter_bar_with_options",
+        "search_input_products",
+        "product_grid_responsive",
+        "product_cards_interactive",
+        "selected_products_sidebar"
+      ],
+      "style_rules": {
+        "grid": "responsive grid with 2-4 columns based on screen size",
+        "product_cards": "hover lift with add button overlay",
+        "filters": "horizontal scroll on mobile, full width on desktop",
+        "sidebar": "sticky position with quantity controls"
+      }
+    },
+    "product_card": {
+      "name": "ProductCard",
+      "file": "features/kasir/components/forms/ProductCard.tsx",
+      "elements": [
+        "product_image_placeholder",
+        "product_name_code",
+        "availability_badge",
+        "size_category_info",
+        "quick_add_button"
+      ],
+      "style_rules": {
+        "card_states": {
+          "available": "normal styling with green badge",
+          "out_of_stock": "dimmed with red badge and disabled button",
+          "selected": "gold border with checkmark overlay"
+        },
+        "hover_effects": "lift animation with shadow enhancement"
+      }
+    },
+    "transaction_summary": {
+      "name": "TransactionSummary",
+      "file": "features/kasir/components/forms/TransactionSummary.tsx",
+      "elements": [
+        "customer_info_preview",
+        "selected_products_list",
+        "rental_duration_selector",
+        "payment_method_options",
+        "total_calculation_display",
+        "rental_dates_section",
+        "notes_textarea",
+        "create_transaction_button"
+      ],
+      "style_rules": {
+        "summary_sections": "clear visual separation with proper spacing",
+        "calculation": "emphasized typography for total amount",
+        "dates": "calendar picker with auto-calculated return date",
+        "submit_button": "large gold primary button with loading states"
+      }
+    },
+    "payment_method_selector": {
+      "name": "PaymentMethodSelector",
+      "file": "features/kasir/components/forms/PaymentMethodSelector.tsx",
+      "elements": [
+        "payment_method_cards",
+        "qris_option_with_qr",
+        "cash_option_simple",
+        "transfer_option_bank",
+        "selected_method_highlight"
+      ],
+      "style_rules": {
+        "method_cards": "radio card style with icons and descriptions",
+        "selected_state": "gold border with checkmark indicator",
+        "qr_code": "placeholder QR code display when QRIS selected",
+        "icons": "appropriate payment method icons from Lucide"
+      }
+    },
+    "rental_date_picker": {
+      "name": "RentalDatePicker",
+      "file": "features/kasir/components/forms/RentalDatePicker.tsx",
+      "elements": [
+        "pickup_date_calendar",
+        "duration_dropdown_selector",
+        "return_date_display",
+        "date_validation_feedback",
+        "calendar_widget_popup"
+      ],
+      "style_rules": {
+        "calendar": "clean month view with hover states",
+        "duration_selector": "dropdown with 1-7 day options",
+        "return_date": "read-only display with automatic calculation",
+        "validation": "prevent past dates with visual feedback"
+      }
+    },
+    "transaction_breadcrumb": {
+      "name": "TransactionBreadcrumb",
+      "file": "features/kasir/components/forms/TransactionBreadcrumb.tsx",
+      "elements": [
+        "step_indicator_numbers",
+        "step_titles_descriptive",
+        "progress_line_connector",
+        "current_step_highlight",
+        "clickable_completed_steps"
+      ],
+      "style_rules": {
+        "step_indicators": "numbered circles with connecting lines",
+        "active_step": "gold background with white text",
+        "completed_steps": "green background with checkmark",
+        "inactive_steps": "gray background with step number"
+      }
+    }
+  },
+
+  "data_structure": {
+    "customer": {
+      "id": "string",
+      "name": "string",
+      "phone": "string", 
+      "address": "string",
+      "email": "string (optional)",
+      "idNumber": "string (optional)"
+    },
+    "product": {
+      "id": "string",
+      "code": "string",
+      "name": "string",
+      "category": "string",
+      "size": "string",
+      "available": "number",
+      "imageUrl": "string",
+      "status": "enum (available|out_of_stock)"
+    },
+    "transaction": {
+      "transactionCode": "string (auto-generated)",
+      "customerId": "string",
+      "products": "array of product selections",
+      "rentalDuration": "number (days)",
+      "pickupDate": "date",
+      "returnDate": "date (auto-calculated)",
+      "paymentMethod": "enum (qris|cash|transfer)",
+      "paymentAmount": "number",
+      "paymentStatus": "enum (paid|unpaid)",
+      "notes": "string",
+      "createdAt": "timestamp"
+    }
+  },
+
+  "user_flows": [
+    "Open form → Search/select customer → Add customer if new",
+    "Select products → Adjust quantities → Set rental duration",
+    "Choose payment method → Set payment status → Add notes",
+    "Review summary → Submit transaction → Get transaction code"
+  ],
+
+  "form_validation": {
+    "customer_form": {
+      "name": "required, min 2 chars",
+      "phone": "required, valid phone format",
+      "address": "required, min 10 chars",
+      "email": "optional, valid email format if provided"
+    },
+    "transaction_form": {
+      "customer": "required selection",
+      "products": "minimum 1 product required",
+      "pickupDate": "required, cannot be past date",
+      "paymentMethod": "required selection",
+      "paymentAmount": "required if status is paid"
+    }
+  },
+
+  "responsive_breakpoints": {
+    "mobile": {
+      "max_width": "768px",
+      "layout": "single column stack, full-screen modal",
+      "typography": "smaller font sizes, compact form spacing",
+      "interactions": "touch-optimized buttons and form controls"
+    },
+    "tablet": {
+      "min_width": "769px",
+      "max_width": "1024px",
+      "layout": "two column form sections, condensed modal",
+      "typography": "medium font sizes, balanced spacing"
+    },
+    "desktop": {
+      "min_width": "1025px",
+      "layout": "three section layout with full feature set",
+      "typography": "large font sizes, generous form spacing"
+    }
+  },
+  "interaction_patterns": {
+    "hover_effects": {
+      "form_cards": "subtle lift with enhanced shadow",
+      "product_cards": "scale-102 with add button overlay",
+      "buttons": "color transition with slight scale"
+    },
+    "loading_states": {
+      "form_submission": "button spinner with disabled state",
+      "product_grid": "skeleton loading for product cards",
+      "modal": "backdrop blur with loading indicator"
+    },
+    "validation_feedback": {
+      "real_time": "immediate validation on blur and input",
+      "error_states": "red border with descriptive error message",
+      "success_states": "green checkmark with success message"
+    },
+    "transitions": {
+      "duration": "200ms for form interactions",
+      "easing": "cubic-bezier(0.4, 0, 0.2, 1)",
+      "properties": "transform, opacity, border-color, background-color"
+    }
+  },
+  "accessibility_features": {
+    "keyboard_navigation": "full keyboard support with logical tab order",
+    "screen_reader": "semantic HTML with proper form labeling and ARIA",
+    "color_contrast": "WCAG 2.1 AA compliant throughout all form states",
+    "reduced_motion": "respects prefers-reduced-motion for animations",
+    "form_accessibility": "associated labels, required field indicators, error announcements"
+  }
+}

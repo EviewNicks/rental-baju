@@ -21,11 +21,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "uv run ~/.claude/hooks/log_pre_tool_use.py"
+            "command": "uv run .claude/hooks/log_pre_tool_use.py"
           },
           {
             "type": "command",
-            "command": "uv run ~/.claude/hooks/use_bun.py"
+            "command": "uv run .claude/hooks/use_bun.py"
           }
         ]
       }
@@ -36,7 +36,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "uv run ~/.claude/hooks/ts_lint.py"
+            "command": "uv run .claude/hooks/ts_lint.py"
           }
         ]
       }
@@ -47,11 +47,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "uv run ~/.claude/hooks/play_audio.py"
+            "command": "uv run .claude/hooks/play_audio.py"
           },
           {
             "type": "command",
-            "command": "uv run ~/.claude/hooks/windows_notification.py"
+            "command": "uv run .claude/hooks/windows_notification.py"
           }
         ]
       }
@@ -62,11 +62,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "uv run ~/.claude/hooks/play_audio.py"
+            "command": "uv run .claude/hooks/play_audio.py"
           },
           {
             "type": "command",
-            "command": "uv run ~/.claude/hooks/windows_notification.py"
+            "command": "uv run .claude/hooks/windows_notification.py"
           }
         ]
       }

@@ -1,0 +1,324 @@
+{
+  "detail_penyewaan_style": {
+    "perspective": "comprehensive rental transaction detail page",
+    "geometry": {
+      "proportions": "full-width header, three-column desktop layout, single column mobile",
+      "element_arrangement": "header top, main content center, sidebar right, timeline bottom"
+    },
+    "composition": {
+      "element_count": "9 main sections: header, customer, rental, products, payment, timeline, sidebar, actions, related",
+      "spatial_depth": "layered cards with varying shadows, elevated action panels",
+      "scale_consistency": "hierarchical card sizing, consistent information density",
+      "scene_density": "high information density with clear visual grouping and hierarchy"
+    },
+    "lighting": {
+      "type": "professional detail page lighting with status-based highlighting",
+      "light_source": "ambient top-down with focused spotlights on critical information",
+      "shadow": "soft shadows on cards with enhanced shadows on interactive elements",
+      "highlighting": "status-based color highlights, gold accent on primary actions"
+    },
+    "textures": {
+      "material_finish": "clean card surfaces with subtle status-based variations",
+      "surface_treatment": "consistent rounded corners with status border treatments",
+      "texture_realism": "minimal textures emphasizing information clarity"
+    },
+    "render_quality": {
+      "resolution": "high-resolution detail rendering with crisp data presentation",
+      "edge_definition": "rounded-lg corners with status-specific border styling",
+      "visual_clarity": "clear information hierarchy optimized for quick scanning"
+    },
+    "color_palette": {
+      "primary": {
+        "gold_400": "#F7C948",
+        "gold_500": "#FFD700",
+        "gold_600": "#F0B429"
+      },
+      "status_colors": {
+        "active_blue": "#3B82F6",
+        "overdue_red": "#EF4444",
+        "returned_green": "#10B981",
+        "warning_yellow": "#F59E0B"
+      },
+      "neutral": {
+        "white": "#FFFFFF",
+        "gray_50": "#F8FAFC",
+        "gray_100": "#F1F5F9",
+        "gray_900": "#1F2937"
+      }
+    },
+    "background": {
+      "color": "light gray with white card backgrounds",
+      "style": "professional detail page with status-appropriate accents",
+      "texture": "subtle background pattern for visual separation"
+    },
+    "stylistic_tone": "comprehensive business detail view optimized for transaction management workflow",
+    "page_behavior": {
+      "branding_alignment": "consistent with rental software professional identity",
+      "scalability": "responsive design optimized for detailed information display",
+      "accessibility": "WCAG 2.1 AA compliant with proper information structure"
+    }
+  },
+  "v0_prompt": "Create a comprehensive rental transaction detail page with the following specifications:\n\n**Design Philosophy:**\n- Clean, professional design with gold (#FFD700) accent color\n- Flat modern minimalist approach with subtle neumorphism\n- White background with rounded cards (rounded-lg) and soft shadows (shadow-md)\n- Information hierarchy optimized for quick scanning and decision making\n\n**Page Layout Structure:**\n- Full-width header with transaction code and status\n- Three-column layout on desktop: main content (60%), sidebar (25%), actions (15%)\n- Two-column layout on tablet: main content (70%), sidebar (30%)\n- Single column stack on mobile with collapsible sections\n\n**Header Section:**\n- Large transaction code (TXN-YYYYMMDD-XXX format)\n- Status badge (Active/Overdue/Returned with appropriate colors)\n- Created date and time\n- Breadcrumb navigation\n- Quick actions: Edit, Print, Delete (with confirmation)\n\n**Main Content Areas:**\n\n**1. Customer Information Card:**\n- Customer name and contact details\n- Address information\n- Customer photo/avatar placeholder\n- Registration date\n- Total lifetime rentals count\n- Edit customer button\n\n**2. Rental Details Card:**\n- Rental duration and dates (pickup/return)\n- Auto-calculated return deadline with countdown timer\n- Current status with visual indicator\n- Late fee calculation if overdue\n- Notes and special instructions\n\n**3. Product Details Table:**\n- Comprehensive product information:\n  - Product name and code\n  - Category and size\n  - Quantity rented vs available stock\n  - Individual product status\n  - Condition notes\n- Expandable rows for additional product details\n- Product images in thumbnail gallery\n\n**4. Payment Information Card:**\n- Payment method with appropriate icon (QRIS/Cash/Transfer)\n- Payment amount breakdown:\n  - Base rental fee\n  - Additional charges\n  - Late fees (if applicable)\n  - Total amount\n- Payment status with timestamp\n- Payment proof/receipt attachment option\n- Payment history log\n\n**5. Timeline/Activity Log:**\n- Chronological activity feed:\n  - Transaction created\n  - Payment received\n  - Items picked up\n  - Due date reminders\n  - Return date changes\n  - Late fee applications\n- Each entry with timestamp and user who performed action\n\n**Sidebar Components:**\n\n**1. Quick Actions Panel:**\n- Mark as Returned button (gold primary)\n- Extend Rental Duration\n- Send Reminder (WhatsApp/SMS)\n- Generate Invoice\n- Add Payment\n\n**2. Status Overview:**\n- Days remaining/overdue counter\n- Payment status indicator\n- Return checklist\n- Risk assessment (low/medium/high based on customer history)\n\n**3. Related Information:**\n- Customer's other active rentals\n- Similar transactions history\n- Recommended actions based on status\n\n**Interactive Features:**\n- Collapsible sections for mobile optimization\n- In-line editing for certain fields (notes, payment status)\n- Modal dialogs for critical actions (delete, extend rental)\n- Real-time status updates\n- Print-friendly version\n- Export transaction details (PDF/Excel)\n\n**Data Structure Example:**\n```json\n{\n  \"transactionCode\": \"TXN-20241122-001\",\n  \"status\": \"active | overdue | returned\",\n  \"customer\": {\n    \"id\": \"string\",\n    \"name\": \"Ardiansyah\",\n    \"phone\": \"089657\",\n    \"address\": \"Jl. Jendral\",\n    \"email\": \"optional\",\n    \"registrationDate\": \"date\",\n    \"totalRentals\": \"number\"\n  },\n  \"rental\": {\n    \"duration\": 4,\n    \"pickupDate\": \"2024-11-22\",\n    \"returnDate\": \"2024-11-26\",\n    \"actualReturnDate\": \"date | null\",\n    \"isOverdue\": \"boolean\",\n    \"daysOverdue\": \"number\",\n    \"lateFee\": \"number\"\n  },\n  \"products\": [\n    {\n      \"id\": \"string\",\n      \"name\": \"Baju\",\n      \"code\": \"product_code\",\n      \"category\": \"clothing\",\n      \"size\": \"L\",\n      \"quantity\": 1,\n      \"totalAvailable\": 5,\n      \"condition\": \"good | fair | poor\",\n      \"notes\": \"string\"\n    }\n  ],\n  \"payment\": {\n    \"method\": \"QRIS | Cash | Transfer\",\n    \"baseAmount\": \"number\",\n    \"lateFees\": \"number\",\n    \"totalAmount\": \"number\",\n    \"status\": \"paid | unpaid | partial\",\n    \"paidAmount\": \"number\",\n    \"paidDate\": \"date\",\n    \"paymentProof\": \"string (file URL)\"\n  },\n  \"timeline\": [\n    {\n      \"action\": \"string\",\n      \"timestamp\": \"datetime\",\n      \"user\": \"string\",\n      \"details\": \"string\"\n    }\n  ]\n}\n```\n\n**Status-Based Features:**\n- Active: Show countdown timer, send reminder options\n- Overdue: Highlight late fees, urgent return actions\n- Returned: Show return confirmation, condition assessment\n\n**Technical Requirements:**\n- Responsive design with mobile-first approach\n- Real-time data updates (WebSocket/polling)\n- Offline capability for viewing (service worker)\n- Print stylesheet optimization\n- Accessibility compliance (WCAG AA)\n- Loading states and error handling\n\n**Component Architecture:**\n- Use shadcn/ui components as foundation\n- Custom components: TransactionHeader, CustomerCard, ProductTable, PaymentCard, ActivityTimeline\n- Icons from Lucide React\n- Date formatting with relative time display\n\n**Color Coding:**\n- Active rentals: Blue (#3B82F6)\n- Overdue: Red (#EF4444) with warning indicators\n- Returned: Green (#10B981)\n- Payment pending: Yellow (#F59E0B)\n- Gold accent: Action buttons and highlights\n\n**Performance Considerations:**\n- Lazy loading for product images and timeline data\n- Virtualized scrolling for large product lists\n- Optimistic UI updates for quick actions\n- Cached customer and product data\n\nThe page should provide cashiers with comprehensive information while maintaining clean visual hierarchy and efficient workflow for managing rental transactions.",
+  
+  "components_structure": {
+    "transaction_detail_header": {
+      "name": "TransactionDetailHeader",
+      "file": "features/kasir/components/detail/TransactionDetailHeader.tsx",
+      "elements": [
+        "transaction_code_large",
+        "status_badge_prominent",
+        "created_timestamp",
+        "breadcrumb_navigation",
+        "header_action_buttons",
+        "print_export_options"
+      ],
+      "style_rules": {
+        "header": "full-width white background with bottom border",
+        "transaction_code": "large typography with monospace font",
+        "status_badge": "prominent sizing with appropriate status colors",
+        "actions": "grouped button set with hover states"
+      }
+    },
+    "customer_info_card": {
+      "name": "CustomerInfoCard", 
+      "file": "features/kasir/components/detail/CustomerInfoCard.tsx",
+      "elements": [
+        "customer_avatar_placeholder",
+        "name_contact_details",
+        "address_information",
+        "registration_date",
+        "lifetime_rentals_count",
+        "edit_customer_button"
+      ],
+      "style_rules": {
+        "card": "white background with rounded corners and shadow",
+        "avatar": "circular placeholder with initials fallback",
+        "information_grid": "two-column layout with proper spacing",
+        "edit_button": "subtle styling with hover enhancement"
+      }
+    },
+    "rental_details_card": {
+      "name": "RentalDetailsCard",
+      "file": "features/kasir/components/detail/RentalDetailsCard.tsx", 
+      "elements": [
+        "rental_duration_display",
+        "pickup_return_dates",
+        "countdown_timer_active",
+        "status_visual_indicator",
+        "late_fee_calculation",
+        "notes_special_instructions"
+      ],
+      "style_rules": {
+        "countdown": "prominent display with status-based colors",
+        "dates": "clear formatting with visual separators",
+        "late_fees": "warning styling when applicable",
+        "notes": "expandable text area with edit functionality"
+      }
+    },
+    "product_details_table": {
+      "name": "ProductDetailsTable",
+      "file": "features/kasir/components/detail/ProductDetailsTable.tsx",
+      "elements": [
+        "product_table_headers",
+        "product_rows_expandable",
+        "product_images_thumbnails",
+        "quantity_vs_available",
+        "condition_status_badges",
+        "product_notes_inline"
+      ],
+      "style_rules": {
+        "table": "clean borders with hover states on rows",
+        "expandable_rows": "smooth accordion animation",
+        "thumbnails": "small square images with lightbox option",
+        "condition_badges": "color-coded status indicators"
+      }
+    },
+    "payment_info_card": {
+      "name": "PaymentInfoCard",
+      "file": "features/kasir/components/detail/PaymentInfoCard.tsx",
+      "elements": [
+        "payment_method_icon",
+        "amount_breakdown_detailed",
+        "payment_status_timestamp",
+        "payment_proof_attachment",
+        "payment_history_log"
+      ],
+      "style_rules": {
+        "method_icon": "appropriate payment method icons with labels",
+        "breakdown": "itemized list with emphasized total",
+        "status": "badge with timestamp formatting",
+        "proof_attachment": "file upload/view functionality"
+      }
+    },
+    "activity_timeline": {
+      "name": "ActivityTimeline",
+      "file": "features/kasir/components/detail/ActivityTimeline.tsx",
+      "elements": [
+        "timeline_vertical_line",
+        "activity_entries_chronological",
+        "timestamp_formatting",
+        "user_attribution",
+        "activity_details_expandable"
+      ],
+      "style_rules": {
+        "timeline": "vertical line with circular markers",
+        "entries": "card-based with proper spacing",
+        "timestamps": "relative time with full datetime tooltip",
+        "user_info": "subtle attribution with avatar"
+      }
+    },
+    "quick_actions_sidebar": {
+      "name": "QuickActionsSidebar",
+      "file": "features/kasir/components/detail/QuickActionsSidebar.tsx",
+      "elements": [
+        "mark_returned_button",
+        "extend_rental_option",
+        "send_reminder_buttons",
+        "generate_invoice_action",
+        "add_payment_form"
+      ],
+      "style_rules": {
+        "primary_actions": "gold button styling with prominent sizing",
+        "secondary_actions": "outline buttons with proper spacing",
+        "action_groups": "visual separation between action types",
+        "quick_forms": "inline forms with immediate feedback"
+      }
+    },
+    "status_overview_card": {
+      "name": "StatusOverviewCard",
+      "file": "features/kasir/components/detail/StatusOverviewCard.tsx",
+      "elements": [
+        "days_remaining_counter",
+        "payment_status_indicator",
+        "return_checklist_items",
+        "risk_assessment_display"
+      ],
+      "style_rules": {
+        "counter": "large typography with status-based colors",
+        "indicators": "visual status badges with clear labeling", 
+        "checklist": "checkable items with progress indication",
+        "risk_assessment": "color-coded risk level display"
+      }
+    },
+    "related_info_panel": {
+      "name": "RelatedInfoPanel",
+      "file": "features/kasir/components/detail/RelatedInfoPanel.tsx",
+      "elements": [
+        "customer_active_rentals",
+        "transaction_history_similar",
+        "recommended_actions_list",
+        "quick_navigation_links"
+      ],
+      "style_rules": {
+        "related_items": "compact list with navigation links",
+        "recommendations": "actionable suggestions with click handlers",
+        "navigation": "breadcrumb-style links with hover states",
+        "history": "condensed timeline view with key details"
+      }
+    }
+  },
+
+  "data_structure": {
+    "transaction": {
+      "transactionCode": "string (TXN-YYYYMMDD-XXX)",
+      "status": "enum (active|overdue|returned)",
+      "createdAt": "datetime",
+      "customerId": "string",
+      "cashierId": "string"
+    },
+    "customer": {
+      "id": "string",
+      "name": "string",
+      "phone": "string",
+      "address": "string",
+      "email": "string (optional)",
+      "registrationDate": "date",
+      "totalRentals": "number",
+      "riskLevel": "enum (low|medium|high)"
+    },
+    "rental": {
+      "duration": "number (days)",
+      "pickupDate": "date",
+      "returnDate": "date",
+      "actualReturnDate": "date (nullable)",
+      "isOverdue": "boolean",
+      "daysOverdue": "number",
+      "lateFeePerDay": "number (20000)",
+      "totalLateFee": "number",
+      "notes": "string"
+    },
+    "products": "array of product objects with quantity and condition",
+    "payment": {
+      "method": "enum (qris|cash|transfer)",
+      "baseAmount": "number",
+      "lateFees": "number", 
+      "totalAmount": "number",
+      "status": "enum (paid|unpaid|partial)",
+      "paidAmount": "number",
+      "paymentHistory": "array of payment records"
+    }
+  },
+
+  "user_flows": [
+    "View transaction overview → Check customer details → Review product status",
+    "Monitor overdue status → Calculate late fees → Send reminder",
+    "Process return → Update payment → Mark as completed",
+    "Generate reports → Export transaction data → Print receipt"
+  ],
+
+  "status_logic": {
+    "active": "Current date < return date, display countdown",
+    "overdue": "Current date > return date + 10:00 AM, calculate late fees",
+    "returned": "Actual return date exists, show completion status",
+    "late_fee_calculation": "Days overdue * 20,000 IDR per day"
+  },
+
+  "responsive_breakpoints": {
+    "mobile": {
+      "max_width": "768px",
+      "layout": "single column with collapsible sections",
+      "typography": "compact spacing, smaller font sizes",
+      "interactions": "touch-optimized buttons and swipe gestures"
+    },
+    "tablet": {
+      "min_width": "769px", 
+      "max_width": "1024px",
+      "layout": "two column with condensed sidebar",
+      "typography": "medium font sizes, balanced spacing"
+    },
+    "desktop": {
+      "min_width": "1025px",
+      "layout": "three column with full sidebar and actions panel",
+      "typography": "large font sizes, generous spacing"
+    }
+  },
+  "interaction_patterns": {
+    "hover_effects": {
+      "cards": "subtle lift with enhanced shadow depth",
+      "table_rows": "background highlight with pointer cursor",
+      "action_buttons": "color transition with scale enhancement"
+    },
+    "loading_states": {
+      "data_loading": "skeleton placeholders matching content structure",
+      "action_processing": "button spinners with disabled states",
+      "real_time_updates": "subtle pulse animations for live data"
+    },
+    "status_transitions": {
+      "status_changes": "smooth color transitions for status updates",
+      "countdown_updates": "live countdown with color progression",
+      "payment_updates": "immediate visual feedback for payment changes"
+    },
+    "transitions": {
+      "duration": "200ms for micro-interactions, 300ms for section changes",
+      "easing": "cubic-bezier(0.4, 0, 0.2, 1)",
+      "properties": "transform, opacity, background-color, border-color, box-shadow"
+    }
+  },
+  "accessibility_features": {
+    "keyboard_navigation": "full keyboard support with logical focus order and visible indicators",
+    "screen_reader": "semantic HTML structure with proper ARIA labels and live regions",
+    "color_contrast": "WCAG 2.1 AA compliant contrast ratios for all text and status indicators",
+    "reduced_motion": "respects prefers-reduced-motion for all animations and transitions",
+    "status_announcements": "live regions for status changes and important updates"
+  }
+}
