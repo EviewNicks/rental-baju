@@ -1,8 +1,9 @@
 ---
-description: 
-globs: 
+description:
+globs:
 alwaysApply: true
 ---
+
 # 📐 Arsitektur Proyek Maguru
 
 ## Daftar Isi
@@ -13,7 +14,6 @@ alwaysApply: true
 - [Modular Boundaries & Feature-First](mdc:#modular-boundaries--feature-first)
 - [Layered Architecture (3-Tier)](mdc:#layered-architecture-3-tier)
 - [State Management Strategy](mdc:#state-management-strategy)
-- [Event-Driven Hybrid](mdc:#event-driven-hybrid)
 - [Komponen Arsitektur Detil](mdc:#komponen-arsitektur-detil)
 - [Alur Data End-to-End](mdc:#alur-data-end-to-end)
 - [Konvensi Penamaan](mdc:#konvensi-penamaan)
@@ -300,59 +300,6 @@ graph TD
     style C fill:#e8f5e8
 ```
 
-### Implementation Guidelines
-
-#### 1. **Kapan Menggunakan Context (Global State)**
-
-```typescript
-// ✅ BENAR - Global state yang di-share antar fitur
-const UserAuthContext = createContext()
-
-// ❌ SALAH - Feature state yang hanya digunakan dalam satu fitur
-const CourseListContext = createContext() // Gunakan hooks sebagai gantinya
-```
-
-#### 2. **Kapan Menggunakan Hooks (Feature State)**
-
-```typescript
-// ✅ BENAR - Feature state dengan business logic
-export function useCourseManagement() {
-  const [courses, setCourses] = useState([])
-  const [loading, setLoading] = useState(false)
-
-  const fetchCourses = useCallback(async () => {
-    // Business logic here
-  }, [])
-
-  return { courses, loading, fetchCourses }
-}
-
-// ✅ BENAR - Low-level hook untuk data operations
-export function useCourse() {
-  // Direct adapter calls
-  return { fetchCourses, createCourse, updateCourse }
-}
-```
-
-#### 3. **Kapan Menggunakan Component State**
-
-```typescript
-// ✅ BENAR - Local UI state
-function CourseCard({ course }) {
-  const [isExpanded, setIsExpanded] = useState(false)
-  const [isHovered, setIsHovered] = useState(false)
-
-  return (
-    <div
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      {/* Component content */}
-    </div>
-  )
-}
-```
-
 ### Performance Considerations
 
 1. **Context Optimization:**
@@ -369,46 +316,6 @@ function CourseCard({ course }) {
    - Keep component state minimal
    - Use local state for UI interactions
    - Avoid prop drilling untuk local state
-
-### Migration Strategy
-
-Untuk fitur yang sudah menggunakan context untuk feature state:
-
-1. **Identifikasi state yang seharusnya di hooks:**
-   - State yang hanya digunakan dalam satu fitur
-   - Business logic state
-   - Data fetching state
-
-2. **Refactor ke hooks:**
-   - Buat custom hooks untuk feature state
-   - Pindahkan business logic dari context ke hooks
-   - Update komponen untuk menggunakan hooks langsung
-
-3. **Pertahankan context untuk global state:**
-   - User authentication
-   - App-wide settings
-   - Cross-feature state
-
----
-
-## Event-Driven Hybrid
-
-Maguru menggunakan pendekatan **Event-Driven Hybrid** untuk melengkapi komunikasi sinkron (Request/Response) yang umum pada arsitektur berlapis, dengan komunikasi asinkron berbasis event. Pendekatan ini membuat sistem lebih fleksibel, mudah dikembangkan, dan responsif.
-
-#### Apa itu Event-Driven Hybrid?
-
-Pada dasarnya, sistem ini menggabungkan dua cara komunikasi:
-
-- **Sinkron (Request/Response):** Komponen A memanggil komponen B dan menunggu hasilnya secara langsung.
-- **Asinkron (Event-Driven):** Komponen A hanya mengumumkan bahwa sesuatu telah terjadi (event), lalu komponen lain yang tertarik akan bereaksi tanpa A perlu tahu siapa yang mendengarkan.
-
-#### Manfaat Pendekatan Event-Driven Hybrid
-
-- **Decoupling (Pemisahan Ketergantungan):** Fitur atau service bisa saling bereaksi tanpa saling memanggil secara langsung. Contoh: Ketika event `ModulePublished` dipancarkan oleh `manage-module`, service notifikasi bisa mengirim pesan tanpa perlu dihubungi langsung oleh `manage-module`.
-- **Scalability & Responsiveness:** Proses yang berat atau lambat bisa dijalankan secara asinkron oleh listener, sehingga tidak menghambat proses utama.
-- **Flexibility:** Listener baru bisa ditambahkan untuk bereaksi pada event yang sama tanpa perlu mengubah kode emitter.
-
-> **Catatan:** Detail implementasi event-driven untuk modul `manage-module` akan dijelaskan lebih lanjut di dokumen arsitektur modul tersebut. Penjelasan di atas adalah prinsip umum yang berlaku di seluruh sistem Maguru.
 
 ---
 

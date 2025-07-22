@@ -1,0 +1,545 @@
+{
+  "prompt": "Buat komponen Category Management Modal untuk aplikasi rental pakaian 'RentalBaju' dengan desain flat modern minimalist dan soft neumorphism. Modal ini memungkinkan admin mengelola kategori produk dengan daftar kategori, form tambah/edit, dan color picker untuk badge customization.",
+
+  "context": {
+    "business": "RentalBaju - Sistem manajemen penyewaan pakaian untuk UMKM",
+    "user_role": "Admin/Producer yang mengelola kategori produk",
+    "component_purpose": "Modal untuk mengelola kategori produk dengan CRUD operations dan color picker",
+    "tech_stack": "Next.js 14, TypeScript, Tailwind CSS, Supabase, Clerk",
+    "trigger": "Click 'Kelola Kategori' button di halaman manajemen produk"
+  },
+
+  "design_system": {
+    "theme": "Flat Modern Minimalist dengan Soft Neumorphism",
+    "color_palette": {
+      "primary": "#FFD700",
+      "background": "#FFFFFF",
+      "background_secondary": "#F8FAFC",
+      "text_primary": "#111827",
+      "text_secondary": "#64748B",
+      "border": "#E2E8F0",
+      "success": "#10B981",
+      "warning": "#F59E0B",
+      "error": "#EF4444"
+    },
+    "typography": "Poppins/Inter sans-serif",
+    "spacing": "Tailwind spacing scale",
+    "shadows": {
+      "sm": "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1)",
+      "md": "0 4px 20px 0 rgba(0, 0, 0, 0.08)",
+      "lg": "0 10px 15px -3px rgba(0, 0, 0, 0.1)"
+    },
+    "border_radius": {
+      "sm": "0.375rem",
+      "md": "0.5rem",
+      "lg": "0.75rem"
+    }
+  },
+
+  "modal_structure": {
+    "type": "centered_modal",
+    "size": "max-w-2xl",
+    "backdrop": "backdrop-blur-sm bg-black/50",
+    "layout": "single_column",
+    "sections": [
+      "Header dengan judul dan close button",
+      "Category list section",
+      "Add category form section",
+      "Action buttons di footer"
+    ]
+  },
+
+  "components": {
+    "modal_header": {
+      "title": "Kelola Kategori",
+      "subtitle": "Atur kategori produk untuk organisasi inventaris yang lebih baik",
+      "close_button": {
+        "type": "icon_button",
+        "icon": "x",
+        "size": "sm",
+        "variant": "ghost",
+        "position": "top-right",
+        "accessibility": "aria-label='Tutup modal'"
+      }
+    },
+
+    "category_list": {
+      "title": "Kategori Tersedia",
+      "empty_state": {
+        "icon": "tag",
+        "title": "Belum ada kategori",
+        "description": "Mulai dengan menambahkan kategori pertama",
+        "action": "Tambah Kategori"
+      },
+      "list_layout": "space-y-3",
+      "category_item": {
+        "layout": "flex items-center justify-between p-4 bg-white rounded-lg border border-gray-200",
+        "content": {
+          "left": {
+            "badge": {
+              "name": "category_name",
+              "color": "category_color",
+              "size": "md",
+              "style": "font-medium"
+            }
+          },
+          "right": {
+            "actions": [
+              {
+                "type": "button",
+                "label": "Edit",
+                "icon": "edit",
+                "variant": "ghost",
+                "size": "sm",
+                "action": "edit_category"
+              },
+              {
+                "type": "button",
+                "label": "Hapus",
+                "icon": "trash",
+                "variant": "ghost",
+                "size": "sm",
+                "action": "delete_category",
+                "color": "text-red-500 hover:text-red-700"
+              }
+            ]
+          }
+        },
+        "hover_effect": "hover:shadow-lg hover:border-gold-100 transition-all duration-200"
+      },
+      "default_categories": [
+        {
+          "id": "1",
+          "name": "Dress",
+          "color": "#EC4899",
+          "bg_color": "#FCE7F3",
+          "text_color": "#BE185D",
+          "product_count": 15
+        },
+        {
+          "id": "2",
+          "name": "Kemeja",
+          "color": "#3B82F6",
+          "bg_color": "#DBEAFE",
+          "text_color": "#1E40AF",
+          "product_count": 8
+        },
+        {
+          "id": "3",
+          "name": "Jas",
+          "color": "#8B5CF6",
+          "bg_color": "#EDE9FE",
+          "text_color": "#5B21B6",
+          "product_count": 5
+        },
+        {
+          "id": "4",
+          "name": "Celana",
+          "color": "#A16207",
+          "bg_color": "#FEF3C7",
+          "text_color": "#92400E",
+          "product_count": 12
+        },
+        {
+          "id": "5",
+          "name": "Aksesoris",
+          "color": "#FFD700",
+          "bg_color": "#FEFCE8",
+          "text_color": "#A16207",
+          "product_count": 20
+        }
+      ]
+    },
+
+    "category_form": {
+      "title": "Tambah Kategori Baru",
+      "edit_title": "Edit Kategori",
+      "layout": "space-y-4",
+      "fields": [
+        {
+          "name": "name",
+          "label": "Nama Kategori",
+          "type": "text",
+          "required": true,
+          "placeholder": "Masukkan nama kategori",
+          "max_length": 50,
+          "validation": {
+            "required": "Nama kategori wajib diisi",
+            "min_length": "Nama minimal 2 karakter",
+            "max_length": "Nama maksimal 50 karakter",
+            "unique": "Nama kategori sudah digunakan"
+          },
+          "help_text": "Masukkan nama kategori yang jelas dan deskriptif",
+          "icon": "tag"
+        },
+        {
+          "name": "color",
+          "label": "Warna Badge",
+          "type": "color_picker",
+          "required": true,
+          "default_value": "#FFD700",
+          "validation": {
+            "required": "Warna badge wajib dipilih"
+          },
+          "help_text": "Pilih warna untuk badge kategori",
+          "preset_colors": [
+            "#FFD700",
+            "#EC4899",
+            "#3B82F6",
+            "#8B5CF6",
+            "#10B981",
+            "#F59E0B",
+            "#EF4444",
+            "#6B7280",
+            "#84CC16",
+            "#F97316"
+          ]
+        }
+      ],
+      "preview": {
+        "enabled": true,
+        "title": "Preview Badge",
+        "component": "category_badge_preview"
+      }
+    },
+
+    "color_picker": {
+      "type": "custom_color_picker",
+      "layout": "grid grid-cols-5 gap-2",
+      "preset_colors": [
+        {
+          "color": "#FFD700",
+          "name": "Gold",
+          "selected": true
+        },
+        {
+          "color": "#EC4899",
+          "name": "Pink"
+        },
+        {
+          "color": "#3B82F6",
+          "name": "Blue"
+        },
+        {
+          "color": "#8B5CF6",
+          "name": "Purple"
+        },
+        {
+          "color": "#10B981",
+          "name": "Green"
+        },
+        {
+          "color": "#F59E0B",
+          "name": "Orange"
+        },
+        {
+          "color": "#EF4444",
+          "name": "Red"
+        },
+        {
+          "color": "#6B7280",
+          "name": "Gray"
+        },
+        {
+          "color": "#84CC16",
+          "name": "Lime"
+        },
+        {
+          "color": "#F97316",
+          "name": "Amber"
+        }
+      ],
+      "custom_color": {
+        "enabled": true,
+        "input_type": "color",
+        "label": "Warna Kustom",
+        "placeholder": "#000000"
+      },
+      "color_item": {
+        "size": "w-10 h-10",
+        "border_radius": "rounded-full",
+        "border": "border-2 border-gray-200",
+        "selected_border": "border-gold-600",
+        "hover_effect": "hover:scale-110 transition-transform"
+      }
+    },
+
+    "action_buttons": {
+      "layout": "flex justify-end space-x-3",
+      "buttons": [
+        {
+          "type": "button",
+          "label": "Batal",
+          "variant": "outline",
+          "action": "close_modal",
+          "size": "md"
+        },
+        {
+          "type": "button",
+          "label": "Simpan Kategori",
+          "variant": "primary",
+          "icon": "save",
+          "action": "save_category",
+          "size": "md",
+          "loading_state": true
+        }
+      ]
+    }
+  },
+
+  "data_structure": {
+    "category": {
+      "id": "string (UUID)",
+      "name": "string (max 50 chars, unique)",
+      "color": "string (hex color)",
+      "bg_color": "string (calculated light version)",
+      "text_color": "string (calculated dark version)",
+      "product_count": "number (calculated)",
+      "created_at": "datetime",
+      "updated_at": "datetime"
+    }
+  },
+
+  "category_badges": {
+    "Dress": {
+      "color": "#EC4899",
+      "bg_color": "#FCE7F3",
+      "text_color": "#BE185D"
+    },
+    "Kemeja": {
+      "color": "#3B82F6",
+      "bg_color": "#DBEAFE",
+      "text_color": "#1E40AF"
+    },
+    "Jas": {
+      "color": "#8B5CF6",
+      "bg_color": "#EDE9FE",
+      "text_color": "#5B21B6"
+    },
+    "Celana": {
+      "color": "#A16207",
+      "bg_color": "#FEF3C7",
+      "text_color": "#92400E"
+    },
+    "Aksesoris": {
+      "color": "#FFD700",
+      "bg_color": "#FEFCE8",
+      "text_color": "#A16207"
+    }
+  },
+
+  "interactions": {
+    "modal_open": {
+      "trigger": "click_manage_category_button",
+      "animation": "fade_in_scale",
+      "duration": "200ms",
+      "focus_management": "first_focusable_element"
+    },
+    "modal_close": {
+      "triggers": ["click_close_button", "click_backdrop", "press_escape_key"],
+      "animation": "fade_out_scale",
+      "duration": "200ms"
+    },
+    "category_actions": {
+      "edit": "open_edit_mode",
+      "delete": "open_delete_confirmation",
+      "add": "open_add_mode"
+    },
+    "color_picker": {
+      "preset_click": "select_preset_color",
+      "custom_input": "update_custom_color",
+      "preview_update": "real_time_preview"
+    },
+    "form_submission": {
+      "validation": "real_time_validation",
+      "submit": "save_category_data",
+      "success": "show_success_message"
+    }
+  },
+
+  "responsive_behavior": {
+    "mobile": {
+      "breakpoint": "< 768px",
+      "modal_size": "full_screen",
+      "form_layout": "stacked",
+      "color_picker": "grid-cols-4",
+      "button_stack": "vertical"
+    },
+    "tablet": {
+      "breakpoint": "768px - 1024px",
+      "modal_size": "90_percent_width",
+      "form_layout": "side_by_side",
+      "color_picker": "grid-cols-5",
+      "button_layout": "horizontal"
+    },
+    "desktop": {
+      "breakpoint": "> 1024px",
+      "modal_size": "max-w-2xl",
+      "form_layout": "side_by_side",
+      "color_picker": "grid-cols-5",
+      "button_layout": "horizontal"
+    }
+  },
+
+  "accessibility": {
+    "keyboard_navigation": true,
+    "screen_reader": "aria_labels",
+    "color_contrast": "4.5:1_minimum",
+    "focus_management": "visible_indicators",
+    "color_blind_friendly": "color_names_and_icons",
+    "form_announcements": "screen_reader_friendly"
+  },
+
+  "loading_states": {
+    "modal_loading": "skeleton_loader",
+    "category_list_loading": "list_skeleton_loader",
+    "form_loading": "field_skeleton_loader",
+    "submit_loading": "button_spinner"
+  },
+
+  "error_states": {
+    "empty_categories": {
+      "icon": "tag",
+      "title": "Belum ada kategori",
+      "description": "Mulai dengan menambahkan kategori pertama",
+      "action": "Tambah Kategori"
+    },
+    "validation_error": {
+      "display": "inline_below_field",
+      "style": "text-red-500 text-sm",
+      "icon": "alert-circle"
+    },
+    "network_error": {
+      "display": "toast_notification",
+      "style": "error_toast",
+      "retry_option": true
+    }
+  },
+
+  "success_states": {
+    "category_added": {
+      "display": "success_toast",
+      "message": "Kategori berhasil ditambahkan",
+      "auto_close": true
+    },
+    "category_updated": {
+      "display": "success_toast",
+      "message": "Kategori berhasil diperbarui",
+      "auto_close": true
+    },
+    "category_deleted": {
+      "display": "success_toast",
+      "message": "Kategori berhasil dihapus",
+      "auto_close": true
+    }
+  },
+
+  "animations": {
+    "modal_enter": {
+      "type": "fade_in_scale",
+      "duration": "200ms",
+      "easing": "ease-out"
+    },
+    "modal_exit": {
+      "type": "fade_out_scale",
+      "duration": "200ms",
+      "easing": "ease-in"
+    },
+    "category_item": {
+      "enter": "slide_in_from_right",
+      "exit": "slide_out_to_left",
+      "duration": "150ms"
+    },
+    "color_picker": {
+      "selection": "scale_bounce",
+      "duration": "100ms"
+    }
+  },
+
+  "validation": {
+    "client_side": {
+      "real_time": true,
+      "on_blur": true,
+      "on_change": true,
+      "error_display": "inline_below_field",
+      "success_indicators": true
+    },
+    "server_side": {
+      "api_validation": true,
+      "error_handling": "toast_notifications",
+      "success_feedback": "toast_notifications"
+    },
+    "rules": {
+      "name": {
+        "required": true,
+        "min_length": 2,
+        "max_length": 50,
+        "unique": true,
+        "pattern": "^[a-zA-Z0-9\\s\\-]+$"
+      },
+      "color": {
+        "required": true,
+        "pattern": "^#[0-9A-Fa-f]{6}$"
+      }
+    }
+  },
+
+  "api_integration": {
+    "endpoints": {
+      "get_categories": "GET /api/categories",
+      "create_category": "POST /api/categories",
+      "update_category": "PUT /api/categories/{id}",
+      "delete_category": "DELETE /api/categories/{id}",
+      "validate_name": "GET /api/categories/validate-name"
+    },
+    "error_handling": "toast_notifications",
+    "optimistic_updates": true,
+    "real_time_validation": true
+  },
+
+  "delete_confirmation": {
+    "enabled": true,
+    "title": "Hapus Kategori",
+    "message": "Apakah Anda yakin ingin menghapus kategori '{name}'?",
+    "warning": "Tindakan ini tidak dapat dibatalkan dan akan mempengaruhi produk yang menggunakan kategori ini.",
+    "buttons": [
+      {
+        "label": "Batal",
+        "variant": "outline",
+        "action": "cancel_delete"
+      },
+      {
+        "label": "Hapus",
+        "variant": "destructive",
+        "action": "confirm_delete"
+      }
+    ]
+  },
+
+  "keyboard_shortcuts": {
+    "escape": "close_modal",
+    "enter": "submit_form",
+    "tab": "navigate_focusable_elements",
+    "ctrl_enter": "submit_form"
+  },
+
+  "focus_management": {
+    "on_open": "focus_first_focusable",
+    "on_close": "return_focus_to_trigger",
+    "trap_focus": true,
+    "visible_focus": true,
+    "form_focus": "focus_name_input"
+  },
+
+  "performance": {
+    "lazy_loading": false,
+    "debouncing": {
+      "name_validation": true,
+      "debounce_delay": 300
+    },
+    "caching": {
+      "categories": true,
+      "cache_duration": "5_minutes"
+    }
+  }
+}

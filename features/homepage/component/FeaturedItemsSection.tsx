@@ -140,7 +140,7 @@ export default function FeaturedItemsSection() {
     <section id="featured" className="py-16 md:py-24 bg-gradient-to-b from-neutral-50 to-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <div className="inline-flex items-center px-4 py-2 bg-green-100 text-green-700 rounded-full text-sm font-medium mb-4">
+          <div className="inline-flex items-center px-4 py-2 bg-gold-100 text-gold-700 rounded-full text-sm font-medium mb-4">
             <Star className="w-4 h-4 mr-2" />
             Koleksi Terpopuler
           </div>
@@ -201,7 +201,7 @@ export default function FeaturedItemsSection() {
                         {item.category}
                       </Badge>
                       {item.isPopular && (
-                        <Badge className="text-xs bg-red-100 text-red-700 border-red-200">
+                        <Badge className="text-xs bg-gold-100 text-gold-800 border-gold-200">
                           Popular
                         </Badge>
                       )}
@@ -215,7 +215,7 @@ export default function FeaturedItemsSection() {
                       }}
                       className={`absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 ${
                         isLiked
-                          ? 'bg-red-500 text-white'
+                          ? 'bg-gold-500 text-white'
                           : 'bg-white/80 text-neutral-600 hover:bg-white'
                       }`}
                     >
@@ -232,7 +232,7 @@ export default function FeaturedItemsSection() {
 
                     {/* Rating */}
                     <div className="flex items-center space-x-1">
-                      <Star className="w-3 h-3 text-yellow-500 fill-current" />
+                      <Star className="w-3 h-3 text-gold-500 fill-current" />
                       <span className="text-xs font-medium text-neutral-700">{item.rating}</span>
                       <span className="text-xs text-neutral-500">({item.reviews})</span>
                     </div>
@@ -240,12 +240,12 @@ export default function FeaturedItemsSection() {
                     {/* Price */}
                     <div className="space-y-1">
                       <div className="flex items-center space-x-2">
-                        <span className="text-blue-500 font-bold text-sm">{item.price}</span>
+                        <span className="text-gold-500 font-bold text-sm">{item.price}</span>
                         <span className="text-neutral-400 text-xs line-through">
                           {item.originalPrice}
                         </span>
                       </div>
-                      <div className="text-xs text-green-600 font-medium">
+                      <div className="text-xs text-gold-600 font-medium">
                         Hemat{' '}
                         {Math.round(
                           (1 -
@@ -264,7 +264,7 @@ export default function FeaturedItemsSection() {
         </div>
 
         <div className="text-center mt-12">
-          <button className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-8 py-3 rounded-lg font-semibold transition-all duration-200 hover:scale-105 hover:shadow-lg">
+          <button className="bg-gradient-to-r from-gold-500 to-gold-600 hover:from-gold-600 hover:to-gold-700 text-neutral-900 px-8 py-3 rounded-lg font-semibold transition-all duration-200 hover:scale-105 hover:shadow-lg">
             Lihat Semua Koleksi (500+ Items)
           </button>
         </div>

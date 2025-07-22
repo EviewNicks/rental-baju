@@ -197,6 +197,7 @@ export function generateTestUsername(prefix: string = 'testuser'): string {
 export const accessControlMatrix: Record<string, UserRole[]> = {
   '/dashboard': ['kasir', 'producer', 'owner'],
   '/producer': ['producer', 'owner'],
+  '/producer/manage-product': ['producer', 'owner'],
   '/owner': ['owner'],
 }
 

@@ -1,0 +1,456 @@
+{
+  "prompt": "Buat halaman form tambah produk untuk aplikasi rental pakaian 'RentalBaju' dengan desain flat modern minimalist dan soft neumorphism. Halaman ini adalah form lengkap untuk menambah produk baru dengan image upload, validasi real-time, dan kategori selection.",
+
+  "context": {
+    "business": "RentalBaju - Sistem manajemen penyewaan pakaian untuk UMKM",
+    "user_role": "Admin/Producer yang menambah produk baru ke inventaris",
+    "page_purpose": "Form halaman untuk menambah produk baru dengan validasi lengkap dan image upload",
+    "tech_stack": "Next.js 14, TypeScript, Tailwind CSS, Supabase, Clerk",
+    "route": "/app/producer/manage-product/add"
+  },
+
+  "design_system": {
+    "theme": "Flat Modern Minimalist dengan Soft Neumorphism",
+    "color_palette": {
+      "primary": "#FFD700",
+      "background": "#FFFFFF",
+      "background_secondary": "#F8FAFC",
+      "text_primary": "#111827",
+      "text_secondary": "#64748B",
+      "border": "#E2E8F0",
+      "success": "#10B981",
+      "warning": "#F59E0B",
+      "error": "#EF4444"
+    },
+    "typography": "Poppins/Inter sans-serif",
+    "spacing": "Tailwind spacing scale",
+    "shadows": {
+      "sm": "0 1px 3px 0 rgba(0, 0, 0, 0.1)",
+      "md": "0 4px 20px 0 rgba(0, 0, 0, 0.08)",
+      "lg": "0 10px 15px -3px rgba(0, 0, 0, 0.1)"
+    },
+    "border_radius": {
+      "sm": "0.375rem",
+      "md": "0.5rem",
+      "lg": "0.75rem"
+    }
+  },
+
+  "page_structure": {
+    "layout": "Single page form dengan header, breadcrumb, form container, dan action buttons",
+    "sections": [
+      "Header dengan breadcrumb navigation",
+      "Form container dengan card layout",
+      "Form fields dalam grid responsive",
+      "Image upload section",
+      "Action buttons di footer"
+    ]
+  },
+
+  "components": {
+    "header": {
+      "breadcrumb": {
+        "items": [
+          { "label": "Dashboard", "href": "/app/producer" },
+          { "label": "Manajemen Produk", "href": "/app/producer/manage-product" },
+          { "label": "Tambah Produk", "current": true }
+        ]
+      },
+      "title": "Tambah Produk Baru",
+      "subtitle": "Lengkapi informasi produk untuk menambah ke inventaris"
+    },
+
+    "form_container": {
+      "type": "card",
+      "max_width": "max-w-4xl",
+      "padding": "p-6 md:p-8",
+      "background": "bg-white",
+      "shadow": "shadow-md",
+      "border_radius": "rounded-lg"
+    },
+
+    "form_fields": {
+      "layout": "grid grid-cols-1 md:grid-cols-2 gap-6",
+      "sections": [
+        {
+          "title": "Informasi Dasar",
+          "fields": [
+            {
+              "name": "code",
+              "label": "Kode Produk",
+              "type": "text",
+              "required": true,
+              "placeholder": "PRD1",
+              "max_length": 4,
+              "pattern": "^[A-Z0-9]{4}$",
+              "validation": {
+                "required": "Kode produk wajib diisi",
+                "pattern": "Kode harus 4 digit alfanumerik uppercase",
+                "unique": "Kode produk sudah digunakan"
+              },
+              "help_text": "Masukkan 4 digit kode alfanumerik (contoh: PRD1, DRES2)",
+              "icon": "hash"
+            },
+            {
+              "name": "name",
+              "label": "Nama Produk",
+              "type": "text",
+              "required": true,
+              "placeholder": "Dress Pesta Merah",
+              "max_length": 100,
+              "validation": {
+                "required": "Nama produk wajib diisi",
+                "min_length": "Nama minimal 3 karakter"
+              },
+              "help_text": "Masukkan nama produk yang jelas dan deskriptif",
+              "icon": "package"
+            },
+            {
+              "name": "category",
+              "label": "Kategori",
+              "type": "select",
+              "required": true,
+              "options": [
+                { "value": "", "label": "Pilih kategori", "disabled": true },
+                { "value": "dress", "label": "Dress", "color": "#EC4899" },
+                { "value": "kemeja", "label": "Kemeja", "color": "#3B82F6" },
+                { "value": "jas", "label": "Jas", "color": "#8B5CF6" },
+                { "value": "celana", "label": "Celana", "color": "#A16207" },
+                { "value": "aksesoris", "label": "Aksesoris", "color": "#FFD700" }
+              ],
+              "validation": {
+                "required": "Kategori wajib dipilih"
+              },
+              "help_text": "Pilih kategori yang sesuai dengan produk",
+              "icon": "tag"
+            },
+            {
+              "name": "quantity",
+              "label": "Jumlah Stok",
+              "type": "number",
+              "required": true,
+              "placeholder": "1",
+              "min": 0,
+              "max": 9999,
+              "validation": {
+                "required": "Jumlah stok wajib diisi",
+                "min": "Jumlah minimal 0",
+                "max": "Jumlah maksimal 9999"
+              },
+              "help_text": "Masukkan jumlah stok yang tersedia",
+              "icon": "box"
+            }
+          ]
+        },
+        {
+          "title": "Informasi Harga",
+          "fields": [
+            {
+              "name": "modal_awal",
+              "label": "Modal Awal (Rp)",
+              "type": "number",
+              "required": true,
+              "placeholder": "800000",
+              "min": 0,
+              "format": "currency",
+              "prefix": "Rp",
+              "validation": {
+                "required": "Modal awal wajib diisi",
+                "min": "Modal awal minimal Rp 0"
+              },
+              "help_text": "Biaya pembuatan/pembelian produk",
+              "icon": "dollar-sign"
+            },
+            {
+              "name": "harga_sewa",
+              "label": "Harga Sewa (Rp)",
+              "type": "number",
+              "required": true,
+              "placeholder": "150000",
+              "min": 0,
+              "format": "currency",
+              "prefix": "Rp",
+              "validation": {
+                "required": "Harga sewa wajib diisi",
+                "min": "Harga sewa minimal Rp 0"
+              },
+              "help_text": "Harga sewa per sekali pakai",
+              "icon": "credit-card"
+            }
+          ]
+        }
+      ],
+      "full_width_fields": [
+        {
+          "name": "description",
+          "label": "Deskripsi Produk",
+          "type": "textarea",
+          "required": false,
+          "placeholder": "Deskripsi detail produk, bahan, ukuran, dan informasi tambahan...",
+          "max_length": 500,
+          "rows": 4,
+          "validation": {
+            "max_length": "Deskripsi maksimal 500 karakter"
+          },
+          "help_text": "Deskripsi opsional untuk detail produk",
+          "icon": "file-text"
+        }
+      ]
+    },
+
+    "image_upload": {
+      "title": "Gambar Produk",
+      "type": "file_upload",
+      "required": false,
+      "accept": "image/*",
+      "max_size": "5MB",
+      "max_files": 1,
+      "preview": true,
+      "drag_drop": true,
+      "aspect_ratio": "4:3",
+      "validation": {
+        "file_type": "Hanya file gambar yang diperbolehkan",
+        "file_size": "Ukuran file maksimal 5MB"
+      },
+      "help_text": "Upload gambar produk (JPG, PNG, WebP). Maksimal 5MB.",
+      "placeholder": {
+        "icon": "image",
+        "text": "Drag & drop gambar di sini atau klik untuk memilih",
+        "subtext": "Format: JPG, PNG, WebP • Maksimal: 5MB"
+      },
+      "preview_settings": {
+        "size": "w-32 h-32 md:w-48 md:h-48",
+        "border_radius": "rounded-lg",
+        "object_fit": "object-cover"
+      }
+    },
+
+    "form_actions": {
+      "layout": "flex justify-end space-x-4",
+      "buttons": [
+        {
+          "type": "button",
+          "label": "Batal",
+          "variant": "outline",
+          "action": "navigate_back",
+          "icon": "x"
+        },
+        {
+          "type": "button",
+          "label": "Simpan Draft",
+          "variant": "secondary",
+          "action": "save_draft",
+          "icon": "save"
+        },
+        {
+          "type": "submit",
+          "label": "Simpan Produk",
+          "variant": "primary",
+          "action": "submit_form",
+          "icon": "check",
+          "loading_state": true
+        }
+      ]
+    }
+  },
+
+  "form_validation": {
+    "client_side": {
+      "real_time": true,
+      "on_blur": true,
+      "on_change": true,
+      "error_display": "inline_below_field",
+      "success_indicators": true
+    },
+    "server_side": {
+      "api_validation": true,
+      "error_handling": "toast_notifications",
+      "success_feedback": "toast_notifications"
+    },
+    "rules": {
+      "code": {
+        "required": true,
+        "pattern": "^[A-Z0-9]{4}$",
+        "unique": true
+      },
+      "name": {
+        "required": true,
+        "min_length": 3,
+        "max_length": 100
+      },
+      "category": {
+        "required": true
+      },
+      "modal_awal": {
+        "required": true,
+        "min": 0
+      },
+      "harga_sewa": {
+        "required": true,
+        "min": 0
+      },
+      "quantity": {
+        "required": true,
+        "min": 0,
+        "max": 9999
+      },
+      "description": {
+        "max_length": 500
+      }
+    }
+  },
+
+  "image_upload_features": {
+    "drag_drop": {
+      "enabled": true,
+      "visual_feedback": true,
+      "drop_zone_highlight": true
+    },
+    "preview": {
+      "enabled": true,
+      "aspect_ratio": "4:3",
+      "zoom_capability": true,
+      "remove_option": true
+    },
+    "compression": {
+      "enabled": true,
+      "quality": 0.8,
+      "max_width": 1200,
+      "max_height": 900
+    },
+    "file_validation": {
+      "allowed_types": ["image/jpeg", "image/png", "image/webp"],
+      "max_size": 5242880,
+      "min_dimensions": { "width": 200, "height": 200 }
+    }
+  },
+
+  "responsive_behavior": {
+    "mobile": {
+      "breakpoint": "< 768px",
+      "layout": "single_column",
+      "form_padding": "p-4",
+      "button_stack": "vertical"
+    },
+    "tablet": {
+      "breakpoint": "768px - 1024px",
+      "layout": "two_column_grid",
+      "form_padding": "p-6",
+      "button_layout": "horizontal"
+    },
+    "desktop": {
+      "breakpoint": "> 1024px",
+      "layout": "two_column_grid",
+      "form_padding": "p-8",
+      "button_layout": "horizontal"
+    }
+  },
+
+  "accessibility": {
+    "keyboard_navigation": true,
+    "screen_reader": "aria_labels",
+    "color_contrast": "4.5:1_minimum",
+    "focus_management": "visible_indicators",
+    "error_announcements": "screen_reader_friendly",
+    "form_labels": "explicit_labels",
+    "help_text": "descriptive_help"
+  },
+
+  "loading_states": {
+    "form_loading": "skeleton_loader",
+    "image_upload": "progress_bar",
+    "submit_loading": "button_spinner",
+    "validation_loading": "field_spinner"
+  },
+
+  "error_states": {
+    "validation_errors": {
+      "display": "inline_below_field",
+      "style": "text-red-500 text-sm",
+      "icon": "alert-circle"
+    },
+    "network_errors": {
+      "display": "toast_notification",
+      "style": "error_toast",
+      "retry_option": true
+    },
+    "server_errors": {
+      "display": "toast_notification",
+      "style": "error_toast",
+      "details": "expandable_error_details"
+    }
+  },
+
+  "success_states": {
+    "validation_success": {
+      "display": "inline_checkmark",
+      "style": "text-green-500",
+      "icon": "check-circle"
+    },
+    "form_submission": {
+      "display": "success_toast",
+      "redirect": "/app/producer/manage-product",
+      "message": "Produk berhasil ditambahkan"
+    }
+  },
+
+  "api_integration": {
+    "endpoints": {
+      "submit_form": "POST /api/products",
+      "upload_image": "POST /api/upload",
+      "validate_code": "GET /api/products/validate-code",
+      "get_categories": "GET /api/categories"
+    },
+    "error_handling": "toast_notifications",
+    "optimistic_updates": false,
+    "form_persistence": "local_storage_draft"
+  },
+
+  "navigation": {
+    "breadcrumb": {
+      "enabled": true,
+      "separator": "chevron-right",
+      "responsive": "collapse_on_mobile"
+    },
+    "back_button": {
+      "enabled": true,
+      "action": "navigate_back",
+      "confirmation": "unsaved_changes"
+    },
+    "success_redirect": {
+      "path": "/app/producer/manage-product",
+      "delay": 2000,
+      "message": "Produk berhasil ditambahkan"
+    }
+  },
+
+  "form_persistence": {
+    "draft_saving": {
+      "enabled": true,
+      "auto_save": true,
+      "interval": 30000,
+      "storage": "local_storage"
+    },
+    "unsaved_changes": {
+      "detection": true,
+      "warning": "Batal perubahan?",
+      "confirmation": true
+    }
+  },
+
+  "performance": {
+    "image_optimization": {
+      "compression": true,
+      "lazy_loading": true,
+      "webp_support": true
+    },
+    "form_validation": {
+      "debouncing": true,
+      "debounce_delay": 300
+    },
+    "api_calls": {
+      "caching": true,
+      "request_deduplication": true
+    }
+  }
+}

@@ -45,10 +45,10 @@ export function Navbar() {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2 group" data-testid="navbar-logo">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center transition-transform duration-200 group-hover:scale-105">
+            <div className="w-8 h-8 bg-gradient-to-br from-gold-500 to-gold-600 rounded-lg flex items-center justify-center transition-transform duration-200 group-hover:scale-105">
               <Shirt className="w-5 h-5 text-white" />
             </div>
-            <span className="text-xl font-bold text-neutral-900 transition-colors duration-200 group-hover:text-blue-500">
+            <span className="text-xl font-bold text-neutral-900 transition-colors duration-200 group-hover:text-gold-500">
               RentalBaju
             </span>
           </Link>
@@ -57,35 +57,35 @@ export function Navbar() {
           <div className="hidden md:flex items-center space-x-8" data-testid="desktop-navigation">
             <Link
               href="#categories"
-              className="text-neutral-700 hover:text-blue-500 transition-all duration-200 relative group"
+              className="text-neutral-700 hover:text-gold-500 transition-all duration-200 relative group"
               data-testid="nav-categories"
             >
               Kategori
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-500 transition-all duration-200 group-hover:w-full"></span>
+              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gold-500 transition-all duration-200 group-hover:w-full"></span>
             </Link>
             <Link
               href="#featured"
-              className="text-neutral-700 hover:text-blue-500 transition-all duration-200 relative group"
+              className="text-neutral-700 hover:text-gold-500 transition-all duration-200 relative group"
               data-testid="nav-featured"
             >
               Koleksi
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-500 transition-all duration-200 group-hover:w-full"></span>
+              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gold-500 transition-all duration-200 group-hover:w-full"></span>
             </Link>
             <Link
               href="#store-info"
-              className="text-neutral-700 hover:text-blue-500 transition-all duration-200 relative group"
+              className="text-neutral-700 hover:text-gold-500 transition-all duration-200 relative group"
               data-testid="nav-store-info"
             >
               Toko
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-500 transition-all duration-200 group-hover:w-full"></span>
+              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gold-500 transition-all duration-200 group-hover:w-full"></span>
             </Link>
             <Link
               href="#contact"
-              className="text-neutral-700 hover:text-blue-500 transition-all duration-200 relative group"
+              className="text-neutral-700 hover:text-gold-500 transition-all duration-200 relative group"
               data-testid="nav-contact"
             >
               Kontak
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-500 transition-all duration-200 group-hover:w-full"></span>
+              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gold-500 transition-all duration-200 group-hover:w-full"></span>
             </Link>
           </div>
 
@@ -94,12 +94,12 @@ export function Navbar() {
             {!isSignedIn ? (
               <>
                 <Link href="/sign-in" data-testid="desktop-sign-in-link">
-                  <Button variant="ghost" className="text-neutral-700 hover:text-blue-500">
+                  <Button variant="ghost" className="text-neutral-700 hover:text-gold-500">
                     Masuk
                   </Button>
                 </Link>
                 <Link href="/sign-up" data-testid="desktop-sign-up-link">
-                  <Button className="bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-all duration-200 hover:scale-105 hover:shadow-lg">
+                  <Button className="bg-gold-500 hover:bg-gold-600 text-neutral-900 rounded-lg transition-all duration-200 hover:scale-105 hover:shadow-lg">
                     Daftar Gratis
                   </Button>
                 </Link>
@@ -108,7 +108,7 @@ export function Navbar() {
               <>
                 {/* Role-based Dashboard Link */}
                 <Link href={getDashboardUrl()} data-testid="desktop-dashboard-link">
-                  <Button variant="ghost" className="text-sm text-neutral-700 hover:text-blue-500">
+                  <Button variant="ghost" className="text-sm text-neutral-700 hover:text-gold-500">
                     Dashboard
                     {role && (
                       <span
@@ -116,8 +116,8 @@ export function Navbar() {
                           role === 'owner'
                             ? 'bg-red-100 text-red-600'
                             : role === 'producer'
-                              ? 'bg-blue-100 text-blue-600'
-                              : 'bg-green-100 text-green-600'
+                              ? 'bg-gold-100 text-gold-600'
+                              : 'bg-gold-50 text-gold-700'
                         }`}
                       >
                         {role}
@@ -130,7 +130,7 @@ export function Navbar() {
                   signOutOptions={{ redirectUrl: '/' }}
                   data-testid="desktop-sign-out-button"
                 >
-                  <Button variant="ghost" className="text-neutral-700 hover:text-blue-500">
+                  <Button variant="ghost" className="text-neutral-700 hover:text-gold-500">
                     Keluar
                   </Button>
                 </SignOutButton>
@@ -162,7 +162,7 @@ export function Navbar() {
           <div className="flex flex-col space-y-4">
             <Link
               href="#categories"
-              className="text-neutral-700 hover:text-blue-500 transition-colors duration-200 py-2"
+              className="text-neutral-700 hover:text-gold-500 transition-colors duration-200 py-2"
               onClick={handleNavClick}
               data-testid="mobile-nav-categories"
             >
@@ -170,7 +170,7 @@ export function Navbar() {
             </Link>
             <Link
               href="#featured"
-              className="text-neutral-700 hover:text-blue-500 transition-colors duration-200 py-2"
+              className="text-neutral-700 hover:text-gold-500 transition-colors duration-200 py-2"
               onClick={handleNavClick}
               data-testid="mobile-nav-featured"
             >
@@ -178,7 +178,7 @@ export function Navbar() {
             </Link>
             <Link
               href="#store-info"
-              className="text-neutral-700 hover:text-blue-500 transition-colors duration-200 py-2"
+              className="text-neutral-700 hover:text-gold-500 transition-colors duration-200 py-2"
               onClick={handleNavClick}
               data-testid="mobile-nav-store-info"
             >
@@ -186,7 +186,7 @@ export function Navbar() {
             </Link>
             <Link
               href="#contact"
-              className="text-neutral-700 hover:text-blue-500 transition-colors duration-200 py-2"
+              className="text-neutral-700 hover:text-gold-500 transition-colors duration-200 py-2"
               onClick={handleNavClick}
               data-testid="mobile-nav-contact"
             >
@@ -198,7 +198,7 @@ export function Navbar() {
                   <Link href="/sign-in" data-testid="mobile-sign-in-link">
                     <Button
                       variant="ghost"
-                      className="justify-start cursor-pointer text-neutral-700 hover:text-blue-500"
+                      className="justify-start cursor-pointer text-neutral-700 hover:text-gold-500"
                       onClick={handleNavClick}
                     >
                       Masuk
@@ -206,7 +206,7 @@ export function Navbar() {
                   </Link>
                   <Link href="/sign-up" data-testid="mobile-sign-up-link">
                     <Button
-                      className="bg-blue-500 hover:bg-blue-600 text-white rounded-lg w-full transition-all duration-200"
+                      className="bg-gold-500 hover:bg-gold-600 text-neutral-900 rounded-lg w-full transition-all duration-200"
                       onClick={handleNavClick}
                     >
                       Daftar Gratis
@@ -219,7 +219,7 @@ export function Navbar() {
                   <Link href={getDashboardUrl()} data-testid="mobile-dashboard-link">
                     <Button
                       variant="outline"
-                      className="justify-start cursor-pointer w-full text-neutral-700 hover:text-blue-500"
+                      className="justify-start cursor-pointer w-full text-neutral-700 hover:text-gold-500"
                       onClick={handleNavClick}
                     >
                       <span className="flex items-center">
@@ -230,8 +230,8 @@ export function Navbar() {
                               role === 'owner'
                                 ? 'bg-red-100 text-red-600'
                                 : role === 'producer'
-                                  ? 'bg-blue-100 text-blue-600'
-                                  : 'bg-green-100 text-green-600'
+                                  ? 'bg-gold-100 text-gold-600'
+                                  : 'bg-gold-50 text-gold-700'
                             }`}
                           >
                             {role}
@@ -247,7 +247,7 @@ export function Navbar() {
                   >
                     <Button
                       variant="ghost"
-                      className="justify-start cursor-pointer text-neutral-700 hover:text-blue-500"
+                      className="justify-start cursor-pointer text-neutral-700 hover:text-gold-500"
                       onClick={handleSignOut}
                     >
                       Keluar

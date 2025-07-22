@@ -10,10 +10,10 @@ const categories = [
     description:
       'Koleksi pakaian elegan untuk acara pesta dan formal. Dress, gaun malam, dan suit premium.',
     icon: PartyPopper,
-    color: 'blue',
+    color: 'gold',
     items: '150+ items',
-    gradient: 'from-blue-500 to-blue-600',
-    bgGradient: 'from-blue-50 to-blue-100',
+    gradient: 'from-gold-500 to-gold-600',
+    bgGradient: 'from-gold-50 to-gold-100',
     popular: ['Dress Pesta', 'Gaun Malam', 'Suit Formal'],
   },
   {
@@ -21,10 +21,10 @@ const categories = [
     description:
       'Pakaian nyaman untuk acara santai dan sehari-hari. Kemeja, blouse, dan outfit kasual.',
     icon: Shirt,
-    color: 'green',
+    color: 'gold',
     items: '200+ items',
-    gradient: 'from-green-500 to-green-600',
-    bgGradient: 'from-green-50 to-green-100',
+    gradient: 'from-gold-500 to-gold-600',
+    bgGradient: 'from-gold-50 to-gold-100',
     popular: ['Kemeja Casual', 'Blouse', 'Kaos Premium'],
   },
   {
@@ -32,10 +32,10 @@ const categories = [
     description:
       'Koleksi pakaian tradisional untuk acara adat dan budaya. Kebaya, batik, dan busana nusantara.',
     icon: Crown,
-    color: 'yellow',
+    color: 'gold',
     items: '100+ items',
-    gradient: 'from-yellow-500 to-orange-500',
-    bgGradient: 'from-yellow-50 to-orange-100',
+    gradient: 'from-gold-500 to-gold-600',
+    bgGradient: 'from-gold-50 to-gold-100',
     popular: ['Kebaya', 'Batik Premium', 'Sarong'],
   },
 ]
@@ -47,7 +47,7 @@ export default function CategoriesSection() {
     <section id="categories" className="py-16 md:py-24 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <div className="inline-flex items-center px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-medium mb-4">
+          <div className="inline-flex items-center px-4 py-2 bg-gold-100 text-gold-700 rounded-full text-sm font-medium mb-4">
             Kategori Lengkap
           </div>
           <h2 className="text-3xl md:text-4xl font-bold text-neutral-900 mb-4">
@@ -117,9 +117,9 @@ export default function CategoriesSection() {
                         isHovered ? 'translate-x-2' : ''
                       }`}
                     >
-                      <span className="text-sm font-semibold text-blue-500">Lihat Koleksi</span>
+                      <span className="text-sm font-semibold text-gold-500">Lihat Koleksi</span>
                       <ArrowRight
-                        className={`w-4 h-4 text-blue-500 transition-transform duration-300 ${
+                        className={`w-4 h-4 text-gold-500 transition-transform duration-300 ${
                           isHovered ? 'translate-x-1' : ''
                         }`}
                       />
@@ -133,7 +133,7 @@ export default function CategoriesSection() {
 
         {/* Bottom CTA */}
         <div className="text-center mt-12">
-          <button className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-8 py-3 rounded-lg font-semibold transition-all duration-200 hover:scale-105 hover:shadow-lg">
+          <button className="bg-gradient-to-r from-gold-500 to-gold-600 hover:from-gold-600 hover:to-gold-700 text-neutral-900 px-8 py-3 rounded-lg font-semibold transition-all duration-200 hover:scale-105 hover:shadow-lg">
             Jelajahi Semua Kategori
           </button>
         </div>
