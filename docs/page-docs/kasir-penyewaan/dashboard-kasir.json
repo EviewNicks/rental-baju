@@ -1,0 +1,135 @@
+{
+  "dashboard_kasir_style": {
+    "perspective": "modern rental transaction list page for cashier",
+    "geometry": {
+      "proportions": "header with tab bar, main content with transactions table, no sidebar",
+      "element_arrangement": "tab bar at top, transactions table as main content"
+    },
+    "composition": {
+      "element_count": "2 main sections: tab bar, transactions table",
+      "spatial_depth": "layered cards with soft shadows, floating action buttons",
+      "scale_consistency": "component sizes reduced to 3/4 of previous, compact layout",
+      "scene_density": "moderate density optimized for quick scanning and workflow efficiency"
+    },
+    "lighting": {
+      "type": "soft ambient lighting with gold accent highlights",
+      "light_source": "top-down natural light simulation",
+      "shadow": "subtle drop shadows on cards and interactive elements",
+      "highlighting": "gold accent glow on primary actions and important stats"
+    },
+    "textures": {
+      "material_finish": "clean flat surfaces with subtle depth",
+      "surface_treatment": "rounded corners with consistent radius",
+      "texture_realism": "minimal textures, focus on clean modern aesthetics"
+    },
+    "render_quality": {
+      "resolution": "high-resolution web rendering with crisp typography",
+      "edge_definition": "rounded-lg corners with consistent 8px radius",
+      "visual_clarity": "clear information hierarchy with proper spacing"
+    },
+    "color_palette": {
+      "primary": {
+        "gold_400": "#F7C948",
+        "gold_500": "#FFD700",
+        "gold_600": "#F0B429"
+      },
+      "secondary": {
+        "blue_500": "#3B82F6",
+        "green_500": "#10B981",
+        "red_500": "#EF4444"
+      },
+      "neutral": {
+        "white": "#FFFFFF",
+        "gray_50": "#F8FAFC",
+        "gray_200": "#F1F5F9",
+        "gray_900": "#1F2937"
+      }
+    },
+    "background": {
+      "color": "light gray gradient from neutral-50 to neutral-100",
+      "style": "clean minimalist background with subtle texture",
+      "texture": "very subtle noise pattern for depth"
+    },
+    "stylistic_tone": "professional business dashboard with modern flat design and efficient workflow focus",
+    "page_behavior": {
+      "branding_alignment": "consistent with rental software brand identity",
+      "scalability": "responsive design optimized for cashier workflow",
+      "accessibility": "WCAG 2.1 AA compliant with keyboard navigation"
+    }
+  },
+  "v0_prompt": "Buat halaman Daftar Transaksi Penyewaan untuk kasir, menampilkan seluruh transaksi rental dalam bentuk tabel dengan tab filter status di bagian atas (Aktif, Selesai, Overdue). Tidak perlu sidebar, statistik, atau daftar penyewa. Ukuran komponen lebih kecil (3/4 dari sebelumnya), layout tetap clean, responsif, dan mudah discan. Fokus pada kemudahan kasir memantau dan mengelola transaksi rental secara real-time.",
+  "components_structure": {
+    "transactions_tabbed": {
+      "name": "TransactionsTabbedTable",
+      "file": "features/kasir/components/dashboard/TransactionsTabbedTable.tsx",
+      "elements": [
+        "tab_bar_with_status_tabs",
+        "search_bar_with_filters",
+        "transaction_rows_with_status",
+        "status_badges_colored",
+        "pagination_controls"
+      ],
+      "style_rules": {
+        "table": "compact, clean borders with zebra striping",
+        "status_badges": "rounded-full with appropriate colors",
+        "hover_states": "row highlight with pointer cursor",
+        "loading_skeleton": "animated shimmer for loading states"
+      }
+    }
+  },
+  "data_structure": {
+    "transactions": [
+      {
+        "transactionCode": "string (TXN-YYYYMMDD-XXX)",
+        "customerName": "string",
+        "rentalDate": "date",
+        "status": "enum (active|overdue|returned)",
+        "totalPayment": "number"
+      }
+    ]
+  },
+  "user_flows": [
+    "Kasir login → Daftar transaksi → Tab switch (Aktif/Selesai/Overdue) → Lihat transaksi",
+    "Daftar transaksi → Search transaksi → Lihat detail transaksi"
+  ],
+  "responsive_breakpoints": {
+    "mobile": {
+      "max_width": "768px",
+      "layout": "single column stack, collapsible sections",
+      "typography": "smaller font sizes, compact spacing",
+      "interactions": "touch-friendly buttons and swipe gestures"
+    },
+    "tablet": {
+      "min_width": "769px",
+      "max_width": "1024px",
+      "layout": "two column layout with adjusted proportions",
+      "typography": "medium font sizes, balanced spacing"
+    },
+    "desktop": {
+      "min_width": "1025px",
+      "layout": "full two column grid with sidebar potential",
+      "typography": "large font sizes, generous spacing"
+    }
+  },
+  "interaction_patterns": {
+    "hover_effects": {
+      "table_rows": "background highlight with pointer cursor"
+    },
+    "loading_states": {
+      "skeleton": "animate-pulse with proper aspect ratios",
+      "spinner": "gold-colored spinner for form submissions",
+      "progressive": "fade-in animations for content loading"
+    },
+    "transitions": {
+      "duration": "200ms for micro-interactions",
+      "easing": "cubic-bezier(0.4, 0, 0.2, 1)",
+      "properties": "transform, opacity, background-color, box-shadow"
+    }
+  },
+  "accessibility_features": {
+    "keyboard_navigation": "full keyboard support with visible focus indicators",
+    "screen_reader": "semantic HTML with proper ARIA labels and live regions",
+    "color_contrast": "WCAG 2.1 AA compliant contrast ratios throughout",
+    "reduced_motion": "respects prefers-reduced-motion for animations"
+  }
+}

@@ -1,33 +1,15 @@
 #!/usr/bin/env python3
 
-import subprocess
 import sys
 import json
 from win10toast import ToastNotifier
 
-def send_notification(title, message, sound="default"):
-    """Send a Windows notification using osascript"""
-    try:
-        # Escape quotes in the title and message
-        escaped_title = title.replace('"', '\\"')
-        escaped_message = message.replace('"', '\\"')
-        # Try AppleScript with explicit app bundle identifier
-        script = f'''
-        tell application "System Events"
-            display notification "{escaped_message}" with title "{escaped_title}"
-        end tell
-        '''
-        print(f"DEBUG: Running script with System Events", file=sys.stderr)
-        result = subprocess.run(['osascript', '-e', script], check=True, capture_output=True, text=True)
-        print(f"DEBUG: Script executed successfully", file=sys.stderr)
-    except subprocess.CalledProcessError as e:
-        print(f"Failed to send notification: {e}", file=sys.stderr)
-    except Exception as e:
-        print(f"Error sending notification: {e}", file=sys.stderr)
-
 def main():
-
-    input_data = json.load(sys.stdin)
+    if sys.stdin.isatty():
+        # Dummy data untuk testing manual
+        input_data = {"tool_name": "Write"}
+    else:
+        input_data = json.load(sys.stdin)
     tool_name = input_data.get("tool_name")
     
     # Create notification title and message based on tool name
