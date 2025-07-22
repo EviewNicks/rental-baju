@@ -1,0 +1,60 @@
+'use client'
+
+import { useState } from 'react'
+import Link from 'next/link'
+import type { TransactionStatus } from '../../types/transaction'
+import { useTransactions } from '../../hooks/useTransactions'
+import { TransactionTabs } from './TransactionTabs'
+import { TransactionTable } from './TransactionsTable'
+import { Button } from '@/components/ui/button'
+import { Plus } from 'lucide-react'
+
+export function TransactionsDashboard() {
+  const [activeTab, setActiveTab] = useState<TransactionStatus | 'all'>('all')
+  const { transactions, filters, updateFilters, isLoading, counts } = useTransactions()
+
+  const handleTabChange = (tab: TransactionStatus | 'all') => {
+    setActiveTab(tab)
+    updateFilters({
+      status: tab === 'all' ? undefined : tab,
+    })
+  }
+
+  const handleSearchChange = (search: string) => {
+    updateFilters({ search })
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="text-center space-y-2">
+          <h1 className="text-2xl font-bold text-gray-900">RentalBaju</h1>
+          <p className="text-gray-600">Daftar Transaksi Penyewaan</p>
+        </div>
+
+        {/* Add Transaction Button */}
+        <div className="flex justify-end">
+          <Link href="/dashboard/new">
+            <Button className="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-medium shadow-lg shadow-yellow-400/25">
+              <Plus className="h-4 w-4 mr-2" />
+              Tambah Transaksi
+            </Button>
+          </Link>
+        </div>
+
+        {/* Tabs and Search */}
+        <TransactionTabs
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+          searchValue={filters.search || ''}
+          onSearchChange={handleSearchChange}
+          counts={counts}
+        />
+
+        {/* Transactions Table */}
+        <TransactionTable transactions={transactions} isLoading={isLoading} />
+      </div>
+    </div>
+  )
+}
