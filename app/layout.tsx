@@ -45,8 +45,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeProvider
           attribute="class"
           defaultTheme="light"
-          enableSystem
+          enableSystem={false}
           disableTransitionOnChange
+          forcedTheme="light"
         >
           <ClerkProvider>
             <UserRoleProvider

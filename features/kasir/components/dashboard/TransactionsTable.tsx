@@ -125,7 +125,7 @@ function TransactionRow({ transaction }: { transaction: Transaction }) {
         <StatusBadge status={transaction.status} />
       </TableCell>
       <TableCell className="px-4 py-3 text-center">
-        <Link href={`/transaksi/${transaction.id}`}>
+        <Link href={`/dashboard/${transaction.id}`}>
           <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
             <Eye className="h-4 w-4" />
             <span className="sr-only">Lihat Detail</span>
