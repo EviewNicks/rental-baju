@@ -39,6 +39,7 @@ graph TD
 │   └── [feature]/      # Contoh: manage-product, auth, kasir
 │       ├── components/ # Komponen UI
 │       ├── hooks/      # Custom hooks (state, logic)
+│       ├── services/   # prisma logic CRUD, validasi, dsb
 │       ├── api.ts      # API client/fetcher untuk fitur ini
 │       ├── types.ts    # TypeScript types untuk fitur ini
 ├── prisma/             # Skema database & seed
@@ -91,6 +92,8 @@ features/
       ProductForm.tsx
     hooks/
       useProduct.ts
+    services/
+      ProductService.ts
     api.ts
     types.ts
   kasir/
@@ -99,6 +102,8 @@ features/
       RentalTable.tsx
     hooks/
       useRental.ts
+    services/
+      RentalService.ts
     api.ts
     types.ts
 ```
@@ -121,7 +126,8 @@ features/
 
 - Fokus di:
   - `features/[fitur]/api.ts` → Membuat API client/fetcher (opsional, biasanya dibuat FE, tapi BE bisa bantu jika logic fetch kompleks)
-  - `app/api/[fitur]/route.ts` → Membangun API Route Next.js (handler CRUD, validasi, otentikasi)
+  - `app/api/[fitur]/route.ts` → Membangun API Route Next.js (validasi, otentikasi)
+  - `services/` → handler CRUD prisma yang digunakan di API route
   - `prisma/` → Mendesain dan memelihara schema database, migration, dan query
 
 ### **Alur Kolaborasi**

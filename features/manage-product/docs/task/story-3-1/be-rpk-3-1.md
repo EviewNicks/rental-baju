@@ -16,7 +16,7 @@ Task ini mengimplementasikan backend support untuk field Size dan Color pada sis
 
 Size akan menggunakan enum values untuk ukuran standar pakaian, sementara Color akan bersifat fleksibel seperti model categories dengan validation yang tepat untuk use case rental business.
 
-> **  PENTING**: Dalam task docs jangan memberikan contoh pseudocode details
+> **ï¿½ PENTING**: Dalam task docs jangan memberikan contoh pseudocode details
 
 ## Perbandingan dengan Referensi
 
