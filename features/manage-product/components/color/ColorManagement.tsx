@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { ColorList } from './ColorList'
 import { ColorForm } from './ColorForm'
 import { DeleteConfirmationDialog } from '../category/DeleteConfirmationDialog'
-import { mockColors } from '../../data/mock-colors'
+import { useColors, useCreateColor, useUpdateColor, useDeleteColor } from '../../hooks/useCategories'
 import type { Color, ColorFormData, ColorModalMode } from '../../types/color'
 import { Button } from '@/components/ui/button'
 
@@ -13,30 +13,19 @@ interface ColorManagementProps {
 }
 
 export function ColorManagement({ className }: ColorManagementProps) {
-  const [colors, setColors] = useState<Color[]>([])
-  const [loading, setLoading] = useState(true)
+  // Use simplified hooks instead of manual state management
+  const { data: colorsData, isLoading } = useColors({ isActive: true })
+  const colors = colorsData?.colors || []
+
+  // Mutations
+  const createColorMutation = useCreateColor()
+  const updateColorMutation = useUpdateColor()
+  const deleteColorMutation = useDeleteColor()
+
+  // Local UI state
   const [mode, setMode] = useState<ColorModalMode>('view')
   const [selectedColor, setSelectedColor] = useState<Color | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [deleteLoading, setDeleteLoading] = useState(false)
-
-  // Load colors
-  useEffect(() => {
-    loadColors()
-  }, [])
-
-  const loadColors = async () => {
-    setLoading(true)
-    try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      setColors(mockColors)
-    } catch (error) {
-      console.error('Error loading colors:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const handleAddColor = () => {
     setSelectedColor(null)
@@ -56,35 +45,18 @@ export function ColorManagement({ className }: ColorManagementProps) {
   const handleFormSubmit = async (formData: ColorFormData) => {
     try {
       if (mode === 'add') {
-        // Simulate API call for adding color
-        await new Promise((resolve) => setTimeout(resolve, 1500))
-
-        const newColor: Color = {
-          id: Date.now().toString(),
+        await createColorMutation.mutateAsync({
           name: formData.name,
-          hex_value: formData.hex_value,
-          product_count: 0,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        }
-
-        setColors((prev) => [...prev, newColor])
+          hexCode: formData.hexCode,
+        })
       } else if (mode === 'edit' && selectedColor) {
-        // Simulate API call for updating color
-        await new Promise((resolve) => setTimeout(resolve, 1500))
-
-        setColors((prev) =>
-          prev.map((color) =>
-            color.id === selectedColor.id
-              ? {
-                  ...color,
-                  name: formData.name,
-                  hex_value: formData.hex_value,
-                  updated_at: new Date().toISOString(),
-                }
-              : color,
-          ),
-        )
+        await updateColorMutation.mutateAsync({
+          id: selectedColor.id,
+          data: {
+            name: formData.name,
+            hexCode: formData.hexCode,
+          }
+        })
       }
 
       setMode('view')
@@ -103,18 +75,12 @@ export function ColorManagement({ className }: ColorManagementProps) {
   const handleConfirmDelete = async () => {
     if (!selectedColor) return
 
-    setDeleteLoading(true)
     try {
-      // Simulate API call for deleting color
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-
-      setColors((prev) => prev.filter((color) => color.id !== selectedColor.id))
+      await deleteColorMutation.mutateAsync(selectedColor.id)
       setDeleteDialogOpen(false)
       setSelectedColor(null)
     } catch (error) {
       console.error('Error deleting color:', error)
-    } finally {
-      setDeleteLoading(false)
     }
   }
 
@@ -127,14 +93,14 @@ export function ColorManagement({ className }: ColorManagementProps) {
               colors={colors}
               onEdit={handleEditColor}
               onDelete={handleDeleteColor}
-              loading={loading}
+              loading={isLoading}
             />
 
             <div className="flex justify-end pt-4 border-t border-gray-200">
               <Button
                 onClick={handleAddColor}
                 className="bg-yellow-400 hover:bg-yellow-500 text-black"
-                disabled={loading}
+                disabled={isLoading}
               >
                 Tambah Warna
               </Button>
@@ -157,7 +123,7 @@ export function ColorManagement({ className }: ColorManagementProps) {
         onConfirm={handleConfirmDelete}
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         category={selectedColor as any} // Reusing the same dialog component
-        loading={deleteLoading}
+        loading={deleteColorMutation.isPending}
       />
     </>
   )

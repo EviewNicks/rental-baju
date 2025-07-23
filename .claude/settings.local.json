@@ -49,7 +49,8 @@
       "Bash(npx prisma db seed:*)",
       "Bash(yarn dev)",
       "Bash(npx prisma generate:*)",
-      "Bash(tail:*)"
+      "Bash(tail:*)",
+      "Bash(touch:*)"
     ],
     "deny": []
   }

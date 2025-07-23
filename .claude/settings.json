@@ -1,4 +1,10 @@
 {
+  "mcpServers": {
+    "browser-tools": {
+      "command": "npx",
+      "args": ["@agentdeskai/browser-tools-mcp@1.2.0"]
+    }
+  },
   "permissions": {
     "deny": [
       "Read(.env)",
@@ -36,6 +42,14 @@
         "hooks": [
           {
             "type": "command",
+            "command": "uv run .claude/hooks/play_audio.py build_complete"
+          },
+          {
+            "type": "command",
+            "command": "uv run .claude/hooks/windows_notification.py build_complete"
+          },
+          {
+            "type": "command",
             "command": "uv run .claude/hooks/ts_lint.py"
           }
         ]
@@ -47,11 +61,15 @@
         "hooks": [
           {
             "type": "command",
-            "command": "uv run .claude/hooks/play_audio.py"
+            "command": "uv run .claude/hooks/play_audio.py ready"
           },
           {
             "type": "command",
-            "command": "uv run .claude/hooks/windows_notification.py"
+            "command": "uv run .claude/hooks/windows_notification.py ready"
+          },
+          {
+            "type": "command",
+            "command": "uv run .claude/hooks/play_audio.py error_fixed"
           }
         ]
       }
@@ -62,11 +80,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "uv run .claude/hooks/play_audio.py"
+            "command": "uv run .claude/hooks/play_audio.py "
           },
           {
             "type": "command",
-            "command": "uv run .claude/hooks/windows_notification.py"
+            "command": "uv run .claude/hooks/windows_notification.py awaiting_instructions"
           }
         ]
       }

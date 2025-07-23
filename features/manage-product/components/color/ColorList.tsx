@@ -33,7 +33,7 @@ export function ColorList({ colors, onEdit, onDelete, loading }: ColorListProps)
             <div className="flex items-center space-x-4">
               <div
                 className="w-8 h-8 rounded-full border-2 border-gray-300 shadow-sm flex-shrink-0"
-                style={{ backgroundColor: color.hex_value }}
+                style={{ backgroundColor: color.hexCode }}
               />
 
               {/* Color Info */}
@@ -41,7 +41,7 @@ export function ColorList({ colors, onEdit, onDelete, loading }: ColorListProps)
                 <div className="flex items-center space-x-2 mb-1">
                   <span className="font-medium text-gray-900">{color.name}</span>
                   <Badge variant="outline" className="font-mono text-xs">
-                    {color.hex_value}
+                    {color.hexCode}
                   </Badge>
                 </div>
  
