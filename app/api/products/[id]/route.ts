@@ -100,6 +100,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       ? parseInt(formData.get('quantity') as string)
       : undefined
     const categoryId = (formData.get('categoryId') as string) || undefined
+    const size = (formData.get('size') as string) || undefined
+    const colorId = (formData.get('colorId') as string) || undefined
     const image = formData.get('image') as File | null
 
     // Prepare update data
@@ -111,6 +113,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     if (hargaSewa !== undefined) updateData.hargaSewa = hargaSewa
     if (quantity !== undefined) updateData.quantity = quantity
     if (categoryId !== undefined) updateData.categoryId = categoryId
+    if (size !== undefined) updateData.size = size
+    if (colorId !== undefined) updateData.colorId = colorId
 
     // Validate with schema if there's data to update
     if (Object.keys(updateData).length > 0) {

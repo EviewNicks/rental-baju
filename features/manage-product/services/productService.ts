@@ -55,6 +55,17 @@ export class ProductService {
       throw new NotFoundError(`Category dengan ID ${validatedData.categoryId} tidak ditemukan`)
     }
 
+    // Validate colorId if provided
+    if (validatedData.colorId) {
+      const colorExists = await this.prisma.color.findUnique({
+        where: { id: validatedData.colorId, isActive: true },
+      })
+
+      if (!colorExists) {
+        throw new NotFoundError(`Warna dengan ID ${validatedData.colorId} tidak ditemukan`)
+      }
+    }
+
     // Create product with Decimal conversion
     const prismaProduct = await this.prisma.product.create({
       data: {
@@ -65,6 +76,8 @@ export class ProductService {
         hargaSewa: new Decimal(validatedData.hargaSewa), // ✅ Konversi number ke Decimal
         quantity: validatedData.quantity,
         categoryId: validatedData.categoryId,
+        size: validatedData.size,
+        colorId: validatedData.colorId,
         imageUrl: request.imageUrl || undefined, // ✅ Gunakan imageUrl dari request
         status: 'AVAILABLE',
         totalPendapatan: new Decimal(0),
@@ -73,6 +86,7 @@ export class ProductService {
       },
       include: {
         category: true,
+        color: true,  // Include color relation
       },
     })
 
@@ -114,6 +128,17 @@ export class ProductService {
       }
     }
 
+    // Validate colorId existence if colorId is being updated
+    if (validatedData.colorId && validatedData.colorId !== existingProduct.colorId) {
+      const colorExists = await this.prisma.color.findUnique({
+        where: { id: validatedData.colorId, isActive: true },
+      })
+
+      if (!colorExists) {
+        throw new NotFoundError(`Warna dengan ID ${validatedData.colorId} tidak ditemukan`)
+      }
+    }
+
     // Prepare update data with Decimal conversion
     const updateData: Record<string, unknown> = {
       updatedAt: new Date(),
@@ -124,6 +149,8 @@ export class ProductService {
     if (validatedData.description !== undefined) updateData.description = validatedData.description
     if (validatedData.quantity !== undefined) updateData.quantity = validatedData.quantity
     if (validatedData.categoryId !== undefined) updateData.categoryId = validatedData.categoryId
+    if (validatedData.size !== undefined) updateData.size = validatedData.size
+    if (validatedData.colorId !== undefined) updateData.colorId = validatedData.colorId
 
     // Handle imageUrl update (added from API layer)
     if ('imageUrl' in request && request.imageUrl !== undefined) {
@@ -144,6 +171,7 @@ export class ProductService {
       data: updateData,
       include: {
         category: true,
+        color: true,  // Include color relation
       },
     })
 
@@ -156,7 +184,7 @@ export class ProductService {
   async getProducts(query: Record<string, unknown>): Promise<ProductListResponse> {
     // Validate and parse query parameters
     const validatedQuery = productQuerySchema.parse(query)
-    const { page, limit, search, categoryId, status, isActive } = validatedQuery
+    const { page, limit, search, categoryId, status, isActive, size, colorId } = validatedQuery
 
     // Build where clause
     const where: Record<string, unknown> = {
@@ -169,6 +197,24 @@ export class ProductService {
 
     if (status) {
       where.status = status
+    }
+
+    // Handle size filtering (support multiple values)
+    if (size) {
+      if (Array.isArray(size)) {
+        where.size = { in: size }
+      } else {
+        where.size = size
+      }
+    }
+
+    // Handle colorId filtering (support multiple values)
+    if (colorId) {
+      if (Array.isArray(colorId)) {
+        where.colorId = { in: colorId }
+      } else {
+        where.colorId = colorId
+      }
     }
 
     if (search) {
@@ -189,6 +235,7 @@ export class ProductService {
         where,
         include: {
           category: true,
+          color: true,  // Include color relation
         },
         orderBy: {
           createdAt: 'desc',
@@ -227,6 +274,7 @@ export class ProductService {
       },
       include: {
         category: true,
+        color: true,  // Include color relation
       },
     })
 
@@ -307,6 +355,7 @@ export class ProductService {
       },
       include: {
         category: true,
+        color: true,  // Include color relation
       },
     })
 
@@ -323,6 +372,8 @@ export class ProductService {
       name: prismaProduct.name as string,
       description: prismaProduct.description as string,
       categoryId: prismaProduct.categoryId as string,
+      size: prismaProduct.size as string | undefined,
+      colorId: prismaProduct.colorId as string | undefined,
       category: prismaProduct.category
         ? {
             id: (prismaProduct.category as Record<string, unknown>).id as string,
@@ -334,6 +385,19 @@ export class ProductService {
             createdBy: (prismaProduct.category as Record<string, unknown>).createdBy as string,
           }
         : ({} as Category),
+      color: prismaProduct.color
+        ? {
+            id: (prismaProduct.color as Record<string, unknown>).id as string,
+            name: (prismaProduct.color as Record<string, unknown>).name as string,
+            hexCode: (prismaProduct.color as Record<string, unknown>).hexCode as string | undefined,
+            description: (prismaProduct.color as Record<string, unknown>).description as string | undefined,
+            isActive: (prismaProduct.color as Record<string, unknown>).isActive as boolean,
+            products: [], // Avoid circular reference in conversion
+            createdAt: (prismaProduct.color as Record<string, unknown>).createdAt as Date,
+            updatedAt: (prismaProduct.color as Record<string, unknown>).updatedAt as Date,
+            createdBy: (prismaProduct.color as Record<string, unknown>).createdBy as string,
+          }
+        : undefined,
       modalAwal: prismaProduct.modalAwal as Decimal,
       hargaSewa: prismaProduct.hargaSewa as Decimal,
       quantity: prismaProduct.quantity as number,

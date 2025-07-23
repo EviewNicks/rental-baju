@@ -142,6 +142,10 @@ features/
 
 ---
 
+> /docs-result baiklah buatlah docs result terkait apa yang telah kita kerjakan pada                                     │
+│   features\manage-product\docs\task\story-3-1\be-rpk-3-1.md , silahkan docs result nya di                                │
+│   features\manage-product\docs\result-docs\story-3-1\result-be-rpk-3-1.md       
+
 ## 7. Best Practice
 
 - **Keep it simple!**
