@@ -1,0 +1,68 @@
+import type { Color } from '../types/color'
+
+export const mockColors: Color[] = [
+  {
+    id: '1',
+    name: 'Merah Marun',
+    hex_value: '#800000',
+    product_count: 8,
+    created_at: '2024-01-01T00:00:00Z',
+    updated_at: '2024-01-01T00:00:00Z',
+  },
+  {
+    id: '2',
+    name: 'Biru Navy',
+    hex_value: '#000080',
+    product_count: 12,
+    created_at: '2024-01-01T00:00:00Z',
+    updated_at: '2024-01-01T00:00:00Z',
+  },
+  {
+    id: '3',
+    name: 'Hitam Pekat',
+    hex_value: '#000000',
+    product_count: 15,
+    created_at: '2024-01-01T00:00:00Z',
+    updated_at: '2024-01-01T00:00:00Z',
+  },
+  {
+    id: '4',
+    name: 'Putih Gading',
+    hex_value: '#FFFDD0',
+    product_count: 6,
+    created_at: '2024-01-01T00:00:00Z',
+    updated_at: '2024-01-01T00:00:00Z',
+  },
+  {
+    id: '5',
+    name: 'Emas Champagne',
+    hex_value: '#F7E7CE',
+    product_count: 4,
+    created_at: '2024-01-01T00:00:00Z',
+    updated_at: '2024-01-01T00:00:00Z',
+  },
+  {
+    id: '6',
+    name: 'Pink Dusty',
+    hex_value: '#D4A5A5',
+    product_count: 7,
+    created_at: '2024-01-01T00:00:00Z',
+    updated_at: '2024-01-01T00:00:00Z',
+  },
+  {
+    id: '7',
+    name: 'Hijau Emerald',
+    hex_value: '#50C878',
+    product_count: 3,
+    created_at: '2024-01-01T00:00:00Z',
+    updated_at: '2024-01-01T00:00:00Z',
+  },
+  {
+    id: '8',
+    name: 'Ungu Royal',
+    hex_value: '#663399',
+    product_count: 5,
+    created_at: '2024-01-01T00:00:00Z',
+    updated_at: '2024-01-01T00:00:00Z',
+  },
+]
