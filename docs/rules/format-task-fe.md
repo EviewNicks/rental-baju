@@ -189,11 +189,6 @@ interface HookReturn {
 - [Testing interaksi antar komponen]
 - [Testing integrasi dengan API]
 
-### E2E Testing
-
-- [User flow testing dengan Playwright]
-- [Critical path testing]
-
 ### Accessibility Testing
 
 - [Automated accessibility testing]

@@ -1,197 +1,220 @@
-User Story 2: TSK-02
+Berdasarkan analisis ketidaksesuaian antara mock data kasir dengan schema database, saya akan memberikan rekomendasi enhancement yang diperlukan untuk ketiga result documentation tersebut.
+
+## 🔍 **Analisis Metadata yang Perlu Ditambahkan**
+
+### **Field Baru yang Diperlukan di Database Schema:**
+
+```prisma
+model Product {
+  // ... existing fields ...
+  size        String?  // Ukuran produk (S, M, L, XL, dll)
+  color       String?  // Warna produk (Merah, Hitam, Biru, dll)
+  // ... existing fields ...
+}
+```
+
+## 📋 **Rekomendasi Enhancement untuk Result Documentation**
+
+### **1. Result RPK-12 (UI Design) - Enhancement yang Diperlukan**
+
+#### **A. Komponen yang Perlu Diupdate:**
+
+**ProductForm.tsx**:
+- Tambahkan field `size` dan `color` di form add/edit produk
+- Implementasi dropdown untuk size (S, M, L, XL, XXL)
+- Implementasi color picker atau input text untuk warna
+
+**ProductTable.tsx & ProductGrid.tsx**:
+- Tambahkan kolom Size dan Color di tabel
+- Tampilkan size dan color di card grid
+- Update sorting dan filtering untuk field baru
+
+**ProductDetailPage.tsx**:
+- Tampilkan informasi size dan color di detail produk
+- Update layout untuk accommodate field baru
+
+#### **B. TypeScript Interfaces yang Perlu Diupdate:**
 
-Title: Sebagai producer, saya ingin mengelola produk (pakaian) yang tersedia untuk disewa, termasuk menambah, melihat, dan mengedit detail produk, agar saya dapat menjaga inventaris up-to-date.
+```typescript
+interface Product {
+  // ... existing fields ...
+  size?: string
+  color?: string
+  // ... existing fields ...
+}
 
-Asumsi
+interface ProductFormData {
+  // ... existing fields ...
+  size: string
+  color: string
+  // ... existing fields ...
+}
+```
+
+#### **C. Validation Schema yang Perlu Diupdate:**
+
+```typescript
+const productSchema = z.object({
+  // ... existing fields ...
+  size: z.string().optional(),
+  color: z.string().optional(),
+  // ... existing fields ...
+})
+```
 
-Database Supabase sudah disiapkan dengan tabel untuk produk.
+### **2. Result RPK-13 (Backend) - Enhancement yang Diperlukan**
 
-Admin sudah terautentikasi melalui Clerk.
+#### **A. Database Migration:**
 
-Detail
+```sql
+-- Migration untuk menambah field size dan color
+ALTER TABLE "Product" ADD COLUMN "size" TEXT;
+ALTER TABLE "Product" ADD COLUMN "color" TEXT;
+```
 
-producer dapat menambah produk baru dengan detail seperti kode, foto, jumlah, dan harga.
+#### **B. Service Layer Updates:**
 
-producer dapat melihat daftar produk dalam format tabel atau list.
+**ProductService.ts**:
+- Update createProduct method untuk handle size dan color
+- Update updateProduct method untuk handle field baru
+- Update validation logic
 
-producer dapat mengedit detail produk yang sudah ada.
+**productSchema.ts**:
+- Tambahkan validasi untuk size dan color
+- Update Zod schema untuk field baru
 
-Kriteria Penerimaan
+#### **C. API Endpoints Updates:**
 
-Given saya adalah admin, when saya mengisi form untuk menambah produk dengan data valid, then produk tersimpan di database.
+**POST /api/products**:
+- Handle size dan color di request body
+- Validasi field baru
 
-Given saya adalah admin, when saya membuka halaman daftar produk, then saya dapat melihat semua produk yang ada.
+**PUT /api/products/[id]**:
+- Handle update untuk size dan color
+- Validasi perubahan field baru
 
-Given saya adalah admin, when saya mengedit detail produk, then perubahan tersimpan di database dan terlihat di daftar.
+#### **D. Type Definitions Updates:**
 
-Flowchart
+```typescript
+interface CreateProductRequest {
+  // ... existing fields ...
+  size?: string
+  color?: string
+  // ... existing fields ...
+}
 
-Start ->
-[Tambah Produk] -> <Validasi Data> ->
-[Simpan ke Database] -> [Tampilkan Daftar] ->
-End
+interface UpdateProductRequest {
+  // ... existing fields ...
+  size?: string
+  color?: string
+  // ... existing fields ...
+}
+```
 
-Start ->
-[Lihat Daftar] -> [Tampilkan Daftar Produk] ->
-End
+### **3. Result RPK-14 (Frontend) - Enhancement yang Diperlukan**
 
-Start ->
-[Edit Produk] -> <Validasi Data> ->
-[Update Database] -> [Tampilkan Daftar] ->
-End
+#### **A. Adapter Layer Updates:**
 
-Evaluasi INVEST
+**productAdapter.ts**:
+- Update request/response types untuk include size dan color
+- Handle field baru di createProduct dan updateProduct methods
 
-Kriteria
+**types/requests.ts & types/responses.ts**:
+- Update interface definitions untuk field baru
 
-Evaluasi
+#### **B. Hook Layer Updates:**
 
-Independent
+**useProductForm.ts**:
+- Add size dan color ke form state
+- Update validation logic
+- Handle field baru di form submission
 
-Bergantung pada TSK-01 untuk autentikasi, tetapi dapat diimplementasikan setelah autentikasi selesai.
+**useProducts.ts**:
+- Update filtering untuk size dan color
+- Handle field baru di search functionality
 
-Negotiable
+#### **C. Component Updates:**
 
-Dapat didiskusikan (misalnya, tambahan fitur seperti hapus).
+**SearchFilterBar.tsx**:
+- Tambahkan filter dropdown untuk size
+- Tambahkan filter dropdown untuk color
+- Update search logic untuk include field baru
 
-Valuable
+**ProductFilters interface**:
+```typescript
+interface ProductFilters {
+  // ... existing fields ...
+  size?: string
+  color?: string
+  // ... existing fields ...
+}
+```
 
-Membantu admin mengelola inventaris.
+#### **D. Utility Functions Updates:**
 
-Estimable
+**lib/utils/product.ts**:
+- Add utility functions untuk size dan color formatting
+- Update filtering utilities
 
-8 story points.
+**lib/validation/productSchema.ts**:
+- Update Zod schemas untuk include size dan color validation
 
-Small
+## 🎯 **Prioritas Enhancement**
 
-Dapat diselesaikan dalam satu sprint.
+### **Tingkat Kritis (Harus Dilakukan):**
 
-Testable
+1. **Database Migration** - Tambah field size dan color ke schema
+2. **Backend API Updates** - Handle field baru di semua endpoints
+3. **Frontend Form Updates** - Tambah field di form add/edit
+4. **Type Definitions** - Update semua TypeScript interfaces
 
-Dapat diuji dengan skenario akses untuk berbagai peran.
+### **Tingkat Penting (Sebaiknya Dilakukan):**
 
-Tasks untuk TSK-02
+1. **Search & Filter Enhancement** - Filter berdasarkan size dan color
+2. **Display Updates** - Tampilkan size dan color di table/grid
+3. **Validation Enhancement** - Validasi untuk field baru
 
-Task 2.1: Desain UI
+### **Tingkat Opsional (Bisa Ditunda):**
 
-Task ID: T:02.1
+1. **Advanced Color Picker** - Color picker component untuk kategori
+2. **Size Presets** - Dropdown dengan ukuran standar
+3. **Bulk Operations** - Bulk update size dan color
 
-Kaitan User Story: US:02
+## �� **Dokumentasi yang Perlu Diupdate**
 
-Deskripsi Detail: Merancang antarmuka pengguna (UI) untuk fitur manajemen produk.
+### **Result RPK-12 Updates:**
+- Tambah section "New Fields Implementation" di Detail Implementasi
+- Update Status Acceptance Criteria untuk include size/color fields
+- Update Database Schema section
 
-Checklist:
+### **Result RPK-13 Updates:**
+- Update API Implementation section
+- Tambah migration script documentation
+- Update validation schema documentation
 
-Form tambah produk (termasuk field untuk nama, deskripsi, harga, dan upload foto produk).
+### **Result RPK-14 Updates:**
+- Update Hook Architecture section
+- Update Component Updates section
+- Update Type Safety section
 
-Daftar produk (tabel atau grid dengan kolom nama, harga, dan aksi edit/hapus).
+## 🔄 **Migration Strategy**
 
-Form edit produk (mirip form tambah produk, dengan data yang sudah terisi).
+### **Phase 1: Database & Backend**
+1. Create database migration
+2. Update Prisma schema
+3. Update backend services dan API
+4. Test backend endpoints
 
-Validasi form (misalnya, pesan error jika field wajib kosong).
+### **Phase 2: Frontend Integration**
+1. Update TypeScript interfaces
+2. Update form components
+3. Update display components
+4. Update search/filter functionality
 
-Tombol aksi (simpan, batal, hapus).
+### **Phase 3: Testing & Validation**
+1. Unit tests untuk field baru
+2. Integration tests
+3. E2E tests untuk form workflows
+4. Performance testing
 
-Estimasi Effort: 4 jam
-
-Owner: [Nama Pengembang]
-
-Definition of Done:
-
-Desain UI berhasil dibuat
-
-semua feature UI terinclude di dlaam wireframe
-
-Dependensi: TSK-01 (autentikasi sudah diimplementasikan).
-
-Catatan Tambahan: Fokus pada pembuatan mockup/wireframe atau implementasi desain di kode (tergantung kebutuhan tim).
-
-Task 2.2: Implementasi Backend
-
-Task ID: T:02.2
-
-Kaitan User Story: US:02
-
-Deskripsi Detail: Mengembangkan logika dan API di sisi backend untuk manajemen produk.
-
-Checklist:
-
-Membuat API CRUD (Create, Read, Update, Delete) untuk produk di Supabase.
-
-Mengelola upload foto produk ke storage Supabase.
-
-Memastikan keamanan API dengan Clerk Auth (hanya pengguna terautentikasi dengan role admin yang bisa mengakses).
-
-unit tets dan integration test utama
-
-Estimasi Effort: 6 jam
-
-Owner: [Nama Pengembang]
-
-Definition of Done:
-
-Dependensi: T:02.1 (custom claims sudah dikonfigurasi).
-
-Catatan Tambahan:
-
-Task 2.3: Implementasi Frontend
-
-Task ID: T:02.3
-
-Kaitan User Story: US:02
-
-Deskripsi Detail: Mengembangkan antarmuka pengguna di sisi frontend dan mengintegrasikannya dengan backend.
-
-Checklist:
-
-Membuat komponen UI seperti tabel produk, form tambah produk, dan form edit produk.
-
-Mengintegrasikan API backend dengan React Query untuk operasi CRUD.
-
-Menambahkan validasi form di sisi frontend (misalnya, cek field kosong sebelum submit).
-
-React Query (untuk manajemen state dan fetching data dari API).
-
-unit tets dan integration test utama
-
-Estimasi Effort: 6 jam
-
-Owner: [Nama Pengembang]
-
-Definition of Done:
-
-Dependensi: T:02.1 dan T:02.2 (claims dikonfigurasi dan dapat diambil).
-
-Catatan Tambahan:
-
-Task 2.4: Menulis Test E2E Case
-
-Task ID: T:02.4
-
-Kaitan User Story: US:02
-
-Deskripsi Detail:Menulis skenario pengujian end-to-end untuk memastikan fitur bekerja dengan baik.
-
-Checklist:
-
-Menulis test case untuk skenario seperti:
-
-Menambah produk baru (termasuk upload foto).
-
-Mengedit produk yang ada.
-
-Menghapus produk.
-
-Memastikan hanya producer dan owner yang bisa mengakses fitur (autentikasi via Clerk Auth).
-
-Menggunakan Playwright untuk pengujian E2E.
-
-Estimasi Effort: 6 jam
-
-Owner: [Nama Pengembang]
-
-Definition of Done:
-
-Dependensi: T:02.1 dan T:02.2 (claims dikonfigurasi dan dapat diambil).
-
-Catatan Tambahan:
+Apakah Anda ingin saya membantu membuat detail implementation plan untuk enhancement ini?
