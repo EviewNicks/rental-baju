@@ -16,7 +16,7 @@ import {
 import { ProductImageSection } from './ProductImageSection'
 import { ProductInfoSection } from './ProductInfoSection'
 import { ProductActionButtons } from './ProductActionButton'
-import { useProduct, useDeleteProduct } from '@/features/manage-product/hooks/useProduct'
+import { useProduct, useDeleteProduct } from '@/features/manage-product/hooks/useProducts'
 import { showSuccess, showError } from '@/lib/notifications'
 import type { Product } from '@/features/manage-product/types'
 

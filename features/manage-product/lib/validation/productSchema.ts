@@ -130,6 +130,7 @@ export const productParamsSchema = z.object({
  */
 export const categoryQuerySchema = z.object({
   search: z.string().optional(),
+  isActive: z.coerce.boolean().optional().default(true),
   includeProducts: z.coerce.boolean().optional().default(false),
 })
 

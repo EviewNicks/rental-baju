@@ -4,7 +4,7 @@ import { Edit, Trash2, Phone, MapPin, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import type { Renter } from '@/app/(kasir)/dashboard/page'
+import type { Renter } from '@/features/rentals-manage/types'
 
 interface RentersTableProps {
   renters: Renter[]

@@ -16,7 +16,7 @@ const handleResponse = async (response: Response) => {
 }
 
 // Helper untuk build query params
-const buildQueryParams = (params: Record<string, any>): string => {
+const buildQueryParams = (params: Record<string, string | number | boolean | string[] | undefined | null>): string => {
   const query = new URLSearchParams()
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined && value !== null && value !== '') {
@@ -55,7 +55,7 @@ export const productApi = {
   },
 
   // Create new product
-  createProduct: async (data: FormData | Record<string, any>) => {
+  createProduct: async (data: FormData | Record<string, string | number | boolean | File | null>) => {
     const response = await fetch(`${API_BASE_URL}/products`, {
       method: 'POST',
       body: data instanceof FormData ? data : JSON.stringify(data),
@@ -65,7 +65,7 @@ export const productApi = {
   },
 
   // Update existing product
-  updateProduct: async (id: string, data: FormData | Record<string, any>) => {
+  updateProduct: async (id: string, data: FormData | Record<string, string | number | boolean | File | null>) => {
     const response = await fetch(`${API_BASE_URL}/products/${id}`, {
       method: 'PUT',
       body: data instanceof FormData ? data : JSON.stringify(data),
@@ -86,7 +86,7 @@ export const productApi = {
 // === CATEGORY API ===
 export const categoryApi = {
   // Get all categories
-  getCategories: async (params?: { search?: string; isActive?: boolean }) => {
+  getCategories: async (params?: { search?: string; isActive?: boolean; includeProducts?: boolean }) => {
     const queryString = params ? buildQueryParams(params) : ''
     const url = `${API_BASE_URL}/categories${queryString ? `?${queryString}` : ''}`
     const response = await fetch(url)
@@ -100,7 +100,7 @@ export const categoryApi = {
   },
 
   // Create new category
-  createCategory: async (data: { name: string; description?: string }) => {
+  createCategory: async (data: { name: string; description?: string; color?: string }) => {
     const response = await fetch(`${API_BASE_URL}/categories`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -110,7 +110,7 @@ export const categoryApi = {
   },
 
   // Update existing category
-  updateCategory: async (id: string, data: { name?: string; description?: string }) => {
+  updateCategory: async (id: string, data: { name?: string; description?: string; color?: string }) => {
     const response = await fetch(`${API_BASE_URL}/categories/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },

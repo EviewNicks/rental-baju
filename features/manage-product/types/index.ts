@@ -123,12 +123,12 @@ export interface PrismaCategory extends BaseCategory {
   products?: BaseProduct[]
 }
 
-export type ViewMode = 'table' | 'card'
+export type ViewMode = 'table' | 'card' | 'grid'
 export type ProductStatus = 'AVAILABLE' | 'RENTED' | 'MAINTENANCE'
 
 // Filter types untuk UI components
 export type CategoryFilterValue = string | undefined
-export type StatusFilterValue = ProductStatus | undefined | 'Semua'
+export type StatusFilterValue = ProductStatus | undefined | 'Semua' | ''
 
 // Type guards
 export function isValidProductStatus(status: string): status is ProductStatus {

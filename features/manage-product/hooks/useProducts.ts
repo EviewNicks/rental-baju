@@ -5,13 +5,12 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { productApi } from '../api'
-import type { Product } from '../types'
 
 // Simple query key factory
 const queryKeys = {
   products: {
     all: ['products'] as const,
-    list: (params: any) => ['products', 'list', params] as const,
+    list: (params: { search?: string; category?: string; status?: string; size?: string | string[]; colorId?: string | string[]; page?: number; limit?: number } | undefined) => ['products', 'list', params] as const,
     detail: (id: string) => ['products', 'detail', id] as const,
   }
 }
@@ -60,7 +59,7 @@ export function useUpdateProduct() {
   const queryClient = useQueryClient()
   
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: FormData | Record<string, any> }) =>
+    mutationFn: ({ id, data }: { id: string; data: FormData | Record<string, string | number | boolean | File | null> }) =>
       productApi.updateProduct(id, data),
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.products.all })

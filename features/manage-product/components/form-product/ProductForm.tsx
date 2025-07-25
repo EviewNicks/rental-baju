@@ -5,7 +5,7 @@ import { FormField } from '@/features/manage-product/components/form-product/For
 import { FormSection } from '@/features/manage-product/components/form-product/FormSection'
 import { ImageUpload } from '@/features/manage-product/components/products/ImageUpload'
 import { useColors } from '@/features/manage-product/hooks/useCategories'
-import type { ClientCategory } from '@/features/manage-product/types'
+import type { ClientCategory, ClientColor } from '@/features/manage-product/types'
 
 interface ProductFormData {
   code: string
@@ -65,7 +65,7 @@ export function ProductForm({
   ]
 
   // Transform colors for select options
-  const colorOptions = colors.map((color) => ({
+  const colorOptions = colors.map((color: ClientColor) => ({
     value: color.id,
     label: color.name,
     hexCode: color.hexCode,

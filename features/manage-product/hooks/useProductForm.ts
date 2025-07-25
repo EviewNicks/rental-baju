@@ -36,7 +36,7 @@ export function useProductForm({
     code: initialData?.code || '',
     name: initialData?.name || '',
     description: initialData?.description || '',
-    category: initialData?.category || '',
+    category: typeof initialData?.category === 'string' ? initialData.category : initialData?.categoryId || '',
     size: initialData?.size || '',
     colorId: initialData?.colorId || '',
     modalAwal: initialData?.modalAwal || 0,
@@ -54,7 +54,7 @@ export function useProductForm({
   const isEditing = !!initialData?.id
 
   // Update form field
-  const updateField = (field: keyof ProductFormData, value: any) => {
+  const updateField = (field: keyof ProductFormData, value: string | number | File | undefined) => {
     setFormData(prev => ({ ...prev, [field]: value }))
     // Clear error when user starts typing
     if (errors[field]) {

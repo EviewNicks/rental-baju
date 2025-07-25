@@ -10,16 +10,16 @@ import { categoryApi, colorApi } from '../api'
 const queryKeys = {
   categories: {
     all: ['categories'] as const,
-    list: (params: any) => ['categories', 'list', params] as const,
+    list: (params: { search?: string; isActive?: boolean; includeProducts?: boolean } | undefined) => ['categories', 'list', params] as const,
   },
   colors: {
     all: ['colors'] as const,
-    list: (params: any) => ['colors', 'list', params] as const,
+    list: (params: { search?: string; isActive?: boolean; includeProducts?: boolean } | undefined) => ['colors', 'list', params] as const,
   }
 }
 
 // === CATEGORIES ===
-export function useCategories(params?: { search?: string; isActive?: boolean }) {
+export function useCategories(params?: { search?: string; isActive?: boolean; includeProducts?: boolean }) {
   return useQuery({
     queryKey: queryKeys.categories.list(params),
     queryFn: () => categoryApi.getCategories(params),
@@ -42,7 +42,7 @@ export function useUpdateCategory() {
   const queryClient = useQueryClient()
   
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: { name?: string; description?: string } }) =>
+    mutationFn: ({ id, data }: { id: string; data: { name?: string; description?: string; color?: string } }) =>
       categoryApi.updateCategory(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.categories.all })

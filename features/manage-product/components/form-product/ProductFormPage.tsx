@@ -12,7 +12,8 @@ import {
   BreadcrumbList,
 } from '@/components/ui/breadcrumb'
 import { ProductForm } from '@/features/manage-product/components/form-product/ProductForm'
-import { useCategories, useCreateProduct, useUpdateProduct } from '@/features/manage-product/hooks/useCategories'
+import { useCategories } from '@/features/manage-product/hooks/useCategories'
+import { useCreateProduct, useUpdateProduct } from '@/features/manage-product/hooks/useProducts'
 import type { ClientProduct } from '@/features/manage-product/types'
 
 // Local form data interface with numbers for form handling
@@ -20,6 +21,8 @@ interface ProductFormData {
   code: string
   name: string
   categoryId: string
+  size?: string
+  colorId?: string
   quantity: number
   modalAwal: number
   hargaSewa: number
@@ -37,6 +40,8 @@ interface CreateProductRequest {
   hargaSewa: number
   quantity: number
   categoryId: string
+  size?: string
+  colorId?: string
   image?: File
   imageUrl?: string
 }
@@ -48,6 +53,8 @@ interface UpdateProductRequest {
   hargaSewa: number
   quantity: number
   categoryId: string
+  size?: string
+  colorId?: string
   image?: File
   imageUrl?: string
 }
@@ -107,7 +114,7 @@ export function ProductFormPage({
     data: categoriesData,
     isLoading: isLoadingCategories,
     error: categoriesError,
-  } = useCategories()
+  } = useCategories({ isActive: true })
 
   // Product CRUD mutations
   const createProductMutation = useCreateProduct()
@@ -119,6 +126,8 @@ export function ProductFormPage({
     code: product?.code || '',
     name: product?.name || '',
     categoryId: product?.categoryId || '',
+    size: product?.size || '',
+    colorId: product?.colorId || '',
     quantity: product?.quantity || 1,
     modalAwal: product?.modalAwal ? Number(product.modalAwal) : 0,
     hargaSewa: product?.hargaSewa ? Number(product.hargaSewa) : 0,
@@ -160,38 +169,45 @@ export function ProductFormPage({
     return Object.keys(newErrors).length === 0
   }
 
-  const validateSingleField = (name: string, value: any): void => {
+  const validateSingleField = (name: string, value: string | number | File | null): void => {
     let error = ''
     
     switch (name) {
       case 'code':
-        error = validateProductCode(value) || ''
+        error = validateProductCode(typeof value === 'string' ? value : '') || ''
         break
       case 'name':
-        error = validateProductName(value) || ''
+        error = validateProductName(typeof value === 'string' ? value : '') || ''
         break
       case 'categoryId':
-        error = validateCategoryId(value) || ''
+        error = validateCategoryId(typeof value === 'string' ? value : '') || ''
+        break
+      case 'size':
+        // Size is optional, no validation needed
+        error = ''
+        break
+      case 'colorId':
+        // ColorId is optional, no validation needed
+        error = ''
         break
       case 'modalAwal':
-        error = validateNumber(value, 'Modal awal') || ''
+        error = validateNumber(typeof value === 'number' ? value : 0, 'Modal awal') || ''
         break
       case 'hargaSewa':
-        error = validateNumber(value, 'Harga sewa') || ''
+        error = validateNumber(typeof value === 'number' ? value : 0, 'Harga sewa') || ''
         break
       case 'quantity':
-        error = validateNumber(value, 'Kuantitas', 0, 9999) || ''
+        error = validateNumber(typeof value === 'number' ? value : 0, 'Kuantitas', 0, 9999) || ''
         break
       case 'description':
-        error = validateDescription(value) || ''
+        error = validateDescription(typeof value === 'string' ? value : '') || ''
         break
     }
     
     setErrors(prev => ({ ...prev, [name]: error }))
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleInputChange = (name: string, value: any) => {
+  const handleInputChange = (name: string, value: string | number | File | null) => {
     setFormData((prev) => ({ ...prev, [name]: value }))
     // Clear error when user starts typing
     if (errors[name]) {
@@ -199,7 +215,7 @@ export function ProductFormPage({
     }
   }
 
-  const handleBlur = (name: string, value: any) => {
+  const handleBlur = (name: string, value: string | number | File | null) => {
     setTouched(prev => ({ ...prev, [name]: true }))
     validateSingleField(name, value)
   }
@@ -212,6 +228,8 @@ export function ProductFormPage({
         code: true, 
         name: true, 
         categoryId: true, 
+        size: true,
+        colorId: true,
         modalAwal: true, 
         hargaSewa: true, 
         quantity: true, 
@@ -231,11 +249,13 @@ export function ProductFormPage({
           hargaSewa: formData.hargaSewa,
           quantity: formData.quantity,
           categoryId: formData.categoryId,
+          size: formData.size || undefined,
+          colorId: formData.colorId || undefined,
           image: formData.image || undefined,
           imageUrl: formData.imageUrl || undefined,
         }
 
-        await createProductMutation.mutateAsync(createData)
+        await createProductMutation.mutateAsync(createData as unknown as FormData | Record<string, string | number | boolean | File | null>)
       } else {
         // Update existing product
         if (!product?.id) {
@@ -249,11 +269,13 @@ export function ProductFormPage({
           hargaSewa: formData.hargaSewa,
           quantity: formData.quantity,
           categoryId: formData.categoryId,
+          size: formData.size || undefined,
+          colorId: formData.colorId || undefined,
           image: formData.image || undefined,
           imageUrl: formData.imageUrl || undefined,
         }
 
-        await updateProductMutation.mutateAsync({ id: product.id, data: updateData })
+        await updateProductMutation.mutateAsync({ id: product.id, data: updateData as unknown as FormData | Record<string, string | number | boolean | File | null> })
       }
 
       // Success - redirect to product list
