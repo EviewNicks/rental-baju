@@ -50,7 +50,9 @@
       "Bash(yarn dev)",
       "Bash(npx prisma generate:*)",
       "Bash(tail:*)",
-      "Bash(touch:*)"
+      "Bash(touch:*)",
+      "mcp__sequentialthinking__sequentialthinking",
+      "Bash(gh pr:*)"
     ],
     "deny": []
   }

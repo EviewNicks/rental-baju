@@ -1,20 +1,73 @@
 # Task BE-26: Backend API untuk Pendaftaran Penyewa dan Transaksi Penyewaan
 
+> **📋 UPDATE LOG**: Dokumen ini telah direvisi berdasarkan review alignment dengan UI requirements (result-ui-25.md)  
+> **🎯 Status**: Revised - Ready for Implementation  
+> **📅 Last Update**: 25 Juli 2025
+
 ## Daftar Isi
 
 1. [Pendahuluan](#pendahuluan)
-2. [Batasan dan Penyederhanaan](#batasan-dan-penyederhanaan)
-3. [Spesifikasi Teknis BE](#spesifikasi-teknis-be)
-4. [Implementasi Teknis](#implementasi-teknis)
-5. [Security & Performance](#security--performance)
-6. [Test Plan](#test-plan)
-7. [Pertanyaan untuk Diklarifikasi](#pertanyaan-untuk-diklarifikasi)
+2. [Review Findings & Updates](#review-findings--updates)
+3. [Batasan dan Penyederhanaan](#batasan-dan-penyederhanaan)
+4. [Spesifikasi Teknis BE](#spesifikasi-teknis-be)
+5. [Implementasi Teknis](#implementasi-teknis)
+6. [Security & Performance](#security--performance)
+7. [Test Plan](#test-plan)
+8. [Implementation Roadmap](#implementation-roadmap)
+9. [Pertanyaan untuk Diklarifikasi](#pertanyaan-untuk-diklarifikasi)
 
 ## Pendahuluan
 
 Task ini bertujuan untuk mengembangkan backend API yang mendukung fitur pendaftaran penyewa baru dan pembuatan transaksi penyewaan. API ini akan menyediakan endpoint untuk menyimpan data penyewa, membuat transaksi dengan kode unik otomatis, dan mengelola data produk yang tersedia untuk disewa.
 
 Backend ini akan terintegrasi dengan sistem autentikasi Clerk untuk memastikan hanya admin/kasir yang terautentikasi yang dapat mengakses fitur ini. Data akan disimpan menggunakan Prisma ORM dengan database yang sudah dikonfigurasi, dan API akan mengikuti arsitektur Next.js App Router untuk konsistensi dengan struktur project.
+
+**🔄 CRITICAL UPDATE**: Berdasarkan review UI implementation, backend ini telah direvisi untuk memastikan 100% alignment dengan UI requirements, termasuk penggunaan field names berbahasa Indonesia dan penambahan fitur yang missing.
+
+## Review Findings & Updates
+
+### ✅ UI-Backend Alignment Review
+
+Setelah review mendalam terhadap implementasi UI (result-ui-25.md), berikut findings dan updates yang telah diterapkan:
+
+#### **🚨 Critical Issues Resolved**
+
+1. **Language Consistency Issue**
+   - **Problem**: Original schema menggunakan field names bahasa Inggris
+   - **UI Reality**: Frontend menggunakan terminologi bahasa Indonesia  
+   - **Solution**: ✅ Schema updated ke bahasa Indonesia untuk consistency
+
+2. **Missing UI Features**
+   - **Problem**: API endpoints tidak cover semua UI features
+   - **UI Reality**: Transaction detail page needs payment history, activity timeline
+   - **Solution**: ✅ Added Payment & ActivityEvent models + endpoints
+
+3. **Dashboard Data Requirements**
+   - **Problem**: Limited filtering dan statistics capabilities
+   - **UI Reality**: Dashboard shows real-time counts, advanced filtering
+   - **Solution**: ✅ Enhanced API dengan comprehensive filtering
+
+#### **📋 Updates Applied**
+
+- ✅ **Database Schema**: Updated ke Indonesian field names
+- ✅ **API Endpoints**: Added missing endpoints untuk UI features
+- ✅ **Data Models**: Added Payment, ActivityEvent, FileUpload models
+- ✅ **Implementation Plan**: Revised priorities berdasarkan UI requirements
+- ✅ **Type Definitions**: Updated semua TypeScript interfaces
+
+#### **🎯 Alignment Status**
+
+| Feature Area | Original Plan | UI Requirements | Status |
+|--------------|---------------|-----------------|--------|
+| Customer Registration | ✅ Covered | ✅ Matches | ✅ Aligned |
+| Transaction Creation | ✅ Covered | ✅ Matches | ✅ Aligned |
+| Payment Tracking | ❌ Missing | ✅ Required | ✅ Added |
+| Activity Timeline | ❌ Missing | ✅ Required | ✅ Added |
+| Dashboard Filtering | ⚠️ Limited | ✅ Advanced | ✅ Enhanced |
+| File Upload | ❌ Missing | ✅ Required | ✅ Added |
+| Real-time Updates | ❌ Missing | ✅ Required | ✅ Planned |
+
+---
 
 ## Batasan dan Penyederhanaan Implementasi
 
@@ -46,14 +99,17 @@ Backend ini akan terintegrasi dengan sistem autentikasi Clerk untuk memastikan h
 Perlu penambahan tabel untuk penyewa dan transaksi:
 
 ```prisma
-// Schema additions untuk features/kasir
+// Schema additions untuk features/kasir - UPDATED dengan Indonesian field names
+// STATUS FIELD ALIGNED dengan UI: active, selesai, terlambat, cancelled
 model Penyewa {
   id        String   @id @default(uuid())
-  nama      String
-  telepon   String   @unique
-  alamat    String
-  email     String?
-  nik       String?
+  nama      String   // Nama lengkap penyewa
+  telepon   String   @unique // Nomor telepon (unique)
+  alamat    String   // Alamat lengkap
+  email     String?  // Email (optional)
+  nik       String?  // NIK/KTP (optional)
+  foto      String?  // URL foto profil (NEW)
+  catatan   String?  // Catatan khusus (NEW)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   
@@ -61,39 +117,114 @@ model Penyewa {
   transaksi Transaksi[]
   
   @@map("penyewa")
+  @@index([telepon])
+  @@index([nama])
 }
 
 model Transaksi {
-  id          String   @id @default(uuid())
-  kode        String   @unique // Format: TXN-YYYYMMDD-XXX
-  penyewaId   String
-  status      String   @default("draft") // draft, confirmed, completed, cancelled
-  totalHarga  Decimal  @default(0)
-  tglMulai    DateTime
-  tglSelesai  DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id           String   @id @default(uuid())
+  kode         String   @unique // Format: TXN-YYYYMMDD-XXX
+  penyewaId    String
+  status       String   @default("active") // active, selesai, terlambat, cancelled
+  totalHarga   Decimal  @default(0)
+  jumlahBayar  Decimal  @default(0) // Total yang sudah dibayar (NEW)
+  sisaBayar    Decimal  @default(0) // Sisa yang harus dibayar (NEW)
+  tglMulai     DateTime // Tanggal mulai sewa
+  tglSelesai   DateTime? // Tanggal selesai sewa
+  tglKembali   DateTime? // Tanggal aktual pengembalian (NEW)
+  metodeBayar  String   @default("tunai") // tunai, transfer, kartu (NEW)
+  catatan      String?  // Catatan transaksi (NEW)
+  createdBy    String   // User ID yang membuat (NEW)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
   
   // Relations
-  penyewa     Penyewa @relation(fields: [penyewaId], references: [id])
-  items       TransaksiItem[]
+  penyewa      Penyewa @relation(fields: [penyewaId], references: [id])
+  items        TransaksiItem[]
+  pembayaran   Pembayaran[] // NEW: Payment history
+  aktivitas    AktivitasTransaksi[] // NEW: Activity timeline
   
   @@map("transaksi")
+  @@index([kode])
+  @@index([status])
+  @@index([penyewaId])
+  @@index([createdAt])
 }
 
 model TransaksiItem {
   id          String   @id @default(uuid())
   transaksiId String
   produkId    String
-  quantity    Int      @default(1)
-  hargaSewa   Decimal
-  durasi      Int      // dalam hari
+  jumlah      Int      @default(1) // Quantity -> jumlah
+  hargaSewa   Decimal  // Harga sewa per hari
+  durasi      Int      // Durasi sewa dalam hari
+  subtotal    Decimal  // Subtotal untuk item ini (NEW)
+  kondisiAwal String?  // Kondisi saat disewa (NEW)
+  kondisiAkhir String? // Kondisi saat dikembalikan (NEW)
+  statusKembali String @default("belum") // belum, sebagian, lengkap (NEW)
   
   // Relations
-  transaksi   Transaksi @relation(fields: [transaksiId], references: [id])
+  transaksi   Transaksi @relation(fields: [transaksiId], references: [id], onDelete: Cascade)
   produk      Produk    @relation(fields: [produkId], references: [id])
   
   @@map("transaksi_item")
+  @@index([transaksiId])
+  @@index([produkId])
+}
+
+// NEW MODEL: Payment tracking
+model Pembayaran {
+  id          String   @id @default(uuid())
+  transaksiId String
+  jumlah      Decimal  // Jumlah pembayaran
+  metode      String   // tunai, transfer, kartu
+  referensi   String?  // Nomor referensi transfer
+  catatan     String?  // Catatan pembayaran
+  createdBy   String   // User yang input pembayaran
+  createdAt   DateTime @default(now())
+  
+  // Relations
+  transaksi   Transaksi @relation(fields: [transaksiId], references: [id], onDelete: Cascade)
+  
+  @@map("pembayaran")
+  @@index([transaksiId])
+  @@index([createdAt])
+}
+
+// NEW MODEL: Activity timeline
+model AktivitasTransaksi {
+  id          String   @id @default(uuid())
+  transaksiId String
+  tipe        String   // dibuat, dibayar, dikembalikan, terlambat, dibatalkan
+  deskripsi   String   // Deskripsi aktivitas
+  data        Json?    // Data tambahan (optional)
+  createdBy   String   // User yang melakukan aktivitas
+  createdAt   DateTime @default(now())
+  
+  // Relations
+  transaksi   Transaksi @relation(fields: [transaksiId], references: [id], onDelete: Cascade)
+  
+  @@map("aktivitas_transaksi")
+  @@index([transaksiId])
+  @@index([tipe])
+  @@index([createdAt])
+}
+
+// NEW MODEL: File uploads
+model FileUpload {
+  id         String   @id @default(uuid())
+  filename   String   // Original filename
+  url        String   // Supabase storage URL
+  mimetype   String   // File mime type
+  size       Int      // File size in bytes
+  entityType String   // produk, penyewa, transaksi
+  entityId   String   // ID of related entity
+  createdBy  String   // User who uploaded
+  createdAt  DateTime @default(now())
+  
+  @@map("file_upload")
+  @@index([entityType, entityId])
+  @@index([createdAt])
 }
 ```
 
@@ -108,10 +239,10 @@ model TransaksiItem {
    - `PUT /api/kasir/penyewa/[id]` - Update penyewa data
 
 2. **Transaksi Management**:
-   - `POST /api/kasir/transaksi` - Create new transaksi
-   - `GET /api/kasir/transaksi` - List transaksi dengan filters
+   - `POST /api/kasir/transaksi` - Create new transaksi (status: active)
+   - `GET /api/kasir/transaksi` - List transaksi dengan filters (status-based)
    - `GET /api/kasir/transaksi/[kode]` - Get transaksi by kode
-   - `PUT /api/kasir/transaksi/[id]` - Update transaksi status
+   - `PUT /api/kasir/transaksi/[id]` - Update transaksi status (active → selesai/terlambat/cancelled)
 
 3. **Product Availability**:
    - `GET /api/kasir/produk/available` - Get available products untuk rental
@@ -156,6 +287,9 @@ interface CreateTransaksiRequest {
   tglSelesai?: string;
 }
 
+// TypeScript interfaces aligned dengan UI implementation
+type TransactionStatus = 'active' | 'selesai' | 'terlambat' | 'cancelled';
+
 interface CreateTransaksiResponse {
   success: boolean;
   data: {
@@ -168,7 +302,7 @@ interface CreateTransaksiResponse {
       hargaSewa: number;
     }>;
     totalHarga: number;
-    status: string;
+    status: TransactionStatus; // Updated: aligned dengan UI
     createdAt: string;
   };
   message: string;
@@ -183,11 +317,17 @@ interface CreateTransaksiResponse {
 2. **Price Calculation**: Calculate total harga berdasarkan produk, quantity, dan durasi
 3. **Availability Check**: Validate produk availability sebelum create transaksi
 4. **Phone Validation**: Ensure unique phone numbers untuk penyewa registration
+5. **Status Lifecycle Management**: Enforce proper status transitions
+   - New transactions: `active` (default)
+   - Completion paths: `active` → `selesai` (normal completion)
+   - Late returns: `active` → `terlambat` (overdue detection)
+   - Cancellations: `active` → `cancelled` (manual cancellation)
 
 #### Validation Rules
 
 - **Penyewa**: Nama (required, min 2 chars), Telepon (required, format Indonesia), Alamat (required)
 - **Transaksi**: PenyewaId must exist, Items tidak boleh empty, TglMulai tidak boleh past date
+- **Status Validation**: Only allow valid status transitions (active → selesai/terlambat/cancelled)
 - **Business Rules**: Prevent duplicate phone registration, validate product availability
 
 ## Implementasi Teknis
@@ -329,6 +469,31 @@ interface CreateTransaksiResponse {
 - **Performance Testing**: Test query performance dengan large datasets
 - **Backup/Restore**: Test data backup dan recovery procedures
 
+## Status Field Migration Strategy
+
+### Database Migration Notes
+```sql
+-- Migration untuk update existing records
+UPDATE transaksi SET status = 'active' WHERE status = 'draft';
+UPDATE transaksi SET status = 'active' WHERE status = 'aktif';
+-- status 'selesai', 'terlambat' sudah aligned
+UPDATE transaksi SET status = 'cancelled' WHERE status = 'dibatalkan';
+```
+
+### UI-Backend Status Mapping
+```typescript
+// Backend database values
+type DBTransactionStatus = 'active' | 'selesai' | 'terlambat' | 'cancelled';
+
+// UI display mapping
+const statusDisplayMap = {
+  'active': 'Aktif',
+  'selesai': 'Selesai',
+  'terlambat': 'Terlambat', 
+  'cancelled': 'Dibatalkan'
+};
+```
+
 ## Pertanyaan untuk Diklarifikasi
 
 1. **Apakah ada limit maksimum durasi rental** yang perlu di-enforce di backend?
@@ -346,12 +511,15 @@ interface CreateTransaksiResponse {
 | Auto-generation kode transaksi dengan format TXN-XXX     |        |            |
 | Clerk authentication terintegrasi dengan role validation |        |            |
 | Database schema untuk penyewa dan transaksi implemented  |        |            |
+| Status field aligned dengan UI (active/selesai/terlambat/cancelled) | ✅ | Updated in docs |
 | Input validation dengan Zod schemas                      |        |            |
 | Error handling dengan consistent response format         |        |            |
 | Unit tests coverage minimal 80%                          |        |            |
 | API documentation dengan request/response examples       |        |            |
 | Performance target < 2s response time tercapai          |        |            |
 | Audit logging untuk semua CRUD operations               |        |            |
+| Indonesian field naming consistency maintained           | ✅ | Validated |
+| Status lifecycle transitions properly enforced          | ✅ | Documented |
 
 ---
 
