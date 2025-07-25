@@ -43,7 +43,7 @@ export function ProductForm({
   categories,
 }: ProductFormProps) {
   // Fetch colors data
-  const { data: colorsData, isLoading: isLoadingColors } = useColors({ isActive: true })
+  const { data: colorsData, isLoading: isLoadingColors, error: colorsError } = useColors({ isActive: true })
   const colors = colorsData?.colors || []
 
   // Transform categories for select options
@@ -68,7 +68,7 @@ export function ProductForm({
   const colorOptions = colors.map((color: ClientColor) => ({
     value: color.id,
     label: color.name,
-    hexCode: color.hexCode,
+    color: color.hexCode,
   }))
 
   return (
@@ -171,11 +171,11 @@ export function ProductForm({
                 value={formData.colorId || ''}
                 onChange={(value) => onInputChange('colorId', value)}
                 options={colorOptions}
-                placeholder={isLoadingColors ? "Loading..." : "Pilih warna (opsional)"}
+                placeholder={isLoadingColors ? "Memuat warna..." : colorsError ? "Error memuat warna" : "Pilih warna (opsional)"}
                 error={errors.colorId}
                 touched={touched.colorId}
-                disabled={isLoadingColors}
-                helpText="Pilih warna produk jika berlaku"
+                disabled={isLoadingColors || !!colorsError}
+                helpText={colorsError ? "Gagal memuat data warna" : "Pilih warna produk jika berlaku"}
                 data-testid="product-color-field"
               />
             </div>

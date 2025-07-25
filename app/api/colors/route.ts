@@ -37,7 +37,8 @@ export async function GET(request: NextRequest) {
     // Get colors
     const colors = await colorService.getColors(query)
 
-    return NextResponse.json(colors, { status: 200 })
+    // Return with consistent API format structure
+    return NextResponse.json({ colors }, { status: 200 })
   } catch (error) {
     console.error('GET /api/colors error:', error)
 

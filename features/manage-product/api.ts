@@ -56,20 +56,52 @@ export const productApi = {
 
   // Create new product
   createProduct: async (data: FormData | Record<string, string | number | boolean | File | null>) => {
+    // Always convert to FormData for multipart/form-data handling
+    const formData = data instanceof FormData ? data : new FormData()
+    
+    if (!(data instanceof FormData)) {
+      // Convert object to FormData
+      Object.entries(data).forEach(([key, value]) => {
+        if (value !== null && value !== undefined) {
+          if (value instanceof File) {
+            formData.append(key, value)
+          } else {
+            formData.append(key, value.toString())
+          }
+        }
+      })
+    }
+    
     const response = await fetch(`${API_BASE_URL}/products`, {
       method: 'POST',
-      body: data instanceof FormData ? data : JSON.stringify(data),
-      headers: data instanceof FormData ? {} : { 'Content-Type': 'application/json' }
+      body: formData,
+      // Let browser set Content-Type with boundary for multipart/form-data
     })
     return handleResponse(response)
   },
 
   // Update existing product
   updateProduct: async (id: string, data: FormData | Record<string, string | number | boolean | File | null>) => {
+    // Always convert to FormData for multipart/form-data handling
+    const formData = data instanceof FormData ? data : new FormData()
+    
+    if (!(data instanceof FormData)) {
+      // Convert object to FormData
+      Object.entries(data).forEach(([key, value]) => {
+        if (value !== null && value !== undefined) {
+          if (value instanceof File) {
+            formData.append(key, value)
+          } else {
+            formData.append(key, value.toString())
+          }
+        }
+      })
+    }
+    
     const response = await fetch(`${API_BASE_URL}/products/${id}`, {
       method: 'PUT',
-      body: data instanceof FormData ? data : JSON.stringify(data),
-      headers: data instanceof FormData ? {} : { 'Content-Type': 'application/json' }
+      body: formData,
+      // Let browser set Content-Type with boundary for multipart/form-data
     })
     return handleResponse(response)
   },
