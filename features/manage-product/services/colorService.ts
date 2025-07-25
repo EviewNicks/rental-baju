@@ -137,7 +137,7 @@ export class ColorService {
       orderBy: [{ name: 'asc' }],
     })
 
-    return colors.map((color) => this.convertPrismaColorToColor(color))
+    return colors.map((color: Record<string, unknown>) => this.convertPrismaColorToColor(color))
   }
 
   /**

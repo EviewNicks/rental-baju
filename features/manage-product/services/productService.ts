@@ -86,7 +86,7 @@ export class ProductService {
       },
       include: {
         category: true,
-        color: true,  // Include color relation
+        color: true, // Include color relation
       },
     })
 
@@ -171,7 +171,7 @@ export class ProductService {
       data: updateData,
       include: {
         category: true,
-        color: true,  // Include color relation
+        color: true, // Include color relation
       },
     })
 
@@ -235,7 +235,7 @@ export class ProductService {
         where,
         include: {
           category: true,
-          color: true,  // Include color relation
+          color: true, // Include color relation
         },
         orderBy: {
           createdAt: 'desc',
@@ -250,7 +250,9 @@ export class ProductService {
     const totalPages = Math.ceil(total / limit)
 
     return {
-      products: products.map((product) => this.convertPrismaProductToProduct(product)),
+      products: products.map((product: Record<string, unknown>) =>
+        this.convertPrismaProductToProduct(product),
+      ),
       pagination: {
         page,
         limit,
@@ -274,7 +276,7 @@ export class ProductService {
       },
       include: {
         category: true,
-        color: true,  // Include color relation
+        color: true, // Include color relation
       },
     })
 
@@ -355,7 +357,7 @@ export class ProductService {
       },
       include: {
         category: true,
-        color: true,  // Include color relation
+        color: true, // Include color relation
       },
     })
 
@@ -390,7 +392,9 @@ export class ProductService {
             id: (prismaProduct.color as Record<string, unknown>).id as string,
             name: (prismaProduct.color as Record<string, unknown>).name as string,
             hexCode: (prismaProduct.color as Record<string, unknown>).hexCode as string | undefined,
-            description: (prismaProduct.color as Record<string, unknown>).description as string | undefined,
+            description: (prismaProduct.color as Record<string, unknown>).description as
+              | string
+              | undefined,
             isActive: (prismaProduct.color as Record<string, unknown>).isActive as boolean,
             products: [], // Avoid circular reference in conversion
             createdAt: (prismaProduct.color as Record<string, unknown>).createdAt as Date,

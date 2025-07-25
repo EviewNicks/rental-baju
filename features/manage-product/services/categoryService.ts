@@ -133,7 +133,9 @@ export class CategoryService {
       },
     })
 
-    return categories.map((category) => this.convertPrismaCategoryToCategory(category))
+    return categories.map((category: Record<string, unknown>) =>
+      this.convertPrismaCategoryToCategory(category),
+    )
   }
 
   /**
