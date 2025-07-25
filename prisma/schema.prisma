@@ -25,6 +25,9 @@ model Product {
   imageUrl        String?
   categoryId      String
   category        Category      @relation(fields: [categoryId], references: [id])
+  size            String?       // Ukuran: S, M, L, XL, XXL atau custom
+  colorId         String?       // Relasi ke Color model
+  color           Color?        @relation(fields: [colorId], references: [id])
   status          ProductStatus @default(AVAILABLE)
   totalPendapatan Decimal       @db.Decimal(10, 2) @default(0) // Pendapatan kumulatif
   isActive        Boolean       @default(true)
@@ -36,6 +39,9 @@ model Product {
   @@index([categoryId])
   @@index([status])
   @@index([createdBy])
+  @@index([size])
+  @@index([colorId])
+  @@index([categoryId, size, colorId])
 }
 
 model Category {
@@ -48,6 +54,22 @@ model Category {
   createdBy String    // User ID dari Clerk
 
   @@index([createdBy])
+}
+
+model Color {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  hexCode     String?   // Hex color code (optional)
+  description String?   // Deskripsi warna (optional)
+  isActive    Boolean   @default(true)
+  products    Product[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdBy   String    // User ID dari Clerk
+
+  @@index([createdBy])
+  @@index([isActive])
+  @@map("colors")
 }
 
 enum ProductStatus {

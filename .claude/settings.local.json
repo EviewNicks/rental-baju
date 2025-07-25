@@ -44,7 +44,13 @@
       "Bash(where yarn)",
       "Bash(cmd /c:*)",
       "Bash(npx playwright:*)",
-      "Bash(set NODE_ENV=test)"
+      "Bash(set NODE_ENV=test)",
+      "Bash(npx prisma migrate dev:*)",
+      "Bash(npx prisma db seed:*)",
+      "Bash(yarn dev)",
+      "Bash(npx prisma generate:*)",
+      "Bash(tail:*)",
+      "Bash(touch:*)"
     ],
     "deny": []
   }

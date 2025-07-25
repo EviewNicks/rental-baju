@@ -41,17 +41,33 @@ export function ProductGrid({ products, onProductClick }: ProductGridProps) {
                 </Badge>
               </div>
               <h3 className="font-medium text-sm line-clamp-2">{product.name}</h3>
-              <Badge
-                variant="outline"
-                style={{
-                  backgroundColor: lightenColor(product.category.color, 85),
-                  color: getContrastTextColor(lightenColor(product.category.color, 85)),
-                  borderColor: product.category.color,
-                }}
-                className="font-medium rounded-full"
-              >
-                {product.category.name}
-              </Badge>
+              <div className="flex flex-wrap gap-1">
+                <Badge
+                  variant="outline"
+                  style={{
+                    backgroundColor: lightenColor(product.category.color, 85),
+                    color: getContrastTextColor(lightenColor(product.category.color, 85)),
+                    borderColor: product.category.color,
+                  }}
+                  className="font-medium rounded-full"
+                >
+                  {product.category.name}
+                </Badge>
+                {product.size && (
+                  <Badge variant="outline" className="font-mono text-xs">
+                    {product.size}
+                  </Badge>
+                )}
+                {product.color && (
+                  <Badge variant="outline" className="flex items-center gap-1">
+                    <div 
+                      className="w-2 h-2 rounded-full" 
+                      style={{ backgroundColor: product.color.hexCode || '#gray' }}
+                    />
+                    <span className="text-xs">{product.color.name}</span>
+                  </Badge>
+                )}
+              </div>
               <div className="space-y-1 text-xs text-gray-600">
                 <div className="flex justify-between">
                   <span>Harga Sewa:</span>

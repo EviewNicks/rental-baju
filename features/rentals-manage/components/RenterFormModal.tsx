@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 
-import type { Renter } from '@/app/(kasir)/dashboard/page'
+import type { Renter } from '@/features/rentals-manage/types'
 
 interface RenterFormModalProps {
   isOpen: boolean

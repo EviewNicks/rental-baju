@@ -23,7 +23,7 @@ export function CategoryList({ categories, onEdit, onDelete, loading }: Category
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 w-full">
       <h3 className="text-lg font-semibold text-gray-900">Kategori Tersedia</h3>
       <div className="space-y-3">
         {categories.map((category) => (

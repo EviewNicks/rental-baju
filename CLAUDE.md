@@ -1,105 +1,143 @@
-# My name is Ardiansyah
+# CLAUDE.md
 
-# CLAUDE.md - Rental Software Project
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview
 
-**Nama:** Sistem Manajemen Penyewaan Pakaian  
-**Tech Stack:** Next.js 14, TypeScript, Prisma, Supabase, TailwindCSS, React Query, Jest, Playwright
+**Name:** Sistem Manajemen Penyewaan Pakaian (Rental Clothing Management System)  
+**Tech Stack:** Next.js 15, TypeScript, Prisma, Supabase, TailwindCSS, React Query, Jest, Playwright  
 **Developer:** Ardiansyah Arifin
 
-## Arsitektur Utama
+## Architecture
 
-- **Feature-First:** Kode diorganisir di `/features/[feature-name]/`
-- **3-Tier:** Presentation → Business Logic -> api layer -> service layer → Data Access
-- **State Management:** Feature Context (global Feature) + Custom Hooks (feature) + useState (component)
+### Core Principles
+- **Feature-First Architecture:** Code organized by business features in `/features/[feature-name]/`
+- **3-Tier Modular Monolith:** Presentation → Business Logic → Data Access
+- **Simple State Management:** Feature Context (global) + Custom Hooks (feature) + useState (component)
 
-## Struktur Folder
-
+### Layer Structure per Feature
+```
+features/[feature-name]/
+├── components/     # UI Components (Presentation Layer)
+├── hooks/         # Business Logic + State Management
+├── services/      # Business Logic (Server-side CRUD operations)
+├── api.ts         # API client/fetcher for this feature
+├── types/         # TypeScript types & schemas
+└── context/       # Global state (when needed across components)
 ```
 
-├── app/ # Next.js pages & API routes
-├── features/           # Feature Modules (Modular Monolith - Semua layer per fitur)
-│   └── [feature-name]/ # Contoh: manage-module
-│       ├── components/ # Presentation Layer (UI Components)
-│       ├── context/    # Global State Layer (Cross-component state, app-wide settings)
-│       ├── hooks/      # Business Logic Layer (Client-side Orchestration, Feature State)
-│       ├── adapters/   # Data Access Layer (Client-side interface to API)
-│       ├── services/   # Business Logic Layer (Server-side Services)
-│       ├── lib/        # Feature-specific Utilities
-│       └── types/      # Feature-specific Types & Schemas
-├── lib/ # Shared utilities Global
-└── prisma/ # Database schema
-└── __tests__/
-    └── integration/
-            └── Feature/
-                └── Feature.integration.test.ts
-    ├── playwright/
-            └── Feature/
-                └── Feature.spec.ts
+### Tech Stack Implementation
+- **Frontend:** Next.js App Router, React 19, TypeScript strict mode
+- **Backend:** Next.js API Routes with Prisma ORM
+- **Database:** PostgreSQL via Supabase
+- **State Management:** React Query + Custom Hooks pattern
+- **Styling:** TailwindCSS with Radix UI components
+- **Authentication:** Clerk
+- **File Upload:** Supabase Storage
 
+## Commands
+
+### Development
+```bash
+yarn app                    # Start development server (with Turbopack)
+yarn app:prod              # Start with production environment
+yarn build                 # Build for production
+yarn start                 # Start production server
 ```
 
-## Coding Standards
+### Code Quality
+```bash
+yarn lint                  # Run ESLint (zero warnings policy)
+yarn lint:fix              # Auto-fix linting issues
+yarn type-check            # TypeScript type checking
+```
 
+### Testing Strategy
+```bash
+# Unit Tests (TDD approach)
+yarn test:unit              # Run unit tests for specific feature
+yarn test:unit:all          # Run all unit tests
+
+# Integration Tests (2-layer integration)
+yarn test:int               # Run integration tests for specific feature  
+yarn test:int:all           # Run all integration tests
+
+# E2E Tests (BDD approach with Playwright)
+yarn test:e2e               # Run E2E tests for specific feature
+yarn test:e2e:all           # Run all E2E tests
+yarn test:e2e:ui            # Run E2E tests with UI
+yarn test:e2e:debug         # Debug specific E2E test
+yarn test:e2e:report        # View test reports
+
+# Coverage
+yarn test:coverage          # Run tests with coverage report
+```
+
+### Database
+```bash
+yarn test:db               # Test database connection
+yarn env:validate          # Validate environment variables
+```
+
+## Development Workflow
+
+### Feature Development Pattern
+1. **API Layer:** Create/update API routes in `app/api/[feature]/route.ts`
+2. **Service Layer:** Implement business logic in `features/[feature]/services/`
+3. **Data Layer:** Use Prisma for database operations
+4. **Hook Layer:** Create custom hooks in `features/[feature]/hooks/`
+5. **Component Layer:** Build UI components in `features/[feature]/components/`
+6. **Integration:** Wire everything together via `features/[feature]/api.ts`
+
+### Testing Approach (TDD/BDD)
+- **Unit Tests:** Co-located with implementation files (`.test.ts` files)
+- **Integration Tests:** Located in `__tests__/integration/[feature]/`
+- **E2E Tests:** Located in `__tests__/playwright/[feature]/` using BDD format
+- **Test-First Development:** Write tests before implementation
+
+### Code Standards
 - **Files:** kebab-case (`product-form.tsx`)
 - **Components:** PascalCase (`ProductForm.tsx`)
 - **Hooks:** `use` + CamelCase (`useProductData.ts`)
 - **Services:** Entity + `Service.ts` (`productService.ts`)
+- **API Clients:** Entity + `Api.ts` (`productApi.ts`)
 
-## Testing Strategy
+## Key Implementation Details
 
-- **Unit:** Co-location dengan file implementasi
-- **Integration:** `/__tests__/integration/` Pendekatan 2 Layer Integration 
-- **E2E:** Playwright dengan BDD approach pada `/__tests__/palywright/`
+### Error Handling
+- Custom error classes in `features/[feature]/lib/errors/`
+- Graceful fallbacks for all async operations
+- Comprehensive logging with retry mechanisms
+- Error boundaries for React components
 
-**TDD Instruction** : TDD (Test Driven Development) adalah metode pengembangan perangkat lunak yang melibatkan pengujian secara terstruktur dan berurutan. TDD bertujuan untuk memastikan bahwa perangkat lunak yang dibuat dapat berjalan dengan baik tanpa menimbulkan kesalahan. Membuat Unit tets dan integration test sebelum menulis kode yang akan dibuat.
+### Data Flow Example (Product Management)
+1. UI Component calls `useProducts()` hook
+2. Hook uses React Query to call `productApi.getProducts()`
+3. API client makes request to `/app/api/products/route.ts`
+4. API route uses `ProductService` for business logic
+5. Service uses Prisma to query database
+6. Response flows back through the layers with proper type safety
 
-## Error Handling
+### Authentication & Authorization
+- Clerk for authentication
+- Role-based access control (Owner, Producer, Kasir)
+- Middleware protection for routes and API endpoints
 
-- Graceful fallbacks untuk semua async operations
-- Comprehensive logging
-- Retry mechanisms untuk API calls
+### File Structure Highlights
+- `app/` - Next.js App Router (pages, layouts, API routes)
+- `features/` - Feature modules (complete business domains)
+- `lib/` - Shared utilities and configurations
+- `components/ui/` - Reusable UI components (Radix + TailwindCSS)
+- `prisma/` - Database schema and migrations
+- `__tests__/` - Testing structure (integration, e2e)
 
-## File Access Rules
-
-**✅ Allowed:** `/features/**/*`, `/app/**/*`, `/lib/**/*`, `/prisma/**/*`  
-**❌ Restricted:** `node_modules/`, `.env*`, build artifacts
-
-## Common Commands
-
-```bash
-yarn app          # Development
-yarn build        # Build
-yarn test         # All tests
-yarn test:unit    # Unit tests only
-yarn test:int     # Integration tests only
-yarn test:e2e     # E2E tests
-```
-
-## Error Resolution
-
-1. Check application logs
-2. Verify database schema/migrations
-3. Check API requests/responses
-4. Review component props/state
+## Architectural References
+- Detailed architecture documentation: `/docs/rules/architecture.md`
+- Test instruction guidelines: `/docs/rules/test-instruction.md`
+- Design failure handling: `/docs/rules/designing-for-failure.md`
 
 ## Context Preservation
-
-### Session Continuity
-
-- Maintain context across multiple file edits
-- Preserve architectural decisions throughout session
-- Remember previous error resolutions
-- Keep track of implemented features and their status
-
-### Knowledge Base
-
-- Reference implemented patterns for consistency
-- Apply learned solutions to similar problems
-- Maintain awareness of project constraints and requirements
-
-## Architecture Documentation
-
-- Referensi arsitektur project tersimpan di `/docs/rules/architecture.md`
-- Dokumentasi menjelaskan detail arsitektur, struktur folder, dan aturan pengembangan
+- Maintain architectural decisions throughout development sessions
+- Reference implemented patterns for consistency across features
+- Apply learned solutions to similar problems within the codebase
+- Keep track of feature implementation status and dependencies

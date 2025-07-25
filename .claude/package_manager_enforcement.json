@@ -1,0 +1,8 @@
+[
+  {
+    "session_id": "0c3f550b-f2a7-4e4a-9de2-ac52124d13f6",
+    "blocked_command": "npm run dev",
+    "suggested_command": "yarn dev",
+    "reason": "Gunakan 'yarn' sebagai pengganti 'npm run' untuk workflow utama."
+  }
+]

@@ -9,7 +9,6 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ColorPicker } from './ColorPicker'
 import { CategoryBadgePreview } from './CategoryBadgePreview'
-import { useFormValidation } from '@/features/manage-product/hooks/useFormValidation'
 import type { ClientCategory, CategoryFormData, CategoryModalMode } from '@/features/manage-product/types'
 import { cn } from '@/lib/utils'
 
@@ -21,34 +20,25 @@ interface CategoryFormProps {
   existingCategories: ClientCategory[]
 }
 
-const validationRules = {
-  name: {
-    required: true,
-    minLength: 2,
-    maxLength: 50,
-    pattern: /^[a-zA-Z0-9\s-]+$/,
-    custom: (value: string, existingCategories: ClientCategory[], editingId?: string) => {
-      if (value) {
-        const exists = existingCategories.some(
-          (cat) => cat.name.toLowerCase() === value.toLowerCase() && cat.id !== editingId,
-        )
-        if (exists) {
-          return 'Nama kategori sudah digunakan'
-        }
-      }
-      return null
-    },
-  },
-  color: {
-    required: true,
-    pattern: /^#[0-9A-Fa-f]{6}$/,
-    custom: (value: string) => {
-      if (value && !/^#[0-9A-Fa-f]{6}$/.test(value)) {
-        return 'Format warna tidak valid (gunakan #RRGGBB)'
-      }
-      return null
-    },
-  },
+// Simple validation helper functions
+const validateCategoryName = (name: string, existingCategories: ClientCategory[], editingId?: string): string | null => {
+  if (!name.trim()) return 'Nama kategori wajib diisi'
+  if (name.length < 2) return 'Nama kategori minimal 2 karakter'
+  if (name.length > 50) return 'Nama kategori maksimal 50 karakter'
+  if (!/^[a-zA-Z0-9\s-]+$/.test(name)) return 'Nama kategori hanya boleh mengandung huruf, angka, spasi, dan tanda hubung'
+  
+  const exists = existingCategories.some(
+    (cat) => cat.name.toLowerCase() === name.toLowerCase() && cat.id !== editingId
+  )
+  if (exists) return 'Nama kategori sudah digunakan'
+  
+  return null
+}
+
+const validateCategoryColor = (color: string): string | null => {
+  if (!color.trim()) return 'Warna kategori wajib dipilih'
+  if (!/^#[0-9A-Fa-f]{6}$/.test(color)) return 'Format warna tidak valid (gunakan #RRGGBB)'
+  return null
 }
 
 export function CategoryForm({
@@ -64,18 +54,37 @@ export function CategoryForm({
     color: category?.color || '#FFD700',
   })
 
-  const { errors, touched, validate, validateSingleField } = useFormValidation({
-    ...validationRules,
-    name: {
-      ...validationRules.name,
-      custom: (value: string) =>
-        validationRules.name.custom(
-          value,
-          existingCategories,
-          mode === 'edit' ? category?.id : undefined,
-        ),
-    },
-  })
+  // Simple error state management
+  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [touched, setTouched] = useState<Record<string, boolean>>({})
+
+  // Simple validation function
+  const validateForm = (): boolean => {
+    const newErrors: Record<string, string> = {}
+    const editingId = mode === 'edit' ? category?.id : undefined
+
+    const nameError = validateCategoryName(formData.name, existingCategories, editingId)
+    if (nameError) newErrors.name = nameError
+
+    const colorError = validateCategoryColor(formData.color)
+    if (colorError) newErrors.color = colorError
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
+  const validateSingleField = (name: string, value: string): void => {
+    const editingId = mode === 'edit' ? category?.id : undefined
+    let error = ''
+    
+    if (name === 'name') {
+      error = validateCategoryName(value, existingCategories, editingId) || ''
+    } else if (name === 'color') {
+      error = validateCategoryColor(value) || ''
+    }
+    
+    setErrors(prev => ({ ...prev, [name]: error }))
+  }
 
   useEffect(() => {
     if (category && mode === 'edit') {
@@ -88,19 +97,22 @@ export function CategoryForm({
 
   const handleInputChange = (name: string, value: string) => {
     setFormData((prev) => ({ ...prev, [name]: value }))
-    if (touched[name]) {
-      validateSingleField(name, value)
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }))
     }
   }
 
   const handleBlur = (name: string, value: string) => {
+    setTouched(prev => ({ ...prev, [name]: true }))
     validateSingleField(name, value)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!validate(formData)) {
+    if (!validateForm()) {
+      setTouched({ name: true, color: true })
       return
     }
 

@@ -12,23 +12,51 @@ import {
   BreadcrumbList,
 } from '@/components/ui/breadcrumb'
 import { ProductForm } from '@/features/manage-product/components/form-product/ProductForm'
-import { useFormValidation } from '@/features/manage-product/hooks/useFormValidation'
 import { useCategories } from '@/features/manage-product/hooks/useCategories'
-import { useProductManagement } from '@/features/manage-product/hooks/useProductManagement'
+import { useCreateProduct, useUpdateProduct } from '@/features/manage-product/hooks/useProducts'
 import type { ClientProduct } from '@/features/manage-product/types'
-import type { CreateProductRequest, UpdateProductRequest } from '@/features/manage-product/adapters/types/requests'
 
 // Local form data interface with numbers for form handling
 interface ProductFormData {
   code: string
   name: string
   categoryId: string
+  size?: string
+  colorId?: string
   quantity: number
   modalAwal: number
   hargaSewa: number
   description: string
   imageUrl: string | null
   image?: File | null
+}
+
+// Request interfaces for API calls
+interface CreateProductRequest {
+  code: string
+  name: string
+  description: string
+  modalAwal: number
+  hargaSewa: number
+  quantity: number
+  categoryId: string
+  size?: string
+  colorId?: string
+  image?: File
+  imageUrl?: string
+}
+
+interface UpdateProductRequest {
+  name: string
+  description: string
+  modalAwal: number
+  hargaSewa: number
+  quantity: number
+  categoryId: string
+  size?: string
+  colorId?: string
+  image?: File
+  imageUrl?: string
 }
 // Jika ingin menggunakan mock data saat development, import mock-categories
 // import { mockCategories } from '@/features/manage-product/data/mock-categories'
@@ -41,47 +69,35 @@ interface ProductFormPageProps {
   subtitle: string
 }
 
-const validationRules = {
-  code: {
-    required: true,
-    pattern: /^[A-Z0-9]{4}$/,
-    custom: (value: string) => {
-      if (value && !/^[A-Z0-9]{4}$/.test(value)) {
-        return 'Kode harus 4 digit alfanumerik uppercase'
-      }
-      return null
-    },
-  },
-  name: {
-    required: true,
-    minLength: 3,
-    maxLength: 100,
-  },
-  categoryId: {
-    required: true,
-    custom: (value: string) => {
-      if (!value || value.trim() === '') {
-        return 'Kategori wajib dipilih'
-      }
-      return null
-    },
-  },
-  modalAwal: {
-    required: true,
-    min: 0,
-  },
-  hargaSewa: {
-    required: true,
-    min: 0,
-  },
-  quantity: {
-    required: true,
-    min: 0,
-    max: 9999,
-  },
-  description: {
-    maxLength: 500,
-  },
+// Simple validation helper functions
+const validateProductCode = (code: string): string | null => {
+  if (!code.trim()) return 'Kode produk wajib diisi'
+  if (!/^[A-Z0-9]{4}$/.test(code)) return 'Kode harus 4 digit alfanumerik uppercase'
+  return null
+}
+
+const validateProductName = (name: string): string | null => {
+  if (!name.trim()) return 'Nama produk wajib diisi'
+  if (name.length < 3) return 'Nama produk minimal 3 karakter'
+  if (name.length > 100) return 'Nama produk maksimal 100 karakter'
+  return null
+}
+
+const validateCategoryId = (categoryId: string): string | null => {
+  if (!categoryId || categoryId.trim() === '') return 'Kategori wajib dipilih'
+  return null
+}
+
+const validateNumber = (value: number, field: string, min: number = 0, max?: number): string | null => {
+  if (value === undefined || value === null) return `${field} wajib diisi`
+  if (value < min) return `${field} minimal ${min}`
+  if (max && value > max) return `${field} maksimal ${max}`
+  return null
+}
+
+const validateDescription = (description: string): string | null => {
+  if (description.length > 500) return 'Deskripsi maksimal 500 karakter'
+  return null
 }
 
 export function ProductFormPage({
@@ -98,14 +114,11 @@ export function ProductFormPage({
     data: categoriesData,
     isLoading: isLoadingCategories,
     error: categoriesError,
-  } = useCategories()
+  } = useCategories({ isActive: true })
 
-  // Product management hooks for CRUD operations
-  const {
-    handleCreateProduct,
-    handleUpdateProduct,
-    mutations,
-  } = useProductManagement()
+  // Product CRUD mutations
+  const createProductMutation = useCreateProduct()
+  const updateProductMutation = useUpdateProduct()
 
   const categories = categoriesData?.categories ?? []
 
@@ -113,6 +126,8 @@ export function ProductFormPage({
     code: product?.code || '',
     name: product?.name || '',
     categoryId: product?.categoryId || '',
+    size: product?.size || '',
+    colorId: product?.colorId || '',
     quantity: product?.quantity || 1,
     modalAwal: product?.modalAwal ? Number(product.modalAwal) : 0,
     hargaSewa: product?.hargaSewa ? Number(product.hargaSewa) : 0,
@@ -121,25 +136,105 @@ export function ProductFormPage({
     image: null,
   })
 
-  const { errors, touched, validate, validateSingleField } = useFormValidation(validationRules)
+  // Simple error state management
+  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [touched, setTouched] = useState<Record<string, boolean>>({})
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleInputChange = (name: string, value: any) => {
+  // Simple validation function
+  const validateForm = (): boolean => {
+    const newErrors: Record<string, string> = {}
+
+    const codeError = validateProductCode(formData.code)
+    if (codeError) newErrors.code = codeError
+
+    const nameError = validateProductName(formData.name)
+    if (nameError) newErrors.name = nameError
+
+    const categoryError = validateCategoryId(formData.categoryId)
+    if (categoryError) newErrors.categoryId = categoryError
+
+    const modalAwalError = validateNumber(formData.modalAwal, 'Modal awal')
+    if (modalAwalError) newErrors.modalAwal = modalAwalError
+
+    const hargaSewaError = validateNumber(formData.hargaSewa, 'Harga sewa')
+    if (hargaSewaError) newErrors.hargaSewa = hargaSewaError
+
+    const quantityError = validateNumber(formData.quantity, 'Kuantitas', 0, 9999)
+    if (quantityError) newErrors.quantity = quantityError
+
+    const descriptionError = validateDescription(formData.description)
+    if (descriptionError) newErrors.description = descriptionError
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
+  const validateSingleField = (name: string, value: string | number | File | null): void => {
+    let error = ''
+    
+    switch (name) {
+      case 'code':
+        error = validateProductCode(typeof value === 'string' ? value : '') || ''
+        break
+      case 'name':
+        error = validateProductName(typeof value === 'string' ? value : '') || ''
+        break
+      case 'categoryId':
+        error = validateCategoryId(typeof value === 'string' ? value : '') || ''
+        break
+      case 'size':
+        // Size is optional, no validation needed
+        error = ''
+        break
+      case 'colorId':
+        // ColorId is optional, no validation needed
+        error = ''
+        break
+      case 'modalAwal':
+        error = validateNumber(typeof value === 'number' ? value : 0, 'Modal awal') || ''
+        break
+      case 'hargaSewa':
+        error = validateNumber(typeof value === 'number' ? value : 0, 'Harga sewa') || ''
+        break
+      case 'quantity':
+        error = validateNumber(typeof value === 'number' ? value : 0, 'Kuantitas', 0, 9999) || ''
+        break
+      case 'description':
+        error = validateDescription(typeof value === 'string' ? value : '') || ''
+        break
+    }
+    
+    setErrors(prev => ({ ...prev, [name]: error }))
+  }
+
+  const handleInputChange = (name: string, value: string | number | File | null) => {
     setFormData((prev) => ({ ...prev, [name]: value }))
-    if (touched[name]) {
-      validateSingleField(name, value)
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }))
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleBlur = (name: string, value: any) => {
+  const handleBlur = (name: string, value: string | number | File | null) => {
+    setTouched(prev => ({ ...prev, [name]: true }))
     validateSingleField(name, value)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!validate(formData)) {
+    if (!validateForm()) {
+      setTouched({ 
+        code: true, 
+        name: true, 
+        categoryId: true, 
+        size: true,
+        colorId: true,
+        modalAwal: true, 
+        hargaSewa: true, 
+        quantity: true, 
+        description: true 
+      })
       return
     }
 
@@ -154,11 +249,13 @@ export function ProductFormPage({
           hargaSewa: formData.hargaSewa,
           quantity: formData.quantity,
           categoryId: formData.categoryId,
+          size: formData.size || undefined,
+          colorId: formData.colorId || undefined,
           image: formData.image || undefined,
           imageUrl: formData.imageUrl || undefined,
         }
 
-        await handleCreateProduct(createData)
+        await createProductMutation.mutateAsync(createData as unknown as FormData | Record<string, string | number | boolean | File | null>)
       } else {
         // Update existing product
         if (!product?.id) {
@@ -172,18 +269,20 @@ export function ProductFormPage({
           hargaSewa: formData.hargaSewa,
           quantity: formData.quantity,
           categoryId: formData.categoryId,
+          size: formData.size || undefined,
+          colorId: formData.colorId || undefined,
           image: formData.image || undefined,
           imageUrl: formData.imageUrl || undefined,
         }
 
-        await handleUpdateProduct(product.id, updateData)
+        await updateProductMutation.mutateAsync({ id: product.id, data: updateData as unknown as FormData | Record<string, string | number | boolean | File | null> })
       }
 
       // Success - redirect to product list
       router.push('/producer/manage-product')
     } catch (error) {
       console.error(`Error ${mode === 'add' ? 'creating' : 'updating'} product:`, error)
-      // Error handling is already done in the hooks (showError)
+      // Error handling is already done in the mutations
     }
   }
 
@@ -234,12 +333,12 @@ export function ProductFormPage({
       {/* Form */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8" data-testid="product-form-content">
         {/* Show errors */}
-        {(categoriesError || mutations.create.error || mutations.update.error) && (
+        {(categoriesError || createProductMutation.error || updateProductMutation.error) && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md">
             <p className="text-red-600 text-sm">
               {categoriesError && 'Gagal memuat data kategori. Silakan refresh halaman.'}
-              {mutations.create.error && `Error creating product: ${mutations.create.error.message}`}
-              {mutations.update.error && `Error updating product: ${mutations.update.error.message}`}
+              {createProductMutation.error && `Error creating product: ${createProductMutation.error.message}`}
+              {updateProductMutation.error && `Error updating product: ${updateProductMutation.error.message}`}
             </p>
           </div>
         )}
@@ -268,14 +367,14 @@ export function ProductFormPage({
             <Button
               type="submit"
               disabled={
-                mutations.create.isPending || 
-                mutations.update.isPending || 
+                createProductMutation.isPending || 
+                updateProductMutation.isPending || 
                 isLoadingCategories
               }
               className="bg-yellow-400 hover:bg-yellow-500 text-black"
               data-testid="submit-button"
             >
-              {mutations.create.isPending || mutations.update.isPending ? (
+              {createProductMutation.isPending || updateProductMutation.isPending ? (
                 <>
                   <div className="w-4 h-4 mr-2 animate-spin rounded-full border-2 border-black border-t-transparent" />
                   {mode === 'add' ? 'Menyimpan...' : 'Mengupdate...'}
