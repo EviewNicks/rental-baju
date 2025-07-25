@@ -1,1041 +1,456 @@
 {
-  "numTotalTests": 147,
-  "numPassedTests": 147,
+  "numTotalTests": 89,
+  "numPassedTests": 89,
   "numFailedTests": 0,
   "numPendingTests": 0,
-  "startTime": "2025-07-22T03:12:09.856Z",
-  "endTime": "2025-07-22T03:12:22.851Z",
+  "startTime": "2025-07-25T12:10:16.954Z",
+  "endTime": "2025-07-25T12:10:20.575Z",
   "testResults": [
     {
-      "testFilePath": "D:\\.work\\rental-software\\features\\manage-product\\types\\index.test.ts",
+      "testFilePath": "D:\\.work\\rental-software\\features\\kasir\\services\\pembayaranService.test.ts",
       "testFileResults": [
         {
           "ancestorTitles": [
-            "Type Guards and Utilities",
-            "isValidProductStatus"
+            "PembayaranService",
+            "createPembayaran"
           ],
-          "fullName": "Type Guards and Utilities isValidProductStatus should return true for valid product statuses",
+          "fullName": "PembayaranService createPembayaran should create payment successfully",
           "status": "passed",
-          "title": "should return true for valid product statuses",
+          "title": "should create payment successfully",
           "failureMessages": [],
-          "duration": 21
+          "duration": 27
         },
         {
           "ancestorTitles": [
-            "Type Guards and Utilities",
-            "isValidProductStatus"
+            "PembayaranService",
+            "createPembayaran"
           ],
-          "fullName": "Type Guards and Utilities isValidProductStatus should return false for invalid product statuses",
+          "fullName": "PembayaranService createPembayaran should throw error if transaction not found",
           "status": "passed",
-          "title": "should return false for invalid product statuses",
+          "title": "should throw error if transaction not found",
           "failureMessages": [],
-          "duration": 3
+          "duration": 32
         },
         {
           "ancestorTitles": [
-            "Type Guards and Utilities",
-            "isValidProductStatus"
+            "PembayaranService",
+            "createPembayaran"
           ],
-          "fullName": "Type Guards and Utilities isValidProductStatus should handle edge cases",
+          "fullName": "PembayaranService createPembayaran should throw error if transaction is cancelled",
           "status": "passed",
-          "title": "should handle edge cases",
+          "title": "should throw error if transaction is cancelled",
           "failureMessages": [],
-          "duration": 4
+          "duration": 1
         },
         {
           "ancestorTitles": [
-            "Type Guards and Utilities",
-            "normalizeStatusFilter"
+            "PembayaranService",
+            "createPembayaran"
           ],
-          "fullName": "Type Guards and Utilities normalizeStatusFilter should return undefined for \"Semua\" status",
+          "fullName": "PembayaranService createPembayaran should throw error if transaction is completed",
           "status": "passed",
-          "title": "should return undefined for \"Semua\" status",
+          "title": "should throw error if transaction is completed",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "createPembayaran"
+          ],
+          "fullName": "PembayaranService createPembayaran should throw error if payment amount is invalid",
+          "status": "passed",
+          "title": "should throw error if payment amount is invalid",
           "failureMessages": [],
           "duration": 2
         },
         {
           "ancestorTitles": [
-            "Type Guards and Utilities",
-            "normalizeStatusFilter"
+            "PembayaranService",
+            "createPembayaran"
           ],
-          "fullName": "Type Guards and Utilities normalizeStatusFilter should return undefined for empty string",
+          "fullName": "PembayaranService createPembayaran should handle overpayment validation",
           "status": "passed",
-          "title": "should return undefined for empty string",
+          "title": "should handle overpayment validation",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "getTransactionPayments"
+          ],
+          "fullName": "PembayaranService getTransactionPayments should return payments for a transaction",
+          "status": "passed",
+          "title": "should return payments for a transaction",
           "failureMessages": [],
           "duration": 2
         },
         {
           "ancestorTitles": [
-            "Type Guards and Utilities",
-            "normalizeStatusFilter"
+            "PembayaranService",
+            "getPembayaranById"
           ],
-          "fullName": "Type Guards and Utilities normalizeStatusFilter should return undefined for undefined input",
+          "fullName": "PembayaranService getPembayaranById should return payment by ID",
           "status": "passed",
-          "title": "should return undefined for undefined input",
+          "title": "should return payment by ID",
           "failureMessages": [],
           "duration": 1
         },
         {
           "ancestorTitles": [
-            "Type Guards and Utilities",
-            "normalizeStatusFilter"
+            "PembayaranService",
+            "getPembayaranById"
           ],
-          "fullName": "Type Guards and Utilities normalizeStatusFilter should return valid status for valid inputs",
+          "fullName": "PembayaranService getPembayaranById should throw error if payment not found",
           "status": "passed",
-          "title": "should return valid status for valid inputs",
+          "title": "should throw error if payment not found",
           "failureMessages": [],
           "duration": 1
         },
         {
           "ancestorTitles": [
-            "Type Guards and Utilities",
-            "normalizeStatusFilter"
+            "PembayaranService",
+            "getPaymentSummary"
           ],
-          "fullName": "Type Guards and Utilities normalizeStatusFilter should return undefined for invalid status strings",
+          "fullName": "PembayaranService getPaymentSummary should return payment summary for transaction",
           "status": "passed",
-          "title": "should return undefined for invalid status strings",
+          "title": "should return payment summary for transaction",
           "failureMessages": [],
           "duration": 2
         },
         {
           "ancestorTitles": [
-            "Type Guards and Utilities",
-            "normalizeStatusFilter"
+            "PembayaranService",
+            "getPaymentSummary"
           ],
-          "fullName": "Type Guards and Utilities normalizeStatusFilter should handle edge cases",
+          "fullName": "PembayaranService getPaymentSummary should throw error if transaction not found for summary",
           "status": "passed",
-          "title": "should handle edge cases",
+          "title": "should throw error if transaction not found for summary",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "getPaymentSummary"
+          ],
+          "fullName": "PembayaranService getPaymentSummary should handle transaction with no payments",
+          "status": "passed",
+          "title": "should handle transaction with no payments",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "getPaymentList"
+          ],
+          "fullName": "PembayaranService getPaymentList should return paginated payment list",
+          "status": "passed",
+          "title": "should return paginated payment list",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "getPaymentList"
+          ],
+          "fullName": "PembayaranService getPaymentList should filter payments by transaction ID",
+          "status": "passed",
+          "title": "should filter payments by transaction ID",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "getPaymentList"
+          ],
+          "fullName": "PembayaranService getPaymentList should filter payments by method",
+          "status": "passed",
+          "title": "should filter payments by method",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "getPaymentList"
+          ],
+          "fullName": "PembayaranService getPaymentList should filter payments by date range",
+          "status": "passed",
+          "title": "should filter payments by date range",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "cancelPayment"
+          ],
+          "fullName": "PembayaranService cancelPayment should cancel payment successfully",
+          "status": "passed",
+          "title": "should cancel payment successfully",
           "failureMessages": [],
           "duration": 2
         },
         {
           "ancestorTitles": [
-            "Type Guards and Utilities",
-            "normalizeCategoryFilter"
+            "PembayaranService",
+            "cancelPayment"
           ],
-          "fullName": "Type Guards and Utilities normalizeCategoryFilter should return undefined for empty string",
+          "fullName": "PembayaranService cancelPayment should throw error if payment not found for cancellation",
           "status": "passed",
-          "title": "should return undefined for empty string",
+          "title": "should throw error if payment not found for cancellation",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "cancelPayment"
+          ],
+          "fullName": "PembayaranService cancelPayment should throw error if transaction is already cancelled",
+          "status": "passed",
+          "title": "should throw error if transaction is already cancelled",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "getPaymentStats"
+          ],
+          "fullName": "PembayaranService getPaymentStats should return payment statistics",
+          "status": "passed",
+          "title": "should return payment statistics",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "getPaymentStats"
+          ],
+          "fullName": "PembayaranService getPaymentStats should filter statistics by date range",
+          "status": "passed",
+          "title": "should filter statistics by date range",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "getPaymentStats"
+          ],
+          "fullName": "PembayaranService getPaymentStats should handle empty payment data",
+          "status": "passed",
+          "title": "should handle empty payment data",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "getPaymentStats"
+          ],
+          "fullName": "PembayaranService getPaymentStats should aggregate payments by method correctly",
+          "status": "passed",
+          "title": "should aggregate payments by method correctly",
           "failureMessages": [],
           "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "Type Guards and Utilities",
-            "normalizeCategoryFilter"
-          ],
-          "fullName": "Type Guards and Utilities normalizeCategoryFilter should return undefined for undefined input",
-          "status": "passed",
-          "title": "should return undefined for undefined input",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "Type Guards and Utilities",
-            "normalizeCategoryFilter"
-          ],
-          "fullName": "Type Guards and Utilities normalizeCategoryFilter should return undefined for \"all\" keyword",
-          "status": "passed",
-          "title": "should return undefined for \"all\" keyword",
-          "failureMessages": [],
-          "duration": 0
-        },
-        {
-          "ancestorTitles": [
-            "Type Guards and Utilities",
-            "normalizeCategoryFilter"
-          ],
-          "fullName": "Type Guards and Utilities normalizeCategoryFilter should return the category ID for valid inputs",
-          "status": "passed",
-          "title": "should return the category ID for valid inputs",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "Type Guards and Utilities",
-            "normalizeCategoryFilter"
-          ],
-          "fullName": "Type Guards and Utilities normalizeCategoryFilter should handle special cases",
-          "status": "passed",
-          "title": "should handle special cases",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "Type Guards and Utilities",
-            "normalizeCategoryFilter"
-          ],
-          "fullName": "Type Guards and Utilities normalizeCategoryFilter should preserve valid category IDs",
-          "status": "passed",
-          "title": "should preserve valid category IDs",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "Type Guards and Utilities",
-            "Type Definitions"
-          ],
-          "fullName": "Type Guards and Utilities Type Definitions should define ProductStatus correctly",
-          "status": "passed",
-          "title": "should define ProductStatus correctly",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "Type Guards and Utilities",
-            "Type Definitions"
-          ],
-          "fullName": "Type Guards and Utilities Type Definitions should define CategoryFilterValue correctly",
-          "status": "passed",
-          "title": "should define CategoryFilterValue correctly",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "Type Guards and Utilities",
-            "Type Definitions"
-          ],
-          "fullName": "Type Guards and Utilities Type Definitions should define StatusFilterValue correctly",
-          "status": "passed",
-          "title": "should define StatusFilterValue correctly",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "Type Guards and Utilities",
-            "Integration Tests"
-          ],
-          "fullName": "Type Guards and Utilities Integration Tests should handle complete filter workflow for status",
-          "status": "passed",
-          "title": "should handle complete filter workflow for status",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "Type Guards and Utilities",
-            "Integration Tests"
-          ],
-          "fullName": "Type Guards and Utilities Integration Tests should handle complete filter workflow for category",
-          "status": "passed",
-          "title": "should handle complete filter workflow for category",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "Type Guards and Utilities",
-            "Integration Tests"
-          ],
-          "fullName": "Type Guards and Utilities Integration Tests should handle API contract expectations",
-          "status": "passed",
-          "title": "should handle API contract expectations",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "Type Guards and Utilities",
-            "Error Prevention"
-          ],
-          "fullName": "Type Guards and Utilities Error Prevention should prevent invalid status from reaching API",
-          "status": "passed",
-          "title": "should prevent invalid status from reaching API",
-          "failureMessages": [],
-          "duration": 4
-        },
-        {
-          "ancestorTitles": [
-            "Type Guards and Utilities",
-            "Error Prevention"
-          ],
-          "fullName": "Type Guards and Utilities Error Prevention should handle null-like values gracefully",
-          "status": "passed",
-          "title": "should handle null-like values gracefully",
-          "failureMessages": [],
-          "duration": 1
         }
       ],
       "failureMessage": null
     },
     {
-      "testFilePath": "D:\\.work\\rental-software\\features\\manage-product\\lib\\validation\\productSchema.test.ts",
+      "testFilePath": "D:\\.work\\rental-software\\features\\kasir\\services\\auditService.test.ts",
       "testFileResults": [
         {
           "ancestorTitles": [
-            "Product Schema Validation",
-            "productBaseSchema"
+            "AuditService",
+            "logActivity"
           ],
-          "fullName": "Product Schema Validation productBaseSchema should validate valid product data - happy path",
+          "fullName": "AuditService logActivity should log transaksi activity successfully",
           "status": "passed",
-          "title": "should validate valid product data - happy path",
-          "failureMessages": [],
-          "duration": 29
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "productBaseSchema",
-            "code validation"
-          ],
-          "fullName": "Product Schema Validation productBaseSchema code validation should accept valid 4-character alphanumeric uppercase code",
-          "status": "passed",
-          "title": "should accept valid 4-character alphanumeric uppercase code",
-          "failureMessages": [],
-          "duration": 6
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "productBaseSchema",
-            "code validation"
-          ],
-          "fullName": "Product Schema Validation productBaseSchema code validation should reject code that is too short",
-          "status": "passed",
-          "title": "should reject code that is too short",
-          "failureMessages": [],
-          "duration": 57
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "productBaseSchema",
-            "code validation"
-          ],
-          "fullName": "Product Schema Validation productBaseSchema code validation should reject code that is too long",
-          "status": "passed",
-          "title": "should reject code that is too long",
-          "failureMessages": [],
-          "duration": 5
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "productBaseSchema",
-            "code validation"
-          ],
-          "fullName": "Product Schema Validation productBaseSchema code validation should reject code with lowercase characters",
-          "status": "passed",
-          "title": "should reject code with lowercase characters",
-          "failureMessages": [],
-          "duration": 5
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "productBaseSchema",
-            "code validation"
-          ],
-          "fullName": "Product Schema Validation productBaseSchema code validation should reject code with special characters",
-          "status": "passed",
-          "title": "should reject code with special characters",
-          "failureMessages": [],
-          "duration": 4
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "productBaseSchema",
-            "code validation"
-          ],
-          "fullName": "Product Schema Validation productBaseSchema code validation should reject empty code",
-          "status": "passed",
-          "title": "should reject empty code",
-          "failureMessages": [],
-          "duration": 4
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "productBaseSchema",
-            "name validation"
-          ],
-          "fullName": "Product Schema Validation productBaseSchema name validation should accept valid product names",
-          "status": "passed",
-          "title": "should accept valid product names",
-          "failureMessages": [],
-          "duration": 3
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "productBaseSchema",
-            "name validation"
-          ],
-          "fullName": "Product Schema Validation productBaseSchema name validation should reject empty name",
-          "status": "passed",
-          "title": "should reject empty name",
-          "failureMessages": [],
-          "duration": 4
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "productBaseSchema",
-            "name validation"
-          ],
-          "fullName": "Product Schema Validation productBaseSchema name validation should reject name that is too long",
-          "status": "passed",
-          "title": "should reject name that is too long",
+          "title": "should log transaksi activity successfully",
           "failureMessages": [],
           "duration": 2
         },
         {
           "ancestorTitles": [
-            "Product Schema Validation",
-            "productBaseSchema",
-            "description validation"
+            "AuditService",
+            "logActivity"
           ],
-          "fullName": "Product Schema Validation productBaseSchema description validation should accept valid descriptions",
+          "fullName": "AuditService logActivity should log sensitive data without automatic sanitization in logActivity",
           "status": "passed",
-          "title": "should accept valid descriptions",
+          "title": "should log sensitive data without automatic sanitization in logActivity",
           "failureMessages": [],
-          "duration": 4
+          "duration": 1
         },
         {
           "ancestorTitles": [
-            "Product Schema Validation",
-            "productBaseSchema",
-            "description validation"
+            "AuditService",
+            "logActivity"
           ],
-          "fullName": "Product Schema Validation productBaseSchema description validation should reject description that is too long",
+          "fullName": "AuditService logActivity should handle non-transaksi entity types",
           "status": "passed",
-          "title": "should reject description that is too long",
+          "title": "should handle non-transaksi entity types",
           "failureMessages": [],
-          "duration": 3
+          "duration": 65
         },
         {
           "ancestorTitles": [
-            "Product Schema Validation",
-            "productBaseSchema",
-            "modalAwal validation"
+            "AuditService",
+            "logActivity"
           ],
-          "fullName": "Product Schema Validation productBaseSchema modalAwal validation should accept positive numbers",
+          "fullName": "AuditService logActivity should handle database errors gracefully",
           "status": "passed",
-          "title": "should accept positive numbers",
+          "title": "should handle database errors gracefully",
           "failureMessages": [],
-          "duration": 2
+          "duration": 1
         },
         {
           "ancestorTitles": [
-            "Product Schema Validation",
-            "productBaseSchema",
-            "modalAwal validation"
+            "AuditService",
+            "specific activity loggers"
           ],
-          "fullName": "Product Schema Validation productBaseSchema modalAwal validation should reject zero or negative numbers",
+          "fullName": "AuditService specific activity loggers should log penyewa activity with correct parameters",
           "status": "passed",
-          "title": "should reject zero or negative numbers",
+          "title": "should log penyewa activity with correct parameters",
           "failureMessages": [],
-          "duration": 5
+          "duration": 0
         },
         {
           "ancestorTitles": [
-            "Product Schema Validation",
-            "productBaseSchema",
-            "modalAwal validation"
+            "AuditService",
+            "specific activity loggers"
           ],
-          "fullName": "Product Schema Validation productBaseSchema modalAwal validation should reject values that are too large",
+          "fullName": "AuditService specific activity loggers should log transaksi activity with correct parameters",
           "status": "passed",
-          "title": "should reject values that are too large",
+          "title": "should log transaksi activity with correct parameters",
           "failureMessages": [],
-          "duration": 2
+          "duration": 1
         },
         {
           "ancestorTitles": [
-            "Product Schema Validation",
-            "productBaseSchema",
-            "hargaSewa validation"
+            "AuditService",
+            "specific activity loggers"
           ],
-          "fullName": "Product Schema Validation productBaseSchema hargaSewa validation should accept positive numbers",
+          "fullName": "AuditService specific activity loggers should log pembayaran activity with correct parameters",
           "status": "passed",
-          "title": "should accept positive numbers",
+          "title": "should log pembayaran activity with correct parameters",
           "failureMessages": [],
-          "duration": 12
+          "duration": 0
         },
         {
           "ancestorTitles": [
-            "Product Schema Validation",
-            "productBaseSchema",
-            "hargaSewa validation"
+            "AuditService",
+            "getAuditTrail"
           ],
-          "fullName": "Product Schema Validation productBaseSchema hargaSewa validation should reject zero or negative numbers",
+          "fullName": "AuditService getAuditTrail should return audit trail for transaksi entity",
           "status": "passed",
-          "title": "should reject zero or negative numbers",
-          "failureMessages": [],
-          "duration": 7
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "productBaseSchema",
-            "hargaSewa validation"
-          ],
-          "fullName": "Product Schema Validation productBaseSchema hargaSewa validation should reject values that are too large",
-          "status": "passed",
-          "title": "should reject values that are too large",
-          "failureMessages": [],
-          "duration": 3
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "productBaseSchema",
-            "quantity validation"
-          ],
-          "fullName": "Product Schema Validation productBaseSchema quantity validation should accept valid integer quantities",
-          "status": "passed",
-          "title": "should accept valid integer quantities",
+          "title": "should return audit trail for transaksi entity",
           "failureMessages": [],
           "duration": 2
         },
         {
           "ancestorTitles": [
-            "Product Schema Validation",
-            "productBaseSchema",
-            "quantity validation"
+            "AuditService",
+            "getAuditTrail"
           ],
-          "fullName": "Product Schema Validation productBaseSchema quantity validation should reject negative quantities",
+          "fullName": "AuditService getAuditTrail should return empty array for non-transaksi entities",
           "status": "passed",
-          "title": "should reject negative quantities",
+          "title": "should return empty array for non-transaksi entities",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "AuditService",
+            "getAuditTrail"
+          ],
+          "fullName": "AuditService getAuditTrail should limit results based on provided limit",
+          "status": "passed",
+          "title": "should limit results based on provided limit",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "AuditService",
+            "getAuditSummary"
+          ],
+          "fullName": "AuditService getAuditSummary should return audit summary statistics",
+          "status": "passed",
+          "title": "should return audit summary statistics",
           "failureMessages": [],
           "duration": 2
         },
         {
           "ancestorTitles": [
-            "Product Schema Validation",
-            "productBaseSchema",
-            "quantity validation"
+            "AuditService",
+            "getAuditSummary"
           ],
-          "fullName": "Product Schema Validation productBaseSchema quantity validation should reject quantities that are too large",
+          "fullName": "AuditService getAuditSummary should filter summary by date range",
           "status": "passed",
-          "title": "should reject quantities that are too large",
+          "title": "should filter summary by date range",
           "failureMessages": [],
-          "duration": 3
+          "duration": 1
         },
         {
           "ancestorTitles": [
-            "Product Schema Validation",
-            "productBaseSchema",
-            "quantity validation"
+            "AuditService",
+            "createAuditWrapper"
           ],
-          "fullName": "Product Schema Validation productBaseSchema quantity validation should reject decimal quantities",
+          "fullName": "AuditService createAuditWrapper should create audit wrapper that logs successful operations",
           "status": "passed",
-          "title": "should reject decimal quantities",
+          "title": "should create audit wrapper that logs successful operations",
           "failureMessages": [],
-          "duration": 4
+          "duration": 1
         },
         {
           "ancestorTitles": [
-            "Product Schema Validation",
-            "productBaseSchema",
-            "categoryId validation"
+            "AuditService",
+            "createAuditWrapper"
           ],
-          "fullName": "Product Schema Validation productBaseSchema categoryId validation should accept valid UUID",
+          "fullName": "AuditService createAuditWrapper should create audit wrapper that logs failed operations",
           "status": "passed",
-          "title": "should accept valid UUID",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "productBaseSchema",
-            "categoryId validation"
-          ],
-          "fullName": "Product Schema Validation productBaseSchema categoryId validation should reject invalid UUID formats",
-          "status": "passed",
-          "title": "should reject invalid UUID formats",
+          "title": "should create audit wrapper that logs failed operations",
           "failureMessages": [],
           "duration": 9
         },
         {
           "ancestorTitles": [
-            "Product Schema Validation",
-            "imageFileSchema"
+            "AuditService",
+            "data sanitization"
           ],
-          "fullName": "Product Schema Validation imageFileSchema should accept valid image files",
+          "fullName": "AuditService data sanitization should sanitize sensitive fields",
           "status": "passed",
-          "title": "should accept valid image files",
+          "title": "should sanitize sensitive fields",
           "failureMessages": [],
-          "duration": 6
+          "duration": 1
         },
         {
           "ancestorTitles": [
-            "Product Schema Validation",
-            "imageFileSchema"
+            "AuditService",
+            "data sanitization"
           ],
-          "fullName": "Product Schema Validation imageFileSchema should accept undefined and null values",
+          "fullName": "AuditService data sanitization should handle non-object data",
           "status": "passed",
-          "title": "should accept undefined and null values",
-          "failureMessages": [],
-          "duration": 3
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "imageFileSchema"
-          ],
-          "fullName": "Product Schema Validation imageFileSchema should reject files that are too large",
-          "status": "passed",
-          "title": "should reject files that are too large",
-          "failureMessages": [],
-          "duration": 3
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "imageFileSchema"
-          ],
-          "fullName": "Product Schema Validation imageFileSchema should reject unsupported file types",
-          "status": "passed",
-          "title": "should reject unsupported file types",
-          "failureMessages": [],
-          "duration": 11
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "imageFileSchema"
-          ],
-          "fullName": "Product Schema Validation imageFileSchema should accept supported file types",
-          "status": "passed",
-          "title": "should accept supported file types",
-          "failureMessages": [],
-          "duration": 5
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "createProductSchema"
-          ],
-          "fullName": "Product Schema Validation createProductSchema should validate create product data with image",
-          "status": "passed",
-          "title": "should validate create product data with image",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "createProductSchema"
-          ],
-          "fullName": "Product Schema Validation createProductSchema should validate create product data without image",
-          "status": "passed",
-          "title": "should validate create product data without image",
+          "title": "should handle non-object data",
           "failureMessages": [],
           "duration": 0
         },
         {
           "ancestorTitles": [
-            "Product Schema Validation",
-            "updateProductSchema"
+            "createAuditService factory"
           ],
-          "fullName": "Product Schema Validation updateProductSchema should validate partial product updates",
+          "fullName": "createAuditService factory should create audit service with correct parameters",
           "status": "passed",
-          "title": "should validate partial product updates",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "updateProductSchema"
-          ],
-          "fullName": "Product Schema Validation updateProductSchema should validate update with image",
-          "status": "passed",
-          "title": "should validate update with image",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "productQuerySchema"
-          ],
-          "fullName": "Product Schema Validation productQuerySchema should validate query parameters with defaults",
-          "status": "passed",
-          "title": "should validate query parameters with defaults",
-          "failureMessages": [],
-          "duration": 4
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "productQuerySchema"
-          ],
-          "fullName": "Product Schema Validation productQuerySchema should validate complete query parameters",
-          "status": "passed",
-          "title": "should validate complete query parameters",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "productQuerySchema"
-          ],
-          "fullName": "Product Schema Validation productQuerySchema should enforce page and limit boundaries",
-          "status": "passed",
-          "title": "should enforce page and limit boundaries",
-          "failureMessages": [],
-          "duration": 8
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "productQuerySchema"
-          ],
-          "fullName": "Product Schema Validation productQuerySchema should validate status enum values",
-          "status": "passed",
-          "title": "should validate status enum values",
-          "failureMessages": [],
-          "duration": 7
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "productParamsSchema"
-          ],
-          "fullName": "Product Schema Validation productParamsSchema should validate valid UUID parameter",
-          "status": "passed",
-          "title": "should validate valid UUID parameter",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "Product Schema Validation",
-            "productParamsSchema"
-          ],
-          "fullName": "Product Schema Validation productParamsSchema should reject invalid UUID parameter",
-          "status": "passed",
-          "title": "should reject invalid UUID parameter",
-          "failureMessages": [],
-          "duration": 7
-        },
-        {
-          "ancestorTitles": [
-            "Category Schema Validation",
-            "categorySchema"
-          ],
-          "fullName": "Category Schema Validation categorySchema should validate valid category data - happy path",
-          "status": "passed",
-          "title": "should validate valid category data - happy path",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "Category Schema Validation",
-            "categorySchema",
-            "name validation"
-          ],
-          "fullName": "Category Schema Validation categorySchema name validation should accept valid category names",
-          "status": "passed",
-          "title": "should accept valid category names",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "Category Schema Validation",
-            "categorySchema",
-            "name validation"
-          ],
-          "fullName": "Category Schema Validation categorySchema name validation should reject empty name",
-          "status": "passed",
-          "title": "should reject empty name",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "Category Schema Validation",
-            "categorySchema",
-            "name validation"
-          ],
-          "fullName": "Category Schema Validation categorySchema name validation should reject name that is too long",
-          "status": "passed",
-          "title": "should reject name that is too long",
-          "failureMessages": [],
-          "duration": 5
-        },
-        {
-          "ancestorTitles": [
-            "Category Schema Validation",
-            "categorySchema",
-            "color validation"
-          ],
-          "fullName": "Category Schema Validation categorySchema color validation should accept valid hex colors",
-          "status": "passed",
-          "title": "should accept valid hex colors",
-          "failureMessages": [],
-          "duration": 10
-        },
-        {
-          "ancestorTitles": [
-            "Category Schema Validation",
-            "categorySchema",
-            "color validation"
-          ],
-          "fullName": "Category Schema Validation categorySchema color validation should reject invalid color formats",
-          "status": "passed",
-          "title": "should reject invalid color formats",
-          "failureMessages": [],
-          "duration": 10
-        },
-        {
-          "ancestorTitles": [
-            "Category Schema Validation",
-            "updateCategorySchema"
-          ],
-          "fullName": "Category Schema Validation updateCategorySchema should validate partial category updates",
-          "status": "passed",
-          "title": "should validate partial category updates",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "Category Schema Validation",
-            "categoryQuerySchema"
-          ],
-          "fullName": "Category Schema Validation categoryQuerySchema should validate query parameters with defaults",
-          "status": "passed",
-          "title": "should validate query parameters with defaults",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "Category Schema Validation",
-            "categoryQuerySchema"
-          ],
-          "fullName": "Category Schema Validation categoryQuerySchema should validate complete query parameters",
-          "status": "passed",
-          "title": "should validate complete query parameters",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "Category Schema Validation",
-            "categoryQuerySchema"
-          ],
-          "fullName": "Category Schema Validation categoryQuerySchema should coerce includeProducts to boolean",
-          "status": "passed",
-          "title": "should coerce includeProducts to boolean",
-          "failureMessages": [],
-          "duration": 3
-        },
-        {
-          "ancestorTitles": [
-            "Category Schema Validation",
-            "categoryParamsSchema"
-          ],
-          "fullName": "Category Schema Validation categoryParamsSchema should validate valid UUID parameter",
-          "status": "passed",
-          "title": "should validate valid UUID parameter",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "Category Schema Validation",
-            "categoryParamsSchema"
-          ],
-          "fullName": "Category Schema Validation categoryParamsSchema should reject invalid UUID parameter",
-          "status": "passed",
-          "title": "should reject invalid UUID parameter",
-          "failureMessages": [],
-          "duration": 5
-        }
-      ],
-      "failureMessage": null
-    },
-    {
-      "testFilePath": "D:\\.work\\rental-software\\features\\manage-product\\services\\fileUploadService.test.ts",
-      "testFileResults": [
-        {
-          "ancestorTitles": [
-            "FileUploadService",
-            "validateFile"
-          ],
-          "fullName": "FileUploadService validateFile should validate file successfully - happy path",
-          "status": "passed",
-          "title": "should validate file successfully - happy path",
-          "failureMessages": [],
-          "duration": 29
-        },
-        {
-          "ancestorTitles": [
-            "FileUploadService",
-            "validateFile"
-          ],
-          "fullName": "FileUploadService validateFile should reject file that is too large",
-          "status": "passed",
-          "title": "should reject file that is too large",
-          "failureMessages": [],
-          "duration": 39
-        },
-        {
-          "ancestorTitles": [
-            "FileUploadService",
-            "validateFile"
-          ],
-          "fullName": "FileUploadService validateFile should reject unsupported file format",
-          "status": "passed",
-          "title": "should reject unsupported file format",
-          "failureMessages": [],
-          "duration": 7
-        },
-        {
-          "ancestorTitles": [
-            "FileUploadService",
-            "validateFile"
-          ],
-          "fullName": "FileUploadService validateFile should handle null file gracefully",
-          "status": "passed",
-          "title": "should handle null file gracefully",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "FileUploadService",
-            "validateFile"
-          ],
-          "fullName": "FileUploadService validateFile should handle undefined file gracefully",
-          "status": "passed",
-          "title": "should handle undefined file gracefully",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "FileUploadService",
-            "generateImagePath"
-          ],
-          "fullName": "FileUploadService generateImagePath should generate valid image path with timestamp",
-          "status": "passed",
-          "title": "should generate valid image path with timestamp",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "FileUploadService",
-            "generateImagePath"
-          ],
-          "fullName": "FileUploadService generateImagePath should handle different file extensions",
-          "status": "passed",
-          "title": "should handle different file extensions",
-          "failureMessages": [],
-          "duration": 3
-        },
-        {
-          "ancestorTitles": [
-            "FileUploadService",
-            "extractPathFromUrl"
-          ],
-          "fullName": "FileUploadService extractPathFromUrl should extract path from storage URL correctly",
-          "status": "passed",
-          "title": "should extract path from storage URL correctly",
-          "failureMessages": [],
-          "duration": 4
-        },
-        {
-          "ancestorTitles": [
-            "FileUploadService",
-            "extractPathFromUrl"
-          ],
-          "fullName": "FileUploadService extractPathFromUrl should handle URLs with query parameters",
-          "status": "passed",
-          "title": "should handle URLs with query parameters",
-          "failureMessages": [],
-          "duration": 5
-        },
-        {
-          "ancestorTitles": [
-            "FileUploadService",
-            "extractPathFromUrl"
-          ],
-          "fullName": "FileUploadService extractPathFromUrl should handle invalid URLs gracefully",
-          "status": "passed",
-          "title": "should handle invalid URLs gracefully",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "FileUploadService",
-            "extractPathFromUrl"
-          ],
-          "fullName": "FileUploadService extractPathFromUrl should handle empty URL",
-          "status": "passed",
-          "title": "should handle empty URL",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "FileUploadService",
-            "extractPathFromUrl"
-          ],
-          "fullName": "FileUploadService extractPathFromUrl should handle null URL",
-          "status": "passed",
-          "title": "should handle null URL",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "FileUploadService",
-            "uploadProductImage"
-          ],
-          "fullName": "FileUploadService uploadProductImage should handle null file input",
-          "status": "passed",
-          "title": "should handle null file input",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "FileUploadService",
-            "uploadProductImage"
-          ],
-          "fullName": "FileUploadService uploadProductImage should handle undefined file input",
-          "status": "passed",
-          "title": "should handle undefined file input",
-          "failureMessages": [],
-          "duration": 11
-        },
-        {
-          "ancestorTitles": [
-            "FileUploadService",
-            "deleteProductImage"
-          ],
-          "fullName": "FileUploadService deleteProductImage should handle empty image path gracefully",
-          "status": "passed",
-          "title": "should handle empty image path gracefully",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "FileUploadService",
-            "deleteProductImage"
-          ],
-          "fullName": "FileUploadService deleteProductImage should handle null image path gracefully",
-          "status": "passed",
-          "title": "should handle null image path gracefully",
+          "title": "should create audit service with correct parameters",
           "failureMessages": [],
           "duration": 1
         }
@@ -1043,646 +458,557 @@
       "failureMessage": null
     },
     {
-      "testFilePath": "D:\\.work\\rental-software\\features\\manage-product\\services\\categoryService.test.ts",
+      "testFilePath": "D:\\.work\\rental-software\\features\\kasir\\services\\transaksiService.test.ts",
       "testFileResults": [
         {
           "ancestorTitles": [
-            "CategoryService",
-            "createCategory"
+            "TransaksiService",
+            "createTransaksi"
           ],
-          "fullName": "CategoryService createCategory should create category successfully - happy path",
+          "fullName": "TransaksiService createTransaksi should create transaksi successfully with auto-generated code",
           "status": "passed",
-          "title": "should create category successfully - happy path",
-          "failureMessages": [],
-          "duration": 61
-        },
-        {
-          "ancestorTitles": [
-            "CategoryService",
-            "createCategory"
-          ],
-          "fullName": "CategoryService createCategory should throw error when category name already exists",
-          "status": "passed",
-          "title": "should throw error when category name already exists",
-          "failureMessages": [],
-          "duration": 69
-        },
-        {
-          "ancestorTitles": [
-            "CategoryService",
-            "createCategory"
-          ],
-          "fullName": "CategoryService createCategory should handle case-insensitive name checking",
-          "status": "passed",
-          "title": "should handle case-insensitive name checking",
-          "failureMessages": [],
-          "duration": 4
-        },
-        {
-          "ancestorTitles": [
-            "CategoryService",
-            "createCategory"
-          ],
-          "fullName": "CategoryService createCategory should handle validation error gracefully",
-          "status": "passed",
-          "title": "should handle validation error gracefully",
-          "failureMessages": [],
-          "duration": 15
-        },
-        {
-          "ancestorTitles": [
-            "CategoryService",
-            "createCategory"
-          ],
-          "fullName": "CategoryService createCategory should handle database error during creation",
-          "status": "passed",
-          "title": "should handle database error during creation",
-          "failureMessages": [],
-          "duration": 4
-        },
-        {
-          "ancestorTitles": [
-            "CategoryService",
-            "updateCategory"
-          ],
-          "fullName": "CategoryService updateCategory should update category successfully - happy path",
-          "status": "passed",
-          "title": "should update category successfully - happy path",
-          "failureMessages": [],
-          "duration": 15
-        },
-        {
-          "ancestorTitles": [
-            "CategoryService",
-            "updateCategory"
-          ],
-          "fullName": "CategoryService updateCategory should throw error when category not found",
-          "status": "passed",
-          "title": "should throw error when category not found",
-          "failureMessages": [],
-          "duration": 4
-        },
-        {
-          "ancestorTitles": [
-            "CategoryService",
-            "updateCategory"
-          ],
-          "fullName": "CategoryService updateCategory should throw error when updated name conflicts with existing category",
-          "status": "passed",
-          "title": "should throw error when updated name conflicts with existing category",
+          "title": "should create transaksi successfully with auto-generated code",
           "failureMessages": [],
           "duration": 2
         },
         {
           "ancestorTitles": [
-            "CategoryService",
-            "updateCategory"
+            "TransaksiService",
+            "createTransaksi"
           ],
-          "fullName": "CategoryService updateCategory should handle partial update (only color)",
+          "fullName": "TransaksiService createTransaksi should throw error if penyewa not found",
           "status": "passed",
-          "title": "should handle partial update (only color)",
+          "title": "should throw error if penyewa not found",
+          "failureMessages": [],
+          "duration": 27
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService",
+            "createTransaksi"
+          ],
+          "fullName": "TransaksiService createTransaksi should throw error if product not available",
+          "status": "passed",
+          "title": "should throw error if product not available",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService",
+            "createTransaksi"
+          ],
+          "fullName": "TransaksiService createTransaksi should throw error if insufficient product quantity",
+          "status": "passed",
+          "title": "should throw error if insufficient product quantity",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService",
+            "getTransaksiById"
+          ],
+          "fullName": "TransaksiService getTransaksiById should return transaksi by ID",
+          "status": "passed",
+          "title": "should return transaksi by ID",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService",
+            "getTransaksiById"
+          ],
+          "fullName": "TransaksiService getTransaksiById should throw error if transaksi not found",
+          "status": "passed",
+          "title": "should throw error if transaksi not found",
+          "failureMessages": [],
+          "duration": 5
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService",
+            "getTransaksiByCode"
+          ],
+          "fullName": "TransaksiService getTransaksiByCode should return transaksi by code",
+          "status": "passed",
+          "title": "should return transaksi by code",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService",
+            "getTransaksiList"
+          ],
+          "fullName": "TransaksiService getTransaksiList should return paginated transaksi list",
+          "status": "passed",
+          "title": "should return paginated transaksi list",
           "failureMessages": [],
           "duration": 2
         },
         {
           "ancestorTitles": [
-            "CategoryService",
-            "updateCategory"
+            "TransaksiService",
+            "getTransaksiList"
           ],
-          "fullName": "CategoryService updateCategory should handle empty update request gracefully",
+          "fullName": "TransaksiService getTransaksiList should filter by status",
           "status": "passed",
-          "title": "should handle empty update request gracefully",
+          "title": "should filter by status",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService",
+            "getTransaksiList"
+          ],
+          "fullName": "TransaksiService getTransaksiList should search by code or penyewa name",
+          "status": "passed",
+          "title": "should search by code or penyewa name",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService",
+            "updateTransaksiStatus"
+          ],
+          "fullName": "TransaksiService updateTransaksiStatus should update transaksi status successfully",
+          "status": "passed",
+          "title": "should update transaksi status successfully",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService",
+            "updateTransaksiStatus"
+          ],
+          "fullName": "TransaksiService updateTransaksiStatus should throw error if transaksi not found",
+          "status": "passed",
+          "title": "should throw error if transaksi not found",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService",
+            "updateTransaksiStatus"
+          ],
+          "fullName": "TransaksiService updateTransaksiStatus should validate status transitions",
+          "status": "passed",
+          "title": "should validate status transitions",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService",
+            "getTransaksiStats"
+          ],
+          "fullName": "TransaksiService getTransaksiStats should return transaction statistics",
+          "status": "passed",
+          "title": "should return transaction statistics",
+          "failureMessages": [],
+          "duration": 0
+        }
+      ],
+      "failureMessage": null
+    },
+    {
+      "testFilePath": "D:\\.work\\rental-software\\features\\kasir\\services\\availabilityService.test.ts",
+      "testFileResults": [
+        {
+          "ancestorTitles": [
+            "AvailabilityService",
+            "getProductAvailability"
+          ],
+          "fullName": "AvailabilityService getProductAvailability should calculate availability for product with no active rentals",
+          "status": "passed",
+          "title": "should calculate availability for product with no active rentals",
           "failureMessages": [],
           "duration": 2
         },
         {
           "ancestorTitles": [
-            "CategoryService",
-            "getCategories"
+            "AvailabilityService",
+            "getProductAvailability"
           ],
-          "fullName": "CategoryService getCategories should get all categories without products - happy path",
+          "fullName": "AvailabilityService getProductAvailability should calculate availability considering active rentals",
           "status": "passed",
-          "title": "should get all categories without products - happy path",
+          "title": "should calculate availability considering active rentals",
           "failureMessages": [],
-          "duration": 3
+          "duration": 1
         },
         {
           "ancestorTitles": [
-            "CategoryService",
-            "getCategories"
+            "AvailabilityService",
+            "getProductAvailability"
           ],
-          "fullName": "CategoryService getCategories should get categories with products when requested",
+          "fullName": "AvailabilityService getProductAvailability should exclude fully returned items from rental calculation",
           "status": "passed",
-          "title": "should get categories with products when requested",
+          "title": "should exclude fully returned items from rental calculation",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "AvailabilityService",
+            "getProductAvailability"
+          ],
+          "fullName": "AvailabilityService getProductAvailability should handle ongoing rentals with no end date",
+          "status": "passed",
+          "title": "should handle ongoing rentals with no end date",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "AvailabilityService",
+            "getProductAvailability"
+          ],
+          "fullName": "AvailabilityService getProductAvailability should throw error if product not found",
+          "status": "passed",
+          "title": "should throw error if product not found",
+          "failureMessages": [],
+          "duration": 27
+        },
+        {
+          "ancestorTitles": [
+            "AvailabilityService",
+            "getProductAvailability"
+          ],
+          "fullName": "AvailabilityService getProductAvailability should ensure available quantity never goes below zero",
+          "status": "passed",
+          "title": "should ensure available quantity never goes below zero",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "AvailabilityService",
+            "getMultipleProductAvailability"
+          ],
+          "fullName": "AvailabilityService getMultipleProductAvailability should get availability for multiple products",
+          "status": "passed",
+          "title": "should get availability for multiple products",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "AvailabilityService",
+            "checkRentalAvailability"
+          ],
+          "fullName": "AvailabilityService checkRentalAvailability should return available=true when all items are available",
+          "status": "passed",
+          "title": "should return available=true when all items are available",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "AvailabilityService",
+            "checkRentalAvailability"
+          ],
+          "fullName": "AvailabilityService checkRentalAvailability should return conflicts when items are not available",
+          "status": "passed",
+          "title": "should return conflicts when items are not available",
+          "failureMessages": [],
+          "duration": 2
+        },
+        {
+          "ancestorTitles": [
+            "AvailabilityService",
+            "getCategoryAvailability"
+          ],
+          "fullName": "AvailabilityService getCategoryAvailability should get availability for all products in a category",
+          "status": "passed",
+          "title": "should get availability for all products in a category",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "AvailabilityService",
+            "reserveProducts"
+          ],
+          "fullName": "AvailabilityService reserveProducts should reserve products when available",
+          "status": "passed",
+          "title": "should reserve products when available",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "AvailabilityService",
+            "reserveProducts"
+          ],
+          "fullName": "AvailabilityService reserveProducts should throw error when products not available for reservation",
+          "status": "passed",
+          "title": "should throw error when products not available for reservation",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "AvailabilityService",
+            "getAvailabilitySummary"
+          ],
+          "fullName": "AvailabilityService getAvailabilitySummary should return availability summary for dashboard",
+          "status": "passed",
+          "title": "should return availability summary for dashboard",
+          "failureMessages": [],
+          "duration": 5
+        },
+        {
+          "ancestorTitles": [
+            "AvailabilityService",
+            "getLowStockProducts"
+          ],
+          "fullName": "AvailabilityService getLowStockProducts should return products with low availability",
+          "status": "passed",
+          "title": "should return products with low availability",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "AvailabilityService",
+            "getLowStockProducts"
+          ],
+          "fullName": "AvailabilityService getLowStockProducts should sort low stock products by availability ascending",
+          "status": "passed",
+          "title": "should sort low stock products by availability ascending",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "AvailabilityService",
+            "validateTransactionItems"
+          ],
+          "fullName": "AvailabilityService validateTransactionItems should validate all items successfully",
+          "status": "passed",
+          "title": "should validate all items successfully",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "AvailabilityService",
+            "validateTransactionItems"
+          ],
+          "fullName": "AvailabilityService validateTransactionItems should return error for nonexistent product",
+          "status": "passed",
+          "title": "should return error for nonexistent product",
+          "failureMessages": [],
+          "duration": 2
+        },
+        {
+          "ancestorTitles": [
+            "AvailabilityService",
+            "validateTransactionItems"
+          ],
+          "fullName": "AvailabilityService validateTransactionItems should return error for inactive product",
+          "status": "passed",
+          "title": "should return error for inactive product",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "AvailabilityService",
+            "validateTransactionItems"
+          ],
+          "fullName": "AvailabilityService validateTransactionItems should return errors for insufficient quantity",
+          "status": "passed",
+          "title": "should return errors for insufficient quantity",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "AvailabilityService",
+            "validateTransactionItems"
+          ],
+          "fullName": "AvailabilityService validateTransactionItems should return warnings for low stock after rental",
+          "status": "passed",
+          "title": "should return warnings for low stock after rental",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "AvailabilityService",
+            "validateTransactionItems"
+          ],
+          "fullName": "AvailabilityService validateTransactionItems should handle errors gracefully during validation",
+          "status": "passed",
+          "title": "should handle errors gracefully during validation",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "createAvailabilityService factory"
+          ],
+          "fullName": "createAvailabilityService factory should create availability service instance",
+          "status": "passed",
+          "title": "should create availability service instance",
+          "failureMessages": [],
+          "duration": 1
+        }
+      ],
+      "failureMessage": null
+    },
+    {
+      "testFilePath": "D:\\.work\\rental-software\\features\\kasir\\services\\penyewaService.test.ts",
+      "testFileResults": [
+        {
+          "ancestorTitles": [
+            "PenyewaService",
+            "createPenyewa"
+          ],
+          "fullName": "PenyewaService createPenyewa should create penyewa successfully",
+          "status": "passed",
+          "title": "should create penyewa successfully",
+          "failureMessages": [],
+          "duration": 14
+        },
+        {
+          "ancestorTitles": [
+            "PenyewaService",
+            "createPenyewa"
+          ],
+          "fullName": "PenyewaService createPenyewa should throw error if phone number already exists",
+          "status": "passed",
+          "title": "should throw error if phone number already exists",
+          "failureMessages": [],
+          "duration": 17
+        },
+        {
+          "ancestorTitles": [
+            "PenyewaService",
+            "createPenyewa"
+          ],
+          "fullName": "PenyewaService createPenyewa should handle database errors",
+          "status": "passed",
+          "title": "should handle database errors",
           "failureMessages": [],
           "duration": 4
         },
         {
           "ancestorTitles": [
-            "CategoryService",
-            "getCategories"
+            "PenyewaService",
+            "getPenyewaById"
           ],
-          "fullName": "CategoryService getCategories should filter categories by search term",
+          "fullName": "PenyewaService getPenyewaById should return penyewa by ID",
           "status": "passed",
-          "title": "should filter categories by search term",
+          "title": "should return penyewa by ID",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PenyewaService",
+            "getPenyewaById"
+          ],
+          "fullName": "PenyewaService getPenyewaById should throw error if penyewa not found",
+          "status": "passed",
+          "title": "should throw error if penyewa not found",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "PenyewaService",
+            "getPenyewaList"
+          ],
+          "fullName": "PenyewaService getPenyewaList should return paginated penyewa list",
+          "status": "passed",
+          "title": "should return paginated penyewa list",
           "failureMessages": [],
           "duration": 2
         },
         {
           "ancestorTitles": [
-            "CategoryService",
-            "getCategories"
+            "PenyewaService",
+            "getPenyewaList"
           ],
-          "fullName": "CategoryService getCategories should handle empty results",
+          "fullName": "PenyewaService getPenyewaList should search penyewa by name or phone",
+          "status": "passed",
+          "title": "should search penyewa by name or phone",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "PenyewaService",
+            "getPenyewaList"
+          ],
+          "fullName": "PenyewaService getPenyewaList should handle empty results",
           "status": "passed",
           "title": "should handle empty results",
           "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "PenyewaService",
+            "updatePenyewa"
+          ],
+          "fullName": "PenyewaService updatePenyewa should update penyewa successfully",
+          "status": "passed",
+          "title": "should update penyewa successfully",
+          "failureMessages": [],
+          "duration": 5
+        },
+        {
+          "ancestorTitles": [
+            "PenyewaService",
+            "updatePenyewa"
+          ],
+          "fullName": "PenyewaService updatePenyewa should throw error if penyewa not found",
+          "status": "passed",
+          "title": "should throw error if penyewa not found",
+          "failureMessages": [],
           "duration": 1
         },
         {
           "ancestorTitles": [
-            "CategoryService",
-            "getCategories"
+            "PenyewaService",
+            "updatePenyewa"
           ],
-          "fullName": "CategoryService getCategories should handle query without parameters",
+          "fullName": "PenyewaService updatePenyewa should validate phone uniqueness when updating phone",
           "status": "passed",
-          "title": "should handle query without parameters",
+          "title": "should validate phone uniqueness when updating phone",
           "failureMessages": [],
           "duration": 1
         },
         {
           "ancestorTitles": [
-            "CategoryService",
-            "getCategoryById"
+            "PenyewaService",
+            "findPenyewaByPhone"
           ],
-          "fullName": "CategoryService getCategoryById should get category by ID successfully - happy path",
+          "fullName": "PenyewaService findPenyewaByPhone should find penyewa by phone number",
           "status": "passed",
-          "title": "should get category by ID successfully - happy path",
+          "title": "should find penyewa by phone number",
           "failureMessages": [],
-          "duration": 3
+          "duration": 0
         },
         {
           "ancestorTitles": [
-            "CategoryService",
-            "getCategoryById"
+            "PenyewaService",
+            "findPenyewaByPhone"
           ],
-          "fullName": "CategoryService getCategoryById should throw error when category not found",
+          "fullName": "PenyewaService findPenyewaByPhone should return null if penyewa not found",
           "status": "passed",
-          "title": "should throw error when category not found",
+          "title": "should return null if penyewa not found",
           "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "CategoryService",
-            "getCategoryById"
-          ],
-          "fullName": "CategoryService getCategoryById should handle invalid ID format",
-          "status": "passed",
-          "title": "should handle invalid ID format",
-          "failureMessages": [],
-          "duration": 4
-        },
-        {
-          "ancestorTitles": [
-            "CategoryService",
-            "deleteCategory"
-          ],
-          "fullName": "CategoryService deleteCategory should delete category successfully when no products exist - happy path",
-          "status": "passed",
-          "title": "should delete category successfully when no products exist - happy path",
-          "failureMessages": [],
-          "duration": 3
-        },
-        {
-          "ancestorTitles": [
-            "CategoryService",
-            "deleteCategory"
-          ],
-          "fullName": "CategoryService deleteCategory should throw error when category not found",
-          "status": "passed",
-          "title": "should throw error when category not found",
-          "failureMessages": [],
-          "duration": 3
-        },
-        {
-          "ancestorTitles": [
-            "CategoryService",
-            "deleteCategory"
-          ],
-          "fullName": "CategoryService deleteCategory should throw error when category has active products",
-          "status": "passed",
-          "title": "should throw error when category has active products",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "CategoryService",
-            "deleteCategory"
-          ],
-          "fullName": "CategoryService deleteCategory should allow deletion when category has only inactive products",
-          "status": "passed",
-          "title": "should allow deletion when category has only inactive products",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "CategoryService",
-            "deleteCategory"
-          ],
-          "fullName": "CategoryService deleteCategory should handle database error during deletion",
-          "status": "passed",
-          "title": "should handle database error during deletion",
-          "failureMessages": [],
-          "duration": 2
-        }
-      ],
-      "failureMessage": null
-    },
-    {
-      "testFilePath": "D:\\.work\\rental-software\\features\\manage-product\\services\\productService.test.ts",
-      "testFileResults": [
-        {
-          "ancestorTitles": [
-            "ProductService",
-            "createProduct"
-          ],
-          "fullName": "ProductService createProduct should create product successfully - happy path",
-          "status": "passed",
-          "title": "should create product successfully - happy path",
-          "failureMessages": [],
-          "duration": 36
-        },
-        {
-          "ancestorTitles": [
-            "ProductService",
-            "createProduct"
-          ],
-          "fullName": "ProductService createProduct should throw error when product code already exists",
-          "status": "passed",
-          "title": "should throw error when product code already exists",
-          "failureMessages": [],
-          "duration": 53
-        },
-        {
-          "ancestorTitles": [
-            "ProductService",
-            "createProduct"
-          ],
-          "fullName": "ProductService createProduct should handle validation error gracefully",
-          "status": "passed",
-          "title": "should handle validation error gracefully",
-          "failureMessages": [],
-          "duration": 16
-        },
-        {
-          "ancestorTitles": [
-            "ProductService",
-            "createProduct"
-          ],
-          "fullName": "ProductService createProduct should handle database error during creation",
-          "status": "passed",
-          "title": "should handle database error during creation",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "ProductService",
-            "updateProduct"
-          ],
-          "fullName": "ProductService updateProduct should update product successfully - happy path",
-          "status": "passed",
-          "title": "should update product successfully - happy path",
-          "failureMessages": [],
-          "duration": 4
-        },
-        {
-          "ancestorTitles": [
-            "ProductService",
-            "updateProduct"
-          ],
-          "fullName": "ProductService updateProduct should throw error when product not found",
-          "status": "passed",
-          "title": "should throw error when product not found",
-          "failureMessages": [],
-          "duration": 10
-        },
-        {
-          "ancestorTitles": [
-            "ProductService",
-            "updateProduct"
-          ],
-          "fullName": "ProductService updateProduct should handle empty update request gracefully",
-          "status": "passed",
-          "title": "should handle empty update request gracefully",
-          "failureMessages": [],
-          "duration": 3
-        },
-        {
-          "ancestorTitles": [
-            "ProductService",
-            "getProducts"
-          ],
-          "fullName": "ProductService getProducts should get products with pagination and filters - happy path",
-          "status": "passed",
-          "title": "should get products with pagination and filters - happy path",
-          "failureMessages": [],
-          "duration": 6
-        },
-        {
-          "ancestorTitles": [
-            "ProductService",
-            "getProducts"
-          ],
-          "fullName": "ProductService getProducts should handle query without filters",
-          "status": "passed",
-          "title": "should handle query without filters",
-          "failureMessages": [],
-          "duration": 6
-        },
-        {
-          "ancestorTitles": [
-            "ProductService",
-            "getProducts"
-          ],
-          "fullName": "ProductService getProducts should handle empty results",
-          "status": "passed",
-          "title": "should handle empty results",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "ProductService",
-            "getProductById"
-          ],
-          "fullName": "ProductService getProductById should get product by ID successfully - happy path",
-          "status": "passed",
-          "title": "should get product by ID successfully - happy path",
-          "failureMessages": [],
-          "duration": 5
-        },
-        {
-          "ancestorTitles": [
-            "ProductService",
-            "getProductById"
-          ],
-          "fullName": "ProductService getProductById should throw error when product not found",
-          "status": "passed",
-          "title": "should throw error when product not found",
-          "failureMessages": [],
-          "duration": 10
-        },
-        {
-          "ancestorTitles": [
-            "ProductService",
-            "getProductById"
-          ],
-          "fullName": "ProductService getProductById should handle invalid ID format",
-          "status": "passed",
-          "title": "should handle invalid ID format",
-          "failureMessages": [],
-          "duration": 6
-        },
-        {
-          "ancestorTitles": [
-            "ProductService",
-            "deleteProduct"
-          ],
-          "fullName": "ProductService deleteProduct should soft delete product successfully - happy path",
-          "status": "passed",
-          "title": "should soft delete product successfully - happy path",
-          "failureMessages": [],
-          "duration": 5
-        },
-        {
-          "ancestorTitles": [
-            "ProductService",
-            "deleteProduct"
-          ],
-          "fullName": "ProductService deleteProduct should throw error when product not found",
-          "status": "passed",
-          "title": "should throw error when product not found",
-          "failureMessages": [],
-          "duration": 5
-        },
-        {
-          "ancestorTitles": [
-            "ProductService",
-            "updateProductStatus"
-          ],
-          "fullName": "ProductService updateProductStatus should update product status successfully - happy path",
-          "status": "passed",
-          "title": "should update product status successfully - happy path",
-          "failureMessages": [],
-          "duration": 4
-        },
-        {
-          "ancestorTitles": [
-            "ProductService",
-            "updateProductStatus"
-          ],
-          "fullName": "ProductService updateProductStatus should throw error when trying to set same status",
-          "status": "passed",
-          "title": "should throw error when trying to set same status",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "ProductService",
-            "updateProductStatus"
-          ],
-          "fullName": "ProductService updateProductStatus should handle invalid status value",
-          "status": "passed",
-          "title": "should handle invalid status value",
-          "failureMessages": [],
-          "duration": 4
-        }
-      ],
-      "failureMessage": null
-    },
-    {
-      "testFilePath": "D:\\.work\\rental-software\\features\\manage-product\\components\\products\\SearchFilterBar.test.tsx",
-      "testFileResults": [
-        {
-          "ancestorTitles": [
-            "SearchFilterBar",
-            "Rendering"
-          ],
-          "fullName": "SearchFilterBar Rendering should render all filter components",
-          "status": "passed",
-          "title": "should render all filter components",
-          "failureMessages": [],
-          "duration": 364
-        },
-        {
-          "ancestorTitles": [
-            "SearchFilterBar",
-            "Rendering"
-          ],
-          "fullName": "SearchFilterBar Rendering should display correct placeholder for search input",
-          "status": "passed",
-          "title": "should display correct placeholder for search input",
-          "failureMessages": [],
-          "duration": 78
-        },
-        {
-          "ancestorTitles": [
-            "SearchFilterBar",
-            "Rendering"
-          ],
-          "fullName": "SearchFilterBar Rendering should display current search term",
-          "status": "passed",
-          "title": "should display current search term",
-          "failureMessages": [],
-          "duration": 68
-        },
-        {
-          "ancestorTitles": [
-            "SearchFilterBar",
-            "Search Functionality"
-          ],
-          "fullName": "SearchFilterBar Search Functionality should call onSearchChange when typing in search input",
-          "status": "passed",
-          "title": "should call onSearchChange when typing in search input",
-          "failureMessages": [],
-          "duration": 107
-        },
-        {
-          "ancestorTitles": [
-            "SearchFilterBar",
-            "Category Filter"
-          ],
-          "fullName": "SearchFilterBar Category Filter should display \"all\" as default value when no category selected",
-          "status": "passed",
-          "title": "should display \"all\" as default value when no category selected",
-          "failureMessages": [],
-          "duration": 84
-        },
-        {
-          "ancestorTitles": [
-            "SearchFilterBar",
-            "Category Filter"
-          ],
-          "fullName": "SearchFilterBar Category Filter should display selected category",
-          "status": "passed",
-          "title": "should display selected category",
-          "failureMessages": [],
-          "duration": 68
-        },
-        {
-          "ancestorTitles": [
-            "SearchFilterBar",
-            "Category Filter"
-          ],
-          "fullName": "SearchFilterBar Category Filter should call onCategoryChange when category is selected",
-          "status": "passed",
-          "title": "should call onCategoryChange when category is selected",
-          "failureMessages": [],
-          "duration": 77
-        },
-        {
-          "ancestorTitles": [
-            "SearchFilterBar",
-            "Status Filter"
-          ],
-          "fullName": "SearchFilterBar Status Filter should display \"Semua\" as default value when no status selected",
-          "status": "passed",
-          "title": "should display \"Semua\" as default value when no status selected",
-          "failureMessages": [],
-          "duration": 64
-        },
-        {
-          "ancestorTitles": [
-            "SearchFilterBar",
-            "Status Filter"
-          ],
-          "fullName": "SearchFilterBar Status Filter should call onStatusChange when status is selected",
-          "status": "passed",
-          "title": "should call onStatusChange when status is selected",
-          "failureMessages": [],
-          "duration": 60
-        },
-        {
-          "ancestorTitles": [
-            "SearchFilterBar",
-            "View Mode Toggle"
-          ],
-          "fullName": "SearchFilterBar View Mode Toggle should display current view mode",
-          "status": "passed",
-          "title": "should display current view mode",
-          "failureMessages": [],
-          "duration": 68
-        },
-        {
-          "ancestorTitles": [
-            "SearchFilterBar",
-            "View Mode Toggle"
-          ],
-          "fullName": "SearchFilterBar View Mode Toggle should call onViewModeChange when view mode is toggled",
-          "status": "passed",
-          "title": "should call onViewModeChange when view mode is toggled",
-          "failureMessages": [],
-          "duration": 104
-        },
-        {
-          "ancestorTitles": [
-            "SearchFilterBar",
-            "Loading States"
-          ],
-          "fullName": "SearchFilterBar Loading States should disable all controls when isLoading is true",
-          "status": "passed",
-          "title": "should disable all controls when isLoading is true",
-          "failureMessages": [],
-          "duration": 70
-        },
-        {
-          "ancestorTitles": [
-            "SearchFilterBar",
-            "Loading States"
-          ],
-          "fullName": "SearchFilterBar Loading States should enable all controls when isLoading is false",
-          "status": "passed",
-          "title": "should enable all controls when isLoading is false",
-          "failureMessages": [],
-          "duration": 80
-        },
-        {
-          "ancestorTitles": [
-            "SearchFilterBar",
-            "Accessibility"
-          ],
-          "fullName": "SearchFilterBar Accessibility should have proper ARIA labels for toggle buttons",
-          "status": "passed",
-          "title": "should have proper ARIA labels for toggle buttons",
-          "failureMessages": [],
-          "duration": 62
-        },
-        {
-          "ancestorTitles": [
-            "SearchFilterBar",
-            "Accessibility"
-          ],
-          "fullName": "SearchFilterBar Accessibility should support keyboard navigation",
-          "status": "passed",
-          "title": "should support keyboard navigation",
-          "failureMessages": [],
-          "duration": 57
-        },
-        {
-          "ancestorTitles": [
-            "SearchFilterBar",
-            "Error Handling"
-          ],
-          "fullName": "SearchFilterBar Error Handling should render without crashing when categories data is undefined",
-          "status": "passed",
-          "title": "should render without crashing when categories data is undefined",
-          "failureMessages": [],
-          "duration": 69
+          "duration": 1
         }
       ],
       "failureMessage": null

@@ -16,7 +16,7 @@
     "test": "jest app/creator/dashboard/page.test.tsx  --verbose",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage --collectCoverageFrom='**/*.{ts,tsx}' --collectCoverageFrom='!**/*.d.ts' --collectCoverageFrom='!**/node_modules/**'",
-    "test:unit": "jest features/manage-product/ --verbose --passWithNoTests",
+    "test:unit": "jest features/kasir/ --verbose --passWithNoTests",
     "test:unit:all": "jest features/ --verbose --passWithNoTests",
     "test:int": "jest __tests__/integration/manage-product/ --verbose --passWithNoTests",
     "test:int:all": "jest __tests__/integration --verbose --passWithNoTests",
