@@ -16,9 +16,9 @@ import { ZodError } from 'zod'
 import { requirePermission, withRateLimit } from '@/lib/auth-middleware'
 
 interface RouteParams {
-  params: {
+  params: Promise<{
     kode: string
-  }
+  }>
 }
 
 export async function GET(request: NextRequest, { params }: RouteParams) {
@@ -37,7 +37,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     }
     const { user } = authResult
 
-    const { kode } = params
+    const { kode } = await params
 
     // Validate transaction code format
     if (!TransactionCodeGenerator.validateTransactionCode(kode)) {
@@ -125,7 +125,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       { status: 200 }
     )
   } catch (error) {
-    console.error(`GET /api/kasir/transaksi/${params.kode} error:`, error)
+    const { kode } = await params
+    console.error(`GET /api/kasir/transaksi/${kode} error:`, error)
 
     // Handle not found errors
     if (error instanceof Error && error.message.includes('tidak ditemukan')) {
@@ -186,7 +187,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     }
     const { user } = authResult
 
-    const { kode } = params
+    const { kode } = await params
 
     // Validate transaction code format
     if (!TransactionCodeGenerator.validateTransactionCode(kode)) {
@@ -303,7 +304,8 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       { status: 200 }
     )
   } catch (error) {
-    console.error(`PUT /api/kasir/transaksi/${params.kode} error:`, error)
+    const { kode } = await params
+    console.error(`PUT /api/kasir/transaksi/${kode} error:`, error)
 
     // Handle validation errors
     if (error instanceof ZodError) {

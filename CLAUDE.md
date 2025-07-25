@@ -1,12 +1,21 @@
 # CLAUDE.md
 
+Nama Saya adalah Ardiansyah
+
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview
 
-**Name:** Sistem Manajemen Penyewaan Pakaian (Rental Clothing Management System)  
+**Name:** Maguru - Sistem Manajemen Penyewaan Pakaian (Rental Clothing Management System)  
 **Tech Stack:** Next.js 15, TypeScript, Prisma, Supabase, TailwindCSS, React Query, Jest, Playwright  
 **Developer:** Ardiansyah Arifin
+
+### Role-Based Access Control
+
+- **Owner:** Full access to all features (`/owner/*`, `/producer/*`, `/dashboard/*`)
+- **Producer:** Product management and kasir features (`/producer/*`, `/dashboard/*`)
+- **Kasir:** Transaction management only (`/dashboard/*`)
+- Roles managed via Clerk custom session claims
 
 ## Plan & Review
 
@@ -90,8 +99,15 @@ yarn test:e2e:debug         # Debug specific E2E test
 yarn test:e2e:report        # View test reports
 
 # Coverage
-yarn test:coverage          # Run tests with coverage report
+yarn test:coverage          # Run tests with coverage report (minimum 80% target)
 ```
+
+**Testing Approach:**
+
+- **TDD:** Red → Green → Refactor cycle for unit/integration tests
+- **BDD:** Given-When-Then structure for E2E tests using Playwright
+- **MSW:** Mock Service Worker for API mocking in integration tests
+- **Co-location:** Unit tests alongside implementation files (`.test.ts`)
 
 ### Database
 
@@ -146,14 +162,23 @@ yarn env:validate          # Validate environment variables
 
 ### Authentication & Authorization
 
-- Clerk for authentication
-- Role-based access control (Owner, Producer, Kasir)
-- Middleware protection for routes and API endpoints
+- **Clerk** for authentication with custom role-based session claims
+- **Role-based routing** enforced in `middleware.ts`:
+  - Owner routes: `/owner/*` (owner only)
+  - Producer routes: `/producer/*` (owner & producer)
+  - Kasir routes: `/dashboard/*` (all roles - note: uses `/dashboard` not `/kasir`)
+- **API Protection** via Clerk's `auth.protect()` method
+- **Unauthorized redirect** to `/unauthorized` page for access violations
 
 ### File Structure Highlights
 
 - `app/` - Next.js App Router (pages, layouts, API routes)
-- `features/` - Feature modules (complete business domains)
+- `features/` - Feature modules (complete business domains):
+  - `auth/` - Authentication and role management
+  - `homepage/` - Landing page components
+  - `kasir/` - Transaction management system
+  - `manage-product/` - Product and category management
+  - `rentals-manage/` - Rental operations (in development)
 - `lib/` - Shared utilities and configurations
 - `components/ui/` - Reusable UI components (Radix + TailwindCSS)
 - `prisma/` - Database schema and migrations
@@ -165,9 +190,35 @@ yarn env:validate          # Validate environment variables
 - Test instruction guidelines: `/docs/rules/test-instruction.md`
 - Design failure handling: `/docs/rules/designing-for-failure.md`
 
+## Database Schema Overview
+
+**Core Models:**
+
+- `User` - Basic user information
+- `Product` - Rental items with status tracking (AVAILABLE, RENTED, MAINTENANCE)
+- `Category` - Product categorization with color-coded badges
+- `Color` - Product color management
+
+**Kasir Feature Models:**
+
+- `Penyewa` - Customer/renter information
+- `Transaksi` - Transaction records with status tracking
+- `TransaksiItem` - Line items for transactions
+- `Pembayaran` - Payment records
+- `AktivitasTransaksi` - Transaction activity audit trail
+- `FileUpload` - File management for various entities
+
+**Key Database Patterns:**
+
+- UUID primary keys with meaningful codes (Product.code, Transaksi.kode)
+- Comprehensive indexing for performance
+- Cascade deletes for related data integrity
+- Audit trails via createdBy fields and activity logs
+
 ## Context Preservation
 
 - Maintain architectural decisions throughout development sessions
 - Reference implemented patterns for consistency across features
 - Apply learned solutions to similar problems within the codebase
 - Keep track of feature implementation status and dependencies
+- Follow the modular monolith approach with feature-first organization

@@ -52,7 +52,9 @@
       "Bash(tail:*)",
       "Bash(touch:*)",
       "mcp__sequentialthinking__sequentialthinking",
-      "Bash(gh pr:*)"
+      "Bash(gh pr:*)",
+      "mcp__context7__resolve-library-id",
+      "mcp__context7__get-library-docs"
     ],
     "deny": []
   }

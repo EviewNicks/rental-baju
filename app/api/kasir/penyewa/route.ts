@@ -15,6 +15,12 @@ import {
   createPenyewaSchema, 
   penyewaQuerySchema 
 } from '@/features/kasir/lib/validation/kasirSchema'
+import { 
+  formatPenyewaData, 
+  formatPenyewaList, 
+  createSuccessResponse, 
+} from '@/features/kasir/lib/responseFormatter'
+import { sanitizePenyewaInput } from '@/features/kasir/lib/inputSanitizer'
 import { ZodError } from 'zod'
 import { requirePermission, withRateLimit } from '@/lib/auth-middleware'
 
@@ -34,37 +40,54 @@ export async function POST(request: NextRequest) {
     }
     const { user } = authResult
 
-    // Parse request body
-    const body = await request.json()
+    // Parse and validate request body
+    let body: unknown;
+    try {
+      body = await request.json()
+    } catch {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            message: 'Invalid JSON format',
+            code: 'INVALID_JSON'
+          }
+        },
+        { status: 400 }
+      )
+    }
 
+    // Sanitize input data
+    const sanitizedData = sanitizePenyewaInput(body as Record<string, unknown>)
+    
+    // Remove empty optional fields to let Zod set defaults
+    const processedData = Object.fromEntries(
+      Object.entries(sanitizedData).filter(([key, value]) => {
+        // Keep required fields even if empty (nama, telepon, alamat)
+        if (['nama', 'telepon', 'alamat'].includes(key)) {
+          return true
+        }
+        // Remove empty optional fields
+        return value !== '' && value !== null && value !== undefined
+      })
+    )
+    
     // Validate request data
-    const validatedData = createPenyewaSchema.parse(body)
+    const validatedData = createPenyewaSchema.parse(processedData)
 
     // Initialize penyewa service
     const penyewaService = new PenyewaService(prisma, user.id, user.role)
 
     // Create penyewa
     const penyewa = await penyewaService.createPenyewa(validatedData)
-
-    return NextResponse.json(
-      {
-        success: true,
-        data: {
-          id: penyewa.id,
-          nama: penyewa.nama,
-          telepon: penyewa.telepon,
-          alamat: penyewa.alamat,
-          email: penyewa.email,
-          nik: penyewa.nik,
-          foto: penyewa.foto,
-          catatan: penyewa.catatan,
-          createdAt: penyewa.createdAt.toISOString(),
-          updatedAt: penyewa.updatedAt.toISOString()
-        },
-        message: 'Penyewa berhasil dibuat'
-      },
-      { status: 201 }
+    
+    // Format and return response
+    const { response, status } = createSuccessResponse(
+      formatPenyewaData(penyewa),
+      'Penyewa berhasil dibuat',
+      201
     )
+    return NextResponse.json(response, { status })
   } catch (error) {
     console.error('POST /api/kasir/penyewa error:', error)
 
@@ -95,7 +118,8 @@ export async function POST(request: NextRequest) {
             success: false,
             error: {
               message: error.message,
-              code: 'CONFLICT'
+              code: 'PHONE_ALREADY_EXISTS',
+              field: 'telepon'
             }
           },
           { status: 409 }
@@ -111,7 +135,7 @@ export async function POST(request: NextRequest) {
             code: 'BUSINESS_ERROR'
           }
         },
-        { status: 400 }
+        { status: 422 }
       )
     }
 
@@ -179,29 +203,16 @@ export async function GET(request: NextRequest) {
 
     // Format response data
     const formattedData = {
-      data: result.data.map(penyewa => ({
-        id: penyewa.id,
-        nama: penyewa.nama,
-        telepon: penyewa.telepon,
-        alamat: penyewa.alamat,
-        email: penyewa.email,
-        nik: penyewa.nik,
-        foto: penyewa.foto,
-        catatan: penyewa.catatan,
-        createdAt: penyewa.createdAt.toISOString(),
-        updatedAt: penyewa.updatedAt.toISOString()
-      })),
+      data: formatPenyewaList(result.data),
       pagination: result.pagination
     }
 
-    return NextResponse.json(
-      {
-        success: true,
-        data: formattedData,
-        message: 'Data penyewa berhasil diambil'
-      },
-      { status: 200 }
+    // Return formatted response
+    const { response, status } = createSuccessResponse(
+      formattedData,
+      'Data penyewa berhasil diambil'
     )
+    return NextResponse.json(response, { status })
   } catch (error) {
     console.error('GET /api/kasir/penyewa error:', error)
 
