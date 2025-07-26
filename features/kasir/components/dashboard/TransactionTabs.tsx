@@ -68,11 +68,11 @@ export function TransactionTabs({
             <TabsTrigger value="active">
               Aktif <span className="ml-1 text-xs text-muted-foreground">({counts.active})</span>
             </TabsTrigger>
-            <TabsTrigger value="completed">
+            <TabsTrigger value="selesai">
               Selesai{' '}
               <span className="ml-1 text-xs text-muted-foreground">({counts.completed})</span>
             </TabsTrigger>
-            <TabsTrigger value="overdue">
+            <TabsTrigger value="terlambat">
               Terlambat{' '}
               <span className="ml-1 text-xs text-muted-foreground">({counts.overdue})</span>
             </TabsTrigger>

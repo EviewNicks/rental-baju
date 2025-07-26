@@ -110,13 +110,13 @@ export function TransactionDetailPage({ transactionId }: TransactionDetailPagePr
                 <div>
                   <div className="text-sm text-gray-600">Tanggal Sewa</div>
                   <div className="font-semibold text-gray-900">
-                    {formatDate(transaction.rentalDate)}
+                    {formatDate(transaction.startDate)}
                   </div>
                 </div>
                 <div>
                   <div className="text-sm text-gray-600">Tanggal Kembali</div>
                   <div className="font-semibold text-gray-900">
-                    {formatDate(transaction.returnDate)}
+                    {transaction.endDate ? formatDate(transaction.endDate) : 'Belum ditentukan'}
                   </div>
                 </div>
                 <div>

@@ -48,9 +48,9 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
   }
 
   const canReturn = transaction.status === 'active'
-  const canSendReminder = transaction.status === 'overdue'
+  const canSendReminder = transaction.status === 'terlambat'
   const needsPayment =
-    transaction.paidAmount < transaction.totalAmount ||
+    transaction.amountPaid < transaction.totalAmount ||
     (transaction.penalties && transaction.penalties.some((p) => p.status === 'pending'))
 
   return (
@@ -133,13 +133,13 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
               Transaksi sedang berjalan
             </div>
           )}
-          {transaction.status === 'overdue' && (
+          {transaction.status === 'terlambat' && (
             <div className="flex items-center gap-2 text-red-600">
               <AlertTriangle className="h-4 w-4" />
               Transaksi terlambat
             </div>
           )}
-          {transaction.status === 'completed' && (
+          {transaction.status === 'selesai' && (
             <div className="flex items-center gap-2 text-green-600">
               <CheckCircle className="h-4 w-4" />
               Transaksi selesai

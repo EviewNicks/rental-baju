@@ -11,7 +11,15 @@ import { Plus } from 'lucide-react'
 
 export function TransactionsDashboard() {
   const [activeTab, setActiveTab] = useState<TransactionStatus | 'all'>('all')
-  const { transactions, filters, updateFilters, isLoading, counts } = useTransactions()
+  const { 
+    transactions, 
+    filters, 
+    updateFilters, 
+    isLoading, 
+    counts, 
+    error,
+    refreshTransactions 
+  } = useTransactions()
 
   const handleTabChange = (tab: TransactionStatus | 'all') => {
     setActiveTab(tab)
@@ -22,6 +30,33 @@ export function TransactionsDashboard() {
 
   const handleSearchChange = (search: string) => {
     updateFilters({ search })
+  }
+
+  // Handle error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4">
+        <div className="max-w-7xl mx-auto space-y-6">
+          <div className="text-center space-y-2">
+            <h1 className="text-2xl font-bold text-gray-900">RentalBaju</h1>
+            <p className="text-gray-600">Daftar Transaksi Penyewaan</p>
+          </div>
+          
+          <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
+            <div className="text-red-600 mb-2">⚠️ Terjadi Kesalahan</div>
+            <p className="text-red-700 mb-4">
+              {error.message || 'Gagal memuat data transaksi'}
+            </p>
+            <Button 
+              onClick={refreshTransactions}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Coba Lagi
+            </Button>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (

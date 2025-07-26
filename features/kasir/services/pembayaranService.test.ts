@@ -88,7 +88,7 @@ const mockPrisma = {
 } as unknown as jest.Mocked<PrismaClient>
 
 // Import mocked modules
-const { PriceCalculator } = require('../lib/utils/priceCalculator')
+import { PriceCalculator } from '../lib/utils/priceCalculator'
 
 describe('PembayaranService', () => {
   let pembayaranService: PembayaranService

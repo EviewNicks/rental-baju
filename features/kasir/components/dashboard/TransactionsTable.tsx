@@ -68,8 +68,8 @@ export function TransactionTable({ transactions, isLoading }: TransactionTablePr
 }
 
 function TransactionRow({ transaction }: { transaction: Transaction }) {
-  const isOverdue = transaction.status === 'overdue'
-  const daysOverdue = isOverdue ? getDaysOverdue(transaction.returnDate) : 0
+  const isOverdue = transaction.status === 'terlambat'
+  const daysOverdue = isOverdue && transaction.endDate ? getDaysOverdue(transaction.endDate) : 0
 
   return (
     <TableRow className="hover:bg-gold-50 transition-colors duration-150 bg-">
@@ -99,9 +99,9 @@ function TransactionRow({ transaction }: { transaction: Transaction }) {
       </TableCell>
       <TableCell className="px-4 py-3">
         <div className="space-y-1">
-          <div className="text-sm text-gray-700">Sewa: {formatDate(transaction.rentalDate)}</div>
-          <div className="text-sm text-gray-700">Kembali: {formatDate(transaction.returnDate)}</div>
-          {isOverdue && (
+          <div className="text-sm text-gray-700">Sewa: {formatDate(transaction.startDate)}</div>
+          <div className="text-sm text-gray-700">Kembali: {transaction.endDate ? formatDate(transaction.endDate) : 'Belum ditentukan'}</div>
+          {isOverdue && daysOverdue > 0 && (
             <div className="flex items-center gap-1 text-red-600 text-xs">
               <Clock className="h-3 w-3" />
               Terlambat {daysOverdue} hari
@@ -114,9 +114,9 @@ function TransactionRow({ transaction }: { transaction: Transaction }) {
           <div className="font-semibold text-gray-900 text-sm">
             {formatCurrency(transaction.totalAmount)}
           </div>
-          {transaction.paidAmount < transaction.totalAmount && (
+          {transaction.amountPaid < transaction.totalAmount && (
             <div className="text-xs text-orange-600">
-              Dibayar: {formatCurrency(transaction.paidAmount)}
+              Dibayar: {formatCurrency(transaction.amountPaid)}
             </div>
           )}
         </div>

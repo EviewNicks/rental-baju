@@ -393,6 +393,7 @@ describe('AuditService', () => {
       }
 
       // Access private method for testing
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const sanitized = (auditService as any).sanitizeData(sensitiveData)
 
       expect(sanitized.nama).toBe('John')
@@ -404,9 +405,13 @@ describe('AuditService', () => {
     })
 
     it('should handle non-object data', () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect((auditService as any).sanitizeData(null)).toBe(null)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect((auditService as any).sanitizeData('string')).toBe('string')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect((auditService as any).sanitizeData(123)).toBe(123)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect((auditService as any).sanitizeData([])).toEqual([])
     })
   })

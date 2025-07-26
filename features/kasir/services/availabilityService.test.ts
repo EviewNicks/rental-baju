@@ -17,11 +17,12 @@ import { AvailabilityService, createAvailabilityService } from './availabilitySe
 import { PrismaClient } from '@prisma/client'
 
 // Mock Decimal to avoid circular dependency issues
-const createMockDecimal = (value: number) => ({
-  toNumber: () => value,
-  toString: () => value.toString(),
-  valueOf: () => value
-})
+// Commented out as it's not currently used but may be needed for future tests
+// const createMockDecimal = (value: number) => ({
+//   toNumber: () => value,
+//   toString: () => value.toString(),
+//   valueOf: () => value
+// })
 
 // Mock Prisma Client
 const mockPrisma = {

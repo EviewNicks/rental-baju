@@ -207,6 +207,7 @@ export interface PenyewaQueryParams {
   page?: number
   limit?: number
   search?: string // Search by nama or telepon
+  [key: string]: unknown
 }
 
 export interface TransaksiQueryParams {
@@ -219,6 +220,7 @@ export interface TransaksiQueryParams {
     end: string
   }
   penyewaId?: string
+  [key: string]: unknown
 }
 
 export interface ProductAvailabilityQueryParams {
@@ -229,6 +231,7 @@ export interface ProductAvailabilityQueryParams {
   size?: string[]
   colorId?: string[]
   available?: boolean // Only show available products
+  [key: string]: unknown
 }
 
 // Standard API Response Wrapper
@@ -254,4 +257,34 @@ export interface ApiError {
   message: string
   details?: Record<string, unknown>
   validationErrors?: ValidationError[]
+}
+
+// Dashboard Statistics Types (from task requirements)
+export interface DashboardStats {
+  transactions: {
+    total: number
+    active: number
+    completed: number
+    completionRate: number
+  }
+  customers: {
+    total: number
+    thisMonth: number
+    growth: number
+  }
+  payments: {
+    totalRevenue: number
+    thisMonth: number
+    pendingAmount: number
+  }
+  inventory: {
+    totalProducts: number
+    availableProducts: number
+    rentedProducts: number
+  }
+  alerts: {
+    overdueTransactions: number
+    lowStock: number
+    paymentReminders: number
+  }
 }
