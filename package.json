@@ -20,7 +20,7 @@
     "test:unit:all": "jest features/ --verbose --passWithNoTests",
     "test:int": "jest __tests__/integration/manage-product/ --verbose --passWithNoTests",
     "test:int:all": "jest __tests__/integration --verbose --passWithNoTests",
-    "test:e2e": "cross-env NODE_ENV=test  playwright test __tests__/playwright/manage-product/",
+    "test:e2e": "cross-env NODE_ENV=test  playwright test __tests__/playwright/kasir/",
     "test:e2e:all": "cross-env NODE_ENV=test playwright test __tests__/playwright",
     "test:e2e:ui": "cross-env NODE_ENV=test  playwright test --ui",
     "test:e2e:debug": "cross-env NODE_ENV=test  playwright test __tests__/playwright/auth/sign-in.spec.ts --debug",

@@ -52,31 +52,35 @@ export function useTransactions(options: UseTransactionsOptions = {}) {
 
   // Transform API data to match component expectations
   const transactions = useMemo(() => {
+    // API returns TransaksiListResponse structure
     if (!transactionData?.data) return []
     
-    return transactionData.data.map((transaction) => ({
-      id: transaction.id,
-      transactionCode: transaction.kode,
-      customerName: transaction.penyewa.nama,
-      customerPhone: transaction.penyewa.telepon,
-      customerAddress: transaction.penyewa.alamat,
-      items: transaction.items.map(item => item.produk.name),
-      totalAmount: transaction.totalHarga,
-      amountPaid: transaction.jumlahBayar,
-      remainingAmount: transaction.sisaBayar,
-      status: transaction.status,
-      startDate: transaction.tglMulai,
-      endDate: transaction.tglSelesai,
-      returnDate: transaction.tglKembali,
-      paymentMethod: transaction.metodeBayar,
-      notes: transaction.catatan,
-      createdAt: transaction.createdAt,
-      updatedAt: transaction.updatedAt,
+    return transactionData.data.map((transaction: any) => ({
+      id: transaction?.id || '',
+      transactionCode: transaction?.kode || '',
+      customerName: transaction?.penyewa?.nama || '',
+      customerPhone: transaction?.penyewa?.telepon || '',
+      customerAddress: transaction?.penyewa?.alamat || '',
+      // Handle missing items array - use itemCount as fallback
+      items: transaction?.items?.map((item: any) => item?.produk?.name || '') || 
+             (transaction?.itemCount ? [`${transaction.itemCount} item(s)`] : ['Tidak ada item']),
+      totalAmount: transaction?.totalHarga || 0,
+      amountPaid: transaction?.jumlahBayar || 0,
+      remainingAmount: transaction?.sisaBayar || 0,
+      status: transaction?.status || 'active',
+      startDate: transaction?.tglMulai || '',
+      endDate: transaction?.tglSelesai || null,
+      returnDate: transaction?.tglKembali || null,
+      paymentMethod: transaction?.metodeBayar || 'tunai',
+      notes: transaction?.catatan || '',
+      createdAt: transaction?.createdAt || '',
+      updatedAt: transaction?.updatedAt || '',
     }))
   }, [transactionData])
 
   // Calculate transaction counts from summary
   const counts = useMemo(() => {
+    // API returns summary in TransaksiListResponse
     if (!transactionData?.summary) {
       return {
         active: 0,
@@ -88,10 +92,10 @@ export function useTransactions(options: UseTransactionsOptions = {}) {
 
     const { summary } = transactionData
     return {
-      active: summary.totalActive,
-      completed: summary.totalSelesai,
-      overdue: summary.totalTerlambat,
-      total: summary.totalActive + summary.totalSelesai + summary.totalTerlambat + summary.totalCancelled,
+      active: summary?.totalActive || 0,
+      completed: summary?.totalSelesai || 0,
+      overdue: summary?.totalTerlambat || 0,
+      total: (summary?.totalActive || 0) + (summary?.totalSelesai || 0) + (summary?.totalTerlambat || 0) + (summary?.totalCancelled || 0),
     }
   }, [transactionData])
 
@@ -99,8 +103,15 @@ export function useTransactions(options: UseTransactionsOptions = {}) {
     setFilters((prev) => ({ ...prev, ...newFilters }))
   }
 
-  // Helper function to manually refresh data
+  // Helper function to manually refresh data with error recovery
   const refreshTransactions = () => {
+    // Clear any cached error state and refetch
+    refetch()
+  }
+
+  // Clear error state function for error recovery
+  const clearError = () => {
+    // This will be used by error boundary components
     refetch()
   }
 
@@ -112,6 +123,7 @@ export function useTransactions(options: UseTransactionsOptions = {}) {
     error,
     counts,
     refreshTransactions,
+    clearError, // New function for error recovery
     // Additional metadata
     pagination: transactionData?.pagination,
     summary: transactionData?.summary,

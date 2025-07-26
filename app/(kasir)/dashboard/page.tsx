@@ -3,8 +3,10 @@ import ErrorBoundary, { ApiErrorFallback } from '@/features/kasir/components/ui/
 
 export default function HomePage() {
   return (
-    <ErrorBoundary fallback={ApiErrorFallback}>
-      <TransactionsDashboard />
-    </ErrorBoundary>
+    <div data-testid="kasir-dashboard-page">
+      <ErrorBoundary fallback={ApiErrorFallback}>
+        <TransactionsDashboard />
+      </ErrorBoundary>
+    </div>
   )
 }

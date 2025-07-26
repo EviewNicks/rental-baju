@@ -25,7 +25,7 @@ export function TransactionTable({ transactions, isLoading }: TransactionTablePr
 
   if (transactions.length === 0) {
     return (
-      <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-8 text-center">
+      <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-8 text-center" data-testid="empty-state">
         <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
         <p className="text-gray-500">Tidak ada transaksi ditemukan</p>
       </div>
@@ -33,7 +33,7 @@ export function TransactionTable({ transactions, isLoading }: TransactionTablePr
   }
 
   return (
-    <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 overflow-hidden shadow-lg shadow-gray-900/5">
+    <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 overflow-hidden shadow-lg shadow-gray-900/5" data-testid="transaction-table">
       <Table>
         <TableHeader className="bg-gold-100">
           <TableRow>
@@ -72,7 +72,7 @@ function TransactionRow({ transaction }: { transaction: Transaction }) {
   const daysOverdue = isOverdue && transaction.endDate ? getDaysOverdue(transaction.endDate) : 0
 
   return (
-    <TableRow className="hover:bg-gold-50 transition-colors duration-150 bg-">
+    <TableRow className="hover:bg-gold-50 transition-colors duration-150 bg-" data-testid={`transaction-row-${transaction.id}`}>
       <TableCell className="px-4 py-3">
         <div className="space-y-1">
           <div className="font-medium text-gray-900 text-sm">{transaction.transactionCode}</div>
@@ -86,7 +86,11 @@ function TransactionRow({ transaction }: { transaction: Transaction }) {
       <TableCell className="px-4 py-3">
         <div className="space-y-1">
           {transaction.items.slice(0, 2).map((item, index) => (
-            <div key={index} className="text-sm text-gray-700">
+            <div key={index} className={`text-sm ${
+              item.includes('item(s)') || item === 'Tidak ada item' 
+                ? 'text-gray-500 italic' 
+                : 'text-gray-700'
+            }`}>
               {item}
             </div>
           ))}
@@ -138,7 +142,7 @@ function TransactionRow({ transaction }: { transaction: Transaction }) {
 
 function TransactionTableSkeleton() {
   return (
-    <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 overflow-hidden">
+    <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 overflow-hidden" data-testid="loading-skeleton">
       <Table>
         <TableHeader>
           <TableRow>

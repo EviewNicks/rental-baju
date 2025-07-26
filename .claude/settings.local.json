@@ -54,7 +54,10 @@
       "mcp__sequentialthinking__sequentialthinking",
       "Bash(gh pr:*)",
       "mcp__context7__resolve-library-id",
-      "mcp__context7__get-library-docs"
+      "mcp__context7__get-library-docs",
+      "mcp__playwright__start_codegen_session",
+      "mcp__playwright__playwright_console_logs",
+      "mcp__playwright__playwright_console_logs"
     ],
     "deny": []
   }

@@ -215,6 +215,12 @@ yarn env:validate          # Validate environment variables
 - Cascade deletes for related data integrity
 - Audit trails via createdBy fields and activity logs
 
+**API Response Patterns:**
+
+- List endpoints return paginated results with `{ data: [], pagination: {}, summary: {} }` structure
+- Transaction list includes `itemCount` field for performance (avoids loading full item details)
+- Frontend transformation handles both full `items[]` arrays and fallback to `itemCount`
+
 ## Context Preservation
 
 - Maintain architectural decisions throughout development sessions
@@ -222,3 +228,22 @@ yarn env:validate          # Validate environment variables
 - Apply learned solutions to similar problems within the codebase
 - Keep track of feature implementation status and dependencies
 - Follow the modular monolith approach with feature-first organization
+
+## Known Issues & Solutions
+
+### Transaction Display Issue (Fixed - 2025-07-26)
+
+**Problem**: Dashboard showing "Tidak ada transaksi ditemukan" despite API returning transaction data.
+
+**Root Cause**: Backend API (`/api/kasir/transaksi`) returns `itemCount` field but not full `items[]` array. Frontend `useTransactions` hook expected `items` array and failed transformation when undefined.
+
+**Solution Applied**:
+1. **Frontend Fallback**: Modified `useTransactions.ts` line 65-66 to use `itemCount` as fallback:
+   ```typescript
+   items: transaction?.items?.map((item: any) => item?.produk?.name || '') || 
+          (transaction?.itemCount ? [`${transaction.itemCount} item(s)`] : ['Tidak ada item']),
+   ```
+
+2. **UI Enhancement**: Added visual styling in `TransactionsTable.tsx` to distinguish fallback displays from actual item names.
+
+**Future Enhancement**: Consider updating backend to include full `items` array with product details in GET `/api/kasir/transaksi` response.

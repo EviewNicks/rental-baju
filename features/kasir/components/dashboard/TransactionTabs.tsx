@@ -41,6 +41,7 @@ function SearchInput({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className="pl-10 bg-white/80 backdrop-blur-sm border-gray-200 focus:border-yellow-400 focus:ring-yellow-400/20"
+        data-testid="search-input"
       />
     </div>
   )
@@ -60,19 +61,20 @@ export function TransactionTabs({
           value={activeTab}
           onValueChange={(val) => onTabChange(val as TransactionStatus | 'all')}
           className="w-full"
+          data-testid="transaction-tabs"
         >
           <TabsList>
-            <TabsTrigger value="all">
+            <TabsTrigger value="all" data-testid="tab-all">
               Semua <span className="ml-1 text-xs text-muted-foreground">({counts.total})</span>
             </TabsTrigger>
-            <TabsTrigger value="active">
+            <TabsTrigger value="active" data-testid="tab-active">
               Aktif <span className="ml-1 text-xs text-muted-foreground">({counts.active})</span>
             </TabsTrigger>
-            <TabsTrigger value="selesai">
+            <TabsTrigger value="selesai" data-testid="tab-selesai">
               Selesai{' '}
               <span className="ml-1 text-xs text-muted-foreground">({counts.completed})</span>
             </TabsTrigger>
-            <TabsTrigger value="terlambat">
+            <TabsTrigger value="terlambat" data-testid="tab-terlambat">
               Terlambat{' '}
               <span className="ml-1 text-xs text-muted-foreground">({counts.overdue})</span>
             </TabsTrigger>
