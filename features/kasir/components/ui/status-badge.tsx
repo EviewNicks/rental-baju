@@ -4,6 +4,7 @@ import type { TransactionStatus } from '../../types/transaction'
 interface StatusBadgeProps {
   status: TransactionStatus
   className?: string
+  'data-testid'?: string
 }
 
 const statusConfig: Record<TransactionStatus, { label: string; className: string }> = {
@@ -25,11 +26,12 @@ const statusConfig: Record<TransactionStatus, { label: string; className: string
   },
 }
 
-export function StatusBadge({ status, className }: StatusBadgeProps) {
+export function StatusBadge({ status, className, 'data-testid': dataTestId }: StatusBadgeProps) {
   const config = statusConfig[status]
 
   return (
     <span
+      data-testid={dataTestId}
       className={cn(
         'inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border',
         config.className,

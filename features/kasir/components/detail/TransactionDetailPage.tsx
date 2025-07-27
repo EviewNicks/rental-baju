@@ -1,8 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Download, AlertTriangle } from 'lucide-react'
+import { ArrowLeft, Download, AlertTriangle, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { StatusBadge } from '@/features/kasir/components/ui/status-badge'
 import { CustomerInfoCard } from './CustomerInfoCard'
@@ -10,8 +9,7 @@ import { ProductDetailCard } from './ProductDetailCard'
 import { PaymentSummaryCard } from './PaymentSummaryCard'
 import { ActivityTimeline } from './ActivityTimeline'
 import { ActionButtonsPanel } from './ActionButtonPanel'
-import type { TransactionDetail } from '../../types/transaction-detail'
-import { mockTransactionDetail } from '../../lib/mock-transaction-detail'
+import { useTransactionDetail } from '../../hooks/useTransactionDetail'
 import { formatDate } from '../../lib/utils'
 
 interface TransactionDetailPageProps {
@@ -19,40 +17,131 @@ interface TransactionDetailPageProps {
 }
 
 export function TransactionDetailPage({ transactionId }: TransactionDetailPageProps) {
-  const [transaction, setTransaction] = useState<TransactionDetail | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-
-  useEffect(() => {
-    // Simulate API call
-    const fetchTransaction = async () => {
-      setIsLoading(true)
-      try {
-        // Simulate delay
-        await new Promise((resolve) => setTimeout(resolve, 500))
-        const data = mockTransactionDetail[transactionId]
-        setTransaction(data || null)
-      } catch (error) {
-        console.error('Failed to fetch transaction:', error)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    fetchTransaction()
-  }, [transactionId])
+  const { transaction, isLoading, error, refreshTransaction, clearError } = useTransactionDetail(transactionId)
 
   if (isLoading) {
     return <TransactionDetailSkeleton />
   }
 
+  if (error) {
+    // Enhanced error detection
+    const isNotFound = error.message?.includes('tidak ditemukan') || error.message?.includes('Not Found')
+    const isNetworkError = error.message?.includes('fetch') || error.message?.includes('Network')
+    const isServerError = error.message?.includes('Internal Server Error') || error.message?.includes('500')
+    const isPermissionError = error.message?.includes('unauthorized') || error.message?.includes('403')
+    
+    const getErrorDetails = () => {
+      if (isNotFound) {
+        return {
+          title: 'Transaksi Tidak Ditemukan',
+          description: `Transaksi dengan kode ${transactionId} tidak dapat ditemukan.`,
+          suggestions: [
+            'Periksa kembali kode transaksi',
+            'Cari transaksi di daftar transaksi',
+            'Pastikan transaksi belum dihapus'
+          ],
+          canRetry: false
+        }
+      } else if (isNetworkError) {
+        return {
+          title: 'Masalah Koneksi',
+          description: 'Koneksi internet bermasalah. Periksa koneksi dan coba lagi.',
+          suggestions: [
+            'Periksa koneksi internet',
+            'Coba refresh halaman',
+            'Tunggu beberapa saat lalu coba lagi'
+          ],
+          canRetry: true
+        }
+      } else if (isServerError) {
+        return {
+          title: 'Server Bermasalah',
+          description: 'Terjadi gangguan pada server. Tim kami sedang menangani masalah ini.',
+          suggestions: [
+            'Tunggu beberapa menit lalu coba lagi',
+            'Hubungi support jika masalah berlanjut',
+            'Coba akses fitur lain terlebih dahulu'
+          ],
+          canRetry: true
+        }
+      } else if (isPermissionError) {
+        return {
+          title: 'Akses Ditolak',
+          description: 'Anda tidak memiliki izin untuk mengakses transaksi ini.',
+          suggestions: [
+            'Login ulang dengan akun yang benar',
+            'Hubungi admin untuk mendapatkan akses',
+            'Periksa role dan permissions akun Anda'
+          ],
+          canRetry: false
+        }
+      } else {
+        return {
+          title: 'Terjadi Kesalahan',
+          description: 'Gagal memuat detail transaksi. Silakan coba lagi.',
+          suggestions: [
+            'Refresh halaman',
+            'Coba lagi dalam beberapa saat',
+            'Hubungi support jika masalah berlanjut'
+          ],
+          canRetry: true
+        }
+      }
+    }
+
+    const errorDetails = getErrorDetails()
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+        <div data-testid="error-boundary" className="text-center max-w-lg mx-auto p-6">
+          <AlertTriangle className="h-16 w-16 text-red-400 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            {errorDetails.title}
+          </h1>
+          <p className="text-gray-600 mb-4">
+            {errorDetails.description}
+          </p>
+          
+          {/* Recovery suggestions */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 text-left">
+            <h3 className="font-semibold text-blue-900 mb-2">Saran untuk mengatasi masalah:</h3>
+            <ul className="text-sm text-blue-800 space-y-1">
+              {errorDetails.suggestions.map((suggestion, index) => (
+                <li key={index} className="flex items-start">
+                  <span className="text-blue-500 mr-2">•</span>
+                  {suggestion}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            {errorDetails.canRetry && (
+              <Button data-testid="retry-button" onClick={clearError} variant="outline">
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Coba Lagi
+              </Button>
+            )}
+            <Link href="/dashboard">
+              <Button>
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Kembali ke Dashboard
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   if (!transaction) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
-        <div className="text-center">
+        <div data-testid="error-boundary" className="text-center">
           <AlertTriangle className="h-16 w-16 text-gray-400 mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Transaksi Tidak Ditemukan</h1>
           <p className="text-gray-600 mb-6">
-            Transaksi dengan ID {transactionId} tidak dapat ditemukan.
+            Transaksi dengan kode {transactionId} tidak dapat ditemukan.
           </p>
           <Link href="/dashboard">
             <Button>
@@ -66,14 +155,14 @@ export function TransactionDetailPage({ transactionId }: TransactionDetailPagePr
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div data-testid="transaction-detail-page" className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Header */}
       <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200/50 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Link href="/dashboard">
-                <Button variant="ghost" size="sm">
+                <Button data-testid="back-button" variant="ghost" size="sm">
                   <ArrowLeft className="h-4 w-4 mr-2" />
                   Kembali
                 </Button>
@@ -84,7 +173,11 @@ export function TransactionDetailPage({ transactionId }: TransactionDetailPagePr
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <StatusBadge status={transaction.status} />
+              <StatusBadge data-testid="status-badge" status={transaction.status} />
+              <Button data-testid="refresh-button" variant="outline" size="sm" onClick={refreshTransaction}>
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Refresh
+              </Button>
               <Button variant="outline" size="sm">
                 <Download className="h-4 w-4 mr-2" />
                 Cetak
@@ -121,7 +214,7 @@ export function TransactionDetailPage({ transactionId }: TransactionDetailPagePr
                 </div>
                 <div>
                   <div className="text-sm text-gray-600">Status</div>
-                  <StatusBadge status={transaction.status} />
+                  <StatusBadge data-testid="status-badge" status={transaction.status} />
                 </div>
               </div>
               {transaction.notes && (
@@ -133,10 +226,10 @@ export function TransactionDetailPage({ transactionId }: TransactionDetailPagePr
             </div>
 
             {/* Customer Info */}
-            <CustomerInfoCard customer={transaction.customer} />
+            <CustomerInfoCard data-testid="customer-info-card" customer={transaction.customer} />
 
             {/* Products */}
-            <div className="space-y-4">
+            <div data-testid="product-detail-card" className="space-y-4">
               <h2 className="text-lg font-semibold text-gray-900">Produk yang Disewa</h2>
               {transaction.products.map((item, index) => (
                 <ProductDetailCard key={index} item={item} />
@@ -144,13 +237,14 @@ export function TransactionDetailPage({ transactionId }: TransactionDetailPagePr
             </div>
 
             {/* Activity Timeline */}
-            <ActivityTimeline timeline={transaction.timeline} />
+            <ActivityTimeline data-testid="activity-timeline" timeline={transaction.timeline} />
           </div>
 
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Payment Summary */}
             <PaymentSummaryCard
+              data-testid="payment-summary-card"
               transaction={transaction}
               payments={transaction.payments}
               penalties={transaction.penalties}
@@ -167,7 +261,7 @@ export function TransactionDetailPage({ transactionId }: TransactionDetailPagePr
 
 function TransactionDetailSkeleton() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div data-testid="loading-skeleton" className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Header Skeleton */}
       <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200/50 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">

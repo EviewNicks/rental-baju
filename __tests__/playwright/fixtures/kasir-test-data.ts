@@ -8,7 +8,7 @@
 import type { TransactionStatus } from '../../../features/kasir/types/transaction'
 
 /**
- * Mock Transaction Data untuk Testing
+ * Mock Transaction Data untuk Testing (Updated API Format)
  */
 export const mockTransactions = [
   {
@@ -69,6 +69,98 @@ export const mockTransactions = [
     updatedAt: '2025-01-25T20:00:00Z',
   },
 ]
+
+/**
+ * Mock API Transaction Detail Response (RPK-27 Format)
+ * Format sesuai dengan API response dari backend integration
+ */
+export const mockTransactionDetailApiResponse = {
+  id: '53229bd2-cfd9-4a7f-a268-2fd07da97b34',
+  kode: 'TXN-20250726-001',
+  penyewa: {
+    id: '0d75c83a-33e7-40c5-9d59-cf1fd06fd119',
+    nama: 'Budi Santoso',
+    telepon: '081234567890',
+    alamat: 'Jl. Merdeka No. 123, Jakarta',
+  },
+  status: 'active',
+  totalHarga: 240000,
+  jumlahBayar: 150000,
+  sisaBayar: 90000,
+  tglMulai: '2025-01-26T00:00:00.000Z',
+  tglSelesai: '2025-01-28T00:00:00.000Z',
+  tglKembali: null,
+  metodeBayar: 'tunai',
+  catatan: 'Untuk acara pernikahan',
+  createdBy: 'kasir-001',
+  createdAt: '2025-01-26T10:00:00.000Z',
+  updatedAt: '2025-01-26T10:00:00.000Z',
+  items: [
+    {
+      id: 'item-001',
+      produkId: 'product-001',
+      produk: {
+        id: 'product-001',
+        code: 'PRD-001',
+        name: 'Kemeja Batik Premium',
+        imageUrl: '/products/kemeja-batik.jpg',
+      },
+      jumlah: 1,
+      hargaSewa: 50000,
+      durasi: 3,
+      subtotal: 150000,
+      kondisiAwal: 'Baik',
+      kondisiAkhir: null,
+      statusKembali: 'belum',
+    },
+    {
+      id: 'item-002',
+      produkId: 'product-002',
+      produk: {
+        id: 'product-002',
+        code: 'PRD-002',
+        name: 'Celana Formal',
+        imageUrl: '/products/celana-formal.jpg',
+      },
+      jumlah: 1,
+      hargaSewa: 30000,
+      durasi: 3,
+      subtotal: 90000,
+      kondisiAwal: 'Baik',
+      kondisiAkhir: null,
+      statusKembali: 'belum',
+    },
+  ],
+  pembayaran: [
+    {
+      id: 'payment-001',
+      jumlah: 150000,
+      metode: 'tunai',
+      referensi: 'PAY-001',
+      catatan: null,
+      createdBy: 'kasir-001',
+      createdAt: '2025-01-26T10:30:00.000Z',
+    },
+  ],
+  aktivitas: [
+    {
+      id: 'activity-001',
+      tipe: 'dibuat',
+      deskripsi: 'Transaksi dibuat',
+      data: {},
+      createdBy: 'kasir-001',
+      createdAt: '2025-01-26T10:00:00.000Z',
+    },
+    {
+      id: 'activity-002',
+      tipe: 'dibayar',
+      deskripsi: 'Pembayaran sebagian diterima',
+      data: { jumlah: 150000 },
+      createdBy: 'kasir-001',
+      createdAt: '2025-01-26T10:30:00.000Z',
+    },
+  ],
+}
 
 /**
  * Mock Transaction Counts untuk Tab Testing
@@ -151,7 +243,7 @@ export const errorTestScenarios = {
 export const navigationTestData = {
   dashboardPath: '/dashboard',
   newTransactionPath: '/dashboard/new',
-  transactionDetailPath: (id: string) => `/dashboard/${id}`,
+  transactionDetailPath: (id: string) => `/dashboard/transaction/${id}`,
 }
 
 /**
@@ -190,6 +282,18 @@ export const kasirSelectors = {
   errorBoundary: '[data-testid="error-boundary"]',
   errorMessage: '[data-testid="error-message"]',
   retryButton: '[data-testid="retry-button"]',
+
+  // Transaction Detail Page Selectors (RPK-27)
+  transactionDetailPage: '[data-testid="transaction-detail-page"]',
+  customerInfoCard: '[data-testid="customer-info-card"]',
+  productDetailCard: '[data-testid="product-detail-card"]',
+  paymentSummaryCard: '[data-testid="payment-summary-card"]',
+  activityTimeline: '[data-testid="activity-timeline"]',
+  actionButtonsPanel: '[data-testid="action-buttons-panel"]',
+  statusBadge: '[data-testid="status-badge"]',
+  refreshButton: '[data-testid="refresh-button"]',
+  backButton: '[data-testid="back-button"]',
+  breadcrumb: '[data-testid="breadcrumb"]',
 }
 
 /**
@@ -201,7 +305,7 @@ export const performanceThresholds = {
   searchResponseTime: 3000, // 3 seconds max (was 2000) - account for debouncing
   tabSwitchTime: 2000, // 2 seconds max (was 1000) - allow for data loading
   navigationTime: 5000, // 5 seconds max (was 3000) - more realistic for routing
-  
+
   // Large dataset multipliers
   largeDatasetMultiplier: 4, // 4x threshold for large dataset tests
   concurrentActionMultiplier: 2, // 2x threshold for concurrent operations

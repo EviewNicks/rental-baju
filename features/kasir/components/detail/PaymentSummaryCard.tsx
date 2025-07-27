@@ -7,16 +7,17 @@ interface PaymentSummaryCardProps {
   transaction: TransactionDetail
   payments: Payment[]
   penalties?: Penalty[]
+  'data-testid'?: string
 }
 
-export function PaymentSummaryCard({ transaction, payments, penalties }: PaymentSummaryCardProps) {
+export function PaymentSummaryCard({ transaction, payments, penalties, 'data-testid': dataTestId }: PaymentSummaryCardProps) {
   const totalPaid = payments.reduce((sum, payment) => sum + payment.amount, 0)
   const totalPenalties = penalties?.reduce((sum, penalty) => sum + penalty.amount, 0) || 0
   const grandTotal = transaction.totalAmount + totalPenalties
   const remainingBalance = grandTotal - totalPaid
 
   return (
-    <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-6 space-y-6">
+    <div data-testid={dataTestId} className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-6 space-y-6">
       <div className="flex items-center gap-2">
         <CreditCard className="h-5 w-5 text-gray-700" />
         <h3 className="text-lg font-semibold text-gray-900">Ringkasan Pembayaran</h3>

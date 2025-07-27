@@ -39,13 +39,15 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     const { kode } = await params
 
-    // Validate transaction code format
-    if (!TransactionCodeGenerator.validateTransactionCode(kode)) {
+    // Detect parameter type (UUID or transaction code)
+    const paramType = TransactionCodeGenerator.detectParameterType(kode)
+    
+    if (paramType === 'invalid') {
       return NextResponse.json(
         {
           success: false,
           error: {
-            message: 'Format kode transaksi tidak valid (contoh: TXN-20250726-001)',
+            message: 'Parameter harus berupa kode transaksi (contoh: TXN-20250726-001) atau ID transaksi',
             code: 'VALIDATION_ERROR'
           }
         },
@@ -56,8 +58,10 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     // Initialize transaksi service
     const transaksiService = new TransaksiService(prisma, user.id)
 
-    // Get transaksi by code
-    const transaksi = await transaksiService.getTransaksiByCode(kode)
+    // Get transaksi using appropriate method based on parameter type
+    const transaksi = paramType === 'uuid' 
+      ? await transaksiService.getTransaksiById(kode)
+      : await transaksiService.getTransaksiByCode(kode)
 
     // Format response data
     const formattedData = {
@@ -189,13 +193,15 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
     const { kode } = await params
 
-    // Validate transaction code format
-    if (!TransactionCodeGenerator.validateTransactionCode(kode)) {
+    // Detect parameter type (UUID or transaction code)
+    const paramType = TransactionCodeGenerator.detectParameterType(kode)
+    
+    if (paramType === 'invalid') {
       return NextResponse.json(
         {
           success: false,
           error: {
-            message: 'Format kode transaksi tidak valid (contoh: TXN-20250726-001)',
+            message: 'Parameter harus berupa kode transaksi (contoh: TXN-20250726-001) atau ID transaksi',
             code: 'VALIDATION_ERROR'
           }
         },
@@ -226,8 +232,10 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     // Initialize transaksi service
     const transaksiService = new TransaksiService(prisma, user.id)
 
-    // Get current transaction to get ID
-    const currentTransaksi = await transaksiService.getTransaksiByCode(kode)
+    // Get current transaction using appropriate method
+    const currentTransaksi = paramType === 'uuid' 
+      ? await transaksiService.getTransaksiById(kode)
+      : await transaksiService.getTransaksiByCode(kode)
 
     // Update transaksi status
     await transaksiService.updateTransaksiStatus(

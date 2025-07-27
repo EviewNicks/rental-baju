@@ -2,11 +2,11 @@ import { TransactionDetailPage } from '@/features/kasir/components/detail/Transa
 
 interface TransactionDetailPageProps {
   params: Promise<{
-    id: string
+    kode: string
   }>
 }
 
 export default async function TransactionDetail({ params }: TransactionDetailPageProps) {
-  const { id } = await params
-  return <TransactionDetailPage transactionId={id} />
+  const { kode } = await params
+  return <TransactionDetailPage transactionId={kode} />
 }

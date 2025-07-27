@@ -25,7 +25,10 @@ export function TransactionTable({ transactions, isLoading }: TransactionTablePr
 
   if (transactions.length === 0) {
     return (
-      <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-8 text-center" data-testid="empty-state">
+      <div
+        className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-8 text-center"
+        data-testid="empty-state"
+      >
         <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
         <p className="text-gray-500">Tidak ada transaksi ditemukan</p>
       </div>
@@ -33,7 +36,10 @@ export function TransactionTable({ transactions, isLoading }: TransactionTablePr
   }
 
   return (
-    <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 overflow-hidden shadow-lg shadow-gray-900/5" data-testid="transaction-table">
+    <div
+      className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 overflow-hidden shadow-lg shadow-gray-900/5"
+      data-testid="transaction-table"
+    >
       <Table>
         <TableHeader className="bg-gold-100">
           <TableRow>
@@ -72,7 +78,10 @@ function TransactionRow({ transaction }: { transaction: Transaction }) {
   const daysOverdue = isOverdue && transaction.endDate ? getDaysOverdue(transaction.endDate) : 0
 
   return (
-    <TableRow className="hover:bg-gold-50 transition-colors duration-150 bg-" data-testid={`transaction-row-${transaction.id}`}>
+    <TableRow
+      className="hover:bg-gold-50 transition-colors duration-150 bg-"
+      data-testid={`transaction-row-${transaction.id}`}
+    >
       <TableCell className="px-4 py-3">
         <div className="space-y-1">
           <div className="font-medium text-gray-900 text-sm">{transaction.transactionCode}</div>
@@ -86,11 +95,14 @@ function TransactionRow({ transaction }: { transaction: Transaction }) {
       <TableCell className="px-4 py-3">
         <div className="space-y-1">
           {transaction.items.slice(0, 2).map((item, index) => (
-            <div key={index} className={`text-sm ${
-              item.includes('item(s)') || item === 'Tidak ada item' 
-                ? 'text-gray-500 italic' 
-                : 'text-gray-700'
-            }`}>
+            <div
+              key={index}
+              className={`text-sm ${
+                item.includes('item(s)') || item === 'Tidak ada item'
+                  ? 'text-gray-500 italic'
+                  : 'text-gray-700'
+              }`}
+            >
               {item}
             </div>
           ))}
@@ -104,7 +116,9 @@ function TransactionRow({ transaction }: { transaction: Transaction }) {
       <TableCell className="px-4 py-3">
         <div className="space-y-1">
           <div className="text-sm text-gray-700">Sewa: {formatDate(transaction.startDate)}</div>
-          <div className="text-sm text-gray-700">Kembali: {transaction.endDate ? formatDate(transaction.endDate) : 'Belum ditentukan'}</div>
+          <div className="text-sm text-gray-700">
+            Kembali: {transaction.endDate ? formatDate(transaction.endDate) : 'Belum ditentukan'}
+          </div>
           {isOverdue && daysOverdue > 0 && (
             <div className="flex items-center gap-1 text-red-600 text-xs">
               <Clock className="h-3 w-3" />
@@ -129,7 +143,7 @@ function TransactionRow({ transaction }: { transaction: Transaction }) {
         <StatusBadge status={transaction.status} />
       </TableCell>
       <TableCell className="px-4 py-3 text-center">
-        <Link href={`/dashboard/${transaction.id}`}>
+        <Link href={`/dashboard/transaction/${transaction.transactionCode}`}>
           <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
             <Eye className="h-4 w-4" />
             <span className="sr-only">Lihat Detail</span>
@@ -142,7 +156,10 @@ function TransactionRow({ transaction }: { transaction: Transaction }) {
 
 function TransactionTableSkeleton() {
   return (
-    <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 overflow-hidden" data-testid="loading-skeleton">
+    <div
+      className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 overflow-hidden"
+      data-testid="loading-skeleton"
+    >
       <Table>
         <TableHeader>
           <TableRow>

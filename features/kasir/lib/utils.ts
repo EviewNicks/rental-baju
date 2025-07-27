@@ -14,11 +14,21 @@ export function formatCurrency(amount: number): string {
 }
 
 export function formatDate(dateString: string): string {
+  if (!dateString) {
+    return 'Tanggal tidak tersedia'
+  }
+  
+  const date = new Date(dateString)
+  
+  if (isNaN(date.getTime())) {
+    return 'Tanggal tidak valid'
+  }
+  
   return new Intl.DateTimeFormat('id-ID', {
     day: '2-digit',
     month: 'short',
     year: 'numeric',
-  }).format(new Date(dateString))
+  }).format(date)
 }
 
 export function getDaysOverdue(returnDate: string): number {

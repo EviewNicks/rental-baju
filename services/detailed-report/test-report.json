@@ -1,618 +1,90 @@
 {
-  "numTotalTests": 89,
-  "numPassedTests": 89,
+  "numTotalTests": 112,
+  "numPassedTests": 107,
   "numFailedTests": 0,
-  "numPendingTests": 0,
-  "startTime": "2025-07-25T12:10:16.954Z",
-  "endTime": "2025-07-25T12:10:20.575Z",
+  "numPendingTests": 5,
+  "startTime": "2025-07-27T01:42:04.829Z",
+  "endTime": "2025-07-27T01:42:13.472Z",
   "testResults": [
     {
-      "testFilePath": "D:\\.work\\rental-software\\features\\kasir\\services\\pembayaranService.test.ts",
+      "testFilePath": "D:\\.work\\rental-software\\features\\kasir\\lib\\utils\\codeGenerator.test.ts",
       "testFileResults": [
         {
           "ancestorTitles": [
-            "PembayaranService",
-            "createPembayaran"
+            "TransactionCodeGenerator Enhanced Features",
+            "UUID Validation"
           ],
-          "fullName": "PembayaranService createPembayaran should create payment successfully",
+          "fullName": "TransactionCodeGenerator Enhanced Features UUID Validation should validate correct UUID v4 format",
           "status": "passed",
-          "title": "should create payment successfully",
+          "title": "should validate correct UUID v4 format",
           "failureMessages": [],
-          "duration": 27
+          "duration": 8
         },
         {
           "ancestorTitles": [
-            "PembayaranService",
-            "createPembayaran"
+            "TransactionCodeGenerator Enhanced Features",
+            "UUID Validation"
           ],
-          "fullName": "PembayaranService createPembayaran should throw error if transaction not found",
+          "fullName": "TransactionCodeGenerator Enhanced Features UUID Validation should reject invalid UUID formats",
           "status": "passed",
-          "title": "should throw error if transaction not found",
-          "failureMessages": [],
-          "duration": 32
-        },
-        {
-          "ancestorTitles": [
-            "PembayaranService",
-            "createPembayaran"
-          ],
-          "fullName": "PembayaranService createPembayaran should throw error if transaction is cancelled",
-          "status": "passed",
-          "title": "should throw error if transaction is cancelled",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PembayaranService",
-            "createPembayaran"
-          ],
-          "fullName": "PembayaranService createPembayaran should throw error if transaction is completed",
-          "status": "passed",
-          "title": "should throw error if transaction is completed",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PembayaranService",
-            "createPembayaran"
-          ],
-          "fullName": "PembayaranService createPembayaran should throw error if payment amount is invalid",
-          "status": "passed",
-          "title": "should throw error if payment amount is invalid",
+          "title": "should reject invalid UUID formats",
           "failureMessages": [],
           "duration": 2
         },
         {
           "ancestorTitles": [
-            "PembayaranService",
-            "createPembayaran"
+            "TransactionCodeGenerator Enhanced Features",
+            "Parameter Type Detection"
           ],
-          "fullName": "PembayaranService createPembayaran should handle overpayment validation",
+          "fullName": "TransactionCodeGenerator Enhanced Features Parameter Type Detection should correctly detect UUID parameters",
           "status": "passed",
-          "title": "should handle overpayment validation",
+          "title": "should correctly detect UUID parameters",
           "failureMessages": [],
           "duration": 1
         },
         {
           "ancestorTitles": [
-            "PembayaranService",
-            "getTransactionPayments"
+            "TransactionCodeGenerator Enhanced Features",
+            "Parameter Type Detection"
           ],
-          "fullName": "PembayaranService getTransactionPayments should return payments for a transaction",
+          "fullName": "TransactionCodeGenerator Enhanced Features Parameter Type Detection should correctly detect transaction code parameters",
           "status": "passed",
-          "title": "should return payments for a transaction",
+          "title": "should correctly detect transaction code parameters",
           "failureMessages": [],
           "duration": 2
         },
         {
           "ancestorTitles": [
-            "PembayaranService",
-            "getPembayaranById"
+            "TransactionCodeGenerator Enhanced Features",
+            "Parameter Type Detection"
           ],
-          "fullName": "PembayaranService getPembayaranById should return payment by ID",
+          "fullName": "TransactionCodeGenerator Enhanced Features Parameter Type Detection should correctly detect invalid parameters",
           "status": "passed",
-          "title": "should return payment by ID",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PembayaranService",
-            "getPembayaranById"
-          ],
-          "fullName": "PembayaranService getPembayaranById should throw error if payment not found",
-          "status": "passed",
-          "title": "should throw error if payment not found",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PembayaranService",
-            "getPaymentSummary"
-          ],
-          "fullName": "PembayaranService getPaymentSummary should return payment summary for transaction",
-          "status": "passed",
-          "title": "should return payment summary for transaction",
+          "title": "should correctly detect invalid parameters",
           "failureMessages": [],
           "duration": 2
         },
         {
           "ancestorTitles": [
-            "PembayaranService",
-            "getPaymentSummary"
+            "TransactionCodeGenerator Enhanced Features",
+            "Existing Transaction Code Functionality"
           ],
-          "fullName": "PembayaranService getPaymentSummary should throw error if transaction not found for summary",
+          "fullName": "TransactionCodeGenerator Enhanced Features Existing Transaction Code Functionality should still validate transaction codes correctly",
           "status": "passed",
-          "title": "should throw error if transaction not found for summary",
+          "title": "should still validate transaction codes correctly",
           "failureMessages": [],
           "duration": 1
         },
         {
           "ancestorTitles": [
-            "PembayaranService",
-            "getPaymentSummary"
+            "TransactionCodeGenerator Enhanced Features",
+            "Existing Transaction Code Functionality"
           ],
-          "fullName": "PembayaranService getPaymentSummary should handle transaction with no payments",
+          "fullName": "TransactionCodeGenerator Enhanced Features Existing Transaction Code Functionality should reject invalid transaction codes",
           "status": "passed",
-          "title": "should handle transaction with no payments",
+          "title": "should reject invalid transaction codes",
           "failureMessages": [],
           "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PembayaranService",
-            "getPaymentList"
-          ],
-          "fullName": "PembayaranService getPaymentList should return paginated payment list",
-          "status": "passed",
-          "title": "should return paginated payment list",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PembayaranService",
-            "getPaymentList"
-          ],
-          "fullName": "PembayaranService getPaymentList should filter payments by transaction ID",
-          "status": "passed",
-          "title": "should filter payments by transaction ID",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PembayaranService",
-            "getPaymentList"
-          ],
-          "fullName": "PembayaranService getPaymentList should filter payments by method",
-          "status": "passed",
-          "title": "should filter payments by method",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PembayaranService",
-            "getPaymentList"
-          ],
-          "fullName": "PembayaranService getPaymentList should filter payments by date range",
-          "status": "passed",
-          "title": "should filter payments by date range",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PembayaranService",
-            "cancelPayment"
-          ],
-          "fullName": "PembayaranService cancelPayment should cancel payment successfully",
-          "status": "passed",
-          "title": "should cancel payment successfully",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "PembayaranService",
-            "cancelPayment"
-          ],
-          "fullName": "PembayaranService cancelPayment should throw error if payment not found for cancellation",
-          "status": "passed",
-          "title": "should throw error if payment not found for cancellation",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PembayaranService",
-            "cancelPayment"
-          ],
-          "fullName": "PembayaranService cancelPayment should throw error if transaction is already cancelled",
-          "status": "passed",
-          "title": "should throw error if transaction is already cancelled",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PembayaranService",
-            "getPaymentStats"
-          ],
-          "fullName": "PembayaranService getPaymentStats should return payment statistics",
-          "status": "passed",
-          "title": "should return payment statistics",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PembayaranService",
-            "getPaymentStats"
-          ],
-          "fullName": "PembayaranService getPaymentStats should filter statistics by date range",
-          "status": "passed",
-          "title": "should filter statistics by date range",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PembayaranService",
-            "getPaymentStats"
-          ],
-          "fullName": "PembayaranService getPaymentStats should handle empty payment data",
-          "status": "passed",
-          "title": "should handle empty payment data",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PembayaranService",
-            "getPaymentStats"
-          ],
-          "fullName": "PembayaranService getPaymentStats should aggregate payments by method correctly",
-          "status": "passed",
-          "title": "should aggregate payments by method correctly",
-          "failureMessages": [],
-          "duration": 2
-        }
-      ],
-      "failureMessage": null
-    },
-    {
-      "testFilePath": "D:\\.work\\rental-software\\features\\kasir\\services\\auditService.test.ts",
-      "testFileResults": [
-        {
-          "ancestorTitles": [
-            "AuditService",
-            "logActivity"
-          ],
-          "fullName": "AuditService logActivity should log transaksi activity successfully",
-          "status": "passed",
-          "title": "should log transaksi activity successfully",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "AuditService",
-            "logActivity"
-          ],
-          "fullName": "AuditService logActivity should log sensitive data without automatic sanitization in logActivity",
-          "status": "passed",
-          "title": "should log sensitive data without automatic sanitization in logActivity",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "AuditService",
-            "logActivity"
-          ],
-          "fullName": "AuditService logActivity should handle non-transaksi entity types",
-          "status": "passed",
-          "title": "should handle non-transaksi entity types",
-          "failureMessages": [],
-          "duration": 65
-        },
-        {
-          "ancestorTitles": [
-            "AuditService",
-            "logActivity"
-          ],
-          "fullName": "AuditService logActivity should handle database errors gracefully",
-          "status": "passed",
-          "title": "should handle database errors gracefully",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "AuditService",
-            "specific activity loggers"
-          ],
-          "fullName": "AuditService specific activity loggers should log penyewa activity with correct parameters",
-          "status": "passed",
-          "title": "should log penyewa activity with correct parameters",
-          "failureMessages": [],
-          "duration": 0
-        },
-        {
-          "ancestorTitles": [
-            "AuditService",
-            "specific activity loggers"
-          ],
-          "fullName": "AuditService specific activity loggers should log transaksi activity with correct parameters",
-          "status": "passed",
-          "title": "should log transaksi activity with correct parameters",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "AuditService",
-            "specific activity loggers"
-          ],
-          "fullName": "AuditService specific activity loggers should log pembayaran activity with correct parameters",
-          "status": "passed",
-          "title": "should log pembayaran activity with correct parameters",
-          "failureMessages": [],
-          "duration": 0
-        },
-        {
-          "ancestorTitles": [
-            "AuditService",
-            "getAuditTrail"
-          ],
-          "fullName": "AuditService getAuditTrail should return audit trail for transaksi entity",
-          "status": "passed",
-          "title": "should return audit trail for transaksi entity",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "AuditService",
-            "getAuditTrail"
-          ],
-          "fullName": "AuditService getAuditTrail should return empty array for non-transaksi entities",
-          "status": "passed",
-          "title": "should return empty array for non-transaksi entities",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "AuditService",
-            "getAuditTrail"
-          ],
-          "fullName": "AuditService getAuditTrail should limit results based on provided limit",
-          "status": "passed",
-          "title": "should limit results based on provided limit",
-          "failureMessages": [],
-          "duration": 0
-        },
-        {
-          "ancestorTitles": [
-            "AuditService",
-            "getAuditSummary"
-          ],
-          "fullName": "AuditService getAuditSummary should return audit summary statistics",
-          "status": "passed",
-          "title": "should return audit summary statistics",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "AuditService",
-            "getAuditSummary"
-          ],
-          "fullName": "AuditService getAuditSummary should filter summary by date range",
-          "status": "passed",
-          "title": "should filter summary by date range",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "AuditService",
-            "createAuditWrapper"
-          ],
-          "fullName": "AuditService createAuditWrapper should create audit wrapper that logs successful operations",
-          "status": "passed",
-          "title": "should create audit wrapper that logs successful operations",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "AuditService",
-            "createAuditWrapper"
-          ],
-          "fullName": "AuditService createAuditWrapper should create audit wrapper that logs failed operations",
-          "status": "passed",
-          "title": "should create audit wrapper that logs failed operations",
-          "failureMessages": [],
-          "duration": 9
-        },
-        {
-          "ancestorTitles": [
-            "AuditService",
-            "data sanitization"
-          ],
-          "fullName": "AuditService data sanitization should sanitize sensitive fields",
-          "status": "passed",
-          "title": "should sanitize sensitive fields",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "AuditService",
-            "data sanitization"
-          ],
-          "fullName": "AuditService data sanitization should handle non-object data",
-          "status": "passed",
-          "title": "should handle non-object data",
-          "failureMessages": [],
-          "duration": 0
-        },
-        {
-          "ancestorTitles": [
-            "createAuditService factory"
-          ],
-          "fullName": "createAuditService factory should create audit service with correct parameters",
-          "status": "passed",
-          "title": "should create audit service with correct parameters",
-          "failureMessages": [],
-          "duration": 1
-        }
-      ],
-      "failureMessage": null
-    },
-    {
-      "testFilePath": "D:\\.work\\rental-software\\features\\kasir\\services\\transaksiService.test.ts",
-      "testFileResults": [
-        {
-          "ancestorTitles": [
-            "TransaksiService",
-            "createTransaksi"
-          ],
-          "fullName": "TransaksiService createTransaksi should create transaksi successfully with auto-generated code",
-          "status": "passed",
-          "title": "should create transaksi successfully with auto-generated code",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "TransaksiService",
-            "createTransaksi"
-          ],
-          "fullName": "TransaksiService createTransaksi should throw error if penyewa not found",
-          "status": "passed",
-          "title": "should throw error if penyewa not found",
-          "failureMessages": [],
-          "duration": 27
-        },
-        {
-          "ancestorTitles": [
-            "TransaksiService",
-            "createTransaksi"
-          ],
-          "fullName": "TransaksiService createTransaksi should throw error if product not available",
-          "status": "passed",
-          "title": "should throw error if product not available",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "TransaksiService",
-            "createTransaksi"
-          ],
-          "fullName": "TransaksiService createTransaksi should throw error if insufficient product quantity",
-          "status": "passed",
-          "title": "should throw error if insufficient product quantity",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "TransaksiService",
-            "getTransaksiById"
-          ],
-          "fullName": "TransaksiService getTransaksiById should return transaksi by ID",
-          "status": "passed",
-          "title": "should return transaksi by ID",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "TransaksiService",
-            "getTransaksiById"
-          ],
-          "fullName": "TransaksiService getTransaksiById should throw error if transaksi not found",
-          "status": "passed",
-          "title": "should throw error if transaksi not found",
-          "failureMessages": [],
-          "duration": 5
-        },
-        {
-          "ancestorTitles": [
-            "TransaksiService",
-            "getTransaksiByCode"
-          ],
-          "fullName": "TransaksiService getTransaksiByCode should return transaksi by code",
-          "status": "passed",
-          "title": "should return transaksi by code",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "TransaksiService",
-            "getTransaksiList"
-          ],
-          "fullName": "TransaksiService getTransaksiList should return paginated transaksi list",
-          "status": "passed",
-          "title": "should return paginated transaksi list",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "TransaksiService",
-            "getTransaksiList"
-          ],
-          "fullName": "TransaksiService getTransaksiList should filter by status",
-          "status": "passed",
-          "title": "should filter by status",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "TransaksiService",
-            "getTransaksiList"
-          ],
-          "fullName": "TransaksiService getTransaksiList should search by code or penyewa name",
-          "status": "passed",
-          "title": "should search by code or penyewa name",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "TransaksiService",
-            "updateTransaksiStatus"
-          ],
-          "fullName": "TransaksiService updateTransaksiStatus should update transaksi status successfully",
-          "status": "passed",
-          "title": "should update transaksi status successfully",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "TransaksiService",
-            "updateTransaksiStatus"
-          ],
-          "fullName": "TransaksiService updateTransaksiStatus should throw error if transaksi not found",
-          "status": "passed",
-          "title": "should throw error if transaksi not found",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "TransaksiService",
-            "updateTransaksiStatus"
-          ],
-          "fullName": "TransaksiService updateTransaksiStatus should validate status transitions",
-          "status": "passed",
-          "title": "should validate status transitions",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "TransaksiService",
-            "getTransaksiStats"
-          ],
-          "fullName": "TransaksiService getTransaksiStats should return transaction statistics",
-          "status": "passed",
-          "title": "should return transaction statistics",
-          "failureMessages": [],
-          "duration": 0
         }
       ],
       "failureMessage": null
@@ -629,7 +101,7 @@
           "status": "passed",
           "title": "should calculate availability for product with no active rentals",
           "failureMessages": [],
-          "duration": 2
+          "duration": 7
         },
         {
           "ancestorTitles": [
@@ -640,7 +112,7 @@
           "status": "passed",
           "title": "should calculate availability considering active rentals",
           "failureMessages": [],
-          "duration": 1
+          "duration": 2
         },
         {
           "ancestorTitles": [
@@ -662,7 +134,7 @@
           "status": "passed",
           "title": "should handle ongoing rentals with no end date",
           "failureMessages": [],
-          "duration": 0
+          "duration": 1
         },
         {
           "ancestorTitles": [
@@ -673,7 +145,7 @@
           "status": "passed",
           "title": "should throw error if product not found",
           "failureMessages": [],
-          "duration": 27
+          "duration": 20
         },
         {
           "ancestorTitles": [
@@ -717,7 +189,7 @@
           "status": "passed",
           "title": "should return conflicts when items are not available",
           "failureMessages": [],
-          "duration": 2
+          "duration": 1
         },
         {
           "ancestorTitles": [
@@ -761,7 +233,7 @@
           "status": "passed",
           "title": "should return availability summary for dashboard",
           "failureMessages": [],
-          "duration": 5
+          "duration": 1
         },
         {
           "ancestorTitles": [
@@ -805,7 +277,7 @@
           "status": "passed",
           "title": "should return error for nonexistent product",
           "failureMessages": [],
-          "duration": 2
+          "duration": 1
         },
         {
           "ancestorTitles": [
@@ -827,7 +299,7 @@
           "status": "passed",
           "title": "should return errors for insufficient quantity",
           "failureMessages": [],
-          "duration": 0
+          "duration": 1
         },
         {
           "ancestorTitles": [
@@ -838,7 +310,7 @@
           "status": "passed",
           "title": "should return warnings for low stock after rental",
           "failureMessages": [],
-          "duration": 1
+          "duration": 0
         },
         {
           "ancestorTitles": [
@@ -849,7 +321,7 @@
           "status": "passed",
           "title": "should handle errors gracefully during validation",
           "failureMessages": [],
-          "duration": 0
+          "duration": 1
         },
         {
           "ancestorTitles": [
@@ -858,6 +330,617 @@
           "fullName": "createAvailabilityService factory should create availability service instance",
           "status": "passed",
           "title": "should create availability service instance",
+          "failureMessages": [],
+          "duration": 1
+        }
+      ],
+      "failureMessage": null
+    },
+    {
+      "testFilePath": "D:\\.work\\rental-software\\features\\kasir\\services\\auditService.test.ts",
+      "testFileResults": [
+        {
+          "ancestorTitles": [
+            "AuditService",
+            "logActivity"
+          ],
+          "fullName": "AuditService logActivity should log transaksi activity successfully",
+          "status": "passed",
+          "title": "should log transaksi activity successfully",
+          "failureMessages": [],
+          "duration": 8
+        },
+        {
+          "ancestorTitles": [
+            "AuditService",
+            "logActivity"
+          ],
+          "fullName": "AuditService logActivity should log sensitive data without automatic sanitization in logActivity",
+          "status": "passed",
+          "title": "should log sensitive data without automatic sanitization in logActivity",
+          "failureMessages": [],
+          "duration": 2
+        },
+        {
+          "ancestorTitles": [
+            "AuditService",
+            "logActivity"
+          ],
+          "fullName": "AuditService logActivity should handle non-transaksi entity types",
+          "status": "passed",
+          "title": "should handle non-transaksi entity types",
+          "failureMessages": [],
+          "duration": 68
+        },
+        {
+          "ancestorTitles": [
+            "AuditService",
+            "logActivity"
+          ],
+          "fullName": "AuditService logActivity should handle database errors gracefully",
+          "status": "passed",
+          "title": "should handle database errors gracefully",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "AuditService",
+            "specific activity loggers"
+          ],
+          "fullName": "AuditService specific activity loggers should log penyewa activity with correct parameters",
+          "status": "passed",
+          "title": "should log penyewa activity with correct parameters",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "AuditService",
+            "specific activity loggers"
+          ],
+          "fullName": "AuditService specific activity loggers should log transaksi activity with correct parameters",
+          "status": "passed",
+          "title": "should log transaksi activity with correct parameters",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "AuditService",
+            "specific activity loggers"
+          ],
+          "fullName": "AuditService specific activity loggers should log pembayaran activity with correct parameters",
+          "status": "passed",
+          "title": "should log pembayaran activity with correct parameters",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "AuditService",
+            "getAuditTrail"
+          ],
+          "fullName": "AuditService getAuditTrail should return audit trail for transaksi entity",
+          "status": "passed",
+          "title": "should return audit trail for transaksi entity",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "AuditService",
+            "getAuditTrail"
+          ],
+          "fullName": "AuditService getAuditTrail should return empty array for non-transaksi entities",
+          "status": "passed",
+          "title": "should return empty array for non-transaksi entities",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "AuditService",
+            "getAuditTrail"
+          ],
+          "fullName": "AuditService getAuditTrail should limit results based on provided limit",
+          "status": "passed",
+          "title": "should limit results based on provided limit",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "AuditService",
+            "getAuditSummary"
+          ],
+          "fullName": "AuditService getAuditSummary should return audit summary statistics",
+          "status": "passed",
+          "title": "should return audit summary statistics",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "AuditService",
+            "getAuditSummary"
+          ],
+          "fullName": "AuditService getAuditSummary should filter summary by date range",
+          "status": "passed",
+          "title": "should filter summary by date range",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "AuditService",
+            "createAuditWrapper"
+          ],
+          "fullName": "AuditService createAuditWrapper should create audit wrapper that logs successful operations",
+          "status": "passed",
+          "title": "should create audit wrapper that logs successful operations",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "AuditService",
+            "createAuditWrapper"
+          ],
+          "fullName": "AuditService createAuditWrapper should create audit wrapper that logs failed operations",
+          "status": "passed",
+          "title": "should create audit wrapper that logs failed operations",
+          "failureMessages": [],
+          "duration": 14
+        },
+        {
+          "ancestorTitles": [
+            "AuditService",
+            "data sanitization"
+          ],
+          "fullName": "AuditService data sanitization should sanitize sensitive fields",
+          "status": "passed",
+          "title": "should sanitize sensitive fields",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "AuditService",
+            "data sanitization"
+          ],
+          "fullName": "AuditService data sanitization should handle non-object data",
+          "status": "passed",
+          "title": "should handle non-object data",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "createAuditService factory"
+          ],
+          "fullName": "createAuditService factory should create audit service with correct parameters",
+          "status": "passed",
+          "title": "should create audit service with correct parameters",
+          "failureMessages": [],
+          "duration": 1
+        }
+      ],
+      "failureMessage": null
+    },
+    {
+      "testFilePath": "D:\\.work\\rental-software\\features\\kasir\\services\\transaksiService.test.ts",
+      "testFileResults": [
+        {
+          "ancestorTitles": [
+            "TransaksiService",
+            "createTransaksi"
+          ],
+          "fullName": "TransaksiService createTransaksi should create transaksi successfully with auto-generated code",
+          "status": "passed",
+          "title": "should create transaksi successfully with auto-generated code",
+          "failureMessages": [],
+          "duration": 8
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService",
+            "createTransaksi"
+          ],
+          "fullName": "TransaksiService createTransaksi should throw error if penyewa not found",
+          "status": "passed",
+          "title": "should throw error if penyewa not found",
+          "failureMessages": [],
+          "duration": 24
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService",
+            "createTransaksi"
+          ],
+          "fullName": "TransaksiService createTransaksi should throw error if product not available",
+          "status": "passed",
+          "title": "should throw error if product not available",
+          "failureMessages": [],
+          "duration": 2
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService",
+            "createTransaksi"
+          ],
+          "fullName": "TransaksiService createTransaksi should throw error if insufficient product quantity",
+          "status": "passed",
+          "title": "should throw error if insufficient product quantity",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService",
+            "getTransaksiById"
+          ],
+          "fullName": "TransaksiService getTransaksiById should return transaksi by ID",
+          "status": "passed",
+          "title": "should return transaksi by ID",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService",
+            "getTransaksiById"
+          ],
+          "fullName": "TransaksiService getTransaksiById should throw error if transaksi not found",
+          "status": "passed",
+          "title": "should throw error if transaksi not found",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService",
+            "getTransaksiByCode"
+          ],
+          "fullName": "TransaksiService getTransaksiByCode should return transaksi by code",
+          "status": "passed",
+          "title": "should return transaksi by code",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService",
+            "getTransaksiList"
+          ],
+          "fullName": "TransaksiService getTransaksiList should return paginated transaksi list",
+          "status": "passed",
+          "title": "should return paginated transaksi list",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService",
+            "getTransaksiList"
+          ],
+          "fullName": "TransaksiService getTransaksiList should filter by status",
+          "status": "passed",
+          "title": "should filter by status",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService",
+            "getTransaksiList"
+          ],
+          "fullName": "TransaksiService getTransaksiList should search by code or penyewa name",
+          "status": "passed",
+          "title": "should search by code or penyewa name",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService",
+            "updateTransaksiStatus"
+          ],
+          "fullName": "TransaksiService updateTransaksiStatus should update transaksi status successfully",
+          "status": "passed",
+          "title": "should update transaksi status successfully",
+          "failureMessages": [],
+          "duration": 2
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService",
+            "updateTransaksiStatus"
+          ],
+          "fullName": "TransaksiService updateTransaksiStatus should throw error if transaksi not found",
+          "status": "passed",
+          "title": "should throw error if transaksi not found",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService",
+            "updateTransaksiStatus"
+          ],
+          "fullName": "TransaksiService updateTransaksiStatus should validate status transitions",
+          "status": "passed",
+          "title": "should validate status transitions",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService",
+            "getTransaksiStats"
+          ],
+          "fullName": "TransaksiService getTransaksiStats should return transaction statistics",
+          "status": "passed",
+          "title": "should return transaction statistics",
+          "failureMessages": [],
+          "duration": 0
+        }
+      ],
+      "failureMessage": null
+    },
+    {
+      "testFilePath": "D:\\.work\\rental-software\\features\\kasir\\services\\pembayaranService.test.ts",
+      "testFileResults": [
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "createPembayaran"
+          ],
+          "fullName": "PembayaranService createPembayaran should create payment successfully",
+          "status": "passed",
+          "title": "should create payment successfully",
+          "failureMessages": [],
+          "duration": 38
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "createPembayaran"
+          ],
+          "fullName": "PembayaranService createPembayaran should throw error if transaction not found",
+          "status": "passed",
+          "title": "should throw error if transaction not found",
+          "failureMessages": [],
+          "duration": 23
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "createPembayaran"
+          ],
+          "fullName": "PembayaranService createPembayaran should throw error if transaction is cancelled",
+          "status": "passed",
+          "title": "should throw error if transaction is cancelled",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "createPembayaran"
+          ],
+          "fullName": "PembayaranService createPembayaran should throw error if transaction is completed",
+          "status": "passed",
+          "title": "should throw error if transaction is completed",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "createPembayaran"
+          ],
+          "fullName": "PembayaranService createPembayaran should throw error if payment amount is invalid",
+          "status": "passed",
+          "title": "should throw error if payment amount is invalid",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "createPembayaran"
+          ],
+          "fullName": "PembayaranService createPembayaran should handle overpayment validation",
+          "status": "passed",
+          "title": "should handle overpayment validation",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "getTransactionPayments"
+          ],
+          "fullName": "PembayaranService getTransactionPayments should return payments for a transaction",
+          "status": "passed",
+          "title": "should return payments for a transaction",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "getPembayaranById"
+          ],
+          "fullName": "PembayaranService getPembayaranById should return payment by ID",
+          "status": "passed",
+          "title": "should return payment by ID",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "getPembayaranById"
+          ],
+          "fullName": "PembayaranService getPembayaranById should throw error if payment not found",
+          "status": "passed",
+          "title": "should throw error if payment not found",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "getPaymentSummary"
+          ],
+          "fullName": "PembayaranService getPaymentSummary should return payment summary for transaction",
+          "status": "passed",
+          "title": "should return payment summary for transaction",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "getPaymentSummary"
+          ],
+          "fullName": "PembayaranService getPaymentSummary should throw error if transaction not found for summary",
+          "status": "passed",
+          "title": "should throw error if transaction not found for summary",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "getPaymentSummary"
+          ],
+          "fullName": "PembayaranService getPaymentSummary should handle transaction with no payments",
+          "status": "passed",
+          "title": "should handle transaction with no payments",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "getPaymentList"
+          ],
+          "fullName": "PembayaranService getPaymentList should return paginated payment list",
+          "status": "passed",
+          "title": "should return paginated payment list",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "getPaymentList"
+          ],
+          "fullName": "PembayaranService getPaymentList should filter payments by transaction ID",
+          "status": "passed",
+          "title": "should filter payments by transaction ID",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "getPaymentList"
+          ],
+          "fullName": "PembayaranService getPaymentList should filter payments by method",
+          "status": "passed",
+          "title": "should filter payments by method",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "getPaymentList"
+          ],
+          "fullName": "PembayaranService getPaymentList should filter payments by date range",
+          "status": "passed",
+          "title": "should filter payments by date range",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "cancelPayment"
+          ],
+          "fullName": "PembayaranService cancelPayment should cancel payment successfully",
+          "status": "passed",
+          "title": "should cancel payment successfully",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "cancelPayment"
+          ],
+          "fullName": "PembayaranService cancelPayment should throw error if payment not found for cancellation",
+          "status": "passed",
+          "title": "should throw error if payment not found for cancellation",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "cancelPayment"
+          ],
+          "fullName": "PembayaranService cancelPayment should throw error if transaction is already cancelled",
+          "status": "passed",
+          "title": "should throw error if transaction is already cancelled",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "getPaymentStats"
+          ],
+          "fullName": "PembayaranService getPaymentStats should return payment statistics",
+          "status": "passed",
+          "title": "should return payment statistics",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "getPaymentStats"
+          ],
+          "fullName": "PembayaranService getPaymentStats should filter statistics by date range",
+          "status": "passed",
+          "title": "should filter statistics by date range",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "getPaymentStats"
+          ],
+          "fullName": "PembayaranService getPaymentStats should handle empty payment data",
+          "status": "passed",
+          "title": "should handle empty payment data",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "getPaymentStats"
+          ],
+          "fullName": "PembayaranService getPaymentStats should aggregate payments by method correctly",
+          "status": "passed",
+          "title": "should aggregate payments by method correctly",
           "failureMessages": [],
           "duration": 1
         }
@@ -876,7 +959,7 @@
           "status": "passed",
           "title": "should create penyewa successfully",
           "failureMessages": [],
-          "duration": 14
+          "duration": 88
         },
         {
           "ancestorTitles": [
@@ -887,7 +970,7 @@
           "status": "passed",
           "title": "should throw error if phone number already exists",
           "failureMessages": [],
-          "duration": 17
+          "duration": 12
         },
         {
           "ancestorTitles": [
@@ -909,7 +992,7 @@
           "status": "passed",
           "title": "should return penyewa by ID",
           "failureMessages": [],
-          "duration": 1
+          "duration": 0
         },
         {
           "ancestorTitles": [
@@ -931,7 +1014,7 @@
           "status": "passed",
           "title": "should return paginated penyewa list",
           "failureMessages": [],
-          "duration": 2
+          "duration": 1
         },
         {
           "ancestorTitles": [
@@ -942,7 +1025,7 @@
           "status": "passed",
           "title": "should search penyewa by name or phone",
           "failureMessages": [],
-          "duration": 0
+          "duration": 1
         },
         {
           "ancestorTitles": [
@@ -964,7 +1047,7 @@
           "status": "passed",
           "title": "should update penyewa successfully",
           "failureMessages": [],
-          "duration": 5
+          "duration": 3
         },
         {
           "ancestorTitles": [
@@ -975,7 +1058,7 @@
           "status": "passed",
           "title": "should throw error if penyewa not found",
           "failureMessages": [],
-          "duration": 1
+          "duration": 0
         },
         {
           "ancestorTitles": [
@@ -1009,6 +1092,190 @@
           "title": "should return null if penyewa not found",
           "failureMessages": [],
           "duration": 1
+        }
+      ],
+      "failureMessage": null
+    },
+    {
+      "testFilePath": "D:\\.work\\rental-software\\features\\kasir\\lib\\utils.test.ts",
+      "testFileResults": [
+        {
+          "ancestorTitles": [
+            "formatDate"
+          ],
+          "fullName": "formatDate should format valid date string correctly",
+          "status": "passed",
+          "title": "should format valid date string correctly",
+          "failureMessages": [],
+          "duration": 24
+        },
+        {
+          "ancestorTitles": [
+            "formatDate"
+          ],
+          "fullName": "formatDate should handle null/undefined dateString gracefully",
+          "status": "passed",
+          "title": "should handle null/undefined dateString gracefully",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "formatDate"
+          ],
+          "fullName": "formatDate should handle invalid date string gracefully",
+          "status": "passed",
+          "title": "should handle invalid date string gracefully",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "formatDate"
+          ],
+          "fullName": "formatDate should handle edge case dates",
+          "status": "passed",
+          "title": "should handle edge case dates",
+          "failureMessages": [],
+          "duration": 1
+        }
+      ],
+      "failureMessage": null
+    },
+    {
+      "testFilePath": "D:\\.work\\rental-software\\features\\kasir\\hooks\\useTransactionDetail.test.ts",
+      "testFileResults": [
+        {
+          "ancestorTitles": [
+            "useTransactionDetail Hook",
+            "Basic Functionality and React Query Integration"
+          ],
+          "fullName": "useTransactionDetail Hook Basic Functionality and React Query Integration should fetch and transform transaction data successfully",
+          "status": "passed",
+          "title": "should fetch and transform transaction data successfully",
+          "failureMessages": [],
+          "duration": 107
+        },
+        {
+          "ancestorTitles": [
+            "useTransactionDetail Hook",
+            "Basic Functionality and React Query Integration"
+          ],
+          "fullName": "useTransactionDetail Hook Basic Functionality and React Query Integration should correctly transform API response to UI format",
+          "status": "passed",
+          "title": "should correctly transform API response to UI format",
+          "failureMessages": [],
+          "duration": 84
+        },
+        {
+          "ancestorTitles": [
+            "useTransactionDetail Hook",
+            "Basic Functionality and React Query Integration"
+          ],
+          "fullName": "useTransactionDetail Hook Basic Functionality and React Query Integration should correctly map payment methods from API to UI",
+          "status": "pending",
+          "title": "should correctly map payment methods from API to UI",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "useTransactionDetail Hook",
+            "Basic Functionality and React Query Integration"
+          ],
+          "fullName": "useTransactionDetail Hook Basic Functionality and React Query Integration should correctly map activity types from API to UI",
+          "status": "passed",
+          "title": "should correctly map activity types from API to UI",
+          "failureMessages": [],
+          "duration": 93
+        },
+        {
+          "ancestorTitles": [
+            "useTransactionDetail Hook",
+            "Error Handling and Retry Logic"
+          ],
+          "fullName": "useTransactionDetail Hook Error Handling and Retry Logic should handle 404 errors without retry",
+          "status": "passed",
+          "title": "should handle 404 errors without retry",
+          "failureMessages": [],
+          "duration": 93
+        },
+        {
+          "ancestorTitles": [
+            "useTransactionDetail Hook",
+            "Error Handling and Retry Logic"
+          ],
+          "fullName": "useTransactionDetail Hook Error Handling and Retry Logic should retry network errors",
+          "status": "pending",
+          "title": "should retry network errors",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "useTransactionDetail Hook",
+            "Error Handling and Retry Logic"
+          ],
+          "fullName": "useTransactionDetail Hook Error Handling and Retry Logic should handle server errors appropriately",
+          "status": "pending",
+          "title": "should handle server errors appropriately",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "useTransactionDetail Hook",
+            "Hook Options and Configuration"
+          ],
+          "fullName": "useTransactionDetail Hook Hook Options and Configuration should not fetch data when disabled",
+          "status": "passed",
+          "title": "should not fetch data when disabled",
+          "failureMessages": [],
+          "duration": 113
+        },
+        {
+          "ancestorTitles": [
+            "useTransactionDetail Hook",
+            "Hook Options and Configuration"
+          ],
+          "fullName": "useTransactionDetail Hook Hook Options and Configuration should not fetch data with empty transaction ID",
+          "status": "passed",
+          "title": "should not fetch data with empty transaction ID",
+          "failureMessages": [],
+          "duration": 113
+        },
+        {
+          "ancestorTitles": [
+            "useTransactionDetail Hook",
+            "Hook Options and Configuration"
+          ],
+          "fullName": "useTransactionDetail Hook Hook Options and Configuration should provide refresh functionality",
+          "status": "pending",
+          "title": "should provide refresh functionality",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "useTransactionDetail Hook",
+            "Hook Options and Configuration"
+          ],
+          "fullName": "useTransactionDetail Hook Hook Options and Configuration should provide error recovery functions",
+          "status": "pending",
+          "title": "should provide error recovery functions",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "useTransactionDetail Hook",
+            "Hook Options and Configuration"
+          ],
+          "fullName": "useTransactionDetail Hook Hook Options and Configuration should provide access to raw API data",
+          "status": "passed",
+          "title": "should provide access to raw API data",
+          "failureMessages": [],
+          "duration": 84
         }
       ],
       "failureMessage": null

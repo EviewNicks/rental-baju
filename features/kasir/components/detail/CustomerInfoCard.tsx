@@ -4,11 +4,15 @@ import { formatDate } from '../../lib/utils'
 
 interface CustomerInfoCardProps {
   customer: Customer
+  'data-testid'?: string
 }
 
-export function CustomerInfoCard({ customer }: CustomerInfoCardProps) {
+export function CustomerInfoCard({ customer, 'data-testid': dataTestId }: CustomerInfoCardProps) {
   return (
-    <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-6">
+    <div
+      data-testid={dataTestId}
+      className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-6"
+    >
       <h2 className="text-lg font-semibold text-gray-900 mb-4">Informasi Penyewa</h2>
 
       <div className="flex items-start gap-4">

@@ -123,7 +123,9 @@ export async function switchToTab(page: Page, tabStatus: TransactionStatus | 'al
   await waitForDashboardDataLoad(page)
 
   // Verify tab is active using Radix UI data-state attribute (most reliable)
-  await expect(page.locator(tabSelector)).toHaveAttribute('data-state', 'active', { timeout: 10000 })
+  await expect(page.locator(tabSelector)).toHaveAttribute('data-state', 'active', {
+    timeout: 10000,
+  })
 
   const loadTime = Date.now() - startTime
   console.log(`✅ Tab switch completed in ${loadTime}ms`)
@@ -256,7 +258,9 @@ export async function verifyErrorState(page: Page, expectedErrorMessage?: string
       await expect(page.locator(`text=${expectedErrorMessage}`)).toBeVisible({ timeout: 5000 })
       console.log(`✅ Expected error message "${expectedErrorMessage}" found`)
     } catch {
-      console.log(`⚠️ Expected error message "${expectedErrorMessage}" not found, but error state is confirmed`)
+      console.log(
+        `⚠️ Expected error message "${expectedErrorMessage}" not found, but error state is confirmed`,
+      )
     }
   }
 
@@ -365,4 +369,332 @@ export async function setupKasirTestEnvironment(page: Page) {
   await verifyDashboardComponents(page)
 
   console.log('✅ Kasir test environment ready')
+}
+
+// ===== TRANSACTION DETAIL PAGE HELPERS (RPK-27) =====
+
+/**
+ * Navigate to transaction detail page
+ *
+ * @param page - Playwright Page object
+ * @param transactionCode - Transaction code to view
+ * @param options - Navigation options
+ */
+export async function navigateToTransactionDetail(
+  page: Page,
+  transactionCode: string,
+  options: { waitForData?: boolean; timeout?: number } = {},
+) {
+  const { waitForData = true, timeout = testConfig.timeouts.medium } = options
+
+  console.log(`🔍 Navigating to transaction detail: ${transactionCode}`)
+
+  // Navigate to detail page
+  await page.goto(`/dashboard/transaction/${transactionCode}`)
+  await waitForPageLoad(page)
+
+  // Verify page is loaded
+  await expect(page.locator(kasirSelectors.transactionDetailPage)).toBeVisible({ timeout })
+
+  // Wait for data loading if required
+  if (waitForData) {
+    await waitForTransactionDetailDataLoad(page, timeout)
+  }
+
+  console.log('✅ Successfully navigated to transaction detail page')
+}
+
+/**
+ * Wait for transaction detail data to fully load
+ *
+ * @param page - Playwright Page object
+ * @param timeout - Maximum wait time
+ */
+export async function waitForTransactionDetailDataLoad(
+  page: Page,
+  timeout = testConfig.timeouts.medium,
+) {
+  console.log('⏳ Waiting for transaction detail data to load...')
+
+  try {
+    // Wait for main content cards to be visible
+    await Promise.all([
+      page.locator(kasirSelectors.customerInfoCard).waitFor({ state: 'visible', timeout }),
+      page.locator(kasirSelectors.productDetailCard).waitFor({ state: 'visible', timeout }),
+      page.locator(kasirSelectors.paymentSummaryCard).waitFor({ state: 'visible', timeout }),
+    ])
+
+    // Ensure loading state is gone
+    await expect(page.locator(kasirSelectors.loadingState)).not.toBeVisible()
+
+    console.log('✅ Transaction detail data loaded successfully')
+  } catch {
+    console.log('⚠️ Transaction detail data load timeout, continuing with test...')
+  }
+}
+
+/**
+ * Verify transaction detail page components are visible
+ *
+ * @param page - Playwright Page object
+ */
+export async function verifyTransactionDetailComponents(page: Page) {
+  console.log('🔍 Verifying transaction detail components...')
+
+  // Main page container
+  await expect(page.locator(kasirSelectors.transactionDetailPage)).toBeVisible()
+
+  // Core information cards
+  await expect(page.locator(kasirSelectors.customerInfoCard)).toBeVisible()
+  await expect(page.locator(kasirSelectors.productDetailCard)).toBeVisible()
+  await expect(page.locator(kasirSelectors.paymentSummaryCard)).toBeVisible()
+
+  // Activity timeline
+  await expect(page.locator(kasirSelectors.activityTimeline)).toBeVisible()
+
+  // Status badge
+  await expect(page.locator(kasirSelectors.statusBadge)).toBeVisible()
+
+  console.log('✅ All transaction detail components verified')
+}
+
+/**
+ * Verify transaction detail data is displayed correctly
+ *
+ * @param page - Playwright Page object
+ * @param expectedData - Expected transaction data to verify
+ */
+export async function verifyTransactionDetailData(
+  page: Page,
+  expectedData: {
+    transactionCode?: string
+    customerName?: string
+    customerPhone?: string
+    totalAmount?: string
+    status?: string
+    items?: string[]
+  },
+) {
+  console.log('🔍 Verifying transaction detail data...')
+
+  if (expectedData.transactionCode) {
+    await expect(page.locator(`text=${expectedData.transactionCode}`)).toBeVisible()
+  }
+
+  if (expectedData.customerName) {
+    await expect(page.locator(`text=${expectedData.customerName}`)).toBeVisible()
+  }
+
+  if (expectedData.customerPhone) {
+    await expect(page.locator(`text=${expectedData.customerPhone}`)).toBeVisible()
+  }
+
+  if (expectedData.totalAmount) {
+    await expect(page.locator(`text=${expectedData.totalAmount}`)).toBeVisible()
+  }
+
+  if (expectedData.status) {
+    await expect(page.locator(kasirSelectors.statusBadge)).toBeVisible()
+  }
+
+  if (expectedData.items) {
+    for (const item of expectedData.items) {
+      await expect(page.locator(`text=${item}`)).toBeVisible()
+    }
+  }
+
+  console.log('✅ Transaction detail data verification completed')
+}
+
+/**
+ * Click refresh button on transaction detail page
+ *
+ * @param page - Playwright Page object
+ */
+export async function refreshTransactionDetail(page: Page) {
+  console.log('🔄 Refreshing transaction detail...')
+
+  const refreshButton = page.locator(kasirSelectors.refreshButton)
+
+  if (await refreshButton.isVisible({ timeout: 2000 })) {
+    await refreshButton.click()
+    await waitForTransactionDetailDataLoad(page)
+    console.log('✅ Transaction detail refreshed successfully')
+  } else {
+    console.log('⚠️ Refresh button not found, skipping refresh')
+  }
+}
+
+/**
+ * Navigate back from transaction detail to dashboard
+ *
+ * @param page - Playwright Page object
+ */
+export async function navigateBackFromTransactionDetail(page: Page) {
+  console.log('↩️ Navigating back from transaction detail...')
+
+  const backButton = page.locator(kasirSelectors.backButton)
+
+  if (await backButton.isVisible({ timeout: 2000 })) {
+    await backButton.click()
+  } else {
+    // Use browser back navigation
+    await page.goBack()
+  }
+
+  // Wait for dashboard to load
+  await page.waitForURL('/dashboard', { timeout: testConfig.timeouts.medium })
+  await waitForPageLoad(page)
+  await waitForDashboardDataLoad(page)
+
+  // Verify we're back on dashboard
+  await expect(page.locator(kasirSelectors.title)).toBeVisible()
+
+  console.log('✅ Successfully navigated back to dashboard')
+}
+
+/**
+ * Verify transaction detail error state
+ *
+ * @param page - Playwright Page object
+ * @param expectedErrorMessage - Optional expected error message
+ */
+export async function verifyTransactionDetailErrorState(page: Page, expectedErrorMessage?: string) {
+  console.log('🚨 Verifying transaction detail error state...')
+
+  // Check for error boundary
+  await expect(page.locator(kasirSelectors.errorBoundary)).toBeVisible({ timeout: 10000 })
+
+  // Check for retry button
+  await expect(page.locator(kasirSelectors.retryButton)).toBeVisible()
+  await expect(page.locator(kasirSelectors.retryButton)).toBeEnabled()
+
+  // Check specific error message if provided
+  if (expectedErrorMessage) {
+    try {
+      await expect(page.locator(`text=${expectedErrorMessage}`)).toBeVisible({ timeout: 5000 })
+      console.log(`✅ Expected error message "${expectedErrorMessage}" found`)
+    } catch {
+      console.log(
+        `⚠️ Expected error message "${expectedErrorMessage}" not found, but error state is confirmed`,
+      )
+    }
+  }
+
+  console.log('✅ Transaction detail error state verified')
+}
+
+/**
+ * Test transaction detail responsive design
+ *
+ * @param page - Playwright Page object
+ * @param transactionCode - Transaction code to test
+ */
+export async function testTransactionDetailResponsive(page: Page, transactionCode: string) {
+  console.log('📱 Testing transaction detail responsive design...')
+
+  // Test mobile view
+  await page.setViewportSize({ width: 375, height: 667 })
+  await navigateToTransactionDetail(page, transactionCode)
+  await verifyTransactionDetailComponents(page)
+  await takeKasirScreenshot(page, 'detail-responsive', 'mobile')
+
+  // Test tablet view
+  await page.setViewportSize({ width: 768, height: 1024 })
+  await verifyTransactionDetailComponents(page)
+  await takeKasirScreenshot(page, 'detail-responsive', 'tablet')
+
+  // Test desktop view
+  await page.setViewportSize({ width: 1280, height: 720 })
+  await verifyTransactionDetailComponents(page)
+  await takeKasirScreenshot(page, 'detail-responsive', 'desktop')
+
+  console.log('✅ Transaction detail responsive design testing completed')
+}
+
+/**
+ * Mock transaction detail API response for testing
+ *
+ * @param page - Playwright Page object
+ * @param mockResponse - Mock API response data
+ * @param statusCode - HTTP status code (default: 200)
+ */
+export async function mockTransactionDetailApi(
+  page: Page,
+  //eslint-disable-next-line @typescript-eslint/no-explicit-any
+  mockResponse: any,
+  statusCode: number = 200,
+) {
+  console.log(`🎭 Mocking transaction detail API with status ${statusCode}`)
+
+  await page.route('**/api/kasir/transaksi/*', (route) => {
+    if (statusCode === 200) {
+      route.fulfill({
+        status: statusCode,
+        contentType: 'application/json',
+        body: JSON.stringify(mockResponse),
+      })
+    } else {
+      route.fulfill({
+        status: statusCode,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          error: 'Test Error',
+          message: mockResponse.message || 'Test error message',
+        }),
+      })
+    }
+  })
+
+  console.log('✅ Transaction detail API mocked successfully')
+}
+
+/**
+ * Test transaction detail loading states
+ *
+ * @param page - Playwright Page object
+ * @param transactionCode - Transaction code to test
+ * @param delayMs - Delay in milliseconds for slow loading simulation
+ */
+export async function testTransactionDetailLoadingStates(
+  page: Page,
+  transactionCode: string,
+  delayMs: number = 2000,
+) {
+  console.log(`⏳ Testing transaction detail loading states with ${delayMs}ms delay`)
+
+  // Mock slow API response
+  await page.route('**/api/kasir/transaksi/*', (route) => {
+    setTimeout(() => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          id: 'test-txn',
+          kode: transactionCode,
+          penyewa: { nama: 'Test Customer' },
+          items: [],
+          aktivitas: [],
+          pembayaran: [],
+        }),
+      })
+    }, delayMs)
+  })
+
+  await page.goto(`/dashboard/transaction/${transactionCode}`)
+
+  // Verify loading state appears
+  await expect(page.locator(kasirSelectors.loadingState)).toBeVisible()
+  await takeKasirScreenshot(page, 'detail-loading', 'skeleton-visible')
+
+  // Wait for data to load
+  await expect(page.locator(kasirSelectors.transactionDetailPage)).toBeVisible({
+    timeout: delayMs + 5000,
+  })
+
+  // Verify loading state disappears
+  await expect(page.locator(kasirSelectors.loadingState)).not.toBeVisible()
+  await takeKasirScreenshot(page, 'detail-loading', 'data-loaded')
+
+  console.log('✅ Transaction detail loading states testing completed')
 }

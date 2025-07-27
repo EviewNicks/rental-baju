@@ -4,6 +4,7 @@ import { formatDate } from '../../lib/utils'
 
 interface ActivityTimelineProps {
   timeline: ActivityLog[]
+  'data-testid'?: string
 }
 
 const actionIcons = {
@@ -26,9 +27,9 @@ const actionColors = {
   penalty_added: 'text-red-600 bg-red-100',
 }
 
-export function ActivityTimeline({ timeline }: ActivityTimelineProps) {
+export function ActivityTimeline({ timeline, 'data-testid': dataTestId }: ActivityTimelineProps) {
   return (
-    <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-6">
+    <div data-testid={dataTestId} className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-6">
       <h2 className="text-lg font-semibold text-gray-900 mb-6">Riwayat Aktivitas</h2>
 
       <div className="space-y-6">

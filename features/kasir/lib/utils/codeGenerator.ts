@@ -122,4 +122,27 @@ export class TransactionCodeGenerator {
     
     return isNaN(sequence) ? null : sequence
   }
+
+  /**
+   * Validate UUID format (v4)
+   */
+  static validateUUID(uuid: string): boolean {
+    const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+    return uuidPattern.test(uuid)
+  }
+
+  /**
+   * Detect parameter type: 'uuid', 'code', or 'invalid'
+   */
+  static detectParameterType(param: string): 'uuid' | 'code' | 'invalid' {
+    if (this.validateUUID(param)) {
+      return 'uuid'
+    }
+    
+    if (this.validateTransactionCode(param)) {
+      return 'code'
+    }
+    
+    return 'invalid'
+  }
 }
