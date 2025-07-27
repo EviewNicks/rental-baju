@@ -4,6 +4,9 @@ import { useState, useCallback } from 'react'
 import type { TransactionFormData, TransactionStep } from '../types/transaction-form'
 import type { Customer } from '../types/customer'
 import type { ProductSelection } from '../types/product'
+import type { CreateTransaksiRequest } from '../types/api'
+import { useCreateTransaksi } from './useTransaksi'
+// import { toast } from '@/hooks/use-toast' // TODO: Add toast implementation
 
 const initialFormData: TransactionFormData = {
   products: [],
@@ -18,6 +21,9 @@ export function useTransactionForm() {
   const [currentStep, setCurrentStep] = useState<TransactionStep>(1)
   const [formData, setFormData] = useState<TransactionFormData>(initialFormData)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  
+  // Real API integration
+  const createTransaksiMutation = useCreateTransaksi()
 
   const updateFormData = useCallback((updates: Partial<TransactionFormData>) => {
     setFormData((prev) => ({ ...prev, ...updates }))
@@ -102,26 +108,26 @@ export function useTransactionForm() {
 
     setIsSubmitting(true)
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000))
+      // Transform form data to API format
+      const createRequest: CreateTransaksiRequest = {
+        penyewaId: formData.customer?.id || '',
+        items: formData.products.map((product) => ({
+          produkId: product.product.id,
+          jumlah: product.quantity,
+          durasi: product.duration,
+          kondisiAwal: 'baik', // Default condition
+        })),
+        tglMulai: formData.pickupDate,
+        tglSelesai: formData.returnDate || undefined,
+        metodeBayar: formData.paymentMethod === 'cash' ? 'tunai' : formData.paymentMethod === 'transfer' ? 'transfer' : 'kartu',
+        catatan: formData.notes || undefined,
+      }
 
-      // Generate transaction code
-      const transactionCode = `TXN-${new Date().toISOString().split('T')[0].replace(/-/g, '')}-${String(Math.floor(Math.random() * 1000)).padStart(3, '0')}`
+      // Create transaction via API
+      const createdTransaction = await createTransaksiMutation.mutateAsync(createRequest)
 
-      console.log('Transaction created:', {
-        code: transactionCode,
-        customer: formData.customer,
-        products: formData.products,
-        total: formData.products.reduce((total, item) => {
-          return total + item.product.pricePerDay * item.quantity * item.duration
-        }, 0),
-        pickupDate: formData.pickupDate,
-        returnDate: formData.returnDate,
-        paymentMethod: formData.paymentMethod,
-        paymentAmount: formData.paymentAmount,
-        paymentStatus: formData.paymentStatus,
-        notes: formData.notes,
-      })
+      // Show success message
+      console.log('Transaksi berhasil dibuat:', createdTransaction.kode)
 
       // Reset form after successful submission
       setFormData(initialFormData)
@@ -129,11 +135,15 @@ export function useTransactionForm() {
       return true
     } catch (error) {
       console.error('Failed to submit transaction:', error)
+      
+      // Show error message
+      console.error('Gagal membuat transaksi:', createTransaksiMutation.error?.message || 'Terjadi kesalahan saat membuat transaksi')
+      
       return false
     } finally {
       setIsSubmitting(false)
     }
-  }, [formData, validateStep])
+  }, [formData, validateStep, createTransaksiMutation])
 
   const resetForm = useCallback(() => {
     setFormData(initialFormData)
@@ -143,7 +153,7 @@ export function useTransactionForm() {
   return {
     currentStep,
     formData,
-    isSubmitting,
+    isSubmitting: isSubmitting || createTransaksiMutation.isPending,
     updateFormData,
     addProduct,
     removeProduct,
@@ -156,5 +166,8 @@ export function useTransactionForm() {
     goToStep,
     submitTransaction,
     resetForm,
+    // Additional state from API integration
+    createError: createTransaksiMutation.error,
+    isCreating: createTransaksiMutation.isPending,
   }
 }

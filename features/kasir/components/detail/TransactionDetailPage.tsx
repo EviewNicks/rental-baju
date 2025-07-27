@@ -24,11 +24,14 @@ export function TransactionDetailPage({ transactionId }: TransactionDetailPagePr
   }
 
   if (error) {
-    // Enhanced error detection
-    const isNotFound = error.message?.includes('tidak ditemukan') || error.message?.includes('Not Found')
-    const isNetworkError = error.message?.includes('fetch') || error.message?.includes('Network')
-    const isServerError = error.message?.includes('Internal Server Error') || error.message?.includes('500')
-    const isPermissionError = error.message?.includes('unauthorized') || error.message?.includes('403')
+    // Enhanced error detection with proper type checking
+    const errorMessage = error && typeof error === 'object' && 'message' in error ? 
+                        (error as { message: string }).message : 'Unknown error'
+    
+    const isNotFound = errorMessage.includes('tidak ditemukan') || errorMessage.includes('Not Found')
+    const isNetworkError = errorMessage.includes('fetch') || errorMessage.includes('Network')
+    const isServerError = errorMessage.includes('Internal Server Error') || errorMessage.includes('500')
+    const isPermissionError = errorMessage.includes('unauthorized') || errorMessage.includes('403')
     
     const getErrorDetails = () => {
       if (isNotFound) {

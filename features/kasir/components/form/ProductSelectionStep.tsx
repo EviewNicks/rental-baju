@@ -1,13 +1,13 @@
 'use client'
 
-import { useState, useMemo } from 'react'
-import { Search, Filter, ShoppingCart, Plus, Minus, X, Package } from 'lucide-react'
+import { useState, useMemo, useEffect } from 'react'
+import { Search, Filter, ShoppingCart, Plus, Minus, X, Package, Loader2 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ProductCard } from '../ui/product-card'
 import type { Product, ProductFilters, ProductSelection } from '../../types/product'
-import { mockProducts } from '../../lib/mock-products'
+import { useAvailableProducts } from '../../hooks/useProduk'
 import { formatCurrency } from '../../lib/utils'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
@@ -20,10 +20,6 @@ interface ProductSelectionStepProps {
   onNext: () => void
   canProceed: boolean
 }
-
-const categories = ['semua', 'kebaya', 'jas', 'gaun', 'batik', 'dress', 'kemeja']
-const sizes = ['semua', 'S', 'M', 'L', 'XL']
-const colors = ['semua', 'Merah', 'Hitam', 'Biru', 'Coklat']
 
 export function ProductSelectionStep({
   selectedProducts,
@@ -41,9 +37,64 @@ export function ProductSelectionStep({
     available: true,
   })
   const [showCart, setShowCart] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+
+  // Fetch products from API
+  const { 
+    data: productsResponse, 
+    isLoading, 
+    error, 
+    refetch 
+  } = useAvailableProducts({
+    search: searchQuery,
+    available: true,
+  })
+
+  // Extract products and transform API data to match component interface
+  const apiProducts = useMemo(() => {
+    if (!productsResponse?.data) return []
+    
+    return productsResponse.data.map((apiProduct): Product => ({
+      id: apiProduct.id,
+      name: apiProduct.name,
+      category: apiProduct.category.name.toLowerCase(),
+      size: apiProduct.size || 'Unknown',
+      color: apiProduct.color?.name || 'Unknown',
+      pricePerDay: apiProduct.hargaSewa,
+      image: apiProduct.imageUrl || '/placeholder.svg',
+      available: apiProduct.availableQuantity > 0,
+      description: apiProduct.description,
+      availableQuantity: apiProduct.availableQuantity,
+    }))
+  }, [productsResponse])
+
+  // Extract unique categories, sizes, and colors from API data
+  const categories = useMemo(() => {
+    const uniqueCategories = [...new Set(apiProducts.map(p => p.category))]
+    return ['semua', ...uniqueCategories]
+  }, [apiProducts])
+
+  const sizes = useMemo(() => {
+    const uniqueSizes = [...new Set(apiProducts.map(p => p.size).filter(Boolean))]
+    return ['semua', ...uniqueSizes]
+  }, [apiProducts])
+
+  const colors = useMemo(() => {
+    const uniqueColors = [...new Set(apiProducts.map(p => p.color).filter(Boolean))]
+    return ['semua', ...uniqueColors]
+  }, [apiProducts])
+
+  // Handle search with debouncing
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setSearchQuery(filters.search || '')
+    }, 300)
+
+    return () => clearTimeout(timeoutId)
+  }, [filters.search])
 
   const filteredProducts = useMemo(() => {
-    return mockProducts.filter((product) => {
+    return apiProducts.filter((product) => {
       if (
         filters.category &&
         filters.category !== 'semua' &&
@@ -57,15 +108,12 @@ export function ProductSelectionStep({
       if (filters.color && filters.color !== 'semua' && product.color !== filters.color) {
         return false
       }
-      if (filters.search && !product.name.toLowerCase().includes(filters.search.toLowerCase())) {
-        return false
-      }
       if (filters.available && !product.available) {
         return false
       }
       return true
     })
-  }, [filters])
+  }, [apiProducts, filters])
 
   const getSelectedQuantity = (productId: string) => {
     const selected = selectedProducts.find((item) => item.product.id === productId)
@@ -197,7 +245,7 @@ export function ProductSelectionStep({
         <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-semibold text-gray-900">
-              Produk Tersedia ({filteredProducts.length})
+              Produk Tersedia ({isLoading ? '...' : filteredProducts.length})
             </h2>
             <Button variant="outline" onClick={() => setShowCart(!showCart)} className="lg:hidden">
               <ShoppingCart className="h-4 w-4 mr-2" />
@@ -205,27 +253,56 @@ export function ProductSelectionStep({
             </Button>
           </div>
 
-          {filteredProducts.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-              {filteredProducts.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  onAddToCart={handleAddProduct}
-                  selectedQuantity={getSelectedQuantity(product.id)}
-                />
-              ))}
+          {/* Loading State */}
+          {isLoading && (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+              <span className="ml-2 text-gray-600">Memuat produk...</span>
             </div>
-          ) : (
+          )}
+
+          {/* Error State */}
+          {error && !isLoading && (
             <div className="text-center py-12">
-              <Package className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-              <div className="text-lg text-gray-500 mb-2">
-                Tidak ada produk yang sesuai dengan filter
+              <Package className="h-16 w-16 text-red-300 mx-auto mb-4" />
+              <div className="text-lg text-red-600 mb-2">
+                Gagal memuat produk
               </div>
-              <div className="text-sm text-gray-400">
-                Coba ubah filter atau kata kunci pencarian
+              <div className="text-sm text-gray-600 mb-4">
+                Terjadi kesalahan saat mengambil data produk
               </div>
+              <Button onClick={() => refetch()} variant="outline">
+                Coba Lagi
+              </Button>
             </div>
+          )}
+
+          {/* Products Content */}
+          {!isLoading && !error && (
+            <>
+              {filteredProducts.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                  {filteredProducts.map((product) => (
+                    <ProductCard
+                      key={product.id}
+                      product={product}
+                      onAddToCart={handleAddProduct}
+                      selectedQuantity={getSelectedQuantity(product.id)}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <Package className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                  <div className="text-lg text-gray-500 mb-2">
+                    Tidak ada produk yang sesuai dengan filter
+                  </div>
+                  <div className="text-sm text-gray-400">
+                    Coba ubah filter atau kata kunci pencarian
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>

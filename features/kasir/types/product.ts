@@ -8,6 +8,7 @@ export interface Product {
   image: string
   available: boolean
   description?: string
+  availableQuantity?: number
 }
 
 export interface ProductSelection {

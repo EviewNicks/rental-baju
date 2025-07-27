@@ -1,12 +1,13 @@
 'use client'
 
-import { useState } from 'react'
-import { Search, Plus, User, Phone, Mail, MapPin, ArrowLeft, ArrowRight } from 'lucide-react'
+import { useState, useEffect, useMemo } from 'react'
+import { Search, Plus, User, Phone, Mail, MapPin, ArrowLeft, ArrowRight, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { CustomerRegistrationModal } from './CustomerRegistrationModal'
 import type { Customer } from '../../types/customer'
-import { mockCustomers } from '../../lib/mock-customer'
+import { usePenyewaSearch, usePenyewaList } from '../../hooks/usePenyewa'
+import type { PenyewaResponse } from '../../types/api'
 
 interface CustomerBiodataStepProps {
   selectedCustomer?: Customer
@@ -24,26 +25,62 @@ export function CustomerBiodataStep({
   canProceed,
 }: CustomerBiodataStepProps) {
   const [searchQuery, setSearchQuery] = useState('')
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('')
   const [showRegistrationModal, setShowRegistrationModal] = useState(false)
-  const [filteredCustomers, setFilteredCustomers] = useState(mockCustomers)
+
+  // Debounce search query
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery)
+    }, 300)
+
+    return () => clearTimeout(timeoutId)
+  }, [searchQuery])
+
+  // Fetch customers - use search if query exists, otherwise get recent customers
+  const { 
+    data: searchResults, 
+    isLoading: isSearching,
+    error: searchError 
+  } = usePenyewaSearch(debouncedSearchQuery, debouncedSearchQuery.length >= 2)
+
+  const { 
+    data: allCustomersResponse, 
+    isLoading: isLoadingAll,
+    error: allCustomersError 
+  } = usePenyewaList({ limit: 20 })
+
+  // Transform API data to Customer interface
+  const transformPenyewaToCustomer = (penyewa: PenyewaResponse): Customer => ({
+    id: penyewa.id,
+    name: penyewa.nama,
+    phone: penyewa.telepon,
+    email: penyewa.email || '',
+    address: penyewa.alamat,
+    totalTransactions: 0, // This would need to come from API if needed
+    createdAt: penyewa.createdAt,
+  })
+
+  const customers = useMemo(() => {
+    if (debouncedSearchQuery.length >= 2 && searchResults?.data) {
+      return searchResults.data.map(transformPenyewaToCustomer)
+    } else if (allCustomersResponse?.data) {
+      return allCustomersResponse.data.map(transformPenyewaToCustomer)
+    }
+    return []
+  }, [searchResults, allCustomersResponse, debouncedSearchQuery])
+
+  const isLoading = isSearching || isLoadingAll
+  const error = searchError || allCustomersError
 
   const handleSearch = (query: string) => {
     setSearchQuery(query)
-    const filtered = mockCustomers.filter(
-      (customer) =>
-        customer.name.toLowerCase().includes(query.toLowerCase()) ||
-        customer.phone.includes(query) ||
-        customer.email?.toLowerCase().includes(query.toLowerCase()),
-    )
-    setFilteredCustomers(filtered)
   }
 
   const handleCustomerRegistered = (customer: Customer) => {
-    // Add to mock customers (in real app, this would be handled by API)
-    mockCustomers.push(customer)
-    setFilteredCustomers([...mockCustomers])
     onSelectCustomer(customer)
     setShowRegistrationModal(false)
+    // Note: The customer list will be automatically updated via React Query invalidation
   }
 
   const handleSelectCustomer = (customer: Customer) => {
@@ -134,44 +171,74 @@ export function CustomerBiodataStep({
         <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 overflow-hidden">
           <div className="p-6 border-b border-gray-200/50">
             <div className="text-lg font-semibold text-gray-900">
-              Daftar Penyewa ({filteredCustomers.length})
+              Daftar Penyewa ({isLoading ? '...' : customers.length})
             </div>
-          </div>
-          <div className="max-h-96 overflow-y-auto">
-            {filteredCustomers.map((customer) => (
-              <button
-                key={customer.id}
-                onClick={() => handleSelectCustomer(customer)}
-                className="w-full p-6 text-left hover:bg-gray-50/50 transition-colors border-b border-gray-200/50 last:border-b-0"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
-                    <User className="h-6 w-6 text-gray-600" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-lg font-semibold text-gray-900">{customer.name}</div>
-                    <div className="text-sm text-gray-600 flex items-center gap-4 mt-1">
-                      <span>{customer.phone}</span>
-                      {customer.email && <span>{customer.email}</span>}
-                    </div>
-                    <div className="text-xs text-gray-500 mt-2">
-                      {customer.totalTransactions} transaksi • Bergabung{' '}
-                      {new Date(customer.createdAt).toLocaleDateString('id-ID')}
-                    </div>
-                  </div>
-                </div>
-              </button>
-            ))}
           </div>
 
-          {filteredCustomers.length === 0 && (
+          {/* Loading State */}
+          {isLoading && (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+              <span className="ml-2 text-gray-600">
+                {debouncedSearchQuery ? 'Mencari penyewa...' : 'Memuat daftar penyewa...'}
+              </span>
+            </div>
+          )}
+
+          {/* Error State */}
+          {error && !isLoading && (
             <div className="p-12 text-center text-gray-500">
-              <User className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-              <div className="text-lg">Tidak ada penyewa ditemukan</div>
-              <div className="text-sm mt-1">
-                Coba ubah kata kunci pencarian atau tambah penyewa baru
+              <User className="h-16 w-16 mx-auto mb-4 text-red-300" />
+              <div className="text-lg text-red-600">Gagal memuat data penyewa</div>
+              <div className="text-sm mt-1 text-gray-600">
+                Terjadi kesalahan saat mengambil data penyewa
               </div>
             </div>
+          )}
+
+          {/* Customer List Content */}
+          {!isLoading && !error && (
+            <>
+              <div className="max-h-96 overflow-y-auto">
+                {customers.map((customer) => (
+                  <button
+                    key={customer.id}
+                    onClick={() => handleSelectCustomer(customer)}
+                    className="w-full p-6 text-left hover:bg-gray-50/50 transition-colors border-b border-gray-200/50 last:border-b-0"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
+                        <User className="h-6 w-6 text-gray-600" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-lg font-semibold text-gray-900">{customer.name}</div>
+                        <div className="text-sm text-gray-600 flex items-center gap-4 mt-1">
+                          <span>{customer.phone}</span>
+                          {customer.email && <span>{customer.email}</span>}
+                        </div>
+                        <div className="text-xs text-gray-500 mt-2">
+                          {customer.totalTransactions} transaksi • Bergabung{' '}
+                          {new Date(customer.createdAt).toLocaleDateString('id-ID')}
+                        </div>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+
+              {customers.length === 0 && !isLoading && (
+                <div className="p-12 text-center text-gray-500">
+                  <User className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+                  <div className="text-lg">Tidak ada penyewa ditemukan</div>
+                  <div className="text-sm mt-1">
+                    {debouncedSearchQuery 
+                      ? 'Coba ubah kata kunci pencarian atau tambah penyewa baru'
+                      : 'Belum ada penyewa terdaftar. Tambah penyewa baru untuk memulai'
+                    }
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
       )}

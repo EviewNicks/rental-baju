@@ -9,6 +9,9 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import type { Customer, CustomerFormData } from '../../types/customer'
+import { useCreatePenyewa } from '../../hooks/usePenyewa'
+import type { CreatePenyewaRequest } from '../../types/api'
+// import { toast } from '@/hooks/use-toast' // TODO: Add toast implementation
 
 interface CustomerRegistrationModalProps {
   isOpen: boolean
@@ -29,7 +32,12 @@ export function CustomerRegistrationModal({
     identityNumber: '',
   })
   const [errors, setErrors] = useState<Partial<CustomerFormData>>({})
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  
+  // Real API integration
+  const { 
+    mutate: createPenyewa, 
+    isPending: isSubmitting
+  } = useCreatePenyewa()
 
   const validateForm = (): boolean => {
     const newErrors: Partial<CustomerFormData> = {}
@@ -59,34 +67,50 @@ export function CustomerRegistrationModal({
 
     if (!validateForm()) return
 
-    setIsSubmitting(true)
-    try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      const newCustomer: Customer = {
-        id: Date.now().toString(),
-        ...formData,
-        createdAt: new Date().toISOString(),
-        totalTransactions: 0,
-      }
-
-      onCustomerRegistered(newCustomer)
-
-      // Reset form
-      setFormData({
-        name: '',
-        phone: '',
-        email: '',
-        address: '',
-        identityNumber: '',
-      })
-      setErrors({})
-    } catch (error) {
-      console.error('Failed to register customer:', error)
-    } finally {
-      setIsSubmitting(false)
+    // Transform form data to API format
+    const createRequest: CreatePenyewaRequest = {
+      nama: formData.name,
+      telepon: formData.phone,
+      alamat: formData.address,
+      email: formData.email || undefined,
+      nik: formData.identityNumber || undefined,
     }
+
+    createPenyewa(createRequest, {
+      onSuccess: (createdPenyewa) => {
+        // Transform API response to Customer interface
+        const newCustomer: Customer = {
+          id: createdPenyewa.id,
+          name: createdPenyewa.nama,
+          phone: createdPenyewa.telepon,
+          email: createdPenyewa.email || '',
+          address: createdPenyewa.alamat,
+          totalTransactions: 0,
+          createdAt: createdPenyewa.createdAt,
+        }
+
+        // Show success message
+        console.log('Penyewa berhasil ditambahkan:', createdPenyewa.nama)
+
+        onCustomerRegistered(newCustomer)
+
+        // Reset form
+        setFormData({
+          name: '',
+          phone: '',
+          email: '',
+          address: '',
+          identityNumber: '',
+        })
+        setErrors({})
+      },
+      onError: (error) => {
+        console.error('Failed to register customer:', error)
+        
+        // Show error message
+        console.error('Gagal menambahkan penyewa:', error.message || 'Terjadi kesalahan saat menyimpan data penyewa')
+      },
+    })
   }
 
   const handleInputChange = (field: keyof CustomerFormData, value: string) => {

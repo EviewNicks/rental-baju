@@ -8,8 +8,8 @@ describe('formatDate', () => {
 
   it('should handle null/undefined dateString gracefully', () => {
     expect(formatDate('')).toBe('Tanggal tidak tersedia')
-    expect(formatDate(null as any)).toBe('Tanggal tidak tersedia')
-    expect(formatDate(undefined as any)).toBe('Tanggal tidak tersedia')
+    expect(formatDate(null as string)).toBe('Tanggal tidak tersedia')
+    expect(formatDate(undefined as string)).toBe('Tanggal tidak tersedia')
   })
 
   it('should handle invalid date string gracefully', () => {

@@ -35,15 +35,21 @@ export function useTransactionDetail(
     refetchInterval,
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
-    retry: (failureCount, error: any) => {
+    retry: (failureCount, error: unknown) => {
       // Don't retry on client errors (4xx)
-      if (error?.status >= 400 && error?.status < 500) {
+      if (error && typeof error === 'object' && 'status' in error && 
+          typeof (error as { status: number }).status === 'number' && 
+          (error as { status: number }).status >= 400 && (error as { status: number }).status < 500) {
         return false
       }
-      if (error?.message?.includes('tidak ditemukan') || error?.message?.includes('Not Found')) {
+      if (error && typeof error === 'object' && 'message' in error && 
+          typeof (error as { message: string }).message === 'string' && 
+          ((error as { message: string }).message.includes('tidak ditemukan') || (error as { message: string }).message.includes('Not Found'))) {
         return false
       }
-      if (error?.message?.includes('unauthorized') || error?.message?.includes('403')) {
+      if (error && typeof error === 'object' && 'message' in error && 
+          typeof (error as { message: string }).message === 'string' && 
+          ((error as { message: string }).message.includes('unauthorized') || (error as { message: string }).message.includes('403'))) {
         return false
       }
       
@@ -59,9 +65,15 @@ export function useTransactionDetail(
         '504'
       ]
       
-      const isRetryable = retryableErrors.some(errorType => 
-        error?.message?.includes(errorType) || error?.status?.toString()?.includes(errorType)
-      )
+      const isRetryable = retryableErrors.some(errorType => {
+        const hasMessage = error && typeof error === 'object' && 'message' in error && 
+                          typeof (error as { message: string }).message === 'string' &&
+                          (error as { message: string }).message.includes(errorType)
+        const hasStatus = error && typeof error === 'object' && 'status' in error && 
+                         typeof (error as { status: number }).status === 'number' &&
+                         (error as { status: number }).status.toString().includes(errorType)
+        return hasMessage || hasStatus
+      })
       
       return isRetryable && failureCount < 3
     },
@@ -147,7 +159,7 @@ function transformApiToUI(apiData: TransaksiResponse): TransactionDetail {
     })),
 
     // Transform activity timeline
-    timeline: apiData.aktivitas.map((activity, index) => ({
+    timeline: apiData.aktivitas.map((activity) => ({
       id: activity.id,
       timestamp: activity.createdAt,
       action: mapActivityTypeToAction(activity.tipe),

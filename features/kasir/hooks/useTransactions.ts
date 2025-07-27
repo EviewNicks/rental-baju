@@ -55,26 +55,26 @@ export function useTransactions(options: UseTransactionsOptions = {}) {
     // API returns TransaksiListResponse structure
     if (!transactionData?.data) return []
     
-    return transactionData.data.map((transaction: any) => ({
-      id: transaction?.id || '',
-      transactionCode: transaction?.kode || '',
-      customerName: transaction?.penyewa?.nama || '',
-      customerPhone: transaction?.penyewa?.telepon || '',
-      customerAddress: transaction?.penyewa?.alamat || '',
+    return transactionData.data.map((transaction) => ({
+      id: transaction.id,
+      transactionCode: transaction.kode,
+      customerName: transaction.penyewa.nama,
+      customerPhone: transaction.penyewa.telepon,
+      customerAddress: transaction.penyewa.alamat,
       // Handle missing items array - use itemCount as fallback
-      items: transaction?.items?.map((item: any) => item?.produk?.name || '') || 
-             (transaction?.itemCount ? [`${transaction.itemCount} item(s)`] : ['Tidak ada item']),
-      totalAmount: transaction?.totalHarga || 0,
-      amountPaid: transaction?.jumlahBayar || 0,
-      remainingAmount: transaction?.sisaBayar || 0,
-      status: transaction?.status || 'active',
-      startDate: transaction?.tglMulai || '',
-      endDate: transaction?.tglSelesai || null,
-      returnDate: transaction?.tglKembali || null,
-      paymentMethod: transaction?.metodeBayar || 'tunai',
-      notes: transaction?.catatan || '',
-      createdAt: transaction?.createdAt || '',
-      updatedAt: transaction?.updatedAt || '',
+      items: transaction.items?.map((item) => item.produk.name) || 
+             (transaction.items?.length ? [`${transaction.items.length} item(s)`] : ['Tidak ada item']),
+      totalAmount: transaction.totalHarga,
+      amountPaid: transaction.jumlahBayar,
+      remainingAmount: transaction.sisaBayar,
+      status: transaction.status,
+      startDate: transaction.tglMulai,
+      endDate: transaction.tglSelesai || undefined,
+      returnDate: transaction.tglKembali || undefined,
+      paymentMethod: transaction.metodeBayar,
+      notes: transaction.catatan || '',
+      createdAt: transaction.createdAt,
+      updatedAt: transaction.updatedAt,
     }))
   }, [transactionData])
 

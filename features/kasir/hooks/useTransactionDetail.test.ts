@@ -318,12 +318,13 @@ describe('useTransactionDetail Hook', () => {
         expect(result.current.isLoading).toBe(false)
       })
 
-      const timeline = result.current.transaction?.timeline!
+      const timeline = result.current.transaction?.timeline
+      expect(timeline).toBeDefined()
       expect(timeline).toHaveLength(4)
-      expect(timeline[0].action).toBe('created')
-      expect(timeline[1].action).toBe('paid')
-      expect(timeline[2].action).toBe('returned')
-      expect(timeline[3].action).toBe('overdue')
+      expect(timeline![0].action).toBe('created')
+      expect(timeline![1].action).toBe('paid')
+      expect(timeline![2].action).toBe('returned')
+      expect(timeline![3].action).toBe('overdue')
     })
   })
 
