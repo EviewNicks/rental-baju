@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import {
   Calendar,
   CreditCard,
@@ -9,10 +9,12 @@ import {
   FileText,
   ShoppingBag,
   ArrowLeft,
+  CheckCircle,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { useLogger } from '@/lib/client-logger'
 import { Textarea } from '@/components/ui/textarea'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import type { TransactionFormData } from '../../types/transaction-form'
@@ -22,7 +24,9 @@ import Image from 'next/image'
 interface PaymentSummaryStepProps {
   formData: TransactionFormData
   totalAmount: number
+  duration: number
   onUpdateFormData: (updates: Partial<TransactionFormData>) => void
+  onUpdateDuration: (duration: number) => void
   onSubmit: () => Promise<boolean>
   onPrev: () => void
   isSubmitting: boolean
@@ -31,12 +35,46 @@ interface PaymentSummaryStepProps {
 export function PaymentSummaryStep({
   formData,
   totalAmount,
+  duration,
   onUpdateFormData,
+  onUpdateDuration,
   onSubmit,
   onPrev,
   isSubmitting,
 }: PaymentSummaryStepProps) {
-  const [duration, setDuration] = useState(3) // Default 3 days
+  const log = useLogger('PaymentSummaryStep')
+  const [paymentDisplayValue, setPaymentDisplayValue] = useState('')
+
+  // Format number to Indonesian currency display (Rp 200.000)
+  const formatToDisplay = useCallback((value: number): string => {
+    if (value === 0) return ''
+    return new Intl.NumberFormat('id-ID').format(value)
+  }, [])
+
+  // Parse display string back to number
+  const parseFromDisplay = useCallback((displayValue: string): number => {
+    if (!displayValue) return 0
+    const cleanValue = displayValue.replace(/[^\d]/g, '')
+    return parseInt(cleanValue) || 0
+  }, [])
+
+  // Sync display value with form data
+  useEffect(() => {
+    setPaymentDisplayValue(formatToDisplay(formData.paymentAmount))
+  }, [formData.paymentAmount, formatToDisplay])
+
+  // Handle currency input change
+  const handlePaymentChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const inputValue = e.target.value
+    const numericValue = parseFromDisplay(inputValue)
+    
+    // Update display value with formatting
+    const formattedValue = formatToDisplay(numericValue)
+    setPaymentDisplayValue(formattedValue)
+    
+    // Update form data with numeric value
+    onUpdateFormData({ paymentAmount: numericValue })
+  }, [parseFromDisplay, formatToDisplay, onUpdateFormData])
 
   useEffect(() => {
     // Auto-calculate return date based on pickup date and duration
@@ -55,7 +93,7 @@ export function PaymentSummaryStep({
     const success = await onSubmit()
     if (success) {
       // Handle success (e.g., show success message, redirect)
-      console.log('Transaction submitted successfully!')
+      log.info('Transaction submitted successfully!', { totalAmount })
     }
   }
 
@@ -91,7 +129,7 @@ export function PaymentSummaryStep({
             >
               <div className="flex items-center gap-4">
                 <Image
-                  src={item.product.image || '/placeholder.svg'}
+                  src={item.product.image?.startsWith('/') || item.product.image?.startsWith('http') ? (item.product.image || '/placeholder.svg') : `/${item.product.image || 'placeholder.svg'}`}
                   alt={item.product.name}
                   width={200}
                   height={200}
@@ -131,15 +169,34 @@ export function PaymentSummaryStep({
             <Label htmlFor="duration" className="text-sm font-medium text-gray-700">
               Durasi Sewa (Hari)
             </Label>
-            <Input
-              id="duration"
-              type="number"
-              min="1"
-              max="30"
-              value={duration}
-              onChange={(e) => setDuration(Number.parseInt(e.target.value) || 1)}
-              className="mt-2"
-            />
+            <div className="mt-2 space-y-3">
+              {/* Duration Presets */}
+              <div className="flex flex-wrap gap-2">
+                {[1, 3, 7, 14].map((preset) => (
+                  <Button
+                    key={preset}
+                    type="button"
+                    variant={duration === preset ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => onUpdateDuration(preset)}
+                    className="text-xs"
+                  >
+                    {preset} hari
+                  </Button>
+                ))}
+              </div>
+              {/* Custom Duration Input */}
+              <Input
+                id="duration"
+                type="number"
+                min="1"
+                max="30"
+                value={duration}
+                onChange={(e) => onUpdateDuration(Number.parseInt(e.target.value) || 1)}
+                className="w-full"
+                placeholder="Atau masukkan durasi kustom"
+              />
+            </div>
           </div>
 
           {/* Pickup Date */}
@@ -217,16 +274,68 @@ export function PaymentSummaryStep({
             <Label htmlFor="paymentAmount" className="text-sm font-medium text-gray-700">
               Jumlah Bayar
             </Label>
-            <Input
-              id="paymentAmount"
-              type="number"
-              value={formData.paymentAmount}
-              onChange={(e) =>
-                onUpdateFormData({ paymentAmount: Number.parseInt(e.target.value) || 0 })
-              }
-              placeholder="0"
-              className="mt-2"
-            />
+            <div className="mt-2 space-y-2">
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <span className="text-gray-500 text-sm font-medium">Rp</span>
+                </div>
+                <Input
+                  id="paymentAmount"
+                  type="text"
+                  value={paymentDisplayValue}
+                  onChange={handlePaymentChange}
+                  placeholder="0"
+                  className={`w-full pl-10 pr-24 text-right font-mono text-lg transition-colors ${
+                    formData.paymentAmount > subtotal 
+                      ? 'border-yellow-300 bg-yellow-50' 
+                      : formData.paymentAmount === subtotal 
+                        ? 'border-green-300 bg-green-50'
+                        : 'border-gray-300'
+                  }`}
+                  style={{ textAlign: 'right' }}
+                />
+              </div>
+              {/* Quick Payment Options */}
+              <div className="flex gap-2 flex-wrap">
+                {/* Common payment amounts */}
+                {[50000, 100000, 200000, 500000].filter(amount => amount < subtotal).map(amount => (
+                  <Button
+                    key={amount}
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onUpdateFormData({ paymentAmount: amount })}
+                    className="text-xs flex-1 min-w-[80px]"
+                  >
+                    {formatCurrency(amount)}
+                  </Button>
+                ))}
+                
+                {/* Pay full amount button */}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onUpdateFormData({ paymentAmount: subtotal })}
+                  className="text-xs flex-1 min-w-[100px] bg-green-50 hover:bg-green-100 text-green-700 border-green-200"
+                >
+                  Bayar Lunas
+                </Button>
+              </div>
+              
+              {/* Payment help text */}
+              {formData.paymentAmount > subtotal && (
+                <div className="text-xs text-yellow-600 bg-yellow-50 p-2 rounded border border-yellow-200">
+                  💡 Jumlah pembayaran melebihi total. Kembalian: {formatCurrency(formData.paymentAmount - subtotal)}
+                </div>
+              )}
+              
+              {formData.paymentAmount > 0 && formData.paymentAmount < subtotal && (
+                <div className="text-xs text-orange-600 bg-orange-50 p-2 rounded border border-orange-200">
+                  ⚠️ Pembayaran belum lunas. Sisa: {formatCurrency(subtotal - formData.paymentAmount)}
+                </div>
+              )}
+            </div>
           </div>
           <div>
             <Label className="text-sm font-medium text-gray-700">Status Pembayaran</Label>
@@ -268,20 +377,58 @@ export function PaymentSummaryStep({
         />
       </div>
 
-      {/* Total & Submit */}
-      <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6 space-y-6">
-        <div className="flex items-center justify-between text-2xl font-bold text-gray-900">
-          <span>Total Pembayaran</span>
-          <span>{formatCurrency(subtotal)}</span>
+      {/* Total Breakdown & Submit */}
+      <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-xl p-6 space-y-6">
+        {/* Total Breakdown */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-gray-900">Ringkasan Pembayaran</h3>
+          
+          {/* Item Details */}
+          <div className="space-y-2">
+            {formData.products.map((item) => (
+              <div key={item.product.id} className="flex justify-between text-sm">
+                <span className="text-gray-600">
+                  {item.product.name} × {item.quantity} × {duration} hari
+                </span>
+                <span className="font-medium">
+                  {formatCurrency(item.product.pricePerDay * item.quantity * duration)}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          <div className="border-t border-yellow-300 pt-3">
+            <div className="flex items-center justify-between text-xl font-bold text-gray-900">
+              <span>Total Pembayaran</span>
+              <span className="text-yellow-700">{formatCurrency(subtotal)}</span>
+            </div>
+          </div>
+
+          {/* Payment Status Info */}
+          {formData.paymentStatus === 'unpaid' && formData.paymentAmount > 0 && (
+            <div className="bg-white/50 rounded-lg p-3 space-y-1">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Jumlah dibayar:</span>
+                <span className="font-medium text-green-600">{formatCurrency(formData.paymentAmount)}</span>
+              </div>
+              <div className="flex justify-between text-sm font-medium">
+                <span className="text-gray-900">Sisa pembayaran:</span>
+                <span className="text-red-600">{formatCurrency(subtotal - formData.paymentAmount)}</span>
+              </div>
+            </div>
+          )}
+
+          {formData.paymentStatus === 'paid' && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+              <div className="flex items-center gap-2 text-green-700">
+                <CheckCircle className="h-4 w-4" />
+                <span className="text-sm font-medium">Pembayaran Lunas</span>
+              </div>
+            </div>
+          )}
         </div>
 
-        {formData.paymentStatus === 'unpaid' && formData.paymentAmount > 0 && (
-          <div className="text-sm text-gray-600">
-            Sisa pembayaran: {formatCurrency(subtotal - formData.paymentAmount)}
-          </div>
-        )}
-
-        <div className="flex items-center justify-between pt-4">
+        <div className="flex items-center justify-between pt-4 border-t border-yellow-300">
           <Button variant="outline" onClick={onPrev}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Kembali ke Data Penyewa
@@ -290,7 +437,7 @@ export function PaymentSummaryStep({
           <Button
             onClick={handleSubmit}
             disabled={isSubmitting || !formData.pickupDate || !formData.paymentMethod}
-            className="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-semibold px-8 py-3"
+            className="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-semibold px-8 py-3 shadow-lg transition-all duration-200"
             size="lg"
           >
             {isSubmitting ? 'Memproses...' : 'Buat Transaksi'}

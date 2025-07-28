@@ -10,6 +10,7 @@ export interface TransactionFormData {
   paymentAmount: number
   paymentStatus: 'paid' | 'unpaid'
   notes?: string
+  currentStep?: TransactionStep // For persistence
 }
 
 export type TransactionStep = 1 | 2 | 3

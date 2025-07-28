@@ -36,8 +36,15 @@ export const createPenyewaSchema = z.object({
     .or(z.literal('')),
   nik: z
     .string()
-    .regex(/^\d{16}$/, 'NIK harus 16 digit angka')
     .optional()
+    .refine((val) => {
+      // Allow empty string or undefined (optional field)
+      if (!val || val === '') return true
+      // If provided, must be exactly 16 digits
+      return /^\d{16}$/.test(val)
+    }, {
+      message: 'NIK harus 16 digit angka'
+    })
     .or(z.literal('')),
   foto: z
     .string()

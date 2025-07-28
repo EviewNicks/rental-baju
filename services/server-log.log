@@ -1,0 +1,99 @@
+GET /dashboard/new 200 in 5054ms
+ ✓ Compiled in 3.3s
+ ✓ Compiled in 3.2s
+ GET /api/kasir/penyewa?limit=20 200 in 2364ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 1284ms (cache skip)    
+ │ │ Cache skipped reason: (auto no cache)
+[2025-07-28T07:22:03.763Z] [DEBUG] [useTransactionForm] 🔍 Validating step 1... | Data: {}
+[2025-07-28T07:22:03.764Z] [DEBUG] [useTransactionForm] 📦 Step 1 - Products count: 0, Valid: false | Data: {"productsCount":0,"valid":false}
+[2025-07-28T07:22:03.765Z] [WARN] [useTransactionForm] ❌ Step 1 failed: No products selected | Data: {}
+[2025-07-28T07:22:03.773Z] [DEBUG] [useTransactionForm] 🔍 Validating step 1... | Data: {}
+[2025-07-28T07:22:03.773Z] [DEBUG] [useTransactionForm] 📦 Step 1 - Products count: 0, Valid: false | Data: {"productsCount":0,"valid":false}
+[2025-07-28T07:22:03.774Z] [WARN] [useTransactionForm] ❌ Step 1 failed: No products selected | Data: {}
+[2025-07-28T07:22:03.809Z] [DEBUG] [ProductSelectionStep] 🔍 No products data available | Data: {}
+ GET /dashboard/new 200 in 1794ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 439ms
+ GET /api/kasir/produk/available?available=true 200 in 3274ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 442ms (cache skip)     
+ │ │ Cache skipped reason: (auto no cache)
+ GET /dashboard 200 in 280ms
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 1481ms
+ GET /dashboard 200 in 917ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 376ms
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 2058ms
+ GET /dashboard/new 200 in 369ms
+ GET /api/kasir/produk/available?available=true 200 in 3408ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 478ms (cache skip)     
+ │ │ Cache skipped reason: (auto no cache)
+ GET /api/kasir/penyewa?limit=20 200 in 1624ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 478ms (cache skip)     
+ │ │ Cache skipped reason: (auto no cache)
+[2025-07-28T07:22:47.585Z] [DEBUG] [useTransactionForm] 🔍 Validating step 1... | Data: {}
+[2025-07-28T07:22:47.587Z] [DEBUG] [useTransactionForm] 📦 Step 1 - Products count: 0, Valid: false | Data: {"productsCount":0,"valid":false}
+[2025-07-28T07:22:47.589Z] [WARN] [useTransactionForm] ❌ Step 1 failed: No products selected | Data: {}
+[2025-07-28T07:22:47.607Z] [DEBUG] [useTransactionForm] 🔍 Validating step 1... | Data: {}
+[2025-07-28T07:22:47.608Z] [DEBUG] [useTransactionForm] 📦 Step 1 - Products count: 0, Valid: false | Data: {"productsCount":0,"valid":false}
+[2025-07-28T07:22:47.609Z] [WARN] [useTransactionForm] ❌ Step 1 failed: No products selected | Data: {}
+[2025-07-28T07:22:47.668Z] [DEBUG] [ProductSelectionStep] 🔍 No products data available | Data: {}
+ GET /dashboard/new 200 in 960ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 409ms
+ GET /api/kasir/produk/available?available=true 200 in 3463ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 532ms (cache skip)     
+ │ │ Cache skipped reason: (auto no cache)
+ GET /dashboard 200 in 357ms
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 2180ms
+ GET /dashboard/new 200 in 455ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 285ms
+ GET /dashboard 200 in 323ms
+ GET /dashboard 200 in 1082ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 463ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 448ms
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 2253ms
+ GET /dashboard/new 200 in 356ms
+ GET /api/kasir/produk/available?available=true 200 in 4019ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 1217ms (cache skip)    
+ │ │ Cache skipped reason: (auto no cache)
+ GET /api/kasir/penyewa?limit=20 200 in 1489ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 467ms (cache skip)     
+ │ │ Cache skipped reason: (auto no cache)
+[2025-07-28T07:23:39.104Z] [DEBUG] [useTransactionForm] 🔍 Validating step 1... | Data: {}
+[2025-07-28T07:23:39.106Z] [DEBUG] [useTransactionForm] 📦 Step 1 - Products count: 0, Valid: false | Data: {"productsCount":0,"valid":false}
+[2025-07-28T07:23:39.108Z] [WARN] [useTransactionForm] ❌ Step 1 failed: No products selected | Data: {}
+[2025-07-28T07:23:39.129Z] [DEBUG] [useTransactionForm] 🔍 Validating step 1... | Data: {}
+[2025-07-28T07:23:39.130Z] [DEBUG] [useTransactionForm] 📦 Step 1 - Products count: 0, Valid: false | Data: {"productsCount":0,"valid":false}
+[2025-07-28T07:23:39.131Z] [WARN] [useTransactionForm] ❌ Step 1 failed: No products selected | Data: {}
+[2025-07-28T07:23:39.168Z] [DEBUG] [ProductSelectionStep] 🔍 No products data available | Data: {}
+ GET /dashboard/new 200 in 714ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 437ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 436ms
+ GET /api/kasir/produk/available?available=true 200 in 3627ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 628ms (cache skip)     
+ │ │ Cache skipped reason: (auto no cache)
+[2025-07-28T07:23:47.573Z] [DEBUG] [useTransactionForm] 🔍 Validating step 1... | Data: {}
+[2025-07-28T07:23:47.574Z] [DEBUG] [useTransactionForm] 📦 Step 1 - Products count: 0, Valid: false | Data: {"productsCount":0,"valid":false}
+[2025-07-28T07:23:47.577Z] [WARN] [useTransactionForm] ❌ Step 1 failed: No products selected | Data: {}
+[2025-07-28T07:23:47.585Z] [DEBUG] [useTransactionForm] 🔍 Validating step 1... | Data: {}
+[2025-07-28T07:23:47.589Z] [DEBUG] [useTransactionForm] 📦 Step 1 - Products count: 0, Valid: false | Data: {"productsCount":0,"valid":false}
+[2025-07-28T07:23:47.591Z] [WARN] [useTransactionForm] ❌ Step 1 failed: No products selected | Data: {}
+[2025-07-28T07:23:47.609Z] [DEBUG] [ProductSelectionStep] 🔍 No products data available | Data: {}
+ GET /dashboard/new 200 in 577ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 469ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 454ms
+ GET /api/kasir/produk/available?available=true 200 in 3285ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 432ms (cache skip)     
+ │ │ Cache skipped reason: (auto no cache)
+ GET /api/kasir/penyewa?limit=20 200 in 2349ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 318ms (cache skip)     
+ │ │ Cache skipped reason: (auto no cache)
+[2025-07-28T07:24:33.755Z] [DEBUG] [useTransactionForm] 🔍 Validating step 1... | Data: {}
+[2025-07-28T07:24:33.756Z] [DEBUG] [useTransactionForm] 📦 Step 1 - Products count: 0, Valid: false | Data: {"productsCount":0,"valid":false}
+[2025-07-28T07:24:33.756Z] [WARN] [useTransactionForm] ❌ Step 1 failed: No products selected | Data: {}
+[2025-07-28T07:24:33.761Z] [DEBUG] [useTransactionForm] 🔍 Validating step 1... | Data: {}
+[2025-07-28T07:24:33.761Z] [DEBUG] [useTransactionForm] 📦 Step 1 - Products count: 0, Valid: false | Data: {"productsCount":0,"valid":false}
+[2025-07-28T07:24:33.762Z] [WARN] [useTransactionForm] ❌ Step 1 failed: No products selected | Data: {}
+[2025-07-28T07:24:33.773Z] [DEBUG] [ProductSelectionStep] 🔍 No products data available | Data: {}   
+ GET /dashboard/new 200 in 619ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 383ms
+ GET /api/kasir/produk/available?available=true 200 in 4317ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 461ms (cache skip)     
+ │ │ Cache skipped reason: (auto no cache)

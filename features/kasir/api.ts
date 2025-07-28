@@ -80,7 +80,7 @@ async function apiRequest<T>(
         error.code,
         error.message,
         error.details,
-'validationErrors' in error ? (error.validationErrors as Array<{ field: string; message: string }>) : undefined
+        Array.isArray(error.details) ? error.details as Array<{ field: string; message: string }> : undefined
       )
     }
 

@@ -11,6 +11,8 @@ import { Textarea } from '@/components/ui/textarea'
 import type { Customer, CustomerFormData } from '../../types/customer'
 import { useCreatePenyewa } from '../../hooks/usePenyewa'
 import type { CreatePenyewaRequest } from '../../types/api'
+import { KasirApiError } from '../../api'
+import { useLogger } from '@/lib/client-logger'
 // import { toast } from '@/hooks/use-toast' // TODO: Add toast implementation
 
 interface CustomerRegistrationModalProps {
@@ -32,6 +34,8 @@ export function CustomerRegistrationModal({
     identityNumber: '',
   })
   const [errors, setErrors] = useState<Partial<CustomerFormData>>({})
+  const [serverErrors, setServerErrors] = useState<Record<string, string>>({})
+  const log = useLogger('CustomerRegistrationModal')
   
   // Real API integration
   const { 
@@ -56,6 +60,13 @@ export function CustomerRegistrationModal({
 
     if (!formData.address || formData.address.length < 10) {
       newErrors.address = 'Alamat minimal 10 karakter'
+    }
+
+    // NIK validation (optional field)
+    if (formData.identityNumber && formData.identityNumber.trim() !== '') {
+      if (!/^\d{16}$/.test(formData.identityNumber)) {
+        newErrors.identityNumber = 'NIK harus 16 digit angka'
+      }
     }
 
     setErrors(newErrors)
@@ -90,7 +101,7 @@ export function CustomerRegistrationModal({
         }
 
         // Show success message
-        console.log('Penyewa berhasil ditambahkan:', createdPenyewa.nama)
+        log.info('Penyewa berhasil ditambahkan', { customerName: createdPenyewa.nama, customerId: createdPenyewa.id })
 
         onCustomerRegistered(newCustomer)
 
@@ -103,21 +114,63 @@ export function CustomerRegistrationModal({
           identityNumber: '',
         })
         setErrors({})
+        setServerErrors({})
       },
       onError: (error) => {
-        console.error('Failed to register customer:', error)
+        log.error('Failed to register customer', { error: error.message })
         
-        // Show error message
-        console.error('Gagal menambahkan penyewa:', error.message || 'Terjadi kesalahan saat menyimpan data penyewa')
+        // Handle validation errors from server
+        if (error instanceof KasirApiError && error.validationErrors) {
+          const fieldErrors: Record<string, string> = {}
+          error.validationErrors.forEach(validationError => {
+            // Map API field names to form field names
+            const fieldMapping: Record<string, keyof CustomerFormData> = {
+              'nama': 'name',
+              'telepon': 'phone', 
+              'alamat': 'address',
+              'email': 'email',
+              'nik': 'identityNumber'
+            }
+            
+            const formField = fieldMapping[validationError.field]
+            if (formField) {
+              fieldErrors[formField] = validationError.message
+            } else {
+              // If no mapping found, use the field as is
+              fieldErrors[validationError.field] = validationError.message
+            }
+          })
+          setServerErrors(fieldErrors)
+        } else {
+          // Clear server errors for non-validation errors
+          setServerErrors({})
+        }
+        
+        // Show general error message
+        log.error('Gagal menambahkan penyewa', { errorMessage: error.message || 'Terjadi kesalahan saat menyimpan data penyewa' })
       },
     })
   }
 
   const handleInputChange = (field: keyof CustomerFormData, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
-    // Clear error when user starts typing
+    let processedValue = value
+    
+    // Format NIK input - only allow digits and limit to 16 characters
+    if (field === 'identityNumber') {
+      processedValue = value.replace(/\D/g, '').slice(0, 16)
+    }
+    
+    setFormData((prev) => ({ ...prev, [field]: processedValue }))
+    // Clear errors when user starts typing
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: undefined }))
+    }
+    if (serverErrors[field]) {
+      setServerErrors((prev) => {
+        const newErrors = { ...prev }
+        delete newErrors[field]
+        return newErrors
+      })
     }
   }
 
@@ -164,11 +217,13 @@ export function CustomerRegistrationModal({
                   type="text"
                   value={formData.name}
                   onChange={(e) => handleInputChange('name', e.target.value)}
-                  className={`pl-10 ${errors.name ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''}`}
+                  className={`pl-10 ${(errors.name || serverErrors.name) ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''}`}
                   placeholder="Masukkan nama lengkap"
                 />
               </div>
-              {errors.name && <p className="mt-1 text-xs text-red-600">{errors.name}</p>}
+              {(errors.name || serverErrors.name) && (
+                <p className="mt-1 text-xs text-red-600">{errors.name || serverErrors.name}</p>
+              )}
             </div>
 
             {/* Phone */}
@@ -183,11 +238,13 @@ export function CustomerRegistrationModal({
                   type="tel"
                   value={formData.phone}
                   onChange={(e) => handleInputChange('phone', e.target.value)}
-                  className={`pl-10 ${errors.phone ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''}`}
+                  className={`pl-10 ${(errors.phone || serverErrors.phone) ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''}`}
                   placeholder="081234567890"
                 />
               </div>
-              {errors.phone && <p className="mt-1 text-xs text-red-600">{errors.phone}</p>}
+              {(errors.phone || serverErrors.phone) && (
+                <p className="mt-1 text-xs text-red-600">{errors.phone || serverErrors.phone}</p>
+              )}
             </div>
 
             {/* Email */}
@@ -202,11 +259,13 @@ export function CustomerRegistrationModal({
                   type="email"
                   value={formData.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
-                  className={`pl-10 ${errors.email ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''}`}
+                  className={`pl-10 ${(errors.email || serverErrors.email) ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''}`}
                   placeholder="email@example.com"
                 />
               </div>
-              {errors.email && <p className="mt-1 text-xs text-red-600">{errors.email}</p>}
+              {(errors.email || serverErrors.email) && (
+                <p className="mt-1 text-xs text-red-600">{errors.email || serverErrors.email}</p>
+              )}
             </div>
 
             {/* Identity Number */}
@@ -214,6 +273,7 @@ export function CustomerRegistrationModal({
               <Label htmlFor="identityNumber" className="text-sm font-medium text-gray-700">
                 Nomor KTP (Opsional)
               </Label>
+              <p className="text-xs text-gray-500 mt-1">16 digit angka</p>
               <div className="mt-1 relative">
                 <CreditCard className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
@@ -221,10 +281,13 @@ export function CustomerRegistrationModal({
                   type="text"
                   value={formData.identityNumber}
                   onChange={(e) => handleInputChange('identityNumber', e.target.value)}
-                  className="pl-10"
+                  className={`pl-10 ${(errors.identityNumber || serverErrors.identityNumber) ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''}`}
                   placeholder="3171234567890001"
                 />
               </div>
+              {(errors.identityNumber || serverErrors.identityNumber) && (
+                <p className="mt-1 text-xs text-red-600">{errors.identityNumber || serverErrors.identityNumber}</p>
+              )}
             </div>
 
             {/* Address */}
@@ -238,11 +301,13 @@ export function CustomerRegistrationModal({
                   id="address"
                   value={formData.address}
                   onChange={(e) => handleInputChange('address', e.target.value)}
-                  className={`pl-10 min-h-[80px] ${errors.address ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''}`}
+                  className={`pl-10 min-h-[80px] ${(errors.address || serverErrors.address) ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''}`}
                   placeholder="Masukkan alamat lengkap dengan RT/RW, Kelurahan, Kecamatan, Kota"
                 />
               </div>
-              {errors.address && <p className="mt-1 text-xs text-red-600">{errors.address}</p>}
+              {(errors.address || serverErrors.address) && (
+                <p className="mt-1 text-xs text-red-600">{errors.address || serverErrors.address}</p>
+              )}
             </div>
           </div>
 

@@ -1,0 +1,36 @@
+[Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 158ms
+:3000/api/kasir/transaksi:1  Failed to load resource: the server responded with a status of 400 (Bad Request)Understand this error
+client-logger.ts:97 [2025-07-28T06:31:22.958Z] [DEBUG] [useTransactionForm] 🔍 Validating step 3... | Data: {}
+client-logger.ts:97 [2025-07-28T06:31:22.958Z] [DEBUG] [useTransactionForm] 💰 Step 3 validation details | Data: {"pickupDate":{"has":true,"value":"2025-07-30"},"returnDate":{"has":true,"value":"2025-08-02"},"paymentMethod":{"has":true,"value":"qris"},"paymentStatus":"unpaid","paymentAmount":350000,"paymentCondition":true,"overallValid":true}
+hook.js:377 [2025-07-28T06:31:22.959Z] [DEBUG] [useTransactionForm] 🔍 Validating step 3... | Data: {}
+hook.js:377 [2025-07-28T06:31:22.960Z] [DEBUG] [useTransactionForm] 💰 Step 3 validation details | Data: {"pickupDate":{"has":true,"value":"2025-07-30"},"returnDate":{"has":true,"value":"2025-08-02"},"paymentMethod":{"has":true,"value":"qris"},"paymentStatus":"unpaid","paymentAmount":350000,"paymentCondition":true,"overallValid":true}
+:3000/api/kasir/transaksi:1  Failed to load resource: the server responded with a status of 400 (Bad Request)Understand this error
+client-logger.ts:97 [2025-07-28T06:31:24.716Z] [DEBUG] [useTransactionForm] 🔍 Validating step 3... | Data: {}
+client-logger.ts:97 [2025-07-28T06:31:24.717Z] [DEBUG] [useTransactionForm] 💰 Step 3 validation details | Data: {"pickupDate":{"has":true,"value":"2025-07-30"},"returnDate":{"has":true,"value":"2025-08-02"},"paymentMethod":{"has":true,"value":"qris"},"paymentStatus":"unpaid","paymentAmount":350000,"paymentCondition":true,"overallValid":true}
+hook.js:377 [2025-07-28T06:31:24.718Z] [DEBUG] [useTransactionForm] 🔍 Validating step 3... | Data: {}
+hook.js:377 [2025-07-28T06:31:24.719Z] [DEBUG] [useTransactionForm] 💰 Step 3 validation details | Data: {"pickupDate":{"has":true,"value":"2025-07-30"},"returnDate":{"has":true,"value":"2025-08-02"},"paymentMethod":{"has":true,"value":"qris"},"paymentStatus":"unpaid","paymentAmount":350000,"paymentCondition":true,"overallValid":true}
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+:3000/api/kasir/transaksi:1  Failed to load resource: the server responded with a status of 400 (Bad Request)Understand this error
+report-hmr-latency.ts:26 [Fast Refresh] done in 282ms
+hook.js:608 Failed to create transaksi: Data tidak valid
+overrideMethod @ hook.js:608Understand this error
+hook.js:608 [2025-07-28T06:31:27.430Z] [ERROR] [useTransactionForm] ❌ Transaction submission failed! | Data: {"errorType":"object","errorProperties":["code","details","validationErrors","name"]}
+overrideMethod @ hook.js:608Understand this error
+hook.js:608 [2025-07-28T06:31:27.432Z] [ERROR] [useTransactionForm] 💬 Error details | Data: {"message":"Data tidak valid","stack":"KasirApiError: Data tidak valid\n    at apiRequest (http://localhost:3000/_next/static/chunks/_fa394cb8._.js:351:19)"}
+overrideMethod @ hook.js:608Understand this error
+client-logger.ts:97 [2025-07-28T06:31:27.432Z] [DEBUG] [useTransactionForm] 🏁 Transaction submission completed (cleanup) | Data: {}
+hook.js:608 [2025-07-28T06:31:27.433Z] [ERROR] [TransactionFormPage] ❌ Transaction failed, showing error message | Data: {}
+overrideMethod @ hook.js:608Understand this error
+client-logger.ts:97 [2025-07-28T06:31:27.435Z] [DEBUG] [useTransactionForm] 🔍 Validating step 3... | Data: {}
+client-logger.ts:97 [2025-07-28T06:31:27.435Z] [DEBUG] [useTransactionForm] 💰 Step 3 validation details | Data: {"pickupDate":{"has":true,"value":"2025-07-30"},"returnDate":{"has":true,"value":"2025-08-02"},"paymentMethod":{"has":true,"value":"qris"},"paymentStatus":"unpaid","paymentAmount":350000,"paymentCondition":true,"overallValid":true}
+hook.js:377 [2025-07-28T06:31:27.435Z] [DEBUG] [useTransactionForm] 🔍 Validating step 3... | Data: {}
+hook.js:377 [2025-07-28T06:31:27.436Z] [DEBUG] [useTransactionForm] 💰 Step 3 validation details | Data: {"pickupDate":{"has":true,"value":"2025-07-30"},"returnDate":{"has":true,"value":"2025-08-02"},"paymentMethod":{"has":true,"value":"qris"},"paymentStatus":"unpaid","paymentAmount":350000,"paymentCondition":true,"overallValid":true}
+client-logger.ts:97 [2025-07-28T06:31:32.436Z] [DEBUG] [useTransactionForm] 🔍 Validating step 3... | Data: {}
+client-logger.ts:97 [2025-07-28T06:31:32.437Z] [DEBUG] [useTransactionForm] 💰 Step 3 validation details | Data: {"pickupDate":{"has":true,"value":"2025-07-30"},"returnDate":{"has":true,"value":"2025-08-02"},"paymentMethod":{"has":true,"value":"qris"},"paymentStatus":"unpaid","paymentAmount":350000,"paymentCondition":true,"overallValid":true}
+hook.js:377 [2025-07-28T06:31:32.439Z] [DEBUG] [useTransactionForm] 🔍 Validating step 3... | Data: {}
+hook.js:377 [2025-07-28T06:31:32.440Z] [DEBUG] [useTransactionForm] 💰 Step 3 validation details | Data: {"pickupDate":{"has":true,"value":"2025-07-30"},"returnDate":{"has":true,"value":"2025-08-02"},"paymentMethod":{"has":true,"value":"qris"},"paymentStatus":"unpaid","paymentAmount":350000,"paymentCondition":true,"overallValid":true}
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 2772ms
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 227ms

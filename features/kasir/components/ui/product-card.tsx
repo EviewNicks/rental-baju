@@ -51,7 +51,11 @@ export function ProductCard({
       {/* Product Image */}
       <div className="relative aspect-square">
         <Image
-          src={product.image || '/placeholder.svg'}
+          src={
+            product.image?.startsWith('/') || product.image?.startsWith('http') 
+              ? (product.image || '/products/image.png') 
+              : `/${product.image || 'products/image.png'}`
+          }
           alt={product.name}
           width={200}
           height={200}

@@ -11,6 +11,7 @@ import { useAvailableProducts } from '../../hooks/useProduk'
 import { formatCurrency } from '../../lib/utils'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
+import { useLogger } from '@/lib/client-logger'
 
 interface ProductSelectionStepProps {
   selectedProducts: ProductSelection[]
@@ -29,6 +30,7 @@ export function ProductSelectionStep({
   onNext,
   canProceed,
 }: ProductSelectionStepProps) {
+  const log = useLogger('ProductSelectionStep')
   const [filters, setFilters] = useState<ProductFilters>({
     category: 'semua',
     size: 'semua',
@@ -38,6 +40,15 @@ export function ProductSelectionStep({
   })
   const [showCart, setShowCart] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+
+  // Debug logging for props
+  useEffect(() => {
+    log.debug(`📋 ProductSelectionStep props`, {
+      selectedProductsCount: selectedProducts.length,
+      canProceed,
+      selectedProducts: selectedProducts.map(p => ({ id: p.product.id, name: p.product.name, quantity: p.quantity }))
+    })
+  }, [selectedProducts, canProceed, log])
 
   // Fetch products from API
   const { 
@@ -50,11 +61,26 @@ export function ProductSelectionStep({
     available: true,
   })
 
+  // Debug API loading state
+  useEffect(() => {
+    log.debug(`🌐 API State`, {
+      isLoading,
+      hasError: !!error,
+      errorMessage: error?.message,
+      hasData: !!productsResponse,
+      dataCount: productsResponse?.data?.length || 0,
+      searchQuery
+    })
+  }, [isLoading, error, productsResponse, searchQuery, log])
+
   // Extract products and transform API data to match component interface
   const apiProducts = useMemo(() => {
-    if (!productsResponse?.data) return []
+    if (!productsResponse?.data) {
+      log.debug(`🔍 No products data available`, { productsResponse })
+      return []
+    }
     
-    return productsResponse.data.map((apiProduct): Product => ({
+    const transformedProducts = productsResponse.data.map((apiProduct): Product => ({
       id: apiProduct.id,
       name: apiProduct.name,
       category: apiProduct.category.name.toLowerCase(),
@@ -66,7 +92,21 @@ export function ProductSelectionStep({
       description: apiProduct.description,
       availableQuantity: apiProduct.availableQuantity,
     }))
-  }, [productsResponse])
+
+    log.debug(`📦 Products transformed`, {
+      originalCount: productsResponse.data.length,
+      transformedCount: transformedProducts.length,
+      availableCount: transformedProducts.filter(p => p.available).length,
+      firstProduct: transformedProducts[0] ? {
+        id: transformedProducts[0].id,
+        name: transformedProducts[0].name,
+        available: transformedProducts[0].available,
+        pricePerDay: transformedProducts[0].pricePerDay
+      } : null
+    })
+    
+    return transformedProducts
+  }, [productsResponse, log])
 
   // Extract unique categories, sizes, and colors from API data
   const categories = useMemo(() => {
@@ -131,13 +171,30 @@ export function ProductSelectionStep({
   }
 
   const handleAddProduct = (product: Product, quantity: number) => {
+    log.info(`🛒 Adding product to cart`, {
+      productId: product.id,
+      productName: product.name,
+      quantity,
+      currentSelectedCount: selectedProducts.length
+    })
+
     // Check if product is already in cart
     const existingProduct = selectedProducts.find((item) => item.product.id === product.id)
 
     if (existingProduct) {
+      log.debug(`📈 Updating existing product quantity`, {
+        productId: product.id,
+        oldQuantity: existingProduct.quantity,
+        newQuantity: existingProduct.quantity + quantity
+      })
       // Update quantity if product already exists
       onUpdateQuantity(product.id, existingProduct.quantity + quantity)
     } else {
+      log.debug(`✨ Adding new product to cart`, {
+        productId: product.id,
+        productName: product.name,
+        quantity
+      })
       // Add new product
       onAddProduct(product, quantity)
     }
@@ -334,7 +391,11 @@ export function ProductSelectionStep({
                   <div key={item.product.id} className="bg-gray-50 rounded-lg p-3">
                     <div className="flex items-start gap-3">
                       <Image
-                        src={item.product.image || '/placeholder.svg'}
+                        src={
+                          item.product.image?.startsWith('/') || item.product.image?.startsWith('http') 
+                            ? (item.product.image || '/products/image.png') 
+                            : `/${item.product.image || 'products/image.png'}`
+                        }
                         alt={item.product.name}
                         width={48}
                         height={48}
