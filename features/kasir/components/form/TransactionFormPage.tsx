@@ -1,21 +1,26 @@
 'use client'
 
-import { useState } from 'react'
-import { ArrowLeft, CheckCircle, AlertCircle, X, RotateCcw } from 'lucide-react'
+import React, { useState } from 'react'
+import { ArrowLeft } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Stepper } from '../ui/stepper'
+import { TransactionSuccessScreen } from '../ui/TransactionSuccessScreen'
+import { NotificationBanner } from '../ui/NotificationBanner'
 import { useTransactionForm } from '../../hooks/useTransactionForm'
 import { ProductSelectionStep } from './ProductSelectionStep'
 import { CustomerBiodataStep } from './CustomerBiodataStep'
 import { PaymentSummaryStep } from './PaymentSummaryStep'
 import { useLogger } from '@/lib/client-logger'
+import { getStepValidationMessage } from '../../lib/constants/stepValidationMessages'
+import type { ProductSelection } from '../../types/product'
 
 const steps = [
   { id: 1, title: 'Pilih Produk', description: 'Pilih baju yang akan disewa' },
   { id: 2, title: 'Data Penyewa', description: 'Isi biodata penyewa' },
   { id: 3, title: 'Pembayaran', description: 'Ringkasan & pembayaran' },
 ]
+
 
 export function TransactionFormPage() {
   const router = useRouter()
@@ -45,6 +50,14 @@ export function TransactionFormPage() {
     clearFormData,
   } = useTransactionForm()
 
+  // Add local state for restoration notification control
+  const [showDataRestored, setShowDataRestored] = useState(isDataRestored)
+  
+  // Sync local state with hook state
+  React.useEffect(() => {
+    setShowDataRestored(isDataRestored)
+  }, [isDataRestored])
+
   // Helper function to check if current step can proceed
   const canProceed = validateStep(currentStep)
 
@@ -55,8 +68,7 @@ export function TransactionFormPage() {
     router.push('/dashboard')
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleAddProduct = (product: any, quantity: number) => {
+  const handleAddProduct = (product: ProductSelection['product'], quantity: number) => {
     const productSelection = {
       product,
       quantity,
@@ -87,28 +99,17 @@ export function TransactionFormPage() {
         setErrorMessage('Terjadi kesalahan tidak terduga. Silakan coba lagi.')
       }
       
-      // Auto-hide error message after 5 seconds
-      setTimeout(() => {
-        setErrorMessage(null)
-      }, 5000)
+      // Error message will be dismissed by user action
+      // Removed auto-hide setTimeout for better UX control
     }
     return success
   }
 
   if (showSuccess) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
-        <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-8 text-center max-w-md mx-4">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <CheckCircle className="h-8 w-8 text-green-600" />
-          </div>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Transaksi Berhasil Dibuat!</h2>
-          <p className="text-gray-600 mb-6">
-            Transaksi penyewaan telah berhasil disimpan dan siap diproses.
-          </p>
-          <div className="text-sm text-gray-500">Mengalihkan ke dashboard...</div>
-        </div>
-      </div>
+      <TransactionSuccessScreen 
+        redirectDelay={2000}
+      />
     )
   }
 
@@ -146,92 +147,42 @@ export function TransactionFormPage() {
         </div>
 
         {/* Data Restoration Notification */}
-        {isDataRestored && (
-          <div 
-            className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start gap-3 mb-6"
-            role="alert"
-            aria-live="polite"
-          >
-            <RotateCcw className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
-            <div className="flex-1">
-              <h3 className="text-sm font-medium text-blue-900">Data Form Dipulihkan</h3>
-              <p className="text-sm text-blue-700 mt-1">
-                Data transaksi sebelumnya telah dipulihkan. Anda dapat melanjutkan dari langkah terakhir.
-              </p>
-              <div className="mt-2 text-xs text-blue-600">
-                Data akan tersimpan otomatis saat Anda mengisi form.
-              </div>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsDataRestored(false)}
-              className="h-6 w-6 p-0 text-blue-500 hover:text-blue-700"
-              aria-label="Tutup notifikasi"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
+        {showDataRestored && (
+          <NotificationBanner
+            type="info"
+            title="Data Form Dipulihkan"
+            message="Data transaksi sebelumnya telah dipulihkan. Anda dapat melanjutkan dari langkah terakhir."
+            helpText="Data akan tersimpan otomatis saat Anda mengisi form."
+            onDismiss={() => setShowDataRestored(false)}
+          />
         )}
 
         {/* Error Message */}
         {errorMessage && (
-          <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3 mb-6">
-            <AlertCircle className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0" />
-            <div className="flex-1">
-              <h3 className="text-sm font-medium text-red-900">Gagal Membuat Transaksi</h3>
-              <p className="text-sm text-red-700 mt-1">{errorMessage}</p>
-              <div className="mt-2 text-xs text-red-600">
-                Periksa kembali data yang telah diisi dan coba lagi.
-              </div>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setErrorMessage(null)}
-              className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
+          <NotificationBanner
+            type="error"
+            title="Gagal Membuat Transaksi"
+            message={errorMessage}
+            helpText="Periksa kembali data yang telah diisi dan coba lagi."
+            onDismiss={() => setErrorMessage(null)}
+          />
         )}
 
         {/* Progress Indicators */}
-        {!canProceed && currentStep === 1 && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 flex items-start gap-3 mb-6">
-            <AlertCircle className="h-5 w-5 text-yellow-600 mt-0.5 flex-shrink-0" />
-            <div className="flex-1">
-              <h3 className="text-sm font-medium text-yellow-900">Pilih Produk</h3>
-              <p className="text-sm text-yellow-700 mt-1">
-                Silakan pilih minimal satu produk untuk melanjutkan ke tahap berikutnya.
-              </p>
-            </div>
-          </div>
-        )}
-
-        {!canProceed && currentStep === 2 && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 flex items-start gap-3 mb-6">
-            <AlertCircle className="h-5 w-5 text-yellow-600 mt-0.5 flex-shrink-0" />
-            <div className="flex-1">
-              <h3 className="text-sm font-medium text-yellow-900">Data Penyewa Diperlukan</h3>
-              <p className="text-sm text-yellow-700 mt-1">
-                Pilih atau daftarkan data penyewa untuk melanjutkan.
-              </p>
-            </div>
-          </div>
-        )}
-
-        {!canProceed && currentStep === 3 && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 flex items-start gap-3 mb-6">
-            <AlertCircle className="h-5 w-5 text-yellow-600 mt-0.5 flex-shrink-0" />
-            <div className="flex-1">
-              <h3 className="text-sm font-medium text-yellow-900">Lengkapi Informasi Pembayaran</h3>
-              <p className="text-sm text-yellow-700 mt-1">
-                Pastikan tanggal penyewaan dan metode pembayaran sudah dipilih.
-              </p>
-            </div>
-          </div>
-        )}
+        {!canProceed && (() => {
+          const validationMessage = getStepValidationMessage(currentStep)
+          if (!validationMessage) return null
+          
+          return (
+            <NotificationBanner
+              type="warning"
+              title={validationMessage.title}
+              message={validationMessage.message}
+              helpText={validationMessage.helpText}
+              dismissible={false}
+            />
+          )
+        })()}
 
         {/* Content */}
         <div className="space-y-6">

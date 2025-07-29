@@ -88,7 +88,7 @@ export function ProductSelectionStep({
       color: apiProduct.color?.name || 'Unknown',
       pricePerDay: apiProduct.hargaSewa,
       image: apiProduct.imageUrl || '/placeholder.svg',
-      available: apiProduct.availableQuantity > 0,
+      available: true, // Availability is now handled in ProductCard with quantity-aware logic
       description: apiProduct.description,
       availableQuantity: apiProduct.availableQuantity,
     }))

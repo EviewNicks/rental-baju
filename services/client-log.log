@@ -1,36 +1,618 @@
 [Fast Refresh] rebuilding
-report-hmr-latency.ts:26 [Fast Refresh] done in 158ms
-:3000/api/kasir/transaksi:1  Failed to load resource: the server responded with a status of 400 (Bad Request)Understand this error
-client-logger.ts:97 [2025-07-28T06:31:22.958Z] [DEBUG] [useTransactionForm] 🔍 Validating step 3... | Data: {}
-client-logger.ts:97 [2025-07-28T06:31:22.958Z] [DEBUG] [useTransactionForm] 💰 Step 3 validation details | Data: {"pickupDate":{"has":true,"value":"2025-07-30"},"returnDate":{"has":true,"value":"2025-08-02"},"paymentMethod":{"has":true,"value":"qris"},"paymentStatus":"unpaid","paymentAmount":350000,"paymentCondition":true,"overallValid":true}
-hook.js:377 [2025-07-28T06:31:22.959Z] [DEBUG] [useTransactionForm] 🔍 Validating step 3... | Data: {}
-hook.js:377 [2025-07-28T06:31:22.960Z] [DEBUG] [useTransactionForm] 💰 Step 3 validation details | Data: {"pickupDate":{"has":true,"value":"2025-07-30"},"returnDate":{"has":true,"value":"2025-08-02"},"paymentMethod":{"has":true,"value":"qris"},"paymentStatus":"unpaid","paymentAmount":350000,"paymentCondition":true,"overallValid":true}
-:3000/api/kasir/transaksi:1  Failed to load resource: the server responded with a status of 400 (Bad Request)Understand this error
-client-logger.ts:97 [2025-07-28T06:31:24.716Z] [DEBUG] [useTransactionForm] 🔍 Validating step 3... | Data: {}
-client-logger.ts:97 [2025-07-28T06:31:24.717Z] [DEBUG] [useTransactionForm] 💰 Step 3 validation details | Data: {"pickupDate":{"has":true,"value":"2025-07-30"},"returnDate":{"has":true,"value":"2025-08-02"},"paymentMethod":{"has":true,"value":"qris"},"paymentStatus":"unpaid","paymentAmount":350000,"paymentCondition":true,"overallValid":true}
-hook.js:377 [2025-07-28T06:31:24.718Z] [DEBUG] [useTransactionForm] 🔍 Validating step 3... | Data: {}
-hook.js:377 [2025-07-28T06:31:24.719Z] [DEBUG] [useTransactionForm] 💰 Step 3 validation details | Data: {"pickupDate":{"has":true,"value":"2025-07-30"},"returnDate":{"has":true,"value":"2025-08-02"},"paymentMethod":{"has":true,"value":"qris"},"paymentStatus":"unpaid","paymentAmount":350000,"paymentCondition":true,"overallValid":true}
+report-hmr-latency.ts:26 [Fast Refresh] done in 115ms
+client-logger.ts:97 [2025-07-29T08:24:07.991Z] [DEBUG] [useTransactionForm] 🔍 Validating step 1... | Data: {}
+client-logger.ts:97 [2025-07-29T08:24:07.992Z] [DEBUG] [useTransactionForm] 📦 Step 1 - Products count: 0, Valid: false | Data: {"productsCount":0,"valid":false}
+client-logger.ts:113 [2025-07-29T08:24:07.992Z] [WARN] [useTransactionForm] ❌ Step 1 failed: No products selected | Data: {}
+overrideMethod @ hook.js:608
+warn @ client-logger.ts:113
+useTransactionForm.useCallback[validateStep] @ useTransactionForm.ts:140
+TransactionFormPage @ TransactionFormPage.tsx:62
+react-stack-bottom-frame @ react-dom-client.development.js:22973
+renderWithHooks @ react-dom-client.development.js:6666
+updateFunctionComponent @ react-dom-client.development.js:8930
+beginWork @ react-dom-client.development.js:10504
+runWithFiberInDEV @ react-dom-client.development.js:844
+performUnitOfWork @ react-dom-client.development.js:15257
+workLoopConcurrentByScheduler @ react-dom-client.development.js:15251
+renderRootConcurrent @ react-dom-client.development.js:15226
+performWorkOnRoot @ react-dom-client.development.js:14524
+performWorkOnRootViaSchedulerTask @ react-dom-client.development.js:16349
+performWorkUntilDeadline @ scheduler.development.js:45Understand this warning
+client-logger.ts:97 [2025-07-29T08:24:07.994Z] [DEBUG] [useTransactionForm] 🔍 Validating step 1... | Data: {}
+client-logger.ts:97 [2025-07-29T08:24:07.994Z] [DEBUG] [useTransactionForm] 📦 Step 1 - Products count: 0, Valid: false | Data: {"productsCount":0,"valid":false}
+client-logger.ts:113 [2025-07-29T08:24:07.994Z] [WARN] [useTransactionForm] ❌ Step 1 failed: No products selected | Data: {}
+overrideMethod @ hook.js:608
+warn @ client-logger.ts:113
+useTransactionForm.useCallback[validateStep] @ useTransactionForm.ts:140
+TransactionFormPage @ TransactionFormPage.tsx:196
+react-stack-bottom-frame @ react-dom-client.development.js:22973
+renderWithHooks @ react-dom-client.development.js:6666
+updateFunctionComponent @ react-dom-client.development.js:8930
+beginWork @ react-dom-client.development.js:10504
+runWithFiberInDEV @ react-dom-client.development.js:844
+performUnitOfWork @ react-dom-client.development.js:15257
+workLoopConcurrentByScheduler @ react-dom-client.development.js:15251
+renderRootConcurrent @ react-dom-client.development.js:15226
+performWorkOnRoot @ react-dom-client.development.js:14524
+performWorkOnRootViaSchedulerTask @ react-dom-client.development.js:16349
+performWorkUntilDeadline @ scheduler.development.js:45Understand this warning
+client-logger.ts:97 [2025-07-29T08:24:07.995Z] [DEBUG] [useTransactionForm] 🔍 Validating step 1... | Data: {}
+client-logger.ts:97 [2025-07-29T08:24:07.995Z] [DEBUG] [useTransactionForm] 📦 Step 1 - Products count: 0, Valid: false | Data: {"productsCount":0,"valid":false}
+client-logger.ts:113 [2025-07-29T08:24:07.995Z] [WARN] [useTransactionForm] ❌ Step 1 failed: No products selected | Data: {}
+overrideMethod @ hook.js:600
+warn @ client-logger.ts:113
+useTransactionForm.useCallback[validateStep] @ useTransactionForm.ts:140
+TransactionFormPage @ TransactionFormPage.tsx:62
+react-stack-bottom-frame @ react-dom-client.development.js:22973
+renderWithHooksAgain @ react-dom-client.development.js:6766
+renderWithHooks @ react-dom-client.development.js:6678
+updateFunctionComponent @ react-dom-client.development.js:8930
+beginWork @ react-dom-client.development.js:10504
+runWithFiberInDEV @ react-dom-client.development.js:844
+performUnitOfWork @ react-dom-client.development.js:15257
+workLoopConcurrentByScheduler @ react-dom-client.development.js:15251
+renderRootConcurrent @ react-dom-client.development.js:15226
+performWorkOnRoot @ react-dom-client.development.js:14524
+performWorkOnRootViaSchedulerTask @ react-dom-client.development.js:16349
+performWorkUntilDeadline @ scheduler.development.js:45Understand this warning
+client-logger.ts:97 [2025-07-29T08:24:07.996Z] [DEBUG] [useTransactionForm] 🔍 Validating step 1... | Data: {}
+client-logger.ts:97 [2025-07-29T08:24:07.996Z] [DEBUG] [useTransactionForm] 📦 Step 1 - Products count: 0, Valid: false | Data: {"productsCount":0,"valid":false}
+client-logger.ts:113 [2025-07-29T08:24:07.996Z] [WARN] [useTransactionForm] ❌ Step 1 failed: No products selected | Data: {}
+overrideMethod @ hook.js:600
+warn @ client-logger.ts:113
+useTransactionForm.useCallback[validateStep] @ useTransactionForm.ts:140
+TransactionFormPage @ TransactionFormPage.tsx:196
+react-stack-bottom-frame @ react-dom-client.development.js:22973
+renderWithHooksAgain @ react-dom-client.development.js:6766
+renderWithHooks @ react-dom-client.development.js:6678
+updateFunctionComponent @ react-dom-client.development.js:8930
+beginWork @ react-dom-client.development.js:10504
+runWithFiberInDEV @ react-dom-client.development.js:844
+performUnitOfWork @ react-dom-client.development.js:15257
+workLoopConcurrentByScheduler @ react-dom-client.development.js:15251
+renderRootConcurrent @ react-dom-client.development.js:15226
+performWorkOnRoot @ react-dom-client.development.js:14524
+performWorkOnRootViaSchedulerTask @ react-dom-client.development.js:16349
+performWorkUntilDeadline @ scheduler.development.js:45Understand this warning
+client-logger.ts:97 [2025-07-29T08:24:08.006Z] [DEBUG] [ProductSelectionStep] 🔍 No products data available | Data: {}
+client-logger.ts:97 [2025-07-29T08:24:08.006Z] [DEBUG] [ProductSelectionStep] 🔍 No products data available | Data: {}
+client-logger.ts:97 [2025-07-29T08:24:08.008Z] [DEBUG] [ProductSelectionStep] 🔍 No products data available | Data: {}
+client-logger.ts:97 [2025-07-29T08:24:08.047Z] [DEBUG] [ProductSelectionStep] 📋 ProductSelectionStep props | Data: {"selectedProductsCount":0,"canProceed":false,"selectedProducts":[]}
+client-logger.ts:97 [2025-07-29T08:24:08.048Z] [DEBUG] [ProductSelectionStep] 🌐 API State | Data: {"isLoading":true,"hasError":false,"hasData":false,"dataCount":0,"searchQuery":""}
+client-logger.ts:105 [2025-07-29T08:24:08.049Z] [INFO] [useTransactionForm] 🚀 Initializing transaction form... | Data: {}
+client-logger.ts:105 [2025-07-29T08:24:08.049Z] [INFO] [useTransactionFormPersistence] 🔄 Loading persisted form data... | Data: {}
+client-logger.ts:97 [2025-07-29T08:24:08.050Z] [DEBUG] [SafeStorage] No data found in sessionStorage | Data: {"key":"transaction-form-draft"}
+client-logger.ts:105 [2025-07-29T08:24:08.050Z] [INFO] [useTransactionFormPersistence] 💭 No persisted data found | Data: {}
+client-logger.ts:105 [2025-07-29T08:24:08.051Z] [INFO] [useTransactionForm] 🆕 Starting with fresh form | Data: {}
+client-logger.ts:97 [2025-07-29T08:24:08.052Z] [DEBUG] [ProductSelectionStep] 📋 ProductSelectionStep props | Data: {"selectedProductsCount":0,"canProceed":false,"selectedProducts":[]}
+client-logger.ts:97 [2025-07-29T08:24:08.052Z] [DEBUG] [ProductSelectionStep] 🌐 API State | Data: {"isLoading":true,"hasError":false,"hasData":false,"dataCount":0,"searchQuery":""}
+client-logger.ts:105 [2025-07-29T08:24:08.053Z] [INFO] [useTransactionForm] 🚀 Initializing transaction form... | Data: {}
+client-logger.ts:105 [2025-07-29T08:24:08.054Z] [INFO] [useTransactionFormPersistence] 🔄 Loading persisted form data... | Data: {}
+client-logger.ts:97 [2025-07-29T08:24:08.055Z] [DEBUG] [SafeStorage] No data found in sessionStorage | Data: {"key":"transaction-form-draft"}
+client-logger.ts:105 [2025-07-29T08:24:08.056Z] [INFO] [useTransactionFormPersistence] 💭 No persisted data found | Data: {}
+client-logger.ts:105 [2025-07-29T08:24:08.057Z] [INFO] [useTransactionForm] 🆕 Starting with fresh form | Data: {}
+client-logger.ts:97 [2025-07-29T08:24:11.525Z] [DEBUG] [ProductSelectionStep] 📦 Products transformed | Data: {"originalCount":5,"transformedCount":5,"availableCount":5,"firstProduct":{"id":"2a225c70-148d-4fca-a5b2-02d151ffb334","name":"Dress Elegant Red","available":true,"pricePerDay":50000}}
+client-logger.ts:97 [2025-07-29T08:24:11.526Z] [DEBUG] [ProductSelectionStep] 📦 Products transformed | Data: {"originalCount":5,"transformedCount":5,"availableCount":5,"firstProduct":{"id":"2a225c70-148d-4fca-a5b2-02d151ffb334","name":"Dress Elegant Red","available":true,"pricePerDay":50000}}
+client-logger.ts:97 [2025-07-29T08:24:11.529Z] [DEBUG] [ProductSelectionStep] 📦 Products transformed | Data: {"originalCount":5,"transformedCount":5,"availableCount":5,"firstProduct":{"id":"2a225c70-148d-4fca-a5b2-02d151ffb334","name":"Dress Elegant Red","available":true,"pricePerDay":50000}}
+client-logger.ts:97 [2025-07-29T08:24:11.567Z] [DEBUG] [ProductSelectionStep] 📋 ProductSelectionStep props | Data: {"selectedProductsCount":0,"canProceed":false,"selectedProducts":[]}
+client-logger.ts:97 [2025-07-29T08:24:11.567Z] [DEBUG] [ProductSelectionStep] 🌐 API State | Data: {"isLoading":false,"hasError":false,"hasData":true,"dataCount":5,"searchQuery":""}
+client-logger.ts:97 [2025-07-29T08:24:11.604Z] [DEBUG] [ProductSelectionStep] 📦 Products transformed | Data: {"originalCount":5,"transformedCount":5,"availableCount":5,"firstProduct":{"id":"2a225c70-148d-4fca-a5b2-02d151ffb334","name":"Dress Elegant Red","available":true,"pricePerDay":50000}}
+client-logger.ts:97 [2025-07-29T08:24:11.604Z] [DEBUG] [ProductSelectionStep] 📦 Products transformed | Data: {"originalCount":5,"transformedCount":5,"availableCount":5,"firstProduct":{"id":"2a225c70-148d-4fca-a5b2-02d151ffb334","name":"Dress Elegant Red","available":true,"pricePerDay":50000}}
+client-logger.ts:97 [2025-07-29T08:24:11.606Z] [DEBUG] [ProductSelectionStep] 📦 Products transformed | Data: {"originalCount":5,"transformedCount":5,"availableCount":5,"firstProduct":{"id":"2a225c70-148d-4fca-a5b2-02d151ffb334","name":"Dress Elegant Red","available":true,"pricePerDay":50000}}
+client-logger.ts:105 [2025-07-29T08:24:18.916Z] [INFO] [ProductSelectionStep] 🛒 Adding product to cart | Data: {"productId":"6ca0b72e-6392-4ea2-9e96-1511969661d1","productName":"DRESS Pesta Baju test 1","quantity":2,"currentSelectedCount":0}
+client-logger.ts:97 [2025-07-29T08:24:18.916Z] [DEBUG] [ProductSelectionStep] ✨ Adding new product to cart | Data: {"productId":"6ca0b72e-6392-4ea2-9e96-1511969661d1","productName":"DRESS Pesta Baju test 1","quantity":2}
+client-logger.ts:97 [2025-07-29T08:24:18.917Z] [DEBUG] [useTransactionForm] 🔍 Validating step 1... | Data: {}
+client-logger.ts:97 [2025-07-29T08:24:18.918Z] [DEBUG] [useTransactionForm] 📦 Step 1 - Products count: 1, Valid: true | Data: {"productsCount":1,"valid":true}
+client-logger.ts:97 [2025-07-29T08:24:18.920Z] [DEBUG] [useTransactionForm] 🔍 Validating step 1... | Data: {}
+client-logger.ts:97 [2025-07-29T08:24:18.920Z] [DEBUG] [useTransactionForm] 📦 Step 1 - Products count: 1, Valid: true | Data: {"productsCount":1,"valid":true}
+client-logger.ts:97 [2025-07-29T08:24:18.921Z] [DEBUG] [useTransactionForm] 🔍 Validating step 1... | Data: {}
+client-logger.ts:97 [2025-07-29T08:24:18.922Z] [DEBUG] [useTransactionForm] 📦 Step 1 - Products count: 1, Valid: true | Data: {"productsCount":1,"valid":true}
+client-logger.ts:97 [2025-07-29T08:24:18.923Z] [DEBUG] [useTransactionForm] 🔍 Validating step 1... | Data: {}
+client-logger.ts:97 [2025-07-29T08:24:18.924Z] [DEBUG] [useTransactionForm] 📦 Step 1 - Products count: 1, Valid: true | Data: {"productsCount":1,"valid":true}
+client-logger.ts:97 [2025-07-29T08:24:18.927Z] [DEBUG] [ProductSelectionStep] 📦 Products transformed | Data: {"originalCount":5,"transformedCount":5,"availableCount":5,"firstProduct":{"id":"2a225c70-148d-4fca-a5b2-02d151ffb334","name":"Dress Elegant Red","available":true,"pricePerDay":50000}}
+client-logger.ts:97 [2025-07-29T08:24:18.927Z] [DEBUG] [ProductSelectionStep] 📦 Products transformed | Data: {"originalCount":5,"transformedCount":5,"availableCount":5,"firstProduct":{"id":"2a225c70-148d-4fca-a5b2-02d151ffb334","name":"Dress Elegant Red","available":true,"pricePerDay":50000}}
+client-logger.ts:97 [2025-07-29T08:24:18.931Z] [DEBUG] [ProductSelectionStep] 📦 Products transformed | Data: {"originalCount":5,"transformedCount":5,"availableCount":5,"firstProduct":{"id":"2a225c70-148d-4fca-a5b2-02d151ffb334","name":"Dress Elegant Red","available":true,"pricePerDay":50000}}
+client-logger.ts:97 [2025-07-29T08:24:18.950Z] [DEBUG] [ProductSelectionStep] 📋 ProductSelectionStep props | Data: {"selectedProductsCount":1,"canProceed":true,"selectedProducts":[{"id":"6ca0b72e-6392-4ea2-9e96-1511969661d1","name":"DRESS Pesta Baju test 1","quantity":2}]}
+client-logger.ts:97 [2025-07-29T08:24:18.951Z] [DEBUG] [ProductSelectionStep] 🌐 API State | Data: {"isLoading":false,"hasError":false,"hasData":true,"dataCount":5,"searchQuery":""}
+client-logger.ts:97 [2025-07-29T08:24:18.985Z] [DEBUG] [useTransactionForm] 🔍 Validating step 1... | Data: {}
+client-logger.ts:97 [2025-07-29T08:24:18.986Z] [DEBUG] [useTransactionForm] 📦 Step 1 - Products count: 1, Valid: true | Data: {"productsCount":1,"valid":true}
+client-logger.ts:97 [2025-07-29T08:24:18.988Z] [DEBUG] [useTransactionForm] 🔍 Validating step 1... | Data: {}
+client-logger.ts:97 [2025-07-29T08:24:18.990Z] [DEBUG] [useTransactionForm] 📦 Step 1 - Products count: 1, Valid: true | Data: {"productsCount":1,"valid":true}
+client-logger.ts:97 [2025-07-29T08:24:18.992Z] [DEBUG] [useTransactionForm] 🔍 Validating step 1... | Data: {}
+client-logger.ts:97 [2025-07-29T08:24:18.993Z] [DEBUG] [useTransactionForm] 📦 Step 1 - Products count: 1, Valid: true | Data: {"productsCount":1,"valid":true}
+client-logger.ts:97 [2025-07-29T08:24:18.995Z] [DEBUG] [useTransactionForm] 🔍 Validating step 1... | Data: {}
+client-logger.ts:97 [2025-07-29T08:24:18.995Z] [DEBUG] [useTransactionForm] 📦 Step 1 - Products count: 1, Valid: true | Data: {"productsCount":1,"valid":true}
+client-logger.ts:97 [2025-07-29T08:24:19.956Z] [DEBUG] [SafeStorage] Data saved to sessionStorage | Data: {"key":"transaction-form-draft","dataKeys":["products","pickupDate","returnDate","paymentMethod","paymentAmount","paymentStatus","currentStep"]}
+client-logger.ts:97 [2025-07-29T08:24:19.957Z] [DEBUG] [useTransactionFormPersistence] 💾 Form data auto-saved | Data: {"productsCount":1,"currentStep":1,"hasCustomer":false}
+client-logger.ts:105 [2025-07-29T08:24:20.927Z] [INFO] [ProductSelectionStep] 🛒 Adding product to cart | Data: {"productId":"2a225c70-148d-4fca-a5b2-02d151ffb334","productName":"Dress Elegant Red","quantity":1,"currentSelectedCount":1}
+client-logger.ts:97 [2025-07-29T08:24:20.928Z] [DEBUG] [ProductSelectionStep] ✨ Adding new product to cart | Data: {"productId":"2a225c70-148d-4fca-a5b2-02d151ffb334","productName":"Dress Elegant Red","quantity":1}
+client-logger.ts:97 [2025-07-29T08:24:20.929Z] [DEBUG] [useTransactionForm] 🔍 Validating step 1... | Data: {}
+client-logger.ts:97 [2025-07-29T08:24:20.930Z] [DEBUG] [useTransactionForm] 📦 Step 1 - Products count: 2, Valid: true | Data: {"productsCount":2,"valid":true}
+client-logger.ts:97 [2025-07-29T08:24:20.931Z] [DEBUG] [useTransactionForm] 🔍 Validating step 1... | Data: {}
+client-logger.ts:97 [2025-07-29T08:24:20.931Z] [DEBUG] [useTransactionForm] 📦 Step 1 - Products count: 2, Valid: true | Data: {"productsCount":2,"valid":true}
+client-logger.ts:97 [2025-07-29T08:24:20.932Z] [DEBUG] [useTransactionForm] 🔍 Validating step 1... | Data: {}
+client-logger.ts:97 [2025-07-29T08:24:20.933Z] [DEBUG] [useTransactionForm] 📦 Step 1 - Products count: 2, Valid: true | Data: {"productsCount":2,"valid":true}
+client-logger.ts:97 [2025-07-29T08:24:20.934Z] [DEBUG] [useTransactionForm] 🔍 Validating step 1... | Data: {}
+client-logger.ts:97 [2025-07-29T08:24:20.935Z] [DEBUG] [useTransactionForm] 📦 Step 1 - Products count: 2, Valid: true | Data: {"productsCount":2,"valid":true}
+client-logger.ts:97 [2025-07-29T08:24:20.940Z] [DEBUG] [ProductSelectionStep] 📦 Products transformed | Data: {"originalCount":5,"transformedCount":5,"availableCount":5,"firstProduct":{"id":"2a225c70-148d-4fca-a5b2-02d151ffb334","name":"Dress Elegant Red","available":true,"pricePerDay":50000}}
+client-logger.ts:97 [2025-07-29T08:24:20.941Z] [DEBUG] [ProductSelectionStep] 📦 Products transformed | Data: {"originalCount":5,"transformedCount":5,"availableCount":5,"firstProduct":{"id":"2a225c70-148d-4fca-a5b2-02d151ffb334","name":"Dress Elegant Red","available":true,"pricePerDay":50000}}
+client-logger.ts:97 [2025-07-29T08:24:20.945Z] [DEBUG] [ProductSelectionStep] 📦 Products transformed | Data: {"originalCount":5,"transformedCount":5,"availableCount":5,"firstProduct":{"id":"2a225c70-148d-4fca-a5b2-02d151ffb334","name":"Dress Elegant Red","available":true,"pricePerDay":50000}}
+client-logger.ts:97 [2025-07-29T08:24:20.977Z] [DEBUG] [ProductSelectionStep] 📋 ProductSelectionStep props | Data: {"selectedProductsCount":2,"canProceed":true,"selectedProducts":[{"id":"6ca0b72e-6392-4ea2-9e96-1511969661d1","name":"DRESS Pesta Baju test 1","quantity":2},{"id":"2a225c70-148d-4fca-a5b2-02d151ffb334","name":"Dress Elegant Red","quantity":1}]}
+client-logger.ts:97 [2025-07-29T08:24:20.978Z] [DEBUG] [ProductSelectionStep] 🌐 API State | Data: {"isLoading":false,"hasError":false,"hasData":true,"dataCount":5,"searchQuery":""}
+client-logger.ts:97 [2025-07-29T08:24:21.982Z] [DEBUG] [SafeStorage] Data saved to sessionStorage | Data: {"key":"transaction-form-draft","dataKeys":["products","pickupDate","returnDate","paymentMethod","paymentAmount","paymentStatus","currentStep"]}
+client-logger.ts:97 [2025-07-29T08:24:21.983Z] [DEBUG] [useTransactionFormPersistence] 💾 Form data auto-saved | Data: {"productsCount":2,"currentStep":1,"hasCustomer":false}
+client-logger.ts:97 [2025-07-29T08:24:31.456Z] [DEBUG] [useTransactionForm] 🔍 Validating step 1... | Data: {}
+client-logger.ts:97 [2025-07-29T08:24:31.456Z] [DEBUG] [useTransactionForm] 📦 Step 1 - Products count: 2, Valid: true | Data: {"productsCount":2,"valid":true}
+client-logger.ts:97 [2025-07-29T08:24:31.457Z] [DEBUG] [useTransactionForm] 🔍 Validating step 2... | Data: {}
+client-logger.ts:97 [2025-07-29T08:24:31.457Z] [DEBUG] [useTransactionForm] 👤 Step 2 - Customer exists: false, Has ID: false, Valid: false | Data: {"hasCustomer":false,"hasCustomerId":false,"valid":false}
+client-logger.ts:113 [2025-07-29T08:24:31.457Z] [WARN] [useTransactionForm] ❌ Step 2 failed: Customer not selected or missing ID | Data: {}
+overrideMethod @ hook.js:608
+warn @ client-logger.ts:113
+useTransactionForm.useCallback[validateStep] @ useTransactionForm.ts:155
+TransactionFormPage @ TransactionFormPage.tsx:62
+react-stack-bottom-frame @ react-dom-client.development.js:22973
+renderWithHooks @ react-dom-client.development.js:6666
+updateFunctionComponent @ react-dom-client.development.js:8930
+beginWork @ react-dom-client.development.js:10555
+runWithFiberInDEV @ react-dom-client.development.js:844
+performUnitOfWork @ react-dom-client.development.js:15257
+workLoopSync @ react-dom-client.development.js:15077
+renderRootSync @ react-dom-client.development.js:15057
+performWorkOnRoot @ react-dom-client.development.js:14525
+performSyncWorkOnRoot @ react-dom-client.development.js:16364
+flushSyncWorkAcrossRoots_impl @ react-dom-client.development.js:16210
+processRootScheduleInMicrotask @ react-dom-client.development.js:16249
+(anonymous) @ react-dom-client.development.js:16383Understand this warning
+client-logger.ts:97 [2025-07-29T08:24:31.458Z] [DEBUG] [useTransactionForm] 🔍 Validating step 2... | Data: {}
+client-logger.ts:97 [2025-07-29T08:24:31.458Z] [DEBUG] [useTransactionForm] 👤 Step 2 - Customer exists: false, Has ID: false, Valid: false | Data: {"hasCustomer":false,"hasCustomerId":false,"valid":false}
+client-logger.ts:113 [2025-07-29T08:24:31.458Z] [WARN] [useTransactionForm] ❌ Step 2 failed: Customer not selected or missing ID | Data: {}
+overrideMethod @ hook.js:608
+warn @ client-logger.ts:113
+useTransactionForm.useCallback[validateStep] @ useTransactionForm.ts:155
+TransactionFormPage @ TransactionFormPage.tsx:206
+react-stack-bottom-frame @ react-dom-client.development.js:22973
+renderWithHooks @ react-dom-client.development.js:6666
+updateFunctionComponent @ react-dom-client.development.js:8930
+beginWork @ react-dom-client.development.js:10555
+runWithFiberInDEV @ react-dom-client.development.js:844
+performUnitOfWork @ react-dom-client.development.js:15257
+workLoopSync @ react-dom-client.development.js:15077
+renderRootSync @ react-dom-client.development.js:15057
+performWorkOnRoot @ react-dom-client.development.js:14525
+performSyncWorkOnRoot @ react-dom-client.development.js:16364
+flushSyncWorkAcrossRoots_impl @ react-dom-client.development.js:16210
+processRootScheduleInMicrotask @ react-dom-client.development.js:16249
+(anonymous) @ react-dom-client.development.js:16383Understand this warning
+client-logger.ts:97 [2025-07-29T08:24:31.459Z] [DEBUG] [useTransactionForm] 🔍 Validating step 2... | Data: {}
+client-logger.ts:97 [2025-07-29T08:24:31.459Z] [DEBUG] [useTransactionForm] 👤 Step 2 - Customer exists: false, Has ID: false, Valid: false | Data: {"hasCustomer":false,"hasCustomerId":false,"valid":false}
+client-logger.ts:113 [2025-07-29T08:24:31.460Z] [WARN] [useTransactionForm] ❌ Step 2 failed: Customer not selected or missing ID | Data: {}
+overrideMethod @ hook.js:600
+warn @ client-logger.ts:113
+useTransactionForm.useCallback[validateStep] @ useTransactionForm.ts:155
+TransactionFormPage @ TransactionFormPage.tsx:62
+react-stack-bottom-frame @ react-dom-client.development.js:22973
+renderWithHooksAgain @ react-dom-client.development.js:6766
+renderWithHooks @ react-dom-client.development.js:6678
+updateFunctionComponent @ react-dom-client.development.js:8930
+beginWork @ react-dom-client.development.js:10555
+runWithFiberInDEV @ react-dom-client.development.js:844
+performUnitOfWork @ react-dom-client.development.js:15257
+workLoopSync @ react-dom-client.development.js:15077
+renderRootSync @ react-dom-client.development.js:15057
+performWorkOnRoot @ react-dom-client.development.js:14525
+performSyncWorkOnRoot @ react-dom-client.development.js:16364
+flushSyncWorkAcrossRoots_impl @ react-dom-client.development.js:16210
+processRootScheduleInMicrotask @ react-dom-client.development.js:16249
+(anonymous) @ react-dom-client.development.js:16383Understand this warning
+client-logger.ts:97 [2025-07-29T08:24:31.460Z] [DEBUG] [useTransactionForm] 🔍 Validating step 2... | Data: {}
+client-logger.ts:97 [2025-07-29T08:24:31.461Z] [DEBUG] [useTransactionForm] 👤 Step 2 - Customer exists: false, Has ID: false, Valid: false | Data: {"hasCustomer":false,"hasCustomerId":false,"valid":false}
+client-logger.ts:113 [2025-07-29T08:24:31.461Z] [WARN] [useTransactionForm] ❌ Step 2 failed: Customer not selected or missing ID | Data: {}
+overrideMethod @ hook.js:600
+warn @ client-logger.ts:113
+useTransactionForm.useCallback[validateStep] @ useTransactionForm.ts:155
+TransactionFormPage @ TransactionFormPage.tsx:206
+react-stack-bottom-frame @ react-dom-client.development.js:22973
+renderWithHooksAgain @ react-dom-client.development.js:6766
+renderWithHooks @ react-dom-client.development.js:6678
+updateFunctionComponent @ react-dom-client.development.js:8930
+beginWork @ react-dom-client.development.js:10555
+runWithFiberInDEV @ react-dom-client.development.js:844
+performUnitOfWork @ react-dom-client.development.js:15257
+workLoopSync @ react-dom-client.development.js:15077
+renderRootSync @ react-dom-client.development.js:15057
+performWorkOnRoot @ react-dom-client.development.js:14525
+performSyncWorkOnRoot @ react-dom-client.development.js:16364
+flushSyncWorkAcrossRoots_impl @ react-dom-client.development.js:16210
+processRootScheduleInMicrotask @ react-dom-client.development.js:16249
+(anonymous) @ react-dom-client.development.js:16383Understand this warning
 turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
-:3000/api/kasir/transaksi:1  Failed to load resource: the server responded with a status of 400 (Bad Request)Understand this error
-report-hmr-latency.ts:26 [Fast Refresh] done in 282ms
-hook.js:608 Failed to create transaksi: Data tidak valid
-overrideMethod @ hook.js:608Understand this error
-hook.js:608 [2025-07-28T06:31:27.430Z] [ERROR] [useTransactionForm] ❌ Transaction submission failed! | Data: {"errorType":"object","errorProperties":["code","details","validationErrors","name"]}
-overrideMethod @ hook.js:608Understand this error
-hook.js:608 [2025-07-28T06:31:27.432Z] [ERROR] [useTransactionForm] 💬 Error details | Data: {"message":"Data tidak valid","stack":"KasirApiError: Data tidak valid\n    at apiRequest (http://localhost:3000/_next/static/chunks/_fa394cb8._.js:351:19)"}
-overrideMethod @ hook.js:608Understand this error
-client-logger.ts:97 [2025-07-28T06:31:27.432Z] [DEBUG] [useTransactionForm] 🏁 Transaction submission completed (cleanup) | Data: {}
-hook.js:608 [2025-07-28T06:31:27.433Z] [ERROR] [TransactionFormPage] ❌ Transaction failed, showing error message | Data: {}
-overrideMethod @ hook.js:608Understand this error
-client-logger.ts:97 [2025-07-28T06:31:27.435Z] [DEBUG] [useTransactionForm] 🔍 Validating step 3... | Data: {}
-client-logger.ts:97 [2025-07-28T06:31:27.435Z] [DEBUG] [useTransactionForm] 💰 Step 3 validation details | Data: {"pickupDate":{"has":true,"value":"2025-07-30"},"returnDate":{"has":true,"value":"2025-08-02"},"paymentMethod":{"has":true,"value":"qris"},"paymentStatus":"unpaid","paymentAmount":350000,"paymentCondition":true,"overallValid":true}
-hook.js:377 [2025-07-28T06:31:27.435Z] [DEBUG] [useTransactionForm] 🔍 Validating step 3... | Data: {}
-hook.js:377 [2025-07-28T06:31:27.436Z] [DEBUG] [useTransactionForm] 💰 Step 3 validation details | Data: {"pickupDate":{"has":true,"value":"2025-07-30"},"returnDate":{"has":true,"value":"2025-08-02"},"paymentMethod":{"has":true,"value":"qris"},"paymentStatus":"unpaid","paymentAmount":350000,"paymentCondition":true,"overallValid":true}
-client-logger.ts:97 [2025-07-28T06:31:32.436Z] [DEBUG] [useTransactionForm] 🔍 Validating step 3... | Data: {}
-client-logger.ts:97 [2025-07-28T06:31:32.437Z] [DEBUG] [useTransactionForm] 💰 Step 3 validation details | Data: {"pickupDate":{"has":true,"value":"2025-07-30"},"returnDate":{"has":true,"value":"2025-08-02"},"paymentMethod":{"has":true,"value":"qris"},"paymentStatus":"unpaid","paymentAmount":350000,"paymentCondition":true,"overallValid":true}
-hook.js:377 [2025-07-28T06:31:32.439Z] [DEBUG] [useTransactionForm] 🔍 Validating step 3... | Data: {}
-hook.js:377 [2025-07-28T06:31:32.440Z] [DEBUG] [useTransactionForm] 💰 Step 3 validation details | Data: {"pickupDate":{"has":true,"value":"2025-07-30"},"returnDate":{"has":true,"value":"2025-08-02"},"paymentMethod":{"has":true,"value":"qris"},"paymentStatus":"unpaid","paymentAmount":350000,"paymentCondition":true,"overallValid":true}
+report-hmr-latency.ts:26 [Fast Refresh] done in 154ms
 turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
-report-hmr-latency.ts:26 [Fast Refresh] done in 2772ms
+report-hmr-latency.ts:26 [Fast Refresh] done in 249ms
+client-logger.ts:97 [2025-07-29T08:24:32.488Z] [DEBUG] [SafeStorage] Data saved to sessionStorage | Data: {"key":"transaction-form-draft","dataKeys":["products","pickupDate","returnDate","paymentMethod","paymentAmount","paymentStatus","currentStep"]}
+client-logger.ts:97 [2025-07-29T08:24:32.490Z] [DEBUG] [useTransactionFormPersistence] 💾 Form data auto-saved | Data: {"productsCount":2,"currentStep":2,"hasCustomer":false}
+client-logger.ts:97 [2025-07-29T08:24:35.556Z] [DEBUG] [useTransactionForm] 🔍 Validating step 2... | Data: {}
+client-logger.ts:97 [2025-07-29T08:24:35.556Z] [DEBUG] [useTransactionForm] 👤 Step 2 - Customer exists: true, Has ID: true, Valid: true | Data: {"hasCustomer":true,"hasCustomerId":true,"valid":true,"customerData":{"id":"db214b9a-2b56-4675-be6b-6231730cba4b","name":"Ardiansyah","phone":"089526293221","email":"eviewnicks@gmail.com","address":"Jl.Andi tonro no.9 Gowam, Makassar","totalTransactions":0,"createdAt":"2025-07-28T03:49:04.091Z"}}
+client-logger.ts:97 [2025-07-29T08:24:35.558Z] [DEBUG] [useTransactionForm] 🔍 Validating step 2... | Data: {}
+client-logger.ts:97 [2025-07-29T08:24:35.559Z] [DEBUG] [useTransactionForm] 👤 Step 2 - Customer exists: true, Has ID: true, Valid: true | Data: {"hasCustomer":true,"hasCustomerId":true,"valid":true,"customerData":{"id":"db214b9a-2b56-4675-be6b-6231730cba4b","name":"Ardiansyah","phone":"089526293221","email":"eviewnicks@gmail.com","address":"Jl.Andi tonro no.9 Gowam, Makassar","totalTransactions":0,"createdAt":"2025-07-28T03:49:04.091Z"}}
+client-logger.ts:97 [2025-07-29T08:24:35.560Z] [DEBUG] [useTransactionForm] 🔍 Validating step 2... | Data: {}
+client-logger.ts:97 [2025-07-29T08:24:35.560Z] [DEBUG] [useTransactionForm] 👤 Step 2 - Customer exists: true, Has ID: true, Valid: true | Data: {"hasCustomer":true,"hasCustomerId":true,"valid":true,"customerData":{"id":"db214b9a-2b56-4675-be6b-6231730cba4b","name":"Ardiansyah","phone":"089526293221","email":"eviewnicks@gmail.com","address":"Jl.Andi tonro no.9 Gowam, Makassar","totalTransactions":0,"createdAt":"2025-07-28T03:49:04.091Z"}}
+client-logger.ts:97 [2025-07-29T08:24:35.561Z] [DEBUG] [useTransactionForm] 🔍 Validating step 2... | Data: {}
+client-logger.ts:97 [2025-07-29T08:24:35.562Z] [DEBUG] [useTransactionForm] 👤 Step 2 - Customer exists: true, Has ID: true, Valid: true | Data: {"hasCustomer":true,"hasCustomerId":true,"valid":true,"customerData":{"id":"db214b9a-2b56-4675-be6b-6231730cba4b","name":"Ardiansyah","phone":"089526293221","email":"eviewnicks@gmail.com","address":"Jl.Andi tonro no.9 Gowam, Makassar","totalTransactions":0,"createdAt":"2025-07-28T03:49:04.091Z"}}
+client-logger.ts:97 [2025-07-29T08:24:36.588Z] [DEBUG] [SafeStorage] Data saved to sessionStorage | Data: {"key":"transaction-form-draft","dataKeys":["products","pickupDate","returnDate","paymentMethod","paymentAmount","paymentStatus","customer","currentStep"]}
+client-logger.ts:97 [2025-07-29T08:24:36.590Z] [DEBUG] [useTransactionFormPersistence] 💾 Form data auto-saved | Data: {"productsCount":2,"currentStep":2,"hasCustomer":true}
+client-logger.ts:97 [2025-07-29T08:24:38.479Z] [DEBUG] [useTransactionForm] 🔍 Validating step 2... | Data: {}
+client-logger.ts:97 [2025-07-29T08:24:38.480Z] [DEBUG] [useTransactionForm] 👤 Step 2 - Customer exists: true, Has ID: true, Valid: true | Data: {"hasCustomer":true,"hasCustomerId":true,"valid":true,"customerData":{"id":"db214b9a-2b56-4675-be6b-6231730cba4b","name":"Ardiansyah","phone":"089526293221","email":"eviewnicks@gmail.com","address":"Jl.Andi tonro no.9 Gowam, Makassar","totalTransactions":0,"createdAt":"2025-07-28T03:49:04.091Z"}}
+client-logger.ts:97 [2025-07-29T08:24:38.481Z] [DEBUG] [useTransactionForm] 🔍 Validating step 3... | Data: {}
+client-logger.ts:97 [2025-07-29T08:24:38.482Z] [DEBUG] [useTransactionForm] 💰 Step 3 validation details | Data: {"pickupDate":{"has":false,"value":""},"returnDate":{"has":false,"value":""},"paymentMethod":{"has":true,"value":"cash"},"paymentStatus":"unpaid","paymentAmount":0,"paymentCondition":true,"overallValid":false}
+client-logger.ts:113 [2025-07-29T08:24:38.482Z] [WARN] [useTransactionForm] ❌ Step 3 failed: Missing required payment/date information | Data: {}
+overrideMethod @ hook.js:608
+warn @ client-logger.ts:113
+useTransactionForm.useCallback[validateStep] @ useTransactionForm.ts:179
+TransactionFormPage @ TransactionFormPage.tsx:62
+react-stack-bottom-frame @ react-dom-client.development.js:22973
+renderWithHooks @ react-dom-client.development.js:6666
+updateFunctionComponent @ react-dom-client.development.js:8930
+beginWork @ react-dom-client.development.js:10555
+runWithFiberInDEV @ react-dom-client.development.js:844
+performUnitOfWork @ react-dom-client.development.js:15257
+workLoopSync @ react-dom-client.development.js:15077
+renderRootSync @ react-dom-client.development.js:15057
+performWorkOnRoot @ react-dom-client.development.js:14525
+performSyncWorkOnRoot @ react-dom-client.development.js:16364
+flushSyncWorkAcrossRoots_impl @ react-dom-client.development.js:16210
+processRootScheduleInMicrotask @ react-dom-client.development.js:16249
+(anonymous) @ react-dom-client.development.js:16383Understand this warning
+client-logger.ts:97 [2025-07-29T08:24:38.485Z] [DEBUG] [useTransactionForm] 🔍 Validating step 3... | Data: {}
+client-logger.ts:97 [2025-07-29T08:24:38.486Z] [DEBUG] [useTransactionForm] 💰 Step 3 validation details | Data: {"pickupDate":{"has":false,"value":""},"returnDate":{"has":false,"value":""},"paymentMethod":{"has":true,"value":"cash"},"paymentStatus":"unpaid","paymentAmount":0,"paymentCondition":true,"overallValid":false}
+client-logger.ts:113 [2025-07-29T08:24:38.486Z] [WARN] [useTransactionForm] ❌ Step 3 failed: Missing required payment/date information | Data: {}
+overrideMethod @ hook.js:600
+warn @ client-logger.ts:113
+useTransactionForm.useCallback[validateStep] @ useTransactionForm.ts:179
+TransactionFormPage @ TransactionFormPage.tsx:62
+react-stack-bottom-frame @ react-dom-client.development.js:22973
+renderWithHooksAgain @ react-dom-client.development.js:6766
+renderWithHooks @ react-dom-client.development.js:6678
+updateFunctionComponent @ react-dom-client.development.js:8930
+beginWork @ react-dom-client.development.js:10555
+runWithFiberInDEV @ react-dom-client.development.js:844
+performUnitOfWork @ react-dom-client.development.js:15257
+workLoopSync @ react-dom-client.development.js:15077
+renderRootSync @ react-dom-client.development.js:15057
+performWorkOnRoot @ react-dom-client.development.js:14525
+performSyncWorkOnRoot @ react-dom-client.development.js:16364
+flushSyncWorkAcrossRoots_impl @ react-dom-client.development.js:16210
+processRootScheduleInMicrotask @ react-dom-client.development.js:16249
+(anonymous) @ react-dom-client.development.js:16383Understand this warning
+client-logger.ts:97 [2025-07-29T08:24:39.553Z] [DEBUG] [SafeStorage] Data saved to sessionStorage | Data: {"key":"transaction-form-draft","dataKeys":["products","pickupDate","returnDate","paymentMethod","paymentAmount","paymentStatus","customer","currentStep"]}
+client-logger.ts:97 [2025-07-29T08:24:39.554Z] [DEBUG] [useTransactionFormPersistence] 💾 Form data auto-saved | Data: {"productsCount":2,"currentStep":3,"hasCustomer":true}
+client-logger.ts:97 [2025-07-29T08:24:42.082Z] [DEBUG] [useTransactionForm] 🔍 Validating step 3... | Data: {}
+client-logger.ts:97 [2025-07-29T08:24:42.085Z] [DEBUG] [useTransactionForm] 💰 Step 3 validation details | Data: {"pickupDate":{"has":true,"value":"2025-07-29"},"returnDate":{"has":false,"value":""},"paymentMethod":{"has":true,"value":"cash"},"paymentStatus":"unpaid","paymentAmount":0,"paymentCondition":true,"overallValid":false}
+client-logger.ts:113 [2025-07-29T08:24:42.086Z] [WARN] [useTransactionForm] ❌ Step 3 failed: Missing required payment/date information | Data: {}
+overrideMethod @ hook.js:608
+warn @ client-logger.ts:113
+useTransactionForm.useCallback[validateStep] @ useTransactionForm.ts:179
+TransactionFormPage @ TransactionFormPage.tsx:62
+react-stack-bottom-frame @ react-dom-client.development.js:22973
+renderWithHooks @ react-dom-client.development.js:6666
+updateFunctionComponent @ react-dom-client.development.js:8930
+beginWork @ react-dom-client.development.js:10555
+runWithFiberInDEV @ react-dom-client.development.js:844
+performUnitOfWork @ react-dom-client.development.js:15257
+workLoopSync @ react-dom-client.development.js:15077
+renderRootSync @ react-dom-client.development.js:15057
+performWorkOnRoot @ react-dom-client.development.js:14525
+performSyncWorkOnRoot @ react-dom-client.development.js:16364
+flushSyncWorkAcrossRoots_impl @ react-dom-client.development.js:16210
+flushSyncWork$1 @ react-dom-client.development.js:14827
+batchedUpdates$1 @ react-dom-client.development.js:3270
+dispatchEventForPluginEventSystem @ react-dom-client.development.js:16705
+dispatchEvent @ react-dom-client.development.js:20815
+dispatchDiscreteEvent @ react-dom-client.development.js:20783
+(anonymous) @ unknownUnderstand this warning
+client-logger.ts:97 [2025-07-29T08:24:42.091Z] [DEBUG] [useTransactionForm] 🔍 Validating step 3... | Data: {}
+client-logger.ts:97 [2025-07-29T08:24:42.091Z] [DEBUG] [useTransactionForm] 💰 Step 3 validation details | Data: {"pickupDate":{"has":true,"value":"2025-07-29"},"returnDate":{"has":false,"value":""},"paymentMethod":{"has":true,"value":"cash"},"paymentStatus":"unpaid","paymentAmount":0,"paymentCondition":true,"overallValid":false}
+client-logger.ts:113 [2025-07-29T08:24:42.091Z] [WARN] [useTransactionForm] ❌ Step 3 failed: Missing required payment/date information | Data: {}
+overrideMethod @ hook.js:600
+warn @ client-logger.ts:113
+useTransactionForm.useCallback[validateStep] @ useTransactionForm.ts:179
+TransactionFormPage @ TransactionFormPage.tsx:62
+react-stack-bottom-frame @ react-dom-client.development.js:22973
+renderWithHooksAgain @ react-dom-client.development.js:6766
+renderWithHooks @ react-dom-client.development.js:6678
+updateFunctionComponent @ react-dom-client.development.js:8930
+beginWork @ react-dom-client.development.js:10555
+runWithFiberInDEV @ react-dom-client.development.js:844
+performUnitOfWork @ react-dom-client.development.js:15257
+workLoopSync @ react-dom-client.development.js:15077
+renderRootSync @ react-dom-client.development.js:15057
+performWorkOnRoot @ react-dom-client.development.js:14525
+performSyncWorkOnRoot @ react-dom-client.development.js:16364
+flushSyncWorkAcrossRoots_impl @ react-dom-client.development.js:16210
+flushSyncWork$1 @ react-dom-client.development.js:14827
+batchedUpdates$1 @ react-dom-client.development.js:3270
+dispatchEventForPluginEventSystem @ react-dom-client.development.js:16705
+dispatchEvent @ react-dom-client.development.js:20815
+dispatchDiscreteEvent @ react-dom-client.development.js:20783
+(anonymous) @ unknownUnderstand this warning
+client-logger.ts:97 [2025-07-29T08:24:42.114Z] [DEBUG] [useTransactionForm] 🔍 Validating step 3... | Data: {}
+client-logger.ts:97 [2025-07-29T08:24:42.114Z] [DEBUG] [useTransactionForm] 💰 Step 3 validation details | Data: {"pickupDate":{"has":true,"value":"2025-07-29"},"returnDate":{"has":true,"value":"2025-08-01"},"paymentMethod":{"has":true,"value":"cash"},"paymentStatus":"unpaid","paymentAmount":0,"paymentCondition":true,"overallValid":true}
+client-logger.ts:97 [2025-07-29T08:24:42.115Z] [DEBUG] [useTransactionForm] 🔍 Validating step 3... | Data: {}
+client-logger.ts:97 [2025-07-29T08:24:42.115Z] [DEBUG] [useTransactionForm] 💰 Step 3 validation details | Data: {"pickupDate":{"has":true,"value":"2025-07-29"},"returnDate":{"has":true,"value":"2025-08-01"},"paymentMethod":{"has":true,"value":"cash"},"paymentStatus":"unpaid","paymentAmount":0,"paymentCondition":true,"overallValid":true}
+client-logger.ts:97 [2025-07-29T08:24:43.146Z] [DEBUG] [SafeStorage] Data saved to sessionStorage | Data: {"key":"transaction-form-draft","dataKeys":["products","pickupDate","returnDate","paymentMethod","paymentAmount","paymentStatus","customer","currentStep"]}
+client-logger.ts:97 [2025-07-29T08:24:43.146Z] [DEBUG] [useTransactionFormPersistence] 💾 Form data auto-saved | Data: {"productsCount":2,"currentStep":3,"hasCustomer":true}
+client-logger.ts:97 [2025-07-29T08:24:46.063Z] [DEBUG] [useTransactionForm] 🔍 Validating step 3... | Data: {}
+client-logger.ts:97 [2025-07-29T08:24:46.063Z] [DEBUG] [useTransactionForm] 💰 Step 3 validation details | Data: {"pickupDate":{"has":true,"value":"2025-07-29"},"returnDate":{"has":true,"value":"2025-08-01"},"paymentMethod":{"has":true,"value":"cash"},"paymentStatus":"unpaid","paymentAmount":750000,"paymentCondition":true,"overallValid":true}
+client-logger.ts:97 [2025-07-29T08:24:46.064Z] [DEBUG] [useTransactionForm] 🔍 Validating step 3... | Data: {}
+client-logger.ts:97 [2025-07-29T08:24:46.065Z] [DEBUG] [useTransactionForm] 💰 Step 3 validation details | Data: {"pickupDate":{"has":true,"value":"2025-07-29"},"returnDate":{"has":true,"value":"2025-08-01"},"paymentMethod":{"has":true,"value":"cash"},"paymentStatus":"unpaid","paymentAmount":750000,"paymentCondition":true,"overallValid":true}
+client-logger.ts:97 [2025-07-29T08:24:47.100Z] [DEBUG] [SafeStorage] Data saved to sessionStorage | Data: {"key":"transaction-form-draft","dataKeys":["products","pickupDate","returnDate","paymentMethod","paymentAmount","paymentStatus","customer","currentStep"]}
+client-logger.ts:97 [2025-07-29T08:24:47.101Z] [DEBUG] [useTransactionFormPersistence] 💾 Form data auto-saved | Data: {"productsCount":2,"currentStep":3,"hasCustomer":true}
+client-logger.ts:105 [2025-07-29T08:24:51.247Z] [INFO] [TransactionFormPage] 🎯 Starting transaction submission
+client-logger.ts:105 [2025-07-29T08:24:51.248Z] [INFO] [useTransactionForm] 🚀 Starting transaction submission... | Data: {"formDataSummary":{"productsCount":2,"customerId":"db214b9a-2b56-4675-be6b-6231730cba4b","pickupDate":"2025-07-29","paymentMethod":"cash"}}
+client-logger.ts:97 [2025-07-29T08:24:51.250Z] [DEBUG] [useTransactionForm] 🔍 Validating step 3... | Data: {}
+client-logger.ts:97 [2025-07-29T08:24:51.251Z] [DEBUG] [useTransactionForm] 💰 Step 3 validation details | Data: {"pickupDate":{"has":true,"value":"2025-07-29"},"returnDate":{"has":true,"value":"2025-08-01"},"paymentMethod":{"has":true,"value":"cash"},"paymentStatus":"unpaid","paymentAmount":750000,"paymentCondition":true,"overallValid":true}
+client-logger.ts:105 [2025-07-29T08:24:51.251Z] [INFO] [useTransactionForm] ✅ Step 3 validation result | Data: {"valid":true}
+client-logger.ts:97 [2025-07-29T08:24:51.251Z] [DEBUG] [useTransactionForm] 🔄 Transforming form data to API format... | Data: {}
+client-logger.ts:97 [2025-07-29T08:24:51.252Z] [DEBUG] [useTransactionForm] 📤 API Request payload | Data: {"createRequest":{"penyewaId":"db214b9a-2b56-4675-be6b-6231730cba4b","items":[{"produkId":"6ca0b72e-6392-4ea2-9e96-1511969661d1","jumlah":2,"durasi":3,"kondisiAwal":"baik"},{"produkId":"2a225c70-148d-4fca-a5b2-02d151ffb334","jumlah":1,"durasi":3,"kondisiAwal":"baik"}],"tglMulai":"2025-07-29T00:00:00.000Z","tglSelesai":"2025-08-01T00:00:00.000Z","metodeBayar":"tunai"}}
+client-logger.ts:105 [2025-07-29T08:24:51.252Z] [INFO] [useTransactionForm] 🌐 Calling API... | Data: {}
+client-logger.ts:97 [2025-07-29T08:24:51.255Z] [DEBUG] [useTransactionForm] 🔍 Validating step 3... | Data: {}
+client-logger.ts:97 [2025-07-29T08:24:51.255Z] [DEBUG] [useTransactionForm] 💰 Step 3 validation details | Data: {"pickupDate":{"has":true,"value":"2025-07-29"},"returnDate":{"has":true,"value":"2025-08-01"},"paymentMethod":{"has":true,"value":"cash"},"paymentStatus":"unpaid","paymentAmount":750000,"paymentCondition":true,"overallValid":true}
+client-logger.ts:97 [2025-07-29T08:24:51.257Z] [DEBUG] [useTransactionForm] 🔍 Validating step 3... | Data: {}
+client-logger.ts:97 [2025-07-29T08:24:51.257Z] [DEBUG] [useTransactionForm] 💰 Step 3 validation details | Data: {"pickupDate":{"has":true,"value":"2025-07-29"},"returnDate":{"has":true,"value":"2025-08-01"},"paymentMethod":{"has":true,"value":"cash"},"paymentStatus":"unpaid","paymentAmount":750000,"paymentCondition":true,"overallValid":true}
+client-logger.ts:105 [2025-07-29T08:25:01.272Z] [INFO] [useTransactionForm] ✅ Transaction created successfully! | Data: {"transactionId":"d37df237-5e3d-4c61-9704-07e02c6e5ce0","transactionCode":"TXN-20250729-004"}
+client-logger.ts:97 [2025-07-29T08:25:01.272Z] [DEBUG] [useTransactionForm] 💳 Creating payment record... | Data: {"transactionId":"d37df237-5e3d-4c61-9704-07e02c6e5ce0","transactionCode":"TXN-20250729-004","amount":750000,"method":"cash"}
+client-logger.ts:97 [2025-07-29T08:25:01.273Z] [DEBUG] [useTransactionForm] 💳 Payment attempt 1/3 | Data: {"transactionId":"d37df237-5e3d-4c61-9704-07e02c6e5ce0","attempt":1}
+client-logger.ts:97 [2025-07-29T08:25:01.276Z] [DEBUG] [useTransactionForm] 🔍 Validating step 3... | Data: {}
+client-logger.ts:97 [2025-07-29T08:25:01.277Z] [DEBUG] [useTransactionForm] 💰 Step 3 validation details | Data: {"pickupDate":{"has":true,"value":"2025-07-29"},"returnDate":{"has":true,"value":"2025-08-01"},"paymentMethod":{"has":true,"value":"cash"},"paymentStatus":"unpaid","paymentAmount":750000,"paymentCondition":true,"overallValid":true}
+client-logger.ts:97 [2025-07-29T08:25:01.280Z] [DEBUG] [useTransactionForm] 🔍 Validating step 3... | Data: {}
+client-logger.ts:97 [2025-07-29T08:25:01.281Z] [DEBUG] [useTransactionForm] 💰 Step 3 validation details | Data: {"pickupDate":{"has":true,"value":"2025-07-29"},"returnDate":{"has":true,"value":"2025-08-01"},"paymentMethod":{"has":true,"value":"cash"},"paymentStatus":"unpaid","paymentAmount":750000,"paymentCondition":true,"overallValid":true}
 turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
-report-hmr-latency.ts:26 [Fast Refresh] done in 227ms
+report-hmr-latency.ts:26 [Fast Refresh] done in 3491ms
+client-logger.ts:105 [2025-07-29T08:25:08.415Z] [INFO] [useTransactionForm] ✅ Payment record created successfully! | Data: {"transactionId":"d37df237-5e3d-4c61-9704-07e02c6e5ce0","transactionCode":"TXN-20250729-004","paymentAmount":750000,"attempts":1}
+client-logger.ts:105 [2025-07-29T08:25:08.417Z] [INFO] [useTransactionFormPersistence] 🗑️ Clearing persisted form data | Data: {"reason":"successful-submission"}
+client-logger.ts:97 [2025-07-29T08:25:08.420Z] [DEBUG] [SafeStorage] Data removed from sessionStorage | Data: {"key":"transaction-form-draft"}
+client-logger.ts:97 [2025-07-29T08:25:08.421Z] [DEBUG] [useTransactionForm] 🔄 Form reset to initial state | Data: {}
+client-logger.ts:97 [2025-07-29T08:25:08.421Z] [DEBUG] [useTransactionForm] 🏁 Transaction submission completed (cleanup) | Data: {}
+client-logger.ts:105 [2025-07-29T08:25:08.422Z] [INFO] [TransactionFormPage] ✅ Transaction successful, showing success message
+client-logger.ts:105 [2025-07-29T08:25:08.422Z] [INFO] [PaymentSummaryStep] Transaction submitted successfully! | Data: {"totalAmount":750000}
+client-logger.ts:97 [2025-07-29T08:25:08.423Z] [DEBUG] [useTransactionForm] 🔍 Validating step 1... | Data: {}
+client-logger.ts:97 [2025-07-29T08:25:08.424Z] [DEBUG] [useTransactionForm] 📦 Step 1 - Products count: 0, Valid: false | Data: {"productsCount":0,"valid":false}
+client-logger.ts:113 [2025-07-29T08:25:08.425Z] [WARN] [useTransactionForm] ❌ Step 1 failed: No products selected | Data: {}
+overrideMethod @ hook.js:608
+warn @ client-logger.ts:113
+useTransactionForm.useCallback[validateStep] @ useTransactionForm.ts:140
+TransactionFormPage @ TransactionFormPage.tsx:62
+react-stack-bottom-frame @ react-dom-client.development.js:22973
+renderWithHooks @ react-dom-client.development.js:6666
+updateFunctionComponent @ react-dom-client.development.js:8930
+beginWork @ react-dom-client.development.js:10555
+runWithFiberInDEV @ react-dom-client.development.js:844
+performUnitOfWork @ react-dom-client.development.js:15257
+workLoopSync @ react-dom-client.development.js:15077
+renderRootSync @ react-dom-client.development.js:15057
+performWorkOnRoot @ react-dom-client.development.js:14525
+performSyncWorkOnRoot @ react-dom-client.development.js:16364
+flushSyncWorkAcrossRoots_impl @ react-dom-client.development.js:16210
+processRootScheduleInMicrotask @ react-dom-client.development.js:16249
+(anonymous) @ react-dom-client.development.js:16383Understand this warning
+client-logger.ts:97 [2025-07-29T08:25:08.428Z] [DEBUG] [useTransactionForm] 🔍 Validating step 1... | Data: {}
+client-logger.ts:97 [2025-07-29T08:25:08.429Z] [DEBUG] [useTransactionForm] 📦 Step 1 - Products count: 0, Valid: false | Data: {"productsCount":0,"valid":false}
+client-logger.ts:113 [2025-07-29T08:25:08.431Z] [WARN] [useTransactionForm] ❌ Step 1 failed: No products selected | Data: {}
+overrideMethod @ hook.js:600
+warn @ client-logger.ts:113
+useTransactionForm.useCallback[validateStep] @ useTransactionForm.ts:140
+TransactionFormPage @ TransactionFormPage.tsx:62
+react-stack-bottom-frame @ react-dom-client.development.js:22973
+renderWithHooksAgain @ react-dom-client.development.js:6766
+renderWithHooks @ react-dom-client.development.js:6678
+updateFunctionComponent @ react-dom-client.development.js:8930
+beginWork @ react-dom-client.development.js:10555
+runWithFiberInDEV @ react-dom-client.development.js:844
+performUnitOfWork @ react-dom-client.development.js:15257
+workLoopSync @ react-dom-client.development.js:15077
+renderRootSync @ react-dom-client.development.js:15057
+performWorkOnRoot @ react-dom-client.development.js:14525
+performSyncWorkOnRoot @ react-dom-client.development.js:16364
+flushSyncWorkAcrossRoots_impl @ react-dom-client.development.js:16210
+processRootScheduleInMicrotask @ react-dom-client.development.js:16249
+(anonymous) @ react-dom-client.development.js:16383Understand this warning
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 117ms
+hook.js:608 Skipping auto-scroll behavior due to `position: sticky` or `position: fixed` on element: <div class=​"bg-white border-b border-neutral-200 sticky top-0 z-50 shadow-md w-full flex justify-center">​…​</div>​
+overrideMethod @ hook.js:608
+shouldSkipElement @ layout-router.tsx:133
+InnerScrollAndFocusHandler.handlePotentialScroll @ layout-router.tsx:221
+componentDidMount @ layout-router.tsx:288
+react-stack-bottom-frame @ react-dom-client.development.js:22996
+runWithFiberInDEV @ react-dom-client.development.js:844
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12709
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12686
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12686
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12866
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12686
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12866
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12866
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12686
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12691
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12686
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12691
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12686
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12686
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12686
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12691
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12686
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12686
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12866
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12686
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12802
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12802
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12866
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12691
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12686
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12866
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12866
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12686
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12691
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12686
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12691
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12686
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12686
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12686
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12691
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12686
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12686
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12866
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12686
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12866
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12686
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12686
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12866
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12691
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12686
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12866
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12686
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12866
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12866
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12866
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12866
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12686
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12686
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12866
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12866
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12866
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12686
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12686
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12686
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12866
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12686
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12686
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12686
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12866
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12686
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12686
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12802
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12802
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12866
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12691
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12686
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12691
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12686
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12686
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12691
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12686
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12686
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12866
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12866
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12866
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12866
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12866
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12866
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12686
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12691
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12686
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12686
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12866
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12686
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12686
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12866
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12866
+recursivelyTraverseLayoutEffects @ react-dom-client.development.js:13672
+commitLayoutEffectOnFiber @ react-dom-client.development.js:12768
+flushLayoutEffects @ react-dom-client.development.js:15686
+commitRoot @ react-dom-client.development.js:15527
+commitRootWhenReady @ react-dom-client.development.js:14758
+performWorkOnRoot @ react-dom-client.development.js:14681
+performWorkOnRootViaSchedulerTask @ react-dom-client.development.js:16349
+performWorkUntilDeadline @ scheduler.development.js:45Understand this warning
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 295ms

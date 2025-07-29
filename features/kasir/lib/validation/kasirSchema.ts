@@ -83,7 +83,12 @@ export const createTransaksiSchema = z.object({
   tglMulai: z
     .string()
     .datetime('Format tanggal mulai tidak valid (ISO 8601)')
-    .refine((date) => new Date(date) >= new Date(), {
+    .refine((date) => {
+      const inputDate = new Date(date)
+      const today = new Date()
+      today.setHours(0, 0, 0, 0) // Reset to start of day
+      return inputDate >= today
+    }, {
       message: 'Tanggal mulai tidak boleh di masa lalu'
     }),
   tglSelesai: z

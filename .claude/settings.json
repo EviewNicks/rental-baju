@@ -1,10 +1,4 @@
 {
-  "mcpServers": {
-    "browser-tools": {
-      "command": "npx",
-      "args": ["@agentdeskai/browser-tools-mcp@1.2.0"]
-    }
-  },
   "permissions": {
     "deny": [
       "Read(.env)",

@@ -17,7 +17,8 @@ interface TransactionDetailPageProps {
 }
 
 export function TransactionDetailPage({ transactionId }: TransactionDetailPageProps) {
-  const { transaction, isLoading, error, refreshTransaction, clearError } = useTransactionDetail(transactionId)
+  const { transaction, isLoading, error, refreshTransaction, clearError } =
+    useTransactionDetail(transactionId)
 
   if (isLoading) {
     return <TransactionDetailSkeleton />
@@ -25,14 +26,18 @@ export function TransactionDetailPage({ transactionId }: TransactionDetailPagePr
 
   if (error) {
     // Enhanced error detection with proper type checking
-    const errorMessage = error && typeof error === 'object' && 'message' in error ? 
-                        (error as { message: string }).message : 'Unknown error'
-    
-    const isNotFound = errorMessage.includes('tidak ditemukan') || errorMessage.includes('Not Found')
+    const errorMessage =
+      error && typeof error === 'object' && 'message' in error
+        ? (error as { message: string }).message
+        : 'Unknown error'
+
+    const isNotFound =
+      errorMessage.includes('tidak ditemukan') || errorMessage.includes('Not Found')
     const isNetworkError = errorMessage.includes('fetch') || errorMessage.includes('Network')
-    const isServerError = errorMessage.includes('Internal Server Error') || errorMessage.includes('500')
+    const isServerError =
+      errorMessage.includes('Internal Server Error') || errorMessage.includes('500')
     const isPermissionError = errorMessage.includes('unauthorized') || errorMessage.includes('403')
-    
+
     const getErrorDetails = () => {
       if (isNotFound) {
         return {
@@ -41,9 +46,9 @@ export function TransactionDetailPage({ transactionId }: TransactionDetailPagePr
           suggestions: [
             'Periksa kembali kode transaksi',
             'Cari transaksi di daftar transaksi',
-            'Pastikan transaksi belum dihapus'
+            'Pastikan transaksi belum dihapus',
           ],
-          canRetry: false
+          canRetry: false,
         }
       } else if (isNetworkError) {
         return {
@@ -52,9 +57,9 @@ export function TransactionDetailPage({ transactionId }: TransactionDetailPagePr
           suggestions: [
             'Periksa koneksi internet',
             'Coba refresh halaman',
-            'Tunggu beberapa saat lalu coba lagi'
+            'Tunggu beberapa saat lalu coba lagi',
           ],
-          canRetry: true
+          canRetry: true,
         }
       } else if (isServerError) {
         return {
@@ -63,9 +68,9 @@ export function TransactionDetailPage({ transactionId }: TransactionDetailPagePr
           suggestions: [
             'Tunggu beberapa menit lalu coba lagi',
             'Hubungi support jika masalah berlanjut',
-            'Coba akses fitur lain terlebih dahulu'
+            'Coba akses fitur lain terlebih dahulu',
           ],
-          canRetry: true
+          canRetry: true,
         }
       } else if (isPermissionError) {
         return {
@@ -74,9 +79,9 @@ export function TransactionDetailPage({ transactionId }: TransactionDetailPagePr
           suggestions: [
             'Login ulang dengan akun yang benar',
             'Hubungi admin untuk mendapatkan akses',
-            'Periksa role dan permissions akun Anda'
+            'Periksa role dan permissions akun Anda',
           ],
-          canRetry: false
+          canRetry: false,
         }
       } else {
         return {
@@ -85,9 +90,9 @@ export function TransactionDetailPage({ transactionId }: TransactionDetailPagePr
           suggestions: [
             'Refresh halaman',
             'Coba lagi dalam beberapa saat',
-            'Hubungi support jika masalah berlanjut'
+            'Hubungi support jika masalah berlanjut',
           ],
-          canRetry: true
+          canRetry: true,
         }
       }
     }
@@ -98,13 +103,9 @@ export function TransactionDetailPage({ transactionId }: TransactionDetailPagePr
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
         <div data-testid="error-boundary" className="text-center max-w-lg mx-auto p-6">
           <AlertTriangle className="h-16 w-16 text-red-400 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            {errorDetails.title}
-          </h1>
-          <p className="text-gray-600 mb-4">
-            {errorDetails.description}
-          </p>
-          
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">{errorDetails.title}</h1>
+          <p className="text-gray-600 mb-4">{errorDetails.description}</p>
+
           {/* Recovery suggestions */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 text-left">
             <h3 className="font-semibold text-blue-900 mb-2">Saran untuk mengatasi masalah:</h3>
@@ -158,7 +159,10 @@ export function TransactionDetailPage({ transactionId }: TransactionDetailPagePr
   }
 
   return (
-    <div data-testid="transaction-detail-page" className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div
+      data-testid="transaction-detail-page"
+      className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100"
+    >
       {/* Header */}
       <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200/50 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
@@ -177,7 +181,12 @@ export function TransactionDetailPage({ transactionId }: TransactionDetailPagePr
             </div>
             <div className="flex items-center gap-3">
               <StatusBadge data-testid="status-badge" status={transaction.status} />
-              <Button data-testid="refresh-button" variant="outline" size="sm" onClick={refreshTransaction}>
+              <Button
+                data-testid="refresh-button"
+                variant="outline"
+                size="sm"
+                onClick={refreshTransaction}
+              >
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Refresh
               </Button>
@@ -264,7 +273,10 @@ export function TransactionDetailPage({ transactionId }: TransactionDetailPagePr
 
 function TransactionDetailSkeleton() {
   return (
-    <div data-testid="loading-skeleton" className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div
+      data-testid="loading-skeleton"
+      className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100"
+    >
       {/* Header Skeleton */}
       <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200/50 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">

@@ -27,7 +27,11 @@ export function ProductDetailCard({ item }: ProductDetailCardProps) {
       <div className="flex items-start gap-4">
         <div className="w-24 h-24 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
           <Image
-            src={item.product.image || '/products/image.png'}
+            src={
+              item.product.image?.startsWith('/') || item.product.image?.startsWith('http')
+                ? item.product.image || '/products/image.png'
+                : `/${item.product.image || 'products/image.png'}`
+            }
             alt={item.product.name}
             width={200}
             height={200}
