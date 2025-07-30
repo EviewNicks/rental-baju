@@ -1,5 +1,6 @@
 import { CreditCard, AlertTriangle, CheckCircle } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
+import { useEffect } from 'react'
 import type { TransactionDetail, Payment, Penalty } from '../../types/transaction-detail'
 import { formatCurrency, formatDate } from '../../lib/utils'
 
@@ -11,10 +12,85 @@ interface PaymentSummaryCardProps {
 }
 
 export function PaymentSummaryCard({ transaction, payments, penalties, 'data-testid': dataTestId }: PaymentSummaryCardProps) {
-  const totalPaid = payments.reduce((sum, payment) => sum + payment.amount, 0)
-  const totalPenalties = penalties?.reduce((sum, penalty) => sum + penalty.amount, 0) || 0
-  const grandTotal = transaction.totalAmount + totalPenalties
+  // 🛡️ Phase 2: Data validation
+  const validPayments = Array.isArray(payments) ? payments : []
+  const validPenalties = Array.isArray(penalties) ? penalties : []
+  const validTransaction = transaction || { totalAmount: 0 }
+
+  // 🔍 Debug logging - Phase 1
+  console.log('🔍 PaymentSummaryCard Debug:', {
+    transaction: {
+      id: validTransaction.id,
+      totalAmount: validTransaction.totalAmount,
+      totalAmountType: typeof validTransaction.totalAmount,
+    },
+    payments: validPayments.map(p => ({
+      id: p.id,
+      amount: p.amount,
+      amountType: typeof p.amount,
+      method: p.method,
+    })),
+    paymentsLength: validPayments.length,
+    penalties: validPenalties.map(p => ({
+      id: p.id,
+      amount: p.amount,
+      amountType: typeof p.amount,
+    })),
+    penaltiesLength: validPenalties.length,
+  })
+
+  // 🛡️ Phase 2: Safe calculations with validation
+  const totalPaid = validPayments.reduce((sum, payment) => {
+    const amount = Number(payment.amount) || 0
+    return sum + amount
+  }, 0)
+  
+  const totalPenalties = validPenalties.reduce((sum, penalty) => {
+    const amount = Number(penalty.amount) || 0
+    return sum + amount
+  }, 0)
+  
+  const transactionAmount = Number(validTransaction.totalAmount) || 0
+  const grandTotal = transactionAmount + totalPenalties
   const remainingBalance = grandTotal - totalPaid
+
+  // 🔍 Debug calculated values
+  console.log('🔍 PaymentSummary Calculations:', {
+    totalPaid,
+    totalPaidType: typeof totalPaid,
+    totalPenalties,
+    transactionAmount,
+    grandTotal,
+    remainingBalance,
+    isValidData: {
+      hasPayments: validPayments.length > 0,
+      hasValidAmount: transactionAmount > 0,
+      calculationsOk: !isNaN(grandTotal) && !isNaN(remainingBalance),
+    }
+  })
+
+  // 🔧 Phase 3: Monitor prop changes and re-rendering
+  useEffect(() => {
+    console.log('🔧 PaymentSummaryCard re-rendered with:', {
+      transactionId: validTransaction.id,
+      paymentsCount: validPayments.length,
+      totalAmount: transactionAmount,
+      calculatedTotalPaid: totalPaid,
+    })
+  }, [validTransaction.id, validPayments.length, transactionAmount, totalPaid])
+
+  // 🛡️ Phase 3: Loading state and error handling
+  if (!validTransaction || typeof validTransaction.totalAmount === 'undefined') {
+    console.log('⚠️ PaymentSummaryCard: Invalid transaction data', validTransaction)
+    return (
+      <div data-testid={dataTestId} className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-6">
+        <div className="flex items-center gap-2 text-gray-500">
+          <CreditCard className="h-5 w-5" />
+          <h3 className="text-lg font-semibold">Memuat Pembayaran...</h3>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div data-testid={dataTestId} className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-6 space-y-6">
@@ -27,8 +103,8 @@ export function PaymentSummaryCard({ transaction, payments, penalties, 'data-tes
       <div className="space-y-3">
         <div className="flex justify-between text-sm">
           <span className="text-gray-600">Total Sewa:</span>
-          <span className="font-medium text-gray-900">
-            {formatCurrency(transaction.totalAmount)}
+          <span className="font-medium text-gray-900" data-testid="total-amount">
+            {formatCurrency(transactionAmount)}
           </span>
         </div>
 
@@ -48,13 +124,17 @@ export function PaymentSummaryCard({ transaction, payments, penalties, 'data-tes
 
         <div className="flex justify-between text-sm">
           <span className="text-gray-600">Dibayar:</span>
-          <span className="font-medium text-green-600">{formatCurrency(totalPaid)}</span>
+          <span className="font-medium text-green-600" data-testid="total-paid">
+            {formatCurrency(totalPaid)}
+          </span>
         </div>
 
         {remainingBalance > 0 && (
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">Sisa:</span>
-            <span className="font-medium text-red-600">{formatCurrency(remainingBalance)}</span>
+            <span className="font-medium text-red-600" data-testid="remaining-balance">
+              {formatCurrency(remainingBalance)}
+            </span>
           </div>
         )}
       </div>
@@ -75,14 +155,18 @@ export function PaymentSummaryCard({ transaction, payments, penalties, 'data-tes
       </div>
 
       {/* Payment History */}
-      {payments.length > 0 && (
+      {validPayments.length > 0 && (
         <div className="pt-4 border-t border-gray-200">
-          <h4 className="text-sm font-medium text-gray-900 mb-3">Riwayat Pembayaran</h4>
-          <div className="space-y-2">
-            {payments.map((payment) => (
+          <h4 className="text-sm font-medium text-gray-900 mb-3">
+            Riwayat Pembayaran ({validPayments.length})
+          </h4>
+          <div className="space-y-2" data-testid="payment-history">
+            {validPayments.map((payment) => (
               <div key={payment.id} className="flex justify-between items-center text-sm">
                 <div>
-                  <div className="text-gray-900">{formatCurrency(payment.amount)}</div>
+                  <div className="text-gray-900" data-testid={`payment-amount-${payment.id}`}>
+                    {formatCurrency(Number(payment.amount) || 0)}
+                  </div>
                   <div className="text-gray-500 text-xs">
                     {formatDate(payment.timestamp)} • {payment.method.toUpperCase()}
                   </div>
@@ -92,6 +176,16 @@ export function PaymentSummaryCard({ transaction, payments, penalties, 'data-tes
                 </Badge>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Empty state for payments */}
+      {validPayments.length === 0 && transactionAmount > 0 && (
+        <div className="pt-4 border-t border-gray-200">
+          <div className="text-center text-gray-500 text-sm py-4">
+            <AlertTriangle className="h-4 w-4 mx-auto mb-2" />
+            Belum ada pembayaran tercatat
           </div>
         </div>
       )}

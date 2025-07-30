@@ -1,6 +1,7 @@
-import { Tag } from 'lucide-react'
+import { Tag, Package, Palette, Shirt } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { formatCurrency } from '../../lib/utils'
+import { cn } from '@/lib/utils'
 import Image from 'next/image'
 
 interface ProductDetailCardProps {
@@ -23,59 +24,106 @@ interface ProductDetailCardProps {
 
 export function ProductDetailCard({ item }: ProductDetailCardProps) {
   return (
-    <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-6">
+    <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-6 shadow-lg shadow-gray-900/5 transition-all duration-200">
       <div className="flex items-start gap-4">
-        <div className="w-24 h-24 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+        <div className="w-32 h-32 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 shadow-md">
           <Image
             src={
               item.product.image?.startsWith('/') || item.product.image?.startsWith('http')
                 ? item.product.image || '/products/image.png'
                 : `/${item.product.image || 'products/image.png'}`
             }
-            alt={item.product.name}
+            alt={`${item.product.name}${item.product.category ? ` - ${item.product.category}` : ''}${item.product.color ? ` dalam warna ${item.product.color}` : ''}`}
             width={200}
             height={200}
             className="w-full h-full object-cover"
           />
         </div>
 
-        <div className="flex-1 space-y-3">
+        <div className="flex-1 space-y-4">
           <div>
-            <h3 className="text-lg font-semibold text-gray-900">{item.product.name}</h3>
+            <h3 className="text-xl font-semibold text-gray-900 leading-tight">{item.product.name}</h3>
             {item.product.description && (
-              <p className="text-sm text-gray-600">{item.product.description}</p>
+              <p className="text-sm text-gray-600 mt-2 leading-relaxed">{item.product.description}</p>
             )}
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <Badge variant="outline" className="text-xs">
-              <Tag className="h-3 w-3 mr-1" />
-              {item.product.category}
-            </Badge>
-            <Badge variant="outline" className="text-xs">
-              {item.product.size}
-            </Badge>
-            <Badge variant="outline" className="text-xs">
-              {item.product.color}
-            </Badge>
+            {item.product.category && (
+              <Badge 
+                variant="outline" 
+                className={cn(
+                  "text-xs font-medium border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100",
+                  "transition-colors duration-200"
+                )} 
+                aria-label={`Kategori: ${item.product.category}`}
+              >
+                <Tag className="h-3 w-3 mr-1.5" aria-hidden="true" />
+                {item.product.category}
+              </Badge>
+            )}
+            {item.product.size && (
+              <Badge 
+                variant="outline" 
+                className={cn(
+                  "text-xs font-medium border-green-200 bg-green-50 text-green-700 hover:bg-green-100",
+                  "transition-colors duration-200"
+                )} 
+                aria-label={`Ukuran: ${item.product.size}`}
+              >
+                <Shirt className="h-3 w-3 mr-1.5" aria-hidden="true" />
+                {item.product.size}
+              </Badge>
+            )}
+            {item.product.color && (
+              <Badge 
+                variant="outline" 
+                className={cn(
+                  "text-xs font-medium border-purple-200 bg-purple-50 text-purple-700 hover:bg-purple-100",
+                  "transition-colors duration-200"
+                )} 
+                aria-label={`Warna: ${item.product.color}`}
+              >
+                <Palette className="h-3 w-3 mr-1.5" aria-hidden="true" />
+                {item.product.color}
+              </Badge>
+            )}
+            {!item.product.category && !item.product.size && !item.product.color && (
+              <Badge 
+                variant="outline" 
+                className="text-xs text-gray-500 border-gray-200 bg-gray-50" 
+                aria-label="Informasi produk tidak tersedia"
+              >
+                <Package className="h-3 w-3 mr-1.5" aria-hidden="true" />
+                Info tidak tersedia
+              </Badge>
+            )}
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-            <div>
-              <div className="text-gray-600">Jumlah</div>
-              <div className="font-semibold text-gray-900">{item.quantity}x</div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50/80 rounded-lg border border-gray-100">
+            <div className="text-center md:text-left">
+              <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Jumlah</div>
+              <div className="text-lg font-bold text-gray-900" aria-label={`Jumlah: ${item.quantity} pieces`}>
+                {item.quantity}x
+              </div>
             </div>
-            <div>
-              <div className="text-gray-600">Harga/Hari</div>
-              <div className="font-semibold text-gray-900">{formatCurrency(item.pricePerDay)}</div>
+            <div className="text-center md:text-left">
+              <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Harga/Hari</div>
+              <div className="text-lg font-bold text-gray-900" aria-label={`Harga per hari: ${formatCurrency(item.pricePerDay)}`}>
+                {formatCurrency(item.pricePerDay)}
+              </div>
             </div>
-            <div>
-              <div className="text-gray-600">Durasi</div>
-              <div className="font-semibold text-gray-900">{item.duration} hari</div>
+            <div className="text-center md:text-left">
+              <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Durasi</div>
+              <div className="text-lg font-bold text-gray-900" aria-label={`Durasi sewa: ${item.duration} hari`}>
+                {item.duration} hari
+              </div>
             </div>
-            <div>
-              <div className="text-gray-600">Subtotal</div>
-              <div className="font-semibold text-gray-900">{formatCurrency(item.subtotal)}</div>
+            <div className="text-center md:text-left">
+              <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Subtotal</div>
+              <div className="text-lg font-bold text-yellow-600" aria-label={`Subtotal: ${formatCurrency(item.subtotal)}`}>
+                {formatCurrency(item.subtotal)}
+              </div>
             </div>
           </div>
         </div>

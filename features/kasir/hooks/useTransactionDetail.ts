@@ -5,6 +5,7 @@ import { queryKeys } from '@/lib/react-query'
 import { kasirApi } from '../api'
 import type { TransactionDetail } from '../types/transaction-detail'
 import type { TransaksiResponse } from '../types/api'
+import type { ProductAvailabilityResponse } from '../types/api'
 
 interface UseTransactionDetailOptions {
   enabled?: boolean
@@ -80,8 +81,17 @@ export function useTransactionDetail(
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000), // Exponential backoff, max 10s
   })
 
-  // Transform API response to match UI component expectations
-  const transaction: TransactionDetail | null = apiData ? transformApiToUI(apiData) : null
+  // Create a separate query for the transformed data
+  const {
+    data: transaction,
+    isLoading: isTransforming,
+  } = useQuery({
+    queryKey: [...queryKeys.kasir.transaksi.detail(transactionId), 'transformed'],
+    queryFn: () => transformApiToUI(apiData!),
+    enabled: !!apiData,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  })
 
   // Helper function to manually refresh data
   const refreshTransaction = () => {
@@ -95,7 +105,7 @@ export function useTransactionDetail(
 
   return {
     transaction,
-    isLoading: isLoading || isRefetching,
+    isLoading: isLoading || isRefetching || isTransforming,
     error,
     refreshTransaction,
     clearError,
@@ -106,8 +116,17 @@ export function useTransactionDetail(
 
 /**
  * Transform API TransaksiResponse to UI TransactionDetail type
+ * Now fetches full product details including category, size, color
  */
-function transformApiToUI(apiData: TransaksiResponse): TransactionDetail {
+async function transformApiToUI(apiData: TransaksiResponse): Promise<TransactionDetail> {
+  // Fetch full product details for all items
+  const productDetailsPromises = apiData.items.map(item => 
+    kasirApi.produk.getById(item.produk.id).catch(error => {
+      console.warn(`Failed to fetch product details for ${item.produk.id}:`, error)
+      return null
+    })
+  )
+  const productDetails = await Promise.all(productDetailsPromises)
   return {
     id: apiData.id,
     transactionCode: apiData.kode,
@@ -139,24 +158,27 @@ function transformApiToUI(apiData: TransaksiResponse): TransactionDetail {
       totalTransactions: 0, // Would need separate API call
     },
 
-    // Enhanced product information
-    products: apiData.items.map(item => ({
-      product: {
-        id: item.produk.id,
-        name: item.produk.name,
-        category: '', // Would need category info from API
-        size: '', // Not available in current response
-        color: '', // Not available in current response
+    // Enhanced product information with full details
+    products: apiData.items.map((item, index) => {
+      const fullProduct = productDetails[index] as ProductAvailabilityResponse | null
+      return {
+        product: {
+          id: item.produk.id,
+          name: item.produk.name,
+          category: fullProduct?.category?.name || '',
+          size: fullProduct?.size || '',
+          color: fullProduct?.color?.name || '',
+          pricePerDay: item.hargaSewa,
+          image: item.produk.imageUrl || fullProduct?.imageUrl || '/products/placeholder.png',
+          available: false, // Item is currently rented
+          description: fullProduct?.description || '',
+        },
+        quantity: item.jumlah,
         pricePerDay: item.hargaSewa,
-        image: item.produk.imageUrl || '/products/placeholder.png',
-        available: false, // Item is currently rented
-        description: '', // Not available in current response
-      },
-      quantity: item.jumlah,
-      pricePerDay: item.hargaSewa,
-      duration: item.durasi,
-      subtotal: item.subtotal,
-    })),
+        duration: item.durasi,
+        subtotal: item.subtotal,
+      }
+    }),
 
     // Transform activity timeline
     timeline: apiData.aktivitas.map((activity) => ({

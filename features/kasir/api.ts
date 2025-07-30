@@ -260,6 +260,18 @@ export const kasirApi = {
     getAvailable: (params?: ProductAvailabilityQueryParams) => KasirApi.getAvailableProducts(params),
     search: (query: string) => KasirApi.getAvailableProducts({ search: query, available: true }),
     getByCategory: (categoryId: string) => KasirApi.getAvailableProducts({ categoryId, available: true }),
+    getById: (id: string) => {
+      // Get specific product details using the available products API
+      // Since kasir available API doesn't support direct ID lookup, we'll filter in frontend
+      return KasirApi.getAvailableProducts({ search: '', available: false })
+        .then(response => {
+          const product = response.data.find(p => p.id === id)
+          if (!product) {
+            throw new Error(`Product with ID ${id} not found`)
+          }
+          return product
+        })
+    },
   },
 
   // Payment shortcuts

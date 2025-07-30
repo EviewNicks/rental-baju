@@ -61,9 +61,8 @@ export function useTransactions(options: UseTransactionsOptions = {}) {
       customerName: transaction.penyewa.nama,
       customerPhone: transaction.penyewa.telepon,
       customerAddress: transaction.penyewa.alamat,
-      // Handle missing items array - use itemCount as fallback
-      items: transaction.items?.map((item) => item.produk.name) || 
-             (transaction.items?.length ? [`${transaction.items.length} item(s)`] : ['Tidak ada item']),
+      // Use the actual items array with product names from API
+      items: transaction.items?.map((item) => item.produk?.name || 'Produk tidak diketahui') || ['Tidak ada item'],
       totalAmount: transaction.totalHarga,
       amountPaid: transaction.jumlahBayar,
       remainingAmount: transaction.sisaBayar,

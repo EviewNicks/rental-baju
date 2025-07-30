@@ -113,7 +113,7 @@ model Transaksi {
   tglMulai     DateTime // Tanggal mulai sewa
   tglSelesai   DateTime? // Tanggal selesai sewa
   tglKembali   DateTime? // Tanggal aktual pengembalian
-  metodeBayar  String   @default("tunai") // tunai, transfer, kartu
+  metodeBayar  String   @default("tunai") // tunai, transfer, kartu"
   catatan      String?  // Catatan transaksi
   createdBy    String   // User ID yang membuat
   createdAt    DateTime @default(now())

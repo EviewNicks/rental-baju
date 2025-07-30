@@ -265,6 +265,13 @@ export async function GET(request: NextRequest) {
         createdAt: transaksi.createdAt.toISOString(),
         updatedAt: transaksi.updatedAt.toISOString(),
         itemCount: transaksi.items.length,
+        items: transaksi.items.map(item => ({
+          produk: {
+            id: item.produk.id,
+            name: item.produk.name
+          },
+          jumlah: item.jumlah
+        })),
         recentPayment: transaksi.pembayaran[0] ? {
           jumlah: Number(transaksi.pembayaran[0].jumlah),
           metode: transaksi.pembayaran[0].metode,

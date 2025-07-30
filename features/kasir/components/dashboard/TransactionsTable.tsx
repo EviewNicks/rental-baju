@@ -43,22 +43,40 @@ export function TransactionTable({ transactions, isLoading }: TransactionTablePr
       <Table>
         <TableHeader className="bg-gold-100">
           <TableRow>
-            <TableHead className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+            <TableHead 
+              scope="col"
+              className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+            >
               Kode & Pelanggan
             </TableHead>
-            <TableHead className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+            <TableHead 
+              scope="col"
+              className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+            >
               Item
             </TableHead>
-            <TableHead className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+            <TableHead 
+              scope="col"
+              className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+            >
               Tanggal
             </TableHead>
-            <TableHead className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+            <TableHead 
+              scope="col"
+              className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+            >
               Total
             </TableHead>
-            <TableHead className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+            <TableHead 
+              scope="col"
+              className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+            >
               Status
             </TableHead>
-            <TableHead className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+            <TableHead 
+              scope="col"
+              className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider"
+            >
               Aksi
             </TableHead>
           </TableRow>
@@ -87,8 +105,14 @@ function TransactionRow({ transaction }: { transaction: Transaction }) {
           <div className="font-medium text-gray-900 text-sm">{transaction.transactionCode}</div>
           <div className="text-gray-600 text-sm">{transaction.customerName}</div>
           <div className="flex items-center gap-1 text-gray-500 text-xs">
-            <Phone className="h-3 w-3" />
-            {transaction.customerPhone}
+            <Phone className="h-3 w-3" aria-hidden="true" />
+            <a 
+              href={`tel:${transaction.customerPhone}`}
+              className="hover:text-blue-600 transition-colors"
+              aria-label={`Telepon ${transaction.customerName}: ${transaction.customerPhone}`}
+            >
+              {transaction.customerPhone}
+            </a>
           </div>
         </div>
       </TableCell>
@@ -98,7 +122,7 @@ function TransactionRow({ transaction }: { transaction: Transaction }) {
             <div
               key={index}
               className={`text-sm ${
-                item.includes('item(s)') || item === 'Tidak ada item'
+                item === 'Tidak ada item' || item === 'Produk tidak diketahui'
                   ? 'text-gray-500 italic'
                   : 'text-gray-700'
               }`}
@@ -115,25 +139,51 @@ function TransactionRow({ transaction }: { transaction: Transaction }) {
       </TableCell>
       <TableCell className="px-4 py-3">
         <div className="space-y-1">
-          <div className="text-sm text-gray-700">Sewa: {formatDate(transaction.startDate)}</div>
           <div className="text-sm text-gray-700">
-            Kembali: {transaction.endDate ? formatDate(transaction.endDate) : 'Belum ditentukan'}
+            <time 
+              dateTime={transaction.startDate}
+              aria-label={`Tanggal mulai sewa: ${formatDate(transaction.startDate)}`}
+            >
+              Sewa: {formatDate(transaction.startDate)}
+            </time>
+          </div>
+          <div className="text-sm text-gray-700">
+            {transaction.endDate ? (
+              <time 
+                dateTime={transaction.endDate}
+                aria-label={`Tanggal pengembalian: ${formatDate(transaction.endDate)}`}
+              >
+                Kembali: {formatDate(transaction.endDate)}
+              </time>
+            ) : (
+              <span aria-label="Tanggal pengembalian belum ditentukan">
+                Kembali: Belum ditentukan
+              </span>
+            )}
           </div>
           {isOverdue && daysOverdue > 0 && (
-            <div className="flex items-center gap-1 text-red-600 text-xs">
-              <Clock className="h-3 w-3" />
-              Terlambat {daysOverdue} hari
+            <div className="flex items-center gap-1 text-red-600 text-xs" role="alert">
+              <Clock className="h-3 w-3" aria-hidden="true" />
+              <span aria-label={`Peringatan: Terlambat ${daysOverdue} hari`}>
+                Terlambat {daysOverdue} hari
+              </span>
             </div>
           )}
         </div>
       </TableCell>
       <TableCell className="px-4 py-3">
         <div className="space-y-1">
-          <div className="font-semibold text-gray-900 text-sm">
+          <div 
+            className="font-semibold text-gray-900 text-sm"
+            aria-label={`Total transaksi: ${formatCurrency(transaction.totalAmount)}`}
+          >
             {formatCurrency(transaction.totalAmount)}
           </div>
           {transaction.amountPaid < transaction.totalAmount && (
-            <div className="text-xs text-orange-600">
+            <div 
+              className="text-xs text-orange-600"
+              aria-label={`Sudah dibayar: ${formatCurrency(transaction.amountPaid)} dari total ${formatCurrency(transaction.totalAmount)}`}
+            >
               Dibayar: {formatCurrency(transaction.amountPaid)}
             </div>
           )}
@@ -144,8 +194,13 @@ function TransactionRow({ transaction }: { transaction: Transaction }) {
       </TableCell>
       <TableCell className="px-4 py-3 text-center">
         <Link href={`/dashboard/transaction/${transaction.transactionCode}`}>
-          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-            <Eye className="h-4 w-4" />
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="h-8 w-8 p-0"
+            aria-label={`Lihat detail transaksi ${transaction.transactionCode} untuk ${transaction.customerName}`}
+          >
+            <Eye className="h-4 w-4" aria-hidden="true" />
             <span className="sr-only">Lihat Detail</span>
           </Button>
         </Link>

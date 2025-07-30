@@ -63,18 +63,27 @@ export function PaymentSummaryStep({
     setPaymentDisplayValue(formatToDisplay(formData.paymentAmount))
   }, [formData.paymentAmount, formatToDisplay])
 
-  // Handle currency input change
-  const handlePaymentChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const inputValue = e.target.value
-    const numericValue = parseFromDisplay(inputValue)
-    
-    // Update display value with formatting
-    const formattedValue = formatToDisplay(numericValue)
-    setPaymentDisplayValue(formattedValue)
-    
-    // Update form data with numeric value
-    onUpdateFormData({ paymentAmount: numericValue })
-  }, [parseFromDisplay, formatToDisplay, onUpdateFormData])
+  // Handle currency input change with automatic status calculation
+  const handlePaymentChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const inputValue = e.target.value
+      const numericValue = parseFromDisplay(inputValue)
+
+      // Update display value with formatting
+      const formattedValue = formatToDisplay(numericValue)
+      setPaymentDisplayValue(formattedValue)
+
+      // Automatically determine payment status based on amount
+      const paymentStatus = numericValue >= totalAmount ? 'paid' : 'unpaid'
+
+      // Update form data with numeric value and automatic status
+      onUpdateFormData({
+        paymentAmount: numericValue,
+        paymentStatus: paymentStatus,
+      })
+    },
+    [parseFromDisplay, formatToDisplay, onUpdateFormData, totalAmount],
+  )
 
   useEffect(() => {
     // Auto-calculate return date based on pickup date and duration
@@ -88,6 +97,16 @@ export function PaymentSummaryStep({
       })
     }
   }, [formData.pickupDate, duration, onUpdateFormData])
+
+  // Auto-calculate payment status when payment amount or total changes
+  useEffect(() => {
+    if (formData.paymentAmount > 0) {
+      const paymentStatus = formData.paymentAmount >= totalAmount ? 'paid' : 'unpaid'
+      if (formData.paymentStatus !== paymentStatus) {
+        onUpdateFormData({ paymentStatus })
+      }
+    }
+  }, [formData.paymentAmount, totalAmount, formData.paymentStatus, onUpdateFormData])
 
   const handleSubmit = async () => {
     const success = await onSubmit()
@@ -129,7 +148,11 @@ export function PaymentSummaryStep({
             >
               <div className="flex items-center gap-4">
                 <Image
-                  src={item.product.image?.startsWith('/') || item.product.image?.startsWith('http') ? (item.product.image || '/placeholder.svg') : `/${item.product.image || 'placeholder.svg'}`}
+                  src={
+                    item.product.image?.startsWith('/') || item.product.image?.startsWith('http')
+                      ? item.product.image || '/placeholder.svg'
+                      : `/${item.product.image || 'placeholder.svg'}`
+                  }
                   alt={item.product.name}
                   width={200}
                   height={200}
@@ -176,7 +199,7 @@ export function PaymentSummaryStep({
                   <Button
                     key={preset}
                     type="button"
-                    variant={duration === preset ? "default" : "outline"}
+                    variant={duration === preset ? 'default' : 'outline'}
                     size="sm"
                     onClick={() => onUpdateDuration(preset)}
                     className="text-xs"
@@ -269,7 +292,7 @@ export function PaymentSummaryStep({
         </RadioGroup>
 
         {/* Payment Amount */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-6">
           <div>
             <Label htmlFor="paymentAmount" className="text-sm font-medium text-gray-700">
               Jumlah Bayar
@@ -286,9 +309,9 @@ export function PaymentSummaryStep({
                   onChange={handlePaymentChange}
                   placeholder="0"
                   className={`w-full pl-10 pr-24 text-right font-mono text-lg transition-colors ${
-                    formData.paymentAmount > subtotal 
-                      ? 'border-yellow-300 bg-yellow-50' 
-                      : formData.paymentAmount === subtotal 
+                    formData.paymentAmount > subtotal
+                      ? 'border-yellow-300 bg-yellow-50'
+                      : formData.paymentAmount === subtotal
                         ? 'border-green-300 bg-green-50'
                         : 'border-gray-300'
                   }`}
@@ -298,67 +321,59 @@ export function PaymentSummaryStep({
               {/* Quick Payment Options */}
               <div className="flex gap-2 flex-wrap">
                 {/* Common payment amounts */}
-                {[50000, 100000, 200000, 500000].filter(amount => amount < subtotal).map(amount => (
-                  <Button
-                    key={amount}
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onUpdateFormData({ paymentAmount: amount })}
-                    className="text-xs flex-1 min-w-[80px]"
-                  >
-                    {formatCurrency(amount)}
-                  </Button>
-                ))}
-                
-                {/* Pay full amount button */}
+                {[50000, 100000, 200000, 500000]
+                  .filter((amount) => amount < subtotal)
+                  .map((amount) => (
+                    <Button
+                      key={amount}
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const paymentStatus = amount >= subtotal ? 'paid' : 'unpaid'
+                        onUpdateFormData({
+                          paymentAmount: amount,
+                          paymentStatus: paymentStatus,
+                        })
+                      }}
+                      className="text-xs flex-1 min-w-[80px]"
+                    >
+                      {formatCurrency(amount)}
+                    </Button>
+                  ))}
+
+                {/* Pay full amount button with automatic status */}
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => onUpdateFormData({ paymentAmount: subtotal })}
+                  onClick={() =>
+                    onUpdateFormData({
+                      paymentAmount: subtotal,
+                      paymentStatus: 'paid',
+                    })
+                  }
                   className="text-xs flex-1 min-w-[100px] bg-green-50 hover:bg-green-100 text-green-700 border-green-200"
                 >
                   Bayar Lunas
                 </Button>
               </div>
-              
+
               {/* Payment help text */}
               {formData.paymentAmount > subtotal && (
                 <div className="text-xs text-yellow-600 bg-yellow-50 p-2 rounded border border-yellow-200">
-                  💡 Jumlah pembayaran melebihi total. Kembalian: {formatCurrency(formData.paymentAmount - subtotal)}
+                  💡 Jumlah pembayaran melebihi total. Kembalian:{' '}
+                  {formatCurrency(formData.paymentAmount - subtotal)}
                 </div>
               )}
-              
+
               {formData.paymentAmount > 0 && formData.paymentAmount < subtotal && (
                 <div className="text-xs text-orange-600 bg-orange-50 p-2 rounded border border-orange-200">
-                  ⚠️ Pembayaran belum lunas. Sisa: {formatCurrency(subtotal - formData.paymentAmount)}
+                  ⚠️ Pembayaran belum lunas. Sisa:{' '}
+                  {formatCurrency(subtotal - formData.paymentAmount)}
                 </div>
               )}
             </div>
-          </div>
-          <div>
-            <Label className="text-sm font-medium text-gray-700">Status Pembayaran</Label>
-            <RadioGroup
-              value={formData.paymentStatus}
-              onValueChange={(value: 'paid' | 'unpaid') =>
-                onUpdateFormData({ paymentStatus: value })
-              }
-              className="mt-2 flex gap-6"
-            >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="paid" id="paid" />
-                <Label htmlFor="paid" className="cursor-pointer">
-                  Lunas
-                </Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="unpaid" id="unpaid" />
-                <Label htmlFor="unpaid" className="cursor-pointer">
-                  Belum Lunas
-                </Label>
-              </div>
-            </RadioGroup>
           </div>
         </div>
       </div>
@@ -382,7 +397,7 @@ export function PaymentSummaryStep({
         {/* Total Breakdown */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-gray-900">Ringkasan Pembayaran</h3>
-          
+
           {/* Item Details */}
           <div className="space-y-2">
             {formData.products.map((item) => (
@@ -409,11 +424,15 @@ export function PaymentSummaryStep({
             <div className="bg-white/50 rounded-lg p-3 space-y-1">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Jumlah dibayar:</span>
-                <span className="font-medium text-green-600">{formatCurrency(formData.paymentAmount)}</span>
+                <span className="font-medium text-green-600">
+                  {formatCurrency(formData.paymentAmount)}
+                </span>
               </div>
               <div className="flex justify-between text-sm font-medium">
                 <span className="text-gray-900">Sisa pembayaran:</span>
-                <span className="text-red-600">{formatCurrency(subtotal - formData.paymentAmount)}</span>
+                <span className="text-red-600">
+                  {formatCurrency(subtotal - formData.paymentAmount)}
+                </span>
               </div>
             </div>
           )}

@@ -21,10 +21,6 @@
         "hooks": [
           {
             "type": "command",
-            "command": "uv run .claude/hooks/log_pre_tool_use.py"
-          },
-          {
-            "type": "command",
             "command": "uv run .claude/hooks/use_bun.py"
           }
         ]
@@ -34,10 +30,6 @@
       {
         "matcher": "Write|Edit|MultiEdit",
         "hooks": [
-          {
-            "type": "command",
-            "command": "uv run .claude/hooks/play_audio.py build_complete"
-          },
           {
             "type": "command",
             "command": "uv run .claude/hooks/windows_notification.py build_complete"
@@ -56,10 +48,6 @@
           {
             "type": "command",
             "command": "uv run .claude/hooks/play_audio.py ready"
-          },
-          {
-            "type": "command",
-            "command": "uv run .claude/hooks/windows_notification.py ready"
           },
           {
             "type": "command",
