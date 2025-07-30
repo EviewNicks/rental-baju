@@ -120,9 +120,9 @@ export function PaymentSummaryStep({
   const subtotal = totalAmount
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6" data-testid="payment-summary-layout">
       {/* Order Summary */}
-      <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-6 space-y-6">
+      <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-6 space-y-6" data-testid="order-summary-section">
         <div className="flex items-center gap-2 text-xl font-bold text-gray-900">
           <ShoppingBag className="h-6 w-6" />
           Ringkasan Pesanan
@@ -194,7 +194,7 @@ export function PaymentSummaryStep({
             </Label>
             <div className="mt-2 space-y-3">
               {/* Duration Presets */}
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2" data-testid="duration-preset-buttons">
                 {[1, 3, 7, 14].map((preset) => (
                   <Button
                     key={preset}
@@ -203,6 +203,7 @@ export function PaymentSummaryStep({
                     size="sm"
                     onClick={() => onUpdateDuration(preset)}
                     className="text-xs"
+                    data-testid={`duration-preset-${preset}`}
                   >
                     {preset} hari
                   </Button>
@@ -218,6 +219,7 @@ export function PaymentSummaryStep({
                 onChange={(e) => onUpdateDuration(Number.parseInt(e.target.value) || 1)}
                 className="w-full"
                 placeholder="Atau masukkan durasi kustom"
+                data-testid="duration-input"
               />
             </div>
           </div>
@@ -235,6 +237,7 @@ export function PaymentSummaryStep({
               min={new Date().toISOString().split('T')[0]}
               className="mt-2"
               required
+              data-testid="pickup-date-input"
             />
           </div>
 
@@ -249,6 +252,7 @@ export function PaymentSummaryStep({
               value={formData.returnDate}
               readOnly
               className="mt-2 bg-gray-50"
+              data-testid="return-date-input"
             />
           </div>
         </div>
@@ -267,23 +271,24 @@ export function PaymentSummaryStep({
             onUpdateFormData({ paymentMethod: value })
           }
           className="grid grid-cols-1 md:grid-cols-3 gap-4"
+          data-testid="payment-method-selection"
         >
-          <div className="flex items-center space-x-3 border border-gray-200 rounded-lg p-4">
-            <RadioGroupItem value="cash" id="cash" />
+          <div className="flex items-center space-x-3 border border-gray-200 rounded-lg p-4" data-testid="payment-method-cash">
+            <RadioGroupItem value="cash" id="cash" data-testid="payment-method-cash-radio" />
             <Label htmlFor="cash" className="flex items-center gap-2 cursor-pointer">
               <Banknote className="h-5 w-5" />
               Tunai
             </Label>
           </div>
-          <div className="flex items-center space-x-3 border border-gray-200 rounded-lg p-4">
-            <RadioGroupItem value="qris" id="qris" />
+          <div className="flex items-center space-x-3 border border-gray-200 rounded-lg p-4" data-testid="payment-method-qris">
+            <RadioGroupItem value="qris" id="qris" data-testid="payment-method-qris-radio" />
             <Label htmlFor="qris" className="flex items-center gap-2 cursor-pointer">
               <Smartphone className="h-5 w-5" />
               QRIS
             </Label>
           </div>
-          <div className="flex items-center space-x-3 border border-gray-200 rounded-lg p-4">
-            <RadioGroupItem value="transfer" id="transfer" />
+          <div className="flex items-center space-x-3 border border-gray-200 rounded-lg p-4" data-testid="payment-method-transfer">
+            <RadioGroupItem value="transfer" id="transfer" data-testid="payment-method-transfer-radio" />
             <Label htmlFor="transfer" className="flex items-center gap-2 cursor-pointer">
               <CreditCard className="h-5 w-5" />
               Transfer Bank
@@ -316,10 +321,11 @@ export function PaymentSummaryStep({
                         : 'border-gray-300'
                   }`}
                   style={{ textAlign: 'right' }}
+                  data-testid="payment-amount-input"
                 />
               </div>
               {/* Quick Payment Options */}
-              <div className="flex gap-2 flex-wrap">
+              <div className="flex gap-2 flex-wrap" data-testid="quick-payment-buttons">
                 {/* Common payment amounts */}
                 {[50000, 100000, 200000, 500000]
                   .filter((amount) => amount < subtotal)
@@ -337,6 +343,7 @@ export function PaymentSummaryStep({
                         })
                       }}
                       className="text-xs flex-1 min-w-[80px]"
+                      data-testid={`quick-payment-${amount}`}
                     >
                       {formatCurrency(amount)}
                     </Button>
@@ -354,6 +361,7 @@ export function PaymentSummaryStep({
                     })
                   }
                   className="text-xs flex-1 min-w-[100px] bg-green-50 hover:bg-green-100 text-green-700 border-green-200"
+                  data-testid="pay-full-amount-button"
                 >
                   Bayar Lunas
                 </Button>
@@ -389,6 +397,7 @@ export function PaymentSummaryStep({
           onChange={(e) => onUpdateFormData({ notes: e.target.value })}
           placeholder="Tambahkan catatan untuk transaksi ini..."
           className="min-h-[100px]"
+          data-testid="transaction-notes-textarea"
         />
       </div>
 
@@ -448,7 +457,7 @@ export function PaymentSummaryStep({
         </div>
 
         <div className="flex items-center justify-between pt-4 border-t border-yellow-300">
-          <Button variant="outline" onClick={onPrev}>
+          <Button variant="outline" onClick={onPrev} data-testid="step-3-prev-button">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Kembali ke Data Penyewa
           </Button>
@@ -458,6 +467,7 @@ export function PaymentSummaryStep({
             disabled={isSubmitting || !formData.pickupDate || !formData.paymentMethod}
             className="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-semibold px-8 py-3 shadow-lg transition-all duration-200"
             size="lg"
+            data-testid="submit-transaction-button"
           >
             {isSubmitting ? 'Memproses...' : 'Buat Transaksi'}
           </Button>

@@ -209,32 +209,33 @@ export function ProductSelectionStep({
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6" data-testid="product-selection-layout">
       {/* Main Content */}
-      <div className="lg:col-span-3 space-y-6">
+      <div className="lg:col-span-3 space-y-6" data-testid="product-selection-main-content">
         {/* Filters */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-6 space-y-4">
+        <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-6 space-y-4" data-testid="product-filters-section">
           <div className="flex items-center gap-2 text-lg font-semibold text-gray-900">
             <Filter className="h-5 w-5" />
             Filter Produk
           </div>
 
           {/* Search */}
-          <div className="relative">
+          <div className="relative" data-testid="product-search-container">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
             <Input
               placeholder="Cari produk..."
               value={filters.search || ''}
               onChange={(e) => setFilters((prev) => ({ ...prev, search: e.target.value }))}
               className="pl-10"
+              data-testid="product-search-input"
             />
           </div>
 
           {/* Filter Buttons */}
-          <div className="space-y-4">
-            <div>
+          <div className="space-y-4" data-testid="product-filter-buttons">
+            <div data-testid="category-filter-section">
               <div className="text-sm font-medium text-gray-700 mb-2">Kategori</div>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2" data-testid="category-filter-buttons">
                 {categories.map((category) => (
                   <Button
                     key={category}
@@ -246,6 +247,7 @@ export function ProductSelectionStep({
                       filters.category === category &&
                         'bg-yellow-400 text-gray-900 hover:bg-yellow-500',
                     )}
+                    data-testid={`category-filter-${category}`}
                   >
                     {category}
                   </Button>
@@ -254,9 +256,9 @@ export function ProductSelectionStep({
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div>
+              <div data-testid="size-filter-section">
                 <div className="text-sm font-medium text-gray-700 mb-2">Ukuran</div>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2" data-testid="size-filter-buttons">
                   {sizes.map((size) => (
                     <Button
                       key={size}
@@ -267,6 +269,7 @@ export function ProductSelectionStep({
                         'text-xs',
                         filters.size === size && 'bg-yellow-400 text-gray-900 hover:bg-yellow-500',
                       )}
+                      data-testid={`size-filter-${size}`}
                     >
                       {size}
                     </Button>
@@ -274,9 +277,9 @@ export function ProductSelectionStep({
                 </div>
               </div>
 
-              <div>
+              <div data-testid="color-filter-section">
                 <div className="text-sm font-medium text-gray-700 mb-2">Warna</div>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2" data-testid="color-filter-buttons">
                   {colors.map((color) => (
                     <Button
                       key={color}
@@ -288,6 +291,7 @@ export function ProductSelectionStep({
                         filters.color === color &&
                           'bg-yellow-400 text-gray-900 hover:bg-yellow-500',
                       )}
+                      data-testid={`color-filter-${color}`}
                     >
                       {color}
                     </Button>
@@ -299,12 +303,17 @@ export function ProductSelectionStep({
         </div>
 
         {/* Products Grid */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-lg font-semibold text-gray-900">
+        <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-6" data-testid="products-grid-section">
+          <div className="flex items-center justify-between mb-6" data-testid="products-grid-header">
+            <h2 className="text-lg font-semibold text-gray-900" data-testid="products-count-header">
               Produk Tersedia ({isLoading ? '...' : filteredProducts.length})
             </h2>
-            <Button variant="outline" onClick={() => setShowCart(!showCart)} className="lg:hidden">
+            <Button 
+              variant="outline" 
+              onClick={() => setShowCart(!showCart)} 
+              className="lg:hidden"
+              data-testid="mobile-cart-toggle-button"
+            >
               <ShoppingCart className="h-4 w-4 mr-2" />
               Keranjang ({getTotalItems()})
             </Button>
@@ -312,7 +321,7 @@ export function ProductSelectionStep({
 
           {/* Loading State */}
           {isLoading && (
-            <div className="flex items-center justify-center py-12">
+            <div className="flex items-center justify-center py-12" data-testid="products-loading-state">
               <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
               <span className="ml-2 text-gray-600">Memuat produk...</span>
             </div>
@@ -320,7 +329,7 @@ export function ProductSelectionStep({
 
           {/* Error State */}
           {error && !isLoading && (
-            <div className="text-center py-12">
+            <div className="text-center py-12" data-testid="products-error-state">
               <Package className="h-16 w-16 text-red-300 mx-auto mb-4" />
               <div className="text-lg text-red-600 mb-2">
                 Gagal memuat produk
@@ -328,7 +337,7 @@ export function ProductSelectionStep({
               <div className="text-sm text-gray-600 mb-4">
                 Terjadi kesalahan saat mengambil data produk
               </div>
-              <Button onClick={() => refetch()} variant="outline">
+              <Button onClick={() => refetch()} variant="outline" data-testid="products-retry-button">
                 Coba Lagi
               </Button>
             </div>
@@ -338,18 +347,19 @@ export function ProductSelectionStep({
           {!isLoading && !error && (
             <>
               {filteredProducts.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4" data-testid="products-grid">
                   {filteredProducts.map((product) => (
-                    <ProductCard
-                      key={product.id}
-                      product={product}
-                      onAddToCart={handleAddProduct}
-                      selectedQuantity={getSelectedQuantity(product.id)}
-                    />
+                    <div key={product.id} data-testid={`product-card-${product.id}`}>
+                      <ProductCard
+                        product={product}
+                        onAddToCart={handleAddProduct}
+                        selectedQuantity={getSelectedQuantity(product.id)}
+                      />
+                    </div>
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-12">
+                <div className="text-center py-12" data-testid="products-empty-state">
                   <Package className="h-16 w-16 text-gray-300 mx-auto mb-4" />
                   <div className="text-lg text-gray-500 mb-2">
                     Tidak ada produk yang sesuai dengan filter
@@ -365,30 +375,30 @@ export function ProductSelectionStep({
       </div>
 
       {/* Cart Sidebar */}
-      <div className={cn('lg:block', showCart ? 'block' : 'hidden')}>
-        <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-6 sticky top-32">
-          <div className="flex items-center justify-between mb-4">
+      <div className={cn('lg:block', showCart ? 'block' : 'hidden')} data-testid="cart-sidebar">
+        <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-6 sticky top-32" data-testid="cart-container">
+          <div className="flex items-center justify-between mb-4" data-testid="cart-header">
             <div className="flex items-center gap-2">
               <ShoppingCart className="h-5 w-5 text-gray-700" />
               <h3 className="font-semibold text-gray-900">Keranjang</h3>
             </div>
-            <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
+            <Badge variant="secondary" className="bg-yellow-100 text-yellow-800" data-testid="cart-item-count">
               {getTotalItems()} item
             </Badge>
           </div>
 
           {selectedProducts.length === 0 ? (
-            <div className="text-center py-8">
+            <div className="text-center py-8" data-testid="cart-empty-state">
               <ShoppingCart className="h-12 w-12 text-gray-300 mx-auto mb-4" />
               <p className="text-gray-500 text-sm">Keranjang masih kosong</p>
               <p className="text-gray-400 text-xs mt-1">Pilih produk untuk memulai</p>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-4" data-testid="cart-content">
               {/* Cart Items */}
-              <div className="space-y-3 max-h-64 overflow-y-auto">
+              <div className="space-y-3 max-h-64 overflow-y-auto" data-testid="cart-items-list">
                 {selectedProducts.map((item) => (
-                  <div key={item.product.id} className="bg-gray-50 rounded-lg p-3">
+                  <div key={item.product.id} className="bg-gray-50 rounded-lg p-3" data-testid={`cart-item-${item.product.id}`}>
                     <div className="flex items-start gap-3">
                       <Image
                         src={
@@ -413,16 +423,17 @@ export function ProductSelectionStep({
                         </p>
 
                         {/* Quantity Controls */}
-                        <div className="flex items-center gap-2 mt-2">
+                        <div className="flex items-center gap-2 mt-2" data-testid={`cart-item-controls-${item.product.id}`}>
                           <Button
                             size="sm"
                             variant="outline"
                             onClick={() => handleUpdateQuantity(item.product.id, item.quantity - 1)}
                             className="h-6 w-6 p-0"
+                            data-testid={`cart-item-decrease-${item.product.id}`}
                           >
                             <Minus className="h-3 w-3" />
                           </Button>
-                          <span className="text-sm font-medium w-8 text-center">
+                          <span className="text-sm font-medium w-8 text-center" data-testid={`cart-item-quantity-${item.product.id}`}>
                             {item.quantity}
                           </span>
                           <Button
@@ -430,6 +441,7 @@ export function ProductSelectionStep({
                             variant="outline"
                             onClick={() => handleUpdateQuantity(item.product.id, item.quantity + 1)}
                             className="h-6 w-6 p-0"
+                            data-testid={`cart-item-increase-${item.product.id}`}
                           >
                             <Plus className="h-3 w-3" />
                           </Button>
@@ -438,6 +450,7 @@ export function ProductSelectionStep({
                             variant="ghost"
                             onClick={() => onRemoveProduct(item.product.id)}
                             className="h-6 w-6 p-0 text-red-500 hover:text-red-700 ml-auto"
+                            data-testid={`cart-item-remove-${item.product.id}`}
                           >
                             <X className="h-3 w-3" />
                           </Button>
@@ -449,16 +462,16 @@ export function ProductSelectionStep({
               </div>
 
               {/* Cart Summary */}
-              <div className="border-t border-gray-200 pt-4 space-y-2">
-                <div className="flex justify-between text-sm">
+              <div className="border-t border-gray-200 pt-4 space-y-2" data-testid="cart-summary">
+                <div className="flex justify-between text-sm" data-testid="cart-total-items">
                   <span className="text-gray-600">Total Item:</span>
                   <span className="font-medium">{getTotalItems()}</span>
                 </div>
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between text-sm" data-testid="cart-duration">
                   <span className="text-gray-600">Durasi:</span>
                   <span className="font-medium">3 hari</span>
                 </div>
-                <div className="flex justify-between text-base font-semibold text-gray-900 border-t border-gray-200 pt-2">
+                <div className="flex justify-between text-base font-semibold text-gray-900 border-t border-gray-200 pt-2" data-testid="cart-total-price">
                   <span>Total:</span>
                   <span>{formatCurrency(getTotalPrice())}</span>
                 </div>
@@ -469,6 +482,7 @@ export function ProductSelectionStep({
                 onClick={onNext}
                 disabled={!canProceed}
                 className="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-semibold"
+                data-testid="step-1-next-button"
               >
                 Lanjut ke Data Penyewa
               </Button>

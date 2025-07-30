@@ -258,7 +258,7 @@ export const kasirSelectors = {
   // Header elements
   title: '[data-testid="kasir-title"]',
   subtitle: '[data-testid="kasir-subtitle"]',
-  addTransactionButton: '[data-testid="add-transaction-button"]',
+  addTransactionButton: '[data-testid="add-transaction-link"]',
 
   // Tab navigation
   tabContainer: '[data-testid="transaction-tabs"]',
@@ -294,6 +294,128 @@ export const kasirSelectors = {
   refreshButton: '[data-testid="refresh-button"]',
   backButton: '[data-testid="back-button"]',
   breadcrumb: '[data-testid="breadcrumb"]',
+}
+
+/**
+ * Transaction Form Selectors untuk E2E Testing (RPK-21)
+ * Added for comprehensive transaction creation flow testing
+ */
+export const transactionFormSelectors = {
+  // Main form structure
+  formHeader: '[data-testid="transaction-form-header"]',
+  formTitle: '[data-testid="transaction-form-title"]',
+  formSubtitle: '[data-testid="transaction-form-subtitle"]',
+  backButton: '[data-testid="transaction-form-back-button"]',
+  stepper: '[data-testid="transaction-form-stepper"]',
+  content: '[data-testid="transaction-form-content"]',
+
+  // Step containers
+  productSelectionStep: '[data-testid="product-selection-step"]',
+  customerBiodataStep: '[data-testid="customer-biodata-step"]',
+  paymentSummaryStep: '[data-testid="payment-summary-step"]',
+
+  // Notifications
+  dataRestorationNotification: '[data-testid="data-restoration-notification"]',
+  errorNotification: '[data-testid="transaction-error-notification"]',
+  validationNotification: '[data-testid="step-validation-notification"]',
+
+  // Success state
+  successScreen: '[data-testid="transaction-success-screen"]',
+
+  // Step 1: Product Selection
+  productFilters: '[data-testid="product-filters-section"]',
+  productSearch: '[data-testid="product-search-input"]',
+  productSearchContainer: '[data-testid="product-search-container"]',
+  
+  // Product filter buttons
+  categoryFilterButtons: '[data-testid="category-filter-buttons"]',
+  sizeFilterButtons: '[data-testid="size-filter-buttons"]',
+  colorFilterButtons: '[data-testid="color-filter-buttons"]',
+  categoryFilter: (category: string) => `[data-testid="category-filter-${category}"]`,
+  sizeFilter: (size: string) => `[data-testid="size-filter-${size}"]`,
+  colorFilter: (color: string) => `[data-testid="color-filter-${color}"]`,
+
+  // Products grid
+  productsGridSection: '[data-testid="products-grid-section"]',
+  productsGrid: '[data-testid="products-grid"]',
+  productCard: (productId: string) => `[data-testid="product-card-${productId}"]`,
+  productsLoadingState: '[data-testid="products-loading-state"]',
+  productsErrorState: '[data-testid="products-error-state"]',
+  productsEmptyState: '[data-testid="products-empty-state"]',
+  productsRetryButton: '[data-testid="products-retry-button"]',
+
+  // Cart functionality
+  cartSidebar: '[data-testid="cart-sidebar"]',
+  cartContainer: '[data-testid="cart-container"]',
+  cartHeader: '[data-testid="cart-header"]',
+  cartItemCount: '[data-testid="cart-item-count"]',
+  cartEmptyState: '[data-testid="cart-empty-state"]',
+  cartContent: '[data-testid="cart-content"]',
+  cartItemsList: '[data-testid="cart-items-list"]',
+  cartItem: (productId: string) => `[data-testid="cart-item-${productId}"]`,
+  cartItemControls: (productId: string) => `[data-testid="cart-item-controls-${productId}"]`,
+  cartItemQuantity: (productId: string) => `[data-testid="cart-item-quantity-${productId}"]`,
+  cartItemIncrease: (productId: string) => `[data-testid="cart-item-increase-${productId}"]`,
+  cartItemDecrease: (productId: string) => `[data-testid="cart-item-decrease-${productId}"]`,
+  cartItemRemove: (productId: string) => `[data-testid="cart-item-remove-${productId}"]`,
+  cartSummary: '[data-testid="cart-summary"]',
+  cartTotalItems: '[data-testid="cart-total-items"]',
+  cartTotalPrice: '[data-testid="cart-total-price"]',
+  mobileCartToggle: '[data-testid="mobile-cart-toggle-button"]',
+
+  // Step navigation
+  step1NextButton: '[data-testid="step-1-next-button"]',
+
+  // Step 2: Customer Selection
+  customerSearchSection: '[data-testid="customer-search-section"]',
+  customerSearchInput: '[data-testid="customer-search-input"]',
+  addNewCustomerButton: '[data-testid="add-new-customer-button"]',
+  
+  // Customer list
+  customerListSection: '[data-testid="customer-list-section"]',
+  customerListItems: '[data-testid="customer-list-items"]',
+  customerListItem: (customerId: string) => `[data-testid="customer-list-item-${customerId}"]`,
+  customerName: (customerId: string) => `[data-testid="customer-name-${customerId}"]`,
+  customerContact: (customerId: string) => `[data-testid="customer-contact-${customerId}"]`,
+  customerListLoadingState: '[data-testid="customer-list-loading-state"]',
+  customerListErrorState: '[data-testid="customer-list-error-state"]',
+  customerListEmptyState: '[data-testid="customer-list-empty-state"]',
+
+  // Selected customer display
+  selectedCustomerDisplay: '[data-testid="selected-customer-display"]',
+  selectedCustomerDetails: '[data-testid="selected-customer-details"]',
+  selectedCustomerName: '[data-testid="selected-customer-name"]',
+  selectedCustomerPhone: '[data-testid="selected-customer-phone"]',
+  selectedCustomerEmail: '[data-testid="selected-customer-email"]',
+  selectedCustomerAddress: '[data-testid="selected-customer-address"]',
+  changeCustomerButton: '[data-testid="change-customer-button"]',
+
+  // Customer registration modal
+  customerRegistrationModalContainer: '[data-testid="customer-registration-modal-container"]',
+
+  // Step 2 navigation
+  step2PrevButton: '[data-testid="step-2-prev-button"]',
+  step2NextButton: '[data-testid="step-2-next-button"]',
+
+  // Step 3: Payment Summary
+  paymentSummaryLayout: '[data-testid="payment-summary-layout"]',
+  orderSummarySection: '[data-testid="order-summary-section"]',
+  rentalDurationSection: '[data-testid="rental-duration-section"]',
+  paymentMethodSection: '[data-testid="payment-method-section"]',
+
+  // Payment inputs
+  durationCustomInput: '[data-testid="duration-custom-input"]',
+  pickupDateInput: '[data-testid="pickup-date-input"]',
+  paymentAmountInput: '[data-testid="payment-amount-input"]',
+  
+  // Payment method selection
+  paymentMethodCash: 'input[value="cash"]',
+  paymentMethodQris: 'input[value="qris"]',
+  paymentMethodTransfer: 'input[value="transfer"]',
+
+  // Step 3 navigation and submission
+  step3PrevButton: '[data-testid="step-3-prev-button"]',
+  submitTransactionButton: '[data-testid="submit-transaction-button"]',
 }
 
 /**

@@ -107,16 +107,18 @@ export function TransactionFormPage() {
 
   if (showSuccess) {
     return (
-      <TransactionSuccessScreen 
-        redirectDelay={2000}
-      />
+      <div data-testid="transaction-success-screen">
+        <TransactionSuccessScreen 
+          redirectDelay={2000}
+        />
+      </div>
     )
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Header */}
-      <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200/50 sticky top-0 z-10">
+      <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200/50 sticky top-0 z-10" data-testid="transaction-form-header">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -125,13 +127,14 @@ export function TransactionFormPage() {
                 size="sm" 
                 onClick={handleBackButtonClick}
                 aria-label="Kembali ke dashboard dan hapus data form"
+                data-testid="transaction-form-back-button"
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Kembali
               </Button>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">Transaksi Penyewaan Baru</h1>
-                <p className="text-sm text-gray-600">
+                <h1 className="text-xl font-bold text-gray-900" data-testid="transaction-form-title">Transaksi Penyewaan Baru</h1>
+                <p className="text-sm text-gray-600" data-testid="transaction-form-subtitle">
                   Ikuti langkah-langkah untuk membuat transaksi rental
                 </p>
               </div>
@@ -142,8 +145,8 @@ export function TransactionFormPage() {
 
       {/* Stepper */}
       <div className="max-w-7xl mx-auto px-4 py-6">
-        <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-6 mb-6">
-          <Stepper steps={steps} currentStep={currentStep} onStepClick={goToStep} />
+        <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-6 mb-6" data-testid="transaction-form-stepper-container">
+          <Stepper steps={steps} currentStep={currentStep} onStepClick={goToStep} data-testid="transaction-form-stepper" />
         </div>
 
         {/* Data Restoration Notification */}
@@ -154,6 +157,7 @@ export function TransactionFormPage() {
             message="Data transaksi sebelumnya telah dipulihkan. Anda dapat melanjutkan dari langkah terakhir."
             helpText="Data akan tersimpan otomatis saat Anda mengisi form."
             onDismiss={() => setShowDataRestored(false)}
+            data-testid="data-restoration-notification"
           />
         )}
 
@@ -165,6 +169,7 @@ export function TransactionFormPage() {
             message={errorMessage}
             helpText="Periksa kembali data yang telah diisi dan coba lagi."
             onDismiss={() => setErrorMessage(null)}
+            data-testid="transaction-error-notification"
           />
         )}
 
@@ -180,44 +185,51 @@ export function TransactionFormPage() {
               message={validationMessage.message}
               helpText={validationMessage.helpText}
               dismissible={false}
+              data-testid="step-validation-notification"
             />
           )
         })()}
 
         {/* Content */}
-        <div className="space-y-6">
+        <div className="space-y-6" data-testid="transaction-form-content">
           {currentStep === 1 && (
-            <ProductSelectionStep
-              selectedProducts={formData.products}
-              onAddProduct={handleAddProduct}
-              onRemoveProduct={removeProduct}
-              onUpdateQuantity={updateProductQuantity}
-              onNext={nextStep}
-              canProceed={validateStep(currentStep)}
-            />
+            <div data-testid="product-selection-step">
+              <ProductSelectionStep
+                selectedProducts={formData.products}
+                onAddProduct={handleAddProduct}
+                onRemoveProduct={removeProduct}
+                onUpdateQuantity={updateProductQuantity}
+                onNext={nextStep}
+                canProceed={validateStep(currentStep)}
+              />
+            </div>
           )}
 
           {currentStep === 2 && (
-            <CustomerBiodataStep
-              selectedCustomer={formData.customer}
-              onSelectCustomer={setCustomer}
-              onNext={nextStep}
-              onPrev={prevStep}
-              canProceed={validateStep(currentStep)}
-            />
+            <div data-testid="customer-biodata-step">
+              <CustomerBiodataStep
+                selectedCustomer={formData.customer}
+                onSelectCustomer={setCustomer}
+                onNext={nextStep}
+                onPrev={prevStep}
+                canProceed={validateStep(currentStep)}
+              />
+            </div>
           )}
 
           {currentStep === 3 && (
-            <PaymentSummaryStep
-              formData={formData}
-              totalAmount={calculateTotal()}
-              duration={globalDuration}
-              onUpdateFormData={updateFormData}
-              onUpdateDuration={updateDuration}
-              onSubmit={handleSubmitTransaction}
-              onPrev={prevStep}
-              isSubmitting={isSubmitting}
-            />
+            <div data-testid="payment-summary-step">
+              <PaymentSummaryStep
+                formData={formData}
+                totalAmount={calculateTotal()}
+                duration={globalDuration}
+                onUpdateFormData={updateFormData}
+                onUpdateDuration={updateDuration}
+                onSubmit={handleSubmitTransaction}
+                onPrev={prevStep}
+                isSubmitting={isSubmitting}
+              />
+            </div>
           )}
         </div>
       </div>

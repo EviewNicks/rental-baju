@@ -71,7 +71,7 @@ export function TransactionsDashboard() {
 
         {/* Add Transaction Button */}
         <div className="flex justify-end">
-          <Link href="/dashboard/new">
+          <Link href="/dashboard/new" data-testid="add-transaction-link">
             <Button 
               className="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-medium shadow-lg shadow-yellow-400/25"
               data-testid="add-transaction-button"
