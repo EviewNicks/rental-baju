@@ -33,6 +33,7 @@ test.use({ storageState: '__tests__/playwright/.clerk/kasir.json' })
 /**
  * Navigate to new transaction form and verify initial state
  */
+//eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function navigateToTransactionForm(page: any) {
   console.log('🏠 Navigating to transaction form...')
 
@@ -50,6 +51,7 @@ async function navigateToTransactionForm(page: any) {
  * Complete product selection step
  */
 async function completeProductSelection(
+  //eslint-disable-next-line @typescript-eslint/no-explicit-any
   page: any,
   options: { products?: string[]; skipValidation?: boolean } = {},
 ) {
@@ -126,7 +128,9 @@ async function completeProductSelection(
  * Complete customer selection step
  */
 async function completeCustomerSelection(
+  //eslint-disable-next-line @typescript-eslint/no-explicit-any
   page: any,
+  //eslint-disable-next-line @typescript-eslint/no-explicit-any
   options: { useExisting?: boolean; customerData?: any } = {},
 ) {
   const { useExisting = true, customerData } = options
@@ -170,7 +174,6 @@ async function completeCustomerSelection(
       }
     } else {
       console.log('⚠️ No existing customers, will create new customer')
-      useExisting = false
     }
   }
 
@@ -229,6 +232,7 @@ async function completeCustomerSelection(
  * Complete payment step and submit transaction
  */
 async function completePaymentAndSubmit(
+  //eslint-disable-next-line @typescript-eslint/no-explicit-any
   page: any,
   options: { paymentAmount?: number; fullPayment?: boolean } = {},
 ) {
@@ -287,6 +291,7 @@ async function completePaymentAndSubmit(
 /**
  * Verify transaction success state
  */
+//eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function verifyTransactionSuccess(page: any) {
   console.log('✅ Verifying transaction success...')
 

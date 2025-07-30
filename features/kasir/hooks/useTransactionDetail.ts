@@ -119,8 +119,11 @@ export function useTransactionDetail(
  * Now fetches full product details including category, size, color
  */
 async function transformApiToUI(apiData: TransaksiResponse): Promise<TransactionDetail> {
+  // Use fullItems for detail view with null safety
+  const items = apiData.fullItems || []
+  
   // Fetch full product details for all items
-  const productDetailsPromises = apiData.items.map(item => 
+  const productDetailsPromises = items.map(item => 
     kasirApi.produk.getById(item.produk.id).catch(error => {
       console.warn(`Failed to fetch product details for ${item.produk.id}:`, error)
       return null
@@ -133,7 +136,7 @@ async function transformApiToUI(apiData: TransaksiResponse): Promise<Transaction
     customerName: apiData.penyewa.nama,
     customerPhone: apiData.penyewa.telepon,
     customerAddress: apiData.penyewa.alamat,
-    items: apiData.items.map(item => item.produk.name),
+    items: items.map(item => item.produk.name),
     startDate: apiData.tglMulai,
     endDate: apiData.tglSelesai || undefined,
     returnDate: apiData.tglKembali || undefined,
@@ -159,7 +162,7 @@ async function transformApiToUI(apiData: TransaksiResponse): Promise<Transaction
     },
 
     // Enhanced product information with full details
-    products: apiData.items.map((item, index) => {
+    products: items.map((item, index) => {
       const fullProduct = productDetails[index] as ProductAvailabilityResponse | null
       return {
         product: {
@@ -181,7 +184,7 @@ async function transformApiToUI(apiData: TransaksiResponse): Promise<Transaction
     }),
 
     // Transform activity timeline
-    timeline: apiData.aktivitas.map((activity) => ({
+    timeline: (apiData.aktivitas || []).map((activity) => ({
       id: activity.id,
       timestamp: activity.createdAt,
       action: mapActivityTypeToAction(activity.tipe),
@@ -191,7 +194,7 @@ async function transformApiToUI(apiData: TransaksiResponse): Promise<Transaction
     })),
 
     // Transform payments
-    payments: apiData.pembayaran.map(payment => ({
+    payments: (apiData.pembayaran || []).map(payment => ({
       id: payment.id,
       amount: payment.jumlah,
       method: mapPaymentMethod(payment.metode),

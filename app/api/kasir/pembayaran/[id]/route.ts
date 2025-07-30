@@ -13,15 +13,18 @@ import { PembayaranService } from '@/features/kasir/services/pembayaranService'
 import { requirePermission, requireAdminAccess, withRateLimit } from '@/lib/auth-middleware'
 
 interface RouteParams {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 export async function GET(
   request: NextRequest,
   { params }: RouteParams
 ) {
+  // Extract params outside try block for error logging
+  const { id } = await params
+  
   try {
     // Rate limiting check
     const clientIP = request.headers.get('x-forwarded-for') || 'unknown'
@@ -36,8 +39,6 @@ export async function GET(
       return authResult.error
     }
     const { user } = authResult
-
-    const { id } = params
 
     // Validate ID format
     if (!id || typeof id !== 'string') {
@@ -91,7 +92,7 @@ export async function GET(
       { status: 200 }
     )
   } catch (error) {
-    console.error(`GET /api/kasir/pembayaran/${params.id} error:`, error)
+    console.error(`GET /api/kasir/pembayaran/${id} error:`, error)
 
     // Handle not found errors
     if (error instanceof Error && error.message.includes('tidak ditemukan')) {
@@ -125,6 +126,9 @@ export async function DELETE(
   request: NextRequest,
   { params }: RouteParams
 ) {
+  // Extract params outside try block for error logging
+  const { id } = await params
+  
   try {
     // Rate limiting check
     const clientIP = request.headers.get('x-forwarded-for') || 'unknown'
@@ -139,8 +143,6 @@ export async function DELETE(
       return authResult.error
     }
     const { user } = authResult
-
-    const { id } = params
 
     // Validate ID format
     if (!id || typeof id !== 'string') {
@@ -181,7 +183,7 @@ export async function DELETE(
       { status: 200 }
     )
   } catch (error) {
-    console.error(`DELETE /api/kasir/pembayaran/${params.id} error:`, error)
+    console.error(`DELETE /api/kasir/pembayaran/${id} error:`, error)
 
     // Handle business logic errors
     if (error instanceof Error) {

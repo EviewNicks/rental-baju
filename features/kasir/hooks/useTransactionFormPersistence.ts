@@ -33,7 +33,7 @@ class SafeStorage {
         data
       }
       sessionStorage.setItem(key, JSON.stringify(payload))
-      logger.debug('Data saved to sessionStorage', { key, dataKeys: Object.keys(data) }, 'SafeStorage')
+      logger.debug('Data saved to sessionStorage', { key, dataKeys: Object.keys(data as Record<string, unknown>) }, 'SafeStorage')
       return true
     } catch (error) {
       logger.error('Failed to save to sessionStorage', { key, error: error instanceof Error ? error.message : 'Unknown error' }, 'SafeStorage')
@@ -109,23 +109,26 @@ function validateFormData(data: unknown): TransactionFormData | null {
       return null
     }
 
+    // Cast to record type for property access
+    const typedData = data as Record<string, unknown>
+
     // Validate required fields exist
     const requiredFields = ['products', 'pickupDate', 'returnDate', 'paymentMethod', 'paymentAmount', 'paymentStatus']
     for (const field of requiredFields) {
-      if (!(field in data)) {
+      if (!(field in typedData)) {
         logger.warn('Missing required field in stored data', { field }, 'validateFormData')
         return null
       }
     }
 
     // Validate products array
-    if (!Array.isArray(data.products)) {
-      logger.warn('Products field is not an array', { productsType: typeof data.products }, 'validateFormData')
+    if (!Array.isArray(typedData.products)) {
+      logger.warn('Products field is not an array', { productsType: typeof typedData.products }, 'validateFormData')
       return null
     }
 
     // Validate product structure
-    for (const product of data.products) {
+    for (const product of typedData.products) {
       if (!product.product?.id || !product.quantity || product.quantity <= 0) {
         logger.warn('Invalid product structure in stored data', { product }, 'validateFormData')
         return null
@@ -133,26 +136,29 @@ function validateFormData(data: unknown): TransactionFormData | null {
     }
 
     // Validate customer data if present
-    if (data.customer && (!data.customer.id || !data.customer.nama)) {
-      logger.warn('Invalid customer structure in stored data', { customer: data.customer }, 'validateFormData')
+    const customer = typedData.customer as { id?: string; nama?: string; name?: string } | undefined
+    if (customer && (!customer.id || (!customer.nama && !customer.name))) {
+      logger.warn('Invalid customer structure in stored data', { customer }, 'validateFormData')
       return null
     }
 
     // Validate dates format
-    if (data.pickupDate && !/^\d{4}-\d{2}-\d{2}$/.test(data.pickupDate)) {
-      logger.warn('Invalid pickup date format', { pickupDate: data.pickupDate }, 'validateFormData')
+    const pickupDate = typedData.pickupDate as string
+    if (pickupDate && !/^\d{4}-\d{2}-\d{2}$/.test(pickupDate)) {
+      logger.warn('Invalid pickup date format', { pickupDate }, 'validateFormData')
       return null
     }
 
-    if (data.returnDate && !/^\d{4}-\d{2}-\d{2}$/.test(data.returnDate)) {
-      logger.warn('Invalid return date format', { returnDate: data.returnDate }, 'validateFormData')
+    const returnDate = typedData.returnDate as string
+    if (returnDate && !/^\d{4}-\d{2}-\d{2}$/.test(returnDate)) {
+      logger.warn('Invalid return date format', { returnDate }, 'validateFormData')
       return null
     }
 
     logger.info('Form data validation passed', { 
-      productsCount: data.products.length,
-      hasCustomer: !!data.customer,
-      hasDates: !!(data.pickupDate && data.returnDate)
+      productsCount: (typedData.products as unknown[]).length,
+      hasCustomer: !!typedData.customer,
+      hasDates: !!(typedData.pickupDate && typedData.returnDate)
     }, 'validateFormData')
 
     return data as TransactionFormData
@@ -164,7 +170,7 @@ function validateFormData(data: unknown): TransactionFormData | null {
 
 // Hook for transaction form persistence
 export function useTransactionFormPersistence() {
-  const debounceTimerRef = useRef<NodeJS.Timeout>()
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null)
   const lastSavedRef = useRef<string>('')
 
   // Load persisted form data

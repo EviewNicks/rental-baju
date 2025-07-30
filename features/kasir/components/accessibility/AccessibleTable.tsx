@@ -23,7 +23,7 @@ interface AccessibleTableRowProps extends React.HTMLAttributes<HTMLTableRowEleme
 interface AccessibleTableHeadProps extends React.ThHTMLAttributes<HTMLTableCellElement> {
   scope?: 'col' | 'row' | 'colgroup' | 'rowgroup'
   sortable?: boolean
-  sortDirection?: 'asc' | 'desc' | 'none'
+  sortDirection?: 'ascending' | 'descending' | 'none'
   onSort?: () => void
 }
 
@@ -46,76 +46,60 @@ const AccessibleTable = forwardRef<HTMLTableElement, AccessibleTableProps>(
         )}
         <table
           ref={ref}
-          className={cn(
-            'w-full border-collapse',
-            className
-          )}
+          className={cn('w-full border-collapse', className)}
           role="table"
           aria-describedby={description ? `${props.id || 'table'}-description` : undefined}
           {...props}
         >
-          {caption && (
-            <caption className="sr-only">
-              {caption}
-            </caption>
-          )}
+          {caption && <caption className="sr-only">{caption}</caption>}
           {children}
         </table>
       </div>
     )
-  }
+  },
 )
 AccessibleTable.displayName = 'AccessibleTable'
 
 const AccessibleTableHeader = forwardRef<HTMLTableSectionElement, AccessibleTableHeaderProps>(
   ({ className, children, ...props }, ref) => (
-    <thead
-      ref={ref}
-      className={cn('bg-gray-50', className)}
-      {...props}
-    >
+    <thead ref={ref} className={cn('bg-gray-50', className)} {...props}>
       {children}
     </thead>
-  )
+  ),
 )
 AccessibleTableHeader.displayName = 'AccessibleTableHeader'
 
 const AccessibleTableBody = forwardRef<HTMLTableSectionElement, AccessibleTableBodyProps>(
   ({ className, children, ...props }, ref) => (
-    <tbody
-      ref={ref}
-      className={cn('divide-y divide-gray-200', className)}
-      {...props}
-    >
+    <tbody ref={ref} className={cn('divide-y divide-gray-200', className)} {...props}>
       {children}
     </tbody>
-  )
+  ),
 )
 AccessibleTableBody.displayName = 'AccessibleTableBody'
 
 const AccessibleTableRow = forwardRef<HTMLTableRowElement, AccessibleTableRowProps>(
   ({ className, children, ...props }, ref) => (
-    <tr
-      ref={ref}
-      className={cn('hover:bg-gray-50 transition-colors', className)}
-      {...props}
-    >
+    <tr ref={ref} className={cn('hover:bg-gray-50 transition-colors', className)} {...props}>
       {children}
     </tr>
-  )
+  ),
 )
 AccessibleTableRow.displayName = 'AccessibleTableRow'
 
 const AccessibleTableHead = forwardRef<HTMLTableCellElement, AccessibleTableHeadProps>(
-  ({ 
-    className, 
-    children, 
-    scope = 'col',
-    sortable = false,
-    sortDirection = 'none',
-    onSort,
-    ...props 
-  }, ref) => {
+  (
+    {
+      className,
+      children,
+      scope = 'col',
+      sortable = false,
+      sortDirection = 'none',
+      onSort,
+      ...props
+    },
+    ref,
+  ) => {
     const handleKeyDown = (e: React.KeyboardEvent) => {
       if (sortable && onSort && (e.key === 'Enter' || e.key === ' ')) {
         e.preventDefault()
@@ -129,49 +113,44 @@ const AccessibleTableHead = forwardRef<HTMLTableCellElement, AccessibleTableHead
         onClick={onSort}
         onKeyDown={handleKeyDown}
         className="w-full text-left font-semibold text-gray-900 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded p-1"
-        aria-sort={sortDirection}
-        aria-label={`${children} - ${sortDirection === 'none' ? 'klik untuk mengurutkan' : `diurutkan ${sortDirection === 'asc' ? 'naik' : 'turun'}`}`}
+        aria-label={`${children} - ${sortDirection === 'none' ? 'klik untuk mengurutkan' : `diurutkan ${sortDirection === 'ascending' ? 'naik' : 'turun'}`}`}
       >
         <span className="flex items-center gap-1">
           {children}
           {sortDirection !== 'none' && (
-            <span aria-hidden="true">
-              {sortDirection === 'asc' ? '↑' : '↓'}
-            </span>
+            <span aria-hidden="true">{sortDirection === 'ascending' ? '↑' : '↓'}</span>
           )}
         </span>
       </button>
-    ) : children
+    ) : (
+      children
+    )
 
     return (
       <th
         ref={ref}
         scope={scope}
+        aria-sort={sortDirection}
         className={cn(
           'px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider',
           sortable && 'cursor-pointer select-none',
-          className
+          className,
         )}
         {...props}
       >
         {content}
       </th>
     )
-  }
+  },
 )
 AccessibleTableHead.displayName = 'AccessibleTableHead'
 
 const AccessibleTableCell = forwardRef<HTMLTableCellElement, AccessibleTableCellProps>(
   ({ className, children, headers, ...props }, ref) => (
-    <td
-      ref={ref}
-      headers={headers}
-      className={cn('px-4 py-3 text-sm', className)}
-      {...props}
-    >
+    <td ref={ref} headers={headers} className={cn('px-4 py-3 text-sm', className)} {...props}>
       {children}
     </td>
-  )
+  ),
 )
 AccessibleTableCell.displayName = 'AccessibleTableCell'
 
