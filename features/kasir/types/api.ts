@@ -91,6 +91,7 @@ export interface TransaksiItemResponse {
     imageUrl?: string
   }
   jumlah: number
+  jumlahDiambil: number
   hargaSewa: number
   durasi: number
   subtotal: number
@@ -296,4 +297,20 @@ export interface DashboardStats {
     lowStock: number
     paymentReminders: number
   }
+}
+
+// Pickup API Types (TSK-22)
+export interface PickupItemRequest {
+  id: string // TransaksiItem.id
+  jumlahDiambil: number // Quantity to pick up
+}
+
+export interface PickupRequest {
+  items: PickupItemRequest[]
+}
+
+export interface PickupResponse {
+  success: boolean
+  transaction: TransaksiResponse
+  message: string
 }

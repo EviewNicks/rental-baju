@@ -24,6 +24,7 @@ export interface TransaksiWithDetails extends Transaksi {
   }
   items: Array<{
     id: string
+    produkId: string
     produk: {
       id: string
       code: string
@@ -31,6 +32,7 @@ export interface TransaksiWithDetails extends Transaksi {
       imageUrl?: string | null
     }
     jumlah: number
+    jumlahDiambil: number
     hargaSewa: Decimal
     durasi: number
     subtotal: Decimal

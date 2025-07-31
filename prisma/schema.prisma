@@ -137,6 +137,7 @@ model TransaksiItem {
   transaksiId String
   produkId    String
   jumlah      Int      @default(1) // Quantity
+  jumlahDiambil Int    @default(0) // Quantity picked up from total jumlah
   hargaSewa   Decimal  @db.Decimal(10, 2) // Harga sewa per hari
   durasi      Int      // Durasi sewa dalam hari
   subtotal    Decimal  @db.Decimal(10, 2) // Subtotal untuk item ini

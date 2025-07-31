@@ -22,5 +22,11 @@
     "blocked_command": "node --version && npm --version",
     "suggested_command": "node --version && yarn --version",
     "reason": "Gunakan 'yarn' sebagai default, kecuali ada alasan khusus."
+  },
+  {
+    "session_id": "0fcd4ebb-1b21-4f58-86cc-a4f3abf5209b",
+    "blocked_command": "npm run type-check",
+    "suggested_command": "yarn type-check",
+    "reason": "Gunakan 'yarn' sebagai pengganti 'npm run' untuk workflow utama."
   }
 ]

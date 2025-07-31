@@ -1,50 +1,67 @@
-GET /dashboard 200 in 671ms
- GET /favicon.ico?favicon.45db1c09.ico 200 in 336ms
- GET /api/kasir/transaksi?page=1&limit=100 200 in 2127ms
- GET /dashboard/new 200 in 333ms
- GET /api/kasir/produk/available?available=true 200 in 3436ms
- GET /api/kasir/penyewa?limit=20 200 in 2638ms
- POST /api/kasir/transaksi 201 in 9945ms
- ○ Compiling /api/kasir/pembayaran ...
- ✓ Compiled /api/kasir/pembayaran in 3.6s
-[AUDIT] {
-  "entityType": "pembayaran",
-  "entityId": "756a53c6-0511-4fdc-bf14-69d0c1b87cc5",
-  "action": "create",
-  "newData": {
-    "id": "756a53c6-0511-4fdc-bf14-69d0c1b87cc5",
-    "transaksiId": "d37df237-5e3d-4c61-9704-07e02c6e5ce0",
-    "jumlah": "750000",
-    "metode": "tunai",
-    "referensi": null,
-    "catatan": "Pembayaran awal transaksi",
-    "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
-    "createdAt": "2025-07-29T08:25:06.731Z",
-    "transaksi": {
-      "id": "d37df237-5e3d-4c61-9704-07e02c6e5ce0",
-      "kode": "TXN-20250729-004",
-      "penyewa": {
-        "nama": "Ardiansyah",
-        "telepon": "089526293221"
-      },
-      "totalHarga": "750000",
-      "jumlahBayar": "750000",
-      "sisaBayar": "0",
-      "status": "active"
-    }
-  },
-  "metadata": {
-    "operation": "payment_creation",
-    "transactionCode": "TXN-20250729-004",
-    "amount": 750000,
-    "method": "tunai"
-  },
-  "userId": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
-  "userRole": "kasir",
-  "timestamp": "2025-07-29T08:25:08.398Z"
-}
- POST /api/kasir/pembayaran 201 in 7104ms
- GET /dashboard 200 in 309ms
- GET /api/kasir/transaksi?page=1&limit=100 200 in 2067ms
- GET /dashboard/transaction/TXN-20250729-004 200 in 366ms
- GET /.well-known/appspecific/com.chrome.devtools.json 404 in 203ms
+GET / 200 in 484ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 296ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 380ms
+ GET /api/kasir/transaksi/TXN-20250730-002 200 in 3572ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 2
+                                                                       200 in 976ms (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
+Error: Route "/api/kasir/transaksi/[kode]/ambil" used `params.kode`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PATCH (app\api\kasir\transaksi\[kode]\ambil\route.ts:61:69)      
+  59 |     let transaction
+  60 |     try {
+> 61 |       transaction = await transaksiService.getTransaksiByCode(params.kode)
+     |                                                                  
+   ^
+  62 |     } catch {
+  63 |       return NextResponse.json(
+  64 |         {
+ PATCH /api/kasir/transaksi/TXN-20250730-002/ambil 400 in 5169ms
+Error: Route "/api/kasir/transaksi/[kode]/ambil" used `params.kode`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PATCH (app\api\kasir\transaksi\[kode]\ambil\route.ts:61:69)      
+  59 |     let transaction
+  60 |     try {
+> 61 |       transaction = await transaksiService.getTransaksiByCode(params.kode)
+     |                                                                  
+   ^
+  62 |     } catch {
+  63 |       return NextResponse.json(
+  64 |         {
+ PATCH /api/kasir/transaksi/TXN-20250730-002/ambil 200 in 9430ms
+ PATCH /api/kasir/transaksi/TXN-20250730-002/ambil 401 in 174ms
+ GET / 200 in 442ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 319ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 354ms
+ PATCH /api/kasir/transaksi/TXN-20250730-002/ambil 400 in 140ms
+Error: Route "/api/kasir/transaksi/[kode]/ambil" used `params.kode`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PATCH (app\api\kasir\transaksi\[kode]\ambil\route.ts:61:69)      
+  59 |     let transaction
+  60 |     try {
+> 61 |       transaction = await transaksiService.getTransaksiByCode(params.kode)
+     |                                                                  
+   ^
+  62 |     } catch {
+  63 |       return NextResponse.json(
+  64 |         {
+Error: Route "/api/kasir/transaksi/[kode]/ambil" used `params.kode`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PATCH (app\api\kasir\transaksi\[kode]\ambil\route.ts:69:53)      
+  67 |           error: {
+  68 |             code: 'TRANSACTION_NOT_FOUND',
+> 69 |             message: `Transaksi dengan kode ${params.kode} tidak ditemukan`
+     |                                                     ^
+  70 |           }
+  71 |         },
+  72 |         { status: 404 }
+ PATCH /api/kasir/transaksi/TXN-20990101-999/ambil 404 in 2246ms        
+ GET /api/kasir/transaksi/TXN-20250730-002/ambil 405 in 151ms
+ GET /api/kasir/transaksi/TXN-20250730-002/ambil 405 in 146ms
+Error: Route "/api/kasir/transaksi/[kode]/ambil" used `params.kode`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PATCH (app\api\kasir\transaksi\[kode]\ambil\route.ts:61:69)      
+  59 |     let transaction
+  60 |     try {
+> 61 |       transaction = await transaksiService.getTransaksiByCode(params.kode)
+     |                                                                  
+   ^
+  62 |     } catch {
+  63 |       return NextResponse.json(
+  64 |         {
+ PATCH /api/kasir/transaksi/TXN-20250730-002/ambil 400 in 5123ms
