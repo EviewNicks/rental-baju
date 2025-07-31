@@ -1031,7 +1031,7 @@
     "@types/tough-cookie" "^4.0.5"
     tough-cookie "^4.1.4"
 
-"@clerk/backend@^2.4.1":
+"@clerk/backend@^2.4.1", "@clerk/backend@^2.6.1":
   version "2.6.1"
   resolved "https://registry.yarnpkg.com/@clerk/backend/-/backend-2.6.1.tgz#f6421d968f3c0399c5e605839ccfc2eda27e8748"
   integrity sha512-8Loy5jUJ3VMoKhO9lA7KObQarozAYdYMHNkQcJ2fFUrkPNwTRDdz+GzY7qHmkM5iGBPycrw5VqDy2ObPzT+Nnw==
@@ -1076,15 +1076,15 @@
     std-env "^3.9.0"
     swr "2.3.4"
 
-"@clerk/testing@1.9.3":
-  version "1.9.3"
-  resolved "https://registry.yarnpkg.com/@clerk/testing/-/testing-1.9.3.tgz#779216d8dae0aeeb6769c759cacefa59012ac4bf"
-  integrity sha512-nEKUr5iRCIX7ftEbKeVmPEuW7jgXluDr7/BM8CgiVfAM/84N3aaqK8N2svVXEkow5cGJWoCgufwrTEVdMFtopw==
+"@clerk/testing@1.10.8":
+  version "1.10.8"
+  resolved "https://registry.yarnpkg.com/@clerk/testing/-/testing-1.10.8.tgz#dab80948c057354f9775d2f5cf2957f5f5f0f5c2"
+  integrity sha512-vbfMsOncwrF62agv4BYMYe/6tmw2QGFJL48hFKQZ9/VRwA7c6DbAaHErVpEzQA1BBCuA8IzLgXVAvZ+vt0PRyw==
   dependencies:
-    "@clerk/backend" "^2.4.1"
-    "@clerk/shared" "^3.11.0"
-    "@clerk/types" "^4.64.0"
-    dotenv "16.4.7"
+    "@clerk/backend" "^2.6.1"
+    "@clerk/shared" "^3.16.0"
+    "@clerk/types" "^4.71.0"
+    dotenv "17.2.0"
 
 "@clerk/types@^4.64.0", "@clerk/types@^4.71.0":
   version "4.71.0"
@@ -4070,10 +4070,10 @@ dot-case@^3.0.4:
     no-case "^3.0.4"
     tslib "^2.0.3"
 
-dotenv@16.4.7:
-  version "16.4.7"
-  resolved "https://registry.yarnpkg.com/dotenv/-/dotenv-16.4.7.tgz#0e20c5b82950140aa99be360a8a5f52335f53c26"
-  integrity sha512-47qPchRCykZC03FhkYAhrvwU4xDBFIj1QPqaarj6mdM/hgUzfPHcpkHJOn3mJAufFeeAxAzeGsr5X0M4k6fLZQ==
+dotenv@17.2.0:
+  version "17.2.0"
+  resolved "https://registry.yarnpkg.com/dotenv/-/dotenv-17.2.0.tgz#e19678fdabcf86d4bfdb6764a758d7d44efbb6a2"
+  integrity sha512-Q4sgBT60gzd0BB0lSyYD3xM4YxrXA9y4uBDof1JNYGzOXrQdQ6yX+7XIAqoFOGQFOTK1D3Hts5OllpxMDZFONQ==
 
 dunder-proto@^1.0.0, dunder-proto@^1.0.1:
   version "1.0.1"
