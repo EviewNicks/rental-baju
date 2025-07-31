@@ -10,6 +10,7 @@ import {
   AlertTriangle,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { PaymentModal } from './PaymentModal'
 import type { TransactionDetail } from '../../types/transaction-detail'
 
 interface ActionButtonsPanelProps {
@@ -18,6 +19,7 @@ interface ActionButtonsPanelProps {
 
 export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
   const [isProcessing, setIsProcessing] = useState<string | null>(null)
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false)
 
   const handleAction = async (action: string) => {
     setIsProcessing(action)
@@ -34,7 +36,7 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
           console.log('Sending reminder for transaction:', transaction.id)
           break
         case 'payment':
-          console.log('Processing payment for transaction:', transaction.id)
+          setIsPaymentModalOpen(true)
           break
         case 'receipt':
           console.log('Printing receipt for transaction:', transaction.id)
@@ -94,17 +96,12 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
         {/* Process Payment */}
         {needsPayment && (
           <Button
-            onClick={() => handleAction('payment')}
-            disabled={isProcessing === 'payment'}
+            onClick={() => setIsPaymentModalOpen(true)}
             variant="outline"
             className="w-full border-blue-400 text-blue-600 hover:bg-blue-50"
           >
-            {isProcessing === 'payment' ? (
-              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              <DollarSign className="h-4 w-4 mr-2" />
-            )}
-            {isProcessing === 'payment' ? 'Memproses...' : 'Proses Pembayaran'}
+            <DollarSign className="h-4 w-4 mr-2" />
+            Proses Pembayaran
           </Button>
         )}
 
@@ -147,6 +144,16 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
           )}
         </div>
       </div>
+
+      {/* Payment Modal */}
+      <PaymentModal
+        isOpen={isPaymentModalOpen}
+        onClose={() => {
+          setIsPaymentModalOpen(false)
+          setIsProcessing(null)
+        }}
+        transaction={transaction}
+      />
     </div>
   )
 }

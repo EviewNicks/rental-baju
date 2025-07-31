@@ -4,13 +4,21 @@
  * Following business logic requirements for rental payment management
  */
 
-import { PrismaClient, Pembayaran } from '@prisma/client'
+import { PrismaClient } from '@prisma/client'
 import { Decimal } from '@prisma/client/runtime/library'
 import { CreatePembayaranRequest } from '../lib/validation/kasirSchema'
 import { PriceCalculator } from '../lib/utils/priceCalculator'
 import { createAuditService, AuditService } from './auditService'
 
-export interface PembayaranWithDetails extends Pembayaran {
+export interface PembayaranWithDetails {
+  id: string
+  transaksiId: string
+  jumlah: Decimal
+  metode: string
+  referensi: string | null
+  catatan: string | null
+  createdBy: string
+  createdAt: Date
   transaksi: {
     id: string
     kode: string
