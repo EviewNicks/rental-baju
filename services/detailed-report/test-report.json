@@ -1,9 +1,76 @@
 {
-  "numTotalTests": 0,
-  "numPassedTests": 0,
+  "numTotalTests": 6,
+  "numPassedTests": 6,
   "numFailedTests": 0,
   "numPendingTests": 0,
-  "startTime": "2025-07-31T12:52:35.472Z",
-  "endTime": "2025-07-31T12:52:35.477Z",
-  "testResults": []
+  "startTime": "2025-07-31T13:09:15.980Z",
+  "endTime": "2025-07-31T13:09:19.645Z",
+  "testResults": [
+    {
+      "testFilePath": "D:\\.work\\rental-software\\features\\kasir\\hooks\\usePickupProcess.test.ts",
+      "testFileResults": [
+        {
+          "ancestorTitles": [
+            "usePickupProcess"
+          ],
+          "fullName": "usePickupProcess should handle successful pickup",
+          "status": "passed",
+          "title": "should handle successful pickup",
+          "failureMessages": [],
+          "duration": 76
+        },
+        {
+          "ancestorTitles": [
+            "usePickupProcess"
+          ],
+          "fullName": "usePickupProcess should handle failed pickup",
+          "status": "passed",
+          "title": "should handle failed pickup",
+          "failureMessages": [],
+          "duration": 88
+        },
+        {
+          "ancestorTitles": [
+            "usePickupValidation"
+          ],
+          "fullName": "usePickupValidation should validate pickup items correctly",
+          "status": "passed",
+          "title": "should validate pickup items correctly",
+          "failureMessages": [],
+          "duration": 4
+        },
+        {
+          "ancestorTitles": [
+            "usePickupValidation"
+          ],
+          "fullName": "usePickupValidation should reject excessive pickup quantities",
+          "status": "passed",
+          "title": "should reject excessive pickup quantities",
+          "failureMessages": [],
+          "duration": 2
+        },
+        {
+          "ancestorTitles": [
+            "usePickupValidation"
+          ],
+          "fullName": "usePickupValidation should reject zero quantities",
+          "status": "passed",
+          "title": "should reject zero quantities",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "usePickupValidation"
+          ],
+          "fullName": "usePickupValidation should require at least one item for pickup",
+          "status": "passed",
+          "title": "should require at least one item for pickup",
+          "failureMessages": [],
+          "duration": 2
+        }
+      ],
+      "failureMessage": null
+    }
+  ]
 }

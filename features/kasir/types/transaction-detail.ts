@@ -5,6 +5,7 @@ import type { Product } from './product'
 export interface TransactionDetail extends Transaction {
   customer: Customer
   products: Array<{
+    id: string // TransaksiItem.id - needed for pickup operations
     product: Product
     quantity: number
     pricePerDay: number

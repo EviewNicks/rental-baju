@@ -5,7 +5,6 @@ import { queryKeys } from '@/lib/react-query'
 import { kasirApi } from '../api'
 import type { TransactionDetail } from '../types/transaction-detail'
 import type { TransaksiResponse } from '../types/api'
-import type { ProductAvailabilityResponse } from '../types/api'
 
 interface UseTransactionDetailOptions {
   enabled?: boolean
@@ -116,20 +115,11 @@ export function useTransactionDetail(
 
 /**
  * Transform API TransaksiResponse to UI TransactionDetail type
- * Now fetches full product details including category, size, color
+ * Uses existing transaction item data with product information
  */
 async function transformApiToUI(apiData: TransaksiResponse): Promise<TransactionDetail> {
-  // Use fullItems for detail view with null safety
-  const items = apiData.fullItems || []
-  
-  // Fetch full product details for all items
-  const productDetailsPromises = items.map(item => 
-    kasirApi.produk.getById(item.produk.id).catch(error => {
-      console.warn(`Failed to fetch product details for ${item.produk.id}:`, error)
-      return null
-    })
-  )
-  const productDetails = await Promise.all(productDetailsPromises)
+  // Use items from transaction data - API returns items array, not fullItems
+  const items = apiData.items || []
   return {
     id: apiData.id,
     transactionCode: apiData.kode,
@@ -161,25 +151,30 @@ async function transformApiToUI(apiData: TransaksiResponse): Promise<Transaction
       totalTransactions: 0, // Would need separate API call
     },
 
-    // Enhanced product information with full details
-    products: items.map((item, index) => {
-      const fullProduct = productDetails[index] as ProductAvailabilityResponse | null
+    // Product information from transaction items - no need for additional API calls
+    products: items.map((item) => {
       return {
+        id: item.id, // TransaksiItem.id - needed for pickup operations
         product: {
           id: item.produk.id,
           name: item.produk.name,
-          category: fullProduct?.category?.name || '',
-          size: fullProduct?.size || '',
-          color: fullProduct?.color?.name || '',
+          category: '', // Not included in transaction item data
+          size: '', // Not included in transaction item data  
+          color: '', // Not included in transaction item data
           pricePerDay: item.hargaSewa,
-          image: item.produk.imageUrl || fullProduct?.imageUrl || '/products/placeholder.png',
+          image: item.produk.imageUrl || '/products/placeholder.png',
           available: false, // Item is currently rented
-          description: fullProduct?.description || '',
+          description: '', // Not included in transaction item data
         },
         quantity: item.jumlah,
         pricePerDay: item.hargaSewa,
         duration: item.durasi,
         subtotal: item.subtotal,
+        // Enhanced: Include pickup information for ProductDetailCard
+        pickupInfo: {
+          jumlahDiambil: item.jumlahDiambil || 0, // How many items have been picked up
+          remainingQuantity: Math.max(0, item.jumlah - (item.jumlahDiambil || 0)), // How many items are left to pick up
+        },
       }
     }),
 

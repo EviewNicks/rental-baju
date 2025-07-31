@@ -8,9 +8,11 @@ import {
   Download,
   RefreshCw,
   AlertTriangle,
+  Package,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { PaymentModal } from './PaymentModal'
+import { PickupModal } from './PickupModal'
 import type { TransactionDetail } from '../../types/transaction-detail'
 
 interface ActionButtonsPanelProps {
@@ -20,6 +22,7 @@ interface ActionButtonsPanelProps {
 export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
   const [isProcessing, setIsProcessing] = useState<string | null>(null)
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false)
+  const [isPickupModalOpen, setIsPickupModalOpen] = useState(false)
 
   const handleAction = async (action: string) => {
     setIsProcessing(action)
@@ -38,6 +41,9 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
         case 'payment':
           setIsPaymentModalOpen(true)
           break
+        case 'pickup':
+          setIsPickupModalOpen(true)
+          break
         case 'receipt':
           console.log('Printing receipt for transaction:', transaction.id)
           break
@@ -50,6 +56,7 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
   }
 
   const canReturn = transaction.status === 'active'
+  const canPickup = transaction.status === 'active'
   const canSendReminder = transaction.status === 'terlambat'
   const needsPayment =
     transaction.amountPaid < transaction.totalAmount ||
@@ -60,6 +67,22 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
       <h3 className="text-lg font-semibold text-gray-900">Aksi Transaksi</h3>
 
       <div className="space-y-3">
+        {/* Pickup Item */}
+        {canPickup && (
+          <Button
+            onClick={() => handleAction('pickup')}
+            disabled={isProcessing === 'pickup'}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            {isProcessing === 'pickup' ? (
+              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Package className="h-4 w-4 mr-2" />
+            )}
+            {isProcessing === 'pickup' ? 'Memproses...' : 'Proses Pengambilan'}
+          </Button>
+        )}
+
         {/* Return Item */}
         {canReturn && (
           <Button
@@ -150,6 +173,16 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
         isOpen={isPaymentModalOpen}
         onClose={() => {
           setIsPaymentModalOpen(false)
+          setIsProcessing(null)
+        }}
+        transaction={transaction}
+      />
+
+      {/* Pickup Modal */}
+      <PickupModal
+        isOpen={isPickupModalOpen}
+        onClose={() => {
+          setIsPickupModalOpen(false)
           setIsProcessing(null)
         }}
         transaction={transaction}

@@ -1,4 +1,4 @@
-import { Tag, Package, Palette, Shirt } from 'lucide-react'
+import { Tag, Package, Palette, Shirt, CheckCircle } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { formatCurrency } from '../../lib/utils'
 import { cn } from '@/lib/utils'
@@ -20,9 +20,14 @@ interface ProductDetailCardProps {
     duration: number
     subtotal: number
   }
+  // Optional pickup information - will be available when backend data includes it
+  pickupInfo?: {
+    jumlahDiambil: number // How many items have been picked up
+    remainingQuantity: number // How many items are left to pick up
+  }
 }
 
-export function ProductDetailCard({ item }: ProductDetailCardProps) {
+export function ProductDetailCard({ item, pickupInfo }: ProductDetailCardProps) {
   return (
     <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-6 shadow-lg shadow-gray-900/5 transition-all duration-200">
       <div className="flex items-start gap-4">
@@ -99,6 +104,34 @@ export function ProductDetailCard({ item }: ProductDetailCardProps) {
               </Badge>
             )}
           </div>
+
+          {/* Pickup Status Display */}
+          {pickupInfo && (
+            <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-blue-600" />
+                  <span className="text-sm font-medium text-blue-900">Status Pengambilan</span>
+                </div>
+                <div className="text-sm text-blue-700">
+                  <span className="font-semibold">{pickupInfo.jumlahDiambil}</span>
+                  <span className="text-blue-600 mx-1">/</span>
+                  <span>{item.quantity}</span>
+                  <span className="ml-1">diambil</span>
+                </div>
+              </div>
+              {pickupInfo.remainingQuantity > 0 && (
+                <div className="mt-2 text-xs text-blue-600">
+                  Sisa {pickupInfo.remainingQuantity} item belum diambil
+                </div>
+              )}
+              {pickupInfo.remainingQuantity === 0 && (
+                <div className="mt-2 text-xs text-green-600 font-medium">
+                  ✓ Semua item sudah diambil
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50/80 rounded-lg border border-gray-100">
             <div className="text-center md:text-left">

@@ -1,67 +1,118 @@
-GET / 200 in 484ms
- GET /.well-known/appspecific/com.chrome.devtools.json 404 in 296ms
- GET /favicon.ico?favicon.45db1c09.ico 200 in 380ms
- GET /api/kasir/transaksi/TXN-20250730-002 200 in 3572ms
- │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 2
-                                                                       200 in 976ms (cache skip)
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 4198ms
+ GET /dashboard 200 in 555ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 439ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 419ms
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 2667ms
+ ○ Compiling /dashboard/new ...
+ ✓ Compiled /dashboard/new in 8.4s
+ GET /dashboard/new 200 in 8520ms
+ ○ Compiling /api/kasir/produk/available ...
+ ✓ Compiled /api/kasir/produk/available in 3.1s
+ GET /api/kasir/produk/available?available=true 200 in 9093ms
+ ○ Compiling /api/kasir/penyewa ...
+ ✓ Compiled /api/kasir/penyewa in 2.8s
+ GET /api/kasir/penyewa?limit=20 200 in 4804ms
+ POST /api/kasir/transaksi 201 in 11845ms
+[AUDIT] {
+  "entityType": "pembayaran",
+  "entityId": "610bb005-b611-4bfb-9138-492b676c7ebb",
+  "action": "create",
+  "newData": {
+    "id": "610bb005-b611-4bfb-9138-492b676c7ebb",
+    "transaksiId": "d0c94415-79db-4737-a38e-4602d20f36f9",
+    "jumlah": "624000",
+    "metode": "tunai",
+    "referensi": null,
+    "catatan": "Pembayaran awal transaksi",
+    "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
+    "createdAt": "2025-07-31T16:22:07.337Z",
+    "transaksi": {
+      "id": "d0c94415-79db-4737-a38e-4602d20f36f9",
+      "kode": "TXN-20250801-001",
+      "penyewa": {
+        "nama": "NInja",
+        "telepon": "087463296331"
+      },
+      "totalHarga": "624000",
+      "jumlahBayar": "624000",
+      "sisaBayar": "0",
+      "status": "active"
+    }
+  },
+  "metadata": {
+    "operation": "payment_creation",
+    "transactionCode": "TXN-20250801-001",
+    "amount": 624000,
+    "method": "tunai"
+  },
+  "userId": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
+  "userRole": "kasir",
+  "timestamp": "2025-07-31T16:22:09.351Z"
+}
+ POST /api/kasir/pembayaran 201 in 4491ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 870ms (cache skip)
  │ │ Cache skipped reason: (auto no cache)
-Error: Route "/api/kasir/transaksi/[kode]/ambil" used `params.kode`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
-    at PATCH (app\api\kasir\transaksi\[kode]\ambil\route.ts:61:69)      
-  59 |     let transaction
-  60 |     try {
-> 61 |       transaction = await transaksiService.getTransaksiByCode(params.kode)
-     |                                                                  
-   ^
-  62 |     } catch {
-  63 |       return NextResponse.json(
-  64 |         {
- PATCH /api/kasir/transaksi/TXN-20250730-002/ambil 400 in 5169ms
-Error: Route "/api/kasir/transaksi/[kode]/ambil" used `params.kode`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
-    at PATCH (app\api\kasir\transaksi\[kode]\ambil\route.ts:61:69)      
-  59 |     let transaction
-  60 |     try {
-> 61 |       transaction = await transaksiService.getTransaksiByCode(params.kode)
-     |                                                                  
-   ^
-  62 |     } catch {
-  63 |       return NextResponse.json(
-  64 |         {
- PATCH /api/kasir/transaksi/TXN-20250730-002/ambil 200 in 9430ms
- PATCH /api/kasir/transaksi/TXN-20250730-002/ambil 401 in 174ms
- GET / 200 in 442ms
- GET /.well-known/appspecific/com.chrome.devtools.json 404 in 319ms
- GET /favicon.ico?favicon.45db1c09.ico 200 in 354ms
- PATCH /api/kasir/transaksi/TXN-20250730-002/ambil 400 in 140ms
-Error: Route "/api/kasir/transaksi/[kode]/ambil" used `params.kode`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
-    at PATCH (app\api\kasir\transaksi\[kode]\ambil\route.ts:61:69)      
-  59 |     let transaction
-  60 |     try {
-> 61 |       transaction = await transaksiService.getTransaksiByCode(params.kode)
-     |                                                                  
-   ^
-  62 |     } catch {
-  63 |       return NextResponse.json(
-  64 |         {
-Error: Route "/api/kasir/transaksi/[kode]/ambil" used `params.kode`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
-    at PATCH (app\api\kasir\transaksi\[kode]\ambil\route.ts:69:53)      
-  67 |           error: {
-  68 |             code: 'TRANSACTION_NOT_FOUND',
-> 69 |             message: `Transaksi dengan kode ${params.kode} tidak ditemukan`
-     |                                                     ^
-  70 |           }
-  71 |         },
-  72 |         { status: 404 }
- PATCH /api/kasir/transaksi/TXN-20990101-999/ambil 404 in 2246ms        
- GET /api/kasir/transaksi/TXN-20250730-002/ambil 405 in 151ms
- GET /api/kasir/transaksi/TXN-20250730-002/ambil 405 in 146ms
-Error: Route "/api/kasir/transaksi/[kode]/ambil" used `params.kode`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
-    at PATCH (app\api\kasir\transaksi\[kode]\ambil\route.ts:61:69)      
-  59 |     let transaction
-  60 |     try {
-> 61 |       transaction = await transaksiService.getTransaksiByCode(params.kode)
-     |                                                                  
-   ^
-  62 |     } catch {
-  63 |       return NextResponse.json(
-  64 |         {
- PATCH /api/kasir/transaksi/TXN-20250730-002/ambil 400 in 5123ms
+ GET /dashboard 200 in 150ms
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 2672ms
+ GET /dashboard/transaction/TXN-20250801-001 200 in 682ms
+POST /api/kasir/pembayaran error: Error: Jumlah pembayaran melebihi sisa tagihan
+    at PembayaranService.createPembayaran (features\kasir\services\pembayaranService.ts:90:12)
+    at async POST (app\api\kasir\pembayaran\route.ts:44:23)
+  88 |
+  89 |     if (!validation.isValid) {
+> 90 |       throw new Error(validation.error!)
+     |            ^
+  91 |     }
+  92 |
+  93 |     // 3. Create payment record and update transaction in a database transaction
+ POST /api/kasir/pembayaran 409 in 2911ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 1094ms (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
+POST /api/kasir/pembayaran error: Error: Jumlah pembayaran melebihi sisa tagihan
+    at PembayaranService.createPembayaran (features\kasir\services\pembayaranService.ts:90:12)
+    at async POST (app\api\kasir\pembayaran\route.ts:44:23)
+  88 |
+  89 |     if (!validation.isValid) {
+> 90 |       throw new Error(validation.error!)
+     |            ^
+  91 |     }
+  92 |
+  93 |     // 3. Create payment record and update transaction in a database transaction
+ POST /api/kasir/pembayaran 409 in 2233ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 408ms (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
+POST /api/kasir/pembayaran error: Error: Jumlah pembayaran melebihi sisa tagihan
+    at PembayaranService.createPembayaran (features\kasir\services\pembayaranService.ts:90:12)
+    at async POST (app\api\kasir\pembayaran\route.ts:44:23)
+  88 |
+  89 |     if (!validation.isValid) {
+> 90 |       throw new Error(validation.error!)
+     |            ^
+  91 |     }
+  92 |
+  93 |     // 3. Create payment record and update transaction in a database transaction
+ POST /api/kasir/pembayaran 409 in 2150ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 421ms (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
+ GET /dashboard 200 in 170ms
+ GET /dashboard 200 in 421ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 396ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 430ms
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 3409ms
+ GET /dashboard/transaction/TXN-20250801-001 200 in 238ms
+ GET /api/kasir/transaksi/TXN-20250801-001 200 in 4313ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 1194ms (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
+ PATCH /api/kasir/transaksi/TXN-20250801-001/ambil 200 in 12950ms
+ GET /api/kasir/transaksi/TXN-20250801-001 200 in 3962ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 1096ms (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
+ GET /api/kasir/transaksi/TXN-20250801-001 200 in 3312ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 335ms (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
+ GET /dashboard/transaction/TXN-20250801-001 200 in 783ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 514ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 613ms
+ GET /api/kasir/transaksi/TXN-20250801-001 200 in 3976ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 812ms (cache skip)
+ │ │ Cache skipped reason: (auto no cache)

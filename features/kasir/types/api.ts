@@ -140,16 +140,10 @@ export interface TransaksiResponse {
   createdBy: string
   createdAt: string
   updatedAt: string
-  // For list endpoint - simplified items with product names
-  items?: Array<{
-    produk: {
-      id: string
-      name: string
-    }
-    jumlah: number
-  }>
-  // For detail endpoint - full item details
-  fullItems?: TransaksiItemResponse[]
+  // For list endpoint - simplified items with product names (when itemCount is used)
+  itemCount?: number
+  // For detail endpoint - full item details (API returns full details in items field)
+  items?: TransaksiItemResponse[]
   pembayaran?: PembayaranResponse[]
   aktivitas?: AktivitasResponse[]
 }
