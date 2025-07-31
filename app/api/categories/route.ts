@@ -36,7 +36,8 @@ export async function GET(request: NextRequest) {
     // Get categories
     const categories = await categoryService.getCategories(query)
 
-    return NextResponse.json(categories, { status: 200 })
+    // Return with consistent API format structure
+    return NextResponse.json({ categories }, { status: 200 })
   } catch (error) {
     console.error('GET /api/categories error:', error)
 

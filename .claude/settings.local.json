@@ -44,7 +44,22 @@
       "Bash(where yarn)",
       "Bash(cmd /c:*)",
       "Bash(npx playwright:*)",
-      "Bash(set NODE_ENV=test)"
+      "Bash(set NODE_ENV=test)",
+      "Bash(npx prisma migrate dev:*)",
+      "Bash(npx prisma db seed:*)",
+      "Bash(yarn dev)",
+      "Bash(npx prisma generate:*)",
+      "Bash(tail:*)",
+      "Bash(touch:*)",
+      "mcp__sequentialthinking__sequentialthinking",
+      "Bash(gh pr:*)",
+      "mcp__context7__resolve-library-id",
+      "mcp__context7__get-library-docs",
+      "mcp__playwright__start_codegen_session",
+      "mcp__playwright__playwright_console_logs",
+      "mcp__playwright__playwright_console_logs",
+      "Bash(timeout 10s yarn app:*)",
+      "Bash(true)"
     ],
     "deny": []
   }

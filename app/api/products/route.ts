@@ -33,6 +33,8 @@ export async function GET(request: NextRequest) {
       categoryId: searchParams.get('categoryId') || undefined,
       status: searchParams.get('status') || undefined,
       isActive: searchParams.get('isActive') !== 'false', // default true
+      size: searchParams.getAll('size').length > 0 ? searchParams.getAll('size') : undefined,
+      colorId: searchParams.getAll('colorId').length > 0 ? searchParams.getAll('colorId') : undefined,
     }
 
     // Initialize service
@@ -94,6 +96,8 @@ export async function POST(request: NextRequest) {
     const hargaSewaStr = formData.get('hargaSewa') as string
     const quantityStr = formData.get('quantity') as string
     const categoryId = formData.get('categoryId') as string
+    const size = (formData.get('size') as string) || undefined
+    const colorId = (formData.get('colorId') as string) || undefined
     const image = formData.get('image') as File | null
 
     // Convert string to numbers
@@ -130,6 +134,8 @@ export async function POST(request: NextRequest) {
       hargaSewa,
       quantity,
       categoryId,
+      size,
+      colorId,
       image,
     }
 

@@ -13,6 +13,8 @@ export interface BaseProduct {
   name: string
   description?: string
   categoryId: string
+  size?: string
+  colorId?: string
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   modalAwal: any // Prisma Decimal (server-side only)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -37,6 +39,17 @@ export interface BaseCategory {
   createdBy: string
 }
 
+export interface BaseColor {
+  id: string
+  name: string
+  hexCode?: string
+  description?: string
+  isActive: boolean
+  createdAt: Date
+  updatedAt: Date
+  createdBy: string
+}
+
 // Client-side types (frontend-safe with regular numbers)
 export interface ClientProduct {
   id: string
@@ -44,6 +57,8 @@ export interface ClientProduct {
   name: string
   description?: string
   categoryId: string
+  size?: string
+  colorId?: string
   modalAwal: number
   hargaSewa: number
   quantity: number
@@ -55,6 +70,7 @@ export interface ClientProduct {
   updatedAt: Date | string
   createdBy: string
   category: ClientCategory
+  color?: ClientColor
 }
 
 export interface ClientCategory {
@@ -67,12 +83,29 @@ export interface ClientCategory {
   products: ClientProduct[]
 }
 
+export interface ClientColor {
+  id: string
+  name: string
+  hexCode?: string
+  description?: string
+  isActive: boolean
+  createdAt: Date | string
+  updatedAt: Date | string
+  createdBy: string
+  products: ClientProduct[]
+}
+
 // Full types with relationships
 export interface Product extends BaseProduct {
   category: Category
+  color?: Color
 }
 
 export interface Category extends BaseCategory {
+  products: Product[]
+}
+
+export interface Color extends BaseColor {
   products: Product[]
 }
 
@@ -90,12 +123,12 @@ export interface PrismaCategory extends BaseCategory {
   products?: BaseProduct[]
 }
 
-export type ViewMode = 'table' | 'card'
+export type ViewMode = 'table' | 'card' | 'grid'
 export type ProductStatus = 'AVAILABLE' | 'RENTED' | 'MAINTENANCE'
 
 // Filter types untuk UI components
 export type CategoryFilterValue = string | undefined
-export type StatusFilterValue = ProductStatus | undefined | 'Semua'
+export type StatusFilterValue = ProductStatus | undefined | 'Semua' | ''
 
 // Type guards
 export function isValidProductStatus(status: string): status is ProductStatus {
@@ -129,6 +162,8 @@ export interface CreateProductRequest {
   hargaSewa: number // ✅ Ubah dari Decimal ke number
   quantity: number
   categoryId: string
+  size?: string
+  colorId?: string
   image?: File
   imageUrl?: string
 }
@@ -140,6 +175,8 @@ export interface UpdateProductRequest {
   hargaSewa?: number // ✅ Ubah dari Decimal ke number
   quantity?: number
   categoryId?: string
+  size?: string
+  colorId?: string
   image?: File
   imageUrl?: string
 }
@@ -169,6 +206,23 @@ export interface UpdateCategoryRequest {
 }
 
 /**
+ * Color Management Types
+ */
+
+export interface CreateColorRequest {
+  name: string
+  hexCode?: string
+  description?: string
+}
+
+export interface UpdateColorRequest {
+  name?: string
+  hexCode?: string
+  description?: string
+  isActive?: boolean
+}
+
+/**
  * Category Management Types
  */
 
@@ -185,6 +239,8 @@ export interface ProductFormData {
   code: string
   name: string
   categoryId: string
+  size?: string
+  colorId?: string
   quantity: number
   modalAwal: number // ✅ Ubah dari Decimal ke number
   hargaSewa: number // ✅ Ubah dari Decimal ke number

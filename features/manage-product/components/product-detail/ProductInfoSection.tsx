@@ -91,6 +91,14 @@ export function ProductInfoSection({ product, className }: ProductInfoSectionPro
             </Badge>
           </InfoField>
 
+          {product.size && (
+            <InfoField label="Ukuran">
+              <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-200">
+                {product.size}
+              </Badge>
+            </InfoField>
+          )}
+
           {product.description && (
             <InfoField label="Deskripsi">
               <p className="text-gray-600 leading-relaxed">{product.description}</p>
@@ -98,6 +106,44 @@ export function ProductInfoSection({ product, className }: ProductInfoSectionPro
           )}
         </div>
       </InfoSection>
+
+      {/* Informasi Warna */}
+      {product.color && (
+        <InfoSection title="Informasi Warna">
+          <div className="grid grid-cols-1 gap-4">
+            <InfoField label="Nama Warna">
+              <div className="flex items-center gap-3">
+                <div 
+                  className="w-6 h-6 rounded-full border-2 border-gray-300 shadow-sm"
+                  style={{ backgroundColor: product.color.hexCode || '#gray' }}
+                  title={`Kode Warna: ${product.color.hexCode}`}
+                />
+                <p className="text-lg font-semibold text-gray-900">{product.color.name}</p>
+              </div>
+            </InfoField>
+
+            {product.color.hexCode && (
+              <InfoField label="Kode Hex">
+                <div className="flex items-center gap-2">
+                  <code className="bg-gray-100 px-2 py-1 rounded text-sm font-mono">
+                    {product.color.hexCode}
+                  </code>
+                  <div 
+                    className="w-4 h-4 rounded border"
+                    style={{ backgroundColor: product.color.hexCode }}
+                  />
+                </div>
+              </InfoField>
+            )}
+
+            {product.color.description && (
+              <InfoField label="Deskripsi Warna">
+                <p className="text-gray-600 leading-relaxed">{product.color.description}</p>
+              </InfoField>
+            )}
+          </div>
+        </InfoSection>
+      )}
 
       {/* Informasi Harga */}
       <InfoSection title="Informasi Harga">

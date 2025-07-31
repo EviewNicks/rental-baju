@@ -58,8 +58,8 @@ setup('authenticate kasir and save state', async ({ page }) => {
     page,
     signInParams: {
       strategy: 'password',
-      identifier: process.env.E2E_CLERK_KASIR_USERNAME!,
-      password: process.env.E2E_CLERK_KASIR_PASSWORD!,
+      identifier: 'kasir01',
+      password: 'kasir01rentalbaju',
     },
   })
   await page.goto('/dashboard')
@@ -75,8 +75,8 @@ setup('authenticate producer and save state', async ({ page }) => {
     page,
     signInParams: {
       strategy: 'password',
-      identifier: process.env.E2E_CLERK_PRODUCER_USERNAME!,
-      password: process.env.E2E_CLERK_PRODUCER_PASSWORD!,
+      identifier: 'producer01',
+      password: 'akunproducer01',
     },
   })
   await page.goto('/producer')
@@ -92,8 +92,8 @@ setup('authenticate owner and save state', async ({ page }) => {
     page,
     signInParams: {
       strategy: 'password',
-      identifier: process.env.E2E_CLERK_OWNER_USERNAME!,
-      password: process.env.E2E_CLERK_OWNER_PASSWORD!,
+      identifier: 'owner01',
+      password: 'ardi14mei2005',
     },
   })
   await page.goto('/owner')

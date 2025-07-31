@@ -1,61 +1,123 @@
 ---
-description: saat membuat task docs yang ebrhubungan dengan UI, Wireframe dan style UI
+description: Format dokumentasi task untuk UI/UX Designer - wireframe, mockup, dan style UI
 alwaysApply: false
 ---
+
+# Panduan Dokumentasi Task UI/UX (task-ui-xxx.md)
+
+## Tujuan Panduan
+
+Dokumen ini berisi panduan standar format dokumentasi task UI/UX dalam project Maguru. Format ini khusus untuk task yang berhubungan dengan desain UI, wireframe, mockup, dan style guide yang akan diimplementasikan oleh Frontend Developer.
+
+## Format Standar task-ui-xxx.md
+
+# Task UI-[ID]: [Judul Task UI/UX]
+
 ## Pendahuluan
 
-[Deskripsi singkat tujuan, konteks, dan nilai bisnis dari task UI/page ini.]
+[Deskripsi singkat tujuan, konteks, dan nilai bisnis dari task UI/page ini. Jelaskan mengapa desain ini penting dan bagaimana akan meningkatkan user experience.]
 
-## Referensi Visual & Inspirasi
+## Scope Fitur
 
-- [Link/attach wireframe, mockup, atau referensi visual lain]
+### Cakuoan Fitur
+
+- [Deskripsi singkat tentang fitur yang akan dibuat]
+
+### Inspirasi & Referensi
+
 - [Aplikasi/brand/gaya yang menjadi inspirasi]
+- [Alasan pemilihan referensi tersebut]
 
-## Prinsip & Guideline UI/UX
+## Layout and Page Feature
 
-- [Sebutkan guideline utama yang harus diikuti: theme, token, komponen, dsb]
-- [Referensi ke dokumen UI/UX utama project]
+layout dan page apa yang pelru di buat?
 
-## Spesifikasi UI & Komponen
+### List page feature
 
-- [Daftar komponen utama yang digunakan (card, button, table, dsb)]
-- [State penting (loading, error, empty, dsb)]
-- [Token warna, font, dsb yang wajib digunakan]
+### Page 1
 
-## Flow Pengguna & Interaksi
+- Tujuan
+- Kompoennt Utama
+
+### User Journey
 
 - [Langkah-langkah interaksi user pada page/komponen ini]
-- [Event penting, affordance, feedback visual]
-
-## Layout, Responsive & Accessibility
-
-- [Struktur grid/layout, breakpoints]
-- [Prinsip responsive (mobile, tablet, desktop)]
-- [Aksesibilitas: kontras, focus ring, ARIA, dsb]
+- [Flow yang diharapkan dari user]
 
 ## Acceptance Criteria
 
-| Kriteria UI/UX              | Status | Keterangan |
-| --------------------------- | ------ | ---------- |
-| [Contoh: Button utama gold] |        |            |
-| [Contoh: Layout 2 kolom]    |        |            |
-| ...                         |        |            |
+| Kriteria UI/UX                  | Status | Keterangan |
+| ------------------------------- | ------ | ---------- |
+| [Contoh: Button utama gold]     |        |            |
+| [Contoh: Layout 2 kolom]        |        |            |
+| [Contoh: Responsive mobile]     |        |            |
+| [Contoh: Accessibility WCAG AA] |        |            |
+| ...                             |        |            |
+
+### Page 2
+
+- Tujuan
+- Kompoennt Utama
+
+### User Journey
+
+- [Langkah-langkah interaksi user pada page/komponen ini]
+- [Flow yang diharapkan dari user]
+
+## Acceptance Criteria
+
+| Kriteria UI/UX                  | Status | Keterangan |
+| ------------------------------- | ------ | ---------- |
+| [Contoh: Button utama gold]     |        |            |
+| [Contoh: Layout 2 kolom]        |        |            |
+| [Contoh: Responsive mobile]     |        |            |
+| [Contoh: Accessibility WCAG AA] |        |            |
+| ...                             |        |            |
+
+...
 
 ## Test Plan
 
-- [Deskripsi test visual, responsive, dan accessibility yang akan dilakukan]
-- [Checklist manual/otomatis]
+### Visual Testing
 
-## Lampiran: Wireframe/Mockup/Diagram
+- [Deskripsi test visual yang akan dilakukan]
+- [Cross-browser compatibility testing]
+- [Device testing checklist]
 
-- [Sisipkan wireframe, mockup, atau diagram yang relevan]
-- link webste yang bisa dijadikan referensi 
+### Accessibility Testing
+
+- [Checklist aksesibilitas manual]
+- [Tools yang akan digunakan (axe, WAVE, etc.)]
+- [Screen reader testing]
+
+### User Testing
+
+- [Usability testing plan]
+- [User feedback collection method]
 
 ---
 
-### Panduan Penggunaan
+## Panduan Penggunaan
 
-- Simpan file dengan format: `task-ui-[ID].md` (misal: `task-ui-21.md`)
+### Penamaan File
+
+- Format: `task-ui-[ID].md` (contoh: `task-ui-21.md`)
 - Simpan di direktori `features/[feature-name]/docs/task-ui/`
-- Gunakan format ini untuk semua task yang berhubungan dengan desain UI, wireframe, atau pembuatan page baru.
-- Pastikan semua komponen dan style mengacu pada guideline UI/UX utama project.
+
+### Integrasi dengan Task Lain
+
+- **UI → FE**: Setiap task UI harus mereferensikan task FE yang akan mengimplementasikan desain
+- **UI → BE**: Jika ada kebutuhan data khusus untuk UI, referensikan task BE terkait
+
+### Approval Process
+
+1. **Draft**: Dokumentasi awal dibuat oleh UI/UX Designer
+2. **Review**: Ditinjau oleh FE Developer untuk feasibility
+3. **Final**: Disetujui dan siap untuk handoff ke FE Developer
+
+### Best Practices
+
+- Gunakan format ini untuk semua task yang berhubungan dengan desain UI, wireframe, atau pembuatan page baru
+- Pastikan semua komponen dan style mengacu pada guideline UI/UX utama project
+- Sertakan screenshot atau mockup untuk kejelasan
+- Dokumentasikan semua constraint dan rationale untuk referensi masa depan

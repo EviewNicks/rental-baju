@@ -1,0 +1,229 @@
+{
+  "form_penyewaan_style": {
+    "perspective": "multi-step rental transaction form system",
+    "geometry": {
+      "proportions": "stepper form: product selection, customer biodata, payment summary",
+      "element_arrangement": "stepper at top, main content per step, summary at end"
+    },
+    "composition": {
+      "element_count": "4 main sections: stepper, product selection, customer biodata, payment summary",
+      "spatial_depth": "layered modal with backdrop blur, elevated form sections with shadows",
+      "scale_consistency": "consistent form field sizing, proportional button hierarchy",
+      "scene_density": "moderate density optimized for form completion efficiency"
+    },
+    "lighting": {
+      "type": "soft form-focused lighting with gold accent highlights",
+      "light_source": "ambient top-down with focused highlights on active sections",
+      "shadow": "soft shadows on form sections and modal overlay",
+      "highlighting": "gold accent on primary actions and active form states"
+    },
+    "textures": {
+      "material_finish": "clean form surfaces with subtle input field styling",
+      "surface_treatment": "consistent rounded corners on inputs and cards",
+      "texture_realism": "minimal textures focusing on form usability"
+    },
+    "render_quality": {
+      "resolution": "high-resolution form rendering with crisp input fields",
+      "edge_definition": "rounded-lg corners with consistent border styling",
+      "visual_clarity": "clear form hierarchy with proper field grouping"
+    },
+    "color_palette": {
+      "primary": {
+        "gold_400": "#F7C948",
+        "gold_500": "#FFD700",
+        "gold_600": "#F0B429"
+      },
+      "secondary": {
+        "blue_500": "#3B82F6",
+        "green_500": "#10B981",
+        "red_500": "#EF4444"
+      },
+      "form_states": {
+        "success_green": "#10B981",
+        "error_red": "#EF4444",
+        "warning_yellow": "#F59E0B",
+        "info_blue": "#3B82F6"
+      }
+    },
+    "background": {
+      "color": "white with light gray section backgrounds",
+      "style": "clean form background with modal overlay blur",
+      "texture": "subtle texture for visual separation between sections"
+    },
+    "stylistic_tone": "professional multi-step form optimized for transaction workflow efficiency",
+    "page_behavior": {
+      "branding_alignment": "consistent with rental software design system",
+      "scalability": "responsive form design for all device sizes",
+      "accessibility": "WCAG 2.1 AA compliant with proper form labeling"
+    }
+  },
+  "v0_prompt": "Buat halaman Form Transaksi Penyewaan dengan 3 langkah: (1) Pilih Produk/Baju yang akan disewa, (2) Isi Biodata Penyewa (bisa pilih penyewa lama atau tambah baru via modal), (3) Pembayaran & Ringkasan. Setiap langkah tampil sebagai stepper di atas, dengan validasi dan navigasi antar step. Form Pendaftaran Penyewa tetap sebagai modal terpisah. Fokus pada kemudahan kasir menginput transaksi secara bertahap, responsif, dan minim error.",
+  "components_structure": {
+    "transaction_stepper": {
+      "name": "TransactionStepper",
+      "file": "features/kasir/components/forms/TransactionStepper.tsx",
+      "elements": [
+        "step_indicator_numbers",
+        "step_titles_descriptive",
+        "progress_line_connector",
+        "current_step_highlight",
+        "clickable_completed_steps"
+      ],
+      "style_rules": {
+        "step_indicators": "numbered circles with connecting lines",
+        "active_step": "gold background with white text",
+        "completed_steps": "green background with checkmark",
+        "inactive_steps": "gray background with step number"
+      }
+    },
+    "product_selection_grid": {
+      "name": "ProductSelectionGrid",
+      "file": "features/kasir/components/forms/ProductSelectionGrid.tsx",
+      "elements": [
+        "filter_bar_with_options",
+        "search_input_products",
+        "product_grid_responsive",
+        "product_cards_interactive",
+        "selected_products_sidebar"
+      ],
+      "style_rules": {
+        "grid": "responsive grid with 2-4 columns based on screen size",
+        "product_cards": "hover lift with add button overlay",
+        "filters": "horizontal scroll on mobile, full width on desktop",
+        "sidebar": "sticky position with quantity controls"
+      }
+    },
+    "customer_biodata_form": {
+      "name": "CustomerBiodataForm",
+      "file": "features/kasir/components/forms/CustomerBiodataForm.tsx",
+      "elements": ["customer_search_select", "biodata_fields", "add_new_customer_button_modal"],
+      "style_rules": {
+        "form_layout": "grid-cols-2 on desktop, single column on mobile",
+        "validation": "real-time with red borders and error messages",
+        "add_button": "prominent gold styling with plus icon"
+      }
+    },
+    "payment_summary": {
+      "name": "PaymentSummary",
+      "file": "features/kasir/components/forms/PaymentSummary.tsx",
+      "elements": [
+        "selected_products_list",
+        "rental_duration_selector",
+        "payment_method_options",
+        "total_calculation_display",
+        "rental_dates_section",
+        "notes_textarea",
+        "create_transaction_button"
+      ],
+      "style_rules": {
+        "summary_sections": "clear visual separation with proper spacing",
+        "calculation": "emphasized typography for total amount",
+        "dates": "calendar picker with auto-calculated return date",
+        "submit_button": "large gold primary button with loading states"
+      }
+    },
+    "customer_registration_modal": {
+      "name": "CustomerRegistrationModal",
+      "file": "features/kasir/components/forms/CustomerRegistrationModal.tsx",
+      "elements": [
+        "modal_backdrop_blur",
+        "modal_container_centered",
+        "form_header_with_title",
+        "two_column_form_layout",
+        "required_fields_validation",
+        "optional_fields_section",
+        "action_buttons_footer"
+      ],
+      "style_rules": {
+        "modal": "backdrop-blur-sm with centered container",
+        "form_layout": "grid-cols-2 on desktop, single column on mobile",
+        "validation": "real-time with red borders and error messages",
+        "buttons": "gold primary for submit, blue secondary for cancel"
+      }
+    }
+  },
+  "data_structure": {
+    "transaction": {
+      "transactionCode": "string (auto-generated)",
+      "customerId": "string",
+      "products": "array of product selections",
+      "rentalDuration": "number (days)",
+      "pickupDate": "date",
+      "returnDate": "date (auto-calculated)",
+      "paymentMethod": "enum (qris|cash|transfer)",
+      "paymentAmount": "number",
+      "paymentStatus": "enum (paid|unpaid)",
+      "notes": "string",
+      "createdAt": "timestamp"
+    }
+  },
+  "user_flows": [
+    "Step 1: Pilih produk → Step 2: Isi biodata penyewa",
+    "Step 2: Tambah penyewa baru (modal) jika belum terdaftar",
+    "Step 3: Pembayaran & ringkasan → Submit transaksi",
+    "Step 4: Validasi form, jika ada error, tampilkan pesan error dan highlight field yang error"
+  ],
+  "form_validation": {
+    "customer_form": {
+      "name": "required, min 2 chars",
+      "phone": "required, valid phone format",
+      "address": "required, min 10 chars",
+      "email": "optional, valid email format if provided"
+    },
+    "transaction_form": {
+      "customer": "required selection",
+      "products": "minimum 1 product required",
+      "pickupDate": "required, cannot be past date",
+      "paymentMethod": "required selection",
+      "paymentAmount": "required if status is paid"
+    }
+  },
+  "responsive_breakpoints": {
+    "mobile": {
+      "max_width": "768px",
+      "layout": "single column stack, full-screen modal",
+      "typography": "smaller font sizes, compact form spacing",
+      "interactions": "touch-optimized buttons and form controls"
+    },
+    "tablet": {
+      "min_width": "769px",
+      "max_width": "1024px",
+      "layout": "two column form sections, condensed modal",
+      "typography": "medium font sizes, balanced spacing"
+    },
+    "desktop": {
+      "min_width": "1025px",
+      "layout": "three section layout with full feature set",
+      "typography": "large font sizes, generous form spacing"
+    }
+  },
+  "interaction_patterns": {
+    "hover_effects": {
+      "form_cards": "subtle lift with enhanced shadow",
+      "product_cards": "scale-102 with add button overlay",
+      "buttons": "color transition with slight scale"
+    },
+    "loading_states": {
+      "form_submission": "button spinner with disabled state",
+      "product_grid": "skeleton loading for product cards",
+      "modal": "backdrop blur with loading indicator"
+    },
+    "validation_feedback": {
+      "real_time": "immediate validation on blur and input",
+      "error_states": "red border with descriptive error message",
+      "success_states": "green checkmark with success message"
+    },
+    "transitions": {
+      "duration": "200ms for form interactions",
+      "easing": "cubic-bezier(0.4, 0, 0.2, 1)",
+      "properties": "transform, opacity, border-color, background-color"
+    }
+  },
+  "accessibility_features": {
+    "keyboard_navigation": "full keyboard support with logical tab order",
+    "screen_reader": "semantic HTML with proper form labeling and ARIA",
+    "color_contrast": "WCAG 2.1 AA compliant throughout all form states",
+    "reduced_motion": "respects prefers-reduced-motion for animations",
+    "form_accessibility": "associated labels, required field indicators, error announcements"
+  }
+}

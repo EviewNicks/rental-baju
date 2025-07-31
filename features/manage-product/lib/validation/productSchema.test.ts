@@ -649,6 +649,7 @@ describe('Category Schema Validation', () => {
       // Assert
       expect(result).toEqual({
         includeProducts: false,
+        isActive: true,
       })
     })
 
@@ -666,6 +667,7 @@ describe('Category Schema Validation', () => {
       expect(result).toEqual({
         search: 'dress',
         includeProducts: true,
+        isActive: true,
       })
     })
 

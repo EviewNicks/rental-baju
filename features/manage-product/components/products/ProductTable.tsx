@@ -51,6 +51,8 @@ export function ProductTable({
                 <TableHead className="w-24" data-testid="header-code">Kode</TableHead>
                 <TableHead className="min-w-48" data-testid="header-name">Nama Produk</TableHead>
                 <TableHead className="w-32 text-center" data-testid="header-category">Kategori</TableHead>
+                <TableHead className="w-24 text-center" data-testid="header-size">Ukuran</TableHead>
+                <TableHead className="w-28 text-center" data-testid="header-color">Warna</TableHead>
                 <TableHead className="w-32 text-right" data-testid="header-modal">Modal Awal</TableHead>
                 <TableHead className="w-32 text-right" data-testid="header-price">Harga Sewa</TableHead>
                 <TableHead className="w-32 text-center" data-testid="header-status">Status</TableHead>
@@ -89,6 +91,31 @@ export function ProductTable({
                     >
                       {product.category.name}
                     </Badge>
+                  </TableCell>
+                  <TableCell className="text-center" data-testid={`product-${product.code}-size`}>
+                    {product.size ? (
+                      <Badge variant="outline" className="font-mono text-xs" data-testid={`product-${product.code}-size-badge`}>
+                        {product.size}
+                      </Badge>
+                    ) : (
+                      <span className="text-gray-400">-</span>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-center" data-testid={`product-${product.code}-color`}>
+                    {product.color ? (
+                      <div className="flex items-center justify-center gap-2" data-testid={`product-${product.code}-color-display`}>
+                        <div 
+                          className="w-4 h-4 rounded-full border border-gray-300" 
+                          style={{ backgroundColor: product.color.hexCode || '#gray' }}
+                          data-testid={`product-${product.code}-color-dot`}
+                        />
+                        <span className="text-xs truncate max-w-16" title={product.color.name}>
+                          {product.color.name}
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="text-gray-400">-</span>
+                    )}
                   </TableCell>
                   <TableCell className="text-right" data-testid={`product-${product.code}-modal`}>
                     {formatCurrency(Number(product.modalAwal))}

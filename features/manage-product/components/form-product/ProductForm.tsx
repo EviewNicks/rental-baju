@@ -1,15 +1,18 @@
 'use client'
-import { Hash, Package, Tag, Box, DollarSign, CreditCard, FileText } from 'lucide-react'
+import { Hash, Package, Tag, Box, DollarSign, CreditCard, FileText, Ruler, Palette } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { FormField } from '@/features/manage-product/components/form-product/FormField'
 import { FormSection } from '@/features/manage-product/components/form-product/FormSection'
 import { ImageUpload } from '@/features/manage-product/components/products/ImageUpload'
-import type { ClientCategory } from '@/features/manage-product/types'
+import { useColors } from '@/features/manage-product/hooks/useCategories'
+import type { ClientCategory, ClientColor } from '@/features/manage-product/types'
 
 interface ProductFormData {
   code: string
   name: string
   categoryId: string
+  size?: string
+  colorId?: string
   quantity: number
   modalAwal: number
   hargaSewa: number
@@ -39,12 +42,33 @@ export function ProductForm({
   formatCurrency,
   categories,
 }: ProductFormProps) {
+  // Fetch colors data
+  const { data: colorsData, isLoading: isLoadingColors, error: colorsError } = useColors({ isActive: true })
+  const colors = colorsData?.colors || []
+
   // Transform categories for select options
   // Defensive: categories fallback ke array kosong jika undefined/null
   const categoryOptions = (categories ?? []).map((category) => ({
     value: category.id,
     label: category.name,
     color: category.color,
+  }))
+
+  // Size options with preset values
+  const sizeOptions = [
+    { value: 'XS', label: 'XS (Extra Small)' },
+    { value: 'S', label: 'S (Small)' },
+    { value: 'M', label: 'M (Medium)' },
+    { value: 'L', label: 'L (Large)' },
+    { value: 'XL', label: 'XL (Extra Large)' },
+    { value: 'XXL', label: 'XXL (Double Extra Large)' },
+  ]
+
+  // Transform colors for select options
+  const colorOptions = colors.map((color: ClientColor) => ({
+    value: color.id,
+    label: color.name,
+    color: color.hexCode,
   }))
 
   return (
@@ -122,6 +146,37 @@ export function ProductForm({
                 required
                 helpText="Masukkan jumlah stok yang tersedia"
                 data-testid="product-quantity-field"
+              />
+
+              <FormField
+                type="select"
+                name="size"
+                label="Ukuran"
+                icon={Ruler}
+                value={formData.size || ''}
+                onChange={(value) => onInputChange('size', value)}
+                options={sizeOptions}
+                placeholder="Pilih ukuran (opsional)"
+                error={errors.size}
+                touched={touched.size}
+                helpText="Pilih ukuran produk jika berlaku"
+                data-testid="product-size-field"
+              />
+
+              <FormField
+                type="select"
+                name="colorId"
+                label="Warna"
+                icon={Palette}
+                value={formData.colorId || ''}
+                onChange={(value) => onInputChange('colorId', value)}
+                options={colorOptions}
+                placeholder={isLoadingColors ? "Memuat warna..." : colorsError ? "Error memuat warna" : "Pilih warna (opsional)"}
+                error={errors.colorId}
+                touched={touched.colorId}
+                disabled={isLoadingColors || !!colorsError}
+                helpText={colorsError ? "Gagal memuat data warna" : "Pilih warna produk jika berlaku"}
+                data-testid="product-color-field"
               />
             </div>
           </FormSection>

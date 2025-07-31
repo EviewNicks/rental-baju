@@ -53,6 +53,7 @@ interface SelectFieldProps extends BaseFieldProps {
   onChange: (value: string) => void
   options: Array<{ value: string; label: string; color?: string; disabled?: boolean }>
   placeholder?: string
+  disabled?: boolean
 }
 
 type FormFieldProps = TextFieldProps | TextareaFieldProps | SelectFieldProps
@@ -132,7 +133,7 @@ export function FormField(props: FormFieldProps) {
       )}
 
       {props.type === 'select' && (
-        <Select value={props.value || undefined} onValueChange={props.onChange}>
+        <Select value={props.value || undefined} onValueChange={props.onChange} disabled={props.disabled}>
           <SelectTrigger className={fieldClassName} data-testid={testId ? `${testId}-trigger` : undefined}>
             <SelectValue placeholder={props.placeholder} />
           </SelectTrigger>

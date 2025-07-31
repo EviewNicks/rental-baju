@@ -140,7 +140,7 @@ function useRoleNavigation() {
           case 'owner':
             return '/owner'
           case 'producer':
-            return '/producer'
+            return '/producer/manage-product'
           case 'kasir':
             return '/dashboard'
           default:
@@ -175,7 +175,7 @@ function useRoleNavigation() {
             case 'owner':
               return '/owner'
             case 'producer':
-              return '/producer'
+              return '/producer/manage-product'
             case 'kasir':
               return '/kasir/dashboard'
             default:
@@ -192,12 +192,12 @@ function useRoleNavigation() {
         if (role === 'owner') {
           items.push(
             { label: 'Owner Dashboard', href: '/owner', icon: 'crown' },
-            { label: 'Producer Panel', href: '/producer', icon: 'edit' },
+            { label: 'Producer Panel', href: '/producer/manage-product', icon: 'edit' },
             { label: 'Kasir Panel', href: '/kasir/dashboard', icon: 'users' },
           )
         } else if (role === 'producer') {
           items.push(
-            { label: 'Producer Dashboard', href: '/producer', icon: 'edit' },
+            { label: 'Producer Dashboard', href: '/producer/manage-product', icon: 'edit' },
             { label: 'Kasir Panel', href: '/kasir/dashboard', icon: 'users' },
           )
         } else if (role === 'kasir') {
