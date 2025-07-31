@@ -1,15 +1,18 @@
 /**
  * Global Setup untuk Playwright E2E Testing dengan Clerk Authentication State
+ * Multi-Role Support: Kasir, Producer, Owner
  *
  * Setup ini mengikuti dokumentasi resmi Clerk Test Authenticated Flows:
  * 1. Configure Playwright dengan Clerk menggunakan clerkSetup() (setup terpisah)
  * 2. Authenticate user dan save auth state ke storage file (setup terpisah)
  * 3. Auth state akan di-reuse oleh semua tests untuk performance
+ * 4. Multi-role support dengan storage state terpisah untuk setiap role
  *
  * Referensi:
  * - https://clerk.com/docs/testing/playwright/test-authenticated-flows
  * - https://clerk.com/docs/testing/playwright/overview
  * - https://clerk.com/docs/testing/playwright/test-helpers
+ * - Task Plan: Multi-Role E2E Testing Implementation (RPK-17)
  */
 
 import { clerk, clerkSetup } from '@clerk/testing/playwright'
@@ -38,34 +41,63 @@ setup('global setup', async () => {
     console.error('Error in loading environment variables', error)
   }
 })
-// Define the path to the storage file, which is `user.json`
-// Path disesuaikan dengan struktur directory proyek kita
-const authFile = path.join(__dirname, '.clerk/user.json')
 
-// Setup 2: Authenticate dan save state - sesuai dokumentasi Test Authenticated Flows
-setup('authenticate', async ({ page }) => {
-  console.log('🔐 Authenticating user and saving state to storage...')
+// Setup untuk setiap role dengan storage state terpisah
+// Path disesuaikan dengan struktur direktori proyek kita
+const roleAuthFiles = {
+  kasir: path.join(__dirname, '.clerk/kasir.json'),
+  producer: path.join(__dirname, '.clerk/producer.json'),
+  owner: path.join(__dirname, '.clerk/owner.json'),
+}
 
-  // Navigate to unprotected page that loads Clerk - sesuai dokumentasi Test Helpers
+// Setup authentication untuk setiap role sesuai dokumentasi Clerk
+setup('authenticate kasir and save state', async ({ page }) => {
+  console.log('🔐 Authenticating kasir and saving state...')
   await page.goto('/')
-
-  // Perform authentication - sesuai dokumentasi Test Helpers
   await clerk.signIn({
     page,
     signInParams: {
       strategy: 'password',
-      identifier: process.env.E2E_CLERK_USER_USERNAME!,
-      password: process.env.E2E_CLERK_USER_PASSWORD!,
+      identifier: 'kasir01',
+      password: 'kasir01rentalbaju',
     },
   })
-
-  // Navigate ke protected page untuk verify authentication berhasil
   await page.goto('/dashboard')
-
-  // Ensure user berhasil access protected page
   await page.waitForSelector('main', { timeout: 10000 })
+  await page.context().storageState({ path: roleAuthFiles.kasir })
+  console.log('✅ Kasir auth state saved to:', roleAuthFiles.kasir)
+})
 
-  // Save authentication state - sesuai dokumentasi Test Authenticated Flows
-  await page.context().storageState({ path: authFile })
-  console.log('✅ Auth state saved to:', authFile)
+setup('authenticate producer and save state', async ({ page }) => {
+  console.log('🔐 Authenticating producer and saving state...')
+  await page.goto('/')
+  await clerk.signIn({
+    page,
+    signInParams: {
+      strategy: 'password',
+      identifier: 'producer01',
+      password: 'akunproducer01',
+    },
+  })
+  await page.goto('/producer')
+  await page.waitForSelector('main', { timeout: 10000 })
+  await page.context().storageState({ path: roleAuthFiles.producer })
+  console.log('✅ Producer auth state saved to:', roleAuthFiles.producer)
+})
+
+setup('authenticate owner and save state', async ({ page }) => {
+  console.log('🔐 Authenticating owner and saving state...')
+  await page.goto('/')
+  await clerk.signIn({
+    page,
+    signInParams: {
+      strategy: 'password',
+      identifier: 'owner01',
+      password: 'ardi14mei2005',
+    },
+  })
+  await page.goto('/owner')
+  await page.waitForSelector('main', { timeout: 10000 })
+  await page.context().storageState({ path: roleAuthFiles.owner })
+  console.log('✅ Owner auth state saved to:', roleAuthFiles.owner)
 })

@@ -1,0 +1,529 @@
+{
+  "prompt": "Buat halaman manajemen produk untuk aplikasi rental pakaian 'RentalBaju' dengan desain flat modern minimalist dan soft neumorphism. Halaman ini adalah dashboard utama untuk mengelola inventaris produk pakaian dengan operasi CRUD lengkap.",
+
+  "context": {
+    "business": "RentalBaju - Sistem manajemen penyewaan pakaian untuk UMKM",
+    "user_role": "Admin/Producer yang mengelola inventaris produk",
+    "page_purpose": "Dashboard utama untuk manajemen produk dengan tabel dan card view, pencarian, filter, dan operasi CRUD",
+    "tech_stack": "Next.js 14, TypeScript, Tailwind CSS, Supabase, Clerk"
+  },
+
+  "design_system": {
+    "theme": "Flat Modern Minimalist dengan Soft Neumorphism",
+    "color_palette": {
+      "primary": "#FFD700",
+      "background": "#FFFFFF",
+      "background_secondary": "#F8FAFC",
+      "text_primary": "#111827",
+      "text_secondary": "#64748B",
+      "border": "#E2E8F0",
+      "success": "#10B981",
+      "warning": "#F59E0B",
+      "error": "#EF4444"
+    },
+    "typography": "Poppins/Inter sans-serif",
+    "spacing": "Tailwind spacing scale",
+    "shadows": {
+      "sm": "0 1px 3px 0 rgba(0, 0, 0, 0.1)",
+      "md": "0 4px 20px 0 rgba(0, 0, 0, 0.08)",
+      "lg": "0 10px 15px -3px rgba(0, 0, 0, 0.1)"
+    },
+    "border_radius": {
+      "sm": "0.375rem",
+      "md": "0.5rem",
+      "lg": "0.75rem"
+    }
+  },
+
+  "page_structure": {
+    "layout": "Responsive dashboard dengan header, navigation, main content, dan modals",
+    "sections": [
+      "Header dengan judul dan action buttons",
+      "Search dan filter bar",
+      "View toggle (Table/Card)",
+      "Main content area (Table atau Grid)",
+      "Pagination",
+      "Modals untuk form dan detail"
+    ]
+  },
+
+  "components": {
+    "header": {
+      "title": "Manajemen Produk",
+      "actions": [
+        {
+          "type": "button",
+          "label": "Tambah Produk",
+          "variant": "primary",
+          "icon": "plus",
+          "action": "open_add_modal"
+        },
+        {
+          "type": "button",
+          "label": "Kelola Kategori",
+          "variant": "secondary",
+          "icon": "settings",
+          "action": "open_category_modal"
+        }
+      ]
+    },
+
+    "search_filter_bar": {
+      "search_input": {
+        "placeholder": "Cari produk berdasarkan nama atau kode...",
+        "debounce": 300,
+        "icon": "search"
+      },
+      "filters": [
+        {
+          "type": "dropdown",
+          "label": "Kategori",
+          "options": ["Semua", "Dress", "Kemeja", "Jas", "Celana", "Aksesoris"],
+          "default": "Semua"
+        },
+        {
+          "type": "dropdown",
+          "label": "Status",
+          "options": ["Semua", "Tersedia", "Disewa", "Maintenance", "Habis"],
+          "default": "Semua"
+        }
+      ],
+      "sort": {
+        "type": "dropdown",
+        "label": "Urutkan",
+        "options": ["Nama A-Z", "Nama Z-A", "Kode A-Z", "Kode Z-A"],
+        "default": "Nama A-Z"
+      }
+    },
+
+    "view_toggle": {
+      "type": "toggle_group",
+      "options": [
+        { "value": "table", "label": "Tabel", "icon": "table" },
+        { "value": "card", "label": "Kartu", "icon": "grid" }
+      ],
+      "default": "table"
+    },
+
+    "product_table": {
+      "responsive": true,
+      "columns": [
+        {
+          "key": "no",
+          "label": "No",
+          "width": "60px",
+          "sortable": true,
+          "align": "center"
+        },
+        {
+          "key": "image",
+          "label": "Gambar",
+          "width": "80px",
+          "sortable": false,
+          "align": "center"
+        },
+        {
+          "key": "code",
+          "label": "Kode",
+          "width": "100px",
+          "sortable": true,
+          "align": "left"
+        },
+        {
+          "key": "name",
+          "label": "Nama Produk",
+          "width": "200px",
+          "sortable": true,
+          "align": "left"
+        },
+        {
+          "key": "category",
+          "label": "Kategori",
+          "width": "120px",
+          "sortable": false,
+          "align": "center"
+        },
+        {
+          "key": "modal_awal",
+          "label": "Modal Awal",
+          "width": "140px",
+          "sortable": false,
+          "align": "right"
+        },
+        {
+          "key": "harga_sewa",
+          "label": "Harga Sewa",
+          "width": "140px",
+          "sortable": false,
+          "align": "right"
+        },
+        {
+          "key": "status",
+          "label": "Status",
+          "width": "120px",
+          "sortable": false,
+          "align": "center"
+        },
+        {
+          "key": "pendapatan",
+          "label": "Pendapatan",
+          "width": "150px",
+          "sortable": false,
+          "align": "right"
+        },
+        {
+          "key": "actions",
+          "label": "Aksi",
+          "width": "120px",
+          "sortable": false,
+          "align": "center"
+        }
+      ],
+      "row_actions": [
+        { "type": "view", "label": "Lihat", "icon": "eye" },
+        { "type": "edit", "label": "Edit", "icon": "edit" },
+        { "type": "delete", "label": "Hapus", "icon": "trash" }
+      ]
+    },
+
+    "product_grid": {
+      "responsive": {
+        "mobile": "grid-cols-2",
+        "tablet": "grid-cols-3",
+        "desktop": "grid-cols-4"
+      },
+      "card": {
+        "aspect_ratio": "4:3",
+        "image": {
+          "size": "w-full h-48 object-cover rounded-t-lg"
+        },
+        "content": {
+          "padding": "p-4",
+          "spacing": "space-y-2"
+        },
+        "actions": {
+          "type": "swipe",
+          "mobile": true
+        }
+      }
+    },
+
+    "product_form_modal": {
+      "title": "Tambah Produk Baru",
+      "size": "max-w-2xl",
+      "fields": [
+        {
+          "name": "code",
+          "label": "Kode Produk",
+          "type": "text",
+          "required": true,
+          "placeholder": "PRD1",
+          "validation": {
+            "pattern": "^[A-Z0-9]{4}$",
+            "message": "Kode harus 4 digit alfanumerik uppercase"
+          },
+          "max_length": 4
+        },
+        {
+          "name": "name",
+          "label": "Nama Produk",
+          "type": "text",
+          "required": true,
+          "placeholder": "Dress Pesta Merah",
+          "max_length": 100
+        },
+        {
+          "name": "description",
+          "label": "Deskripsi",
+          "type": "textarea",
+          "required": false,
+          "placeholder": "Deskripsi produk...",
+          "max_length": 500,
+          "rows": 3
+        },
+        {
+          "name": "category",
+          "label": "Kategori",
+          "type": "select",
+          "required": true,
+          "options": [
+            { "value": "dress", "label": "Dress" },
+            { "value": "kemeja", "label": "Kemeja" },
+            { "value": "jas", "label": "Jas" },
+            { "value": "celana", "label": "Celana" },
+            { "value": "aksesoris", "label": "Aksesoris" }
+          ]
+        },
+        {
+          "name": "modal_awal",
+          "label": "Modal Awal (Rp)",
+          "type": "number",
+          "required": true,
+          "placeholder": "800000",
+          "min": 0,
+          "format": "currency"
+        },
+        {
+          "name": "harga_sewa",
+          "label": "Harga Sewa (Rp)",
+          "type": "number",
+          "required": true,
+          "placeholder": "150000",
+          "min": 0,
+          "format": "currency"
+        },
+        {
+          "name": "quantity",
+          "label": "Jumlah",
+          "type": "number",
+          "required": true,
+          "placeholder": "1",
+          "min": 0,
+          "max": 9999
+        },
+        {
+          "name": "image",
+          "label": "Gambar Produk",
+          "type": "file_upload",
+          "required": false,
+          "accept": "image/*",
+          "max_size": "5MB",
+          "preview": true
+        }
+      ],
+      "actions": [
+        { "type": "cancel", "label": "Batal", "variant": "outline" },
+        { "type": "save", "label": "Simpan", "variant": "primary" }
+      ]
+    },
+
+    "product_detail_modal": {
+      "title": "Detail Produk",
+      "size": "max-w-4xl",
+      "layout": "grid grid-cols-1 md:grid-cols-2 gap-6",
+      "sections": [
+        {
+          "type": "image_section",
+          "image": {
+            "size": "w-full h-96 object-cover rounded-lg"
+          }
+        },
+        {
+          "type": "info_section",
+          "fields": [
+            { "key": "code", "label": "Kode", "type": "text" },
+            { "key": "name", "label": "Nama", "type": "text" },
+            { "key": "category", "label": "Kategori", "type": "badge" },
+            { "key": "description", "label": "Deskripsi", "type": "text" },
+            { "key": "modal_awal", "label": "Modal Awal", "type": "currency" },
+            { "key": "harga_sewa", "label": "Harga Sewa", "type": "currency" },
+            { "key": "status", "label": "Status", "type": "badge" },
+            { "key": "pendapatan", "label": "Total Pendapatan", "type": "currency" }
+          ]
+        }
+      ],
+      "actions": [
+        { "type": "edit", "label": "Edit", "variant": "primary" },
+        { "type": "delete", "label": "Hapus", "variant": "destructive" },
+        { "type": "close", "label": "Tutup", "variant": "outline" }
+      ]
+    },
+
+    "category_manager_modal": {
+      "title": "Kelola Kategori",
+      "size": "max-w-2xl",
+      "sections": [
+        {
+          "type": "category_list",
+          "columns": [
+            { "key": "name", "label": "Nama Kategori" },
+            { "key": "color", "label": "Warna" },
+            { "key": "actions", "label": "Aksi" }
+          ]
+        },
+        {
+          "type": "add_category_form",
+          "fields": [
+            {
+              "name": "name",
+              "label": "Nama Kategori",
+              "type": "text",
+              "required": true,
+              "max_length": 50
+            },
+            {
+              "name": "color",
+              "label": "Warna Badge",
+              "type": "color_picker",
+              "required": true
+            }
+          ]
+        }
+      ]
+    }
+  },
+
+  "data_structure": {
+    "product": {
+      "id": "string (UUID)",
+      "code": "string (4 chars, alphanumeric)",
+      "name": "string (max 100 chars)",
+      "description": "string (max 500 chars, optional)",
+      "category": "string (enum)",
+      "modal_awal": "number (currency)",
+      "harga_sewa": "number (currency)",
+      "quantity": "number (0-9999)",
+      "status": "enum (Tersedia, Disewa, Maintenance, Habis)",
+      "image_url": "string (optional)",
+      "pendapatan": "number (calculated)",
+      "created_at": "datetime",
+      "updated_at": "datetime"
+    },
+    "category": {
+      "id": "string (UUID)",
+      "name": "string (max 50 chars)",
+      "color": "string (hex color)",
+      "created_at": "datetime"
+    }
+  },
+
+  "status_badges": {
+    "Tersedia": {
+      "color": "#10B981",
+      "bg_color": "#D1FAE5",
+      "text_color": "#065F46"
+    },
+    "Disewa": {
+      "color": "#F59E0B",
+      "bg_color": "#FEF3C7",
+      "text_color": "#92400E"
+    },
+    "Maintenance": {
+      "color": "#EF4444",
+      "bg_color": "#FEE2E2",
+      "text_color": "#991B1B"
+    },
+    "Habis": {
+      "color": "#6B7280",
+      "bg_color": "#F3F4F6",
+      "text_color": "#374151"
+    }
+  },
+
+  "category_badges": {
+    "Dress": {
+      "color": "#EC4899",
+      "bg_color": "#FCE7F3",
+      "text_color": "#BE185D"
+    },
+    "Kemeja": {
+      "color": "#3B82F6",
+      "bg_color": "#DBEAFE",
+      "text_color": "#1E40AF"
+    },
+    "Jas": {
+      "color": "#8B5CF6",
+      "bg_color": "#EDE9FE",
+      "text_color": "#5B21B6"
+    },
+    "Celana": {
+      "color": "#A16207",
+      "bg_color": "#FEF3C7",
+      "text_color": "#92400E"
+    },
+    "Aksesoris": {
+      "color": "#FFD700",
+      "bg_color": "#FEFCE8",
+      "text_color": "#A16207"
+    }
+  },
+
+  "interactions": {
+    "table_view": {
+      "row_click": "open_detail_modal",
+      "hover": "highlight_row",
+      "sort": "server_side_sorting",
+      "filter": "real_time_filtering"
+    },
+    "card_view": {
+      "card_click": "open_detail_modal",
+      "swipe_actions": "mobile_only",
+      "hover": "elevate_card"
+    },
+    "search": {
+      "debounce": 300,
+      "search_fields": ["name", "code"],
+      "highlight_results": true
+    },
+    "pagination": {
+      "items_per_page": [10, 25, 50, 100],
+      "default": 25,
+      "show_total": true
+    }
+  },
+
+  "responsive_behavior": {
+    "mobile": {
+      "breakpoint": "< 768px",
+      "layout": "card_view_only",
+      "actions": "swipe_actions",
+      "modals": "full_screen"
+    },
+    "tablet": {
+      "breakpoint": "768px - 1024px",
+      "layout": "hybrid_table_card",
+      "view_toggle": "visible",
+      "modals": "centered_90_percent"
+    },
+    "desktop": {
+      "breakpoint": "> 1024px",
+      "layout": "full_table",
+      "bulk_actions": "visible",
+      "modals": "centered_600px"
+    }
+  },
+
+  "accessibility": {
+    "keyboard_navigation": true,
+    "screen_reader": "aria_labels",
+    "color_contrast": "4.5:1_minimum",
+    "focus_management": "visible_indicators",
+    "error_handling": "clear_messages"
+  },
+
+  "loading_states": {
+    "table_skeleton": "row_skeleton_loader",
+    "card_skeleton": "card_skeleton_loader",
+    "form_skeleton": "field_skeleton_loader",
+    "image_skeleton": "image_placeholder"
+  },
+
+  "error_states": {
+    "empty_state": {
+      "icon": "package",
+      "title": "Belum ada produk",
+      "description": "Mulai dengan menambahkan produk pertama Anda",
+      "action": "Tambah Produk"
+    },
+    "error_state": {
+      "icon": "alert_circle",
+      "title": "Terjadi kesalahan",
+      "description": "Gagal memuat data produk",
+      "action": "Coba Lagi"
+    }
+  },
+
+  "validation": {
+    "client_side": "real_time_validation",
+    "server_side": "api_validation",
+    "error_messages": "indonesian",
+    "success_feedback": "toast_notifications"
+  },
+
+  "performance": {
+    "lazy_loading": "images_and_components",
+    "virtualization": "large_lists",
+    "debouncing": "search_and_filters",
+    "caching": "react_query_cache"
+  }
+}

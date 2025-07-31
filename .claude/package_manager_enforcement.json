@@ -1,0 +1,26 @@
+[
+  {
+    "session_id": "0c3f550b-f2a7-4e4a-9de2-ac52124d13f6",
+    "blocked_command": "npm run dev",
+    "suggested_command": "yarn dev",
+    "reason": "Gunakan 'yarn' sebagai pengganti 'npm run' untuk workflow utama."
+  },
+  {
+    "session_id": "a1e15107-9e28-42da-8a34-dcb96cb5ed7e",
+    "blocked_command": "node --version && npm --version",
+    "suggested_command": "node --version && yarn --version",
+    "reason": "Gunakan 'yarn' sebagai default, kecuali ada alasan khusus."
+  },
+  {
+    "session_id": "1750a81e-99cf-4ddf-9bfe-5bd44251cd9b",
+    "blocked_command": "npm list @playwright/test 2>/dev/null | head -3",
+    "suggested_command": "yarn list @playwright/test 2>/dev/null | head -3",
+    "reason": "Gunakan 'yarn' sebagai default, kecuali ada alasan khusus."
+  },
+  {
+    "session_id": "1750a81e-99cf-4ddf-9bfe-5bd44251cd9b",
+    "blocked_command": "node --version && npm --version",
+    "suggested_command": "node --version && yarn --version",
+    "reason": "Gunakan 'yarn' sebagai default, kecuali ada alasan khusus."
+  }
+]

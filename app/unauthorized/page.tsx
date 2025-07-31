@@ -41,12 +41,12 @@ function UnauthorizedContent() {
     if (isLoading) return 'Memuat informasi akun...'
 
     switch (role) {
-      case 'admin':
-        return 'Sebagai admin, Anda seharusnya memiliki akses ke semua area. Ini mungkin bug sistem.'
-      case 'creator':
-        return 'Sebagai creator, Anda memiliki akses ke area konten. Halaman ini mungkin khusus untuk admin.'
-      case 'user':
-        return 'Sebagai user, Anda memiliki akses terbatas. Halaman ini memerlukan role yang lebih tinggi.'
+      case 'owner':
+        return 'Sebagai owner, Anda seharusnya memiliki akses ke semua area. Ini mungkin bug sistem.'
+      case 'producer':
+        return 'Sebagai producer, Anda memiliki akses ke area konten dan kasir. Halaman ini mungkin khusus untuk owner.'
+      case 'kasir':
+        return 'Sebagai kasir, Anda memiliki akses terbatas. Halaman ini memerlukan role yang lebih tinggi.'
       default:
         return 'Anda perlu masuk terlebih dahulu untuk mengakses halaman ini.'
     }
@@ -68,17 +68,31 @@ function UnauthorizedContent() {
         icon: <Home className="w-4 h-4" />,
       })
     } else {
+      // Get appropriate dashboard URL based on role
+      let dashboardUrl = '/dashboard'
+      switch (role) {
+        case 'owner':
+          dashboardUrl = '/owner'
+          break
+        case 'producer':
+          dashboardUrl = '/producer'
+          break
+        case 'kasir':
+          dashboardUrl = '/kasir/dashboard'
+          break
+      }
+
       actions.push({
         label: 'Kembali ke Dashboard',
-        href: '/dashboard',
+        href: dashboardUrl,
         variant: 'default' as const,
         icon: <Home className="w-4 h-4" />,
       })
 
-      if (role === 'user') {
+      if (role === 'kasir') {
         actions.push({
-          label: 'Hubungi Admin',
-          href: 'mailto:admin@maguru.com?subject=Request%20Access&body=Saya%20memerlukan%20akses%20ke%20halaman%20tertentu.',
+          label: 'Hubungi Owner',
+          href: 'mailto:owner@rentalbaju.com?subject=Request%20Access&body=Saya%20memerlukan%20akses%20ke%20halaman%20tertentu.',
           variant: 'outline' as const,
           icon: <MessageCircle className="w-4 h-4" />,
         })
@@ -133,7 +147,7 @@ function UnauthorizedContent() {
         {/* Help text */}
         <div className="mt-8 text-center">
           <p className="text-xs text-gray-500">
-            Jika Anda yakin ini adalah kesalahan, silakan hubungi administrator sistem.
+            Jika Anda yakin ini adalah kesalahan, silakan hubungi owner sistem.
           </p>
         </div>
 

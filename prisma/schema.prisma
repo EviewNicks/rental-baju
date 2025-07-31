@@ -13,3 +13,194 @@ model User {
   name  String
   email String @unique
 }
+
+model Product {
+  id              String        @id @default(uuid())
+  code            String        @unique // 4 digit alfanumerik uppercase (PRD1, DRES2, dll)
+  name            String
+  description     String?
+  modalAwal       Decimal       @db.Decimal(10, 2) // Biaya pembuatan baju
+  hargaSewa       Decimal       @db.Decimal(10, 2) // Harga sewa per sekali
+  quantity        Int
+  imageUrl        String?
+  categoryId      String
+  category        Category      @relation(fields: [categoryId], references: [id])
+  size            String?       // Ukuran: S, M, L, XL, XXL atau custom
+  colorId         String?       // Relasi ke Color model
+  color           Color?        @relation(fields: [colorId], references: [id])
+  status          ProductStatus @default(AVAILABLE)
+  totalPendapatan Decimal       @db.Decimal(10, 2) @default(0) // Pendapatan kumulatif
+  isActive        Boolean       @default(true)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  createdBy       String        // User ID dari Clerk
+  
+  // Relations for kasir feature
+  transaksiItems  TransaksiItem[]
+
+  @@index([isActive])
+  @@index([categoryId])
+  @@index([status])
+  @@index([createdBy])
+  @@index([size])
+  @@index([colorId])
+  @@index([categoryId, size, colorId])
+}
+
+model Category {
+  id        String    @id @default(uuid())
+  name      String    @unique
+  color     String    // Hex color untuk badge
+  products  Product[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  createdBy String    // User ID dari Clerk
+
+  @@index([createdBy])
+}
+
+model Color {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  hexCode     String?   // Hex color code (optional)
+  description String?   // Deskripsi warna (optional)
+  isActive    Boolean   @default(true)
+  products    Product[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdBy   String    // User ID dari Clerk
+
+  @@index([createdBy])
+  @@index([isActive])
+  @@map("colors")
+}
+
+enum ProductStatus {
+  AVAILABLE    // Tersedia
+  RENTED       // Disewa
+  MAINTENANCE  // Maintenance
+}
+
+// Kasir Feature Models - RPK-26
+model Penyewa {
+  id        String   @id @default(uuid())
+  nama      String   // Nama lengkap penyewa
+  telepon   String   @unique // Nomor telepon (unique)
+  alamat    String   // Alamat lengkap
+  email     String?  // Email (optional)
+  nik       String?  // NIK/KTP (optional)
+  foto      String?  // URL foto profil
+  catatan   String?  // Catatan khusus
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  transaksi Transaksi[]
+  
+  @@map("penyewa")
+  @@index([telepon])
+  @@index([nama])
+}
+
+model Transaksi {
+  id           String   @id @default(uuid())
+  kode         String   @unique // Format: TXN-YYYYMMDD-XXX
+  penyewaId    String
+  status       String   @default("active") // active, selesai, terlambat, cancelled
+  totalHarga   Decimal  @db.Decimal(10, 2) @default(0)
+  jumlahBayar  Decimal  @db.Decimal(10, 2) @default(0) // Total yang sudah dibayar
+  sisaBayar    Decimal  @db.Decimal(10, 2) @default(0) // Sisa yang harus dibayar
+  tglMulai     DateTime // Tanggal mulai sewa
+  tglSelesai   DateTime? // Tanggal selesai sewa
+  tglKembali   DateTime? // Tanggal aktual pengembalian
+  metodeBayar  String   @default("tunai") // tunai, transfer, kartu"
+  catatan      String?  // Catatan transaksi
+  createdBy    String   // User ID yang membuat
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  // Relations
+  penyewa      Penyewa @relation(fields: [penyewaId], references: [id])
+  items        TransaksiItem[]
+  pembayaran   Pembayaran[]
+  aktivitas    AktivitasTransaksi[]
+  
+  @@map("transaksi")
+  @@index([kode])
+  @@index([status])
+  @@index([penyewaId])
+  @@index([createdAt])
+}
+
+model TransaksiItem {
+  id          String   @id @default(uuid())
+  transaksiId String
+  produkId    String
+  jumlah      Int      @default(1) // Quantity
+  hargaSewa   Decimal  @db.Decimal(10, 2) // Harga sewa per hari
+  durasi      Int      // Durasi sewa dalam hari
+  subtotal    Decimal  @db.Decimal(10, 2) // Subtotal untuk item ini
+  kondisiAwal String?  // Kondisi saat disewa
+  kondisiAkhir String? // Kondisi saat dikembalikan
+  statusKembali String @default("belum") // belum, sebagian, lengkap
+  
+  // Relations
+  transaksi   Transaksi @relation(fields: [transaksiId], references: [id], onDelete: Cascade)
+  produk      Product   @relation(fields: [produkId], references: [id])
+  
+  @@map("transaksi_item")
+  @@index([transaksiId])
+  @@index([produkId])
+}
+
+model Pembayaran {
+  id          String   @id @default(uuid())
+  transaksiId String
+  jumlah      Decimal  @db.Decimal(10, 2) // Jumlah pembayaran
+  metode      String   // tunai, transfer, kartu
+  referensi   String?  // Nomor referensi transfer
+  catatan     String?  // Catatan pembayaran
+  createdBy   String   // User yang input pembayaran
+  createdAt   DateTime @default(now())
+  
+  // Relations
+  transaksi   Transaksi @relation(fields: [transaksiId], references: [id], onDelete: Cascade)
+  
+  @@map("pembayaran")
+  @@index([transaksiId])
+  @@index([createdAt])
+}
+
+model AktivitasTransaksi {
+  id          String   @id @default(uuid())
+  transaksiId String
+  tipe        String   // dibuat, dibayar, dikembalikan, terlambat, dibatalkan
+  deskripsi   String   // Deskripsi aktivitas
+  data        Json?    // Data tambahan (optional)
+  createdBy   String   // User yang melakukan aktivitas
+  createdAt   DateTime @default(now())
+  
+  // Relations
+  transaksi   Transaksi @relation(fields: [transaksiId], references: [id], onDelete: Cascade)
+  
+  @@map("aktivitas_transaksi")
+  @@index([transaksiId])
+  @@index([tipe])
+  @@index([createdAt])
+}
+
+model FileUpload {
+  id         String   @id @default(uuid())
+  filename   String   // Original filename
+  url        String   // Supabase storage URL
+  mimetype   String   // File mime type
+  size       Int      // File size in bytes
+  entityType String   // produk, penyewa, transaksi
+  entityId   String   // ID of related entity
+  createdBy  String   // User who uploaded
+  createdAt  DateTime @default(now())
+  
+  @@map("file_upload")
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}

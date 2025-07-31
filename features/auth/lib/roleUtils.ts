@@ -8,7 +8,7 @@
 import type { UserRole, ClerkTokenPayload, RoleError, RoleCache } from '../types'
 
 // Constants
-export const DEFAULT_ROLE: UserRole = 'user'
+export const DEFAULT_ROLE: UserRole = 'kasir'
 export const ROLE_CACHE_TTL = 5 * 60 * 1000 // 5 minutes
 export const SESSION_STORAGE_KEY = 'maguru_user_role_cache'
 export const BROADCAST_CHANNEL_NAME = 'maguru_role_sync'
@@ -17,7 +17,7 @@ export const BROADCAST_CHANNEL_NAME = 'maguru_role_sync'
  * Type guard untuk validasi UserRole
  */
 export const isValidRole: (role: unknown) => role is UserRole = (role): role is UserRole => {
-  return typeof role === 'string' && ['admin', 'creator', 'user'].includes(role)
+  return typeof role === 'string' && ['owner', 'producer', 'kasir'].includes(role)
 }
 
 /**

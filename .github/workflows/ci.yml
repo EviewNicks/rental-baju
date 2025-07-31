@@ -27,7 +27,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
+          node-version: '22.x'
           cache: 'yarn'
           cache-dependency-path: yarn.lock
 
@@ -69,7 +69,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
+          node-version: '22.x'
           cache: 'yarn'
           cache-dependency-path: yarn.lock
 
@@ -150,7 +150,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
+          node-version: '22.x'
           cache: 'yarn'
           cache-dependency-path: yarn.lock
 
@@ -181,7 +181,7 @@ jobs:
           SKIP_ENV_VALIDATION: true
         run: |
           echo "=== Running integration tests ==="
-          yarn test:integration --ci --watchAll=false
+          yarn test:int --ci --watchAll=false
           echo "✅ Integration tests completed"
 
       - name: Upload integration test results
@@ -207,7 +207,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
+          node-version: '22.x'
           cache: 'yarn'
           cache-dependency-path: yarn.lock
 
@@ -235,13 +235,13 @@ jobs:
           # Clerk Authentication untuk E2E tests
           CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
           NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
-          E2E_CLERK_ADMIN_USERNAME: ${{ secrets.E2E_CLERK_ADMIN_USERNAME }}
-          E2E_CLERK_ADMIN_PASSWORD: ${{ secrets.E2E_CLERK_ADMIN_PASSWORD }}
-          E2E_CLERK_CREATOR_PASSWORD: ${{ secrets.E2E_CLERK_CREATOR_PASSWORD }}
-          E2E_CLERK_CREATOR_USERNAME: ${{ secrets.E2E_CLERK_CREATOR_USERNAME }}
-          E2E_CLERK_USER_EMAIL: ${{ secrets.E2E_CLERK_USER_EMAIL }}
-          E2E_CLERK_USER_PASSWORD: ${{ secrets.E2E_CLERK_USER_PASSWORD }}
-          E2E_CLERK_USER_USERNAME: ${{ secrets.E2E_CLERK_USER_USERNAME }}
+          E2E_CLERK_OWNER_USERNAME: ${{ secrets.E2E_CLERK_OWNER_USERNAME }}
+          E2E_CLERK_OWNER_PASSWORD: ${{ secrets.E2E_CLERK_OWNER_PASSWORD }}
+          E2E_CLERK_PRODUCER_USERNAME: ${{ secrets.E2E_CLERK_PRODUCER_USERNAME }}
+          E2E_CLERK_PRODUCER_PASSWORD: ${{ secrets.E2E_CLERK_PRODUCER_PASSWORD }}
+          E2E_CLERK_KASIR_EMAIL: ${{ secrets.E2E_CLERK_KASIR_EMAIL }}
+          E2E_CLERK_KASIR_PASSWORD: ${{ secrets.E2E_CLERK_KASIR_PASSWORD }}
+          E2E_CLERK_KASIR_USERNAME: ${{ secrets.E2E_CLERK_KASIR_USERNAME }}
           CLERK_TEST_MODE: true
 
           # App Configuration
@@ -285,7 +285,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
+          node-version: '22.x'
           cache: 'yarn'
           cache-dependency-path: yarn.lock
 

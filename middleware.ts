@@ -14,70 +14,63 @@ import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
  * - https://clerk.com/docs/backend-requests/jwt-templates
  *
  * App Structure:
- * - /dashboard = User area (default)
- * - /admin/* = Admin area
- * - /creator/* = Creator area
+ * - /owner/* = Owner area (hanya owner)
+ * - /producer/* = Producer area (owner & producer)
+ * - /kasir/* = Kasir area (owner, producer, kasir)
  */
 
 // Define protected routes using Clerk's createRouteMatcher
 const isProtectedRoute = createRouteMatcher([
+  '/owner(.*)',
+  '/producer(.*)',
   '/dashboard(.*)',
-  '/admin(.*)',
-  '/creator(.*)',
   '/settings(.*)',
   '/profile(.*)',
 ])
 
-// Define admin-only routes for role-based protection
-const isAdminRoute = createRouteMatcher(['/admin(.*)'])
-
-// Define creator routes (accessible by creator and admin)
-const isCreatorRoute = createRouteMatcher(['/creator(.*)'])
+// Define owner-only routes
+const isOwnerRoute = createRouteMatcher(['/owner(.*)'])
+// Define producer routes (owner & producer)
+const isProducerRoute = createRouteMatcher(['/producer(.*)'])
+// Define kasir routes (owner, producer, kasir) - menggunakan /dashboard
+const isKasirRoute = createRouteMatcher(['/dashboard(.*)'])
 
 export default clerkMiddleware(
   async (auth, req) => {
-    // Protect routes that require authentication using Clerk's auth.protect()
     if (isProtectedRoute(req)) {
       await auth.protect()
     }
 
-    // Additional role-based protection for admin routes
-    if (isAdminRoute(req)) {
-      const { sessionClaims } = await auth()
+    const { sessionClaims } = await auth()
+    const userRole = sessionClaims?.role as string
 
-      // Access role directly from custom session claims
-      // Based on Clerk Dashboard config: "role": "{{user.public_metadata.role || 'user'}}"
-      const userRole = sessionClaims?.role as string
-
-      if (userRole !== 'admin') {
-        // Redirect non-admin users to unauthorized page
+    // Owner-only routes
+    if (isOwnerRoute(req)) {
+      if (userRole !== 'owner') {
         const url = new URL('/unauthorized', req.url)
         return Response.redirect(url)
       }
     }
 
-    // Additional role-based protection for creator routes
-    if (isCreatorRoute(req)) {
-      const { sessionClaims } = await auth()
+    // Producer routes (owner & producer)
+    if (isProducerRoute(req)) {
+      if (userRole !== 'owner' && userRole !== 'producer') {
+        const url = new URL('/unauthorized', req.url)
+        return Response.redirect(url)
+      }
+    }
 
-      // Access role directly from custom session claims
-      const userRole = sessionClaims?.role as string
-
-      // Allow admin and creator roles
-      if (userRole !== 'admin' && userRole !== 'creator') {
+    // Kasir routes (owner, producer, kasir) - menggunakan /dashboard
+    if (isKasirRoute(req)) {
+      if (userRole !== 'owner' && userRole !== 'producer' && userRole !== 'kasir') {
         const url = new URL('/unauthorized', req.url)
         return Response.redirect(url)
       }
     }
   },
   {
-    // ✅ FIX: Include test environment untuk debug
-    debug: process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test',
-
-    // Fix clock skew issue - allow 30 seconds difference
+    debug: false,
     clockSkewInMs: 30000,
-
-    // Ensure proper sign-in/sign-up URLs are set
     signInUrl: '/sign-in',
     signUpUrl: '/sign-up',
   },

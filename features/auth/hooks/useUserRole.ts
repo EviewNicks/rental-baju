@@ -17,10 +17,10 @@ import type { UseUserRoleReturn, UserRole } from '../types'
  *
  * @example
  * ```tsx
- * const { role, isAdmin, isLoading, refreshRole } = useUserRole();
+ * const { role, isOwner, isLoading, refreshRole } = useUserRole();
  *
  * if (isLoading) return <Spinner />;
- * if (isAdmin) return <AdminPanel />;
+ * if (isOwner) return <AdminPanel />;
  * ```
  */
 export function useUserRole(): UseUserRoleReturn {
@@ -32,9 +32,9 @@ export function useUserRole(): UseUserRoleReturn {
    */
   const helpers = useMemo(
     () => ({
-      isAdmin: context.role === 'admin',
-      isCreator: context.role === 'creator',
-      isUser: context.role === 'user',
+      isOwner: context.role === 'owner',
+      isProducer: context.role === 'producer',
+      isKasir: context.role === 'kasir',
       hasRole: (role: UserRole) => context.role === role,
     }),
     [context.role],
@@ -67,27 +67,27 @@ function useRoleGuard() {
   return useMemo(
     () => ({
       // Basic role checks
-      canAccessAdmin: () => role === 'admin',
-      canAccessCreator: () => role === 'admin' || role === 'creator',
-      canAccessUser: () => role !== null,
+      canAccessOwner: () => role === 'owner',
+      canAccessProducer: () => role === 'owner' || role === 'producer',
+      canAccessKasir: () => role === 'owner' || role === 'producer' || role === 'kasir',
 
       // Permission-based checks
-      canManageUsers: () => role === 'admin',
-      canCreateContent: () => role === 'admin' || role === 'creator',
+      canManageUsers: () => role === 'owner',
+      canCreateContent: () => role === 'owner' || role === 'producer',
       canViewContent: () => role !== null,
-      canEditOwnContent: () => role === 'admin' || role === 'creator',
-      canDeleteContent: () => role === 'admin',
+      canEditOwnContent: () => role === 'owner' || role === 'producer',
+      canDeleteContent: () => role === 'owner',
 
       // Feature-specific checks
-      canAccessDashboard: () => role === 'admin' || role === 'creator',
-      canAccessAnalytics: () => role === 'admin',
-      canManageSettings: () => role === 'admin',
-      canInviteUsers: () => role === 'admin',
-      canModerateContent: () => role === 'admin' || role === 'creator',
+      canAccessDashboard: () => role === 'owner' || role === 'producer' || role === 'kasir',
+      canAccessAnalytics: () => role === 'owner',
+      canManageSettings: () => role === 'owner',
+      canInviteUsers: () => role === 'owner',
+      canModerateContent: () => role === 'owner' || role === 'producer',
 
       // Utility functions
       hasMinimumRole: (minimumRole: UserRole) => {
-        const roleHierarchy = { user: 1, creator: 2, admin: 3 }
+        const roleHierarchy = { kasir: 1, producer: 2, owner: 3 }
         const currentRoleLevel = role ? roleHierarchy[role] : 0
         const requiredLevel = roleHierarchy[minimumRole]
         return currentRoleLevel >= requiredLevel
@@ -99,14 +99,124 @@ function useRoleGuard() {
 
       // Context-aware guards
       canEditUser: (targetUserId: string, currentUserId: string) => {
-        if (role === 'admin') return true
-        if (role === 'creator' && targetUserId === currentUserId) return true
+        if (role === 'owner') return true
+        if (role === 'producer' && targetUserId === currentUserId) return true
         return false
       },
 
       canDeleteUser: (targetUserId: string, currentUserId: string) => {
-        if (role === 'admin' && targetUserId !== currentUserId) return true
+        if (role === 'owner' && targetUserId !== currentUserId) return true
         return false
+      },
+    }),
+    [role],
+  )
+}
+
+/**
+ * Hook untuk role-based navigation dan redirect
+ * Provides navigation helpers dan redirect logic berdasarkan role
+ *
+ * @returns Object dengan navigation functions dan redirect URLs
+ *
+ * @example
+ * ```tsx
+ * const { getDashboardUrl, canNavigateTo, getRedirectUrl } = useRoleNavigation();
+ *
+ * const dashboardUrl = getDashboardUrl();
+ * if (canNavigateTo('/admin')) {
+ *   return <AdminPanel />;
+ * }
+ * ```
+ */
+function useRoleNavigation() {
+  const { role } = useUserRole()
+
+  return useMemo(
+    () => ({
+      // Get dashboard URL berdasarkan role
+      getDashboardUrl: () => {
+        switch (role) {
+          case 'owner':
+            return '/owner'
+          case 'producer':
+            return '/producer/manage-product'
+          case 'kasir':
+            return '/dashboard'
+          default:
+            return '/unauthorized'
+        }
+      },
+
+      // Check if user can navigate to specific route
+      canNavigateTo: (route: string) => {
+        if (!role) return false
+
+        // Owner can access everything
+        if (role === 'owner') return true
+
+        // Producer can access producer and kasir routes
+        if (role === 'producer') {
+          return route.startsWith('/producer') || route.startsWith('/kasir')
+        }
+
+        // Kasir can only access kasir routes
+        if (role === 'kasir') {
+          return route.startsWith('/kasir')
+        }
+
+        return false
+      },
+
+      // Get redirect URL for unauthorized access
+      getRedirectUrl: (attemptedRoute: string) => {
+        const dashboardUrl = (() => {
+          switch (role) {
+            case 'owner':
+              return '/owner'
+            case 'producer':
+              return '/producer/manage-product'
+            case 'kasir':
+              return '/kasir/dashboard'
+            default:
+              return '/unauthorized'
+          }
+        })()
+        return `${dashboardUrl}?redirect=${encodeURIComponent(attemptedRoute)}`
+      },
+
+      // Get role-specific navigation items
+      getNavigationItems: () => {
+        const items = []
+
+        if (role === 'owner') {
+          items.push(
+            { label: 'Owner Dashboard', href: '/owner', icon: 'crown' },
+            { label: 'Producer Panel', href: '/producer/manage-product', icon: 'edit' },
+            { label: 'Kasir Panel', href: '/kasir/dashboard', icon: 'users' },
+          )
+        } else if (role === 'producer') {
+          items.push(
+            { label: 'Producer Dashboard', href: '/producer/manage-product', icon: 'edit' },
+            { label: 'Kasir Panel', href: '/kasir/dashboard', icon: 'users' },
+          )
+        } else if (role === 'kasir') {
+          items.push({ label: 'Kasir Dashboard', href: '/kasir/dashboard', icon: 'users' })
+        }
+
+        return items
+      },
+
+      // Check if route requires authentication
+      isProtectedRoute: (route: string) => {
+        const protectedRoutes = ['/owner', '/producer', '/kasir', '/dashboard']
+        return protectedRoutes.some((protectedRoute) => route.startsWith(protectedRoute))
+      },
+
+      // Get role hierarchy level
+      getRoleLevel: () => {
+        const hierarchy = { kasir: 1, producer: 2, owner: 3 }
+        return role ? hierarchy[role] : 0
       },
     }),
     [role],
@@ -184,18 +294,18 @@ function useRoleDevelopment() {
   return useMemo(() => {
     if (process.env.NODE_ENV !== 'development') {
       return {
-        switchToAdmin: () => console.warn('Role switching only available in development'),
-        switchToCreator: () => console.warn('Role switching only available in development'),
-        switchToUser: () => console.warn('Role switching only available in development'),
+        switchToOwner: () => console.warn('Role switching only available in development'),
+        switchToProducer: () => console.warn('Role switching only available in development'),
+        switchToKasir: () => console.warn('Role switching only available in development'),
         getCurrentRole: () => role,
         isDevMode: false,
       }
     }
 
     return {
-      switchToAdmin: () => setRole('admin'),
-      switchToCreator: () => setRole('creator'),
-      switchToUser: () => setRole('user'),
+      switchToOwner: () => setRole('owner'),
+      switchToProducer: () => setRole('producer'),
+      switchToKasir: () => setRole('kasir'),
       getCurrentRole: () => role,
       isDevMode: true,
 
@@ -203,16 +313,16 @@ function useRoleDevelopment() {
       logRoleInfo: () => {
         console.group('🔐 Role Development Info')
         console.log('Current Role:', role)
-        console.log('Is Admin:', role === 'admin')
-        console.log('Is Creator:', role === 'creator')
-        console.log('Is User:', role === 'user')
-        console.log('Role Hierarchy Level:', role ? { user: 1, creator: 2, admin: 3 }[role] : 0)
+        console.log('Is Owner:', role === 'owner')
+        console.log('Is Producer:', role === 'producer')
+        console.log('Is Kasir:', role === 'kasir')
+        console.log('Role Hierarchy Level:', role ? { kasir: 1, producer: 2, owner: 3 }[role] : 0)
         console.groupEnd()
       },
 
       testRoleTransitions: () => {
         console.log('🧪 Testing role transitions...')
-        const roles: UserRole[] = ['user', 'creator', 'admin']
+        const roles: UserRole[] = ['kasir', 'producer', 'owner']
         let index = 0
 
         const interval = setInterval(() => {
@@ -256,12 +366,12 @@ function useRoleConditional() {
   return useMemo(
     () => ({
       // Render helpers
-      renderForAdmin: (component: React.ReactNode) => (role === 'admin' ? component : null),
+      renderForOwner: (component: React.ReactNode) => (role === 'owner' ? component : null),
 
-      renderForCreator: (component: React.ReactNode) =>
-        role === 'admin' || role === 'creator' ? component : null,
+      renderForProducer: (component: React.ReactNode) =>
+        role === 'owner' || role === 'producer' ? component : null,
 
-      renderForUser: (component: React.ReactNode) => (role !== null ? component : null),
+      renderForKasir: (component: React.ReactNode) => (role !== null ? component : null),
 
       renderForRole: (targetRole: UserRole, component: React.ReactNode) =>
         role === targetRole ? component : null,
@@ -289,13 +399,13 @@ function useRoleConditional() {
       // Feature flags
       isFeatureEnabled: (feature: string) => {
         const featureRoles: Record<string, UserRole[]> = {
-          analytics: ['admin'],
-          'content-management': ['admin', 'creator'],
-          'user-management': ['admin'],
-          'profile-editing': ['admin', 'creator', 'user'],
-          'advanced-settings': ['admin'],
-          'content-creation': ['admin', 'creator'],
-          dashboard: ['admin', 'creator'],
+          analytics: ['owner'],
+          'content-management': ['owner', 'producer'],
+          'user-management': ['owner'],
+          'profile-editing': ['owner', 'producer', 'kasir'],
+          'advanced-settings': ['owner'],
+          'content-creation': ['owner', 'producer'],
+          dashboard: ['owner', 'producer', 'kasir'],
         }
 
         const requiredRoles = featureRoles[feature]
@@ -392,6 +502,7 @@ function useRoleErrorHandling() {
 export {
   useUserRole as default,
   useRoleGuard,
+  useRoleNavigation,
   useRoleLoadingState,
   useRoleDevelopment,
   useRoleConditional,

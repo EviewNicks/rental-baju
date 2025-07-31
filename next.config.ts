@@ -42,7 +42,13 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'cdn.dribbble.com',
+        hostname: 'pmjxdencfgkbjuyjndbp.supabase.co',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'localhost',
         port: '',
         pathname: '/**',
       },
@@ -139,6 +145,12 @@ const nextConfig = {
         },
       },
     }),
+
+  // Client-side logging untuk debugging
+  env: {
+    NEXT_PUBLIC_LOG_LEVEL: process.env.NODE_ENV === 'development' ? 'debug' : 'error',
+    NEXT_PUBLIC_ENABLE_LOGGING: process.env.NODE_ENV === 'development' ? 'true' : 'false',
+  },
 }
 
 module.exports = nextConfig

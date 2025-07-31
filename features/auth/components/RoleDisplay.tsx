@@ -17,10 +17,11 @@ import {
 } from '../hooks/useUserRole'
 
 export function RoleDisplay() {
-  const { role, isAdmin, isCreator, isUser, refreshRole } = useUserRole()
+  const { role, isOwner, isProducer, isKasir, refreshRole } = useUserRole()
   const roleGuard = useRoleGuard()
   const { isLoading, shouldShowLoader, getStatusMessage } = useRoleLoadingState()
-  const { renderForAdmin, renderForCreator, isFeatureEnabled } = useRoleConditional()
+  const { renderForOwner, renderForProducer, renderForKasir, isFeatureEnabled } =
+    useRoleConditional()
   const { hasError, getUserFriendlyError, retryRoleFetch } = useRoleErrorHandling()
 
   if (shouldShowLoader) {
@@ -59,9 +60,9 @@ export function RoleDisplay() {
             <span className="text-gray-600">Role Aktif:</span>
             <span
               className={`font-medium px-2 py-1 rounded text-xs ${
-                role === 'admin'
+                role === 'owner'
                   ? 'bg-red-100 text-red-800'
-                  : role === 'creator'
+                  : role === 'producer'
                     ? 'bg-blue-100 text-blue-800'
                     : 'bg-green-100 text-green-800'
               }`}
@@ -74,21 +75,21 @@ export function RoleDisplay() {
             <span className="text-gray-900">{getStatusMessage()}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-gray-600">Admin:</span>
-            <span className={isAdmin ? 'text-green-600' : 'text-gray-400'}>
-              {isAdmin ? '✓' : '✗'}
+            <span className="text-gray-600">Owner:</span>
+            <span className={isOwner ? 'text-green-600' : 'text-gray-400'}>
+              {isOwner ? '✓' : '✗'}
             </span>
           </div>
           <div className="flex justify-between">
-            <span className="text-gray-600">Creator:</span>
-            <span className={isCreator ? 'text-green-600' : 'text-gray-400'}>
-              {isCreator ? '✓' : '✗'}
+            <span className="text-gray-600">Producer:</span>
+            <span className={isProducer ? 'text-green-600' : 'text-gray-400'}>
+              {isProducer ? '✓' : '✗'}
             </span>
           </div>
           <div className="flex justify-between">
-            <span className="text-gray-600">User:</span>
-            <span className={isUser ? 'text-green-600' : 'text-gray-400'}>
-              {isUser ? '✓' : '✗'}
+            <span className="text-gray-600">Kasir:</span>
+            <span className={isKasir ? 'text-green-600' : 'text-gray-400'}>
+              {isKasir ? '✓' : '✗'}
             </span>
           </div>
         </div>
@@ -106,8 +107,9 @@ export function RoleDisplay() {
       <div className="p-4 border rounded-lg">
         <h3 className="font-medium text-gray-900 mb-3">Permission Examples</h3>
         <div className="space-y-2 text-sm">
-          <PermissionItem label="Akses Admin Panel" allowed={roleGuard.canAccessAdmin()} />
-          <PermissionItem label="Kelola Pengguna" allowed={roleGuard.canManageUsers()} />
+          <PermissionItem label="Akses Owner Panel" allowed={roleGuard.canAccessOwner()} />
+          <PermissionItem label="Akses Producer Panel" allowed={roleGuard.canAccessProducer()} />
+          <PermissionItem label="Akses Kasir Panel" allowed={roleGuard.canAccessKasir()} />
           <PermissionItem label="Buat Konten" allowed={roleGuard.canCreateContent()} />
           <PermissionItem label="Akses Dashboard" allowed={roleGuard.canAccessDashboard()} />
           <PermissionItem label="Lihat Analytics" allowed={roleGuard.canAccessAnalytics()} />
@@ -145,30 +147,32 @@ export function RoleDisplay() {
       <div className="p-4 border rounded-lg">
         <h3 className="font-medium text-gray-900 mb-3">Conditional Content</h3>
 
-        {renderForAdmin(
+        {renderForOwner(
           <div className="p-3 bg-red-50 border border-red-200 rounded mb-2">
-            <div className="text-red-800 font-medium">Admin-Only Content</div>
+            <div className="text-red-800 font-medium">Owner-Only Content</div>
             <div className="text-red-600 text-sm">
-              Ini hanya terlihat oleh admin. Anda dapat mengelola sistem secara penuh.
+              Ini hanya terlihat oleh owner. Anda dapat mengelola sistem secara penuh.
             </div>
           </div>,
         )}
 
-        {renderForCreator(
+        {renderForProducer(
           <div className="p-3 bg-blue-50 border border-blue-200 rounded mb-2">
-            <div className="text-blue-800 font-medium">Creator Content</div>
+            <div className="text-blue-800 font-medium">Producer Content</div>
             <div className="text-blue-600 text-sm">
-              Ini terlihat oleh admin dan creator. Anda dapat membuat dan mengedit konten.
+              Ini terlihat oleh owner dan producer. Anda dapat membuat dan mengedit konten.
             </div>
           </div>,
         )}
 
-        <div className="p-3 bg-green-50 border border-green-200 rounded">
-          <div className="text-green-800 font-medium">Public Content</div>
-          <div className="text-green-600 text-sm">
-            Ini terlihat oleh semua user yang sudah login.
-          </div>
-        </div>
+        {renderForKasir(
+          <div className="p-3 bg-green-50 border border-green-200 rounded">
+            <div className="text-green-800 font-medium">Kasir Content</div>
+            <div className="text-green-600 text-sm">
+              Ini terlihat oleh semua user yang sudah login.
+            </div>
+          </div>,
+        )}
       </div>
     </div>
   )

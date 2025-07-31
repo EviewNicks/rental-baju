@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { ThemeProvider } from 'next-themes'
 import { ClerkProvider } from '@clerk/nextjs'
 import { UserRoleProvider } from '../features/auth'
+import { QueryProvider } from '../components/providers/QueryProvider'
 import '../styles/globals.css'
 
 // Load Google Fonts via next/font/google
@@ -30,9 +31,9 @@ const firaCode = Fira_Code({
 })
 
 export const metadata: Metadata = {
-  title: 'Maguru - Platform Course Online Terdepan',
+  title: 'RentalBaju - Solusi Penyewaan Pakaian Terpercaya',
   description:
-    'Belajar skill digital terbaru dengan mentor expert di Maguru. Ribuan course berkualitas tinggi untuk mengembangkan karir Anda.',
+    'Koleksi pakaian pesta, casual, dan tradisional untuk acara spesial Anda. Temukan pakaian yang sempurna dengan kualitas premium dan harga terjangkau.',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -44,8 +45,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeProvider
           attribute="class"
           defaultTheme="light"
-          enableSystem
+          enableSystem={false}
           disableTransitionOnChange
+          forcedTheme="light"
         >
           <ClerkProvider>
             <UserRoleProvider
@@ -58,7 +60,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 enableSessionStorage: process.env.NEXT_PUBLIC_ENABLE_ROLE_CACHE !== 'false',
               }}
             >
-              {children}
+              <QueryProvider>{children}</QueryProvider>
             </UserRoleProvider>
           </ClerkProvider>
         </ThemeProvider>

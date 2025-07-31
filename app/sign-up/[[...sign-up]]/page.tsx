@@ -1,7 +1,6 @@
-'use client';
+'use client'
 
-import React from 'react';
-import { SignUp } from '@clerk/nextjs';
+import { SignUp } from '@clerk/nextjs'
 
 export default function SignUpPage() {
   return (
@@ -14,7 +13,10 @@ export default function SignUpPage() {
       </div>
 
       {/* Auth container */}
-      <div className="glass-panel p-8 rounded-lg shadow-glass w-full max-w-md relative z-10 backdrop-blur-sm">
+      <div
+        className="glass-panel p-8 rounded-lg shadow-glass w-full max-w-md relative z-10 backdrop-blur-sm"
+        data-testid="sign-up-container"
+      >
         <SignUp
           appearance={{
             elements: {
@@ -41,10 +43,9 @@ export default function SignUpPage() {
               borderRadius: '0.5rem',
             },
           }}
-          forceRedirectUrl="/dashboard"
           signInUrl="/sign-in"
         />
       </div>
     </main>
-  );
+  )
 }

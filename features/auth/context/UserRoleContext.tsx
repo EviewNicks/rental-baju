@@ -345,7 +345,7 @@ export function UserRoleProvider({
    */
   const ErrorFallback = (
     <div className="role-error-fallback">
-      <p>Role management tidak tersedia. Menggunakan role default: user</p>
+      <p>Role management tidak tersedia. Menggunakan role default: kasir</p>
     </div>
   )
 
@@ -423,7 +423,7 @@ function DevRoleSwitcher({
     return null
   }
 
-  const roles: UserRole[] = ['admin', 'creator', 'user']
+  const roles: UserRole[] = ['owner', 'producer', 'kasir']
 
   return (
     <div className="fixed bottom-4 right-4 p-4 bg-yellow-100 border border-yellow-300 rounded-lg shadow-lg z-50">

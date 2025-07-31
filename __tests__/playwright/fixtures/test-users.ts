@@ -30,6 +30,17 @@ export interface TestUser {
   username?: string // untuk sign-up tests
 }
 
+export interface RoleTestUser {
+  identifier: string
+  password: string
+  email: string
+  role: UserRole
+  displayName: string
+  dashboardUrl: string
+  allowedRoutes: string[]
+  restrictedRoutes: string[]
+}
+
 // Real test users configuration sesuai demo repo Clerk
 export const testUsers = {
   // Primary test user - sesuai demo repo format (untuk authenticated tests)
@@ -63,26 +74,60 @@ export const testUsers = {
     identifier: `weakpass+clerk_test@example.com`,
   },
 
-  // Alternative users untuk testing berbagai scenarios (opsional)
-  // Harus dibuat di Clerk Dashboard jika digunakan
-  adminUser: {
-    identifier: process.env.E2E_CLERK_ADMIN_USERNAME!,
-    password: process.env.E2E_CLERK_ADMIN_PASSWORD!,
-    role: 'admin' as const,
-    displayName: 'Admin Test User',
+  // Role-based users untuk testing authorization scenarios
+  // Harus dibuat di Clerk Dashboard dengan role yang sesuai
+  kasirUser: {
+    identifier: process.env.E2E_CLERK_KASIR_USERNAME!,
+    password: process.env.E2E_CLERK_KASIR_PASSWORD!,
+    email: process.env.E2E_CLERK_KASIR_EMAIL!,
+    role: 'kasir' as const,
+    displayName: 'Kasir Test User',
   },
-  creatorUser: {
-    identifier: process.env.E2E_CLERK_CREATOR_USERNAME!,
-    password: process.env.E2E_CLERK_CREATOR_PASSWORD!,
-    role: 'creator' as const,
-    displayName: 'Creator Test User',
+  producerUser: {
+    identifier: process.env.E2E_CLERK_PRODUCER_USERNAME!,
+    password: process.env.E2E_CLERK_PRODUCER_PASSWORD!,
+    email: process.env.E2E_CLERK_PRODUCER_EMAIL!,
+    role: 'producer' as const,
+    displayName: 'Producer Test User',
   },
-  regularUser: {
-    identifier: process.env.E2E_CLERK_USER_USERNAME!, // Same as existingUser
-    password: process.env.E2E_CLERK_USER_PASSWORD!,
-    email: process.env.E2E_CLERK_USER_EMAIL!,
-    role: 'user' as const,
-    displayName: 'Regular Test User',
+  ownerUser: {
+    identifier: process.env.E2E_CLERK_OWNER_USERNAME!,
+    password: process.env.E2E_CLERK_OWNER_PASSWORD!,
+    email: process.env.E2E_CLERK_OWNER_EMAIL!,
+    role: 'owner' as const,
+    displayName: 'Owner Test User',
+  },
+
+  // Role-based test users untuk authorization testing
+  kasir: {
+    identifier: process.env.E2E_CLERK_KASIR_USERNAME!,
+    password: process.env.E2E_CLERK_KASIR_PASSWORD!,
+    email: process.env.E2E_CLERK_KASIR_EMAIL!,
+    role: 'kasir' as const,
+    displayName: 'Kasir Test User',
+    dashboardUrl: '/dashboard',
+    allowedRoutes: ['/dashboard'],
+    restrictedRoutes: ['/producer', '/owner'],
+  },
+  producer: {
+    identifier: process.env.E2E_CLERK_PRODUCER_USERNAME!,
+    password: process.env.E2E_CLERK_PRODUCER_PASSWORD!,
+    email: process.env.E2E_CLERK_PRODUCER_EMAIL!,
+    role: 'producer' as const,
+    displayName: 'Producer Test User',
+    dashboardUrl: '/producer',
+    allowedRoutes: ['/dashboard', '/producer'],
+    restrictedRoutes: ['/owner'],
+  },
+  owner: {
+    identifier: process.env.E2E_CLERK_OWNER_USERNAME!,
+    password: process.env.E2E_CLERK_OWNER_PASSWORD!,
+    email: process.env.E2E_CLERK_OWNER_EMAIL!,
+    role: 'owner' as const,
+    displayName: 'Owner Test User',
+    dashboardUrl: '/owner',
+    allowedRoutes: ['/dashboard', '/producer', '/owner'],
+    restrictedRoutes: [],
   },
 }
 
@@ -90,9 +135,15 @@ export const testUsers = {
 export const clerkTestConfig = {
   // Environment variables yang diperlukan - sesuai demo repo
   requiredEnvVars: [
-    'E2E_CLERK_USER_USERNAME',
-    'E2E_CLERK_USER_PASSWORD',
-    'E2E_CLERK_USER_EMAIL',
+    'E2E_CLERK_KASIR_USERNAME',
+    'E2E_CLERK_KASIR_PASSWORD',
+    'E2E_CLERK_KASIR_EMAIL',
+    'E2E_CLERK_PRODUCER_USERNAME',
+    'E2E_CLERK_PRODUCER_PASSWORD',
+    'E2E_CLERK_PRODUCER_EMAIL',
+    'E2E_CLERK_OWNER_USERNAME',
+    'E2E_CLERK_OWNER_PASSWORD',
+    'E2E_CLERK_OWNER_EMAIL',
     'NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY',
     'CLERK_SECRET_KEY',
   ],
@@ -141,3 +192,29 @@ export function generateTestUsername(prefix: string = 'testuser'): string {
   const timestamp = Date.now()
   return `${prefix}${timestamp}`
 }
+
+// Access Control Configuration Matrix
+export const accessControlMatrix: Record<string, UserRole[]> = {
+  '/dashboard': ['kasir', 'producer', 'owner'],
+  '/producer': ['producer', 'owner'],
+  '/producer/manage-product': ['producer', 'owner'],
+  '/owner': ['owner'],
+}
+
+// Helper function untuk check apakah role punya akses ke route
+export function hasAccess(userRole: UserRole, route: string): boolean {
+  const allowedRoles = accessControlMatrix[route]
+  return allowedRoles?.includes(userRole) ?? false
+}
+
+// Helper function untuk get role test user berdasarkan role
+export function getRoleTestUser(role: UserRole): RoleTestUser {
+  const user = testUsers[role]
+  return {
+    ...user,
+    allowedRoutes: [...user.allowedRoutes],
+    restrictedRoutes: [...user.restrictedRoutes],
+  }
+}
+
+export default testUsers

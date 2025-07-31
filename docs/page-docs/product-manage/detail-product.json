@@ -1,0 +1,440 @@
+{
+  "prompt": "Buat komponen Product Detail Modal untuk aplikasi rental pakaian 'RentalBaju' dengan desain flat modern minimalist dan soft neumorphism. Modal ini menampilkan informasi lengkap produk dengan gambar besar, detail informasi, dan action buttons untuk edit dan delete.",
+
+  "context": {
+    "business": "RentalBaju - Sistem manajemen penyewaan pakaian untuk UMKM",
+    "user_role": "Admin/Producer yang melihat detail produk",
+    "component_purpose": "Modal untuk menampilkan detail lengkap produk dengan action buttons",
+    "tech_stack": "Next.js 14, TypeScript, Tailwind CSS, Supabase, Clerk",
+    "trigger": "Click pada row/card produk di halaman manajemen produk"
+  },
+
+  "design_system": {
+    "theme": "Flat Modern Minimalist dengan Soft Neumorphism",
+    "color_palette": {
+      "primary": "#FFD700",
+      "background": "#FFFFFF",
+      "background_secondary": "#F8FAFC",
+      "text_primary": "#111827",
+      "text_secondary": "#64748B",
+      "border": "#E2E8F0",
+      "success": "#10B981",
+      "warning": "#F59E0B",
+      "error": "#EF4444"
+    },
+    "typography": "Poppins/Inter sans-serif",
+    "spacing": "Tailwind spacing scale",
+    "shadows": {
+      "sm": "0 1px 3px 0 rgba(0, 0, 0, 0.1)",
+      "md": "0 4px 20px 0 rgba(0, 0, 0, 0.08)",
+      "lg": "0 10px 15px -3px rgba(0, 0, 0, 0.1)"
+    },
+    "border_radius": {
+      "sm": "0.375rem",
+      "md": "0.5rem",
+      "lg": "0.75rem"
+    }
+  },
+
+  "modal_structure": {
+    "type": "centered_modal",
+    "size": "max-w-4xl",
+    "backdrop": "backdrop-blur-sm bg-black/50",
+    "layout": "grid grid-cols-1 md:grid-cols-2 gap-6",
+    "sections": [
+      "Header dengan judul dan close button",
+      "Image section dengan zoom capability",
+      "Info section dengan detail produk",
+      "Action buttons di footer"
+    ]
+  },
+
+  "components": {
+    "modal_header": {
+      "title": "Detail Produk",
+      "close_button": {
+        "type": "icon_button",
+        "icon": "x",
+        "size": "sm",
+        "variant": "ghost",
+        "position": "top-right",
+        "accessibility": "aria-label='Tutup modal'"
+      },
+      "breadcrumb": {
+        "enabled": false
+      }
+    },
+
+    "image_section": {
+      "container": {
+        "aspect_ratio": "4:3",
+        "border_radius": "rounded-lg",
+        "overflow": "hidden",
+        "background": "bg-gray-100"
+      },
+      "image": {
+        "size": "w-full h-full object-cover",
+        "loading": "lazy",
+        "fallback": {
+          "icon": "image",
+          "text": "Gambar tidak tersedia",
+          "background": "bg-gray-200"
+        }
+      },
+      "zoom_capability": {
+        "enabled": true,
+        "trigger": "click",
+        "zoom_level": "1.5x",
+        "overlay": "dark_overlay"
+      },
+      "image_actions": [
+        {
+          "type": "button",
+          "label": "Lihat Gambar Besar",
+          "icon": "maximize",
+          "variant": "outline",
+          "size": "sm",
+          "action": "open_image_modal"
+        }
+      ]
+    },
+
+    "info_section": {
+      "layout": "space-y-6",
+      "sections": [
+        {
+          "title": "Informasi Dasar",
+          "fields": [
+            {
+              "key": "code",
+              "label": "Kode Produk",
+              "type": "text",
+              "value": "PRD1",
+              "style": "font-mono text-lg font-semibold text-gray-900"
+            },
+            {
+              "key": "name",
+              "label": "Nama Produk",
+              "type": "text",
+              "value": "Dress Pesta Merah",
+              "style": "text-xl font-semibold text-gray-900"
+            },
+            {
+              "key": "category",
+              "label": "Kategori",
+              "type": "badge",
+              "value": "Dress",
+              "color": "#EC4899",
+              "bg_color": "#FCE7F3",
+              "text_color": "#BE185D"
+            },
+            {
+              "key": "description",
+              "label": "Deskripsi",
+              "type": "text",
+              "value": "Dress pesta merah dengan bahan premium, cocok untuk acara formal",
+              "style": "text-gray-600 leading-relaxed"
+            }
+          ]
+        },
+        {
+          "title": "Informasi Harga",
+          "fields": [
+            {
+              "key": "modal_awal",
+              "label": "Modal Awal",
+              "type": "currency",
+              "value": 800000,
+              "format": "Rp {value}",
+              "style": "text-lg font-semibold text-gray-900"
+            },
+            {
+              "key": "harga_sewa",
+              "label": "Harga Sewa",
+              "type": "currency",
+              "value": 150000,
+              "format": "Rp {value}",
+              "style": "text-lg font-semibold text-primary"
+            }
+          ]
+        },
+        {
+          "title": "Status & Inventaris",
+          "fields": [
+            {
+              "key": "status",
+              "label": "Status",
+              "type": "badge",
+              "value": "Tersedia",
+              "color": "#10B981",
+              "bg_color": "#D1FAE5",
+              "text_color": "#065F46"
+            },
+            {
+              "key": "quantity",
+              "label": "Jumlah Stok",
+              "type": "number",
+              "value": 1,
+              "style": "text-lg font-semibold text-gray-900"
+            },
+            {
+              "key": "pendapatan",
+              "label": "Total Pendapatan",
+              "type": "currency",
+              "value": 2500000,
+              "format": "Rp {value}",
+              "style": "text-lg font-semibold text-success"
+            }
+          ]
+        },
+        {
+          "title": "Informasi Sistem",
+          "fields": [
+            {
+              "key": "created_at",
+              "label": "Dibuat Pada",
+              "type": "datetime",
+              "value": "2024-01-15T10:30:00Z",
+              "format": "dd MMM yyyy, HH:mm"
+            },
+            {
+              "key": "updated_at",
+              "label": "Terakhir Diupdate",
+              "type": "datetime",
+              "value": "2024-01-20T14:45:00Z",
+              "format": "dd MMM yyyy, HH:mm"
+            }
+          ]
+        }
+      ]
+    },
+
+    "action_buttons": {
+      "layout": "flex justify-end space-x-3",
+      "buttons": [
+        {
+          "type": "button",
+          "label": "Edit",
+          "variant": "primary",
+          "icon": "edit",
+          "action": "open_edit_modal",
+          "size": "md"
+        },
+        {
+          "type": "button",
+          "label": "Hapus",
+          "variant": "destructive",
+          "icon": "trash",
+          "action": "open_delete_confirmation",
+          "size": "md"
+        },
+        {
+          "type": "button",
+          "label": "Tutup",
+          "variant": "outline",
+          "action": "close_modal",
+          "size": "md"
+        }
+      ]
+    }
+  },
+
+  "data_structure": {
+    "product": {
+      "id": "string (UUID)",
+      "code": "string (4 chars, alphanumeric)",
+      "name": "string (max 100 chars)",
+      "description": "string (max 500 chars, optional)",
+      "category": "string (enum)",
+      "modal_awal": "number (currency)",
+      "harga_sewa": "number (currency)",
+      "quantity": "number (0-9999)",
+      "status": "enum (Tersedia, Disewa, Maintenance, Habis)",
+      "image_url": "string (optional)",
+      "pendapatan": "number (calculated)",
+      "created_at": "datetime",
+      "updated_at": "datetime"
+    }
+  },
+
+  "status_badges": {
+    "Tersedia": {
+      "color": "#10B981",
+      "bg_color": "#D1FAE5",
+      "text_color": "#065F46"
+    },
+    "Disewa": {
+      "color": "#F59E0B",
+      "bg_color": "#FEF3C7",
+      "text_color": "#92400E"
+    },
+    "Maintenance": {
+      "color": "#EF4444",
+      "bg_color": "#FEE2E2",
+      "text_color": "#991B1B"
+    },
+    "Habis": {
+      "color": "#6B7280",
+      "bg_color": "#F3F4F6",
+      "text_color": "#374151"
+    }
+  },
+
+  "category_badges": {
+    "Dress": {
+      "color": "#EC4899",
+      "bg_color": "#FCE7F3",
+      "text_color": "#BE185D"
+    },
+    "Kemeja": {
+      "color": "#3B82F6",
+      "bg_color": "#DBEAFE",
+      "text_color": "#1E40AF"
+    },
+    "Jas": {
+      "color": "#8B5CF6",
+      "bg_color": "#EDE9FE",
+      "text_color": "#5B21B6"
+    },
+    "Celana": {
+      "color": "#A16207",
+      "bg_color": "#FEF3C7",
+      "text_color": "#92400E"
+    },
+    "Aksesoris": {
+      "color": "#FFD700",
+      "bg_color": "#FEFCE8",
+      "text_color": "#A16207"
+    }
+  },
+
+  "interactions": {
+    "modal_open": {
+      "trigger": "click_row_or_card",
+      "animation": "fade_in_scale",
+      "duration": "200ms",
+      "focus_management": "first_focusable_element"
+    },
+    "modal_close": {
+      "triggers": ["click_close_button", "click_backdrop", "press_escape_key"],
+      "animation": "fade_out_scale",
+      "duration": "200ms"
+    },
+    "image_zoom": {
+      "trigger": "click_image",
+      "zoom_level": "1.5x",
+      "overlay": "dark_backdrop",
+      "close_on_click": true
+    },
+    "action_buttons": {
+      "edit": "open_edit_modal_with_data",
+      "delete": "open_delete_confirmation",
+      "close": "close_modal"
+    }
+  },
+
+  "responsive_behavior": {
+    "mobile": {
+      "breakpoint": "< 768px",
+      "layout": "single_column",
+      "modal_size": "full_screen",
+      "image_size": "w-full h-64",
+      "button_stack": "vertical"
+    },
+    "tablet": {
+      "breakpoint": "768px - 1024px",
+      "layout": "single_column",
+      "modal_size": "90_percent_width",
+      "image_size": "w-full h-80",
+      "button_layout": "horizontal"
+    },
+    "desktop": {
+      "breakpoint": "> 1024px",
+      "layout": "two_column_grid",
+      "modal_size": "max-w-4xl",
+      "image_size": "w-full h-96",
+      "button_layout": "horizontal"
+    }
+  },
+
+  "accessibility": {
+    "keyboard_navigation": true,
+    "screen_reader": "aria_labels",
+    "color_contrast": "4.5:1_minimum",
+    "focus_management": "visible_indicators",
+    "modal_announcement": "screen_reader_friendly",
+    "close_announcement": "screen_reader_friendly"
+  },
+
+  "loading_states": {
+    "modal_loading": "skeleton_loader",
+    "image_loading": "image_placeholder",
+    "data_loading": "field_skeleton_loader"
+  },
+
+  "error_states": {
+    "image_error": {
+      "fallback": "placeholder_icon",
+      "text": "Gambar tidak tersedia",
+      "style": "text-gray-500"
+    },
+    "data_error": {
+      "message": "Gagal memuat detail produk",
+      "action": "Coba Lagi"
+    }
+  },
+
+  "animations": {
+    "modal_enter": {
+      "type": "fade_in_scale",
+      "duration": "200ms",
+      "easing": "ease-out"
+    },
+    "modal_exit": {
+      "type": "fade_out_scale",
+      "duration": "200ms",
+      "easing": "ease-in"
+    },
+    "image_zoom": {
+      "type": "scale_transform",
+      "duration": "150ms",
+      "easing": "ease-out"
+    }
+  },
+
+  "performance": {
+    "lazy_loading": "image_only",
+    "image_optimization": {
+      "compression": true,
+      "webp_support": true,
+      "responsive_images": true
+    },
+    "modal_preloading": false
+  },
+
+  "api_integration": {
+    "data_fetching": {
+      "endpoint": "GET /api/products/{id}",
+      "loading_state": "skeleton_loader",
+      "error_handling": "toast_notification"
+    },
+    "actions": {
+      "edit": "navigate_to_edit_page",
+      "delete": "open_delete_confirmation",
+      "close": "close_modal"
+    }
+  },
+
+  "keyboard_shortcuts": {
+    "escape": "close_modal",
+    "enter": "trigger_primary_action",
+    "tab": "navigate_focusable_elements"
+  },
+
+  "focus_management": {
+    "on_open": "focus_first_focusable",
+    "on_close": "return_focus_to_trigger",
+    "trap_focus": true,
+    "visible_focus": true
+  }
+}
