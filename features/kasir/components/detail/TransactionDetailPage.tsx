@@ -249,7 +249,11 @@ export function TransactionDetailPage({ transactionId }: TransactionDetailPagePr
             </div>
 
             {/* Activity Timeline */}
-            <ActivityTimeline data-testid="activity-timeline" timeline={transaction.timeline} />
+            <ActivityTimeline 
+              data-testid="activity-timeline" 
+              timeline={transaction.timeline} 
+              transactionCode={transaction.transactionCode}
+            />
           </div>
 
           {/* Sidebar */}

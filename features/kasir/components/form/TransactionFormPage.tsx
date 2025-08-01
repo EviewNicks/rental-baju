@@ -11,7 +11,6 @@ import { useTransactionForm } from '../../hooks/useTransactionForm'
 import { ProductSelectionStep } from './ProductSelectionStep'
 import { CustomerBiodataStep } from './CustomerBiodataStep'
 import { PaymentSummaryStep } from './PaymentSummaryStep'
-import { useLogger } from '@/lib/client-logger'
 import { getStepValidationMessage } from '../../lib/constants/stepValidationMessages'
 import type { ProductSelection } from '../../types/product'
 
@@ -25,8 +24,7 @@ const steps = [
 export function TransactionFormPage() {
   const router = useRouter()
   const [showSuccess, setShowSuccess] = useState(false)
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
-  const log = useLogger('TransactionFormPage')
+  const [errorMessage, setErrorMessage] = useState<string | null>(null) 
 
   const {
     currentStep,
@@ -63,8 +61,7 @@ export function TransactionFormPage() {
 
   // Handle back button click - clear storage when navigating away intentionally
   const handleBackButtonClick = () => {
-    log.info('🔙 Back button clicked, clearing form storage')
-    clearFormData('back-button')
+    clearFormData()
     router.push('/dashboard')
   }
 
@@ -79,19 +76,16 @@ export function TransactionFormPage() {
 
   const handleSubmitTransaction = async () => {
     setErrorMessage(null) // Clear previous errors
-    log.info('🎯 Starting transaction submission')
     
     const success = await submitTransaction()
     
     if (success) {
-      log.info('✅ Transaction successful, showing success message')
       setShowSuccess(true)
       // Redirect after showing success message
       setTimeout(() => {
         router.push('/dashboard')
       }, 2000)
     } else {
-      log.error('❌ Transaction failed, showing error message', { createError: createError?.message })
       // Show error message based on the type of error
       if (createError) {
         setErrorMessage(createError.message || 'Terjadi kesalahan saat membuat transaksi')

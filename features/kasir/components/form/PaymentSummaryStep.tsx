@@ -14,7 +14,6 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { useLogger } from '@/lib/client-logger'
 import { Textarea } from '@/components/ui/textarea'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import type { TransactionFormData } from '../../types/transaction-form'
@@ -42,7 +41,6 @@ export function PaymentSummaryStep({
   onPrev,
   isSubmitting,
 }: PaymentSummaryStepProps) {
-  const log = useLogger('PaymentSummaryStep')
   const [paymentDisplayValue, setPaymentDisplayValue] = useState('')
 
   // Format number to Indonesian currency display (Rp 200.000)
@@ -111,8 +109,6 @@ export function PaymentSummaryStep({
   const handleSubmit = async () => {
     const success = await onSubmit()
     if (success) {
-      // Handle success (e.g., show success message, redirect)
-      log.info('Transaction submitted successfully!', { totalAmount })
     }
   }
 
@@ -122,7 +118,10 @@ export function PaymentSummaryStep({
   return (
     <div className="max-w-4xl mx-auto space-y-6" data-testid="payment-summary-layout">
       {/* Order Summary */}
-      <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-6 space-y-6" data-testid="order-summary-section">
+      <div
+        className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-6 space-y-6"
+        data-testid="order-summary-section"
+      >
         <div className="flex items-center gap-2 text-xl font-bold text-gray-900">
           <ShoppingBag className="h-6 w-6" />
           Ringkasan Pesanan
@@ -273,22 +272,35 @@ export function PaymentSummaryStep({
           className="grid grid-cols-1 md:grid-cols-3 gap-4"
           data-testid="payment-method-selection"
         >
-          <div className="flex items-center space-x-3 border border-gray-200 rounded-lg p-4" data-testid="payment-method-cash">
+          <div
+            className="flex items-center space-x-3 border border-gray-200 rounded-lg p-4"
+            data-testid="payment-method-cash"
+          >
             <RadioGroupItem value="cash" id="cash" data-testid="payment-method-cash-radio" />
             <Label htmlFor="cash" className="flex items-center gap-2 cursor-pointer">
               <Banknote className="h-5 w-5" />
               Tunai
             </Label>
           </div>
-          <div className="flex items-center space-x-3 border border-gray-200 rounded-lg p-4" data-testid="payment-method-qris">
+          <div
+            className="flex items-center space-x-3 border border-gray-200 rounded-lg p-4"
+            data-testid="payment-method-qris"
+          >
             <RadioGroupItem value="qris" id="qris" data-testid="payment-method-qris-radio" />
             <Label htmlFor="qris" className="flex items-center gap-2 cursor-pointer">
               <Smartphone className="h-5 w-5" />
               QRIS
             </Label>
           </div>
-          <div className="flex items-center space-x-3 border border-gray-200 rounded-lg p-4" data-testid="payment-method-transfer">
-            <RadioGroupItem value="transfer" id="transfer" data-testid="payment-method-transfer-radio" />
+          <div
+            className="flex items-center space-x-3 border border-gray-200 rounded-lg p-4"
+            data-testid="payment-method-transfer"
+          >
+            <RadioGroupItem
+              value="transfer"
+              id="transfer"
+              data-testid="payment-method-transfer-radio"
+            />
             <Label htmlFor="transfer" className="flex items-center gap-2 cursor-pointer">
               <CreditCard className="h-5 w-5" />
               Transfer Bank

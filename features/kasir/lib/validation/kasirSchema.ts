@@ -140,7 +140,7 @@ export const transaksiQuerySchema = z.object({
 
 // Payment Validation Schema
 export const createPembayaranSchema = z.object({
-  transaksiId: z.string().uuid('ID transaksi tidak valid'),
+  transaksiKode: z.string().min(1, 'Kode transaksi tidak boleh kosong'),
   jumlah: z.number().positive('Jumlah pembayaran harus lebih dari 0'),
   metode: z.enum(['tunai', 'transfer', 'kartu']),
   referensi: z.string().max(100, 'Referensi maksimal 100 karakter').optional(),

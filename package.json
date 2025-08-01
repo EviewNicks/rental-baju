@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "app": "prisma generate && next dev --turbopack",
+    "app": " next dev --turbopack",
     "app:prod": "cross-env APP_ENV=prod next dev --turbopack",
     "build": "prisma generate && next build",
     "build:analyze": "ANALYZE=true next build",

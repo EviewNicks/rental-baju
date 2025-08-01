@@ -30,7 +30,7 @@ interface ProductDetailCardProps {
 
 export function ProductDetailCard({ item, pickupInfo }: ProductDetailCardProps) {
   const logger = useLogger('ProductDetailCard')
-  
+
   // Log product item data for debugging
   logger.debug('ProductDetailCard rendered', {
     productId: item.product.id,
@@ -40,10 +40,12 @@ export function ProductDetailCard({ item, pickupInfo }: ProductDetailCardProps) 
     duration: item.duration,
     subtotal: item.subtotal,
     hasPickupInfo: !!pickupInfo,
-    pickupStatus: pickupInfo ? {
-      jumlahDiambil: pickupInfo.jumlahDiambil,
-      remainingQuantity: pickupInfo.remainingQuantity,
-    } : null,
+    pickupStatus: pickupInfo
+      ? {
+          jumlahDiambil: pickupInfo.jumlahDiambil,
+          remainingQuantity: pickupInfo.remainingQuantity,
+        }
+      : null,
     productDetails: {
       hasCategory: !!item.product.category,
       hasSize: !!item.product.size,
@@ -72,20 +74,24 @@ export function ProductDetailCard({ item, pickupInfo }: ProductDetailCardProps) 
 
         <div className="flex-1 space-y-4">
           <div>
-            <h3 className="text-xl font-semibold text-gray-900 leading-tight">{item.product.name}</h3>
+            <h3 className="text-xl font-semibold text-gray-900 leading-tight">
+              {item.product.name}
+            </h3>
             {item.product.description && (
-              <p className="text-sm text-gray-600 mt-2 leading-relaxed">{item.product.description}</p>
+              <p className="text-sm text-gray-600 mt-2 leading-relaxed">
+                {item.product.description}
+              </p>
             )}
           </div>
 
           <div className="flex flex-wrap gap-2">
             {item.product.category && (
-              <Badge 
-                variant="outline" 
+              <Badge
+                variant="outline"
                 className={cn(
-                  "text-xs font-medium border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100",
-                  "transition-colors duration-200"
-                )} 
+                  'text-xs font-medium border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100',
+                  'transition-colors duration-200',
+                )}
                 aria-label={`Kategori: ${item.product.category}`}
               >
                 <Tag className="h-3 w-3 mr-1.5" aria-hidden="true" />
@@ -93,12 +99,12 @@ export function ProductDetailCard({ item, pickupInfo }: ProductDetailCardProps) 
               </Badge>
             )}
             {item.product.size && (
-              <Badge 
-                variant="outline" 
+              <Badge
+                variant="outline"
                 className={cn(
-                  "text-xs font-medium border-green-200 bg-green-50 text-green-700 hover:bg-green-100",
-                  "transition-colors duration-200"
-                )} 
+                  'text-xs font-medium border-green-200 bg-green-50 text-green-700 hover:bg-green-100',
+                  'transition-colors duration-200',
+                )}
                 aria-label={`Ukuran: ${item.product.size}`}
               >
                 <Shirt className="h-3 w-3 mr-1.5" aria-hidden="true" />
@@ -106,12 +112,12 @@ export function ProductDetailCard({ item, pickupInfo }: ProductDetailCardProps) 
               </Badge>
             )}
             {item.product.color && (
-              <Badge 
-                variant="outline" 
+              <Badge
+                variant="outline"
                 className={cn(
-                  "text-xs font-medium border-purple-200 bg-purple-50 text-purple-700 hover:bg-purple-100",
-                  "transition-colors duration-200"
-                )} 
+                  'text-xs font-medium border-purple-200 bg-purple-50 text-purple-700 hover:bg-purple-100',
+                  'transition-colors duration-200',
+                )}
                 aria-label={`Warna: ${item.product.color}`}
               >
                 <Palette className="h-3 w-3 mr-1.5" aria-hidden="true" />
@@ -119,9 +125,9 @@ export function ProductDetailCard({ item, pickupInfo }: ProductDetailCardProps) 
               </Badge>
             )}
             {!item.product.category && !item.product.size && !item.product.color && (
-              <Badge 
-                variant="outline" 
-                className="text-xs text-gray-500 border-gray-200 bg-gray-50" 
+              <Badge
+                variant="outline"
+                className="text-xs text-gray-500 border-gray-200 bg-gray-50"
                 aria-label="Informasi produk tidak tersedia"
               >
                 <Package className="h-3 w-3 mr-1.5" aria-hidden="true" />
@@ -160,26 +166,46 @@ export function ProductDetailCard({ item, pickupInfo }: ProductDetailCardProps) 
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50/80 rounded-lg border border-gray-100">
             <div className="text-center md:text-left">
-              <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Jumlah</div>
-              <div className="text-lg font-bold text-gray-900" aria-label={`Jumlah: ${item.quantity} pieces`}>
+              <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                Jumlah
+              </div>
+              <div
+                className="text-lg font-bold text-gray-900"
+                aria-label={`Jumlah: ${item.quantity} pieces`}
+              >
                 {item.quantity}x
               </div>
             </div>
             <div className="text-center md:text-left">
-              <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Harga/Hari</div>
-              <div className="text-lg font-bold text-gray-900" aria-label={`Harga per hari: ${formatCurrency(item.pricePerDay)}`}>
+              <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                Harga/Hari
+              </div>
+              <div
+                className="text-lg font-bold text-gray-900"
+                aria-label={`Harga per hari: ${formatCurrency(item.pricePerDay)}`}
+              >
                 {formatCurrency(item.pricePerDay)}
               </div>
             </div>
             <div className="text-center md:text-left">
-              <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Durasi</div>
-              <div className="text-lg font-bold text-gray-900" aria-label={`Durasi sewa: ${item.duration} hari`}>
+              <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                Durasi
+              </div>
+              <div
+                className="text-lg font-bold text-gray-900"
+                aria-label={`Durasi sewa: ${item.duration} hari`}
+              >
                 {item.duration} hari
               </div>
             </div>
             <div className="text-center md:text-left">
-              <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Subtotal</div>
-              <div className="text-lg font-bold text-yellow-600" aria-label={`Subtotal: ${formatCurrency(item.subtotal)}`}>
+              <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                Subtotal
+              </div>
+              <div
+                className="text-lg font-bold text-yellow-600"
+                aria-label={`Subtotal: ${formatCurrency(item.subtotal)}`}
+              >
                 {formatCurrency(item.subtotal)}
               </div>
             </div>

@@ -12,7 +12,6 @@ import type { Customer, CustomerFormData } from '../../types/customer'
 import { useCreatePenyewa } from '../../hooks/usePenyewa'
 import type { CreatePenyewaRequest } from '../../types/api'
 import { KasirApiError } from '../../api'
-import { useLogger } from '@/lib/client-logger'
 // import { toast } from '@/hooks/use-toast' // TODO: Add toast implementation
 
 interface CustomerRegistrationModalProps {
@@ -35,7 +34,6 @@ export function CustomerRegistrationModal({
   })
   const [errors, setErrors] = useState<Partial<CustomerFormData>>({})
   const [serverErrors, setServerErrors] = useState<Record<string, string>>({})
-  const log = useLogger('CustomerRegistrationModal')
   
   // Real API integration
   const { 
@@ -101,7 +99,6 @@ export function CustomerRegistrationModal({
         }
 
         // Show success message
-        log.info('Penyewa berhasil ditambahkan', { customerName: createdPenyewa.nama, customerId: createdPenyewa.id })
 
         onCustomerRegistered(newCustomer)
 
@@ -117,7 +114,6 @@ export function CustomerRegistrationModal({
         setServerErrors({})
       },
       onError: (error) => {
-        log.error('Failed to register customer', { error: error.message })
         
         // Handle validation errors from server
         if (error instanceof KasirApiError && error.validationErrors) {
@@ -147,7 +143,6 @@ export function CustomerRegistrationModal({
         }
         
         // Show general error message
-        log.error('Gagal menambahkan penyewa', { errorMessage: error.message || 'Terjadi kesalahan saat menyimpan data penyewa' })
       },
     })
   }

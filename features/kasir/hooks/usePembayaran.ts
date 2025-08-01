@@ -35,7 +35,7 @@ export function useCreatePembayaran() {
       transaksiQueries.forEach(([queryKey, queryData]) => {
         if (queryData && typeof queryData === 'object' && 'id' in queryData) {
           const transaction = queryData as Record<string, unknown>
-          if (transaction.id === variables.transaksiId) {
+          if (transaction.kode === variables.transaksiKode) {
             // Update the transaction with new payment
             queryClient.setQueryData(queryKey, {
               ...transaction,
@@ -63,7 +63,7 @@ export function useUpdatePembayaran() {
       data 
     }: { 
       id: string
-      data: Partial<Omit<CreatePembayaranRequest, 'transaksiId'>>
+      data: Partial<Omit<CreatePembayaranRequest, 'transaksiKode'>>
     }) => kasirApi.pembayaran.update(id, data),
     onSuccess: () => {
       // Invalidate all related queries
@@ -92,7 +92,7 @@ export function usePembayaranOperations() {
 
   // Helper function to process payment with validation
   const processPayment = async (
-    transaksiId: string,
+    transaksiKode: string,
     jumlah: number,
     metode: 'tunai' | 'transfer' | 'kartu',
     referensi?: string,
@@ -103,7 +103,7 @@ export function usePembayaranOperations() {
     }
 
     const paymentData: CreatePembayaranRequest = {
-      transaksiId,
+      transaksiKode,
       jumlah,
       metode,
       referensi,

@@ -102,7 +102,7 @@ describe('PembayaranService', () => {
 
   describe('createPembayaran', () => {
     const validCreateRequest: CreatePembayaranRequest = {
-      transaksiId: 'transaksi-1',
+      transaksiKode: 'TRX-2025-001',
       jumlah: 100000,
       metode: 'tunai',
       referensi: 'REF-001',
@@ -180,7 +180,7 @@ describe('PembayaranService', () => {
       const result = await pembayaranService.createPembayaran(validCreateRequest)
 
       expect(mockPrisma.transaksi.findUnique).toHaveBeenCalledWith({
-        where: { id: validCreateRequest.transaksiId },
+        where: { kode: validCreateRequest.transaksiKode },
         include: {
           penyewa: {
             select: { nama: true, telepon: true }

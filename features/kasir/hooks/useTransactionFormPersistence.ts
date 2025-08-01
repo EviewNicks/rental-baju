@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useRef } from 'react'
 import type { TransactionFormData } from '../types/transaction-form'
-import { logger } from '@/lib/client-logger'
 
 const STORAGE_KEY = 'transaction-form-draft'
 const STORAGE_VERSION = '1.0'
@@ -189,27 +188,21 @@ export function useTransactionFormPersistence() {
         const success = SafeStorage.save(STORAGE_KEY, dataToSave)
         if (success) {
           lastSavedRef.current = dataString
-          
         }
       }
     }, 1000) // 1 second debounce
   }, [])
 
   // Clear persisted data
-  const clearFormData = useCallback(
-    (reason: 'back-button' | 'form-reset' | 'successful-submission' = 'form-reset') => {
-      logger.info('🗑️ Clearing persisted form data', { reason }, 'useTransactionFormPersistence')
+  const clearFormData = useCallback(() => {
+    SafeStorage.remove(STORAGE_KEY)
+    lastSavedRef.current = ''
 
-      SafeStorage.remove(STORAGE_KEY)
-      lastSavedRef.current = ''
-
-      // Clear debounce timer
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current)
-      }
-    },
-    [],
-  )
+    // Clear debounce timer
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current)
+    }
+  }, [])
 
   // Cleanup on unmount
   useEffect(() => {

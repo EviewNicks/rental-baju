@@ -166,7 +166,7 @@ export interface TransaksiListResponse {
 
 // Payment API Types
 export interface CreatePembayaranRequest {
-  transaksiId: string
+  transaksiKode: string
   jumlah: number
   metode: PaymentMethod
   referensi?: string

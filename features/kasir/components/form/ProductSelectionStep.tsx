@@ -11,7 +11,6 @@ import { useAvailableProducts } from '../../hooks/useProduk'
 import { formatCurrency } from '../../lib/utils'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
-import { useLogger } from '@/lib/client-logger'
 
 interface ProductSelectionStepProps {
   selectedProducts: ProductSelection[]
@@ -29,8 +28,7 @@ export function ProductSelectionStep({
   onUpdateQuantity,
   onNext,
   canProceed,
-}: ProductSelectionStepProps) {
-  const log = useLogger('ProductSelectionStep')
+}: ProductSelectionStepProps) { 
   const [filters, setFilters] = useState<ProductFilters>({
     category: 'semua',
     size: 'semua',
@@ -43,12 +41,7 @@ export function ProductSelectionStep({
 
   // Debug logging for props
   useEffect(() => {
-    log.debug(`📋 ProductSelectionStep props`, {
-      selectedProductsCount: selectedProducts.length,
-      canProceed,
-      selectedProducts: selectedProducts.map(p => ({ id: p.product.id, name: p.product.name, quantity: p.quantity }))
-    })
-  }, [selectedProducts, canProceed, log])
+  }, [selectedProducts, canProceed])
 
   // Fetch products from API
   const { 
@@ -63,20 +56,11 @@ export function ProductSelectionStep({
 
   // Debug API loading state
   useEffect(() => {
-    log.debug(`🌐 API State`, {
-      isLoading,
-      hasError: !!error,
-      errorMessage: error?.message,
-      hasData: !!productsResponse,
-      dataCount: productsResponse?.data?.length || 0,
-      searchQuery
-    })
-  }, [isLoading, error, productsResponse, searchQuery, log])
+  }, [isLoading, error, productsResponse, searchQuery])
 
   // Extract products and transform API data to match component interface
   const apiProducts = useMemo(() => {
     if (!productsResponse?.data) {
-      log.debug(`🔍 No products data available`, { productsResponse })
       return []
     }
     
@@ -93,20 +77,8 @@ export function ProductSelectionStep({
       availableQuantity: apiProduct.availableQuantity,
     }))
 
-    log.debug(`📦 Products transformed`, {
-      originalCount: productsResponse.data.length,
-      transformedCount: transformedProducts.length,
-      availableCount: transformedProducts.filter(p => p.available).length,
-      firstProduct: transformedProducts[0] ? {
-        id: transformedProducts[0].id,
-        name: transformedProducts[0].name,
-        available: transformedProducts[0].available,
-        pricePerDay: transformedProducts[0].pricePerDay
-      } : null
-    })
-    
     return transformedProducts
-  }, [productsResponse, log])
+  }, [productsResponse])
 
   // Extract unique categories, sizes, and colors from API data
   const categories = useMemo(() => {
@@ -171,30 +143,14 @@ export function ProductSelectionStep({
   }
 
   const handleAddProduct = (product: Product, quantity: number) => {
-    log.info(`🛒 Adding product to cart`, {
-      productId: product.id,
-      productName: product.name,
-      quantity,
-      currentSelectedCount: selectedProducts.length
-    })
 
     // Check if product is already in cart
     const existingProduct = selectedProducts.find((item) => item.product.id === product.id)
 
     if (existingProduct) {
-      log.debug(`📈 Updating existing product quantity`, {
-        productId: product.id,
-        oldQuantity: existingProduct.quantity,
-        newQuantity: existingProduct.quantity + quantity
-      })
       // Update quantity if product already exists
       onUpdateQuantity(product.id, existingProduct.quantity + quantity)
     } else {
-      log.debug(`✨ Adding new product to cart`, {
-        productId: product.id,
-        productName: product.name,
-        quantity
-      })
       // Add new product
       onAddProduct(product, quantity)
     }
