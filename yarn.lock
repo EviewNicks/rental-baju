@@ -1031,15 +1031,14 @@
     "@types/tough-cookie" "^4.0.5"
     tough-cookie "^4.1.4"
 
-"@clerk/backend@^2.4.1":
-  version "2.6.1"
-  resolved "https://registry.yarnpkg.com/@clerk/backend/-/backend-2.6.1.tgz#f6421d968f3c0399c5e605839ccfc2eda27e8748"
-  integrity sha512-8Loy5jUJ3VMoKhO9lA7KObQarozAYdYMHNkQcJ2fFUrkPNwTRDdz+GzY7qHmkM5iGBPycrw5VqDy2ObPzT+Nnw==
+"@clerk/backend@^2.4.1", "@clerk/backend@^2.6.2":
+  version "2.6.2"
+  resolved "https://registry.yarnpkg.com/@clerk/backend/-/backend-2.6.2.tgz#866bbc1555c94a0ebb2bc920ae85d1567e915b9f"
+  integrity sha512-IUTjLmA1QkqoJnB97S8Ay/oeFR1QtBxxzi9V2J8zncGdUUpAHRp9PfbUwe203VEZuoDD8n6PGfK4oiiq5CoKhQ==
   dependencies:
-    "@clerk/shared" "^3.16.0"
-    "@clerk/types" "^4.71.0"
+    "@clerk/shared" "^3.17.0"
+    "@clerk/types" "^4.72.0"
     cookie "1.0.2"
-    snakecase-keys "9.0.2"
     standardwebhooks "^1.0.0"
     tslib "2.8.1"
 
@@ -1064,32 +1063,32 @@
     server-only "0.0.1"
     tslib "2.8.1"
 
-"@clerk/shared@^3.11.0", "@clerk/shared@^3.16.0":
-  version "3.16.0"
-  resolved "https://registry.yarnpkg.com/@clerk/shared/-/shared-3.16.0.tgz#2f1eec1aad74bb3df3d3bafbc0beba39557e3f10"
-  integrity sha512-jzaa7mnFszxWn0xPBu9tBmHQl3iTLMuHbTjOPWkEdz6/1rdPYWaUfCudMhv2p7Zv9YPesn3Nyui6BZ1nygxMig==
+"@clerk/shared@^3.11.0", "@clerk/shared@^3.16.0", "@clerk/shared@^3.17.0":
+  version "3.17.0"
+  resolved "https://registry.yarnpkg.com/@clerk/shared/-/shared-3.17.0.tgz#859e439802ef1e00ca29608f0f3b14b3689e3734"
+  integrity sha512-eYbA0xmKG1DluFmdVykXiElgZGTpCruEyXmIBAwokpxypd5nOpDsS1xvEKwYvZieLTZkFz21Z3Y6HdDI5cPxBQ==
   dependencies:
-    "@clerk/types" "^4.71.0"
+    "@clerk/types" "^4.72.0"
     dequal "2.0.3"
     glob-to-regexp "0.4.1"
     js-cookie "3.0.5"
     std-env "^3.9.0"
     swr "2.3.4"
 
-"@clerk/testing@1.9.3":
-  version "1.9.3"
-  resolved "https://registry.yarnpkg.com/@clerk/testing/-/testing-1.9.3.tgz#779216d8dae0aeeb6769c759cacefa59012ac4bf"
-  integrity sha512-nEKUr5iRCIX7ftEbKeVmPEuW7jgXluDr7/BM8CgiVfAM/84N3aaqK8N2svVXEkow5cGJWoCgufwrTEVdMFtopw==
+"@clerk/testing@1.10.9":
+  version "1.10.9"
+  resolved "https://registry.yarnpkg.com/@clerk/testing/-/testing-1.10.9.tgz#a9e54f2cec896b10fca761cb72bcf4168d36f3f9"
+  integrity sha512-BDRCgMyHLMrDj+z8ewo0rykp57sNDc7uPtBor1vMGUmw0WE12ju/BevWTACYKByXulOR4vVn76sz3/wZT4Ec1w==
   dependencies:
-    "@clerk/backend" "^2.4.1"
-    "@clerk/shared" "^3.11.0"
-    "@clerk/types" "^4.64.0"
-    dotenv "16.4.7"
+    "@clerk/backend" "^2.6.2"
+    "@clerk/shared" "^3.17.0"
+    "@clerk/types" "^4.72.0"
+    dotenv "17.2.0"
 
-"@clerk/types@^4.64.0", "@clerk/types@^4.71.0":
-  version "4.71.0"
-  resolved "https://registry.yarnpkg.com/@clerk/types/-/types-4.71.0.tgz#66a72d61270429061e5329f25f9f189d8688c4c0"
-  integrity sha512-QsZEIzx9AFTXAjcGc+aQ+k0TjzXTqi2EpScl36w187xhO3+CWXuk/tZai8IdVclp091+KmQKd8ayxuKnhg3QYQ==
+"@clerk/types@^4.64.0", "@clerk/types@^4.71.0", "@clerk/types@^4.72.0":
+  version "4.72.0"
+  resolved "https://registry.yarnpkg.com/@clerk/types/-/types-4.72.0.tgz#7731b68c333419d461e557676dd630241c5817b8"
+  integrity sha512-SEkgiQNeTstC0/mQjHCGBEyX0/ALyWAa5QZBBvVOok204r48MLipfIKsXQhyWE2Hk6FIo5WT6YyqD36jaxUEIw==
   dependencies:
     csstype "3.1.3"
 
@@ -3694,11 +3693,6 @@ chalk@^4.0.0, chalk@^4.1.2:
     ansi-styles "^4.1.0"
     supports-color "^7.1.0"
 
-change-case@^5.4.4:
-  version "5.4.4"
-  resolved "https://registry.yarnpkg.com/change-case/-/change-case-5.4.4.tgz#0d52b507d8fb8f204343432381d1a6d7bff97a02"
-  integrity sha512-HRQyTk2/YPEkt9TnUPbOpr64Uw3KOicFWPVBb+xiHvd6eBx/qPr9xqfBFDT8P2vWsvvz4jbEkfDe71W3VyNu2w==
-
 char-regex@^1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/char-regex/-/char-regex-1.0.2.tgz#d744358226217f981ed58f479b1d6bcc29545dcf"
@@ -4070,10 +4064,10 @@ dot-case@^3.0.4:
     no-case "^3.0.4"
     tslib "^2.0.3"
 
-dotenv@16.4.7:
-  version "16.4.7"
-  resolved "https://registry.yarnpkg.com/dotenv/-/dotenv-16.4.7.tgz#0e20c5b82950140aa99be360a8a5f52335f53c26"
-  integrity sha512-47qPchRCykZC03FhkYAhrvwU4xDBFIj1QPqaarj6mdM/hgUzfPHcpkHJOn3mJAufFeeAxAzeGsr5X0M4k6fLZQ==
+dotenv@17.2.0:
+  version "17.2.0"
+  resolved "https://registry.yarnpkg.com/dotenv/-/dotenv-17.2.0.tgz#e19678fdabcf86d4bfdb6764a758d7d44efbb6a2"
+  integrity sha512-Q4sgBT60gzd0BB0lSyYD3xM4YxrXA9y4uBDof1JNYGzOXrQdQ6yX+7XIAqoFOGQFOTK1D3Hts5OllpxMDZFONQ==
 
 dunder-proto@^1.0.0, dunder-proto@^1.0.1:
   version "1.0.1"
@@ -6001,11 +5995,6 @@ makeerror@1.0.12:
   dependencies:
     tmpl "1.0.5"
 
-map-obj@^5.0.2:
-  version "5.0.2"
-  resolved "https://registry.yarnpkg.com/map-obj/-/map-obj-5.0.2.tgz#174ad9f7e5e4e777a219126d9a734ff3e14a1c68"
-  integrity sha512-K6K2NgKnTXimT3779/4KxSvobxOtMmx1LBZ3NwRxT/MDIR3Br/fQ4Q+WCX5QxjyUR8zg5+RV9Tbf2c5pAWTD2A==
-
 math-intrinsics@^1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/math-intrinsics/-/math-intrinsics-1.1.0.tgz#a0dd74be81e2aa5c2f27e65ce283605ee4e2b7f9"
@@ -6973,15 +6962,6 @@ snake-case@^3.0.4:
     dot-case "^3.0.4"
     tslib "^2.0.3"
 
-snakecase-keys@9.0.2:
-  version "9.0.2"
-  resolved "https://registry.yarnpkg.com/snakecase-keys/-/snakecase-keys-9.0.2.tgz#41a80ec43f131016bc4b4698e135ef41d7e39b23"
-  integrity sha512-Tr4gONsDj1Pa6HJH9D3b411r6tuRyCGgb1l7YpzDFp/thjVSWs7rcbNjyTyRqJi5SUV23sFpzf9epIJRbLR6Yw==
-  dependencies:
-    change-case "^5.4.4"
-    map-obj "^5.0.2"
-    type-fest "^4.15.0"
-
 source-map-js@^1.0.1, source-map-js@^1.0.2, source-map-js@^1.2.1:
   version "1.2.1"
   resolved "https://registry.yarnpkg.com/source-map-js/-/source-map-js-1.2.1.tgz#1ce5650fddd87abc099eda37dcff024c2667ae46"
@@ -7422,7 +7402,7 @@ type-fest@^0.21.3:
   resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-0.21.3.tgz#d260a24b0198436e133fa26a524a6d65fa3b2e37"
   integrity sha512-t0rzBq87m3fVcduHDUFhKmyyX+9eo6WQjZvf51Ea/M0Q7+T374Jp1aUiyUl0GKxp8M/OETVHSDvmkyPgvX+X2w==
 
-type-fest@^4.15.0, type-fest@^4.26.1:
+type-fest@^4.26.1:
   version "4.41.0"
   resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-4.41.0.tgz#6ae1c8e5731273c2bf1f58ad39cbae2c91a46c58"
   integrity sha512-TeTSQ6H5YHvpqVwBRcnLDCBnDOHWYu7IvGbHT6N8AOymcr9PJGjc1GTtiWZTYg0NCgYwvnYWEkVChQAr9bjfwA==
