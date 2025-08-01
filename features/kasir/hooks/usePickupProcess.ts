@@ -2,6 +2,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/react-query'
+import { logger } from '@/lib/client-logger'
 import { KasirApiError } from '../api'
 
 /**
@@ -35,6 +36,12 @@ async function processPickup(
   transactionCode: string,
   data: PickupRequest
 ): Promise<PickupResponse> {
+  logger.info('🚀 Pickup API call starting', {
+    transactionCode,
+    itemsCount: data.items.length,
+    totalQuantity: data.items.reduce((sum, item) => sum + item.jumlahDiambil, 0)
+  })
+
   const response = await fetch(`/api/kasir/transaksi/${transactionCode}/ambil`, {
     method: 'PATCH',
     headers: {
@@ -51,12 +58,25 @@ async function processPickup(
       message: result.message || 'Gagal memproses pickup',
     }
     
+    logger.error('❌ Pickup API call failed', {
+      transactionCode,
+      status: response.status,
+      errorCode: error.code,
+      errorMessage: error.message
+    })
+    
     throw new KasirApiError(
       error.code,
       error.message,
       error.details
     )
   }
+
+  logger.info('✅ Pickup API call successful', {
+    transactionCode,
+    success: result.success,
+    message: result.message
+  })
 
   return result
 }
@@ -71,7 +91,12 @@ export function usePickupProcess(transactionCode: string) {
   return useMutation({
     mutationFn: (data: PickupRequest) => processPickup(transactionCode, data),
     
-    onMutate: async () => {
+    onMutate: async (data) => {
+      logger.debug('🔄 Pickup mutation starting', {
+        transactionCode,
+        itemsCount: data.items.length
+      })
+
       // Cancel any outgoing refetches for transaction detail
       await queryClient.cancelQueries({
         queryKey: queryKeys.kasir.transaksi.detail(transactionCode)
@@ -82,6 +107,11 @@ export function usePickupProcess(transactionCode: string) {
         queryKeys.kasir.transaksi.detail(transactionCode)
       )
 
+      logger.debug('📸 Transaction snapshot taken for rollback', {
+        transactionCode,
+        hasSnapshot: !!previousTransaction
+      })
+
       // Optimistically update the pickup quantities
       // This would require more complex logic to update the cached data
       // For now, we'll rely on refetch after success
@@ -91,18 +121,31 @@ export function usePickupProcess(transactionCode: string) {
     },
 
     onError: (error, _, context) => {
+      logger.error('💥 Pickup mutation failed', {
+        transactionCode,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        hasRollbackData: !!context?.previousTransaction
+      })
+
       // Roll back to previous state if needed
       if (context?.previousTransaction) {
         queryClient.setQueryData(
           queryKeys.kasir.transaksi.detail(transactionCode),
           context.previousTransaction
         )
+        logger.debug('🔙 Rolled back to previous transaction state', {
+          transactionCode
+        })
       }
-
-      console.error('Pickup failed:', error)
     },
 
     onSuccess: (data) => {
+      logger.info('🎉 Pickup mutation successful', {
+        transactionCode,
+        message: data.message,
+        success: data.success
+      })
+
       // Invalidate and refetch transaction detail to get updated data
       queryClient.invalidateQueries({
         queryKey: queryKeys.kasir.transaksi.detail(transactionCode)
@@ -113,7 +156,10 @@ export function usePickupProcess(transactionCode: string) {
         queryKey: queryKeys.kasir.transaksi.lists()
       })
 
-      console.log('Pickup successful:', data.message)
+      logger.debug('🔄 Cache invalidated after successful pickup', {
+        transactionCode,
+        keys: ['transaction.detail', 'transaction.lists']
+      })
     },
 
     onSettled: () => {

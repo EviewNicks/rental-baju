@@ -91,9 +91,14 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
           id: item.produk.id,
           code: item.produk.code,
           name: item.produk.name,
-          imageUrl: item.produk.imageUrl
+          imageUrl: item.produk.imageUrl,
+          // Add missing product fields
+          size: item.produk.size || null,
+          color: item.produk.color?.name || null,
+          category: item.produk.category?.name || null
         },
         jumlah: item.jumlah,
+        jumlahDiambil: item.jumlahDiambil || 0,
         hargaSewa: Number(item.hargaSewa),
         durasi: item.durasi,
         subtotal: Number(item.subtotal),
@@ -274,9 +279,14 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
           id: item.produk.id,
           code: item.produk.code,
           name: item.produk.name,
-          imageUrl: item.produk.imageUrl
+          imageUrl: item.produk.imageUrl,
+          // Add missing product fields
+          size: item.produk.size || null,
+          color: item.produk.color?.name || null,
+          category: item.produk.category?.name || null
         },
         jumlah: item.jumlah,
+        jumlahDiambil: item.jumlahDiambil || 0,
         hargaSewa: Number(item.hargaSewa),
         durasi: item.durasi,
         subtotal: Number(item.subtotal),

@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { CheckCircle, Package, AlertCircle, Minus, Plus } from 'lucide-react'
 import { usePickupProcess, usePickupValidation, getPickupErrorMessage } from '../../hooks/usePickupProcess'
+import { useLogger } from '@/lib/client-logger'
 import type { PickupItemRequest } from '../../hooks/usePickupProcess'
 import type { TransactionDetail } from '../../types/transaction-detail'
 
@@ -34,6 +35,7 @@ export function PickupModal({ isOpen, onClose, transaction }: PickupModalProps) 
   const [pickupItems, setPickupItems] = useState<PickupItemState[]>([])
   const [showSuccess, setShowSuccess] = useState(false)
   const [showConfirmation, setShowConfirmation] = useState(false)
+  const logger = useLogger('PickupModal')
 
   const { mutate: processPickup, isPending, error, isSuccess, data, reset } = 
     usePickupProcess(transaction.transactionCode)
@@ -42,13 +44,28 @@ export function PickupModal({ isOpen, onClose, transaction }: PickupModalProps) 
 
   // Initialize pickup items from transaction data
   useEffect(() => {
-    if (isOpen && transaction.products) {
+    let isEffectActive = true // Prevent state updates if component unmounts
+
+    if (isOpen && transaction.products && isEffectActive) {
+      logger.info('🚀 Initializing pickup modal', {
+        transactionCode: transaction.transactionCode,
+        productsCount: transaction.products.length
+      })
+
       // Transform transaction products to pickup items using real TransaksiItem IDs
       const items: PickupItemState[] = transaction.products.map((product) => {
         const totalQuantity = product.quantity
-        // For now, assuming no items picked up yet - this will be replaced with actual API data
-        const alreadyPickedUp = 0 
+        // Use actual pickup data from API response
+        const alreadyPickedUp = product.jumlahDiambil || 0 
         const remainingQuantity = totalQuantity - alreadyPickedUp
+        
+        logger.debug('📦 Processing product for pickup', {
+          productId: product.id,
+          productName: product.product.name,
+          totalQuantity,
+          alreadyPickedUp,
+          remainingQuantity
+        })
         
         return {
           id: product.id, // Use actual TransaksiItem.id for pickup operations
@@ -61,7 +78,20 @@ export function PickupModal({ isOpen, onClose, transaction }: PickupModalProps) 
         }
       })
       
-      setPickupItems(items)
+      if (isEffectActive) {
+        logger.info('✅ Pickup items initialized', {
+          transactionCode: transaction.transactionCode,
+          itemsCount: items.length,
+          totalAvailableForPickup: items.reduce((sum, item) => sum + item.remainingQuantity, 0)
+        })
+        
+        setPickupItems(items)
+      }
+    }
+
+    // Cleanup function for React Strict Mode
+    return () => {
+      isEffectActive = false
     }
   }, [isOpen, transaction])
 
@@ -133,6 +163,18 @@ export function PickupModal({ isOpen, onClose, transaction }: PickupModalProps) 
 
   const handleConfirmPickup = () => {
     const selectedItems = getSelectedItems()
+    
+    logger.info('🔄 Processing pickup request', {
+      transactionCode: transaction.transactionCode,
+      selectedItemsCount: selectedItems.length,
+      totalQuantity: selectedItems.reduce((sum, item) => sum + item.jumlahDiambil, 0),
+      items: selectedItems.map(item => ({
+        id: item.id,
+        productName: item.productName,
+        quantity: item.jumlahDiambil
+      }))
+    })
+    
     processPickup({
       items: selectedItems.map(item => ({
         id: item.id,
@@ -142,6 +184,11 @@ export function PickupModal({ isOpen, onClose, transaction }: PickupModalProps) 
   }
 
   const handleClose = () => {
+    logger.debug('🔚 Closing pickup modal', {
+      transactionCode: transaction.transactionCode,
+      wasSuccessful: showSuccess || isSuccess
+    })
+    
     setShowSuccess(false)
     setShowConfirmation(false)
     setPickupItems([])
@@ -296,7 +343,11 @@ export function PickupModal({ isOpen, onClose, transaction }: PickupModalProps) 
             <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4 flex items-start gap-2">
               <AlertCircle className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
               <div className="text-sm text-red-700">
-                {getPickupErrorMessage(error)}
+                <div className="font-medium mb-1">Terjadi Kesalahan</div>
+                <div>{getPickupErrorMessage(error)}</div>
+                <div className="mt-2 text-xs text-red-600">
+                  Silakan coba lagi atau hubungi administrator jika masalah berlanjut.
+                </div>
               </div>
             </div>
           )}
@@ -371,6 +422,7 @@ export function PickupModal({ isOpen, onClose, transaction }: PickupModalProps) 
             <Button
               variant="outline"
               onClick={handleClose}
+              disabled={isPending}
               className="flex-1"
             >
               Batal
@@ -378,9 +430,16 @@ export function PickupModal({ isOpen, onClose, transaction }: PickupModalProps) 
             <Button
               onClick={validateAndProceed}
               disabled={getTotalSelectedQuantity() === 0 || isPending}
-              className="flex-1 bg-green-600 hover:bg-green-700"
+              className="flex-1 bg-green-600 hover:bg-green-700 disabled:opacity-50"
             >
-              {isPending ? 'Memproses...' : `Pickup ${getTotalSelectedQuantity()} Item`}
+              {isPending ? (
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <span>Memproses...</span>
+                </div>
+              ) : (
+                `Pickup ${getTotalSelectedQuantity()} Item`
+              )}
             </Button>
           </div>
         </div>

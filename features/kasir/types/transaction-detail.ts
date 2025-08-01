@@ -8,6 +8,7 @@ export interface TransactionDetail extends Transaction {
     id: string // TransaksiItem.id - needed for pickup operations
     product: Product
     quantity: number
+    jumlahDiambil?: number // How many items have been picked up
     pricePerDay: number
     duration: number
     subtotal: number

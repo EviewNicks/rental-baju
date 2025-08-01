@@ -317,15 +317,16 @@ async function transformApiToUI(apiData: TransaksiResponse): Promise<Transaction
         product: {
           id: item.produk.id,
           name: item.produk.name,
-          category: '', // Not included in transaction item data
-          size: '', // Not included in transaction item data
-          color: '', // Not included in transaction item data
+          category: item.produk.category || '', // Now available from API response
+          size: item.produk.size || '', // Now available from API response
+          color: item.produk.color || '', // Now available from API response
           pricePerDay: item.hargaSewa,
           image: item.produk.imageUrl || '/products/placeholder.png',
           available: false, // Item is currently rented
           description: '', // Not included in transaction item data
         },
         quantity: item.jumlah,
+        jumlahDiambil: item.jumlahDiambil || 0, // Pickup status from API response
         pricePerDay: item.hargaSewa,
         duration: item.durasi,
         subtotal: item.subtotal,

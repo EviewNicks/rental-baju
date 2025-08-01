@@ -30,6 +30,15 @@ export interface TransaksiWithDetails extends Transaksi {
       code: string
       name: string
       imageUrl?: string | null
+      size?: string | null
+      color?: {
+        id: string
+        name: string
+      } | null
+      category?: {
+        id: string
+        name: string
+      } | null
     }
     jumlah: number
     jumlahDiambil: number
@@ -224,7 +233,20 @@ export class TransaksiService {
                 id: true,
                 code: true,
                 name: true,
-                imageUrl: true
+                imageUrl: true,
+                size: true,
+                color: {
+                  select: {
+                    id: true,
+                    name: true
+                  }
+                },
+                category: {
+                  select: {
+                    id: true,
+                    name: true
+                  }
+                }
               }
             }
           }
@@ -267,7 +289,20 @@ export class TransaksiService {
                 id: true,
                 code: true,
                 name: true,
-                imageUrl: true
+                imageUrl: true,
+                size: true,
+                color: {
+                  select: {
+                    id: true,
+                    name: true
+                  }
+                },
+                category: {
+                  select: {
+                    id: true,
+                    name: true
+                  }
+                }
               }
             }
           }

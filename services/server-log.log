@@ -1,103 +1,32 @@
- GET /api/kasir/penyewa?limit=20 200 in 1535ms
- │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 611ms (cache skip)
- │ │ Cache skipped reason: (auto no cache)
- POST /api/kasir/transaksi 201 in 9603ms
-[PAYMENT_CREATE] Starting payment transaction for TXN-20250801-011
-[PAYMENT_CREATE] Payment record created: 9120f036-8689-4f00-8281-8c61e049d778
-[PAYMENT_CREATE] Transaction amounts updated for TXN-20250801-011
-[PAYMENT_CREATE] Activity log created: 38956968-58e6-46c1-a227-eda0034a7181
-[PAYMENT_CREATE] Activity verification successful: 38956968-58e6-46c1-a227-eda0034a7181
-[PAYMENT_CREATE] Payment transaction completed for TXN-20250801-011
-[PAYMENT_VERIFY] Activity verification successful after 0 retries
-[AUDIT] {
-  "entityType": "pembayaran",
-  "entityId": "9120f036-8689-4f00-8281-8c61e049d778",
-  "action": "create",
-  "newData": {
-    "id": "9120f036-8689-4f00-8281-8c61e049d778",
-    "transaksiId": "234e2e9a-4af7-463d-9874-191ba45711ee",
-    "jumlah": "500000",
-    "metode": "tunai",
-    "referensi": null,
-    "catatan": "Pembayaran awal transaksi",
-    "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
-    "createdAt": "2025-08-01T13:10:42.400Z",
-    "transaksi": {
-      "id": "234e2e9a-4af7-463d-9874-191ba45711ee",
-      "kode": "TXN-20250801-011",
-      "penyewa": {
-        "nama": "NInja",
-        "telepon": "087463296331"
-      },
-      "totalHarga": "900000",
-      "jumlahBayar": "500000",
-      "sisaBayar": "400000",
-      "status": "active"
-    }
-  },
-  "metadata": {
-    "operation": "payment_creation",
-    "transactionCode": "TXN-20250801-011",
-    "amount": 500000,
-    "method": "tunai"
-  },
-  "userId": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
-  "userRole": "kasir",
-  "timestamp": "2025-08-01T13:10:45.681Z"
-}
-[PAYMENT_CREATE] Payment creation process completed for TXN-20250801-011
- POST /api/kasir/pembayaran 201 in 6140ms
- GET /dashboard 200 in 165ms
- GET /api/kasir/transaksi?page=1&limit=100 200 in 2457ms
- GET /dashboard/transaction/TXN-20250801-011 200 in 3910ms
- GET /api/kasir/transaksi/TXN-20250801-011 200 in 3351ms
- │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 879ms (cache skip)
- │ │ Cache skipped reason: (auto no cache)
-[PAYMENT_CREATE] Starting payment transaction for TXN-20250801-011
-[PAYMENT_CREATE] Payment record created: 3ec676a8-a4be-4afb-997f-3328f6c84de5
-[PAYMENT_CREATE] Transaction amounts updated for TXN-20250801-011
-[PAYMENT_CREATE] Activity log created: b5eac006-b5c1-4e6e-82aa-c3839db8b2e4
-[PAYMENT_CREATE] Activity verification successful: b5eac006-b5c1-4e6e-82aa-c3839db8b2e4
-[PAYMENT_CREATE] Payment transaction completed for TXN-20250801-011
-[PAYMENT_VERIFY] Activity verification successful after 0 retries
-[AUDIT] {
-  "entityType": "pembayaran",
-  "entityId": "3ec676a8-a4be-4afb-997f-3328f6c84de5",
-  "action": "create",
-  "newData": {
-    "id": "3ec676a8-a4be-4afb-997f-3328f6c84de5",
-    "transaksiId": "234e2e9a-4af7-463d-9874-191ba45711ee",
-    "jumlah": "400000",
-    "metode": "tunai",
-    "referensi": null,
-    "catatan": null,
-    "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
-    "createdAt": "2025-08-01T13:11:18.723Z",
-    "transaksi": {
-      "id": "234e2e9a-4af7-463d-9874-191ba45711ee",
-      "kode": "TXN-20250801-011",
-      "penyewa": {
-        "nama": "NInja",
-        "telepon": "087463296331"
-      },
-      "totalHarga": "900000",
-      "jumlahBayar": "900000",
-      "sisaBayar": "0",
-      "status": "active"
-    }
-  },
-  "metadata": {
-    "operation": "payment_creation",
-    "transactionCode": "TXN-20250801-011",
-    "amount": 400000,
-    "method": "tunai"
-  },
-  "userId": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
-  "userRole": "kasir",
-  "timestamp": "2025-08-01T13:11:21.744Z"
-}
-[PAYMENT_CREATE] Payment creation process completed for TXN-20250801-011
- POST /api/kasir/pembayaran 201 in 5586ms
- GET /api/kasir/transaksi/TXN-20250801-011 200 in 3030ms
- │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 524ms (cache skip)
- │ │ Cache skipped reason: (auto no cache)
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 2205ms
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 2756ms
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 2563ms
+ ○ Compiling /dashboard/transaction/[kode] ...
+ ✓ Compiled /dashboard/transaction/[kode] in 1821ms
+ GET /dashboard/transaction/TXN-20250801-011 200 in 2833ms
+ ○ Compiling /api/kasir/transaksi/[kode] ...
+ ✓ Compiled /api/kasir/transaksi/[kode] in 651ms
+ GET /api/kasir/transaksi/TXN-20250801-011 200 in 5938ms
+ ✓ Compiled in 2.6s
+ ✓ Compiled in 2.8s
+ GET /api/kasir/transaksi/TXN-20250801-011 401 in 117ms
+ GET /api/kasir/transaksi/TXN-20250801-011 401 in 140ms
+ ✓ Compiled in 3s
+ ✓ Compiled in 3.1s
+ ✓ Compiled in 2.3s
+ ✓ Compiled in 2.5s
+ ✓ Compiled in 3.7s
+ GET /dashboard 200 in 374ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 253ms
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 3771ms
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 2566ms
+ GET /dashboard/transaction/TXN-20250801-011 200 in 517ms
+ GET /api/kasir/transaksi/TXN-20250801-011 200 in 4225ms
+ ○ Compiling /api/kasir/transaksi/[kode]/ambil ...
+ ✓ Compiled /api/kasir/transaksi/[kode]/ambil in 806ms
+ PATCH /api/kasir/transaksi/TXN-20250801-011/ambil 200 in 11497ms
+ GET /api/kasir/transaksi/TXN-20250801-011 200 in 3695ms
+ GET /api/kasir/transaksi/TXN-20250801-011 200 in 3270ms
+ PATCH /api/kasir/transaksi/TXN-20250801-011/ambil 200 in 10040ms
+ GET /api/kasir/transaksi/TXN-20250801-011 200 in 4129ms
+ GET /api/kasir/transaksi/TXN-20250801-011 200 in 3442ms
