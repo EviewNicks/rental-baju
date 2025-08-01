@@ -28,7 +28,7 @@
     "env:validate": "tsx -e \"const { validateEnvSafe } = require('./lib/env-validation.ts'); const result = validateEnvSafe(); if (!result.success) { console.error(result.error); process.exit(1); } console.log('✅ Environment validation passed');\""
   },
   "dependencies": {
-    "@clerk/nextjs": "6.24.0",
+    "@clerk/nextjs": "6.28.1",
     "@hookform/resolvers": "^5.1.1",
     "@prisma/client": "6.11.1",
     "@radix-ui/react-alert-dialog": "^1.1.14",
