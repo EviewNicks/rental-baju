@@ -71,6 +71,21 @@ export function useCreateTransaksi() {
         newTransaksi
       )
       
+      // 🔥 FIX: Invalidate specific transaction detail to ensure fresh data
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.kasir.transaksi.detail(newTransaksi.kode),
+      })
+      
+      // 🔥 FIX: Invalidate transformed cache used by PaymentSummaryCard
+      queryClient.invalidateQueries({
+        queryKey: [...queryKeys.kasir.transaksi.detail(newTransaksi.kode), 'transformed'],
+      })
+      
+      // 🔥 FIX: Invalidate payment cache for this transaction
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.kasir.pembayaran.byTransaksi(newTransaksi.id),
+      })
+      
       // Also invalidate dashboard stats as they may have changed
       queryClient.invalidateQueries({
         queryKey: queryKeys.kasir.dashboard.stats(),

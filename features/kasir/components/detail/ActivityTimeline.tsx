@@ -1,6 +1,7 @@
 import { Clock, CheckCircle, AlertTriangle, DollarSign, Package, MessageCircle } from 'lucide-react'
 import type { ActivityLog } from '../../types/transaction-detail'
 import { formatDate } from '../../lib/utils'
+import { useLogger } from '@/lib/client-logger'
 
 interface ActivityTimelineProps {
   timeline: ActivityLog[]
@@ -28,6 +29,34 @@ const actionColors = {
 }
 
 export function ActivityTimeline({ timeline, 'data-testid': dataTestId }: ActivityTimelineProps) {
+  const logger = useLogger('ActivityTimeline')
+  
+  // Log activity timeline data for debugging
+  logger.debug('ActivityTimeline rendered', {
+    timelineLength: timeline.length,
+    activities: timeline.map(activity => ({
+      id: activity.id,
+      action: activity.action,
+      description: activity.description,
+      timestamp: activity.timestamp,
+      performedBy: activity.performedBy,
+      hasDetails: !!activity.details,
+    })),
+  })
+  
+  if (!timeline || timeline.length === 0) {
+    logger.warn('ActivityTimeline: No activities to display')
+    return (
+      <div data-testid={dataTestId} className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-6">Riwayat Aktivitas</h2>
+        <div className="text-center py-8 text-gray-500">
+          <Clock className="h-8 w-8 mx-auto mb-3 text-gray-400" />
+          <p>Belum ada aktivitas tercatat</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div data-testid={dataTestId} className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-6">
       <h2 className="text-lg font-semibold text-gray-900 mb-6">Riwayat Aktivitas</h2>
@@ -36,6 +65,15 @@ export function ActivityTimeline({ timeline, 'data-testid': dataTestId }: Activi
         {timeline.map((activity, index) => {
           const Icon = actionIcons[activity.action] || Clock
           const colorClass = actionColors[activity.action] || 'text-gray-600 bg-gray-100'
+
+          // Log each activity item rendering
+          logger.debug(`Rendering activity item ${index + 1}`, {
+            id: activity.id,
+            action: activity.action,
+            iconFound: !!actionIcons[activity.action],
+            colorClass,
+            description: activity.description,
+          })
 
           return (
             <div key={activity.id} className="flex items-start gap-4">

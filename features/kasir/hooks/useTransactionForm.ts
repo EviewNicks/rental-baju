@@ -7,6 +7,7 @@ import type { ProductSelection } from '../types/product'
 import type { CreateTransaksiRequest, UpdateTransaksiRequest } from '../types/api'
 import { useCreateTransaksi } from './useTransaksi'
 import { useTransactionFormPersistence } from './useTransactionFormPersistence'
+import { useCreatePembayaran } from './usePembayaran'
 import { logger } from '@/lib/client-logger'
 import { KasirApi } from '../api'
 import { useMutation } from '@tanstack/react-query'
@@ -40,10 +41,8 @@ export function useTransactionForm() {
   // Real API integration
   const createTransaksiMutation = useCreateTransaksi()
   
-  // Payment creation mutation
-  const createPembayaranMutation = useMutation({
-    mutationFn: (data: CreatePembayaranRequest) => KasirApi.createPembayaran(data),
-  })
+  // 🔥 FIX: Use proper payment hook with cache invalidation
+  const createPembayaranMutation = useCreatePembayaran()
   
   // Transaction rollback mutation
   const updateTransaksiMutation = useMutation({

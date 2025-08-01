@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge'
 import { formatCurrency } from '../../lib/utils'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
+import { useLogger } from '@/lib/client-logger'
 
 interface ProductDetailCardProps {
   item: {
@@ -28,6 +29,30 @@ interface ProductDetailCardProps {
 }
 
 export function ProductDetailCard({ item, pickupInfo }: ProductDetailCardProps) {
+  const logger = useLogger('ProductDetailCard')
+  
+  // Log product item data for debugging
+  logger.debug('ProductDetailCard rendered', {
+    productId: item.product.id,
+    productName: item.product.name,
+    quantity: item.quantity,
+    pricePerDay: item.pricePerDay,
+    duration: item.duration,
+    subtotal: item.subtotal,
+    hasPickupInfo: !!pickupInfo,
+    pickupStatus: pickupInfo ? {
+      jumlahDiambil: pickupInfo.jumlahDiambil,
+      remainingQuantity: pickupInfo.remainingQuantity,
+    } : null,
+    productDetails: {
+      hasCategory: !!item.product.category,
+      hasSize: !!item.product.size,
+      hasColor: !!item.product.color,
+      hasImage: !!item.product.image,
+      hasDescription: !!item.product.description,
+    },
+  })
+
   return (
     <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-6 shadow-lg shadow-gray-900/5 transition-all duration-200">
       <div className="flex items-start gap-4">

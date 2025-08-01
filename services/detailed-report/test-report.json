@@ -1,73 +1,167 @@
 {
-  "numTotalTests": 6,
-  "numPassedTests": 6,
+  "numTotalTests": 14,
+  "numPassedTests": 14,
   "numFailedTests": 0,
   "numPendingTests": 0,
-  "startTime": "2025-07-31T13:09:15.980Z",
-  "endTime": "2025-07-31T13:09:19.645Z",
+  "startTime": "2025-08-01T06:41:26.335Z",
+  "endTime": "2025-08-01T06:41:27.942Z",
   "testResults": [
     {
-      "testFilePath": "D:\\.work\\rental-software\\features\\kasir\\hooks\\usePickupProcess.test.ts",
+      "testFilePath": "D:\\.work\\rental-software\\features\\kasir\\services\\transaksiService.test.ts",
       "testFileResults": [
         {
           "ancestorTitles": [
-            "usePickupProcess"
+            "TransaksiService",
+            "createTransaksi"
           ],
-          "fullName": "usePickupProcess should handle successful pickup",
+          "fullName": "TransaksiService createTransaksi should create transaksi successfully with auto-generated code",
           "status": "passed",
-          "title": "should handle successful pickup",
+          "title": "should create transaksi successfully with auto-generated code",
           "failureMessages": [],
-          "duration": 76
+          "duration": 5
         },
         {
           "ancestorTitles": [
-            "usePickupProcess"
+            "TransaksiService",
+            "createTransaksi"
           ],
-          "fullName": "usePickupProcess should handle failed pickup",
+          "fullName": "TransaksiService createTransaksi should throw error if penyewa not found",
           "status": "passed",
-          "title": "should handle failed pickup",
+          "title": "should throw error if penyewa not found",
           "failureMessages": [],
-          "duration": 88
+          "duration": 16
         },
         {
           "ancestorTitles": [
-            "usePickupValidation"
+            "TransaksiService",
+            "createTransaksi"
           ],
-          "fullName": "usePickupValidation should validate pickup items correctly",
+          "fullName": "TransaksiService createTransaksi should throw error if product not available",
           "status": "passed",
-          "title": "should validate pickup items correctly",
+          "title": "should throw error if product not available",
           "failureMessages": [],
-          "duration": 4
+          "duration": 0
         },
         {
           "ancestorTitles": [
-            "usePickupValidation"
+            "TransaksiService",
+            "createTransaksi"
           ],
-          "fullName": "usePickupValidation should reject excessive pickup quantities",
+          "fullName": "TransaksiService createTransaksi should throw error if insufficient product quantity",
           "status": "passed",
-          "title": "should reject excessive pickup quantities",
+          "title": "should throw error if insufficient product quantity",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService",
+            "getTransaksiById"
+          ],
+          "fullName": "TransaksiService getTransaksiById should return transaksi by ID",
+          "status": "passed",
+          "title": "should return transaksi by ID",
           "failureMessages": [],
           "duration": 2
         },
         {
           "ancestorTitles": [
-            "usePickupValidation"
+            "TransaksiService",
+            "getTransaksiById"
           ],
-          "fullName": "usePickupValidation should reject zero quantities",
+          "fullName": "TransaksiService getTransaksiById should throw error if transaksi not found",
           "status": "passed",
-          "title": "should reject zero quantities",
+          "title": "should throw error if transaksi not found",
           "failureMessages": [],
           "duration": 1
         },
         {
           "ancestorTitles": [
-            "usePickupValidation"
+            "TransaksiService",
+            "getTransaksiByCode"
           ],
-          "fullName": "usePickupValidation should require at least one item for pickup",
+          "fullName": "TransaksiService getTransaksiByCode should return transaksi by code",
           "status": "passed",
-          "title": "should require at least one item for pickup",
+          "title": "should return transaksi by code",
           "failureMessages": [],
-          "duration": 2
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService",
+            "getTransaksiList"
+          ],
+          "fullName": "TransaksiService getTransaksiList should return paginated transaksi list",
+          "status": "passed",
+          "title": "should return paginated transaksi list",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService",
+            "getTransaksiList"
+          ],
+          "fullName": "TransaksiService getTransaksiList should filter by status",
+          "status": "passed",
+          "title": "should filter by status",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService",
+            "getTransaksiList"
+          ],
+          "fullName": "TransaksiService getTransaksiList should search by code or penyewa name",
+          "status": "passed",
+          "title": "should search by code or penyewa name",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService",
+            "updateTransaksiStatus"
+          ],
+          "fullName": "TransaksiService updateTransaksiStatus should update transaksi status successfully",
+          "status": "passed",
+          "title": "should update transaksi status successfully",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService",
+            "updateTransaksiStatus"
+          ],
+          "fullName": "TransaksiService updateTransaksiStatus should throw error if transaksi not found",
+          "status": "passed",
+          "title": "should throw error if transaksi not found",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService",
+            "updateTransaksiStatus"
+          ],
+          "fullName": "TransaksiService updateTransaksiStatus should validate status transitions",
+          "status": "passed",
+          "title": "should validate status transitions",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService",
+            "getTransaksiStats"
+          ],
+          "fullName": "TransaksiService getTransaksiStats should return transaction statistics",
+          "status": "passed",
+          "title": "should return transaction statistics",
+          "failureMessages": [],
+          "duration": 0
         }
       ],
       "failureMessage": null

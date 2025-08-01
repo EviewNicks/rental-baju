@@ -11,79 +11,42 @@ interface PaymentSummaryCardProps {
   'data-testid'?: string
 }
 
-export function PaymentSummaryCard({ transaction, payments, penalties, 'data-testid': dataTestId }: PaymentSummaryCardProps) {
+export function PaymentSummaryCard({
+  transaction,
+  payments,
+  penalties,
+  'data-testid': dataTestId,
+}: PaymentSummaryCardProps) {
   // 🛡️ Phase 2: Data validation
   const validPayments = Array.isArray(payments) ? payments : []
   const validPenalties = Array.isArray(penalties) ? penalties : []
   const validTransaction = transaction || { totalAmount: 0 }
-
-  // 🔍 Debug logging - Phase 1
-  console.log('🔍 PaymentSummaryCard Debug:', {
-    transaction: {
-      id: validTransaction.id,
-      totalAmount: validTransaction.totalAmount,
-      totalAmountType: typeof validTransaction.totalAmount,
-    },
-    payments: validPayments.map(p => ({
-      id: p.id,
-      amount: p.amount,
-      amountType: typeof p.amount,
-      method: p.method,
-    })),
-    paymentsLength: validPayments.length,
-    penalties: validPenalties.map(p => ({
-      id: p.id,
-      amount: p.amount,
-      amountType: typeof p.amount,
-    })),
-    penaltiesLength: validPenalties.length,
-  })
 
   // 🛡️ Phase 2: Safe calculations with validation
   const totalPaid = validPayments.reduce((sum, payment) => {
     const amount = Number(payment.amount) || 0
     return sum + amount
   }, 0)
-  
+
   const totalPenalties = validPenalties.reduce((sum, penalty) => {
     const amount = Number(penalty.amount) || 0
     return sum + amount
   }, 0)
-  
+
   const transactionAmount = Number(validTransaction.totalAmount) || 0
   const grandTotal = transactionAmount + totalPenalties
   const remainingBalance = grandTotal - totalPaid
 
-  // 🔍 Debug calculated values
-  console.log('🔍 PaymentSummary Calculations:', {
-    totalPaid,
-    totalPaidType: typeof totalPaid,
-    totalPenalties,
-    transactionAmount,
-    grandTotal,
-    remainingBalance,
-    isValidData: {
-      hasPayments: validPayments.length > 0,
-      hasValidAmount: transactionAmount > 0,
-      calculationsOk: !isNaN(grandTotal) && !isNaN(remainingBalance),
-    }
-  })
-
   // 🔧 Phase 3: Monitor prop changes and re-rendering
-  useEffect(() => {
-    console.log('🔧 PaymentSummaryCard re-rendered with:', {
-      transactionId: validTransaction.id,
-      paymentsCount: validPayments.length,
-      totalAmount: transactionAmount,
-      calculatedTotalPaid: totalPaid,
-    })
-  }, [validTransaction.id, validPayments.length, transactionAmount, totalPaid])
+  useEffect(() => {}, [validTransaction.id, validPayments.length, transactionAmount, totalPaid])
 
   // 🛡️ Phase 3: Loading state and error handling
   if (!validTransaction || typeof validTransaction.totalAmount === 'undefined') {
-    console.log('⚠️ PaymentSummaryCard: Invalid transaction data', validTransaction)
     return (
-      <div data-testid={dataTestId} className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-6">
+      <div
+        data-testid={dataTestId}
+        className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-6"
+      >
         <div className="flex items-center gap-2 text-gray-500">
           <CreditCard className="h-5 w-5" />
           <h3 className="text-lg font-semibold">Memuat Pembayaran...</h3>
@@ -93,7 +56,10 @@ export function PaymentSummaryCard({ transaction, payments, penalties, 'data-tes
   }
 
   return (
-    <div data-testid={dataTestId} className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-6 space-y-6">
+    <div
+      data-testid={dataTestId}
+      className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-6 space-y-6"
+    >
       <div className="flex items-center gap-2">
         <CreditCard className="h-5 w-5 text-gray-700" />
         <h3 className="text-lg font-semibold text-gray-900">Ringkasan Pembayaran</h3>

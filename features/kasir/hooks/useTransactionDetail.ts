@@ -5,6 +5,7 @@ import { queryKeys } from '@/lib/react-query'
 import { kasirApi } from '../api'
 import type { TransactionDetail } from '../types/transaction-detail'
 import type { TransaksiResponse } from '../types/api'
+import { logger } from '@/lib/client-logger'
 
 interface UseTransactionDetailOptions {
   enabled?: boolean
@@ -21,6 +22,12 @@ export function useTransactionDetail(
 ) {
   const { enabled = true, refetchInterval } = options
 
+  logger.debug('useTransactionDetail hook initialized', {
+    transactionId,
+    enabled,
+    refetchInterval,
+  }, 'useTransactionDetail')
+
   // Fetch transaction detail with React Query
   const {
     data: apiData,
@@ -30,10 +37,13 @@ export function useTransactionDetail(
     isRefetching,
   } = useQuery({
     queryKey: queryKeys.kasir.transaksi.detail(transactionId),
-    queryFn: () => kasirApi.transaksi.getByKode(transactionId),
+    queryFn: () => {
+      logger.info('Fetching transaction detail from API', { transactionId }, 'useTransactionDetail')
+      return kasirApi.transaksi.getByKode(transactionId)
+    },
     enabled: enabled && !!transactionId,
     refetchInterval,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 30 * 1000, // 🔥 FIX: 30 seconds for real-time payment updates
     gcTime: 10 * 60 * 1000, // 10 minutes
     retry: (failureCount, error: unknown) => {
       // Don't retry on client errors (4xx)
@@ -86,9 +96,27 @@ export function useTransactionDetail(
     isLoading: isTransforming,
   } = useQuery({
     queryKey: [...queryKeys.kasir.transaksi.detail(transactionId), 'transformed'],
-    queryFn: () => transformApiToUI(apiData!),
+    queryFn: async () => {
+      logger.debug('Transforming API data to UI format', {
+        hasApiData: !!apiData,
+        transactionId,
+        apiDataKeys: apiData ? Object.keys(apiData) : null,
+      }, 'useTransactionDetail')
+      
+      const transformed = await transformApiToUI(apiData!)
+      
+      logger.info('Transaction data transformation completed', {
+        transactionId,
+        transformedKeys: Object.keys(transformed),
+        paymentsCount: transformed.payments?.length || 0,
+        productsCount: transformed.products?.length || 0,
+        timelineCount: transformed.timeline?.length || 0,
+      }, 'useTransactionDetail')
+      
+      return transformed
+    },
     enabled: !!apiData,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 30 * 1000, // 🔥 FIX: 30 seconds for real-time payment updates
     gcTime: 10 * 60 * 1000,
   })
 
@@ -118,9 +146,34 @@ export function useTransactionDetail(
  * Uses existing transaction item data with product information
  */
 async function transformApiToUI(apiData: TransaksiResponse): Promise<TransactionDetail> {
+  logger.debug('Starting API to UI transformation', {
+    apiData: {
+      id: apiData.id,
+      kode: apiData.kode,
+      status: apiData.status,
+      itemsCount: apiData.items?.length || 0,
+      pembayaranCount: apiData.pembayaran?.length || 0,
+      aktivitasCount: apiData.aktivitas?.length || 0,
+    }
+  }, 'transformApiToUI')
+
   // Use items from transaction data - API returns items array, not fullItems
   const items = apiData.items || []
-  return {
+  
+  logger.debug('Processing transaction items', {
+    itemsCount: items.length,
+    items: items.map(item => ({
+      id: item.id,
+      produktId: item.produk.id,
+      produktName: item.produk.name,
+      jumlah: item.jumlah,
+      jumlahDiambil: item.jumlahDiambil,
+      hargaSewa: item.hargaSewa,
+      subtotal: item.subtotal,
+    }))
+  }, 'transformApiToUI')
+
+  const transformed: TransactionDetail = {
     id: apiData.id,
     transactionCode: apiData.kode,
     customerName: apiData.penyewa.nama,
@@ -201,6 +254,16 @@ async function transformApiToUI(apiData: TransaksiResponse): Promise<Transaction
     // Penalties - not available in current API, would need enhancement
     penalties: [],
   }
+
+  logger.debug('Transformation completed', {
+    transformedId: transformed.id,
+    transformedCode: transformed.transactionCode,
+    paymentsCount: transformed.payments.length,
+    productsCount: transformed.products.length,
+    timelineCount: transformed.timeline.length,
+  }, 'transformApiToUI')
+
+  return transformed
 }
 
 /**

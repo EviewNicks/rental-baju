@@ -22,7 +22,6 @@ class SafeStorage {
 
   static save(key: string, data: unknown): boolean {
     if (!this.isAvailable()) {
-      logger.warn('SessionStorage not available, skipping save', { key }, 'SafeStorage')
       return false
     }
 
@@ -30,39 +29,26 @@ class SafeStorage {
       const payload = {
         version: STORAGE_VERSION,
         timestamp: Date.now(),
-        data
+        data,
       }
       sessionStorage.setItem(key, JSON.stringify(payload))
-      logger.debug('Data saved to sessionStorage', { key, dataKeys: Object.keys(data as Record<string, unknown>) }, 'SafeStorage')
       return true
-    } catch (error) {
-      logger.error('Failed to save to sessionStorage', { key, error: error instanceof Error ? error.message : 'Unknown error' }, 'SafeStorage')
+    } catch {
       return false
     }
   }
 
   static load<T>(key: string): T | null {
-    if (!this.isAvailable()) {
-      logger.warn('SessionStorage not available, skipping load', { key }, 'SafeStorage')
-      return null
-    }
-
     try {
       const stored = sessionStorage.getItem(key)
       if (!stored) {
-        logger.debug('No data found in sessionStorage', { key }, 'SafeStorage')
         return null
       }
 
       const payload = JSON.parse(stored)
-      
+
       // Version check for future compatibility
       if (payload.version !== STORAGE_VERSION) {
-        logger.warn('Storage version mismatch, clearing old data', { 
-          key, 
-          storedVersion: payload.version, 
-          currentVersion: STORAGE_VERSION 
-        }, 'SafeStorage')
         this.remove(key)
         return null
       }
@@ -71,15 +57,12 @@ class SafeStorage {
       const age = Date.now() - payload.timestamp
       const maxAge = 24 * 60 * 60 * 1000 // 24 hours
       if (age > maxAge) {
-        logger.info('Stored data expired, clearing', { key, age: Math.round(age / 1000 / 60) + ' minutes' }, 'SafeStorage')
         this.remove(key)
         return null
       }
 
-      logger.debug('Data loaded from sessionStorage', { key, age: Math.round(age / 1000) + 's' }, 'SafeStorage')
       return payload.data
-    } catch (error) {
-      logger.error('Failed to load from sessionStorage', { key, error: error instanceof Error ? error.message : 'Unknown error' }, 'SafeStorage')
+    } catch {
       this.remove(key) // Clear corrupted data
       return null
     }
@@ -92,10 +75,8 @@ class SafeStorage {
 
     try {
       sessionStorage.removeItem(key)
-      logger.debug('Data removed from sessionStorage', { key }, 'SafeStorage')
       return true
-    } catch (error) {
-      logger.error('Failed to remove from sessionStorage', { key, error: error instanceof Error ? error.message : 'Unknown error' }, 'SafeStorage')
+    } catch {
       return false
     }
   }
@@ -113,24 +94,28 @@ function validateFormData(data: unknown): TransactionFormData | null {
     const typedData = data as Record<string, unknown>
 
     // Validate required fields exist
-    const requiredFields = ['products', 'pickupDate', 'returnDate', 'paymentMethod', 'paymentAmount', 'paymentStatus']
+    const requiredFields = [
+      'products',
+      'pickupDate',
+      'returnDate',
+      'paymentMethod',
+      'paymentAmount',
+      'paymentStatus',
+    ]
     for (const field of requiredFields) {
       if (!(field in typedData)) {
-        logger.warn('Missing required field in stored data', { field }, 'validateFormData')
         return null
       }
     }
 
     // Validate products array
     if (!Array.isArray(typedData.products)) {
-      logger.warn('Products field is not an array', { productsType: typeof typedData.products }, 'validateFormData')
       return null
     }
 
     // Validate product structure
     for (const product of typedData.products) {
       if (!product.product?.id || !product.quantity || product.quantity <= 0) {
-        logger.warn('Invalid product structure in stored data', { product }, 'validateFormData')
         return null
       }
     }
@@ -138,32 +123,22 @@ function validateFormData(data: unknown): TransactionFormData | null {
     // Validate customer data if present
     const customer = typedData.customer as { id?: string; nama?: string; name?: string } | undefined
     if (customer && (!customer.id || (!customer.nama && !customer.name))) {
-      logger.warn('Invalid customer structure in stored data', { customer }, 'validateFormData')
       return null
     }
 
     // Validate dates format
     const pickupDate = typedData.pickupDate as string
     if (pickupDate && !/^\d{4}-\d{2}-\d{2}$/.test(pickupDate)) {
-      logger.warn('Invalid pickup date format', { pickupDate }, 'validateFormData')
       return null
     }
 
     const returnDate = typedData.returnDate as string
     if (returnDate && !/^\d{4}-\d{2}-\d{2}$/.test(returnDate)) {
-      logger.warn('Invalid return date format', { returnDate }, 'validateFormData')
       return null
     }
 
-    logger.info('Form data validation passed', { 
-      productsCount: (typedData.products as unknown[]).length,
-      hasCustomer: !!typedData.customer,
-      hasDates: !!(typedData.pickupDate && typedData.returnDate)
-    }, 'validateFormData')
-
     return data as TransactionFormData
-  } catch (error) {
-    logger.error('Error validating form data', { error: error instanceof Error ? error.message : 'Unknown error' }, 'validateFormData')
+  } catch {
     return null
   }
 }
@@ -175,26 +150,16 @@ export function useTransactionFormPersistence() {
 
   // Load persisted form data
   const loadFormData = useCallback((): TransactionFormData | null => {
-    logger.info('🔄 Loading persisted form data...', {}, 'useTransactionFormPersistence')
-    
     const storedData = SafeStorage.load<TransactionFormData>(STORAGE_KEY)
     if (!storedData) {
-      logger.info('💭 No persisted data found', {}, 'useTransactionFormPersistence')
       return null
     }
 
     const validatedData = validateFormData(storedData)
     if (!validatedData) {
-      logger.warn('⚠️ Stored data failed validation, clearing', {}, 'useTransactionFormPersistence')
       SafeStorage.remove(STORAGE_KEY)
       return null
     }
-
-    logger.info('✅ Form data restored successfully', {
-      productsCount: validatedData.products.length,
-      hasCustomer: !!validatedData.customer,
-      currentStep: validatedData.currentStep || 1
-    }, 'useTransactionFormPersistence')
 
     return validatedData
   }, [])
@@ -212,40 +177,39 @@ export function useTransactionFormPersistence() {
       currentStep,
       // Ensure dates are strings
       pickupDate: formData.pickupDate || '',
-      returnDate: formData.returnDate || ''
+      returnDate: formData.returnDate || '',
     }
 
     // Debounce saving to avoid excessive storage operations
     debounceTimerRef.current = setTimeout(() => {
       const dataString = JSON.stringify(dataToSave)
-      
+
       // Only save if data has changed
       if (dataString !== lastSavedRef.current) {
         const success = SafeStorage.save(STORAGE_KEY, dataToSave)
         if (success) {
           lastSavedRef.current = dataString
-          logger.debug('💾 Form data auto-saved', {
-            productsCount: dataToSave.products.length,
-            currentStep: dataToSave.currentStep,
-            hasCustomer: !!dataToSave.customer
-          }, 'useTransactionFormPersistence')
+          
         }
       }
     }, 1000) // 1 second debounce
   }, [])
 
   // Clear persisted data
-  const clearFormData = useCallback((reason: 'back-button' | 'form-reset' | 'successful-submission' = 'form-reset') => {
-    logger.info('🗑️ Clearing persisted form data', { reason }, 'useTransactionFormPersistence')
-    
-    SafeStorage.remove(STORAGE_KEY)
-    lastSavedRef.current = ''
-    
-    // Clear debounce timer
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current)
-    }
-  }, [])
+  const clearFormData = useCallback(
+    (reason: 'back-button' | 'form-reset' | 'successful-submission' = 'form-reset') => {
+      logger.info('🗑️ Clearing persisted form data', { reason }, 'useTransactionFormPersistence')
+
+      SafeStorage.remove(STORAGE_KEY)
+      lastSavedRef.current = ''
+
+      // Clear debounce timer
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current)
+      }
+    },
+    [],
+  )
 
   // Cleanup on unmount
   useEffect(() => {
@@ -259,7 +223,7 @@ export function useTransactionFormPersistence() {
   return {
     loadFormData,
     saveFormData,
-    clearFormData
+    clearFormData,
   }
 }
 
