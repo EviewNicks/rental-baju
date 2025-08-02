@@ -89,6 +89,9 @@ export interface TransaksiItemResponse {
     code: string
     name: string
     imageUrl?: string
+    category?: string
+    size?: string
+    color?: string
   }
   jumlah: number
   jumlahDiambil: number

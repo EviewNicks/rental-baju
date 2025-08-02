@@ -5,13 +5,11 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@clerk/nextjs/server'
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '@/lib/prisma'
 import { createPickupService } from '../../../../../../features/kasir/services/pickupService'
 import { pickupRequestSchema } from '../../../../../../features/kasir/lib/validation/kasirSchema'
 import { TransaksiService } from '../../../../../../features/kasir/services/transaksiService'
-
-const prisma = new PrismaClient()
+import { requirePermission, withRateLimit } from '@/lib/auth-middleware'
 
 export async function PATCH(
   request: NextRequest,
@@ -21,21 +19,21 @@ export async function PATCH(
     // 1. Await params to comply with Next.js 15
     const { kode } = await params
     
-    // 2. Authentication & Authorization
-    const { userId } = await auth()
-    
-    if (!userId) {
-      return NextResponse.json(
-        { 
-          success: false,
-          message: 'Unauthorized - Login required',
-          error: { code: 'UNAUTHORIZED', message: 'User not authenticated' }
-        },
-        { status: 401 }
-      )
+    // 2. Rate limiting check
+    const clientIP = request.headers.get('x-forwarded-for') || 'unknown'
+    const rateLimitResult = await withRateLimit(`transaksi-pickup-${clientIP}`, 50, 60000)
+    if (rateLimitResult.error) {
+      return rateLimitResult.error
     }
 
-    // 3. Parse and validate request body
+    // 3. Authentication and permission check
+    const authResult = await requirePermission('transaksi', 'update')
+    if (authResult.error) {
+      return authResult.error
+    }
+    const { user } = authResult
+
+    // 4. Parse and validate request body
     const body = await request.json()
     const validation = pickupRequestSchema.safeParse(body)
 
@@ -56,8 +54,8 @@ export async function PATCH(
 
     const { items } = validation.data
 
-    // 4. Get transaction by code
-    const transaksiService = new TransaksiService(prisma, userId)
+    // 5. Get transaction by code
+    const transaksiService = new TransaksiService(prisma, user.id)
     
     let transaction
     try {
@@ -76,8 +74,8 @@ export async function PATCH(
       )
     }
 
-    // 4. Process pickup using PickupService
-    const pickupService = createPickupService(prisma, userId)
+    // 6. Process pickup using PickupService
+    const pickupService = createPickupService(prisma, user.id)
     const result = await pickupService.processPickup(transaction.id, items)
 
     if (!result.success) {
@@ -94,10 +92,10 @@ export async function PATCH(
       )
     }
 
-    // 5. Update transaction pickup status
+    // 7. Update transaction pickup status
     await pickupService.updateTransactionPickupStatus(transaction.id)
 
-    // 6. Transform response to match API contract
+    // 8. Transform response to match API contract
     const transformedTransaction = {
       id: result.transaction.id,
       kode: result.transaction.kode,
@@ -156,7 +154,7 @@ export async function PATCH(
       }))
     }
 
-    // 7. Return success response
+    // 9. Return success response
     return NextResponse.json({
       success: true,
       message: result.message,
@@ -166,21 +164,92 @@ export async function PATCH(
     })
 
   } catch (error) {
-    console.error('Pickup API Error:', error)
-    
+    const { kode } = await params
+    console.error(`PATCH /api/kasir/transaksi/${kode}/ambil error:`, error)
+
+    // Handle not found errors
+    if (error instanceof Error && error.message.includes('tidak ditemukan')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            message: 'Transaksi tidak ditemukan',
+            code: 'NOT_FOUND'
+          }
+        },
+        { status: 404 }
+      )
+    }
+
+    // Handle business logic errors
+    if (error instanceof Error) {
+      // Pickup processing errors
+      if (error.message.includes('pickup') || error.message.includes('pengambilan')) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              message: error.message,
+              code: 'PICKUP_ERROR'
+            }
+          },
+          { status: 400 }
+        )
+      }
+
+      // Validation errors
+      if (error.message.includes('validasi') || error.message.includes('validation')) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              message: error.message,
+              code: 'VALIDATION_ERROR'
+            }
+          },
+          { status: 400 }
+        )
+      }
+
+      // Other business logic errors
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            message: error.message,
+            code: 'BUSINESS_ERROR'
+          }
+        },
+        { status: 400 }
+      )
+    }
+
+    // Handle database connection errors
+    if (error && typeof error === 'object' && 'message' in error && 
+        typeof error.message === 'string' && error.message.includes('connection pool')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            message: 'Database connection timeout. Please try again.',
+            code: 'CONNECTION_ERROR'
+          }
+        },
+        { status: 503 }
+      )
+    }
+
+    // Generic server error
     return NextResponse.json(
       {
         success: false,
-        message: 'Internal server error',
         error: {
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'An unexpected error occurred while processing pickup'
+          message: 'Internal server error',
+          code: 'INTERNAL_ERROR'
         }
       },
       { status: 500 }
     )
-  } finally {
-    await prisma.$disconnect()
   }
 }
 

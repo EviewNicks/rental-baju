@@ -1,32 +1,54 @@
- GET /.well-known/appspecific/com.chrome.devtools.json 404 in 2205ms
- GET /api/kasir/transaksi?page=1&limit=100 200 in 2756ms
- GET /api/kasir/transaksi?page=1&limit=100 200 in 2563ms
+ ✓ Compiled / in 7.1s
+ GET / 200 in 8669ms
+ ○ Compiling /dashboard ...
+ ✓ Compiled /dashboard in 2.6s
+ GET /dashboard 200 in 2841ms
+ ○ Compiling /api/kasir/transaksi ...
+ ✓ Compiled /api/kasir/transaksi in 1261ms
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 6699ms
+ ○ Compiling /dashboard/new ...
+ ✓ Compiled /dashboard/new in 7.7s
+ GET /dashboard/new 200 in 7890ms
+ ○ Compiling /api/kasir/produk/available ...
+ GET /dashboard 200 in 216ms
+ ✓ Compiled /api/kasir/produk/available in 2.6s
  ○ Compiling /dashboard/transaction/[kode] ...
- ✓ Compiled /dashboard/transaction/[kode] in 1821ms
- GET /dashboard/transaction/TXN-20250801-011 200 in 2833ms
+ ✓ Compiled /dashboard/transaction/[kode] in 2.6s
+ GET /api/kasir/produk/available?available=true 200 in 7723ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 623ms (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
+ GET /dashboard/transaction/TXN-20250801-007 200 in 4172ms
  ○ Compiling /api/kasir/transaksi/[kode] ...
- ✓ Compiled /api/kasir/transaksi/[kode] in 651ms
- GET /api/kasir/transaksi/TXN-20250801-011 200 in 5938ms
- ✓ Compiled in 2.6s
- ✓ Compiled in 2.8s
- GET /api/kasir/transaksi/TXN-20250801-011 401 in 117ms
- GET /api/kasir/transaksi/TXN-20250801-011 401 in 140ms
- ✓ Compiled in 3s
- ✓ Compiled in 3.1s
- ✓ Compiled in 2.3s
- ✓ Compiled in 2.5s
- ✓ Compiled in 3.7s
- GET /dashboard 200 in 374ms
- GET /.well-known/appspecific/com.chrome.devtools.json 404 in 253ms
- GET /api/kasir/transaksi?page=1&limit=100 200 in 3771ms
- GET /api/kasir/transaksi?page=1&limit=100 200 in 2566ms
- GET /dashboard/transaction/TXN-20250801-011 200 in 517ms
- GET /api/kasir/transaksi/TXN-20250801-011 200 in 4225ms
+ ✓ Compiled /api/kasir/transaksi/[kode] in 894ms
+ GET /api/kasir/transaksi/TXN-20250801-007 200 in 6385ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 868ms (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
+ GET /dashboard 200 in 208ms
+ GET /dashboard/transaction/TXN-20250730-001 200 in 215ms
+ GET /api/kasir/transaksi/TXN-20250730-001 200 in 4138ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 779ms (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
+ GET /dashboard 200 in 196ms
+ GET /dashboard/transaction/TXN-20250729-004 200 in 314ms
+ GET /api/kasir/transaksi/TXN-20250729-004 200 in 3744ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 567ms (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
  ○ Compiling /api/kasir/transaksi/[kode]/ambil ...
- ✓ Compiled /api/kasir/transaksi/[kode]/ambil in 806ms
- PATCH /api/kasir/transaksi/TXN-20250801-011/ambil 200 in 11497ms
- GET /api/kasir/transaksi/TXN-20250801-011 200 in 3695ms
- GET /api/kasir/transaksi/TXN-20250801-011 200 in 3270ms
- PATCH /api/kasir/transaksi/TXN-20250801-011/ambil 200 in 10040ms
- GET /api/kasir/transaksi/TXN-20250801-011 200 in 4129ms
- GET /api/kasir/transaksi/TXN-20250801-011 200 in 3442ms
+ ✓ Compiled /api/kasir/transaksi/[kode]/ambil in 2.8s
+ PATCH /api/kasir/transaksi/TXN-20250729-004/ambil 200 in 14298ms
+ GET /api/kasir/transaksi/TXN-20250729-004 200 in 4453ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 1029ms (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
+ GET /api/kasir/transaksi/TXN-20250729-004 200 in 3551ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 366ms (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
+ PATCH /api/kasir/transaksi/TXN-20250729-004/ambil 200 in 11033ms
+ GET /api/kasir/transaksi/TXN-20250729-004 200 in 3798ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 515ms (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
+ GET /api/kasir/transaksi/TXN-20250729-004 200 in 3631ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 330ms (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
+ ○ Compiling /_not-found/page ...
+ ✓ Compiled /_not-found/page in 3.4s
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 3616ms

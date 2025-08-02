@@ -98,7 +98,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
           category: item.produk.category?.name || null
         },
         jumlah: item.jumlah,
-        jumlahDiambil: item.jumlahDiambil || 0,
+        jumlahDiambil: item.jumlahDiambil,
         hargaSewa: Number(item.hargaSewa),
         durasi: item.durasi,
         subtotal: Number(item.subtotal),
@@ -286,7 +286,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
           category: item.produk.category?.name || null
         },
         jumlah: item.jumlah,
-        jumlahDiambil: item.jumlahDiambil || 0,
+        jumlahDiambil: item.jumlahDiambil,
         hargaSewa: Number(item.hargaSewa),
         durasi: item.durasi,
         subtotal: Number(item.subtotal),

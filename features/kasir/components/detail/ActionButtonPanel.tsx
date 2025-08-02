@@ -15,6 +15,7 @@ import { PaymentModal } from './PaymentModal'
 import { PickupModal } from './PickupModal'
 import { useLogger } from '@/lib/client-logger'
 import type { TransactionDetail } from '../../types/transaction-detail'
+import { isPickupAvailable, calculateTransactionPickupStatus } from '../../utils/pickupUtils'
 
 interface ActionButtonsPanelProps {
   transaction: TransactionDetail
@@ -65,7 +66,13 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
           logger.info('📋 Opening pickup modal', { 
             transactionCode: transaction.transactionCode,
             action: 'pickup',
-            productsCount: transaction.products?.length || 0
+            productsCount: transaction.products?.length || 0,
+            pickupStatus: {
+              totalItems: pickupStatus.totalItems,
+              totalPickedUp: pickupStatus.totalPickedUp,
+              totalRemaining: pickupStatus.totalRemaining,
+              hasRemainingItems: pickupStatus.hasRemainingItems
+            }
           })
           setIsPickupModalOpen(true)
           break
@@ -88,12 +95,35 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
     }
   }
 
+  // Calculate pickup status for enhanced logic
+  const pickupStatus = calculateTransactionPickupStatus(transaction)
+  
+  // Enhanced button visibility logic
   const canReturn = transaction.status === 'active'
-  const canPickup = transaction.status === 'active'
+  const canPickup = transaction.status === 'active' && isPickupAvailable(transaction)
   const canSendReminder = transaction.status === 'terlambat'
   const needsPayment =
     transaction.amountPaid < transaction.totalAmount ||
     (transaction.penalties && transaction.penalties.some((p) => p.status === 'pending'))
+
+  // Log pickup status for debugging
+  logger.debug('🔍 Button visibility calculation', {
+    transactionCode: transaction.transactionCode,
+    transactionStatus: transaction.status,
+    pickupStatus: {
+      hasRemainingItems: pickupStatus.hasRemainingItems,
+      totalItems: pickupStatus.totalItems,
+      totalPickedUp: pickupStatus.totalPickedUp,
+      totalRemaining: pickupStatus.totalRemaining,
+      completionPercentage: pickupStatus.completionPercentage
+    },
+    buttonStates: {
+      canPickup,
+      canReturn,
+      canSendReminder,
+      needsPayment
+    }
+  })
 
   return (
     <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-6 space-y-4">
