@@ -5,7 +5,6 @@ import { queryKeys } from '@/lib/react-query'
 import { kasirApi } from '../api'
 import type { TransactionDetail } from '../types/transaction-detail'
 import type { TransaksiResponse } from '../types/api'
-import { logger } from '@/lib/client-logger'
 
 interface UseTransactionDetailOptions {
   enabled?: boolean
@@ -22,16 +21,6 @@ export function useTransactionDetail(
 ) {
   const { enabled = true, refetchInterval } = options
 
-  logger.debug(
-    'useTransactionDetail hook initialized',
-    {
-      transactionId,
-      enabled,
-      refetchInterval,
-    },
-    'useTransactionDetail',
-  )
-
   // Fetch transaction detail with React Query
   const {
     data: apiData,
@@ -42,7 +31,6 @@ export function useTransactionDetail(
   } = useQuery({
     queryKey: queryKeys.kasir.transaksi.detail(transactionId),
     queryFn: () => {
-      logger.info('Fetching transaction detail from API', { transactionId }, 'useTransactionDetail')
       return kasirApi.transaksi.getByKode(transactionId)
     },
     enabled: enabled && !!transactionId,
@@ -117,32 +105,14 @@ export function useTransactionDetail(
   })
 
   // Create a separate query for the transformed data with enhanced synchronization
-  const { data: transaction, isLoading: isTransforming, refetch: refetchTransformed } = useQuery({
+  const {
+    data: transaction,
+    isLoading: isTransforming,
+    refetch: refetchTransformed,
+  } = useQuery({
     queryKey: [...queryKeys.kasir.transaksi.detail(transactionId), 'transformed'],
     queryFn: async () => {
-      logger.debug(
-        'Transforming API data to UI format',
-        {
-          hasApiData: !!apiData,
-          transactionId,
-          apiDataKeys: apiData ? Object.keys(apiData) : null,
-        },
-        'useTransactionDetail',
-      )
-
       const transformed = await transformApiToUI(apiData!)
-
-      logger.info(
-        'Transaction data transformation completed',
-        {
-          transactionId,
-          transformedKeys: Object.keys(transformed),
-          paymentsCount: transformed.payments?.length || 0,
-          productsCount: transformed.products?.length || 0,
-          timelineCount: transformed.timeline?.length || 0,
-        },
-        'useTransactionDetail',
-      )
 
       return transformed
     },
@@ -150,13 +120,8 @@ export function useTransactionDetail(
     staleTime: 0, // 🔥 FIX: Always consider transformed data stale for real-time updates
     gcTime: 10 * 60 * 1000,
     refetchOnMount: true, // 🔥 FIX: Always refetch transformed data on mount
-    retry: (failureCount, error: unknown) => {
+    retry: (failureCount) => {
       // Retry transformation failures up to 2 times
-      logger.debug('🔄 Transformation retry', {
-        transactionId,
-        failureCount,
-        error: error instanceof Error ? error.message : 'Unknown error'
-      })
       return failureCount < 2
     },
     retryDelay: (attemptIndex) => Math.min(500 * 2 ** attemptIndex, 2000), // Max 2s delay
@@ -164,58 +129,36 @@ export function useTransactionDetail(
 
   // 🔥 FIX: Enhanced refresh function with retry mechanism
   const refreshTransaction = async (retryCount = 0, maxRetries = 3) => {
-    logger.debug('🔄 Manual transaction refresh requested', {
-      transactionId,
-      retryCount,
-      maxRetries
-    })
-    
     try {
       await refetch()
-      logger.info('✅ Manual transaction refresh successful', { transactionId })
-    } catch (error) {
+    } catch {
       if (retryCount < maxRetries) {
         const delay = 1000 * Math.pow(2, retryCount) // Exponential backoff
-        logger.warn(`⚠️ Transaction refresh failed, retrying in ${delay}ms`, {
-          transactionId,
-          retryCount: retryCount + 1,
-          error: error instanceof Error ? error.message : 'Unknown error'
-        })
-        
+
         setTimeout(() => {
           refreshTransaction(retryCount + 1, maxRetries)
         }, delay)
       } else {
-        logger.error('💥 Transaction refresh failed after all retries', {
-          transactionId,
-          maxRetries,
-          error: error instanceof Error ? error.message : 'Unknown error'
-        })
       }
     }
   }
 
   // Clear error state function for error recovery
   const clearError = () => {
-    logger.debug('🧹 Clearing transaction error state', { transactionId })
     refetch()
   }
 
   // 🔥 FIX: Enhanced data synchronization function
   const syncTransactionData = async () => {
-    logger.debug('🔄 Syncing transaction data (base + transformed)', { transactionId })
-    
     try {
       // Refetch both base and transformed data in sequence
       await refetch()
-      await new Promise(resolve => setTimeout(resolve, 100)) // Small delay
+      await new Promise((resolve) => setTimeout(resolve, 100)) // Small delay
       await refetchTransformed()
-      
-      logger.info('✅ Transaction data sync completed', { transactionId })
-    } catch (error) {
-      logger.error('❌ Transaction data sync failed', {
+    } catch {
+      console.error('❌ Transaction data sync failed', {
         transactionId,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       })
       throw error
     }
@@ -244,40 +187,8 @@ export function useTransactionDetail(
  * Uses existing transaction item data with product information
  */
 async function transformApiToUI(apiData: TransaksiResponse): Promise<TransactionDetail> {
-  logger.debug(
-    'Starting API to UI transformation',
-    {
-      apiData: {
-        id: apiData.id,
-        kode: apiData.kode,
-        status: apiData.status,
-        itemsCount: apiData.items?.length || 0,
-        pembayaranCount: apiData.pembayaran?.length || 0,
-        aktivitasCount: apiData.aktivitas?.length || 0,
-      },
-    },
-    'transformApiToUI',
-  )
-
   // Use items from transaction data - API returns items array, not fullItems
   const items = apiData.items || []
-
-  logger.debug(
-    'Processing transaction items',
-    {
-      itemsCount: items.length,
-      items: items.map((item) => ({
-        id: item.id,
-        produktId: item.produk.id,
-        produktName: item.produk.name,
-        jumlah: item.jumlah,
-        jumlahDiambil: item.jumlahDiambil,
-        hargaSewa: item.hargaSewa,
-        subtotal: item.subtotal,
-      })),
-    },
-    'transformApiToUI',
-  )
 
   const transformed: TransactionDetail = {
     id: apiData.id,
@@ -361,18 +272,6 @@ async function transformApiToUI(apiData: TransaksiResponse): Promise<Transaction
     // Penalties - not available in current API, would need enhancement
     penalties: [],
   }
-
-  logger.debug(
-    'Transformation completed',
-    {
-      transformedId: transformed.id,
-      transformedCode: transformed.transactionCode,
-      paymentsCount: transformed.payments.length,
-      productsCount: transformed.products.length,
-      timelineCount: transformed.timeline.length,
-    },
-    'transformApiToUI',
-  )
 
   return transformed
 }

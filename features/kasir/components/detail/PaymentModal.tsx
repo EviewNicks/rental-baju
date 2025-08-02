@@ -12,7 +12,6 @@ import { CheckCircle, CreditCard } from 'lucide-react'
 import { PaymentForm } from './PaymentForm'
 import { usePaymentProcessing } from '../../hooks/usePaymentProcessing'
 import { formatCurrency } from '../../lib/utils'
-import { useLogger } from '@/lib/client-logger'
 import type { TransactionDetail } from '../../types/transaction-detail'
 
 interface PaymentModalProps {
@@ -24,47 +23,28 @@ interface PaymentModalProps {
 export function PaymentModal({ isOpen, onClose, transaction }: PaymentModalProps) {
   const [showSuccess, setShowSuccess] = useState(false)
   const remainingAmount = transaction.totalAmount - transaction.amountPaid
-  const logger = useLogger('PaymentModal')
 
-  // 🔍 Log modal state changes
-  logger.debug('PaymentModal rendered', {
-    isOpen,
-    transactionCode: transaction.transactionCode,
-    transactionId: transaction.id,
-    remainingAmount,
-    showSuccess,
-  })
-
-  const { processPayment, isProcessing, error, isSuccess, data, reset } = 
-    usePaymentProcessing(transaction.transactionCode, {
-      onSuccess: (data) => {
-        logger.info('💰 Payment processing successful!', {
-          transactionCode: transaction.transactionCode,
-          paymentAmount: data.jumlah,
-          paymentMethod: data.metode,
-          paymentId: data.id,
-        })
+  const { processPayment, isProcessing, error, isSuccess, data, reset } = usePaymentProcessing(
+    transaction.transactionCode,
+    {
+      onSuccess: () => {
         setShowSuccess(true)
         // Auto close after showing success message
         setTimeout(() => {
-          logger.debug('🔄 Auto-closing payment modal after success')
           handleClose()
         }, 2000)
       },
       onError: (error) => {
-        logger.error('❌ Payment processing failed', {
+        console.error('❌ Payment processing failed', {
           transactionCode: transaction.transactionCode,
           remainingAmount,
           error: error.message,
         })
-      }
-    })
+      },
+    },
+  )
 
   const handleClose = () => {
-    logger.debug('🚪 Closing payment modal', {
-      transactionCode: transaction.transactionCode,
-      wasSuccessful: showSuccess,
-    })
     setShowSuccess(false)
     reset()
     onClose()
@@ -76,14 +56,6 @@ export function PaymentModal({ isOpen, onClose, transaction }: PaymentModalProps
     referensi?: string
     catatan?: string
   }) => {
-    logger.info('📝 Payment form submitted', {
-      transactionCode: transaction.transactionCode,
-      paymentAmount: formData.jumlah,
-      paymentMethod: formData.metode,
-      hasReference: !!formData.referensi,
-      remainingAmount,
-    })
-    
     processPayment({
       jumlah: formData.jumlah,
       metode: formData.metode,
@@ -99,11 +71,10 @@ export function PaymentModal({ isOpen, onClose, transaction }: PaymentModalProps
         <DialogContent className="sm:max-w-md">
           <div className="text-center py-6">
             <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Pembayaran Berhasil!
-            </h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Pembayaran Berhasil!</h3>
             <p className="text-sm text-gray-600 mb-4">
-              Pembayaran sebesar <span className="font-medium">{formatCurrency(data.jumlah)}</span> telah berhasil diproses
+              Pembayaran sebesar <span className="font-medium">{formatCurrency(data.jumlah)}</span>{' '}
+              telah berhasil diproses
             </p>
             <div className="bg-green-50 border border-green-200 rounded-lg p-3">
               <div className="text-sm">

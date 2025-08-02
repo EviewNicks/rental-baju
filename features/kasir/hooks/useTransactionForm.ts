@@ -11,7 +11,6 @@ import { useCreatePembayaran } from './usePembayaran'
 import { KasirApi } from '../api'
 import { useMutation } from '@tanstack/react-query'
 import type { CreatePembayaranRequest } from '../types/api'
-import { logger } from '@/lib/client-logger'
 // import { toast } from '@/hooks/use-toast' // TODO: Add toast implementation
 
 const initialFormData: TransactionFormData = {
@@ -282,7 +281,7 @@ export function useTransactionForm() {
       const isRollbackError = errorMessage.includes('tidak dapat dibatalkan')
 
       if (isPaymentError && isRollbackError) {
-        logger.error(
+        console.error(
           '🚨 CRITICAL: Payment failed AND rollback failed!',
           {
             errorType: 'PAYMENT_ROLLBACK_FAILURE',
@@ -294,7 +293,7 @@ export function useTransactionForm() {
           'useTransactionForm',
         )
       } else if (isPaymentError) {
-        logger.error(
+        console.error(
           '💳 Payment creation failed - transaction rolled back',
           {
             errorType: 'PAYMENT_FAILURE',
@@ -305,7 +304,7 @@ export function useTransactionForm() {
           'useTransactionForm',
         )
       } else {
-        logger.error(
+        console.error(
           '❌ Transaction creation failed!',
           {
             errorType: 'TRANSACTION_FAILURE',
@@ -317,7 +316,7 @@ export function useTransactionForm() {
       }
 
       if (error instanceof Error) {
-        logger.error(
+        console.error(
           '💬 Detailed error information',
           {
             message: error.message,

@@ -13,7 +13,6 @@ import {
 import { Button } from '@/components/ui/button'
 import { PaymentModal } from './PaymentModal'
 import { PickupModal } from './PickupModal'
-import { useLogger } from '@/lib/client-logger'
 import type { TransactionDetail } from '../../types/transaction-detail'
 import { isPickupAvailable, calculateTransactionPickupStatus } from '../../utils/pickupUtils'
 
@@ -25,45 +24,37 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
   const [isProcessing, setIsProcessing] = useState<string | null>(null)
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false)
   const [isPickupModalOpen, setIsPickupModalOpen] = useState(false)
-  const logger = useLogger('ActionButtonsPanel')
 
   const handleAction = async (action: string) => {
-    logger.info(`🎯 Action initiated: ${action}`, {
-      transactionCode: transaction.transactionCode,
-      transactionId: transaction.id,
-      action,
-      timestamp: new Date().toISOString()
-    })
-
     setIsProcessing(action)
     try {
       // Handle different actions
       switch (action) {
         case 'return':
-          logger.info('📦 Processing return', { 
+          console.info('📦 Processing return', {
             transactionCode: transaction.transactionCode,
-            action: 'return'
+            action: 'return',
           })
           // TODO: Implement return functionality
           break
         case 'reminder':
-          logger.info('📢 Sending reminder', { 
+          console.info('📢 Sending reminder', {
             transactionCode: transaction.transactionCode,
-            action: 'reminder'
+            action: 'reminder',
           })
           // TODO: Implement reminder functionality
           break
         case 'payment':
-          logger.info('💰 Opening payment modal', { 
+          console.info('💰 Opening payment modal', {
             transactionCode: transaction.transactionCode,
             action: 'payment',
             currentAmount: transaction.amountPaid,
-            totalAmount: transaction.totalAmount
+            totalAmount: transaction.totalAmount,
           })
           setIsPaymentModalOpen(true)
           break
         case 'pickup':
-          logger.info('📋 Opening pickup modal', { 
+          console.info('📋 Opening pickup modal', {
             transactionCode: transaction.transactionCode,
             action: 'pickup',
             productsCount: transaction.products?.length || 0,
@@ -71,24 +62,24 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
               totalItems: pickupStatus.totalItems,
               totalPickedUp: pickupStatus.totalPickedUp,
               totalRemaining: pickupStatus.totalRemaining,
-              hasRemainingItems: pickupStatus.hasRemainingItems
-            }
+              hasRemainingItems: pickupStatus.hasRemainingItems,
+            },
           })
           setIsPickupModalOpen(true)
           break
         case 'receipt':
-          logger.info('🧾 Printing receipt', { 
+          console.info('🧾 Printing receipt', {
             transactionCode: transaction.transactionCode,
-            action: 'receipt'
+            action: 'receipt',
           })
           // TODO: Implement receipt printing
           break
       }
     } catch (error) {
-      logger.error('❌ Action failed', {
+      console.error('❌ Action failed', {
         transactionCode: transaction.transactionCode,
         action,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       })
     } finally {
       setIsProcessing(null)
@@ -97,7 +88,7 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
 
   // Calculate pickup status for enhanced logic
   const pickupStatus = calculateTransactionPickupStatus(transaction)
-  
+
   // Enhanced button visibility logic
   const canReturn = transaction.status === 'active'
   const canPickup = transaction.status === 'active' && isPickupAvailable(transaction)
@@ -105,25 +96,6 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
   const needsPayment =
     transaction.amountPaid < transaction.totalAmount ||
     (transaction.penalties && transaction.penalties.some((p) => p.status === 'pending'))
-
-  // Log pickup status for debugging
-  logger.debug('🔍 Button visibility calculation', {
-    transactionCode: transaction.transactionCode,
-    transactionStatus: transaction.status,
-    pickupStatus: {
-      hasRemainingItems: pickupStatus.hasRemainingItems,
-      totalItems: pickupStatus.totalItems,
-      totalPickedUp: pickupStatus.totalPickedUp,
-      totalRemaining: pickupStatus.totalRemaining,
-      completionPercentage: pickupStatus.completionPercentage
-    },
-    buttonStates: {
-      canPickup,
-      canReturn,
-      canSendReminder,
-      needsPayment
-    }
-  })
 
   return (
     <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-6 space-y-4">
@@ -235,9 +207,6 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
       <PaymentModal
         isOpen={isPaymentModalOpen}
         onClose={() => {
-          logger.debug('💰 Payment modal closed', {
-            transactionCode: transaction.transactionCode
-          })
           setIsPaymentModalOpen(false)
           setIsProcessing(null)
         }}
@@ -248,9 +217,6 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
       <PickupModal
         isOpen={isPickupModalOpen}
         onClose={() => {
-          logger.debug('📋 Pickup modal closed', {
-            transactionCode: transaction.transactionCode
-          })
           setIsPickupModalOpen(false)
           setIsProcessing(null)
         }}

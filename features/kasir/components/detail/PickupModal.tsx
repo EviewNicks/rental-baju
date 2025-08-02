@@ -12,8 +12,11 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { CheckCircle, Package, AlertCircle, Minus, Plus } from 'lucide-react'
-import { usePickupProcess, usePickupValidation, getPickupErrorMessage } from '../../hooks/usePickupProcess'
-import { useLogger } from '@/lib/client-logger'
+import {
+  usePickupProcess,
+  usePickupValidation,
+  getPickupErrorMessage,
+} from '../../hooks/usePickupProcess'
 import type { PickupItemRequest } from '../../hooks/usePickupProcess'
 import type { TransactionDetail } from '../../types/transaction-detail'
 
@@ -35,11 +38,16 @@ export function PickupModal({ isOpen, onClose, transaction }: PickupModalProps) 
   const [pickupItems, setPickupItems] = useState<PickupItemState[]>([])
   const [showSuccess, setShowSuccess] = useState(false)
   const [showConfirmation, setShowConfirmation] = useState(false)
-  const logger = useLogger('PickupModal')
 
-  const { mutate: processPickup, isPending, error, isSuccess, data, reset } = 
-    usePickupProcess(transaction.transactionCode)
-  
+  const {
+    mutate: processPickup,
+    isPending,
+    error,
+    isSuccess,
+    data,
+    reset,
+  } = usePickupProcess(transaction.transactionCode)
+
   const { validatePickupItems } = usePickupValidation()
 
   // Initialize pickup items from transaction data
@@ -47,26 +55,13 @@ export function PickupModal({ isOpen, onClose, transaction }: PickupModalProps) 
     let isEffectActive = true // Prevent state updates if component unmounts
 
     if (isOpen && transaction.products && isEffectActive) {
-      logger.info('🚀 Initializing pickup modal', {
-        transactionCode: transaction.transactionCode,
-        productsCount: transaction.products.length
-      })
-
       // Transform transaction products to pickup items using real TransaksiItem IDs
       const items: PickupItemState[] = transaction.products.map((product) => {
         const totalQuantity = product.quantity
         // Use actual pickup data from API response
-        const alreadyPickedUp = product.jumlahDiambil || 0 
+        const alreadyPickedUp = product.jumlahDiambil || 0
         const remainingQuantity = totalQuantity - alreadyPickedUp
-        
-        logger.debug('📦 Processing product for pickup', {
-          productId: product.id,
-          productName: product.product.name,
-          totalQuantity,
-          alreadyPickedUp,
-          remainingQuantity
-        })
-        
+
         return {
           id: product.id, // Use actual TransaksiItem.id for pickup operations
           jumlahDiambil: 0,
@@ -77,14 +72,8 @@ export function PickupModal({ isOpen, onClose, transaction }: PickupModalProps) 
           maxPickup: remainingQuantity,
         }
       })
-      
+
       if (isEffectActive) {
-        logger.info('✅ Pickup items initialized', {
-          transactionCode: transaction.transactionCode,
-          itemsCount: items.length,
-          totalAvailableForPickup: items.reduce((sum, item) => sum + item.remainingQuantity, 0)
-        })
-        
         setPickupItems(items)
       }
     }
@@ -96,43 +85,39 @@ export function PickupModal({ isOpen, onClose, transaction }: PickupModalProps) 
   }, [isOpen, transaction])
 
   const handleQuantityChange = (itemId: string, newQuantity: number) => {
-    setPickupItems(items => 
-      items.map(item => 
-        item.id === itemId 
+    setPickupItems((items) =>
+      items.map((item) =>
+        item.id === itemId
           ? { ...item, jumlahDiambil: Math.max(0, Math.min(newQuantity, item.maxPickup)) }
-          : item
-      )
+          : item,
+      ),
     )
   }
 
   const incrementQuantity = (itemId: string) => {
-    const item = pickupItems.find(i => i.id === itemId)
+    const item = pickupItems.find((i) => i.id === itemId)
     if (item && item.jumlahDiambil < item.maxPickup) {
       handleQuantityChange(itemId, item.jumlahDiambil + 1)
     }
   }
 
   const decrementQuantity = (itemId: string) => {
-    const item = pickupItems.find(i => i.id === itemId)
+    const item = pickupItems.find((i) => i.id === itemId)
     if (item && item.jumlahDiambil > 0) {
       handleQuantityChange(itemId, item.jumlahDiambil - 1)
     }
   }
 
   const handleSelectAll = () => {
-    setPickupItems(items => 
-      items.map(item => ({ ...item, jumlahDiambil: item.maxPickup }))
-    )
+    setPickupItems((items) => items.map((item) => ({ ...item, jumlahDiambil: item.maxPickup })))
   }
 
   const handleClearAll = () => {
-    setPickupItems(items => 
-      items.map(item => ({ ...item, jumlahDiambil: 0 }))
-    )
+    setPickupItems((items) => items.map((item) => ({ ...item, jumlahDiambil: 0 })))
   }
 
   const getSelectedItems = () => {
-    return pickupItems.filter(item => item.jumlahDiambil > 0)
+    return pickupItems.filter((item) => item.jumlahDiambil > 0)
   }
 
   const getTotalSelectedQuantity = () => {
@@ -141,17 +126,17 @@ export function PickupModal({ isOpen, onClose, transaction }: PickupModalProps) 
 
   const validateAndProceed = () => {
     const selectedItems = getSelectedItems()
-    
+
     // Mock transaction items for validation - this should come from API
-    const mockTransactionItems = pickupItems.map(item => ({
+    const mockTransactionItems = pickupItems.map((item) => ({
       id: item.id,
       jumlah: item.totalQuantity,
       jumlahDiambil: item.alreadyPickedUp,
-      produk: { name: item.productName }
+      produk: { name: item.productName },
     }))
 
     const validation = validatePickupItems(selectedItems, mockTransactionItems)
-    
+
     if (!validation.valid) {
       // Show validation errors (could use toast or alert)
       console.error('Validation errors:', validation.errors)
@@ -163,32 +148,16 @@ export function PickupModal({ isOpen, onClose, transaction }: PickupModalProps) 
 
   const handleConfirmPickup = () => {
     const selectedItems = getSelectedItems()
-    
-    logger.info('🔄 Processing pickup request', {
-      transactionCode: transaction.transactionCode,
-      selectedItemsCount: selectedItems.length,
-      totalQuantity: selectedItems.reduce((sum, item) => sum + item.jumlahDiambil, 0),
-      items: selectedItems.map(item => ({
-        id: item.id,
-        productName: item.productName,
-        quantity: item.jumlahDiambil
-      }))
-    })
-    
+
     processPickup({
-      items: selectedItems.map(item => ({
+      items: selectedItems.map((item) => ({
         id: item.id,
-        jumlahDiambil: item.jumlahDiambil
-      }))
+        jumlahDiambil: item.jumlahDiambil,
+      })),
     })
   }
 
   const handleClose = () => {
-    logger.debug('🔚 Closing pickup modal', {
-      transactionCode: transaction.transactionCode,
-      wasSuccessful: showSuccess || isSuccess
-    })
-    
     setShowSuccess(false)
     setShowConfirmation(false)
     setPickupItems([])
@@ -203,9 +172,7 @@ export function PickupModal({ isOpen, onClose, transaction }: PickupModalProps) 
         <DialogContent className="sm:max-w-md">
           <div className="text-center py-6">
             <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Pickup Berhasil!
-            </h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Pickup Berhasil!</h3>
             <p className="text-sm text-gray-600 mb-4">
               {data?.message || `Berhasil memproses pickup ${getTotalSelectedQuantity()} item`}
             </p>
@@ -221,9 +188,7 @@ export function PickupModal({ isOpen, onClose, transaction }: PickupModalProps) 
                 </div>
                 <div className="flex justify-between mt-1">
                   <span className="text-gray-600">Waktu:</span>
-                  <span className="font-medium">
-                    {new Date().toLocaleString('id-ID')}
-                  </span>
+                  <span className="font-medium">{new Date().toLocaleString('id-ID')}</span>
                 </div>
               </div>
             </div>
@@ -236,7 +201,7 @@ export function PickupModal({ isOpen, onClose, transaction }: PickupModalProps) 
   // Confirmation state
   if (showConfirmation) {
     const selectedItems = getSelectedItems()
-    
+
     return (
       <Dialog open={isOpen} onOpenChange={() => setShowConfirmation(false)}>
         <DialogContent className="sm:max-w-md">
@@ -245,9 +210,7 @@ export function PickupModal({ isOpen, onClose, transaction }: PickupModalProps) 
               <Package className="h-5 w-5 text-orange-600" />
               Konfirmasi Pickup
             </DialogTitle>
-            <DialogDescription>
-              Pastikan data pickup sudah benar sebelum diproses
-            </DialogDescription>
+            <DialogDescription>Pastikan data pickup sudah benar sebelum diproses</DialogDescription>
           </DialogHeader>
 
           <div className="py-4">
@@ -268,7 +231,10 @@ export function PickupModal({ isOpen, onClose, transaction }: PickupModalProps) 
             <div className="space-y-2 mb-4">
               <h5 className="font-medium text-gray-900">Item yang akan diambil:</h5>
               {selectedItems.map((item) => (
-                <div key={item.id} className="flex justify-between items-center py-2 px-3 bg-gray-50 rounded">
+                <div
+                  key={item.id}
+                  className="flex justify-between items-center py-2 px-3 bg-gray-50 rounded"
+                >
                   <span className="text-sm">{item.productName}</span>
                   <span className="text-sm font-medium">{item.jumlahDiambil} pcs</span>
                 </div>
@@ -307,8 +273,8 @@ export function PickupModal({ isOpen, onClose, transaction }: PickupModalProps) 
             Proses Pengambilan Item
           </DialogTitle>
           <DialogDescription>
-            Transaksi: <span className="font-medium">{transaction.transactionCode}</span> • 
-            Pilih item dan jumlah yang akan diambil pelanggan
+            Transaksi: <span className="font-medium">{transaction.transactionCode}</span> • Pilih
+            item dan jumlah yang akan diambil pelanggan
           </DialogDescription>
         </DialogHeader>
 
@@ -361,8 +327,7 @@ export function PickupModal({ isOpen, onClose, transaction }: PickupModalProps) 
                   <div className="flex-1">
                     <h6 className="font-medium text-gray-900">{item.productName}</h6>
                     <div className="text-sm text-gray-600 mt-1">
-                      Total: {item.totalQuantity} pcs • 
-                      Sudah diambil: {item.alreadyPickedUp} pcs • 
+                      Total: {item.totalQuantity} pcs • Sudah diambil: {item.alreadyPickedUp} pcs •
                       Sisa: {item.remainingQuantity} pcs
                     </div>
                   </div>
@@ -390,7 +355,9 @@ export function PickupModal({ isOpen, onClose, transaction }: PickupModalProps) 
                         min={0}
                         max={item.maxPickup}
                         value={item.jumlahDiambil}
-                        onChange={(e) => handleQuantityChange(item.id, parseInt(e.target.value) || 0)}
+                        onChange={(e) =>
+                          handleQuantityChange(item.id, parseInt(e.target.value) || 0)
+                        }
                         className="w-20 text-center"
                       />
                       <Button
@@ -404,14 +371,10 @@ export function PickupModal({ isOpen, onClose, transaction }: PickupModalProps) 
                         <Plus className="h-3 w-3" />
                       </Button>
                     </div>
-                    <span className="text-sm text-gray-500">
-                      dari {item.maxPickup} tersedia
-                    </span>
+                    <span className="text-sm text-gray-500">dari {item.maxPickup} tersedia</span>
                   </div>
                 ) : (
-                  <div className="text-sm text-gray-500 italic">
-                    Semua item sudah diambil
-                  </div>
+                  <div className="text-sm text-gray-500 italic">Semua item sudah diambil</div>
                 )}
               </div>
             ))}
@@ -419,12 +382,7 @@ export function PickupModal({ isOpen, onClose, transaction }: PickupModalProps) 
 
           {/* Action Buttons */}
           <div className="flex gap-3">
-            <Button
-              variant="outline"
-              onClick={handleClose}
-              disabled={isPending}
-              className="flex-1"
-            >
+            <Button variant="outline" onClick={handleClose} disabled={isPending} className="flex-1">
               Batal
             </Button>
             <Button

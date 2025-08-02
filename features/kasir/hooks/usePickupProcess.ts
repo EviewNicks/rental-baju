@@ -2,7 +2,6 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/react-query'
-import { logger } from '@/lib/client-logger'
 import { KasirApiError } from '../api'
 
 /**
@@ -34,14 +33,8 @@ export interface PickupResponse {
  */
 async function processPickup(
   transactionCode: string,
-  data: PickupRequest
+  data: PickupRequest,
 ): Promise<PickupResponse> {
-  logger.info('🚀 Pickup API call starting', {
-    transactionCode,
-    itemsCount: data.items.length,
-    totalQuantity: data.items.reduce((sum, item) => sum + item.jumlahDiambil, 0)
-  })
-
   const response = await fetch(`/api/kasir/transaksi/${transactionCode}/ambil`, {
     method: 'PATCH',
     headers: {
@@ -57,26 +50,16 @@ async function processPickup(
       code: 'PICKUP_ERROR',
       message: result.message || 'Gagal memproses pickup',
     }
-    
-    logger.error('❌ Pickup API call failed', {
+
+    console.error('❌ Pickup API call failed', {
       transactionCode,
       status: response.status,
       errorCode: error.code,
-      errorMessage: error.message
+      errorMessage: error.message,
     })
-    
-    throw new KasirApiError(
-      error.code,
-      error.message,
-      error.details
-    )
-  }
 
-  logger.info('✅ Pickup API call successful', {
-    transactionCode,
-    success: result.success,
-    message: result.message
-  })
+    throw new KasirApiError(error.code, error.message, error.details)
+  }
 
   return result
 }
@@ -90,27 +73,22 @@ export function usePickupProcess(transactionCode: string) {
 
   return useMutation({
     mutationFn: (data: PickupRequest) => processPickup(transactionCode, data),
-    
+
     onMutate: async (data) => {
-      logger.debug('🔄 Pickup mutation starting', {
+      console.debug('🔄 Pickup mutation starting', {
         transactionCode,
-        itemsCount: data.items.length
+        itemsCount: data.items.length,
       })
 
       // Cancel any outgoing refetches for transaction detail
       await queryClient.cancelQueries({
-        queryKey: queryKeys.kasir.transaksi.detail(transactionCode)
+        queryKey: queryKeys.kasir.transaksi.detail(transactionCode),
       })
 
       // Snapshot the current transaction data for rollback
       const previousTransaction = queryClient.getQueryData(
-        queryKeys.kasir.transaksi.detail(transactionCode)
+        queryKeys.kasir.transaksi.detail(transactionCode),
       )
-
-      logger.debug('📸 Transaction snapshot taken for rollback', {
-        transactionCode,
-        hasSnapshot: !!previousTransaction
-      })
 
       // Optimistically update the pickup quantities
       // This would require more complex logic to update the cached data
@@ -121,51 +99,37 @@ export function usePickupProcess(transactionCode: string) {
     },
 
     onError: (error, _, context) => {
-      logger.error('💥 Pickup mutation failed', {
+      console.error('💥 Pickup mutation failed', {
         transactionCode,
         error: error instanceof Error ? error.message : 'Unknown error',
-        hasRollbackData: !!context?.previousTransaction
+        hasRollbackData: !!context?.previousTransaction,
       })
 
       // Roll back to previous state if needed
       if (context?.previousTransaction) {
         queryClient.setQueryData(
           queryKeys.kasir.transaksi.detail(transactionCode),
-          context.previousTransaction
+          context.previousTransaction,
         )
-        logger.debug('🔙 Rolled back to previous transaction state', {
-          transactionCode
-        })
       }
     },
 
-    onSuccess: (data) => {
-      logger.info('🎉 Pickup mutation successful', {
-        transactionCode,
-        message: data.message,
-        success: data.success
-      })
-
+    onSuccess: () => {
       // Invalidate and refetch transaction detail to get updated data
       queryClient.invalidateQueries({
-        queryKey: queryKeys.kasir.transaksi.detail(transactionCode)
+        queryKey: queryKeys.kasir.transaksi.detail(transactionCode),
       })
 
       // Also invalidate transaction list in case it's displayed elsewhere
       queryClient.invalidateQueries({
-        queryKey: queryKeys.kasir.transaksi.lists()
-      })
-
-      logger.debug('🔄 Cache invalidated after successful pickup', {
-        transactionCode,
-        keys: ['transaction.detail', 'transaction.lists']
+        queryKey: queryKeys.kasir.transaksi.lists(),
       })
     },
 
     onSettled: () => {
       // Always refetch transaction detail after pickup attempt
       queryClient.invalidateQueries({
-        queryKey: queryKeys.kasir.transaksi.detail(transactionCode)
+        queryKey: queryKeys.kasir.transaksi.detail(transactionCode),
       })
     },
 
@@ -196,7 +160,7 @@ export function usePickupValidation() {
         jumlah: number
         jumlahDiambil: number
         produk: { name: string }
-      }>
+      }>,
     ) => {
       const errors: string[] = []
 
@@ -206,32 +170,32 @@ export function usePickupValidation() {
       }
 
       for (const pickupItem of items) {
-        const transactionItem = transactionItems.find(ti => ti.id === pickupItem.id)
-        
+        const transactionItem = transactionItems.find((ti) => ti.id === pickupItem.id)
+
         if (!transactionItem) {
           errors.push(`Item dengan ID ${pickupItem.id} tidak ditemukan`)
           continue
         }
 
         const remainingQuantity = transactionItem.jumlah - transactionItem.jumlahDiambil
-        
+
         if (pickupItem.jumlahDiambil <= 0) {
           errors.push(`Jumlah pickup untuk ${transactionItem.produk.name} harus lebih dari 0`)
         }
-        
+
         if (pickupItem.jumlahDiambil > remainingQuantity) {
           errors.push(
             `Jumlah pickup untuk ${transactionItem.produk.name} (${pickupItem.jumlahDiambil}) ` +
-            `melebihi sisa yang belum diambil (${remainingQuantity})`
+              `melebihi sisa yang belum diambil (${remainingQuantity})`,
           )
         }
       }
 
       return {
         valid: errors.length === 0,
-        errors
+        errors,
       }
-    }
+    },
   }
 }
 

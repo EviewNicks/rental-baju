@@ -3,7 +3,6 @@ import { Badge } from '@/components/ui/badge'
 import { formatCurrency } from '../../lib/utils'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
-import { useLogger } from '@/lib/client-logger'
 
 interface ProductDetailCardProps {
   item: {
@@ -30,37 +29,13 @@ interface ProductDetailCardProps {
 }
 
 export function ProductDetailCard({ item, pickupInfo }: ProductDetailCardProps) {
-  const logger = useLogger('ProductDetailCard')
-
   // Calculate pickup status - use explicit pickupInfo or derive from item data
   const actualJumlahDiambil = pickupInfo?.jumlahDiambil ?? item.jumlahDiambil ?? 0
-  const actualRemainingQuantity = pickupInfo?.remainingQuantity ?? (item.quantity - actualJumlahDiambil)
+  const actualRemainingQuantity =
+    pickupInfo?.remainingQuantity ?? item.quantity - actualJumlahDiambil
   // Show pickup status when there's pickup activity OR when items are available for pickup
-  const hasPickupData = actualJumlahDiambil > 0 || (actualRemainingQuantity > 0 && item.quantity > 0)
-
-  // Log product item data for debugging
-  logger.debug('ProductDetailCard rendered', {
-    productId: item.product.id,
-    productName: item.product.name,
-    quantity: item.quantity,
-    jumlahDiambil: item.jumlahDiambil,
-    pricePerDay: item.pricePerDay,
-    duration: item.duration,
-    subtotal: item.subtotal,
-    hasExplicitPickupInfo: !!pickupInfo,
-    hasPickupData,
-    calculatedPickupStatus: {
-      jumlahDiambil: actualJumlahDiambil,
-      remainingQuantity: actualRemainingQuantity,
-    },
-    productDetails: {
-      hasCategory: !!item.product.category,
-      hasSize: !!item.product.size,
-      hasColor: !!item.product.color,
-      hasImage: !!item.product.image,
-      hasDescription: !!item.product.description,
-    },
-  })
+  const hasPickupData =
+    actualJumlahDiambil > 0 || (actualRemainingQuantity > 0 && item.quantity > 0)
 
   return (
     <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-6 shadow-lg shadow-gray-900/5 transition-all duration-200">
@@ -145,39 +120,47 @@ export function ProductDetailCard({ item, pickupInfo }: ProductDetailCardProps) 
 
           {/* Pickup Status Display */}
           {hasPickupData && (
-            <div className={`p-3 rounded-lg border ${
-              actualRemainingQuantity === 0 
-                ? 'bg-green-50 border-green-200' 
-                : actualJumlahDiambil > 0 
-                  ? 'bg-blue-50 border-blue-200'
-                  : 'bg-yellow-50 border-yellow-200'
-            }`}>
+            <div
+              className={`p-3 rounded-lg border ${
+                actualRemainingQuantity === 0
+                  ? 'bg-green-50 border-green-200'
+                  : actualJumlahDiambil > 0
+                    ? 'bg-blue-50 border-blue-200'
+                    : 'bg-yellow-50 border-yellow-200'
+              }`}
+            >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <CheckCircle className={`h-4 w-4 ${
-                    actualRemainingQuantity === 0 
-                      ? 'text-green-600' 
-                      : actualJumlahDiambil > 0 
-                        ? 'text-blue-600'
-                        : 'text-yellow-600'
-                  }`} />
-                  <span className={`text-sm font-medium ${
-                    actualRemainingQuantity === 0 
-                      ? 'text-green-900' 
-                      : actualJumlahDiambil > 0 
-                        ? 'text-blue-900'
-                        : 'text-yellow-900'
-                  }`}>
+                  <CheckCircle
+                    className={`h-4 w-4 ${
+                      actualRemainingQuantity === 0
+                        ? 'text-green-600'
+                        : actualJumlahDiambil > 0
+                          ? 'text-blue-600'
+                          : 'text-yellow-600'
+                    }`}
+                  />
+                  <span
+                    className={`text-sm font-medium ${
+                      actualRemainingQuantity === 0
+                        ? 'text-green-900'
+                        : actualJumlahDiambil > 0
+                          ? 'text-blue-900'
+                          : 'text-yellow-900'
+                    }`}
+                  >
                     Status Pengambilan
                   </span>
                 </div>
-                <div className={`text-sm ${
-                  actualRemainingQuantity === 0 
-                    ? 'text-green-700' 
-                    : actualJumlahDiambil > 0 
-                      ? 'text-blue-700'
-                      : 'text-yellow-700'
-                }`}>
+                <div
+                  className={`text-sm ${
+                    actualRemainingQuantity === 0
+                      ? 'text-green-700'
+                      : actualJumlahDiambil > 0
+                        ? 'text-blue-700'
+                        : 'text-yellow-700'
+                  }`}
+                >
                   <span className="font-semibold">{actualJumlahDiambil}</span>
                   <span className="mx-1">/</span>
                   <span>{item.quantity}</span>
@@ -185,9 +168,11 @@ export function ProductDetailCard({ item, pickupInfo }: ProductDetailCardProps) 
                 </div>
               </div>
               {actualRemainingQuantity > 0 && (
-                <div className={`mt-2 text-xs ${
-                  actualJumlahDiambil > 0 ? 'text-blue-600' : 'text-yellow-600'
-                }`}>
+                <div
+                  className={`mt-2 text-xs ${
+                    actualJumlahDiambil > 0 ? 'text-blue-600' : 'text-yellow-600'
+                  }`}
+                >
                   Sisa {actualRemainingQuantity} item belum diambil
                 </div>
               )}
