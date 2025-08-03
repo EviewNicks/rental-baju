@@ -6,9 +6,9 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ProductCard } from '../ui/product-card'
-import type { Product, ProductFilters, ProductSelection } from '../../types/product'
+import type { Product, ProductFilters, ProductSelection } from '../../types'
 import { useAvailableProducts } from '../../hooks/useProduk'
-import { formatCurrency } from '../../lib/utils'
+import { formatCurrency } from '../../lib/utils/client'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
 
@@ -28,7 +28,7 @@ export function ProductSelectionStep({
   onUpdateQuantity,
   onNext,
   canProceed,
-}: ProductSelectionStepProps) { 
+}: ProductSelectionStepProps) {
   const [filters, setFilters] = useState<ProductFilters>({
     category: 'semua',
     size: 'semua',
@@ -40,59 +40,59 @@ export function ProductSelectionStep({
   const [searchQuery, setSearchQuery] = useState('')
 
   // Debug logging for props
-  useEffect(() => {
-  }, [selectedProducts, canProceed])
+  useEffect(() => {}, [selectedProducts, canProceed])
 
   // Fetch products from API
-  const { 
-    data: productsResponse, 
-    isLoading, 
-    error, 
-    refetch 
+  const {
+    data: productsResponse,
+    isLoading,
+    error,
+    refetch,
   } = useAvailableProducts({
     search: searchQuery,
     available: true,
   })
 
   // Debug API loading state
-  useEffect(() => {
-  }, [isLoading, error, productsResponse, searchQuery])
+  useEffect(() => {}, [isLoading, error, productsResponse, searchQuery])
 
   // Extract products and transform API data to match component interface
   const apiProducts = useMemo(() => {
     if (!productsResponse?.data) {
       return []
     }
-    
-    const transformedProducts = productsResponse.data.map((apiProduct): Product => ({
-      id: apiProduct.id,
-      name: apiProduct.name,
-      category: apiProduct.category.name.toLowerCase(),
-      size: apiProduct.size || 'Unknown',
-      color: apiProduct.color?.name || 'Unknown',
-      pricePerDay: apiProduct.hargaSewa,
-      image: apiProduct.imageUrl || '/placeholder.svg',
-      available: true, // Availability is now handled in ProductCard with quantity-aware logic
-      description: apiProduct.description,
-      availableQuantity: apiProduct.availableQuantity,
-    }))
+
+    const transformedProducts = productsResponse.data.map(
+      (apiProduct): Product => ({
+        id: apiProduct.id,
+        name: apiProduct.name,
+        category: apiProduct.category.name.toLowerCase(),
+        size: apiProduct.size || 'Unknown',
+        color: apiProduct.color?.name || 'Unknown',
+        pricePerDay: apiProduct.hargaSewa,
+        image: apiProduct.imageUrl || '/placeholder.svg',
+        available: true, // Availability is now handled in ProductCard with quantity-aware logic
+        description: apiProduct.description,
+        availableQuantity: apiProduct.availableQuantity,
+      }),
+    )
 
     return transformedProducts
   }, [productsResponse])
 
   // Extract unique categories, sizes, and colors from API data
   const categories = useMemo(() => {
-    const uniqueCategories = [...new Set(apiProducts.map(p => p.category))]
+    const uniqueCategories = [...new Set(apiProducts.map((p) => p.category))]
     return ['semua', ...uniqueCategories]
   }, [apiProducts])
 
   const sizes = useMemo(() => {
-    const uniqueSizes = [...new Set(apiProducts.map(p => p.size).filter(Boolean))]
+    const uniqueSizes = [...new Set(apiProducts.map((p) => p.size).filter(Boolean))]
     return ['semua', ...uniqueSizes]
   }, [apiProducts])
 
   const colors = useMemo(() => {
-    const uniqueColors = [...new Set(apiProducts.map(p => p.color).filter(Boolean))]
+    const uniqueColors = [...new Set(apiProducts.map((p) => p.color).filter(Boolean))]
     return ['semua', ...uniqueColors]
   }, [apiProducts])
 
@@ -143,7 +143,6 @@ export function ProductSelectionStep({
   }
 
   const handleAddProduct = (product: Product, quantity: number) => {
-
     // Check if product is already in cart
     const existingProduct = selectedProducts.find((item) => item.product.id === product.id)
 
@@ -169,7 +168,10 @@ export function ProductSelectionStep({
       {/* Main Content */}
       <div className="lg:col-span-3 space-y-6" data-testid="product-selection-main-content">
         {/* Filters */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-6 space-y-4" data-testid="product-filters-section">
+        <div
+          className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-6 space-y-4"
+          data-testid="product-filters-section"
+        >
           <div className="flex items-center gap-2 text-lg font-semibold text-gray-900">
             <Filter className="h-5 w-5" />
             Filter Produk
@@ -259,14 +261,20 @@ export function ProductSelectionStep({
         </div>
 
         {/* Products Grid */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-6" data-testid="products-grid-section">
-          <div className="flex items-center justify-between mb-6" data-testid="products-grid-header">
+        <div
+          className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-6"
+          data-testid="products-grid-section"
+        >
+          <div
+            className="flex items-center justify-between mb-6"
+            data-testid="products-grid-header"
+          >
             <h2 className="text-lg font-semibold text-gray-900" data-testid="products-count-header">
               Produk Tersedia ({isLoading ? '...' : filteredProducts.length})
             </h2>
-            <Button 
-              variant="outline" 
-              onClick={() => setShowCart(!showCart)} 
+            <Button
+              variant="outline"
+              onClick={() => setShowCart(!showCart)}
               className="lg:hidden"
               data-testid="mobile-cart-toggle-button"
             >
@@ -277,7 +285,10 @@ export function ProductSelectionStep({
 
           {/* Loading State */}
           {isLoading && (
-            <div className="flex items-center justify-center py-12" data-testid="products-loading-state">
+            <div
+              className="flex items-center justify-center py-12"
+              data-testid="products-loading-state"
+            >
               <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
               <span className="ml-2 text-gray-600">Memuat produk...</span>
             </div>
@@ -287,13 +298,15 @@ export function ProductSelectionStep({
           {error && !isLoading && (
             <div className="text-center py-12" data-testid="products-error-state">
               <Package className="h-16 w-16 text-red-300 mx-auto mb-4" />
-              <div className="text-lg text-red-600 mb-2">
-                Gagal memuat produk
-              </div>
+              <div className="text-lg text-red-600 mb-2">Gagal memuat produk</div>
               <div className="text-sm text-gray-600 mb-4">
                 Terjadi kesalahan saat mengambil data produk
               </div>
-              <Button onClick={() => refetch()} variant="outline" data-testid="products-retry-button">
+              <Button
+                onClick={() => refetch()}
+                variant="outline"
+                data-testid="products-retry-button"
+              >
                 Coba Lagi
               </Button>
             </div>
@@ -303,7 +316,10 @@ export function ProductSelectionStep({
           {!isLoading && !error && (
             <>
               {filteredProducts.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4" data-testid="products-grid">
+                <div
+                  className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4"
+                  data-testid="products-grid"
+                >
                   {filteredProducts.map((product) => (
                     <div key={product.id} data-testid={`product-card-${product.id}`}>
                       <ProductCard
@@ -332,13 +348,20 @@ export function ProductSelectionStep({
 
       {/* Cart Sidebar */}
       <div className={cn('lg:block', showCart ? 'block' : 'hidden')} data-testid="cart-sidebar">
-        <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-6 sticky top-32" data-testid="cart-container">
+        <div
+          className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-6 sticky top-32"
+          data-testid="cart-container"
+        >
           <div className="flex items-center justify-between mb-4" data-testid="cart-header">
             <div className="flex items-center gap-2">
               <ShoppingCart className="h-5 w-5 text-gray-700" />
               <h3 className="font-semibold text-gray-900">Keranjang</h3>
             </div>
-            <Badge variant="secondary" className="bg-yellow-100 text-yellow-800" data-testid="cart-item-count">
+            <Badge
+              variant="secondary"
+              className="bg-yellow-100 text-yellow-800"
+              data-testid="cart-item-count"
+            >
               {getTotalItems()} item
             </Badge>
           </div>
@@ -354,12 +377,17 @@ export function ProductSelectionStep({
               {/* Cart Items */}
               <div className="space-y-3 max-h-64 overflow-y-auto" data-testid="cart-items-list">
                 {selectedProducts.map((item) => (
-                  <div key={item.product.id} className="bg-gray-50 rounded-lg p-3" data-testid={`cart-item-${item.product.id}`}>
+                  <div
+                    key={item.product.id}
+                    className="bg-gray-50 rounded-lg p-3"
+                    data-testid={`cart-item-${item.product.id}`}
+                  >
                     <div className="flex items-start gap-3">
                       <Image
                         src={
-                          item.product.image?.startsWith('/') || item.product.image?.startsWith('http') 
-                            ? (item.product.image || '/products/image.png') 
+                          item.product.image?.startsWith('/') ||
+                          item.product.image?.startsWith('http')
+                            ? item.product.image || '/products/image.png'
                             : `/${item.product.image || 'products/image.png'}`
                         }
                         alt={item.product.name}
@@ -379,7 +407,10 @@ export function ProductSelectionStep({
                         </p>
 
                         {/* Quantity Controls */}
-                        <div className="flex items-center gap-2 mt-2" data-testid={`cart-item-controls-${item.product.id}`}>
+                        <div
+                          className="flex items-center gap-2 mt-2"
+                          data-testid={`cart-item-controls-${item.product.id}`}
+                        >
                           <Button
                             size="sm"
                             variant="outline"
@@ -389,7 +420,10 @@ export function ProductSelectionStep({
                           >
                             <Minus className="h-3 w-3" />
                           </Button>
-                          <span className="text-sm font-medium w-8 text-center" data-testid={`cart-item-quantity-${item.product.id}`}>
+                          <span
+                            className="text-sm font-medium w-8 text-center"
+                            data-testid={`cart-item-quantity-${item.product.id}`}
+                          >
                             {item.quantity}
                           </span>
                           <Button
@@ -427,7 +461,10 @@ export function ProductSelectionStep({
                   <span className="text-gray-600">Durasi:</span>
                   <span className="font-medium">3 hari</span>
                 </div>
-                <div className="flex justify-between text-base font-semibold text-gray-900 border-t border-gray-200 pt-2" data-testid="cart-total-price">
+                <div
+                  className="flex justify-between text-base font-semibold text-gray-900 border-t border-gray-200 pt-2"
+                  data-testid="cart-total-price"
+                >
                   <span>Total:</span>
                   <span>{formatCurrency(getTotalPrice())}</span>
                 </div>

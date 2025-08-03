@@ -13,8 +13,8 @@ import {
 import { Button } from '@/components/ui/button'
 import { PaymentModal } from './PaymentModal'
 import { PickupModal } from './PickupModal'
-import type { TransactionDetail } from '../../types/transaction-detail'
-import { isPickupAvailable, calculateTransactionPickupStatus } from '../../utils/pickupUtils'
+import type { TransactionDetail } from '../../types'
+import { isPickupAvailable, calculateTransactionPickupStatus } from '../../lib/utils/client'
 
 interface ActionButtonsPanelProps {
   transaction: TransactionDetail

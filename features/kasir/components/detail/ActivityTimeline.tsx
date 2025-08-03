@@ -10,8 +10,8 @@ import {
 import { useEffect, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/react-query'
-import type { ActivityLog } from '../../types/transaction-detail'
-import { formatDate } from '../../lib/utils'
+import type { ActivityLog } from '../../types'
+import { formatDate } from '../../lib/utils/client'
 
 interface ActivityTimelineProps {
   timeline: ActivityLog[]

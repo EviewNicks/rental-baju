@@ -4,8 +4,8 @@ import { useState, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/react-query'
 import { kasirApi } from '../api'
-import type { TransactionFilters } from '../types/transaction'
-import type { TransactionStatus, TransaksiQueryParams } from '../types/api'
+import type { TransactionFilters } from '../types'
+import type { TransactionStatus, TransaksiQueryParams } from '../types'
 
 interface UseTransactionsOptions {
   enabled?: boolean

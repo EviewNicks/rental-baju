@@ -1,6 +1,6 @@
 import { Tag, Package, Palette, Shirt, CheckCircle } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
-import { formatCurrency } from '../../lib/utils'
+import { formatCurrency } from '../../lib/utils/client'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
 

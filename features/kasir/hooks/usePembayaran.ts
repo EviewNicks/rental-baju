@@ -3,7 +3,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/react-query'
 import { kasirApi, KasirApiError } from '../api'
-import type { CreatePembayaranRequest } from '../types/api'
+import type { CreatePembayaranRequest } from '../types'
 
 // Hook for creating payment
 export function useCreatePembayaran() {
@@ -16,22 +16,22 @@ export function useCreatePembayaran() {
       queryClient.invalidateQueries({
         queryKey: queryKeys.kasir.transaksi.details(),
       })
-      
+
       // Invalidate transaction list to update amounts
       queryClient.invalidateQueries({
         queryKey: queryKeys.kasir.transaksi.lists(),
       })
-      
+
       // Invalidate dashboard stats to update revenue
       queryClient.invalidateQueries({
         queryKey: queryKeys.kasir.dashboard.stats(),
       })
-      
+
       // Add payment to specific transaction cache if exists
       const transaksiQueries = queryClient.getQueriesData({
         queryKey: queryKeys.kasir.transaksi.details(),
       })
-      
+
       transaksiQueries.forEach(([queryKey, queryData]) => {
         if (queryData && typeof queryData === 'object' && 'id' in queryData) {
           const transaction = queryData as Record<string, unknown>
@@ -41,7 +41,9 @@ export function useCreatePembayaran() {
               ...transaction,
               pembayaran: [...((transaction.pembayaran as unknown[]) || []), newPembayaran],
               jumlahBayar: (transaction.jumlahBayar as number) + newPembayaran.jumlah,
-              sisaBayar: (transaction.totalHarga as number) - ((transaction.jumlahBayar as number) + newPembayaran.jumlah),
+              sisaBayar:
+                (transaction.totalHarga as number) -
+                ((transaction.jumlahBayar as number) + newPembayaran.jumlah),
             })
           }
         }
@@ -58,10 +60,10 @@ export function useUpdatePembayaran() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ 
-      id, 
-      data 
-    }: { 
+    mutationFn: ({
+      id,
+      data,
+    }: {
       id: string
       data: Partial<Omit<CreatePembayaranRequest, 'transaksiKode'>>
     }) => kasirApi.pembayaran.update(id, data),
@@ -70,11 +72,11 @@ export function useUpdatePembayaran() {
       queryClient.invalidateQueries({
         queryKey: queryKeys.kasir.transaksi.details(),
       })
-      
+
       queryClient.invalidateQueries({
         queryKey: queryKeys.kasir.transaksi.lists(),
       })
-      
+
       queryClient.invalidateQueries({
         queryKey: queryKeys.kasir.dashboard.stats(),
       })
@@ -96,7 +98,7 @@ export function usePembayaranOperations() {
     jumlah: number,
     metode: 'tunai' | 'transfer' | 'kartu',
     referensi?: string,
-    catatan?: string
+    catatan?: string,
   ) => {
     if (jumlah <= 0) {
       throw new Error('Jumlah pembayaran harus lebih dari 0')
@@ -116,12 +118,12 @@ export function usePembayaranOperations() {
   // Helper function to calculate payment summary
   const calculatePaymentSummary = (
     totalAmount: number,
-    existingPayments: Array<{ jumlah: number }> = []
+    existingPayments: Array<{ jumlah: number }> = [],
   ) => {
     const totalPaid = existingPayments.reduce((sum, payment) => sum + payment.jumlah, 0)
     const remainingAmount = totalAmount - totalPaid
     const isFullyPaid = remainingAmount <= 0
-    
+
     return {
       totalAmount,
       totalPaid,
@@ -134,19 +136,19 @@ export function usePembayaranOperations() {
   // Validate payment amount against remaining balance
   const validatePaymentAmount = (
     amount: number,
-    remainingBalance: number
+    remainingBalance: number,
   ): { isValid: boolean; message?: string } => {
     if (amount <= 0) {
       return { isValid: false, message: 'Jumlah pembayaran harus lebih dari 0' }
     }
-    
+
     if (amount > remainingBalance) {
-      return { 
-        isValid: false, 
-        message: `Jumlah pembayaran (${formatCurrency(amount)}) melebihi sisa tagihan (${formatCurrency(remainingBalance)})` 
+      return {
+        isValid: false,
+        message: `Jumlah pembayaran (${formatCurrency(amount)}) melebihi sisa tagihan (${formatCurrency(remainingBalance)})`,
       }
     }
-    
+
     return { isValid: true }
   }
 
@@ -164,7 +166,7 @@ export function usePembayaranOperations() {
     const dateStr = timestamp.toISOString().slice(0, 10).replace(/-/g, '')
     const timeStr = timestamp.toTimeString().slice(0, 5).replace(':', '')
     const methodPrefix = method === 'transfer' ? 'TRF' : method === 'kartu' ? 'CRD' : 'CSH'
-    
+
     return `${methodPrefix}-${dateStr}-${timeStr}`
   }
 
@@ -172,26 +174,26 @@ export function usePembayaranOperations() {
     // Mutation functions
     processPayment,
     updatePayment: updatePembayaran.mutate,
-    
+
     // Loading states
     isProcessing: createPembayaran.isPending,
     isUpdating: updatePembayaran.isPending,
     isLoading: createPembayaran.isPending || updatePembayaran.isPending,
-    
+
     // Error states
     createError: createPembayaran.error,
     updateError: updatePembayaran.error,
     error: createPembayaran.error || updatePembayaran.error,
-    
+
     // Helper functions
     calculatePaymentSummary,
     validatePaymentAmount,
     formatCurrency,
     generatePaymentReference,
-    
+
     // Success flags
     isSuccess: createPembayaran.isSuccess || updatePembayaran.isSuccess,
-    
+
     // Reset functions
     resetCreateState: createPembayaran.reset,
     resetUpdateState: updatePembayaran.reset,
@@ -225,7 +227,7 @@ export function usePaymentMethods() {
   ]
 
   const getMethodByValue = (value: string) => {
-    return methods.find(method => method.value === value)
+    return methods.find((method) => method.value === value)
   }
 
   const getMethodIcon = (value: string) => {

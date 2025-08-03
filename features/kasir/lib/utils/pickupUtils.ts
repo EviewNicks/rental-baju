@@ -3,7 +3,7 @@
  * Utility functions for pickup status calculations and validation
  */
 
-import type { TransactionDetail } from '../types/transaction-detail'
+import type { TransactionDetail } from '../../types'
 
 /**
  * Calculate comprehensive pickup status for a transaction

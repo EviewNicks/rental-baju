@@ -1,7 +1,7 @@
 import { User, Phone, Mail, MapPin, CreditCard, Calendar, FileText, Receipt } from 'lucide-react'
 import Image from 'next/image'
-import type { Customer } from '../../types/customer'
-import { formatDate } from '../../lib/utils'
+import type { Customer } from '../../types'
+import { formatDate } from '../../lib/utils/client'
 
 interface CustomerInfoCardProps {
   customer: Customer
@@ -16,13 +16,15 @@ export function CustomerInfoCard({ customer, 'data-testid': dataTestId }: Custom
       role="region"
       aria-labelledby="customer-info-heading"
     >
-      <h2 id="customer-info-heading" className="text-lg font-semibold text-gray-900 mb-4">Informasi Penyewa</h2>
+      <h2 id="customer-info-heading" className="text-lg font-semibold text-gray-900 mb-4">
+        Informasi Penyewa
+      </h2>
 
       <div className="flex items-start gap-4">
         <div className="w-16 h-16 bg-yellow-400 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
           {customer.foto ? (
-            <Image 
-              src={customer.foto} 
+            <Image
+              src={customer.foto}
               alt={`Foto ${customer.name}`}
               width={64}
               height={64}
@@ -37,14 +39,15 @@ export function CustomerInfoCard({ customer, 'data-testid': dataTestId }: Custom
           <div>
             <h3 className="text-xl font-semibold text-gray-900">{customer.name}</h3>
             <p className="text-sm text-gray-600">
-              {customer.recentTransactions?.length || customer.totalTransactions || 0} transaksi sebelumnya
+              {customer.recentTransactions?.length || customer.totalTransactions || 0} transaksi
+              sebelumnya
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="flex items-center gap-3 text-gray-600">
               <Phone className="h-4 w-4" aria-hidden="true" />
-              <a 
+              <a
                 href={`tel:${customer.phone}`}
                 className="hover:text-blue-600 transition-colors"
                 aria-label={`Telepon ${customer.name}: ${customer.phone}`}
@@ -56,7 +59,7 @@ export function CustomerInfoCard({ customer, 'data-testid': dataTestId }: Custom
             {customer.email && (
               <div className="flex items-center gap-3 text-gray-600">
                 <Mail className="h-4 w-4" aria-hidden="true" />
-                <a 
+                <a
                   href={`mailto:${customer.email}`}
                   className="hover:text-blue-600 transition-colors"
                   aria-label={`Email ${customer.name}: ${customer.email}`}
@@ -77,7 +80,7 @@ export function CustomerInfoCard({ customer, 'data-testid': dataTestId }: Custom
 
             <div className="flex items-center gap-3 text-gray-600">
               <Calendar className="h-4 w-4" aria-hidden="true" />
-              <time 
+              <time
                 dateTime={customer.createdAt}
                 aria-label={`Tanggal bergabung: ${formatDate(customer.createdAt)}`}
               >
@@ -88,9 +91,7 @@ export function CustomerInfoCard({ customer, 'data-testid': dataTestId }: Custom
 
           <div className="flex items-start gap-3 text-gray-600">
             <MapPin className="h-4 w-4 mt-0.5" aria-hidden="true" />
-            <address className="not-italic">
-              {customer.address}
-            </address>
+            <address className="not-italic">{customer.address}</address>
           </div>
 
           {customer.catatan && (
@@ -115,13 +116,15 @@ export function CustomerInfoCard({ customer, 'data-testid': dataTestId }: Custom
                     <div>
                       <span className="font-medium text-gray-900">{transaction.kode}</span>
                       <span className="mx-2 text-gray-400">•</span>
-                      <span className={`px-2 py-1 rounded-full text-xs ${
-                        transaction.status === 'active' 
-                          ? 'bg-blue-100 text-blue-800' 
-                          : transaction.status === 'selesai'
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-gray-100 text-gray-800'
-                      }`}>
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs ${
+                          transaction.status === 'active'
+                            ? 'bg-blue-100 text-blue-800'
+                            : transaction.status === 'selesai'
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-gray-100 text-gray-800'
+                        }`}
+                      >
                         {transaction.status}
                       </span>
                     </div>

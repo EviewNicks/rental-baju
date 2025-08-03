@@ -12,7 +12,7 @@ import {
   TransaksiQueryParams 
 } from '../lib/validation/kasirSchema'
 import { TransactionCodeGenerator } from '../lib/utils/codeGenerator'
-import { PriceCalculator } from '../lib/utils/priceCalculator'
+import { PriceCalculator } from '../lib/utils/server'
 import { createAvailabilityService, AvailabilityService } from './availabilityService'
 
 export interface TransaksiWithDetails extends Transaksi {

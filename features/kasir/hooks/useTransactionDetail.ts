@@ -3,8 +3,8 @@
 import { useQuery } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/react-query'
 import { kasirApi } from '../api'
-import type { TransactionDetail } from '../types/transaction-detail'
-import type { TransaksiResponse } from '../types/api'
+import type { TransactionDetail } from '../types'
+import type { TransaksiResponse } from '../types'
 
 interface UseTransactionDetailOptions {
   enabled?: boolean

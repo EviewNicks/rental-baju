@@ -12,7 +12,7 @@ import { ProductSelectionStep } from './ProductSelectionStep'
 import { CustomerBiodataStep } from './CustomerBiodataStep'
 import { PaymentSummaryStep } from './PaymentSummaryStep'
 import { getStepValidationMessage } from '../../lib/constants/stepValidationMessages'
-import type { ProductSelection } from '../../types/product'
+import type { ProductSelection } from '../../types'
 
 const steps = [
   { id: 1, title: 'Pilih Produk', description: 'Pilih baju yang akan disewa' },
@@ -20,11 +20,10 @@ const steps = [
   { id: 3, title: 'Pembayaran', description: 'Ringkasan & pembayaran' },
 ]
 
-
 export function TransactionFormPage() {
   const router = useRouter()
   const [showSuccess, setShowSuccess] = useState(false)
-  const [errorMessage, setErrorMessage] = useState<string | null>(null) 
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const {
     currentStep,
@@ -50,7 +49,7 @@ export function TransactionFormPage() {
 
   // Add local state for restoration notification control
   const [showDataRestored, setShowDataRestored] = useState(isDataRestored)
-  
+
   // Sync local state with hook state
   React.useEffect(() => {
     setShowDataRestored(isDataRestored)
@@ -76,9 +75,9 @@ export function TransactionFormPage() {
 
   const handleSubmitTransaction = async () => {
     setErrorMessage(null) // Clear previous errors
-    
+
     const success = await submitTransaction()
-    
+
     if (success) {
       setShowSuccess(true)
       // Redirect after showing success message
@@ -92,7 +91,7 @@ export function TransactionFormPage() {
       } else {
         setErrorMessage('Terjadi kesalahan tidak terduga. Silakan coba lagi.')
       }
-      
+
       // Error message will be dismissed by user action
       // Removed auto-hide setTimeout for better UX control
     }
@@ -102,9 +101,7 @@ export function TransactionFormPage() {
   if (showSuccess) {
     return (
       <div data-testid="transaction-success-screen">
-        <TransactionSuccessScreen 
-          redirectDelay={2000}
-        />
+        <TransactionSuccessScreen redirectDelay={2000} />
       </div>
     )
   }
@@ -112,13 +109,16 @@ export function TransactionFormPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Header */}
-      <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200/50 sticky top-0 z-10" data-testid="transaction-form-header">
+      <div
+        className="bg-white/80 backdrop-blur-sm border-b border-gray-200/50 sticky top-0 z-10"
+        data-testid="transaction-form-header"
+      >
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Button 
-                variant="ghost" 
-                size="sm" 
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={handleBackButtonClick}
                 aria-label="Kembali ke dashboard dan hapus data form"
                 data-testid="transaction-form-back-button"
@@ -127,7 +127,12 @@ export function TransactionFormPage() {
                 Kembali
               </Button>
               <div>
-                <h1 className="text-xl font-bold text-gray-900" data-testid="transaction-form-title">Transaksi Penyewaan Baru</h1>
+                <h1
+                  className="text-xl font-bold text-gray-900"
+                  data-testid="transaction-form-title"
+                >
+                  Transaksi Penyewaan Baru
+                </h1>
                 <p className="text-sm text-gray-600" data-testid="transaction-form-subtitle">
                   Ikuti langkah-langkah untuk membuat transaksi rental
                 </p>
@@ -139,8 +144,16 @@ export function TransactionFormPage() {
 
       {/* Stepper */}
       <div className="max-w-7xl mx-auto px-4 py-6">
-        <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-6 mb-6" data-testid="transaction-form-stepper-container">
-          <Stepper steps={steps} currentStep={currentStep} onStepClick={goToStep} data-testid="transaction-form-stepper" />
+        <div
+          className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-6 mb-6"
+          data-testid="transaction-form-stepper-container"
+        >
+          <Stepper
+            steps={steps}
+            currentStep={currentStep}
+            onStepClick={goToStep}
+            data-testid="transaction-form-stepper"
+          />
         </div>
 
         {/* Data Restoration Notification */}
@@ -168,21 +181,22 @@ export function TransactionFormPage() {
         )}
 
         {/* Progress Indicators */}
-        {!canProceed && (() => {
-          const validationMessage = getStepValidationMessage(currentStep)
-          if (!validationMessage) return null
-          
-          return (
-            <NotificationBanner
-              type="warning"
-              title={validationMessage.title}
-              message={validationMessage.message}
-              helpText={validationMessage.helpText}
-              dismissible={false}
-              data-testid="step-validation-notification"
-            />
-          )
-        })()}
+        {!canProceed &&
+          (() => {
+            const validationMessage = getStepValidationMessage(currentStep)
+            if (!validationMessage) return null
+
+            return (
+              <NotificationBanner
+                type="warning"
+                title={validationMessage.title}
+                message={validationMessage.message}
+                helpText={validationMessage.helpText}
+                dismissible={false}
+                data-testid="step-validation-notification"
+              />
+            )
+          })()}
 
         {/* Content */}
         <div className="space-y-6" data-testid="transaction-form-content">

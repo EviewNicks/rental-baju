@@ -7,7 +7,7 @@
 import { PrismaClient } from '@prisma/client'
 import { Decimal } from '@prisma/client/runtime/library'
 import { CreatePembayaranRequest } from '../lib/validation/kasirSchema'
-import { PriceCalculator } from '../lib/utils/priceCalculator'
+import { PriceCalculator } from '../lib/utils/server'
 import { createAuditService, AuditService } from './auditService'
 
 export interface PembayaranWithDetails {

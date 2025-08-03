@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils'
-import type { TransactionStatus } from '../../types/transaction'
+import type { TransactionStatus } from '../../types'
 
 interface StatusBadgeProps {
   status: TransactionStatus
@@ -8,7 +8,10 @@ interface StatusBadgeProps {
   'aria-label'?: string
 }
 
-const statusConfig: Record<TransactionStatus, { label: string; className: string; description: string }> = {
+const statusConfig: Record<
+  TransactionStatus,
+  { label: string; className: string; description: string }
+> = {
   active: {
     label: 'Aktif',
     className: 'bg-blue-100 text-blue-800 border-blue-200',
@@ -31,11 +34,11 @@ const statusConfig: Record<TransactionStatus, { label: string; className: string
   },
 }
 
-export function StatusBadge({ 
-  status, 
-  className, 
-  'data-testid': dataTestId, 
-  'aria-label': ariaLabel 
+export function StatusBadge({
+  status,
+  className,
+  'data-testid': dataTestId,
+  'aria-label': ariaLabel,
 }: StatusBadgeProps) {
   const config = statusConfig[status]
 

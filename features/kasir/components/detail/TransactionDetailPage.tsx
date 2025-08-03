@@ -10,7 +10,7 @@ import { PaymentSummaryCard } from './PaymentSummaryCard'
 import { ActivityTimeline } from './ActivityTimeline'
 import { ActionButtonsPanel } from './ActionButtonPanel'
 import { useTransactionDetail } from '../../hooks/useTransactionDetail'
-import { formatDate } from '../../lib/utils'
+import { formatDate } from '../../lib/utils/client'
 
 interface TransactionDetailPageProps {
   transactionId: string

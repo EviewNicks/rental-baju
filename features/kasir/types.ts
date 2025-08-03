@@ -1,15 +1,187 @@
 /**
- * API Types for Kasir Feature - RPK-26
- * TypeScript interfaces for request/response contracts
- * Following Indonesian field naming as per task requirements
+ * Kasir Feature Types - Consolidated
+ * All TypeScript types for the kasir feature in one file
+ * Following architecture guidelines from docs/rules/architecture.md
  */
 
+// ==========================================
+// CORE TYPES & ENUMS
+// ==========================================
 
-// Status types aligned with UI requirements
 export type TransactionStatus = 'active' | 'selesai' | 'terlambat' | 'cancelled'
 export type PaymentMethod = 'tunai' | 'transfer' | 'kartu'
 export type ActivityType = 'dibuat' | 'dibayar' | 'dikembalikan' | 'terlambat' | 'dibatalkan'
 export type ReturnStatus = 'belum' | 'sebagian' | 'lengkap'
+export type TransactionStep = 1 | 2 | 3
+
+// ==========================================
+// CUSTOMER TYPES
+// ==========================================
+
+export interface RecentTransaction {
+  id: string
+  kode: string
+  status: string
+  totalHarga: number
+  createdAt: string
+}
+
+export interface Customer {
+  id: string
+  name: string
+  phone: string
+  email?: string
+  address: string
+  identityNumber?: string
+  foto?: string
+  catatan?: string
+  createdAt: string
+  totalTransactions?: number
+  recentTransactions?: RecentTransaction[]
+}
+
+export interface CustomerFormData {
+  name: string
+  phone: string
+  email?: string
+  address: string
+  identityNumber?: string
+}
+
+// ==========================================
+// PRODUCT TYPES
+// ==========================================
+
+export interface Product {
+  id: string
+  name: string
+  category: string
+  size: string
+  color: string
+  pricePerDay: number
+  image: string
+  available: boolean
+  description?: string
+  availableQuantity?: number
+}
+
+export interface ProductSelection {
+  product: Product
+  quantity: number
+  duration: number
+}
+
+export interface ProductFilters {
+  category?: string
+  size?: string
+  color?: string
+  search?: string
+  available?: boolean
+}
+
+// ==========================================
+// TRANSACTION TYPES
+// ==========================================
+
+export interface Transaction {
+  id: string
+  transactionCode: string
+  customerName: string
+  customerPhone: string
+  customerAddress: string
+  items: string[]
+  totalAmount: number
+  amountPaid: number
+  remainingAmount: number
+  status: TransactionStatus
+  startDate: string
+  endDate?: string
+  returnDate?: string
+  paymentMethod?: string
+  notes?: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface TransactionFilters {
+  status?: TransactionStatus | 'all'
+  search?: string
+  dateRange?: {
+    start: string
+    end: string
+  }
+}
+
+export interface ActivityLog {
+  id: string
+  timestamp: string
+  action:
+    | 'created'
+    | 'paid'
+    | 'picked_up'
+    | 'returned'
+    | 'overdue'
+    | 'reminder_sent'
+    | 'penalty_added'
+  description: string
+  performedBy: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  details?: any
+}
+
+export interface Penalty {
+  id: string
+  type: 'late_return' | 'damage' | 'lost'
+  amount: number
+  description: string
+  createdAt: string
+  status: 'pending' | 'paid' | 'waived'
+}
+
+export interface Payment {
+  id: string
+  amount: number
+  method: 'cash' | 'qris' | 'transfer'
+  timestamp: string
+  type: 'rental' | 'penalty' | 'deposit'
+  reference?: string
+}
+
+export interface TransactionDetail extends Transaction {
+  customer: Customer
+  products: Array<{
+    id: string // TransaksiItem.id - needed for pickup operations
+    product: Product
+    quantity: number
+    jumlahDiambil?: number // How many items have been picked up
+    pricePerDay: number
+    duration: number
+    subtotal: number
+  }>
+  timeline: ActivityLog[]
+  penalties?: Penalty[]
+  payments: Payment[]
+}
+
+// ==========================================
+// TRANSACTION FORM TYPES
+// ==========================================
+
+export interface TransactionFormData {
+  customer?: Customer
+  products: ProductSelection[]
+  pickupDate: string
+  returnDate: string
+  paymentMethod: 'cash' | 'qris' | 'transfer'
+  paymentAmount: number
+  paymentStatus: 'paid' | 'unpaid'
+  notes?: string
+  currentStep?: TransactionStep // For persistence
+}
+
+// ==========================================
+// API TYPES
+// ==========================================
 
 // Penyewa (Customer) API Types
 export interface CreatePenyewaRequest {
@@ -266,7 +438,7 @@ export interface ApiError {
   validationErrors?: ValidationError[]
 }
 
-// Dashboard Statistics Types (from task requirements)
+// Dashboard Statistics Types
 export interface DashboardStats {
   transactions: {
     total: number
@@ -310,4 +482,42 @@ export interface PickupResponse {
   success: boolean
   transaction: TransaksiResponse
   message: string
+}
+
+// ==========================================
+// UI TYPES
+// ==========================================
+
+export interface TransactionSuccessProps {
+  transactionCode?: string
+  message?: string
+  redirectDelay?: number
+}
+
+export interface TransactionFormState {
+  showSuccess: boolean
+  errorMessage: string | null
+  isDataRestored: boolean
+}
+
+export interface StepIndicatorProps {
+  currentStep: number
+  canProceed: boolean
+  onStepClick: (step: number) => void
+}
+
+export interface TransactionNotification {
+  type: 'error' | 'warning' | 'info' | 'success'
+  title: string
+  message: string
+  helpText?: string
+  dismissible?: boolean
+  autoHide?: boolean
+  duration?: number
+}
+
+export interface TransactionFormPageProps {
+  // Future: Could accept initial data or configuration
+  initialStep?: number
+  onTransactionComplete?: (transactionId: string) => void
 }

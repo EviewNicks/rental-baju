@@ -1,16 +1,14 @@
 'use client'
 
 import { useState, useCallback, useEffect } from 'react'
-import type { TransactionFormData, TransactionStep } from '../types/transaction-form'
-import type { Customer } from '../types/customer'
-import type { ProductSelection } from '../types/product'
-import type { CreateTransaksiRequest, UpdateTransaksiRequest } from '../types/api'
+import type { TransactionFormData, TransactionStep, Customer,ProductSelection,   } from '../types'
+import type { CreateTransaksiRequest, UpdateTransaksiRequest } from '../types'
 import { useCreateTransaksi } from './useTransaksi'
 import { useTransactionFormPersistence } from './useTransactionFormPersistence'
 import { useCreatePembayaran } from './usePembayaran'
 import { KasirApi } from '../api'
 import { useMutation } from '@tanstack/react-query'
-import type { CreatePembayaranRequest } from '../types/api'
+import type { CreatePembayaranRequest } from '../types'
 // import { toast } from '@/hooks/use-toast' // TODO: Add toast implementation
 
 const initialFormData: TransactionFormData = {

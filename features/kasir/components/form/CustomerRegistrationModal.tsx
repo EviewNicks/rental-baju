@@ -8,9 +8,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import type { Customer, CustomerFormData } from '../../types/customer'
+import type { Customer, CustomerFormData } from '../../types'
 import { useCreatePenyewa } from '../../hooks/usePenyewa'
-import type { CreatePenyewaRequest } from '../../types/api'
+import type { CreatePenyewaRequest } from '../../types'
 import { KasirApiError } from '../../api'
 // import { toast } from '@/hooks/use-toast' // TODO: Add toast implementation
 
@@ -34,12 +34,9 @@ export function CustomerRegistrationModal({
   })
   const [errors, setErrors] = useState<Partial<CustomerFormData>>({})
   const [serverErrors, setServerErrors] = useState<Record<string, string>>({})
-  
+
   // Real API integration
-  const { 
-    mutate: createPenyewa, 
-    isPending: isSubmitting
-  } = useCreatePenyewa()
+  const { mutate: createPenyewa, isPending: isSubmitting } = useCreatePenyewa()
 
   const validateForm = (): boolean => {
     const newErrors: Partial<CustomerFormData> = {}
@@ -114,20 +111,19 @@ export function CustomerRegistrationModal({
         setServerErrors({})
       },
       onError: (error) => {
-        
         // Handle validation errors from server
         if (error instanceof KasirApiError && error.validationErrors) {
           const fieldErrors: Record<string, string> = {}
-          error.validationErrors.forEach(validationError => {
+          error.validationErrors.forEach((validationError) => {
             // Map API field names to form field names
             const fieldMapping: Record<string, keyof CustomerFormData> = {
-              'nama': 'name',
-              'telepon': 'phone', 
-              'alamat': 'address',
-              'email': 'email',
-              'nik': 'identityNumber'
+              nama: 'name',
+              telepon: 'phone',
+              alamat: 'address',
+              email: 'email',
+              nik: 'identityNumber',
             }
-            
+
             const formField = fieldMapping[validationError.field]
             if (formField) {
               fieldErrors[formField] = validationError.message
@@ -141,7 +137,7 @@ export function CustomerRegistrationModal({
           // Clear server errors for non-validation errors
           setServerErrors({})
         }
-        
+
         // Show general error message
       },
     })
@@ -149,12 +145,12 @@ export function CustomerRegistrationModal({
 
   const handleInputChange = (field: keyof CustomerFormData, value: string) => {
     let processedValue = value
-    
+
     // Format NIK input - only allow digits and limit to 16 characters
     if (field === 'identityNumber') {
       processedValue = value.replace(/\D/g, '').slice(0, 16)
     }
-    
+
     setFormData((prev) => ({ ...prev, [field]: processedValue }))
     // Clear errors when user starts typing
     if (errors[field]) {
@@ -212,7 +208,7 @@ export function CustomerRegistrationModal({
                   type="text"
                   value={formData.name}
                   onChange={(e) => handleInputChange('name', e.target.value)}
-                  className={`pl-10 ${(errors.name || serverErrors.name) ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''}`}
+                  className={`pl-10 ${errors.name || serverErrors.name ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''}`}
                   placeholder="Masukkan nama lengkap"
                 />
               </div>
@@ -233,7 +229,7 @@ export function CustomerRegistrationModal({
                   type="tel"
                   value={formData.phone}
                   onChange={(e) => handleInputChange('phone', e.target.value)}
-                  className={`pl-10 ${(errors.phone || serverErrors.phone) ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''}`}
+                  className={`pl-10 ${errors.phone || serverErrors.phone ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''}`}
                   placeholder="081234567890"
                 />
               </div>
@@ -254,7 +250,7 @@ export function CustomerRegistrationModal({
                   type="email"
                   value={formData.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
-                  className={`pl-10 ${(errors.email || serverErrors.email) ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''}`}
+                  className={`pl-10 ${errors.email || serverErrors.email ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''}`}
                   placeholder="email@example.com"
                 />
               </div>
@@ -276,12 +272,14 @@ export function CustomerRegistrationModal({
                   type="text"
                   value={formData.identityNumber}
                   onChange={(e) => handleInputChange('identityNumber', e.target.value)}
-                  className={`pl-10 ${(errors.identityNumber || serverErrors.identityNumber) ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''}`}
+                  className={`pl-10 ${errors.identityNumber || serverErrors.identityNumber ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''}`}
                   placeholder="3171234567890001"
                 />
               </div>
               {(errors.identityNumber || serverErrors.identityNumber) && (
-                <p className="mt-1 text-xs text-red-600">{errors.identityNumber || serverErrors.identityNumber}</p>
+                <p className="mt-1 text-xs text-red-600">
+                  {errors.identityNumber || serverErrors.identityNumber}
+                </p>
               )}
             </div>
 
@@ -296,12 +294,14 @@ export function CustomerRegistrationModal({
                   id="address"
                   value={formData.address}
                   onChange={(e) => handleInputChange('address', e.target.value)}
-                  className={`pl-10 min-h-[80px] ${(errors.address || serverErrors.address) ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''}`}
+                  className={`pl-10 min-h-[80px] ${errors.address || serverErrors.address ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''}`}
                   placeholder="Masukkan alamat lengkap dengan RT/RW, Kelurahan, Kecamatan, Kota"
                 />
               </div>
               {(errors.address || serverErrors.address) && (
-                <p className="mt-1 text-xs text-red-600">{errors.address || serverErrors.address}</p>
+                <p className="mt-1 text-xs text-red-600">
+                  {errors.address || serverErrors.address}
+                </p>
               )}
             </div>
           </div>

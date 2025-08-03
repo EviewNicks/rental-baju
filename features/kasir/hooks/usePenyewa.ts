@@ -3,12 +3,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/react-query'
 import { kasirApi, KasirApiError } from '../api'
-import type { 
-  CreatePenyewaRequest, 
-  UpdatePenyewaRequest, 
+import type {
+  CreatePenyewaRequest,
+  UpdatePenyewaRequest,
   PenyewaResponse,
-  PenyewaQueryParams 
-} from '../types/api'
+  PenyewaQueryParams,
+} from '../types'
 
 // Hook for fetching penyewa list
 export function usePenyewaList(params: PenyewaQueryParams = {}) {
@@ -53,12 +53,9 @@ export function useCreatePenyewa() {
       queryClient.invalidateQueries({
         queryKey: queryKeys.kasir.penyewa.lists(),
       })
-      
+
       // Add the new penyewa to cache
-      queryClient.setQueryData(
-        queryKeys.kasir.penyewa.detail(newPenyewa.id),
-        newPenyewa
-      )
+      queryClient.setQueryData(queryKeys.kasir.penyewa.detail(newPenyewa.id), newPenyewa)
     },
     onError: (error: KasirApiError) => {
       // Error will be handled by the component
@@ -76,11 +73,8 @@ export function useUpdatePenyewa() {
       kasirApi.penyewa.update(id, data),
     onSuccess: (updatedPenyewa, { id }) => {
       // Update the penyewa in cache
-      queryClient.setQueryData(
-        queryKeys.kasir.penyewa.detail(id),
-        updatedPenyewa
-      )
-      
+      queryClient.setQueryData(queryKeys.kasir.penyewa.detail(id), updatedPenyewa)
+
       // Invalidate penyewa lists to ensure consistency
       queryClient.invalidateQueries({
         queryKey: queryKeys.kasir.penyewa.lists(),
@@ -117,7 +111,7 @@ export function usePenyewaSelection() {
     const queries = queryClient.getQueriesData({
       queryKey: queryKeys.kasir.penyewa.details(),
     })
-    
+
     return queries
       .map(([, data]) => data as PenyewaResponse)
       .filter(Boolean)

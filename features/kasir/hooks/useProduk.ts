@@ -3,7 +3,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/react-query'
 import { kasirApi } from '../api'
-import type { ProductAvailabilityQueryParams } from '../types/api'
+import type { ProductAvailabilityQueryParams } from '../types'
 
 // Hook for fetching available products
 export function useAvailableProducts(params: ProductAvailabilityQueryParams = {}) {
@@ -46,12 +46,7 @@ export function useProductsByCategory(categoryId: string, enabled = true) {
 // Combined hook for product selection in transaction forms
 export function useProductSelection() {
   // Get all available products by default
-  const {
-    data: productsData,
-    isLoading,
-    error,
-    refetch,
-  } = useAvailableProducts()
+  const { data: productsData, isLoading, error, refetch } = useAvailableProducts()
 
   // Helper functions for product operations
   const searchProducts = (query: string) => {
@@ -65,25 +60,27 @@ export function useProductSelection() {
   // Check if product is available for rental
   const isProductAvailable = (productId: string, requestedQuantity: number) => {
     if (!productsData?.data) return false
-    
-    const product = productsData.data.find(p => p.id === productId)
+
+    const product = productsData.data.find((p) => p.id === productId)
     return product ? product.availableQuantity >= requestedQuantity : false
   }
 
   // Get product details by ID
   const getProductById = (productId: string) => {
     if (!productsData?.data) return null
-    return productsData.data.find(p => p.id === productId) || null
+    return productsData.data.find((p) => p.id === productId) || null
   }
 
   // Calculate total price for selected products
-  const calculateTotalPrice = (selections: Array<{ productId: string; quantity: number; duration: number }>) => {
+  const calculateTotalPrice = (
+    selections: Array<{ productId: string; quantity: number; duration: number }>,
+  ) => {
     if (!productsData?.data) return 0
-    
+
     return selections.reduce((total, selection) => {
       const product = getProductById(selection.productId)
       if (!product) return total
-      
+
       const subtotal = product.hargaSewa * selection.quantity * selection.duration
       return total + subtotal
     }, 0)
@@ -107,9 +104,9 @@ export function useProductSelection() {
 // Hook for real-time inventory checking
 export function useInventoryCheck(productId: string, enabled = true) {
   return useQuery({
-    queryKey: queryKeys.kasir.produk.availableList({ 
-      search: productId,  // This might need adjustment based on API implementation
-      available: true 
+    queryKey: queryKeys.kasir.produk.availableList({
+      search: productId, // This might need adjustment based on API implementation
+      available: true,
     }),
     queryFn: () => kasirApi.produk.getAvailable({ available: true }),
     enabled: enabled && !!productId,
@@ -118,13 +115,15 @@ export function useInventoryCheck(productId: string, enabled = true) {
     gcTime: 2 * 60 * 1000,
     select: (data) => {
       // Extract just the product we're checking
-      const product = data.data.find(p => p.id === productId)
-      return product ? {
-        id: product.id,
-        name: product.name,
-        availableQuantity: product.availableQuantity,
-        hargaSewa: product.hargaSewa,
-      } : null
+      const product = data.data.find((p) => p.id === productId)
+      return product
+        ? {
+            id: product.id,
+            name: product.name,
+            availableQuantity: product.availableQuantity,
+            hargaSewa: product.hargaSewa,
+          }
+        : null
     },
   })
 }

@@ -3,8 +3,8 @@ import { Badge } from '@/components/ui/badge'
 import { useEffect, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/react-query'
-import type { TransactionDetail, Payment, Penalty } from '../../types/transaction-detail'
-import { formatCurrency, formatDate } from '../../lib/utils'
+import type { TransactionDetail, Payment, Penalty } from '../../types'
+import { formatCurrency, formatDate } from '../../lib/utils/client'
 
 interface PaymentSummaryCardProps {
   transaction: TransactionDetail
@@ -23,7 +23,7 @@ export function PaymentSummaryCard({
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [lastPaymentCount, setLastPaymentCount] = useState(0)
   const [lastTotalPaid, setLastTotalPaid] = useState(0)
-  
+
   // 🛡️ Phase 2: Data validation
   const validPayments = Array.isArray(payments) ? payments : []
   const validPenalties = Array.isArray(penalties) ? penalties : []
@@ -48,12 +48,15 @@ export function PaymentSummaryCard({
   useEffect(() => {
     if (!transaction?.transactionCode) return
 
-    const queryKey = [...queryKeys.kasir.transaksi.detail(transaction.transactionCode), 'transformed']
-    
+    const queryKey = [
+      ...queryKeys.kasir.transaksi.detail(transaction.transactionCode),
+      'transformed',
+    ]
+
     // Check if query is currently fetching
     const queryState = queryClient.getQueryState(queryKey)
     const isFetching = queryState?.fetchStatus === 'fetching'
-    
+
     if (isFetching !== isRefreshing) {
       setIsRefreshing(isFetching)
     }
@@ -63,7 +66,7 @@ export function PaymentSummaryCard({
   useEffect(() => {
     const currentPaymentCount = validPayments.length
     const currentTotalPaid = totalPaid
-    
+
     // Log payment changes for debugging
     if (currentPaymentCount !== lastPaymentCount || currentTotalPaid !== lastTotalPaid) {
       console.log(`[PaymentSummaryCard] Payment data changed for ${transaction?.transactionCode}`, {
@@ -72,53 +75,79 @@ export function PaymentSummaryCard({
         previousTotalPaid: lastTotalPaid,
         currentTotalPaid,
         paymentIncrease: currentTotalPaid - lastTotalPaid,
-        remainingBalance
+        remainingBalance,
       })
-      
+
       setLastPaymentCount(currentPaymentCount)
       setLastTotalPaid(currentTotalPaid)
-      
+
       // If payment count decreased unexpectedly, force a refresh
       if (currentPaymentCount < lastPaymentCount && lastPaymentCount > 0) {
-        console.warn(`[PaymentSummaryCard] Payment count decreased unexpectedly for ${transaction?.transactionCode} - forcing refresh`)
-        
+        console.warn(
+          `[PaymentSummaryCard] Payment count decreased unexpectedly for ${transaction?.transactionCode} - forcing refresh`,
+        )
+
         setTimeout(() => {
           queryClient.refetchQueries({
-            queryKey: [...queryKeys.kasir.transaksi.detail(transaction.transactionCode), 'transformed'],
-            type: 'active'
+            queryKey: [
+              ...queryKeys.kasir.transaksi.detail(transaction.transactionCode),
+              'transformed',
+            ],
+            type: 'active',
           })
         }, 500)
       }
     }
-  }, [validPayments.length, totalPaid, lastPaymentCount, lastTotalPaid, transaction?.transactionCode, queryClient, remainingBalance])
-  
+  }, [
+    validPayments.length,
+    totalPaid,
+    lastPaymentCount,
+    lastTotalPaid,
+    transaction?.transactionCode,
+    queryClient,
+    remainingBalance,
+  ])
+
   // 🔥 FIX: Periodic payment sync (every 15 seconds when component is active)
   useEffect(() => {
     if (!transaction?.transactionCode) return
-    
+
     const syncInterval = setInterval(() => {
-      const queryKey = [...queryKeys.kasir.transaksi.detail(transaction.transactionCode), 'transformed']
+      const queryKey = [
+        ...queryKeys.kasir.transaksi.detail(transaction.transactionCode),
+        'transformed',
+      ]
       const queryState = queryClient.getQueryState(queryKey)
-      
+
       // Only sync if not currently fetching and has data
       if (queryState?.fetchStatus !== 'fetching' && queryState?.data) {
-        console.log(`[PaymentSummaryCard] Periodic payment sync check for ${transaction.transactionCode}`, {
-          currentPayments: validPayments.length,
-          currentTotalPaid: totalPaid
-        })
-        
-        queryClient.refetchQueries({
-          queryKey,
-          type: 'active'
-        }).catch(error => {
-          console.error(`[PaymentSummaryCard] Periodic sync failed for ${transaction.transactionCode}:`, error)
-        })
+        console.log(
+          `[PaymentSummaryCard] Periodic payment sync check for ${transaction.transactionCode}`,
+          {
+            currentPayments: validPayments.length,
+            currentTotalPaid: totalPaid,
+          },
+        )
+
+        queryClient
+          .refetchQueries({
+            queryKey,
+            type: 'active',
+          })
+          .catch((error) => {
+            console.error(
+              `[PaymentSummaryCard] Periodic sync failed for ${transaction.transactionCode}:`,
+              error,
+            )
+          })
       }
     }, 15000) // Sync every 15 seconds
-    
+
     return () => {
       clearInterval(syncInterval)
-      console.log(`[PaymentSummaryCard] Cleared periodic payment sync for ${transaction?.transactionCode}`)
+      console.log(
+        `[PaymentSummaryCard] Cleared periodic payment sync for ${transaction?.transactionCode}`,
+      )
     }
   }, [transaction?.transactionCode, queryClient, validPayments.length, totalPaid])
 

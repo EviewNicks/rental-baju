@@ -1,4 +1,4 @@
-import type { TransactionDetail } from '../types/transaction-detail'
+import type { TransactionDetail } from '../../types'
 
 export const mockTransactionDetail: Record<string, TransactionDetail> = {
   '1': {

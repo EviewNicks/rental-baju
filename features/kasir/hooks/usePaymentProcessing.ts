@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { kasirApi } from '../api'
 import { queryKeys } from '@/lib/react-query'
 import type { CreatePembayaranRequest } from '../lib/validation/kasirSchema'
-import type { PembayaranResponse } from '../types/api'
+import type { PembayaranResponse } from '../types'
 
 interface PaymentProcessingOptions {
   onSuccess?: (data: PembayaranResponse) => void

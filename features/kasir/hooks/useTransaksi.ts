@@ -3,12 +3,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/react-query'
 import { kasirApi, KasirApiError } from '../api'
-import type { 
-  CreateTransaksiRequest, 
+import type {
+  CreateTransaksiRequest,
   UpdateTransaksiRequest,
   TransaksiQueryParams,
-  TransactionStatus
-} from '../types/api'
+  TransactionStatus,
+} from '../types'
 
 // Hook for fetching transaksi list
 export function useTransaksiList(params: TransaksiQueryParams = {}) {
@@ -64,28 +64,25 @@ export function useCreateTransaksi() {
       queryClient.invalidateQueries({
         queryKey: queryKeys.kasir.transaksi.lists(),
       })
-      
+
       // Add the new transaksi to cache
-      queryClient.setQueryData(
-        queryKeys.kasir.transaksi.detail(newTransaksi.kode),
-        newTransaksi
-      )
-      
+      queryClient.setQueryData(queryKeys.kasir.transaksi.detail(newTransaksi.kode), newTransaksi)
+
       // 🔥 FIX: Invalidate specific transaction detail to ensure fresh data
       queryClient.invalidateQueries({
         queryKey: queryKeys.kasir.transaksi.detail(newTransaksi.kode),
       })
-      
+
       // 🔥 FIX: Invalidate transformed cache used by PaymentSummaryCard
       queryClient.invalidateQueries({
         queryKey: [...queryKeys.kasir.transaksi.detail(newTransaksi.kode), 'transformed'],
       })
-      
+
       // 🔥 FIX: Invalidate payment cache for this transaction
       queryClient.invalidateQueries({
         queryKey: queryKeys.kasir.pembayaran.byTransaksi(newTransaksi.id),
       })
-      
+
       // Also invalidate dashboard stats as they may have changed
       queryClient.invalidateQueries({
         queryKey: queryKeys.kasir.dashboard.stats(),
@@ -107,16 +104,13 @@ export function useUpdateTransaksi() {
       kasirApi.transaksi.update(kode, data),
     onSuccess: (updatedTransaksi, { kode }) => {
       // Update the transaksi in cache
-      queryClient.setQueryData(
-        queryKeys.kasir.transaksi.detail(kode),
-        updatedTransaksi
-      )
-      
+      queryClient.setQueryData(queryKeys.kasir.transaksi.detail(kode), updatedTransaksi)
+
       // Invalidate transaksi lists to ensure consistency
       queryClient.invalidateQueries({
         queryKey: queryKeys.kasir.transaksi.lists(),
       })
-      
+
       // Invalidate dashboard stats
       queryClient.invalidateQueries({
         queryKey: queryKeys.kasir.dashboard.stats(),
@@ -150,7 +144,6 @@ export function useTransaksiOperations() {
 
 // Helper hook for transaction status management
 export function useTransactionStatusManager() {
-
   // Mark transaction as complete
   const markAsCompleted = (kode: string) => {
     return kasirApi.transaksi.update(kode, { status: 'selesai' })
@@ -194,7 +187,7 @@ export function useTransactionMetrics() {
 
   return {
     totalActive,
-    totalCompleted, 
+    totalCompleted,
     totalOverdue,
     totalTransactions,
     completionRate: Math.round(completionRate),

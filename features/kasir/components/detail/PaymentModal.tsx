@@ -11,8 +11,8 @@ import {
 import { CheckCircle, CreditCard } from 'lucide-react'
 import { PaymentForm } from './PaymentForm'
 import { usePaymentProcessing } from '../../hooks/usePaymentProcessing'
-import { formatCurrency } from '../../lib/utils'
-import type { TransactionDetail } from '../../types/transaction-detail'
+import { formatCurrency } from '../../lib/utils/client'
+import type { TransactionDetail } from '../../types'
 
 interface PaymentModalProps {
   isOpen: boolean

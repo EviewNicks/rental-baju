@@ -33,7 +33,7 @@ import type {
   
   // API wrapper types
   ApiResponse,
-} from './types/api'
+} from './types'
 
 // Base API configuration
 const API_BASE_URL = '/api/kasir'

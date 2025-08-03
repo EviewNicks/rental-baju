@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef } from 'react'
-import type { TransactionFormData } from '../types/transaction-form'
+import type { TransactionFormData } from '../types'
 
 const STORAGE_KEY = 'transaction-form-draft'
 const STORAGE_VERSION = '1.0'

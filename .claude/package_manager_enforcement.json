@@ -34,5 +34,11 @@
     "blocked_command": "cd \"D:\\.work\\rental-software\" && npm run lint",
     "suggested_command": "cd \"D:\\.work\\rental-software\" && yarn lint",
     "reason": "Gunakan 'yarn' sebagai pengganti 'npm run' untuk workflow utama."
+  },
+  {
+    "session_id": "67032924-7c62-4d0a-a37c-3bc4046e715c",
+    "blocked_command": "cd \"D:\\.work\\rental-software\" && npm list @prisma/client prisma",
+    "suggested_command": "cd \"D:\\.work\\rental-software\" && yarn list @prisma/client prisma",
+    "reason": "Gunakan 'yarn' sebagai default, kecuali ada alasan khusus."
   }
 ]
