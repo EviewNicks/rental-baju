@@ -8,7 +8,7 @@ import type { ProductAvailabilityQueryParams } from '../types'
 // Cache metrics for monitoring
 const logCacheMetrics = (queryKey: string, isStale: boolean) => {
   if (typeof window !== 'undefined') {
-    console.log('[useProduk] Cache metrics', {
+    console.info('[useProduk] Cache metrics', {
       queryKey,
       isStale,
       timestamp: new Date().toISOString(),

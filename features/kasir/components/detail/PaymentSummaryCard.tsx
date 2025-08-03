@@ -69,15 +69,6 @@ export function PaymentSummaryCard({
 
     // Log payment changes for debugging
     if (currentPaymentCount !== lastPaymentCount || currentTotalPaid !== lastTotalPaid) {
-      console.log(`[PaymentSummaryCard] Payment data changed for ${transaction?.transactionCode}`, {
-        previousPaymentCount: lastPaymentCount,
-        currentPaymentCount,
-        previousTotalPaid: lastTotalPaid,
-        currentTotalPaid,
-        paymentIncrease: currentTotalPaid - lastTotalPaid,
-        remainingBalance,
-      })
-
       setLastPaymentCount(currentPaymentCount)
       setLastTotalPaid(currentTotalPaid)
 
@@ -121,14 +112,6 @@ export function PaymentSummaryCard({
 
       // Only sync if not currently fetching and has data
       if (queryState?.fetchStatus !== 'fetching' && queryState?.data) {
-        console.log(
-          `[PaymentSummaryCard] Periodic payment sync check for ${transaction.transactionCode}`,
-          {
-            currentPayments: validPayments.length,
-            currentTotalPaid: totalPaid,
-          },
-        )
-
         queryClient
           .refetchQueries({
             queryKey,
@@ -145,9 +128,6 @@ export function PaymentSummaryCard({
 
     return () => {
       clearInterval(syncInterval)
-      console.log(
-        `[PaymentSummaryCard] Cleared periodic payment sync for ${transaction?.transactionCode}`,
-      )
     }
   }, [transaction?.transactionCode, queryClient, validPayments.length, totalPaid])
 

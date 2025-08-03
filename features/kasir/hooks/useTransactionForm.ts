@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useEffect } from 'react'
-import type { TransactionFormData, TransactionStep, Customer,ProductSelection,   } from '../types'
+import type { TransactionFormData, TransactionStep, Customer, ProductSelection } from '../types'
 import type { CreateTransaksiRequest, UpdateTransaksiRequest } from '../types'
 import { useCreateTransaksi } from './useTransaksi'
 import { useTransactionFormPersistence } from './useTransactionFormPersistence'
@@ -204,10 +204,6 @@ export function useTransactionForm() {
         catatan: formData.notes || undefined,
       }
 
-      // 🔧 CACHE FIX: Pre-submission availability validation
-      // Check if product availability has changed since initial selection
-      console.log('[useTransactionForm] 🔍 Performing pre-submission availability check')
-      
       for (const product of formData.products) {
         // Note: This is a simple warning system - full validation happens server-side
         const currentAvailability = product.product.availableQuantity || 0
@@ -217,7 +213,7 @@ export function useTransactionForm() {
             productName: product.product.name,
             requestedQuantity: product.quantity,
             lastKnownAvailability: currentAvailability,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
           })
         }
       }
