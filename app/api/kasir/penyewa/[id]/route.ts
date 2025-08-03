@@ -11,8 +11,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { PenyewaService } from '@/features/kasir/services/penyewaService'
 import { updatePenyewaSchema } from '@/features/kasir/lib/validation/kasirSchema'
-import { formatPenyewaData, createSuccessResponse } from '@/features/kasir/lib/responseFormatter'
-import { sanitizePenyewaInput } from '@/features/kasir/lib/inputSanitizer'
+import { formatPenyewaData, createSuccessResponse, sanitizePenyewaInput } from '@/features/kasir/types'
 import { ZodError } from 'zod'
 import { requirePermission, withRateLimit } from '@/lib/auth-middleware'
 
@@ -223,7 +222,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
           error: {
             message: 'Data tidak valid',
             code: 'VALIDATION_ERROR',
-            details: error.errors.map((err) => ({
+            details: error.issues.map((err) => ({
               field: err.path.join('.'),
               message: err.message,
             })),

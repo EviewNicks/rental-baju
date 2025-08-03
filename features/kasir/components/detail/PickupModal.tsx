@@ -18,7 +18,7 @@ import {
   getPickupErrorMessage,
 } from '../../hooks/usePickupProcess'
 import type { PickupItemRequest } from '../../hooks/usePickupProcess'
-import type { TransactionDetail } from '../../types/transaction-detail'
+import type { TransactionDetail } from '../../types'
 
 interface PickupModalProps {
   isOpen: boolean

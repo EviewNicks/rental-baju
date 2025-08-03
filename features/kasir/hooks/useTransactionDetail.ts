@@ -35,9 +35,9 @@ export function useTransactionDetail(
     },
     enabled: enabled && !!transactionId,
     refetchInterval,
-    staleTime: 0, // 🔥 FIX: Always consider payment data stale for real-time updates
+    staleTime: 0, // Always consider payment data stale for real-time updates
     gcTime: 10 * 60 * 1000, // 10 minutes
-    refetchOnMount: true, // 🔥 FIX: Always refetch on mount for fresh payment data
+    refetchOnMount: true, // Always refetch on mount for fresh payment data
     retry: (failureCount, error: unknown) => {
       // Don't retry on client errors (4xx)
       if (
@@ -117,9 +117,9 @@ export function useTransactionDetail(
       return transformed
     },
     enabled: !!apiData,
-    staleTime: 0, // 🔥 FIX: Always consider transformed data stale for real-time updates
+    staleTime: 0, // Always consider transformed data stale for real-time updates
     gcTime: 10 * 60 * 1000,
-    refetchOnMount: true, // 🔥 FIX: Always refetch transformed data on mount
+    refetchOnMount: true, // Always refetch transformed data on mount
     retry: (failureCount) => {
       // Retry transformation failures up to 2 times
       return failureCount < 2
@@ -127,7 +127,7 @@ export function useTransactionDetail(
     retryDelay: (attemptIndex) => Math.min(500 * 2 ** attemptIndex, 2000), // Max 2s delay
   })
 
-  // 🔥 FIX: Enhanced refresh function with retry mechanism
+  // Enhanced refresh function with retry mechanism
   const refreshTransaction = async (retryCount = 0, maxRetries = 3) => {
     try {
       await refetch()
@@ -148,19 +148,19 @@ export function useTransactionDetail(
     refetch()
   }
 
-  // 🔥 FIX: Enhanced data synchronization function
+  // Enhanced data synchronization function
   const syncTransactionData = async () => {
     try {
       // Refetch both base and transformed data in sequence
       await refetch()
       await new Promise((resolve) => setTimeout(resolve, 100)) // Small delay
       await refetchTransformed()
-    } catch {
-      console.error('❌ Transaction data sync failed', {
+    } catch (syncError) {
+      console.error('Transaction data sync failed', {
         transactionId,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: syncError instanceof Error ? syncError.message : 'Unknown error',
       })
-      throw error
+      throw syncError
     }
   }
 
@@ -170,7 +170,7 @@ export function useTransactionDetail(
     error,
     refreshTransaction,
     clearError,
-    // 🔥 FIX: New enhanced functions for better cache management
+    // Enhanced functions for better cache management
     syncTransactionData,
     refetchTransformed,
     // Raw API data for debugging

@@ -187,7 +187,7 @@ export async function GET(request: NextRequest) {
           error: {
             message: 'Parameter query tidak valid',
             code: 'VALIDATION_ERROR',
-            details: error.errors.map(err => ({
+            details: error.issues.map((err) => ({
               field: err.path.join('.'),
               message: err.message
             }))

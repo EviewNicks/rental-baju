@@ -30,7 +30,7 @@ export function usePaymentProcessing(
       })
     },
     onSuccess: async (data) => {
-      // 🔥 FIX: Optimistic update first for immediate UI feedback
+      // Optimistic update for immediate UI feedback
       const optimisticActivity = {
         id: `temp-${Date.now()}`,
         timestamp: new Date().toISOString(),
@@ -46,17 +46,17 @@ export function usePaymentProcessing(
       // Apply optimistic update to transformed cache
       queryClient.setQueryData(
         [...queryKeys.kasir.transaksi.detail(transactionCode), 'transformed'],
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (oldData: any) => {
-          if (!oldData) return oldData
+        (oldData: unknown) => {
+          if (!oldData || typeof oldData !== 'object') return oldData
 
+          const typedData = oldData as Record<string, unknown>
           return {
-            ...oldData,
-            timeline: [optimisticActivity, ...(oldData.timeline || [])],
-            amountPaid: (oldData.amountPaid || 0) + data.jumlah,
+            ...typedData,
+            timeline: [optimisticActivity, ...((typedData.timeline as unknown[]) || [])],
+            amountPaid: ((typedData.amountPaid as number) || 0) + data.jumlah,
             remainingAmount: Math.max(
               0,
-              (oldData.totalAmount || 0) - ((oldData.amountPaid || 0) + data.jumlah),
+              ((typedData.totalAmount as number) || 0) - (((typedData.amountPaid as number) || 0) + data.jumlah),
             ),
             payments: [
               {
@@ -67,16 +67,16 @@ export function usePaymentProcessing(
                 type: 'rental' as const,
                 reference: data.referensi,
               },
-              ...(oldData.payments || []),
+              ...((typedData.payments as unknown[]) || []),
             ],
           }
         },
       )
 
-      // 🔥 FIX: Add delay to ensure backend transaction is fully committed
-      await new Promise((resolve) => setTimeout(resolve, 300)) // Wait 300ms for backend consistency
+      // Wait for backend transaction to be fully committed
+      await new Promise((resolve) => setTimeout(resolve, 300))
 
-      // 🔥 FIX: Enhanced cache invalidation with retry mechanism
+      // Enhanced cache invalidation with retry mechanism
 
       let retryCount = 0
       const maxRetries = 3
@@ -102,7 +102,7 @@ export function usePaymentProcessing(
           break
         } catch (error) {
           retryCount++
-          console.error(`❌ Cache refetch attempt ${retryCount} failed`, {
+          console.error(`Cache refetch attempt ${retryCount} failed`, {
             transactionCode: transactionCode,
             error: error instanceof Error ? error.message : 'Unknown error',
             retryCount,
@@ -117,7 +117,7 @@ export function usePaymentProcessing(
       }
 
       if (!refetchSuccess) {
-        console.error('💥 All cache refetch attempts failed, falling back to invalidation', {
+        console.error('All cache refetch attempts failed, falling back to invalidation', {
           transactionCode: transactionCode,
           maxRetries,
         })
@@ -143,7 +143,7 @@ export function usePaymentProcessing(
       onSuccess?.(data)
     },
     onError: (error) => {
-      console.error('❌ Payment API call failed', {
+      console.error('Payment API call failed', {
         transactionCode: transactionCode,
         error: error.message,
         errorName: error.name,

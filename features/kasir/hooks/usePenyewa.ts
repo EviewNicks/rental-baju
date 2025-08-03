@@ -3,12 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/react-query'
 import { kasirApi, KasirApiError } from '../api'
-import type {
-  CreatePenyewaRequest,
-  UpdatePenyewaRequest,
-  PenyewaResponse,
-  PenyewaQueryParams,
-} from '../types'
+import type { CreatePenyewaRequest, PenyewaQueryParams } from '../types'
 
 // Hook for fetching penyewa list
 export function usePenyewaList(params: PenyewaQueryParams = {}) {
@@ -64,62 +59,3 @@ export function useCreatePenyewa() {
   })
 }
 
-// Hook for updating penyewa
-export function useUpdatePenyewa() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: UpdatePenyewaRequest }) =>
-      kasirApi.penyewa.update(id, data),
-    onSuccess: (updatedPenyewa, { id }) => {
-      // Update the penyewa in cache
-      queryClient.setQueryData(queryKeys.kasir.penyewa.detail(id), updatedPenyewa)
-
-      // Invalidate penyewa lists to ensure consistency
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.kasir.penyewa.lists(),
-      })
-    },
-    onError: (error: KasirApiError) => {
-      console.error('Failed to update penyewa:', error.message)
-    },
-  })
-}
-
-// Combined hook for common penyewa operations
-export function usePenyewaOperations() {
-  const createPenyewa = useCreatePenyewa()
-  const updatePenyewa = useUpdatePenyewa()
-
-  return {
-    createPenyewa: createPenyewa.mutate,
-    updatePenyewa: updatePenyewa.mutate,
-    isCreating: createPenyewa.isPending,
-    isUpdating: updatePenyewa.isPending,
-    createError: createPenyewa.error,
-    updateError: updatePenyewa.error,
-    isLoading: createPenyewa.isPending || updatePenyewa.isPending,
-  }
-}
-
-// Helper hook for customer selection in forms
-export function usePenyewaSelection() {
-  const queryClient = useQueryClient()
-
-  // Get recently accessed customers from cache
-  const getRecentCustomers = (): PenyewaResponse[] => {
-    const queries = queryClient.getQueriesData({
-      queryKey: queryKeys.kasir.penyewa.details(),
-    })
-
-    return queries
-      .map(([, data]) => data as PenyewaResponse)
-      .filter(Boolean)
-      .slice(0, 5) // Last 5 accessed customers
-  }
-
-  return {
-    getRecentCustomers,
-    search: (query: string) => kasirApi.penyewa.search(query),
-  }
-}

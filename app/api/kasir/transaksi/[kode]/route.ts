@@ -333,7 +333,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
           error: {
             message: 'Data tidak valid',
             code: 'VALIDATION_ERROR',
-            details: error.errors.map(err => ({
+            details: error.issues.map((err) => ({
               field: err.path.join('.'),
               message: err.message
             }))

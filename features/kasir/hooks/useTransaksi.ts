@@ -68,17 +68,17 @@ export function useCreateTransaksi() {
       // Add the new transaksi to cache
       queryClient.setQueryData(queryKeys.kasir.transaksi.detail(newTransaksi.kode), newTransaksi)
 
-      // 🔥 FIX: Invalidate specific transaction detail to ensure fresh data
+      // Invalidate specific transaction detail to ensure fresh data
       queryClient.invalidateQueries({
         queryKey: queryKeys.kasir.transaksi.detail(newTransaksi.kode),
       })
 
-      // 🔥 FIX: Invalidate transformed cache used by PaymentSummaryCard
+      // Invalidate transformed cache used by PaymentSummaryCard
       queryClient.invalidateQueries({
         queryKey: [...queryKeys.kasir.transaksi.detail(newTransaksi.kode), 'transformed'],
       })
 
-      // 🔥 FIX: Invalidate payment cache for this transaction
+      // Invalidate payment cache for this transaction
       queryClient.invalidateQueries({
         queryKey: queryKeys.kasir.pembayaran.byTransaksi(newTransaksi.id),
       })
@@ -122,75 +122,3 @@ export function useUpdateTransaksi() {
   })
 }
 
-// Combined hook for common transaksi operations
-export function useTransaksiOperations() {
-  const createTransaksi = useCreateTransaksi()
-  const updateTransaksi = useUpdateTransaksi()
-
-  return {
-    createTransaksi: createTransaksi.mutate,
-    createTransaksiAsync: createTransaksi.mutateAsync,
-    updateTransaksi: updateTransaksi.mutate,
-    updateTransaksiAsync: updateTransaksi.mutateAsync,
-    isCreating: createTransaksi.isPending,
-    isUpdating: updateTransaksi.isPending,
-    createError: createTransaksi.error,
-    updateError: updateTransaksi.error,
-    isLoading: createTransaksi.isPending || updateTransaksi.isPending,
-    createData: createTransaksi.data,
-    updateData: updateTransaksi.data,
-  }
-}
-
-// Helper hook for transaction status management
-export function useTransactionStatusManager() {
-  // Mark transaction as complete
-  const markAsCompleted = (kode: string) => {
-    return kasirApi.transaksi.update(kode, { status: 'selesai' })
-  }
-
-  // Mark transaction as overdue
-  const markAsOverdue = (kode: string) => {
-    return kasirApi.transaksi.update(kode, { status: 'terlambat' })
-  }
-
-  // Cancel transaction
-  const cancelTransaction = (kode: string) => {
-    return kasirApi.transaksi.update(kode, { status: 'cancelled' })
-  }
-
-  // Reactivate transaction
-  const reactivateTransaction = (kode: string) => {
-    return kasirApi.transaksi.update(kode, { status: 'active' })
-  }
-
-  return {
-    markAsCompleted,
-    markAsOverdue,
-    cancelTransaction,
-    reactivateTransaction,
-  }
-}
-
-// Hook for dashboard transaction metrics
-export function useTransactionMetrics() {
-  const { data: activeTransactions } = useTransaksiByStatus('active')
-  const { data: completedTransactions } = useTransaksiByStatus('selesai')
-  const { data: overdueTransactions } = useTransaksiByStatus('terlambat')
-
-  const totalActive = activeTransactions?.data?.length || 0
-  const totalCompleted = completedTransactions?.data?.length || 0
-  const totalOverdue = overdueTransactions?.data?.length || 0
-  const totalTransactions = totalActive + totalCompleted + totalOverdue
-
-  const completionRate = totalTransactions > 0 ? (totalCompleted / totalTransactions) * 100 : 0
-
-  return {
-    totalActive,
-    totalCompleted,
-    totalOverdue,
-    totalTransactions,
-    completionRate: Math.round(completionRate),
-    isLoading: false, // All queries are independent, we don't need to wait for all
-  }
-}

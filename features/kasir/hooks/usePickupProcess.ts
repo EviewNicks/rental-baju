@@ -74,11 +74,8 @@ export function usePickupProcess(transactionCode: string) {
   return useMutation({
     mutationFn: (data: PickupRequest) => processPickup(transactionCode, data),
 
-    onMutate: async (data) => {
-      console.debug('🔄 Pickup mutation starting', {
-        transactionCode,
-        itemsCount: data.items.length,
-      })
+    onMutate: async () => {
+      // Pickup mutation starting
 
       // Cancel any outgoing refetches for transaction detail
       await queryClient.cancelQueries({

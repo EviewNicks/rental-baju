@@ -31,8 +31,8 @@ const envSchema = z.object({
   // Testing Configuration
   CLERK_TEST_MODE: z
     .string()
-    .transform((val) => val === 'true')
-    .default('false'),
+    .default('false')
+    .transform((val) => val === 'true'),
   NEXT_PUBLIC_CLERK_FRONTEND_API: z.string().optional(),
 })
 
@@ -69,7 +69,7 @@ export function validateEnv(): ValidatedEnv {
       return result
     } catch (error) {
       if (error instanceof z.ZodError) {
-        const errorMessages = error.errors
+        const errorMessages = error.issues
           .map((err) => `${err.path.join('.')}: ${err.message}`)
           .join('\n')
 

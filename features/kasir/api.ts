@@ -38,6 +38,140 @@ import type {
 // Base API configuration
 const API_BASE_URL = '/api/kasir'
 
+// ==========================================
+// INPUT SANITIZATION UTILITIES
+// ==========================================
+
+/**
+ * Sanitize and validate penyewa input data
+ * Removes potentially harmful content and normalizes input
+ */
+function sanitizePenyewaInput(input: Record<string, unknown>): Record<string, unknown> {
+  const sanitized: Record<string, unknown> = {}
+
+  for (const [key, value] of Object.entries(input)) {
+    if (value === null || value === undefined) {
+      continue // Skip null/undefined values
+    }
+
+    switch (key) {
+      case 'nama':
+      case 'alamat':
+        // Sanitize text fields - remove HTML tags and normalize whitespace
+        if (typeof value === 'string') {
+          sanitized[key] = sanitizeTextInput(value)
+        }
+        break
+
+      case 'telepon':
+        // Sanitize phone number - keep only digits, +, -, (, ), and spaces
+        if (typeof value === 'string') {
+          sanitized[key] = sanitizePhoneInput(value)
+        }
+        break
+
+      case 'email':
+        // Sanitize email - basic cleanup and normalization
+        if (typeof value === 'string') {
+          sanitized[key] = sanitizeEmailInput(value)
+        }
+        break
+
+      default:
+        // For other fields, just ensure they're safe strings if they are strings
+        if (typeof value === 'string') {
+          sanitized[key] = sanitizeGenericInput(value)
+        } else {
+          sanitized[key] = value
+        }
+        break
+    }
+  }
+
+  return sanitized
+}
+
+/**
+ * Sanitize general text input
+ * Removes HTML tags, normalizes whitespace, and trims
+ */
+function sanitizeTextInput(input: string): string {
+  return input
+    .replace(/<[^>]*>/g, '') // Remove HTML tags
+    .replace(/[<>'"&]/g, '') // Remove potentially dangerous characters
+    .replace(/\s+/g, ' ') // Normalize whitespace
+    .trim()
+    .substring(0, 255) // Limit length to prevent DoS
+}
+
+/**
+ * Sanitize phone number input
+ * Keeps only valid phone number characters
+ */
+function sanitizePhoneInput(input: string): string {
+  return input
+    .replace(/[^0-9+\-\(\)\s]/g, '') // Keep only phone-valid characters
+    .replace(/\s+/g, ' ') // Normalize whitespace
+    .trim()
+    .substring(0, 20) // Reasonable phone number length limit
+}
+
+/**
+ * Sanitize email input
+ * Basic email cleanup and normalization
+ */
+function sanitizeEmailInput(input: string): string {
+  return input
+    .toLowerCase() // Email addresses are case-insensitive
+    .replace(/[<>'"&]/g, '') // Remove dangerous characters
+    .replace(/\s/g, '') // Remove all whitespace
+    .trim()
+    .substring(0, 254) // RFC 5321 email length limit
+}
+
+/**
+ * Sanitize generic string input
+ * General purpose string sanitization
+ */
+function sanitizeGenericInput(input: string): string {
+  return input
+    .replace(/<[^>]*>/g, '') // Remove HTML tags
+    .replace(/[<>'"&]/g, '') // Remove potentially dangerous characters
+    .trim()
+    .substring(0, 500) // General length limit
+}
+
+/**
+ * Deep sanitize object recursively
+ * Applies sanitization to nested objects and arrays
+ * 
+ * @deprecated Not currently used in API client - for future use
+ */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function deepSanitizeObject(obj: unknown): unknown {
+  if (obj === null || obj === undefined) {
+    return obj
+  }
+
+  if (typeof obj === 'string') {
+    return sanitizeGenericInput(obj)
+  }
+
+  if (Array.isArray(obj)) {
+    return obj.map(deepSanitizeObject)
+  }
+
+  if (typeof obj === 'object') {
+    const sanitized: Record<string, unknown> = {}
+    for (const [key, value] of Object.entries(obj as Record<string, unknown>)) {
+      sanitized[key] = deepSanitizeObject(value)
+    }
+    return sanitized
+  }
+
+  return obj
+}
+
 // Custom error class for API errors
 export class KasirApiError extends Error {
   constructor(
@@ -152,9 +286,12 @@ export class KasirApi {
 
   // Penyewa (Customer) Operations
   static async createPenyewa(data: CreatePenyewaRequest): Promise<PenyewaResponse> {
+    // Sanitize input data before sending
+    const sanitizedData = sanitizePenyewaInput(data as unknown as Record<string, unknown>) as unknown as CreatePenyewaRequest
+    
     return apiRequest<PenyewaResponse>('/penyewa', {
       method: 'POST',
-      body: JSON.stringify(data),
+      body: JSON.stringify(sanitizedData),
     })
   }
 
@@ -169,9 +306,12 @@ export class KasirApi {
   }
 
   static async updatePenyewa(id: string, data: UpdatePenyewaRequest): Promise<PenyewaResponse> {
+    // Sanitize input data before sending
+    const sanitizedData = sanitizePenyewaInput(data as unknown as Record<string, unknown>) as unknown as UpdatePenyewaRequest
+    
     return apiRequest<PenyewaResponse>(`/penyewa/${id}`, {
       method: 'PUT',
-      body: JSON.stringify(data),
+      body: JSON.stringify(sanitizedData),
     })
   }
 

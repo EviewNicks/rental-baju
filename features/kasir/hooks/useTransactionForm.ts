@@ -9,7 +9,7 @@ import { useCreatePembayaran } from './usePembayaran'
 import { KasirApi } from '../api'
 import { useMutation } from '@tanstack/react-query'
 import type { CreatePembayaranRequest } from '../types'
-// import { toast } from '@/hooks/use-toast' // TODO: Add toast implementation
+// import { toast } from '@/hooks/use-toast' // TODO: Add toast implementation when available
 
 const initialFormData: TransactionFormData = {
   products: [],
@@ -38,7 +38,7 @@ export function useTransactionForm() {
   // Real API integration
   const createTransaksiMutation = useCreateTransaksi()
 
-  // 🔥 FIX: Use proper payment hook with cache invalidation
+  // Use proper payment hook with cache invalidation
   const createPembayaranMutation = useCreatePembayaran()
 
   // Transaction rollback mutation

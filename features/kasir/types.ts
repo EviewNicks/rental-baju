@@ -485,6 +485,232 @@ export interface PickupResponse {
 }
 
 // ==========================================
+// INPUT SANITIZATION UTILITIES 
+// ==========================================
+
+/**
+ * Sanitize and validate penyewa input data
+ * Removes potentially harmful content and normalizes input
+ */
+export function sanitizePenyewaInput(input: Record<string, unknown>): Record<string, unknown> {
+  const sanitized: Record<string, unknown> = {}
+
+  for (const [key, value] of Object.entries(input)) {
+    if (value === null || value === undefined) {
+      continue // Skip null/undefined values
+    }
+
+    switch (key) {
+      case 'nama':
+      case 'alamat':
+        // Sanitize text fields - remove HTML tags and normalize whitespace
+        if (typeof value === 'string') {
+          sanitized[key] = sanitizeTextInput(value)
+        }
+        break
+
+      case 'telepon':
+        // Sanitize phone number - keep only digits, +, -, (, ), and spaces
+        if (typeof value === 'string') {
+          sanitized[key] = sanitizePhoneInput(value)
+        }
+        break
+
+      case 'email':
+        // Sanitize email - basic cleanup and normalization
+        if (typeof value === 'string') {
+          sanitized[key] = sanitizeEmailInput(value)
+        }
+        break
+
+      default:
+        // For other fields, just ensure they're safe strings if they are strings
+        if (typeof value === 'string') {
+          sanitized[key] = sanitizeGenericInput(value)
+        } else {
+          sanitized[key] = value
+        }
+        break
+    }
+  }
+
+  return sanitized
+}
+
+/**
+ * Sanitize general text input
+ * Removes HTML tags, normalizes whitespace, and trims
+ */
+function sanitizeTextInput(input: string): string {
+  return input
+    .replace(/<[^>]*>/g, '') // Remove HTML tags
+    .replace(/[<>'"&]/g, '') // Remove potentially dangerous characters
+    .replace(/\s+/g, ' ') // Normalize whitespace
+    .trim()
+    .substring(0, 255) // Limit length to prevent DoS
+}
+
+/**
+ * Sanitize phone number input
+ * Keeps only valid phone number characters
+ */
+function sanitizePhoneInput(input: string): string {
+  return input
+    .replace(/[^0-9+\-\(\)\s]/g, '') // Keep only phone-valid characters
+    .replace(/\s+/g, ' ') // Normalize whitespace
+    .trim()
+    .substring(0, 20) // Reasonable phone number length limit
+}
+
+/**
+ * Sanitize email input
+ * Basic email cleanup and normalization
+ */
+function sanitizeEmailInput(input: string): string {
+  return input
+    .toLowerCase() // Email addresses are case-insensitive
+    .replace(/[<>'"&]/g, '') // Remove dangerous characters
+    .replace(/\s/g, '') // Remove all whitespace
+    .trim()
+    .substring(0, 254) // RFC 5321 email length limit
+}
+
+/**
+ * Sanitize generic string input
+ * General purpose string sanitization
+ */
+function sanitizeGenericInput(input: string): string {
+  return input
+    .replace(/<[^>]*>/g, '') // Remove HTML tags
+    .replace(/[<>'"&]/g, '') // Remove potentially dangerous characters
+    .trim()
+    .substring(0, 500) // General length limit
+}
+
+// ==========================================
+// RESPONSE FORMATTING UTILITIES
+// ==========================================
+
+/**
+ * Format penyewa data for API response
+ * Transforms database model to API response format
+ */
+export function formatPenyewaData(penyewa: {
+  id: string
+  nama: string
+  telepon: string
+  alamat: string
+  email?: string | null
+  createdAt: Date
+  updatedAt: Date
+}): PenyewaResponse {
+  return {
+    id: penyewa.id,
+    nama: penyewa.nama,
+    telepon: penyewa.telepon,
+    alamat: penyewa.alamat,
+    email: penyewa.email || null,
+    nik: null, // Will be added to database model later
+    foto: null, // Will be added to database model later
+    catatan: null, // Will be added to database model later
+    createdAt: penyewa.createdAt.toISOString(),
+    updatedAt: penyewa.updatedAt.toISOString(),
+  }
+}
+
+/**
+ * Format penyewa list (simple array transformation)
+ * Transforms array of database models to formatted array
+ */
+export function formatPenyewaList(
+  penyewaList: Array<{
+    id: string
+    nama: string
+    telepon: string
+    alamat: string
+    email?: string | null
+    createdAt: Date
+    updatedAt: Date
+  }>
+): PenyewaResponse[] {
+  return penyewaList.map(formatPenyewaData)
+}
+
+/**
+ * Format penyewa list for paginated API response
+ * Transforms array of database models to paginated response format
+ */
+export function formatPenyewaListWithPagination(
+  penyewaList: Array<{
+    id: string
+    nama: string
+    telepon: string
+    alamat: string
+    email?: string | null
+    createdAt: Date
+    updatedAt: Date
+  }>,
+  pagination: {
+    page: number
+    limit: number
+    total: number
+    totalPages: number
+  }
+): PenyewaListResponse {
+  return {
+    data: penyewaList.map(formatPenyewaData),
+    pagination,
+  }
+}
+
+/**
+ * Create standardized success response
+ * Provides consistent response structure across API endpoints
+ */
+export function createSuccessResponse<T = unknown>(
+  data: T,
+  message: string,
+  statusCode: number = 200
+): { response: { success: true; data: T; message: string }; status: number } {
+  return {
+    response: {
+      success: true,
+      data,
+      message,
+    },
+    status: statusCode,
+  }
+}
+
+/**
+ * Create standardized error response
+ * Provides consistent error structure across API endpoints
+ */
+export function createErrorResponse(
+  message: string,
+  code: string,
+  statusCode: number = 400,
+  details?: unknown
+): { response: { success: false; error: { message: string; code: string; details?: unknown } }; status: number } {
+  const errorResponse: { message: string; code: string; details?: unknown } = {
+    message,
+    code,
+  }
+  
+  if (details) {
+    errorResponse.details = details
+  }
+
+  return {
+    response: {
+      success: false,
+      error: errorResponse,
+    },
+    status: statusCode,
+  }
+}
+
+// ==========================================
 // UI TYPES
 // ==========================================
 
