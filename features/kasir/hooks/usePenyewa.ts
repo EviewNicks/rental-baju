@@ -10,7 +10,7 @@ export function usePenyewaList(params: PenyewaQueryParams = {}) {
   return useQuery({
     queryKey: queryKeys.kasir.penyewa.list(params),
     queryFn: () => kasirApi.penyewa.getAll(params),
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 2 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
   })
 }
@@ -21,7 +21,7 @@ export function usePenyewa(id: string, enabled = true) {
     queryKey: queryKeys.kasir.penyewa.detail(id),
     queryFn: () => kasirApi.penyewa.getById(id),
     enabled: enabled && !!id,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 2 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   })
 }

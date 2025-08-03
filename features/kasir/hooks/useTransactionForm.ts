@@ -204,6 +204,24 @@ export function useTransactionForm() {
         catatan: formData.notes || undefined,
       }
 
+      // 🔧 CACHE FIX: Pre-submission availability validation
+      // Check if product availability has changed since initial selection
+      console.log('[useTransactionForm] 🔍 Performing pre-submission availability check')
+      
+      for (const product of formData.products) {
+        // Note: This is a simple warning system - full validation happens server-side
+        const currentAvailability = product.product.availableQuantity || 0
+        if (currentAvailability < product.quantity) {
+          console.warn('[useTransactionForm] ⚠️ Potential availability conflict detected', {
+            productId: product.product.id,
+            productName: product.product.name,
+            requestedQuantity: product.quantity,
+            lastKnownAvailability: currentAvailability,
+            timestamp: new Date().toISOString()
+          })
+        }
+      }
+
       // Create transaction via API
       const createdTransaction = await createTransaksiMutation.mutateAsync(createRequest)
 

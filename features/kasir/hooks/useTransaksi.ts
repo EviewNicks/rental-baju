@@ -15,8 +15,8 @@ export function useTransaksiList(params: TransaksiQueryParams = {}) {
   return useQuery({
     queryKey: queryKeys.kasir.transaksi.list(params),
     queryFn: () => kasirApi.transaksi.getAll(params),
-    staleTime: 1 * 60 * 1000, // 1 minute - transaction status changes frequently
-    gcTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 1 * 30 * 1000, // 1 minute - transaction status changes frequently
+    gcTime: 3 * 60 * 1000, // 5 minutes
   })
 }
 
@@ -26,8 +26,8 @@ export function useTransaksi(kode: string, enabled = true) {
     queryKey: queryKeys.kasir.transaksi.detail(kode),
     queryFn: () => kasirApi.transaksi.getByKode(kode),
     enabled: enabled && !!kode,
-    staleTime: 1 * 60 * 1000,
-    gcTime: 5 * 60 * 1000,
+    staleTime: 1 * 30 * 1000,
+    gcTime: 3 * 60 * 1000,
   })
 }
 
@@ -37,8 +37,8 @@ export function useTransaksiByStatus(status: TransactionStatus, enabled = true) 
     queryKey: queryKeys.kasir.transaksi.byStatus(status),
     queryFn: () => kasirApi.transaksi.getByStatus(status),
     enabled: enabled && !!status,
-    staleTime: 1 * 60 * 1000,
-    gcTime: 5 * 60 * 1000,
+    staleTime: 1 * 30 * 1000,
+    gcTime: 3 * 60 * 1000,
   })
 }
 
@@ -48,7 +48,7 @@ export function useTransaksiSearch(query: string, enabled = true) {
     queryKey: queryKeys.kasir.transaksi.search(query),
     queryFn: () => kasirApi.transaksi.search(query),
     enabled: enabled && query.length >= 2, // Only search with 2+ characters
-    staleTime: 1 * 60 * 1000, // 1 minute for search results
+    staleTime: 1 * 30 * 1000, // 1 minute for search results
     gcTime: 3 * 60 * 1000,
   })
 }
@@ -78,6 +78,18 @@ export function useCreateTransaksi() {
         queryKey: [...queryKeys.kasir.transaksi.detail(newTransaksi.kode), 'transformed'],
       })
 
+      // 🔧 CACHE FIX: Invalidate product availability cache after successful transaction
+      // This ensures users see fresh inventory data after any transaction
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.kasir.produk.all(),
+      })
+      
+      console.log('[useTransaksi] Cache invalidation completed', {
+        transactionCode: newTransaksi.kode,
+        cacheKeysInvalidated: ['transaksi.lists', 'produk.all'],
+        timestamp: new Date().toISOString()
+      })
+
       // Invalidate payment cache for this transaction
       queryClient.invalidateQueries({
         queryKey: queryKeys.kasir.pembayaran.byTransaksi(newTransaksi.id),
@@ -91,6 +103,21 @@ export function useCreateTransaksi() {
     onError: (error: KasirApiError) => {
       // Error will be handled by the component
       console.error('Failed to create transaksi:', error.message)
+      
+      // Enhanced error logging for cache-related issues
+      if (error.message.includes('tidak mencukupi') || error.message.includes('Tersedia')) {
+        console.warn('[useTransaksi] 🔄 Inventory conflict detected - possible cache staleness', {
+          error: error.message,
+          timestamp: new Date().toISOString(),
+          suggestion: 'User may have been viewing stale inventory data',
+          solution: 'Cache has been optimized to 30s refresh',
+        })
+
+        // Proactively invalidate product cache on inventory conflicts
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.kasir.produk.all(),
+        })
+      }
     },
   })
 }

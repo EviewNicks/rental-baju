@@ -16,16 +16,25 @@ import { createAvailabilityService } from '@/features/kasir/services/availabilit
 
 export async function GET(request: NextRequest) {
   try {
+    // 🔍 LOG: API request start
+    console.log('[ProductAvailableAPI] 🚀 GET request started', {
+      timestamp: new Date().toISOString(),
+      url: request.url,
+      method: 'GET'
+    })
+
     // Rate limiting check
     const clientIP = request.headers.get('x-forwarded-for') || 'unknown'
     const rateLimitResult = await withRateLimit(`products-available-${clientIP}`, 50, 60000)
     if (rateLimitResult.error) {
+      console.log('[ProductAvailableAPI] ⚠️ Rate limit exceeded', { clientIP })
       return rateLimitResult.error
     }
 
     // Authentication and permission check
     const authResult = await requirePermission('produk', 'read')
     if (authResult.error) {
+      console.log('[ProductAvailableAPI] ❌ Authentication failed')
       return authResult.error
     }
 
@@ -41,21 +50,40 @@ export async function GET(request: NextRequest) {
       colorId: searchParams.getAll('colorId').length > 0 ? searchParams.getAll('colorId') : undefined
     }
 
+    // 🔍 LOG: Query parameters
+    console.log('[ProductAvailableAPI] 📊 Query parameters received', {
+      queryParams,
+      timestamp: new Date().toISOString()
+    })
+
     // Validate query parameters
     const validatedQuery = productAvailabilityQuerySchema.parse(queryParams)
 
     const { page, limit, search, categoryId, available, size, colorId } = validatedQuery
     const skip = (page - 1) * limit
 
+    // 🔍 LOG: Processed query parameters
+    console.log('[ProductAvailableAPI] ✅ Query parameters validated', {
+      page,
+      limit,
+      skip,
+      search,
+      categoryId,
+      available,
+      size,
+      colorId,
+      timestamp: new Date().toISOString()
+    })
+
     // Build where clause
     const whereClause: Record<string, unknown> = {
       isActive: true
     }
 
-    // Only show available products (AVAILABLE status and quantity > 0)
+    // Only show available products (AVAILABLE status and availableStock > 0)
     if (available) {
       whereClause.status = 'AVAILABLE'
-      whereClause.quantity = { gt: 0 }
+      whereClause.availableStock = { gt: 0 }  // Use new availableStock field
     }
 
     // Search by product name, code, or description
@@ -81,6 +109,14 @@ export async function GET(request: NextRequest) {
     if (colorId && colorId.length > 0) {
       whereClause.colorId = { in: colorId }
     }
+
+    // 🔍 LOG: Database query about to execute
+    console.log('[ProductAvailableAPI] 🗄️ Executing database query', {
+      whereClause,
+      skip,
+      limit,
+      timestamp: new Date().toISOString()
+    })
 
     // Get products with related data
     const [products, total] = await Promise.all([
@@ -114,28 +150,48 @@ export async function GET(request: NextRequest) {
       })
     ])
 
-    // Calculate actual available quantity for each product
-    const availabilityService = createAvailabilityService(prisma)
-    const productIds = products.map(p => p.id)
-    const availabilities = await availabilityService.getMultipleProductAvailability(productIds)
-    
-    // Create availability map for quick lookup
-    const availabilityMap = new Map(
-      availabilities.map(av => [av.productId, av])
-    )
+    // 🔍 LOG: Database query results
+    console.log('[ProductAvailableAPI] ✅ Database query completed', {
+      productsFound: products.length,
+      totalCount: total,
+      productIds: products.map(p => p.id),
+      productInventory: products.map(p => ({ 
+        id: p.id, 
+        name: p.name, 
+        totalInventory: p.quantity,
+        availableStock: p.availableStock,
+        rentedStock: p.rentedStock
+      })),
+      timestamp: new Date().toISOString()
+    })
+
+    // SIMPLIFIED: Use database fields directly instead of complex calculations
+    // This eliminates race conditions and improves performance
+    console.log('[ProductAvailableAPI] ✅ Using database inventory fields directly', {
+      productsFound: products.length,
+      inventorySummary: products.map(p => ({
+        id: p.id,
+        name: p.name,
+        totalInventory: p.quantity,      // Total stock (immutable)
+        availableStock: p.availableStock, // Currently available
+        rentedStock: p.rentedStock       // Currently rented
+      })),
+      timestamp: new Date().toISOString()
+    })
 
     const formattedProducts = products
       .map(product => {
-        const availability = availabilityMap.get(product.id)
         return {
           id: product.id,
           code: product.code,
           name: product.name,
           description: product.description,
           hargaSewa: Number(product.hargaSewa),
-          quantity: product.quantity,
-          availableQuantity: availability?.availableQuantity || 0,
-          rentedQuantity: availability?.rentedQuantity || 0,
+          // UPDATED: Enhanced inventory information with new fields
+          totalInventory: product.quantity,        // Total stock (immutable during rentals)
+          quantity: product.quantity,              // Keep for backward compatibility
+          availableQuantity: product.availableStock, // Currently available for rent
+          rentedQuantity: product.rentedStock,     // Currently rented out
           imageUrl: product.imageUrl,
           category: {
             id: product.category.id,
@@ -167,6 +223,20 @@ export async function GET(request: NextRequest) {
         totalPages
       }
     }
+
+    // 🔍 LOG: API response summary
+    console.log('[ProductAvailableAPI] ✅ Sending response', {
+      returnedProducts: formattedProducts.length,
+      totalProducts: total,
+      currentPage: page,
+      totalPages,
+      productsWithStock: formattedProducts.filter(p => p.availableQuantity > 0).length,
+      productsOutOfStock: formattedProducts.filter(p => p.availableQuantity === 0).length,
+      totalInventoryValue: formattedProducts.reduce((sum, p) => sum + p.totalInventory, 0),
+      totalAvailableStock: formattedProducts.reduce((sum, p) => sum + p.availableQuantity, 0),
+      totalRentedStock: formattedProducts.reduce((sum, p) => sum + p.rentedQuantity, 0),
+      timestamp: new Date().toISOString()
+    })
 
     return NextResponse.json(
       {

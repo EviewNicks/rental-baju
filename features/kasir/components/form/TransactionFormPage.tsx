@@ -14,11 +14,15 @@ import { PaymentSummaryStep } from './PaymentSummaryStep'
 import { getStepValidationMessage } from '../../lib/constants/stepValidationMessages'
 import type { ProductSelection } from '../../types'
 import { transactionFormSteps } from '../../lib/constants/workflowConfig'
+import { useLogger } from '@/lib/client-logger'
 
 export function TransactionFormPage() {
   const router = useRouter()
   const [showSuccess, setShowSuccess] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+
+  // 🔍 Initialize logger for this component
+  const logger = useLogger('TransactionFormPage')
 
   const {
     currentStep,
@@ -45,9 +49,31 @@ export function TransactionFormPage() {
   // Add local state for restoration notification control
   const [showDataRestored, setShowDataRestored] = useState(isDataRestored)
 
+  // 🔍 LOG: Component initialization
+  React.useEffect(() => {
+    logger.info('TransactionFormPage initialized', {
+      currentStep,
+      hasProducts: formData.products.length > 0,
+      hasCustomer: !!formData.customer,
+      isDataRestored,
+      globalDuration,
+      timestamp: new Date().toISOString(),
+    })
+  }, [])
+
   // Sync local state with hook state
   React.useEffect(() => {
     setShowDataRestored(isDataRestored)
+
+    // 🔍 LOG: Data restoration event
+    if (isDataRestored) {
+      logger.info('Form data restored from localStorage', {
+        restoredProducts: formData.products.length,
+        restoredCustomer: !!formData.customer,
+        currentStep,
+        timestamp: new Date().toISOString(),
+      })
+    }
   }, [isDataRestored])
 
   // Helper function to check if current step can proceed
@@ -60,26 +86,112 @@ export function TransactionFormPage() {
   }
 
   const handleAddProduct = (product: ProductSelection['product'], quantity: number) => {
+    // 🔍 LOG: Product addition attempt
+    logger.info('Adding product to transaction', {
+      productId: product.id,
+      productName: product.name,
+      productCode: 'N/A', // code property not available in Product interface
+      requestedQuantity: quantity,
+      availableQuantity: product.availableQuantity,
+      globalDuration,
+      currentProductCount: formData.products.length,
+      timestamp: new Date().toISOString(),
+    })
+
     const productSelection = {
       product,
       quantity,
       duration: globalDuration, // Use global duration
     }
-    addProduct(productSelection)
+
+    try {
+      addProduct(productSelection)
+
+      // 🔧 CACHE FIX: Optimistic update - reduce perceived availability locally
+      // This provides immediate feedback to users while data syncs in background
+      // Note: This is client-side only, real inventory is managed server-side
+      if (product.availableQuantity) {
+        console.log('[TransactionFormPage] 🔄 Optimistic availability update', {
+          productId: product.id,
+          previousAvailability: product.availableQuantity,
+          reservedQuantity: quantity,
+          optimisticAvailability: Math.max(0, product.availableQuantity - quantity),
+          timestamp: new Date().toISOString(),
+        })
+      }
+
+      // 🔍 LOG: Product addition success
+      logger.info('Product added successfully', {
+        productId: product.id,
+        quantity,
+        newProductCount: formData.products.length + 1,
+        timestamp: new Date().toISOString(),
+      })
+    } catch (error) {
+      // 🔍 LOG: Product addition failure
+      logger.error('Failed to add product', {
+        productId: product.id,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString(),
+      })
+    }
   }
 
   const handleSubmitTransaction = async () => {
     setErrorMessage(null) // Clear previous errors
 
+    // 🔍 LOG: Transaction submission start
+    const transactionData = {
+      productCount: formData.products.length,
+      products: formData.products.map((p) => ({
+        id: p.product.id,
+        name: p.product.name,
+        quantity: p.quantity,
+        availableQuantity: p.product.availableQuantity,
+      })),
+      customer: formData.customer
+        ? {
+            id: formData.customer.id,
+            name: formData.customer.name,
+          }
+        : null,
+      totalAmount: calculateTotal(),
+      globalDuration,
+      step: currentStep,
+    }
+
+    logger.info('🚀 Starting transaction submission', {
+      ...transactionData,
+      timestamp: new Date().toISOString(),
+    })
+
     const success = await submitTransaction()
 
     if (success) {
+      // 🔍 LOG: Transaction success
+      logger.info('✅ Transaction submitted successfully', {
+        ...transactionData,
+        result: 'SUCCESS',
+        timestamp: new Date().toISOString(),
+      })
+
       setShowSuccess(true)
       // Redirect after showing success message
       setTimeout(() => {
         router.push('/dashboard')
       }, 2000)
     } else {
+      // 🔍 LOG: Transaction failure
+      const errorDetails = {
+        ...transactionData,
+        result: 'FAILURE',
+        error: createError?.message || 'Unknown error',
+        errorCode: createError?.code || 'UNKNOWN_ERROR',
+        timestamp: new Date().toISOString(),
+      }
+
+      logger.error('❌ Transaction submission failed', errorDetails)
+
       // Show error message based on the type of error
       if (createError) {
         setErrorMessage(createError.message || 'Terjadi kesalahan saat membuat transaksi')

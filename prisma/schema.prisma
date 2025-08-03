@@ -21,7 +21,10 @@ model Product {
   description     String?
   modalAwal       Decimal       @db.Decimal(10, 2) // Biaya pembuatan baju
   hargaSewa       Decimal       @db.Decimal(10, 2) // Harga sewa per sekali
-  quantity        Int
+  quantity        Int           // Total inventory (immutable during rentals)
+  availableStock  Int           @default(0) // Currently available for rent
+  rentedStock     Int           @default(0) // Currently rented out
+  // Invariant: quantity = availableStock + rentedStock
   imageUrl        String?
   categoryId      String
   category        Category      @relation(fields: [categoryId], references: [id])
@@ -45,6 +48,7 @@ model Product {
   @@index([size])
   @@index([colorId])
   @@index([categoryId, size, colorId])
+  @@index([availableStock])
 }
 
 model Category {

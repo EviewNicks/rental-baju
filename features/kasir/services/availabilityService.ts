@@ -32,18 +32,21 @@ export class AvailabilityService {
   constructor(private prisma: PrismaClient) {}
 
   /**
-   * Calculate real-time availability for a single product
+   * Get real-time availability for a single product
+   * SIMPLIFIED: Uses new inventory tracking fields from database
    */
   async getProductAvailability(
     productId: string,
     checkDate: Date = new Date()
   ): Promise<ProductAvailability> {
-    // Get product basic info
+    // Get product with new inventory tracking fields
     const product = await this.prisma.product.findUnique({
       where: { id: productId },
       select: {
         id: true,
-        quantity: true,
+        quantity: true,        // Total inventory (immutable)
+        availableStock: true,  // Currently available for rent
+        rentedStock: true,     // Currently rented out
         status: true
       }
     })
@@ -52,7 +55,7 @@ export class AvailabilityService {
       throw new Error('Produk tidak ditemukan')
     }
 
-    // Get active rentals for this product
+    // Get active rentals for detailed information (optional for debugging)
     const activeRentals = await this.prisma.transaksiItem.findMany({
       where: {
         produkId: productId,
@@ -88,22 +91,13 @@ export class AvailabilityService {
       }
     })
 
-    // Calculate total rented quantity
-    const rentedQuantity = activeRentals.reduce((total, rental) => {
-      // Only count items that haven't been fully returned
-      if (rental.statusKembali !== 'lengkap') {
-        return total + rental.jumlah
-      }
-      return total
-    }, 0)
-
-    const availableQuantity = Math.max(0, product.quantity - rentedQuantity)
-
+    // SIMPLIFIED: Use database fields directly instead of calculations
+    // This eliminates race conditions and complex calculations
     return {
       productId,
-      totalStock: product.quantity,
-      rentedQuantity,
-      availableQuantity,
+      totalStock: product.quantity,           // Total inventory (unchanged during rentals)
+      rentedQuantity: product.rentedStock,    // Currently rented out
+      availableQuantity: product.availableStock, // Currently available for rent
       activeRentals: activeRentals.map(rental => ({
         transaksiId: rental.transaksi.id,
         transaksiKode: rental.transaksi.kode,
@@ -232,7 +226,9 @@ export class AvailabilityService {
       },
       select: {
         id: true,
-        quantity: true
+        quantity: true,
+        availableStock: true,
+        rentedStock: true
       }
     })
 
@@ -242,12 +238,12 @@ export class AvailabilityService {
     let totalRented = 0
 
     for (const product of products) {
-      const availability = await this.getProductAvailability(product.id)
-      totalRented += availability.rentedQuantity
+      // SIMPLIFIED: Use database fields directly for summary
+      totalRented += product.rentedStock
 
-      if (availability.availableQuantity === 0) {
+      if (product.availableStock === 0) {
         outOfStock++
-      } else if (availability.availableQuantity === product.quantity) {
+      } else if (product.availableStock === product.quantity) {
         fullyAvailable++
       } else {
         partiallyAvailable++
@@ -279,7 +275,13 @@ export class AvailabilityService {
         isActive: true,
         status: 'AVAILABLE'
       },
-      include: {
+      select: {
+        id: true,
+        name: true,
+        code: true,
+        quantity: true,
+        availableStock: true,
+        rentedStock: true,
         category: {
           select: { name: true }
         }
@@ -289,15 +291,14 @@ export class AvailabilityService {
     const lowStockProducts = []
 
     for (const product of products) {
-      const availability = await this.getProductAvailability(product.id)
-      
-      if (availability.availableQuantity <= threshold && availability.availableQuantity > 0) {
+      // SIMPLIFIED: Use database fields directly for low stock check
+      if (product.availableStock <= threshold && product.availableStock > 0) {
         lowStockProducts.push({
           productId: product.id,
           productName: product.name,
           productCode: product.code,
           totalStock: product.quantity,
-          availableQuantity: availability.availableQuantity,
+          availableQuantity: product.availableStock,
           categoryName: product.category.name
         })
       }

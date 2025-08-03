@@ -1,88 +1,72 @@
-[{
-	"resource": "/d:/.work/rental-software/features/kasir/components/accessibility/AccessibleTable.tsx",
-	"owner": "_generated_diagnostic_collection_name_#0",
-	"code": {
-		"value": "axe/aria",
-		"target": {
-			"$mid": 1,
-			"path": "/rules/axe/4.10/aria-required-children",
-			"scheme": "https",
-			"authority": "dequeuniversity.com",
-			"query": "application=axeAPI"
-		}
-	},
-	"severity": 8,
-	"message": "Certain ARIA roles must contain particular children: Required ARIA children role not present: rowgroup, row",
-	"source": "Microsoft Edge Tools",
-	"startLineNumber": 47,
-	"startColumn": 10,
-	"endLineNumber": 47,
-	"endColumn": 15,
-	"modelVersionId": 3
-},{
-	"resource": "/d:/.work/rental-software/features/kasir/components/accessibility/AccessibleTable.tsx",
-	"owner": "_generated_diagnostic_collection_name_#0",
-	"code": {
-		"value": "axe/aria",
-		"target": {
-			"$mid": 1,
-			"path": "/rules/axe/4.10/aria-valid-attr-value",
-			"scheme": "https",
-			"authority": "dequeuniversity.com",
-			"query": "application=axeAPI"
-		}
-	},
-	"severity": 8,
-	"message": "ARIA attributes must conform to valid values: Invalid ARIA attribute value: aria-sort=\"{expression}\"",
-	"source": "Microsoft Edge Tools",
-	"startLineNumber": 130,
-	"startColumn": 8,
-	"endLineNumber": 130,
-	"endColumn": 10,
-	"modelVersionId": 3
-},{
-	"resource": "/d:/.work/rental-software/features/kasir/components/accessibility/AccessibleTable.tsx",
-	"owner": "_generated_diagnostic_collection_name_#0",
-	"code": {
-		"value": "axe/tables",
-		"target": {
-			"$mid": 1,
-			"path": "/rules/axe/4.10/td-headers-attr",
-			"scheme": "https",
-			"authority": "dequeuniversity.com",
-			"query": "application=axeAPI"
-		}
-	},
-	"severity": 4,
-	"message": "Table cells that use the headers attribute must only refer to cells in the same table",
-	"source": "Microsoft Edge Tools",
-	"startLineNumber": 1,
-	"startColumn": 1,
-	"endLineNumber": 1,
-	"endColumn": 7,
-	"modelVersionId": 3
-}]
-
-
-[{
-	"resource": "/d:/.work/rental-software/features/kasir/components/accessibility/ScreenReaderAnnouncer.tsx",
-	"owner": "_generated_diagnostic_collection_name_#0",
-	"code": {
-		"value": "axe/aria",
-		"target": {
-			"$mid": 1,
-			"path": "/rules/axe/4.10/aria-valid-attr-value",
-			"scheme": "https",
-			"authority": "dequeuniversity.com",
-			"query": "application=axeAPI"
-		}
-	},
-	"severity": 8,
-	"message": "ARIA attributes must conform to valid values: Invalid ARIA attribute value: aria-live=\"{expression}\"",
-	"source": "Microsoft Edge Tools",
-	"startLineNumber": 37,
-	"startColumn": 6,
-	"endLineNumber": 37,
-	"endColumn": 9,
-	"modelVersionId": 3
-}]
+ Server  [2025-08-03T22:37:49.558Z] [INFO] [NewTransactionPage] New transaction page loaded | Data: {"timestamp":"2025-08-03T22:37:49.558Z","page":"/dashboard/new","action":"PAGE_LOAD"}
+hook.js:608 Skipping auto-scroll behavior due to `position: sticky` or `position: fixed` on element: <div class=​"bg-white border-b border-neutral-200 sticky top-0 z-50 shadow-md w-full flex justify-center">​…​</div>​
+overrideMethod @ hook.js:608Understand this warning
+hook.js:608 Detected `scroll-behavior: smooth` on the `<html>` element. In a future version, Next.js will no longer automatically disable smooth scrolling during route transitions. To prepare for this change, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+overrideMethod @ hook.js:608Understand this warning
+client-logger.ts:105 [2025-08-03T22:37:49.645Z] [INFO] [TransactionFormPage] TransactionFormPage initialized | Data: {"currentStep":1,"hasProducts":false,"hasCustomer":false,"isDataRestored":false,"globalDuration":3,"timestamp":"2025-08-03T22:37:49.645Z"}
+hook.js:377 [2025-08-03T22:37:49.646Z] [INFO] [TransactionFormPage] TransactionFormPage initialized | Data: {"currentStep":1,"hasProducts":false,"hasCustomer":false,"isDataRestored":false,"globalDuration":3,"timestamp":"2025-08-03T22:37:49.646Z"}
+useProduk.ts:11 [useProduk] Cache metrics Object
+client-logger.ts:105 [2025-08-03T22:37:56.038Z] [INFO] [TransactionFormPage] Adding product to transaction | Data: {"productId":"ee781c3a-e7be-4ec4-9889-904c664b1d54","productName":"Dress Elegant Updated Update","productCode":"N/A","requestedQuantity":2,"availableQuantity":2,"globalDuration":3,"currentProductCount":0,"timestamp":"2025-08-03T22:37:56.038Z"}
+TransactionFormPage.tsx:114 [TransactionFormPage] 🔄 Optimistic availability update Object
+client-logger.ts:105 [2025-08-03T22:37:56.039Z] [INFO] [TransactionFormPage] Product added successfully | Data: {"productId":"ee781c3a-e7be-4ec4-9889-904c664b1d54","quantity":2,"newProductCount":1,"timestamp":"2025-08-03T22:37:56.039Z"}
+client-logger.ts:105 [2025-08-03T22:37:56.563Z] [INFO] [TransactionFormPage] Adding product to transaction | Data: {"productId":"2a225c70-148d-4fca-a5b2-02d151ffb334","productName":"Dress Elegant Red","productCode":"N/A","requestedQuantity":1,"availableQuantity":1,"globalDuration":3,"currentProductCount":1,"timestamp":"2025-08-03T22:37:56.563Z"}
+TransactionFormPage.tsx:114 [TransactionFormPage] 🔄 Optimistic availability update Object
+client-logger.ts:105 [2025-08-03T22:37:56.563Z] [INFO] [TransactionFormPage] Product added successfully | Data: {"productId":"2a225c70-148d-4fca-a5b2-02d151ffb334","quantity":1,"newProductCount":2,"timestamp":"2025-08-03T22:37:56.563Z"}
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 3700ms
+client-logger.ts:105 [2025-08-03T22:38:59.471Z] [INFO] [TransactionFormPage] 🚀 Starting transaction submission | Data: {"productCount":2,"products":[{"id":"ee781c3a-e7be-4ec4-9889-904c664b1d54","name":"Dress Elegant Updated Update","quantity":2,"availableQuantity":2},{"id":"2a225c70-148d-4fca-a5b2-02d151ffb334","name":"Dress Elegant Red","quantity":1,"availableQuantity":1}],"customer":{"id":"10bb5330-3654-4c45-b110-c71c07e6ec2f","name":"NInja"},"totalAmount":198000,"globalDuration":3,"step":3,"timestamp":"2025-08-03T22:38:59.471Z"}
+useTransactionForm.ts:209 [useTransactionForm] 🔍 Performing pre-submission availability check
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 105ms
+useTransaksi.ts:87 [useTransaksi] Cache invalidation completed Object
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 3266ms
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 118ms
+client-logger.ts:105 [2025-08-03T22:39:26.233Z] [INFO] [TransactionFormPage] ✅ Transaction submitted successfully | Data: {"productCount":2,"products":[{"id":"ee781c3a-e7be-4ec4-9889-904c664b1d54","name":"Dress Elegant Updated Update","quantity":2,"availableQuantity":2},{"id":"2a225c70-148d-4fca-a5b2-02d151ffb334","name":"Dress Elegant Red","quantity":1,"availableQuantity":1}],"customer":{"id":"10bb5330-3654-4c45-b110-c71c07e6ec2f","name":"NInja"},"totalAmount":198000,"globalDuration":3,"step":3,"result":"SUCCESS","timestamp":"2025-08-03T22:39:26.233Z"}
+client-logger.ts:105  Server  [2025-08-03T22:39:52.966Z] [INFO] [NewTransactionPage] New transaction page loaded | Data: {"timestamp":"2025-08-03T22:39:52.966Z","page":"/dashboard/new","action":"PAGE_LOAD"}
+client-logger.ts:105 [2025-08-03T22:39:53.011Z] [INFO] [TransactionFormPage] TransactionFormPage initialized | Data: {"currentStep":1,"hasProducts":false,"hasCustomer":false,"isDataRestored":false,"globalDuration":3,"timestamp":"2025-08-03T22:39:53.011Z"}
+hook.js:377 [2025-08-03T22:39:53.012Z] [INFO] [TransactionFormPage] TransactionFormPage initialized | Data: {"currentStep":1,"hasProducts":false,"hasCustomer":false,"isDataRestored":false,"globalDuration":3,"timestamp":"2025-08-03T22:39:53.012Z"}
+useProduk.ts:11 [useProduk] Cache metrics Object
+client-logger.ts:105 [2025-08-03T22:40:04.097Z] [INFO] [TransactionFormPage] Adding product to transaction | Data: {"productId":"6e23fefd-205a-4e62-af17-488b75e8cb4f","productName":"DRESS Pesta Baju","productCode":"N/A","requestedQuantity":5,"availableQuantity":10,"globalDuration":3,"currentProductCount":0,"timestamp":"2025-08-03T22:40:04.097Z"}
+TransactionFormPage.tsx:114 [TransactionFormPage] 🔄 Optimistic availability update Object
+client-logger.ts:105 [2025-08-03T22:40:04.098Z] [INFO] [TransactionFormPage] Product added successfully | Data: {"productId":"6e23fefd-205a-4e62-af17-488b75e8cb4f","quantity":5,"newProductCount":1,"timestamp":"2025-08-03T22:40:04.098Z"}
+client-logger.ts:105 [2025-08-03T22:40:20.955Z] [INFO] [TransactionFormPage] 🚀 Starting transaction submission | Data: {"productCount":1,"products":[{"id":"6e23fefd-205a-4e62-af17-488b75e8cb4f","name":"DRESS Pesta Baju","quantity":5,"availableQuantity":10}],"customer":{"id":"db214b9a-2b56-4675-be6b-6231730cba4b","name":"Ardiansyah"},"totalAmount":1500000,"globalDuration":3,"step":3,"timestamp":"2025-08-03T22:40:20.955Z"}
+useTransactionForm.ts:209 [useTransactionForm] 🔍 Performing pre-submission availability check
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 135ms
+useTransaksi.ts:87 [useTransaksi] Cache invalidation completed Object
+client-logger.ts:105 [2025-08-03T22:40:40.159Z] [INFO] [TransactionFormPage] ✅ Transaction submitted successfully | Data: {"productCount":1,"products":[{"id":"6e23fefd-205a-4e62-af17-488b75e8cb4f","name":"DRESS Pesta Baju","quantity":5,"availableQuantity":10}],"customer":{"id":"db214b9a-2b56-4675-be6b-6231730cba4b","name":"Ardiansyah"},"totalAmount":1500000,"globalDuration":3,"step":3,"result":"SUCCESS","timestamp":"2025-08-03T22:40:40.159Z"}
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 169ms
+client-logger.ts:105  Server  [2025-08-03T22:40:48.167Z] [INFO] [NewTransactionPage] New transaction page loaded | Data: {"timestamp":"2025-08-03T22:40:48.167Z","page":"/dashboard/new","action":"PAGE_LOAD"}
+client-logger.ts:105 [2025-08-03T22:40:48.230Z] [INFO] [TransactionFormPage] TransactionFormPage initialized | Data: {"currentStep":1,"hasProducts":false,"hasCustomer":false,"isDataRestored":false,"globalDuration":3,"timestamp":"2025-08-03T22:40:48.230Z"}
+hook.js:377 [2025-08-03T22:40:48.231Z] [INFO] [TransactionFormPage] TransactionFormPage initialized | Data: {"currentStep":1,"hasProducts":false,"hasCustomer":false,"isDataRestored":false,"globalDuration":3,"timestamp":"2025-08-03T22:40:48.231Z"}
+useProduk.ts:11 [useProduk] Cache metrics Object
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 115ms
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 4924ms
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 248ms
+hook.js:608 Skipping auto-scroll behavior due to `position: sticky` or `position: fixed` on element: <div class=​"bg-white border-b border-neutral-200 sticky top-0 z-50 shadow-md w-full flex justify-center">​…​</div>​
+overrideMethod @ hook.js:608Understand this warning
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 150ms
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 2843ms
+PaymentSummaryCard.tsx:72 [PaymentSummaryCard] Payment data changed for TXN-20250804-001 ObjectcurrentPaymentCount: 1currentTotalPaid: 100000paymentIncrease: 100000previousPaymentCount: 0previousTotalPaid: 0remainingBalance: 98000[[Prototype]]: Object
+hook.js:377 [PaymentSummaryCard] Cleared periodic payment sync for TXN-20250804-001
+hook.js:377 [PaymentSummaryCard] Payment data changed for TXN-20250804-001 ObjectcurrentPaymentCount: 1currentTotalPaid: 100000paymentIncrease: 100000previousPaymentCount: 0previousTotalPaid: 0remainingBalance: 98000[[Prototype]]: Object
+PaymentSummaryCard.tsx:124 [PaymentSummaryCard] Periodic payment sync check for TXN-20250804-001 ObjectcurrentPayments: 1currentTotalPaid: 100000[[Prototype]]: Object
+PaymentSummaryCard.tsx:148 [PaymentSummaryCard] Cleared periodic payment sync for TXN-20250804-001
+PaymentSummaryCard.tsx:72 [PaymentSummaryCard] Payment data changed for TXN-20250804-001 ObjectcurrentPaymentCount: 2currentTotalPaid: 198000paymentIncrease: 98000previousPaymentCount: 1previousTotalPaid: 100000remainingBalance: 0[[Prototype]]: Object
+PaymentSummaryCard.tsx:148 [PaymentSummaryCard] Cleared periodic payment sync for TXN-20250804-001
+PaymentSummaryCard.tsx:72 [PaymentSummaryCard] Payment data changed for TXN-20250804-001 ObjectcurrentPaymentCount: 1currentTotalPaid: 100000paymentIncrease: 100000previousPaymentCount: 0previousTotalPaid: 0remainingBalance: 98000[[Prototype]]: Object
+hook.js:377 [PaymentSummaryCard] Cleared periodic payment sync for TXN-20250804-001
+hook.js:377 [PaymentSummaryCard] Payment data changed for TXN-20250804-001 ObjectcurrentPaymentCount: 1currentTotalPaid: 100000paymentIncrease: 100000previousPaymentCount: 0previousTotalPaid: 0remainingBalance: 98000[[Prototype]]: Object
+PaymentSummaryCard.tsx:148 [PaymentSummaryCard] Cleared periodic payment sync for TXN-20250804-001
+PaymentSummaryCard.tsx:72 [PaymentSummaryCard] Payment data changed for TXN-20250804-001 ObjectcurrentPaymentCount: 2currentTotalPaid: 198000paymentIncrease: 98000previousPaymentCount: 1previousTotalPaid: 100000remainingBalance: 0[[Prototype]]: Object
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 330ms
+PaymentSummaryCard.tsx:124 [PaymentSummaryCard] Periodic payment sync check for TXN-20250804-001 {currentPayments: 2, currentTotalPaid: 198000}
