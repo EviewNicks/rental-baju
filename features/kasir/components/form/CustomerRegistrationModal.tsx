@@ -12,6 +12,7 @@ import type { Customer, CustomerFormData } from '../../types'
 import { useCreatePenyewa } from '../../hooks/usePenyewa'
 import type { CreatePenyewaRequest } from '../../types'
 import { KasirApiError } from '../../api'
+import { apiToFormFieldMapping } from '../../lib/constants/workflowConfig'
 // import { toast } from '@/hooks/use-toast' // TODO: Add toast implementation
 
 interface CustomerRegistrationModalProps {
@@ -116,15 +117,7 @@ export function CustomerRegistrationModal({
           const fieldErrors: Record<string, string> = {}
           error.validationErrors.forEach((validationError) => {
             // Map API field names to form field names
-            const fieldMapping: Record<string, keyof CustomerFormData> = {
-              nama: 'name',
-              telepon: 'phone',
-              alamat: 'address',
-              email: 'email',
-              nik: 'identityNumber',
-            }
-
-            const formField = fieldMapping[validationError.field]
+            const formField = apiToFormFieldMapping[validationError.field]
             if (formField) {
               fieldErrors[formField] = validationError.message
             } else {

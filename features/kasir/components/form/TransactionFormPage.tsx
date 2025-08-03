@@ -13,12 +13,7 @@ import { CustomerBiodataStep } from './CustomerBiodataStep'
 import { PaymentSummaryStep } from './PaymentSummaryStep'
 import { getStepValidationMessage } from '../../lib/constants/stepValidationMessages'
 import type { ProductSelection } from '../../types'
-
-const steps = [
-  { id: 1, title: 'Pilih Produk', description: 'Pilih baju yang akan disewa' },
-  { id: 2, title: 'Data Penyewa', description: 'Isi biodata penyewa' },
-  { id: 3, title: 'Pembayaran', description: 'Ringkasan & pembayaran' },
-]
+import { transactionFormSteps } from '../../lib/constants/workflowConfig'
 
 export function TransactionFormPage() {
   const router = useRouter()
@@ -149,7 +144,7 @@ export function TransactionFormPage() {
           data-testid="transaction-form-stepper-container"
         >
           <Stepper
-            steps={steps}
+            steps={transactionFormSteps}
             currentStep={currentStep}
             onStepClick={goToStep}
             data-testid="transaction-form-stepper"

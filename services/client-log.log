@@ -1,32 +1,88 @@
-Error: ./node_modules/@prisma/client/runtime/library.mjs
-Code generation for chunk item errored
-An error occurred while generating the chunk item [project]/node_modules/@prisma/client/runtime/library.mjs [app-client] (ecmascript)
+[{
+	"resource": "/d:/.work/rental-software/features/kasir/components/accessibility/AccessibleTable.tsx",
+	"owner": "_generated_diagnostic_collection_name_#0",
+	"code": {
+		"value": "axe/aria",
+		"target": {
+			"$mid": 1,
+			"path": "/rules/axe/4.10/aria-required-children",
+			"scheme": "https",
+			"authority": "dequeuniversity.com",
+			"query": "application=axeAPI"
+		}
+	},
+	"severity": 8,
+	"message": "Certain ARIA roles must contain particular children: Required ARIA children role not present: rowgroup, row",
+	"source": "Microsoft Edge Tools",
+	"startLineNumber": 47,
+	"startColumn": 10,
+	"endLineNumber": 47,
+	"endColumn": 15,
+	"modelVersionId": 3
+},{
+	"resource": "/d:/.work/rental-software/features/kasir/components/accessibility/AccessibleTable.tsx",
+	"owner": "_generated_diagnostic_collection_name_#0",
+	"code": {
+		"value": "axe/aria",
+		"target": {
+			"$mid": 1,
+			"path": "/rules/axe/4.10/aria-valid-attr-value",
+			"scheme": "https",
+			"authority": "dequeuniversity.com",
+			"query": "application=axeAPI"
+		}
+	},
+	"severity": 8,
+	"message": "ARIA attributes must conform to valid values: Invalid ARIA attribute value: aria-sort=\"{expression}\"",
+	"source": "Microsoft Edge Tools",
+	"startLineNumber": 130,
+	"startColumn": 8,
+	"endLineNumber": 130,
+	"endColumn": 10,
+	"modelVersionId": 3
+},{
+	"resource": "/d:/.work/rental-software/features/kasir/components/accessibility/AccessibleTable.tsx",
+	"owner": "_generated_diagnostic_collection_name_#0",
+	"code": {
+		"value": "axe/tables",
+		"target": {
+			"$mid": 1,
+			"path": "/rules/axe/4.10/td-headers-attr",
+			"scheme": "https",
+			"authority": "dequeuniversity.com",
+			"query": "application=axeAPI"
+		}
+	},
+	"severity": 4,
+	"message": "Table cells that use the headers attribute must only refer to cells in the same table",
+	"source": "Microsoft Edge Tools",
+	"startLineNumber": 1,
+	"startColumn": 1,
+	"endLineNumber": 1,
+	"endColumn": 7,
+	"modelVersionId": 3
+}]
 
-Caused by:
-- the chunking context (unknown) does not support external modules (request: node:module)
 
-Debug info:
-- An error occurred while generating the chunk item [project]/node_modules/@prisma/client/runtime/library.mjs [app-client] (ecmascript)
-- Execution of *EcmascriptChunkItemContent::module_factory failed
-- Execution of <ModuleChunkItem as EcmascriptChunkItem>::content_with_async_module_info failed
-- Execution of *EcmascriptChunkItemContent::new failed
-- Execution of EcmascriptModuleContent::new failed
-- the chunking context (unknown) does not support external modules (request: node:module)
-
-Import trace:
-  ./node_modules/@prisma/client/runtime/library.mjs [Client Component Browser]
-  ./features/kasir/lib/utils/priceCalculator.ts [Client Component Browser]
-  ./features/kasir/lib/utils/index.ts [Client Component Browser]
-  ./features/kasir/components/detail/TransactionDetailPage.tsx [Client Component Browser]
-  ./features/kasir/components/detail/TransactionDetailPage.tsx [Server Component]
-  ./app/(kasir)/dashboard/transaction/[kode]/page.tsx [Server Component]
-    at tr (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_next-devtools_index_d575f738.js:20164:60)
-    at o6 (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_next-devtools_index_d575f738.js:2952:164)
-    at iP (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_next-devtools_index_d575f738.js:4008:32)
-    at i$ (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_next-devtools_index_d575f738.js:4305:28)
-    at sv (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_next-devtools_index_d575f738.js:5791:21)
-    at http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_next-devtools_index_d575f738.js:5782:40
-    at sm (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_next-devtools_index_d575f738.js:5783:19)
-    at sa (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_next-devtools_index_d575f738.js:5596:23)
-    at sZ (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_next-devtools_index_d575f738.js:6520:124)
-    at MessagePort._ (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_next-devtools_index_d575f738.js:8806:49)
+[{
+	"resource": "/d:/.work/rental-software/features/kasir/components/accessibility/ScreenReaderAnnouncer.tsx",
+	"owner": "_generated_diagnostic_collection_name_#0",
+	"code": {
+		"value": "axe/aria",
+		"target": {
+			"$mid": 1,
+			"path": "/rules/axe/4.10/aria-valid-attr-value",
+			"scheme": "https",
+			"authority": "dequeuniversity.com",
+			"query": "application=axeAPI"
+		}
+	},
+	"severity": 8,
+	"message": "ARIA attributes must conform to valid values: Invalid ARIA attribute value: aria-live=\"{expression}\"",
+	"source": "Microsoft Edge Tools",
+	"startLineNumber": 37,
+	"startColumn": 6,
+	"endLineNumber": 37,
+	"endColumn": 9,
+	"modelVersionId": 3
+}]

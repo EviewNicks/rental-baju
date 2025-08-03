@@ -1,10 +1,5 @@
 import {
   Clock,
-  CheckCircle,
-  AlertTriangle,
-  DollarSign,
-  Package,
-  MessageCircle,
   Loader2,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
@@ -12,6 +7,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/react-query'
 import type { ActivityLog } from '../../types'
 import { formatDate } from '../../lib/utils/client'
+import { actionIcons, actionColors } from '../../lib/constants/uiConfig'
 
 interface ActivityTimelineProps {
   timeline: ActivityLog[]
@@ -19,25 +15,6 @@ interface ActivityTimelineProps {
   'data-testid'?: string
 }
 
-const actionIcons = {
-  created: Package,
-  paid: DollarSign,
-  picked_up: CheckCircle,
-  returned: CheckCircle,
-  overdue: AlertTriangle,
-  reminder_sent: MessageCircle,
-  penalty_added: AlertTriangle,
-}
-
-const actionColors = {
-  created: 'text-blue-600 bg-blue-100',
-  paid: 'text-green-600 bg-green-100',
-  picked_up: 'text-green-600 bg-green-100',
-  returned: 'text-green-600 bg-green-100',
-  overdue: 'text-red-600 bg-red-100',
-  reminder_sent: 'text-yellow-600 bg-yellow-100',
-  penalty_added: 'text-red-600 bg-red-100',
-}
 
 export function ActivityTimeline({
   timeline,
