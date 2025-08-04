@@ -10,7 +10,7 @@ import { PaymentSummaryCard } from './PaymentSummaryCard'
 import { ActivityTimeline } from './ActivityTimeline'
 import { ActionButtonsPanel } from './ActionButtonPanel'
 import { useTransactionDetail } from '../../hooks/useTransactionDetail'
-import { formatDate } from '../../lib/utils'
+import { formatDate } from '../../lib/utils/client'
 
 interface TransactionDetailPageProps {
   transactionId: string
@@ -185,7 +185,7 @@ export function TransactionDetailPage({ transactionId }: TransactionDetailPagePr
                 data-testid="refresh-button"
                 variant="outline"
                 size="sm"
-                onClick={refreshTransaction}
+                onClick={() => refreshTransaction()}
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Refresh
@@ -249,7 +249,11 @@ export function TransactionDetailPage({ transactionId }: TransactionDetailPagePr
             </div>
 
             {/* Activity Timeline */}
-            <ActivityTimeline data-testid="activity-timeline" timeline={transaction.timeline} />
+            <ActivityTimeline 
+              data-testid="activity-timeline" 
+              timeline={transaction.timeline} 
+              transactionCode={transaction.transactionCode}
+            />
           </div>
 
           {/* Sidebar */}

@@ -165,6 +165,148 @@ class ClientLogger {
     document.body.removeChild(link)
     URL.revokeObjectURL(url)
   }
+
+  // 🔥 FIX: Enhanced payment flow debugging methods
+  logPaymentStart(transactionCode: string, amount: number, method: string) {
+    this.info(
+      '🚀 Payment process started',
+      {
+        transactionCode,
+        amount,
+        method,
+        timestamp: new Date().toISOString(),
+        step: 'PAYMENT_START',
+      },
+      'PaymentFlow',
+    )
+  }
+
+  //eslint-disable-next-line @typescript-eslint/no-explicit-any
+  logPaymentOptimistic(transactionCode: string, optimisticData: any) {
+    this.debug(
+      '✨ Optimistic update applied',
+      {
+        transactionCode,
+        optimisticData,
+        timestamp: new Date().toISOString(),
+        step: 'OPTIMISTIC_UPDATE',
+      },
+      'PaymentFlow',
+    )
+  }
+
+  logPaymentApiSuccess(transactionCode: string, paymentId: string, amount: number) {
+    this.info(
+      '✅ Payment API successful',
+      {
+        transactionCode,
+        paymentId,
+        amount,
+        timestamp: new Date().toISOString(),
+        step: 'API_SUCCESS',
+      },
+      'PaymentFlow',
+    )
+  }
+
+  logCacheInvalidationStart(transactionCode: string, queryKeys: string[]) {
+    this.debug(
+      '🔄 Cache invalidation started',
+      {
+        transactionCode,
+        queryKeys,
+        timestamp: new Date().toISOString(),
+        step: 'CACHE_INVALIDATION_START',
+      },
+      'PaymentFlow',
+    )
+  }
+
+  logCacheInvalidationComplete(transactionCode: string, success: boolean, retryCount?: number) {
+    if (success) {
+      this.info(
+        '🎉 Cache invalidation completed',
+        {
+          transactionCode,
+          retryCount: retryCount || 0,
+          timestamp: new Date().toISOString(),
+          step: 'CACHE_INVALIDATION_SUCCESS',
+        },
+        'PaymentFlow',
+      )
+    } else {
+      this.error(
+        '💥 Cache invalidation failed',
+        {
+          transactionCode,
+          retryCount: retryCount || 0,
+          timestamp: new Date().toISOString(),
+          step: 'CACHE_INVALIDATION_FAILED',
+        },
+        'PaymentFlow',
+      )
+    }
+  }
+
+  //eslint-disable-next-line @typescript-eslint/no-explicit-any
+  logUIUpdate(component: string, transactionCode: string, data: any) {
+    this.debug(
+      '🖼️ UI component updated',
+      {
+        component,
+        transactionCode,
+        data,
+        timestamp: new Date().toISOString(),
+        step: 'UI_UPDATE',
+      },
+      'PaymentFlow',
+    )
+  }
+
+  logPaymentComplete(transactionCode: string, finalAmount: number, remainingBalance: number) {
+    this.info(
+      '🏁 Payment flow completed',
+      {
+        transactionCode,
+        finalAmount,
+        remainingBalance,
+        timestamp: new Date().toISOString(),
+        step: 'PAYMENT_COMPLETE',
+      },
+      'PaymentFlow',
+    )
+  }
+
+  // 🔍 Payment flow analysis helper
+  getPaymentFlowLogs(transactionCode: string): LogEntry[] {
+    return this.logs.filter(
+      (log) => log.component === 'PaymentFlow' && log.data?.transactionCode === transactionCode,
+    )
+  }
+
+  // 🔍 Get payment flow timeline for debugging
+  getPaymentFlowTimeline(transactionCode: string): string {
+    const paymentLogs = this.getPaymentFlowLogs(transactionCode)
+
+    if (paymentLogs.length === 0) {
+      return `No payment flow logs found for transaction: ${transactionCode}`
+    }
+
+    const timeline = paymentLogs
+      .map((log, index) => {
+        const step = log.data?.step || 'UNKNOWN'
+        const duration =
+          index > 0
+            ? new Date(log.timestamp).getTime() -
+              new Date(paymentLogs[index - 1].timestamp).getTime()
+            : 0
+
+        return `${index + 1}. [${step}] ${log.message} ${duration > 0 ? `(+${duration}ms)` : ''}`
+      })
+      .join('\n')
+
+    return `Payment Flow Timeline for ${transactionCode}:\n${timeline}`
+  }
 }
 
 // Singleton instance

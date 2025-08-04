@@ -17,6 +17,7 @@ import {
   transaksiQuerySchema 
 } from '@/features/kasir/lib/validation/kasirSchema'
 import { ZodError } from 'zod'
+import { createSuccessResponse } from '@/features/kasir/types'
 
 export async function POST(request: NextRequest) {
   try {
@@ -104,14 +105,12 @@ export async function POST(request: NextRequest) {
       }))
     }
 
-    return NextResponse.json(
-      {
-        success: true,
-        data: formattedData,
-        message: `Transaksi ${transaksi.kode} berhasil dibuat`
-      },
-      { status: 201 }
+    const { response, status } = createSuccessResponse(
+      formattedData,
+      `Transaksi ${transaksi.kode} berhasil dibuat`,
+      201
     )
+    return NextResponse.json(response, { status })
   } catch (error) {
     console.error('POST /api/kasir/transaksi error:', error)
 
@@ -123,7 +122,7 @@ export async function POST(request: NextRequest) {
           error: {
             message: 'Data tidak valid',
             code: 'VALIDATION_ERROR',
-            details: error.errors.map(err => ({
+            details: error.issues.map((err) => ({
               field: err.path.join('.'),
               message: err.message
             }))
@@ -282,14 +281,11 @@ export async function GET(request: NextRequest) {
       summary: result.summary
     }
 
-    return NextResponse.json(
-      {
-        success: true,
-        data: formattedData,
-        message: 'Data transaksi berhasil diambil'
-      },
-      { status: 200 }
+    const { response, status } = createSuccessResponse(
+      formattedData,
+      'Data transaksi berhasil diambil'
     )
+    return NextResponse.json(response, { status })
   } catch (error) {
     console.error('GET /api/kasir/transaksi error:', error)
 
@@ -301,7 +297,7 @@ export async function GET(request: NextRequest) {
           error: {
             message: 'Parameter query tidak valid',
             code: 'VALIDATION_ERROR',
-            details: error.errors.map(err => ({
+            details: error.issues.map((err) => ({
               field: err.path.join('.'),
               message: err.message
             }))

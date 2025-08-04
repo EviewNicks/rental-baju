@@ -22,5 +22,29 @@
     "blocked_command": "node --version && npm --version",
     "suggested_command": "node --version && yarn --version",
     "reason": "Gunakan 'yarn' sebagai default, kecuali ada alasan khusus."
+  },
+  {
+    "session_id": "0fcd4ebb-1b21-4f58-86cc-a4f3abf5209b",
+    "blocked_command": "npm run type-check",
+    "suggested_command": "yarn type-check",
+    "reason": "Gunakan 'yarn' sebagai pengganti 'npm run' untuk workflow utama."
+  },
+  {
+    "session_id": "4485f276-a9b3-4fa1-9716-f36df44be95c",
+    "blocked_command": "cd \"D:\\.work\\rental-software\" && npm run lint",
+    "suggested_command": "cd \"D:\\.work\\rental-software\" && yarn lint",
+    "reason": "Gunakan 'yarn' sebagai pengganti 'npm run' untuk workflow utama."
+  },
+  {
+    "session_id": "67032924-7c62-4d0a-a37c-3bc4046e715c",
+    "blocked_command": "cd \"D:\\.work\\rental-software\" && npm list @prisma/client prisma",
+    "suggested_command": "cd \"D:\\.work\\rental-software\" && yarn list @prisma/client prisma",
+    "reason": "Gunakan 'yarn' sebagai default, kecuali ada alasan khusus."
+  },
+  {
+    "session_id": "81fb4b81-1c31-4378-8fc7-c9d85a391193",
+    "blocked_command": "cd \"D:\\.work\\rental-software\" && npm run type-check",
+    "suggested_command": "cd \"D:\\.work\\rental-software\" && yarn type-check",
+    "reason": "Gunakan 'yarn' sebagai pengganti 'npm run' untuk workflow utama."
   }
 ]

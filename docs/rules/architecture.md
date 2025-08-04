@@ -42,6 +42,7 @@ graph TD
 │       ├── services/   # prisma logic CRUD, validasi, dsb
 │       ├── api.ts      # API client/fetcher untuk fitur ini
 │       ├── types.ts    # TypeScript types untuk fitur ini
+│       └── lib    # Export semua komponen, hooks, dsb 
 ├── prisma/             # Skema database & seed
 ├── public/             # Static files (gambar, dsb)
 ├── lib/                # Utilitas global

@@ -1,6 +1,6 @@
 'use client'
 
-import type { TransactionStatus } from '../../types/transaction'
+import type { TransactionStatus } from '../../types'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'

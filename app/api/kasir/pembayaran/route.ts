@@ -1,9 +1,9 @@
 /**
  * API Route: Kasir Payment Management - RPK-26
- * 
+ *
  * POST /api/kasir/pembayaran - Create new payment record
  * GET /api/kasir/pembayaran - Get paginated list of payments with filters
- * 
+ *
  * Authentication: Clerk (admin/kasir roles only)
  * Following existing patterns from manage-product feature
  */
@@ -14,6 +14,7 @@ import { PembayaranService } from '@/features/kasir/services/pembayaranService'
 import { createPembayaranSchema } from '@/features/kasir/lib/validation/kasirSchema'
 import { ZodError } from 'zod'
 import { requirePermission, withRateLimit } from '@/lib/auth-middleware'
+// TODO: Update to use createSuccessResponse, createErrorResponse from @/features/kasir/types
 
 export async function POST(request: NextRequest) {
   try {
@@ -51,28 +52,28 @@ export async function POST(request: NextRequest) {
         kode: pembayaran.transaksi.kode,
         penyewa: {
           nama: pembayaran.transaksi.penyewa.nama,
-          telepon: pembayaran.transaksi.penyewa.telepon
+          telepon: pembayaran.transaksi.penyewa.telepon,
         },
         totalHarga: Number(pembayaran.transaksi.totalHarga),
         jumlahBayar: Number(pembayaran.transaksi.jumlahBayar),
         sisaBayar: Number(pembayaran.transaksi.sisaBayar),
-        status: pembayaran.transaksi.status
+        status: pembayaran.transaksi.status,
       },
       jumlah: Number(pembayaran.jumlah),
       metode: pembayaran.metode,
       referensi: pembayaran.referensi,
       catatan: pembayaran.catatan,
       createdBy: pembayaran.createdBy,
-      createdAt: pembayaran.createdAt.toISOString()
+      createdAt: pembayaran.createdAt.toISOString(),
     }
 
     return NextResponse.json(
       {
         success: true,
         data: formattedData,
-        message: `Pembayaran ${pembayaran.metode} sebesar Rp ${Number(pembayaran.jumlah).toLocaleString('id-ID')} berhasil dicatat`
+        message: `Pembayaran ${pembayaran.metode} sebesar Rp ${Number(pembayaran.jumlah).toLocaleString('id-ID')} berhasil dicatat`,
       },
-      { status: 201 }
+      { status: 201 },
     )
   } catch (error) {
     console.error('POST /api/kasir/pembayaran error:', error)
@@ -85,13 +86,13 @@ export async function POST(request: NextRequest) {
           error: {
             message: 'Data tidak valid',
             code: 'VALIDATION_ERROR',
-            details: error.errors.map(err => ({
+            details: error.issues.map((err) => ({
               field: err.path.join('.'),
-              message: err.message
-            }))
-          }
+              message: err.message,
+            })),
+          },
         },
-        { status: 400 }
+        { status: 400 },
       )
     }
 
@@ -104,27 +105,29 @@ export async function POST(request: NextRequest) {
             success: false,
             error: {
               message: error.message,
-              code: 'NOT_FOUND'
-            }
+              code: 'NOT_FOUND',
+            },
           },
-          { status: 404 }
+          { status: 404 },
         )
       }
 
       // Payment validation errors
-      if (error.message.includes('tidak dapat') || 
-          error.message.includes('melebihi') ||
-          error.message.includes('sudah selesai') ||
-          error.message.includes('dibatalkan')) {
+      if (
+        error.message.includes('tidak dapat') ||
+        error.message.includes('melebihi') ||
+        error.message.includes('sudah selesai') ||
+        error.message.includes('dibatalkan')
+      ) {
         return NextResponse.json(
           {
             success: false,
             error: {
               message: error.message,
-              code: 'PAYMENT_ERROR'
-            }
+              code: 'PAYMENT_ERROR',
+            },
           },
-          { status: 409 }
+          { status: 409 },
         )
       }
 
@@ -134,25 +137,30 @@ export async function POST(request: NextRequest) {
           success: false,
           error: {
             message: error.message,
-            code: 'BUSINESS_ERROR'
-          }
+            code: 'BUSINESS_ERROR',
+          },
         },
-        { status: 400 }
+        { status: 400 },
       )
     }
 
     // Handle database connection errors
-    if (error && typeof error === 'object' && 'message' in error && 
-        typeof error.message === 'string' && error.message.includes('connection pool')) {
+    if (
+      error &&
+      typeof error === 'object' &&
+      'message' in error &&
+      typeof error.message === 'string' &&
+      error.message.includes('connection pool')
+    ) {
       return NextResponse.json(
         {
           success: false,
           error: {
             message: 'Database connection timeout. Please try again.',
-            code: 'CONNECTION_ERROR'
-          }
+            code: 'CONNECTION_ERROR',
+          },
         },
-        { status: 503 }
+        { status: 503 },
       )
     }
 
@@ -162,10 +170,10 @@ export async function POST(request: NextRequest) {
         success: false,
         error: {
           message: 'Internal server error',
-          code: 'INTERNAL_ERROR'
-        }
+          code: 'INTERNAL_ERROR',
+        },
       },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }
@@ -193,8 +201,10 @@ export async function GET(request: NextRequest) {
       limit: parseInt(searchParams.get('limit') || '10'),
       transaksiId: searchParams.get('transaksiId') || undefined,
       metode: searchParams.get('metode') || undefined,
-      startDate: searchParams.get('startDate') ? new Date(searchParams.get('startDate')!) : undefined,
-      endDate: searchParams.get('endDate') ? new Date(searchParams.get('endDate')!) : undefined
+      startDate: searchParams.get('startDate')
+        ? new Date(searchParams.get('startDate')!)
+        : undefined,
+      endDate: searchParams.get('endDate') ? new Date(searchParams.get('endDate')!) : undefined,
     }
 
     // Initialize payment service
@@ -205,37 +215,37 @@ export async function GET(request: NextRequest) {
 
     // Format response data
     const formattedData = {
-      data: result.data.map(payment => ({
+      data: result.data.map((payment) => ({
         id: payment.id,
         transaksi: {
           id: payment.transaksi.id,
           kode: payment.transaksi.kode,
           penyewa: {
             nama: payment.transaksi.penyewa.nama,
-            telepon: payment.transaksi.penyewa.telepon
+            telepon: payment.transaksi.penyewa.telepon,
           },
           totalHarga: Number(payment.transaksi.totalHarga),
           jumlahBayar: Number(payment.transaksi.jumlahBayar),
           sisaBayar: Number(payment.transaksi.sisaBayar),
-          status: payment.transaksi.status
+          status: payment.transaksi.status,
         },
         jumlah: Number(payment.jumlah),
         metode: payment.metode,
         referensi: payment.referensi,
         catatan: payment.catatan,
         createdBy: payment.createdBy,
-        createdAt: payment.createdAt.toISOString()
+        createdAt: payment.createdAt.toISOString(),
       })),
-      pagination: result.pagination
+      pagination: result.pagination,
     }
 
     return NextResponse.json(
       {
         success: true,
         data: formattedData,
-        message: 'Data pembayaran berhasil diambil'
+        message: 'Data pembayaran berhasil diambil',
       },
-      { status: 200 }
+      { status: 200 },
     )
   } catch (error) {
     console.error('GET /api/kasir/pembayaran error:', error)
@@ -247,25 +257,30 @@ export async function GET(request: NextRequest) {
           success: false,
           error: {
             message: 'Format tanggal tidak valid',
-            code: 'VALIDATION_ERROR'
-          }
+            code: 'VALIDATION_ERROR',
+          },
         },
-        { status: 400 }
+        { status: 400 },
       )
     }
 
     // Handle database connection errors
-    if (error && typeof error === 'object' && 'message' in error && 
-        typeof error.message === 'string' && error.message.includes('connection pool')) {
+    if (
+      error &&
+      typeof error === 'object' &&
+      'message' in error &&
+      typeof error.message === 'string' &&
+      error.message.includes('connection pool')
+    ) {
       return NextResponse.json(
         {
           success: false,
           error: {
             message: 'Database connection timeout. Please try again.',
-            code: 'CONNECTION_ERROR'
-          }
+            code: 'CONNECTION_ERROR',
+          },
         },
-        { status: 503 }
+        { status: 503 },
       )
     }
 
@@ -275,10 +290,10 @@ export async function GET(request: NextRequest) {
         success: false,
         error: {
           message: 'Internal server error',
-          code: 'INTERNAL_ERROR'
-        }
+          code: 'INTERNAL_ERROR',
+        },
       },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }

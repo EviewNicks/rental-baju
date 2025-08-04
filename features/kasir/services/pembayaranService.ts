@@ -7,7 +7,7 @@
 import { PrismaClient } from '@prisma/client'
 import { Decimal } from '@prisma/client/runtime/library'
 import { CreatePembayaranRequest } from '../lib/validation/kasirSchema'
-import { PriceCalculator } from '../lib/utils/priceCalculator'
+import { PriceCalculator } from '../lib/utils/server'
 import { createAuditService, AuditService } from './auditService'
 
 export interface PembayaranWithDetails {
@@ -59,7 +59,7 @@ export class PembayaranService {
   async createPembayaran(data: CreatePembayaranRequest): Promise<PembayaranWithDetails> {
     // 1. Validate transaction exists and is active
     const transaksi = await this.prisma.transaksi.findUnique({
-      where: { id: data.transaksiId },
+      where: { kode: data.transaksiKode },
       include: {
         penyewa: {
           select: { nama: true, telepon: true }
@@ -90,12 +90,14 @@ export class PembayaranService {
       throw new Error(validation.error!)
     }
 
-    // 3. Create payment record and update transaction in a database transaction
+    // 3. Create payment record and update transaction in a database transaction with consistency checks
     const result = await this.prisma.$transaction(async (tx) => {
+      console.log(`[PAYMENT_CREATE] Starting payment transaction for ${transaksi.kode}`)
+      
       // Create payment record
       const pembayaran = await tx.pembayaran.create({
         data: {
-          transaksiId: data.transaksiId,
+          transaksiId: transaksi.id, // Use the found transaction's ID
           jumlah: new Decimal(data.jumlah),
           metode: data.metode,
           referensi: data.referensi || null,
@@ -103,6 +105,7 @@ export class PembayaranService {
           createdBy: this.userId
         }
       })
+      console.log(`[PAYMENT_CREATE] Payment record created: ${pembayaran.id}`)
 
       // Update transaction payment amounts
       const newJumlahBayar = transaksi.jumlahBayar.add(data.jumlah)
@@ -112,17 +115,18 @@ export class PembayaranService {
       )
 
       await tx.transaksi.update({
-        where: { id: data.transaksiId },
+        where: { id: transaksi.id }, // Use the found transaction's ID
         data: {
           jumlahBayar: newJumlahBayar,
           sisaBayar: newSisaBayar
         }
       })
+      console.log(`[PAYMENT_CREATE] Transaction amounts updated for ${transaksi.kode}`)
 
       // Create activity log
-      await tx.aktivitasTransaksi.create({
+      const aktivitas = await tx.aktivitasTransaksi.create({
         data: {
-          transaksiId: data.transaksiId,
+          transaksiId: transaksi.id, // Use the found transaction's ID
           tipe: 'dibayar',
           deskripsi: `Pembayaran ${data.metode} sebesar ${PriceCalculator.formatToRupiah(data.jumlah)}`,
           data: {
@@ -136,6 +140,17 @@ export class PembayaranService {
           createdBy: this.userId
         }
       })
+      console.log(`[PAYMENT_CREATE] Activity log created: ${aktivitas.id}`)
+
+      // 🔥 FIX: Verify activity was created within transaction
+      const activityVerification = await tx.aktivitasTransaksi.findUnique({
+        where: { id: aktivitas.id }
+      })
+      
+      if (!activityVerification) {
+        throw new Error(`Critical error: Activity ${aktivitas.id} creation verification failed`)
+      }
+      console.log(`[PAYMENT_CREATE] Activity verification successful: ${aktivitas.id}`)
 
       // Get payment with transaction details for response
       const paymentWithDetails = await tx.pembayaran.findUnique({
@@ -157,8 +172,57 @@ export class PembayaranService {
         }
       })
 
+      console.log(`[PAYMENT_CREATE] Payment transaction completed for ${transaksi.kode}`)
       return paymentWithDetails!
+    }, {
+      // 🔥 FIX: Increase transaction timeout and set isolation level for consistency
+      timeout: 30000, // 30 seconds timeout
+      isolationLevel: 'ReadCommitted' // Ensure read-after-write consistency
     })
+
+    // 🔥 FIX: Post-transaction consistency verification
+    // Small delay to ensure database consistency across replicas/connections
+    await new Promise(resolve => setTimeout(resolve, 100))
+    
+    // Verify the activity exists after transaction commit
+    let retryCount = 0
+    const maxRetries = 3
+    let activityExists = false
+    
+    while (!activityExists && retryCount < maxRetries) {
+      try {
+        const activityCheck = await this.prisma.aktivitasTransaksi.findFirst({
+          where: {
+            transaksiId: transaksi.id,
+            tipe: 'dibayar',
+            createdBy: this.userId
+          },
+          orderBy: { createdAt: 'desc' }
+        })
+        
+        if (activityCheck) {
+          activityExists = true
+          console.log(`[PAYMENT_VERIFY] Activity verification successful after ${retryCount} retries`)
+        } else {
+          retryCount++
+          if (retryCount < maxRetries) {
+            console.log(`[PAYMENT_VERIFY] Activity not found, retrying (${retryCount}/${maxRetries})`)
+            await new Promise(resolve => setTimeout(resolve, 200 * retryCount)) // Exponential backoff
+          }
+        }
+      } catch (error) {
+        retryCount++
+        console.error(`[PAYMENT_VERIFY] Activity verification error (${retryCount}/${maxRetries}):`, error)
+        if (retryCount < maxRetries) {
+          await new Promise(resolve => setTimeout(resolve, 200 * retryCount))
+        }
+      }
+    }
+    
+    if (!activityExists) {
+      console.error(`[PAYMENT_VERIFY] Critical: Activity verification failed after ${maxRetries} retries for ${transaksi.kode}`)
+      // Don't fail the entire payment, but log for debugging
+    }
 
     // Log audit trail
     await this.auditService.logPembayaranActivity(
@@ -174,6 +238,7 @@ export class PembayaranService {
       }
     )
 
+    console.log(`[PAYMENT_CREATE] Payment creation process completed for ${transaksi.kode}`)
     return result as PembayaranWithDetails
   }
 

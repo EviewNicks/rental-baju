@@ -1,9 +1,9 @@
 /**
  * API Route: Kasir Penyewa Management - RPK-26
- * 
+ *
  * POST /api/kasir/penyewa - Create new penyewa (customer)
  * GET /api/kasir/penyewa - Get paginated list of penyewa with search
- * 
+ *
  * Authentication: Clerk (admin/kasir roles only)
  * Following existing patterns from manage-product feature
  */
@@ -11,16 +11,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { PenyewaService } from '@/features/kasir/services/penyewaService'
-import { 
-  createPenyewaSchema, 
-  penyewaQuerySchema 
+import {
+  createPenyewaSchema,
+  penyewaQuerySchema,
 } from '@/features/kasir/lib/validation/kasirSchema'
-import { 
-  formatPenyewaData, 
-  formatPenyewaList, 
-  createSuccessResponse, 
-} from '@/features/kasir/lib/responseFormatter'
-import { sanitizePenyewaInput } from '@/features/kasir/lib/inputSanitizer'
+import {
+  formatPenyewaData,
+  formatPenyewaList,
+  createSuccessResponse,
+  sanitizePenyewaInput,
+} from '@/features/kasir/types'
 import { ZodError } from 'zod'
 import { requirePermission, withRateLimit } from '@/lib/auth-middleware'
 
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     const { user } = authResult
 
     // Parse and validate request body
-    let body: unknown;
+    let body: unknown
     try {
       body = await request.json()
     } catch {
@@ -50,16 +50,16 @@ export async function POST(request: NextRequest) {
           success: false,
           error: {
             message: 'Invalid JSON format',
-            code: 'INVALID_JSON'
-          }
+            code: 'INVALID_JSON',
+          },
         },
-        { status: 400 }
+        { status: 400 },
       )
     }
 
     // Sanitize input data
     const sanitizedData = sanitizePenyewaInput(body as Record<string, unknown>)
-    
+
     // Remove empty optional fields to let Zod set defaults
     const processedData = Object.fromEntries(
       Object.entries(sanitizedData).filter(([key, value]) => {
@@ -69,9 +69,9 @@ export async function POST(request: NextRequest) {
         }
         // Remove empty optional fields
         return value !== '' && value !== null && value !== undefined
-      })
+      }),
     )
-    
+
     // Validate request data
     const validatedData = createPenyewaSchema.parse(processedData)
 
@@ -80,12 +80,12 @@ export async function POST(request: NextRequest) {
 
     // Create penyewa
     const penyewa = await penyewaService.createPenyewa(validatedData)
-    
+
     // Format and return response
     const { response, status } = createSuccessResponse(
       formatPenyewaData(penyewa),
       'Penyewa berhasil dibuat',
-      201
+      201,
     )
     return NextResponse.json(response, { status })
   } catch (error) {
@@ -99,13 +99,13 @@ export async function POST(request: NextRequest) {
           error: {
             message: 'Data tidak valid',
             code: 'VALIDATION_ERROR',
-            details: error.errors.map(err => ({
+            details: error.issues.map((err) => ({
               field: err.path.join('.'),
-              message: err.message
-            }))
-          }
+              message: err.message,
+            })),
+          },
         },
-        { status: 400 }
+        { status: 400 },
       )
     }
 
@@ -119,10 +119,10 @@ export async function POST(request: NextRequest) {
             error: {
               message: error.message,
               code: 'PHONE_ALREADY_EXISTS',
-              field: 'telepon'
-            }
+              field: 'telepon',
+            },
           },
-          { status: 409 }
+          { status: 409 },
         )
       }
 
@@ -132,25 +132,30 @@ export async function POST(request: NextRequest) {
           success: false,
           error: {
             message: error.message,
-            code: 'BUSINESS_ERROR'
-          }
+            code: 'BUSINESS_ERROR',
+          },
         },
-        { status: 422 }
+        { status: 422 },
       )
     }
 
     // Handle database connection errors
-    if (error && typeof error === 'object' && 'message' in error && 
-        typeof error.message === 'string' && error.message.includes('connection pool')) {
+    if (
+      error &&
+      typeof error === 'object' &&
+      'message' in error &&
+      typeof error.message === 'string' &&
+      error.message.includes('connection pool')
+    ) {
       return NextResponse.json(
         {
           success: false,
           error: {
             message: 'Database connection timeout. Please try again.',
-            code: 'CONNECTION_ERROR'
-          }
+            code: 'CONNECTION_ERROR',
+          },
         },
-        { status: 503 }
+        { status: 503 },
       )
     }
 
@@ -160,10 +165,10 @@ export async function POST(request: NextRequest) {
         success: false,
         error: {
           message: 'Internal server error',
-          code: 'INTERNAL_ERROR'
-        }
+          code: 'INTERNAL_ERROR',
+        },
       },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }
@@ -189,7 +194,7 @@ export async function GET(request: NextRequest) {
     const queryParams = {
       page: searchParams.get('page') || '1',
       limit: searchParams.get('limit') || '10',
-      search: searchParams.get('search') || undefined
+      search: searchParams.get('search') || undefined,
     }
 
     // Validate query parameters
@@ -204,13 +209,13 @@ export async function GET(request: NextRequest) {
     // Format response data
     const formattedData = {
       data: formatPenyewaList(result.data),
-      pagination: result.pagination
+      pagination: result.pagination,
     }
 
     // Return formatted response
     const { response, status } = createSuccessResponse(
       formattedData,
-      'Data penyewa berhasil diambil'
+      'Data penyewa berhasil diambil',
     )
     return NextResponse.json(response, { status })
   } catch (error) {
@@ -224,28 +229,33 @@ export async function GET(request: NextRequest) {
           error: {
             message: 'Parameter query tidak valid',
             code: 'VALIDATION_ERROR',
-            details: error.errors.map(err => ({
+            details: error.issues.map((err) => ({
               field: err.path.join('.'),
-              message: err.message
-            }))
-          }
+              message: err.message,
+            })),
+          },
         },
-        { status: 400 }
+        { status: 400 },
       )
     }
 
     // Handle database connection errors
-    if (error && typeof error === 'object' && 'message' in error && 
-        typeof error.message === 'string' && error.message.includes('connection pool')) {
+    if (
+      error &&
+      typeof error === 'object' &&
+      'message' in error &&
+      typeof error.message === 'string' &&
+      error.message.includes('connection pool')
+    ) {
       return NextResponse.json(
         {
           success: false,
           error: {
             message: 'Database connection timeout. Please try again.',
-            code: 'CONNECTION_ERROR'
-          }
+            code: 'CONNECTION_ERROR',
+          },
         },
-        { status: 503 }
+        { status: 503 },
       )
     }
 
@@ -255,10 +265,10 @@ export async function GET(request: NextRequest) {
         success: false,
         error: {
           message: 'Internal server error',
-          code: 'INTERNAL_ERROR'
-        }
+          code: 'INTERNAL_ERROR',
+        },
       },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }
