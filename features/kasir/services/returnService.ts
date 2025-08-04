@@ -6,11 +6,10 @@
 
 import { PrismaClient } from '@prisma/client'
 import { Decimal } from '@prisma/client/runtime/library'
-import { 
-  ReturnRequest, 
+import {
+  ReturnRequest,
   ReturnItemRequest,
-  ReturnEligibilityRequest,
-  ExtendedTransactionStatus 
+  ExtendedTransactionStatus,
 } from '../lib/validation/returnSchema'
 import { PenaltyCalculator, PenaltyCalculationResult } from '../lib/utils/penaltyCalculator'
 import { TransaksiService, TransaksiWithDetails } from './transaksiService'
@@ -56,7 +55,7 @@ export class ReturnService {
 
   constructor(
     private prisma: PrismaClient,
-    private userId: string
+    private userId: string,
   ) {
     this.transaksiService = new TransaksiService(prisma, userId)
   }
@@ -74,13 +73,13 @@ export class ReturnService {
         return {
           isEligible: false,
           reason: `Transaksi dengan status '${transaction.status}' tidak dapat diproses pengembaliannya`,
-          transaction
+          transaction,
         }
       }
 
       // Check if there are items that have been picked up but not returned
-      const hasUnreturnedItems = transaction.items.some(item => 
-        item.jumlahDiambil > 0 && item.statusKembali !== 'lengkap'
+      const hasUnreturnedItems = transaction.items.some(
+        (item) => item.jumlahDiambil > 0 && item.statusKembali !== 'lengkap',
       )
 
       if (!hasUnreturnedItems) {
@@ -91,8 +90,8 @@ export class ReturnService {
           eligibilityDetails: {
             currentStatus: transaction.status,
             hasUnreturnedItems: false,
-            canProcessReturn: false
-          }
+            canProcessReturn: false,
+          },
         }
       }
 
@@ -102,11 +101,13 @@ export class ReturnService {
         eligibilityDetails: {
           currentStatus: transaction.status,
           hasUnreturnedItems: true,
-          canProcessReturn: true
-        }
+          canProcessReturn: true,
+        },
       }
     } catch (error) {
-      throw new Error(`Gagal memvalidasi kelayakan pengembalian: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Gagal memvalidasi kelayakan pengembalian: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      )
     }
   }
 
@@ -114,8 +115,8 @@ export class ReturnService {
    * Validate return request items against transaction items
    */
   async validateReturnItems(
-    transaksiId: string, 
-    returnItems: ReturnItemRequest[]
+    transaksiId: string,
+    returnItems: ReturnItemRequest[],
   ): Promise<{ isValid: boolean; errors: ReturnValidationError[] }> {
     const errors: ReturnValidationError[] = []
 
@@ -125,13 +126,13 @@ export class ReturnService {
 
       // Validate each return item
       for (const returnItem of returnItems) {
-        const transactionItem = transaction.items.find(item => item.id === returnItem.itemId)
+        const transactionItem = transaction.items.find((item) => item.id === returnItem.itemId)
 
         if (!transactionItem) {
           errors.push({
             field: `items.${returnItem.itemId}`,
             message: 'Item tidak ditemukan dalam transaksi',
-            code: 'ITEM_NOT_FOUND'
+            code: 'ITEM_NOT_FOUND',
           })
           continue
         }
@@ -141,7 +142,7 @@ export class ReturnService {
           errors.push({
             field: `items.${returnItem.itemId}`,
             message: 'Item belum diambil, tidak dapat dikembalikan',
-            code: 'ITEM_NOT_PICKED_UP'
+            code: 'ITEM_NOT_PICKED_UP',
           })
           continue
         }
@@ -151,7 +152,7 @@ export class ReturnService {
           errors.push({
             field: `items.${returnItem.itemId}`,
             message: 'Item sudah dikembalikan sepenuhnya',
-            code: 'ITEM_ALREADY_RETURNED'
+            code: 'ITEM_ALREADY_RETURNED',
           })
           continue
         }
@@ -162,25 +163,25 @@ export class ReturnService {
           errors.push({
             field: `items.${returnItem.itemId}`,
             message: `Jumlah kembali (${returnItem.jumlahKembali}) melebihi jumlah yang diambil (${maxReturnableQuantity})`,
-            code: 'INVALID_RETURN_QUANTITY'
+            code: 'INVALID_RETURN_QUANTITY',
           })
         }
       }
 
       return {
         isValid: errors.length === 0,
-        errors
+        errors,
       }
     } catch (error) {
       errors.push({
         field: 'general',
         message: `Gagal memvalidasi item pengembalian: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        code: 'VALIDATION_ERROR'
+        code: 'VALIDATION_ERROR',
       })
 
       return {
         isValid: false,
-        errors
+        errors,
       }
     }
   }
@@ -191,15 +192,15 @@ export class ReturnService {
   async calculateReturnPenalties(
     transaksiId: string,
     returnItems: ReturnItemRequest[],
-    actualReturnDate: Date = new Date()
+    actualReturnDate: Date = new Date(),
   ): Promise<PenaltyCalculationResult> {
     try {
       // Get transaction details
       const transaction = await this.transaksiService.getTransaksiById(transaksiId)
 
       // Prepare items for penalty calculation
-      const itemsForCalculation = returnItems.map(returnItem => {
-        const transactionItem = transaction.items.find(item => item.id === returnItem.itemId)
+      const itemsForCalculation = returnItems.map((returnItem) => {
+        const transactionItem = transaction.items.find((item) => item.id === returnItem.itemId)
         if (!transactionItem) {
           throw new Error(`Item dengan ID ${returnItem.itemId} tidak ditemukan`)
         }
@@ -211,14 +212,16 @@ export class ReturnService {
           actualReturnDate,
           condition: returnItem.kondisiAkhir,
           quantity: returnItem.jumlahKembali,
-          modalAwal: Number(transactionItem.produk.modalAwal) // Added for lost item penalty calculation
+          modalAwal: Number(transactionItem.produk.modalAwal), // Added for lost item penalty calculation
         }
       })
 
       // Calculate penalties using PenaltyCalculator
       return PenaltyCalculator.calculateTransactionPenalties(itemsForCalculation)
     } catch (error) {
-      throw new Error(`Gagal menghitung penalty: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Gagal menghitung penalty: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      )
     }
   }
 
@@ -227,20 +230,24 @@ export class ReturnService {
    */
   async processReturn(
     transaksiId: string,
-    request: ReturnRequest
+    request: ReturnRequest,
   ): Promise<ReturnProcessingResult> {
     return await this.prisma.$transaction(async (tx) => {
       try {
         // Validate eligibility
         const eligibility = await this.validateReturnEligibility(transaksiId)
         if (!eligibility.isEligible || !eligibility.transaction) {
-          throw new Error(eligibility.reason || 'Transaksi tidak memenuhi syarat untuk pengembalian')
+          throw new Error(
+            eligibility.reason || 'Transaksi tidak memenuhi syarat untuk pengembalian',
+          )
         }
 
         // Validate return items
         const validation = await this.validateReturnItems(transaksiId, request.items)
         if (!validation.isValid) {
-          throw new Error(`Validasi item gagal: ${validation.errors.map(e => e.message).join(', ')}`)
+          throw new Error(
+            `Validasi item gagal: ${validation.errors.map((e) => e.message).join(', ')}`,
+          )
         }
 
         // Calculate return date
@@ -250,7 +257,7 @@ export class ReturnService {
         const penaltyCalculation = await this.calculateReturnPenalties(
           transaksiId,
           request.items,
-          returnDate
+          returnDate,
         )
 
         // Update transaction status and penalty
@@ -260,9 +267,9 @@ export class ReturnService {
             status: 'dikembalikan',
             tglKembali: returnDate,
             sisaBayar: {
-              increment: new Decimal(penaltyCalculation.totalPenalty)
-            }
-          }
+              increment: new Decimal(penaltyCalculation.totalPenalty),
+            },
+          },
         })
 
         // Update transaction items
@@ -272,32 +279,36 @@ export class ReturnService {
             where: { id: returnItem.itemId },
             data: {
               kondisiAkhir: returnItem.kondisiAkhir,
-              statusKembali: 'lengkap'
-            }
+              statusKembali: 'lengkap',
+            },
           })
 
           // Find penalty details for this item
-          const itemPenalty = penaltyCalculation.itemPenalties.find(p => p.itemId === returnItem.itemId)
+          const itemPenalty = penaltyCalculation.itemPenalties.find(
+            (p) => p.itemId === returnItem.itemId,
+          )
 
           processedItems.push({
             itemId: returnItem.itemId,
             penalty: itemPenalty?.totalPenalty || 0,
             kondisiAkhir: returnItem.kondisiAkhir,
-            statusKembali: 'lengkap' as const
+            statusKembali: 'lengkap' as const,
           })
         }
 
         // Update product stock (increment available quantity)
         for (const returnItem of request.items) {
-          const transactionItem = eligibility.transaction.items.find(item => item.id === returnItem.itemId)
+          const transactionItem = eligibility.transaction.items.find(
+            (item) => item.id === returnItem.itemId,
+          )
           if (transactionItem) {
             await tx.product.update({
               where: { id: transactionItem.produkId },
               data: {
                 quantity: {
-                  increment: returnItem.jumlahKembali
-                }
-              }
+                  increment: returnItem.jumlahKembali,
+                },
+              },
             })
           }
         }
@@ -309,21 +320,30 @@ export class ReturnService {
             tipe: 'dikembalikan',
             deskripsi: `Pengembalian ${request.items.length} item dengan total penalty ${PenaltyCalculator.formatPenaltyAmount(penaltyCalculation.totalPenalty)}`,
             data: {
-              returnItems: request.items.map(item => ({
+              returnItems: request.items.map((item) => ({
                 itemId: item.itemId,
                 kondisiAkhir: item.kondisiAkhir,
-                jumlahKembali: item.jumlahKembali
+                jumlahKembali: item.jumlahKembali,
               })),
               penaltyDetails: {
                 totalPenalty: penaltyCalculation.totalPenalty,
                 totalLateDays: penaltyCalculation.totalLateDays,
-                breakdown: penaltyCalculation.itemPenalties
+                breakdown: penaltyCalculation.itemPenalties.map((p) => ({
+                  itemId: p.itemId,
+                  productName: p.productName,
+                  totalPenalty: p.totalPenalty,
+                  lateDays: p.lateDays,
+                  dailyPenaltyRate: p.dailyPenaltyRate,
+                  reasonCode: p.reasonCode,
+                  description: p.description,
+                })),
               },
               returnDate: returnDate.toISOString(),
-              catatan: request.catatan || null
-            },
-            createdBy: this.userId
-          }
+              catatan: request.catatan || null,
+              //eslint-disable-next-line @typescript-eslint/no-explicit-any
+            } as Record<string, any>,
+            createdBy: this.userId,
+          },
         })
 
         return {
@@ -335,12 +355,14 @@ export class ReturnService {
             id: updatedTransaction.id,
             status: 'dikembalikan' as ExtendedTransactionStatus,
             tglKembali: returnDate,
-            sisaBayar: Number(updatedTransaction.sisaBayar)
+            sisaBayar: Number(updatedTransaction.sisaBayar),
           },
-          penaltyCalculation
+          penaltyCalculation,
         }
       } catch (error) {
-        throw new Error(`Gagal memproses pengembalian: ${error instanceof Error ? error.message : 'Unknown error'}`)
+        throw new Error(
+          `Gagal memproses pengembalian: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        )
       }
     })
   }
@@ -352,7 +374,9 @@ export class ReturnService {
     try {
       return await this.transaksiService.getTransaksiByCode(transactionCode)
     } catch (error) {
-      throw new Error(`Gagal mendapatkan transaksi: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Gagal mendapatkan transaksi: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      )
     }
   }
 
@@ -364,38 +388,47 @@ export class ReturnService {
       const activities = await this.prisma.aktivitasTransaksi.findMany({
         where: {
           transaksiId,
-          tipe: 'dikembalikan'
+          tipe: 'dikembalikan',
         },
         orderBy: {
-          createdAt: 'desc'
+          createdAt: 'desc',
         },
-        include: {
-          user: {
-            select: {
-              id: true,
-              nama: true
-            }
-          }
-        }
+        // include: {
+        //   user: {
+        //     select: {
+        //       id: true,
+        //       nama: true
+        //     }
+        //   }
+        // }
       })
 
-      return activities.map(activity => ({
+      return activities.map((activity) => ({
         id: activity.id,
         returnDate: activity.createdAt,
-        processedBy: activity.user?.nama || 'Unknown',
+        processedBy: 'Unknown', // Fix: user relation not available
         description: activity.deskripsi,
-        penaltyAmount: activity.data && typeof activity.data === 'object' && 'penaltyDetails' in activity.data
-          ? (activity.data.penaltyDetails as any)?.totalPenalty || 0
-          : 0,
-        items: activity.data && typeof activity.data === 'object' && 'returnItems' in activity.data
-          ? (activity.data.returnItems as any) || []
-          : [],
-        notes: activity.data && typeof activity.data === 'object' && 'catatan' in activity.data
-          ? (activity.data.catatan as string) || null
-          : null
+        penaltyAmount:
+          activity.data && typeof activity.data === 'object' && 'penaltyDetails' in activity.data
+            ? (activity.data.penaltyDetails as { totalPenalty?: number })?.totalPenalty || 0
+            : 0,
+        items:
+          activity.data && typeof activity.data === 'object' && 'returnItems' in activity.data
+            ? (activity.data.returnItems as Array<{
+                itemId: string
+                kondisiAkhir: string
+                jumlahKembali: number
+              }>) || []
+            : [],
+        notes:
+          activity.data && typeof activity.data === 'object' && 'catatan' in activity.data
+            ? (activity.data.catatan as string) || null
+            : null,
       }))
     } catch (error) {
-      throw new Error(`Gagal mendapatkan riwayat pengembalian: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Gagal mendapatkan riwayat pengembalian: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      )
     }
   }
 }

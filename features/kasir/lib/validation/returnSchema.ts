@@ -81,7 +81,7 @@ export const penaltyCalculationSchema = z.object({
   const expected = new Date(data.expectedDate)
   const actual = new Date(data.actualDate)
   // Allow same day returns (no penalty)
-  return actual >= expected.getTime() - (24 * 60 * 60 * 1000)
+  return actual >= new Date(expected.getTime() - (24 * 60 * 60 * 1000))
 }, {
   message: 'Tanggal kembali tidak valid terhadap tanggal yang diharapkan',
   path: ['actualDate']
@@ -119,7 +119,7 @@ export const itemConditionSchema = z.enum([
   'Buruk - ada kerusakan besar',
   'Hilang/tidak dikembalikan'
 ], {
-  errorMap: () => ({ message: 'Pilih kondisi barang yang valid' })
+  message: 'Pilih kondisi barang yang valid'
 })
 
 // Business Rules Validation Schema

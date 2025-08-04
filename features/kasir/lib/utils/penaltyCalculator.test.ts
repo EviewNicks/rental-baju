@@ -4,12 +4,11 @@
  * Following TDD approach and comprehensive coverage
  */
 
-import { PenaltyCalculator, PenaltyDetails, PenaltyCalculationResult } from './penaltyCalculator'
+import { PenaltyCalculator, PenaltyDetails } from './penaltyCalculator'
 
 describe('PenaltyCalculator', () => {
   const testDate = new Date('2025-01-01T10:00:00.000Z')
   const lateDate = new Date('2025-01-04T10:00:00.000Z') // 3 days late
-  const veryLateDate = new Date('2025-01-11T10:00:00.000Z') // 10 days late
 
   describe('calculateLatePenalty', () => {
     it('should calculate no penalty for on-time return', () => {
