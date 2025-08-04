@@ -14,6 +14,7 @@ import {
 import { TransactionCodeGenerator } from '../lib/utils/codeGenerator'
 import { PriceCalculator } from '../lib/utils/server'
 import { createAvailabilityService, AvailabilityService } from './availabilityService'
+import { calculateAvailableStock } from '../lib/typeUtils'
 
 export interface TransaksiWithDetails extends Transaksi {
   penyewa: {
@@ -189,7 +190,7 @@ export class TransaksiService {
         produkId: item.produkId,
         jumlah: item.jumlah,
         durasi: item.durasi,
-        hargaSewa: product.hargaSewa,
+        hargaSewa: product.currentPrice,
       }
     })
 
@@ -695,7 +696,6 @@ export class TransaksiService {
         select: {
           id: true,
           quantity: true, // Total inventory (unchanged)
-          availableStock: true, // Currently available for rent
           rentedStock: true, // Currently rented out
           name: true,
         },
@@ -710,35 +710,34 @@ export class TransaksiService {
         throw new Error(error)
       }
 
-      // Double-check availability using new availableStock field (race condition protection)
-      if (currentProduct.availableStock < item.jumlah) {
-        const error = `Insufficient stock for product ${currentProduct.name}. Available: ${currentProduct.availableStock}, Requested: ${item.jumlah}`
+      // Double-check availability using calculated availableStock (race condition protection)
+      const availableStock = calculateAvailableStock(currentProduct.quantity, currentProduct.rentedStock)
+      if (availableStock < item.jumlah) {
+        const error = `Insufficient stock for product ${currentProduct.name}. Available: ${availableStock}, Requested: ${item.jumlah}`
         console.log('[TransaksiService] ❌ Insufficient stock during update', {
           productId: item.produkId,
           productName: currentProduct.name,
-          available: currentProduct.availableStock,
+          available: availableStock,
           requested: item.jumlah,
           error,
         })
         throw new Error(error)
       }
 
-      // UPDATED: Use new inventory tracking fields instead of modifying quantity
+      // UPDATED: Use rentedStock field only (availableStock calculated)
       // quantity field remains unchanged (total inventory)
-      // availableStock decreases, rentedStock increases
+      // Only update rentedStock, availableStock calculated as (quantity - rentedStock)
       const updateResult = await tx.product.updateMany({
         where: {
           id: item.produkId,
-          availableStock: { gte: item.jumlah }, // Optimistic locking: only update if availableStock is sufficient
+          rentedStock: { lte: currentProduct.quantity - item.jumlah }, // Ensure sufficient stock
         },
         data: {
-          availableStock: {
-            decrement: item.jumlah, // Reduce available stock
-          },
           rentedStock: {
             increment: item.jumlah, // Increase rented stock
           },
           // quantity field stays the same (total inventory unchanged)
+          // availableStock now calculated as (quantity - rentedStock)
         },
       })
 
@@ -755,14 +754,15 @@ export class TransaksiService {
       }
 
       // 🔍 LOG: Successful inventory tracking update
+      const previousAvailable = calculateAvailableStock(currentProduct.quantity, currentProduct.rentedStock)
       console.log('[TransaksiService] ✅ Product inventory updated successfully', {
         productId: item.produkId,
         productName: currentProduct.name,
         totalInventory: currentProduct.quantity, // Unchanged
-        previousAvailable: currentProduct.availableStock,
+        previousAvailable,  // Calculated
         previousRented: currentProduct.rentedStock,
         rentedQuantity: item.jumlah,
-        newAvailable: currentProduct.availableStock - item.jumlah,
+        newAvailable: previousAvailable - item.jumlah,  // Calculated
         newRented: currentProduct.rentedStock + item.jumlah,
         timestamp: new Date().toISOString(),
       })
@@ -801,7 +801,6 @@ export class TransaksiService {
             id: true,
             name: true,
             quantity: true, // Total inventory (unchanged)
-            availableStock: true, // Currently available
             rentedStock: true, // Currently rented
           },
         },
@@ -815,15 +814,12 @@ export class TransaksiService {
           : item.jumlah - (item.jumlahDiambil || 0) // Only restore non-returned items
 
       if (quantityToRestore > 0) {
-        // UPDATED: Restore inventory using new tracking fields
+        // UPDATED: Restore inventory using rentedStock field only
         // quantity field remains unchanged (total inventory)
-        // availableStock increases, rentedStock decreases
+        // Only update rentedStock, availableStock calculated as (quantity - rentedStock)
         await tx.product.update({
           where: { id: item.produkId },
           data: {
-            availableStock: {
-              increment: quantityToRestore, // Restore available stock
-            },
             rentedStock: {
               decrement: quantityToRestore, // Reduce rented stock
             },

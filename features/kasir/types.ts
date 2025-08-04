@@ -78,7 +78,7 @@ export interface ProductWithCategory extends ProductCore {
 
 // Product with pricing information
 export interface ProductWithPricing extends ProductCore {
-  hargaSewa: number // Will be renamed to currentPrice in Phase 2
+  currentPrice: number // Current rental price per unit
   pricePerDay?: number // Legacy field for backward compatibility
 }
 
@@ -86,9 +86,7 @@ export interface ProductWithPricing extends ProductCore {
 export interface ProductWithStock extends ProductCore {
   quantity: number
   rentedStock: number
-  // availableStock is calculated: quantity - rentedStock
-  // Getter method will be added in service layer
-  get availableStock(): number
+  // Note: availableStock calculated as (quantity - rentedStock) using calculateAvailableStock() utility
 }
 
 // Legacy Product interface for backward compatibility

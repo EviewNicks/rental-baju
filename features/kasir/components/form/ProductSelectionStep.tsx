@@ -69,7 +69,7 @@ export function ProductSelectionStep({
         category: apiProduct.category.name.toLowerCase(),
         size: apiProduct.size || 'Unknown',
         color: apiProduct.color?.name || 'Unknown',
-        pricePerDay: apiProduct.hargaSewa,
+        pricePerDay: apiProduct.currentPrice,
         image: apiProduct.imageUrl || '/placeholder.svg',
         available: true, // Availability is now handled in ProductCard with quantity-aware logic
         description: apiProduct.description,

@@ -12,6 +12,7 @@ import { prisma } from '@/lib/prisma'
 import { productAvailabilityQuerySchema } from '@/features/kasir/lib/validation/kasirSchema'
 import { ZodError } from 'zod'
 import { requirePermission, withRateLimit } from '@/lib/auth-middleware'
+import { calculateAvailableStock } from '@/features/kasir/lib/typeUtils'
 
 export async function GET(request: NextRequest) {
   try {
@@ -121,11 +122,11 @@ export async function GET(request: NextRequest) {
           code: product.code,
           name: product.name,
           description: product.description,
-          hargaSewa: Number(product.hargaSewa),
+          currentPrice: Number(product.currentPrice),
           // UPDATED: Enhanced inventory information with new fields
           totalInventory: product.quantity, // Total stock (immutable during rentals)
           quantity: product.quantity, // Keep for backward compatibility
-          availableQuantity: product.availableStock, // Currently available for rent
+          availableQuantity: calculateAvailableStock(product.quantity, product.rentedStock), // Calculated available stock
           rentedQuantity: product.rentedStock, // Currently rented out
           imageUrl: product.imageUrl,
           category: {
