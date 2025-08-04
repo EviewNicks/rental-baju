@@ -8,7 +8,7 @@
 // CORE TYPES & ENUMS
 // ==========================================
 
-export type TransactionStatus = 'active' | 'selesai' | 'terlambat' | 'cancelled'
+export type TransactionStatus = 'active' | 'selesai' | 'terlambat' | 'cancelled' | 'dikembalikan'
 export type PaymentMethod = 'tunai' | 'transfer' | 'kartu'
 export type ActivityType = 'dibuat' | 'dibayar' | 'dikembalikan' | 'terlambat' | 'dibatalkan'
 export type ReturnStatus = 'belum' | 'sebagian' | 'lengkap'
