@@ -48,6 +48,8 @@ model Product {
   @@index([colorId])
   @@index([categoryId, size, colorId])
   @@index([rentedStock])
+  // Performance index for penalty calculation
+  @@index([id, modalAwal], name: "idx_product_penalty_calc")
 }
 
 model Category {
@@ -133,6 +135,9 @@ model Transaksi {
   @@index([status])
   @@index([penyewaId])
   @@index([createdAt])
+  // Performance indexes for return processing
+  @@index([status, id], name: "idx_transaksi_status_id_validation")
+  @@index([id, tglSelesai, status], name: "idx_transaksi_penalty_dates")
 }
 
 model TransaksiItem {
@@ -155,6 +160,9 @@ model TransaksiItem {
   @@map("transaksi_item")
   @@index([transaksiId])
   @@index([produkId])
+  // Performance indexes for return processing
+  @@index([id, statusKembali, jumlahDiambil], name: "idx_transaksi_item_return_lookup")
+  @@index([produkId, transaksiId, statusKembali], name: "idx_transaksi_item_product_join")
 }
 
 model Pembayaran {
