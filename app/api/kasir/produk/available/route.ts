@@ -53,10 +53,11 @@ export async function GET(request: NextRequest) {
       isActive: true,
     }
 
-    // Only show available products (AVAILABLE status and availableStock > 0)
+    // Only show available products (AVAILABLE status and calculated available stock > 0)
     if (available) {
       whereClause.status = 'AVAILABLE'
-      whereClause.availableStock = { gt: 0 } // Use new availableStock field
+      // Note: availableStock filtering will be done after query using calculateAvailableStock()
+      // This avoids the schema mismatch issue while maintaining the same business logic
     }
 
     // Search by product name, code, or description
@@ -84,7 +85,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get products with related data
-    const [products, total] = await Promise.all([
+    const [products, allProducts] = await Promise.all([
       prisma.product.findMany({
         skip,
         take: limit,
@@ -107,8 +108,14 @@ export async function GET(request: NextRequest) {
           },
         },
       }),
-      prisma.product.count({
+      // Get all products matching base criteria for accurate count calculation
+      prisma.product.findMany({
         where: whereClause,
+        select: {
+          id: true,
+          quantity: true,
+          rentedStock: true,
+        },
       }),
     ])
 
@@ -150,6 +157,12 @@ export async function GET(request: NextRequest) {
       // Filter out products with no available quantity if 'available' filter is true
       .filter((product) => !available || product.availableQuantity > 0)
 
+    // Calculate accurate total count by filtering allProducts with same logic
+    const filteredAllProducts = available 
+      ? allProducts.filter((product) => calculateAvailableStock(product.quantity, product.rentedStock) > 0)
+      : allProducts
+    
+    const total = filteredAllProducts.length
     const totalPages = Math.ceil(total / limit)
 
     const responseData = {
