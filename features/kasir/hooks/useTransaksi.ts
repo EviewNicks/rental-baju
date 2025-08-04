@@ -3,20 +3,20 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/react-query'
 import { kasirApi, KasirApiError } from '../api'
-import type { 
-  CreateTransaksiRequest, 
+import type {
+  CreateTransaksiRequest,
   UpdateTransaksiRequest,
   TransaksiQueryParams,
-  TransactionStatus
-} from '../types/api'
+  TransactionStatus,
+} from '../types'
 
 // Hook for fetching transaksi list
 export function useTransaksiList(params: TransaksiQueryParams = {}) {
   return useQuery({
     queryKey: queryKeys.kasir.transaksi.list(params),
     queryFn: () => kasirApi.transaksi.getAll(params),
-    staleTime: 1 * 60 * 1000, // 1 minute - transaction status changes frequently
-    gcTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 1 * 30 * 1000, // 1 minute - transaction status changes frequently
+    gcTime: 3 * 60 * 1000, // 5 minutes
   })
 }
 
@@ -26,8 +26,8 @@ export function useTransaksi(kode: string, enabled = true) {
     queryKey: queryKeys.kasir.transaksi.detail(kode),
     queryFn: () => kasirApi.transaksi.getByKode(kode),
     enabled: enabled && !!kode,
-    staleTime: 1 * 60 * 1000,
-    gcTime: 5 * 60 * 1000,
+    staleTime: 1 * 30 * 1000,
+    gcTime: 3 * 60 * 1000,
   })
 }
 
@@ -37,8 +37,8 @@ export function useTransaksiByStatus(status: TransactionStatus, enabled = true) 
     queryKey: queryKeys.kasir.transaksi.byStatus(status),
     queryFn: () => kasirApi.transaksi.getByStatus(status),
     enabled: enabled && !!status,
-    staleTime: 1 * 60 * 1000,
-    gcTime: 5 * 60 * 1000,
+    staleTime: 1 * 30 * 1000,
+    gcTime: 3 * 60 * 1000,
   })
 }
 
@@ -48,7 +48,7 @@ export function useTransaksiSearch(query: string, enabled = true) {
     queryKey: queryKeys.kasir.transaksi.search(query),
     queryFn: () => kasirApi.transaksi.search(query),
     enabled: enabled && query.length >= 2, // Only search with 2+ characters
-    staleTime: 1 * 60 * 1000, // 1 minute for search results
+    staleTime: 1 * 30 * 1000, // 1 minute for search results
     gcTime: 3 * 60 * 1000,
   })
 }
@@ -64,13 +64,37 @@ export function useCreateTransaksi() {
       queryClient.invalidateQueries({
         queryKey: queryKeys.kasir.transaksi.lists(),
       })
-      
+
       // Add the new transaksi to cache
-      queryClient.setQueryData(
-        queryKeys.kasir.transaksi.detail(newTransaksi.kode),
-        newTransaksi
-      )
+      queryClient.setQueryData(queryKeys.kasir.transaksi.detail(newTransaksi.kode), newTransaksi)
+
+      // Invalidate specific transaction detail to ensure fresh data
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.kasir.transaksi.detail(newTransaksi.kode),
+      })
+
+      // Invalidate transformed cache used by PaymentSummaryCard
+      queryClient.invalidateQueries({
+        queryKey: [...queryKeys.kasir.transaksi.detail(newTransaksi.kode), 'transformed'],
+      })
+
+      // 🔧 CACHE FIX: Invalidate product availability cache after successful transaction
+      // This ensures users see fresh inventory data after any transaction
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.kasir.produk.all(),
+      })
       
+      console.log('[useTransaksi] Cache invalidation completed', {
+        transactionCode: newTransaksi.kode,
+        cacheKeysInvalidated: ['transaksi.lists', 'produk.all'],
+        timestamp: new Date().toISOString()
+      })
+
+      // Invalidate payment cache for this transaction
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.kasir.pembayaran.byTransaksi(newTransaksi.id),
+      })
+
       // Also invalidate dashboard stats as they may have changed
       queryClient.invalidateQueries({
         queryKey: queryKeys.kasir.dashboard.stats(),
@@ -79,6 +103,21 @@ export function useCreateTransaksi() {
     onError: (error: KasirApiError) => {
       // Error will be handled by the component
       console.error('Failed to create transaksi:', error.message)
+      
+      // Enhanced error logging for cache-related issues
+      if (error.message.includes('tidak mencukupi') || error.message.includes('Tersedia')) {
+        console.warn('[useTransaksi] 🔄 Inventory conflict detected - possible cache staleness', {
+          error: error.message,
+          timestamp: new Date().toISOString(),
+          suggestion: 'User may have been viewing stale inventory data',
+          solution: 'Cache has been optimized to 30s refresh',
+        })
+
+        // Proactively invalidate product cache on inventory conflicts
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.kasir.produk.all(),
+        })
+      }
     },
   })
 }
@@ -92,16 +131,13 @@ export function useUpdateTransaksi() {
       kasirApi.transaksi.update(kode, data),
     onSuccess: (updatedTransaksi, { kode }) => {
       // Update the transaksi in cache
-      queryClient.setQueryData(
-        queryKeys.kasir.transaksi.detail(kode),
-        updatedTransaksi
-      )
-      
+      queryClient.setQueryData(queryKeys.kasir.transaksi.detail(kode), updatedTransaksi)
+
       // Invalidate transaksi lists to ensure consistency
       queryClient.invalidateQueries({
         queryKey: queryKeys.kasir.transaksi.lists(),
       })
-      
+
       // Invalidate dashboard stats
       queryClient.invalidateQueries({
         queryKey: queryKeys.kasir.dashboard.stats(),
@@ -113,76 +149,3 @@ export function useUpdateTransaksi() {
   })
 }
 
-// Combined hook for common transaksi operations
-export function useTransaksiOperations() {
-  const createTransaksi = useCreateTransaksi()
-  const updateTransaksi = useUpdateTransaksi()
-
-  return {
-    createTransaksi: createTransaksi.mutate,
-    createTransaksiAsync: createTransaksi.mutateAsync,
-    updateTransaksi: updateTransaksi.mutate,
-    updateTransaksiAsync: updateTransaksi.mutateAsync,
-    isCreating: createTransaksi.isPending,
-    isUpdating: updateTransaksi.isPending,
-    createError: createTransaksi.error,
-    updateError: updateTransaksi.error,
-    isLoading: createTransaksi.isPending || updateTransaksi.isPending,
-    createData: createTransaksi.data,
-    updateData: updateTransaksi.data,
-  }
-}
-
-// Helper hook for transaction status management
-export function useTransactionStatusManager() {
-
-  // Mark transaction as complete
-  const markAsCompleted = (kode: string) => {
-    return kasirApi.transaksi.update(kode, { status: 'selesai' })
-  }
-
-  // Mark transaction as overdue
-  const markAsOverdue = (kode: string) => {
-    return kasirApi.transaksi.update(kode, { status: 'terlambat' })
-  }
-
-  // Cancel transaction
-  const cancelTransaction = (kode: string) => {
-    return kasirApi.transaksi.update(kode, { status: 'cancelled' })
-  }
-
-  // Reactivate transaction
-  const reactivateTransaction = (kode: string) => {
-    return kasirApi.transaksi.update(kode, { status: 'active' })
-  }
-
-  return {
-    markAsCompleted,
-    markAsOverdue,
-    cancelTransaction,
-    reactivateTransaction,
-  }
-}
-
-// Hook for dashboard transaction metrics
-export function useTransactionMetrics() {
-  const { data: activeTransactions } = useTransaksiByStatus('active')
-  const { data: completedTransactions } = useTransaksiByStatus('selesai')
-  const { data: overdueTransactions } = useTransaksiByStatus('terlambat')
-
-  const totalActive = activeTransactions?.data?.length || 0
-  const totalCompleted = completedTransactions?.data?.length || 0
-  const totalOverdue = overdueTransactions?.data?.length || 0
-  const totalTransactions = totalActive + totalCompleted + totalOverdue
-
-  const completionRate = totalTransactions > 0 ? (totalCompleted / totalTransactions) * 100 : 0
-
-  return {
-    totalActive,
-    totalCompleted, 
-    totalOverdue,
-    totalTransactions,
-    completionRate: Math.round(completionRate),
-    isLoading: false, // All queries are independent, we don't need to wait for all
-  }
-}

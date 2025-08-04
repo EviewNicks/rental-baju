@@ -4,8 +4,8 @@ import { useState } from 'react'
 import { Plus, Minus, ShoppingCart } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import type { Product } from '../../types/product'
-import { formatCurrency } from '../../lib/utils'
+import type { Product } from '../../types'
+import { formatCurrency } from '../../lib/utils/client'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
 
@@ -63,8 +63,8 @@ export function ProductCard({
       <div className="relative aspect-square">
         <Image
           src={
-            product.image?.startsWith('/') || product.image?.startsWith('http') 
-              ? (product.image || '/products/image.png') 
+            product.image?.startsWith('/') || product.image?.startsWith('http')
+              ? product.image || '/products/image.png'
               : `/${product.image || 'products/image.png'}`
           }
           alt={product.name}
@@ -116,9 +116,7 @@ export function ProductCard({
           <div className="text-sm font-semibold text-gray-900">
             {formatCurrency(product.pricePerDay)}/hari
           </div>
-          <div className="text-xs text-gray-500">
-            Tersedia: {product.availableQuantity ?? 0}
-          </div>
+          <div className="text-xs text-gray-500">Tersedia: {product.availableQuantity ?? 0}</div>
         </div>
 
         {/* Quantity Controls */}
@@ -157,7 +155,7 @@ export function ProductCard({
             </Button>
           </div>
         )}
-        
+
         {/* Out of Stock Message */}
         {isOutOfStock && (
           <div className="text-center py-2">

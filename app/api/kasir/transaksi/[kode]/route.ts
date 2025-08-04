@@ -91,9 +91,14 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
           id: item.produk.id,
           code: item.produk.code,
           name: item.produk.name,
-          imageUrl: item.produk.imageUrl
+          imageUrl: item.produk.imageUrl,
+          // Add missing product fields
+          size: item.produk.size || null,
+          color: item.produk.color?.name || null,
+          category: item.produk.category?.name || null
         },
         jumlah: item.jumlah,
+        jumlahDiambil: item.jumlahDiambil,
         hargaSewa: Number(item.hargaSewa),
         durasi: item.durasi,
         subtotal: Number(item.subtotal),
@@ -274,9 +279,14 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
           id: item.produk.id,
           code: item.produk.code,
           name: item.produk.name,
-          imageUrl: item.produk.imageUrl
+          imageUrl: item.produk.imageUrl,
+          // Add missing product fields
+          size: item.produk.size || null,
+          color: item.produk.color?.name || null,
+          category: item.produk.category?.name || null
         },
         jumlah: item.jumlah,
+        jumlahDiambil: item.jumlahDiambil,
         hargaSewa: Number(item.hargaSewa),
         durasi: item.durasi,
         subtotal: Number(item.subtotal),
@@ -323,7 +333,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
           error: {
             message: 'Data tidak valid',
             code: 'VALIDATION_ERROR',
-            details: error.errors.map(err => ({
+            details: error.issues.map((err) => ({
               field: err.path.join('.'),
               message: err.message
             }))

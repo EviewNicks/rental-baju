@@ -8,10 +8,13 @@ import {
   Download,
   RefreshCw,
   AlertTriangle,
+  Package,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { PaymentModal } from './PaymentModal'
-import type { TransactionDetail } from '../../types/transaction-detail'
+import { PickupModal } from './PickupModal'
+import type { TransactionDetail } from '../../types'
+import { isPickupAvailable, calculateTransactionPickupStatus } from '../../lib/utils/client'
 
 interface ActionButtonsPanelProps {
   transaction: TransactionDetail
@@ -20,36 +23,75 @@ interface ActionButtonsPanelProps {
 export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
   const [isProcessing, setIsProcessing] = useState<string | null>(null)
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false)
+  const [isPickupModalOpen, setIsPickupModalOpen] = useState(false)
 
   const handleAction = async (action: string) => {
     setIsProcessing(action)
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-
       // Handle different actions
       switch (action) {
         case 'return':
-          console.log('Processing return for transaction:', transaction.id)
+          console.info('📦 Processing return', {
+            transactionCode: transaction.transactionCode,
+            action: 'return',
+          })
+          // TODO: Implement return functionality
           break
         case 'reminder':
-          console.log('Sending reminder for transaction:', transaction.id)
+          console.info('📢 Sending reminder', {
+            transactionCode: transaction.transactionCode,
+            action: 'reminder',
+          })
+          // TODO: Implement reminder functionality
           break
         case 'payment':
+          console.info('💰 Opening payment modal', {
+            transactionCode: transaction.transactionCode,
+            action: 'payment',
+            currentAmount: transaction.amountPaid,
+            totalAmount: transaction.totalAmount,
+          })
           setIsPaymentModalOpen(true)
           break
+        case 'pickup':
+          console.info('📋 Opening pickup modal', {
+            transactionCode: transaction.transactionCode,
+            action: 'pickup',
+            productsCount: transaction.products?.length || 0,
+            pickupStatus: {
+              totalItems: pickupStatus.totalItems,
+              totalPickedUp: pickupStatus.totalPickedUp,
+              totalRemaining: pickupStatus.totalRemaining,
+              hasRemainingItems: pickupStatus.hasRemainingItems,
+            },
+          })
+          setIsPickupModalOpen(true)
+          break
         case 'receipt':
-          console.log('Printing receipt for transaction:', transaction.id)
+          console.info('🧾 Printing receipt', {
+            transactionCode: transaction.transactionCode,
+            action: 'receipt',
+          })
+          // TODO: Implement receipt printing
           break
       }
     } catch (error) {
-      console.error('Action failed:', error)
+      console.error('❌ Action failed', {
+        transactionCode: transaction.transactionCode,
+        action,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      })
     } finally {
       setIsProcessing(null)
     }
   }
 
+  // Calculate pickup status for enhanced logic
+  const pickupStatus = calculateTransactionPickupStatus(transaction)
+
+  // Enhanced button visibility logic
   const canReturn = transaction.status === 'active'
+  const canPickup = transaction.status === 'active' && isPickupAvailable(transaction)
   const canSendReminder = transaction.status === 'terlambat'
   const needsPayment =
     transaction.amountPaid < transaction.totalAmount ||
@@ -60,6 +102,22 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
       <h3 className="text-lg font-semibold text-gray-900">Aksi Transaksi</h3>
 
       <div className="space-y-3">
+        {/* Pickup Item */}
+        {canPickup && (
+          <Button
+            onClick={() => handleAction('pickup')}
+            disabled={isProcessing === 'pickup'}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            {isProcessing === 'pickup' ? (
+              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Package className="h-4 w-4 mr-2" />
+            )}
+            {isProcessing === 'pickup' ? 'Memproses...' : 'Proses Pengambilan'}
+          </Button>
+        )}
+
         {/* Return Item */}
         {canReturn && (
           <Button
@@ -150,6 +208,16 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
         isOpen={isPaymentModalOpen}
         onClose={() => {
           setIsPaymentModalOpen(false)
+          setIsProcessing(null)
+        }}
+        transaction={transaction}
+      />
+
+      {/* Pickup Modal */}
+      <PickupModal
+        isOpen={isPickupModalOpen}
+        onClose={() => {
+          setIsPickupModalOpen(false)
           setIsProcessing(null)
         }}
         transaction={transaction}

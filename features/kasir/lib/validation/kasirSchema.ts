@@ -140,7 +140,7 @@ export const transaksiQuerySchema = z.object({
 
 // Payment Validation Schema
 export const createPembayaranSchema = z.object({
-  transaksiId: z.string().uuid('ID transaksi tidak valid'),
+  transaksiKode: z.string().min(1, 'Kode transaksi tidak boleh kosong'),
   jumlah: z.number().positive('Jumlah pembayaran harus lebih dari 0'),
   metode: z.enum(['tunai', 'transfer', 'kartu']),
   referensi: z.string().max(100, 'Referensi maksimal 100 karakter').optional(),
@@ -196,3 +196,30 @@ export type TransaksiQueryParams = z.infer<typeof transaksiQuerySchema>
 
 export type CreatePembayaranRequest = z.infer<typeof createPembayaranSchema>
 export type ProductAvailabilityQueryParams = z.infer<typeof productAvailabilityQuerySchema>
+
+// Pickup Validation Schemas (TSK-22)
+export const pickupItemSchema = z.object({
+  id: z.string().uuid('ID item transaksi tidak valid'),
+  jumlahDiambil: z.number()
+    .int('Jumlah diambil harus berupa bilangan bulat')
+    .min(1, 'Jumlah diambil minimal 1')
+    .max(999, 'Jumlah diambil maksimal 999')
+})
+
+export const pickupRequestSchema = z.object({
+  items: z
+    .array(pickupItemSchema)
+    .min(1, 'Minimal harus ada 1 item yang diambil')
+    .max(50, 'Maksimal 50 item dapat diproses sekaligus')
+}).refine((data) => {
+  // Ensure no duplicate item IDs
+  const itemIds = data.items.map(item => item.id)
+  const uniqueIds = new Set(itemIds)
+  return uniqueIds.size === itemIds.length
+}, {
+  message: 'Tidak boleh ada duplikasi item dalam satu permintaan pickup',
+  path: ['items']
+})
+
+export type PickupItemRequest = z.infer<typeof pickupItemSchema>
+export type PickupRequest = z.infer<typeof pickupRequestSchema>

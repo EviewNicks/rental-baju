@@ -11,8 +11,8 @@ import {
 import { CheckCircle, CreditCard } from 'lucide-react'
 import { PaymentForm } from './PaymentForm'
 import { usePaymentProcessing } from '../../hooks/usePaymentProcessing'
-import { formatCurrency } from '../../lib/utils'
-import type { TransactionDetail } from '../../types/transaction-detail'
+import { formatCurrency } from '../../lib/utils/client'
+import type { TransactionDetail } from '../../types'
 
 interface PaymentModalProps {
   isOpen: boolean
@@ -24,8 +24,9 @@ export function PaymentModal({ isOpen, onClose, transaction }: PaymentModalProps
   const [showSuccess, setShowSuccess] = useState(false)
   const remainingAmount = transaction.totalAmount - transaction.amountPaid
 
-  const { processPayment, isProcessing, error, isSuccess, data, reset } = 
-    usePaymentProcessing(transaction.id, {
+  const { processPayment, isProcessing, error, isSuccess, data, reset } = usePaymentProcessing(
+    transaction.transactionCode,
+    {
       onSuccess: () => {
         setShowSuccess(true)
         // Auto close after showing success message
@@ -34,9 +35,14 @@ export function PaymentModal({ isOpen, onClose, transaction }: PaymentModalProps
         }, 2000)
       },
       onError: (error) => {
-        console.error('Payment failed:', error)
-      }
-    })
+        console.error('❌ Payment processing failed', {
+          transactionCode: transaction.transactionCode,
+          remainingAmount,
+          error: error.message,
+        })
+      },
+    },
+  )
 
   const handleClose = () => {
     setShowSuccess(false)
@@ -65,11 +71,10 @@ export function PaymentModal({ isOpen, onClose, transaction }: PaymentModalProps
         <DialogContent className="sm:max-w-md">
           <div className="text-center py-6">
             <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Pembayaran Berhasil!
-            </h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Pembayaran Berhasil!</h3>
             <p className="text-sm text-gray-600 mb-4">
-              Pembayaran sebesar <span className="font-medium">{formatCurrency(data.jumlah)}</span> telah berhasil diproses
+              Pembayaran sebesar <span className="font-medium">{formatCurrency(data.jumlah)}</span>{' '}
+              telah berhasil diproses
             </p>
             <div className="bg-green-50 border border-green-200 rounded-lg p-3">
               <div className="text-sm">

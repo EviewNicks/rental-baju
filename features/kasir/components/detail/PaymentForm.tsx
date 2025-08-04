@@ -6,34 +6,45 @@ import { z } from 'zod'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Loader2, AlertTriangle } from 'lucide-react'
 import { usePaymentMethods } from '../../hooks/usePaymentProcessing'
-import { formatCurrency } from '../../lib/utils'
+import { formatCurrency } from '../../lib/utils/client'
 
 // Payment form validation schema
-const paymentFormSchema = z.object({
-  jumlah: z
-    .number()
-    .positive('Jumlah pembayaran harus lebih dari 0')
-    .min(1000, 'Jumlah pembayaran minimal Rp 1.000'),
-  metode: z.enum(['tunai', 'transfer', 'kartu'], {
-    required_error: 'Pilih metode pembayaran'
-  }),
-  referensi: z.string().optional(),
-  catatan: z.string().max(500, 'Catatan maksimal 500 karakter').optional()
-}).refine((data) => {
-  // Reference is required for transfer and kartu methods
-  if ((data.metode === 'transfer' || data.metode === 'kartu') && !data.referensi?.trim()) {
-    return false
-  }
-  return true
-}, {
-  message: 'Nomor referensi wajib diisi untuk metode transfer dan QRIS/Kartu',
-  path: ['referensi']
-})
+const paymentFormSchema = z
+  .object({
+    jumlah: z
+      .number()
+      .positive('Jumlah pembayaran harus lebih dari 0')
+      .min(1000, 'Jumlah pembayaran minimal Rp 1.000'),
+    metode: z.enum(['tunai', 'transfer', 'kartu'], {
+      message: 'Pilih metode pembayaran',
+    }),
+    referensi: z.string().optional(),
+    catatan: z.string().max(500, 'Catatan maksimal 500 karakter').optional(),
+  })
+  .refine(
+    (data) => {
+      // Reference is required for transfer and kartu methods
+      if ((data.metode === 'transfer' || data.metode === 'kartu') && !data.referensi?.trim()) {
+        return false
+      }
+      return true
+    },
+    {
+      message: 'Nomor referensi wajib diisi untuk metode transfer dan QRIS/Kartu',
+      path: ['referensi'],
+    },
+  )
 
 type PaymentFormData = z.infer<typeof paymentFormSchema>
 
@@ -45,37 +56,37 @@ interface PaymentFormProps {
   onCancel: () => void
 }
 
-export function PaymentForm({ 
-  remainingAmount, 
-  isProcessing, 
-  error, 
-  onSubmit, 
-  onCancel 
+export function PaymentForm({
+  remainingAmount,
+  isProcessing,
+  error,
+  onSubmit,
+  onCancel,
 }: PaymentFormProps) {
   const { paymentMethods } = usePaymentMethods()
-  
+
   const form = useForm<PaymentFormData>({
     resolver: zodResolver(paymentFormSchema),
     defaultValues: {
       jumlah: remainingAmount,
       metode: 'tunai',
       referensi: '',
-      catatan: ''
-    }
+      catatan: '',
+    },
   })
 
   const selectedMethod = form.watch('metode')
-  const selectedMethodInfo = paymentMethods.find(m => m.value === selectedMethod)
+  const selectedMethodInfo = paymentMethods.find((m) => m.value === selectedMethod)
 
   const handleSubmit = (data: PaymentFormData) => {
     // Additional validation for amount
     if (data.jumlah > remainingAmount) {
       form.setError('jumlah', {
-        message: `Jumlah pembayaran tidak boleh melebihi sisa tagihan (${formatCurrency(remainingAmount)})`
+        message: `Jumlah pembayaran tidak boleh melebihi sisa tagihan (${formatCurrency(remainingAmount)})`,
       })
       return
     }
-    
+
     onSubmit(data)
   }
 
@@ -95,29 +106,48 @@ export function PaymentForm({
             {...form.register('jumlah', { valueAsNumber: true })}
             className="pl-12"
           />
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">
-            Rp
-          </span>
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">Rp</span>
         </div>
         {form.formState.errors.jumlah && (
           <p className="text-sm text-red-600">{form.formState.errors.jumlah.message}</p>
         )}
-        <p className="text-sm text-gray-600">
-          Sisa tagihan: <span className="font-medium">{formatCurrency(remainingAmount)}</span>
-        </p>
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-gray-600">
+            Sisa tagihan: <span className="font-medium">{formatCurrency(remainingAmount)}</span>
+          </p>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => form.setValue('jumlah', remainingAmount)}
+            className="text-xs"
+          >
+            Bayar Lunas
+          </Button>
+        </div>
       </div>
 
       {/* Payment Method */}
       <div className="space-y-2">
         <Label htmlFor="metode">Metode Pembayaran</Label>
-        <Select onValueChange={(value) => form.setValue('metode', value as 'tunai' | 'transfer' | 'kartu')}>
+        <Select
+          value={selectedMethod}
+          onValueChange={(value) =>
+            form.setValue('metode', value as 'tunai' | 'transfer' | 'kartu')
+          }
+        >
           <SelectTrigger>
             <SelectValue placeholder="Pilih metode pembayaran" />
           </SelectTrigger>
           <SelectContent>
             {paymentMethods.map((method) => (
               <SelectItem key={method.value} value={method.value}>
-                {method.label}
+                <div className="flex items-center justify-between w-full">
+                  <span>{method.label}</span>
+                  {method.requiresReference && (
+                    <span className="text-xs text-gray-500 ml-2">*Referensi</span>
+                  )}
+                </div>
               </SelectItem>
             ))}
           </SelectContent>
@@ -125,6 +155,11 @@ export function PaymentForm({
         {form.formState.errors.metode && (
           <p className="text-sm text-red-600">{form.formState.errors.metode.message}</p>
         )}
+        <p className="text-sm text-gray-600">
+          {selectedMethodInfo?.requiresReference
+            ? 'Metode ini memerlukan nomor referensi'
+            : 'Pembayaran langsung tanpa referensi'}
+        </p>
       </div>
 
       {/* Reference Number (conditional) */}
@@ -137,7 +172,7 @@ export function PaymentForm({
           <Input
             id="referensi"
             placeholder={
-              selectedMethod === 'transfer' 
+              selectedMethod === 'transfer'
                 ? 'Nomor referensi transfer bank'
                 : 'Nomor referensi QRIS/Kartu'
             }
@@ -147,10 +182,9 @@ export function PaymentForm({
             <p className="text-sm text-red-600">{form.formState.errors.referensi.message}</p>
           )}
           <p className="text-sm text-gray-600">
-            {selectedMethod === 'transfer' 
+            {selectedMethod === 'transfer'
               ? 'Masukkan nomor referensi dari slip transfer bank'
-              : 'Masukkan nomor referensi dari QRIS atau struk kartu'
-            }
+              : 'Masukkan nomor referensi dari QRIS atau struk kartu'}
           </p>
         </div>
       )}
@@ -192,7 +226,7 @@ export function PaymentForm({
         </Button>
         <Button
           type="submit"
-          disabled={isProcessing || !form.formState.isValid}
+          disabled={isProcessing || !form.formState.isValid || form.getValues('jumlah') <= 0}
           className="flex-1"
         >
           {isProcessing ? (
@@ -201,7 +235,7 @@ export function PaymentForm({
               Memproses...
             </>
           ) : (
-            'Proses Pembayaran'
+            `Bayar ${formatCurrency(form.getValues('jumlah') || 0)}`
           )}
         </Button>
       </div>

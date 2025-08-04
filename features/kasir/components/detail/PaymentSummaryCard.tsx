@@ -1,8 +1,10 @@
-import { CreditCard, AlertTriangle, CheckCircle } from 'lucide-react'
+import { CreditCard, AlertTriangle, CheckCircle, Loader2 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
-import { useEffect } from 'react'
-import type { TransactionDetail, Payment, Penalty } from '../../types/transaction-detail'
-import { formatCurrency, formatDate } from '../../lib/utils'
+import { useEffect, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
+import { queryKeys } from '@/lib/react-query'
+import type { TransactionDetail, Payment, Penalty } from '../../types'
+import { formatCurrency, formatDate } from '../../lib/utils/client'
 
 interface PaymentSummaryCardProps {
   transaction: TransactionDetail
@@ -11,79 +13,131 @@ interface PaymentSummaryCardProps {
   'data-testid'?: string
 }
 
-export function PaymentSummaryCard({ transaction, payments, penalties, 'data-testid': dataTestId }: PaymentSummaryCardProps) {
+export function PaymentSummaryCard({
+  transaction,
+  payments,
+  penalties,
+  'data-testid': dataTestId,
+}: PaymentSummaryCardProps) {
+  const queryClient = useQueryClient()
+  const [isRefreshing, setIsRefreshing] = useState(false)
+  const [lastPaymentCount, setLastPaymentCount] = useState(0)
+  const [lastTotalPaid, setLastTotalPaid] = useState(0)
+
   // 🛡️ Phase 2: Data validation
   const validPayments = Array.isArray(payments) ? payments : []
   const validPenalties = Array.isArray(penalties) ? penalties : []
   const validTransaction = transaction || { totalAmount: 0 }
-
-  // 🔍 Debug logging - Phase 1
-  console.log('🔍 PaymentSummaryCard Debug:', {
-    transaction: {
-      id: validTransaction.id,
-      totalAmount: validTransaction.totalAmount,
-      totalAmountType: typeof validTransaction.totalAmount,
-    },
-    payments: validPayments.map(p => ({
-      id: p.id,
-      amount: p.amount,
-      amountType: typeof p.amount,
-      method: p.method,
-    })),
-    paymentsLength: validPayments.length,
-    penalties: validPenalties.map(p => ({
-      id: p.id,
-      amount: p.amount,
-      amountType: typeof p.amount,
-    })),
-    penaltiesLength: validPenalties.length,
-  })
 
   // 🛡️ Phase 2: Safe calculations with validation
   const totalPaid = validPayments.reduce((sum, payment) => {
     const amount = Number(payment.amount) || 0
     return sum + amount
   }, 0)
-  
+
   const totalPenalties = validPenalties.reduce((sum, penalty) => {
     const amount = Number(penalty.amount) || 0
     return sum + amount
   }, 0)
-  
+
   const transactionAmount = Number(validTransaction.totalAmount) || 0
   const grandTotal = transactionAmount + totalPenalties
   const remainingBalance = grandTotal - totalPaid
 
-  // 🔍 Debug calculated values
-  console.log('🔍 PaymentSummary Calculations:', {
-    totalPaid,
-    totalPaidType: typeof totalPaid,
-    totalPenalties,
-    transactionAmount,
-    grandTotal,
-    remainingBalance,
-    isValidData: {
-      hasPayments: validPayments.length > 0,
-      hasValidAmount: transactionAmount > 0,
-      calculationsOk: !isNaN(grandTotal) && !isNaN(remainingBalance),
-    }
-  })
-
-  // 🔧 Phase 3: Monitor prop changes and re-rendering
+  // 🔥 FIX: Enhanced payment monitoring with real-time sync
   useEffect(() => {
-    console.log('🔧 PaymentSummaryCard re-rendered with:', {
-      transactionId: validTransaction.id,
-      paymentsCount: validPayments.length,
-      totalAmount: transactionAmount,
-      calculatedTotalPaid: totalPaid,
-    })
-  }, [validTransaction.id, validPayments.length, transactionAmount, totalPaid])
+    if (!transaction?.transactionCode) return
+
+    const queryKey = [
+      ...queryKeys.kasir.transaksi.detail(transaction.transactionCode),
+      'transformed',
+    ]
+
+    // Check if query is currently fetching
+    const queryState = queryClient.getQueryState(queryKey)
+    const isFetching = queryState?.fetchStatus === 'fetching'
+
+    if (isFetching !== isRefreshing) {
+      setIsRefreshing(isFetching)
+    }
+  }, [transaction?.transactionCode, queryClient, isRefreshing])
+
+  // 🔥 FIX: Real-time payment monitoring and validation
+  useEffect(() => {
+    const currentPaymentCount = validPayments.length
+    const currentTotalPaid = totalPaid
+
+    // Log payment changes for debugging
+    if (currentPaymentCount !== lastPaymentCount || currentTotalPaid !== lastTotalPaid) {
+      setLastPaymentCount(currentPaymentCount)
+      setLastTotalPaid(currentTotalPaid)
+
+      // If payment count decreased unexpectedly, force a refresh
+      if (currentPaymentCount < lastPaymentCount && lastPaymentCount > 0) {
+        console.warn(
+          `[PaymentSummaryCard] Payment count decreased unexpectedly for ${transaction?.transactionCode} - forcing refresh`,
+        )
+
+        setTimeout(() => {
+          queryClient.refetchQueries({
+            queryKey: [
+              ...queryKeys.kasir.transaksi.detail(transaction.transactionCode),
+              'transformed',
+            ],
+            type: 'active',
+          })
+        }, 500)
+      }
+    }
+  }, [
+    validPayments.length,
+    totalPaid,
+    lastPaymentCount,
+    lastTotalPaid,
+    transaction?.transactionCode,
+    queryClient,
+    remainingBalance,
+  ])
+
+  // 🔥 FIX: Periodic payment sync (every 15 seconds when component is active)
+  useEffect(() => {
+    if (!transaction?.transactionCode) return
+
+    const syncInterval = setInterval(() => {
+      const queryKey = [
+        ...queryKeys.kasir.transaksi.detail(transaction.transactionCode),
+        'transformed',
+      ]
+      const queryState = queryClient.getQueryState(queryKey)
+
+      // Only sync if not currently fetching and has data
+      if (queryState?.fetchStatus !== 'fetching' && queryState?.data) {
+        queryClient
+          .refetchQueries({
+            queryKey,
+            type: 'active',
+          })
+          .catch((error) => {
+            console.error(
+              `[PaymentSummaryCard] Periodic sync failed for ${transaction.transactionCode}:`,
+              error,
+            )
+          })
+      }
+    }, 15000) // Sync every 15 seconds
+
+    return () => {
+      clearInterval(syncInterval)
+    }
+  }, [transaction?.transactionCode, queryClient, validPayments.length, totalPaid])
 
   // 🛡️ Phase 3: Loading state and error handling
   if (!validTransaction || typeof validTransaction.totalAmount === 'undefined') {
-    console.log('⚠️ PaymentSummaryCard: Invalid transaction data', validTransaction)
     return (
-      <div data-testid={dataTestId} className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-6">
+      <div
+        data-testid={dataTestId}
+        className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-6"
+      >
         <div className="flex items-center gap-2 text-gray-500">
           <CreditCard className="h-5 w-5" />
           <h3 className="text-lg font-semibold">Memuat Pembayaran...</h3>
@@ -93,10 +147,18 @@ export function PaymentSummaryCard({ transaction, payments, penalties, 'data-tes
   }
 
   return (
-    <div data-testid={dataTestId} className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-6 space-y-6">
+    <div
+      data-testid={dataTestId}
+      className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-6 space-y-6"
+    >
       <div className="flex items-center gap-2">
         <CreditCard className="h-5 w-5 text-gray-700" />
         <h3 className="text-lg font-semibold text-gray-900">Ringkasan Pembayaran</h3>
+        {isRefreshing && (
+          <div title="Memperbarui data pembayaran...">
+            <Loader2 className="h-4 w-4 text-blue-500 animate-spin" />
+          </div>
+        )}
       </div>
 
       {/* Payment Summary */}

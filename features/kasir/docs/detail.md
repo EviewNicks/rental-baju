@@ -1,26 +1,167 @@
+# User Story 22 : TSK-22 Pengambilan Baju 
+
+## Deskripsi
+
+Sebagai kasir, saya ingin memproses pengambilan pakaian berdasarkan kode transaksi untuk memastikan pakaian diserahkan dengan benar.
+
+"feature pengambilan baju, jadi setelah kita melakukan transaksi pada 'create new transkasi' app\(kasir)\dashboard\new\page.tsx , selanjutnya pada transaksi  detail app\(kasir)\dashboard\transaction\[kode]\page.tsx barulah terjaid proses pengambilan, untu  pengurangan kuotanya yang di maksud adalah pada kuota baju di transaksi detailnya, contoh : baju yang dipesan ada 3 baju, 2 baju produk A dan 1 baju produk B, jika kasir mengambil 2 baju produk A dan 1 baju produk B, maka kuota baju yang tersedia pada transaksi detailnya akan berkurang 2 dan 1. atau mungkin user hanya ingin mengambil 2 baju produk A dulu, besok baru mengambil 1 baju produk B."
+
+## Asumsi
+
+- Transaksi penyewaan sudah ada di sistem.
+- Kasir sudah terautentikasi.
+- Sistem terhubung dengan database inventaris.
+
+## Detail
+
+- Kasir memasukkan kode transaksi untuk mencari detail penyewaan.
+- Sistem menampilkan detail transaksi dan pakaian yang akan diambil.
+- Kasir mengkonfirmasi pengambilan, dan sistem mengupdate status transaksi menjadi "sudah diambil".
+- Sistem juga mengurangi kuota pakaian yang tersedia.
+
+## Kriteria Penerimaan
+
+- Given saya adalah kasir, when saya memasukkan kode transaksi yang valid, then sistem menampilkan detail transaksi dan pakaian.
+- Given saya mengkonfirmasi pengambilan, when transaksi valid, then status transaksi diupdate menjadi "sudah diambil" dan kuota pakaian berkurang.
+
+## Flowchart
+
+```
+Start ->
+[Transaksi Detail] -> [Konfirmasi Pengambilan] ->
+[Update Status dan Kuota] ->
+End
+```
+
+## Evaluasi INVEST
+
+| Kriteria        | Evaluasi                                                                                              |
+| --------------- | ----------------------------------------------------------------------------------------------------- |
+| **Independent** | Bergantung pada TSK-01 untuk autentikasi, tetapi dapat diimplementasikan setelah autentikasi selesai. |
+| **Negotiable**  | Dapat didiskusikan (misalnya, tambahan verifikasi).                                                   |
+| **Valuable**    | Memastikan pakaian diserahkan dengan benar.                                                           |
+| **Estimable**   | 5 story points.                                                                                       |
+| **Small**       | Dapat diselesaikan dalam satu sprint.                                                                 |
+| **Testable**    | Dapat diuji dengan kriteria penerimaan.                                                               |
+
 ---
 
-ini adlaha list table nya, tetapi mungkin ini terlalu banyak jadi mungkin di bagian list table kita bisa mengambil yang intinya saja dan di penyewaan detail abru kita masukkan semua datanya 
+# Tasks untuk TSK-02
 
-## Contoh Data Transaksi Penyewaan
+## Task 2.1: Desain UI
 
-| No | Nama Penyewa | Kontak (No. KTP) | Alamat      | Status Penyewa   | Status Sewa      | Produk (Kode)                | Quantity | Jenis Pembayaran      | Total Pembayaran | Status Pembayaran | Tanggal Pengambilan | Tanggal Pengembalian | Catatan                |
-|----|--------------|------------------|-------------|------------------|------------------|------------------------------|----------|----------------------|------------------|-------------------|---------------------|----------------------|------------------------|
-| 1  | Ardi         | 089657           | Jl. Jendral | Belum Diambil    | Sedang Disewa    | Baju (kode produk), Sarung Batik (kode unik) | 1 dari 5 | QRIS, Cash, Transfer | [input angka]    | Belum Bayar / Sudah Bayar | DD-MM-YY            | Otomatis 4 hari       | (Status: lewat batas waktu +1 hari = denda 20K) |
+**Task ID**: T:02.1  
+**Kaitan User Story**: US:02
 
-**Catatan:**
-- Pada kolom Produk, gunakan dropdown untuk memilih lebih dari satu produk (misal: Baju dan Sarung).
-- Quantity dapat diatur sesuai stok (misal: 1 dari 5 tersedia).
-- Jenis pembayaran berupa dropdown: QRIS, Cash, Transfer.
-- Status pembayaran: Belum Bayar / Sudah Bayar.
-- Tanggal pengembalian otomatis 4 hari setelah pengambilan.
+### Deskripsi Detail
+
+Merancang antarmuka untuk pencarian dan konfirmasi pengambilan pakaian.
+
+### Fitur UI yang Termasuk
+
+- Form pencarian berdasarkan kode transaksi.
+- Tampilan detail transaksi (penyewa, pakaian, tanggal).
+- Tombol konfirmasi pengambilan.
+
+### Estimasi Effort
+
+3 jam
+
+### Owner
+
+[Nama Designer/Developer]
+
+### Definisi Selesai
+
+Mockup atau implementasi desain UI selesai dan disetujui.
+
+### Dependensi
+
+Tidak ada.
+
+### Catatan Tambahan
+
+Pastikan antarmuka pencarian intuitif.
 
 ---
 
-## Logic Perhitungan Denda
+## Task 2.2: Implementasi Backend
 
-- Jika status melewati batas waktu (jam 10 hari ke-4), sistem akan menghitung hari keterlambatan dan denda.
-- Contoh: Jika pengembalian lewat 1 hari, denda = 20.000.
-- Status pembayaran dan denda akan otomatis terupdate di sistem.
+**Task ID**: T:02.2  
+**Kaitan User Story**: US:02
+
+### Deskripsi Detail
+
+Mengembangkan API untuk pencarian transaksi dan pembaruan status pengambilan.
+
+### Dependencies
+
+Clerk Auth (hanya admin yang dapat mengakses).
+
+### Detail Tugas
+
+- Buat API endpoint untuk mencari transaksi berdasarkan kode.
+- Buat API endpoint untuk memperbarui status transaksi menjadi "sudah diambil".
+- Implementasikan manajemen kuota pakaian (jika diperlukan).
+- Tulis unit test untuk API endpoint menggunakan Jest.
+
+### Estimasi Effort
+
+5 jam
+
+### Owner
+
+[Nama Developer]
+
+### Definisi Selesai
+
+API berfungsi, status diperbarui, dan unit test lulus.
+
+### Dependensi
+
+T1.
+
+### Catatan Tambahan
+
+Klarifikasi manajemen kuota dengan Product Owner.
 
 ---
+
+## Task 2.3: Implementasi Frontend
+
+**Task ID**: T:02.3  
+**Kaitan User Story**: US:02
+
+### Deskripsi Detail
+
+Mengembangkan antarmuka pengguna untuk pencarian dan konfirmasi pengambilan.
+
+### Dependencies
+
+React Query (untuk manajemen state dan fetching data).
+
+### Detail Tugas
+
+- Implementasikan form pencarian transaksi.
+- Tampilkan detail transaksi dan pakaian.
+- Implementasikan tombol konfirmasi pengambilan.
+
+### Estimasi Effort
+
+5 jam
+
+### Owner
+
+[Nama Developer]
+
+### Definisi Selesai
+
+Antarmuka berfungsi dan terintegrasi dengan backend.
+
+### Dependensi
+
+T2.
+
+### Catatan Tambahan
+
+Pastikan feedback visual saat konfirmasi pengambilan.

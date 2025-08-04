@@ -1,17 +1,15 @@
 'use client'
 
 import { useState, useCallback, useEffect } from 'react'
-import type { TransactionFormData, TransactionStep } from '../types/transaction-form'
-import type { Customer } from '../types/customer'
-import type { ProductSelection } from '../types/product'
-import type { CreateTransaksiRequest, UpdateTransaksiRequest } from '../types/api'
+import type { TransactionFormData, TransactionStep, Customer, ProductSelection } from '../types'
+import type { CreateTransaksiRequest, UpdateTransaksiRequest } from '../types'
 import { useCreateTransaksi } from './useTransaksi'
 import { useTransactionFormPersistence } from './useTransactionFormPersistence'
-import { logger } from '@/lib/client-logger'
+import { useCreatePembayaran } from './usePembayaran'
 import { KasirApi } from '../api'
 import { useMutation } from '@tanstack/react-query'
-import type { CreatePembayaranRequest } from '../types/api'
-// import { toast } from '@/hooks/use-toast' // TODO: Add toast implementation
+import type { CreatePembayaranRequest } from '../types'
+// import { toast } from '@/hooks/use-toast' // TODO: Add toast implementation when available
 
 const initialFormData: TransactionFormData = {
   products: [],
@@ -36,52 +34,47 @@ export function useTransactionForm() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [globalDuration, setGlobalDuration] = useState(3) // Global duration state
   const [isDataRestored, setIsDataRestored] = useState(false) // Track if data was restored from storage
-  
+
   // Real API integration
   const createTransaksiMutation = useCreateTransaksi()
-  
-  // Payment creation mutation
-  const createPembayaranMutation = useMutation({
-    mutationFn: (data: CreatePembayaranRequest) => KasirApi.createPembayaran(data),
-  })
-  
+
+  // Use proper payment hook with cache invalidation
+  const createPembayaranMutation = useCreatePembayaran()
+
   // Transaction rollback mutation
   const updateTransaksiMutation = useMutation({
-    mutationFn: ({ kode, data }: { kode: string; data: UpdateTransaksiRequest }) => KasirApi.updateTransaksi(kode, data),
+    mutationFn: ({ kode, data }: { kode: string; data: UpdateTransaksiRequest }) =>
+      KasirApi.updateTransaksi(kode, data),
   })
-  
+
   // Persistence integration
   const { loadFormData, saveFormData, clearFormData } = useTransactionFormPersistence()
 
   // Load persisted data on component mount
   useEffect(() => {
-    logger.info('🚀 Initializing transaction form...', {}, 'useTransactionForm')
-    
     const persistedData = loadFormData()
     if (persistedData) {
-      logger.info('📥 Restoring form data from storage', {
-        productsCount: persistedData.products.length,
-        hasCustomer: !!persistedData.customer,
-        currentStep: persistedData.currentStep || 1
-      }, 'useTransactionForm')
-      
       setFormData(persistedData)
       if (persistedData.currentStep) {
         setCurrentStep(persistedData.currentStep)
       }
       setIsDataRestored(true)
-      
+
       // Clear the restoration flag after a short delay for accessibility announcements
       setTimeout(() => setIsDataRestored(false), 3000)
     } else {
-      logger.info('🆕 Starting with fresh form', {}, 'useTransactionForm')
     }
   }, [loadFormData])
 
   // Auto-save form data whenever it changes
   useEffect(() => {
     // Don't save initial empty data or during restoration
-    if (formData.products.length > 0 || formData.customer || formData.pickupDate || formData.returnDate) {
+    if (
+      formData.products.length > 0 ||
+      formData.customer ||
+      formData.pickupDate ||
+      formData.returnDate
+    ) {
       saveFormData(formData, currentStep)
     }
   }, [formData, currentStep, saveFormData])
@@ -127,61 +120,32 @@ export function useTransactionForm() {
 
   const validateStep = useCallback(
     (step: TransactionStep): boolean => {
-      logger.debug(`🔍 Validating step ${step}...`, {}, 'useTransactionForm')
-      
       switch (step) {
         case 1:
           const step1Valid = formData.products.length > 0
-          logger.debug(`📦 Step 1 - Products count: ${formData.products.length}, Valid: ${step1Valid}`, { 
-            productsCount: formData.products.length, 
-            valid: step1Valid 
-          }, 'useTransactionForm')
           if (!step1Valid) {
-            logger.warn('❌ Step 1 failed: No products selected', {}, 'useTransactionForm')
           }
           return step1Valid
-          
+
         case 2:
           const hasCustomer = !!formData.customer
           const hasCustomerId = !!formData.customer?.id
           const step2Valid = hasCustomer && hasCustomerId
-          logger.debug(`👤 Step 2 - Customer exists: ${hasCustomer}, Has ID: ${hasCustomerId}, Valid: ${step2Valid}`, {
-            hasCustomer,
-            hasCustomerId,
-            valid: step2Valid,
-            customerData: formData.customer
-          }, 'useTransactionForm')
+
           if (!step2Valid) {
-            logger.warn('❌ Step 2 failed: Customer not selected or missing ID', { 
-              customerData: formData.customer 
-            }, 'useTransactionForm')
           }
           return step2Valid
-          
+
         case 3:
           const hasPickupDate = !!formData.pickupDate
           const hasReturnDate = !!formData.returnDate
           const hasPaymentMethod = !!formData.paymentMethod
           const paymentCondition = formData.paymentStatus === 'unpaid' || formData.paymentAmount > 0
           const step3Valid = hasPickupDate && hasReturnDate && hasPaymentMethod && paymentCondition
-          
-          logger.debug(`💰 Step 3 validation details`, {
-            pickupDate: { has: hasPickupDate, value: formData.pickupDate },
-            returnDate: { has: hasReturnDate, value: formData.returnDate },
-            paymentMethod: { has: hasPaymentMethod, value: formData.paymentMethod },
-            paymentStatus: formData.paymentStatus,
-            paymentAmount: formData.paymentAmount,
-            paymentCondition,
-            overallValid: step3Valid
-          }, 'useTransactionForm')
-          
-          if (!step3Valid) {
-            logger.warn('❌ Step 3 failed: Missing required payment/date information', {}, 'useTransactionForm')
-          }
+
           return step3Valid
-          
+
         default:
-          logger.error(`❌ Unknown step: ${step}`, { step }, 'useTransactionForm')
           return false
       }
     },
@@ -211,33 +175,15 @@ export function useTransactionForm() {
   )
 
   const submitTransaction = useCallback(async () => {
-    logger.info('🚀 Starting transaction submission...', { formDataSummary: { 
-      productsCount: formData.products.length,
-      customerId: formData.customer?.id,
-      pickupDate: formData.pickupDate,
-      paymentMethod: formData.paymentMethod
-    }}, 'useTransactionForm')
-    
     // Step 3 validation check
     const step3Valid = validateStep(3)
-    logger.info('✅ Step 3 validation result', { valid: step3Valid }, 'useTransactionForm')
-    
+
     if (!step3Valid) {
-      logger.error('❌ Step 3 validation failed', {
-        validationDetails: {
-          pickupDate: { has: !!formData.pickupDate, value: formData.pickupDate },
-          returnDate: { has: !!formData.returnDate, value: formData.returnDate },
-          paymentMethod: { has: !!formData.paymentMethod, value: formData.paymentMethod },
-          paymentStatusCondition: formData.paymentStatus === 'unpaid' || formData.paymentAmount > 0
-        }
-      }, 'useTransactionForm')
       return false
     }
 
     setIsSubmitting(true)
     try {
-      logger.debug('🔄 Transforming form data to API format...', {}, 'useTransactionForm')
-      
       // Transform form data to API format
       const createRequest: CreateTransaksiRequest = {
         penyewaId: formData.customer?.id || '',
@@ -249,34 +195,43 @@ export function useTransactionForm() {
         })),
         tglMulai: convertDateToISODateTime(formData.pickupDate),
         tglSelesai: formData.returnDate ? convertDateToISODateTime(formData.returnDate) : undefined,
-        metodeBayar: formData.paymentMethod === 'cash' ? 'tunai' : formData.paymentMethod === 'transfer' ? 'transfer' : 'kartu',
+        metodeBayar:
+          formData.paymentMethod === 'cash'
+            ? 'tunai'
+            : formData.paymentMethod === 'transfer'
+              ? 'transfer'
+              : 'kartu',
         catatan: formData.notes || undefined,
       }
 
-      logger.debug('📤 API Request payload', { createRequest }, 'useTransactionForm')
-      logger.info('🌐 Calling API...', {}, 'useTransactionForm')
+      for (const product of formData.products) {
+        // Note: This is a simple warning system - full validation happens server-side
+        const currentAvailability = product.product.availableQuantity || 0
+        if (currentAvailability < product.quantity) {
+          console.warn('[useTransactionForm] ⚠️ Potential availability conflict detected', {
+            productId: product.product.id,
+            productName: product.product.name,
+            requestedQuantity: product.quantity,
+            lastKnownAvailability: currentAvailability,
+            timestamp: new Date().toISOString(),
+          })
+        }
+      }
 
       // Create transaction via API
       const createdTransaction = await createTransaksiMutation.mutateAsync(createRequest)
 
-      logger.info('✅ Transaction created successfully!', { 
-        transactionId: createdTransaction.id,
-        transactionCode: createdTransaction.kode 
-      }, 'useTransactionForm')
-
       // Create payment record with rollback mechanism
       if (formData.paymentAmount > 0) {
-        logger.debug('💳 Creating payment record...', {
-          transactionId: createdTransaction.id,
-          transactionCode: createdTransaction.kode,
-          amount: formData.paymentAmount,
-          method: formData.paymentMethod
-        }, 'useTransactionForm')
-
         const paymentRequest: CreatePembayaranRequest = {
-          transaksiId: createdTransaction.id,
+          transaksiKode: createdTransaction.kode,
           jumlah: formData.paymentAmount,
-          metode: formData.paymentMethod === 'cash' ? 'tunai' : formData.paymentMethod === 'transfer' ? 'transfer' : 'kartu',
+          metode:
+            formData.paymentMethod === 'cash'
+              ? 'tunai'
+              : formData.paymentMethod === 'transfer'
+                ? 'transfer'
+                : 'kartu',
           catatan: 'Pembayaran awal transaksi',
         }
 
@@ -288,74 +243,36 @@ export function useTransactionForm() {
         while (!paymentCreated && attempts < maxAttempts) {
           attempts++
           try {
-            logger.debug(`💳 Payment attempt ${attempts}/${maxAttempts}`, {
-              transactionId: createdTransaction.id,
-              attempt: attempts
-            }, 'useTransactionForm')
-
             await createPembayaranMutation.mutateAsync(paymentRequest)
             paymentCreated = true
-            
-            logger.info('✅ Payment record created successfully!', {
-              transactionId: createdTransaction.id,
-              transactionCode: createdTransaction.kode,
-              paymentAmount: formData.paymentAmount,
-              attempts: attempts
-            }, 'useTransactionForm')
-
           } catch (paymentError) {
-            logger.error(`❌ Payment creation failed (attempt ${attempts}/${maxAttempts})`, {
-              transactionId: createdTransaction.id,
-              transactionCode: createdTransaction.kode,
-              attempt: attempts,
-              error: paymentError instanceof Error ? paymentError.message : String(paymentError)
-            }, 'useTransactionForm')
-
             // If all attempts failed, rollback the transaction
             if (attempts >= maxAttempts) {
-              logger.error('🚨 All payment attempts failed, rolling back transaction...', {
-                transactionId: createdTransaction.id,
-                transactionCode: createdTransaction.kode,
-                totalAttempts: attempts
-              }, 'useTransactionForm')
-
               try {
                 // Mark transaction as cancelled for rollback
                 await updateTransaksiMutation.mutateAsync({
                   kode: createdTransaction.kode,
-                  data: { 
+                  data: {
                     status: 'cancelled',
-                    catatan: `Transaction cancelled due to payment failure. Original error: ${paymentError instanceof Error ? paymentError.message : String(paymentError)}`
-                  }
+                    catatan: `Transaction cancelled due to payment failure. Original error: ${paymentError instanceof Error ? paymentError.message : String(paymentError)}`,
+                  },
                 })
 
-                logger.info('✅ Transaction rolled back successfully', {
-                  transactionId: createdTransaction.id,
-                  transactionCode: createdTransaction.kode,
-                  status: 'cancelled'
-                }, 'useTransactionForm')
-
                 // Throw specific error for payment failure
-                throw new Error('Pembayaran gagal dibuat setelah beberapa kali percobaan. Transaksi telah dibatalkan.')
-
-              } catch (rollbackError) {
-                logger.error('🚨 Transaction rollback failed!', {
-                  transactionId: createdTransaction.id,
-                  transactionCode: createdTransaction.kode,
-                  rollbackError: rollbackError instanceof Error ? rollbackError.message : String(rollbackError)
-                }, 'useTransactionForm')
-
+                throw new Error(
+                  'Pembayaran gagal dibuat setelah beberapa kali percobaan. Transaksi telah dibatalkan.',
+                )
+              } catch {
                 // Throw combined error
-                throw new Error(`Pembayaran gagal dan transaksi tidak dapat dibatalkan. Hubungi admin. Transaction ID: ${createdTransaction.kode}`)
+                throw new Error(
+                  `Pembayaran gagal dan transaksi tidak dapat dibatalkan. Hubungi admin. Transaction ID: ${createdTransaction.kode}`,
+                )
               }
             } else {
               // Wait before retry (exponential backoff)
               const delay = Math.pow(2, attempts - 1) * 1000 // 1s, 2s, 4s
-              logger.debug(`⏳ Waiting ${delay}ms before retry...`, {
-                transactionId: createdTransaction.id,
-                delay: delay
-              }, 'useTransactionForm')
-              await new Promise(resolve => setTimeout(resolve, delay))
+
+              await new Promise((resolve) => setTimeout(resolve, delay))
             }
           }
         }
@@ -365,60 +282,82 @@ export function useTransactionForm() {
       setFormData(initialFormData)
       setCurrentStep(1)
       setGlobalDuration(3) // Reset duration to default
-      clearFormData('successful-submission')
-      logger.debug('🔄 Form reset to initial state', {}, 'useTransactionForm')
-      
+      clearFormData()
+
       return true
     } catch (error) {
       // Enhanced error handling - distinguish between transaction and payment failures
       const errorMessage = error instanceof Error ? error.message : String(error)
-      const isPaymentError = errorMessage.includes('Pembayaran gagal') || errorMessage.includes('payment')
+      const isPaymentError =
+        errorMessage.includes('Pembayaran gagal') || errorMessage.includes('payment')
       const isRollbackError = errorMessage.includes('tidak dapat dibatalkan')
-      
+
       if (isPaymentError && isRollbackError) {
-        logger.error('🚨 CRITICAL: Payment failed AND rollback failed!', {
-          errorType: 'PAYMENT_ROLLBACK_FAILURE',
-          errorMessage: errorMessage,
-          createTransaksiError: createTransaksiMutation.error?.message,
-          createPembayaranError: createPembayaranMutation.error?.message,
-          updateTransaksiError: updateTransaksiMutation.error?.message
-        }, 'useTransactionForm')
+        console.error(
+          '🚨 CRITICAL: Payment failed AND rollback failed!',
+          {
+            errorType: 'PAYMENT_ROLLBACK_FAILURE',
+            errorMessage: errorMessage,
+            createTransaksiError: createTransaksiMutation.error?.message,
+            createPembayaranError: createPembayaranMutation.error?.message,
+            updateTransaksiError: updateTransaksiMutation.error?.message,
+          },
+          'useTransactionForm',
+        )
       } else if (isPaymentError) {
-        logger.error('💳 Payment creation failed - transaction rolled back', {
-          errorType: 'PAYMENT_FAILURE',
-          errorMessage: errorMessage,
-          createPembayaranError: createPembayaranMutation.error?.message,
-          rollbackSuccess: true
-        }, 'useTransactionForm')
+        console.error(
+          '💳 Payment creation failed - transaction rolled back',
+          {
+            errorType: 'PAYMENT_FAILURE',
+            errorMessage: errorMessage,
+            createPembayaranError: createPembayaranMutation.error?.message,
+            rollbackSuccess: true,
+          },
+          'useTransactionForm',
+        )
       } else {
-        logger.error('❌ Transaction creation failed!', {
-          errorType: 'TRANSACTION_FAILURE',
-          errorMessage: errorMessage,
-          createTransaksiError: createTransaksiMutation.error?.message
-        }, 'useTransactionForm')
+        console.error(
+          '❌ Transaction creation failed!',
+          {
+            errorType: 'TRANSACTION_FAILURE',
+            errorMessage: errorMessage,
+            createTransaksiError: createTransaksiMutation.error?.message,
+          },
+          'useTransactionForm',
+        )
       }
-      
+
       if (error instanceof Error) {
-        logger.error('💬 Detailed error information', { 
-          message: error.message,
-          stack: error.stack,
-          name: error.name
-        }, 'useTransactionForm')
+        console.error(
+          '💬 Detailed error information',
+          {
+            message: error.message,
+            stack: error.stack,
+            name: error.name,
+          },
+          'useTransactionForm',
+        )
       }
-      
+
       return false
     } finally {
       setIsSubmitting(false)
-      logger.debug('🏁 Transaction submission completed (cleanup)', {}, 'useTransactionForm')
     }
-  }, [formData, globalDuration, validateStep, createTransaksiMutation, createPembayaranMutation, updateTransaksiMutation, clearFormData])
+  }, [
+    formData,
+    globalDuration,
+    validateStep,
+    createTransaksiMutation,
+    createPembayaranMutation,
+    updateTransaksiMutation,
+    clearFormData,
+  ])
 
   const resetForm = useCallback(() => {
-    logger.info('🔄 Resetting form to initial state', {}, 'useTransactionForm')
     setFormData(initialFormData)
     setCurrentStep(1)
     setGlobalDuration(3) // Reset duration to default
-    clearFormData('form-reset')
+    clearFormData()
   }, [clearFormData])
 
   return {

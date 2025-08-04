@@ -1,4 +1,4 @@
-import type { TransactionDetail } from '../types/transaction-detail'
+import type { TransactionDetail } from '../../types'
 
 export const mockTransactionDetail: Record<string, TransactionDetail> = {
   '1': {
@@ -30,6 +30,7 @@ export const mockTransactionDetail: Record<string, TransactionDetail> = {
     },
     products: [
       {
+        id: 'mock-item-1', // Mock TransaksiItem.id
         product: {
           id: '1',
           name: 'Kebaya Modern Elegant',
@@ -47,6 +48,7 @@ export const mockTransactionDetail: Record<string, TransactionDetail> = {
         subtotal: 225000,
       },
       {
+        id: 'mock-item-2', // Mock TransaksiItem.id
         product: {
           id: '2',
           name: 'Selendang Batik Premium',
@@ -127,6 +129,7 @@ export const mockTransactionDetail: Record<string, TransactionDetail> = {
     },
     products: [
       {
+        id: 'mock-item-3', // Mock TransaksiItem.id
         product: {
           id: '3',
           name: 'Jas Pengantin Premium',

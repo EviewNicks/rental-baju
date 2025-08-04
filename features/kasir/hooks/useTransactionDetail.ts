@@ -3,9 +3,8 @@
 import { useQuery } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/react-query'
 import { kasirApi } from '../api'
-import type { TransactionDetail } from '../types/transaction-detail'
-import type { TransaksiResponse } from '../types/api'
-import type { ProductAvailabilityResponse } from '../types/api'
+import type { TransactionDetail } from '../types'
+import type { TransaksiResponse } from '../types'
 
 interface UseTransactionDetailOptions {
   enabled?: boolean
@@ -18,7 +17,7 @@ interface UseTransactionDetailOptions {
  */
 export function useTransactionDetail(
   transactionId: string,
-  options: UseTransactionDetailOptions = {}
+  options: UseTransactionDetailOptions = {},
 ) {
   const { enabled = true, refetchInterval } = options
 
@@ -31,29 +30,47 @@ export function useTransactionDetail(
     isRefetching,
   } = useQuery({
     queryKey: queryKeys.kasir.transaksi.detail(transactionId),
-    queryFn: () => kasirApi.transaksi.getByKode(transactionId),
+    queryFn: () => {
+      return kasirApi.transaksi.getByKode(transactionId)
+    },
     enabled: enabled && !!transactionId,
     refetchInterval,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 0, // Always consider payment data stale for real-time updates
     gcTime: 10 * 60 * 1000, // 10 minutes
+    refetchOnMount: true, // Always refetch on mount for fresh payment data
     retry: (failureCount, error: unknown) => {
       // Don't retry on client errors (4xx)
-      if (error && typeof error === 'object' && 'status' in error && 
-          typeof (error as { status: number }).status === 'number' && 
-          (error as { status: number }).status >= 400 && (error as { status: number }).status < 500) {
+      if (
+        error &&
+        typeof error === 'object' &&
+        'status' in error &&
+        typeof (error as { status: number }).status === 'number' &&
+        (error as { status: number }).status >= 400 &&
+        (error as { status: number }).status < 500
+      ) {
         return false
       }
-      if (error && typeof error === 'object' && 'message' in error && 
-          typeof (error as { message: string }).message === 'string' && 
-          ((error as { message: string }).message.includes('tidak ditemukan') || (error as { message: string }).message.includes('Not Found'))) {
+      if (
+        error &&
+        typeof error === 'object' &&
+        'message' in error &&
+        typeof (error as { message: string }).message === 'string' &&
+        ((error as { message: string }).message.includes('tidak ditemukan') ||
+          (error as { message: string }).message.includes('Not Found'))
+      ) {
         return false
       }
-      if (error && typeof error === 'object' && 'message' in error && 
-          typeof (error as { message: string }).message === 'string' && 
-          ((error as { message: string }).message.includes('unauthorized') || (error as { message: string }).message.includes('403'))) {
+      if (
+        error &&
+        typeof error === 'object' &&
+        'message' in error &&
+        typeof (error as { message: string }).message === 'string' &&
+        ((error as { message: string }).message.includes('unauthorized') ||
+          (error as { message: string }).message.includes('403'))
+      ) {
         return false
       }
-      
+
       // Retry server errors and network issues up to 3 times
       const retryableErrors = [
         'fetch',
@@ -61,46 +78,90 @@ export function useTransactionDetail(
         'timeout',
         'Internal Server Error',
         '500',
-        '502', 
+        '502',
         '503',
-        '504'
+        '504',
       ]
-      
-      const isRetryable = retryableErrors.some(errorType => {
-        const hasMessage = error && typeof error === 'object' && 'message' in error && 
-                          typeof (error as { message: string }).message === 'string' &&
-                          (error as { message: string }).message.includes(errorType)
-        const hasStatus = error && typeof error === 'object' && 'status' in error && 
-                         typeof (error as { status: number }).status === 'number' &&
-                         (error as { status: number }).status.toString().includes(errorType)
+
+      const isRetryable = retryableErrors.some((errorType) => {
+        const hasMessage =
+          error &&
+          typeof error === 'object' &&
+          'message' in error &&
+          typeof (error as { message: string }).message === 'string' &&
+          (error as { message: string }).message.includes(errorType)
+        const hasStatus =
+          error &&
+          typeof error === 'object' &&
+          'status' in error &&
+          typeof (error as { status: number }).status === 'number' &&
+          (error as { status: number }).status.toString().includes(errorType)
         return hasMessage || hasStatus
       })
-      
+
       return isRetryable && failureCount < 3
     },
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000), // Exponential backoff, max 10s
   })
 
-  // Create a separate query for the transformed data
+  // Create a separate query for the transformed data with enhanced synchronization
   const {
     data: transaction,
     isLoading: isTransforming,
+    refetch: refetchTransformed,
   } = useQuery({
     queryKey: [...queryKeys.kasir.transaksi.detail(transactionId), 'transformed'],
-    queryFn: () => transformApiToUI(apiData!),
+    queryFn: async () => {
+      const transformed = await transformApiToUI(apiData!)
+
+      return transformed
+    },
     enabled: !!apiData,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0, // Always consider transformed data stale for real-time updates
     gcTime: 10 * 60 * 1000,
+    refetchOnMount: true, // Always refetch transformed data on mount
+    retry: (failureCount) => {
+      // Retry transformation failures up to 2 times
+      return failureCount < 2
+    },
+    retryDelay: (attemptIndex) => Math.min(500 * 2 ** attemptIndex, 2000), // Max 2s delay
   })
 
-  // Helper function to manually refresh data
-  const refreshTransaction = () => {
-    refetch()
+  // Enhanced refresh function with retry mechanism
+  const refreshTransaction = async (retryCount = 0, maxRetries = 3) => {
+    try {
+      await refetch()
+    } catch {
+      if (retryCount < maxRetries) {
+        const delay = 1000 * Math.pow(2, retryCount) // Exponential backoff
+
+        setTimeout(() => {
+          refreshTransaction(retryCount + 1, maxRetries)
+        }, delay)
+      } else {
+      }
+    }
   }
 
   // Clear error state function for error recovery
   const clearError = () => {
     refetch()
+  }
+
+  // Enhanced data synchronization function
+  const syncTransactionData = async () => {
+    try {
+      // Refetch both base and transformed data in sequence
+      await refetch()
+      await new Promise((resolve) => setTimeout(resolve, 100)) // Small delay
+      await refetchTransformed()
+    } catch (syncError) {
+      console.error('Transaction data sync failed', {
+        transactionId,
+        error: syncError instanceof Error ? syncError.message : 'Unknown error',
+      })
+      throw syncError
+    }
   }
 
   return {
@@ -109,34 +170,33 @@ export function useTransactionDetail(
     error,
     refreshTransaction,
     clearError,
+    // Enhanced functions for better cache management
+    syncTransactionData,
+    refetchTransformed,
     // Raw API data for debugging
     apiData,
+    // Enhanced loading states for debugging
+    isBaseLoading: isLoading,
+    isTransformLoading: isTransforming,
+    isRefreshing: isRefetching,
   }
 }
 
 /**
  * Transform API TransaksiResponse to UI TransactionDetail type
- * Now fetches full product details including category, size, color
+ * Uses existing transaction item data with product information
  */
 async function transformApiToUI(apiData: TransaksiResponse): Promise<TransactionDetail> {
-  // Use fullItems for detail view with null safety
-  const items = apiData.fullItems || []
-  
-  // Fetch full product details for all items
-  const productDetailsPromises = items.map(item => 
-    kasirApi.produk.getById(item.produk.id).catch(error => {
-      console.warn(`Failed to fetch product details for ${item.produk.id}:`, error)
-      return null
-    })
-  )
-  const productDetails = await Promise.all(productDetailsPromises)
-  return {
+  // Use items from transaction data - API returns items array, not fullItems
+  const items = apiData.items || []
+
+  const transformed: TransactionDetail = {
     id: apiData.id,
     transactionCode: apiData.kode,
     customerName: apiData.penyewa.nama,
     customerPhone: apiData.penyewa.telepon,
     customerAddress: apiData.penyewa.alamat,
-    items: items.map(item => item.produk.name),
+    items: items.map((item) => item.produk.name),
     startDate: apiData.tglMulai,
     endDate: apiData.tglSelesai || undefined,
     returnDate: apiData.tglKembali || undefined,
@@ -148,7 +208,7 @@ async function transformApiToUI(apiData: TransaksiResponse): Promise<Transaction
     notes: apiData.catatan || '',
     createdAt: apiData.createdAt,
     updatedAt: apiData.updatedAt,
-    
+
     // Enhanced customer information
     customer: {
       id: apiData.penyewa.id,
@@ -161,25 +221,31 @@ async function transformApiToUI(apiData: TransaksiResponse): Promise<Transaction
       totalTransactions: 0, // Would need separate API call
     },
 
-    // Enhanced product information with full details
-    products: items.map((item, index) => {
-      const fullProduct = productDetails[index] as ProductAvailabilityResponse | null
+    // Product information from transaction items - no need for additional API calls
+    products: items.map((item) => {
       return {
+        id: item.id, // TransaksiItem.id - needed for pickup operations
         product: {
           id: item.produk.id,
           name: item.produk.name,
-          category: fullProduct?.category?.name || '',
-          size: fullProduct?.size || '',
-          color: fullProduct?.color?.name || '',
+          category: item.produk.category || '', // Now available from API response
+          size: item.produk.size || '', // Now available from API response
+          color: item.produk.color || '', // Now available from API response
           pricePerDay: item.hargaSewa,
-          image: item.produk.imageUrl || fullProduct?.imageUrl || '/products/placeholder.png',
+          image: item.produk.imageUrl || '/products/placeholder.png',
           available: false, // Item is currently rented
-          description: fullProduct?.description || '',
+          description: '', // Not included in transaction item data
         },
         quantity: item.jumlah,
+        jumlahDiambil: item.jumlahDiambil || 0, // Pickup status from API response
         pricePerDay: item.hargaSewa,
         duration: item.durasi,
         subtotal: item.subtotal,
+        // Enhanced: Include pickup information for ProductDetailCard
+        pickupInfo: {
+          jumlahDiambil: item.jumlahDiambil || 0, // How many items have been picked up
+          remainingQuantity: Math.max(0, item.jumlah - (item.jumlahDiambil || 0)), // How many items are left to pick up
+        },
       }
     }),
 
@@ -194,7 +260,7 @@ async function transformApiToUI(apiData: TransaksiResponse): Promise<Transaction
     })),
 
     // Transform payments
-    payments: (apiData.pembayaran || []).map(payment => ({
+    payments: (apiData.pembayaran || []).map((payment) => ({
       id: payment.id,
       amount: payment.jumlah,
       method: mapPaymentMethod(payment.metode),
@@ -206,20 +272,27 @@ async function transformApiToUI(apiData: TransaksiResponse): Promise<Transaction
     // Penalties - not available in current API, would need enhancement
     penalties: [],
   }
+
+  return transformed
 }
 
 /**
  * Map API activity types to UI action types
  */
-function mapActivityTypeToAction(activityType: string): 'created' | 'paid' | 'picked_up' | 'returned' | 'overdue' | 'reminder_sent' | 'penalty_added' {
-  const mapping: Record<string, 'created' | 'paid' | 'picked_up' | 'returned' | 'overdue' | 'reminder_sent' | 'penalty_added'> = {
-    'dibuat': 'created',
-    'dibayar': 'paid',
-    'dikembalikan': 'returned',
-    'terlambat': 'overdue',
-    'dibatalkan': 'penalty_added', // Map cancelled to penalty for now
+function mapActivityTypeToAction(
+  activityType: string,
+): 'created' | 'paid' | 'picked_up' | 'returned' | 'overdue' | 'reminder_sent' | 'penalty_added' {
+  const mapping: Record<
+    string,
+    'created' | 'paid' | 'picked_up' | 'returned' | 'overdue' | 'reminder_sent' | 'penalty_added'
+  > = {
+    dibuat: 'created',
+    dibayar: 'paid',
+    dikembalikan: 'returned',
+    terlambat: 'overdue',
+    dibatalkan: 'penalty_added', // Map cancelled to penalty for now
   }
-  
+
   return mapping[activityType] || 'created' // Default to 'created' for unknown types
 }
 
@@ -228,10 +301,10 @@ function mapActivityTypeToAction(activityType: string): 'created' | 'paid' | 'pi
  */
 function mapPaymentMethod(apiMethod: string): 'cash' | 'qris' | 'transfer' {
   const mapping: Record<string, 'cash' | 'qris' | 'transfer'> = {
-    'tunai': 'cash',
-    'transfer': 'transfer',
-    'kartu': 'qris', // Map kartu to qris for UI consistency
+    tunai: 'cash',
+    transfer: 'transfer',
+    kartu: 'qris', // Map kartu to qris for UI consistency
   }
-  
+
   return mapping[apiMethod] || 'cash'
 }
