@@ -6,7 +6,7 @@
 
 import { z } from 'zod'
 
-// Return Item Validation Schema
+// Return Item Validation Schema with Smart Conditional Logic
 export const returnItemSchema = z.object({
   itemId: z.string().uuid('ID item transaksi tidak valid'),
   kondisiAkhir: z
@@ -20,8 +20,23 @@ export const returnItemSchema = z.object({
   jumlahKembali: z
     .number()
     .int('Jumlah kembali harus berupa bilangan bulat')
-    .min(1, 'Jumlah kembali minimal 1')
+    .min(0, 'Jumlah kembali tidak boleh negatif')
     .max(999, 'Jumlah kembali maksimal 999')
+}).refine((data) => {
+  // Smart validation: Check if item is lost/not returned
+  const isLostItem = data.kondisiAkhir.toLowerCase().includes('hilang') || 
+                     data.kondisiAkhir.toLowerCase().includes('tidak dikembalikan');
+  
+  if (isLostItem) {
+    // Lost items must have jumlahKembali = 0
+    return data.jumlahKembali === 0;
+  } else {
+    // Normal items must have jumlahKembali >= 1
+    return data.jumlahKembali >= 1;
+  }
+}, {
+  message: "Jumlah kembali tidak sesuai dengan kondisi barang. Barang hilang harus 0, barang normal minimal 1",
+  path: ["jumlahKembali"]
 })
 
 // Return Request Validation Schema
@@ -41,13 +56,32 @@ export const returnRequestSchema = z.object({
     .optional()
     .refine((date) => {
       if (!date) return true
+      
       const returnDate = new Date(date)
       const today = new Date()
-      // Allow return date up to 24 hours in the future for scheduling
-      const maxAllowedDate = new Date(today.getTime() + 24 * 60 * 60 * 1000)
-      return returnDate <= maxAllowedDate
+      
+      // Business Rule 1: Allow past dates (late returns with penalty)
+      if (returnDate <= today) return true
+      
+      // Business Rule 2: Allow future dates up to 30 days for scheduling
+      const maxFutureDate = new Date(today.getTime() + (30 * 24 * 60 * 60 * 1000))
+      if (returnDate <= maxFutureDate) return true
+      
+      return false
     }, {
-      message: 'Tanggal kembali tidak boleh lebih dari 24 jam ke depan'
+      message: 'Tanggal kembali tidak boleh lebih dari 30 hari ke depan. Untuk pengembalian terlambat, gunakan tanggal masa lalu.'
+    })
+    .refine((date) => {
+      if (!date) return true
+      
+      const returnDate = new Date(date)
+      const today = new Date()
+      
+      // Business Rule 3: Reasonable past date limit (prevent data entry errors)
+      const minPastDate = new Date(today.getTime() - (365 * 24 * 60 * 60 * 1000)) // 1 year ago max
+      return returnDate >= minPastDate
+    }, {
+      message: 'Tanggal kembali tidak boleh lebih dari 1 tahun yang lalu. Periksa kembali tanggal yang dimasukkan.'
     })
 }).refine((data) => {
   // Ensure no duplicate item IDs in return request
@@ -128,8 +162,83 @@ export const returnBusinessRulesSchema = z.object({
   maxLateDays: z.number().min(1).max(365).default(30),
   penaltyPerDay: z.number().min(0).max(1000000).default(5000),
   requireConditionNotes: z.boolean().default(true),
-  allowFutureReturnDate: z.boolean().default(false)
+  allowFutureReturnDate: z.boolean().default(true),
+  maxFutureDays: z.number().min(1).max(365).default(30),
+  maxPastDays: z.number().min(1).max(1095).default(365), // 3 years max for data integrity
+  allowPastReturns: z.boolean().default(true)
 })
+
+// Contextual Validation Schemas for Different Return Scenarios
+export const lateReturnDateSchema = z
+  .string()
+  .datetime('Format tanggal kembali tidak valid (ISO 8601)')
+  .optional()
+  .refine((date) => {
+    if (!date) return true
+    const returnDate = new Date(date)
+    const today = new Date()
+    
+    // Only allow past dates for late returns
+    return returnDate <= today
+  }, {
+    message: 'Untuk pengembalian terlambat, tanggal harus di masa lalu'
+  })
+
+export const scheduledReturnDateSchema = z
+  .string()
+  .datetime('Format tanggal kembali tidak valid (ISO 8601)')
+  .optional()
+  .refine((date) => {
+    if (!date) return true
+    const returnDate = new Date(date)
+    const today = new Date()
+    
+    // Only allow future dates within scheduling window
+    const maxFutureDate = new Date(today.getTime() + (30 * 24 * 60 * 60 * 1000))
+    return returnDate > today && returnDate <= maxFutureDate
+  }, {
+    message: 'Untuk pengembalian terjadwal, tanggal harus di masa depan (maksimal 30 hari)'
+  })
+
+// Utility function to check if an item condition indicates lost/missing item
+export const isLostItemCondition = (kondisiAkhir: string): boolean => {
+  const normalized = kondisiAkhir.toLowerCase();
+  return normalized.includes('hilang') || normalized.includes('tidak dikembalikan');
+}
+
+// Utility function to get expected jumlahKembali based on condition
+export const getExpectedReturnQuantity = (kondisiAkhir: string): { min: number; max: number; message: string } => {
+  if (isLostItemCondition(kondisiAkhir)) {
+    return {
+      min: 0,
+      max: 0,
+      message: "Barang hilang atau tidak dikembalikan harus memiliki jumlah kembali = 0"
+    };
+  }
+  return {
+    min: 1,
+    max: 999,
+    message: "Barang yang dikembalikan harus memiliki jumlah kembali minimal 1"
+  };
+}
+
+// Context-aware schema creation function
+export const createContextualReturnSchema = (context: 'late' | 'scheduled' | 'flexible' = 'flexible') => {
+  const baseSchema = returnRequestSchema.omit({ tglKembali: true })
+  
+  switch (context) {
+    case 'late':
+      return baseSchema.extend({
+        tglKembali: lateReturnDateSchema
+      })
+    case 'scheduled':
+      return baseSchema.extend({
+        tglKembali: scheduledReturnDateSchema
+      })
+    default:
+      return returnRequestSchema // Uses the enhanced flexible validation
+  }
+}
 
 // Search/Query Schema for return processing
 export const returnQuerySchema = z.object({
@@ -142,6 +251,113 @@ export const returnQuerySchema = z.object({
       'Kode transaksi hanya boleh mengandung huruf kapital, angka, dan tanda hubung'
     )
 })
+
+// Service Layer Integration Interface
+export interface ReturnValidationError {
+  field: string
+  message: string
+  code: string
+}
+
+export interface ServiceValidationResult {
+  isValid: boolean
+  errors: ReturnValidationError[]
+}
+
+// Enhanced service integration function for business validation
+export const validateReturnItemContext = (
+  item: ReturnItemRequest,
+  transactionItem: { 
+    produk: { 
+      name: string
+      modalAwal?: number | string | null 
+    }
+  }
+): ServiceValidationResult => {
+  const errors: ReturnValidationError[] = []
+  
+  // Use existing smart logic from schema
+  const isLost = isLostItemCondition(item.kondisiAkhir)
+  
+  if (isLost && item.jumlahKembali !== 0) {
+    const modalAwalFormatted = transactionItem.produk.modalAwal 
+      ? Number(transactionItem.produk.modalAwal).toLocaleString('id-ID')
+      : '150,000'
+    
+    errors.push({
+      field: 'jumlahKembali',
+      message: `Barang hilang "${transactionItem.produk.name}" harus memiliki jumlah kembali = 0. Penalty akan dihitung menggunakan modal awal produk (Rp ${modalAwalFormatted})`,
+      code: 'LOST_ITEM_INVALID_QUANTITY'
+    })
+  }
+  
+  if (!isLost && item.jumlahKembali < 1) {
+    errors.push({
+      field: 'jumlahKembali',
+      message: `Barang normal "${transactionItem.produk.name}" harus memiliki jumlah kembali minimal 1. Untuk barang hilang, ubah kondisi ke "Hilang/tidak dikembalikan"`,
+      code: 'NORMAL_ITEM_INVALID_QUANTITY'
+    })
+  }
+  
+  // Additional business rule: validate excessive return quantity
+  if (item.jumlahKembali > 999) {
+    errors.push({
+      field: 'jumlahKembali',
+      message: `Jumlah kembali untuk "${transactionItem.produk.name}" tidak boleh melebihi 999`,
+      code: 'EXCESSIVE_RETURN_QUANTITY'
+    })
+  }
+  
+  return { 
+    isValid: errors.length === 0, 
+    errors 
+  }
+}
+
+// Enhanced context message generation for error handling
+export const getValidationContextMessage = (
+  item: ReturnItemRequest,
+  transactionItem?: { produk: { name: string; modalAwal?: number | string | null } }
+): { message: string; suggestions: string[] } => {
+  const isLost = isLostItemCondition(item.kondisiAkhir)
+  const expected = getExpectedReturnQuantity(item.kondisiAkhir)
+  
+  if (isLost) {
+    const modalAwal = transactionItem?.produk.modalAwal ? Number(transactionItem.produk.modalAwal) : null
+    const penaltyInfo = modalAwal 
+      ? `Rp ${modalAwal.toLocaleString('id-ID')} (modal awal)`
+      : 'Rp 150,000 (standar)'
+    
+    return {
+      message: `Kondisi: "${item.kondisiAkhir}" → Jumlah kembali harus ${expected.min}`,
+      suggestions: [
+        `Penalty akan dihitung sebesar ${penaltyInfo}`,
+        'Pastikan kondisi barang mencantumkan "Hilang" atau "tidak dikembalikan"',
+        'Jumlah kembali = 0 karena barang tidak dapat dikembalikan'
+      ]
+    }
+  } else {
+    return {
+      message: `Kondisi: "${item.kondisiAkhir}" → Jumlah kembali minimal ${expected.min}`,
+      suggestions: [
+        'Untuk barang hilang/tidak dapat dikembalikan, ubah kondisi dan set jumlah = 0',
+        'Untuk barang normal yang dikembalikan, jumlah minimal 1',
+        'Periksa kembali kondisi dan jumlah barang yang dikembalikan'
+      ]
+    }
+  }
+}
+
+// Business rule validation for lost item scenarios
+export const isValidLostItemScenario = (kondisiAkhir: string, jumlahKembali: number): boolean => {
+  const isLost = isLostItemCondition(kondisiAkhir)
+  
+  if (isLost) {
+    return jumlahKembali === 0
+  } else {
+    return jumlahKembali >= 1
+  }
+}
 
 // Common validation utilities for return processing
 export const validateReturnAmount = (returned: number, total: number) => {

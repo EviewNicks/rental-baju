@@ -9,7 +9,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { ReturnService } from '@/features/kasir/services/returnService'
-import { returnRequestSchema } from '@/features/kasir/lib/validation/returnSchema'
+import {
+  createContextualReturnSchema,
+  isLostItemCondition,
+  getExpectedReturnQuantity,
+  getValidationContextMessage,
+} from '@/features/kasir/lib/validation/returnSchema'
 import { TransactionCodeGenerator } from '@/features/kasir/lib/utils/codeGenerator'
 import { ZodError } from 'zod'
 import { requirePermission, withRateLimit } from '@/lib/auth-middleware'
@@ -21,6 +26,18 @@ interface RouteParams {
   }>
 }
 
+interface RequestBodyItem {
+  itemId: string
+  kondisiAkhir: string
+  jumlahKembali: number
+}
+
+interface RequestBodyType {
+  items?: RequestBodyItem[]
+  catatan?: string
+  tglKembali?: string
+}
+
 export async function PUT(request: NextRequest, { params }: RouteParams) {
   // Start API performance monitoring with timeout optimization
   const apiTimer = logger.startTimer('API', 'PUT-pengembalian', 'total-api-request')
@@ -29,6 +46,9 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
   // Performance optimization: Set up request timeout to prevent hanging
   const timeoutController = new AbortController()
   const timeoutId = setTimeout(() => timeoutController.abort(), 30000) // 30 second timeout
+
+  // Declare variables that need to be accessible in error handler
+  let requestBody: RequestBodyType | null = null
 
   try {
     // Log API request start
@@ -40,24 +60,17 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     })
 
     // Rate limiting check with timing
-    const rateLimitTimer = logger.startTimer('API', 'PUT-pengembalian', 'rate-limit-check')
+
     const clientIP = request.headers.get('x-forwarded-for') || 'unknown'
     const rateLimitResult = await withRateLimit(`return-${clientIP}`, 10, 60000)
-    const rateLimitDuration = rateLimitTimer.end('Rate limit check completed')
 
     if (rateLimitResult.error) {
-      logger.warn('API', 'PUT-pengembalian', 'Rate limit exceeded', {
-        requestId,
-        clientIP,
-        duration: rateLimitDuration,
-      })
       return rateLimitResult.error
     }
 
     // Authentication and permission check with timing
-    const authTimer = logger.startTimer('API', 'PUT-pengembalian', 'authentication')
+
     const authResult = await requirePermission('transaksi', 'update')
-    const authDuration = authTimer.end('Authentication completed')
 
     if (authResult.error) {
       return authResult.error
@@ -65,41 +78,19 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     const { user } = authResult
 
     // Parameter processing with timing
-    const paramTimer = logger.startTimer('API', 'PUT-pengembalian', 'parameter-processing')
-    const { kode } = await params
-    const paramDuration = paramTimer.end('Parameter processing completed')
 
-    logger.info('API', 'PUT-pengembalian', 'Authentication and parameters processed', {
-      requestId,
-      userId: user.id,
-      transactionCode: kode,
-      authDuration,
-      paramDuration,
-      rateLimitDuration,
-    })
+    const { kode } = await params
 
     // Check for optional detailed breakdown with timing
-    const urlParsingTimer = logger.startTimer('API', 'PUT-pengembalian', 'url-parsing')
+
     const { searchParams } = new URL(request.url)
     const includeDetails = searchParams.get('includeDetails') === 'true'
-    const urlParsingDuration = urlParsingTimer.end('URL parsing completed')
 
     // Detect parameter type (UUID or transaction code) with timing
-    const paramValidationTimer = logger.startTimer(
-      'API',
-      'PUT-pengembalian',
-      'parameter-validation',
-    )
+
     const paramType = TransactionCodeGenerator.detectParameterType(kode)
-    const paramValidationDuration = paramValidationTimer.end('Parameter validation completed')
 
     if (paramType === 'invalid') {
-      logger.warn('API', 'PUT-pengembalian', 'Invalid parameter format', {
-        requestId,
-        transactionCode: kode,
-        paramType: 'invalid',
-        duration: paramValidationDuration,
-      })
       return NextResponse.json(
         {
           success: false,
@@ -114,89 +105,73 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     }
 
     // Parse and validate request body with timing
-    const bodyParsingTimer = logger.startTimer('API', 'PUT-pengembalian', 'body-parsing')
+
     const body = await request.json()
-    const bodyParsingDuration = bodyParsingTimer.end('Request body parsing completed')
+    requestBody = body // Store reference for error handling
 
-    const validationTimer = logger.startTimer('API', 'PUT-pengembalian', 'body-validation')
-    const validatedData = returnRequestSchema.parse(body)
-    const validationDuration = validationTimer.end('Request body validation completed')
+    // Enhanced validation with context detection
+    let validatedData
+    try {
+      // Detect return context based on tglKembali if provided
+      let validationContext: 'late' | 'scheduled' | 'flexible' = 'flexible'
 
-    logger.info('API', 'PUT-pengembalian', 'Request validation completed', {
-      requestId,
-      paramType,
-      includeDetails,
-      itemCount: validatedData.items.length,
-      urlParsingDuration,
-      paramValidationDuration,
-      bodyParsingDuration,
-      validationDuration,
-    })
+      if (body.tglKembali) {
+        const returnDate = new Date(body.tglKembali)
+        const today = new Date()
+
+        if (returnDate <= today) {
+          validationContext = 'late'
+          logger.info('API', 'PUT-pengembalian', 'Late return detected', {
+            requestId,
+            returnDate: body.tglKembali,
+            daysLate: Math.ceil((today.getTime() - returnDate.getTime()) / (24 * 60 * 60 * 1000)),
+          })
+        } else {
+          validationContext = 'scheduled'
+          logger.info('API', 'PUT-pengembalian', 'Scheduled return detected', {
+            requestId,
+            returnDate: body.tglKembali,
+            daysAhead: Math.ceil((returnDate.getTime() - today.getTime()) / (24 * 60 * 60 * 1000)),
+          })
+        }
+      }
+
+      // Use contextual validation schema
+      const validationSchema = createContextualReturnSchema(validationContext)
+      validatedData = validationSchema.parse(body)
+    } catch (validationError) {
+      if (validationError instanceof ZodError) {
+        // Enhanced validation error handling with context
+        logger.error('API', 'PUT-pengembalian', 'Validation failed', {
+          requestId,
+          transactionCode: kode,
+          validationErrors: validationError.issues.map((err) => ({
+            field: err.path.join('.'),
+            message: err.message,
+            code: err.code,
+          })),
+          requestBody: body,
+        })
+
+        throw validationError // Re-throw to be handled by main catch block
+      }
+      throw validationError
+    }
 
     // Initialize return service with timing
-    const serviceInitTimer = logger.startTimer('API', 'PUT-pengembalian', 'service-initialization')
-    const returnService = new ReturnService(prisma, user.id)
-    const serviceInitDuration = serviceInitTimer.end('Return service initialized')
 
-    // Get transaction ID based on parameter type with timing
-    const transactionLookupTimer = logger.startTimer(
-      'API',
-      'PUT-pengembalian',
-      'transaction-lookup',
-    )
+    const returnService = new ReturnService(prisma, user.id)
+
     let transaksiId: string
     if (paramType === 'uuid') {
       transaksiId = kode
-      logger.debug('API', 'PUT-pengembalian', 'Using UUID parameter directly', {
-        requestId,
-        transaksiId,
-      })
     } else {
       // Get transaction by code to obtain ID
       const transaction = await returnService.getReturnTransactionByCode(kode)
       transaksiId = transaction.id
-      logger.debug('API', 'PUT-pengembalian', 'Transaction code resolved to ID', {
-        requestId,
-        transactionCode: kode,
-        transaksiId,
-      })
     }
-    const transactionLookupDuration = transactionLookupTimer.end('Transaction lookup completed')
-
-    logger.info(
-      'API',
-      'PUT-pengembalian',
-      'Service initialization and transaction lookup completed',
-      {
-        requestId,
-        transaksiId,
-        serviceInitDuration,
-        transactionLookupDuration,
-      },
-    )
-
-    // Process the return (validation handled internally by service) with timing
-    const returnProcessingTimer = logger.startTimer('API', 'PUT-pengembalian', 'return-processing')
-    logger.info('API', 'PUT-pengembalian', 'Starting return processing', {
-      requestId,
-      transaksiId,
-      itemCount: validatedData.items.length,
-      returnDate: validatedData.tglKembali,
-    })
 
     const result = await returnService.processReturn(transaksiId, validatedData)
-    const returnProcessingDuration = returnProcessingTimer.end('Return processing completed')
-
-    logger.info('API', 'PUT-pengembalian', 'Return processing completed successfully', {
-      requestId,
-      transaksiId,
-      totalPenalty: result.totalPenalty,
-      processedItemsCount: result.processedItems.length,
-      returnProcessingDuration,
-    })
-
-    // Response assembly with timing
-    const responseAssemblyTimer = logger.startTimer('API', 'PUT-pengembalian', 'response-assembly')
 
     // Build response data (optimized payload)
     const responseData: Record<string, unknown> = {
@@ -227,30 +202,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       }
     }
 
-    const responseAssemblyDuration = responseAssemblyTimer.end('Response assembly completed')
     const totalApiDuration = apiTimer.end('API request completed successfully')
-
-    // Log final API performance summary
-    logger.info('API', 'PUT-pengembalian', 'API request completed successfully', {
-      requestId,
-      transaksiId,
-      totalApiDuration,
-      performanceBreakdown: {
-        rateLimitCheck: rateLimitDuration,
-        authentication: authDuration,
-        parameterProcessing: paramDuration,
-        urlParsing: urlParsingDuration,
-        parameterValidation: paramValidationDuration,
-        bodyParsing: bodyParsingDuration,
-        bodyValidation: validationDuration,
-        serviceInitialization: serviceInitDuration,
-        transactionLookup: transactionLookupDuration,
-        returnProcessing: returnProcessingDuration,
-        responseAssembly: responseAssemblyDuration,
-      },
-      responsePayloadSize: JSON.stringify(responseData).length,
-      success: true,
-    })
 
     // Optimized response with compression and performance headers
     const response = NextResponse.json(
@@ -312,16 +264,102 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
     // Handle validation errors
     if (error instanceof ZodError) {
+      // Enhanced validation error response with helpful context
+      const validationDetails = error.issues.map((err) => {
+        const fieldPath = err.path.join('.')
+        let enhancedMessage = err.message
+        let suggestions: string[] = []
+
+        // Enhanced handling for lost item validation errors
+        if (fieldPath.includes('jumlahKembali') && err.message.includes('kondisi barang')) {
+          // Try to get the item condition from request body for better error message
+          try {
+            const itemIndex = parseInt(
+              err.path.find((p) => typeof p === 'number')?.toString() || '0',
+            )
+            const item = requestBody?.items?.[itemIndex]
+
+            if (item) {
+              // Use the enhanced context message generation
+              const context = getValidationContextMessage(item)
+              enhancedMessage = `${err.message}. ${context.message}`
+              suggestions = context.suggestions
+            }
+          } catch {
+            // Fallback to original message if parsing fails
+            const itemIndex = parseInt(
+              err.path.find((p) => typeof p === 'number')?.toString() || '0',
+            )
+            const itemCondition = requestBody?.items?.[itemIndex]?.kondisiAkhir
+            const receivedQuantity = requestBody?.items?.[itemIndex]?.jumlahKembali
+
+            if (itemCondition) {
+              const isLost = isLostItemCondition(itemCondition)
+              const expected = getExpectedReturnQuantity(itemCondition)
+
+              enhancedMessage = `${err.message}. Kondisi: "${itemCondition}" → Jumlah kembali harus ${expected.min === expected.max ? expected.min : `${expected.min}-${expected.max}`}`
+
+              if (isLost && (receivedQuantity ?? 0) > 0) {
+                suggestions = [
+                  'Untuk barang hilang/tidak dikembalikan, set jumlahKembali = 0',
+                  'Penalty akan dihitung berdasarkan modal awal produk',
+                  'Pastikan kondisi barang sesuai dengan situasi aktual',
+                ]
+              } else if (!isLost && (receivedQuantity ?? 0) === 0) {
+                suggestions = [
+                  'Untuk barang yang dikembalikan, jumlahKembali harus minimal 1',
+                  'Jika barang benar-benar hilang, ubah kondisiAkhir ke "Hilang/tidak dikembalikan"',
+                  'Periksa kembali kondisi dan jumlah barang yang dikembalikan',
+                ]
+              }
+            }
+          }
+        }
+
+        return {
+          field: fieldPath,
+          message: enhancedMessage,
+          code: err.code,
+          receivedValue: err.path.includes('tglKembali')
+            ? 'Invalid date format or out of range'
+            : undefined,
+          suggestions,
+        }
+      })
+
+      // Categorize error types for better messaging
+      const hasDateError = error.issues.some((issue) => issue.path.includes('tglKembali'))
+      const hasLostItemError = error.issues.some(
+        (issue) => issue.path.includes('jumlahKembali') && issue.message.includes('kondisi barang'),
+      )
+
+      let enhancedMessage = 'Data pengembalian tidak valid'
+      let generalHints: string[] = []
+
+      if (hasLostItemError) {
+        enhancedMessage = 'Validasi barang hilang gagal. Periksa kondisi dan jumlah kembali.'
+        generalHints = [
+          'Barang hilang: set jumlahKembali = 0 dan kondisiAkhir mengandung "Hilang" atau "tidak dikembalikan"',
+          'Barang normal: set jumlahKembali ≥ 1 dan kondisiAkhir sesuai keadaan barang',
+        ]
+      } else if (hasDateError) {
+        enhancedMessage =
+          'Tanggal pengembalian tidak valid. Periksa format dan rentang tanggal yang diizinkan.'
+        generalHints = [
+          'Untuk pengembalian terlambat: gunakan tanggal masa lalu',
+          'Untuk pengembalian terjadwal: maksimal 30 hari ke depan',
+          'Format tanggal: ISO 8601 (YYYY-MM-DDTHH:mm:ss.sssZ)',
+        ]
+      }
+
       return NextResponse.json(
         {
           success: false,
           error: {
-            message: 'Data pengembalian tidak valid',
-            code: 'VALIDATION_ERROR',
-            details: error.issues.map((err) => ({
-              field: err.path.join('.'),
-              message: err.message,
-            })),
+            message: enhancedMessage,
+            code: hasLostItemError ? 'LOST_ITEM_VALIDATION_ERROR' : 'VALIDATION_ERROR',
+            details: validationDetails,
+            hints: generalHints,
           },
         },
         { status: 400 },

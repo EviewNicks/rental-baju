@@ -10,11 +10,11 @@ import {
   ReturnRequest,
   ReturnItemRequest,
   ExtendedTransactionStatus,
+  validateReturnItemContext,
 } from '../lib/validation/returnSchema'
 import { PenaltyCalculator, PenaltyCalculationResult } from '../lib/utils/penaltyCalculator'
 import { TransaksiService, TransaksiWithDetails, TransaksiForValidation } from './transaksiService'
 import { createAuditService, AuditService } from './auditService'
-import { logger } from '@/services/logger'
 
 export interface ReturnEligibilityResult {
   isEligible: boolean
@@ -117,13 +117,16 @@ export class ReturnService {
           continue
         }
 
-        // Validate return quantity
-        if (returnItem.jumlahKembali <= 0) {
-          errors.push({
-            field: 'jumlahKembali',
-            message: `Jumlah pengembalian harus lebih dari 0 untuk item ${transactionItem.produk.name}`,
-            code: 'INVALID_QUANTITY',
-          })
+        // Smart business validation using schema integration
+        const adaptedTransactionItem = {
+          produk: {
+            name: transactionItem.produk.name,
+            modalAwal: transactionItem.produk.modalAwal ? Number(transactionItem.produk.modalAwal) : null
+          }
+        }
+        const businessValidation = validateReturnItemContext(returnItem, adaptedTransactionItem)
+        if (!businessValidation.isValid) {
+          errors.push(...businessValidation.errors)
         }
 
         if (returnItem.jumlahKembali > transactionItem.jumlahDiambil) {
@@ -300,33 +303,11 @@ export class ReturnService {
     returnItems: ReturnItemRequest[],
     actualReturnDate: Date = new Date(),
   ): Promise<PenaltyCalculationResult> {
-    const penaltyLogger = logger.child('ReturnService')
-    const calcId = `penalty-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-    
     try {
-      penaltyLogger.debug('calculateReturnPenalties', 'Penalty calculation started', {
-        calcId,
-        transaksiId,
-        itemCount: returnItems.length,
-        actualReturnDate: actualReturnDate.toISOString()
-      })
-
-      // Get transaction details (optimized query for penalty calculation) with timing
-      const txQueryTimer = logger.startTimer('ReturnService', 'calculateReturnPenalties', 'transaction-query')
+      // Get transaction details (optimized query for penalty calculation)
       const transaction = await this.transaksiService.getTransaksiForPenaltyCalculation(transaksiId)
-      const txQueryDuration = txQueryTimer.end('Transaction query for penalty calculation completed')
 
-      penaltyLogger.debug('calculateReturnPenalties', 'Transaction data retrieved', {
-        calcId,
-        transaksiId,
-        txQueryDuration,
-        transactionStatus: transaction.status,
-        expectedReturnDate: transaction.tglSelesai?.toISOString(),
-        itemsCount: transaction.items.length
-      })
-
-      // Prepare items for penalty calculation with timing
-      const itemPrepTimer = logger.startTimer('ReturnService', 'calculateReturnPenalties', 'item-preparation')
+      // Prepare items for penalty calculation
       const itemsForCalculation = returnItems.map((returnItem) => {
         const transactionItem = transaction.items.find((item) => item.id === returnItem.itemId)
         if (!transactionItem) {
@@ -343,48 +324,12 @@ export class ReturnService {
           modalAwal: Number(transactionItem.produk.modalAwal), // Added for lost item penalty calculation
         }
       })
-      const itemPrepDuration = itemPrepTimer.end('Item preparation for penalty calculation completed')
 
-      penaltyLogger.debug('calculateReturnPenalties', 'Items prepared for calculation', {
-        calcId,
-        transaksiId,
-        itemPrepDuration,
-        itemsForCalculationCount: itemsForCalculation.length
-      })
-
-      // Calculate penalties using PenaltyCalculator with timing
-      const calculationTimer = logger.startTimer('ReturnService', 'calculateReturnPenalties', 'penalty-calculator')
+      // Calculate penalties using PenaltyCalculator
       const penaltyResult = PenaltyCalculator.calculateTransactionPenalties(itemsForCalculation)
-      const calculationDuration = calculationTimer.end('Penalty calculator execution completed')
-
-      penaltyLogger.info('calculateReturnPenalties', 'Penalty calculation completed', {
-        calcId,
-        transaksiId,
-        calculationDuration,
-        totalDuration: txQueryDuration + itemPrepDuration + calculationDuration,
-        totalPenalty: penaltyResult.totalPenalty,
-        totalLateDays: penaltyResult.totalLateDays,
-        itemPenaltiesCount: penaltyResult.itemPenalties.length,
-        performanceBreakdown: {
-          transactionQuery: txQueryDuration,
-          itemPreparation: itemPrepDuration,
-          penaltyCalculation: calculationDuration
-        }
-      })
 
       return penaltyResult
     } catch (error) {
-      penaltyLogger.error('calculateReturnPenalties', 'Penalty calculation failed', {
-        calcId,
-        transaksiId,
-        error: error instanceof Error ? {
-          name: error.name,
-          message: error.message,
-          stack: error.stack
-        } : error,
-        itemCount: returnItems.length
-      })
-      
       throw new Error(
         `Gagal menghitung penalty: ${error instanceof Error ? error.message : 'Unknown error'}`,
       )
@@ -400,24 +345,9 @@ export class ReturnService {
     request: ReturnRequest,
   ): Promise<ReturnProcessingResult> {
     const startTime = Date.now()
-    const serviceLogger = logger.child('ReturnService')
-    const processId = `process-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-    
-    // Start comprehensive performance monitoring
-    const processTimer = logger.startTimer('ReturnService', 'processReturn', `total-process-${processId}`)
-    
-    serviceLogger.info('processReturn', 'Return processing started', {
-      processId,
-      transaksiId,
-      itemCount: request.items.length,
-      hasReturnDate: !!request.tglKembali,
-      hasNotes: !!request.catatan
-    })
     
     try {
       // Step 1: Log return processing start (fire-and-forget async - zero blocking)
-      const auditStartTimer = logger.startTimer('ReturnService', 'processReturn', 'audit-start-logging')
-      // Fire-and-forget async logging - no await to prevent blocking
       Promise.resolve().then(() => 
         this.auditService.logReturnActivityAsync(transaksiId, {
           items: request.items,
@@ -426,45 +356,22 @@ export class ReturnService {
           catatan: request.catatan,
           stage: 'validation',
         })
-      ).catch(err => {
-        // Log error but don't fail the main process
-        serviceLogger.warn('processReturn', 'Async audit logging failed', { processId, error: err.message })
+      ).catch(() => {
+        // Silently handle logging errors to keep main process clean
       })
-      const auditStartDuration = auditStartTimer.end('Audit start logging initiated')
 
-      // Step 2: Pre-transaction validations and calculations (OPTIMIZED: Parallel processing)
-      
-      // Calculate return date (no async, fast operation)
+      // Step 2: Pre-transaction validations and calculations (parallel processing)
       const returnDate = request.tglKembali ? new Date(request.tglKembali) : new Date()
       
-      // Run validation and penalty calculation preparation in PARALLEL
-      const parallelTimer = logger.startTimer('ReturnService', 'processReturn', 'parallel-operations')
-      serviceLogger.info('processReturn', 'Starting parallel validation and preparation', { 
-        processId, 
-        transaksiId, 
-        itemCount: request.items.length 
-      })
-      
+      // Run validation and penalty calculation in parallel
       const [combinedValidation, penaltyCalculation] = await Promise.all([
-        // Validation (optimized lean query)
         this.validateReturnProcessing(transaksiId, request.items),
-        // Penalty calculation (moved from later in the process)
         this.calculateReturnPenalties(transaksiId, request.items, returnDate)
       ])
-      
-      const parallelDuration = parallelTimer.end('Parallel operations completed')
       
       // Check validation results
       if (!combinedValidation.isValid) {
         const errorMessage = combinedValidation.error || 'Validation failed'
-        
-        serviceLogger.warn('processReturn', 'Validation failed', {
-          processId,
-          transaksiId,
-          errorMessage,
-          parallelDuration,
-          details: combinedValidation.details
-        })
         
         await this.auditService.logReturnError(transaksiId, {
           error: errorMessage,
@@ -476,39 +383,24 @@ export class ReturnService {
       }
       
       const eligibility = combinedValidation.transaction!.transaction
-      
-      serviceLogger.info('processReturn', 'Parallel validation and penalty calculation completed', {
-        processId,
-        transaksiId,
-        parallelDuration,
-        transactionStatus: eligibility.status,
-        itemsFound: eligibility.items.length,
-        totalPenalty: penaltyCalculation.totalPenalty,
-        totalLateDays: penaltyCalculation.totalLateDays
-      })
 
       // Log calculation start (fire-and-forget async - zero blocking)
-      const auditCalcStartTimer = logger.startTimer('ReturnService', 'processReturn', 'audit-calculation-logging')
-      // Fire-and-forget async logging - no await to prevent blocking
       Promise.resolve().then(() =>
         this.auditService.logReturnActivityAsync(transaksiId, {
           items: request.items,
-          totalPenalty: penaltyCalculation.totalPenalty, // Now available from parallel execution
+          totalPenalty: penaltyCalculation.totalPenalty,
           totalLateDays: penaltyCalculation.totalLateDays,
           catatan: request.catatan,
           stage: 'calculation',
         })
-      ).catch(err => {
-        serviceLogger.warn('processReturn', 'Async audit calculation logging failed', { processId, error: err.message })
+      ).catch(() => {
+        // Silently handle logging errors to keep main process clean
       })
-      const auditCalcStartDuration = auditCalcStartTimer.end('Audit calculation logging initiated')
 
       // Log penalty calculation details (fire-and-forget async - zero blocking)
-      const auditPenaltyTimer = logger.startTimer('ReturnService', 'processReturn', 'audit-penalty-logging')
-      // Fire-and-forget async logging - no await to prevent blocking
       Promise.resolve().then(() =>
         this.auditService.logPenaltyCalculationAsync(transaksiId, {
-          calculationDuration: parallelDuration, // Use parallel execution time
+          calculationDuration: 0,
           totalPenalty: penaltyCalculation.totalPenalty,
           lateDays: penaltyCalculation.totalLateDays,
           itemBreakdown: penaltyCalculation.itemPenalties.map(p => ({
@@ -518,14 +410,11 @@ export class ReturnService {
             reason: p.description,
           })),
         })
-      ).catch(err => {
-        serviceLogger.warn('processReturn', 'Async penalty calculation logging failed', { processId, error: err.message })
+      ).catch(() => {
+        // Silently handle logging errors to keep main process clean
       })
-      const auditPenaltyDuration = auditPenaltyTimer.end('Audit penalty logging initiated')
 
       // Log processing start (fire-and-forget async - zero blocking)
-      const auditProcessingTimer = logger.startTimer('ReturnService', 'processReturn', 'audit-processing-logging')
-      // Fire-and-forget async logging - no await to prevent blocking
       Promise.resolve().then(() =>
         this.auditService.logReturnActivityAsync(transaksiId, {
           items: request.items,
@@ -534,34 +423,15 @@ export class ReturnService {
           catatan: request.catatan,
           stage: 'processing',
         })
-      ).catch(err => {
-        serviceLogger.warn('processReturn', 'Async processing logging failed', { processId, error: err.message })
+      ).catch(() => {
+        // Silently handle logging errors to keep main process clean
       })
-      const auditProcessingDuration = auditProcessingTimer.end('Audit processing logging initiated')
 
-      // Step 3: Execute atomic database operations in transaction with detailed timing
-      const dbTransactionTimer = logger.startTimer('ReturnService', 'processReturn', 'database-transaction')
-      serviceLogger.info('processReturn', 'Starting database transaction', { 
-        processId, 
-        transaksiId,
-        totalPenalty: penaltyCalculation.totalPenalty,
-        itemsToProcess: request.items.length
-      })
-      
+      // Step 3: Execute atomic database operations in transaction
       const transactionStart = Date.now()
       const transactionResult = await this.prisma.$transaction(
         async (tx) => {
-          const txLogger = serviceLogger // Use same logger for transaction operations
-          
-          // Transaction operation logging
-          txLogger.debug('processReturn', 'Transaction started', { 
-            processId, 
-            transaksiId,
-            timestamp: new Date().toISOString()
-          })
-
-          // Update transaction status and penalty with timing
-          const txUpdateTimer = logger.startTimer('ReturnService', 'processReturn', 'transaction-update')
+          // Update transaction status and penalty
           const updatedTransaction = await tx.transaksi.update({
             where: { id: transaksiId },
             data: {
@@ -572,19 +442,8 @@ export class ReturnService {
               },
             },
           })
-          const txUpdateDuration = txUpdateTimer.end('Transaction status update completed')
 
-          txLogger.debug('processReturn', 'Transaction status updated', { 
-            processId, 
-            transaksiId,
-            newStatus: updatedTransaction.status,
-            returnDate: returnDate.toISOString(),
-            penaltyAdded: penaltyCalculation.totalPenalty,
-            txUpdateDuration
-          })
-
-          // Prepare batch operations data with timing
-          const batchPrepTimer = logger.startTimer('ReturnService', 'processReturn', 'batch-preparation')
+          // Prepare batch operations data
           const processedItems = []
           const transactionItemUpdates = []
           const productStockUpdates = new Map<string, number>()
@@ -624,20 +483,8 @@ export class ReturnService {
               productStockUpdates.set(transactionItem.produkId, currentIncrement + returnItem.jumlahKembali)
             }
           }
-          const batchPrepDuration = batchPrepTimer.end('Batch operations preparation completed')
 
-          txLogger.debug('processReturn', 'Batch operations prepared', { 
-            processId, 
-            transaksiId,
-            transactionItemUpdatesCount: transactionItemUpdates.length,
-            productStockUpdatesCount: productStockUpdates.size,
-            batchPrepDuration
-          })
-
-          // Execute ALL database operations in parallel for maximum performance
-          const batchUpdatesTimer = logger.startTimer('ReturnService', 'processReturn', 'batch-operations')
-          
-          // Prepare product stock update operations
+          // Execute all database operations in parallel for maximum performance
           const productUpdatePromises = Array.from(productStockUpdates.entries()).map(([produkId, increment]) =>
             tx.product.update({
               where: { id: produkId },
@@ -649,24 +496,11 @@ export class ReturnService {
             })
           )
           
-          // Execute ALL updates in parallel: transaction items + product stocks
+          // Execute all updates in parallel: transaction items + product stocks
           await Promise.all([
             ...transactionItemUpdates,
             ...productUpdatePromises
           ])
-          
-          const batchUpdatesDuration = batchUpdatesTimer.end('All batch operations completed')
-
-          txLogger.debug('processReturn', 'All database updates completed', { 
-            processId, 
-            transaksiId,
-            batchUpdatesDuration,
-            totalOperationsCount: transactionItemUpdates.length + productUpdatePromises.length,
-            transactionItemUpdatesCount: transactionItemUpdates.length,
-            productStockUpdatesCount: productUpdatePromises.length
-          })
-
-          // Note: Activity logging moved to async operations outside transaction for better performance
 
           const result = {
             success: true,
@@ -689,21 +523,9 @@ export class ReturnService {
         }
       )
       
-      const dbTransactionDuration = dbTransactionTimer.end('Database transaction completed')
       const transactionInternalDuration = Date.now() - transactionStart
 
-      serviceLogger.info('processReturn', 'Database transaction completed successfully', {
-        processId,
-        transaksiId,
-        dbTransactionDuration,
-        transactionInternalDuration,
-        totalPenalty: penaltyCalculation.totalPenalty,
-        processedItemsCount: transactionResult.processedItems.length
-      })
-
       // Log successful completion outside transaction (fire-and-forget async - zero blocking)
-      const auditCompletionTimer = logger.startTimer('ReturnService', 'processReturn', 'audit-completion-logging')
-      // Fire-and-forget async logging - no await to prevent blocking
       Promise.resolve().then(() =>
         this.auditService.logReturnActivityAsync(transaksiId, {
           items: request.items,
@@ -715,77 +537,22 @@ export class ReturnService {
           totalDuration: Date.now() - startTime,
           transactionDuration: transactionInternalDuration,
         })
-      ).catch(err => {
-        serviceLogger.warn('processReturn', 'Async completion logging failed', { processId, error: err.message })
-      })
-      const auditCompletionDuration = auditCompletionTimer.end('Audit completion logging initiated')
-
-      // Final process completion timing
-      const totalProcessDuration = processTimer.end('Return processing completed successfully')
-
-      // Comprehensive performance summary with optimization metrics
-      serviceLogger.info('processReturn', 'Return processing completed successfully', {
-        processId,
-        transaksiId,
-        totalProcessDuration,
-        performanceBreakdown: {
-          auditStartLogging: auditStartDuration,
-          parallelValidationAndPenaltyCalculation: parallelDuration, // OPTIMIZED: Parallel execution
-          auditCalculationLogging: auditCalcStartDuration,
-          auditPenaltyLogging: auditPenaltyDuration,
-          auditProcessingLogging: auditProcessingDuration,
-          databaseTransaction: dbTransactionDuration,
-          auditCompletionLogging: auditCompletionDuration
-        },
-        businessMetrics: {
-          totalPenalty: penaltyCalculation.totalPenalty,
-          totalLateDays: penaltyCalculation.totalLateDays,
-          processedItemsCount: transactionResult.processedItems.length,
-          success: true
-        }
+      ).catch(() => {
+        // Silently handle logging errors to keep main process clean
       })
 
       return transactionResult
     } catch (error) {
-      // Enhanced error logging for better troubleshooting with comprehensive performance context
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-      const duration = Date.now() - startTime
-      const totalProcessDuration = processTimer.end('Return processing failed')
-      
-      serviceLogger.error('processReturn', 'Return processing failed', {
-        processId,
-        transaksiId,
-        totalProcessDuration,
-        duration,
-        error: error instanceof Error ? {
-          name: error.name,
-          message: error.message,
-          stack: error.stack
-        } : error,
-        timestamp: new Date().toISOString(),
-        itemCount: request.items.length
-      })
-      
-      console.error('Return processing error:', {
-        processId,
-        transaksiId,
-        error: errorMessage,
-        stack: error instanceof Error ? error.stack : undefined,
-        duration,
-        totalProcessDuration,
-        timestamp: new Date().toISOString(),
-      })
-
       // Log error to audit trail
       await this.auditService.logReturnError(transaksiId, {
-        error: errorMessage,
+        error: error instanceof Error ? error.message : 'Unknown error',
         stage: 'processing',
         stack: error instanceof Error ? error.stack : undefined,
-        duration,
-        context: { processId },
+        duration: Date.now() - startTime,
+        context: {},
       })
       
-      throw new Error(`Gagal memproses pengembalian: ${errorMessage}`)
+      throw new Error(`Gagal memproses pengembalian: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 

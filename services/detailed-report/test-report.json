@@ -1,11 +1,353 @@
 {
-  "numTotalTests": 112,
-  "numPassedTests": 112,
-  "numFailedTests": 0,
+  "numTotalTests": 155,
+  "numPassedTests": 140,
+  "numFailedTests": 15,
   "numPendingTests": 0,
-  "startTime": "2025-08-01T08:50:50.563Z",
-  "endTime": "2025-08-01T08:50:57.564Z",
+  "startTime": "2025-08-05T03:21:45.051Z",
+  "endTime": "2025-08-05T03:21:56.106Z",
   "testResults": [
+    {
+      "testFilePath": "D:\\.work\\rental-software\\features\\kasir\\lib\\utils\\codeGenerator.test.ts",
+      "testFileResults": [
+        {
+          "ancestorTitles": [
+            "TransactionCodeGenerator Enhanced Features",
+            "UUID Validation"
+          ],
+          "fullName": "TransactionCodeGenerator Enhanced Features UUID Validation should validate correct UUID v4 format",
+          "status": "passed",
+          "title": "should validate correct UUID v4 format",
+          "failureMessages": [],
+          "duration": 10
+        },
+        {
+          "ancestorTitles": [
+            "TransactionCodeGenerator Enhanced Features",
+            "UUID Validation"
+          ],
+          "fullName": "TransactionCodeGenerator Enhanced Features UUID Validation should reject invalid UUID formats",
+          "status": "passed",
+          "title": "should reject invalid UUID formats",
+          "failureMessages": [],
+          "duration": 3
+        },
+        {
+          "ancestorTitles": [
+            "TransactionCodeGenerator Enhanced Features",
+            "Parameter Type Detection"
+          ],
+          "fullName": "TransactionCodeGenerator Enhanced Features Parameter Type Detection should correctly detect UUID parameters",
+          "status": "passed",
+          "title": "should correctly detect UUID parameters",
+          "failureMessages": [],
+          "duration": 2
+        },
+        {
+          "ancestorTitles": [
+            "TransactionCodeGenerator Enhanced Features",
+            "Parameter Type Detection"
+          ],
+          "fullName": "TransactionCodeGenerator Enhanced Features Parameter Type Detection should correctly detect transaction code parameters",
+          "status": "passed",
+          "title": "should correctly detect transaction code parameters",
+          "failureMessages": [],
+          "duration": 2
+        },
+        {
+          "ancestorTitles": [
+            "TransactionCodeGenerator Enhanced Features",
+            "Parameter Type Detection"
+          ],
+          "fullName": "TransactionCodeGenerator Enhanced Features Parameter Type Detection should correctly detect invalid parameters",
+          "status": "passed",
+          "title": "should correctly detect invalid parameters",
+          "failureMessages": [],
+          "duration": 3
+        },
+        {
+          "ancestorTitles": [
+            "TransactionCodeGenerator Enhanced Features",
+            "Existing Transaction Code Functionality"
+          ],
+          "fullName": "TransactionCodeGenerator Enhanced Features Existing Transaction Code Functionality should still validate transaction codes correctly",
+          "status": "passed",
+          "title": "should still validate transaction codes correctly",
+          "failureMessages": [],
+          "duration": 2
+        },
+        {
+          "ancestorTitles": [
+            "TransactionCodeGenerator Enhanced Features",
+            "Existing Transaction Code Functionality"
+          ],
+          "fullName": "TransactionCodeGenerator Enhanced Features Existing Transaction Code Functionality should reject invalid transaction codes",
+          "status": "passed",
+          "title": "should reject invalid transaction codes",
+          "failureMessages": [],
+          "duration": 1
+        }
+      ],
+      "failureMessage": null
+    },
+    {
+      "testFilePath": "D:\\.work\\rental-software\\features\\kasir\\lib\\validation\\pickupValidation.test.ts",
+      "testFileResults": [
+        {
+          "ancestorTitles": [
+            "PickupBusinessRules",
+            "validateTransactionStatus"
+          ],
+          "fullName": "PickupBusinessRules validateTransactionStatus should validate active transaction status",
+          "status": "passed",
+          "title": "should validate active transaction status",
+          "failureMessages": [],
+          "duration": 7
+        },
+        {
+          "ancestorTitles": [
+            "PickupBusinessRules",
+            "validateTransactionStatus"
+          ],
+          "fullName": "PickupBusinessRules validateTransactionStatus should reject non-active transaction status",
+          "status": "passed",
+          "title": "should reject non-active transaction status",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PickupBusinessRules",
+            "validatePickupQuantity"
+          ],
+          "fullName": "PickupBusinessRules validatePickupQuantity should reject zero or negative quantity",
+          "status": "passed",
+          "title": "should reject zero or negative quantity",
+          "failureMessages": [],
+          "duration": 2
+        },
+        {
+          "ancestorTitles": [
+            "PickupBusinessRules",
+            "validatePickupQuantity"
+          ],
+          "fullName": "PickupBusinessRules validatePickupQuantity should reject quantity exceeding available",
+          "status": "passed",
+          "title": "should reject quantity exceeding available",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PickupBusinessRules",
+            "validatePickupQuantity"
+          ],
+          "fullName": "PickupBusinessRules validatePickupQuantity should warn for partial pickup",
+          "status": "passed",
+          "title": "should warn for partial pickup",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PickupBusinessRules",
+            "validateItemNotFullyPickedUp"
+          ],
+          "fullName": "PickupBusinessRules validateItemNotFullyPickedUp should allow pickup for available items",
+          "status": "passed",
+          "title": "should allow pickup for available items",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "PickupBusinessRules",
+            "validateItemNotFullyPickedUp"
+          ],
+          "fullName": "PickupBusinessRules validateItemNotFullyPickedUp should reject pickup for fully picked up items",
+          "status": "passed",
+          "title": "should reject pickup for fully picked up items",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PickupBusinessRules",
+            "validatePickupBatchLimits"
+          ],
+          "fullName": "PickupBusinessRules validatePickupBatchLimits should validate normal batch size",
+          "status": "passed",
+          "title": "should validate normal batch size",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PickupBusinessRules",
+            "validatePickupBatchLimits"
+          ],
+          "fullName": "PickupBusinessRules validatePickupBatchLimits should warn for large batches",
+          "status": "passed",
+          "title": "should warn for large batches",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PickupBusinessRules",
+            "validatePickupBatchLimits"
+          ],
+          "fullName": "PickupBusinessRules validatePickupBatchLimits should reject batches exceeding item limit",
+          "status": "passed",
+          "title": "should reject batches exceeding item limit",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "PickupBusinessRules",
+            "validatePickupBatchLimits"
+          ],
+          "fullName": "PickupBusinessRules validatePickupBatchLimits should reject batches exceeding quantity limit",
+          "status": "passed",
+          "title": "should reject batches exceeding quantity limit",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "PickupBusinessRules",
+            "validateNoDuplicateItems"
+          ],
+          "fullName": "PickupBusinessRules validateNoDuplicateItems should validate unique items",
+          "status": "passed",
+          "title": "should validate unique items",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "PickupBusinessRules",
+            "validateNoDuplicateItems"
+          ],
+          "fullName": "PickupBusinessRules validateNoDuplicateItems should reject duplicate items",
+          "status": "passed",
+          "title": "should reject duplicate items",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PickupBusinessRules",
+            "validateBusinessHours"
+          ],
+          "fullName": "PickupBusinessRules validateBusinessHours should validate normal business hours",
+          "status": "passed",
+          "title": "should validate normal business hours",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "PickupBusinessRules",
+            "validateBusinessHours"
+          ],
+          "fullName": "PickupBusinessRules validateBusinessHours should warn for weekend pickup",
+          "status": "passed",
+          "title": "should warn for weekend pickup",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PickupBusinessRules",
+            "validateBusinessHours"
+          ],
+          "fullName": "PickupBusinessRules validateBusinessHours should warn for outside business hours",
+          "status": "passed",
+          "title": "should warn for outside business hours",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "PickupBusinessRules",
+            "validateConcurrentPickup"
+          ],
+          "fullName": "PickupBusinessRules validateConcurrentPickup should validate when no concurrent pickup detected",
+          "status": "passed",
+          "title": "should validate when no concurrent pickup detected",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PickupBusinessRules",
+            "validateConcurrentPickup"
+          ],
+          "fullName": "PickupBusinessRules validateConcurrentPickup should detect potential concurrent pickup",
+          "status": "passed",
+          "title": "should detect potential concurrent pickup",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PickupValidator",
+            "validatePickupRequest"
+          ],
+          "fullName": "PickupValidator validatePickupRequest should perform comprehensive validation and return valid result",
+          "status": "passed",
+          "title": "should perform comprehensive validation and return valid result",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PickupValidator",
+            "validatePickupRequest"
+          ],
+          "fullName": "PickupValidator validatePickupRequest should detect multiple validation errors",
+          "status": "passed",
+          "title": "should detect multiple validation errors",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PickupValidator",
+            "validatePickupRequest"
+          ],
+          "fullName": "PickupValidator validatePickupRequest should categorize validation results correctly",
+          "status": "passed",
+          "title": "should categorize validation results correctly",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PickupValidator",
+            "generateValidationReport"
+          ],
+          "fullName": "PickupValidator generateValidationReport should generate comprehensive validation report",
+          "status": "passed",
+          "title": "should generate comprehensive validation report",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PickupValidator",
+            "generateValidationReport"
+          ],
+          "fullName": "PickupValidator generateValidationReport should generate valid status report",
+          "status": "passed",
+          "title": "should generate valid status report",
+          "failureMessages": [],
+          "duration": 0
+        }
+      ],
+      "failureMessage": null
+    },
     {
       "testFilePath": "D:\\.work\\rental-software\\features\\kasir\\services\\penyewaService.test.ts",
       "testFileResults": [
@@ -18,7 +360,7 @@
           "status": "passed",
           "title": "should create penyewa successfully",
           "failureMessages": [],
-          "duration": 107
+          "duration": 160
         },
         {
           "ancestorTitles": [
@@ -29,7 +371,7 @@
           "status": "passed",
           "title": "should throw error if phone number already exists",
           "failureMessages": [],
-          "duration": 16
+          "duration": 15
         },
         {
           "ancestorTitles": [
@@ -40,7 +382,7 @@
           "status": "passed",
           "title": "should handle database errors",
           "failureMessages": [],
-          "duration": 4
+          "duration": 7
         },
         {
           "ancestorTitles": [
@@ -106,7 +448,7 @@
           "status": "passed",
           "title": "should update penyewa successfully",
           "failureMessages": [],
-          "duration": 2
+          "duration": 5
         },
         {
           "ancestorTitles": [
@@ -128,7 +470,7 @@
           "status": "passed",
           "title": "should validate phone uniqueness when updating phone",
           "failureMessages": [],
-          "duration": 1
+          "duration": 2
         },
         {
           "ancestorTitles": [
@@ -156,392 +498,455 @@
       "failureMessage": null
     },
     {
-      "testFilePath": "D:\\.work\\rental-software\\features\\kasir\\lib\\utils\\codeGenerator.test.ts",
+      "testFilePath": "D:\\.work\\rental-software\\features\\kasir\\lib\\utils\\penaltyCalculator.test.ts",
       "testFileResults": [
         {
           "ancestorTitles": [
-            "TransactionCodeGenerator Enhanced Features",
-            "UUID Validation"
+            "PenaltyCalculator",
+            "calculateLatePenalty"
           ],
-          "fullName": "TransactionCodeGenerator Enhanced Features UUID Validation should validate correct UUID v4 format",
+          "fullName": "PenaltyCalculator calculateLatePenalty should calculate no penalty for on-time return",
           "status": "passed",
-          "title": "should validate correct UUID v4 format",
+          "title": "should calculate no penalty for on-time return",
           "failureMessages": [],
           "duration": 12
         },
         {
           "ancestorTitles": [
-            "TransactionCodeGenerator Enhanced Features",
-            "UUID Validation"
+            "PenaltyCalculator",
+            "calculateLatePenalty"
           ],
-          "fullName": "TransactionCodeGenerator Enhanced Features UUID Validation should reject invalid UUID formats",
+          "fullName": "PenaltyCalculator calculateLatePenalty should calculate penalty for late return with default rate",
           "status": "passed",
-          "title": "should reject invalid UUID formats",
+          "title": "should calculate penalty for late return with default rate",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "calculateLatePenalty"
+          ],
+          "fullName": "PenaltyCalculator calculateLatePenalty should cap penalty at maximum days (365)",
+          "status": "passed",
+          "title": "should cap penalty at maximum days (365)",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "calculateLatePenalty"
+          ],
+          "fullName": "PenaltyCalculator calculateLatePenalty should handle fractional days by rounding up",
+          "status": "passed",
+          "title": "should handle fractional days by rounding up",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "calculateConditionPenalty",
+            "good conditions - no penalty"
+          ],
+          "fullName": "PenaltyCalculator calculateConditionPenalty good conditions - no penalty should return zero penalty for perfect condition",
+          "status": "passed",
+          "title": "should return zero penalty for perfect condition",
           "failureMessages": [],
           "duration": 2
         },
         {
           "ancestorTitles": [
-            "TransactionCodeGenerator Enhanced Features",
-            "Parameter Type Detection"
+            "PenaltyCalculator",
+            "calculateConditionPenalty",
+            "minor damage conditions"
           ],
-          "fullName": "TransactionCodeGenerator Enhanced Features Parameter Type Detection should correctly detect UUID parameters",
+          "fullName": "PenaltyCalculator calculateConditionPenalty minor damage conditions should apply 1x daily rate for light dirt",
           "status": "passed",
-          "title": "should correctly detect UUID parameters",
+          "title": "should apply 1x daily rate for light dirt",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "calculateConditionPenalty",
+            "minor damage conditions"
+          ],
+          "fullName": "PenaltyCalculator calculateConditionPenalty minor damage conditions should apply 1x daily rate for light stains",
+          "status": "passed",
+          "title": "should apply 1x daily rate for light stains",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "calculateConditionPenalty",
+            "moderate damage conditions"
+          ],
+          "fullName": "PenaltyCalculator calculateConditionPenalty moderate damage conditions should apply 2x daily rate for small damage",
+          "status": "passed",
+          "title": "should apply 2x daily rate for small damage",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "calculateConditionPenalty",
+            "moderate damage conditions"
+          ],
+          "fullName": "PenaltyCalculator calculateConditionPenalty moderate damage conditions should apply 2x daily rate for heavy stains",
+          "status": "passed",
+          "title": "should apply 2x daily rate for heavy stains",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "calculateConditionPenalty",
+            "severe damage conditions"
+          ],
+          "fullName": "PenaltyCalculator calculateConditionPenalty severe damage conditions should apply 4x daily rate for major damage",
+          "status": "passed",
+          "title": "should apply 4x daily rate for major damage",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "calculateConditionPenalty",
+            "lost item conditions - modalAwal integration"
+          ],
+          "fullName": "PenaltyCalculator calculateConditionPenalty lost item conditions - modalAwal integration should use modalAwal when provided for lost items",
+          "status": "passed",
+          "title": "should use modalAwal when provided for lost items",
+          "failureMessages": [],
+          "duration": 46
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "calculateConditionPenalty",
+            "lost item conditions - modalAwal integration"
+          ],
+          "fullName": "PenaltyCalculator calculateConditionPenalty lost item conditions - modalAwal integration should use modalAwal for different lost conditions",
+          "status": "passed",
+          "title": "should use modalAwal for different lost conditions",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "calculateConditionPenalty",
+            "lost item conditions - modalAwal integration"
+          ],
+          "fullName": "PenaltyCalculator calculateConditionPenalty lost item conditions - modalAwal integration should fallback to old calculation when modalAwal not provided",
+          "status": "passed",
+          "title": "should fallback to old calculation when modalAwal not provided",
           "failureMessages": [],
           "duration": 0
         },
         {
           "ancestorTitles": [
-            "TransactionCodeGenerator Enhanced Features",
-            "Parameter Type Detection"
+            "PenaltyCalculator",
+            "calculateConditionPenalty",
+            "lost item conditions - modalAwal integration"
           ],
-          "fullName": "TransactionCodeGenerator Enhanced Features Parameter Type Detection should correctly detect transaction code parameters",
+          "fullName": "PenaltyCalculator calculateConditionPenalty lost item conditions - modalAwal integration should handle zero modalAwal gracefully",
           "status": "passed",
-          "title": "should correctly detect transaction code parameters",
+          "title": "should handle zero modalAwal gracefully",
           "failureMessages": [],
           "duration": 1
         },
         {
           "ancestorTitles": [
-            "TransactionCodeGenerator Enhanced Features",
-            "Parameter Type Detection"
+            "PenaltyCalculator",
+            "calculateConditionPenalty",
+            "unrecognized conditions"
           ],
-          "fullName": "TransactionCodeGenerator Enhanced Features Parameter Type Detection should correctly detect invalid parameters",
+          "fullName": "PenaltyCalculator calculateConditionPenalty unrecognized conditions should apply default moderate penalty for unknown conditions",
           "status": "passed",
-          "title": "should correctly detect invalid parameters",
+          "title": "should apply default moderate penalty for unknown conditions",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "calculateItemPenalty"
+          ],
+          "fullName": "PenaltyCalculator calculateItemPenalty should calculate penalty for on-time return with good condition",
+          "status": "passed",
+          "title": "should calculate penalty for on-time return with good condition",
           "failureMessages": [],
           "duration": 2
         },
         {
           "ancestorTitles": [
-            "TransactionCodeGenerator Enhanced Features",
-            "Existing Transaction Code Functionality"
+            "PenaltyCalculator",
+            "calculateItemPenalty"
           ],
-          "fullName": "TransactionCodeGenerator Enhanced Features Existing Transaction Code Functionality should still validate transaction codes correctly",
+          "fullName": "PenaltyCalculator calculateItemPenalty should calculate penalty for late return with good condition",
           "status": "passed",
-          "title": "should still validate transaction codes correctly",
+          "title": "should calculate penalty for late return with good condition",
           "failureMessages": [],
           "duration": 1
         },
         {
           "ancestorTitles": [
-            "TransactionCodeGenerator Enhanced Features",
-            "Existing Transaction Code Functionality"
+            "PenaltyCalculator",
+            "calculateItemPenalty"
           ],
-          "fullName": "TransactionCodeGenerator Enhanced Features Existing Transaction Code Functionality should reject invalid transaction codes",
+          "fullName": "PenaltyCalculator calculateItemPenalty should calculate penalty for lost item with modalAwal",
           "status": "passed",
-          "title": "should reject invalid transaction codes",
+          "title": "should calculate penalty for lost item with modalAwal",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "calculateItemPenalty"
+          ],
+          "fullName": "PenaltyCalculator calculateItemPenalty should calculate combined penalty for late + damaged item",
+          "status": "passed",
+          "title": "should calculate combined penalty for late + damaged item",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "calculateItemPenalty"
+          ],
+          "fullName": "PenaltyCalculator calculateItemPenalty should multiply penalty by quantity",
+          "status": "passed",
+          "title": "should multiply penalty by quantity",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "calculateItemPenalty"
+          ],
+          "fullName": "PenaltyCalculator calculateItemPenalty should prioritize lost over damaged in reason code",
+          "status": "passed",
+          "title": "should prioritize lost over damaged in reason code",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "calculateTransactionPenalties"
+          ],
+          "fullName": "PenaltyCalculator calculateTransactionPenalties should calculate penalties for multiple items",
+          "status": "passed",
+          "title": "should calculate penalties for multiple items",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "calculateTransactionPenalties"
+          ],
+          "fullName": "PenaltyCalculator calculateTransactionPenalties should provide correct summary statistics",
+          "status": "failed",
+          "title": "should provide correct summary statistics",
+          "failureMessages": [
+            "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: 0\nReceived: 1\n    at Object.toBe (D:\\.work\\rental-software\\features\\kasir\\lib\\utils\\penaltyCalculator.test.ts:269:42)\n    at Promise.finally.completed (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1559:28)\n    at new Promise (<anonymous>)\n    at callAsyncCircusFn (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1499:10)\n    at _callCircusTest (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1009:40)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at _runTest (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:949:3)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:839:13)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at run (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:757:3)\n    at runAndTransformResultsToJestFormat (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1920:21)\n    at jestAdapter (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\runner.js:101:19)\n    at runTestInternal (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:275:16)\n    at runTest (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:343:7)\n    at Object.worker (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:497:12)"
+          ],
+          "duration": 6
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "calculateTransactionPenalties"
+          ],
+          "fullName": "PenaltyCalculator calculateTransactionPenalties should handle empty items array",
+          "status": "passed",
+          "title": "should handle empty items array",
+          "failureMessages": [],
+          "duration": 2
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "utility methods",
+            "formatPenaltyAmount"
+          ],
+          "fullName": "PenaltyCalculator utility methods formatPenaltyAmount should format penalty amount to Indonesian Rupiah",
+          "status": "failed",
+          "title": "should format penalty amount to Indonesian Rupiah",
+          "failureMessages": [
+            "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: \"Rp 75.000\"\nReceived: \"Rp 75.000\"\n    at Object.toBe (D:\\.work\\rental-software\\features\\kasir\\lib\\utils\\penaltyCalculator.test.ts:291:62)\n    at Promise.finally.completed (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1559:28)\n    at new Promise (<anonymous>)\n    at callAsyncCircusFn (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1499:10)\n    at _callCircusTest (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1009:40)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at _runTest (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:949:3)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:839:13)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at run (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:757:3)\n    at runAndTransformResultsToJestFormat (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1920:21)\n    at jestAdapter (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\runner.js:101:19)\n    at runTestInternal (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:275:16)\n    at runTest (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:343:7)\n    at Object.worker (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:497:12)"
+          ],
+          "duration": 3
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "utility methods",
+            "generatePenaltyDescription"
+          ],
+          "fullName": "PenaltyCalculator utility methods generatePenaltyDescription should generate description for zero penalty",
+          "status": "passed",
+          "title": "should generate description for zero penalty",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "utility methods",
+            "generatePenaltyDescription"
+          ],
+          "fullName": "PenaltyCalculator utility methods generatePenaltyDescription should generate description with formatted amount",
+          "status": "failed",
+          "title": "should generate description with formatted amount",
+          "failureMessages": [
+            "Error: expect(received).toContain(expected) // indexOf\n\nExpected substring: \"Rp 75.000\"\nReceived string:    \"Rp 75.000 - Item lost\"\n    at Object.toContain (D:\\.work\\rental-software\\features\\kasir\\lib\\utils\\penaltyCalculator.test.ts:331:24)\n    at Promise.finally.completed (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1559:28)\n    at new Promise (<anonymous>)\n    at callAsyncCircusFn (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1499:10)\n    at _callCircusTest (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1009:40)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at _runTest (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:949:3)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:839:13)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at run (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:757:3)\n    at runAndTransformResultsToJestFormat (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1920:21)\n    at jestAdapter (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\runner.js:101:19)\n    at runTestInternal (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:275:16)\n    at runTest (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:343:7)\n    at Object.worker (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:497:12)"
+          ],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "utility methods",
+            "validatePenaltyInputs"
+          ],
+          "fullName": "PenaltyCalculator utility methods validatePenaltyInputs should validate correct inputs",
+          "status": "passed",
+          "title": "should validate correct inputs",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "utility methods",
+            "validatePenaltyInputs"
+          ],
+          "fullName": "PenaltyCalculator utility methods validatePenaltyInputs should detect invalid dates",
+          "status": "passed",
+          "title": "should detect invalid dates",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "utility methods",
+            "validatePenaltyInputs"
+          ],
+          "fullName": "PenaltyCalculator utility methods validatePenaltyInputs should detect empty condition",
+          "status": "passed",
+          "title": "should detect empty condition",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "utility methods",
+            "validatePenaltyInputs"
+          ],
+          "fullName": "PenaltyCalculator utility methods validatePenaltyInputs should detect invalid quantity",
+          "status": "passed",
+          "title": "should detect invalid quantity",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "utility methods",
+            "validatePenaltyInputs"
+          ],
+          "fullName": "PenaltyCalculator utility methods validatePenaltyInputs should detect very old return dates",
+          "status": "passed",
+          "title": "should detect very old return dates",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "utility methods",
+            "validatePenaltyInputs"
+          ],
+          "fullName": "PenaltyCalculator utility methods validatePenaltyInputs should accumulate multiple errors",
+          "status": "passed",
+          "title": "should accumulate multiple errors",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "utility methods",
+            "getBusinessRules"
+          ],
+          "fullName": "PenaltyCalculator utility methods getBusinessRules should return current business rules configuration",
+          "status": "passed",
+          "title": "should return current business rules configuration",
+          "failureMessages": [],
+          "duration": 6
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "edge cases and boundary conditions"
+          ],
+          "fullName": "PenaltyCalculator edge cases and boundary conditions should handle very large modalAwal values",
+          "status": "passed",
+          "title": "should handle very large modalAwal values",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "edge cases and boundary conditions"
+          ],
+          "fullName": "PenaltyCalculator edge cases and boundary conditions should handle leap year date calculations",
+          "status": "passed",
+          "title": "should handle leap year date calculations",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "edge cases and boundary conditions"
+          ],
+          "fullName": "PenaltyCalculator edge cases and boundary conditions should handle timezone differences correctly",
+          "status": "passed",
+          "title": "should handle timezone differences correctly",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "edge cases and boundary conditions"
+          ],
+          "fullName": "PenaltyCalculator edge cases and boundary conditions should handle case-insensitive condition matching",
+          "status": "passed",
+          "title": "should handle case-insensitive condition matching",
           "failureMessages": [],
           "duration": 1
         }
       ],
-      "failureMessage": null
-    },
-    {
-      "testFilePath": "D:\\.work\\rental-software\\features\\kasir\\services\\pembayaranService.test.ts",
-      "testFileResults": [
-        {
-          "ancestorTitles": [
-            "PembayaranService",
-            "createPembayaran"
-          ],
-          "fullName": "PembayaranService createPembayaran should create payment successfully",
-          "status": "passed",
-          "title": "should create payment successfully",
-          "failureMessages": [],
-          "duration": 39
-        },
-        {
-          "ancestorTitles": [
-            "PembayaranService",
-            "createPembayaran"
-          ],
-          "fullName": "PembayaranService createPembayaran should throw error if transaction not found",
-          "status": "passed",
-          "title": "should throw error if transaction not found",
-          "failureMessages": [],
-          "duration": 26
-        },
-        {
-          "ancestorTitles": [
-            "PembayaranService",
-            "createPembayaran"
-          ],
-          "fullName": "PembayaranService createPembayaran should throw error if transaction is cancelled",
-          "status": "passed",
-          "title": "should throw error if transaction is cancelled",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PembayaranService",
-            "createPembayaran"
-          ],
-          "fullName": "PembayaranService createPembayaran should throw error if transaction is completed",
-          "status": "passed",
-          "title": "should throw error if transaction is completed",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PembayaranService",
-            "createPembayaran"
-          ],
-          "fullName": "PembayaranService createPembayaran should throw error if payment amount is invalid",
-          "status": "passed",
-          "title": "should throw error if payment amount is invalid",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "PembayaranService",
-            "createPembayaran"
-          ],
-          "fullName": "PembayaranService createPembayaran should handle overpayment validation",
-          "status": "passed",
-          "title": "should handle overpayment validation",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "PembayaranService",
-            "getTransactionPayments"
-          ],
-          "fullName": "PembayaranService getTransactionPayments should return payments for a transaction",
-          "status": "passed",
-          "title": "should return payments for a transaction",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "PembayaranService",
-            "getPembayaranById"
-          ],
-          "fullName": "PembayaranService getPembayaranById should return payment by ID",
-          "status": "passed",
-          "title": "should return payment by ID",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "PembayaranService",
-            "getPembayaranById"
-          ],
-          "fullName": "PembayaranService getPembayaranById should throw error if payment not found",
-          "status": "passed",
-          "title": "should throw error if payment not found",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "PembayaranService",
-            "getPaymentSummary"
-          ],
-          "fullName": "PembayaranService getPaymentSummary should return payment summary for transaction",
-          "status": "passed",
-          "title": "should return payment summary for transaction",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PembayaranService",
-            "getPaymentSummary"
-          ],
-          "fullName": "PembayaranService getPaymentSummary should throw error if transaction not found for summary",
-          "status": "passed",
-          "title": "should throw error if transaction not found for summary",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PembayaranService",
-            "getPaymentSummary"
-          ],
-          "fullName": "PembayaranService getPaymentSummary should handle transaction with no payments",
-          "status": "passed",
-          "title": "should handle transaction with no payments",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "PembayaranService",
-            "getPaymentList"
-          ],
-          "fullName": "PembayaranService getPaymentList should return paginated payment list",
-          "status": "passed",
-          "title": "should return paginated payment list",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PembayaranService",
-            "getPaymentList"
-          ],
-          "fullName": "PembayaranService getPaymentList should filter payments by transaction ID",
-          "status": "passed",
-          "title": "should filter payments by transaction ID",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "PembayaranService",
-            "getPaymentList"
-          ],
-          "fullName": "PembayaranService getPaymentList should filter payments by method",
-          "status": "passed",
-          "title": "should filter payments by method",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PembayaranService",
-            "getPaymentList"
-          ],
-          "fullName": "PembayaranService getPaymentList should filter payments by date range",
-          "status": "passed",
-          "title": "should filter payments by date range",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PembayaranService",
-            "cancelPayment"
-          ],
-          "fullName": "PembayaranService cancelPayment should cancel payment successfully",
-          "status": "passed",
-          "title": "should cancel payment successfully",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "PembayaranService",
-            "cancelPayment"
-          ],
-          "fullName": "PembayaranService cancelPayment should throw error if payment not found for cancellation",
-          "status": "passed",
-          "title": "should throw error if payment not found for cancellation",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PembayaranService",
-            "cancelPayment"
-          ],
-          "fullName": "PembayaranService cancelPayment should throw error if transaction is already cancelled",
-          "status": "passed",
-          "title": "should throw error if transaction is already cancelled",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PembayaranService",
-            "getPaymentStats"
-          ],
-          "fullName": "PembayaranService getPaymentStats should return payment statistics",
-          "status": "passed",
-          "title": "should return payment statistics",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "PembayaranService",
-            "getPaymentStats"
-          ],
-          "fullName": "PembayaranService getPaymentStats should filter statistics by date range",
-          "status": "passed",
-          "title": "should filter statistics by date range",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PembayaranService",
-            "getPaymentStats"
-          ],
-          "fullName": "PembayaranService getPaymentStats should handle empty payment data",
-          "status": "passed",
-          "title": "should handle empty payment data",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PembayaranService",
-            "getPaymentStats"
-          ],
-          "fullName": "PembayaranService getPaymentStats should aggregate payments by method correctly",
-          "status": "passed",
-          "title": "should aggregate payments by method correctly",
-          "failureMessages": [],
-          "duration": 2
-        }
-      ],
-      "failureMessage": null
-    },
-    {
-      "testFilePath": "D:\\.work\\rental-software\\features\\kasir\\lib\\utils.test.ts",
-      "testFileResults": [
-        {
-          "ancestorTitles": [
-            "formatDate"
-          ],
-          "fullName": "formatDate should format valid date string correctly",
-          "status": "passed",
-          "title": "should format valid date string correctly",
-          "failureMessages": [],
-          "duration": 41
-        },
-        {
-          "ancestorTitles": [
-            "formatDate"
-          ],
-          "fullName": "formatDate should handle null/undefined dateString gracefully",
-          "status": "passed",
-          "title": "should handle null/undefined dateString gracefully",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "formatDate"
-          ],
-          "fullName": "formatDate should handle invalid date string gracefully",
-          "status": "passed",
-          "title": "should handle invalid date string gracefully",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "formatDate"
-          ],
-          "fullName": "formatDate should handle edge case dates",
-          "status": "passed",
-          "title": "should handle edge case dates",
-          "failureMessages": [],
-          "duration": 1
-        }
-      ],
-      "failureMessage": null
+      "failureMessage": "  ● PenaltyCalculator › calculateTransactionPenalties › should provide correct summary statistics\n\n    expect(received).toBe(expected) // Object.is equality\n\n    Expected: 0\n    Received: 1\n\n    \u001b[0m \u001b[90m 267 |\u001b[39m       \u001b[36mconst\u001b[39m result \u001b[33m=\u001b[39m \u001b[33mPenaltyCalculator\u001b[39m\u001b[33m.\u001b[39mcalculateTransactionPenalties(items\u001b[33m,\u001b[39m \u001b[35m5000\u001b[39m)\n     \u001b[90m 268 |\u001b[39m       \n    \u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 269 |\u001b[39m       expect(result\u001b[33m.\u001b[39msummary\u001b[33m.\u001b[39monTimeItems)\u001b[33m.\u001b[39mtoBe(\u001b[35m0\u001b[39m) \u001b[90m// Item 1 has no penalty but item 2 is late+damaged\u001b[39m\n     \u001b[90m     |\u001b[39m                                          \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n     \u001b[90m 270 |\u001b[39m       expect(result\u001b[33m.\u001b[39msummary\u001b[33m.\u001b[39mlateItems)\u001b[33m.\u001b[39mtoBe(\u001b[35m0\u001b[39m) \u001b[90m// Item 2 is damaged (priority)\u001b[39m\n     \u001b[90m 271 |\u001b[39m       expect(result\u001b[33m.\u001b[39msummary\u001b[33m.\u001b[39mdamagedItems)\u001b[33m.\u001b[39mtoBe(\u001b[35m1\u001b[39m) \u001b[90m// Item 2\u001b[39m\n     \u001b[90m 272 |\u001b[39m       expect(result\u001b[33m.\u001b[39msummary\u001b[33m.\u001b[39mlostItems)\u001b[33m.\u001b[39mtoBe(\u001b[35m1\u001b[39m) \u001b[90m// Item 3\u001b[39m\u001b[0m\n\n      at Object.toBe (features/kasir/lib/utils/penaltyCalculator.test.ts:269:42)\n\n  ● PenaltyCalculator › utility methods › formatPenaltyAmount › should format penalty amount to Indonesian Rupiah\n\n    expect(received).toBe(expected) // Object.is equality\n\n    Expected: \"Rp 75.000\"\n    Received: \"Rp 75.000\"\n\n    \u001b[0m \u001b[90m 289 |\u001b[39m     describe(\u001b[32m'formatPenaltyAmount'\u001b[39m\u001b[33m,\u001b[39m () \u001b[33m=>\u001b[39m {\n     \u001b[90m 290 |\u001b[39m       it(\u001b[32m'should format penalty amount to Indonesian Rupiah'\u001b[39m\u001b[33m,\u001b[39m () \u001b[33m=>\u001b[39m {\n    \u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 291 |\u001b[39m         expect(\u001b[33mPenaltyCalculator\u001b[39m\u001b[33m.\u001b[39mformatPenaltyAmount(\u001b[35m75000\u001b[39m))\u001b[33m.\u001b[39mtoBe(\u001b[32m'Rp 75.000'\u001b[39m)\n     \u001b[90m     |\u001b[39m                                                              \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n     \u001b[90m 292 |\u001b[39m         expect(\u001b[33mPenaltyCalculator\u001b[39m\u001b[33m.\u001b[39mformatPenaltyAmount(\u001b[35m1500000\u001b[39m))\u001b[33m.\u001b[39mtoBe(\u001b[32m'Rp 1.500.000'\u001b[39m)\n     \u001b[90m 293 |\u001b[39m         expect(\u001b[33mPenaltyCalculator\u001b[39m\u001b[33m.\u001b[39mformatPenaltyAmount(\u001b[35m0\u001b[39m))\u001b[33m.\u001b[39mtoBe(\u001b[32m'Rp 0'\u001b[39m)\n     \u001b[90m 294 |\u001b[39m       })\u001b[0m\n\n      at Object.toBe (features/kasir/lib/utils/penaltyCalculator.test.ts:291:62)\n\n  ● PenaltyCalculator › utility methods › generatePenaltyDescription › should generate description with formatted amount\n\n    expect(received).toContain(expected) // indexOf\n\n    Expected substring: \"Rp 75.000\"\n    Received string:    \"Rp 75.000 - Item lost\"\n\n    \u001b[0m \u001b[90m 329 |\u001b[39m         \n     \u001b[90m 330 |\u001b[39m         \u001b[36mconst\u001b[39m result \u001b[33m=\u001b[39m \u001b[33mPenaltyCalculator\u001b[39m\u001b[33m.\u001b[39mgeneratePenaltyDescription(penalty)\n    \u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 331 |\u001b[39m         expect(result)\u001b[33m.\u001b[39mtoContain(\u001b[32m'Rp 75.000'\u001b[39m)\n     \u001b[90m     |\u001b[39m                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n     \u001b[90m 332 |\u001b[39m         expect(result)\u001b[33m.\u001b[39mtoContain(\u001b[32m'Item lost'\u001b[39m)\n     \u001b[90m 333 |\u001b[39m       })\n     \u001b[90m 334 |\u001b[39m     })\u001b[0m\n\n      at Object.toContain (features/kasir/lib/utils/penaltyCalculator.test.ts:331:24)\n"
     },
     {
       "testFilePath": "D:\\.work\\rental-software\\features\\kasir\\services\\availabilityService.test.ts",
@@ -552,10 +957,12 @@
             "getProductAvailability"
           ],
           "fullName": "AvailabilityService getProductAvailability should calculate availability for product with no active rentals",
-          "status": "passed",
+          "status": "failed",
           "title": "should calculate availability for product with no active rentals",
-          "failureMessages": [],
-          "duration": 13
+          "failureMessages": [
+            "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: 0\nReceived: undefined\n    at Object.toBe (D:\\.work\\rental-software\\features\\kasir\\services\\availabilityService.test.ts:63:37)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)"
+          ],
+          "duration": 23
         },
         {
           "ancestorTitles": [
@@ -563,9 +970,11 @@
             "getProductAvailability"
           ],
           "fullName": "AvailabilityService getProductAvailability should calculate availability considering active rentals",
-          "status": "passed",
+          "status": "failed",
           "title": "should calculate availability considering active rentals",
-          "failureMessages": [],
+          "failureMessages": [
+            "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: 5\nReceived: undefined\n    at Object.toBe (D:\\.work\\rental-software\\features\\kasir\\services\\availabilityService.test.ts:109:37)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)"
+          ],
           "duration": 3
         },
         {
@@ -574,10 +983,12 @@
             "getProductAvailability"
           ],
           "fullName": "AvailabilityService getProductAvailability should exclude fully returned items from rental calculation",
-          "status": "passed",
+          "status": "failed",
           "title": "should exclude fully returned items from rental calculation",
-          "failureMessages": [],
-          "duration": 1
+          "failureMessages": [
+            "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: 2\nReceived: undefined\n    at Object.toBe (D:\\.work\\rental-software\\features\\kasir\\services\\availabilityService.test.ts:153:37)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)"
+          ],
+          "duration": 3
         },
         {
           "ancestorTitles": [
@@ -585,10 +996,12 @@
             "getProductAvailability"
           ],
           "fullName": "AvailabilityService getProductAvailability should handle ongoing rentals with no end date",
-          "status": "passed",
+          "status": "failed",
           "title": "should handle ongoing rentals with no end date",
-          "failureMessages": [],
-          "duration": 1
+          "failureMessages": [
+            "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: 4\nReceived: undefined\n    at Object.toBe (D:\\.work\\rental-software\\features\\kasir\\services\\availabilityService.test.ts:177:37)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)"
+          ],
+          "duration": 2
         },
         {
           "ancestorTitles": [
@@ -599,7 +1012,7 @@
           "status": "passed",
           "title": "should throw error if product not found",
           "failureMessages": [],
-          "duration": 20
+          "duration": 6
         },
         {
           "ancestorTitles": [
@@ -607,10 +1020,12 @@
             "getProductAvailability"
           ],
           "fullName": "AvailabilityService getProductAvailability should ensure available quantity never goes below zero",
-          "status": "passed",
+          "status": "failed",
           "title": "should ensure available quantity never goes below zero",
-          "failureMessages": [],
-          "duration": 1
+          "failureMessages": [
+            "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: 0\nReceived: NaN\n    at Object.toBe (D:\\.work\\rental-software\\features\\kasir\\services\\availabilityService.test.ts:209:40)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)"
+          ],
+          "duration": 2
         },
         {
           "ancestorTitles": [
@@ -621,7 +1036,7 @@
           "status": "passed",
           "title": "should get availability for multiple products",
           "failureMessages": [],
-          "duration": 2
+          "duration": 4
         },
         {
           "ancestorTitles": [
@@ -654,7 +1069,7 @@
           "status": "passed",
           "title": "should get availability for all products in a category",
           "failureMessages": [],
-          "duration": 1
+          "duration": 2
         },
         {
           "ancestorTitles": [
@@ -684,9 +1099,11 @@
             "getAvailabilitySummary"
           ],
           "fullName": "AvailabilityService getAvailabilitySummary should return availability summary for dashboard",
-          "status": "passed",
+          "status": "failed",
           "title": "should return availability summary for dashboard",
-          "failureMessages": [],
+          "failureMessages": [
+            "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: 1\nReceived: 0\n    at Object.toBe (D:\\.work\\rental-software\\features\\kasir\\services\\availabilityService.test.ts:419:37)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)"
+          ],
           "duration": 1
         },
         {
@@ -695,10 +1112,12 @@
             "getLowStockProducts"
           ],
           "fullName": "AvailabilityService getLowStockProducts should return products with low availability",
-          "status": "passed",
+          "status": "failed",
           "title": "should return products with low availability",
-          "failureMessages": [],
-          "duration": 1
+          "failureMessages": [
+            "Error: expect(received).toHaveLength(expected)\n\nExpected length: 1\nReceived length: 0\nReceived array:  []\n    at Object.toHaveLength (D:\\.work\\rental-software\\features\\kasir\\services\\availabilityService.test.ts:466:22)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)"
+          ],
+          "duration": 2
         },
         {
           "ancestorTitles": [
@@ -706,10 +1125,12 @@
             "getLowStockProducts"
           ],
           "fullName": "AvailabilityService getLowStockProducts should sort low stock products by availability ascending",
-          "status": "passed",
+          "status": "failed",
           "title": "should sort low stock products by availability ascending",
-          "failureMessages": [],
-          "duration": 0
+          "failureMessages": [
+            "Error: expect(received).toHaveLength(expected)\n\nExpected length: 2\nReceived length: 0\nReceived array:  []\n    at Object.toHaveLength (D:\\.work\\rental-software\\features\\kasir\\services\\availabilityService.test.ts:515:22)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)"
+          ],
+          "duration": 1
         },
         {
           "ancestorTitles": [
@@ -742,7 +1163,7 @@
           "status": "passed",
           "title": "should return error for inactive product",
           "failureMessages": [],
-          "duration": 1
+          "duration": 0
         },
         {
           "ancestorTitles": [
@@ -753,7 +1174,7 @@
           "status": "passed",
           "title": "should return errors for insufficient quantity",
           "failureMessages": [],
-          "duration": 0
+          "duration": 1
         },
         {
           "ancestorTitles": [
@@ -788,6 +1209,191 @@
           "duration": 1
         }
       ],
+      "failureMessage": "  ● AvailabilityService › getProductAvailability › should calculate availability for product with no active rentals\n\n    expect(received).toBe(expected) // Object.is equality\n\n    Expected: 0\n    Received: undefined\n\n    \u001b[0m \u001b[90m 61 |\u001b[39m       expect(result\u001b[33m.\u001b[39mproductId)\u001b[33m.\u001b[39mtoBe(productId)\n     \u001b[90m 62 |\u001b[39m       expect(result\u001b[33m.\u001b[39mtotalStock)\u001b[33m.\u001b[39mtoBe(\u001b[35m10\u001b[39m)\n    \u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 63 |\u001b[39m       expect(result\u001b[33m.\u001b[39mrentedQuantity)\u001b[33m.\u001b[39mtoBe(\u001b[35m0\u001b[39m)\n     \u001b[90m    |\u001b[39m                                     \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n     \u001b[90m 64 |\u001b[39m       expect(result\u001b[33m.\u001b[39mavailableQuantity)\u001b[33m.\u001b[39mtoBe(\u001b[35m10\u001b[39m)\n     \u001b[90m 65 |\u001b[39m       expect(result\u001b[33m.\u001b[39mactiveRentals)\u001b[33m.\u001b[39mtoEqual([])\n     \u001b[90m 66 |\u001b[39m\u001b[0m\n\n      at Object.toBe (features/kasir/services/availabilityService.test.ts:63:37)\n\n  ● AvailabilityService › getProductAvailability › should calculate availability considering active rentals\n\n    expect(received).toBe(expected) // Object.is equality\n\n    Expected: 5\n    Received: undefined\n\n    \u001b[0m \u001b[90m 107 |\u001b[39m\n     \u001b[90m 108 |\u001b[39m       expect(result\u001b[33m.\u001b[39mtotalStock)\u001b[33m.\u001b[39mtoBe(\u001b[35m10\u001b[39m)\n    \u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 109 |\u001b[39m       expect(result\u001b[33m.\u001b[39mrentedQuantity)\u001b[33m.\u001b[39mtoBe(\u001b[35m5\u001b[39m) \u001b[90m// 3 + 2\u001b[39m\n     \u001b[90m     |\u001b[39m                                     \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n     \u001b[90m 110 |\u001b[39m       expect(result\u001b[33m.\u001b[39mavailableQuantity)\u001b[33m.\u001b[39mtoBe(\u001b[35m5\u001b[39m) \u001b[90m// 10 - 5\u001b[39m\n     \u001b[90m 111 |\u001b[39m       expect(result\u001b[33m.\u001b[39mactiveRentals)\u001b[33m.\u001b[39mtoHaveLength(\u001b[35m2\u001b[39m)\n     \u001b[90m 112 |\u001b[39m       expect(result\u001b[33m.\u001b[39mactiveRentals[\u001b[35m0\u001b[39m])\u001b[33m.\u001b[39mtoEqual({\u001b[0m\n\n      at Object.toBe (features/kasir/services/availabilityService.test.ts:109:37)\n\n  ● AvailabilityService › getProductAvailability › should exclude fully returned items from rental calculation\n\n    expect(received).toBe(expected) // Object.is equality\n\n    Expected: 2\n    Received: undefined\n\n    \u001b[0m \u001b[90m 151 |\u001b[39m       \u001b[36mconst\u001b[39m result \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m availabilityService\u001b[33m.\u001b[39mgetProductAvailability(productId\u001b[33m,\u001b[39m checkDate)\n     \u001b[90m 152 |\u001b[39m\n    \u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 153 |\u001b[39m       expect(result\u001b[33m.\u001b[39mrentedQuantity)\u001b[33m.\u001b[39mtoBe(\u001b[35m2\u001b[39m) \u001b[90m// Only count the unreturned item\u001b[39m\n     \u001b[90m     |\u001b[39m                                     \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n     \u001b[90m 154 |\u001b[39m       expect(result\u001b[33m.\u001b[39mavailableQuantity)\u001b[33m.\u001b[39mtoBe(\u001b[35m8\u001b[39m) \u001b[90m// 10 - 2\u001b[39m\n     \u001b[90m 155 |\u001b[39m     })\n     \u001b[90m 156 |\u001b[39m\u001b[0m\n\n      at Object.toBe (features/kasir/services/availabilityService.test.ts:153:37)\n\n  ● AvailabilityService › getProductAvailability › should handle ongoing rentals with no end date\n\n    expect(received).toBe(expected) // Object.is equality\n\n    Expected: 4\n    Received: undefined\n\n    \u001b[0m \u001b[90m 175 |\u001b[39m       \u001b[36mconst\u001b[39m result \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m availabilityService\u001b[33m.\u001b[39mgetProductAvailability(productId\u001b[33m,\u001b[39m checkDate)\n     \u001b[90m 176 |\u001b[39m\n    \u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 177 |\u001b[39m       expect(result\u001b[33m.\u001b[39mrentedQuantity)\u001b[33m.\u001b[39mtoBe(\u001b[35m4\u001b[39m)\n     \u001b[90m     |\u001b[39m                                     \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n     \u001b[90m 178 |\u001b[39m       expect(result\u001b[33m.\u001b[39mavailableQuantity)\u001b[33m.\u001b[39mtoBe(\u001b[35m6\u001b[39m)\n     \u001b[90m 179 |\u001b[39m       expect(result\u001b[33m.\u001b[39mactiveRentals[\u001b[35m0\u001b[39m]\u001b[33m.\u001b[39mendDate)\u001b[33m.\u001b[39mtoBeUndefined()\n     \u001b[90m 180 |\u001b[39m     })\u001b[0m\n\n      at Object.toBe (features/kasir/services/availabilityService.test.ts:177:37)\n\n  ● AvailabilityService › getProductAvailability › should ensure available quantity never goes below zero\n\n    expect(received).toBe(expected) // Object.is equality\n\n    Expected: 0\n    Received: NaN\n\n    \u001b[0m \u001b[90m 207 |\u001b[39m       \u001b[36mconst\u001b[39m result \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m availabilityService\u001b[33m.\u001b[39mgetProductAvailability(productId\u001b[33m,\u001b[39m checkDate)\n     \u001b[90m 208 |\u001b[39m\n    \u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 209 |\u001b[39m       expect(result\u001b[33m.\u001b[39mavailableQuantity)\u001b[33m.\u001b[39mtoBe(\u001b[35m0\u001b[39m) \u001b[90m// Should not be negative\u001b[39m\n     \u001b[90m     |\u001b[39m                                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n     \u001b[90m 210 |\u001b[39m       expect(result\u001b[33m.\u001b[39mrentedQuantity)\u001b[33m.\u001b[39mtoBe(\u001b[35m15\u001b[39m)\n     \u001b[90m 211 |\u001b[39m     })\n     \u001b[90m 212 |\u001b[39m   })\u001b[0m\n\n      at Object.toBe (features/kasir/services/availabilityService.test.ts:209:40)\n\n  ● AvailabilityService › getAvailabilitySummary › should return availability summary for dashboard\n\n    expect(received).toBe(expected) // Object.is equality\n\n    Expected: 1\n    Received: 0\n\n    \u001b[0m \u001b[90m 417 |\u001b[39m\n     \u001b[90m 418 |\u001b[39m       expect(result\u001b[33m.\u001b[39mtotalProducts)\u001b[33m.\u001b[39mtoBe(\u001b[35m3\u001b[39m)\n    \u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 419 |\u001b[39m       expect(result\u001b[33m.\u001b[39mfullyAvailable)\u001b[33m.\u001b[39mtoBe(\u001b[35m1\u001b[39m)\n     \u001b[90m     |\u001b[39m                                     \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n     \u001b[90m 420 |\u001b[39m       expect(result\u001b[33m.\u001b[39mpartiallyAvailable)\u001b[33m.\u001b[39mtoBe(\u001b[35m1\u001b[39m)\n     \u001b[90m 421 |\u001b[39m       expect(result\u001b[33m.\u001b[39moutOfStock)\u001b[33m.\u001b[39mtoBe(\u001b[35m1\u001b[39m)\n     \u001b[90m 422 |\u001b[39m       expect(result\u001b[33m.\u001b[39mtotalRented)\u001b[33m.\u001b[39mtoBe(\u001b[35m10\u001b[39m) \u001b[90m// 0 + 2 + 8\u001b[39m\u001b[0m\n\n      at Object.toBe (features/kasir/services/availabilityService.test.ts:419:37)\n\n  ● AvailabilityService › getLowStockProducts › should return products with low availability\n\n    expect(received).toHaveLength(expected)\n\n    Expected length: 1\n    Received length: 0\n    Received array:  []\n\n    \u001b[0m \u001b[90m 464 |\u001b[39m       \u001b[36mconst\u001b[39m result \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m availabilityService\u001b[33m.\u001b[39mgetLowStockProducts(\u001b[35m2\u001b[39m)\n     \u001b[90m 465 |\u001b[39m\n    \u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 466 |\u001b[39m       expect(result)\u001b[33m.\u001b[39mtoHaveLength(\u001b[35m1\u001b[39m)\n     \u001b[90m     |\u001b[39m                      \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n     \u001b[90m 467 |\u001b[39m       expect(result[\u001b[35m0\u001b[39m])\u001b[33m.\u001b[39mtoEqual({\n     \u001b[90m 468 |\u001b[39m         productId\u001b[33m:\u001b[39m \u001b[32m'product-2'\u001b[39m\u001b[33m,\u001b[39m\n     \u001b[90m 469 |\u001b[39m         productName\u001b[33m:\u001b[39m \u001b[32m'Product 2'\u001b[39m\u001b[33m,\u001b[39m\u001b[0m\n\n      at Object.toHaveLength (features/kasir/services/availabilityService.test.ts:466:22)\n\n  ● AvailabilityService › getLowStockProducts › should sort low stock products by availability ascending\n\n    expect(received).toHaveLength(expected)\n\n    Expected length: 2\n    Received length: 0\n    Received array:  []\n\n    \u001b[0m \u001b[90m 513 |\u001b[39m       \u001b[36mconst\u001b[39m result \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m availabilityService\u001b[33m.\u001b[39mgetLowStockProducts(\u001b[35m2\u001b[39m)\n     \u001b[90m 514 |\u001b[39m\n    \u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 515 |\u001b[39m       expect(result)\u001b[33m.\u001b[39mtoHaveLength(\u001b[35m2\u001b[39m)\n     \u001b[90m     |\u001b[39m                      \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n     \u001b[90m 516 |\u001b[39m       expect(result[\u001b[35m0\u001b[39m]\u001b[33m.\u001b[39mavailableQuantity)\u001b[33m.\u001b[39mtoBe(\u001b[35m1\u001b[39m) \u001b[90m// Most critical first\u001b[39m\n     \u001b[90m 517 |\u001b[39m       expect(result[\u001b[35m1\u001b[39m]\u001b[33m.\u001b[39mavailableQuantity)\u001b[33m.\u001b[39mtoBe(\u001b[35m2\u001b[39m)\n     \u001b[90m 518 |\u001b[39m     })\u001b[0m\n\n      at Object.toHaveLength (features/kasir/services/availabilityService.test.ts:515:22)\n"
+    },
+    {
+      "testFilePath": "D:\\.work\\rental-software\\features\\kasir\\lib\\validation\\returnSchema.test.ts",
+      "testFileResults": [
+        {
+          "ancestorTitles": [
+            "Return Schema Validation",
+            "returnItemSchema",
+            "Lost Item Validation"
+          ],
+          "fullName": "Return Schema Validation returnItemSchema Lost Item Validation should accept lost items with jumlahKembali = 0",
+          "status": "passed",
+          "title": "should accept lost items with jumlahKembali = 0",
+          "failureMessages": [],
+          "duration": 14
+        },
+        {
+          "ancestorTitles": [
+            "Return Schema Validation",
+            "returnItemSchema",
+            "Lost Item Validation"
+          ],
+          "fullName": "Return Schema Validation returnItemSchema Lost Item Validation should reject lost items with jumlahKembali > 0",
+          "status": "passed",
+          "title": "should reject lost items with jumlahKembali > 0",
+          "failureMessages": [],
+          "duration": 13
+        },
+        {
+          "ancestorTitles": [
+            "Return Schema Validation",
+            "returnItemSchema",
+            "Lost Item Validation"
+          ],
+          "fullName": "Return Schema Validation returnItemSchema Lost Item Validation should handle case insensitive lost item conditions",
+          "status": "passed",
+          "title": "should handle case insensitive lost item conditions",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "Return Schema Validation",
+            "returnItemSchema",
+            "Normal Item Validation"
+          ],
+          "fullName": "Return Schema Validation returnItemSchema Normal Item Validation should accept normal items with jumlahKembali >= 1",
+          "status": "passed",
+          "title": "should accept normal items with jumlahKembali >= 1",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "Return Schema Validation",
+            "returnItemSchema",
+            "Normal Item Validation"
+          ],
+          "fullName": "Return Schema Validation returnItemSchema Normal Item Validation should reject normal items with jumlahKembali = 0",
+          "status": "passed",
+          "title": "should reject normal items with jumlahKembali = 0",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "Return Schema Validation",
+            "returnItemSchema",
+            "Normal Item Validation"
+          ],
+          "fullName": "Return Schema Validation returnItemSchema Normal Item Validation should accept damaged items with jumlahKembali >= 1",
+          "status": "passed",
+          "title": "should accept damaged items with jumlahKembali >= 1",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "Return Schema Validation",
+            "returnItemSchema",
+            "Edge Cases"
+          ],
+          "fullName": "Return Schema Validation returnItemSchema Edge Cases should reject invalid UUID",
+          "status": "passed",
+          "title": "should reject invalid UUID",
+          "failureMessages": [],
+          "duration": 3
+        },
+        {
+          "ancestorTitles": [
+            "Return Schema Validation",
+            "returnItemSchema",
+            "Edge Cases"
+          ],
+          "fullName": "Return Schema Validation returnItemSchema Edge Cases should reject negative jumlahKembali",
+          "status": "passed",
+          "title": "should reject negative jumlahKembali",
+          "failureMessages": [],
+          "duration": 2
+        },
+        {
+          "ancestorTitles": [
+            "Return Schema Validation",
+            "returnItemSchema",
+            "Edge Cases"
+          ],
+          "fullName": "Return Schema Validation returnItemSchema Edge Cases should reject excessive jumlahKembali",
+          "status": "passed",
+          "title": "should reject excessive jumlahKembali",
+          "failureMessages": [],
+          "duration": 2
+        },
+        {
+          "ancestorTitles": [
+            "Return Schema Validation",
+            "Utility Functions",
+            "isLostItemCondition"
+          ],
+          "fullName": "Return Schema Validation Utility Functions isLostItemCondition should identify lost item conditions (lowercase)",
+          "status": "passed",
+          "title": "should identify lost item conditions (lowercase)",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "Return Schema Validation",
+            "Utility Functions",
+            "isLostItemCondition"
+          ],
+          "fullName": "Return Schema Validation Utility Functions isLostItemCondition should identify lost item conditions (case insensitive)",
+          "status": "passed",
+          "title": "should identify lost item conditions (case insensitive)",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "Return Schema Validation",
+            "Utility Functions",
+            "isLostItemCondition"
+          ],
+          "fullName": "Return Schema Validation Utility Functions isLostItemCondition should not identify normal conditions as lost",
+          "status": "passed",
+          "title": "should not identify normal conditions as lost",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "Return Schema Validation",
+            "Utility Functions",
+            "getExpectedReturnQuantity"
+          ],
+          "fullName": "Return Schema Validation Utility Functions getExpectedReturnQuantity should return 0 for lost items",
+          "status": "passed",
+          "title": "should return 0 for lost items",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "Return Schema Validation",
+            "Utility Functions",
+            "getExpectedReturnQuantity"
+          ],
+          "fullName": "Return Schema Validation Utility Functions getExpectedReturnQuantity should return 1-999 for normal items",
+          "status": "passed",
+          "title": "should return 1-999 for normal items",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "Return Schema Validation",
+            "Original Failing Case (RPK-23)"
+          ],
+          "fullName": "Return Schema Validation Original Failing Case (RPK-23) should now pass the original failing request",
+          "status": "passed",
+          "title": "should now pass the original failing request",
+          "failureMessages": [],
+          "duration": 1
+        }
+      ],
       "failureMessage": null
     },
     {
@@ -799,10 +1405,12 @@
             "createTransaksi"
           ],
           "fullName": "TransaksiService createTransaksi should create transaksi successfully with auto-generated code",
-          "status": "passed",
+          "status": "failed",
           "title": "should create transaksi successfully with auto-generated code",
-          "failureMessages": [],
-          "duration": 17
+          "failureMessages": [
+            "TypeError: tx.product.findUnique is not a function\n    at TransaksiService.findUnique [as updateProductQuantities] (D:\\.work\\rental-software\\features\\kasir\\services\\transaksiService.ts:697:47)\n    at updateProductQuantities (D:\\.work\\rental-software\\features\\kasir\\services\\transaksiService.ts:238:18)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at Object.<anonymous> (D:\\.work\\rental-software\\features\\kasir\\services\\transaksiService.test.ts:160:16)\n    at TransaksiService.createTransaksi (D:\\.work\\rental-software\\features\\kasir\\services\\transaksiService.ts:201:23)\n    at Object.<anonymous> (D:\\.work\\rental-software\\features\\kasir\\services\\transaksiService.test.ts:168:22)"
+          ],
+          "duration": 10
         },
         {
           "ancestorTitles": [
@@ -813,7 +1421,7 @@
           "status": "passed",
           "title": "should throw error if penyewa not found",
           "failureMessages": [],
-          "duration": 25
+          "duration": 6
         },
         {
           "ancestorTitles": [
@@ -824,7 +1432,7 @@
           "status": "passed",
           "title": "should throw error if product not available",
           "failureMessages": [],
-          "duration": 1
+          "duration": 2
         },
         {
           "ancestorTitles": [
@@ -835,7 +1443,7 @@
           "status": "passed",
           "title": "should throw error if insufficient product quantity",
           "failureMessages": [],
-          "duration": 2
+          "duration": 1
         },
         {
           "ancestorTitles": [
@@ -843,10 +1451,12 @@
             "getTransaksiById"
           ],
           "fullName": "TransaksiService getTransaksiById should return transaksi by ID",
-          "status": "passed",
+          "status": "failed",
           "title": "should return transaksi by ID",
-          "failureMessages": [],
-          "duration": 1
+          "failureMessages": [
+            "Error: expect(jest.fn()).toHaveBeenCalledWith(...expected)\n\n- Expected\n+ Received\n\n@@ -7,14 +7,28 @@\n      },\n      \"items\": Object {\n        \"include\": Object {\n          \"produk\": Object {\n            \"select\": Object {\n+             \"category\": Object {\n+               \"select\": Object {\n+                 \"id\": true,\n+                 \"name\": true,\n+               },\n+             },\n              \"code\": true,\n+             \"color\": Object {\n+               \"select\": Object {\n                  \"id\": true,\n+                 \"name\": true,\n+               },\n+             },\n+             \"id\": true,\n              \"imageUrl\": true,\n+             \"modalAwal\": true,\n              \"name\": true,\n+             \"size\": true,\n            },\n          },\n        },\n      },\n      \"pembayaran\": Object {,\n\nNumber of calls: 1\n    at Object.toHaveBeenCalledWith (D:\\.work\\rental-software\\features\\kasir\\services\\transaksiService.test.ts:251:47)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)"
+          ],
+          "duration": 14
         },
         {
           "ancestorTitles": [
@@ -857,7 +1467,7 @@
           "status": "passed",
           "title": "should throw error if transaksi not found",
           "failureMessages": [],
-          "duration": 2
+          "duration": 1
         },
         {
           "ancestorTitles": [
@@ -879,7 +1489,7 @@
           "status": "passed",
           "title": "should return paginated transaksi list",
           "failureMessages": [],
-          "duration": 3
+          "duration": 2
         },
         {
           "ancestorTitles": [
@@ -890,7 +1500,7 @@
           "status": "passed",
           "title": "should filter by status",
           "failureMessages": [],
-          "duration": 1
+          "duration": 2
         },
         {
           "ancestorTitles": [
@@ -909,10 +1519,12 @@
             "updateTransaksiStatus"
           ],
           "fullName": "TransaksiService updateTransaksiStatus should update transaksi status successfully",
-          "status": "passed",
+          "status": "failed",
           "title": "should update transaksi status successfully",
-          "failureMessages": [],
-          "duration": 1
+          "failureMessages": [
+            "TypeError: transaksiItems is not iterable\n    at TransaksiService.transaksiItems [as restoreProductQuantities] (D:\\.work\\rental-software\\features\\kasir\\services\\transaksiService.ts:775:24)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at D:\\.work\\rental-software\\features\\kasir\\services\\transaksiService.ts:600:11\n    at Object.<anonymous> (D:\\.work\\rental-software\\features\\kasir\\services\\transaksiService.test.ts:423:16)\n    at TransaksiService.updateTransaksiStatus (D:\\.work\\rental-software\\features\\kasir\\services\\transaksiService.ts:584:30)\n    at Object.<anonymous> (D:\\.work\\rental-software\\features\\kasir\\services\\transaksiService.test.ts:428:22)"
+          ],
+          "duration": 2
         },
         {
           "ancestorTitles": [
@@ -934,7 +1546,7 @@
           "status": "passed",
           "title": "should validate status transitions",
           "failureMessages": [],
-          "duration": 0
+          "duration": 1
         },
         {
           "ancestorTitles": [
@@ -945,335 +1557,271 @@
           "status": "passed",
           "title": "should return transaction statistics",
           "failureMessages": [],
-          "duration": 0
+          "duration": 1
         }
       ],
-      "failureMessage": null
+      "failureMessage": "  ● TransaksiService › createTransaksi › should create transaksi successfully with auto-generated code\n\n    TypeError: tx.product.findUnique is not a function\n\n    \u001b[0m \u001b[90m 695 |\u001b[39m     \u001b[36mfor\u001b[39m (\u001b[36mconst\u001b[39m item \u001b[36mof\u001b[39m items) {\n     \u001b[90m 696 |\u001b[39m       \u001b[90m// Get current product state for validation (including new inventory fields)\u001b[39m\n    \u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 697 |\u001b[39m       \u001b[36mconst\u001b[39m currentProduct \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m tx\u001b[33m.\u001b[39mproduct\u001b[33m.\u001b[39mfindUnique({\n     \u001b[90m     |\u001b[39m                                               \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n     \u001b[90m 698 |\u001b[39m         where\u001b[33m:\u001b[39m { id\u001b[33m:\u001b[39m item\u001b[33m.\u001b[39mprodukId }\u001b[33m,\u001b[39m\n     \u001b[90m 699 |\u001b[39m         select\u001b[33m:\u001b[39m {\n     \u001b[90m 700 |\u001b[39m           id\u001b[33m:\u001b[39m \u001b[36mtrue\u001b[39m\u001b[33m,\u001b[39m\u001b[0m\n\n      at TransaksiService.findUnique [as updateProductQuantities] (features/kasir/services/transaksiService.ts:697:47)\n      at updateProductQuantities (features/kasir/services/transaksiService.ts:238:18)\n      at Object.<anonymous> (features/kasir/services/transaksiService.test.ts:160:16)\n      at TransaksiService.createTransaksi (features/kasir/services/transaksiService.ts:201:23)\n      at Object.<anonymous> (features/kasir/services/transaksiService.test.ts:168:22)\n\n  ● TransaksiService › getTransaksiById › should return transaksi by ID\n\n    expect(jest.fn()).toHaveBeenCalledWith(...expected)\n\n    - Expected\n    + Received\n\n    @@ -7,14 +7,28 @@\n          },\n          \"items\": Object {\n            \"include\": Object {\n              \"produk\": Object {\n                \"select\": Object {\n    +             \"category\": Object {\n    +               \"select\": Object {\n    +                 \"id\": true,\n    +                 \"name\": true,\n    +               },\n    +             },\n                  \"code\": true,\n    +             \"color\": Object {\n    +               \"select\": Object {\n                      \"id\": true,\n    +                 \"name\": true,\n    +               },\n    +             },\n    +             \"id\": true,\n                  \"imageUrl\": true,\n    +             \"modalAwal\": true,\n                  \"name\": true,\n    +             \"size\": true,\n                },\n              },\n            },\n          },\n          \"pembayaran\": Object {,\n\n    Number of calls: 1\n\n    \u001b[0m \u001b[90m 249 |\u001b[39m       \u001b[36mconst\u001b[39m result \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m transaksiService\u001b[33m.\u001b[39mgetTransaksiById(transaksiId)\n     \u001b[90m 250 |\u001b[39m\n    \u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 251 |\u001b[39m       expect(mockPrisma\u001b[33m.\u001b[39mtransaksi\u001b[33m.\u001b[39mfindUnique)\u001b[33m.\u001b[39mtoHaveBeenCalledWith({\n     \u001b[90m     |\u001b[39m                                               \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n     \u001b[90m 252 |\u001b[39m         where\u001b[33m:\u001b[39m { id\u001b[33m:\u001b[39m transaksiId }\u001b[33m,\u001b[39m\n     \u001b[90m 253 |\u001b[39m         include\u001b[33m:\u001b[39m {\n     \u001b[90m 254 |\u001b[39m           penyewa\u001b[33m:\u001b[39m {\u001b[0m\n\n      at Object.toHaveBeenCalledWith (features/kasir/services/transaksiService.test.ts:251:47)\n\n  ● TransaksiService › updateTransaksiStatus › should update transaksi status successfully\n\n    TypeError: transaksiItems is not iterable\n\n    \u001b[0m \u001b[90m 773 |\u001b[39m     })\n     \u001b[90m 774 |\u001b[39m\n    \u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 775 |\u001b[39m     \u001b[36mfor\u001b[39m (\u001b[36mconst\u001b[39m item \u001b[36mof\u001b[39m transaksiItems) {\n     \u001b[90m     |\u001b[39m                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n     \u001b[90m 776 |\u001b[39m       \u001b[36mconst\u001b[39m quantityToRestore \u001b[33m=\u001b[39m\n     \u001b[90m 777 |\u001b[39m         reason \u001b[33m===\u001b[39m \u001b[32m'cancelled'\u001b[39m\n     \u001b[90m 778 |\u001b[39m           \u001b[33m?\u001b[39m item\u001b[33m.\u001b[39mjumlah \u001b[90m// Restore full quantity if cancelled\u001b[39m\u001b[0m\n\n      at TransaksiService.transaksiItems [as restoreProductQuantities] (features/kasir/services/transaksiService.ts:775:24)\n      at features/kasir/services/transaksiService.ts:600:11\n      at Object.<anonymous> (features/kasir/services/transaksiService.test.ts:423:16)\n      at TransaksiService.updateTransaksiStatus (features/kasir/services/transaksiService.ts:584:30)\n      at Object.<anonymous> (features/kasir/services/transaksiService.test.ts:428:22)\n"
     },
     {
-      "testFilePath": "D:\\.work\\rental-software\\features\\kasir\\lib\\validation\\pickupValidation.test.ts",
+      "testFilePath": "D:\\.work\\rental-software\\features\\kasir\\services\\pembayaranService.test.ts",
       "testFileResults": [
         {
           "ancestorTitles": [
-            "PickupBusinessRules",
-            "validateTransactionStatus"
+            "PembayaranService",
+            "createPembayaran"
           ],
-          "fullName": "PickupBusinessRules validateTransactionStatus should validate active transaction status",
-          "status": "passed",
-          "title": "should validate active transaction status",
-          "failureMessages": [],
-          "duration": 13
+          "fullName": "PembayaranService createPembayaran should create payment successfully",
+          "status": "failed",
+          "title": "should create payment successfully",
+          "failureMessages": [
+            "TypeError: tx.aktivitasTransaksi.findUnique is not a function\n    at findUnique (D:\\.work\\rental-software\\features\\kasir\\services\\pembayaranService.ts:146:64)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at Object.<anonymous> (D:\\.work\\rental-software\\features\\kasir\\services\\pembayaranService.test.ts:163:16)\n    at PembayaranService.createPembayaran (D:\\.work\\rental-software\\features\\kasir\\services\\pembayaranService.ts:94:20)\n    at Object.<anonymous> (D:\\.work\\rental-software\\features\\kasir\\services\\pembayaranService.test.ts:180:22)"
+          ],
+          "duration": 147
         },
         {
           "ancestorTitles": [
-            "PickupBusinessRules",
-            "validateTransactionStatus"
+            "PembayaranService",
+            "createPembayaran"
           ],
-          "fullName": "PickupBusinessRules validateTransactionStatus should reject non-active transaction status",
+          "fullName": "PembayaranService createPembayaran should throw error if transaction not found",
           "status": "passed",
-          "title": "should reject non-active transaction status",
+          "title": "should throw error if transaction not found",
           "failureMessages": [],
-          "duration": 1
+          "duration": 3
         },
         {
           "ancestorTitles": [
-            "PickupBusinessRules",
-            "validatePickupQuantity"
+            "PembayaranService",
+            "createPembayaran"
           ],
-          "fullName": "PickupBusinessRules validatePickupQuantity should reject zero or negative quantity",
+          "fullName": "PembayaranService createPembayaran should throw error if transaction is cancelled",
           "status": "passed",
-          "title": "should reject zero or negative quantity",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PickupBusinessRules",
-            "validatePickupQuantity"
-          ],
-          "fullName": "PickupBusinessRules validatePickupQuantity should reject quantity exceeding available",
-          "status": "passed",
-          "title": "should reject quantity exceeding available",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PickupBusinessRules",
-            "validatePickupQuantity"
-          ],
-          "fullName": "PickupBusinessRules validatePickupQuantity should warn for partial pickup",
-          "status": "passed",
-          "title": "should warn for partial pickup",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PickupBusinessRules",
-            "validateItemNotFullyPickedUp"
-          ],
-          "fullName": "PickupBusinessRules validateItemNotFullyPickedUp should allow pickup for available items",
-          "status": "passed",
-          "title": "should allow pickup for available items",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PickupBusinessRules",
-            "validateItemNotFullyPickedUp"
-          ],
-          "fullName": "PickupBusinessRules validateItemNotFullyPickedUp should reject pickup for fully picked up items",
-          "status": "passed",
-          "title": "should reject pickup for fully picked up items",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PickupBusinessRules",
-            "validatePickupBatchLimits"
-          ],
-          "fullName": "PickupBusinessRules validatePickupBatchLimits should validate normal batch size",
-          "status": "passed",
-          "title": "should validate normal batch size",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PickupBusinessRules",
-            "validatePickupBatchLimits"
-          ],
-          "fullName": "PickupBusinessRules validatePickupBatchLimits should warn for large batches",
-          "status": "passed",
-          "title": "should warn for large batches",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PickupBusinessRules",
-            "validatePickupBatchLimits"
-          ],
-          "fullName": "PickupBusinessRules validatePickupBatchLimits should reject batches exceeding item limit",
-          "status": "passed",
-          "title": "should reject batches exceeding item limit",
+          "title": "should throw error if transaction is cancelled",
           "failureMessages": [],
           "duration": 2
         },
         {
           "ancestorTitles": [
-            "PickupBusinessRules",
-            "validatePickupBatchLimits"
+            "PembayaranService",
+            "createPembayaran"
           ],
-          "fullName": "PickupBusinessRules validatePickupBatchLimits should reject batches exceeding quantity limit",
+          "fullName": "PembayaranService createPembayaran should throw error if transaction is completed",
           "status": "passed",
-          "title": "should reject batches exceeding quantity limit",
+          "title": "should throw error if transaction is completed",
           "failureMessages": [],
           "duration": 0
         },
         {
           "ancestorTitles": [
-            "PickupBusinessRules",
-            "validateNoDuplicateItems"
+            "PembayaranService",
+            "createPembayaran"
           ],
-          "fullName": "PickupBusinessRules validateNoDuplicateItems should validate unique items",
+          "fullName": "PembayaranService createPembayaran should throw error if payment amount is invalid",
           "status": "passed",
-          "title": "should validate unique items",
-          "failureMessages": [],
-          "duration": 0
-        },
-        {
-          "ancestorTitles": [
-            "PickupBusinessRules",
-            "validateNoDuplicateItems"
-          ],
-          "fullName": "PickupBusinessRules validateNoDuplicateItems should reject duplicate items",
-          "status": "passed",
-          "title": "should reject duplicate items",
+          "title": "should throw error if payment amount is invalid",
           "failureMessages": [],
           "duration": 1
         },
         {
           "ancestorTitles": [
-            "PickupBusinessRules",
-            "validateBusinessHours"
+            "PembayaranService",
+            "createPembayaran"
           ],
-          "fullName": "PickupBusinessRules validateBusinessHours should validate normal business hours",
+          "fullName": "PembayaranService createPembayaran should handle overpayment validation",
           "status": "passed",
-          "title": "should validate normal business hours",
+          "title": "should handle overpayment validation",
           "failureMessages": [],
           "duration": 1
         },
         {
           "ancestorTitles": [
-            "PickupBusinessRules",
-            "validateBusinessHours"
+            "PembayaranService",
+            "getTransactionPayments"
           ],
-          "fullName": "PickupBusinessRules validateBusinessHours should warn for weekend pickup",
+          "fullName": "PembayaranService getTransactionPayments should return payments for a transaction",
           "status": "passed",
-          "title": "should warn for weekend pickup",
-          "failureMessages": [],
-          "duration": 0
-        },
-        {
-          "ancestorTitles": [
-            "PickupBusinessRules",
-            "validateBusinessHours"
-          ],
-          "fullName": "PickupBusinessRules validateBusinessHours should warn for outside business hours",
-          "status": "passed",
-          "title": "should warn for outside business hours",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PickupBusinessRules",
-            "validateConcurrentPickup"
-          ],
-          "fullName": "PickupBusinessRules validateConcurrentPickup should validate when no concurrent pickup detected",
-          "status": "passed",
-          "title": "should validate when no concurrent pickup detected",
-          "failureMessages": [],
-          "duration": 0
-        },
-        {
-          "ancestorTitles": [
-            "PickupBusinessRules",
-            "validateConcurrentPickup"
-          ],
-          "fullName": "PickupBusinessRules validateConcurrentPickup should detect potential concurrent pickup",
-          "status": "passed",
-          "title": "should detect potential concurrent pickup",
-          "failureMessages": [],
-          "duration": 0
-        },
-        {
-          "ancestorTitles": [
-            "PickupValidator",
-            "validatePickupRequest"
-          ],
-          "fullName": "PickupValidator validatePickupRequest should perform comprehensive validation and return valid result",
-          "status": "passed",
-          "title": "should perform comprehensive validation and return valid result",
+          "title": "should return payments for a transaction",
           "failureMessages": [],
           "duration": 2
         },
         {
           "ancestorTitles": [
-            "PickupValidator",
-            "validatePickupRequest"
+            "PembayaranService",
+            "getPembayaranById"
           ],
-          "fullName": "PickupValidator validatePickupRequest should detect multiple validation errors",
+          "fullName": "PembayaranService getPembayaranById should return payment by ID",
           "status": "passed",
-          "title": "should detect multiple validation errors",
+          "title": "should return payment by ID",
           "failureMessages": [],
           "duration": 1
         },
         {
           "ancestorTitles": [
-            "PickupValidator",
-            "validatePickupRequest"
+            "PembayaranService",
+            "getPembayaranById"
           ],
-          "fullName": "PickupValidator validatePickupRequest should categorize validation results correctly",
+          "fullName": "PembayaranService getPembayaranById should throw error if payment not found",
           "status": "passed",
-          "title": "should categorize validation results correctly",
+          "title": "should throw error if payment not found",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "getPaymentSummary"
+          ],
+          "fullName": "PembayaranService getPaymentSummary should return payment summary for transaction",
+          "status": "passed",
+          "title": "should return payment summary for transaction",
+          "failureMessages": [],
+          "duration": 2
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "getPaymentSummary"
+          ],
+          "fullName": "PembayaranService getPaymentSummary should throw error if transaction not found for summary",
+          "status": "passed",
+          "title": "should throw error if transaction not found for summary",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "getPaymentSummary"
+          ],
+          "fullName": "PembayaranService getPaymentSummary should handle transaction with no payments",
+          "status": "passed",
+          "title": "should handle transaction with no payments",
           "failureMessages": [],
           "duration": 1
         },
         {
           "ancestorTitles": [
-            "PickupValidator",
-            "generateValidationReport"
+            "PembayaranService",
+            "getPaymentList"
           ],
-          "fullName": "PickupValidator generateValidationReport should generate comprehensive validation report",
+          "fullName": "PembayaranService getPaymentList should return paginated payment list",
           "status": "passed",
-          "title": "should generate comprehensive validation report",
+          "title": "should return paginated payment list",
           "failureMessages": [],
           "duration": 1
         },
         {
           "ancestorTitles": [
-            "PickupValidator",
-            "generateValidationReport"
+            "PembayaranService",
+            "getPaymentList"
           ],
-          "fullName": "PickupValidator generateValidationReport should generate valid status report",
+          "fullName": "PembayaranService getPaymentList should filter payments by transaction ID",
           "status": "passed",
-          "title": "should generate valid status report",
+          "title": "should filter payments by transaction ID",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "getPaymentList"
+          ],
+          "fullName": "PembayaranService getPaymentList should filter payments by method",
+          "status": "passed",
+          "title": "should filter payments by method",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "getPaymentList"
+          ],
+          "fullName": "PembayaranService getPaymentList should filter payments by date range",
+          "status": "passed",
+          "title": "should filter payments by date range",
           "failureMessages": [],
           "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "cancelPayment"
+          ],
+          "fullName": "PembayaranService cancelPayment should cancel payment successfully",
+          "status": "passed",
+          "title": "should cancel payment successfully",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "cancelPayment"
+          ],
+          "fullName": "PembayaranService cancelPayment should throw error if payment not found for cancellation",
+          "status": "passed",
+          "title": "should throw error if payment not found for cancellation",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "cancelPayment"
+          ],
+          "fullName": "PembayaranService cancelPayment should throw error if transaction is already cancelled",
+          "status": "passed",
+          "title": "should throw error if transaction is already cancelled",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "getPaymentStats"
+          ],
+          "fullName": "PembayaranService getPaymentStats should return payment statistics",
+          "status": "passed",
+          "title": "should return payment statistics",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "getPaymentStats"
+          ],
+          "fullName": "PembayaranService getPaymentStats should filter statistics by date range",
+          "status": "passed",
+          "title": "should filter statistics by date range",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "getPaymentStats"
+          ],
+          "fullName": "PembayaranService getPaymentStats should handle empty payment data",
+          "status": "passed",
+          "title": "should handle empty payment data",
+          "failureMessages": [],
+          "duration": 3
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "getPaymentStats"
+          ],
+          "fullName": "PembayaranService getPaymentStats should aggregate payments by method correctly",
+          "status": "passed",
+          "title": "should aggregate payments by method correctly",
+          "failureMessages": [],
+          "duration": 2
         }
       ],
-      "failureMessage": null
-    },
-    {
-      "testFilePath": "D:\\.work\\rental-software\\features\\kasir\\hooks\\usePickupProcess.test.ts",
-      "testFileResults": [
-        {
-          "ancestorTitles": [
-            "usePickupProcess"
-          ],
-          "fullName": "usePickupProcess should handle successful pickup",
-          "status": "passed",
-          "title": "should handle successful pickup",
-          "failureMessages": [],
-          "duration": 86
-        },
-        {
-          "ancestorTitles": [
-            "usePickupProcess"
-          ],
-          "fullName": "usePickupProcess should handle failed pickup",
-          "status": "passed",
-          "title": "should handle failed pickup",
-          "failureMessages": [],
-          "duration": 86
-        },
-        {
-          "ancestorTitles": [
-            "usePickupValidation"
-          ],
-          "fullName": "usePickupValidation should validate pickup items correctly",
-          "status": "passed",
-          "title": "should validate pickup items correctly",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "usePickupValidation"
-          ],
-          "fullName": "usePickupValidation should reject excessive pickup quantities",
-          "status": "passed",
-          "title": "should reject excessive pickup quantities",
-          "failureMessages": [],
-          "duration": 0
-        },
-        {
-          "ancestorTitles": [
-            "usePickupValidation"
-          ],
-          "fullName": "usePickupValidation should reject zero quantities",
-          "status": "passed",
-          "title": "should reject zero quantities",
-          "failureMessages": [],
-          "duration": 0
-        },
-        {
-          "ancestorTitles": [
-            "usePickupValidation"
-          ],
-          "fullName": "usePickupValidation should require at least one item for pickup",
-          "status": "passed",
-          "title": "should require at least one item for pickup",
-          "failureMessages": [],
-          "duration": 1
-        }
-      ],
-      "failureMessage": null
+      "failureMessage": "  ● PembayaranService › createPembayaran › should create payment successfully\n\n    TypeError: tx.aktivitasTransaksi.findUnique is not a function\n\n    \u001b[0m \u001b[90m 144 |\u001b[39m\n     \u001b[90m 145 |\u001b[39m       \u001b[90m// 🔥 FIX: Verify activity was created within transaction\u001b[39m\n    \u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 146 |\u001b[39m       \u001b[36mconst\u001b[39m activityVerification \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m tx\u001b[33m.\u001b[39maktivitasTransaksi\u001b[33m.\u001b[39mfindUnique({\n     \u001b[90m     |\u001b[39m                                                                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n     \u001b[90m 147 |\u001b[39m         where\u001b[33m:\u001b[39m { id\u001b[33m:\u001b[39m aktivitas\u001b[33m.\u001b[39mid }\n     \u001b[90m 148 |\u001b[39m       })\n     \u001b[90m 149 |\u001b[39m       \u001b[0m\n\n      at findUnique (features/kasir/services/pembayaranService.ts:146:64)\n      at Object.<anonymous> (features/kasir/services/pembayaranService.test.ts:163:16)\n      at PembayaranService.createPembayaran (features/kasir/services/pembayaranService.ts:94:20)\n      at Object.<anonymous> (features/kasir/services/pembayaranService.test.ts:180:22)\n"
     }
   ]
 }

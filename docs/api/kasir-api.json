@@ -1694,6 +1694,19 @@
                   "        pm.expect(item).to.have.property('kondisiAkhir');",
                   "        pm.expect(item).to.have.property('statusKembali', 'lengkap');",
                   "    });",
+                  "});",
+                  "",
+                  "pm.test('Response headers are correct', function () {",
+                  "    pm.expect(pm.response.headers.get('content-type')).to.include('application/json');",
+                  "    pm.expect(pm.response.headers.get('x-request-id')).to.exist;",
+                  "    pm.expect(pm.response.headers.get('x-processing-time')).to.exist;",
+                  "    pm.expect(pm.response.headers.get('cache-control')).to.include('no-cache');",
+                  "});",
+                  "",
+                  "pm.test('Security headers are present', function () {",
+                  "    pm.expect(pm.response.headers.get('x-content-type-options')).to.equal('nosniff');",
+                  "    pm.expect(pm.response.headers.get('x-frame-options')).to.equal('DENY');",
+                  "    pm.expect(pm.response.headers.get('x-xss-protection')).to.include('1; mode=block');",
                   "});"
                 ]
               }
@@ -1747,6 +1760,12 @@
                   "    pm.expect(breakdown).to.have.property('summary');",
                   "    pm.expect(breakdown).to.have.property('itemDetails');",
                   "    pm.expect(breakdown.itemDetails).to.be.an('array');",
+                  "});",
+                  "",
+                  "pm.test('Response headers are valid', function () {",
+                  "    pm.expect(pm.response.headers.get('content-type')).to.include('application/json');",
+                  "    pm.expect(pm.response.headers.get('x-request-id')).to.exist;",
+                  "    pm.expect(pm.response.headers.get('x-processing-time')).to.match(/^\\d+ms$/);",
                   "});"
                 ]
               }
@@ -1799,6 +1818,11 @@
                   "    const items = pm.response.json().data.processedItems;",
                   "    const damagedItem = items.find(item => item.kondisiAkhir.includes('kerusakan'));",
                   "    pm.expect(damagedItem).to.exist;",
+                  "});",
+                  "",
+                  "pm.test('Response headers are properly set', function () {",
+                  "    pm.expect(pm.response.headers.get('content-type')).to.include('application/json');",
+                  "    pm.expect(pm.response.headers.get('x-request-id')).to.exist;",
                   "});"
                 ]
               }
@@ -1855,6 +1879,12 @@
                   "    if (lostItemDetails) {",
                   "        pm.expect(lostItemDetails.penalty).to.be.above(150000); // Should be more than flat 150K",
                   "    }",
+                  "});",
+                  "",
+                  "pm.test('API headers are compliant', function () {",
+                  "    pm.expect(pm.response.headers.get('content-type')).to.include('application/json');",
+                  "    pm.expect(pm.response.headers.get('x-request-id')).to.exist;",
+                  "    pm.expect(pm.response.headers.get('x-processing-time')).to.exist;",
                   "});"
                 ]
               }
@@ -2371,14 +2401,35 @@
       "script": {
         "type": "text/javascript",
         "exec": [
-          "// Global test script",
-          "pm.test('Response is JSON', function () {",
+          "// Global test script with enhanced header validation",
+          "pm.test('Response is JSON with proper headers', function () {",
           "    pm.response.to.have.header('content-type');",
           "    const contentType = pm.response.headers.get('content-type');",
           "    if (contentType) {",
           "        pm.expect(contentType).to.include('application/json');",
+          "        // Ensure charset is specified for proper encoding",
+          "        if (pm.response.code === 200) {",
+          "            pm.expect(contentType).to.include('charset=utf-8');",
+          "        }",
           "    }",
           "});",
+          "",
+          "// Enhanced header validation for successful responses",
+          "if (pm.response.code >= 200 && pm.response.code < 300) {",
+          "    pm.test('Security headers are present', function () {",
+          "        // Check for security headers on successful responses",
+          "        pm.expect(pm.response.headers.get('x-content-type-options')).to.equal('nosniff');",
+          "        pm.expect(pm.response.headers.get('x-frame-options')).to.equal('DENY');",
+          "    });",
+          "",
+          "    pm.test('Performance headers exist', function () {",
+          "        // Ensure performance monitoring headers are present",
+          "        pm.expect(pm.response.headers.get('x-request-id')).to.exist;",
+          "        if (pm.response.headers.get('x-processing-time')) {",
+          "            pm.expect(pm.response.headers.get('x-processing-time')).to.match(/^\\d+ms$/);",
+          "        }",
+          "    });",
+          "}",
           "",
           "// Log response time for monitoring",
           "const responseTime = pm.response.responseTime;",

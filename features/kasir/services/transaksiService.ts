@@ -140,47 +140,14 @@ export class TransaksiService {
    * Create new transaction with auto-generated code
    */
   async createTransaksi(data: CreateTransaksiRequest): Promise<Transaksi> {
-    // 🔍 LOG: Transaction creation start
-    console.log('[TransaksiService] 🚀 Starting transaction creation', {
-      penyewaId: data.penyewaId,
-      itemCount: data.items.length,
-      items: data.items.map((item) => ({
-        produkId: item.produkId,
-        jumlah: item.jumlah,
-        durasi: item.durasi,
-      })),
-      tglMulai: data.tglMulai,
-      metodeBayar: data.metodeBayar,
-      timestamp: new Date().toISOString(),
-    })
-
     // 1. Validate penyewa exists
     const penyewa = await this.prisma.penyewa.findUnique({
       where: { id: data.penyewaId },
     })
 
     if (!penyewa) {
-      console.log('[TransaksiService] ❌ Penyewa not found', { penyewaId: data.penyewaId })
       throw new Error('Penyewa tidak ditemukan')
     }
-
-    // 🔍 LOG: Penyewa validation success
-    console.log('[TransaksiService] ✅ Penyewa validated', {
-      penyewaId: penyewa.id,
-      penyewaNama: penyewa.nama,
-      timestamp: new Date().toISOString(),
-    })
-
-    // 2. Validate product availability using availability service
-    // 🔍 LOG: Starting availability validation
-    console.log('[TransaksiService] 🔄 Validating product availability', {
-      items: data.items.map((item) => ({
-        productId: item.produkId,
-        requestedQuantity: item.jumlah,
-      })),
-      checkDate: new Date(data.tglMulai).toISOString(),
-      timestamp: new Date().toISOString(),
-    })
 
     const availabilityCheck = await this.availabilityService.validateTransactionItems(
       data.items.map((item) => ({
@@ -190,16 +157,8 @@ export class TransaksiService {
       new Date(data.tglMulai),
     )
 
-    // 🔍 LOG: Availability validation result
-    console.log('[TransaksiService] 📊 Availability validation result', {
-      isValid: availabilityCheck.valid,
-      errors: availabilityCheck.errors,
-      warnings: availabilityCheck.warnings,
-      timestamp: new Date().toISOString(),
-    })
-
     if (!availabilityCheck.valid) {
-      console.log('[TransaksiService] ❌ Availability validation failed', {
+      console.error('[TransaksiService] ❌ Availability validation failed', {
         errors: availabilityCheck.errors,
       })
       throw new Error(availabilityCheck.errors[0])
@@ -238,23 +197,8 @@ export class TransaksiService {
     const kode = await this.codeGenerator.generateTransactionCode()
 
     // 6. Create transaction with items in a database transaction
-    // 🔍 LOG: Starting database transaction
-    console.log('[TransaksiService] 🗄️ Starting database transaction', {
-      transactionCode: kode,
-      totalHarga: priceCalculation.totalHarga.toString(),
-      itemCount: data.items.length,
-      timestamp: new Date().toISOString(),
-    })
 
     const transaksi = await this.prisma.$transaction(async (tx) => {
-      // 🔍 LOG: Creating main transaction record
-      console.log('[TransaksiService] 📝 Creating transaksi record', {
-        kode,
-        penyewaId: data.penyewaId,
-        totalHarga: priceCalculation.totalHarga.toString(),
-        timestamp: new Date().toISOString(),
-      })
-
       // Create main transaction
       const createdTransaksi = await tx.transaksi.create({
         data: {
@@ -272,13 +216,6 @@ export class TransaksiService {
         },
       })
 
-      // 🔍 LOG: Main transaction created
-      console.log('[TransaksiService] ✅ Transaksi record created', {
-        transaksiId: createdTransaksi.id,
-        kode: createdTransaksi.kode,
-        timestamp: new Date().toISOString(),
-      })
-
       // Create transaction items
       const itemsData = data.items.map((item, index) => {
         const calculation = priceCalculation.itemCalculations[index]
@@ -293,35 +230,8 @@ export class TransaksiService {
         }
       })
 
-      // 🔍 LOG: Creating transaction items
-      console.log('[TransaksiService] 📋 Creating transaction items', {
-        itemsCount: itemsData.length,
-        items: itemsData.map((item) => ({
-          produkId: item.produkId,
-          jumlah: item.jumlah,
-          hargaSewa: item.hargaSewa.toString(),
-        })),
-        timestamp: new Date().toISOString(),
-      })
-
       await tx.transaksiItem.createMany({
         data: itemsData,
-      })
-
-      // 🔍 LOG: Transaction items created
-      console.log('[TransaksiService] ✅ Transaction items created successfully', {
-        itemsCount: itemsData.length,
-        timestamp: new Date().toISOString(),
-      })
-
-      // ✅ FIXED: Implement stock reduction logic
-      console.log('[TransaksiService] 🔄 Now implementing stock reduction logic', {
-        message: 'Executing product quantity updates for rented items',
-        items: data.items.map((item) => ({
-          productId: item.produkId,
-          rentedQuantity: item.jumlah,
-        })),
-        timestamp: new Date().toISOString(),
       })
 
       // Update product quantities - THIS IS THE FIX!
@@ -341,22 +251,7 @@ export class TransaksiService {
         },
       })
 
-      // 🔍 LOG: Activity log created
-      console.log('[TransaksiService] 📝 Activity log created', {
-        transaksiId: createdTransaksi.id,
-        activityType: 'dibuat',
-        timestamp: new Date().toISOString(),
-      })
-
       return createdTransaksi
-    })
-
-    // 🔍 LOG: Database transaction completed
-    console.log('[TransaksiService] ✅ Database transaction completed successfully', {
-      transaksiId: transaksi.id,
-      kode: transaksi.kode,
-      status: transaksi.status,
-      timestamp: new Date().toISOString(),
     })
 
     return transaksi
@@ -393,7 +288,7 @@ export class TransaksiService {
                 code: true,
                 name: true,
                 modalAwal: true, // Only for penalty calculation
-              }
+              },
             },
             jumlah: true,
             jumlahDiambil: true,
@@ -403,13 +298,13 @@ export class TransaksiService {
             kondisiAwal: true,
             kondisiAkhir: true,
             statusKembali: true,
-          }
+          },
         },
         // Minimal required fields for validation only
         sisaBayar: true,
         createdAt: true,
         updatedAt: true,
-      }
+      },
     })
 
     if (!transaksi) {
@@ -442,16 +337,20 @@ export class TransaksiService {
               select: {
                 name: true,
                 modalAwal: true, // Required for lost item penalty calculation
-              }
+              },
             },
             // No other fields needed for penalty calculation
           },
-          // Only include items that might need penalty calculation
+          // Include all items that were rented (either picked up or not)
+          // This supports scenarios where items are returned without being picked up (cancellation)
           where: {
-            jumlahDiambil: { gt: 0 } // Only items that were picked up
-          }
-        }
-      }
+            OR: [
+              { jumlahDiambil: { gt: 0 } }, // Items that were picked up
+              { jumlah: { gt: 0 } }         // Items that were rented (supports cancellation scenario)
+            ]
+          },
+        },
+      },
     })
 
     if (!transaksi) {
@@ -696,24 +595,8 @@ export class TransaksiService {
       // Handle stock restoration for cancelled or completed transactions
       if (data.status && data.status !== existingTransaksi.status) {
         if (data.status === 'cancelled') {
-          // 🔍 LOG: Transaction cancelled, restoring stock
-          console.log('[TransaksiService] 🔄 Transaction cancelled, restoring product quantities', {
-            transaksiId: id,
-            previousStatus: existingTransaksi.status,
-            newStatus: data.status,
-            timestamp: new Date().toISOString(),
-          })
-
           await this.restoreProductQuantities(tx, id, 'cancelled')
         } else if (data.status === 'selesai') {
-          // 🔍 LOG: Transaction completed, checking for partial returns
-          console.log('[TransaksiService] 🔄 Transaction completed, processing returns', {
-            transaksiId: id,
-            previousStatus: existingTransaksi.status,
-            newStatus: data.status,
-            timestamp: new Date().toISOString(),
-          })
-
           await this.restoreProductQuantities(tx, id, 'returned')
         }
 
@@ -809,24 +692,7 @@ export class TransaksiService {
     tx: any, // Prisma transaction type
     items: CreateTransaksiRequest['items'],
   ): Promise<void> {
-    // 🔍 LOG: Starting stock reduction
-    console.log('[TransaksiService] 🔄 Starting product quantity updates', {
-      itemCount: items.length,
-      items: items.map((item) => ({
-        productId: item.produkId,
-        quantityToReduce: item.jumlah,
-      })),
-      timestamp: new Date().toISOString(),
-    })
-
     for (const item of items) {
-      // 🔍 LOG: Processing individual product
-      console.log('[TransaksiService] 📦 Processing product quantity update', {
-        productId: item.produkId,
-        quantityToReduce: item.jumlah,
-        timestamp: new Date().toISOString(),
-      })
-
       // Get current product state for validation (including new inventory fields)
       const currentProduct = await tx.product.findUnique({
         where: { id: item.produkId },
@@ -840,24 +706,18 @@ export class TransaksiService {
 
       if (!currentProduct) {
         const error = `Product ${item.produkId} not found during stock update`
-        console.log('[TransaksiService] ❌ Product not found', {
-          productId: item.produkId,
-          error,
-        })
+
         throw new Error(error)
       }
 
       // Double-check availability using calculated availableStock (race condition protection)
-      const availableStock = calculateAvailableStock(currentProduct.quantity, currentProduct.rentedStock)
+      const availableStock = calculateAvailableStock(
+        currentProduct.quantity,
+        currentProduct.rentedStock,
+      )
       if (availableStock < item.jumlah) {
         const error = `Insufficient stock for product ${currentProduct.name}. Available: ${availableStock}, Requested: ${item.jumlah}`
-        console.log('[TransaksiService] ❌ Insufficient stock during update', {
-          productId: item.produkId,
-          productName: currentProduct.name,
-          available: availableStock,
-          requested: item.jumlah,
-          error,
-        })
+
         throw new Error(error)
       }
 
@@ -881,35 +741,10 @@ export class TransaksiService {
       // Verify the update was successful
       if (updateResult.count === 0) {
         const error = `Failed to update quantity for product ${currentProduct.name}. Product may have been modified by another transaction.`
-        console.log('[TransaksiService] ❌ Stock update failed (race condition)', {
-          productId: item.produkId,
-          productName: currentProduct.name,
-          requestedReduction: item.jumlah,
-          error,
-        })
+
         throw new Error(error)
       }
-
-      // 🔍 LOG: Successful inventory tracking update
-      const previousAvailable = calculateAvailableStock(currentProduct.quantity, currentProduct.rentedStock)
-      console.log('[TransaksiService] ✅ Product inventory updated successfully', {
-        productId: item.produkId,
-        productName: currentProduct.name,
-        totalInventory: currentProduct.quantity, // Unchanged
-        previousAvailable,  // Calculated
-        previousRented: currentProduct.rentedStock,
-        rentedQuantity: item.jumlah,
-        newAvailable: previousAvailable - item.jumlah,  // Calculated
-        newRented: currentProduct.rentedStock + item.jumlah,
-        timestamp: new Date().toISOString(),
-      })
     }
-
-    // 🔍 LOG: All stock reductions completed
-    console.log('[TransaksiService] ✅ All product quantities updated successfully', {
-      totalProductsUpdated: items.length,
-      timestamp: new Date().toISOString(),
-    })
   }
 
   /**
@@ -922,13 +757,6 @@ export class TransaksiService {
     transaksiId: string,
     reason: 'cancelled' | 'returned' = 'returned',
   ): Promise<void> {
-    // 🔍 LOG: Starting stock restoration
-    console.log('[TransaksiService] 🔄 Starting product quantity restoration', {
-      transaksiId,
-      reason,
-      timestamp: new Date().toISOString(),
-    })
-
     // Get transaction items to restore
     const transaksiItems = await tx.transaksiItem.findMany({
       where: { transaksiId },
@@ -963,24 +791,8 @@ export class TransaksiService {
             // quantity field stays the same (total inventory unchanged)
           },
         })
-
-        // 🔍 LOG: Stock restored
-        console.log('[TransaksiService] ✅ Product quantity restored', {
-          productId: item.produkId,
-          productName: item.produk.name,
-          restoredQuantity: quantityToRestore,
-          reason,
-          timestamp: new Date().toISOString(),
-        })
       }
     }
-
-    console.log('[TransaksiService] ✅ Product quantity restoration completed', {
-      transaksiId,
-      itemsProcessed: transaksiItems.length,
-      reason,
-      timestamp: new Date().toISOString(),
-    })
   }
 
   /**

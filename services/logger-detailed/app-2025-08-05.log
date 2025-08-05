@@ -1,94 +1,106 @@
-⏭️ Environment validation skipped (development/test mode)
- ✓ Ready in 3.1s
-⏭️ Environment validation skipped (development/test mode)
- ○ Compiling /dashboard/transaction/[kode] ...
- ✓ Compiled /dashboard/transaction/[kode] in 5.2s
- GET /dashboard/transaction/TXN-20250805-006 200 in 7079ms
- ○ Compiling /favicon.ico ...
- GET /favicon.ico?favicon.45db1c09.ico 200 in 982ms
- ✓ Compiled /favicon.ico in 1029ms
- GET /api/kasir/transaksi/TXN-20250805-006 200 in 7074ms
- │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 613ms (cache skip)
- │ │ Cache skipped reason: (auto no cache)
- ○ Compiling /api/kasir/transaksi/[kode]/pengembalian ...
- ✓ Compiled /api/kasir/transaksi/[kode]/pengembalian in 1176ms
-2025-08-05T06:10:49.304Z [INFO] [API][PUT-pengembalian] API request started
+2025-08-05T02:19:20.840Z [INFO] [API][PUT-pengembalian] API request started
 {
-  "requestId": "req-1754374249304-fh2j1ing8",
-  "timestamp": "2025-08-05T06:10:49.304Z",
+  "requestId": "req-1754360360840-cvq3jhdld",
+  "timestamp": "2025-08-05T02:19:20.840Z",
   "userAgent": "PostmanRuntime/7.45.0",
-  "contentLength": "220",
+  "contentLength": "264",
   "performance": {
-    "timestamp": 1754374249304,
+    "timestamp": 1754360360840,
     "memory": {
-      "rss": 1045045248,
-      "heapTotal": 157077504,
-      "heapUsed": 148030776,
-      "external": 4228251,
-      "arrayBuffers": 247616
+      "rss": 1124057088,
+      "heapTotal": 176394240,
+      "heapUsed": 169930304,
+      "external": 4319110,
+      "arrayBuffers": 334665
     }
   }
 }
-2025-08-05T06:10:57.005Z [INFO] [API][PUT-pengembalian] API request failed
+2025-08-05T02:19:27.219Z [INFO] [API][PUT-pengembalian] API request completed successfully
 {
   "performance": {
     "label": "total-api-request",
-    "duration": "7701ms"
+    "duration": "6379ms"
   }
 }
-2025-08-05T06:10:57.019Z [ERROR] [API][PUT-pengembalian] API request failed
-{
-  "requestId": "req-1754374249304-fh2j1ing8",
-  "transactionCode": "TXN-20250805-006",
-  "totalApiDuration": 7701,
-  "error": {
-    "name": "Error",
-    "message": "Gagal memproses pengembalian: Validasi item gagal: Jumlah pengembalian harus lebih dari 0 untuk item Pakaian",
-    "stack": "Error: Gagal memproses pengembalian: Validasi item gagal: Jumlah pengembalian harus lebih dari 0 untuk item Pakaian\n    at ReturnService.processReturn (D:\\.work\\rental-software\\.next\\server\\chunks\\[root-of-the-server]__4f56115e._.js:2574:19)\n    at async PUT (D:\\.work\\rental-software\\.next\\server\\chunks\\[root-of-the-server]__4f56115e._.js:3545:24)\n    at async AppRouteRouteModule.do (D:\\.work\\rental-software\\node_modules\\next\\dist\\compiled\\next-server\\app-route-turbo.runtime.dev.js:5:38782)\n    at async AppRouteRouteModule.handle (D:\\.work\\rental-software\\node_modules\\next\\dist\\compiled\\next-server\\app-route-turbo.runtime.dev.js:5:45984)\n    at async responseGenerator (D:\\.work\\rental-software\\.next\\server\\chunks\\node_modules_next_86b4de74._.js:13538:38)\n    at async AppRouteRouteModule.handleResponse (D:\\.work\\rental-software\\node_modules\\next\\dist\\compiled\\next-server\\app-route-turbo.runtime.dev.js:1:183770)\n    at async handleResponse (D:\\.work\\rental-software\\.next\\server\\chunks\\node_modules_next_86b4de74._.js:13600:32)\n    at async handler (D:\\.work\\rental-software\\.next\\server\\chunks\\node_modules_next_86b4de74._.js:13652:13)\n    at async doRender (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:1587:34)\n    at async DevServer.renderToResponseWithComponentsImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:1929:13)\n    at async DevServer.renderPageComponent (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:2395:24)\n    at async DevServer.renderToResponseImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:2435:32)\n    at async DevServer.pipeImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:1035:25)\n    at async NextNodeServer.handleCatchallRenderRequest (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\next-server.js:393:17)\n    at async DevServer.handleRequestImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:925:17)\n    at async D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\dev\\next-dev-server.js:398:20\n    at async Span.traceAsyncFn (D:\\.work\\rental-software\\node_modules\\next\\dist\\trace\\trace.js:157:20)\n    at async DevServer.handleRequest (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\dev\\next-dev-server.js:394:24)\n    at async invokeRender (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\lib\\router-server.js:239:21)\n    at async handleRequest (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\lib\\router-server.js:436:24)\n    at async requestHandlerImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\lib\\router-server.js:464:13)\n    at async Server.requestListener (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\lib\\start-server.js:218:13)"
-  },
-  "timestamp": "2025-08-05T06:10:57.019Z",
-  "performance": {
-    "timestamp": 1754374257019,
-    "memory": {
-      "rss": 1049608192,
-      "heapTotal": 160223232,
-      "heapUsed": 149310936,
-      "external": 4256654,
-      "arrayBuffers": 268864
-  }
-}
-PUT /api/kasir/transaksi/TXN-20250805-006/pengembalian error: Error: Gagal memproses pengembalian: Validasi item gagal: Jumlah pengembalian harus lebih dari 0 untuk item Pakaian
-    at ReturnService.processReturn (features\kasir\services\returnService.ts:551:12)
-    at async PUT (app\api\kasir\transaksi\[kode]\pengembalian\route.ts:173:19)
-  549 |       })
-  550 |
-> 551 |       throw new Error(`Gagal memproses pengembalian: ${error instanceof Error ? error.message : 'Unknown error'}`)
-      |            ^
-  552 |     }
-  553 |   }
-  554 |
- PUT /api/kasir/transaksi/TXN-20250805-006/pengembalian 400 in 10304ms
- │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 650ms (cache skip)    
- │ │ Cache skipped reason: (auto no cache)
+
+== Prosess Return - Success 200 ok  Note = Error : Incorrect header check ==
 
 
-" 2025-08-05T08:33:15.079Z [INFO] [API][PUT-pengembalian] API request started
+
+2025-08-05T02:46:05.384Z [INFO] [API][PUT-pengembalian] API request started
 {
-  "requestId": "req-1754382795079-4s0cyfxlc",
-  "timestamp": "2025-08-05T08:33:15.079Z",
+  "requestId": "req-1754361965384-nljxxj3k7",
+  "timestamp": "2025-08-05T02:46:05.384Z",
   "userAgent": "PostmanRuntime/7.45.0",
-  "contentLength": "220",
+  "contentLength": "255",
   "performance": {
-    "timestamp": 1754382795079,
+    "timestamp": 1754361965384,
     "memory": {
-      "rss": 1075503104,
-      "heapTotal": 162066432,
-      "heapUsed": 154060056,
-      "external": 7385027,
-      "arrayBuffers": 3398159
+      "rss": 1053089792,
+      "heapTotal": 161988608,
+      "heapUsed": 151968552,
+      "external": 4245322,
+      "arrayBuffers": 256526
     }
   }
 }
+2025-08-05T02:46:05.979Z [INFO] [API][PUT-pengembalian] Scheduled return detected
+{
+  "requestId": "req-1754361965384-nljxxj3k7",
+  "returnDate": "2025-08-09T10:00:00.000Z",
+  "daysAhead": 5,
+  "performance": {
+    "timestamp": 1754361965979,
+    "memory": {
+      "rss": 1053294592,
+      "heapTotal": 161988608,
+      "heapUsed": 153055224,
+      "external": 4272057,
+      "arrayBuffers": 277798
+    }
+  }
+}
+2025-08-05T02:46:12.974Z [INFO] [API][PUT-pengembalian] API request completed successfully
+{
+  "performance": {
+    "label": "total-api-request",
+    "duration": "7590ms"
+  }
+}
+
+== Prosess Return - Late return with Penalty  200 ok  Note = Error : Incorrect header check ==
+
+
+
+2025-08-05T02:50:01.389Z [INFO] [API][PUT-pengembalian] API request started
+{
+  "requestId": "req-1754362201389-lk0l6g732",
+  "timestamp": "2025-08-05T02:50:01.389Z",
+  "userAgent": "PostmanRuntime/7.45.0",
+  "contentLength": "220",
+  "performance": {
+    "timestamp": 1754362201389,
+    "memory": {
+      "rss": 1118449664,
+      "heapTotal": 184020992,
+      "heapUsed": 176191824,
+      "external": 7203940,
+      "arrayBuffers": 3215884
+    }
+  }
+}
+2025-08-05T02:50:07.783Z [INFO] [API][PUT-pengembalian] API request completed successfully
+{
+  "performance": {
+    "label": "total-api-request",
+    "duration": "6394ms"
+  }
+}
+
+
+== Prosess Return - damagedItems  200 ok  Note = Error : Incorrect header check ==
+
+
 2025-08-05T08:33:29.060Z [INFO] [API][PUT-pengembalian] API request started
 {
   "requestId": "req-1754382809060-w13uvilvy",
@@ -113,6 +125,10 @@ PUT /api/kasir/transaksi/TXN-20250805-006/pengembalian error: Error: Gagal mempr
     "duration": "8217ms"
   }
 }
+
+== Prosess Return - Lost Item with modal awal 200 ok  Note = Error : Incorrect header check ==
+
+
 2025-08-05T08:36:19.120Z [INFO] [API][PUT-pengembalian] API request started
 {
   "requestId": "req-1754382979120-e2wuufe8f",
@@ -153,6 +169,10 @@ PUT /api/kasir/transaksi/TXN-20250805-006/pengembalian error: Error: Gagal mempr
     "duration": "7134ms"
   }
 }
+
+== Prosess Return - Success 200 ok  Note = Error : Incorrect header check ==
+
+
 2025-08-05T09:07:17.117Z [INFO] [API][PUT-pengembalian] API request started
 {
   "requestId": "req-1754384837116-ee84v4gpb",
@@ -230,6 +250,28 @@ PUT /api/kasir/transaksi/TXN-20250805-006/pengembalian error: Error: Gagal mempr
     }
   }
 }
+
+=== Hasil ==
+{
+    "success": false,
+    "error": {
+        "message": "Data pengembalian tidak valid",
+        "code": "VALIDATION_ERROR",
+        "details": [
+            {
+                "field": "items.0.itemId",
+                "message": "ID item transaksi tidak valid",
+                "code": "invalid_format",
+                "suggestions": []
+            }
+        ],
+        "hints": []
+    }
+}
+
+== Prosess Return - transaction not found 400 Bad Request  ok   ==
+
+
 2025-08-05T09:08:38.657Z [INFO] [API][PUT-pengembalian] API request started
 {
   "requestId": "req-1754384918657-p3zeww8ac",
@@ -322,6 +364,53 @@ PUT /api/kasir/transaksi/TXN-20250805-006/pengembalian error: Error: Gagal mempr
     }
   }
 }
+
+=== Hasil ===
+{
+    "success": false,
+    "error": {
+        "message": "Validasi barang hilang gagal. Periksa kondisi dan jumlah kembali.",
+        "code": "LOST_ITEM_VALIDATION_ERROR",
+        "details": [
+            {
+                "field": "items.0.itemId",
+                "message": "ID item transaksi tidak valid",
+                "code": "invalid_format",
+                "suggestions": []
+            },
+            {
+                "field": "items.0.kondisiAkhir",
+                "message": "Kondisi akhir minimal 5 karakter",
+                "code": "too_small",
+                "suggestions": []
+            },
+            {
+                "field": "items.0.jumlahKembali",
+                "message": "Jumlah kembali tidak boleh negatif",
+                "code": "too_small",
+                "suggestions": []
+            },
+            {
+                "field": "items.0.jumlahKembali",
+                "message": "Jumlah kembali tidak sesuai dengan kondisi barang. Barang hilang harus 0, barang normal minimal 1. Kondisi: \"A\" → Jumlah kembali minimal 1",
+                "code": "custom",
+                "suggestions": [
+                    "Untuk barang hilang/tidak dapat dikembalikan, ubah kondisi dan set jumlah = 0",
+                    "Untuk barang normal yang dikembalikan, jumlah minimal 1",
+                    "Periksa kembali kondisi dan jumlah barang yang dikembalikan"
+                ]
+            }
+        ],
+        "hints": [
+            "Barang hilang: set jumlahKembali = 0 dan kondisiAkhir mengandung \"Hilang\" atau \"tidak dikembalikan\"",
+            "Barang normal: set jumlahKembali ≥ 1 dan kondisiAkhir sesuai keadaan barang"
+        ]
+    }
+}
+
+
+== Prosess Return - Validation Error 400 Bad Request  ok  ==
+
 2025-08-05T09:09:39.545Z [INFO] [API][PUT-pengembalian] API request started
 {
   "requestId": "req-1754384979544-v4crsrel2",
@@ -339,3 +428,16 @@ PUT /api/kasir/transaksi/TXN-20250805-006/pengembalian error: Error: Gagal mempr
     }
   }
 }
+
+=== hasil ===
+
+{
+    "success": false,
+    "error": {
+        "message": "Parameter harus berupa kode transaksi (contoh: TXN-20250726-001) atau ID transaksi",
+        "code": "VALIDATION_ERROR"
+    }
+}
+
+
+== Prosess Return - Not Eligible 400 Bad Request  ok   ==
