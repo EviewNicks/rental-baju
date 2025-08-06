@@ -14,7 +14,8 @@ import {
   Package,
   User,
   DollarSign,
-  FileText
+  FileText,
+  ArrowLeft
 } from 'lucide-react'
 import type { TransaksiDetail } from '../../types'
 
@@ -50,6 +51,7 @@ interface ReturnConfirmationProps {
   penaltyCalculation: PenaltyCalculation | null
   onProcess: (notes?: string) => Promise<void>
   onComplete: () => void
+  onBack?: () => void
   isLoading?: boolean
 }
 
@@ -59,6 +61,7 @@ export function ReturnConfirmation({
   penaltyCalculation,
   onProcess,
   onComplete,
+  onBack,
   isLoading = false
 }: ReturnConfirmationProps) {
   const [notes, setNotes] = useState('')
@@ -317,6 +320,20 @@ export function ReturnConfirmation({
 
       {/* Action Buttons */}
       <div className="flex gap-4">
+        {/* Back Button */}
+        {onBack && (
+          <Button
+            variant="outline"
+            onClick={onBack}
+            disabled={isLoading || isProcessing}
+            className="flex-1 hover:bg-neutral-50 border-neutral-300"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Kembali ke Penalty
+          </Button>
+        )}
+        
+        {/* Process Button */}
         <Button
           onClick={handleProcess}
           disabled={isLoading || isProcessing}

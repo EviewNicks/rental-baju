@@ -4,7 +4,7 @@ import React, { useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, CheckCircle, AlertCircle, Clock, Package } from 'lucide-react'
+import { ArrowLeft, CheckCircle, AlertCircle, Clock } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { ItemConditionForm } from './ItemConditionForm'
@@ -12,6 +12,7 @@ import { PenaltyDisplay } from './PenaltyDisplay'
 import { ReturnConfirmation } from './ReturnConfirmation'
 import { useReturnProcess } from '../../hooks/useReturnProcess'
 import { kasirApi } from '../../api'
+import type { TransaksiDetail } from '../../types'
 
 interface ReturnProcessPageProps {
   onClose?: () => void
@@ -29,8 +30,9 @@ export function ReturnProcessPage({ onClose, initialTransactionId }: ReturnProce
     setCurrentStep,
     setTransaction,
     setItemConditions,
+    setPenaltyCalculation,
     processReturn,
-    resetProcess
+    resetProcess,
   } = useReturnProcess()
 
   // Auto-load transaction if initialTransactionId provided (simplified workflow)
@@ -38,7 +40,7 @@ export function ReturnProcessPage({ onClose, initialTransactionId }: ReturnProce
     queryKey: ['transaction-detail', initialTransactionId],
     queryFn: () => kasirApi.getTransactionByCode(initialTransactionId!),
     enabled: !!initialTransactionId && !transaction,
-    retry: 1
+    retry: 1,
   })
 
   // Set loaded transaction automatically (with type validation)
@@ -46,37 +48,37 @@ export function ReturnProcessPage({ onClose, initialTransactionId }: ReturnProce
     if (loadedTransaction && !transaction) {
       // Ensure transaction has required items array for return processing
       if (loadedTransaction.items) {
-        setTransaction(loadedTransaction as any) // Safe cast - items verified
+        setTransaction(loadedTransaction as TransaksiDetail) // Safe cast - items verified
       }
     }
   }, [loadedTransaction, transaction, setTransaction])
 
   // Step configuration with icons - Simplified 3-step workflow
   const steps = [
-    { 
-      id: 1, 
-      title: 'Kondisi Barang', 
+    {
+      id: 1,
+      title: 'Kondisi Barang',
       description: 'Catat kondisi setiap barang',
       icon: Clock,
-      color: 'bg-blue-100 text-blue-800 border-blue-200'
+      color: 'bg-blue-100 text-blue-800 border-blue-200',
     },
-    { 
-      id: 2, 
-      title: 'Hitung Penalty', 
+    {
+      id: 2,
+      title: 'Hitung Penalty',
       description: 'Review penalty dan denda',
       icon: AlertCircle,
-      color: 'bg-orange-100 text-orange-800 border-orange-200'
+      color: 'bg-orange-100 text-orange-800 border-orange-200',
     },
-    { 
-      id: 3, 
-      title: 'Konfirmasi', 
+    {
+      id: 3,
+      title: 'Konfirmasi',
       description: 'Konfirmasi pengembalian',
       icon: CheckCircle,
-      color: 'bg-green-100 text-green-800 border-green-200'
-    }
+      color: 'bg-green-100 text-green-800 border-green-200',
+    },
   ]
 
-  const currentStepConfig = steps.find(step => step.id === currentStep)
+  const currentStepConfig = steps.find((step) => step.id === currentStep)
   const progressPercentage = (currentStep / steps.length) * 100
 
   const handleBack = () => {
@@ -96,14 +98,41 @@ export function ReturnProcessPage({ onClose, initialTransactionId }: ReturnProce
   const canProceedToNext = () => {
     switch (currentStep) {
       case 1:
-        return !!transaction
+        // Ensure transaction loaded AND at least one item has conditions set
+        const returnableItems =
+          transaction?.items?.filter(
+            (item) => item.jumlahDiambil > 0 && item.statusKembali !== 'lengkap',
+          ) || []
+        
+        const hasValidConditions = returnableItems.length > 0 && 
+          returnableItems.every(
+            (item) =>
+              itemConditions[item.id]?.kondisiAkhir &&
+              itemConditions[item.id]?.jumlahKembali !== undefined,
+          )
+        
+        const canProceed = !!transaction && returnableItems.length > 0 && hasValidConditions
+        
+        // Debug logging for step 1 validation
+        console.log('🎯 Step 1 Validation:', {
+          hasTransaction: !!transaction,
+          returnableItemsCount: returnableItems.length,
+          itemConditionsCount: Object.keys(itemConditions).length,
+          hasValidConditions,
+          canProceed,
+          itemConditions: itemConditions
+        })
+        
+        return canProceed
       case 2:
-        return transaction?.items?.every(item => 
-          itemConditions[item.id]?.kondisiAkhir && 
-          itemConditions[item.id]?.jumlahKembali !== undefined
-        ) || false
-      case 3:
+        // Debug logging for step 2 validation
+        console.log('🎯 Step 2 Validation:', {
+          hasPenaltyCalculation: !!penaltyCalculation,
+          penaltyCalculation: penaltyCalculation
+        })
         return !!penaltyCalculation
+      case 3:
+        return true // Confirmation step can always proceed
       default:
         return false
     }
@@ -123,16 +152,16 @@ export function ReturnProcessPage({ onClose, initialTransactionId }: ReturnProce
         <div className="mb-8">
           {/* Navigation & Title */}
           <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
-            <Button 
-              variant="ghost" 
-              size="sm" 
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={handleBack}
               className="self-start flex items-center gap-2 hover:bg-gold-50 hover:text-gold-700 transition-colors duration-200 rounded-full px-4"
             >
               <ArrowLeft className="h-4 w-4" />
               {currentStep === 1 ? 'Kembali' : 'Sebelumnya'}
             </Button>
-            
+
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
                 {currentStepConfig?.icon && (
@@ -181,52 +210,57 @@ export function ReturnProcessPage({ onClose, initialTransactionId }: ReturnProce
               {/* Progress Bar with Gold Accent */}
               <div className="mb-6">
                 <div className="relative h-3 w-full overflow-hidden rounded-full bg-neutral-200">
-                  <div 
+                  <div
                     className="h-full bg-gradient-to-r from-gold-500 to-gold-400 transition-all duration-300 ease-out"
                     style={{ width: `${progressPercentage}%` }}
                   />
                 </div>
               </div>
-              
+
               {/* Enhanced Step Indicator */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {steps.map((step, index) => {
                   const isCompleted = step.id < currentStep
                   const isCurrent = step.id === currentStep
-                  
+
                   return (
-                    <div 
+                    <div
                       key={step.id}
                       className={`relative flex flex-col items-center p-3 rounded-lg transition-all duration-200 ${
-                        isCompleted 
-                          ? 'bg-green-50 border border-green-200' 
-                          : isCurrent 
-                            ? 'bg-gold-50 border border-gold-200 shadow-sm' 
+                        isCompleted
+                          ? 'bg-green-50 border border-green-200'
+                          : isCurrent
+                            ? 'bg-gold-50 border border-gold-200 shadow-sm'
                             : 'bg-neutral-50 border border-neutral-200'
                       }`}
                     >
                       {/* Step Circle */}
-                      <div className={`
+                      <div
+                        className={`
                         w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold mb-2 transition-all duration-200
-                        ${isCompleted 
-                          ? 'bg-green-500 text-white shadow-lg' 
-                          : isCurrent 
-                            ? 'bg-gold-500 text-black shadow-lg scale-110' 
-                            : 'bg-neutral-200 text-neutral-500'
+                        ${
+                          isCompleted
+                            ? 'bg-green-500 text-white shadow-lg'
+                            : isCurrent
+                              ? 'bg-gold-500 text-black shadow-lg scale-110'
+                              : 'bg-neutral-200 text-neutral-500'
                         }
-                      `}>
+                      `}
+                      >
                         {isCompleted ? (
                           <CheckCircle className="h-5 w-5" />
                         ) : (
                           <step.icon className="h-5 w-5" />
                         )}
                       </div>
-                      
+
                       {/* Step Info */}
                       <div className="text-center">
-                        <div className={`text-xs font-medium mb-1 ${
-                          isCompleted || isCurrent ? 'text-neutral-900' : 'text-neutral-500'
-                        }`}>
+                        <div
+                          className={`text-xs font-medium mb-1 ${
+                            isCompleted || isCurrent ? 'text-neutral-900' : 'text-neutral-500'
+                          }`}
+                        >
                           {step.title}
                         </div>
                         <div className="text-xs text-neutral-500 leading-tight">
@@ -236,10 +270,12 @@ export function ReturnProcessPage({ onClose, initialTransactionId }: ReturnProce
 
                       {/* Connection Line */}
                       {index < steps.length - 1 && (
-                        <div className={`
+                        <div
+                          className={`
                           hidden md:block absolute top-5 left-full w-full h-0.5 -translate-y-0.5 transition-colors duration-200
                           ${isCompleted ? 'bg-green-300' : 'bg-neutral-200'}
-                        `} />
+                        `}
+                        />
                       )}
                     </div>
                   )
@@ -271,7 +307,7 @@ export function ReturnProcessPage({ onClose, initialTransactionId }: ReturnProce
               {currentStepConfig?.title}
             </CardTitle>
           </CardHeader>
-          
+
           <CardContent className="p-6 md:p-8">
             {/* Loading State */}
             {isLoadingTransaction && (
@@ -288,8 +324,8 @@ export function ReturnProcessPage({ onClose, initialTransactionId }: ReturnProce
               <Alert>
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
-                  Data transaksi tidak ditemukan atau belum dimuat. 
-                  Pastikan transaksi valid dan dapat dikembalikan.
+                  Data transaksi tidak ditemukan atau belum dimuat. Pastikan transaksi valid dan
+                  dapat dikembalikan.
                 </AlertDescription>
               </Alert>
             )}
@@ -299,7 +335,6 @@ export function ReturnProcessPage({ onClose, initialTransactionId }: ReturnProce
                 transaction={transaction}
                 itemConditions={itemConditions}
                 onConditionsChange={setItemConditions}
-                onContinue={handleNext}
                 isLoading={isProcessing}
               />
             )}
@@ -308,10 +343,7 @@ export function ReturnProcessPage({ onClose, initialTransactionId }: ReturnProce
               <PenaltyDisplay
                 transaction={transaction}
                 itemConditions={itemConditions}
-                onPenaltyCalculated={() => {
-                  // Penalty calculation will be handled by the component
-                }}
-                onContinue={handleNext}
+                onPenaltyCalculated={setPenaltyCalculation}
               />
             )}
 
@@ -322,6 +354,7 @@ export function ReturnProcessPage({ onClose, initialTransactionId }: ReturnProce
                 penaltyCalculation={penaltyCalculation}
                 onProcess={processReturn}
                 onComplete={handleProcessComplete}
+                onBack={handleBack}
                 isLoading={isProcessing}
               />
             )}
@@ -331,8 +364,8 @@ export function ReturnProcessPage({ onClose, initialTransactionId }: ReturnProce
         {/* Enhanced Navigation with Gold Accents */}
         {currentStep < 3 && (
           <div className="flex flex-col sm:flex-row justify-between gap-4">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={handleBack}
               disabled={isProcessing}
               className="order-2 sm:order-1 hover:bg-neutral-50 border-neutral-300 rounded-lg px-6 py-2.5"
@@ -340,13 +373,17 @@ export function ReturnProcessPage({ onClose, initialTransactionId }: ReturnProce
               <ArrowLeft className="h-4 w-4 mr-2" />
               {currentStep === 1 ? 'Batal' : 'Kembali'}
             </Button>
-            
-            <Button 
+
+            <Button
               onClick={handleNext}
               disabled={!canProceedToNext() || isProcessing}
               className="order-1 sm:order-2 bg-gold-500 hover:bg-gold-400 text-black font-semibold rounded-lg px-6 py-2.5 shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"
             >
-              {currentStep === 3 ? 'Lanjut ke Konfirmasi' : 'Lanjutkan'}
+              {currentStep === 1
+                ? 'Lanjut ke Perhitungan Penalty'
+                : currentStep === 2
+                  ? 'Lanjut ke Konfirmasi'
+                  : 'Selesai'}
               {!isProcessing && <ArrowLeft className="h-4 w-4 ml-2 rotate-180" />}
             </Button>
           </div>

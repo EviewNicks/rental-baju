@@ -133,31 +133,25 @@ export function useReturnProcess(): UseReturnProcessReturn {
     setError(null)
   }, [])
 
-  // Enhanced setters with validation
+  // Simple setters without auto-advancement - manual navigation only
   const setTransactionWithValidation = useCallback((newTransaction: TransaksiDetail) => {
     setTransaction(newTransaction)
     setError(null) // Clear any previous errors
-    
-    // Auto-advance to next step if transaction is valid
-    if (newTransaction && currentStep === 1) {
-      setCurrentStep(2)
-    }
-  }, [currentStep])
+  }, [])
 
   const setItemConditionsWithValidation = useCallback((newConditions: Record<string, ItemCondition>) => {
     setItemConditions(newConditions)
     setError(null) // Clear any previous errors
     
-    // Validate conditions
-    const hasValidConditions = Object.values(newConditions).every(condition => 
-      condition.kondisiAkhir && condition.jumlahKembali !== undefined
-    )
-    
-    if (hasValidConditions && currentStep === 2) {
-      // Auto-advance to penalty calculation step
-      setCurrentStep(3)
-    }
-  }, [currentStep])
+    // Debug logging to track state changes
+    console.log('🔄 ItemConditions updated:', {
+      conditionsCount: Object.keys(newConditions).length,
+      hasValidConditions: Object.values(newConditions).every(condition => 
+        condition.kondisiAkhir && condition.jumlahKembali !== undefined
+      ),
+      conditions: newConditions
+    })
+  }, [])
 
   return {
     // State

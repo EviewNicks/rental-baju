@@ -4,7 +4,6 @@ import { useState, useEffect, useMemo } from 'react'
 import { Card } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Separator } from '@/components/ui/separator'
-import { Button } from '@/components/ui/button'
 import { 
   Calculator, 
   AlertTriangle, 
@@ -12,8 +11,7 @@ import {
   Package, 
   DollarSign,
   Info,
-  CheckCircle,
-  ArrowRight
+  CheckCircle
 } from 'lucide-react'
 import type { TransaksiDetail } from '../../types'
 
@@ -47,14 +45,12 @@ interface PenaltyDisplayProps {
   transaction: TransaksiDetail
   itemConditions: Record<string, ItemCondition>
   onPenaltyCalculated?: (calculation: PenaltyCalculation) => void
-  onContinue?: () => void
 }
 
 export function PenaltyDisplay({ 
   transaction, 
   itemConditions, 
-  onPenaltyCalculated,
-  onContinue
+  onPenaltyCalculated
 }: PenaltyDisplayProps) {
   const [calculation, setCalculation] = useState<PenaltyCalculation | null>(null)
 
@@ -331,19 +327,6 @@ export function PenaltyDisplay({
         </div>
       </Card>
 
-      {/* Continue Button */}
-      {calculation && onContinue && (
-        <div className="flex justify-end pt-6 border-t">
-          <Button 
-            onClick={onContinue}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-2"
-            size="lg"
-          >
-            <ArrowRight className="h-5 w-5 mr-2" />
-            Lanjut ke Konfirmasi
-          </Button>
-        </div>
-      )}
     </div>
   )
 }

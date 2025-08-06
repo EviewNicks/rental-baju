@@ -11,9 +11,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Package, AlertTriangle, Info, CheckCircle, ArrowRight } from 'lucide-react'
+import { Package, AlertTriangle, Info, CheckCircle } from 'lucide-react'
 import type { TransaksiDetail } from '../../types'
 
 // Standard condition options from backend schema
@@ -44,7 +43,6 @@ export function ItemConditionForm({
   transaction,
   itemConditions,
   onConditionsChange,
-  onContinue,
   isLoading = false,
 }: ItemConditionFormProps) {
   const [localConditions, setLocalConditions] =
@@ -57,7 +55,7 @@ export function ItemConditionForm({
       transaction.items?.filter(
         (item) => item.jumlahDiambil > 0 && item.statusKembali !== 'lengkap',
       ) || [],
-    [transaction.items]
+    [transaction.items],
   )
 
   // Initialize conditions for returnable items
@@ -78,6 +76,14 @@ export function ItemConditionForm({
     setLocalConditions((prev) => ({ ...prev, ...initialConditions }))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [returnableItems])
+
+  // Real-time state synchronization - sync localConditions to parent immediately
+  useEffect(() => {
+    // Only sync if we have returnable items and conditions are being set
+    if (returnableItems.length > 0 && Object.keys(localConditions).length > 0) {
+      onConditionsChange(localConditions)
+    }
+  }, [localConditions, returnableItems.length, onConditionsChange])
 
   // Validate item condition
   const validateItemCondition = (itemId: string, condition: ItemCondition): string | null => {
@@ -352,24 +358,6 @@ export function ItemConditionForm({
           </div>
         </div>
       </Card>
-
-      {/* Continue Button */}
-      {onContinue && (
-        <div className="flex justify-end pt-6 border-t">
-          <Button 
-            onClick={() => {
-              onConditionsChange(localConditions)
-              onContinue()
-            }}
-            disabled={!isFormValid() || isLoading}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-2"
-            size="lg"
-          >
-            <ArrowRight className="h-5 w-5 mr-2" />
-            Lanjut ke Perhitungan Penalty
-          </Button>
-        </div>
-      )}
     </div>
   )
 }
