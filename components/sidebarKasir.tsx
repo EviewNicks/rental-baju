@@ -33,7 +33,7 @@ const menuItems = [
   { label: 'Penyewa', href: '/kasir/renters', icon: Users },
   { label: 'Penyewaan', href: '/kasir/rentals', icon: ShoppingCart },
   { label: 'Pengambilan', href: '/kasir/pickup', icon: CornerDownLeft },
-  { label: 'Pengembalian', href: '/kasir/returns', icon: CornerUpLeft },
+  { label: 'Pengembalian', href: '/dashboard/return', icon: CornerUpLeft },
   { label: 'Inventaris', href: '/kasir/inventory', icon: Boxes },
   { label: 'Laporan', href: '/kasir/reports', icon: BarChart3 },
   { label: 'Pengaturan', href: '/kasir/settings', icon: Settings },
