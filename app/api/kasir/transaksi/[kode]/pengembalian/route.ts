@@ -255,7 +255,6 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
           // Performance optimization headers
           'Cache-Control': 'no-cache, no-store, must-revalidate',
           'Content-Type': 'application/json; charset=utf-8',
-          'Content-Encoding': 'gzip', // Enable compression
           'X-Request-ID': requestId,
           'X-Processing-Time': `${totalApiDuration}ms`,
           'X-Performance-Optimized': 'true',

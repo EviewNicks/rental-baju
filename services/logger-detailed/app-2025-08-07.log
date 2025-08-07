@@ -87,3 +87,149 @@
     }
   }
 }
+2025-08-07T01:27:43.862Z [INFO] [API][PUT-pengembalian] API request started
+{
+  "requestId": "req-1754530063862-w8twr2mmd",
+  "timestamp": "2025-08-07T01:27:43.862Z",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+  "contentLength": "163",
+  "performance": {
+    "timestamp": 1754530063862,
+    "memory": {
+      "rss": 507162624,
+      "heapTotal": 331677696,
+      "heapUsed": 323653984,
+      "external": 12947466,
+      "arrayBuffers": 8962335
+    }
+  }
+}
+2025-08-07T01:27:44.524Z [INFO] [API][PUT-pengembalian] Late return detected
+{
+  "requestId": "req-1754530063862-w8twr2mmd",
+  "returnDate": "2025-08-07T01:27:43.659Z",
+  "daysLate": 1,
+  "performance": {
+    "timestamp": 1754530064524,
+    "memory": {
+      "rss": 507203584,
+      "heapTotal": 331939840,
+      "heapUsed": 323207024,
+      "external": 12956495,
+      "arrayBuffers": 8966080
+    }
+  }
+}
+2025-08-07T01:27:52.077Z [INFO] [API][PUT-pengembalian] API request completed successfully
+{
+  "performance": {
+    "label": "total-api-request",
+    "duration": "8215ms"
+  }
+}
+2025-08-07T01:27:53.343Z [INFO] [API][PUT-pengembalian] API request started
+{
+  "requestId": "req-1754530073343-05dcvt86s",
+  "timestamp": "2025-08-07T01:27:53.343Z",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+  "contentLength": "163",
+  "performance": {
+    "timestamp": 1754530073343,
+    "memory": {
+      "rss": 508620800,
+      "heapTotal": 333512704,
+      "heapUsed": 324530248,
+      "external": 12982164,
+      "arrayBuffers": 8998233
+    }
+  }
+}
+2025-08-07T01:27:54.203Z [INFO] [API][PUT-pengembalian] Late return detected
+{
+  "requestId": "req-1754530073343-05dcvt86s",
+  "returnDate": "2025-08-07T01:27:43.659Z",
+  "daysLate": 1,
+  "performance": {
+    "timestamp": 1754530074203,
+    "memory": {
+      "rss": 508657664,
+      "heapTotal": 333774848,
+      "heapUsed": 324740176,
+      "external": 12993142,
+      "arrayBuffers": 9002727
+    }
+  }
+}
+2025-08-07T01:28:00.961Z [INFO] [API][PUT-pengembalian] API request started
+{
+  "requestId": "req-1754530080961-809bk479u",
+  "timestamp": "2025-08-07T01:28:00.961Z",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+  "contentLength": "163",
+  "performance": {
+    "timestamp": 1754530080961,
+    "memory": {
+      "rss": 508772352,
+      "heapTotal": 334561280,
+      "heapUsed": 324955704,
+      "external": 13006528,
+      "arrayBuffers": 9034189
+    }
+  }
+}
+2025-08-07T01:28:01.535Z [INFO] [API][PUT-pengembalian] Late return detected
+{
+  "requestId": "req-1754530080961-809bk479u",
+  "returnDate": "2025-08-07T01:27:43.659Z",
+  "daysLate": 1,
+  "performance": {
+    "timestamp": 1754530081535,
+    "memory": {
+      "rss": 508788736,
+      "heapTotal": 334823424,
+      "heapUsed": 325263904,
+      "external": 13028470,
+      "arrayBuffers": 9038055
+    }
+  }
+}
+2025-08-07T05:07:50.610Z [INFO] [API][PUT-pengembalian] API request started
+{
+  "requestId": "req-1754543270610-kmhumob56",
+  "timestamp": "2025-08-07T05:07:50.610Z",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+  "contentLength": "160",
+  "performance": {
+    "timestamp": 1754543270610,
+    "memory": {
+      "rss": 1173757952,
+      "heapTotal": 191385600,
+      "heapUsed": 176503904,
+      "external": 4257692,
+      "arrayBuffers": 287762
+    }
+  }
+}
+2025-08-07T05:07:51.355Z [INFO] [API][PUT-pengembalian] Late return detected
+{
+  "requestId": "req-1754543270610-kmhumob56",
+  "returnDate": "2025-08-07T05:07:46.901Z",
+  "daysLate": 1,
+  "performance": {
+    "timestamp": 1754543271355,
+    "memory": {
+      "rss": 1174052864,
+      "heapTotal": 191385600,
+      "heapUsed": 175953592,
+      "external": 4280704,
+      "arrayBuffers": 292488
+    }
+  }
+}
+2025-08-07T05:08:01.046Z [INFO] [API][PUT-pengembalian] API request completed successfully
+{
+  "performance": {
+    "label": "total-api-request",
+    "duration": "10436ms"
+  }
+}
