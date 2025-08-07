@@ -15,7 +15,7 @@ interface ProductFormData {
   colorId?: string
   quantity: number
   modalAwal: number
-  hargaSewa: number
+  currentPrice: number
   description: string
   imageUrl: string | null
   image?: File | null
@@ -214,24 +214,24 @@ export function ProductForm({
               <div className="space-y-2">
                 <FormField
                   type="text"
-                  name="hargaSewa"
+                  name="currentPrice"
                   label="Harga Sewa (Rp)"
                   icon={CreditCard}
-                  value={formatCurrency(formData.hargaSewa.toString())}
+                  value={formatCurrency(formData.currentPrice.toString())}
                   onChange={(value) => {
                     const numValue =
                       typeof value === 'string' ? value.replace(/\D/g, '') : value.toString()
-                    onInputChange('hargaSewa', Number(numValue))
+                    onInputChange('currentPrice', Number(numValue))
                   }}
                   onBlur={(value) => {
                     const numValue =
                       typeof value === 'string' ? value.replace(/\D/g, '') : value.toString()
-                    onBlur('hargaSewa', Number(numValue))
+                    onBlur('currentPrice', Number(numValue))
                   }}
                   placeholder="150,000"
                   prefix="Rp"
-                  error={errors.hargaSewa}
-                  touched={touched.hargaSewa}
+                  error={errors.currentPrice}
+                  touched={touched.currentPrice}
                   required
                   helpText="Harga sewa per sekali pakai"
                   data-testid="product-price-field"

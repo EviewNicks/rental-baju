@@ -156,7 +156,7 @@ export function ProductInfoSection({ product, className }: ProductInfoSectionPro
 
           <InfoField label="Harga Sewa">
             <p className="text-lg font-semibold text-yellow-600">
-              {formatCurrency(Number(product.hargaSewa))}
+              {formatCurrency(Number(product.currentPrice))}
             </p>
           </InfoField>
         </div>
