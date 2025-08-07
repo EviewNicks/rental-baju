@@ -73,14 +73,14 @@ export class ProductService {
         name: validatedData.name,
         description: validatedData.description,
         modalAwal: new Decimal(validatedData.modalAwal), // ✅ Konversi number ke Decimal
-        hargaSewa: new Decimal(validatedData.hargaSewa), // ✅ Konversi number ke Decimal
+        currentPrice: new Decimal(validatedData.hargaSewa), // ✅ Konversi number ke Decimal (renamed field)
         quantity: validatedData.quantity,
         categoryId: validatedData.categoryId,
         size: validatedData.size,
         colorId: validatedData.colorId,
         imageUrl: request.imageUrl || undefined, // ✅ Gunakan imageUrl dari request
         status: 'AVAILABLE',
-        totalPendapatan: new Decimal(0),
+        // totalPendapatan removed - now calculated from transaction history
         isActive: true,
         createdBy: this.userId,
       },

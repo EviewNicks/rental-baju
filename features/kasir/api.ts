@@ -340,6 +340,41 @@ export class KasirApi {
     })
   }
 
+  // Process return for transaction
+  static async processReturn(
+    transactionId: string,
+    returnData: {
+      items: Array<{
+        itemId: string
+        kondisiAkhir: string
+        jumlahKembali: number
+      }>
+      catatan?: string
+      tglKembali?: string
+    }
+  ): Promise<TransaksiResponse> {
+    return apiRequest<TransaksiResponse>(`/transaksi/${transactionId}/pengembalian`, {
+      method: 'PUT',
+      body: JSON.stringify(returnData),
+    })
+  }
+
+  // Pickup operations (TSK-22 integration)
+  static async processPickup(
+    transactionId: string,
+    pickupData: {
+      items: Array<{
+        id: string
+        jumlahDiambil: number
+      }>
+    }
+  ): Promise<TransaksiResponse> {
+    return apiRequest<TransaksiResponse>(`/transaksi/${transactionId}/pickup`, {
+      method: 'PUT',
+      body: JSON.stringify(pickupData),
+    })
+  }
+
   // Produk (Product) Operations
   static async getAvailableProducts(params: ProductAvailabilityQueryParams = {}): Promise<ProductAvailabilityListResponse> {
     const queryString = buildQueryString(params)
@@ -394,6 +429,28 @@ export const kasirApi = {
     getByStatus: (status: string) => KasirApi.getTransaksiList({ status: status as TransactionStatus }),
     search: (query: string) => KasirApi.getTransaksiList({ search: query } as TransaksiQueryParams),
   },
+
+  // Return operations
+  processReturn: (transactionId: string, returnData: {
+    items: Array<{
+      itemId: string
+      kondisiAkhir: string
+      jumlahKembali: number
+    }>
+    catatan?: string
+    tglKembali?: string
+  }) => KasirApi.processReturn(transactionId, returnData),
+
+  // Transaction lookup by code (for return process)
+  getTransactionByCode: (code: string) => KasirApi.getTransaksiByKode(code),
+
+  // Pickup operations
+  processPickup: (transactionId: string, pickupData: {
+    items: Array<{
+      id: string
+      jumlahDiambil: number
+    }>
+  }) => KasirApi.processPickup(transactionId, pickupData),
 
   // Product shortcuts
   produk: {

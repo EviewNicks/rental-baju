@@ -1,244 +1,137 @@
-2025-07-17T12:01:34.710Z [ERROR] [ProductService][createProduct] Gagal membuat produk
+ GET /dashboard 200 in 548ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 457ms
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 3681ms
+ GET /dashboard/transaction/TXN-20250807-002 200 in 282ms
+ GET /api/kasir/transaksi/TXN-20250807-002 200 in 4394ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 554m
+                                                                                 ms (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
+ PATCH /api/kasir/transaksi/TXN-20250807-002/ambil 200 in 11454ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 505ms (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
+ GET /api/kasir/transaksi/TXN-20250807-002 200 in 4538ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 662ms (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
+ GET /api/kasir/transaksi/TXN-20250807-002 200 in 4822ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 605ms (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
+ GET /dashboard/transaction/TXN-20250807-002/return 200 in 3185ms
+ GET /api/kasir/transaksi/TXN-20250807-002 200 in 4615ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 1142ms (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
+2025-08-06T23:52:36.209Z [INFO] [API][PUT-pengembalian] API request started
 {
-  "error": {},
+  "requestId": "req-1754524356209-zatqt3ogy",
+  "timestamp": "2025-08-06T23:52:36.209Z",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+  "contentLength": "164",
   "performance": {
-    "timestamp": 1752753694709,
+    "timestamp": 1754524356209,
     "memory": {
-      "rss": 950714368,
-      "heapTotal": 139264000,
-      "heapUsed": 131258328,
-      "external": 19428144,
-      "arrayBuffers": 6424131
+      "rss": 724488192,
+      "heapTotal": 290840576,
+      "heapUsed": 260579080,
+      "external": 4615560,
+      "arrayBuffers": 642199
     }
   }
 }
-2025-07-17T12:03:44.308Z [ERROR] [ProductService][createProduct] Gagal membuat produk
+2025-08-06T23:52:36.581Z [INFO] [API][PUT-pengembalian] Late return detected
 {
-  "error": {},
+  "requestId": "req-1754524356209-zatqt3ogy",
+  "returnDate": "2025-08-06T23:52:34.894Z",
+  "daysLate": 1,
   "performance": {
-    "timestamp": 1752753824307,
+    "timestamp": 1754524356581,
     "memory": {
-      "rss": 1006800896,
-      "heapTotal": 145723392,
-      "heapUsed": 135917304,
-      "external": 23830032,
-      "arrayBuffers": 6424151
+      "rss": 726179840,
+      "heapTotal": 290840576,
+      "heapUsed": 261505008,
+      "external": 4635731,
+      "arrayBuffers": 644112
     }
   }
 }
-2025-07-17T12:06:03.227Z [ERROR] [ProductService][createProduct] Gagal membuat produk
+2025-08-06T23:52:48.045Z [INFO] [API][PUT-pengembalian] API request completed successfully
 {
-  "error": {},
   "performance": {
-    "timestamp": 1752753963227,
+    "label": "total-api-request",
+    "duration": "11836ms"
+  }
+}
+ PUT /api/kasir/transaksi/TXN-20250807-002/pengembalian 200 in 12053ms
+2025-08-06T23:52:49.350Z [INFO] [API][PUT-pengembalian] API request started
+{
+  "requestId": "req-1754524369349-c265vas9c",
+  "timestamp": "2025-08-06T23:52:49.350Z",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+  "contentLength": "164",
+  "performance": {
+    "timestamp": 1754524369350,
     "memory": {
-      "rss": 1007587328,
-      "heapTotal": 150441984,
-      "heapUsed": 139585816,
-      "external": 6978540,
-      "arrayBuffers": 3052252
+      "rss": 728891392,
+      "heapTotal": 260431872,
+      "heapUsed": 253183160,
+      "external": 4492356,
+      "arrayBuffers": 510006
     }
   }
 }
-2025-07-17T12:06:17.396Z [ERROR] [ProductService][createProduct] Gagal membuat produk
+2025-08-06T23:52:49.892Z [INFO] [API][PUT-pengembalian] Late return detected
 {
-  "error": {},
+  "requestId": "req-1754524369349-c265vas9c",
+  "returnDate": "2025-08-06T23:52:34.894Z",
+  "daysLate": 1,
   "performance": {
-    "timestamp": 1752753977396,
+    "timestamp": 1754524369892,
     "memory": {
-      "rss": 1006084096,
-      "heapTotal": 149917696,
-      "heapUsed": 137455528,
-      "external": 4353776,
-      "arrayBuffers": 424104
+      "rss": 728907776,
+      "heapTotal": 261742592,
+      "heapUsed": 252799176,
+      "external": 4500554,
+      "arrayBuffers": 512338
     }
   }
 }
-2025-07-17T12:06:33.953Z [ERROR] [ProductService][createProduct] Gagal membuat produk
+ PUT /api/kasir/transaksi/TXN-20250807-002/pengembalian 409 in 5325ms
+2025-08-06T23:52:56.776Z [INFO] [API][PUT-pengembalian] API request started
 {
-  "error": {},
+  "requestId": "req-1754524376776-sgtvfd81y",
+  "timestamp": "2025-08-06T23:52:56.776Z",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+  "contentLength": "164",
   "performance": {
-    "timestamp": 1752753993952,
+    "timestamp": 1754524376776,
     "memory": {
-      "rss": 1008050176,
-      "heapTotal": 151162880,
-      "heapUsed": 145321968,
-      "external": 4387701,
-      "arrayBuffers": 461413
+      "rss": 726274048,
+      "heapTotal": 262266880,
+      "heapUsed": 253719896,
+      "external": 4525486,
+      "arrayBuffers": 545736
     }
   }
 }
-2025-07-17T12:12:35.311Z [ERROR] [ProductService][createProduct] Gagal membuat produk
+2025-08-06T23:52:57.348Z [INFO] [API][PUT-pengembalian] Late return detected
 {
-  "error": {
-    "name": "PrismaClientValidationError",
-    "clientVersion": "6.11.1"
-  },
+  "requestId": "req-1754524376776-sgtvfd81y",
+  "returnDate": "2025-08-06T23:52:34.894Z",
+  "daysLate": 1,
   "performance": {
-    "timestamp": 1752754355311,
+    "timestamp": 1754524377348,
     "memory": {
-      "rss": 1027600384,
-      "heapTotal": 146771968,
-      "heapUsed": 137509736,
-      "external": 13370808,
-      "arrayBuffers": 12462365
+      "rss": 726777856,
+      "heapTotal": 264888320,
+      "heapUsed": 253842384,
+      "external": 4537734,
+      "arrayBuffers": 549518
     }
   }
 }
-2025-07-17T12:13:00.445Z [ERROR] [ProductService][createProduct] Gagal membuat produk
-{
-  "error": {},
-  "performance": {
-    "timestamp": 1752754380445,
-    "memory": {
-      "rss": 1025622016,
-      "heapTotal": 147034112,
-      "heapUsed": 138565688,
-      "external": 13417992,
-      "arrayBuffers": 12506165
-    }
-  }
-}
-2025-07-17T12:13:24.680Z [ERROR] [ProductService][createProduct] Gagal membuat produk
-{
-  "error": {},
-  "performance": {
-    "timestamp": 1752754404680,
-    "memory": {
-      "rss": 1016344576,
-      "heapTotal": 147296256,
-      "heapUsed": 141157856,
-      "external": 5147821,
-      "arrayBuffers": 1221533
-    }
-  }
-}
-2025-07-17T12:13:45.234Z [ERROR] [ProductService][createProduct] Gagal membuat produk
-{
-  "error": {},
-  "performance": {
-    "timestamp": 1752754425234,
-    "memory": {
-      "rss": 1016328192,
-      "heapTotal": 148344832,
-      "heapUsed": 138116992,
-      "external": 4352454,
-      "arrayBuffers": 422782
-    }
-  }
-}
-2025-07-17T12:14:21.321Z [ERROR] [ProductService][createProduct] Gagal membuat produk
-{
-  "error": {
-    "name": "PrismaClientValidationError",
-    "clientVersion": "6.11.1"
-  },
-  "performance": {
-    "timestamp": 1752754461321,
-    "memory": {
-      "rss": 1016393728,
-      "heapTotal": 147296256,
-      "heapUsed": 137747920,
-      "external": 19418660,
-      "arrayBuffers": 18506824
-    }
-  }
-}
-2025-07-17T12:19:06.034Z [ERROR] [ProductService][createProduct] Gagal membuat produk
-{
-  "error": {},
-  "performance": {
-    "timestamp": 1752754746034,
-    "memory": {
-      "rss": 1015693312,
-      "heapTotal": 157859840,
-      "heapUsed": 151642512,
-      "external": 10395522,
-      "arrayBuffers": 9483695
-    }
-  }
-}
-2025-07-17T12:19:18.835Z [ERROR] [ProductService][createProduct] Gagal membuat produk
-{
-  "error": {},
-  "performance": {
-    "timestamp": 1752754758835,
-    "memory": {
-      "rss": 1038110720,
-      "heapTotal": 168804352,
-      "heapUsed": 160046608,
-      "external": 10421277,
-      "arrayBuffers": 9512834
-    }
-  }
-}
-2025-07-17T12:19:42.841Z [ERROR] [ProductService][createProduct] Gagal membuat produk
-{
-  "error": {},
-  "performance": {
-    "timestamp": 1752754782841,
-    "memory": {
-      "rss": 1038036992,
-      "heapTotal": 162054144,
-      "heapUsed": 154569864,
-      "external": 7022225,
-      "arrayBuffers": 3092553
-    }
-  }
-}
-2025-07-17T12:19:52.594Z [ERROR] [ProductService][createProduct] Gagal membuat produk
-{
-  "error": {},
-  "performance": {
-    "timestamp": 1752754792594,
-    "memory": {
-      "rss": 1035517952,
-      "heapTotal": 178307072,
-      "heapUsed": 153127984,
-      "external": 4520752,
-      "arrayBuffers": 591080
-    }
-  }
-}
-2025-07-17T12:20:34.542Z [ERROR] [ProductService][createProduct] Gagal membuat produk
-{
-  "error": {},
-  "performance": {
-    "timestamp": 1752754834542,
-    "memory": {
-      "rss": 1044336640,
-      "heapTotal": 171573248,
-      "heapUsed": 165385360,
-      "external": 5524438,
-      "arrayBuffers": 1598150
-    }
-  }
-}
-2025-07-17T12:23:04.180Z [ERROR] [ProductService][createProduct] Failed to upload image
-{
-  "uploadError": {},
-  "performance": {
-    "timestamp": 1752754984180,
-    "memory": {
-      "rss": 1049993216,
-      "heapTotal": 191676416,
-      "heapUsed": 169472168,
-      "external": 4518027,
-      "arrayBuffers": 584962
-    }
-  }
-}
-2025-07-17T12:23:04.184Z [ERROR] [ProductService][createProduct] Gagal membuat produk
-{
-  "error": {},
-  "performance": {
-    "timestamp": 1752754984184,
-    "memory": {
-      "rss": 1049993216,
-      "heapTotal": 191676416,
-      "heapUsed": 169482112,
-      "external": 4518027,
-      "arrayBuffers": 584962
-    }
-  }
-}
+ PUT /api/kasir/transaksi/TXN-20250807-002/pengembalian 409 in 6120ms
+ GET /dashboard/transaction/TXN-20250807-002 200 in 414ms
+ GET /api/kasir/transaksi/TXN-20250807-002 200 in 4218ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 524ms (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
+ GET /api/kasir/transaksi/TXN-20250807-002 200 in 4371ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 462ms (cache skip)
+ │ │ Cache skipped reason: (auto no cache)

@@ -1,798 +1,158 @@
- GET /dashboard/new 200 in 194ms
-[ProductAvailableAPI] 🚀 GET request started {
-  timestamp: '2025-08-03T22:37:49.819Z',
-  url: 'http://localhost:3000/api/kasir/produk/available?available=true',
-  method: 'GET'
-}
-[ProductAvailableAPI] 📊 Query parameters received {
-  queryParams: {
-    page: '1',
-    limit: '10',
-    search: undefined,
-    categoryId: undefined,
-    available: true,
-    size: undefined,
-    colorId: undefined
-  },
-  timestamp: '2025-08-03T22:37:50.371Z'
-}
-[ProductAvailableAPI] ✅ Query parameters validated {
-  page: 1,
-  limit: 10,
-  skip: 0,
-  search: undefined,
-  categoryId: undefined,
-  available: true,
-  size: undefined,
-  colorId: undefined,
-  timestamp: '2025-08-03T22:37:50.372Z'
-}
-[ProductAvailableAPI] 🗄️ Executing database query {
-  whereClause: { isActive: true, status: 'AVAILABLE', availableStock: { gt: 0 } },       
-  skip: 0,
-  limit: 10,
-  timestamp: '2025-08-03T22:37:50.373Z'
-}
-[ProductAvailableAPI] ✅ Database query completed {
-  productsFound: 5,
-  totalCount: 5,
-  productIds: [
-    '2a225c70-148d-4fca-a5b2-02d151ffb334',
-    'ee781c3a-e7be-4ec4-9889-904c664b1d54',
-    '6e23fefd-205a-4e62-af17-488b75e8cb4f',
-    '6ca0b72e-6392-4ea2-9e96-1511969661d1',
-    'e2f252a1-a7d4-4846-842d-981f227a64d2'
-  ],
-  productInventory: [
-    {
-      id: '2a225c70-148d-4fca-a5b2-02d151ffb334',
-      name: 'Dress Elegant Red',
-      totalInventory: 1,
-      availableStock: 1,
-      rentedStock: 0
-    },
-    {
-      id: 'ee781c3a-e7be-4ec4-9889-904c664b1d54',
-      name: 'Dress Elegant Updated Update',
-      totalInventory: 2,
-      availableStock: 2,
-      rentedStock: 0
-    },
-    {
-      id: '6e23fefd-205a-4e62-af17-488b75e8cb4f',
-      name: 'DRESS Pesta Baju',
-      totalInventory: 10,
-      availableStock: 10,
-      rentedStock: 0
-    },
-    {
-      id: '6ca0b72e-6392-4ea2-9e96-1511969661d1',
-      name: 'DRESS Pesta Baju test 1',
-      totalInventory: 7,
-      availableStock: 7,
-      rentedStock: 0
-    },
-    {
-      id: 'e2f252a1-a7d4-4846-842d-981f227a64d2',
-      name: 'Pakaian',
-      totalInventory: 9,
-      availableStock: 9,
-      rentedStock: 0
-    }
-  ],
-  timestamp: '2025-08-03T22:37:51.670Z'
-}
-[ProductAvailableAPI] ✅ Using database inventory fields directly {
-  productsFound: 5,
-  inventorySummary: [
-    {
-      id: '2a225c70-148d-4fca-a5b2-02d151ffb334',
-      name: 'Dress Elegant Red',
-      totalInventory: 1,
-      availableStock: 1,
-      rentedStock: 0
-    },
-    {
-      id: 'ee781c3a-e7be-4ec4-9889-904c664b1d54',
-      name: 'Dress Elegant Updated Update',
-      totalInventory: 2,
-      availableStock: 2,
-      rentedStock: 0
-    },
-    {
-      id: '6e23fefd-205a-4e62-af17-488b75e8cb4f',
-      name: 'DRESS Pesta Baju',
-      totalInventory: 10,
-      availableStock: 10,
-      rentedStock: 0
-    },
-    {
-      id: '6ca0b72e-6392-4ea2-9e96-1511969661d1',
-      name: 'DRESS Pesta Baju test 1',
-      totalInventory: 7,
-      availableStock: 7,
-      rentedStock: 0
-    },
-    {
-      id: 'e2f252a1-a7d4-4846-842d-981f227a64d2',
-      name: 'Pakaian',
-      totalInventory: 9,
-      availableStock: 9,
-      rentedStock: 0
-    }
-  ],
-  timestamp: '2025-08-03T22:37:51.676Z'
-}
-[ProductAvailableAPI] ✅ Sending response {
-  returnedProducts: 5,
-  totalProducts: 5,
-  currentPage: 1,
-  totalPages: 1,
-  productsWithStock: 5,
-  productsOutOfStock: 0,
-  totalInventoryValue: 29,
-  totalAvailableStock: 29,
-  totalRentedStock: 0,
-  timestamp: '2025-08-03T22:37:51.681Z'
-}
- GET /api/kasir/produk/available?available=true 200 in 2036ms
- │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 543ms (cache skip)
+ ✓ Compiled /api/kasir/transaksi/[kode]/ambil in 287ms
+ PATCH /api/kasir/transaksi/TXN-20250807-005/ambil 200 in 12095ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 993ms (cache skip)
  │ │ Cache skipped reason: (auto no cache)
- ○ Compiling /api/kasir/penyewa ...
- ✓ Compiled /api/kasir/penyewa in 3.7s
- GET /api/kasir/penyewa?limit=20 200 in 5405ms
- │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 657ms (cache skip)
+ GET /api/kasir/transaksi/TXN-20250807-005 200 in 3987ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 593ms (cache skip)
  │ │ Cache skipped reason: (auto no cache)
-[TransaksiService] 🚀 Starting transaction creation {
-  penyewaId: '10bb5330-3654-4c45-b110-c71c07e6ec2f',
-  itemCount: 2,
-  items: [
-    {
-      produkId: 'ee781c3a-e7be-4ec4-9889-904c664b1d54',
-      jumlah: 2,
-      durasi: 3
-    },
-    {
-      produkId: '2a225c70-148d-4fca-a5b2-02d151ffb334',
-      jumlah: 1,
-      durasi: 3
+ GET /api/kasir/transaksi/TXN-20250807-005 200 in 4272ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 328ms (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
+ ○ Compiling /dashboard/transaction/[kode]/return ...
+ ✓ Compiled /dashboard/transaction/[kode]/return in 900ms
+ GET /dashboard/transaction/TXN-20250807-005/return 200 in 2215ms
+ GET /api/kasir/transaksi/TXN-20250807-005 200 in 5006ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 947ms (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
+ ○ Compiling /api/kasir/transaksi/[kode]/pengembalian ...
+ ✓ Compiled /api/kasir/transaksi/[kode]/pengembalian in 1755ms
+2025-08-07T05:07:50.610Z [INFO] [API][PUT-pengembalian] API request started
+{
+  "requestId": "req-1754543270610-kmhumob56",
+  "timestamp": "2025-08-07T05:07:50.610Z",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+  "contentLength": "160",
+  "performance": {
+    "timestamp": 1754543270610,
+    "memory": {
+      "rss": 1173757952,
+      "heapTotal": 191385600,
+      "heapUsed": 176503904,
+      "external": 4257692,
+      "arrayBuffers": 287762
     }
-  ],
-  tglMulai: '2025-08-12T00:00:00.000Z',
-  metodeBayar: 'tunai',
-  timestamp: '2025-08-03T22:39:00.803Z'
+  }
 }
-[TransaksiService] ✅ Penyewa validated {
-  penyewaId: '10bb5330-3654-4c45-b110-c71c07e6ec2f',
-  penyewaNama: 'NInja',
-  timestamp: '2025-08-03T22:39:01.843Z'
-}
-[TransaksiService] 🔄 Validating product availability {
-  items: [
-    {
-      productId: 'ee781c3a-e7be-4ec4-9889-904c664b1d54',
-      requestedQuantity: 2
-    },
-    {
-      productId: '2a225c70-148d-4fca-a5b2-02d151ffb334',
-      requestedQuantity: 1
+2025-08-07T05:07:51.355Z [INFO] [API][PUT-pengembalian] Late return detected
+{
+  "requestId": "req-1754543270610-kmhumob56",
+  "returnDate": "2025-08-07T05:07:46.901Z",
+  "daysLate": 1,
+  "performance": {
+    "timestamp": 1754543271355,
+    "memory": {
+      "rss": 1174052864,
+      "heapTotal": 191385600,
+      "heapUsed": 175953592,
+      "external": 4280704,
+      "arrayBuffers": 292488
     }
-  ],
-  checkDate: '2025-08-12T00:00:00.000Z',
-  timestamp: '2025-08-03T22:39:01.845Z'
-}
-[TransaksiService] 📊 Availability validation result {
-  isValid: true,
-  errors: [],
-  warnings: [
-    'Stok produk Dress Elegant Updated Update akan hampir habis setelah transaksi ini (sisa: 0)',
-    'Stok produk Dress Elegant Red akan hampir habis setelah transaksi ini (sisa: 0)'    
-  ],
-  timestamp: '2025-08-03T22:39:06.683Z'
-}
-[TransaksiService] 🗄️ Starting database transaction {
-  transactionCode: 'TXN-20250804-001',
-  totalHarga: '198000',
-  itemCount: 2,
-  timestamp: '2025-08-03T22:39:09.413Z'
-}
-[TransaksiService] 📝 Creating transaksi record {
-  kode: 'TXN-20250804-001',
-  penyewaId: '10bb5330-3654-4c45-b110-c71c07e6ec2f',
-  totalHarga: '198000',
-  timestamp: '2025-08-03T22:39:09.825Z'
-}
-[TransaksiService] ✅ Transaksi record created {
-  transaksiId: '2d1276a7-e44d-4f23-bdb5-b863b3a9e3f7',
-  kode: 'TXN-20250804-001',
-  timestamp: '2025-08-03T22:39:10.236Z'
-}
-[TransaksiService] 📋 Creating transaction items {
-  itemsCount: 2,
-  items: [
-    {
-      produkId: 'ee781c3a-e7be-4ec4-9889-904c664b1d54',
-      jumlah: 2,
-      hargaSewa: '8000'
-    },
-    {
-      produkId: '2a225c70-148d-4fca-a5b2-02d151ffb334',
-      jumlah: 1,
-      hargaSewa: '50000'
+    "memory": {
+      "rss": 1174052864,
+      "heapTotal": 191385600,
+      "heapUsed": 175953592,
+      "external": 4280704,
+      "arrayBuffers": 292488
     }
-  ],
-  timestamp: '2025-08-03T22:39:10.238Z'
-}
-[TransaksiService] ✅ Transaction items created successfully { itemsCount: 2, timestamp: '2025-08-03T22:39:10.643Z' }
-[TransaksiService] 🔄 Now implementing stock reduction logic {
-  message: 'Executing product quantity updates for rented items',
-  items: [
-    {
-      productId: 'ee781c3a-e7be-4ec4-9889-904c664b1d54',
-      rentedQuantity: 2
-    },
-    {
-      productId: '2a225c70-148d-4fca-a5b2-02d151ffb334',
-      rentedQuantity: 1
+      "heapUsed": 175953592,
+      "external": 4280704,
+      "arrayBuffers": 292488
     }
-  ],
-  timestamp: '2025-08-03T22:39:10.645Z'
-}
-[TransaksiService] 🔄 Starting product quantity updates {
-  itemCount: 2,
-  items: [
-    {
-      productId: 'ee781c3a-e7be-4ec4-9889-904c664b1d54',
-      quantityToReduce: 2
-    },
-    {
-      productId: '2a225c70-148d-4fca-a5b2-02d151ffb334',
-      quantityToReduce: 1
+      "external": 4280704,
+      "arrayBuffers": 292488
     }
-  ],
-  timestamp: '2025-08-03T22:39:10.649Z'
+      "arrayBuffers": 292488
+    }
+    }
+  }
 }
-[TransaksiService] 📦 Processing product quantity update {
-  productId: 'ee781c3a-e7be-4ec4-9889-904c664b1d54',
-  quantityToReduce: 2,
-  timestamp: '2025-08-03T22:39:10.652Z'
+  }
 }
-[TransaksiService] ✅ Product inventory updated successfully {
-  productId: 'ee781c3a-e7be-4ec4-9889-904c664b1d54',
-  productName: 'Dress Elegant Updated Update',
-  totalInventory: 2,
-  previousAvailable: 2,
-  previousRented: 0,
-  rentedQuantity: 2,
-  newAvailable: 0,
-  newRented: 2,
-  timestamp: '2025-08-03T22:39:11.360Z'
+2025-08-07T05:08:01.046Z [INFO] [API][PUT-pengembalian] API request completed succ}
+2025-08-07T05:08:01.046Z [INFO] [API][PUT-pengembalian] API request completed successfully
+essfully
+{
+{
+  "performance": {
+    "label": "total-api-request",
+    "duration": "10436ms"
+  }
 }
-[TransaksiService] 📦 Processing product quantity update {
-  productId: '2a225c70-148d-4fca-a5b2-02d151ffb334',
-  quantityToReduce: 1,
-  timestamp: '2025-08-03T22:39:11.364Z'
-}
-[TransaksiService] ✅ Product inventory updated successfully {
-  productId: '2a225c70-148d-4fca-a5b2-02d151ffb334',
-  productName: 'Dress Elegant Red',
-  totalInventory: 1,
-  previousAvailable: 1,
-  previousRented: 0,
-  rentedQuantity: 1,
-  newAvailable: 0,
-  newRented: 1,
-  timestamp: '2025-08-03T22:39:12.177Z'
-}
-[TransaksiService] ✅ All product quantities updated successfully { totalProductsUpdated:
- 2, timestamp: '2025-08-03T22:39:12.180Z' }
-[TransaksiService] 📝 Activity log created {
-  transaksiId: '2d1276a7-e44d-4f23-bdb5-b863b3a9e3f7',
-  activityType: 'dibuat',
-  timestamp: '2025-08-03T22:39:12.586Z'
-}
-[TransaksiService] ✅ Database transaction completed successfully {
-  transaksiId: '2d1276a7-e44d-4f23-bdb5-b863b3a9e3f7',
-  kode: 'TXN-20250804-001',
-  status: 'active',
-  timestamp: '2025-08-03T22:39:12.791Z'
-}
- POST /api/kasir/transaksi 201 in 15690ms
- ○ Compiling /api/kasir/pembayaran ...
- ✓ Compiled /api/kasir/pembayaran in 3.3s
-[PAYMENT_CREATE] Starting payment transaction for TXN-20250804-001
-[PAYMENT_CREATE] Payment record created: 9e8a63f9-4e7b-4300-bbd2-8b0ef747baf9
-[PAYMENT_CREATE] Transaction amounts updated for TXN-20250804-001
-[PAYMENT_CREATE] Activity log created: 02032dda-d46a-4435-aff5-7a01b01f495e
-[PAYMENT_CREATE] Activity verification successful: 02032dda-d46a-4435-aff5-7a01b01f495e
-[PAYMENT_CREATE] Payment transaction completed for TXN-20250804-001
+ PUT /api/kasir/transaksi/TXN-20250807-005/pengembalian 200 in 14150ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 721ms (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
+ GET /dashboard/transaction/TXN-20250807-005 200 in 306ms
+ GET /api/kasir/transaksi/TXN-20250807-005 200 in 3587ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 618ms (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
+ GET /api/kasir/transaksi/TXN-20250807-005 200 in 3399ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 364ms (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
+ GET /dashboard 200 in 229ms
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 4329ms
+ GET /dashboard 200 in 694ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 479ms
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 3253ms
+ GET /dashboard/new 200 in 205ms
+ GET /api/kasir/produk/available?available=true 200 in 2077ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 576ms (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
+ GET /api/kasir/penyewa?limit=20 200 in 1762ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 546ms (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
+ POST /api/kasir/transaksi 201 in 19971ms
+[PAYMENT_CREATE] Starting payment transaction for TXN-20250807-006
+[PAYMENT_CREATE] Payment record created: 315084ed-72f5-4c79-b9a2-b0103235bf0d
+[PAYMENT_CREATE] Transaction amounts updated for TXN-20250807-006
+[PAYMENT_CREATE] Activity log created: e38507a3-0486-439c-a744-1707d031c49e
+[PAYMENT_CREATE] Activity verification successful: e38507a3-0486-439c-a744-1707d031c49e
+[PAYMENT_CREATE] Payment transaction completed for TXN-20250807-006
 [PAYMENT_VERIFY] Activity verification successful after 0 retries
 [AUDIT] {
   "entityType": "pembayaran",
-  "entityId": "9e8a63f9-4e7b-4300-bbd2-8b0ef747baf9",
+  "entityId": "315084ed-72f5-4c79-b9a2-b0103235bf0d",
   "action": "create",
   "newData": {
-    "id": "9e8a63f9-4e7b-4300-bbd2-8b0ef747baf9",
-    "transaksiId": "2d1276a7-e44d-4f23-bdb5-b863b3a9e3f7",
-    "jumlah": "100000",
+    "id": "315084ed-72f5-4c79-b9a2-b0103235bf0d",
+    "transaksiId": "00a5b045-d14f-45e6-94df-1c51cca039ad",
+    "jumlah": "1320000",
     "metode": "tunai",
     "referensi": null,
     "catatan": "Pembayaran awal transaksi",
     "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
-    "createdAt": "2025-08-03T22:39:22.425Z",
+    "createdAt": "2025-08-07T05:11:48.378Z",
     "transaksi": {
-      "id": "2d1276a7-e44d-4f23-bdb5-b863b3a9e3f7",
-      "kode": "TXN-20250804-001",
+      "id": "00a5b045-d14f-45e6-94df-1c51cca039ad",
+      "kode": "TXN-20250807-006",
       "penyewa": {
-        "nama": "NInja",
-        "telepon": "087463296331"
+        "nama": "Ardi Doe infosx",
+        "telepon": "0812345678949"
       },
-      "totalHarga": "198000",
-      "jumlahBayar": "100000",
-      "sisaBayar": "98000",
-      "status": "active"
-    }
-  },
-  "metadata": {
-    "operation": "payment_creation",
-    "transactionCode": "TXN-20250804-001",
-    "amount": 100000,
-    "method": "tunai"
-  },
-  "userId": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
-  "userRole": "kasir",
-  "timestamp": "2025-08-03T22:39:26.208Z"
-}
-[PAYMENT_CREATE] Payment creation process completed for TXN-20250804-001
- POST /api/kasir/pembayaran 201 in 9901ms
- │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 561ms (cache skip)
- │ │ Cache skipped reason: (auto no cache)
- GET /dashboard 200 in 157ms
- GET /api/kasir/transaksi?page=1&limit=100 200 in 3110ms
-[2025-08-03T22:39:52.966Z] [INFO] [NewTransactionPage] New transaction page loaded | Data: {"timestamp":"2025-08-03T22:39:52.966Z","page":"/dashboard/new","action":"PAGE_LOAD"}  
- GET /dashboard/new 200 in 255ms
-[ProductAvailableAPI] 🚀 GET request started {
-  timestamp: '2025-08-03T22:39:53.193Z',
-  url: 'http://localhost:3000/api/kasir/produk/available?available=true',
-  method: 'GET'
-}
-[ProductAvailableAPI] 📊 Query parameters received {
-  queryParams: {
-    page: '1',
-    limit: '10',
-    search: undefined,
-    categoryId: undefined,
-    available: true,
-    size: undefined,
-    colorId: undefined
-  },
-  timestamp: '2025-08-03T22:39:54.095Z'
-}
-[ProductAvailableAPI] ✅ Query parameters validated {
-  page: 1,
-  limit: 10,
-  skip: 0,
-  search: undefined,
-  categoryId: undefined,
-  available: true,
-  size: undefined,
-  colorId: undefined,
-  timestamp: '2025-08-03T22:39:54.097Z'
-}
-[ProductAvailableAPI] 🗄️ Executing database query {
-  whereClause: { isActive: true, status: 'AVAILABLE', availableStock: { gt: 0 } },       
-  skip: 0,
-  limit: 10,
-  timestamp: '2025-08-03T22:39:54.097Z'
-}
-[ProductAvailableAPI] ✅ Database query completed {
-  productsFound: 3,
-  totalCount: 3,
-  productIds: [
-    '6e23fefd-205a-4e62-af17-488b75e8cb4f',
-    '6ca0b72e-6392-4ea2-9e96-1511969661d1',
-    'e2f252a1-a7d4-4846-842d-981f227a64d2'
-  ],
-  productInventory: [
-    {
-      id: '6e23fefd-205a-4e62-af17-488b75e8cb4f',
-      name: 'DRESS Pesta Baju',
-      totalInventory: 10,
-      availableStock: 10,
-      rentedStock: 0
-    },
-    {
-      id: '6ca0b72e-6392-4ea2-9e96-1511969661d1',
-      name: 'DRESS Pesta Baju test 1',
-      totalInventory: 7,
-      availableStock: 7,
-      rentedStock: 0
-    },
-    {
-      id: 'e2f252a1-a7d4-4846-842d-981f227a64d2',
-      name: 'Pakaian',
-      totalInventory: 9,
-      availableStock: 9,
-      rentedStock: 0
-    }
-  ],
-  timestamp: '2025-08-03T22:39:55.800Z'
-}
-[ProductAvailableAPI] ✅ Using database inventory fields directly {
-  productsFound: 3,
-  inventorySummary: [
-    {
-      id: '6e23fefd-205a-4e62-af17-488b75e8cb4f',
-      name: 'DRESS Pesta Baju',
-      totalInventory: 10,
-      availableStock: 10,
-      rentedStock: 0
-    },
-    {
-      id: '6ca0b72e-6392-4ea2-9e96-1511969661d1',
-      name: 'DRESS Pesta Baju test 1',
-      totalInventory: 7,
-      availableStock: 7,
-      rentedStock: 0
-    },
-    {
-      id: 'e2f252a1-a7d4-4846-842d-981f227a64d2',
-      name: 'Pakaian',
-      totalInventory: 9,
-      availableStock: 9,
-      rentedStock: 0
-    }
-  ],
-  timestamp: '2025-08-03T22:39:55.805Z'
-}
-[ProductAvailableAPI] ✅ Sending response {
-  returnedProducts: 3,
-  totalProducts: 3,
-  currentPage: 1,
-  totalPages: 1,
-  productsWithStock: 3,
-  productsOutOfStock: 0,
-  totalInventoryValue: 26,
-  totalAvailableStock: 26,
-  totalRentedStock: 0,
-  timestamp: '2025-08-03T22:39:55.808Z'
-}
- GET /api/kasir/produk/available?available=true 200 in 2783ms
- │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 898ms (cache skip)
- │ │ Cache skipped reason: (auto no cache)
- GET /api/kasir/penyewa?limit=20 200 in 1927ms
- │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 811ms (cache skip)
- │ │ Cache skipped reason: (auto no cache)
-[TransaksiService] 🚀 Starting transaction creation {
-  penyewaId: 'db214b9a-2b56-4675-be6b-6231730cba4b',
-  itemCount: 1,
-  items: [
-    {
-      produkId: '6e23fefd-205a-4e62-af17-488b75e8cb4f',
-      jumlah: 5,
-      durasi: 3
-    }
-  ],
-  tglMulai: '2025-08-06T00:00:00.000Z',
-  metodeBayar: 'tunai',
-  timestamp: '2025-08-03T22:40:21.275Z'
-}
-[TransaksiService] ✅ Penyewa validated {
-  penyewaId: 'db214b9a-2b56-4675-be6b-6231730cba4b',
-  penyewaNama: 'Ardiansyah',
-  timestamp: '2025-08-03T22:40:22.275Z'
-}
-[TransaksiService] 🔄 Validating product availability {
-  items: [
-    {
-      productId: '6e23fefd-205a-4e62-af17-488b75e8cb4f',
-      requestedQuantity: 5
-    }
-  ],
-  checkDate: '2025-08-06T00:00:00.000Z',
-  timestamp: '2025-08-03T22:40:22.276Z'
-}
-[TransaksiService] 📊 Availability validation result {
-  isValid: true,
-  errors: [],
-  warnings: [],
-  timestamp: '2025-08-03T22:40:25.188Z'
-}
-[TransaksiService] 🗄️ Starting database transaction {
-  transactionCode: 'TXN-20250804-002',
-  totalHarga: '1500000',
-  itemCount: 1,
-  timestamp: '2025-08-03T22:40:28.158Z'
-}
-[TransaksiService] 📝 Creating transaksi record {
-  kode: 'TXN-20250804-002',
-  penyewaId: 'db214b9a-2b56-4675-be6b-6231730cba4b',
-  totalHarga: '1500000',
-  timestamp: '2025-08-03T22:40:28.453Z'
-}
-[TransaksiService] ✅ Transaksi record created {
-  transaksiId: 'bac2b2b8-95c6-4848-9091-e2ae1005cb9d',
-  kode: 'TXN-20250804-002',
-  timestamp: '2025-08-03T22:40:28.774Z'
-}
-[TransaksiService] 📋 Creating transaction items {
-  itemsCount: 1,
-  items: [
-    {
-      produkId: '6e23fefd-205a-4e62-af17-488b75e8cb4f',
-      jumlah: 5,
-      hargaSewa: '100000'
-    }
-  ],
-  timestamp: '2025-08-03T22:40:28.775Z'
-}
-[TransaksiService] ✅ Transaction items created successfully { itemsCount: 1, timestamp: '2025-08-03T22:40:29.095Z' }
-[TransaksiService] 🔄 Now implementing stock reduction logic {
-  message: 'Executing product quantity updates for rented items',
-  items: [
-    {
-      productId: '6e23fefd-205a-4e62-af17-488b75e8cb4f',
-      rentedQuantity: 5
-    }
-  ],
-  timestamp: '2025-08-03T22:40:29.097Z'
-}
-[TransaksiService] 🔄 Starting product quantity updates {
-  itemCount: 1,
-  items: [
-    {
-      productId: '6e23fefd-205a-4e62-af17-488b75e8cb4f',
-      quantityToReduce: 5
-    }
-  ],
-  timestamp: '2025-08-03T22:40:29.099Z'
-}
-[TransaksiService] 📦 Processing product quantity update {
-  productId: '6e23fefd-205a-4e62-af17-488b75e8cb4f',
-  quantityToReduce: 5,
-  timestamp: '2025-08-03T22:40:29.101Z'
-}
-[TransaksiService] ✅ Product inventory updated successfully {
-  productId: '6e23fefd-205a-4e62-af17-488b75e8cb4f',
-  productName: 'DRESS Pesta Baju',
-  totalInventory: 10,
-  previousAvailable: 10,
-  previousRented: 0,
-  rentedQuantity: 5,
-  newAvailable: 5,
-  newRented: 5,
-  timestamp: '2025-08-03T22:40:29.796Z'
-}
-[TransaksiService] ✅ All product quantities updated successfully { totalProductsUpdated:
- 1, timestamp: '2025-08-03T22:40:29.799Z' }
-[TransaksiService] 📝 Activity log created {
-  transaksiId: 'bac2b2b8-95c6-4848-9091-e2ae1005cb9d',
-  activityType: 'dibuat',
-  timestamp: '2025-08-03T22:40:30.206Z'
-}
-[TransaksiService] ✅ Database transaction completed successfully {
-  transaksiId: 'bac2b2b8-95c6-4848-9091-e2ae1005cb9d',
-  kode: 'TXN-20250804-002',
-  status: 'active',
-  timestamp: '2025-08-03T22:40:30.355Z'
-}
- POST /api/kasir/transaksi 201 in 12580ms
-[PAYMENT_CREATE] Starting payment transaction for TXN-20250804-002
-[PAYMENT_CREATE] Payment record created: 13a141f0-4437-468e-8fc4-0eb71f9233e6
-[PAYMENT_CREATE] Transaction amounts updated for TXN-20250804-002
-[PAYMENT_CREATE] Activity log created: bb5e769a-b823-408d-bfa3-f27ac3736054
-[PAYMENT_CREATE] Activity verification successful: bb5e769a-b823-408d-bfa3-f27ac3736054
-[PAYMENT_CREATE] Payment transaction completed for TXN-20250804-002
-[PAYMENT_VERIFY] Activity verification successful after 0 retries
-[AUDIT] {
-  "entityType": "pembayaran",
-  "entityId": "13a141f0-4437-468e-8fc4-0eb71f9233e6",
-  "action": "create",
-  "newData": {
-    "id": "13a141f0-4437-468e-8fc4-0eb71f9233e6",
-    "transaksiId": "bac2b2b8-95c6-4848-9091-e2ae1005cb9d",
-    "jumlah": "500000",
-    "metode": "tunai",
-    "referensi": null,
-    "catatan": "Pembayaran awal transaksi",
-    "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
-    "createdAt": "2025-08-03T22:40:36.201Z",
-    "transaksi": {
-      "id": "bac2b2b8-95c6-4848-9091-e2ae1005cb9d",
-      "kode": "TXN-20250804-002",
-      "penyewa": {
-        "nama": "Ardiansyah",
-        "telepon": "089526293221"
-      },
-      "totalHarga": "1500000",
-      "jumlahBayar": "500000",
-      "sisaBayar": "1000000",
-      "status": "active"
-    }
-  },
-  "metadata": {
-    "operation": "payment_creation",
-    "transactionCode": "TXN-20250804-002",
-    "amount": 500000,
-    "method": "tunai"
-  },
-  "userId": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
-  "userRole": "kasir",
-  "timestamp": "2025-08-03T22:40:40.140Z"
-}
-[PAYMENT_CREATE] Payment creation process completed for TXN-20250804-002
- POST /api/kasir/pembayaran 201 in 6468ms
- │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 562ms (cache skip)
- │ │ Cache skipped reason: (auto no cache)
- GET /dashboard 200 in 161ms
- GET /api/kasir/transaksi?page=1&limit=100 200 in 3246ms
-[2025-08-03T22:40:48.167Z] [INFO] [NewTransactionPage] New transaction page loaded | Data: {"timestamp":"2025-08-03T22:40:48.167Z","page":"/dashboard/new","action":"PAGE_LOAD"}  
- GET /dashboard/new 200 in 229ms
-[ProductAvailableAPI] 🚀 GET request started {
-  timestamp: '2025-08-03T22:40:48.393Z',
-  url: 'http://localhost:3000/api/kasir/produk/available?available=true',
-  method: 'GET'
-}
-[ProductAvailableAPI] 📊 Query parameters received {
-  queryParams: {
-    page: '1',
-    limit: '10',
-    search: undefined,
-    categoryId: undefined,
-    available: true,
-    size: undefined,
-    colorId: undefined
-  },
-  timestamp: '2025-08-03T22:40:49.333Z'
-}
-[ProductAvailableAPI] ✅ Query parameters validated {
-  page: 1,
-  limit: 10,
-  skip: 0,
-  search: undefined,
-  categoryId: undefined,
-  available: true,
-  size: undefined,
-  colorId: undefined,
-  timestamp: '2025-08-03T22:40:49.335Z'
-}
-[ProductAvailableAPI] 🗄️ Executing database query {
-  whereClause: { isActive: true, status: 'AVAILABLE', availableStock: { gt: 0 } },       
-  skip: 0,
-  limit: 10,
-  timestamp: '2025-08-03T22:40:49.337Z'
-}
-[ProductAvailableAPI] ✅ Database query completed {
-  productsFound: 3,
-  totalCount: 3,
-  productIds: [
-    '6e23fefd-205a-4e62-af17-488b75e8cb4f',
-    '6ca0b72e-6392-4ea2-9e96-1511969661d1',
-    'e2f252a1-a7d4-4846-842d-981f227a64d2'
-  ],
-  productInventory: [
-    {
-      id: '6e23fefd-205a-4e62-af17-488b75e8cb4f',
-      name: 'DRESS Pesta Baju',
-      totalInventory: 10,
-      availableStock: 5,
-      rentedStock: 5
-    },
-    {
-      id: '6ca0b72e-6392-4ea2-9e96-1511969661d1',
-      name: 'DRESS Pesta Baju test 1',
-      totalInventory: 7,
-      availableStock: 7,
-      rentedStock: 0
-    },
-    {
-      id: 'e2f252a1-a7d4-4846-842d-981f227a64d2',
-      name: 'Pakaian',
-      totalInventory: 9,
-      availableStock: 9,
-      rentedStock: 0
-    }
-  ],
-  timestamp: '2025-08-03T22:40:50.854Z'
-}
-[ProductAvailableAPI] ✅ Using database inventory fields directly {
-  productsFound: 3,
-  inventorySummary: [
-    {
-      id: '6e23fefd-205a-4e62-af17-488b75e8cb4f',
-      name: 'DRESS Pesta Baju',
-      totalInventory: 10,
-      availableStock: 5,
-      rentedStock: 5
-    },
-    {
-      id: '6ca0b72e-6392-4ea2-9e96-1511969661d1',
-      name: 'DRESS Pesta Baju test 1',
-      totalInventory: 7,
-      availableStock: 7,
-      rentedStock: 0
-    },
-    {
-      id: 'e2f252a1-a7d4-4846-842d-981f227a64d2',
-      name: 'Pakaian',
-      totalInventory: 9,
-      availableStock: 9,
-      rentedStock: 0
-    }
-  ],
-  timestamp: '2025-08-03T22:40:50.857Z'
-}
-[ProductAvailableAPI] ✅ Sending response {
-  returnedProducts: 3,
-  totalProducts: 3,
-  currentPage: 1,
-  totalPages: 1,
-  productsWithStock: 3,
-  productsOutOfStock: 0,
-  totalInventoryValue: 26,
-  totalAvailableStock: 21,
-  totalRentedStock: 5,
-  timestamp: '2025-08-03T22:40:50.864Z'
-}
- GET /api/kasir/produk/available?available=true 200 in 2629ms
- │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 931ms (cache skip)
- │ │ Cache skipped reason: (auto no cache)
- GET /dashboard 200 in 218ms
- ○ Compiling /dashboard/transaction/[kode] ...
- ✓ Compiled /dashboard/transaction/[kode] in 5s
- GET /dashboard/transaction/TXN-20250804-001 200 in 6295ms
- ○ Compiling /api/kasir/transaksi/[kode] ...
- ✓ Compiled /api/kasir/transaksi/[kode] in 2.7s
- GET /api/kasir/transaksi/TXN-20250804-001 200 in 9124ms
- │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 1115ms (cache skip)
- │ │ Cache skipped reason: (auto no cache)
-[PAYMENT_CREATE] Starting payment transaction for TXN-20250804-001
-[PAYMENT_CREATE] Payment record created: e57b6522-1ade-4959-b968-3c15bf3c535b
-[PAYMENT_CREATE] Transaction amounts updated for TXN-20250804-001
-[PAYMENT_CREATE] Activity log created: 465e3e62-c29c-4049-a9e0-471f84c38f7a
-[PAYMENT_CREATE] Activity verification successful: 465e3e62-c29c-4049-a9e0-471f84c38f7a
-[PAYMENT_CREATE] Payment transaction completed for TXN-20250804-001
-[PAYMENT_VERIFY] Activity verification successful after 0 retries
-[AUDIT] {
-  "entityType": "pembayaran",
-  "entityId": "e57b6522-1ade-4959-b968-3c15bf3c535b",
-  "action": "create",
-  "newData": {
-    "id": "e57b6522-1ade-4959-b968-3c15bf3c535b",
-    "transaksiId": "2d1276a7-e44d-4f23-bdb5-b863b3a9e3f7",
-    "jumlah": "98000",
-    "metode": "tunai",
-    "referensi": null,
-    "catatan": null,
-    "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
-    "createdAt": "2025-08-03T22:41:34.208Z",
-    "transaksi": {
-      "id": "2d1276a7-e44d-4f23-bdb5-b863b3a9e3f7",
-      "kode": "TXN-20250804-001",
-      "penyewa": {
-        "nama": "NInja",
-        "telepon": "087463296331"
-      },
-      "totalHarga": "198000",
-      "jumlahBayar": "198000",
+      "totalHarga": "1320000",
+      "jumlahBayar": "1320000",
       "sisaBayar": "0",
       "status": "active"
     }
   },
   "metadata": {
     "operation": "payment_creation",
-    "transactionCode": "TXN-20250804-001",
-    "amount": 98000,
+    "transactionCode": "TXN-20250807-006",
+    "amount": 1320000,
     "method": "tunai"
   },
   "userId": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
   "userRole": "kasir",
-  "timestamp": "2025-08-03T22:41:37.792Z"
+  "timestamp": "2025-08-07T05:11:51.648Z"
 }
-[PAYMENT_CREATE] Payment creation process completed for TXN-20250804-001
- POST /api/kasir/pembayaran 201 in 6465ms
- │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 590ms (cache skip)
+[PAYMENT_CREATE] Payment creation process completed for TXN-20250807-006
+ POST /api/kasir/pembayaran 201 in 6004ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 990ms (cache skip)
  │ │ Cache skipped reason: (auto no cache)
- GET /api/kasir/transaksi/TXN-20250804-001 200 in 4346ms
- │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 567ms (cache skip)
- │ │ Cache skipped reason: (auto no cache)
+ GET /dashboard 200 in 163ms
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 3870ms
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 3735ms
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 3137ms
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 3961ms
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 2949ms
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 4728ms
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 2934ms

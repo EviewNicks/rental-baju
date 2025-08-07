@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import {
   CheckCircle,
   MessageCircle,
@@ -9,6 +10,7 @@ import {
   RefreshCw,
   AlertTriangle,
   Package,
+  RotateCcw,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { PaymentModal } from './PaymentModal'
@@ -24,6 +26,7 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
   const [isProcessing, setIsProcessing] = useState<string | null>(null)
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false)
   const [isPickupModalOpen, setIsPickupModalOpen] = useState(false)
+  const router = useRouter()
 
   const handleAction = async (action: string) => {
     setIsProcessing(action)
@@ -35,7 +38,8 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
             transactionCode: transaction.transactionCode,
             action: 'return',
           })
-          // TODO: Implement return functionality
+          // Navigate to return process page
+          router.push(`/dashboard/transaction/${transaction.transactionCode}/return`)
           break
         case 'reminder':
           console.info('📢 Sending reminder', {
@@ -90,7 +94,9 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
   const pickupStatus = calculateTransactionPickupStatus(transaction)
 
   // Enhanced button visibility logic
-  const canReturn = transaction.status === 'active'
+  const canReturn =
+    transaction.status === 'active' &&
+    transaction.products?.some((p) => p.jumlahDiambil && p.jumlahDiambil > 0)
   const canPickup = transaction.status === 'active' && isPickupAvailable(transaction)
   const canSendReminder = transaction.status === 'terlambat'
   const needsPayment =
@@ -128,9 +134,9 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
             {isProcessing === 'return' ? (
               <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
             ) : (
-              <CheckCircle className="h-4 w-4 mr-2" />
+              <RotateCcw className="h-4 w-4 mr-2" />
             )}
-            {isProcessing === 'return' ? 'Memproses...' : 'Proses Pengembalian'}
+            {isProcessing === 'return' ? 'Membuka...' : 'Proses Pengembalian'}
           </Button>
         )}
 

@@ -1,583 +1,430 @@
-2025-07-17T12:01:34.695Z [WARN] [ProductService][createProduct] Kategori tidak ditemukan: uuid-category-id
-2025-07-17T12:01:34.710Z [ERROR] [ProductService][createProduct] Gagal membuat produk
+2025-08-06T23:21:36.165Z [INFO] [API][PUT-pengembalian] Late return detected
 {
-  "error": {},
+  "requestId": "req-1754522495065-i0ed47ssy",
+  "returnDate": "2025-08-06T23:21:33.096Z",
+  "daysLate": 1,
   "performance": {
-    "timestamp": 1752753694709,
+    "timestamp": 1754522496165,
     "memory": {
-      "rss": 950714368,
-      "heapTotal": 139264000,
-      "heapUsed": 131258328,
-      "external": 19428144,
-      "arrayBuffers": 6424131
+      "rss": 907771904,
+      "heapTotal": 270434304,
+      "heapUsed": 228377696,
+      "external": 4397578,
+      "arrayBuffers": 405979
     }
   }
 }
-2025-07-17T12:03:44.287Z [WARN] [ProductService][createProduct] Validasi produk gagal
+2025-08-06T23:21:45.212Z [INFO] [API][PUT-pengembalian] API request completed successfully
 {
-  "errors": [
-    {
-      "code": "custom",
-      "message": "Format file harus JPG, PNG, atau WebP",
-      "path": [
-        "image"
-      ]
-    }
-  ],
   "performance": {
-    "timestamp": 1752753824287,
+    "label": "total-api-request",
+    "duration": "10147ms"
+  }
+}
+2025-08-06T23:21:46.534Z [INFO] [API][PUT-pengembalian] API request started
+{
+  "requestId": "req-1754522506533-27lme1tdm",
+  "timestamp": "2025-08-06T23:21:46.533Z",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+  "contentLength": "160",
+  "performance": {
+    "timestamp": 1754522506533,
     "memory": {
-      "rss": 1006800896,
-      "heapTotal": 145723392,
-      "heapUsed": 135905824,
-      "external": 23830032,
-      "arrayBuffers": 6424151
+      "rss": 908115968,
+      "heapTotal": 270434304,
+      "heapUsed": 235551560,
+      "external": 4560643,
+      "arrayBuffers": 587273
     }
   }
 }
-2025-07-17T12:03:44.308Z [ERROR] [ProductService][createProduct] Gagal membuat produk
+2025-08-06T23:21:47.173Z [INFO] [API][PUT-pengembalian] Late return detected
 {
-  "error": {},
+  "requestId": "req-1754522506533-27lme1tdm",
+  "returnDate": "2025-08-06T23:21:33.096Z",
+  "daysLate": 1,
   "performance": {
-    "timestamp": 1752753824307,
+    "timestamp": 1754522507173,
     "memory": {
-      "rss": 1006800896,
-      "heapTotal": 145723392,
-      "heapUsed": 135917304,
-      "external": 23830032,
-      "arrayBuffers": 6424151
+      "rss": 908734464,
+      "heapTotal": 270434304,
+      "heapUsed": 236296096,
+      "external": 4583554,
+      "arrayBuffers": 591935
     }
   }
 }
-2025-07-17T12:06:03.213Z [WARN] [ProductService][createProduct] Kategori tidak ditemukan: Baju Pesta
-2025-07-17T12:06:03.227Z [ERROR] [ProductService][createProduct] Gagal membuat produk
+2025-08-06T23:21:53.661Z [INFO] [API][PUT-pengembalian] API request started
 {
-  "error": {},
+  "requestId": "req-1754522513661-tvr32ztnj",
+  "timestamp": "2025-08-06T23:21:53.661Z",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+  "contentLength": "160",
   "performance": {
-    "timestamp": 1752753963227,
+    "timestamp": 1754522513661,
     "memory": {
-      "rss": 1007587328,
-      "heapTotal": 150441984,
-      "heapUsed": 139585816,
-      "external": 6978540,
-      "arrayBuffers": 3052252
+      "rss": 914595840,
+      "heapTotal": 270434304,
+      "heapUsed": 242296704,
+      "external": 4745706,
+      "arrayBuffers": 772316
     }
   }
 }
-2025-07-17T12:06:17.385Z [WARN] [ProductService][createProduct] Validasi produk gagal
+2025-08-06T23:21:54.233Z [INFO] [API][PUT-pengembalian] Late return detected
 {
-  "errors": [
-    {
-      "code": "custom",
-      "message": "Format file harus JPG, PNG, atau WebP",
-      "path": [
-        "image"
-      ]
-    }
-  ],
+  "requestId": "req-1754522513661-tvr32ztnj",
+  "returnDate": "2025-08-06T23:21:33.096Z",
+  "daysLate": 1,
   "performance": {
-    "timestamp": 1752753977385,
+    "timestamp": 1754522514233,
     "memory": {
-      "rss": 1006084096,
-      "heapTotal": 149917696,
-      "heapUsed": 137445544,
-      "external": 4353776,
-      "arrayBuffers": 424104
+      "rss": 915423232,
+      "heapTotal": 270434304,
+      "heapUsed": 229621432,
+      "external": 4448802,
+      "arrayBuffers": 460586
     }
   }
 }
-2025-07-17T12:06:17.396Z [ERROR] [ProductService][createProduct] Gagal membuat produk
+2025-08-06T23:52:36.209Z [INFO] [API][PUT-pengembalian] API request started
 {
-  "error": {},
+  "requestId": "req-1754524356209-zatqt3ogy",
+  "timestamp": "2025-08-06T23:52:36.209Z",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+  "contentLength": "164",
   "performance": {
-    "timestamp": 1752753977396,
+    "timestamp": 1754524356209,
     "memory": {
-      "rss": 1006084096,
-      "heapTotal": 149917696,
-      "heapUsed": 137455528,
-      "external": 4353776,
-      "arrayBuffers": 424104
+      "rss": 724488192,
+      "heapTotal": 290840576,
+      "heapUsed": 260579080,
+      "external": 4615560,
+      "arrayBuffers": 642199
     }
   }
 }
-2025-07-17T12:06:33.943Z [WARN] [ProductService][createProduct] Validasi produk gagal
+2025-08-06T23:52:36.581Z [INFO] [API][PUT-pengembalian] Late return detected
 {
-  "errors": [
-    {
-      "code": "custom",
-      "message": "Format file harus JPG, PNG, atau WebP",
-      "path": [
-        "image"
-      ]
-    }
-  ],
+  "requestId": "req-1754524356209-zatqt3ogy",
+  "returnDate": "2025-08-06T23:52:34.894Z",
+  "daysLate": 1,
   "performance": {
-    "timestamp": 1752753993943,
+    "timestamp": 1754524356581,
     "memory": {
-      "rss": 1008046080,
-      "heapTotal": 151162880,
-      "heapUsed": 145306272,
-      "external": 4387701,
-      "arrayBuffers": 461413
+      "rss": 726179840,
+      "heapTotal": 290840576,
+      "heapUsed": 261505008,
+      "external": 4635731,
+      "arrayBuffers": 644112
     }
   }
 }
-2025-07-17T12:06:33.953Z [ERROR] [ProductService][createProduct] Gagal membuat produk
+2025-08-06T23:52:48.045Z [INFO] [API][PUT-pengembalian] API request completed successfully
 {
-  "error": {},
   "performance": {
-    "timestamp": 1752753993952,
+    "label": "total-api-request",
+    "duration": "11836ms"
+  }
+}
+2025-08-06T23:52:49.350Z [INFO] [API][PUT-pengembalian] API request started
+{
+  "requestId": "req-1754524369349-c265vas9c",
+  "timestamp": "2025-08-06T23:52:49.350Z",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+  "contentLength": "164",
+  "performance": {
+    "timestamp": 1754524369350,
     "memory": {
-      "rss": 1008050176,
-      "heapTotal": 151162880,
-      "heapUsed": 145321968,
-      "external": 4387701,
-      "arrayBuffers": 461413
+      "rss": 728891392,
+      "heapTotal": 260431872,
+      "heapUsed": 253183160,
+      "external": 4492356,
+      "arrayBuffers": 510006
     }
   }
 }
-2025-07-17T12:12:27.871Z [INFO] [ProductService][createProduct] Uploading product image
+2025-08-06T23:52:49.892Z [INFO] [API][PUT-pengembalian] Late return detected
 {
-  "fileName": "1,1.png",
-  "fileSize": 3017845,
+  "requestId": "req-1754524369349-c265vas9c",
+  "returnDate": "2025-08-06T23:52:34.894Z",
+  "daysLate": 1,
   "performance": {
-    "timestamp": 1752754347871,
+    "timestamp": 1754524369892,
     "memory": {
-      "rss": 1015160832,
-      "heapTotal": 148082688,
-      "heapUsed": 136989424,
-      "external": 19877345,
-      "arrayBuffers": 3405126
+      "rss": 728907776,
+      "heapTotal": 261742592,
+      "heapUsed": 252799176,
+      "external": 4500554,
+      "arrayBuffers": 512338
     }
   }
 }
-2025-07-17T12:12:35.287Z [INFO] [ProductService][createProduct] Image uploaded successfully
+2025-08-06T23:52:56.776Z [INFO] [API][PUT-pengembalian] API request started
 {
-  "imageUrl": "https://pmjxdencfgkbjuyjndbp.supabase.co/storage/v1/object/public/products/products-1752754347895.png",
+  "requestId": "req-1754524376776-sgtvfd81y",
+  "timestamp": "2025-08-06T23:52:56.776Z",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+  "contentLength": "164",
   "performance": {
-    "timestamp": 1752754355287,
+    "timestamp": 1754524376776,
     "memory": {
-      "rss": 1027440640,
-      "heapTotal": 146771968,
-      "heapUsed": 137113624,
-      "external": 13370808,
-      "arrayBuffers": 12462365
+      "rss": 726274048,
+      "heapTotal": 262266880,
+      "heapUsed": 253719896,
+      "external": 4525486,
+      "arrayBuffers": 545736
     }
   }
 }
-2025-07-17T12:12:35.311Z [ERROR] [ProductService][createProduct] Gagal membuat produk
+2025-08-06T23:52:57.348Z [INFO] [API][PUT-pengembalian] Late return detected
 {
-  "error": {
-    "name": "PrismaClientValidationError",
-    "clientVersion": "6.11.1"
-  },
+  "requestId": "req-1754524376776-sgtvfd81y",
+  "returnDate": "2025-08-06T23:52:34.894Z",
+  "daysLate": 1,
   "performance": {
-    "timestamp": 1752754355311,
+    "timestamp": 1754524377348,
     "memory": {
-      "rss": 1027600384,
-      "heapTotal": 146771968,
-      "heapUsed": 137509736,
-      "external": 13370808,
-      "arrayBuffers": 12462365
+      "rss": 726777856,
+      "heapTotal": 264888320,
+      "heapUsed": 253842384,
+      "external": 4537734,
+      "arrayBuffers": 549518
     }
   }
 }
-2025-07-17T12:13:00.439Z [WARN] [ProductService][createProduct] Validasi produk gagal
+2025-08-07T00:26:32.514Z [INFO] [API][PUT-pengembalian] Late return detected
 {
-  "errors": [
-    {
-      "code": "custom",
-      "message": "Format file harus JPG, PNG, atau WebP",
-      "path": [
-        "image"
-      ]
-    }
-  ],
+  "requestId": "req-1754526391339-cyoo08xe8",
+  "returnDate": "2025-08-07T00:26:29.027Z",
+  "daysLate": 1,
   "performance": {
-    "timestamp": 1752754380439,
+    "timestamp": 1754526392514,
     "memory": {
-      "rss": 1025622016,
-      "heapTotal": 147034112,
-      "heapUsed": 138555616,
-      "external": 13417992,
-      "arrayBuffers": 12506165
+      "rss": 585703424,
+      "heapTotal": 328572928,
+      "heapUsed": 284535168,
+      "external": 4464457,
+      "arrayBuffers": 476241
     }
   }
 }
-2025-07-17T12:13:00.445Z [ERROR] [ProductService][createProduct] Gagal membuat produk
+2025-08-07T00:26:41.683Z [INFO] [API][PUT-pengembalian] API request completed successfully
 {
-  "error": {},
   "performance": {
-    "timestamp": 1752754380445,
+    "label": "total-api-request",
+    "duration": "10344ms"
+  }
+}
+2025-08-07T00:26:43.436Z [INFO] [API][PUT-pengembalian] API request started
+{
+  "requestId": "req-1754526403436-3jijrqlds",
+  "timestamp": "2025-08-07T00:26:43.436Z",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+  "contentLength": "163",
+  "performance": {
+    "timestamp": 1754526403436,
     "memory": {
-      "rss": 1025622016,
-      "heapTotal": 147034112,
-      "heapUsed": 138565688,
-      "external": 13417992,
-      "arrayBuffers": 12506165
+      "rss": 575819776,
+      "heapTotal": 295018496,
+      "heapUsed": 284733632,
+      "external": 4389350,
+      "arrayBuffers": 419392
     }
   }
 }
-2025-07-17T12:13:24.664Z [WARN] [ProductService][createProduct] Validasi produk gagal
+2025-08-07T00:26:43.881Z [INFO] [API][PUT-pengembalian] Late return detected
 {
-  "errors": [
-    {
-      "code": "custom",
-      "message": "Format file harus JPG, PNG, atau WebP",
-      "path": [
-        "image"
-      ]
-    }
-  ],
+  "requestId": "req-1754526403436-3jijrqlds",
+  "returnDate": "2025-08-07T00:26:29.027Z",
+  "daysLate": 1,
   "performance": {
-    "timestamp": 1752754404664,
+    "timestamp": 1754526403881,
     "memory": {
-      "rss": 1016344576,
-      "heapTotal": 147296256,
-      "heapUsed": 141147696,
-      "external": 5147821,
-      "arrayBuffers": 1221533
+      "rss": 576032768,
+      "heapTotal": 295018496,
+      "heapUsed": 283959864,
+      "external": 4406531,
+      "arrayBuffers": 418315
     }
   }
 }
-2025-07-17T12:13:24.680Z [ERROR] [ProductService][createProduct] Gagal membuat produk
+2025-08-07T00:26:52.109Z [INFO] [API][PUT-pengembalian] API request started
 {
-  "error": {},
+  "requestId": "req-1754526412109-4tt45ivcq",
+  "timestamp": "2025-08-07T00:26:52.109Z",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+  "contentLength": "163",
   "performance": {
-    "timestamp": 1752754404680,
+    "timestamp": 1754526412109,
     "memory": {
-      "rss": 1016344576,
-      "heapTotal": 147296256,
-      "heapUsed": 141157856,
-      "external": 5147821,
-      "arrayBuffers": 1221533
+      "rss": 577265664,
+      "heapTotal": 293445632,
+      "heapUsed": 284608800,
+      "external": 4423175,
+      "arrayBuffers": 442225
     }
   }
 }
-2025-07-17T12:13:45.209Z [WARN] [ProductService][createProduct] Validasi produk gagal
+2025-08-07T00:26:52.695Z [INFO] [API][PUT-pengembalian] Late return detected
 {
-  "errors": [
-    {
-      "code": "custom",
-      "message": "Format file harus JPG, PNG, atau WebP",
-      "path": [
-        "image"
-      ]
-    }
-  ],
+  "requestId": "req-1754526412109-4tt45ivcq",
+  "returnDate": "2025-08-07T00:26:29.027Z",
+  "daysLate": 1,
   "performance": {
-    "timestamp": 1752754425208,
+    "timestamp": 1754526412695,
     "memory": {
-      "rss": 1016328192,
-      "heapTotal": 148344832,
-      "heapUsed": 138106832,
-      "external": 4352454,
-      "arrayBuffers": 422782
+      "rss": 577306624,
+      "heapTotal": 293707776,
+      "heapUsed": 284831896,
+      "external": 4443039,
+      "arrayBuffers": 454823
     }
   }
 }
-2025-07-17T12:13:45.234Z [ERROR] [ProductService][createProduct] Gagal membuat produk
+2025-08-07T01:27:43.862Z [INFO] [API][PUT-pengembalian] API request started
 {
-  "error": {},
+  "requestId": "req-1754530063862-w8twr2mmd",
+  "timestamp": "2025-08-07T01:27:43.862Z",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+  "contentLength": "163",
   "performance": {
-    "timestamp": 1752754425234,
+    "timestamp": 1754530063862,
     "memory": {
-      "rss": 1016328192,
-      "heapTotal": 148344832,
-      "heapUsed": 138116992,
-      "external": 4352454,
-      "arrayBuffers": 422782
+      "rss": 507162624,
+      "heapTotal": 331677696,
+      "heapUsed": 323653984,
+      "external": 12947466,
+      "arrayBuffers": 8962335
     }
   }
 }
-2025-07-17T12:14:14.385Z [INFO] [ProductService][createProduct] Uploading product image
+2025-08-07T01:27:44.524Z [INFO] [API][PUT-pengembalian] Late return detected
 {
-  "fileName": "1,1.png",
-  "fileSize": 3017845,
+  "requestId": "req-1754530063862-w8twr2mmd",
+  "returnDate": "2025-08-07T01:27:43.659Z",
+  "daysLate": 1,
   "performance": {
-    "timestamp": 1752754454384,
+    "timestamp": 1754530064524,
     "memory": {
-      "rss": 1014800384,
-      "heapTotal": 147034112,
-      "heapUsed": 138673080,
-      "external": 19435915,
-      "arrayBuffers": 18524088
+      "rss": 507203584,
+      "heapTotal": 331939840,
+      "heapUsed": 323207024,
+      "external": 12956495,
+      "arrayBuffers": 8966080
     }
   }
 }
-2025-07-17T12:14:21.294Z [INFO] [ProductService][createProduct] Image uploaded successfully
+2025-08-07T01:27:52.077Z [INFO] [API][PUT-pengembalian] API request completed successfully
 {
-  "imageUrl": "https://pmjxdencfgkbjuyjndbp.supabase.co/storage/v1/object/public/products/products-1752754454414.png",
   "performance": {
-    "timestamp": 1752754461294,
+    "label": "total-api-request",
+    "duration": "8215ms"
+  }
+}
+2025-08-07T01:27:53.343Z [INFO] [API][PUT-pengembalian] API request started
+{
+  "requestId": "req-1754530073343-05dcvt86s",
+  "timestamp": "2025-08-07T01:27:53.343Z",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+  "contentLength": "163",
+  "performance": {
+    "timestamp": 1754530073343,
     "memory": {
-      "rss": 1016209408,
-      "heapTotal": 147296256,
-      "heapUsed": 137416992,
-      "external": 19418660,
-      "arrayBuffers": 18506824
+      "rss": 508620800,
+      "heapTotal": 333512704,
+      "heapUsed": 324530248,
+      "external": 12982164,
+      "arrayBuffers": 8998233
     }
   }
 }
-2025-07-17T12:14:21.321Z [ERROR] [ProductService][createProduct] Gagal membuat produk
+2025-08-07T01:27:54.203Z [INFO] [API][PUT-pengembalian] Late return detected
 {
-  "error": {
-    "name": "PrismaClientValidationError",
-    "clientVersion": "6.11.1"
-  },
+  "requestId": "req-1754530073343-05dcvt86s",
+  "returnDate": "2025-08-07T01:27:43.659Z",
+  "daysLate": 1,
   "performance": {
-    "timestamp": 1752754461321,
+    "timestamp": 1754530074203,
     "memory": {
-      "rss": 1016393728,
-      "heapTotal": 147296256,
-      "heapUsed": 137747920,
-      "external": 19418660,
-      "arrayBuffers": 18506824
+      "rss": 508657664,
+      "heapTotal": 333774848,
+      "heapUsed": 324740176,
+      "external": 12993142,
+      "arrayBuffers": 9002727
     }
   }
 }
-2025-07-17T12:18:35.832Z [INFO] [ProductService][createProduct] Uploading product image
+2025-08-07T01:28:00.961Z [INFO] [API][PUT-pengembalian] API request started
 {
-  "fileName": "1,1.png",
-  "fileSize": 3017845,
+  "requestId": "req-1754530080961-809bk479u",
+  "timestamp": "2025-08-07T01:28:00.961Z",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+  "contentLength": "163",
   "performance": {
-    "timestamp": 1752754715832,
+    "timestamp": 1754530080961,
     "memory": {
-      "rss": 1032192000,
-      "heapTotal": 178274304,
-      "heapUsed": 156942632,
-      "external": 16562550,
-      "arrayBuffers": 15650723
+      "rss": 508772352,
+      "heapTotal": 334561280,
+      "heapUsed": 324955704,
+      "external": 13006528,
+      "arrayBuffers": 9034189
     }
   }
 }
-2025-07-17T12:18:41.886Z [INFO] [ProductService][createProduct] Image uploaded successfully
+2025-08-07T01:28:01.535Z [INFO] [API][PUT-pengembalian] Late return detected
 {
-  "imageUrl": "https://pmjxdencfgkbjuyjndbp.supabase.co/storage/v1/object/public/products/products-1752754715839.png",
+  "requestId": "req-1754530080961-809bk479u",
+  "returnDate": "2025-08-07T01:27:43.659Z",
+  "daysLate": 1,
   "performance": {
-    "timestamp": 1752754721886,
+    "timestamp": 1754530081535,
     "memory": {
-      "rss": 1013764096,
-      "heapTotal": 156286976,
-      "heapUsed": 150592456,
-      "external": 10357928,
-      "arrayBuffers": 9449485
+      "rss": 508788736,
+      "heapTotal": 334823424,
+      "heapUsed": 325263904,
+      "external": 13028470,
+      "arrayBuffers": 9038055
     }
   }
 }
-2025-07-17T12:18:43.220Z [INFO] [ProductService][createProduct] Product created successfully
+2025-08-07T05:07:50.610Z [INFO] [API][PUT-pengembalian] API request started
 {
-  "productId": "14168c36-410f-4653-a1af-4268f769ac26",
+  "requestId": "req-1754543270610-kmhumob56",
+  "timestamp": "2025-08-07T05:07:50.610Z",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+  "contentLength": "160",
   "performance": {
-    "timestamp": 1752754723220,
+    "timestamp": 1754543270610,
     "memory": {
-      "rss": 1013751808,
-      "heapTotal": 156286976,
-      "heapUsed": 150704912,
-      "external": 10357985,
-      "arrayBuffers": 9449542
+      "rss": 1173757952,
+      "heapTotal": 191385600,
+      "heapUsed": 176503904,
+      "external": 4257692,
+      "arrayBuffers": 287762
     }
   }
 }
-2025-07-17T12:19:06.026Z [WARN] [ProductService][createProduct] Kode produk sudah digunakan: PRD1
-2025-07-17T12:19:06.034Z [ERROR] [ProductService][createProduct] Gagal membuat produk
+2025-08-07T05:07:51.355Z [INFO] [API][PUT-pengembalian] Late return detected
 {
-  "error": {},
+  "requestId": "req-1754543270610-kmhumob56",
+  "returnDate": "2025-08-07T05:07:46.901Z",
+  "daysLate": 1,
   "performance": {
-    "timestamp": 1752754746034,
+    "timestamp": 1754543271355,
     "memory": {
-      "rss": 1015693312,
-      "heapTotal": 157859840,
-      "heapUsed": 151642512,
-      "external": 10395522,
-      "arrayBuffers": 9483695
+      "rss": 1174052864,
+      "heapTotal": 191385600,
+      "heapUsed": 175953592,
+      "external": 4280704,
+      "arrayBuffers": 292488
     }
   }
 }
-2025-07-17T12:19:18.829Z [WARN] [ProductService][createProduct] Validasi produk gagal
+2025-08-07T05:08:01.046Z [INFO] [API][PUT-pengembalian] API request completed successfully
 {
-  "errors": [
-    {
-      "code": "custom",
-      "message": "Format file harus JPG, PNG, atau WebP",
-      "path": [
-        "image"
-      ]
-    }
-  ],
   "performance": {
-    "timestamp": 1752754758829,
-    "memory": {
-      "rss": 1038110720,
-      "heapTotal": 168804352,
-      "heapUsed": 160036904,
-      "external": 10421277,
-      "arrayBuffers": 9512834
-    }
-  }
-}
-2025-07-17T12:19:18.835Z [ERROR] [ProductService][createProduct] Gagal membuat produk
-{
-  "error": {},
-  "performance": {
-    "timestamp": 1752754758835,
-    "memory": {
-      "rss": 1038110720,
-      "heapTotal": 168804352,
-      "heapUsed": 160046608,
-      "external": 10421277,
-      "arrayBuffers": 9512834
-    }
-  }
-}
-2025-07-17T12:19:42.817Z [WARN] [ProductService][createProduct] Validasi produk gagal
-{
-  "errors": [
-    {
-      "code": "custom",
-      "message": "Format file harus JPG, PNG, atau WebP",
-      "path": [
-        "image"
-      ]
-    }
-  ],
-  "performance": {
-    "timestamp": 1752754782817,
-    "memory": {
-      "rss": 1038036992,
-      "heapTotal": 162054144,
-      "heapUsed": 154560064,
-      "external": 7022225,
-      "arrayBuffers": 3092553
-    }
-  }
-}
-2025-07-17T12:19:42.841Z [ERROR] [ProductService][createProduct] Gagal membuat produk
-{
-  "error": {},
-  "performance": {
-    "timestamp": 1752754782841,
-    "memory": {
-      "rss": 1038036992,
-      "heapTotal": 162054144,
-      "heapUsed": 154569864,
-      "external": 7022225,
-      "arrayBuffers": 3092553
-    }
-  }
-}
-2025-07-17T12:19:52.583Z [WARN] [ProductService][createProduct] Validasi produk gagal
-{
-  "errors": [
-    {
-      "code": "custom",
-      "message": "Format file harus JPG, PNG, atau WebP",
-      "path": [
-        "image"
-      ]
-    }
-  ],
-  "performance": {
-    "timestamp": 1752754792583,
-    "memory": {
-      "rss": 1035517952,
-      "heapTotal": 178307072,
-      "heapUsed": 153118016,
-      "external": 4520752,
-      "arrayBuffers": 591080
-    }
-  }
-}
-2025-07-17T12:19:52.594Z [ERROR] [ProductService][createProduct] Gagal membuat produk
-{
-  "error": {},
-  "performance": {
-    "timestamp": 1752754792594,
-    "memory": {
-      "rss": 1035517952,
-      "heapTotal": 178307072,
-      "heapUsed": 153127984,
-      "external": 4520752,
-      "arrayBuffers": 591080
-    }
-  }
-}
-2025-07-17T12:20:34.529Z [WARN] [ProductService][createProduct] Validasi produk gagal
-{
-  "errors": [
-    {
-      "code": "custom",
-      "message": "Format file harus JPG, PNG, atau WebP",
-      "path": [
-        "image"
-      ]
-    }
-  ],
-  "performance": {
-    "timestamp": 1752754834529,
-    "memory": {
-      "rss": 1044336640,
-      "heapTotal": 171573248,
-      "heapUsed": 165375944,
-      "external": 5524438,
-      "arrayBuffers": 1598150
-    }
-  }
-}
-2025-07-17T12:20:34.542Z [ERROR] [ProductService][createProduct] Gagal membuat produk
-{
-  "error": {},
-  "performance": {
-    "timestamp": 1752754834542,
-    "memory": {
-      "rss": 1044336640,
-      "heapTotal": 171573248,
-      "heapUsed": 165385360,
-      "external": 5524438,
-      "arrayBuffers": 1598150
-    }
-  }
-}
-2025-07-17T12:23:03.207Z [INFO] [ProductService][createProduct] Uploading product image
-{
-  "fileName": "",
-  "fileSize": 0,
-  "performance": {
-    "timestamp": 1752754983206,
-    "memory": {
-      "rss": 1049993216,
-      "heapTotal": 191676416,
-      "heapUsed": 169166048,
-      "external": 4510352,
-      "arrayBuffers": 580680
-    }
-  }
-}
-2025-07-17T12:23:04.180Z [ERROR] [ProductService][createProduct] Failed to upload image
-{
-  "uploadError": {},
-  "performance": {
-    "timestamp": 1752754984180,
-    "memory": {
-      "rss": 1049993216,
-      "heapTotal": 191676416,
-      "heapUsed": 169472168,
-      "external": 4518027,
-      "arrayBuffers": 584962
-    }
-  }
-}
-2025-07-17T12:23:04.184Z [ERROR] [ProductService][createProduct] Gagal membuat produk
-{
-  "error": {},
-  "performance": {
-    "timestamp": 1752754984184,
-    "memory": {
-      "rss": 1049993216,
-      "heapTotal": 191676416,
-      "heapUsed": 169482112,
-      "external": 4518027,
-      "arrayBuffers": 584962
-    }
+    "label": "total-api-request",
+    "duration": "10436ms"
   }
 }

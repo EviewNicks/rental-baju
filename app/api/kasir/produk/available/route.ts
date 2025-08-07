@@ -12,6 +12,7 @@ import { prisma } from '@/lib/prisma'
 import { productAvailabilityQuerySchema } from '@/features/kasir/lib/validation/kasirSchema'
 import { ZodError } from 'zod'
 import { requirePermission, withRateLimit } from '@/lib/auth-middleware'
+import { calculateAvailableStock } from '@/features/kasir/lib/typeUtils'
 
 export async function GET(request: NextRequest) {
   try {
@@ -52,10 +53,11 @@ export async function GET(request: NextRequest) {
       isActive: true,
     }
 
-    // Only show available products (AVAILABLE status and availableStock > 0)
+    // Only show available products (AVAILABLE status and calculated available stock > 0)
     if (available) {
       whereClause.status = 'AVAILABLE'
-      whereClause.availableStock = { gt: 0 } // Use new availableStock field
+      // Note: availableStock filtering will be done after query using calculateAvailableStock()
+      // This avoids the schema mismatch issue while maintaining the same business logic
     }
 
     // Search by product name, code, or description
@@ -83,7 +85,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get products with related data
-    const [products, total] = await Promise.all([
+    const [products, allProducts] = await Promise.all([
       prisma.product.findMany({
         skip,
         take: limit,
@@ -106,8 +108,14 @@ export async function GET(request: NextRequest) {
           },
         },
       }),
-      prisma.product.count({
+      // Get all products matching base criteria for accurate count calculation
+      prisma.product.findMany({
         where: whereClause,
+        select: {
+          id: true,
+          quantity: true,
+          rentedStock: true,
+        },
       }),
     ])
 
@@ -121,11 +129,11 @@ export async function GET(request: NextRequest) {
           code: product.code,
           name: product.name,
           description: product.description,
-          hargaSewa: Number(product.hargaSewa),
+          currentPrice: Number(product.currentPrice),
           // UPDATED: Enhanced inventory information with new fields
           totalInventory: product.quantity, // Total stock (immutable during rentals)
           quantity: product.quantity, // Keep for backward compatibility
-          availableQuantity: product.availableStock, // Currently available for rent
+          availableQuantity: calculateAvailableStock(product.quantity, product.rentedStock), // Calculated available stock
           rentedQuantity: product.rentedStock, // Currently rented out
           imageUrl: product.imageUrl,
           category: {
@@ -149,6 +157,12 @@ export async function GET(request: NextRequest) {
       // Filter out products with no available quantity if 'available' filter is true
       .filter((product) => !available || product.availableQuantity > 0)
 
+    // Calculate accurate total count by filtering allProducts with same logic
+    const filteredAllProducts = available 
+      ? allProducts.filter((product) => calculateAvailableStock(product.quantity, product.rentedStock) > 0)
+      : allProducts
+    
+    const total = filteredAllProducts.length
     const totalPages = Math.ceil(total / limit)
 
     const responseData = {

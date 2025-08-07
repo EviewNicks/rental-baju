@@ -40,6 +40,11 @@ export const statusConfig: Record<
     className: 'bg-gray-100 text-gray-800 border-gray-200',
     description: 'Transaksi dibatalkan',
   },
+  dikembalikan: {
+    label: 'Dikembalikan',
+    className: 'bg-green-100 text-green-800 border-green-200',
+    description: 'Transaksi telah dikembalikan',
+  },
 }
 
 // Activity Timeline Configuration

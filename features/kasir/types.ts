@@ -8,7 +8,7 @@
 // CORE TYPES & ENUMS
 // ==========================================
 
-export type TransactionStatus = 'active' | 'selesai' | 'terlambat' | 'cancelled'
+export type TransactionStatus = 'active' | 'selesai' | 'terlambat' | 'cancelled' | 'dikembalikan'
 export type PaymentMethod = 'tunai' | 'transfer' | 'kartu'
 export type ActivityType = 'dibuat' | 'dibayar' | 'dikembalikan' | 'terlambat' | 'dibatalkan'
 export type ReturnStatus = 'belum' | 'sebagian' | 'lengkap'
@@ -49,9 +49,48 @@ export interface CustomerFormData {
 }
 
 // ==========================================
-// PRODUCT TYPES
+// PRODUCT TYPES - BASE INTERFACES
 // ==========================================
 
+// Base Product interface - Core fields shared across all product contexts
+export interface ProductCore {
+  id: string
+  name: string
+  code?: string
+  description?: string
+  imageUrl?: string
+}
+
+// Product with category information
+export interface ProductWithCategory extends ProductCore {
+  category: {
+    id: string
+    name: string
+    color?: string
+  }
+  size?: string
+  color?: {
+    id: string
+    name: string
+    hexCode?: string
+  }
+}
+
+// Product with pricing information
+export interface ProductWithPricing extends ProductCore {
+  currentPrice: number // Current rental price per unit
+  pricePerDay?: number // Legacy field for backward compatibility
+}
+
+// Product with stock information (calculated fields)
+export interface ProductWithStock extends ProductCore {
+  quantity: number
+  rentedStock: number
+  // Note: availableStock calculated as (quantity - rentedStock) using calculateAvailableStock() utility
+}
+
+// Legacy Product interface for backward compatibility
+// @deprecated Use ProductWithCategory + ProductWithPricing + ProductWithStock
 export interface Product {
   id: string
   name: string
@@ -80,9 +119,55 @@ export interface ProductFilters {
 }
 
 // ==========================================
-// TRANSACTION TYPES
+// TRANSACTION TYPES - BASE INTERFACES
 // ==========================================
 
+// Base Transaction interface - Core fields shared across all transaction contexts
+export interface TransaksiCore {
+  id: string
+  kode: string // Standardized field name
+  status: TransactionStatus
+  totalHarga: number // Performance critical - kept as stored field
+  jumlahBayar: number
+  sisaBayar: number // Performance critical - kept as stored field
+  tglMulai: string
+  tglSelesai?: string
+  createdAt: string
+  updatedAt: string
+}
+
+// Transaction with customer information
+export interface TransaksiWithCustomer extends TransaksiCore {
+  penyewa: {
+    id: string
+    nama: string
+    telepon: string
+    alamat: string
+  }
+}
+
+// Transaction summary for list views (optimized response)
+export interface TransaksiSummary extends TransaksiWithCustomer {
+  itemCount: number // For performance - avoids loading full items
+  metodeBayar: PaymentMethod
+  catatan?: string
+  createdBy: string
+}
+
+// Transaction detail for full views (complete data)
+export interface TransaksiDetail extends TransaksiWithCustomer {
+  items: TransaksiItemResponse[]
+  pembayaran?: PembayaranResponse[]
+  aktivitas?: AktivitasResponse[]
+  metodeBayar: PaymentMethod
+  catatan?: string
+  createdBy: string
+  // tglKembali derived from item status - will be validated in Phase 2
+  tglKembali?: string
+}
+
+// Legacy Transaction interface for backward compatibility
+// @deprecated Use TransaksiSummary or TransaksiDetail
 export interface Transaction {
   id: string
   transactionCode: string
@@ -147,6 +232,8 @@ export interface Payment {
   reference?: string
 }
 
+// Legacy TransactionDetail - replaced by TransaksiDetail
+// @deprecated Use TransaksiDetail with standardized field names
 export interface TransactionDetail extends Transaction {
   customer: Customer
   products: Array<{
@@ -294,27 +381,19 @@ export interface AktivitasResponse {
   createdAt: string
 }
 
-export interface TransaksiResponse {
-  id: string
-  kode: string
+// Unified TransaksiResponse - supports both summary and detail modes
+export interface TransaksiResponse extends TransaksiCore {
   penyewa: {
     id: string
     nama: string
     telepon: string
     alamat: string
   }
-  status: TransactionStatus
-  totalHarga: number
-  jumlahBayar: number
-  sisaBayar: number
-  tglMulai: string
-  tglSelesai?: string
-  tglKembali?: string
   metodeBayar: PaymentMethod
   catatan?: string
   createdBy: string
-  createdAt: string
-  updatedAt: string
+  tglKembali?: string // Will be validated against item status in Phase 2
+  
   // For list endpoint - simplified items with product names (when itemCount is used)
   itemCount?: number
   // For detail endpoint - full item details (API returns full details in items field)
@@ -348,27 +427,11 @@ export interface CreatePembayaranRequest {
   catatan?: string
 }
 
-// Product Availability API Types
-export interface ProductAvailabilityResponse {
-  id: string
-  code: string
-  name: string
-  description?: string
-  hargaSewa: number
+// Product Availability API Types - Using consolidated base interfaces
+export interface ProductAvailabilityResponse extends ProductWithCategory, ProductWithPricing {
   quantity: number
-  availableQuantity: number
-  imageUrl?: string
-  category: {
-    id: string
-    name: string
-    color: string
-  }
-  size?: string
-  color?: {
-    id: string
-    name: string
-    hexCode?: string
-  }
+  // availableQuantity is calculated field - will be removed in Phase 3
+  availableQuantity: number // @deprecated Use availableStock calculation
 }
 
 export interface ProductAvailabilityListResponse {
