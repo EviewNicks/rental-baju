@@ -167,10 +167,31 @@ model TransaksiItem {
   @@index([transaksiId])
   @@index([produkId])
   // Performance indexes for return processing
-  @@index([id, statusKembali, jumlahDiambil], name: "idx_transaksi_item_return_lookup")
+  @@index([id, statusKembali, jumlahDiambil], name: "idx_transaksi_item_status_lookup")
   @@index([produkId, transaksiId, statusKembali], name: "idx_transaksi_item_product_join")
   // TSK-24: Performance index for multi-condition detection
   @@index([id, isMultiCondition, statusKembali], name: "idx_transaksi_item_multi_condition")
+}
+
+// TSK-24: Multi-condition return tracking table
+model TransaksiItemReturn {
+  id                  String   @id @default(uuid())
+  transaksiItemId     String                              // Foreign key to TransaksiItem
+  kondisiAkhir        String                              // Condition description for this split
+  jumlahKembali       Int                                 // Quantity returned in this condition
+  penaltyAmount       Decimal  @db.Decimal(10, 2) @default(0) // Penalty for this condition split
+  modalAwalUsed       Decimal? @db.Decimal(10, 2)        // Modal awal used for lost item penalty calculation
+  penaltyCalculation  Json?                               // Detailed penalty breakdown (JSONB equivalent)
+  createdAt           DateTime @default(now())            // When this condition was recorded
+  createdBy           String                              // User who processed this condition
+  
+  // Relations
+  transaksiItem       TransaksiItem @relation(fields: [transaksiItemId], references: [id], onDelete: Cascade)
+  
+  // Constraints to ensure data integrity
+  @@map("transaksi_item_return")
+  @@index([transaksiItemId, createdAt], name: "idx_transaksi_item_return_timeline")
+  @@index([transaksiItemId, penaltyAmount], name: "idx_transaksi_item_return_penalty")
 }
 
 model Pembayaran {

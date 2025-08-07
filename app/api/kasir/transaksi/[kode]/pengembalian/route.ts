@@ -10,11 +10,15 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { ReturnService } from '@/features/kasir/services/returnService'
 import {
-  createContextualReturnSchema,
   isLostItemCondition,
   getExpectedReturnQuantity,
   getValidationContextMessage,
-} from '@/features/kasir/lib/validation/returnSchema'
+  createEnhancedContextualReturnSchema,
+  detectProcessingMode,
+  validateMultiConditionBusinessRules,
+  getEnhancedValidationMessage,
+} from '@/features/kasir/lib/validation/returnValidationSchema'
+import { EnhancedReturnRequest } from '@/features/kasir/types'
 import { TransactionCodeGenerator } from '@/features/kasir/lib/utils/codeGenerator'
 import { ZodError } from 'zod'
 import { requirePermission, withRateLimit } from '@/lib/auth-middleware'
@@ -26,10 +30,17 @@ interface RouteParams {
   }>
 }
 
+// TSK-24: Enhanced request body types supporting multi-condition
 interface RequestBodyItem {
   itemId: string
-  kondisiAkhir: string
-  jumlahKembali: number
+  kondisiAkhir?: string
+  jumlahKembali?: number
+  // TSK-24: Multi-condition support
+  conditions?: Array<{
+    kondisiAkhir: string
+    jumlahKembali: number
+    modalAwal?: number
+  }>
 }
 
 interface RequestBodyType {
@@ -109,11 +120,15 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     const body = await request.json()
     requestBody = body // Store reference for error handling
 
-    // Enhanced validation with context detection
-    let validatedData
+    // TSK-24: Enhanced validation with multi-condition support
+    let validatedData: EnhancedReturnRequest
+    let processingMode: string = 'single-condition' // Initialize with default
     try {
+      // Detect processing mode (single, multi, or mixed condition)
+      processingMode = detectProcessingMode(body as EnhancedReturnRequest)
+      
       // Detect return context based on tglKembali if provided
-      let validationContext: 'late' | 'scheduled' | 'flexible' = 'flexible'
+      let validationContext: 'late' | 'scheduled' | 'flexible' | 'multi-condition' = 'flexible'
 
       if (body.tglKembali) {
         const returnDate = new Date(body.tglKembali)
@@ -124,6 +139,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
           logger.info('API', 'PUT-pengembalian', 'Late return detected', {
             requestId,
             returnDate: body.tglKembali,
+            processingMode,
             daysLate: Math.ceil((today.getTime() - returnDate.getTime()) / (24 * 60 * 60 * 1000)),
           })
         } else {
@@ -131,20 +147,50 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
           logger.info('API', 'PUT-pengembalian', 'Scheduled return detected', {
             requestId,
             returnDate: body.tglKembali,
+            processingMode,
             daysAhead: Math.ceil((returnDate.getTime() - today.getTime()) / (24 * 60 * 60 * 1000)),
           })
         }
       }
 
-      // Use contextual validation schema
-      const validationSchema = createContextualReturnSchema(validationContext)
+      // Override context for multi-condition requests
+      if (processingMode === 'multi-condition') {
+        validationContext = 'multi-condition'
+      }
+
+      // Use enhanced contextual validation schema
+      const validationSchema = createEnhancedContextualReturnSchema(validationContext)
       validatedData = validationSchema.parse(body)
+      
+      // Additional business rules validation for multi-condition
+      const businessValidation = validateMultiConditionBusinessRules(validatedData)
+      if (!businessValidation.isValid) {
+        const zodError = new ZodError(
+          businessValidation.errors.map((err: {field: string; message: string; code: string}) => ({
+            code: 'custom',
+            path: err.field.split('.'),
+            message: err.message,
+            fatal: false,
+            received: undefined
+          }))
+        )
+        throw zodError
+      }
+
+      logger.info('API', 'PUT-pengembalian', 'Validation successful', {
+        requestId,
+        processingMode,
+        validationContext,
+        itemCount: validatedData.items.length
+      })
+
     } catch (validationError) {
       if (validationError instanceof ZodError) {
-        // Enhanced validation error handling with context
+        // Enhanced validation error handling with multi-condition context
         logger.error('API', 'PUT-pengembalian', 'Validation failed', {
           requestId,
           transactionCode: kode,
+          processingMode: processingMode || 'unknown',
           validationErrors: validationError.issues.map((err) => ({
             field: err.path.join('.'),
             message: err.message,
@@ -171,7 +217,26 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       transaksiId = transaction.id
     }
 
-    const result = await returnService.processReturn(transaksiId, validatedData)
+    // TSK-24: Use enhanced processing based on detected mode
+    const result = processingMode === 'single-condition' 
+      ? await returnService.processReturn(transaksiId, {
+          items: validatedData.items.map(item => ({
+            itemId: item.itemId,
+            kondisiAkhir: item.kondisiAkhir || item.conditions?.[0]?.kondisiAkhir || '',
+            jumlahKembali: item.jumlahKembali || item.conditions?.[0]?.jumlahKembali || 0,
+          })),
+          catatan: validatedData.catatan,
+          tglKembali: validatedData.tglKembali,
+        })
+      : await returnService.processEnhancedReturn(transaksiId, validatedData)
+
+    logger.info('API', 'PUT-pengembalian', 'Return processing completed', {
+      requestId,
+      processingMode,
+      success: result.success,
+      totalPenalty: result.penalty,
+      processedItems: result.processedItems.length
+    })
 
     // Handle structured error responses from service (CRITICAL FIX - proper HTTP codes)
     if (!result.success) {
@@ -211,32 +276,48 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       }
     }
 
-    // Build response data (optimized payload) - only for successful results
+    // TSK-24: Build response data with multi-condition support
     const responseData: Record<string, unknown> = {
-      transaksiId: result.transaksiId || result.transactionId,
-      totalPenalty: result.totalPenalty || result.penalty,
+      transaksiId: 'transaksiId' in result ? result.transaksiId : result.transactionId,
+      totalPenalty: 'totalPenalty' in result ? result.totalPenalty : result.penalty,
       processedItems: result.processedItems,
-      updatedTransaction: result.updatedTransaction,
+      updatedTransaction: 'updatedTransaction' in result ? result.updatedTransaction : undefined,
+      processingMode, // Include processing mode for client understanding
+    }
+
+    // Include multi-condition summary if available
+    if ('multiConditionSummary' in result && result.multiConditionSummary) {
+      responseData.multiConditionSummary = result.multiConditionSummary
     }
 
     // Include detailed breakdown only if requested (reduces payload size)
-    if (includeDetails && result.penaltyCalculation) {
-      responseData.penaltyBreakdown = {
-        totalLateDays: result.penaltyCalculation.totalLateDays,
-        summary: result.penaltyCalculation.summary,
-        itemDetails: result.penaltyCalculation.itemPenalties.map((penalty) => ({
-          itemId: penalty.itemId,
-          productName: penalty.productName,
-          lateDays: penalty.lateDays,
-          penalty: penalty.totalPenalty,
-          reason: penalty.description,
-        })),
+    if (includeDetails) {
+      if ('penaltyCalculation' in result && result.penaltyCalculation) {
+        // Legacy single-condition format
+        responseData.penaltyBreakdown = {
+          totalLateDays: result.penaltyCalculation.totalLateDays,
+          summary: result.penaltyCalculation.summary,
+          itemDetails: result.penaltyCalculation.itemPenalties.map((penalty) => ({
+            itemId: penalty.itemId,
+            productName: penalty.productName,
+            lateDays: penalty.lateDays,
+            penalty: penalty.totalPenalty,
+            reason: penalty.description,
+          })),
+        }
       }
-    } else if (result.penaltyCalculation) {
+      
+      // Enhanced multi-condition breakdown
+      if ('multiConditionSummary' in result && result.multiConditionSummary) {
+        responseData.multiConditionBreakdown = result.multiConditionSummary
+      }
+    } else {
       // Include minimal penalty info
-      responseData.penaltySummary = {
-        totalLateDays: result.penaltyCalculation.totalLateDays,
-        summary: result.penaltyCalculation.summary,
+      if ('penaltyCalculation' in result && result.penaltyCalculation) {
+        responseData.penaltySummary = {
+          totalLateDays: result.penaltyCalculation.totalLateDays,
+          summary: result.penaltyCalculation.summary,
+        }
       }
     }
 
@@ -247,7 +328,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       {
         success: true,
         data: responseData,
-        message: `Pengembalian berhasil diproses untuk transaksi ${kode}. Total penalty: Rp ${(result.totalPenalty || result.penalty).toLocaleString('id-ID')}`,
+        message: `Pengembalian berhasil diproses untuk transaksi ${kode}. Total penalty: Rp ${('totalPenalty' in result ? result.totalPenalty || 0 : result.penalty || 0).toLocaleString('id-ID')}`,
       },
       {
         status: 200,
@@ -299,16 +380,23 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
     console.error(`PUT /api/kasir/transaksi/${kode}/pengembalian error:`, error)
 
-    // Handle validation errors
+    // TSK-24: Handle validation errors with multi-condition support
     if (error instanceof ZodError) {
-      // Enhanced validation error response with helpful context
+      // Enhanced validation error response with multi-condition context
       const validationDetails = error.issues.map((err) => {
         const fieldPath = err.path.join('.')
         let enhancedMessage = err.message
         let suggestions: string[] = []
 
+        // Enhanced handling for multi-condition validation errors
+        if (fieldPath.includes('conditions')) {
+          const enhanced = getEnhancedValidationMessage(err, 'multi-condition')
+          enhancedMessage = enhanced.message
+          suggestions = enhanced.suggestions
+        }
+        
         // Enhanced handling for lost item validation errors
-        if (fieldPath.includes('jumlahKembali') && err.message.includes('kondisi barang')) {
+        else if (fieldPath.includes('jumlahKembali') && err.message.includes('kondisi barang')) {
           // Try to get the item condition from request body for better error message
           try {
             const itemIndex = parseInt(
@@ -317,10 +405,35 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
             const item = requestBody?.items?.[itemIndex]
 
             if (item) {
-              // Use the enhanced context message generation
-              const context = getValidationContextMessage(item)
-              enhancedMessage = `${err.message}. ${context.message}`
-              suggestions = context.suggestions
+              // Check if multi-condition format
+              if (item.conditions && item.conditions.length > 0) {
+                const conditionIndex = parseInt(
+                  err.path.find((p, i) => typeof p === 'number' && i > err.path.indexOf('conditions'))?.toString() || '0'
+                )
+                const condition = item.conditions[conditionIndex]
+                
+                if (condition) {
+                  const isLost = isLostItemCondition(condition.kondisiAkhir)
+                  enhancedMessage = `Multi-condition validation failed for condition ${conditionIndex + 1}: ${condition.kondisiAkhir}`
+                  
+                  if (isLost) {
+                    suggestions = [
+                      'Untuk barang hilang dalam multi-condition, set jumlahKembali = 0',
+                      'Pisahkan barang hilang dan barang yang dikembalikan ke kondisi terpisah',
+                      'Pastikan setiap kondisi memiliki jumlah yang konsisten'
+                    ]
+                  }
+                }
+              } else {
+                // Single condition format - use existing logic
+                const context = getValidationContextMessage({
+                  itemId: item.itemId,
+                  kondisiAkhir: item.kondisiAkhir || '',
+                  jumlahKembali: item.jumlahKembali || 0,
+                })
+                enhancedMessage = `${err.message}. ${context.message}`
+                suggestions = context.suggestions
+              }
             }
           } catch {
             // Fallback to original message if parsing fails
