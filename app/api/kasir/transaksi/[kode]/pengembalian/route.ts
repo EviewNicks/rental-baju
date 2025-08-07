@@ -51,7 +51,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
   let requestBody: RequestBodyType | null = null
 
   try {
-    // Log API request start
+    // Log API request start with deduplication tracking (CRITICAL: Track multiple calls)
     logger.info('API', 'PUT-pengembalian', 'API request started', {
       requestId,
       timestamp: new Date().toISOString(),
@@ -173,10 +173,48 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
     const result = await returnService.processReturn(transaksiId, validatedData)
 
-    // Build response data (optimized payload)
+    // Handle structured error responses from service (CRITICAL FIX - proper HTTP codes)
+    if (!result.success) {
+      const statusCode = result.details?.statusCode
+      
+      // Return 409 Conflict for already-returned transactions (idempotent handling)
+      if (statusCode === 'ALREADY_RETURNED' && result.details) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              message: result.details.message,
+              code: 'ALREADY_RETURNED',
+              currentStatus: result.details.currentStatus,
+              originalReturnDate: result.details.originalReturnDate,
+              processingTime: result.details.processingTime
+            },
+          },
+          { status: 409 }
+        )
+      }
+      
+      // Return 400 Bad Request for other invalid statuses
+      if (statusCode === 'INVALID_STATUS' && result.details) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              message: result.details.message,
+              code: 'INVALID_STATUS',
+              currentStatus: result.details.currentStatus,
+              processingTime: result.details.processingTime
+            },
+          },
+          { status: 400 }
+        )
+      }
+    }
+
+    // Build response data (optimized payload) - only for successful results
     const responseData: Record<string, unknown> = {
-      transaksiId: result.transaksiId,
-      totalPenalty: result.totalPenalty,
+      transaksiId: result.transaksiId || result.transactionId,
+      totalPenalty: result.totalPenalty || result.penalty,
       processedItems: result.processedItems,
       updatedTransaction: result.updatedTransaction,
     }
@@ -209,7 +247,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       {
         success: true,
         data: responseData,
-        message: `Pengembalian berhasil diproses untuk transaksi ${kode}. Total penalty: Rp ${result.totalPenalty.toLocaleString('id-ID')}`,
+        message: `Pengembalian berhasil diproses untuk transaksi ${kode}. Total penalty: Rp ${(result.totalPenalty || result.penalty).toLocaleString('id-ID')}`,
       },
       {
         status: 200,

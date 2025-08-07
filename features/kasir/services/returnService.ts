@@ -29,21 +29,35 @@ export interface ReturnEligibilityResult {
 
 export interface ReturnProcessingResult {
   success: boolean
-  transaksiId: string
-  totalPenalty: number
+  transactionId: string // Updated to match API usage
+  returnedAt: Date
+  penalty: number // Updated to match API usage
   processedItems: Array<{
     itemId: string
     penalty: number
     kondisiAkhir: string
     statusKembali: 'lengkap'
   }>
-  updatedTransaction: {
+  
+  // Success case properties (optional for error cases)
+  transaksiId?: string
+  totalPenalty?: number
+  updatedTransaction?: {
     id: string
     status: ExtendedTransactionStatus
     tglKembali: Date
     sisaBayar: number
   }
   penaltyCalculation?: PenaltyCalculationResult
+  
+  // Error case properties (optional for success cases)
+  details?: {
+    statusCode: 'ALREADY_RETURNED' | 'INVALID_STATUS'
+    message: string
+    currentStatus: string
+    originalReturnDate?: Date | null
+    processingTime: number
+  }
 }
 
 export interface ReturnValidationError {
@@ -347,6 +361,45 @@ export class ReturnService {
     const startTime = Date.now()
     
     try {
+      // Step 0: Early Status Validation (CRITICAL FIX - prevent 6s processing for invalid states)
+      // This lightweight check prevents expensive validation for already-processed transactions
+      const transactionForValidation = await this.transaksiService.getTransaksiForValidation(transaksiId)
+      
+      // Immediately return structured error for already-returned transactions
+      if (transactionForValidation.status === 'dikembalikan') {
+        return {
+          success: false,
+          transactionId: transaksiId,
+          returnedAt: new Date(),
+          penalty: 0,
+          processedItems: [],
+          details: {
+            statusCode: 'ALREADY_RETURNED',
+            message: 'Transaksi sudah dikembalikan sebelumnya',
+            currentStatus: transactionForValidation.status,
+            originalReturnDate: null, // Not available in validation context
+            processingTime: Date.now() - startTime
+          }
+        }
+      }
+
+      // Return error for other non-active statuses
+      if (transactionForValidation.status !== 'active') {
+        return {
+          success: false,
+          transactionId: transaksiId,
+          returnedAt: new Date(),
+          penalty: 0,
+          processedItems: [],
+          details: {
+            statusCode: 'INVALID_STATUS',
+            message: `Transaksi dengan status '${transactionForValidation.status}' tidak dapat diproses pengembaliannya`,
+            currentStatus: transactionForValidation.status,
+            processingTime: Date.now() - startTime
+          }
+        }
+      }
+
       // Step 1: Log return processing start (fire-and-forget async - zero blocking)
       Promise.resolve().then(() => 
         this.auditService.logReturnActivityAsync(transaksiId, {
@@ -504,9 +557,13 @@ export class ReturnService {
 
           const result = {
             success: true,
-            transaksiId,
-            totalPenalty: penaltyCalculation.totalPenalty,
+            transactionId: transaksiId, // Updated to match interface
+            returnedAt: returnDate,
+            penalty: penaltyCalculation.totalPenalty, // Updated to match interface
             processedItems,
+            // Optional success properties
+            transaksiId, // Keep for backward compatibility
+            totalPenalty: penaltyCalculation.totalPenalty, // Keep for backward compatibility
             updatedTransaction: {
               id: updatedTransaction.id,
               status: 'dikembalikan' as ExtendedTransactionStatus,

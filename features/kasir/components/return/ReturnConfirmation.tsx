@@ -68,20 +68,74 @@ export function ReturnConfirmation({
   const [isProcessing, setIsProcessing] = useState(false)
   const [processComplete, setProcessComplete] = useState(false)
   const [processError, setProcessError] = useState<string | null>(null)
-
+  
+  // Enhanced button state management (CRITICAL FIX - prevent double submissions)
+  const [lastSubmissionTime, setLastSubmissionTime] = useState<number>(0)
+  const [submissionCount, setSubmissionCount] = useState<number>(0)
+  
   const handleProcess = async () => {
+    const now = Date.now()
+    const timeSinceLastSubmission = now - lastSubmissionTime
+    
+    // Prevent rapid double-clicks (< 2 seconds)
+    if (timeSinceLastSubmission < 2000) {
+      // Enhanced logging for double-click prevention (strategic logging)
+      console.log('🚫 BUTTON BLOCK (Double-Click):', {
+        transactionCode: transaction.kode,
+        timeSinceLastSubmission,
+        cooldownRemaining: 2000 - timeSinceLastSubmission,
+        blockType: 'rapid_click'
+      })
+      return
+    }
+    
+    // Prevent multiple submissions when already processing
+    if (isProcessing) {
+      // Enhanced logging for processing state prevention (strategic logging)
+      console.log('🚫 BUTTON BLOCK (Processing):', {
+        transactionCode: transaction.kode,
+        isProcessing,
+        submissionCount,
+        blockType: 'already_processing'
+      })
+      return
+    }
+
+    setLastSubmissionTime(now)
+    setSubmissionCount(prev => prev + 1)
     setIsProcessing(true)
     setProcessError(null)
+    
+    console.log('🎯 Processing return submission', { 
+      attempt: submissionCount + 1,
+      transactionCode: transaction.kode 
+    })
     
     try {
       await onProcess(notes.trim() || undefined)
       setProcessComplete(true)
-      // Auto-complete after 3 seconds
+      
+      // Auto-complete after 3 seconds with clear feedback
+      console.log('✅ Return processing completed successfully')
       setTimeout(() => {
         onComplete()
       }, 3000)
+      
     } catch (error) {
-      setProcessError(error instanceof Error ? error.message : 'Terjadi kesalahan saat memproses pengembalian')
+      const errorMessage = error instanceof Error ? error.message : 'Terjadi kesalahan saat memproses pengembalian'
+      console.error('❌ Return processing failed:', errorMessage)
+      
+      // Handle specific error types for better UX
+      if (errorMessage.includes('sudah dikembalikan') || errorMessage.includes('ALREADY_RETURNED')) {
+        setProcessError('Transaksi ini sudah dikembalikan sebelumnya.')
+        setProcessComplete(true) // Treat as success since transaction is complete
+        setTimeout(() => {
+          onComplete()
+        }, 2000)
+      } else {
+        setProcessError(errorMessage)
+      }
+      
     } finally {
       setIsProcessing(false)
     }
@@ -333,21 +387,26 @@ export function ReturnConfirmation({
           </Button>
         )}
         
-        {/* Process Button */}
+        {/* Process Button - Enhanced State Management */}
         <Button
           onClick={handleProcess}
-          disabled={isLoading || isProcessing}
-          className="flex-1 bg-green-600 hover:bg-green-700"
+          disabled={isLoading || isProcessing || processComplete}
+          className={`flex-1 ${processComplete ? 'bg-green-800' : 'bg-green-600 hover:bg-green-700'}`}
         >
-          {isProcessing ? (
+          {processComplete ? (
+            <>
+              <CheckCircle className="h-4 w-4 mr-2 text-green-300" />
+              Pengembalian Selesai
+            </>
+          ) : isProcessing ? (
             <>
               <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-              Memproses Pengembalian...
+              Memproses Pengembalian... {submissionCount > 1 && `(${submissionCount})`}
             </>
           ) : (
             <>
               <CheckCircle className="h-4 w-4 mr-2" />
-              Proses Pengembalian
+              Proses Pengembalian {submissionCount > 0 && `(${submissionCount + 1})`}
             </>
           )}
         </Button>

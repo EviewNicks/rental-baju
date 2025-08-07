@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import type { TransaksiDetail } from '../types'
@@ -57,6 +57,34 @@ export function useReturnProcess(): UseReturnProcessReturn {
 
   const queryClient = useQueryClient()
 
+  // Request deduplication system (CRITICAL FIX - prevent triple API calls)
+  const lastRequestRef = useRef<{
+    fingerprint: string
+    timestamp: number
+    promise: Promise<unknown> | null
+  }>({ fingerprint: '', timestamp: 0, promise: null })
+
+  // Generate request fingerprint for deduplication (CRITICAL FIX - remove timestamp)
+  const generateRequestFingerprint = useCallback((transactionCode: string, returnData: unknown) => {
+    // Create stable fingerprint based on transaction + data only (no timestamp)
+    // This ensures same transaction with same data always generates same fingerprint
+    return `${transactionCode}:${JSON.stringify(returnData)}`
+  }, [])
+
+  // Check if request should be deduplicated
+  const shouldDeduplicateRequest = useCallback((fingerprint: string) => {
+    const now = Date.now()
+    const timeDiff = now - lastRequestRef.current.timestamp
+    const DEDUPLICATION_WINDOW = 30000 // 30 seconds cooldown
+    
+    // Same request within cooldown window
+    if (lastRequestRef.current.fingerprint === fingerprint && timeDiff < DEDUPLICATION_WINDOW) {
+      return { shouldBlock: true, remainingTime: DEDUPLICATION_WINDOW - timeDiff }
+    }
+    
+    return { shouldBlock: false, remainingTime: 0 }
+  }, [])
+
   // Process return mutation
   const { mutateAsync: processReturnMutation, isPending: isProcessing } = useMutation({
     mutationFn: async ({ transactionId, returnData }: { 
@@ -92,7 +120,7 @@ export function useReturnProcess(): UseReturnProcessReturn {
     }
   })
 
-  // Process return function
+  // Process return function with deduplication (CRITICAL FIX)
   const processReturn = useCallback(async (notes?: string) => {
     if (!transaction) {
       throw new Error('Transaksi tidak ditemukan')
@@ -113,24 +141,130 @@ export function useReturnProcess(): UseReturnProcessReturn {
       tglKembali: new Date().toISOString()
     }
 
+    // Generate request fingerprint for deduplication
+    const requestFingerprint = generateRequestFingerprint(transaction.kode, returnData)
+    
+    // Check for duplicate request
+    const deduplicationCheck = shouldDeduplicateRequest(requestFingerprint)
+    
+    // CRITICAL DEBUGGING: Verify deduplication logic is executing
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔍 DEDUPLICATION CHECK:', {
+        transactionCode: transaction.kode,
+        fingerprint: requestFingerprint.substring(0, 30) + '...',
+        shouldBlock: deduplicationCheck.shouldBlock,
+        remainingTime: deduplicationCheck.remainingTime,
+        lastFingerprint: lastRequestRef.current.fingerprint.substring(0, 30) + '...',
+        timeDiff: Date.now() - lastRequestRef.current.timestamp
+      })
+    }
+    
+    if (deduplicationCheck.shouldBlock) {
+      const remainingSeconds = Math.ceil(deduplicationCheck.remainingTime / 1000)
+      
+      // Log deduplication blocking (strategic logging)
+      console.log('🛡️ DEDUPLICATION BLOCK:', {
+        transactionCode: transaction.kode,
+        fingerprint: requestFingerprint.substring(0, 50) + '...',
+        remainingTime: remainingSeconds,
+        blockType: 'same_fingerprint'
+      })
+      
+      toast.warning(
+        `Request sedang diproses. Harap tunggu ${remainingSeconds} detik sebelum mencoba lagi.`,
+        { duration: 3000 }
+      )
+      return // Block duplicate request
+    }
+
+    // If there's an ongoing request for the same transaction, wait for it
+    if (lastRequestRef.current.promise && 
+        lastRequestRef.current.fingerprint.startsWith(transaction.kode + ':')) {
+      try {
+        // Log promise-based blocking (strategic logging)
+        console.log('🛡️ PROMISE BLOCK:', {
+          transactionCode: transaction.kode,
+          ongoingFingerprint: lastRequestRef.current.fingerprint.substring(0, 50) + '...',
+          blockType: 'ongoing_request'
+        })
+        
+        toast.info('Menunggu request sebelumnya selesai...', { duration: 2000 })
+        await lastRequestRef.current.promise
+        return // Previous request completed, no need to send duplicate
+      } catch {
+        // Previous request failed, continue with new request
+        console.log('🔄 Previous request failed, continuing with new request')
+      }
+    }
+
     try {
-      await processReturnMutation({
-        transactionId: transaction.kode, // Use transaction code as identifier
+      // Update tracking info
+      lastRequestRef.current = {
+        fingerprint: requestFingerprint,
+        timestamp: Date.now(),
+        promise: null
+      }
+
+      // Log successful request processing (strategic logging)
+      console.log('✅ PROCESSING REQUEST:', {
+        transactionCode: transaction.kode,
+        fingerprint: requestFingerprint.substring(0, 50) + '...',
+        timestamp: new Date().toISOString()
+      })
+
+      // Create and track the request promise
+      const requestPromise = processReturnMutation({
+        transactionId: transaction.kode,
         returnData
       })
+      
+      lastRequestRef.current.promise = requestPromise
+      
+      await requestPromise
+      
     } catch (error) {
-      // Error is handled by mutation onError
+      // Handle specific error cases for better UX
+      if (error instanceof Error) {
+        // Check for already returned error
+        if (error.message.includes('sudah dikembalikan') || 
+            error.message.includes('ALREADY_RETURNED')) {
+          toast.info('Transaksi ini sudah dikembalikan sebelumnya.', { duration: 4000 })
+          return // Don't re-throw for already returned
+        }
+      }
+      
+      // Error is handled by mutation onError for other cases
       throw error
+    } finally {
+      // Enhanced promise tracking cleanup (strategic logging)
+      if (lastRequestRef.current.promise) {
+        console.log('🧹 CLEANUP:', {
+          transactionCode: transaction.kode,
+          fingerprintCleared: lastRequestRef.current.fingerprint.substring(0, 30) + '...',
+          cleanupType: 'promise_reference'
+        })
+        lastRequestRef.current.promise = null
+      }
     }
-  }, [transaction, itemConditions, processReturnMutation])
+  }, [transaction, itemConditions, processReturnMutation, generateRequestFingerprint, shouldDeduplicateRequest])
 
-  // Reset process to initial state
+  // Reset process to initial state with enhanced cleanup
   const resetProcess = useCallback(() => {
     setCurrentStep(1)
     setTransaction(null)
     setItemConditions({})
     setPenaltyCalculation(null)
     setError(null)
+    
+    // Clear any pending request state during reset
+    if (lastRequestRef.current.promise || lastRequestRef.current.fingerprint) {
+      console.log('🧹 RESET CLEANUP:', {
+        hadPendingRequest: !!lastRequestRef.current.promise,
+        fingerprintCleared: lastRequestRef.current.fingerprint || 'none',
+        cleanupType: 'process_reset'
+      })
+      lastRequestRef.current = { fingerprint: '', timestamp: 0, promise: null }
+    }
   }, [])
 
   // Simple setters without auto-advancement - manual navigation only
