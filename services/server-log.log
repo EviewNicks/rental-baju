@@ -1,199 +1,158 @@
- GET /api/kasir/produk/available?available=true 200 in 2064ms
- │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 540m
-
-
-
-
-
-
-
-
-
-
-
-
-                                                                                 ms (cache skip)
+ ✓ Compiled /api/kasir/transaksi/[kode]/ambil in 287ms
+ PATCH /api/kasir/transaksi/TXN-20250807-005/ambil 200 in 12095ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 993ms (cache skip)
  │ │ Cache skipped reason: (auto no cache)
- GET /api/kasir/penyewa?limit=20 200 in 2033ms
- │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 642ms (cache skip)
+ GET /api/kasir/transaksi/TXN-20250807-005 200 in 3987ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 593ms (cache skip)
  │ │ Cache skipped reason: (auto no cache)
- POST /api/kasir/transaksi 201 in 12221ms
-[PAYMENT_CREATE] Starting payment transaction for TXN-20250807-003
-[PAYMENT_CREATE] Payment record created: ea1bf653-ad55-45d4-a324-7e11e48c5f02
-[PAYMENT_CREATE] Transaction amounts updated for TXN-20250807-003
-[PAYMENT_CREATE] Activity log created: 2e35cd47-666d-4904-bbf4-b6b6ce68ce7f
-[PAYMENT_CREATE] Activity verification successful: 2e35cd47-666d-4904-bbf4-b6b6ce68ce7f
-[PAYMENT_CREATE] Payment transaction completed for TXN-20250807-003
+ GET /api/kasir/transaksi/TXN-20250807-005 200 in 4272ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 328ms (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
+ ○ Compiling /dashboard/transaction/[kode]/return ...
+ ✓ Compiled /dashboard/transaction/[kode]/return in 900ms
+ GET /dashboard/transaction/TXN-20250807-005/return 200 in 2215ms
+ GET /api/kasir/transaksi/TXN-20250807-005 200 in 5006ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 947ms (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
+ ○ Compiling /api/kasir/transaksi/[kode]/pengembalian ...
+ ✓ Compiled /api/kasir/transaksi/[kode]/pengembalian in 1755ms
+2025-08-07T05:07:50.610Z [INFO] [API][PUT-pengembalian] API request started
+{
+  "requestId": "req-1754543270610-kmhumob56",
+  "timestamp": "2025-08-07T05:07:50.610Z",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+  "contentLength": "160",
+  "performance": {
+    "timestamp": 1754543270610,
+    "memory": {
+      "rss": 1173757952,
+      "heapTotal": 191385600,
+      "heapUsed": 176503904,
+      "external": 4257692,
+      "arrayBuffers": 287762
+    }
+  }
+}
+2025-08-07T05:07:51.355Z [INFO] [API][PUT-pengembalian] Late return detected
+{
+  "requestId": "req-1754543270610-kmhumob56",
+  "returnDate": "2025-08-07T05:07:46.901Z",
+  "daysLate": 1,
+  "performance": {
+    "timestamp": 1754543271355,
+    "memory": {
+      "rss": 1174052864,
+      "heapTotal": 191385600,
+      "heapUsed": 175953592,
+      "external": 4280704,
+      "arrayBuffers": 292488
+    }
+    "memory": {
+      "rss": 1174052864,
+      "heapTotal": 191385600,
+      "heapUsed": 175953592,
+      "external": 4280704,
+      "arrayBuffers": 292488
+    }
+      "heapUsed": 175953592,
+      "external": 4280704,
+      "arrayBuffers": 292488
+    }
+      "external": 4280704,
+      "arrayBuffers": 292488
+    }
+      "arrayBuffers": 292488
+    }
+    }
+  }
+}
+  }
+}
+2025-08-07T05:08:01.046Z [INFO] [API][PUT-pengembalian] API request completed succ}
+2025-08-07T05:08:01.046Z [INFO] [API][PUT-pengembalian] API request completed successfully
+essfully
+{
+{
+  "performance": {
+    "label": "total-api-request",
+    "duration": "10436ms"
+  }
+}
+ PUT /api/kasir/transaksi/TXN-20250807-005/pengembalian 200 in 14150ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 721ms (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
+ GET /dashboard/transaction/TXN-20250807-005 200 in 306ms
+ GET /api/kasir/transaksi/TXN-20250807-005 200 in 3587ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 618ms (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
+ GET /api/kasir/transaksi/TXN-20250807-005 200 in 3399ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 364ms (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
+ GET /dashboard 200 in 229ms
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 4329ms
+ GET /dashboard 200 in 694ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 479ms
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 3253ms
+ GET /dashboard/new 200 in 205ms
+ GET /api/kasir/produk/available?available=true 200 in 2077ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 576ms (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
+ GET /api/kasir/penyewa?limit=20 200 in 1762ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 546ms (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
+ POST /api/kasir/transaksi 201 in 19971ms
+[PAYMENT_CREATE] Starting payment transaction for TXN-20250807-006
+[PAYMENT_CREATE] Payment record created: 315084ed-72f5-4c79-b9a2-b0103235bf0d
+[PAYMENT_CREATE] Transaction amounts updated for TXN-20250807-006
+[PAYMENT_CREATE] Activity log created: e38507a3-0486-439c-a744-1707d031c49e
+[PAYMENT_CREATE] Activity verification successful: e38507a3-0486-439c-a744-1707d031c49e
+[PAYMENT_CREATE] Payment transaction completed for TXN-20250807-006
 [PAYMENT_VERIFY] Activity verification successful after 0 retries
 [AUDIT] {
   "entityType": "pembayaran",
-  "entityId": "ea1bf653-ad55-45d4-a324-7e11e48c5f02",
+  "entityId": "315084ed-72f5-4c79-b9a2-b0103235bf0d",
   "action": "create",
   "newData": {
-    "id": "ea1bf653-ad55-45d4-a324-7e11e48c5f02",
-    "transaksiId": "c1c29c30-6a09-40aa-9b0b-12f4a99bb55a",
-    "jumlah": "600000",
+    "id": "315084ed-72f5-4c79-b9a2-b0103235bf0d",
+    "transaksiId": "00a5b045-d14f-45e6-94df-1c51cca039ad",
+    "jumlah": "1320000",
     "metode": "tunai",
     "referensi": null,
     "catatan": "Pembayaran awal transaksi",
     "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
-    "createdAt": "2025-08-07T00:22:30.952Z",
+    "createdAt": "2025-08-07T05:11:48.378Z",
     "transaksi": {
-      "id": "c1c29c30-6a09-40aa-9b0b-12f4a99bb55a",
-      "kode": "TXN-20250807-003",
+      "id": "00a5b045-d14f-45e6-94df-1c51cca039ad",
+      "kode": "TXN-20250807-006",
       "penyewa": {
-        "nama": "John Doe infosx",
-        "telepon": "0812345678647"
+        "nama": "Ardi Doe infosx",
+        "telepon": "0812345678949"
       },
-      "totalHarga": "600000",
-      "jumlahBayar": "600000",
+      "totalHarga": "1320000",
+      "jumlahBayar": "1320000",
       "sisaBayar": "0",
       "status": "active"
     }
   },
   "metadata": {
     "operation": "payment_creation",
-    "transactionCode": "TXN-20250807-003",
-    "amount": 600000,
+    "transactionCode": "TXN-20250807-006",
+    "amount": 1320000,
     "method": "tunai"
   },
   "userId": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
   "userRole": "kasir",
-  "timestamp": "2025-08-07T00:22:34.944Z"
+  "timestamp": "2025-08-07T05:11:51.648Z"
 }
-[PAYMENT_CREATE] Payment creation process completed for TXN-20250807-003
- POST /api/kasir/pembayaran 201 in 6855ms
- │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 614ms (cache skip)
+[PAYMENT_CREATE] Payment creation process completed for TXN-20250807-006
+ POST /api/kasir/pembayaran 201 in 6004ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 990ms (cache skip)
  │ │ Cache skipped reason: (auto no cache)
  GET /dashboard 200 in 163ms
- GET /api/kasir/transaksi?page=1&limit=100 200 in 3894ms
- GET /dashboard/transaction/TXN-20250807-003 200 in 266ms
- GET /api/kasir/transaksi/TXN-20250807-003 200 in 4324ms
- │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 976ms (cache skip)
- │ │ Cache skipped reason: (auto no cache)
- PATCH /api/kasir/transaksi/TXN-20250807-003/ambil 200 in 9765ms
- │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 515ms (cache skip)
- │ │ Cache skipped reason: (auto no cache)
- GET /api/kasir/transaksi/TXN-20250807-003 200 in 3800ms
- │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 543ms (cache skip)
- │ │ Cache skipped reason: (auto no cache)
- GET /api/kasir/transaksi/TXN-20250807-003 200 in 3561ms
- │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 433ms (cache skip)
- │ │ Cache skipped reason: (auto no cache)
- GET /dashboard/transaction/TXN-20250807-003/return 200 in 3071ms
- GET /api/kasir/transaksi/TXN-20250807-003 200 in 4299ms
- │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 1084ms (cache skip)
- │ │ Cache skipped reason: (auto no cache)
-2025-08-07T00:26:31.340Z [INFO] [API][PUT-pengembalian] API request started
-{
-  "requestId": "req-1754526391339-cyoo08xe8",
-  "timestamp": "2025-08-07T00:26:31.339Z",
-  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
-  "contentLength": "163",
-  "performance": {
-    "timestamp": 1754526391340,
-    "memory": {
-      "rss": 593256448,
-      "heapTotal": 314990592,
-      "heapUsed": 298512888,
-      "external": 4420014,
-      "arrayBuffers": 450056
-    }
-  }
-}
-2025-08-07T00:26:32.514Z [INFO] [API][PUT-pengembalian] Late return detected
-{
-  "requestId": "req-1754526391339-cyoo08xe8",
-  "returnDate": "2025-08-07T00:26:29.027Z",
-  "daysLate": 1,
-  "performance": {
-    "timestamp": 1754526392514,
-    "memory": {
-      "rss": 585703424,
-      "heapTotal": 328572928,
-      "heapUsed": 284535168,
-      "external": 4464457,
-      "arrayBuffers": 476241
-    }
-  }
-}
-2025-08-07T00:26:41.683Z [INFO] [API][PUT-pengembalian] API request completed successfully
-{
-  "performance": {
-    "label": "total-api-request",
-    "duration": "10344ms"
-  }
-}
- PUT /api/kasir/transaksi/TXN-20250807-003/pengembalian 200 in 12634ms
-2025-08-07T00:26:43.436Z [INFO] [API][PUT-pengembalian] API request started
-{
-  "requestId": "req-1754526403436-3jijrqlds",
-  "timestamp": "2025-08-07T00:26:43.436Z",
-  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
-  "contentLength": "163",
-  "performance": {
-    "timestamp": 1754526403436,
-    "memory": {
-      "rss": 575819776,
-      "heapTotal": 295018496,
-      "heapUsed": 284733632,
-      "external": 4389350,
-      "arrayBuffers": 419392
-    }
-  }
-}
-2025-08-07T00:26:43.881Z [INFO] [API][PUT-pengembalian] Late return detected
-{
-  "requestId": "req-1754526403436-3jijrqlds",
-  "returnDate": "2025-08-07T00:26:29.027Z",
-  "daysLate": 1,
-  "performance": {
-    "timestamp": 1754526403881,
-    "memory": {
-      "rss": 576032768,
-      "heapTotal": 295018496,
-      "heapUsed": 283959864,
-      "external": 4406531,
-      "arrayBuffers": 418315
-    }
-  }
-}
- PUT /api/kasir/transaksi/TXN-20250807-003/pengembalian 409 in 6574ms
-2025-08-07T00:26:52.109Z [INFO] [API][PUT-pengembalian] API request started
-{
-  "requestId": "req-1754526412109-4tt45ivcq",
-  "timestamp": "2025-08-07T00:26:52.109Z",
-  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
-  "contentLength": "163",
-  "performance": {
-    "timestamp": 1754526412109,
-    "memory": {
-      "rss": 577265664,
-      "heapTotal": 293445632,
-      "heapUsed": 284608800,
-      "external": 4423175,
-      "arrayBuffers": 442225
-    }
-  }
-}
-2025-08-07T00:26:52.695Z [INFO] [API][PUT-pengembalian] Late return detected
-{
-  "requestId": "req-1754526412109-4tt45ivcq",
-  "returnDate": "2025-08-07T00:26:29.027Z",
-  "daysLate": 1,
-  "performance": {
-    "timestamp": 1754526412695,
-    "memory": {
-      "rss": 577306624,
-      "heapTotal": 293707776,
-      "heapUsed": 284831896,
-      "external": 4443039,
-      "arrayBuffers": 454823
-    }
-  }
-}
- PUT /api/kasir/transaksi/TXN-20250807-003/pengembalian 409 in 5915ms
- GET /dashboard/transaction/TXN-20250807-003 200 in 269ms
- GET /api/kasir/transaksi/TXN-20250807-003 200 in 4591ms
- │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 533ms (cache skip)
- │ │ Cache skipped reason: (auto no cache)
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 3870ms
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 3735ms
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 3137ms
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 3961ms
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 2949ms
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 4728ms
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 2934ms
