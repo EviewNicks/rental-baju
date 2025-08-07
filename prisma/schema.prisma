@@ -153,9 +153,15 @@ model TransaksiItem {
   kondisiAkhir String? // Kondisi saat dikembalikan
   statusKembali String @default("belum") // belum, sebagian, lengkap
   
+  // TSK-24: Multi-condition return enhancements (non-breaking)
+  isMultiCondition      Boolean @default(false)       // Flag for multi-condition processing
+  multiConditionSummary Json?                         // Aggregated summary for multi-condition returns
+  totalReturnPenalty    Decimal @db.Decimal(10, 2) @default(0) // Total penalty from all conditions
+  
   // Relations
   transaksi   Transaksi @relation(fields: [transaksiId], references: [id], onDelete: Cascade)
   produk      Product   @relation(fields: [produkId], references: [id])
+  returnConditions TransaksiItemReturn[] // TSK-24: One-to-many relation with return conditions
   
   @@map("transaksi_item")
   @@index([transaksiId])
@@ -163,6 +169,8 @@ model TransaksiItem {
   // Performance indexes for return processing
   @@index([id, statusKembali, jumlahDiambil], name: "idx_transaksi_item_return_lookup")
   @@index([produkId, transaksiId, statusKembali], name: "idx_transaksi_item_product_join")
+  // TSK-24: Performance index for multi-condition detection
+  @@index([id, isMultiCondition, statusKembali], name: "idx_transaksi_item_multi_condition")
 }
 
 model Pembayaran {
