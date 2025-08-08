@@ -215,13 +215,73 @@ HASIL :
     "success": true,
     "data": {
         "transaksiId": "60c301ce-367f-4869-924c-83850034e948",
-        "totalPenalty": 0,
-        "processedItems": [],
-        "processingMode": "multi-condition"
+        "totalPenalty": 20000,
+        "processedItems": [
+            {
+                "itemId": "e313cb8f-eb01-436a-8ccb-fa96fb6863aa",
+                "penalty": 20000,
+                "kondisiAkhir": "multi-condition",
+                "statusKembali": "lengkap",
+                "conditionBreakdown": [
+                    {
+                        "kondisiAkhir": "Baik - dikembalikan tepat waktu",
+                        "jumlahKembali": 1,
+                        "penaltyAmount": 10000
+                    },
+                    {
+                        "kondisiAkhir": "Rusak berat - tidak bisa diperbaiki",
+                        "jumlahKembali": 1,
+                        "penaltyAmount": 10000
+                    },
+                    {
+                        "kondisiAkhir": "Hilang/tidak dikembalikan",
+                        "jumlahKembali": 0,
+                        "penaltyAmount": 0
+                    }
+                ]
+            }
+        ],
+        "processingMode": "multi-condition",
+        "multiConditionSummary": {
+            "e313cb8f-eb01-436a-8ccb-fa96fb6863aa": {
+                "totalPenalty": 20000,
+                "conditionBreakdown": [
+                    {
+                        "kondisiAkhir": "Baik - dikembalikan tepat waktu",
+                        "quantity": 1,
+                        "penaltyPerUnit": 10000,
+                        "totalConditionPenalty": 10000,
+                        "calculationMethod": "late_fee",
+                        "description": "1x Baik - dikembalikan tepat waktu"
+                    },
+                    {
+                        "kondisiAkhir": "Rusak berat - tidak bisa diperbaiki",
+                        "quantity": 1,
+                        "penaltyPerUnit": 10000,
+                        "totalConditionPenalty": 10000,
+                        "calculationMethod": "late_fee",
+                        "description": "1x Rusak berat - tidak bisa diperbaiki"
+                    },
+                    {
+                        "kondisiAkhir": "Hilang/tidak dikembalikan",
+                        "quantity": 0,
+                        "penaltyPerUnit": 0,
+                        "totalConditionPenalty": 0,
+                        "calculationMethod": "modal_awal",
+                        "description": "0x Hilang/tidak dikembalikan"
+                    }
+                ],
+                "summary": {
+                    "totalQuantity": 2,
+                    "lostItems": 1,
+                    "goodItems": 2,
+                    "damagedItems": 0
+                }
+            }
+        }
     },
-    "message": "Pengembalian berhasil diproses untuk transaksi TXN-20250808-008. Total penalty: Rp 0"
+    "message": "Pengembalian berhasil diproses untuk transaksi TXN-20250808-008. Total penalty: Rp 20.000"
 }
-
 
 
 === TSK-24: Mixed Mode Processing - Single and Multi-Condition Items ===

@@ -25,6 +25,19 @@ import { TransaksiService, TransaksiWithDetails, TransaksiForValidation } from '
 import { createAuditService, AuditService } from './auditService'
 import { logger } from '../../../services/logger'
 
+// Utility function for consistent error handling
+function createServiceError(operation: string, originalError: unknown, context?: Record<string, unknown>): Error {
+  const errorMessage = originalError instanceof Error ? originalError.message : 'Unknown error'
+  const baseMessage = `Gagal ${operation}: ${errorMessage}`
+  
+  if (context && Object.keys(context).length > 0) {
+    const contextStr = JSON.stringify(context, null, 2)
+    return new Error(`${baseMessage}\nContext: ${contextStr}`)
+  }
+  
+  return new Error(baseMessage)
+}
+
 export interface ReturnEligibilityResult {
   isEligible: boolean
   reason?: string
@@ -262,9 +275,14 @@ export class ReturnService {
         },
       }
     } catch (error) {
-      throw new Error(
-        `Gagal memvalidasi kelayakan pengembalian: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      )
+      logger.error('ReturnService', 'checkReturnEligibility', 'Return eligibility check failed', {
+        transactionId: transaksiId,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      })
+      
+      throw createServiceError('memvalidasi kelayakan pengembalian', error, { 
+        transactionId: transaksiId 
+      })
     }
   }
 
@@ -378,9 +396,16 @@ export class ReturnService {
 
       return penaltyResult
     } catch (error) {
-      throw new Error(
-        `Gagal menghitung penalty: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      )
+      logger.error('ReturnService', 'calculateReturnPenalties', 'Penalty calculation failed', {
+        transactionId: transaksiId,
+        itemCount: returnItems.length,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      })
+      
+      throw createServiceError('menghitung penalty', error, {
+        transactionId: transaksiId,
+        itemCount: returnItems.length
+      })
     }
   }
 
@@ -684,9 +709,14 @@ export class ReturnService {
     try {
       return await this.transaksiService.getTransaksiByCode(transactionCode)
     } catch (error) {
-      throw new Error(
-        `Gagal mendapatkan transaksi: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      )
+      logger.error('ReturnService', 'getReturnTransactionByCode', 'Failed to fetch transaction', {
+        transactionCode,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      })
+      
+      throw createServiceError('mendapatkan transaksi', error, { 
+        transactionCode 
+      })
     }
   }
 
@@ -736,9 +766,14 @@ export class ReturnService {
             : null,
       }))
     } catch (error) {
-      throw new Error(
-        `Gagal mendapatkan riwayat pengembalian: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      )
+      logger.error('ReturnService', 'getReturnHistory', 'Failed to fetch return history', {
+        transactionId: transaksiId,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      })
+      
+      throw createServiceError('mendapatkan riwayat pengembalian', error, { 
+        transactionId: transaksiId 
+      })
     }
   }
 
@@ -748,28 +783,25 @@ export class ReturnService {
    * Detect processing mode based on request format (Fixed for TSK-24)
    */
   private detectProcessingMode(request: EnhancedReturnRequest): ProcessingMode {
-    let hasSimple = 0
-    let hasComplex = 0
+    let hasSimple = false
+    let hasComplex = false
 
+    // Early return optimization - stop processing once we know it's mixed mode
     for (const item of request.items) {
       if (item.conditions && item.conditions.length > 1) {
-        // True multi-condition: multiple conditions per item
-        hasComplex++
-      } else if (item.conditions && item.conditions.length === 1) {
-        // Single condition in array format - treat as simple for backward compatibility
-        hasSimple++
-      } else if (item.kondisiAkhir && item.jumlahKembali !== undefined) {
-        // Legacy single condition format
-        hasSimple++
+        hasComplex = true
+        // Early return if we already detected both types
+        if (hasSimple) return 'mixed'
       } else {
-        // Invalid format - will be caught by validation
-        hasSimple++
+        // Single condition (array format, legacy format, or invalid)
+        hasSimple = true
+        // Early return if we already detected both types
+        if (hasComplex) return 'mixed'
       }
     }
 
-    if (hasComplex === 0) return 'single-condition'
-    if (hasSimple === 0) return 'multi-condition'
-    return 'mixed'
+    // Pure mode determination
+    return hasComplex ? 'multi-condition' : 'single-condition'
   }
 
   /**
@@ -794,7 +826,7 @@ export class ReturnService {
         if (!transactionItem) {
           errors.push({
             field: `items[${index}].itemId`,
-            message: `Item dengan ID ${item.itemId} tidak ditemukan dalam transaksi`,
+            message: `Item dengan ID ${item.itemId} tidak ditemukan dalam transaksi ini. Periksa kembali ID item atau pastikan item merupakan bagian dari transaksi yang sedang diproses.`,
             code: 'ITEM_NOT_FOUND',
           })
           continue
@@ -802,34 +834,46 @@ export class ReturnService {
 
         // Validate based on processing mode
         if (item.conditions && item.conditions.length > 0) {
-          // Multi-condition validation
+          // Multi-condition validation - optimized single-pass validation
           let totalQuantity = 0
-          for (let condIndex = 0; condIndex < item.conditions.length; condIndex++) {
-            const condition = item.conditions[condIndex]
-            if (!condition.kondisiAkhir || condition.kondisiAkhir.trim() === '') {
+          
+          // Process all conditions in a single optimized loop
+          item.conditions.forEach((condition, condIndex) => {
+            const kondisiTrimmed = condition.kondisiAkhir?.trim()
+            const isLostItem = kondisiTrimmed ? isLostItemCondition(kondisiTrimmed) : false
+            
+            // Combined validation checks for better performance
+            if (!kondisiTrimmed) {
               errors.push({
                 field: `items[${index}].conditions[${condIndex}].kondisiAkhir`,
-                message: 'Kondisi akhir harus diisi',
+                message: 'Kondisi akhir harus diisi dengan deskripsi yang jelas (minimal 5 karakter). Contoh: "Baik - dikembalikan tepat waktu", "Rusak ringan - bisa diperbaiki", atau "Hilang/tidak dikembalikan".',
                 code: 'MISSING_CONDITION',
               })
+            } else {
+              // Optimized quantity validation - only check when kondisi exists
+              if (isLostItem && condition.jumlahKembali !== 0) {
+                errors.push({
+                  field: `items[${index}].conditions[${condIndex}].jumlahKembali`,
+                  message: 'Barang hilang atau tidak dikembalikan harus memiliki jumlah kembali = 0',
+                  code: 'LOST_ITEM_INVALID_QUANTITY',
+                })
+              } else if (!isLostItem && condition.jumlahKembali <= 0) {
+                errors.push({
+                  field: `items[${index}].conditions[${condIndex}].jumlahKembali`,
+                  message: 'Barang yang dikembalikan harus memiliki jumlah kembali lebih dari 0',
+                  code: 'RETURNED_ITEM_INVALID_QUANTITY',
+                })
+              }
             }
 
-            if (condition.jumlahKembali <= 0) {
-              errors.push({
-                field: `items[${index}].conditions[${condIndex}].jumlahKembali`,
-                message: 'Jumlah kembali harus lebih dari 0',
-                code: 'INVALID_QUANTITY',
-              })
-            }
-
-            totalQuantity += condition.jumlahKembali
-          }
+            totalQuantity += condition.jumlahKembali || 0
+          })
 
           // Check total quantity doesn't exceed taken quantity
           if (totalQuantity > transactionItem.jumlahDiambil) {
             errors.push({
               field: `items[${index}].conditions`,
-              message: `Total jumlah kembali (${totalQuantity}) melebihi jumlah yang diambil (${transactionItem.jumlahDiambil})`,
+              message: `Total jumlah kembali dari semua kondisi (${totalQuantity}) melebihi jumlah yang diambil (${transactionItem.jumlahDiambil}). Periksa pembagian quantity pada setiap kondisi atau pertimbangkan untuk menandai sebagian barang sebagai hilang (jumlahKembali = 0).`,
               code: 'EXCESS_TOTAL_QUANTITY',
             })
           }
@@ -846,7 +890,7 @@ export class ReturnService {
           if ((item.jumlahKembali || 0) > transactionItem.jumlahDiambil) {
             errors.push({
               field: `items[${index}].jumlahKembali`,
-              message: `Jumlah kembali (${item.jumlahKembali}) melebihi jumlah yang diambil (${transactionItem.jumlahDiambil})`,
+              message: `Jumlah kembali (${item.jumlahKembali}) tidak boleh melebihi jumlah yang diambil (${transactionItem.jumlahDiambil}). Periksa kembali jumlah yang akan dikembalikan atau gunakan multi-condition jika ada barang hilang.`,
               code: 'EXCESS_QUANTITY',
             })
           }
