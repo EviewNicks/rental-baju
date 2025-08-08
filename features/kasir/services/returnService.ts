@@ -11,7 +11,15 @@ import {
   ReturnItemRequest,
   ExtendedTransactionStatus,
   validateReturnItemContext,
-} from '../lib/validation/returnSchema'
+  isLostItemCondition,
+} from '../lib/validation/returnValidationSchema'
+import {
+  EnhancedReturnRequest,
+  ProcessingMode,
+  EnhancedReturnProcessingResult,
+  ConditionSplit,
+  MultiConditionValidationResult,
+} from '../types'
 import { PenaltyCalculator, PenaltyCalculationResult } from '../lib/utils/penaltyCalculator'
 import { TransaksiService, TransaksiWithDetails, TransaksiForValidation } from './transaksiService'
 import { createAuditService, AuditService } from './auditService'
@@ -676,5 +684,487 @@ export class ReturnService {
         `Gagal mendapatkan riwayat pengembalian: ${error instanceof Error ? error.message : 'Unknown error'}`,
       )
     }
+  }
+
+  // TSK-24: Multi-condition return system methods
+
+  /**
+   * Detect processing mode based on request format
+   */
+  private detectProcessingMode(request: EnhancedReturnRequest): ProcessingMode {
+    let hasSimple = 0
+    let hasComplex = 0
+
+    for (const item of request.items) {
+      if (item.conditions && item.conditions.length > 1) {
+        hasComplex++
+      } else if (item.conditions && item.conditions.length === 1) {
+        // Single condition in array format - treat as simple
+        hasSimple++
+      } else if (item.kondisiAkhir && item.jumlahKembali !== undefined) {
+        // Legacy single condition format
+        hasSimple++
+      } else {
+        // Invalid format - will be caught by validation
+        hasSimple++
+      }
+    }
+
+    if (hasComplex === 0) return 'single-condition'
+    if (hasSimple === 0) return 'multi-condition'
+    return 'mixed'
+  }
+
+  /**
+   * Validate multi-condition return request
+   */
+  async validateMultiConditionRequest(
+    transaksiId: string,
+    request: EnhancedReturnRequest
+  ): Promise<MultiConditionValidationResult> {
+    const errors: Array<{ field: string; message: string; code: string }> = []
+    const mode = this.detectProcessingMode(request)
+
+    try {
+      // Get transaction for validation
+      const transaction = await this.transaksiService.getTransaksiForValidation(transaksiId)
+
+      // Validate each item
+      for (const [index, item] of request.items.entries()) {
+        const transactionItem = transaction.items.find((ti) => ti.id === item.itemId)
+
+        if (!transactionItem) {
+          errors.push({
+            field: `items[${index}].itemId`,
+            message: `Item dengan ID ${item.itemId} tidak ditemukan dalam transaksi`,
+            code: 'ITEM_NOT_FOUND',
+          })
+          continue
+        }
+
+        // Validate based on processing mode
+        if (item.conditions && item.conditions.length > 0) {
+          // Multi-condition validation
+          let totalQuantity = 0
+          for (const [condIndex, condition] of item.conditions.entries()) {
+            if (!condition.kondisiAkhir || condition.kondisiAkhir.trim() === '') {
+              errors.push({
+                field: `items[${index}].conditions[${condIndex}].kondisiAkhir`,
+                message: 'Kondisi akhir harus diisi',
+                code: 'MISSING_CONDITION',
+              })
+            }
+
+            if (condition.jumlahKembali <= 0) {
+              errors.push({
+                field: `items[${index}].conditions[${condIndex}].jumlahKembali`,
+                message: 'Jumlah kembali harus lebih dari 0',
+                code: 'INVALID_QUANTITY',
+              })
+            }
+
+            totalQuantity += condition.jumlahKembali
+          }
+
+          // Check total quantity doesn't exceed taken quantity
+          if (totalQuantity > transactionItem.jumlahDiambil) {
+            errors.push({
+              field: `items[${index}].conditions`,
+              message: `Total jumlah kembali (${totalQuantity}) melebihi jumlah yang diambil (${transactionItem.jumlahDiambil})`,
+              code: 'EXCESS_TOTAL_QUANTITY',
+            })
+          }
+        } else {
+          // Single-condition validation (backward compatibility)
+          if (!item.kondisiAkhir || item.kondisiAkhir.trim() === '') {
+            errors.push({
+              field: `items[${index}].kondisiAkhir`,
+              message: 'Kondisi akhir harus diisi',
+              code: 'MISSING_CONDITION',
+            })
+          }
+
+          if ((item.jumlahKembali || 0) > transactionItem.jumlahDiambil) {
+            errors.push({
+              field: `items[${index}].jumlahKembali`,
+              message: `Jumlah kembali (${item.jumlahKembali}) melebihi jumlah yang diambil (${transactionItem.jumlahDiambil})`,
+              code: 'EXCESS_QUANTITY',
+            })
+          }
+        }
+      }
+
+      return {
+        isValid: errors.length === 0,
+        errors,
+        mode,
+      }
+    } catch (error) {
+      errors.push({
+        field: 'general',
+        message: `Gagal validasi: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        code: 'VALIDATION_ERROR',
+      })
+
+      return {
+        isValid: false,
+        errors,
+        mode: 'single-condition',
+      }
+    }
+  }
+
+  /**
+   * Process enhanced return with multi-condition support
+   */
+  async processEnhancedReturn(
+    transaksiId: string,
+    request: EnhancedReturnRequest
+  ): Promise<EnhancedReturnProcessingResult> {
+    const startTime = Date.now()
+
+    try {
+      // Early status validation
+      const transactionForValidation = await this.transaksiService.getTransaksiForValidation(transaksiId)
+      
+      if (transactionForValidation.status === 'dikembalikan') {
+        return {
+          success: false,
+          transactionId: transaksiId,
+          returnedAt: new Date(),
+          penalty: 0,
+          processedItems: [],
+          details: {
+            statusCode: 'ALREADY_RETURNED',
+            message: 'Transaksi sudah dikembalikan sebelumnya',
+            currentStatus: transactionForValidation.status,
+            originalReturnDate: null,
+            processingTime: Date.now() - startTime
+          }
+        }
+      }
+
+      if (transactionForValidation.status !== 'active') {
+        return {
+          success: false,
+          transactionId: transaksiId,
+          returnedAt: new Date(),
+          penalty: 0,
+          processedItems: [],
+          details: {
+            statusCode: 'INVALID_STATUS',
+            message: `Transaksi dengan status '${transactionForValidation.status}' tidak dapat diproses pengembaliannya`,
+            currentStatus: transactionForValidation.status,
+            processingTime: Date.now() - startTime
+          }
+        }
+      }
+
+      // Validate request
+      const validation = await this.validateMultiConditionRequest(transaksiId, request)
+      if (!validation.isValid) {
+        return {
+          success: false,
+          transactionId: transaksiId,
+          returnedAt: new Date(),
+          penalty: 0,
+          processedItems: [],
+          details: {
+            statusCode: 'VALIDATION_ERROR',
+            message: `Validasi gagal: ${validation.errors.map(e => e.message).join(', ')}`,
+            currentStatus: transactionForValidation.status,
+            processingTime: Date.now() - startTime
+          }
+        }
+      }
+
+      const returnDate = request.tglKembali ? new Date(request.tglKembali) : new Date()
+
+      // Route to appropriate processing method based on mode
+      switch (validation.mode) {
+        case 'single-condition':
+          return await this.processSingleConditionReturn(transaksiId, request, returnDate)
+        case 'multi-condition':
+          return await this.processMultiConditionReturn(transaksiId, request, returnDate)
+        case 'mixed':
+          return await this.processMixedReturn(transaksiId, request, returnDate)
+        default:
+          throw new Error('Invalid processing mode detected')
+      }
+    } catch (error) {
+      await this.auditService.logReturnError(transaksiId, {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        stage: 'enhanced-processing',
+        stack: error instanceof Error ? error.stack : undefined,
+        duration: Date.now() - startTime,
+        context: { request },
+      })
+      
+      throw new Error(`Gagal memproses pengembalian enhanced: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    }
+  }
+
+  /**
+   * Process single-condition returns (backward compatibility)
+   */
+  private async processSingleConditionReturn(
+    transaksiId: string,
+    request: EnhancedReturnRequest,
+    returnDate: Date
+  ): Promise<EnhancedReturnProcessingResult> {
+    // Convert to legacy format and use existing logic
+    const legacyRequest: ReturnRequest = {
+      items: request.items.map(item => ({
+        itemId: item.itemId,
+        kondisiAkhir: item.kondisiAkhir || item.conditions?.[0]?.kondisiAkhir || '',
+        jumlahKembali: item.jumlahKembali || item.conditions?.[0]?.jumlahKembali || 0,
+      })),
+      catatan: request.catatan,
+      tglKembali: returnDate.toISOString(),
+    }
+
+    const result = await this.processReturn(transaksiId, legacyRequest)
+    
+    return {
+      success: result.success,
+      transactionId: result.transactionId,
+      returnedAt: result.returnedAt,
+      penalty: result.penalty,
+      processedItems: result.processedItems,
+      processingMode: 'single-condition',
+    }
+  }
+
+  /**
+   * Process multi-condition returns (enhanced logic)
+   */
+  private async processMultiConditionReturn(
+    transaksiId: string,
+    request: EnhancedReturnRequest,
+    returnDate: Date
+  ): Promise<EnhancedReturnProcessingResult> {
+    const startTime = Date.now()
+
+    try {
+      // Get full transaction details
+      const transaction = await this.transaksiService.getTransaksiById(transaksiId)
+      
+      const transactionResult = await this.prisma.$transaction(async (tx) => {
+        let totalPenalty = 0
+        const processedItems: EnhancedReturnProcessingResult['processedItems'] = []
+        const multiConditionSummary: Record<string, {
+          totalPenalty: number
+          conditionBreakdown: Array<{
+            kondisiAkhir: string
+            quantity: number
+            penaltyPerUnit: number
+            totalConditionPenalty: number
+            calculationMethod: 'late_fee' | 'modal_awal' | 'none'
+            description: string
+          }>
+          summary: {
+            totalQuantity: number
+            lostItems: number
+            goodItems: number
+            damagedItems: number
+          }
+        }> = {}
+
+        // Process each item with multiple conditions
+        for (const item of request.items) {
+          if (!item.conditions || item.conditions.length === 0) continue
+
+          const transactionItem = transaction.items.find(ti => ti.id === item.itemId)
+          if (!transactionItem) continue
+
+          let itemTotalPenalty = 0
+          const conditionBreakdown: Array<{
+            kondisiAkhir: string
+            quantity: number
+            penaltyPerUnit: number
+            totalConditionPenalty: number
+            calculationMethod: 'late_fee' | 'modal_awal' | 'none'
+            description: string
+          }> = []
+
+          // Process each condition for this item
+          for (const condition of item.conditions) {
+            // Calculate penalty for this condition
+            const conditionPenalty = await this.calculateConditionPenalty(
+              transactionItem,
+              condition,
+              transaction.tglSelesai || new Date(),
+              returnDate
+            )
+
+            // Create TransaksiItemReturn record
+            await tx.transaksiItemReturn.create({
+              data: {
+                transaksiItemId: item.itemId,
+                kondisiAkhir: condition.kondisiAkhir,
+                jumlahKembali: condition.jumlahKembali,
+                penaltyAmount: conditionPenalty,
+                modalAwalUsed: condition.modalAwal ? new Decimal(condition.modalAwal) : null,
+                penaltyCalculation: {
+                  expectedReturnDate: transaction.tglSelesai,
+                  actualReturnDate: returnDate,
+                  calculationMethod: this.getCalculationMethod(condition.kondisiAkhir),
+                  description: `Penalty for ${condition.jumlahKembali} items in condition: ${condition.kondisiAkhir}`
+                },
+                createdBy: this.userId,
+              }
+            })
+
+            itemTotalPenalty += conditionPenalty
+            conditionBreakdown.push({
+              kondisiAkhir: condition.kondisiAkhir,
+              quantity: condition.jumlahKembali,
+              penaltyPerUnit: conditionPenalty / Math.max(condition.jumlahKembali, 1),
+              totalConditionPenalty: conditionPenalty,
+              calculationMethod: isLostItemCondition(condition.kondisiAkhir) ? 'modal_awal' : 'late_fee',
+              description: `${condition.jumlahKembali}x ${condition.kondisiAkhir}`
+            })
+          }
+
+          // Update TransaksiItem with multi-condition summary
+          await tx.transaksiItem.update({
+            where: { id: item.itemId },
+            data: {
+              statusKembali: 'lengkap',
+              isMultiCondition: true,
+              totalReturnPenalty: itemTotalPenalty,
+              multiConditionSummary: {
+                totalConditions: item.conditions.length,
+                totalReturnedQuantity: item.conditions.reduce((sum, c) => sum + c.jumlahKembali, 0),
+                conditionBreakdown: conditionBreakdown
+              }
+            }
+          })
+
+          totalPenalty += itemTotalPenalty
+          
+          processedItems.push({
+            itemId: item.itemId,
+            penalty: itemTotalPenalty,
+            kondisiAkhir: 'multi-condition',
+            statusKembali: 'lengkap',
+            conditionBreakdown: conditionBreakdown.map(cb => ({
+              kondisiAkhir: cb.kondisiAkhir,
+              jumlahKembali: cb.quantity,
+              penaltyAmount: cb.totalConditionPenalty
+            }))
+          })
+
+          multiConditionSummary[item.itemId] = {
+            totalPenalty: itemTotalPenalty,
+            conditionBreakdown: conditionBreakdown,
+            summary: {
+              totalQuantity: item.conditions.reduce((sum, c) => sum + c.jumlahKembali, 0),
+              lostItems: item.conditions.filter(c => isLostItemCondition(c.kondisiAkhir)).length,
+              goodItems: item.conditions.filter(c => !isLostItemCondition(c.kondisiAkhir) && c.kondisiAkhir.toLowerCase().includes('baik')).length,
+              damagedItems: item.conditions.filter(c => !isLostItemCondition(c.kondisiAkhir) && !c.kondisiAkhir.toLowerCase().includes('baik')).length
+            }
+          }
+
+          // Update product stock
+          const totalReturned = item.conditions.reduce((sum, c) => sum + c.jumlahKembali, 0)
+          await tx.product.update({
+            where: { id: transactionItem.produkId },
+            data: {
+              quantity: { increment: totalReturned }
+            }
+          })
+        }
+
+        // Update main transaction
+        await tx.transaksi.update({
+          where: { id: transaksiId },
+          data: {
+            status: 'dikembalikan',
+            tglKembali: returnDate,
+            sisaBayar: { increment: new Decimal(totalPenalty) }
+          }
+        })
+
+        return {
+          success: true,
+          transactionId: transaksiId,
+          returnedAt: returnDate,
+          penalty: totalPenalty,
+          processedItems,
+          processingMode: 'multi-condition' as ProcessingMode,
+          multiConditionSummary
+        }
+      })
+
+      return transactionResult
+    } catch (error) {
+      await this.auditService.logReturnError(transaksiId, {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        stage: 'multi-condition-processing',
+        duration: Date.now() - startTime,
+        context: { request },
+      })
+      
+      throw error
+    }
+  }
+
+  /**
+   * Process mixed-mode returns (some single, some multi-condition)
+   */
+  private async processMixedReturn(
+    transaksiId: string,
+    request: EnhancedReturnRequest,
+    returnDate: Date
+  ): Promise<EnhancedReturnProcessingResult> {
+    // For mixed mode, we process each item according to its format
+    // This is a simplified implementation that processes all as multi-condition
+    return await this.processMultiConditionReturn(transaksiId, request, returnDate)
+  }
+
+  /**
+   * Calculate penalty for a specific condition
+   */
+  private async calculateConditionPenalty(
+    transactionItem: {
+      id: string
+      produk: { modalAwal?: number | string | null | Decimal; name: string }
+      durasi: number
+    },
+    condition: ConditionSplit,
+    expectedReturnDate: Date,
+    actualReturnDate: Date
+  ): Promise<number> {
+    // Use existing penalty calculator logic adapted for conditions
+    const itemData = {
+      id: transactionItem.id,
+      productName: transactionItem.produk.name,
+      expectedReturnDate,
+      actualReturnDate,
+      condition: condition.kondisiAkhir,
+      quantity: condition.jumlahKembali,
+      modalAwal: condition.modalAwal || Number(transactionItem.produk.modalAwal),
+    }
+
+    const penaltyResult = PenaltyCalculator.calculateTransactionPenalties([itemData])
+    return penaltyResult.totalPenalty
+  }
+
+  /**
+   * Get calculation method based on condition description
+   */
+  private getCalculationMethod(kondisiAkhir: string): 'late_fee' | 'modal_awal' | 'none' {
+    const lowerCondition = kondisiAkhir.toLowerCase()
+    
+    if (lowerCondition.includes('hilang') || lowerCondition.includes('tidak dikembalikan') || lowerCondition.includes('lost')) {
+      return 'modal_awal'
+    }
+    
+    if (lowerCondition.includes('rusak') || lowerCondition.includes('damaged')) {
+      return 'late_fee' // Could be enhanced with damage-specific logic
+    }
+    
+    return 'late_fee' // Default to late fee calculation
   }
 }

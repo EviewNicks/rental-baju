@@ -93,8 +93,9 @@ export async function POST(request: NextRequest) {
     const name = formData.get('name') as string
     const description = (formData.get('description') as string) || undefined
     const modalAwalStr = formData.get('modalAwal') as string
-    const hargaSewaStr = formData.get('hargaSewa') as string
+    const currentPriceStr = formData.get('currentPrice') as string // ✅ Fixed: use currentPrice instead of hargaSewa
     const quantityStr = formData.get('quantity') as string
+    const rentedStockStr = (formData.get('rentedStock') as string) || '0' // ✅ Added rentedStock field parsing
     const categoryId = formData.get('categoryId') as string
     const size = (formData.get('size') as string) || undefined
     const colorId = (formData.get('colorId') as string) || undefined
@@ -102,8 +103,9 @@ export async function POST(request: NextRequest) {
 
     // Convert string to numbers
     const modalAwal = parseFloat(modalAwalStr)
-    const hargaSewa = parseFloat(hargaSewaStr)
+    const currentPrice = parseFloat(currentPriceStr) // ✅ Fixed: use currentPrice instead of hargaSewa
     const quantity = parseInt(quantityStr)
+    const rentedStock = parseInt(rentedStockStr) // ✅ Added rentedStock parsing
 
     // Validate required fields and number conversions
     if (!code || !name || !categoryId) {
@@ -113,11 +115,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (isNaN(modalAwal) || isNaN(hargaSewa) || isNaN(quantity)) {
+    if (isNaN(modalAwal) || isNaN(currentPrice) || isNaN(quantity) || isNaN(rentedStock)) {
       return NextResponse.json(
         {
           error: {
-            message: 'Invalid number format for modalAwal, hargaSewa, or quantity',
+            message: 'Invalid number format for modalAwal, currentPrice, quantity, or rentedStock',
             code: 'VALIDATION_ERROR',
           },
         },
@@ -131,8 +133,9 @@ export async function POST(request: NextRequest) {
       name,
       description,
       modalAwal,
-      hargaSewa,
+      currentPrice, // ✅ Fixed: use currentPrice instead of hargaSewa
       quantity,
+      rentedStock, // ✅ Added rentedStock field
       categoryId,
       size,
       colorId,

@@ -93,11 +93,14 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const modalAwal = formData.get('modalAwal')
       ? parseFloat(formData.get('modalAwal') as string)
       : undefined
-    const hargaSewa = formData.get('hargaSewa')
-      ? parseFloat(formData.get('hargaSewa') as string)
+    const currentPrice = formData.get('currentPrice') // ✅ Fixed: use currentPrice instead of hargaSewa
+      ? parseFloat(formData.get('currentPrice') as string)
       : undefined
     const quantity = formData.get('quantity')
       ? parseInt(formData.get('quantity') as string)
+      : undefined
+    const rentedStock = formData.get('rentedStock') // ✅ Added rentedStock parsing
+      ? parseInt(formData.get('rentedStock') as string)
       : undefined
     const categoryId = (formData.get('categoryId') as string) || undefined
     const size = (formData.get('size') as string) || undefined
@@ -110,8 +113,9 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     if (name !== undefined) updateData.name = name
     if (description !== undefined) updateData.description = description
     if (modalAwal !== undefined) updateData.modalAwal = modalAwal
-    if (hargaSewa !== undefined) updateData.hargaSewa = hargaSewa
+    if (currentPrice !== undefined) updateData.currentPrice = currentPrice // ✅ Fixed: use currentPrice instead of hargaSewa
     if (quantity !== undefined) updateData.quantity = quantity
+    if (rentedStock !== undefined) updateData.rentedStock = rentedStock // ✅ Added rentedStock handling
     if (categoryId !== undefined) updateData.categoryId = categoryId
     if (size !== undefined) updateData.size = size
     if (colorId !== undefined) updateData.colorId = colorId

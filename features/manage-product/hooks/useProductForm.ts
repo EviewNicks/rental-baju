@@ -15,7 +15,7 @@ export interface ProductFormData {
   size?: string
   colorId?: string
   modalAwal: number
-  hargaSewa: number
+  currentPrice: number
   status: string
   image?: File
 }
@@ -40,7 +40,7 @@ export function useProductForm({
     size: initialData?.size || '',
     colorId: initialData?.colorId || '',
     modalAwal: initialData?.modalAwal || 0,
-    hargaSewa: initialData?.hargaSewa || 0,
+    currentPrice: initialData?.currentPrice || 0,
     status: initialData?.status || 'Tersedia',
   })
 
@@ -75,7 +75,7 @@ export function useProductForm({
     if (!formData.name.trim()) newErrors.name = 'Nama produk wajib diisi'  
     if (!formData.category.trim()) newErrors.category = 'Kategori wajib dipilih'
     if (formData.modalAwal < 0) newErrors.modalAwal = 'Modal awal tidak boleh negatif'
-    if (formData.hargaSewa < 0) newErrors.hargaSewa = 'Harga sewa tidak boleh negatif'
+    if (formData.currentPrice < 0) newErrors.currentPrice = 'Harga sewa tidak boleh negatif'
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -130,7 +130,7 @@ export function useProductForm({
       size: '',
       colorId: '',
       modalAwal: 0,
-      hargaSewa: 0,
+      currentPrice: 0,
       status: 'Tersedia',
     })
     setErrors({})

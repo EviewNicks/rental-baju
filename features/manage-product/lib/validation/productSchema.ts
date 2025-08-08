@@ -18,11 +18,12 @@ export const productBaseSchema = z.object({
     .number()
     .positive('Modal awal harus positif')
     .max(999999999, 'Modal maksimal 999,999,999'),
-  hargaSewa: z
+  currentPrice: z
     .number()
     .positive('Harga sewa harus positif')
     .max(999999999, 'Harga sewa maksimal 999,999,999'),
   quantity: z.number().int().min(0, 'Jumlah minimal 0').max(9999, 'Jumlah maksimal 9999'),
+  rentedStock: z.number().int().min(0, 'Stok tersewa minimal 0').optional().default(0),
   categoryId: z.string().uuid('ID kategori tidak valid'),
   size: z.string().max(10, 'Ukuran maksimal 10 karakter').optional(),
   colorId: z.string().uuid('ID warna tidak valid').optional(),

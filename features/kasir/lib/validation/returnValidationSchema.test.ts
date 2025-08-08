@@ -3,7 +3,7 @@
  * Tests the enhanced conditional logic for lost items vs normal items
  */
 
-import { returnItemSchema, isLostItemCondition, getExpectedReturnQuantity } from './returnSchema'
+import { returnItemRequestSchema as returnItemSchema, isLostItemCondition, getExpectedReturnQuantity } from './returnValidationSchema'
 
 describe('Return Schema Validation', () => {
   describe('returnItemSchema', () => {

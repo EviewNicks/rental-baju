@@ -18,8 +18,9 @@ export interface BaseProduct {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   modalAwal: any // Prisma Decimal (server-side only)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  hargaSewa: any // Prisma Decimal (server-side only)
+  currentPrice: any // Prisma Decimal (server-side only)
   quantity: number
+  rentedStock: number
   status: ProductStatus
   imageUrl?: string
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -60,8 +61,9 @@ export interface ClientProduct {
   size?: string
   colorId?: string
   modalAwal: number
-  hargaSewa: number
+  currentPrice: number
   quantity: number
+  rentedStock: number
   status: ProductStatus
   imageUrl?: string
   totalPendapatan: number
@@ -159,7 +161,7 @@ export interface CreateProductRequest {
   name: string
   description?: string
   modalAwal: number // ✅ Ubah dari Decimal ke number
-  hargaSewa: number // ✅ Ubah dari Decimal ke number
+  currentPrice: number // ✅ Renamed from hargaSewa to match database schema
   quantity: number
   categoryId: string
   size?: string
@@ -172,7 +174,7 @@ export interface UpdateProductRequest {
   name?: string
   description?: string
   modalAwal?: number // ✅ Ubah dari Decimal ke number
-  hargaSewa?: number // ✅ Ubah dari Decimal ke number
+  currentPrice?: number // ✅ Renamed from hargaSewa to match database schema
   quantity?: number
   categoryId?: string
   size?: string
@@ -243,7 +245,7 @@ export interface ProductFormData {
   colorId?: string
   quantity: number
   modalAwal: number // ✅ Ubah dari Decimal ke number
-  hargaSewa: number // ✅ Ubah dari Decimal ke number
+  currentPrice: number // ✅ Renamed from hargaSewa to match database schema
   description: string
   imageUrl: string | null
 }

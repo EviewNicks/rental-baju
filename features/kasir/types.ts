@@ -774,6 +774,108 @@ export function createErrorResponse(
 }
 
 // ==========================================
+// RETURN PROCESSING TYPES - Multi-Condition Support (TSK-24)
+// ==========================================
+
+// Multi-condition return support for enhanced return system
+export interface ConditionSplit {
+  kondisiAkhir: string
+  jumlahKembali: number
+  isLostItem?: boolean
+  modalAwal?: number
+}
+
+export interface MultiConditionReturnItem {
+  itemId: string
+  
+  // Single-condition mode (backward compatibility)
+  kondisiAkhir?: string
+  jumlahKembali?: number
+  
+  // Multi-condition mode (enhanced)
+  conditions?: ConditionSplit[]
+}
+
+export interface EnhancedReturnRequest {
+  items: MultiConditionReturnItem[]
+  catatan?: string
+  tglKembali?: string
+}
+
+export type ProcessingMode = 'single-condition' | 'multi-condition' | 'mixed'
+
+export interface MultiConditionPenaltyResult {
+  totalPenalty: number
+  conditionBreakdown: Array<{
+    kondisiAkhir: string
+    quantity: number
+    penaltyPerUnit: number
+    totalConditionPenalty: number
+    calculationMethod: 'late_fee' | 'modal_awal' | 'none'
+    description: string
+  }>
+  summary: {
+    totalQuantity: number
+    lostItems: number
+    goodItems: number
+    damagedItems: number
+  }
+}
+
+export interface MultiConditionValidationResult {
+  isValid: boolean
+  errors: Array<{
+    field: string
+    message: string
+    code: string
+  }>
+  mode: ProcessingMode
+}
+
+export interface EnhancedReturnProcessingResult {
+  success: boolean
+  transactionId: string
+  returnedAt: Date
+  penalty: number
+  processedItems: Array<{
+    itemId: string
+    penalty: number
+    kondisiAkhir: string | 'multi-condition'
+    statusKembali: 'lengkap'
+    conditionBreakdown?: Array<{
+      kondisiAkhir: string
+      jumlahKembali: number
+      penaltyAmount: number
+    }>
+  }>
+  
+  // Success case properties
+  processingMode?: ProcessingMode
+  multiConditionSummary?: Record<string, MultiConditionPenaltyResult>
+  
+  // Error case properties  
+  details?: {
+    statusCode: 'ALREADY_RETURNED' | 'INVALID_STATUS' | 'VALIDATION_ERROR'
+    message: string
+    currentStatus: string
+    originalReturnDate?: Date | null
+    processingTime: number
+  }
+}
+
+export interface TransaksiItemReturnData {
+  id: string
+  transaksiItemId: string
+  kondisiAkhir: string
+  jumlahKembali: number
+  penaltyAmount: number
+  modalAwalUsed?: number
+  penaltyCalculation?: Record<string, unknown>
+  createdAt: Date
+  createdBy: string
+}
+
+// ==========================================
 // UI TYPES
 // ==========================================
 
