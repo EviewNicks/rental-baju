@@ -73,8 +73,9 @@ export class ProductService {
         name: validatedData.name,
         description: validatedData.description,
         modalAwal: new Decimal(validatedData.modalAwal), // ✅ Konversi number ke Decimal
-        currentPrice: new Decimal(validatedData.hargaSewa), // ✅ Konversi number ke Decimal (renamed field)
+        currentPrice: new Decimal(validatedData.currentPrice), // ✅ Fixed: use currentPrice from validated data
         quantity: validatedData.quantity,
+        rentedStock: 0, // ✅ Initialize rentedStock to 0 for new products
         categoryId: validatedData.categoryId,
         size: validatedData.size,
         colorId: validatedData.colorId,
@@ -151,6 +152,7 @@ export class ProductService {
     if (validatedData.categoryId !== undefined) updateData.categoryId = validatedData.categoryId
     if (validatedData.size !== undefined) updateData.size = validatedData.size
     if (validatedData.colorId !== undefined) updateData.colorId = validatedData.colorId
+    if (validatedData.rentedStock !== undefined) updateData.rentedStock = validatedData.rentedStock
 
     // Handle imageUrl update (added from API layer)
     if ('imageUrl' in request && request.imageUrl !== undefined) {
@@ -161,8 +163,8 @@ export class ProductService {
     if (validatedData.modalAwal !== undefined) {
       updateData.modalAwal = new Decimal(validatedData.modalAwal) // ✅ Konversi number ke Decimal
     }
-    if (validatedData.hargaSewa !== undefined) {
-      updateData.hargaSewa = new Decimal(validatedData.hargaSewa) // ✅ Konversi number ke Decimal
+    if (validatedData.currentPrice !== undefined) {
+      updateData.currentPrice = new Decimal(validatedData.currentPrice) // ✅ Fixed: use currentPrice instead of hargaSewa
     }
 
     // Update product
@@ -403,8 +405,9 @@ export class ProductService {
           }
         : undefined,
       modalAwal: prismaProduct.modalAwal as Decimal,
-      hargaSewa: prismaProduct.hargaSewa as Decimal,
+      currentPrice: prismaProduct.currentPrice as Decimal, // ✅ Fixed: return currentPrice instead of hargaSewa
       quantity: prismaProduct.quantity as number,
+      rentedStock: (prismaProduct.rentedStock as number) || 0, // ✅ Added rentedStock field
       status: prismaProduct.status as ProductStatus,
       imageUrl: prismaProduct.imageUrl as string | undefined,
       totalPendapatan: prismaProduct.totalPendapatan as Decimal,

@@ -30,7 +30,7 @@ export function productToClientProduct(product: Product): ClientProduct {
   return {
     ...product,
     modalAwal: decimalToNumber(product.modalAwal),
-    hargaSewa: decimalToNumber(product.hargaSewa),
+    currentPrice: decimalToNumber(product.currentPrice),
     totalPendapatan: decimalToNumber(product.totalPendapatan),
     createdAt: product.createdAt instanceof Date ? product.createdAt : new Date(product.createdAt),
     updatedAt: product.updatedAt instanceof Date ? product.updatedAt : new Date(product.updatedAt),
@@ -47,7 +47,7 @@ export function clientProductToProduct(clientProduct: ClientProduct): any {
   return {
     ...clientProduct,
     modalAwal: clientProduct.modalAwal, // Keep as number, server will convert to Decimal
-    hargaSewa: clientProduct.hargaSewa, // Keep as number, server will convert to Decimal
+    currentPrice: clientProduct.currentPrice, // Keep as number, server will convert to Decimal
     totalPendapatan: clientProduct.totalPendapatan, // Keep as number, server will convert to Decimal
     createdAt:
       clientProduct.createdAt instanceof Date

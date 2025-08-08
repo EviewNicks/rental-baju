@@ -121,7 +121,7 @@ export function ProductTable({
                     {formatCurrency(Number(product.modalAwal))}
                   </TableCell>
                   <TableCell className="text-right" data-testid={`product-${product.code}-price`}>
-                    {formatCurrency(Number(product.hargaSewa))}
+                    {formatCurrency(Number(product.currentPrice))}
                   </TableCell>
                   <TableCell className="text-center" data-testid={`product-${product.code}-status`}>
                     <Badge variant="outline" className={getStatusBadge(product.status)} data-testid={`product-${product.code}-status-badge`}>
