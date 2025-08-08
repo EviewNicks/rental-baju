@@ -7,14 +7,14 @@
 import type {
   // Dashboard types
   DashboardStats,
-  
+
   // Penyewa types
   CreatePenyewaRequest,
   UpdatePenyewaRequest,
   PenyewaResponse,
   PenyewaListResponse,
   PenyewaQueryParams,
-  
+
   // Transaksi types
   CreateTransaksiRequest,
   UpdateTransaksiRequest,
@@ -22,15 +22,15 @@ import type {
   TransaksiListResponse,
   TransaksiQueryParams,
   TransactionStatus,
-  
+
   // Pembayaran types
   CreatePembayaranRequest,
   PembayaranResponse,
-  
+
   // Product types
   ProductAvailabilityListResponse,
   ProductAvailabilityQueryParams,
-  
+
   // API wrapper types
   ApiResponse,
 } from './types'
@@ -144,7 +144,7 @@ function sanitizeGenericInput(input: string): string {
 /**
  * Deep sanitize object recursively
  * Applies sanitization to nested objects and arrays
- * 
+ *
  * @deprecated Not currently used in API client - for future use
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -178,7 +178,7 @@ export class KasirApiError extends Error {
     public code: string,
     message: string,
     public details?: Record<string, unknown>,
-    public validationErrors?: Array<{ field: string; message: string }>
+    public validationErrors?: Array<{ field: string; message: string }>,
   ) {
     super(message)
     this.name = 'KasirApiError'
@@ -186,12 +186,9 @@ export class KasirApiError extends Error {
 }
 
 // Generic fetch wrapper with error handling
-async function apiRequest<T>(
-  endpoint: string,
-  options: RequestInit = {}
-): Promise<T> {
+async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`
-  
+
   const config: RequestInit = {
     headers: {
       'Content-Type': 'application/json',
@@ -209,12 +206,14 @@ async function apiRequest<T>(
         code: 'UNKNOWN_ERROR',
         message: data.message || 'Terjadi kesalahan pada server',
       }
-      
+
       throw new KasirApiError(
         error.code,
         error.message,
         error.details,
-        Array.isArray(error.details) ? error.details as Array<{ field: string; message: string }> : undefined
+        Array.isArray(error.details)
+          ? (error.details as Array<{ field: string; message: string }>)
+          : undefined,
       )
     }
 
@@ -222,7 +221,7 @@ async function apiRequest<T>(
       throw new KasirApiError(
         data.error?.code || 'API_ERROR',
         data.message || 'Terjadi kesalahan',
-        data.error?.details
+        data.error?.details,
       )
     }
 
@@ -231,27 +230,21 @@ async function apiRequest<T>(
     if (error instanceof KasirApiError) {
       throw error
     }
-    
+
     // Handle network errors
     if (error instanceof TypeError && error.message.includes('fetch')) {
-      throw new KasirApiError(
-        'NETWORK_ERROR',
-        'Koneksi bermasalah. Silakan coba lagi.'
-      )
+      throw new KasirApiError('NETWORK_ERROR', 'Koneksi bermasalah. Silakan coba lagi.')
     }
-    
+
     // Handle other errors
-    throw new KasirApiError(
-      'UNKNOWN_ERROR',
-      'Terjadi kesalahan tidak terduga'
-    )
+    throw new KasirApiError('UNKNOWN_ERROR', 'Terjadi kesalahan tidak terduga')
   }
 }
 
 // Build query string from params
 function buildQueryString(params: Record<string, unknown>): string {
   const searchParams = new URLSearchParams()
-  
+
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined && value !== null && value !== '') {
       if (typeof value === 'object' && !Array.isArray(value)) {
@@ -263,7 +256,7 @@ function buildQueryString(params: Record<string, unknown>): string {
         })
       } else if (Array.isArray(value)) {
         // Handle arrays
-        value.forEach(item => {
+        value.forEach((item) => {
           searchParams.append(key, String(item))
         })
       } else {
@@ -271,7 +264,7 @@ function buildQueryString(params: Record<string, unknown>): string {
       }
     }
   })
-  
+
   return searchParams.toString()
 }
 
@@ -287,8 +280,10 @@ export class KasirApi {
   // Penyewa (Customer) Operations
   static async createPenyewa(data: CreatePenyewaRequest): Promise<PenyewaResponse> {
     // Sanitize input data before sending
-    const sanitizedData = sanitizePenyewaInput(data as unknown as Record<string, unknown>) as unknown as CreatePenyewaRequest
-    
+    const sanitizedData = sanitizePenyewaInput(
+      data as unknown as Record<string, unknown>,
+    ) as unknown as CreatePenyewaRequest
+
     return apiRequest<PenyewaResponse>('/penyewa', {
       method: 'POST',
       body: JSON.stringify(sanitizedData),
@@ -307,8 +302,10 @@ export class KasirApi {
 
   static async updatePenyewa(id: string, data: UpdatePenyewaRequest): Promise<PenyewaResponse> {
     // Sanitize input data before sending
-    const sanitizedData = sanitizePenyewaInput(data as unknown as Record<string, unknown>) as unknown as UpdatePenyewaRequest
-    
+    const sanitizedData = sanitizePenyewaInput(
+      data as unknown as Record<string, unknown>,
+    ) as unknown as UpdatePenyewaRequest
+
     return apiRequest<PenyewaResponse>(`/penyewa/${id}`, {
       method: 'PUT',
       body: JSON.stringify(sanitizedData),
@@ -333,7 +330,10 @@ export class KasirApi {
     return apiRequest<TransaksiListResponse>(endpoint)
   }
 
-  static async updateTransaksi(kode: string, data: UpdateTransaksiRequest): Promise<TransaksiResponse> {
+  static async updateTransaksi(
+    kode: string,
+    data: UpdateTransaksiRequest,
+  ): Promise<TransaksiResponse> {
     return apiRequest<TransaksiResponse>(`/transaksi/${kode}`, {
       method: 'PUT',
       body: JSON.stringify(data),
@@ -351,7 +351,7 @@ export class KasirApi {
       }>
       catatan?: string
       tglKembali?: string
-    }
+    },
   ): Promise<TransaksiResponse> {
     return apiRequest<TransaksiResponse>(`/transaksi/${transactionId}/pengembalian`, {
       method: 'PUT',
@@ -367,7 +367,7 @@ export class KasirApi {
         id: string
         jumlahDiambil: number
       }>
-    }
+    },
   ): Promise<TransaksiResponse> {
     return apiRequest<TransaksiResponse>(`/transaksi/${transactionId}/pickup`, {
       method: 'PUT',
@@ -376,7 +376,9 @@ export class KasirApi {
   }
 
   // Produk (Product) Operations
-  static async getAvailableProducts(params: ProductAvailabilityQueryParams = {}): Promise<ProductAvailabilityListResponse> {
+  static async getAvailableProducts(
+    params: ProductAvailabilityQueryParams = {},
+  ): Promise<ProductAvailabilityListResponse> {
     const queryString = buildQueryString(params)
     const endpoint = queryString ? `/produk/available?${queryString}` : '/produk/available'
     return apiRequest<ProductAvailabilityListResponse>(endpoint)
@@ -391,8 +393,8 @@ export class KasirApi {
   }
 
   static async updatePembayaran(
-    id: string, 
-    data: Partial<Omit<CreatePembayaranRequest, 'transaksiId'>>
+    id: string,
+    data: Partial<Omit<CreatePembayaranRequest, 'transaksiId'>>,
   ): Promise<PembayaranResponse> {
     return apiRequest<PembayaranResponse>(`/pembayaran/${id}`, {
       method: 'PUT',
@@ -426,55 +428,63 @@ export const kasirApi = {
     getByKode: (kode: string) => KasirApi.getTransaksiByKode(kode),
     getAll: (params?: TransaksiQueryParams) => KasirApi.getTransaksiList(params),
     update: (kode: string, data: UpdateTransaksiRequest) => KasirApi.updateTransaksi(kode, data),
-    getByStatus: (status: string) => KasirApi.getTransaksiList({ status: status as TransactionStatus }),
+    getByStatus: (status: string) =>
+      KasirApi.getTransaksiList({ status: status as TransactionStatus }),
     search: (query: string) => KasirApi.getTransaksiList({ search: query } as TransaksiQueryParams),
   },
 
   // Return operations
-  processReturn: (transactionId: string, returnData: {
-    items: Array<{
-      itemId: string
-      kondisiAkhir: string
-      jumlahKembali: number
-    }>
-    catatan?: string
-    tglKembali?: string
-  }) => KasirApi.processReturn(transactionId, returnData),
+  processReturn: (
+    transactionId: string,
+    returnData: {
+      items: Array<{
+        itemId: string
+        kondisiAkhir: string
+        jumlahKembali: number
+      }>
+      catatan?: string
+      tglKembali?: string
+    },
+  ) => KasirApi.processReturn(transactionId, returnData),
 
   // Transaction lookup by code (for return process)
   getTransactionByCode: (code: string) => KasirApi.getTransaksiByKode(code),
 
   // Pickup operations
-  processPickup: (transactionId: string, pickupData: {
-    items: Array<{
-      id: string
-      jumlahDiambil: number
-    }>
-  }) => KasirApi.processPickup(transactionId, pickupData),
+  processPickup: (
+    transactionId: string,
+    pickupData: {
+      items: Array<{
+        id: string
+        jumlahDiambil: number
+      }>
+    },
+  ) => KasirApi.processPickup(transactionId, pickupData),
 
   // Product shortcuts
   produk: {
-    getAvailable: (params?: ProductAvailabilityQueryParams) => KasirApi.getAvailableProducts(params),
+    getAvailable: (params?: ProductAvailabilityQueryParams) =>
+      KasirApi.getAvailableProducts(params),
     search: (query: string) => KasirApi.getAvailableProducts({ search: query, available: true }),
-    getByCategory: (categoryId: string) => KasirApi.getAvailableProducts({ categoryId, available: true }),
+    getByCategory: (categoryId: string) =>
+      KasirApi.getAvailableProducts({ categoryId, available: true }),
     getById: (id: string) => {
       // Get specific product details using the available products API
       // Since kasir available API doesn't support direct ID lookup, we'll filter in frontend
-      return KasirApi.getAvailableProducts({ search: '', available: false })
-        .then(response => {
-          const product = response.data.find(p => p.id === id)
-          if (!product) {
-            throw new Error(`Product with ID ${id} not found`)
-          }
-          return product
-        })
+      return KasirApi.getAvailableProducts({ search: '', available: false }).then((response) => {
+        const product = response.data.find((p) => p.id === id)
+        if (!product) {
+          throw new Error(`Product with ID ${id} not found`)
+        }
+        return product
+      })
     },
   },
 
   // Payment shortcuts
   pembayaran: {
     create: (data: CreatePembayaranRequest) => KasirApi.createPembayaran(data),
-    update: (id: string, data: Partial<Omit<CreatePembayaranRequest, 'transaksiId'>>) => 
+    update: (id: string, data: Partial<Omit<CreatePembayaranRequest, 'transaksiId'>>) =>
       KasirApi.updatePembayaran(id, data),
   },
 }

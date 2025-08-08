@@ -1,253 +1,146 @@
-Step 1: Create Test Category
+== GET TRANSACTION CODE ===
 
 {
-    "id": "ad7e2ac0-8b17-4ac9-a8dc-aec161a0ecc1",
-    "name": "Baju Ungu",
-    "color": "#FF5733",
-    "products": [],
-    "createdAt": "2025-08-07T22:29:11.339Z",
-    "updatedAt": "2025-08-07T22:29:11.339Z",
-    "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
-}
-
-Step 2: Create Test Color
-
-{
-    "id": "3b6347c8-d9b6-4319-acf3-6bef15820f49",
-    "name": "Pink ",
-    "hexCode": "#D4A5A5",
-    "description": "Warna pink lembut yang feminin",
-    "isActive": true,
-    "products": [],
-    "createdAt": "2025-08-07T22:29:49.326Z",
-    "updatedAt": "2025-08-07T22:29:49.326Z",
-    "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
-}
-
-Step 3: Create Product with Size & Color
-
-{
-    "id": "11b66cc3-8e78-4f2b-831f-ae66fcecddb4",
-    "code": "DRT4",
-    "name": "Baju baru",
-    "description": "Dress merah untuk acara formal",
-    "categoryId": "ad7e2ac0-8b17-4ac9-a8dc-aec161a0ecc1",
-    "size": "L",
-    "colorId": "3b6347c8-d9b6-4319-acf3-6bef15820f49",
-    "category": {
-        "id": "ad7e2ac0-8b17-4ac9-a8dc-aec161a0ecc1",
-        "name": "Baju Ungu",
-        "color": "#FF5733",
-        "products": [],
-        "createdAt": "2025-08-07T22:29:11.339Z",
-        "updatedAt": "2025-08-07T22:29:11.339Z",
-        "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
-    },
-    "color": {
-        "id": "3b6347c8-d9b6-4319-acf3-6bef15820f49",
-        "name": "Pink ",
-        "hexCode": "#D4A5A5",
-        "description": "Warna pink lembut yang feminin",
-        "isActive": true,
-        "products": [],
-        "createdAt": "2025-08-07T22:29:49.326Z",
-        "updatedAt": "2025-08-07T22:29:49.326Z",
-        "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
-    },
-    "modalAwal": "150000",
-    "currentPrice": "50000",
-    "quantity": 5,
-    "rentedStock": 0,
-    "status": "AVAILABLE",
-    "imageUrl": "https://pmjxdencfgkbjuyjndbp.supabase.co/storage/v1/object/public/products/products/DRT4/1754605915306.jpg",
-    "isActive": true,
-    "createdAt": "2025-08-07T22:31:59.669Z",
-    "updatedAt": "2025-08-07T22:31:59.669Z",
-    "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
-}
-
-
-Scenario 2: Advanced Filtering Tests
-
-Test Color Filtering
-GET /api/products?colorId={{color_id}}&isActive=true
-
-{
-    "products": [
-        {
-            "id": "11b66cc3-8e78-4f2b-831f-ae66fcecddb4",
-            "code": "DRT4",
-            "name": "Dress Elegant Updated",
-            "description": "Dress merah untuk acara formal",
-            "categoryId": "ad7e2ac0-8b17-4ac9-a8dc-aec161a0ecc1",
-            "size": "L",
-            "colorId": "3b6347c8-d9b6-4319-acf3-6bef15820f49",
-            "category": {
-                "id": "ad7e2ac0-8b17-4ac9-a8dc-aec161a0ecc1",
-                "name": "Baju Ungu",
-                "color": "#FF5733",
-                "products": [],
-                "createdAt": "2025-08-07T22:29:11.339Z",
-                "updatedAt": "2025-08-07T22:29:11.339Z",
-                "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
-            },
-            "color": {
-                "id": "3b6347c8-d9b6-4319-acf3-6bef15820f49",
-                "name": "Pink ",
-                "hexCode": "#D4A5A5",
-                "description": "Warna pink lembut yang feminin",
-                "isActive": true,
-                "products": [],
-                "createdAt": "2025-08-07T22:29:49.326Z",
-                "updatedAt": "2025-08-07T22:29:49.326Z",
-                "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
-            },
-            "modalAwal": "150000",
-            "currentPrice": "60000",
-            "quantity": 5,
-            "rentedStock": 2,
-            "status": "AVAILABLE",
-            "imageUrl": "https://pmjxdencfgkbjuyjndbp.supabase.co/storage/v1/object/public/products/products/DRT4/1754605915306.jpg",
-            "isActive": true,
-            "createdAt": "2025-08-07T22:31:59.669Z",
-            "updatedAt": "2025-08-07T22:35:44.940Z",
-            "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
+    "success": true,
+    "data": {
+        "id": "e911d80e-b37b-4003-b7fa-86b90e02fb25",
+        "kode": "TXN-20250808-001",
+        "penyewa": {
+            "id": "c11dfe97-735f-4d5b-9e58-74ecad4e3421",
+            "nama": "Newbie",
+            "telepon": "08123456789",
+            "alamat": "02/03, Jl.EMpang no.7 , Kel. Cppo"
         },
-        {
-            "id": "187370f2-6fe3-40f9-8f0f-adbed01ac2bd",
-            "code": "DRS2",
-            "name": "Dress Elegant Red",
-            "description": "Dress merah untuk acara formal",
-            "categoryId": "ad7e2ac0-8b17-4ac9-a8dc-aec161a0ecc1",
-            "size": "M",
-            "colorId": "3b6347c8-d9b6-4319-acf3-6bef15820f49",
-            "category": {
-                "id": "ad7e2ac0-8b17-4ac9-a8dc-aec161a0ecc1",
-                "name": "Baju Ungu",
-                "color": "#FF5733",
-                "products": [],
-                "createdAt": "2025-08-07T22:29:11.339Z",
-                "updatedAt": "2025-08-07T22:29:11.339Z",
-                "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
+        "status": "active",
+        "totalHarga": 450000,
+        "jumlahBayar": 450000,
+        "sisaBayar": 0,
+        "tglMulai": "2025-08-09T00:00:00.000Z",
+        "tglSelesai": "2025-08-12T00:00:00.000Z",
+        "tglKembali": null,
+        "metodeBayar": "tunai",
+        "catatan": null,
+        "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
+        "createdAt": "2025-08-08T05:54:19.205Z",
+        "updatedAt": "2025-08-08T05:54:31.369Z",
+        "items": [
+            {
+                "id": "9a2db264-142a-4163-a559-1dd9603a5be1",
+                "produk": {
+                    "id": "187370f2-6fe3-40f9-8f0f-adbed01ac2bd",
+                    "code": "DRS2",
+                    "name": "Dress Elegant Red",
+                    "imageUrl": "products/image.png",
+                    "size": "M",
+                    "color": "Pink ",
+                    "category": "Baju Ungu"
+                },
+                "jumlah": 2,
+                "jumlahDiambil": 2,
+                "hargaSewa": 50000,
+                "durasi": 3,
+                "subtotal": 300000,
+                "kondisiAwal": "baik",
+                "kondisiAkhir": null,
+                "statusKembali": "belum"
             },
-            "color": {
-                "id": "3b6347c8-d9b6-4319-acf3-6bef15820f49",
-                "name": "Pink ",
-                "hexCode": "#D4A5A5",
-                "description": "Warna pink lembut yang feminin",
-                "isActive": true,
-                "products": [],
-                "createdAt": "2025-08-07T22:29:49.326Z",
-                "updatedAt": "2025-08-07T22:29:49.326Z",
-                "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
+            {
+                "id": "b4f19749-4185-4eaf-8cdb-779620b34fc3",
+                "produk": {
+                    "id": "6bf8bdc3-44dd-4159-a6b7-0dd2f30e0e66",
+                    "code": "GMB5",
+                    "name": "Baju Merah",
+                    "imageUrl": "products/image.png",
+                    "size": "S",
+                    "color": "Pink ",
+                    "category": "Baju Ungu"
+                },
+                "jumlah": 1,
+                "jumlahDiambil": 1,
+                "hargaSewa": 50000,
+                "durasi": 3,
+                "subtotal": 150000,
+                "kondisiAwal": "baik",
+                "kondisiAkhir": null,
+                "statusKembali": "belum"
+            }
+        ],
+        "pembayaran": [
+            {
+                "id": "631b27f1-52fb-4272-8654-99094ea787f5",
+                "jumlah": 450000,
+                "metode": "tunai",
+                "referensi": null,
+                "catatan": "Pembayaran awal transaksi",
+                "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
+                "createdAt": "2025-08-08T05:54:31.046Z"
+            }
+        ],
+        "aktivitas": [
+            {
+                "id": "52691451-7133-469f-8131-799ee47a410d",
+                "tipe": "status_pickup",
+                "deskripsi": "Status pickup: 2 lengkap, 0 sebagian, 0 belum",
+                "data": {
+                    "timestamp": "2025-08-08T08:26:04.870Z",
+                    "pickupStats": {
+                        "totalItems": 2,
+                        "notPickedUp": 0,
+                        "fullyPickedUp": 2,
+                        "partiallyPickedUp": 0
+                    },
+                    "calculatedBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp"
+                },
+                "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
+                "createdAt": "2025-08-08T08:26:04.873Z"
             },
-            "modalAwal": "150000",
-            "currentPrice": "50000",
-            "quantity": 5,
-            "rentedStock": 0,
-            "status": "AVAILABLE",
-            "imageUrl": "products/image.png",
-            "isActive": true,
-            "createdAt": "2025-08-07T22:31:02.452Z",
-            "updatedAt": "2025-08-07T22:31:02.452Z",
-            "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
-        }
-    ],
-    "pagination": {
-        "page": 1,
-        "limit": 10,
-        "total": 2,
-        "totalPages": 1
-    }
-}
-
-
-Scenario 3: Product Update Operations
-Update Product Size and Color
-
-{
-    "id": "11b66cc3-8e78-4f2b-831f-ae66fcecddb4",
-    "code": "DRT4",
-    "name": "Dress Elegant Updated",
-    "description": "Dress merah untuk acara formal",
-    "categoryId": "ad7e2ac0-8b17-4ac9-a8dc-aec161a0ecc1",
-    "size": "L",
-    "colorId": "3b6347c8-d9b6-4319-acf3-6bef15820f49",
-    "category": {
-        "id": "ad7e2ac0-8b17-4ac9-a8dc-aec161a0ecc1",
-        "name": "Baju Ungu",
-        "color": "#FF5733",
-        "products": [],
-        "createdAt": "2025-08-07T22:29:11.339Z",
-        "updatedAt": "2025-08-07T22:29:11.339Z",
-        "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
+            {
+                "id": "85d7dd1b-80fb-4ed4-8d31-1916b0e1635b",
+                "tipe": "diambil",
+                "deskripsi": "Pickup dilakukan: 2 item, 1 item",
+                "data": {
+                    "items": [
+                        {
+                            "itemId": "9a2db264-142a-4163-a559-1dd9603a5be1",
+                            "jumlahDiambil": 2
+                        },
+                        {
+                            "itemId": "b4f19749-4185-4eaf-8cdb-779620b34fc3",
+                            "jumlahDiambil": 1
+                        }
+                    ],
+                    "timestamp": "2025-08-08T08:26:01.527Z",
+                    "processedBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp"
+                },
+                "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
+                "createdAt": "2025-08-08T08:26:01.531Z"
+            },
+            {
+                "id": "aad63df0-1986-456b-ba1d-544bdc960bf9",
+                "tipe": "dibayar",
+                "deskripsi": "Pembayaran tunai sebesar Rp 450.000",
+                "data": {
+                    "amount": 450000,
+                    "method": "tunai",
+                    "newTotal": "450000",
+                    "paymentId": "631b27f1-52fb-4272-8654-99094ea787f5",
+                    "remaining": "0"
+                },
+                "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
+                "createdAt": "2025-08-08T05:54:31.734Z"
+            },
+            {
+                "id": "43465303-aae7-478e-b1ba-f6bc0409d3de",
+                "tipe": "dibuat",
+                "deskripsi": "Transaksi TXN-20250808-001 dibuat",
+                "data": {
+                    "items": 2,
+                    "totalHarga": "450000"
+                },
+                "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
+                "createdAt": "2025-08-08T05:54:21.047Z"
+            }
+        ]
     },
-    "color": {
-        "id": "3b6347c8-d9b6-4319-acf3-6bef15820f49",
-        "name": "Pink ",
-        "hexCode": "#D4A5A5",
-        "description": "Warna pink lembut yang feminin",
-        "isActive": true,
-        "products": [],
-        "createdAt": "2025-08-07T22:29:49.326Z",
-        "updatedAt": "2025-08-07T22:29:49.326Z",
-        "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
-    },
-    "modalAwal": "150000",
-    "currentPrice": "60000",
-    "quantity": 5,
-    "rentedStock": 2,
-    "status": "AVAILABLE",
-    "imageUrl": "https://pmjxdencfgkbjuyjndbp.supabase.co/storage/v1/object/public/products/products/DRT4/1754605915306.jpg",
-    "isActive": true,
-    "createdAt": "2025-08-07T22:31:59.669Z",
-    "updatedAt": "2025-08-07T22:35:44.940Z",
-    "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
-}
-
-Test Product Status Change
-PUT /api/products/{{product_id}}
-Content-Type: multipart/form-data
-
-quantity: 3
-rentedStock: 2
-
-{
-    "id": "11b66cc3-8e78-4f2b-831f-ae66fcecddb4",
-    "code": "DRT4",
-    "name": "Dress Elegant Updated",
-    "description": "Dress merah untuk acara formal",
-    "categoryId": "ad7e2ac0-8b17-4ac9-a8dc-aec161a0ecc1",
-    "size": "L",
-    "colorId": "3b6347c8-d9b6-4319-acf3-6bef15820f49",
-    "category": {
-        "id": "ad7e2ac0-8b17-4ac9-a8dc-aec161a0ecc1",
-        "name": "Baju Ungu",
-        "color": "#FF5733",
-        "products": [],
-        "createdAt": "2025-08-07T22:29:11.339Z",
-        "updatedAt": "2025-08-07T22:29:11.339Z",
-        "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
-    },
-    "color": {
-        "id": "3b6347c8-d9b6-4319-acf3-6bef15820f49",
-        "name": "Pink ",
-        "hexCode": "#D4A5A5",
-        "description": "Warna pink lembut yang feminin",
-        "isActive": true,
-        "products": [],
-        "createdAt": "2025-08-07T22:29:49.326Z",
-        "updatedAt": "2025-08-07T22:29:49.326Z",
-        "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
-    },
-    "modalAwal": "150000",
-    "currentPrice": "60000",
-    "quantity": 3,
-    "rentedStock": 2,
-    "status": "AVAILABLE",
-    "imageUrl": "https://pmjxdencfgkbjuyjndbp.supabase.co/storage/v1/object/public/products/products/DRT4/1754605915306.jpg",
-    "isActive": true,
-    "createdAt": "2025-08-07T22:31:59.669Z",
-    "updatedAt": "2025-08-07T22:41:51.229Z",
-    "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
+    "message": "Detail transaksi berhasil diambil"
 }

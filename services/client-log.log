@@ -1,38 +1,149 @@
-[Fast Refresh] rebuilding
-report-hmr-latency.ts:26 [Fast Refresh] done in 124ms
-ImageUpload.tsx:70 TypeError: Failed to construct 'URL': Invalid URL
-    at defaultLoader (image-loader.ts:55:21)
-    at get-img-props.ts:239:14
-    at Array.map (<anonymous>)
-    at generateImgAttrs (get-img-props.ts:237:8)
-    at getImgProps (get-img-props.ts:693:25)
-    at image-component.tsx:389:64
-    at Object.react_stack_bottom_frame (react-dom-client.development.js:23552:20)
-    at renderWithHooks (react-dom-client.development.js:6763:22)
-    at updateForwardRef (react-dom-client.development.js:8777:19)
-    at beginWork (react-dom-client.development.js:11018:18)
-    at runWithFiberInDEV (react-dom-client.development.js:872:30)
-    at performUnitOfWork (react-dom-client.development.js:15677:22)
-    at workLoopConcurrentByScheduler (react-dom-client.development.js:15671:9)
-    at renderRootConcurrent (react-dom-client.development.js:15646:15)
-    at performWorkOnRoot (react-dom-client.development.js:14940:13)
-    at performWorkOnRootViaSchedulerTask (react-dom-client.development.js:16766:7)
-    at MessagePort.performWorkUntilDeadline (scheduler.development.js:45:48)
-ImageUpload.tsx:70 TypeError: Failed to construct 'URL': Invalid URL
-    at defaultLoader (image-loader.ts:55:21)
-    at get-img-props.ts:239:14
-    at Array.map (<anonymous>)
-    at generateImgAttrs (get-img-props.ts:237:8)
-    at getImgProps (get-img-props.ts:693:25)
-    at image-component.tsx:389:64
-    at Object.react_stack_bottom_frame (react-dom-client.development.js:23552:20)
-    at renderWithHooks (react-dom-client.development.js:6763:22)
-    at updateForwardRef (react-dom-client.development.js:8777:19)
-    at beginWork (react-dom-client.development.js:11018:18)
-    at runWithFiberInDEV (react-dom-client.development.js:872:30)
-    at performUnitOfWork (react-dom-client.development.js:15677:22)
-    at workLoopSync (react-dom-client.development.js:15497:41)
-    at renderRootSync (react-dom-client.development.js:15477:11)
-    at performWorkOnRoot (react-dom-client.development.js:14984:44)
-    at performWorkOnRootViaSchedulerTask (react-dom-client.development.js:16766:7)
-    at MessagePort.performWorkUntilDeadline (scheduler.development.js:45:48)
+===  PROCESS RETURN -- SUCCESS 200 OK ==
+
+HASIL :
+
+{
+    "success": true,
+    "data": {
+        "transaksiId": "61271177-99dd-4571-9382-5f6d0d748682",
+        "totalPenalty": 0,
+        "processedItems": [
+            {
+                "itemId": "bf19ab42-d46d-4378-96a2-04852dc88f9e",
+                "penalty": 0,
+                "kondisiAkhir": "Baik - tidak ada kerusakan",
+                "statusKembali": "lengkap"
+            }
+        ],
+        "updatedTransaction": {
+            "id": "61271177-99dd-4571-9382-5f6d0d748682",
+            "status": "dikembalikan",
+            "tglKembali": "2025-08-04T10:00:00.000Z",
+            "sisaBayar": 0
+        },
+        "processingMode": "single-condition",
+        "penaltySummary": {
+            "totalLateDays": 0,
+            "summary": {
+                "onTimeItems": 1,
+                "lateItems": 0,
+                "damagedItems": 0,
+                "lostItems": 0
+            }
+        }
+    },
+    "message": "Pengembalian berhasil diproses untuk transaksi TXN-20250808-002. Total penalty: Rp 0"
+}
+
+== PROCESS RETURN - LATE RETURN WITH PENALTY ==
+
+{
+    "success": true,
+    "data": {
+        "transaksiId": "1f397965-7a17-41b3-8414-bc974af17739",
+        "totalPenalty": 0,
+        "processedItems": [
+            {
+                "itemId": "0e91b240-dd2a-4ab6-9243-6fbc180820b4",
+                "penalty": 0,
+                "kondisiAkhir": "Baik - tidak ada kerusakan",
+                "statusKembali": "lengkap"
+            }
+        ],
+        "updatedTransaction": {
+            "id": "1f397965-7a17-41b3-8414-bc974af17739",
+            "status": "dikembalikan",
+            "tglKembali": "2025-08-09T10:00:00.000Z",
+            "sisaBayar": 0
+        },
+        "processingMode": "single-condition",
+        "penaltySummary": {
+            "totalLateDays": 0,
+            "summary": {
+                "onTimeItems": 1,
+                "lateItems": 0,
+                "damagedItems": 0,
+                "lostItems": 0
+            }
+        }
+    },
+    "message": "Pengembalian berhasil diproses untuk transaksi TXN-20250808-004. Total penalty: Rp 0"
+}
+
+== PROCESS RETURN - DAMAGED ITEM  ==
+
+HASIL : 
+
+{
+    "success": true,
+    "data": {
+        "transaksiId": "f3216171-d92e-4bca-866e-a352ce9c5749",
+        "totalPenalty": 10000,
+        "processedItems": [
+            {
+                "itemId": "686242ec-e926-4395-b087-55eaa819c3ac",
+                "penalty": 10000,
+                "kondisiAkhir": "Cukup - ada kerusakan kecil",
+                "statusKembali": "lengkap"
+            }
+        ],
+        "updatedTransaction": {
+            "id": "f3216171-d92e-4bca-866e-a352ce9c5749",
+            "status": "dikembalikan",
+            "tglKembali": "2025-08-08T08:47:13.592Z",
+            "sisaBayar": 10000
+        },
+        "processingMode": "single-condition",
+        "penaltySummary": {
+            "totalLateDays": 0,
+            "summary": {
+                "onTimeItems": 0,
+                "lateItems": 0,
+                "damagedItems": 1,
+                "lostItems": 0
+            }
+        }
+    },
+    "message": "Pengembalian berhasil diproses untuk transaksi TXN-20250808-005. Total penalty: Rp 10.000"
+}
+
+== PROCESS RETURN - LOST ITEM  ==
+
+HASIL : 
+
+{
+    "success": true,
+    "data": {
+        "transaksiId": "c26b8f5a-8606-4980-b0f8-094d7e3aa9f8",
+        "totalPenalty": 0,
+        "processedItems": [
+            {
+                "itemId": "b2a8f4f4-560f-48b2-9d91-e90a416217df",
+                "penalty": 0,
+                "kondisiAkhir": "Hilang/tidak dikembalikan",
+                "statusKembali": "lengkap"
+            }
+        ],
+        "updatedTransaction": {
+            "id": "c26b8f5a-8606-4980-b0f8-094d7e3aa9f8",
+            "status": "dikembalikan",
+            "tglKembali": "2025-08-08T08:49:27.909Z",
+            "sisaBayar": 0
+        },
+        "processingMode": "single-condition",
+        "penaltySummary": {
+            "totalLateDays": 0,
+            "summary": {
+                "onTimeItems": 0,
+                "lateItems": 0,
+                "damagedItems": 0,
+                "lostItems": 1
+            }
+        }
+    },
+    "message": "Pengembalian berhasil diproses untuk transaksi TXN-20250808-006. Total penalty: Rp 0"
+}
+
+== MULTI-CONDITION RETURN  - MIX GOOD + DAMAGED ITEMS  ==
+
+== MULTI-CONDITION RETURN  - COMPLEX SCENARIO ( gOOD + DAMAGED + LOST )   ==

@@ -113,6 +113,7 @@ interface EnhancedReturnRequest {
 - ✅ **TypeScript Compilation**: Zero errors
 - ✅ **Database Performance**: Optimized indexes for multi-condition queries
 - ✅ **Memory Footprint**: Minimal impact on existing operations
+- ✅ **Logging Integration**: Simple structured logging for API testing and debugging
 
 ### Business Impact
 - ✅ **Penalty Accuracy**: 100% fair calculation for mixed scenarios
@@ -125,6 +126,7 @@ interface EnhancedReturnRequest {
 - ✅ **Architecture**: Clean separation with single responsibility
 - ✅ **Documentation**: Comprehensive inline and task documentation
 - ✅ **Error Handling**: Robust error handling with contextual messages
+- ✅ **API Testing Support**: Structured logging at key return points for better testing experience
 
 ## 🔗 Integration Points
 
@@ -137,6 +139,21 @@ interface EnhancedReturnRequest {
 - `TransaksiItemReturn` model - Granular condition tracking
 - Enhanced `TransaksiItem` - Multi-condition summary fields
 - Performance indexes - Optimized query performance
+
+### Logging Integration (August 8, 2025)
+- **Structured Logging**: Added focused logging to key return processing methods
+- **API Testing Support**: Improved testing experience with contextual log messages
+- **Simple Implementation**: Minimal logging overhead following project constraints
+- **Log Levels Used**:
+  - `info` - Successful processing outcomes and operation starts
+  - `warn` - Validation failures and invalid request states
+  - `debug` - Detailed validation success information
+  - `error` - Processing failures and exceptions
+- **Key Methods Enhanced**:
+  - `processReturn()` - Single-condition processing logs
+  - `processEnhancedReturn()` - Multi-condition processing logs
+  - `validateReturnProcessing()` - Validation outcome logs
+  - `validateMultiConditionRequest()` - Multi-condition validation logs
 
 ### API Layer Integration
 - Enhanced validation schemas with business rules
@@ -202,6 +219,7 @@ npx tsc --noEmit     # ✅ No errors
 - ✅ Multi-condition requests processed correctly
 - ✅ Mixed-mode requests handled intelligently
 - ✅ Error handling provides actionable feedback
+- ✅ Logging enhancement (Aug 8, 2025): Structured logs for better API testing documentation
 
 ## 📈 Impact Assessment
 

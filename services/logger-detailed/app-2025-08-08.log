@@ -1,163 +1,118 @@
-2025-08-08T08:36:35.725Z [INFO] [API][PUT-pengembalian] API request started
+===  PROCESS RETURN -- SUCCESS 200 OK ===
+
+2025-08-08T08:30:43.440Z [INFO] [API][PUT-pengembalian] API request started
 {
-  "requestId": "req-1754642195725-55pa9rgz8",
-  "timestamp": "2025-08-08T08:36:35.725Z",
+  "requestId": "req-1754641843440-yxn5gde9a",
+  "timestamp": "2025-08-08T08:30:43.440Z",
   "userAgent": "PostmanRuntime/7.45.0",
   "contentLength": "264",
   "performance": {
-    "timestamp": 1754642195725,
+    "timestamp": 1754641843440,
     "memory": {
-      "rss": 1149706240,
-      "heapTotal": 189870080,
-      "heapUsed": 185037040,
-      "external": 10991114,
-      "arrayBuffers": 6982372
+      "rss": 1139896320,
+      "heapTotal": 184365056,
+      "heapUsed": 175636312,
+      "external": 7954583,
+      "arrayBuffers": 3970136
     }
   }
 }
-2025-08-08T08:36:56.694Z [INFO] [API][PUT-pengembalian] API request started
+2025-08-08T08:30:44.010Z [INFO] [API][PUT-pengembalian] Late return detected
 {
-  "requestId": "req-1754642216693-7ftw2reox",
-  "timestamp": "2025-08-08T08:36:56.694Z",
-  "userAgent": "PostmanRuntime/7.45.0",
-  "contentLength": "264",
-  "performance": {
-    "timestamp": 1754642216694,
-    "memory": {
-      "rss": 1122594816,
-      "heapTotal": 179646464,
-      "heapUsed": 172719288,
-      "external": 4335278,
-      "arrayBuffers": 346821
-    }
-  }
-}
-2025-08-08T08:36:57.238Z [INFO] [API][PUT-pengembalian] Late return detected
-{
-  "requestId": "req-1754642216693-7ftw2reox",
+  "requestId": "req-1754641843440-yxn5gde9a",
   "returnDate": "2025-08-04T10:00:00.000Z",
   "processingMode": "single-condition",
   "daysLate": 4,
   "performance": {
-    "timestamp": 1754642217238,
+    "timestamp": 1754641844009,
     "memory": {
-      "rss": 1122770944,
-      "heapTotal": 179646464,
-      "heapUsed": 172340328,
-      "external": 4358443,
-      "arrayBuffers": 366844
+      "rss": 1141563392,
+      "heapTotal": 185413632,
+      "heapUsed": 175028392,
+      "external": 7984968,
+      "arrayBuffers": 3996752
     }
   }
 }
-2025-08-08T08:36:57.242Z [INFO] [API][PUT-pengembalian] Validation successful
+2025-08-08T08:30:44.024Z [INFO] [API][PUT-pengembalian] Validation successful
 {
-  "requestId": "req-1754642216693-7ftw2reox",
+  "requestId": "req-1754641843440-yxn5gde9a",
   "processingMode": "single-condition",
   "validationContext": "late",
   "itemCount": 1,
   "performance": {
-    "timestamp": 1754642217242,
+    "timestamp": 1754641844024,
     "memory": {
-      "rss": 1122787328,
-      "heapTotal": 179646464,
-      "heapUsed": 172500216,
-      "external": 4358443,
-      "arrayBuffers": 366844
+      "rss": 1141579776,
+      "heapTotal": 185413632,
+      "heapUsed": 175187168,
+      "external": 7984968,
+      "arrayBuffers": 3996752
     }
   }
 }
-2025-08-08T08:37:05.538Z [DEBUG] [ReturnService][validateReturnProcessing] Return validation successful
+2025-08-08T08:30:52.853Z [DEBUG] [ReturnService][validateReturnProcessing] Return validation successful
 {
-  "transactionId": "e20dbfc0-916c-4acb-941c-562b225dff3b",
+  "transactionId": "61271177-99dd-4571-9382-5f6d0d748682",
   "itemsValidated": 1,
   "transactionStatus": "active",
   "performance": {
-    "timestamp": 1754642225538,
+    "timestamp": 1754641852853,
     "memory": {
-      "rss": 1123414016,
-      "heapTotal": 182792192,
-      "heapUsed": 172309448,
-      "external": 4358514,
-      "arrayBuffers": 363074
+      "rss": 1138978816,
+      "heapTotal": 185413632,
+      "heapUsed": 175733296,
+      "external": 7985039,
+      "arrayBuffers": 3996823
     }
   }
 }
-2025-08-08T08:37:07.385Z [INFO] [ReturnService][processReturn] Return processing completed successfully
+2025-08-08T08:30:54.195Z [INFO] [ReturnService][processReturn] Return processing completed successfully
 {
-  "transactionId": "e20dbfc0-916c-4acb-941c-562b225dff3b",
+  "transactionId": "61271177-99dd-4571-9382-5f6d0d748682",
   "totalPenalty": 0,
   "itemsProcessed": 1,
-  "processingTime": 6926,
+  "processingTime": 5947,
   "performance": {
-    "timestamp": 1754642227384,
+    "timestamp": 1754641854195,
     "memory": {
-      "rss": 1122439168,
-      "heapTotal": 182792192,
-      "heapUsed": 172714696,
-      "external": 4351347,
-      "arrayBuffers": 363131
+      "rss": 1138274304,
+      "heapTotal": 185413632,
+      "heapUsed": 176153376,
+      "external": 7985096,
+      "arrayBuffers": 3996880
     }
   }
 }
-2025-08-08T08:37:07.396Z [INFO] [API][PUT-pengembalian] Return processing completed
+2025-08-08T08:30:54.205Z [INFO] [API][PUT-pengembalian] Return processing completed
 {
-  "requestId": "req-1754642216693-7ftw2reox",
+  "requestId": "req-1754641843440-yxn5gde9a",
   "processingMode": "single-condition",
   "success": true,
   "totalPenalty": 0,
   "processedItems": 1,
   "performance": {
-    "timestamp": 1754642227396,
+    "timestamp": 1754641854205,
     "memory": {
-      "rss": 1122455552,
-      "heapTotal": 182792192,
-      "heapUsed": 172735968,
-      "external": 4351347,
-      "arrayBuffers": 363131
+      "rss": 1138274304,
+      "heapTotal": 185413632,
+      "heapUsed": 176175240,
+      "external": 7985096,
+      "arrayBuffers": 3996880
     }
   }
 }
-2025-08-08T08:37:07.410Z [INFO] [API][PUT-pengembalian] API request completed successfully
+2025-08-08T08:30:54.219Z [INFO] [API][PUT-pengembalian] API request completed successfully
 {
   "performance": {
     "label": "total-api-request",
-    "duration": "10716ms"
+    "duration": "10778ms"
   }
 }
-2025-08-08T08:39:26.076Z [INFO] [API][PUT-pengembalian] API request started
-{
-  "requestId": "req-1754642366076-wwzfaxp5t",
-  "timestamp": "2025-08-08T08:39:26.076Z",
-  "userAgent": "PostmanRuntime/7.45.0",
-  "contentLength": "255",
-  "performance": {
-    "timestamp": 1754642366076,
-    "memory": {
-      "rss": 1143111680,
-      "heapTotal": 187248640,
-      "heapUsed": 177245640,
-      "external": 7931863,
-      "arrayBuffers": 3931684
-    }
-  }
-}
-2025-08-08T08:39:48.110Z [INFO] [API][PUT-pengembalian] API request started
-{
-  "requestId": "req-1754642388110-v87gx02oj",
-  "timestamp": "2025-08-08T08:39:48.110Z",
-  "userAgent": "PostmanRuntime/7.45.0",
-  "contentLength": "255",
-  "performance": {
-    "timestamp": 1754642388110,
-    "memory": {
-      "rss": 1142165504,
-      "heapTotal": 203239424,
-      "heapUsed": 178205144,
-      "external": 4446117,
-      "arrayBuffers": 460910
-    }
-  }
-}
+
+== PROCESS RETURN - LATE RETURN WITH PENALTY ==
+
+
 2025-08-08T08:39:56.338Z [INFO] [API][PUT-pengembalian] API request started
 {
   "requestId": "req-1754642396338-u4o0asa9w",
@@ -267,6 +222,9 @@
     "duration": "8931ms"
   }
 }
+
+== PROCESS RETURN - DAMAGED ITEMS ==
+
 2025-08-08T08:47:07.018Z [INFO] [API][PUT-pengembalian] API request started
 {
   "requestId": "req-1754642827018-klwydap7x",
@@ -359,6 +317,9 @@
     "duration": "11694ms"
   }
 }
+
+== PROCESS RETURN - LOST ITEMS WITH MODAL AWAL  ==
+
 2025-08-08T08:49:22.264Z [INFO] [API][PUT-pengembalian] API request started
 {
   "requestId": "req-1754642962264-lvn2bugky",
@@ -451,3 +412,7 @@
     "duration": "8851ms"
   }
 }
+
+== MULTI-CONDITION RETURN  - MIX GOOD + DAMAGED ITEMS  ==
+
+== MULTI-CONDITION RETURN  - COMPLEX SCENARIO ( gOOD + DAMAGED + LOST )   ==

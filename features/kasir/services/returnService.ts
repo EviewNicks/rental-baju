@@ -23,6 +23,7 @@ import {
 import { PenaltyCalculator, PenaltyCalculationResult } from '../lib/utils/penaltyCalculator'
 import { TransaksiService, TransaksiWithDetails, TransaksiForValidation } from './transaksiService'
 import { createAuditService, AuditService } from './auditService'
+import { logger } from '../../../services/logger'
 
 export interface ReturnEligibilityResult {
   isEligible: boolean
@@ -170,18 +171,38 @@ export class ReturnService {
       }
 
       if (errors.length > 0) {
-        return {
+        const result = {
           isValid: false,
           error: `Validasi item gagal: ${errors.map((e) => e.message).join(', ')}`,
           details: { errors }
         }
+        
+        logger.warn('ReturnService', 'validateReturnProcessing', 'Return validation failed', {
+          transactionId: transaksiId,
+          errorCount: errors.length,
+          itemsValidated: returnItems.length
+        })
+        
+        return result
       }
+
+      logger.debug('ReturnService', 'validateReturnProcessing', 'Return validation successful', {
+        transactionId: transaksiId,
+        itemsValidated: returnItems.length,
+        transactionStatus: transaction.status
+      })
 
       return {
         isValid: true,
         transaction: { transaction }
       }
     } catch (error) {
+      logger.error('ReturnService', 'validateReturnProcessing', 'Return validation error', {
+        transactionId: transaksiId,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        itemsAttempted: returnItems.length
+      })
+      
       return {
         isValid: false,
         error: `Gagal validasi: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -375,7 +396,7 @@ export class ReturnService {
       
       // Immediately return structured error for already-returned transactions
       if (transactionForValidation.status === 'dikembalikan') {
-        return {
+        const result = {
           success: false,
           transactionId: transaksiId,
           returnedAt: new Date(),
@@ -389,11 +410,19 @@ export class ReturnService {
             processingTime: Date.now() - startTime
           }
         }
+        
+        logger.info('ReturnService', 'processReturn', 'Return rejected: transaction already returned', {
+          transactionId: transaksiId,
+          currentStatus: transactionForValidation.status,
+          processingTime: Date.now() - startTime
+        })
+        
+        return result
       }
 
       // Return error for other non-active statuses
       if (transactionForValidation.status !== 'active') {
-        return {
+        const result = {
           success: false,
           transactionId: transaksiId,
           returnedAt: new Date(),
@@ -406,6 +435,14 @@ export class ReturnService {
             processingTime: Date.now() - startTime
           }
         }
+        
+        logger.warn('ReturnService', 'processReturn', 'Return rejected: invalid transaction status', {
+          transactionId: transaksiId,
+          currentStatus: transactionForValidation.status,
+          processingTime: Date.now() - startTime
+        })
+        
+        return result
       }
 
       // Step 1: Log return processing start (fire-and-forget async - zero blocking)
@@ -606,6 +643,13 @@ export class ReturnService {
         // Silently handle logging errors to keep main process clean
       })
 
+      logger.info('ReturnService', 'processReturn', 'Return processing completed successfully', {
+        transactionId: transaksiId,
+        totalPenalty: penaltyCalculation.totalPenalty,
+        itemsProcessed: request.items.length,
+        processingTime: Date.now() - startTime
+      })
+
       return transactionResult
     } catch (error) {
       // Log error to audit trail
@@ -615,6 +659,13 @@ export class ReturnService {
         stack: error instanceof Error ? error.stack : undefined,
         duration: Date.now() - startTime,
         context: {},
+      })
+      
+      logger.error('ReturnService', 'processReturn', 'Return processing failed', {
+        transactionId: transaksiId,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        processingTime: Date.now() - startTime,
+        itemsAttempted: request.items?.length || 0
       })
       
       throw new Error(`Gagal memproses pengembalian: ${error instanceof Error ? error.message : 'Unknown error'}`)
@@ -794,16 +845,39 @@ export class ReturnService {
         }
       }
 
-      return {
+      const result = {
         isValid: errors.length === 0,
         errors,
         mode,
       }
+      
+      if (errors.length === 0) {
+        logger.debug('ReturnService', 'validateMultiConditionRequest', 'Multi-condition validation successful', {
+          transactionId: transaksiId,
+          processingMode: mode,
+          itemsValidated: request.items.length
+        })
+      } else {
+        logger.warn('ReturnService', 'validateMultiConditionRequest', 'Multi-condition validation failed', {
+          transactionId: transaksiId,
+          processingMode: mode,
+          errorCount: errors.length,
+          itemsValidated: request.items.length
+        })
+      }
+
+      return result
     } catch (error) {
       errors.push({
         field: 'general',
         message: `Gagal validasi: ${error instanceof Error ? error.message : 'Unknown error'}`,
         code: 'VALIDATION_ERROR',
+      })
+
+      logger.error('ReturnService', 'validateMultiConditionRequest', 'Multi-condition validation error', {
+        transactionId: transaksiId,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        itemsAttempted: request.items?.length || 0
       })
 
       return {
@@ -828,7 +902,7 @@ export class ReturnService {
       const transactionForValidation = await this.transaksiService.getTransaksiForValidation(transaksiId)
       
       if (transactionForValidation.status === 'dikembalikan') {
-        return {
+        const result = {
           success: false,
           transactionId: transaksiId,
           returnedAt: new Date(),
@@ -842,10 +916,18 @@ export class ReturnService {
             processingTime: Date.now() - startTime
           }
         }
+        
+        logger.info('ReturnService', 'processEnhancedReturn', 'Enhanced return rejected: transaction already returned', {
+          transactionId: transaksiId,
+          currentStatus: transactionForValidation.status,
+          processingTime: Date.now() - startTime
+        })
+        
+        return result
       }
 
       if (transactionForValidation.status !== 'active') {
-        return {
+        const result = {
           success: false,
           transactionId: transaksiId,
           returnedAt: new Date(),
@@ -858,12 +940,20 @@ export class ReturnService {
             processingTime: Date.now() - startTime
           }
         }
+        
+        logger.warn('ReturnService', 'processEnhancedReturn', 'Enhanced return rejected: invalid transaction status', {
+          transactionId: transaksiId,
+          currentStatus: transactionForValidation.status,
+          processingTime: Date.now() - startTime
+        })
+        
+        return result
       }
 
       // Validate request
       const validation = await this.validateMultiConditionRequest(transaksiId, request)
       if (!validation.isValid) {
-        return {
+        const result = {
           success: false,
           transactionId: transaksiId,
           returnedAt: new Date(),
@@ -876,21 +966,53 @@ export class ReturnService {
             processingTime: Date.now() - startTime
           }
         }
+        
+        logger.warn('ReturnService', 'processEnhancedReturn', 'Enhanced return validation failed', {
+          transactionId: transaksiId,
+          processingMode: validation.mode,
+          errorCount: validation.errors.length,
+          processingTime: Date.now() - startTime
+        })
+        
+        return result
       }
 
       const returnDate = request.tglKembali ? new Date(request.tglKembali) : new Date()
 
+      logger.info('ReturnService', 'processEnhancedReturn', 'Enhanced return processing started', {
+        transactionId: transaksiId,
+        processingMode: validation.mode,
+        itemCount: request.items.length,
+        returnDate: returnDate.toISOString()
+      })
+
       // Route to appropriate processing method based on mode
+      let result: EnhancedReturnProcessingResult
       switch (validation.mode) {
         case 'single-condition':
-          return await this.processSingleConditionReturn(transaksiId, request, returnDate)
+          result = await this.processSingleConditionReturn(transaksiId, request, returnDate)
+          break
         case 'multi-condition':
-          return await this.processMultiConditionReturn(transaksiId, request, returnDate)
+          result = await this.processMultiConditionReturn(transaksiId, request, returnDate)
+          break
         case 'mixed':
-          return await this.processMixedReturn(transaksiId, request, returnDate)
+          result = await this.processMixedReturn(transaksiId, request, returnDate)
+          break
         default:
           throw new Error('Invalid processing mode detected')
       }
+
+      if (result.success) {
+        logger.info('ReturnService', 'processEnhancedReturn', 'Enhanced return processing completed successfully', {
+          transactionId: transaksiId,
+          processingMode: validation.mode,
+          totalPenalty: result.penalty,
+          itemsProcessed: result.processedItems.length,
+          processingTime: Date.now() - startTime
+        })
+      }
+
+      return result
     } catch (error) {
       await this.auditService.logReturnError(transaksiId, {
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -898,6 +1020,13 @@ export class ReturnService {
         stack: error instanceof Error ? error.stack : undefined,
         duration: Date.now() - startTime,
         context: { request },
+      })
+      
+      logger.error('ReturnService', 'processEnhancedReturn', 'Enhanced return processing failed', {
+        transactionId: transaksiId,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        processingTime: Date.now() - startTime,
+        itemsAttempted: request.items?.length || 0
       })
       
       throw new Error(`Gagal memproses pengembalian enhanced: ${error instanceof Error ? error.message : 'Unknown error'}`)
