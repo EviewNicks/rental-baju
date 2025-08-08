@@ -860,6 +860,11 @@ export interface EnhancedReturnProcessingResult {
     currentStatus: string
     originalReturnDate?: Date | null
     processingTime: number
+    validationErrors?: Array<{
+      field: string
+      message: string
+      code: string
+    }>
   }
 }
 

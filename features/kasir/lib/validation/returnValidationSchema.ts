@@ -342,13 +342,13 @@ export function createEnhancedContextualReturnSchema(context: ValidationContext)
       return baseSchema
 
     case 'multi-condition':
-      // Force multi-condition validation
+      // Allow both single and multi-condition arrays (fix for TSK-24)
       return baseSchema.extend({
         items: z.array(
           multiConditionReturnItemSchema.refine(
-            (item) => item.conditions && item.conditions.length > 1,
+            (item) => item.conditions && item.conditions.length > 0,
             {
-              message: 'Multi-condition mode requires at least 2 conditions per item',
+              message: 'Multi-condition mode requires at least 1 condition in conditions array',
               path: ['conditions']
             }
           )
@@ -361,15 +361,23 @@ export function createEnhancedContextualReturnSchema(context: ValidationContext)
   }
 }
 
-// Smart processing mode detection
+// Smart processing mode detection (Fixed for TSK-24)
 export function detectProcessingMode(request: z.infer<typeof enhancedReturnRequestSchema>) {
   let hasSimple = 0
   let hasComplex = 0
 
   for (const item of request.items) {
     if (item.conditions && item.conditions.length > 1) {
+      // True multi-condition: multiple conditions per item
       hasComplex++
+    } else if (item.conditions && item.conditions.length === 1) {
+      // Single condition in array format - treat as simple for backward compatibility
+      hasSimple++
+    } else if (item.kondisiAkhir && item.jumlahKembali !== undefined) {
+      // Legacy single condition format
+      hasSimple++
     } else {
+      // Invalid format - will be caught by validation
       hasSimple++
     }
   }
@@ -420,7 +428,7 @@ export function validateMultiConditionBusinessRules(
       .map(c => c.modalAwal)
 
     if (modalAwalValues.length > 1) {
-      const uniqueValues = [...new Set(modalAwalValues)]
+      const uniqueValues = Array.from(new Set(modalAwalValues))
       if (uniqueValues.length > 1) {
         errors.push({
           field: `items[${itemIndex}].conditions`,
@@ -475,7 +483,7 @@ export function convertMultiToSingleCondition(
   return null
 }
 
-// Enhanced validation error messages
+// Enhanced validation error messages (Updated for TSK-24)
 export function getEnhancedValidationMessage(
   error: z.ZodIssue,
   context: ValidationContext = 'flexible'
@@ -486,9 +494,10 @@ export function getEnhancedValidationMessage(
   if (error.path.includes('conditions')) {
     if (context === 'multi-condition') {
       message = 'Multi-condition validation failed'
-      suggestions.push('Pastikan setiap item memiliki minimal 2 kondisi')
-      suggestions.push('Periksa jumlah kembali untuk setiap kondisi')
-      suggestions.push('Validasi konsistensi kondisi akhir')
+      suggestions.push('Pastikan setiap item memiliki minimal 1 kondisi dalam array conditions[]')
+      suggestions.push('Format yang valid: [{"kondisiAkhir": "...", "jumlahKembali": 1}]')
+      suggestions.push('Untuk multiple conditions: gunakan lebih dari 1 elemen dalam array')
+      suggestions.push('Periksa jumlah kembali untuk setiap kondisi sesuai dengan kondisi akhir')
     } else {
       message = 'Format kondisi tidak valid'
       suggestions.push('Gunakan format single-condition ATAU multi-condition, tidak keduanya')
@@ -501,6 +510,7 @@ export function getEnhancedValidationMessage(
     if (error.message.includes('kondisi barang')) {
       suggestions.push('Barang hilang: set jumlahKembali = 0')
       suggestions.push('Barang dikembalikan: set jumlahKembali ≥ 1')
+      suggestions.push('Untuk multi-condition: periksa setiap kondisi dalam array conditions[]')
       suggestions.push('Periksa kesesuaian kondisi dengan jumlah kembali')
     }
   }

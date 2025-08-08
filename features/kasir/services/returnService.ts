@@ -61,11 +61,16 @@ export interface ReturnProcessingResult {
   
   // Error case properties (optional for success cases)
   details?: {
-    statusCode: 'ALREADY_RETURNED' | 'INVALID_STATUS'
+    statusCode: 'ALREADY_RETURNED' | 'INVALID_STATUS' | 'VALIDATION_ERROR'
     message: string
     currentStatus: string
     originalReturnDate?: Date | null
     processingTime: number
+    validationErrors?: Array<{
+      field: string
+      message: string
+      code: string
+    }>
   }
 }
 
@@ -403,7 +408,7 @@ export class ReturnService {
           penalty: 0,
           processedItems: [],
           details: {
-            statusCode: 'ALREADY_RETURNED',
+            statusCode: 'ALREADY_RETURNED' as const,
             message: 'Transaksi sudah dikembalikan sebelumnya',
             currentStatus: transactionForValidation.status,
             originalReturnDate: null, // Not available in validation context
@@ -429,7 +434,7 @@ export class ReturnService {
           penalty: 0,
           processedItems: [],
           details: {
-            statusCode: 'INVALID_STATUS',
+            statusCode: 'INVALID_STATUS' as const,
             message: `Transaksi dengan status '${transactionForValidation.status}' tidak dapat diproses pengembaliannya`,
             currentStatus: transactionForValidation.status,
             processingTime: Date.now() - startTime
@@ -740,7 +745,7 @@ export class ReturnService {
   // TSK-24: Multi-condition return system methods
 
   /**
-   * Detect processing mode based on request format
+   * Detect processing mode based on request format (Fixed for TSK-24)
    */
   private detectProcessingMode(request: EnhancedReturnRequest): ProcessingMode {
     let hasSimple = 0
@@ -748,9 +753,10 @@ export class ReturnService {
 
     for (const item of request.items) {
       if (item.conditions && item.conditions.length > 1) {
+        // True multi-condition: multiple conditions per item
         hasComplex++
       } else if (item.conditions && item.conditions.length === 1) {
-        // Single condition in array format - treat as simple
+        // Single condition in array format - treat as simple for backward compatibility
         hasSimple++
       } else if (item.kondisiAkhir && item.jumlahKembali !== undefined) {
         // Legacy single condition format
@@ -781,7 +787,8 @@ export class ReturnService {
       const transaction = await this.transaksiService.getTransaksiForValidation(transaksiId)
 
       // Validate each item
-      for (const [index, item] of request.items.entries()) {
+      for (let index = 0; index < request.items.length; index++) {
+        const item = request.items[index]
         const transactionItem = transaction.items.find((ti) => ti.id === item.itemId)
 
         if (!transactionItem) {
@@ -797,7 +804,8 @@ export class ReturnService {
         if (item.conditions && item.conditions.length > 0) {
           // Multi-condition validation
           let totalQuantity = 0
-          for (const [condIndex, condition] of item.conditions.entries()) {
+          for (let condIndex = 0; condIndex < item.conditions.length; condIndex++) {
+            const condition = item.conditions[condIndex]
             if (!condition.kondisiAkhir || condition.kondisiAkhir.trim() === '') {
               errors.push({
                 field: `items[${index}].conditions[${condIndex}].kondisiAkhir`,
@@ -862,7 +870,12 @@ export class ReturnService {
           transactionId: transaksiId,
           processingMode: mode,
           errorCount: errors.length,
-          itemsValidated: request.items.length
+          itemsValidated: request.items.length,
+          validationErrors: errors.map(err => ({
+            field: err.field,
+            message: err.message,
+            code: err.code
+          }))
         })
       }
 
@@ -909,7 +922,7 @@ export class ReturnService {
           penalty: 0,
           processedItems: [],
           details: {
-            statusCode: 'ALREADY_RETURNED',
+            statusCode: 'ALREADY_RETURNED' as const,
             message: 'Transaksi sudah dikembalikan sebelumnya',
             currentStatus: transactionForValidation.status,
             originalReturnDate: null,
@@ -934,7 +947,7 @@ export class ReturnService {
           penalty: 0,
           processedItems: [],
           details: {
-            statusCode: 'INVALID_STATUS',
+            statusCode: 'INVALID_STATUS' as const,
             message: `Transaksi dengan status '${transactionForValidation.status}' tidak dapat diproses pengembaliannya`,
             currentStatus: transactionForValidation.status,
             processingTime: Date.now() - startTime
@@ -960,10 +973,11 @@ export class ReturnService {
           penalty: 0,
           processedItems: [],
           details: {
-            statusCode: 'VALIDATION_ERROR',
+            statusCode: 'VALIDATION_ERROR' as const,
             message: `Validasi gagal: ${validation.errors.map(e => e.message).join(', ')}`,
             currentStatus: transactionForValidation.status,
-            processingTime: Date.now() - startTime
+            processingTime: Date.now() - startTime,
+            validationErrors: validation.errors
           }
         }
         

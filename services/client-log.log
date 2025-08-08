@@ -147,15 +147,64 @@ HASIL :
 == MULTI-CONDITION RETURN  - MIX GOOD + DAMAGED ITEMS  ==
 
 HASIL : 
+
 {
     "success": true,
     "data": {
         "transaksiId": "e911d80e-b37b-4003-b7fa-86b90e02fb25",
-        "totalPenalty": 0,
-        "processedItems": [],
-        "processingMode": "multi-condition"
+        "totalPenalty": 20000,
+        "processedItems": [
+            {
+                "itemId": "9a2db264-142a-4163-a559-1dd9603a5be1",
+                "penalty": 20000,
+                "kondisiAkhir": "multi-condition",
+                "statusKembali": "lengkap",
+                "conditionBreakdown": [
+                    {
+                        "kondisiAkhir": "Baik - dikembalikan tepat waktu",
+                        "jumlahKembali": 1,
+                        "penaltyAmount": 10000
+                    },
+                    {
+                        "kondisiAkhir": "Rusak ringan - bisa diperbaiki",
+                        "jumlahKembali": 1,
+                        "penaltyAmount": 10000
+                    }
+                ]
+            }
+        ],
+        "processingMode": "multi-condition",
+        "multiConditionSummary": {
+            "9a2db264-142a-4163-a559-1dd9603a5be1": {
+                "totalPenalty": 20000,
+                "conditionBreakdown": [
+                    {
+                        "kondisiAkhir": "Baik - dikembalikan tepat waktu",
+                        "quantity": 1,
+                        "penaltyPerUnit": 10000,
+                        "totalConditionPenalty": 10000,
+                        "calculationMethod": "late_fee",
+                        "description": "1x Baik - dikembalikan tepat waktu"
+                    },
+                    {
+                        "kondisiAkhir": "Rusak ringan - bisa diperbaiki",
+                        "quantity": 1,
+                        "penaltyPerUnit": 10000,
+                        "totalConditionPenalty": 10000,
+                        "calculationMethod": "late_fee",
+                        "description": "1x Rusak ringan - bisa diperbaiki"
+                    }
+                ],
+                "summary": {
+                    "totalQuantity": 2,
+                    "lostItems": 0,
+                    "goodItems": 2,
+                    "damagedItems": 0
+                }
+            }
+        }
     },
-    "message": "Pengembalian berhasil diproses untuk transaksi TXN-20250808-001. Total penalty: Rp 0"
+    "message": "Pengembalian berhasil diproses untuk transaksi TXN-20250808-001. Total penalty: Rp 20.000"
 }
 
 == MULTI-CONDITION RETURN  - COMPLEX SCENARIO ( gOOD + DAMAGED + LOST )   ==
@@ -165,24 +214,75 @@ HASIL :
 {
     "success": true,
     "data": {
-        "transaksiId": "2331e10a-7808-4f5e-8df1-058fc7bad2ba",
+        "transaksiId": "60c301ce-367f-4869-924c-83850034e948",
         "totalPenalty": 0,
         "processedItems": [],
         "processingMode": "multi-condition"
     },
-    "message": "Pengembalian berhasil diproses untuk transaksi TXN-20250808-007. Total penalty: Rp 0"
+    "message": "Pengembalian berhasil diproses untuk transaksi TXN-20250808-008. Total penalty: Rp 0"
 }
+
+
 
 === TSK-24: Mixed Mode Processing - Single and Multi-Condition Items ===
 
 HASIL : 
+
 {
     "success": true,
     "data": {
         "transaksiId": "2331e10a-7808-4f5e-8df1-058fc7bad2ba",
-        "totalPenalty": 0,
-        "processedItems": [],
-        "processingMode": "mixed"
+        "totalPenalty": 20000,
+        "processedItems": [
+            {
+                "itemId": "04041a3d-9622-493e-a7e3-773929b7179b",
+                "penalty": 20000,
+                "kondisiAkhir": "multi-condition",
+                "statusKembali": "lengkap",
+                "conditionBreakdown": [
+                    {
+                        "kondisiAkhir": "Baik - dikembalikan tepat waktu",
+                        "jumlahKembali": 1,
+                        "penaltyAmount": 10000
+                    },
+                    {
+                        "kondisiAkhir": "Rusak ringan - bisa diperbaiki",
+                        "jumlahKembali": 1,
+                        "penaltyAmount": 10000
+                    }
+                ]
+            }
+        ],
+        "processingMode": "mixed",
+        "multiConditionSummary": {
+            "04041a3d-9622-493e-a7e3-773929b7179b": {
+                "totalPenalty": 20000,
+                "conditionBreakdown": [
+                    {
+                        "kondisiAkhir": "Baik - dikembalikan tepat waktu",
+                        "quantity": 1,
+                        "penaltyPerUnit": 10000,
+                        "totalConditionPenalty": 10000,
+                        "calculationMethod": "late_fee",
+                        "description": "1x Baik - dikembalikan tepat waktu"
+                    },
+                    {
+                        "kondisiAkhir": "Rusak ringan - bisa diperbaiki",
+                        "quantity": 1,
+                        "penaltyPerUnit": 10000,
+                        "totalConditionPenalty": 10000,
+                        "calculationMethod": "late_fee",
+                        "description": "1x Rusak ringan - bisa diperbaiki"
+                    }
+                ],
+                "summary": {
+                    "totalQuantity": 2,
+                    "lostItems": 0,
+                    "goodItems": 2,
+                    "damagedItems": 0
+                }
+            }
+        }
     },
-    "message": "Pengembalian berhasil diproses untuk transaksi TXN-20250808-007. Total penalty: Rp 0"
+    "message": "Pengembalian berhasil diproses untuk transaksi TXN-20250808-007. Total penalty: Rp 20.000"
 }
