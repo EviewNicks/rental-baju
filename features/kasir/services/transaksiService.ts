@@ -50,6 +50,19 @@ export interface TransaksiWithDetails extends Transaksi {
     kondisiAwal?: string | null
     kondisiAkhir?: string | null
     statusKembali: string
+    // TSK-24: Multi-condition return enhancements
+    isMultiCondition?: boolean
+    multiConditionSummary?: Record<string, unknown> | null
+    totalReturnPenalty?: Decimal
+    returnConditions?: Array<{
+      id: string
+      kondisiAkhir: string
+      jumlahKembali: number
+      penaltyAmount: Decimal
+      modalAwalUsed?: Decimal | null
+      createdAt: Date
+      createdBy: string
+    }>
   }>
   pembayaran: Array<{
     id: string
@@ -399,6 +412,19 @@ export class TransaksiService {
                 },
               },
             },
+            // TSK-24: Include multi-condition return data
+            returnConditions: {
+              orderBy: { createdAt: 'asc' },
+              select: {
+                id: true,
+                kondisiAkhir: true,
+                jumlahKembali: true,
+                penaltyAmount: true,
+                modalAwalUsed: true,
+                createdAt: true,
+                createdBy: true,
+              },
+            },
           },
         },
         pembayaran: {
@@ -414,7 +440,13 @@ export class TransaksiService {
       throw new Error('Transaksi tidak ditemukan')
     }
 
-    return transaksi as TransaksiWithDetails
+    // TSK-24: Transform items with multi-condition return data
+    const enhancedTransaksi = {
+      ...transaksi,
+      items: this.transformItemsWithMultiCondition(transaksi.items as any)
+    }
+
+    return enhancedTransaksi as TransaksiWithDetails
   }
 
   /**
@@ -456,6 +488,19 @@ export class TransaksiService {
                 },
               },
             },
+            // TSK-24: Include multi-condition return data
+            returnConditions: {
+              orderBy: { createdAt: 'asc' },
+              select: {
+                id: true,
+                kondisiAkhir: true,
+                jumlahKembali: true,
+                penaltyAmount: true,
+                modalAwalUsed: true,
+                createdAt: true,
+                createdBy: true,
+              },
+            },
           },
         },
         pembayaran: {
@@ -471,7 +516,13 @@ export class TransaksiService {
       throw new Error('Transaksi tidak ditemukan')
     }
 
-    return transaksi as TransaksiWithDetails
+    // TSK-24: Transform items with multi-condition return data
+    const enhancedTransaksi = {
+      ...transaksi,
+      items: this.transformItemsWithMultiCondition(transaksi.items as any)
+    }
+
+    return enhancedTransaksi as TransaksiWithDetails
   }
 
   /**
@@ -793,6 +844,82 @@ export class TransaksiService {
         })
       }
     }
+  }
+
+  /**
+   * TSK-24: Transform transaction items to include multi-condition return data
+   * Maintains backward compatibility while enhancing with condition breakdown
+   */
+  private transformItemsWithMultiCondition(
+    items: TransaksiWithDetails['items']
+  ): TransaksiWithDetails['items'] {
+    return items.map((item) => {
+      const transformedItem = { ...item }
+
+      // Check if item has multi-condition returns
+      if (item.returnConditions && item.returnConditions.length > 0) {
+        if (item.returnConditions.length > 1) {
+          // Multi-condition case: Transform kondisiAkhir to indicate multi-condition
+          transformedItem.kondisiAkhir = 'multi-condition'
+          
+          // Calculate multi-condition summary
+          const totalPenalty = item.returnConditions.reduce(
+            (sum, condition) => sum + Number(condition.penaltyAmount), 
+            0
+          )
+          
+          const lostItems = item.returnConditions
+            .filter(c => this.isLostItemCondition(c.kondisiAkhir))
+            .reduce((sum, c) => sum + c.jumlahKembali, 0)
+          
+          const goodItems = item.returnConditions
+            .filter(c => !this.isLostItemCondition(c.kondisiAkhir))
+            .reduce((sum, c) => sum + c.jumlahKembali, 0)
+
+          transformedItem.multiConditionSummary = {
+            totalPenalty,
+            lostItems,
+            goodItems,
+            totalQuantity: lostItems + goodItems,
+            conditionBreakdown: item.returnConditions.map(condition => ({
+              kondisiAkhir: condition.kondisiAkhir,
+              jumlahKembali: condition.jumlahKembali,
+              penaltyAmount: Number(condition.penaltyAmount),
+              modalAwalUsed: condition.modalAwalUsed ? Number(condition.modalAwalUsed) : null,
+            }))
+          }
+        } else {
+          // Single condition case: Use the actual condition data
+          const singleCondition = item.returnConditions[0]
+          transformedItem.kondisiAkhir = singleCondition.kondisiAkhir
+          transformedItem.totalReturnPenalty = singleCondition.penaltyAmount
+        }
+
+        // Update status based on return data
+        if (item.returnConditions.length > 0) {
+          const totalReturned = item.returnConditions.reduce(
+            (sum, condition) => sum + condition.jumlahKembali, 
+            0
+          )
+          
+          if (totalReturned >= item.jumlahDiambil) {
+            transformedItem.statusKembali = 'lengkap'
+          } else if (totalReturned > 0) {
+            transformedItem.statusKembali = 'sebagian'
+          }
+        }
+      }
+
+      return transformedItem
+    })
+  }
+
+  /**
+   * TSK-24: Helper method to detect lost item conditions
+   */
+  private isLostItemCondition(kondisiAkhir: string): boolean {
+    const normalized = kondisiAkhir.toLowerCase()
+    return normalized.includes('hilang') || normalized.includes('tidak dikembalikan')
   }
 
   /**

@@ -42,7 +42,8 @@
                 "subtotal": 300000,
                 "kondisiAwal": "baik",
                 "kondisiAkhir": null,
-                "statusKembali": "belum"
+                "statusKembali": "belum",
+                "totalReturnPenalty": 0
             },
             {
                 "id": "b4f19749-4185-4eaf-8cdb-779620b34fc3",
@@ -62,7 +63,8 @@
                 "subtotal": 150000,
                 "kondisiAwal": "baik",
                 "kondisiAkhir": null,
-                "statusKembali": "belum"
+                "statusKembali": "belum",
+                "totalReturnPenalty": 0
             }
         ],
         "pembayaran": [

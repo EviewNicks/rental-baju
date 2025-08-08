@@ -451,3 +451,265 @@
     "duration": "8851ms"
   }
 }
+2025-08-08T12:08:36.483Z [INFO] [API][PUT-pengembalian] Validation successful
+{
+  "requestId": "req-1754654915512-2wspqd25f",
+  "processingMode": "multi-condition",
+  "validationContext": "multi-condition",
+  "itemCount": 1,
+  "performance": {
+    "timestamp": 1754654916483,
+    "memory": {
+      "rss": 366858240,
+      "heapTotal": 245567488,
+      "heapUsed": 220697944,
+      "external": 4373755,
+      "arrayBuffers": 382156
+    }
+  }
+}
+2025-08-08T12:08:42.827Z [WARN] [ReturnService][validateMultiConditionRequest] Multi-condition validation failed
+{
+  "transactionId": "e911d80e-b37b-4003-b7fa-86b90e02fb25",
+  "processingMode": "multi-condition",
+  "errorCount": 1,
+  "itemsValidated": 1,
+  "performance": {
+    "timestamp": 1754654922827,
+    "memory": {
+      "rss": 367009792,
+      "heapTotal": 245567488,
+      "heapUsed": 221160912,
+      "external": 4373826,
+      "arrayBuffers": 382227
+    }
+  }
+}
+2025-08-08T12:08:42.838Z [WARN] [ReturnService][processEnhancedReturn] Enhanced return validation failed
+{
+  "transactionId": "e911d80e-b37b-4003-b7fa-86b90e02fb25",
+  "processingMode": "multi-condition",
+  "errorCount": 1,
+  "processingTime": 3158,
+  "performance": {
+    "timestamp": 1754654922838,
+    "memory": {
+      "rss": 367009792,
+      "heapTotal": 245567488,
+      "heapUsed": 221176320,
+      "external": 4373826,
+      "arrayBuffers": 382227
+    }
+  }
+}
+2025-08-08T12:08:42.843Z [INFO] [API][PUT-pengembalian] Return processing completed
+{
+  "requestId": "req-1754654915512-2wspqd25f",
+  "processingMode": "multi-condition",
+  "success": false,
+  "totalPenalty": 0,
+  "processedItems": 0,
+  "performance": {
+    "timestamp": 1754654922843,
+    "memory": {
+      "rss": 367009792,
+      "heapTotal": 245567488,
+      "heapUsed": 221185008,
+      "external": 4373826,
+      "arrayBuffers": 382227
+    }
+  }
+}
+2025-08-08T12:08:42.864Z [INFO] [API][PUT-pengembalian] API request completed successfully
+{
+  "performance": {
+    "label": "total-api-request",
+    "duration": "7352ms"
+  }
+}
+2025-08-08T12:13:15.006Z [INFO] [API][PUT-pengembalian] API request started
+{
+  "requestId": "req-1754655195006-ra7bsoiqx",
+  "timestamp": "2025-08-08T12:13:15.006Z",
+  "userAgent": "PostmanRuntime/7.45.0",
+  "contentLength": "585",
+  "performance": {
+    "timestamp": 1754655195006,
+    "memory": {
+      "rss": 437608448,
+      "heapTotal": 299696128,
+      "heapUsed": 268663352,
+      "external": 4704643,
+      "arrayBuffers": 720146
+    }
+  }
+}
+2025-08-08T12:13:16.074Z [INFO] [API][PUT-pengembalian] Validation successful
+{
+  "requestId": "req-1754655195006-ra7bsoiqx",
+  "processingMode": "multi-condition",
+  "validationContext": "multi-condition",
+  "itemCount": 1,
+  "performance": {
+    "timestamp": 1754655196074,
+    "memory": {
+      "rss": 438562816,
+      "heapTotal": 299696128,
+      "heapUsed": 269614480,
+      "external": 4728043,
+      "arrayBuffers": 739787
+    }
+  }
+}
+2025-08-08T12:13:22.902Z [WARN] [ReturnService][validateMultiConditionRequest] Multi-condition validation failed
+{
+  "transactionId": "2331e10a-7808-4f5e-8df1-058fc7bad2ba",
+  "processingMode": "multi-condition",
+  "errorCount": 1,
+  "itemsValidated": 1,
+  "performance": {
+    "timestamp": 1754655202902,
+    "memory": {
+      "rss": 438947840,
+      "heapTotal": 299696128,
+      "heapUsed": 269994984,
+      "external": 4728157,
+      "arrayBuffers": 739901
+    }
+  }
+}
+2025-08-08T12:13:22.912Z [WARN] [ReturnService][processEnhancedReturn] Enhanced return validation failed
+{
+  "transactionId": "2331e10a-7808-4f5e-8df1-058fc7bad2ba",
+  "processingMode": "multi-condition",
+  "errorCount": 1,
+  "processingTime": 3385,
+  "performance": {
+    "timestamp": 1754655202912,
+    "memory": {
+      "rss": 438960128,
+      "heapTotal": 299696128,
+      "heapUsed": 270007104,
+      "external": 4728157,
+      "arrayBuffers": 739901
+    }
+  }
+}
+2025-08-08T12:13:22.924Z [INFO] [API][PUT-pengembalian] Return processing completed
+{
+  "requestId": "req-1754655195006-ra7bsoiqx",
+  "processingMode": "multi-condition",
+  "success": false,
+  "totalPenalty": 0,
+  "processedItems": 0,
+  "performance": {
+    "timestamp": 1754655202924,
+    "memory": {
+      "rss": 438972416,
+      "heapTotal": 299696128,
+      "heapUsed": 270016432,
+      "external": 4728157,
+      "arrayBuffers": 739901
+    }
+  }
+}
+2025-08-08T12:13:22.950Z [INFO] [API][PUT-pengembalian] API request completed successfully
+{
+  "performance": {
+    "label": "total-api-request",
+    "duration": "7943ms"
+  }
+}
+2025-08-08T12:15:14.777Z [INFO] [API][PUT-pengembalian] API request started
+{
+  "requestId": "req-1754655314777-05zxxwr2z",
+  "timestamp": "2025-08-08T12:15:14.777Z",
+  "userAgent": "PostmanRuntime/7.45.0",
+  "contentLength": "609",
+  "performance": {
+    "timestamp": 1754655314777,
+    "memory": {
+      "rss": 444801024,
+      "heapTotal": 271384576,
+      "heapUsed": 264719072,
+      "external": 7871183,
+      "arrayBuffers": 3886726
+    }
+  }
+}
+2025-08-08T12:15:15.333Z [INFO] [API][PUT-pengembalian] Validation successful
+{
+  "requestId": "req-1754655314777-05zxxwr2z",
+  "processingMode": "mixed",
+  "validationContext": "flexible",
+  "itemCount": 2,
+  "performance": {
+    "timestamp": 1754655315333,
+    "memory": {
+      "rss": 445030400,
+      "heapTotal": 271384576,
+      "heapUsed": 264689240,
+      "external": 7893930,
+      "arrayBuffers": 3905714
+    }
+  }
+}
+2025-08-08T12:15:21.817Z [WARN] [ReturnService][validateMultiConditionRequest] Multi-condition validation failed
+{
+  "transactionId": "2331e10a-7808-4f5e-8df1-058fc7bad2ba",
+  "processingMode": "mixed",
+  "errorCount": 1,
+  "itemsValidated": 2,
+  "performance": {
+    "timestamp": 1754655321817,
+    "memory": {
+      "rss": 445042688,
+      "heapTotal": 271384576,
+      "heapUsed": 264393992,
+      "external": 7889722,
+      "arrayBuffers": 3901506
+    }
+  }
+}
+2025-08-08T12:15:21.831Z [WARN] [ReturnService][processEnhancedReturn] Enhanced return validation failed
+{
+  "transactionId": "2331e10a-7808-4f5e-8df1-058fc7bad2ba",
+  "processingMode": "mixed",
+  "errorCount": 1,
+  "processingTime": 3255,
+  "performance": {
+    "timestamp": 1754655321831,
+    "memory": {
+      "rss": 445042688,
+      "heapTotal": 271384576,
+      "heapUsed": 264402704,
+      "external": 7889722,
+      "arrayBuffers": 3901506
+    }
+  }
+}
+2025-08-08T12:15:21.853Z [INFO] [API][PUT-pengembalian] Return processing completed
+{
+  "requestId": "req-1754655314777-05zxxwr2z",
+  "processingMode": "mixed",
+  "success": false,
+  "totalPenalty": 0,
+  "processedItems": 0,
+  "performance": {
+    "timestamp": 1754655321852,
+    "memory": {
+      "rss": 445042688,
+      "heapTotal": 271384576,
+      "heapUsed": 264410304,
+      "external": 7889722,
+      "arrayBuffers": 3901506
+    }
+  }
+}
+2025-08-08T12:15:21.873Z [INFO] [API][PUT-pengembalian] API request completed successfully
+{
+  "performance": {
+    "label": "total-api-request",
+    "duration": "7095ms"
+  }
+}

@@ -146,4 +146,43 @@ HASIL :
 
 == MULTI-CONDITION RETURN  - MIX GOOD + DAMAGED ITEMS  ==
 
+HASIL : 
+{
+    "success": true,
+    "data": {
+        "transaksiId": "e911d80e-b37b-4003-b7fa-86b90e02fb25",
+        "totalPenalty": 0,
+        "processedItems": [],
+        "processingMode": "multi-condition"
+    },
+    "message": "Pengembalian berhasil diproses untuk transaksi TXN-20250808-001. Total penalty: Rp 0"
+}
+
 == MULTI-CONDITION RETURN  - COMPLEX SCENARIO ( gOOD + DAMAGED + LOST )   ==
+
+HASIL : 
+
+{
+    "success": true,
+    "data": {
+        "transaksiId": "2331e10a-7808-4f5e-8df1-058fc7bad2ba",
+        "totalPenalty": 0,
+        "processedItems": [],
+        "processingMode": "multi-condition"
+    },
+    "message": "Pengembalian berhasil diproses untuk transaksi TXN-20250808-007. Total penalty: Rp 0"
+}
+
+=== TSK-24: Mixed Mode Processing - Single and Multi-Condition Items ===
+
+HASIL : 
+{
+    "success": true,
+    "data": {
+        "transaksiId": "2331e10a-7808-4f5e-8df1-058fc7bad2ba",
+        "totalPenalty": 0,
+        "processedItems": [],
+        "processingMode": "mixed"
+    },
+    "message": "Pengembalian berhasil diproses untuk transaksi TXN-20250808-007. Total penalty: Rp 0"
+}
