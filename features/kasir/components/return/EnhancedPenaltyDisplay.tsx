@@ -25,6 +25,7 @@ import type {
   EnhancedItemCondition,
   MultiConditionPenaltyResult
 } from '../../types/multiConditionReturn'
+import { kasirLogger } from '../../services/logger'
 
 interface EnhancedPenaltyDisplayProps {
   transaction: TransaksiDetail
@@ -79,6 +80,14 @@ export function EnhancedPenaltyDisplay({
   // Notify parent when calculation changes
   useEffect(() => {
     if (penaltyCalculation && onPenaltyCalculated) {
+      kasirLogger.penaltyCalc.debug('penalty display', 'Penalty calculation received', {
+        totalPenalty: penaltyCalculation.totalPenalty,
+        lateDays: penaltyCalculation.lateDays,
+        breakdownItems: penaltyCalculation.breakdown?.length || 0,
+        processingMode: penaltyCalculation.calculationMetadata?.processingMode,
+        conditionSplits: penaltyCalculation.calculationMetadata?.conditionSplits
+      })
+      
       onPenaltyCalculated(penaltyCalculation)
     }
   }, [penaltyCalculation, onPenaltyCalculated])
@@ -309,7 +318,17 @@ export function EnhancedPenaltyDisplay({
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setShowDetailedBreakdown(!showDetailedBreakdown)}
+                onClick={() => {
+                  const newState = !showDetailedBreakdown
+                  kasirLogger.userInteraction.debug('penalty display toggle', 'User toggled detailed breakdown view', {
+                    previousState: showDetailedBreakdown,
+                    newState,
+                    processingMode,
+                    totalPenalty: penaltyCalculation?.totalPenalty,
+                    breakdownItems: penaltyCalculation?.breakdown?.length || 0
+                  })
+                  setShowDetailedBreakdown(newState)
+                }}
               >
                 {showDetailedBreakdown ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 {showDetailedBreakdown ? 'Sembunyikan' : 'Tampilkan'} Detail

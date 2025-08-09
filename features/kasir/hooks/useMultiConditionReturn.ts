@@ -13,6 +13,7 @@ import type {
   ConditionValidationResult
 } from '../types/multiConditionReturn'
 import { kasirApi } from '../api'
+import { kasirLogger } from '../services/logger'
 
 /**
  * Enhanced Return Process Hook with Multi-Condition Support
@@ -87,9 +88,18 @@ export function useMultiConditionReturn(): UseMultiConditionReturnResult {
       }
     }
 
-    if (hasMulti === 0) return 'single-condition'
-    if (hasSimple === 0) return 'multi-condition'
-    return 'mixed'
+    const mode = hasMulti === 0 ? 'single-condition' : 
+                 hasSimple === 0 ? 'multi-condition' : 'mixed'
+    
+    kasirLogger.stateManagement.debug('processingMode', 'Auto-detected processing mode', {
+      mode,
+      hasSimple,
+      hasMulti,
+      totalItems: Object.keys(itemConditions).length,
+      transactionId: transaction?.kode
+    })
+
+    return mode
   }, [transaction, itemConditions])
 
   // Penalty calculation query (real-time)
@@ -116,9 +126,31 @@ export function useMultiConditionReturn(): UseMultiConditionReturnResult {
   // Enhanced return processing mutation
   const { mutateAsync: processReturnMutation, isPending: isProcessing } = useMutation({
     mutationFn: async (returnRequest: EnhancedReturnRequest & { transactionId: string }) => {
-      return kasirApi.processEnhancedReturn(returnRequest.transactionId, returnRequest)
+      const timer = kasirLogger.performance.startTimer('processReturnMutation', 'Enhanced return processing')
+      
+      kasirLogger.returnProcess.info('processReturnMutation', 'Starting enhanced return processing', {
+        transactionId: returnRequest.transactionId,
+        itemCount: returnRequest.items.length,
+        processingMode: processingMode
+      })
+      
+      try {
+        const result = await kasirApi.processEnhancedReturn(returnRequest.transactionId, returnRequest)
+        timer.end('Enhanced return processing completed')
+        return result
+      } catch (error) {
+        kasirLogger.returnProcess.error('processReturnMutation', 'Enhanced return processing failed', 
+          error instanceof Error ? error : { error: String(error) })
+        throw error
+      }
     },
     onSuccess: (result: ReturnProcessingResult) => {
+      kasirLogger.returnProcess.info('onSuccess', 'Return processing completed successfully', {
+        processingMode: result.processingMode,
+        transactionId: transaction?.kode,
+        itemsProcessed: result.itemsProcessed || 0
+      })
+      
       toast.success(`Pengembalian berhasil diproses (${result.processingMode} mode)`)
       
       // Invalidate related queries
@@ -130,6 +162,13 @@ export function useMultiConditionReturn(): UseMultiConditionReturnResult {
     },
     onError: (error) => {
       const errorMessage = error instanceof Error ? error.message : 'Terjadi kesalahan saat memproses pengembalian'
+      
+      kasirLogger.returnProcess.error('onError', 'Return processing failed', {
+        errorMessage,
+        transactionId: transaction?.kode,
+        processingMode
+      })
+      
       setError(errorMessage)
       toast.error(errorMessage)
     }
@@ -171,15 +210,17 @@ export function useMultiConditionReturn(): UseMultiConditionReturnResult {
     }
   }, [])
 
-  // Set item condition with validation
+  // Set item condition with validation (OPTIMIZED: batched state updates)
   const setItemCondition = useCallback((itemId: string, condition: EnhancedItemCondition) => {
+    // Calculate validation once
+    const itemValidation = validateItemCondition(condition)
+    
+    // Batch state updates to reduce re-renders
     setItemConditions(prev => ({
       ...prev,
       [itemId]: condition
     }))
 
-    // Update validation for this item
-    const itemValidation = validateItemCondition(condition)
     setValidation(prev => ({
       ...prev,
       itemValidations: {
@@ -191,11 +232,17 @@ export function useMultiConditionReturn(): UseMultiConditionReturnResult {
     setError(null)
   }, [validateItemCondition])
 
-  // Set item mode (single/multi) with data preservation
+  // Set item mode (single/multi) with data preservation (OPTIMIZED: removed dependencies)
   const setItemMode = useCallback((itemId: string, mode: 'single' | 'multi') => {
     setItemConditions(prev => {
       const existing = prev[itemId]
       if (!existing) return prev
+
+      kasirLogger.stateManagement.debug('setItemMode', 'Changing item mode with data preservation', {
+        itemId,
+        newMode: mode,
+        previousMode: existing.mode
+      })
 
       // Convert between modes while preserving data
       let newConditions: ConditionSplit[]
@@ -218,14 +265,21 @@ export function useMultiConditionReturn(): UseMultiConditionReturnResult {
         conditions: newConditions
       }
 
+      kasirLogger.stateManagement.debug('setItemMode', 'Mode change completed', {
+        itemId,
+        oldConditionsCount: existing.conditions.length,
+        newConditionsCount: newConditions.length,
+        dataPreserved: newConditions.length > 0
+      })
+
       return {
         ...prev,
         [itemId]: updatedCondition
       }
     })
-  }, [])
+  }, []) // PERFORMANCE FIX: removed itemConditions dependency - use functional updates
 
-  // Validate all items and update form validation
+  // Validate all items and update form validation (OPTIMIZED: stable dependencies)
   const validateAllItems = useCallback(() => {
     if (!transaction) return false
 
@@ -271,22 +325,44 @@ export function useMultiConditionReturn(): UseMultiConditionReturnResult {
 
     setValidation(newValidation)
     return newValidation.canProceed
-  }, [transaction, itemConditions, validateItemCondition])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [transaction, validateItemCondition]) // STABILITY FIX: removed itemConditions dependency
 
   // Calculate penalties for current conditions
   const calculatePenalties = useCallback(async () => {
     if (validateAllItems()) {
+      const timer = kasirLogger.performance.startTimer('calculatePenalties', 'Penalty calculation')
+      
+      kasirLogger.penaltyCalc.info('calculatePenalties', 'Starting penalty calculation', {
+        transactionId: transaction?.kode,
+        itemCount: Object.keys(itemConditions).length,
+        processingMode
+      })
+      
       try {
         const result = await refetchPenalties()
         if (result.data) {
           setPenaltyCalculation(result.data)
+          
+          kasirLogger.penaltyCalc.info('calculatePenalties', 'Penalty calculation completed', {
+            totalPenalty: result.data.totalPenalty,
+            itemsWithPenalties: result.data.breakdown?.length || 0
+          })
         }
+        
+        timer.end('Penalty calculation completed')
       } catch (error) {
-        console.error('Error calculating penalties:', error)
+        kasirLogger.penaltyCalc.error('calculatePenalties', 'Penalty calculation failed', 
+          error instanceof Error ? error : { error: String(error) })
         toast.error('Gagal menghitung penalty')
       }
+    } else {
+      kasirLogger.validation.warn('calculatePenalties', 'Cannot calculate penalties - validation failed', {
+        validationErrors: validation.errors,
+        canProceed: validation.canProceed
+      })
     }
-  }, [validateAllItems, refetchPenalties])
+  }, [validateAllItems, refetchPenalties, transaction?.kode, itemConditions, processingMode, validation])
 
   // Convert current state to API request format
   const convertToApiRequest = useCallback((): EnhancedReturnRequest | null => {
@@ -413,12 +489,13 @@ export function useMultiConditionReturn(): UseMultiConditionReturnResult {
     }
   }, [transaction, itemConditions])
 
-  // Auto-validate when item conditions change
+  // Auto-validate when item conditions change (FIXED: removed validateAllItems from deps)
   useEffect(() => {
     if (Object.keys(itemConditions).length > 0) {
       validateAllItems()
     }
-  }, [itemConditions, validateAllItems])
+    // eslint-disable-next-line react-hooks/exhaustive-deps  
+  }, [itemConditions]) // CRITICAL FIX: removed validateAllItems to break infinite loop
 
   // Reset process to initial state
   const resetProcess = useCallback(() => {

@@ -15,6 +15,7 @@ import type {
 } from '../../types/multiConditionReturn'
 import type { TransaksiDetail } from '../../types'
 import type { TransaksiItem } from '../../types/index'
+import { kasirLogger } from '../../services/logger'
 
 interface EnhancedItemConditionFormProps {
   item: TransaksiItem
@@ -70,6 +71,15 @@ export function EnhancedItemConditionForm({
 
   // Handle mode change with data preservation
   const handleModeChange = (mode: 'single' | 'multi') => {
+    kasirLogger.userInteraction.debug('handleModeChange', 'User changing condition mode', {
+      itemId: item.id,
+      itemName: item.produk?.name,
+      previousMode: currentCondition.mode,
+      newMode: mode,
+      itemQuantity: item.jumlahDiambil,
+      currentConditionsCount: currentCondition.conditions.length
+    })
+
     let newConditions: ConditionSplit[]
 
     if (mode === 'single' && currentCondition.conditions.length > 0) {
@@ -85,11 +95,20 @@ export function EnhancedItemConditionForm({
       newConditions = [...currentCondition.conditions]
     }
 
+    const remainingQuantity = item.jumlahDiambil - newConditions.reduce((sum, c) => sum + (c.jumlahKembali || 0), 0)
+
+    kasirLogger.userInteraction.debug('handleModeChange', 'Mode change completed', {
+      itemId: item.id,
+      newConditionsCount: newConditions.length,
+      remainingQuantity,
+      dataPreserved: newConditions.length > 0
+    })
+
     setCurrentCondition(prev => ({
       ...prev,
       mode,
       conditions: newConditions,
-      remainingQuantity: item.jumlahDiambil - newConditions.reduce((sum, c) => sum + (c.jumlahKembali || 0), 0)
+      remainingQuantity
     }))
   }
 
@@ -121,6 +140,16 @@ export function EnhancedItemConditionForm({
 
   // Handle validation change from multi-condition form
   const handleValidationChange = (newValidation: ConditionValidationResult) => {
+    kasirLogger.validation.debug('handleValidationChange', 'Validation state updated', {
+      itemId: item.id,
+      itemName: item.produk?.name,
+      isValid: newValidation.isValid,
+      hasError: !!newValidation.error,
+      hasWarnings: !!newValidation.warnings?.length,
+      remaining: newValidation.remaining,
+      totalReturned: newValidation.totalReturned
+    })
+
     setValidation(newValidation)
     
     setCurrentCondition(prev => ({

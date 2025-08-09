@@ -1,148 +1,61 @@
-== GET TRANSACTION CODE ===
-
-{
-    "success": true,
-    "data": {
-        "id": "e911d80e-b37b-4003-b7fa-86b90e02fb25",
-        "kode": "TXN-20250808-001",
-        "penyewa": {
-            "id": "c11dfe97-735f-4d5b-9e58-74ecad4e3421",
-            "nama": "Newbie",
-            "telepon": "08123456789",
-            "alamat": "02/03, Jl.EMpang no.7 , Kel. Cppo"
-        },
-        "status": "active",
-        "totalHarga": 450000,
-        "jumlahBayar": 450000,
-        "sisaBayar": 0,
-        "tglMulai": "2025-08-09T00:00:00.000Z",
-        "tglSelesai": "2025-08-12T00:00:00.000Z",
-        "tglKembali": null,
-        "metodeBayar": "tunai",
-        "catatan": null,
-        "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
-        "createdAt": "2025-08-08T05:54:19.205Z",
-        "updatedAt": "2025-08-08T05:54:31.369Z",
-        "items": [
-            {
-                "id": "9a2db264-142a-4163-a559-1dd9603a5be1",
-                "produk": {
-                    "id": "187370f2-6fe3-40f9-8f0f-adbed01ac2bd",
-                    "code": "DRS2",
-                    "name": "Dress Elegant Red",
-                    "imageUrl": "products/image.png",
-                    "size": "M",
-                    "color": "Pink ",
-                    "category": "Baju Ungu"
-                },
-                "jumlah": 2,
-                "jumlahDiambil": 2,
-                "hargaSewa": 50000,
-                "durasi": 3,
-                "subtotal": 300000,
-                "kondisiAwal": "baik",
-                "kondisiAkhir": null,
-                "statusKembali": "belum",
-                "totalReturnPenalty": 0
-            },
-            {
-                "id": "b4f19749-4185-4eaf-8cdb-779620b34fc3",
-                "produk": {
-                    "id": "6bf8bdc3-44dd-4159-a6b7-0dd2f30e0e66",
-                    "code": "GMB5",
-                    "name": "Baju Merah",
-                    "imageUrl": "products/image.png",
-                    "size": "S",
-                    "color": "Pink ",
-                    "category": "Baju Ungu"
-                },
-                "jumlah": 1,
-                "jumlahDiambil": 1,
-                "hargaSewa": 50000,
-                "durasi": 3,
-                "subtotal": 150000,
-                "kondisiAwal": "baik",
-                "kondisiAkhir": null,
-                "statusKembali": "belum",
-                "totalReturnPenalty": 0
-            }
-        ],
-        "pembayaran": [
-            {
-                "id": "631b27f1-52fb-4272-8654-99094ea787f5",
-                "jumlah": 450000,
-                "metode": "tunai",
-                "referensi": null,
-                "catatan": "Pembayaran awal transaksi",
-                "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
-                "createdAt": "2025-08-08T05:54:31.046Z"
-            }
-        ],
-        "aktivitas": [
-            {
-                "id": "52691451-7133-469f-8131-799ee47a410d",
-                "tipe": "status_pickup",
-                "deskripsi": "Status pickup: 2 lengkap, 0 sebagian, 0 belum",
-                "data": {
-                    "timestamp": "2025-08-08T08:26:04.870Z",
-                    "pickupStats": {
-                        "totalItems": 2,
-                        "notPickedUp": 0,
-                        "fullyPickedUp": 2,
-                        "partiallyPickedUp": 0
-                    },
-                    "calculatedBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp"
-                },
-                "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
-                "createdAt": "2025-08-08T08:26:04.873Z"
-            },
-            {
-                "id": "85d7dd1b-80fb-4ed4-8d31-1916b0e1635b",
-                "tipe": "diambil",
-                "deskripsi": "Pickup dilakukan: 2 item, 1 item",
-                "data": {
-                    "items": [
-                        {
-                            "itemId": "9a2db264-142a-4163-a559-1dd9603a5be1",
-                            "jumlahDiambil": 2
-                        },
-                        {
-                            "itemId": "b4f19749-4185-4eaf-8cdb-779620b34fc3",
-                            "jumlahDiambil": 1
-                        }
-                    ],
-                    "timestamp": "2025-08-08T08:26:01.527Z",
-                    "processedBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp"
-                },
-                "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
-                "createdAt": "2025-08-08T08:26:01.531Z"
-            },
-            {
-                "id": "aad63df0-1986-456b-ba1d-544bdc960bf9",
-                "tipe": "dibayar",
-                "deskripsi": "Pembayaran tunai sebesar Rp 450.000",
-                "data": {
-                    "amount": 450000,
-                    "method": "tunai",
-                    "newTotal": "450000",
-                    "paymentId": "631b27f1-52fb-4272-8654-99094ea787f5",
-                    "remaining": "0"
-                },
-                "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
-                "createdAt": "2025-08-08T05:54:31.734Z"
-            },
-            {
-                "id": "43465303-aae7-478e-b1ba-f6bc0409d3de",
-                "tipe": "dibuat",
-                "deskripsi": "Transaksi TXN-20250808-001 dibuat",
-                "data": {
-                    "items": 2,
-                    "totalHarga": "450000"
-                },
-                "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
-                "createdAt": "2025-08-08T05:54:21.047Z"
-            }
-        ]
-    },
-    "message": "Detail transaksi berhasil diambil"
-}
+ ✓ Compiled in 2.5s
+ GET /dashboard/transaction/TXN-20250809-001 200 in 398ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 446ms
+ GET /api/kasir/transaksi/TXN-20250809-001 200 in 4908ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 352ms
+ (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
+ GET /dashboard/transaction/TXN-20250809-001/return 200 in 524ms
+ GET /api/kasir/transaksi/TXN-20250809-001 200 in 3809ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 546ms
+ (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
+ GET /dashboard 200 in 345ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 411ms
+ GET /dashboard/transaction/TXN-20250809-001 200 in 196ms
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 1602ms
+ GET /api/kasir/transaksi/TXN-20250809-001 200 in 579ms
+ GET /dashboard/transaction/TXN-20250809-001 200 in 423ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 433ms
+ GET /api/kasir/transaksi/TXN-20250809-001 200 in 3618ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 350ms
+ (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
+ GET /dashboard/transaction/TXN-20250809-001 200 in 355ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 416ms
+ GET /api/kasir/transaksi/TXN-20250809-001 200 in 3847ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 543ms
+ (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
+ GET /dashboard/transaction/TXN-20250809-001/return 200 in 215ms
+ GET /api/kasir/transaksi/TXN-20250809-001 200 in 3873ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 534ms
+ (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
+ GET /dashboard/transaction/TXN-20250809-001/return 200 in 658ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 436ms
+ GET /api/kasir/transaksi/TXN-20250809-001 200 in 4569ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 1042ms (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
+ GET /dashboard/transaction/TXN-20250809-001/return 200 in 468ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 520ms
+ GET /api/kasir/transaksi/TXN-20250809-001 200 in 4206ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 574ms
+ (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
+ GET /dashboard/transaction/TXN-20250809-001/return 200 in 495ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 537ms
+ GET /api/kasir/transaksi/TXN-20250809-001 200 in 4513ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 950ms
+ (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
+ ○ Compiling /dashboard/transaction/[kode]/return ...
+ ✓ Compiled in 4.8s
+ ✓ Compiled /dashboard/transaction/[kode]/return in 2.6s
+ GET /dashboard/transaction/TXN-20250809-001/return 200 in 2778ms
+ GET /dashboard/transaction/TXN-20250809-001/return 200 in 434ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 529ms
+ GET /api/kasir/transaksi/TXN-20250809-001 200 in 5015ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 559ms
+ (cache skip)
+ │ │ Cache skipped reason: (auto no cache)

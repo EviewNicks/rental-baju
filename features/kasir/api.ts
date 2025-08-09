@@ -34,6 +34,7 @@ import type {
   // API wrapper types
   ApiResponse,
 } from './types'
+import { kasirLogger } from './services/logger'
 
 // Base API configuration
 const API_BASE_URL = '/api/kasir'
@@ -389,24 +390,58 @@ export class KasirApi {
     errors?: string[]
     warnings?: string[]
   }> {
-    return apiRequest<{
-      success: boolean
-      processingMode: 'single-condition' | 'multi-condition' | 'mixed'
-      transactionId: string
-      itemsProcessed: number
-      conditionSplitsProcessed: number
-      totalPenalty: number
-      message: string
-      errors?: string[]
-      warnings?: string[]
-    }>(`/transaksi/${transactionId}/pengembalian`, {
-      method: 'PUT',
-      body: JSON.stringify(returnData),
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Multi-Condition': 'true', // Signal for enhanced processing
-      },
+    const timer = kasirLogger.performance.startTimer('processEnhancedReturn', 'Enhanced return API call')
+    
+    // Detect processing mode for logging
+    const hasMultiConditions = returnData.items.some(item => item.conditions && item.conditions.length > 1)
+    const totalConditions = returnData.items.reduce((sum, item) => 
+      sum + (item.conditions?.length || 1), 0)
+    
+    kasirLogger.apiCalls.info('processEnhancedReturn', 'Starting enhanced return API call', {
+      transactionId,
+      itemCount: returnData.items.length,
+      totalConditions,
+      hasMultiConditions,
+      hasNotes: !!returnData.catatan
     })
+    
+    try {
+      const result = await apiRequest<{
+        success: boolean
+        processingMode: 'single-condition' | 'multi-condition' | 'mixed'
+        transactionId: string
+        itemsProcessed: number
+        conditionSplitsProcessed: number
+        totalPenalty: number
+        message: string
+        errors?: string[]
+        warnings?: string[]
+      }>(`/transaksi/${transactionId}/pengembalian`, {
+        method: 'PUT',
+        body: JSON.stringify(returnData),
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Multi-Condition': 'true', // Signal for enhanced processing
+        },
+      })
+      
+      kasirLogger.apiCalls.info('processEnhancedReturn', 'Enhanced return API call completed', {
+        success: result.success,
+        processingMode: result.processingMode,
+        itemsProcessed: result.itemsProcessed,
+        conditionSplitsProcessed: result.conditionSplitsProcessed,
+        totalPenalty: result.totalPenalty,
+        hasErrors: !!result.errors?.length,
+        hasWarnings: !!result.warnings?.length
+      })
+      
+      timer.end('Enhanced return API call completed')
+      return result
+    } catch (error) {
+      kasirLogger.apiCalls.error('processEnhancedReturn', 'Enhanced return API call failed', 
+        error instanceof Error ? error : { error: String(error) })
+      throw error
+    }
   }
 
   // Calculate enhanced penalties for multi-condition scenarios
@@ -464,49 +499,81 @@ export class KasirApi {
       calculatedAt: string
     }
   }> {
-    return apiRequest<{
-      totalPenalty: number
-      lateDays: number
-      breakdown: Array<{
-        itemId: string
-        itemName: string
-        splitIndex?: number
-        kondisiAkhir: string
-        jumlahKembali: number
-        isLostItem: boolean
-        latePenalty: number
-        conditionPenalty: number
-        modalAwalUsed?: number
-        totalItemPenalty: number
-        calculationMethod: 'late_fee' | 'modal_awal' | 'damage_fee' | 'none'
-        description: string
-        rateApplied?: number
-      }>
-      summary: {
-        totalItems: number
-        totalConditions: number
-        onTimeItems: number
-        lateItems: number
-        damagedItems: number
-        lostItems: number
-        singleConditionItems: number
-        multiConditionItems: number
-        averageConditionsPerItem: number
-      }
-      calculationMetadata: {
-        processingMode: 'single' | 'multi' | 'mixed'
-        itemsProcessed: number
-        conditionSplits: number
-        calculatedAt: string
-      }
-    }>(`/transaksi/${transactionId}/pengembalian/calculate`, {
-      method: 'POST',
-      body: JSON.stringify(returnData),
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Multi-Condition': 'true',
-      },
+    const timer = kasirLogger.performance.startTimer('calculateEnhancedPenalties', 'Enhanced penalty calculation API call')
+    
+    // Analyze data for logging
+    const hasMultiConditions = returnData.items.some(item => item.conditions && item.conditions.length > 1)
+    const totalConditions = returnData.items.reduce((sum, item) => 
+      sum + (item.conditions?.length || 1), 0)
+    
+    kasirLogger.apiCalls.info('calculateEnhancedPenalties', 'Starting enhanced penalty calculation', {
+      transactionId,
+      itemCount: returnData.items.length,
+      totalConditions,
+      hasMultiConditions
     })
+    
+    try {
+      const result = await apiRequest<{
+        totalPenalty: number
+        lateDays: number
+        breakdown: Array<{
+          itemId: string
+          itemName: string
+          splitIndex?: number
+          kondisiAkhir: string
+          jumlahKembali: number
+          isLostItem: boolean
+          latePenalty: number
+          conditionPenalty: number
+          modalAwalUsed?: number
+          totalItemPenalty: number
+          calculationMethod: 'late_fee' | 'modal_awal' | 'damage_fee' | 'none'
+          description: string
+          rateApplied?: number
+        }>
+        summary: {
+          totalItems: number
+          totalConditions: number
+          onTimeItems: number
+          lateItems: number
+          damagedItems: number
+          lostItems: number
+          singleConditionItems: number
+          multiConditionItems: number
+          averageConditionsPerItem: number
+        }
+        calculationMetadata: {
+          processingMode: 'single' | 'multi' | 'mixed'
+          itemsProcessed: number
+          conditionSplits: number
+          calculatedAt: string
+        }
+      }>(`/transaksi/${transactionId}/pengembalian/calculate`, {
+        method: 'POST',
+        body: JSON.stringify(returnData),
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Multi-Condition': 'true',
+        },
+      })
+      
+      kasirLogger.penaltyCalc.info('calculateEnhancedPenalties', 'Enhanced penalty calculation completed', {
+        totalPenalty: result.totalPenalty,
+        lateDays: result.lateDays,
+        breakdownItems: result.breakdown.length,
+        processingMode: result.calculationMetadata.processingMode,
+        itemsProcessed: result.calculationMetadata.itemsProcessed,
+        conditionSplits: result.calculationMetadata.conditionSplits
+      })
+      
+      timer.end('Enhanced penalty calculation completed')
+      return result
+    } catch (error) {
+      kasirLogger.penaltyCalc.error('calculateEnhancedPenalties', 'Enhanced penalty calculation failed', 
+        error instanceof Error ? error : { error: String(error) })
+      throw error
+    }
   }
 
   // Pickup operations (TSK-22 integration)

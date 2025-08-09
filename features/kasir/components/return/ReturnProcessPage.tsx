@@ -13,6 +13,7 @@ import { ReturnConfirmation } from './ReturnConfirmation'
 import { useMultiConditionReturn } from '../../hooks/useMultiConditionReturn'
 import { kasirApi } from '../../api'
 import type { TransaksiDetail } from '../../types'
+import { kasirLogger } from '../../services/logger'
 
 interface ReturnProcessPageProps {
   onClose?: () => void
@@ -46,9 +47,20 @@ export function ReturnProcessPage({ onClose, initialTransactionId }: ReturnProce
   // Set loaded transaction automatically (with type validation)
   useEffect(() => {
     if (loadedTransaction && !transaction) {
+      kasirLogger.returnProcess.info('transaction loading', 'Transaction loaded for return process', {
+        transactionId: loadedTransaction.kode,
+        itemCount: loadedTransaction.items?.length || 0,
+        hasItems: !!loadedTransaction.items,
+        transactionStatus: loadedTransaction.status
+      })
+
       // Ensure transaction has required items array for return processing
       if (loadedTransaction.items) {
         setTransaction(loadedTransaction as TransaksiDetail) // Safe cast - items verified
+      } else {
+        kasirLogger.returnProcess.error('transaction loading', 'Loaded transaction missing items array for return processing', {
+          transactionId: loadedTransaction.kode
+        })
       }
     }
   }, [loadedTransaction, transaction, setTransaction])
@@ -82,6 +94,13 @@ export function ReturnProcessPage({ onClose, initialTransactionId }: ReturnProce
   const progressPercentage = (currentStep / steps.length) * 100
 
   const handleBack = () => {
+    kasirLogger.returnProcess.debug('handleBack', 'User navigating back in return process', {
+      currentStep,
+      transactionId: transaction?.kode,
+      canGoBack: currentStep > 1,
+      willClose: currentStep === 1 && !!onClose
+    })
+
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1)
     } else if (onClose) {
@@ -90,6 +109,15 @@ export function ReturnProcessPage({ onClose, initialTransactionId }: ReturnProce
   }
 
   const handleNext = () => {
+    kasirLogger.returnProcess.debug('handleNext', 'User navigating forward in return process', {
+      currentStep,
+      nextStep: currentStep + 1,
+      maxStep: steps.length,
+      transactionId: transaction?.kode,
+      canProceed: canProceedToNextStep(currentStep),
+      isLastStep: currentStep >= steps.length
+    })
+
     if (currentStep < steps.length) {
       setCurrentStep(currentStep + 1)
     }

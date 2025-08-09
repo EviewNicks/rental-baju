@@ -1,5 +1,6 @@
 'use client'
 
+import { useCallback, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
@@ -9,6 +10,7 @@ import type { ModeToggleProps } from '../../types/multiConditionReturn'
 /**
  * Mode Toggle Component
  * Allows switching between single and multi-condition modes for items with quantity > 1
+ * Fixed: Stabilized refs and eliminated infinite render loops
  */
 export function ModeToggle({
   mode,
@@ -17,6 +19,34 @@ export function ModeToggle({
   itemQuantity,
   showLabels = true,
 }: ModeToggleProps) {
+  // Stable callback functions to prevent ref recreation
+  const handleSingleMode = useCallback(() => {
+    onModeChange('single')
+  }, [onModeChange])
+
+  const handleMultiMode = useCallback(() => {
+    onModeChange('multi')
+  }, [onModeChange])
+
+  // Precompute stable class names
+  const singleButtonClasses = useMemo(() => {
+    const isActive = mode === 'single'
+    return `flex items-center gap-2 transition-all ${
+      isActive 
+        ? 'bg-blue-600 text-white shadow-md' 
+        : 'border-blue-300 text-blue-700 hover:bg-blue-100'
+    }`
+  }, [mode])
+
+  const multiButtonClasses = useMemo(() => {
+    const isActive = mode === 'multi'
+    return `flex items-center gap-2 transition-all ${
+      isActive 
+        ? 'bg-green-600 text-white shadow-md' 
+        : 'border-green-300 text-green-700 hover:bg-green-100'
+    }`
+  }, [mode])
+
   // Don't show toggle for single quantity items
   if (itemQuantity <= 1) {
     return null
@@ -38,13 +68,9 @@ export function ModeToggle({
           <Button
             size="sm"
             variant={mode === 'single' ? 'default' : 'outline'}
-            onClick={() => onModeChange('single')}
+            onClick={handleSingleMode}
             disabled={disabled}
-            className={`flex items-center gap-2 transition-all ${
-              mode === 'single' 
-                ? 'bg-blue-600 text-white shadow-md' 
-                : 'border-blue-300 text-blue-700 hover:bg-blue-100'
-            }`}
+            className={singleButtonClasses}
           >
             <Package2 className="h-4 w-4" />
             <span>Kondisi Sama</span>
@@ -54,13 +80,9 @@ export function ModeToggle({
           <Button
             size="sm"
             variant={mode === 'multi' ? 'default' : 'outline'}
-            onClick={() => onModeChange('multi')}
+            onClick={handleMultiMode}
             disabled={disabled}
-            className={`flex items-center gap-2 transition-all ${
-              mode === 'multi' 
-                ? 'bg-green-600 text-white shadow-md' 
-                : 'border-green-300 text-green-700 hover:bg-green-100'
-            }`}
+            className={multiButtonClasses}
           >
             <Layers3 className="h-4 w-4" />
             <span>Kondisi Berbeda</span>
