@@ -340,7 +340,7 @@ export class KasirApi {
     })
   }
 
-  // Process return for transaction
+  // Process return for transaction (backward compatible)
   static async processReturn(
     transactionId: string,
     returnData: {
@@ -356,6 +356,156 @@ export class KasirApi {
     return apiRequest<TransaksiResponse>(`/transaksi/${transactionId}/pengembalian`, {
       method: 'PUT',
       body: JSON.stringify(returnData),
+    })
+  }
+
+  // Enhanced multi-condition return processing (TSK-24 Phase 2)
+  static async processEnhancedReturn(
+    transactionId: string,
+    returnData: {
+      items: Array<{
+        itemId: string
+        // Single condition (existing format)
+        kondisiAkhir?: string
+        jumlahKembali?: number
+        // Multi-condition (enhanced format)
+        conditions?: Array<{
+          kondisiAkhir: string
+          jumlahKembali: number
+          modalAwal?: number
+        }>
+      }>
+      catatan?: string
+      tglKembali?: string
+    },
+  ): Promise<{
+    success: boolean
+    processingMode: 'single-condition' | 'multi-condition' | 'mixed'
+    transactionId: string
+    itemsProcessed: number
+    conditionSplitsProcessed: number
+    totalPenalty: number
+    message: string
+    errors?: string[]
+    warnings?: string[]
+  }> {
+    return apiRequest<{
+      success: boolean
+      processingMode: 'single-condition' | 'multi-condition' | 'mixed'
+      transactionId: string
+      itemsProcessed: number
+      conditionSplitsProcessed: number
+      totalPenalty: number
+      message: string
+      errors?: string[]
+      warnings?: string[]
+    }>(`/transaksi/${transactionId}/pengembalian`, {
+      method: 'PUT',
+      body: JSON.stringify(returnData),
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Multi-Condition': 'true', // Signal for enhanced processing
+      },
+    })
+  }
+
+  // Calculate enhanced penalties for multi-condition scenarios
+  static async calculateEnhancedPenalties(
+    transactionId: string,
+    returnData: {
+      items: Array<{
+        itemId: string
+        // Single condition (existing format)
+        kondisiAkhir?: string
+        jumlahKembali?: number
+        // Multi-condition (enhanced format)
+        conditions?: Array<{
+          kondisiAkhir: string
+          jumlahKembali: number
+          modalAwal?: number
+        }>
+      }>
+      catatan?: string
+      tglKembali?: string
+    },
+  ): Promise<{
+    totalPenalty: number
+    lateDays: number
+    breakdown: Array<{
+      itemId: string
+      itemName: string
+      splitIndex?: number
+      kondisiAkhir: string
+      jumlahKembali: number
+      isLostItem: boolean
+      latePenalty: number
+      conditionPenalty: number
+      modalAwalUsed?: number
+      totalItemPenalty: number
+      calculationMethod: 'late_fee' | 'modal_awal' | 'damage_fee' | 'none'
+      description: string
+      rateApplied?: number
+    }>
+    summary: {
+      totalItems: number
+      totalConditions: number
+      onTimeItems: number
+      lateItems: number
+      damagedItems: number
+      lostItems: number
+      singleConditionItems: number
+      multiConditionItems: number
+      averageConditionsPerItem: number
+    }
+    calculationMetadata: {
+      processingMode: 'single' | 'multi' | 'mixed'
+      itemsProcessed: number
+      conditionSplits: number
+      calculatedAt: string
+    }
+  }> {
+    return apiRequest<{
+      totalPenalty: number
+      lateDays: number
+      breakdown: Array<{
+        itemId: string
+        itemName: string
+        splitIndex?: number
+        kondisiAkhir: string
+        jumlahKembali: number
+        isLostItem: boolean
+        latePenalty: number
+        conditionPenalty: number
+        modalAwalUsed?: number
+        totalItemPenalty: number
+        calculationMethod: 'late_fee' | 'modal_awal' | 'damage_fee' | 'none'
+        description: string
+        rateApplied?: number
+      }>
+      summary: {
+        totalItems: number
+        totalConditions: number
+        onTimeItems: number
+        lateItems: number
+        damagedItems: number
+        lostItems: number
+        singleConditionItems: number
+        multiConditionItems: number
+        averageConditionsPerItem: number
+      }
+      calculationMetadata: {
+        processingMode: 'single' | 'multi' | 'mixed'
+        itemsProcessed: number
+        conditionSplits: number
+        calculatedAt: string
+      }
+    }>(`/transaksi/${transactionId}/pengembalian/calculate`, {
+      method: 'POST',
+      body: JSON.stringify(returnData),
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Multi-Condition': 'true',
+      },
     })
   }
 
@@ -433,7 +583,7 @@ export const kasirApi = {
     search: (query: string) => KasirApi.getTransaksiList({ search: query } as TransaksiQueryParams),
   },
 
-  // Return operations
+  // Return operations (backward compatible)
   processReturn: (
     transactionId: string,
     returnData: {
@@ -446,6 +596,45 @@ export const kasirApi = {
       tglKembali?: string
     },
   ) => KasirApi.processReturn(transactionId, returnData),
+
+  // Enhanced multi-condition return operations (TSK-24 Phase 2)
+  processEnhancedReturn: (
+    transactionId: string,
+    returnData: {
+      items: Array<{
+        itemId: string
+        // Single condition (existing format)
+        kondisiAkhir?: string
+        jumlahKembali?: number
+        // Multi-condition (enhanced format)
+        conditions?: Array<{
+          kondisiAkhir: string
+          jumlahKembali: number
+          modalAwal?: number
+        }>
+      }>
+      catatan?: string
+      tglKembali?: string
+    },
+  ) => KasirApi.processEnhancedReturn(transactionId, returnData),
+
+  calculateEnhancedPenalties: (
+    transactionId: string,
+    returnData: {
+      items: Array<{
+        itemId: string
+        kondisiAkhir?: string
+        jumlahKembali?: number
+        conditions?: Array<{
+          kondisiAkhir: string
+          jumlahKembali: number
+          modalAwal?: number
+        }>
+      }>
+      catatan?: string
+      tglKembali?: string
+    },
+  ) => KasirApi.calculateEnhancedPenalties(transactionId, returnData),
 
   // Transaction lookup by code (for return process)
   getTransactionByCode: (code: string) => KasirApi.getTransaksiByKode(code),
