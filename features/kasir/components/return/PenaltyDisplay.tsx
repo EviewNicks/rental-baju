@@ -1,9 +1,11 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import { Card } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Separator } from '@/components/ui/separator'
+import { Button } from '@/components/ui/button'
 import { 
   Calculator, 
   AlertTriangle, 
@@ -11,138 +13,88 @@ import {
   Package, 
   DollarSign,
   Info,
-  CheckCircle
+  CheckCircle,
+  ChevronDown,
+  ChevronUp,
+  Eye,
+  EyeOff,
+  Layers,
+  Target
 } from 'lucide-react'
 import type { TransaksiDetail } from '../../types'
+import type {
+  EnhancedItemCondition,
+  MultiConditionPenaltyResult,
+  MultiConditionPenaltyBreakdown
+} from '../../types/multiConditionReturn'
 
-interface ItemCondition {
-  kondisiAkhir: string
-  jumlahKembali: number
-}
-
-interface PenaltyCalculation {
-  totalPenalty: number
-  lateDays: number
-  breakdown: {
-    itemId: string
-    itemName: string
-    latePenalty: number
-    conditionPenalty: number
-    totalItemPenalty: number
-    kondisiAkhir: string
-    jumlahKembali: number
-    isLostItem: boolean
-  }[]
-  summary: {
-    onTimeItems: number
-    lateItems: number
-    damagedItems: number
-    lostItems: number
-  }
-}
-
-interface PenaltyDisplayProps {
+// Enhanced Penalty Display Props
+interface EnhancedPenaltyDisplayProps {
   transaction: TransaksiDetail
-  itemConditions: Record<string, ItemCondition>
-  onPenaltyCalculated?: (calculation: PenaltyCalculation) => void
+  itemConditions: Record<string, EnhancedItemCondition>
+  penaltyCalculation?: MultiConditionPenaltyResult | null
+  onPenaltyCalculated?: (calculation: MultiConditionPenaltyResult) => void
+  showBreakdown?: boolean
+  compactView?: boolean
+  isCalculating?: boolean
 }
 
 export function PenaltyDisplay({ 
   transaction, 
-  itemConditions, 
-  onPenaltyCalculated
-}: PenaltyDisplayProps) {
-  const [calculation, setCalculation] = useState<PenaltyCalculation | null>(null)
+  itemConditions,
+  penaltyCalculation: externalCalculation,
+  onPenaltyCalculated,
+  showBreakdown = true,
+  compactView = false,
+  isCalculating = false
+}: EnhancedPenaltyDisplayProps) {
+  const [showDetailedBreakdown, setShowDetailedBreakdown] = useState(true)
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set())
 
-  // Penalty rates (from backend business logic)
-  const DAILY_LATE_RATE = 5000 // Rp 5,000 per day
-  const CONDITION_PENALTIES = {
-    'baik': 0,
-    'cukup': 5000, // 1x daily rate
-    'buruk': 20000, // 4x daily rate  
-    'hilang': 150000 // Default, but will use modalAwal if available
+  // Use external calculation or create fallback
+  const calculation = externalCalculation
+
+  // Processing mode detection
+  const processingMode = useMemo(() => {
+    if (!itemConditions || Object.keys(itemConditions).length === 0) {
+      return 'single-condition'
+    }
+
+    let hasSimple = 0
+    let hasMulti = 0
+
+    for (const condition of Object.values(itemConditions)) {
+      if (condition.mode === 'multi' && condition.conditions.length > 1) {
+        hasMulti++
+      } else {
+        hasSimple++
+      }
+    }
+
+    if (hasMulti === 0) return 'single-condition'
+    if (hasSimple === 0) return 'multi-condition'
+    return 'mixed'
+  }, [itemConditions])
+
+  // Toggle expanded state for item
+  const toggleItemExpansion = (itemId: string) => {
+    setExpandedItems(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(itemId)) {
+        newSet.delete(itemId)
+      } else {
+        newSet.add(itemId)
+      }
+      return newSet
+    })
   }
 
-  // Calculate penalty
-  const penaltyCalculation = useMemo(() => {
-    if (!transaction.items || Object.keys(itemConditions).length === 0) {
-      return null
-    }
-
-    const returnableItems = transaction.items.filter(item => 
-      item.jumlahDiambil > 0 && 
-      item.statusKembali !== 'lengkap' &&
-      itemConditions[item.id]
-    )
-
-    if (returnableItems.length === 0) {
-      return null
-    }
-
-    // Calculate late days
-    const today = new Date()
-    const expectedReturnDate = new Date(transaction.tglSelesai || transaction.createdAt)
-    const lateDays = Math.max(0, Math.ceil((today.getTime() - expectedReturnDate.getTime()) / (1000 * 60 * 60 * 24)))
-
-    const breakdown = returnableItems.map(item => {
-      const condition = itemConditions[item.id]
-      const isLostItem = condition.kondisiAkhir.toLowerCase().includes('hilang') || 
-                         condition.kondisiAkhir.toLowerCase().includes('tidak dikembalikan')
-
-      // Late penalty (per item quantity)
-      const latePenalty = lateDays * DAILY_LATE_RATE * condition.jumlahKembali
-
-      // Condition penalty
-      let conditionPenalty = 0
-      if (isLostItem) {
-        // Use modalAwal from produk if available, otherwise default
-        const modalAwal = 'modalAwal' in item.produk && item.produk.modalAwal ? Number(item.produk.modalAwal) : null
-        conditionPenalty = modalAwal || CONDITION_PENALTIES.hilang
-      } else if (condition.kondisiAkhir.toLowerCase().includes('buruk')) {
-        conditionPenalty = CONDITION_PENALTIES.buruk * condition.jumlahKembali
-      } else if (condition.kondisiAkhir.toLowerCase().includes('cukup')) {
-        conditionPenalty = CONDITION_PENALTIES.cukup * condition.jumlahKembali
-      } else {
-        conditionPenalty = CONDITION_PENALTIES.baik * condition.jumlahKembali
-      }
-
-      return {
-        itemId: item.id,
-        itemName: item.produk.name,
-        latePenalty,
-        conditionPenalty,
-        totalItemPenalty: latePenalty + conditionPenalty,
-        kondisiAkhir: condition.kondisiAkhir,
-        jumlahKembali: condition.jumlahKembali,
-        isLostItem
-      }
-    })
-
-    const totalPenalty = breakdown.reduce((sum, item) => sum + item.totalItemPenalty, 0)
-
-    // Summary statistics
-    const summary = {
-      onTimeItems: lateDays === 0 ? breakdown.filter(item => !item.isLostItem && item.conditionPenalty === 0).length : 0,
-      lateItems: lateDays > 0 ? breakdown.filter(item => !item.isLostItem).length : 0,
-      damagedItems: breakdown.filter(item => !item.isLostItem && item.conditionPenalty > 0).length,
-      lostItems: breakdown.filter(item => item.isLostItem).length
-    }
-
-    return {
-      totalPenalty,
-      lateDays,
-      breakdown,
-      summary
-    }
-  }, [transaction, itemConditions, CONDITION_PENALTIES.baik, CONDITION_PENALTIES.buruk, CONDITION_PENALTIES.cukup, CONDITION_PENALTIES.hilang])
-
-  // Update calculation and notify parent
+  // Notify parent when calculation changes
   useEffect(() => {
-    if (penaltyCalculation) {
-      setCalculation(penaltyCalculation)
-      onPenaltyCalculated?.(penaltyCalculation)
+    if (calculation && onPenaltyCalculated) {
+      onPenaltyCalculated(calculation)
     }
-  }, [penaltyCalculation, onPenaltyCalculated])
+  }, [calculation, onPenaltyCalculated])
 
   const getConditionColor = (kondisiAkhir: string) => {
     if (kondisiAkhir.toLowerCase().includes('hilang')) return 'text-red-600'
@@ -151,10 +103,45 @@ export function PenaltyDisplay({
     return 'text-green-600'
   }
 
+  const getConditionBadgeColor = (kondisiAkhir: string) => {
+    if (kondisiAkhir.toLowerCase().includes('hilang')) return 'bg-red-100 text-red-800 border-red-200'
+    if (kondisiAkhir.toLowerCase().includes('buruk')) return 'bg-orange-100 text-orange-800 border-orange-200'
+    if (kondisiAkhir.toLowerCase().includes('cukup')) return 'bg-yellow-100 text-yellow-800 border-yellow-200'
+    return 'bg-green-100 text-green-800 border-green-200'
+  }
+
   const formatCurrency = (amount: number) => {
     return `Rp ${amount.toLocaleString('id-ID')}`
   }
 
+  const getCalculationMethodBadge = (method: string) => {
+    switch (method) {
+      case 'late_fee':
+        return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">Telat</Badge>
+      case 'modal_awal':
+        return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">Modal</Badge>
+      case 'damage_fee':
+        return <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200">Rusak</Badge>
+      case 'none':
+        return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Normal</Badge>
+      default:
+        return <Badge variant="outline">-</Badge>
+    }
+  }
+
+  // Loading state
+  if (isCalculating) {
+    return (
+      <Card className="p-6">
+        <div className="flex items-center justify-center space-x-3">
+          <Calculator className="h-5 w-5 animate-spin" />
+          <span>Menghitung penalty...</span>
+        </div>
+      </Card>
+    )
+  }
+
+  // No calculation state
   if (!calculation) {
     return (
       <Alert>
@@ -168,13 +155,36 @@ export function PenaltyDisplay({
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h3 className="text-lg font-semibold mb-2">Perhitungan Penalty</h3>
-        <p className="text-gray-600">
-          Berikut adalah rincian penalty berdasarkan kondisi barang dan keterlambatan pengembalian.
-        </p>
-      </div>
+      {/* Header with Processing Mode */}
+      <Card className="p-4 bg-blue-50 border-blue-200">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Calculator className="h-5 w-5 text-blue-600" />
+            <div>
+              <h3 className="text-lg font-semibold text-blue-900">Perhitungan Penalty</h3>
+              <p className="text-sm text-blue-700 mt-1">
+                {processingMode === 'multi-condition' 
+                  ? 'Multi-kondisi: Penalty per kondisi berbeda' 
+                  : processingMode === 'mixed'
+                    ? 'Campuran: Sebagian item multi-kondisi'
+                    : 'Kondisi tunggal: Standard processing'
+                }
+              </p>
+            </div>
+          </div>
+          <Badge variant="outline" className={
+            processingMode === 'multi-condition' 
+              ? 'bg-purple-100 text-purple-800 border-purple-200'
+              : processingMode === 'mixed'
+                ? 'bg-orange-100 text-orange-800 border-orange-200'
+                : 'bg-blue-100 text-blue-800 border-blue-200'
+          }>
+            {processingMode === 'multi-condition' ? 'Multi-Kondisi' 
+             : processingMode === 'mixed' ? 'Campuran'
+             : 'Kondisi Tunggal'}
+          </Badge>
+        </div>
+      </Card>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
