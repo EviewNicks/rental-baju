@@ -7,10 +7,10 @@ import { Button } from '@/components/ui/button'
 import { ArrowLeft, CheckCircle, AlertCircle, Clock } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { ItemConditionForm } from './ItemConditionForm'
-import { PenaltyDisplay } from './PenaltyDisplay'
+import { EnhancedItemConditionForm } from './EnhancedItemConditionForm'
+import { EnhancedPenaltyDisplay } from './EnhancedPenaltyDisplay'
 import { ReturnConfirmation } from './ReturnConfirmation'
-import { useReturnProcess } from '../../hooks/useReturnProcess'
+import { useMultiConditionReturn } from '../../hooks/useMultiConditionReturn'
 import { kasirApi } from '../../api'
 import type { TransaksiDetail } from '../../types'
 
@@ -29,11 +29,11 @@ export function ReturnProcessPage({ onClose, initialTransactionId }: ReturnProce
     error,
     setCurrentStep,
     setTransaction,
-    setItemConditions,
-    setPenaltyCalculation,
-    processReturn,
+    setItemCondition,
+    processEnhancedReturn,
     resetProcess,
-  } = useReturnProcess()
+    canProceedToNext: canProceedToNextStep,
+  } = useMultiConditionReturn()
 
   // Auto-load transaction if initialTransactionId provided (simplified workflow)
   const { data: loadedTransaction, isLoading: isLoadingTransaction } = useQuery({
@@ -96,46 +96,7 @@ export function ReturnProcessPage({ onClose, initialTransactionId }: ReturnProce
   }
 
   const canProceedToNext = () => {
-    switch (currentStep) {
-      case 1:
-        // Ensure transaction loaded AND at least one item has conditions set
-        const returnableItems =
-          transaction?.items?.filter(
-            (item) => item.jumlahDiambil > 0 && item.statusKembali !== 'lengkap',
-          ) || []
-        
-        const hasValidConditions = returnableItems.length > 0 && 
-          returnableItems.every(
-            (item) =>
-              itemConditions[item.id]?.kondisiAkhir &&
-              itemConditions[item.id]?.jumlahKembali !== undefined,
-          )
-        
-        const canProceed = !!transaction && returnableItems.length > 0 && hasValidConditions
-        
-        // Debug logging for step 1 validation
-        console.log('🎯 Step 1 Validation:', {
-          hasTransaction: !!transaction,
-          returnableItemsCount: returnableItems.length,
-          itemConditionsCount: Object.keys(itemConditions).length,
-          hasValidConditions,
-          canProceed,
-          itemConditions: itemConditions
-        })
-        
-        return canProceed
-      case 2:
-        // Debug logging for step 2 validation
-        console.log('🎯 Step 2 Validation:', {
-          hasPenaltyCalculation: !!penaltyCalculation,
-          penaltyCalculation: penaltyCalculation
-        })
-        return !!penaltyCalculation
-      case 3:
-        return true // Confirmation step can always proceed
-      default:
-        return false
-    }
+    return canProceedToNextStep(currentStep)
   }
 
   const handleProcessComplete = () => {
@@ -331,19 +292,34 @@ export function ReturnProcessPage({ onClose, initialTransactionId }: ReturnProce
             )}
 
             {currentStep === 1 && transaction && (
-              <ItemConditionForm
-                transaction={transaction}
-                itemConditions={itemConditions}
-                onConditionsChange={setItemConditions}
-                isLoading={isProcessing}
-              />
+              <div className="space-y-6">
+                {transaction.items
+                  ?.filter(
+                    (item) => item.jumlahDiambil > 0 && item.statusKembali !== 'lengkap',
+                  )
+                  .map((item) => (
+                    <EnhancedItemConditionForm
+                      key={item.id}
+                      item={item}
+                      value={itemConditions[item.id] || null}
+                      onChange={(condition) => setItemCondition(item.id, condition)}
+                      disabled={isProcessing}
+                      isLoading={isProcessing}
+                    />
+                  ))}
+              </div>
             )}
 
             {currentStep === 2 && transaction && (
-              <PenaltyDisplay
+              <EnhancedPenaltyDisplay
                 transaction={transaction}
                 itemConditions={itemConditions}
-                onPenaltyCalculated={setPenaltyCalculation}
+                penaltyCalculation={penaltyCalculation}
+                onPenaltyCalculated={(calculation) => {
+                  // Handle penalty calculation result
+                  console.log('Penalty calculated:', calculation)
+                }}
+                isCalculating={isProcessing}
               />
             )}
 
@@ -352,7 +328,7 @@ export function ReturnProcessPage({ onClose, initialTransactionId }: ReturnProce
                 transaction={transaction}
                 itemConditions={itemConditions}
                 penaltyCalculation={penaltyCalculation}
-                onProcess={processReturn}
+                onProcess={processEnhancedReturn}
                 onComplete={handleProcessComplete}
                 onBack={handleBack}
                 isLoading={isProcessing}

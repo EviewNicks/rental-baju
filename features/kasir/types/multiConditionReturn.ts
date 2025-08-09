@@ -3,6 +3,8 @@
  * TSK-24 Phase-2: Enhanced types for multi-condition item return system
  */
 
+import type { TransaksiDetail } from '../types'
+
 // ==========================================
 // CORE MULTI-CONDITION TYPES
 // ==========================================
@@ -223,7 +225,7 @@ export interface ConditionSplitCardProps {
  * Enhanced penalty display props
  */
 export interface EnhancedPenaltyDisplayProps {
-  transaction: any // TransaksiDetail from main types
+  transaction: TransaksiDetail
   itemConditions: Record<string, ItemCondition>
   onPenaltyCalculated?: (calculation: MultiConditionPenaltyResult) => void
   showBreakdown?: boolean
@@ -261,6 +263,9 @@ export const PENALTY_RATES = {
     hilang: 150000, // Default, overridden by modalAwal
   },
 } as const
+
+// Export individual constants for convenient access
+export const DAILY_LATE_RATE = PENALTY_RATES.DAILY_LATE_RATE
 
 /**
  * Validation constraints

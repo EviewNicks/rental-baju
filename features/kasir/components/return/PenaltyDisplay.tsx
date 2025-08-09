@@ -1,11 +1,10 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { useEffect, useMemo } from 'react'
+import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Separator } from '@/components/ui/separator'
-import { Button } from '@/components/ui/button'
 import { 
   Calculator, 
   AlertTriangle, 
@@ -13,20 +12,14 @@ import {
   Package, 
   DollarSign,
   Info,
-  CheckCircle,
-  ChevronDown,
-  ChevronUp,
-  Eye,
-  EyeOff,
-  Layers,
-  Target
+  CheckCircle
 } from 'lucide-react'
 import type { TransaksiDetail } from '../../types'
 import type {
   EnhancedItemCondition,
-  MultiConditionPenaltyResult,
-  MultiConditionPenaltyBreakdown
+  MultiConditionPenaltyResult
 } from '../../types/multiConditionReturn'
+import { DAILY_LATE_RATE } from '../../types/multiConditionReturn'
 
 // Enhanced Penalty Display Props
 interface EnhancedPenaltyDisplayProps {
@@ -44,12 +37,8 @@ export function PenaltyDisplay({
   itemConditions,
   penaltyCalculation: externalCalculation,
   onPenaltyCalculated,
-  showBreakdown = true,
-  compactView = false,
   isCalculating = false
 }: EnhancedPenaltyDisplayProps) {
-  const [showDetailedBreakdown, setShowDetailedBreakdown] = useState(true)
-  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set())
 
   // Use external calculation or create fallback
   const calculation = externalCalculation
@@ -76,18 +65,6 @@ export function PenaltyDisplay({
     return 'mixed'
   }, [itemConditions])
 
-  // Toggle expanded state for item
-  const toggleItemExpansion = (itemId: string) => {
-    setExpandedItems(prev => {
-      const newSet = new Set(prev)
-      if (newSet.has(itemId)) {
-        newSet.delete(itemId)
-      } else {
-        newSet.add(itemId)
-      }
-      return newSet
-    })
-  }
 
   // Notify parent when calculation changes
   useEffect(() => {
@@ -103,30 +80,8 @@ export function PenaltyDisplay({
     return 'text-green-600'
   }
 
-  const getConditionBadgeColor = (kondisiAkhir: string) => {
-    if (kondisiAkhir.toLowerCase().includes('hilang')) return 'bg-red-100 text-red-800 border-red-200'
-    if (kondisiAkhir.toLowerCase().includes('buruk')) return 'bg-orange-100 text-orange-800 border-orange-200'
-    if (kondisiAkhir.toLowerCase().includes('cukup')) return 'bg-yellow-100 text-yellow-800 border-yellow-200'
-    return 'bg-green-100 text-green-800 border-green-200'
-  }
-
   const formatCurrency = (amount: number) => {
     return `Rp ${amount.toLocaleString('id-ID')}`
-  }
-
-  const getCalculationMethodBadge = (method: string) => {
-    switch (method) {
-      case 'late_fee':
-        return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">Telat</Badge>
-      case 'modal_awal':
-        return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">Modal</Badge>
-      case 'damage_fee':
-        return <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200">Rusak</Badge>
-      case 'none':
-        return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Normal</Badge>
-      default:
-        return <Badge variant="outline">-</Badge>
-    }
   }
 
   // Loading state

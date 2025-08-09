@@ -1,10 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Separator } from '@/components/ui/separator'
 import { Button } from '@/components/ui/button'
 import { 
   Calculator, 
@@ -14,20 +13,17 @@ import {
   DollarSign,
   Info,
   CheckCircle,
-  ChevronDown,
-  ChevronUp,
-  Eye,
-  EyeOff,
+  TrendingUp,
+  FileText,
   Layers,
   Target,
-  TrendingUp,
-  FileText
+  Eye,
+  EyeOff
 } from 'lucide-react'
 import type { TransaksiDetail } from '../../types'
 import type {
   EnhancedItemCondition,
-  MultiConditionPenaltyResult,
-  MultiConditionPenaltyBreakdown
+  MultiConditionPenaltyResult
 } from '../../types/multiConditionReturn'
 
 interface EnhancedPenaltyDisplayProps {
@@ -45,8 +41,6 @@ interface EnhancedPenaltyDisplayProps {
  * Supports both single-condition and multi-condition penalty breakdown
  */
 export function EnhancedPenaltyDisplay({
-  transaction,
-  itemConditions,
   penaltyCalculation,
   onPenaltyCalculated,
   showBreakdown = true,
@@ -54,30 +48,9 @@ export function EnhancedPenaltyDisplay({
   isCalculating = false
 }: EnhancedPenaltyDisplayProps) {
   const [showDetailedBreakdown, setShowDetailedBreakdown] = useState(false)
-  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set())
 
   // Processing mode detection
   const processingMode = penaltyCalculation?.calculationMetadata?.processingMode || 'single'
-
-  // Toggle expanded state for item
-  const toggleItemExpansion = (itemId: string) => {
-    setExpandedItems(prev => {
-      const newSet = new Set(prev)
-      if (newSet.has(itemId)) {
-        newSet.delete(itemId)
-      } else {
-        newSet.add(itemId)
-      }
-      return newSet
-    })
-  }
-
-  // Notify parent when calculation changes
-  useEffect(() => {
-    if (penaltyCalculation && onPenaltyCalculated) {
-      onPenaltyCalculated(penaltyCalculation)
-    }
-  }, [penaltyCalculation, onPenaltyCalculated])
 
   // Utility functions
   const getConditionBadgeColor = (kondisiAkhir: string) => {
@@ -85,10 +58,6 @@ export function EnhancedPenaltyDisplay({
     if (kondisiAkhir.toLowerCase().includes('buruk')) return 'bg-orange-100 text-orange-800 border-orange-200'
     if (kondisiAkhir.toLowerCase().includes('cukup')) return 'bg-yellow-100 text-yellow-800 border-yellow-200'
     return 'bg-green-100 text-green-800 border-green-200'
-  }
-
-  const formatCurrency = (amount: number) => {
-    return `Rp ${amount.toLocaleString('id-ID')}`
   }
 
   const getCalculationMethodBadge = (method: string) => {
@@ -104,6 +73,19 @@ export function EnhancedPenaltyDisplay({
       default:
         return <Badge variant="outline">-</Badge>
     }
+  }
+
+
+  // Notify parent when calculation changes
+  useEffect(() => {
+    if (penaltyCalculation && onPenaltyCalculated) {
+      onPenaltyCalculated(penaltyCalculation)
+    }
+  }, [penaltyCalculation, onPenaltyCalculated])
+
+  // Utility functions
+  const formatCurrency = (amount: number) => {
+    return `Rp ${amount.toLocaleString('id-ID')}`
   }
 
   // Loading state

@@ -27,7 +27,7 @@ interface ProductFormData {
   modalAwal: number
   currentPrice: number
   description: string
-  imageUrl: string | undefined
+  imageUrl: string | null
   image?: File | null
 }
 
@@ -282,7 +282,7 @@ export function ProductForm({
 
           {/* Image Upload */}
           <ImageUpload
-            value={formData.imageUrl}
+            value={formData.imageUrl || undefined}
             onChange={(value) => onInputChange('imageUrl', value)}
             onFileChange={(file) => onInputChange('image', file)}
             data-testid="product-image-upload"

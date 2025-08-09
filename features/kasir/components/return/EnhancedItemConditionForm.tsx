@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Package, Info, ArrowRight, Zap, CheckCircle } from 'lucide-react'
+import { Package, Info, ArrowRight, Zap } from 'lucide-react'
 import { ItemConditionForm } from './ItemConditionForm'
 import { MultiConditionForm } from './MultiConditionForm'
 import { ModeToggle } from './ModeToggle'
@@ -13,7 +13,8 @@ import type {
   ConditionSplit,
   ConditionValidationResult 
 } from '../../types/multiConditionReturn'
-import type { TransaksiItem } from '../../types'
+import type { TransaksiDetail } from '../../types'
+import type { TransaksiItem } from '../../types/index'
 
 interface EnhancedItemConditionFormProps {
   item: TransaksiItem
@@ -233,12 +234,19 @@ export function EnhancedItemConditionForm({
         {/* Conditional Form Rendering */}
         {currentCondition.mode === 'single' ? (
           <ItemConditionForm
-            item={item}
-            value={currentCondition.conditions[0] || { kondisiAkhir: '', jumlahKembali: item.jumlahDiambil }}
-            onChange={(kondisiAkhir, jumlahKembali) => 
-              handleSingleConditionChange(kondisiAkhir, jumlahKembali)
-            }
-            disabled={disabled}
+            transaction={{
+              items: [item],
+            } as TransaksiDetail}
+            itemConditions={{
+              [item.id]: currentCondition.conditions[0] || { kondisiAkhir: '', jumlahKembali: item.jumlahDiambil },
+            }}
+            onConditionsChange={(conditions: Record<string, { kondisiAkhir: string; jumlahKembali: number }>) => {
+              const itemCondition = conditions[item.id]
+              if (itemCondition) {
+                handleSingleConditionChange(itemCondition.kondisiAkhir, itemCondition.jumlahKembali)
+              }
+            }}
+            isLoading={disabled}
           />
         ) : (
           <MultiConditionForm

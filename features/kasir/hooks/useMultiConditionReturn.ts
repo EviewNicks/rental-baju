@@ -8,7 +8,6 @@ import type {
   MultiConditionFormValidation,
   MultiConditionPenaltyResult,
   ProcessingMode,
-  MultiConditionState,
   EnhancedReturnRequest,
   ReturnProcessingResult,
   ConditionValidationResult
@@ -95,7 +94,6 @@ export function useMultiConditionReturn(): UseMultiConditionReturnResult {
 
   // Penalty calculation query (real-time)
   const { 
-    data: calculatedPenalties, 
     isLoading: isCalculatingPenalty,
     refetch: refetchPenalties 
   } = useQuery({
@@ -137,60 +135,6 @@ export function useMultiConditionReturn(): UseMultiConditionReturnResult {
     }
   })
 
-  // Set item condition with validation
-  const setItemCondition = useCallback((itemId: string, condition: EnhancedItemCondition) => {
-    setItemConditions(prev => ({
-      ...prev,
-      [itemId]: condition
-    }))
-
-    // Update validation for this item
-    const itemValidation = validateItemCondition(condition)
-    setValidation(prev => ({
-      ...prev,
-      itemValidations: {
-        ...prev.itemValidations,
-        [itemId]: itemValidation
-      }
-    }))
-
-    setError(null)
-  }, [])
-
-  // Set item mode (single/multi) with data preservation
-  const setItemMode = useCallback((itemId: string, mode: 'single' | 'multi') => {
-    setItemConditions(prev => {
-      const existing = prev[itemId]
-      if (!existing) return prev
-
-      // Convert between modes while preserving data
-      let newConditions: ConditionSplit[]
-
-      if (mode === 'single' && existing.conditions.length > 0) {
-        // Multi → Single: Take first condition or create default
-        newConditions = [existing.conditions[0] || { kondisiAkhir: '', jumlahKembali: existing.totalQuantity }]
-      } else if (mode === 'multi' && existing.mode === 'single') {
-        // Single → Multi: Convert single condition to array
-        newConditions = existing.conditions.length > 0 
-          ? existing.conditions 
-          : [{ kondisiAkhir: '', jumlahKembali: existing.totalQuantity }]
-      } else {
-        newConditions = existing.conditions
-      }
-
-      const updatedCondition: EnhancedItemCondition = {
-        ...existing,
-        mode,
-        conditions: newConditions
-      }
-
-      return {
-        ...prev,
-        [itemId]: updatedCondition
-      }
-    })
-  }, [])
-
   // Validate single item condition
   const validateItemCondition = useCallback((condition: EnhancedItemCondition): ConditionValidationResult => {
     const totalReturned = condition.conditions.reduce((sum, c) => sum + (c.jumlahKembali || 0), 0)
@@ -225,6 +169,60 @@ export function useMultiConditionReturn(): UseMultiConditionReturnResult {
       error,
       warnings: warnings.length > 0 ? warnings : undefined,
     }
+  }, [])
+
+  // Set item condition with validation
+  const setItemCondition = useCallback((itemId: string, condition: EnhancedItemCondition) => {
+    setItemConditions(prev => ({
+      ...prev,
+      [itemId]: condition
+    }))
+
+    // Update validation for this item
+    const itemValidation = validateItemCondition(condition)
+    setValidation(prev => ({
+      ...prev,
+      itemValidations: {
+        ...prev.itemValidations,
+        [itemId]: itemValidation
+      }
+    }))
+
+    setError(null)
+  }, [validateItemCondition])
+
+  // Set item mode (single/multi) with data preservation
+  const setItemMode = useCallback((itemId: string, mode: 'single' | 'multi') => {
+    setItemConditions(prev => {
+      const existing = prev[itemId]
+      if (!existing) return prev
+
+      // Convert between modes while preserving data
+      let newConditions: ConditionSplit[]
+
+      if (mode === 'single' && existing.conditions.length > 0) {
+        // Multi → Single: Take first condition or create default
+        newConditions = [existing.conditions[0] || { kondisiAkhir: '', jumlahKembali: existing.totalQuantity }]
+      } else if (mode === 'multi' && existing.mode === 'single') {
+        // Single → Multi: Convert single condition to array
+        newConditions = existing.conditions.length > 0 
+          ? existing.conditions 
+          : [{ kondisiAkhir: '', jumlahKembali: existing.totalQuantity }]
+      } else {
+        newConditions = existing.conditions
+      }
+
+      const updatedCondition: EnhancedItemCondition = {
+        ...existing,
+        mode,
+        conditions: newConditions
+      }
+
+      return {
+        ...prev,
+        [itemId]: updatedCondition
+      }
+    })
   }, [])
 
   // Validate all items and update form validation

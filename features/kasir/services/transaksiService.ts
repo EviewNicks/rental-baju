@@ -359,8 +359,8 @@ export class TransaksiService {
           where: {
             OR: [
               { jumlahDiambil: { gt: 0 } }, // Items that were picked up
-              { jumlah: { gt: 0 } }         // Items that were rented (supports cancellation scenario)
-            ]
+              { jumlah: { gt: 0 } }, // Items that were rented (supports cancellation scenario)
+            ],
           },
         },
       },
@@ -443,7 +443,8 @@ export class TransaksiService {
     // TSK-24: Transform items with multi-condition return data
     const enhancedTransaksi = {
       ...transaksi,
-      items: this.transformItemsWithMultiCondition(transaksi.items as any)
+      //eslint-disable-next-line @typescript-eslint/no-explicit-any
+      items: this.transformItemsWithMultiCondition(transaksi.items as any),
     }
 
     return enhancedTransaksi as TransaksiWithDetails
@@ -519,7 +520,8 @@ export class TransaksiService {
     // TSK-24: Transform items with multi-condition return data
     const enhancedTransaksi = {
       ...transaksi,
-      items: this.transformItemsWithMultiCondition(transaksi.items as any)
+      //eslint-disable-next-line @typescript-eslint/no-explicit-any
+      items: this.transformItemsWithMultiCondition(transaksi.items as any),
     }
 
     return enhancedTransaksi as TransaksiWithDetails
@@ -851,7 +853,7 @@ export class TransaksiService {
    * Maintains backward compatibility while enhancing with condition breakdown
    */
   private transformItemsWithMultiCondition(
-    items: TransaksiWithDetails['items']
+    items: TransaksiWithDetails['items'],
   ): TransaksiWithDetails['items'] {
     return items.map((item) => {
       const transformedItem = { ...item }
@@ -861,19 +863,19 @@ export class TransaksiService {
         if (item.returnConditions.length > 1) {
           // Multi-condition case: Transform kondisiAkhir to indicate multi-condition
           transformedItem.kondisiAkhir = 'multi-condition'
-          
+
           // Calculate multi-condition summary
           const totalPenalty = item.returnConditions.reduce(
-            (sum, condition) => sum + Number(condition.penaltyAmount), 
-            0
+            (sum, condition) => sum + Number(condition.penaltyAmount),
+            0,
           )
-          
+
           const lostItems = item.returnConditions
-            .filter(c => this.isLostItemCondition(c.kondisiAkhir))
+            .filter((c) => this.isLostItemCondition(c.kondisiAkhir))
             .reduce((sum, c) => sum + c.jumlahKembali, 0)
-          
+
           const goodItems = item.returnConditions
-            .filter(c => !this.isLostItemCondition(c.kondisiAkhir))
+            .filter((c) => !this.isLostItemCondition(c.kondisiAkhir))
             .reduce((sum, c) => sum + c.jumlahKembali, 0)
 
           transformedItem.multiConditionSummary = {
@@ -881,12 +883,12 @@ export class TransaksiService {
             lostItems,
             goodItems,
             totalQuantity: lostItems + goodItems,
-            conditionBreakdown: item.returnConditions.map(condition => ({
+            conditionBreakdown: item.returnConditions.map((condition) => ({
               kondisiAkhir: condition.kondisiAkhir,
               jumlahKembali: condition.jumlahKembali,
               penaltyAmount: Number(condition.penaltyAmount),
               modalAwalUsed: condition.modalAwalUsed ? Number(condition.modalAwalUsed) : null,
-            }))
+            })),
           }
         } else {
           // Single condition case: Use the actual condition data
@@ -898,10 +900,10 @@ export class TransaksiService {
         // Update status based on return data
         if (item.returnConditions.length > 0) {
           const totalReturned = item.returnConditions.reduce(
-            (sum, condition) => sum + condition.jumlahKembali, 
-            0
+            (sum, condition) => sum + condition.jumlahKembali,
+            0,
           )
-          
+
           if (totalReturned >= item.jumlahDiambil) {
             transformedItem.statusKembali = 'lengkap'
           } else if (totalReturned > 0) {

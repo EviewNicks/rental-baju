@@ -13,7 +13,6 @@ import type { MultiConditionFormProps, ConditionSplit, ConditionValidationResult
  * Main interface for handling items with multiple condition splits
  */
 export function MultiConditionForm({
-  itemId,
   itemName,
   maxQuantity,
   initialConditions = [],
