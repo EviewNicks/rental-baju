@@ -1,12 +1,15 @@
 /**
- * Kasir Types Index - Re-exports for easy importing
- * Consolidates types from main types.ts and multiConditionReturn.ts
+ * Kasir Types Index - TSK-24 Phase 1 Unified Architecture
+ * Consolidates types from unified return system and legacy compatibility
  */
 
 // Re-export all types from main kasir types file
 export * from '../types'
 
-// Selectively re-export multi-condition return types to avoid conflicts
+// TSK-24 Phase 1: Export unified return types (primary)
+export * from './Return'
+
+// Legacy compatibility exports (deprecated)
 export type {
   EnhancedItemCondition,
   ConditionValidationResult,
@@ -26,14 +29,19 @@ export type {
   VALIDATION_CONSTRAINTS,
   ConditionMetadata,
   MultiConditionState,
-  MultiConditionAction
-} from './multiConditionReturn'
-
-// Re-export ConditionSplit and MultiConditionPenaltyResult from multiConditionReturn
-export type { 
+  MultiConditionAction,
   ConditionSplit,
   MultiConditionPenaltyResult
 } from './multiConditionReturn'
 
 // Convenient type aliases for commonly used types
 export type { TransaksiItemResponse as TransaksiItem } from '../types'
+
+// TSK-24 Phase 1: Primary type aliases for unified architecture
+export type {
+  UnifiedReturnRequest as ReturnRequest,
+  UnifiedReturnProcessingResult as ReturnProcessingResult,
+  UnifiedCondition as Condition,
+  UnifiedReturnItem as ReturnItem,
+  UnifiedValidationError as ValidationError
+} from './Return'

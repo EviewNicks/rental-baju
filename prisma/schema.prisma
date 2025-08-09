@@ -150,27 +150,27 @@ model TransaksiItem {
   durasi      Int      // Durasi sewa dalam hari
   subtotal    Decimal  @db.Decimal(10, 2) // Subtotal untuk item ini
   kondisiAwal String?  // Kondisi saat disewa
-  kondisiAkhir String? // Kondisi saat dikembalikan
   statusKembali String @default("belum") // belum, sebagian, lengkap
   
-  // TSK-24: Multi-condition return enhancements (non-breaking)
-  isMultiCondition      Boolean @default(false)       // Flag for multi-condition processing
-  multiConditionSummary Json?                         // Aggregated summary for multi-condition returns
-  totalReturnPenalty    Decimal @db.Decimal(10, 2) @default(0) // Total penalty from all conditions
+  // TSK-24 Phase 1: Unified return system fields
+  conditionCount        Int     @default(1)           // Track complexity for analytics (1 = simple, >1 = complex)
+  migratedFromSingleMode Boolean @default(false)     // Track migration history for audit
+  totalReturnPenalty    Decimal @db.Decimal(10, 2) @default(0) // Aggregated penalty from all conditions
   
   // Relations
   transaksi   Transaksi @relation(fields: [transaksiId], references: [id], onDelete: Cascade)
   produk      Product   @relation(fields: [produkId], references: [id])
-  returnConditions TransaksiItemReturn[] // TSK-24: One-to-many relation with return conditions
+  returnConditions TransaksiItemReturn[] // Unified return conditions (always use this)
   
   @@map("transaksi_item")
   @@index([transaksiId])
   @@index([produkId])
-  // Performance indexes for return processing
+  // Performance indexes for unified return processing
   @@index([id, statusKembali, jumlahDiambil], name: "idx_transaksi_item_status_lookup")
   @@index([produkId, transaksiId, statusKembali], name: "idx_transaksi_item_product_join")
-  // TSK-24: Performance index for multi-condition detection
-  @@index([id, isMultiCondition, statusKembali], name: "idx_transaksi_item_multi_condition")
+  // TSK-24 Phase 1: Unified processing optimization indexes
+  @@index([id, statusKembali, conditionCount], name: "idx_transaksi_item_unified_processing")
+  @@index([migratedFromSingleMode, conditionCount], name: "idx_transaksi_item_migration_history")
 }
 
 // TSK-24: Multi-condition return tracking table
