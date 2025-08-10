@@ -4,6 +4,8 @@
  * Replaces dual-mode types with simplified, consistent interfaces
  */
 
+import { TransaksiWithDetails } from '../services/transaksiService'
+
 // =============================================================================
 // UNIFIED RETURN TYPES (NEW ARCHITECTURE)
 // =============================================================================
@@ -132,7 +134,7 @@ export interface LegacyEnhancedReturnProcessingResult {
     }>
   }>
   processingMode: 'single-condition' | 'multi-condition' | 'mixed' // Deprecated modes
-  multiConditionSummary?: Record<string, any> // Deprecated complex summary
+  multiConditionSummary?: Record<string, unknown> // Deprecated complex summary
   details?: {
     statusCode: string
     message: string
@@ -248,7 +250,7 @@ export interface IUnifiedReturnService {
     request: UnifiedReturnRequest
   ): Promise<UnifiedValidationResult>
   
-  getReturnTransactionByCode(transactionCode: string): Promise<any>
+  getReturnTransactionByCode(transactionCode: string): Promise<TransaksiWithDetails>
 }
 
 // =============================================================================
@@ -289,31 +291,5 @@ export interface UnifiedApiErrorResponse {
 }
 
 // =============================================================================
-// EXPORTS
+// END OF FILE - Types are exported via interface declarations above
 // =============================================================================
-
-// Export main types for public API
-export type {
-  UnifiedReturnRequest,
-  UnifiedReturnProcessingResult,
-  UnifiedReturnItem,
-  UnifiedCondition,
-  UnifiedProcessedItem,
-  UnifiedValidationResult,
-  UnifiedValidationError,
-}
-
-// Export legacy types for backward compatibility (marked as deprecated)
-export type {
-  LegacyReturnRequest,
-  LegacyReturnItemRequest,
-  LegacyEnhancedReturnProcessingResult,
-}
-
-// Export utility types
-export type {
-  FormatDetectionResult,
-  UnifiedMigrationMetadata,
-  UnifiedApiResponseData,
-  UnifiedApiErrorResponse,
-}

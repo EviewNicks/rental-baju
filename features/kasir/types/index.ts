@@ -10,6 +10,8 @@ export * from '../types'
 export * from './Return'
 
 // Legacy compatibility exports (deprecated)
+// TODO: Re-enable when multiConditionReturn.ts is available in frontend phase
+/*
 export type {
   EnhancedItemCondition,
   ConditionValidationResult,
@@ -33,6 +35,7 @@ export type {
   ConditionSplit,
   MultiConditionPenaltyResult
 } from './multiConditionReturn'
+*/
 
 // Convenient type aliases for commonly used types
 export type { TransaksiItemResponse as TransaksiItem } from '../types'

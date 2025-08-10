@@ -8,12 +8,9 @@ import { PrismaClient } from '@prisma/client'
 import { Decimal } from '@prisma/client/runtime/library'
 import {
   ReturnRequest,
-  ReturnItemRequest,
-  ExtendedTransactionStatus,
-  ReturnValidationError,
-  validateReturnItemContext,
+  UnifiedValidationError,
   isLostItemCondition,
-} from '../lib/validation/unifiedValidationSchema'
+} from '../lib/validation/ReturnSchema'
 import { PenaltyCalculator, PenaltyCalculationResult } from '../lib/utils/penaltyCalculator'
 import { TransaksiService, TransaksiWithDetails, TransaksiForValidation } from './transaksiService'
 import { createAuditService, AuditService } from './auditService'
@@ -371,7 +368,7 @@ export class UnifiedReturnService {
             message: validation.error || 'Validation failed',
             currentStatus: transactionForValidation.status,
             processingTime: Date.now() - startTime,
-            validationErrors: validation.details?.errors as any,
+            validationErrors: validation.details?.errors as UnifiedValidationError[],
           },
         }
       }

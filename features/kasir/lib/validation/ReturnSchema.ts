@@ -90,7 +90,6 @@ export const unifiedReturnItemSchema = z.object({
     .refine(
       (conditions) => {
         // Validate total quantity logic for multi-condition scenarios
-        const totalReturned = conditions.reduce((sum, c) => sum + c.jumlahKembali, 0)
         const hasLostItems = conditions.some((c) => isLostItemCondition(c.kondisiAkhir))
         const hasReturnedItems = conditions.some((c) => !isLostItemCondition(c.kondisiAkhir))
 

@@ -189,7 +189,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
             message: err.message,
             code: err.code,
           })),
-          requestBody: body,
+          requestBody: requestBody,
         })
 
         throw validationError // Re-throw to be handled by main catch block

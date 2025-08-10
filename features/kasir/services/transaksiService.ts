@@ -114,7 +114,6 @@ export interface TransaksiForValidation {
     durasi: number
     subtotal: Decimal
     kondisiAwal?: string | null
-    kondisiAkhir?: string | null
     statusKembali: string
   }>
   pembayaran: never[] // Empty for validation
@@ -309,7 +308,6 @@ export class TransaksiService {
             durasi: true,
             subtotal: true,
             kondisiAwal: true,
-            kondisiAkhir: true,
             statusKembali: true,
           },
         },
