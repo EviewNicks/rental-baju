@@ -19,6 +19,7 @@ import type {
   EnhancedItemCondition,
   MultiConditionPenaltyResult
 } from '../../types'
+import { DAILY_LATE_RATE } from '../../types'
 
 // Enhanced Penalty Display Props
 interface EnhancedPenaltyDisplayProps {
@@ -184,7 +185,7 @@ export function PenaltyDisplay({
       </div>
 
       {/* Late Penalty Info */}
-      {calculation.lateDays > 0 && (
+      {calculation.lateDays && calculation.lateDays > 0 && (
         <Alert variant="destructive">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
@@ -202,7 +203,7 @@ export function PenaltyDisplay({
         </h4>
         
         <div className="space-y-4">
-          {calculation.breakdown.map((item) => (
+          {calculation.breakdown?.map((item) => (
             <div key={item.itemId} className="border rounded-lg p-4">
               <div className="flex justify-between items-start mb-3">
                 <div>

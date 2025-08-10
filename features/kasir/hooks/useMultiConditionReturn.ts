@@ -1,16 +1,13 @@
-import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import type { TransaksiDetail } from '../types'
 import type {
-  ConditionSplit,
   EnhancedItemCondition,
   MultiConditionFormValidation,
   MultiConditionPenaltyResult,
-  ProcessingMode,
   EnhancedReturnRequest,
-  ReturnProcessingResult,
-  ConditionValidationResult
+  ConditionValidationResult,
 } from '../types'
 import { kasirApi } from '../api'
 import { kasirLogger } from '../services/logger'
@@ -36,7 +33,17 @@ interface UseMultiConditionReturnResult {
   setItemCondition: (itemId: string, condition: EnhancedItemCondition) => void
   validateAllItems: () => boolean
   calculatePenalties: () => Promise<void>
-  processEnhancedReturn: (notes?: string) => Promise<ReturnProcessingResult>
+  processEnhancedReturn: (notes?: string) => Promise<{
+    success: boolean
+    processingMode: 'single-condition' | 'multi-condition' | 'mixed'
+    transactionId: string
+    itemsProcessed: number
+    conditionSplitsProcessed: number
+    totalPenalty: number
+    message: string
+    errors?: string[]
+    warnings?: string[]
+  }>
   resetProcess: () => void
 
   // Utilities
@@ -54,9 +61,11 @@ export function useMultiConditionReturn(): UseMultiConditionReturnResult {
     isFormValid: false,
     canProceed: false,
     errors: [],
-    warnings: []
+    warnings: [],
   })
-  const [penaltyCalculation, setPenaltyCalculation] = useState<MultiConditionPenaltyResult | null>(null)
+  const [penaltyCalculation, setPenaltyCalculation] = useState<MultiConditionPenaltyResult | null>(
+    null,
+  )
   const [error, setError] = useState<string | null>(null)
 
   const queryClient = useQueryClient()
@@ -72,10 +81,7 @@ export function useMultiConditionReturn(): UseMultiConditionReturnResult {
   // All returns use unified ConditionSplit[] structure
 
   // Penalty calculation query (real-time)
-  const { 
-    isLoading: isCalculatingPenalty,
-    refetch: refetchPenalties 
-  } = useQuery({
+  const { isLoading: isCalculatingPenalty, refetch: refetchPenalties } = useQuery({
     queryKey: ['penalty-calculation', transaction?.id, itemConditions],
     queryFn: async () => {
       if (!transaction || Object.keys(itemConditions).length === 0) {
@@ -94,109 +100,153 @@ export function useMultiConditionReturn(): UseMultiConditionReturnResult {
 
   // Enhanced return processing mutation
   const { mutateAsync: processReturnMutation, isPending: isProcessing } = useMutation({
-    mutationFn: async (returnRequest: EnhancedReturnRequest & { transactionId: string }) => {
-      const timer = kasirLogger.performance.startTimer('processReturnMutation', 'Enhanced return processing')
-      
-      kasirLogger.returnProcess.info('processReturnMutation', 'Starting unified return processing', {
-        transactionId: returnRequest.transactionId,
-        itemCount: returnRequest.items.length
-      })
-      
+    mutationFn: async (returnRequest: EnhancedReturnRequest & { transactionId: string }): Promise<{
+      success: boolean
+      processingMode: 'single-condition' | 'multi-condition' | 'mixed'
+      transactionId: string
+      itemsProcessed: number
+      conditionSplitsProcessed: number
+      totalPenalty: number
+      message: string
+      errors?: string[]
+      warnings?: string[]
+    }> => {
+      const timer = kasirLogger.performance.startTimer(
+        'processReturnMutation',
+        'Enhanced return processing',
+      )
+
+      kasirLogger.returnProcess.info(
+        'processReturnMutation',
+        'Starting unified return processing',
+        {
+          transactionId: returnRequest.transactionId,
+          itemCount: returnRequest.items.length,
+        },
+      )
+
       try {
-        const result = await kasirApi.processEnhancedReturn(returnRequest.transactionId, returnRequest)
+        const result = await kasirApi.processEnhancedReturn(
+          returnRequest.transactionId,
+          returnRequest,
+        )
         timer.end('Enhanced return processing completed')
         return result
       } catch (error) {
-        kasirLogger.returnProcess.error('processReturnMutation', 'Enhanced return processing failed', 
-          error instanceof Error ? error : { error: String(error) })
+        kasirLogger.returnProcess.error(
+          'processReturnMutation',
+          'Enhanced return processing failed',
+          error instanceof Error ? error : { error: String(error) },
+        )
         throw error
       }
     },
-    onSuccess: (result: ReturnProcessingResult) => {
+    onSuccess: (result: {
+      success: boolean
+      processingMode: 'single-condition' | 'multi-condition' | 'mixed'
+      transactionId: string
+      itemsProcessed: number
+      conditionSplitsProcessed: number
+      totalPenalty: number
+      message: string
+      errors?: string[]
+      warnings?: string[]
+    }) => {
       kasirLogger.returnProcess.info('onSuccess', 'Return processing completed successfully', {
         transactionId: transaction?.kode,
-        itemsProcessed: result.itemsProcessed || 0
+        itemsProcessed: result.itemsProcessed || 0,
       })
-      
+
       toast.success('Pengembalian berhasil diproses')
-      
+
       // Invalidate related queries
       queryClient.invalidateQueries({ queryKey: ['transactions'] })
       queryClient.invalidateQueries({ queryKey: ['transaction-detail', transaction?.id] })
       queryClient.invalidateQueries({ queryKey: ['transaction-detail', transaction?.kode] })
-      
+
       setError(null)
     },
     onError: (error) => {
-      const errorMessage = error instanceof Error ? error.message : 'Terjadi kesalahan saat memproses pengembalian'
-      
+      const errorMessage =
+        error instanceof Error ? error.message : 'Terjadi kesalahan saat memproses pengembalian'
+
       kasirLogger.returnProcess.error('onError', 'Return processing failed', {
         errorMessage,
-        transactionId: transaction?.kode
+        transactionId: transaction?.kode,
       })
-      
+
       setError(errorMessage)
       toast.error(errorMessage)
-    }
+    },
   })
 
   // Validate single item condition
-  const validateItemCondition = useCallback((condition: EnhancedItemCondition): ConditionValidationResult => {
-    const totalReturned = condition.conditions.reduce((sum, c) => sum + (c.jumlahKembali || 0), 0)
-    const remaining = condition.totalQuantity - totalReturned
-    const hasValidConditions = condition.conditions.every(c => c.kondisiAkhir && c.jumlahKembali !== undefined)
-    
-    let error: string | undefined
-    const warnings: string[] = []
-    
-    if (totalReturned > condition.totalQuantity) {
-      error = `Total ${totalReturned} melebihi maksimal ${condition.totalQuantity} unit`
-    } else if (totalReturned === 0) {
-      error = 'Minimal harus mengembalikan 1 unit atau tandai sebagai hilang'
-    } else if (!hasValidConditions) {
-      error = 'Semua kondisi harus diisi dengan lengkap'
-    }
+  const validateItemCondition = useCallback(
+    (condition: EnhancedItemCondition): ConditionValidationResult => {
+      const totalReturned = condition.conditions.reduce((sum, c) => sum + (c.jumlahKembali || 0), 0)
+      const remaining = condition.totalQuantity - totalReturned
+      const hasValidConditions = condition.conditions.every(
+        (c) => c.kondisiAkhir && c.jumlahKembali !== undefined,
+      )
 
-    // Warnings for edge cases
-    if (remaining > 0 && !error) {
-      warnings.push(`Masih ada ${remaining} unit yang belum dialokasikan`)
-    }
+      let error: string | undefined
+      const warnings: string[] = []
 
-    if (condition.mode === 'multi' && condition.conditions.length > 5) {
-      warnings.push('Terlalu banyak kondisi berbeda, pertimbangkan untuk menggabungkan yang serupa')
-    }
+      if (totalReturned > condition.totalQuantity) {
+        error = `Total ${totalReturned} melebihi maksimal ${condition.totalQuantity} unit`
+      } else if (totalReturned === 0) {
+        error = 'Minimal harus mengembalikan 1 unit atau tandai sebagai hilang'
+      } else if (!hasValidConditions) {
+        error = 'Semua kondisi harus diisi dengan lengkap'
+      }
 
-    return {
-      isValid: !error,
-      remaining,
-      totalReturned,
-      maxAllowed: condition.totalQuantity,
-      error,
-      warnings: warnings.length > 0 ? warnings : undefined,
-    }
-  }, [])
+      // Warnings for edge cases
+      if (remaining > 0 && !error) {
+        warnings.push(`Masih ada ${remaining} unit yang belum dialokasikan`)
+      }
+
+      if (condition.mode === 'multi' && condition.conditions.length > 5) {
+        warnings.push(
+          'Terlalu banyak kondisi berbeda, pertimbangkan untuk menggabungkan yang serupa',
+        )
+      }
+
+      return {
+        isValid: !error,
+        remaining,
+        totalReturned,
+        maxAllowed: condition.totalQuantity,
+        error,
+        warnings: warnings.length > 0 ? warnings : undefined,
+      }
+    },
+    [],
+  )
 
   // Set item condition with validation (OPTIMIZED: batched state updates)
-  const setItemCondition = useCallback((itemId: string, condition: EnhancedItemCondition) => {
-    // Calculate validation once
-    const itemValidation = validateItemCondition(condition)
-    
-    // Batch state updates to reduce re-renders
-    setItemConditions(prev => ({
-      ...prev,
-      [itemId]: condition
-    }))
+  const setItemCondition = useCallback(
+    (itemId: string, condition: EnhancedItemCondition) => {
+      // Calculate validation once
+      const itemValidation = validateItemCondition(condition)
 
-    setValidation(prev => ({
-      ...prev,
-      itemValidations: {
-        ...prev.itemValidations,
-        [itemId]: itemValidation
-      }
-    }))
+      // Batch state updates to reduce re-renders
+      setItemConditions((prev) => ({
+        ...prev,
+        [itemId]: condition,
+      }))
 
-    setError(null)
-  }, [validateItemCondition])
+      setValidation((prev) => ({
+        ...prev,
+        itemValidations: {
+          ...prev.itemValidations,
+          [itemId]: itemValidation,
+        },
+      }))
+
+      setError(null)
+    },
+    [validateItemCondition],
+  )
 
   // Removed setItemMode - no longer needed with unified architecture
   // Progressive disclosure handles complexity automatically
@@ -223,14 +273,14 @@ export function useMultiConditionReturn(): UseMultiConditionReturnResult {
       }
 
       if (itemValidation.warnings) {
-        warnings.push(...itemValidation.warnings.map(w => `${condition.itemId}: ${w}`))
+        warnings.push(...itemValidation.warnings.map((w) => `${condition.itemId}: ${w}`))
       }
     }
 
     // Check that all transaction items have conditions
-    const transactionItemIds = transaction.items?.map(item => item.id) || []
+    const transactionItemIds = transaction.items?.map((item) => item.id) || []
     const conditionItemIds = Object.keys(itemConditions)
-    const missingItems = transactionItemIds.filter(id => !conditionItemIds.includes(id))
+    const missingItems = transactionItemIds.filter((id) => !conditionItemIds.includes(id))
 
     if (missingItems.length > 0) {
       allValid = false
@@ -242,7 +292,7 @@ export function useMultiConditionReturn(): UseMultiConditionReturnResult {
       isFormValid: allValid && errors.length === 0,
       canProceed: allValid && errors.length === 0,
       errors,
-      warnings
+      warnings,
     }
 
     setValidation(newValidation)
@@ -254,34 +304,73 @@ export function useMultiConditionReturn(): UseMultiConditionReturnResult {
   const calculatePenalties = useCallback(async () => {
     if (validateAllItems()) {
       const timer = kasirLogger.performance.startTimer('calculatePenalties', 'Penalty calculation')
-      
+
       kasirLogger.penaltyCalc.info('calculatePenalties', 'Starting penalty calculation', {
         transactionId: transaction?.kode,
-        itemCount: Object.keys(itemConditions).length
+        itemCount: Object.keys(itemConditions).length,
       })
-      
+
       try {
         const result = await refetchPenalties()
         if (result.data) {
-          setPenaltyCalculation(result.data)
-          
+          // Transform API response to match interface
+          const penaltyData: MultiConditionPenaltyResult = {
+            ...result.data,
+            conditionBreakdown: [], // API doesn't provide this yet
+            breakdown: result.data.breakdown?.map(item => ({
+              ...item,
+              penaltyAmount: item.conditionPenalty || 0,
+              modalAwal: item.modalAwalUsed
+            })),
+            summary: {
+              totalQuantity: result.data.summary.totalItems,
+              lostItems: result.data.summary.lostItems,
+              goodItems: result.data.summary.onTimeItems,
+              damagedItems: result.data.summary.damagedItems,
+              totalConditions: result.data.summary.totalConditions,
+              onTimeItems: result.data.summary.onTimeItems,
+              lateItems: result.data.summary.lateItems,
+              totalItems: result.data.summary.totalItems,
+              averageConditionsPerItem: result.data.summary.averageConditionsPerItem
+            },
+            calculationMetadata: result.data.calculationMetadata ? {
+              calculatedAt: result.data.calculationMetadata.calculatedAt,
+              processingMode: result.data.calculationMetadata.processingMode === 'single' ? 'single-condition' as const :
+                             result.data.calculationMetadata.processingMode === 'multi' ? 'multi-condition' as const :
+                             'mixed' as const,
+              itemCount: result.data.calculationMetadata.itemsProcessed,
+              totalConditions: result.data.calculationMetadata.conditionSplits,
+              hasLateItems: result.data.lateDays > 0,
+              itemsProcessed: result.data.calculationMetadata.itemsProcessed,
+              conditionSplits: result.data.calculationMetadata.conditionSplits
+            } : undefined
+          }
+          setPenaltyCalculation(penaltyData)
+
           kasirLogger.penaltyCalc.info('calculatePenalties', 'Penalty calculation completed', {
             totalPenalty: result.data.totalPenalty,
-            itemsWithPenalties: result.data.breakdown?.length || 0
+            itemsWithPenalties: result.data.breakdown?.length || 0,
           })
         }
-        
+
         timer.end('Penalty calculation completed')
       } catch (error) {
-        kasirLogger.penaltyCalc.error('calculatePenalties', 'Penalty calculation failed', 
-          error instanceof Error ? error : { error: String(error) })
+        kasirLogger.penaltyCalc.error(
+          'calculatePenalties',
+          'Penalty calculation failed',
+          error instanceof Error ? error : { error: String(error) },
+        )
         toast.error('Gagal menghitung penalty')
       }
     } else {
-      kasirLogger.validation.warn('calculatePenalties', 'Cannot calculate penalties - validation failed', {
-        validationErrors: validation.errors,
-        canProceed: validation.canProceed
-      })
+      kasirLogger.validation.warn(
+        'calculatePenalties',
+        'Cannot calculate penalties - validation failed',
+        {
+          validationErrors: validation.errors,
+          canProceed: validation.canProceed,
+        },
+      )
     }
   }, [validateAllItems, refetchPenalties, transaction?.kode, itemConditions, validation])
 
@@ -297,11 +386,11 @@ export function useMultiConditionReturn(): UseMultiConditionReturnResult {
         // Multi-condition format (multiple conditions for one item)
         return {
           itemId,
-          conditions: condition.conditions.map(c => ({
+          conditions: condition.conditions.map((c) => ({
             kondisiAkhir: c.kondisiAkhir,
             jumlahKembali: c.jumlahKembali,
-            modalAwal: c.modalAwal
-          }))
+            modalAwal: c.modalAwal,
+          })),
         }
       } else {
         // Single-condition format (backward compatible)
@@ -309,82 +398,101 @@ export function useMultiConditionReturn(): UseMultiConditionReturnResult {
         return {
           itemId,
           kondisiAkhir: singleCondition.kondisiAkhir,
-          jumlahKembali: singleCondition.jumlahKembali
+          jumlahKembali: singleCondition.jumlahKembali,
         }
       }
     })
 
     return {
       items,
-      tglKembali: new Date().toISOString()
+      tglKembali: new Date().toISOString(),
     }
   }, [transaction, itemConditions])
 
   // Enhanced return processing with deduplication
-  const processEnhancedReturn = useCallback(async (notes?: string): Promise<ReturnProcessingResult> => {
-    if (!transaction) {
-      throw new Error('Transaksi tidak ditemukan')
-    }
+  const processEnhancedReturn = useCallback(
+    async (notes?: string): Promise<{
+      success: boolean
+      processingMode: 'single-condition' | 'multi-condition' | 'mixed'
+      transactionId: string
+      itemsProcessed: number
+      conditionSplitsProcessed: number
+      totalPenalty: number
+      message: string
+      errors?: string[]
+      warnings?: string[]
+    }> => {
+      if (!transaction) {
+        throw new Error('Transaksi tidak ditemukan')
+      }
 
-    if (!validateAllItems()) {
-      throw new Error('Kondisi barang belum valid')
-    }
+      if (!validateAllItems()) {
+        throw new Error('Kondisi barang belum valid')
+      }
 
-    const apiRequest = convertToApiRequest()
-    if (!apiRequest) {
-      throw new Error('Gagal menyiapkan data pengembalian')
-    }
+      const apiRequest = convertToApiRequest()
+      if (!apiRequest) {
+        throw new Error('Gagal menyiapkan data pengembalian')
+      }
 
-    // Add notes if provided
-    if (notes) {
-      apiRequest.catatan = notes
-    }
+      // Add notes if provided
+      if (notes) {
+        apiRequest.catatan = notes
+      }
 
-    // Deduplication logic (same as original)
-    const requestFingerprint = `${transaction.kode}:${JSON.stringify(apiRequest)}`
-    const now = Date.now()
-    const timeDiff = now - lastRequestRef.current.timestamp
-    const DEDUPLICATION_WINDOW = 30000 // 30 seconds
+      // Deduplication logic (same as original)
+      const requestFingerprint = `${transaction.kode}:${JSON.stringify(apiRequest)}`
+      const now = Date.now()
+      const timeDiff = now - lastRequestRef.current.timestamp
+      const DEDUPLICATION_WINDOW = 30000 // 30 seconds
 
-    if (lastRequestRef.current.fingerprint === requestFingerprint && timeDiff < DEDUPLICATION_WINDOW) {
-      const remainingSeconds = Math.ceil((DEDUPLICATION_WINDOW - timeDiff) / 1000)
-      toast.warning(`Request sedang diproses. Harap tunggu ${remainingSeconds} detik.`)
-      throw new Error('Duplicate request blocked')
-    }
+      if (
+        lastRequestRef.current.fingerprint === requestFingerprint &&
+        timeDiff < DEDUPLICATION_WINDOW
+      ) {
+        const remainingSeconds = Math.ceil((DEDUPLICATION_WINDOW - timeDiff) / 1000)
+        toast.warning(`Request sedang diproses. Harap tunggu ${remainingSeconds} detik.`)
+        throw new Error('Duplicate request blocked')
+      }
 
-    // Process the enhanced return
-    const requestWithId = {
-      ...apiRequest,
-      transactionId: transaction.kode
-    }
+      // Process the enhanced return
+      const requestWithId = {
+        ...apiRequest,
+        transactionId: transaction.kode,
+      }
 
-    lastRequestRef.current = {
-      fingerprint: requestFingerprint,
-      timestamp: now,
-      promise: null
-    }
+      lastRequestRef.current = {
+        fingerprint: requestFingerprint,
+        timestamp: now,
+        promise: null,
+      }
 
-    try {
-      const result = await processReturnMutation(requestWithId)
-      return result
-    } finally {
-      lastRequestRef.current.promise = null
-    }
-  }, [transaction, validateAllItems, convertToApiRequest, processReturnMutation])
+      try {
+        const result = await processReturnMutation(requestWithId)
+        return result
+      } finally {
+        lastRequestRef.current.promise = null
+      }
+    },
+    [transaction, validateAllItems, convertToApiRequest, processReturnMutation],
+  )
 
   // Check if can proceed to next step
-  const canProceedToNext = useCallback((step: number) => {
-    switch (step) {
-      case 1: // Item conditions step
-        return validation.canProceed && Object.keys(itemConditions).length > 0
-      case 2: // Penalty calculation step
-        return penaltyCalculation !== null
-      case 3: // Confirmation step
-        return !isProcessing
-      default:
-        return false
-    }
-  }, [validation.canProceed, itemConditions, penaltyCalculation, isProcessing])
+  const canProceedToNext = useCallback(
+    (step: number) => {
+      switch (step) {
+        case 1: // Item conditions step
+          return validation.canProceed && Object.keys(itemConditions).length > 0
+        case 2: // Penalty calculation step
+          return penaltyCalculation !== null
+        case 3: // Confirmation step
+          return !isProcessing
+        default:
+          return false
+      }
+    },
+    [validation.canProceed, itemConditions, penaltyCalculation, isProcessing],
+  )
 
   // Removed getProcessingModeForTransaction - no longer needed with unified approach
 
@@ -413,7 +521,7 @@ export function useMultiConditionReturn(): UseMultiConditionReturnResult {
     if (Object.keys(itemConditions).length > 0) {
       validateAllItems()
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps  
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [itemConditions]) // CRITICAL FIX: removed validateAllItems to break infinite loop
 
   // Reset process to initial state
@@ -426,11 +534,11 @@ export function useMultiConditionReturn(): UseMultiConditionReturnResult {
       isFormValid: false,
       canProceed: false,
       errors: [],
-      warnings: []
+      warnings: [],
     })
     setPenaltyCalculation(null)
     setError(null)
-    
+
     // Clear request tracking
     lastRequestRef.current = { fingerprint: '', timestamp: 0, promise: null }
   }, [])
@@ -457,6 +565,6 @@ export function useMultiConditionReturn(): UseMultiConditionReturnResult {
 
     // Utilities
     canProceedToNext,
-    convertToApiRequest
+    convertToApiRequest,
   }
 }

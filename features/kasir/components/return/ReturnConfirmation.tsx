@@ -20,8 +20,7 @@ import {
 import type { TransaksiDetail } from '../../types'
 import type { 
   EnhancedItemCondition,
-  MultiConditionPenaltyResult,
-  ReturnProcessingResult 
+  MultiConditionPenaltyResult
 } from '../../types'
 
 // Backward compatibility interfaces
@@ -56,7 +55,17 @@ interface ReturnConfirmationProps {
   // Support both old and new data structures
   itemConditions: Record<string, ItemCondition> | Record<string, EnhancedItemCondition>
   penaltyCalculation: PenaltyCalculation | MultiConditionPenaltyResult | null
-  onProcess: (notes?: string) => Promise<ReturnProcessingResult | void>
+  onProcess: (notes?: string) => Promise<{
+    success: boolean
+    processingMode: 'single-condition' | 'multi-condition' | 'mixed'
+    transactionId: string
+    itemsProcessed: number
+    conditionSplitsProcessed: number
+    totalPenalty: number
+    message: string
+    errors?: string[]
+    warnings?: string[]
+  } | void>
   onComplete: () => void
   onBack?: () => void
   isLoading?: boolean
@@ -110,8 +119,8 @@ const normalizePenaltyCalculation = (
       const enhanced = penalty as MultiConditionPenaltyResult
       return {
         totalPenalty: enhanced.totalPenalty,
-        lateDays: enhanced.lateDays,
-        breakdown: enhanced.breakdown.map(item => ({
+        lateDays: enhanced.lateDays || 0,
+        breakdown: enhanced.breakdown?.map(item => ({
           itemId: item.itemId,
           itemName: item.itemName,
           latePenalty: item.latePenalty,
@@ -120,7 +129,7 @@ const normalizePenaltyCalculation = (
           kondisiAkhir: item.kondisiAkhir,
           jumlahKembali: item.jumlahKembali,
           isLostItem: item.isLostItem
-        })),
+        })) || [],
         summary: {
           onTimeItems: enhanced.summary?.onTimeItems || 0,
           lateItems: enhanced.summary?.lateItems || 0,

@@ -824,7 +824,10 @@ export interface MultiConditionPenaltyResult {
     isLostItem: boolean
     latePenalty: number
     modalAwal?: number
+    modalAwalUsed?: number
     penaltyAmount: number
+    conditionPenalty: number
+    totalItemPenalty: number
     calculationMethod: string
     description: string
     rateApplied?: number
@@ -846,6 +849,8 @@ export interface MultiConditionPenaltyResult {
     itemCount: number
     totalConditions: number
     hasLateItems: boolean
+    itemsProcessed?: number
+    conditionSplits?: number
   }
 }
 

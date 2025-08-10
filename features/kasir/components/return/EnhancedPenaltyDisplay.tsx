@@ -133,7 +133,7 @@ export function EnhancedPenaltyDisplay({
             <div>
               <div className="font-semibold">{formatCurrency(totalPenalty)}</div>
               <div className="text-sm text-gray-600">
-                Total Penalty ({processingMode === 'multi' ? 'Multi-kondisi' : 'Standard'})
+                Total Penalty ({processingMode === 'multi-condition' ? 'Multi-kondisi' : 'Standard'})
               </div>
             </div>
           </div>
@@ -155,7 +155,7 @@ export function EnhancedPenaltyDisplay({
             <div>
               <h3 className="text-lg font-semibold text-blue-900">Perhitungan Penalty</h3>
               <p className="text-sm text-blue-700 mt-1">
-                {processingMode === 'multi' 
+                {processingMode === 'multi-condition' 
                   ? 'Multi-kondisi: Penalty per kondisi berbeda' 
                   : processingMode === 'mixed'
                     ? 'Campuran: Sebagian item multi-kondisi'
@@ -166,13 +166,13 @@ export function EnhancedPenaltyDisplay({
           </div>
           <div className="flex items-center gap-2">
             <Badge variant="outline" className={
-              processingMode === 'multi' 
+              processingMode === 'multi-condition' 
                 ? 'bg-purple-100 text-purple-800 border-purple-200'
                 : processingMode === 'mixed'
                   ? 'bg-orange-100 text-orange-800 border-orange-200'
                   : 'bg-blue-100 text-blue-800 border-blue-200'
             }>
-              {processingMode === 'multi' ? 'Multi-Kondisi' 
+              {processingMode === 'multi-condition' ? 'Multi-Kondisi' 
                : processingMode === 'mixed' ? 'Campuran'
                : 'Kondisi Tunggal'}
             </Badge>
@@ -230,7 +230,7 @@ export function EnhancedPenaltyDisplay({
             <Target className="h-5 w-5 text-orange-600" />
             <div>
               <div className="text-xl font-bold text-orange-600">
-                {summary.averageConditionsPerItem.toFixed(1)}
+                {summary.averageConditionsPerItem?.toFixed(1) || '0.0'}
               </div>
               <div className="text-sm text-gray-600">Rata-rata / Item</div>
             </div>
@@ -282,7 +282,7 @@ export function EnhancedPenaltyDisplay({
       </div>
 
       {/* Late Penalty Info */}
-      {lateDays > 0 && (
+      {lateDays && lateDays > 0 && (
         <Alert variant="destructive">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
@@ -293,7 +293,7 @@ export function EnhancedPenaltyDisplay({
       )}
 
       {/* Multi-condition Processing Info */}
-      {(processingMode === 'multi' || processingMode === 'mixed') && (
+      {(processingMode === 'multi-condition' || processingMode === 'mixed') && (
         <Alert>
           <Layers className="h-4 w-4" />
           <AlertDescription>
