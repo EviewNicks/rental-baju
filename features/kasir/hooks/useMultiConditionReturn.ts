@@ -10,7 +10,7 @@ import type {
   ConditionValidationResult,
 } from '../types'
 import { kasirApi } from '../api'
-import { kasirLogger } from '../services/logger'
+import { kasirLogger } from '../lib/logger'
 
 /**
  * Unified Return Process Hook - TSK-24 Phase-2 Simplified Architecture
@@ -100,7 +100,9 @@ export function useMultiConditionReturn(): UseMultiConditionReturnResult {
 
   // Enhanced return processing mutation
   const { mutateAsync: processReturnMutation, isPending: isProcessing } = useMutation({
-    mutationFn: async (returnRequest: EnhancedReturnRequest & { transactionId: string }): Promise<{
+    mutationFn: async (
+      returnRequest: EnhancedReturnRequest & { transactionId: string },
+    ): Promise<{
       success: boolean
       processingMode: 'single-condition' | 'multi-condition' | 'mixed'
       transactionId: string
@@ -317,10 +319,10 @@ export function useMultiConditionReturn(): UseMultiConditionReturnResult {
           const penaltyData: MultiConditionPenaltyResult = {
             ...result.data,
             conditionBreakdown: [], // API doesn't provide this yet
-            breakdown: result.data.breakdown?.map(item => ({
+            breakdown: result.data.breakdown?.map((item) => ({
               ...item,
               penaltyAmount: item.conditionPenalty || 0,
-              modalAwal: item.modalAwalUsed
+              modalAwal: item.modalAwalUsed,
             })),
             summary: {
               totalQuantity: result.data.summary.totalItems,
@@ -331,19 +333,24 @@ export function useMultiConditionReturn(): UseMultiConditionReturnResult {
               onTimeItems: result.data.summary.onTimeItems,
               lateItems: result.data.summary.lateItems,
               totalItems: result.data.summary.totalItems,
-              averageConditionsPerItem: result.data.summary.averageConditionsPerItem
+              averageConditionsPerItem: result.data.summary.averageConditionsPerItem,
             },
-            calculationMetadata: result.data.calculationMetadata ? {
-              calculatedAt: result.data.calculationMetadata.calculatedAt,
-              processingMode: result.data.calculationMetadata.processingMode === 'single' ? 'single-condition' as const :
-                             result.data.calculationMetadata.processingMode === 'multi' ? 'multi-condition' as const :
-                             'mixed' as const,
-              itemCount: result.data.calculationMetadata.itemsProcessed,
-              totalConditions: result.data.calculationMetadata.conditionSplits,
-              hasLateItems: result.data.lateDays > 0,
-              itemsProcessed: result.data.calculationMetadata.itemsProcessed,
-              conditionSplits: result.data.calculationMetadata.conditionSplits
-            } : undefined
+            calculationMetadata: result.data.calculationMetadata
+              ? {
+                  calculatedAt: result.data.calculationMetadata.calculatedAt,
+                  processingMode:
+                    result.data.calculationMetadata.processingMode === 'single'
+                      ? ('single-condition' as const)
+                      : result.data.calculationMetadata.processingMode === 'multi'
+                        ? ('multi-condition' as const)
+                        : ('mixed' as const),
+                  itemCount: result.data.calculationMetadata.itemsProcessed,
+                  totalConditions: result.data.calculationMetadata.conditionSplits,
+                  hasLateItems: result.data.lateDays > 0,
+                  itemsProcessed: result.data.calculationMetadata.itemsProcessed,
+                  conditionSplits: result.data.calculationMetadata.conditionSplits,
+                }
+              : undefined,
           }
           setPenaltyCalculation(penaltyData)
 
@@ -411,7 +418,9 @@ export function useMultiConditionReturn(): UseMultiConditionReturnResult {
 
   // Enhanced return processing with deduplication
   const processEnhancedReturn = useCallback(
-    async (notes?: string): Promise<{
+    async (
+      notes?: string,
+    ): Promise<{
       success: boolean
       processingMode: 'single-condition' | 'multi-condition' | 'mixed'
       transactionId: string

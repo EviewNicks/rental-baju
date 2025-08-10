@@ -1,7 +1,8 @@
 'use client'
 
-import React, { useEffect } from 'react'
+import React, { useEffect, useCallback } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft, CheckCircle, AlertCircle, Clock } from 'lucide-react'
@@ -13,14 +14,30 @@ import { ReturnConfirmation } from './ReturnConfirmation'
 import { useMultiConditionReturn } from '../../hooks/useMultiConditionReturn'
 import { kasirApi } from '../../api'
 import type { TransaksiDetail } from '../../types'
-import { kasirLogger } from '../../services/logger'
+import { kasirLogger } from '../../lib/logger'
 
 interface ReturnProcessPageProps {
   onClose?: () => void
   initialTransactionId?: string
+  kode?: string
 }
 
-export function ReturnProcessPage({ onClose, initialTransactionId }: ReturnProcessPageProps) {
+export function ReturnProcessPage({ onClose, initialTransactionId, kode }: ReturnProcessPageProps) {
+  const router = useRouter()
+
+  // Use kode if provided, otherwise use initialTransactionId
+  const transactionId = kode || initialTransactionId
+
+  // Default close handler - navigate back to transaction detail
+  const defaultClose = useCallback(() => {
+    if (transactionId) {
+      router.push(`/dashboard/transaction/${transactionId}`)
+    } else {
+      router.back()
+    }
+  }, [router, transactionId])
+
+  const handleClose = onClose || defaultClose
   const {
     currentStep,
     transaction,
@@ -36,31 +53,39 @@ export function ReturnProcessPage({ onClose, initialTransactionId }: ReturnProce
     canProceedToNext: canProceedToNextStep,
   } = useMultiConditionReturn()
 
-  // Auto-load transaction if initialTransactionId provided (simplified workflow)
+  // Auto-load transaction if transactionId provided (simplified workflow)
   const { data: loadedTransaction, isLoading: isLoadingTransaction } = useQuery({
-    queryKey: ['transaction-detail', initialTransactionId],
-    queryFn: () => kasirApi.getTransactionByCode(initialTransactionId!),
-    enabled: !!initialTransactionId && !transaction,
+    queryKey: ['transaction-detail', transactionId],
+    queryFn: () => kasirApi.getTransactionByCode(transactionId!),
+    enabled: !!transactionId && !transaction,
     retry: 1,
   })
 
   // Set loaded transaction automatically (with type validation)
   useEffect(() => {
     if (loadedTransaction && !transaction) {
-      kasirLogger.returnProcess.info('transaction loading', 'Transaction loaded for return process', {
-        transactionId: loadedTransaction.kode,
-        itemCount: loadedTransaction.items?.length || 0,
-        hasItems: !!loadedTransaction.items,
-        transactionStatus: loadedTransaction.status
-      })
+      kasirLogger.returnProcess.info(
+        'transaction loading',
+        'Transaction loaded for return process',
+        {
+          transactionId: loadedTransaction.kode,
+          itemCount: loadedTransaction.items?.length || 0,
+          hasItems: !!loadedTransaction.items,
+          transactionStatus: loadedTransaction.status,
+        },
+      )
 
       // Ensure transaction has required items array for return processing
       if (loadedTransaction.items) {
         setTransaction(loadedTransaction as TransaksiDetail) // Safe cast - items verified
       } else {
-        kasirLogger.returnProcess.error('transaction loading', 'Loaded transaction missing items array for return processing', {
-          transactionId: loadedTransaction.kode
-        })
+        kasirLogger.returnProcess.error(
+          'transaction loading',
+          'Loaded transaction missing items array for return processing',
+          {
+            transactionId: loadedTransaction.kode,
+          },
+        )
       }
     }
   }, [loadedTransaction, transaction, setTransaction])
@@ -98,13 +123,13 @@ export function ReturnProcessPage({ onClose, initialTransactionId }: ReturnProce
       currentStep,
       transactionId: transaction?.kode,
       canGoBack: currentStep > 1,
-      willClose: currentStep === 1 && !!onClose
+      willClose: currentStep === 1 && !!onClose,
     })
 
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1)
-    } else if (onClose) {
-      onClose()
+    } else {
+      handleClose()
     }
   }
 
@@ -115,7 +140,7 @@ export function ReturnProcessPage({ onClose, initialTransactionId }: ReturnProce
       maxStep: steps.length,
       transactionId: transaction?.kode,
       canProceed: canProceedToNextStep(currentStep),
-      isLastStep: currentStep >= steps.length
+      isLastStep: currentStep >= steps.length,
     })
 
     if (currentStep < steps.length) {
@@ -129,10 +154,17 @@ export function ReturnProcessPage({ onClose, initialTransactionId }: ReturnProce
 
   const handleProcessComplete = () => {
     resetProcess()
-    if (onClose) {
-      onClose()
-    }
+    handleClose()
   }
+
+  // Stable handler for item condition changes - Fix Rules of Hooks
+  const handleItemConditionChange = useCallback(
+    // eslint-disable-next-line
+    (itemId: string, condition: any) => {
+      setItemCondition(itemId, condition)
+    },
+    [setItemCondition],
+  )
 
   return (
     <div className="min-h-screen bg-neutral-100 p-4 md:p-6">
@@ -298,7 +330,6 @@ export function ReturnProcessPage({ onClose, initialTransactionId }: ReturnProce
           </CardHeader>
 
           <CardContent className="p-6 md:p-8">
-            {/* Loading State */}
             {isLoadingTransaction && (
               <div className="flex items-center justify-center py-12">
                 <div className="flex items-center gap-3 text-gray-600">
@@ -308,7 +339,6 @@ export function ReturnProcessPage({ onClose, initialTransactionId }: ReturnProce
               </div>
             )}
 
-            {/* No Transaction State */}
             {!isLoadingTransaction && !transaction && (
               <Alert>
                 <AlertCircle className="h-4 w-4" />
@@ -322,15 +352,13 @@ export function ReturnProcessPage({ onClose, initialTransactionId }: ReturnProce
             {currentStep === 1 && transaction && (
               <div className="space-y-6">
                 {transaction.items
-                  ?.filter(
-                    (item) => item.jumlahDiambil > 0 && item.statusKembali !== 'lengkap',
-                  )
+                  ?.filter((item) => item.jumlahDiambil > 0 && item.statusKembali !== 'lengkap')
                   .map((item) => (
                     <UnifiedConditionForm
                       key={item.id}
                       item={item}
                       value={itemConditions[item.id] || null}
-                      onChange={(condition) => setItemCondition(item.id, condition)}
+                      onChange={(condition) => handleItemConditionChange(item.id, condition)}
                       disabled={isProcessing}
                       isLoading={isProcessing}
                     />

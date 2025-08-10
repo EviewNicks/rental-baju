@@ -1,4 +1,4 @@
-import { TransactionReturnPageClient } from '@/features/kasir/components/return/TransactionReturnPageClient'
+import { ReturnProcessPage } from '@/features/kasir/components/return/ReturnProcessPage'
 
 interface TransactionReturnPageProps {
   params: Promise<{
@@ -9,5 +9,5 @@ interface TransactionReturnPageProps {
 export default async function TransactionReturnPage({ params }: TransactionReturnPageProps) {
   const { kode } = await params
 
-  return <TransactionReturnPageClient kode={kode} />
+  return <ReturnProcessPage kode={kode} />
 }

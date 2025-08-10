@@ -10,4 +10,3 @@ export { EnhancedPenaltyDisplay } from './EnhancedPenaltyDisplay'
 
 // Error Boundary and Utilities
 export { ReturnErrorBoundary } from './ReturnErrorBoundary'
-export { TransactionReturnPageClient } from './TransactionReturnPageClient'

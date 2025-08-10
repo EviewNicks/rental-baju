@@ -7,18 +7,18 @@ import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Package, Plus, Lightbulb, CheckCircle, AlertCircle } from 'lucide-react'
 import { ConditionRow } from './ConditionRow'
-import type { 
-  UnifiedConditionFormProps, 
-  EnhancedItemCondition, 
+import type {
+  UnifiedConditionFormProps,
+  EnhancedItemCondition,
   ConditionSplit,
-  ConditionValidationResult 
+  ConditionValidationResult,
 } from '../../types'
-import { kasirLogger } from '../../services/logger'
+import { kasirLogger } from '../../lib/logger'
 
 /**
  * UnifiedConditionForm Component
  * Single form component handling all return scenarios through progressive disclosure
- * 
+ *
  * Key Features:
  * - Starts simple: single condition row for all items
  * - Progressive disclosure: "Add Condition" appears when needed
@@ -48,13 +48,18 @@ export function UnifiedConditionForm({
 
   // Validation logic
   const validation = useMemo((): ConditionValidationResult => {
-    const totalReturned = currentCondition.conditions.reduce((sum, c) => sum + (c.jumlahKembali || 0), 0)
+    const totalReturned = currentCondition.conditions.reduce(
+      (sum, c) => sum + (c.jumlahKembali || 0),
+      0,
+    )
     const remaining = currentCondition.totalQuantity - totalReturned
-    const hasValidConditions = currentCondition.conditions.every(c => c.kondisiAkhir && c.jumlahKembali !== undefined && c.jumlahKembali > 0)
-    
+    const hasValidConditions = currentCondition.conditions.every(
+      (c) => c.kondisiAkhir && c.jumlahKembali !== undefined && c.jumlahKembali > 0,
+    )
+
     let error: string | undefined
     const warnings: string[] = []
-    
+
     if (totalReturned > currentCondition.totalQuantity) {
       error = `Total ${totalReturned} melebihi maksimal ${currentCondition.totalQuantity} unit`
     } else if (totalReturned === 0) {
@@ -87,10 +92,10 @@ export function UnifiedConditionForm({
     if (currentCondition.conditions.length > 1) return false // Already multi-condition
     if (validation.remaining <= 0) return false // No remaining quantity
     if (!validation.totalReturned || validation.totalReturned <= 0) return false // No valid input yet
-    
+
     const firstCondition = currentCondition.conditions[0]
     if (!firstCondition?.kondisiAkhir || !firstCondition?.jumlahKembali) return false // Invalid first condition
-    
+
     return validation.remaining > 0 && validation.remaining < currentCondition.totalQuantity
   }, [currentCondition, validation])
 
@@ -103,73 +108,84 @@ export function UnifiedConditionForm({
       validationError: validation.error,
     }
     onChange(updatedCondition)
-  }, [currentCondition, validation, onChange])
+    //eslint-disable-next-line
+  }, [currentCondition, validation])
 
   // Handle individual condition change
-  const handleConditionChange = useCallback((index: number, newCondition: ConditionSplit) => {
-    kasirLogger.userInteraction.debug('handleConditionChange', 'Individual condition updated', {
-      itemId: item.id,
-      conditionIndex: index,
-      kondisiAkhir: newCondition.kondisiAkhir,
-      jumlahKembali: newCondition.jumlahKembali
-    })
+  const handleConditionChange = useCallback(
+    (index: number, newCondition: ConditionSplit) => {
+      kasirLogger.userInteraction.debug('handleConditionChange', 'Individual condition updated', {
+        itemId: item.id,
+        conditionIndex: index,
+        kondisiAkhir: newCondition.kondisiAkhir,
+        jumlahKembali: newCondition.jumlahKembali,
+      })
 
-    setCurrentCondition(prev => ({
-      ...prev,
-      conditions: prev.conditions.map((cond, i) => i === index ? newCondition : cond)
-    }))
-  }, [item.id])
+      setCurrentCondition((prev) => ({
+        ...prev,
+        conditions: prev.conditions.map((cond, i) => (i === index ? newCondition : cond)),
+      }))
+    },
+    [item.id],
+  )
 
   // Add new condition (progressive disclosure)
   const handleAddCondition = useCallback(() => {
     kasirLogger.userInteraction.info('handleAddCondition', 'New condition added', {
       itemId: item.id,
       currentConditionsCount: currentCondition.conditions.length,
-      remainingQuantity: validation.remaining
+      remainingQuantity: validation.remaining,
     })
 
     const suggestedQuantity = validation.remaining
-    setCurrentCondition(prev => ({
+    setCurrentCondition((prev) => ({
       ...prev,
       mode: 'multi', // Switch to multi mode
       conditions: [
         ...prev.conditions,
-        { 
-          kondisiAkhir: '', 
-          jumlahKembali: suggestedQuantity // Auto-suggest remaining quantity
-        }
-      ]
+        {
+          kondisiAkhir: '',
+          jumlahKembali: suggestedQuantity, // Auto-suggest remaining quantity
+        },
+      ],
     }))
-    
+
     setShowSuggestion(false)
   }, [item.id, currentCondition.conditions.length, validation.remaining])
 
   // Remove condition (only allow if more than 1 condition exists)
-  const handleRemoveCondition = useCallback((index: number) => {
-    if (currentCondition.conditions.length <= 1) return
+  const handleRemoveCondition = useCallback(
+    (index: number) => {
+      if (currentCondition.conditions.length <= 1) return
 
-    kasirLogger.userInteraction.info('handleRemoveCondition', 'Condition removed', {
-      itemId: item.id,
-      removedIndex: index,
-      remainingConditions: currentCondition.conditions.length - 1
-    })
+      kasirLogger.userInteraction.info('handleRemoveCondition', 'Condition removed', {
+        itemId: item.id,
+        removedIndex: index,
+        remainingConditions: currentCondition.conditions.length - 1,
+      })
 
-    const newConditions = currentCondition.conditions.filter((_, i) => i !== index)
-    setCurrentCondition(prev => ({
-      ...prev,
-      conditions: newConditions,
-      mode: newConditions.length === 1 ? 'single' : 'multi'
-    }))
-  }, [item.id, currentCondition.conditions])
+      const newConditions = currentCondition.conditions.filter((_, i) => i !== index)
+      setCurrentCondition((prev) => ({
+        ...prev,
+        conditions: newConditions,
+        mode: newConditions.length === 1 ? 'single' : 'multi',
+      }))
+    },
+    [item.id, currentCondition.conditions],
+  )
 
   // Smart suggestion handler
   const handleAcceptSuggestion = useCallback(() => {
-    kasirLogger.userInteraction.info('handleAcceptSuggestion', 'User accepted condition split suggestion', {
-      itemId: item.id,
-      remainingQuantity: validation.remaining,
-      suggestedAction: 'add_condition_for_remaining'
-    })
-    
+    kasirLogger.userInteraction.info(
+      'handleAcceptSuggestion',
+      'User accepted condition split suggestion',
+      {
+        itemId: item.id,
+        remainingQuantity: validation.remaining,
+        suggestedAction: 'add_condition_for_remaining',
+      },
+    )
+
     handleAddCondition()
     setShowSuggestion(false)
   }, [item.id, validation.remaining, handleAddCondition])
@@ -205,16 +221,18 @@ export function UnifiedConditionForm({
                   {item.jumlahDiambil} unit
                 </Badge>
                 {currentCondition.conditions.length > 1 && (
-                  <Badge variant="outline" className="bg-purple-100 text-purple-800 border-purple-200">
+                  <Badge
+                    variant="outline"
+                    className="bg-purple-100 text-purple-800 border-purple-200"
+                  >
                     {currentCondition.conditions.length} kondisi
                   </Badge>
                 )}
               </CardTitle>
               <p className="text-sm text-gray-600 mt-1">
-                {currentCondition.conditions.length === 1 
-                  ? 'Kondisi tunggal untuk semua unit' 
-                  : `Kondisi berbeda untuk ${currentCondition.conditions.length} kelompok unit`
-                }
+                {currentCondition.conditions.length === 1
+                  ? 'Kondisi tunggal untuk semua unit'
+                  : `Kondisi berbeda untuk ${currentCondition.conditions.length} kelompok unit`}
               </p>
             </div>
           </div>
@@ -236,9 +254,7 @@ export function UnifiedConditionForm({
                 Sebagian ({validation.totalReturned}/{currentCondition.totalQuantity})
               </Badge>
             ) : (
-              <Badge variant="outline">
-                Belum diisi
-              </Badge>
+              <Badge variant="outline">Belum diisi</Badge>
             )}
           </div>
         </div>
@@ -250,20 +266,20 @@ export function UnifiedConditionForm({
             <AlertDescription>
               <div className="flex items-center justify-between">
                 <div>
-                  <strong>Saran:</strong> Masih ada {validation.remaining} unit yang belum dialokasikan. 
-                  Apakah kondisinya berbeda dengan yang sudah diisi?
+                  <strong>Saran:</strong> Masih ada {validation.remaining} unit yang belum
+                  dialokasikan. Apakah kondisinya berbeda dengan yang sudah diisi?
                 </div>
                 <div className="flex gap-2 ml-4">
-                  <Button 
-                    size="sm" 
+                  <Button
+                    size="sm"
                     onClick={handleAcceptSuggestion}
                     disabled={disabled}
                     className="bg-blue-600 hover:bg-blue-700 text-white"
                   >
                     Tambah Kondisi
                   </Button>
-                  <Button 
-                    size="sm" 
+                  <Button
+                    size="sm"
                     variant="ghost"
                     onClick={handleDismissSuggestion}
                     disabled={disabled}
@@ -280,9 +296,7 @@ export function UnifiedConditionForm({
         {validation.error && (
           <Alert variant="destructive" className="mt-4">
             <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              {validation.error}
-            </AlertDescription>
+            <AlertDescription>{validation.error}</AlertDescription>
           </Alert>
         )}
 
@@ -309,7 +323,11 @@ export function UnifiedConditionForm({
               key={index}
               condition={condition}
               onChange={(newCondition) => handleConditionChange(index, newCondition)}
-              onRemove={currentCondition.conditions.length > 1 ? () => handleRemoveCondition(index) : undefined}
+              onRemove={
+                currentCondition.conditions.length > 1
+                  ? () => handleRemoveCondition(index)
+                  : undefined
+              }
               disabled={disabled || isLoading}
               canRemove={currentCondition.conditions.length > 1}
               autoFocus={index === currentCondition.conditions.length - 1 && index > 0}
@@ -340,23 +358,19 @@ export function UnifiedConditionForm({
         <div className="flex items-center justify-between text-sm text-gray-600 bg-gray-50 rounded-lg p-3">
           <div className="flex items-center gap-4">
             <span>
-              Status: {validation.isValid && validation.remaining === 0 
-                ? '✅ Lengkap' 
-                : validation.totalReturned > 0 
+              Status:{' '}
+              {validation.isValid && validation.remaining === 0
+                ? '✅ Lengkap'
+                : validation.totalReturned > 0
                   ? '⏳ Sebagian'
-                  : '⚠️ Belum diisi'
-              }
+                  : '⚠️ Belum diisi'}
             </span>
-            {validation.remaining > 0 && (
-              <span>
-                Sisa: {validation.remaining} unit
-              </span>
-            )}
+            {validation.remaining > 0 && <span>Sisa: {validation.remaining} unit</span>}
             <span>
               Total: {validation.totalReturned}/{currentCondition.totalQuantity} unit
             </span>
           </div>
-          
+
           {validation.isValid && validation.remaining === 0 && (
             <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200">
               Siap diproses

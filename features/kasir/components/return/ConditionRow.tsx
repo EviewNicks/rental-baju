@@ -1,22 +1,53 @@
 'use client'
 
 import { useCallback, useMemo } from 'react'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Trash2, AlertTriangle, Calculator } from 'lucide-react'
 import type { ConditionRowProps } from '../../types'
-import { kasirLogger } from '../../services/logger'
+import { kasirLogger } from '../../lib/logger'
 
 // Standard condition options with penalty implications
 const CONDITION_OPTIONS = [
-  { value: 'baik', label: 'Baik', color: 'bg-green-100 text-green-800 border-green-200', penalty: 0 },
-  { value: 'kotor', label: 'Kotor', color: 'bg-yellow-100 text-yellow-800 border-yellow-200', penalty: 5000 },
-  { value: 'rusak ringan', label: 'Rusak Ringan', color: 'bg-orange-100 text-orange-800 border-orange-200', penalty: 15000 },
-  { value: 'rusak berat', label: 'Rusak Berat', color: 'bg-red-100 text-red-800 border-red-200', penalty: 50000 },
-  { value: 'hilang', label: 'Hilang', color: 'bg-gray-100 text-gray-800 border-gray-200', penalty: 'modal_awal' },
+  {
+    value: 'baik',
+    label: 'Baik',
+    color: 'bg-green-100 text-green-800 border-green-200',
+    penalty: 0,
+  },
+  {
+    value: 'kotor',
+    label: 'Kotor',
+    color: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+    penalty: 5000,
+  },
+  {
+    value: 'rusak ringan',
+    label: 'Rusak Ringan',
+    color: 'bg-orange-100 text-orange-800 border-orange-200',
+    penalty: 15000,
+  },
+  {
+    value: 'rusak berat',
+    label: 'Rusak Berat',
+    color: 'bg-red-100 text-red-800 border-red-200',
+    penalty: 50000,
+  },
+  {
+    value: 'hilang',
+    label: 'Hilang',
+    color: 'bg-gray-100 text-gray-800 border-gray-200',
+    penalty: 'modal_awal',
+  },
 ] as const
 
 /**
@@ -36,7 +67,9 @@ export function ConditionRow({
 }: ConditionRowProps) {
   // Get condition metadata for UI styling
   const conditionMeta = useMemo(() => {
-    return CONDITION_OPTIONS.find(opt => opt.value === condition.kondisiAkhir) || CONDITION_OPTIONS[0]
+    return (
+      CONDITION_OPTIONS.find((opt) => opt.value === condition.kondisiAkhir) || CONDITION_OPTIONS[0]
+    )
   }, [condition.kondisiAkhir])
 
   // Validation state
@@ -67,50 +100,56 @@ export function ConditionRow({
       isValid: errors.length === 0,
       hasWarnings: warnings.length > 0,
       errors,
-      warnings
+      warnings,
     }
   }, [condition, maxQuantity, remainingQuantity])
 
   // Handle condition type change
-  const handleConditionChange = useCallback((value: string) => {
-    kasirLogger.userInteraction.debug('handleConditionChange', 'Condition type changed', {
-      previousCondition: condition.kondisiAkhir,
-      newCondition: value,
-      quantity: condition.jumlahKembali
-    })
+  const handleConditionChange = useCallback(
+    (value: string) => {
+      kasirLogger.userInteraction.debug('handleConditionChange', 'Condition type changed', {
+        previousCondition: condition.kondisiAkhir,
+        newCondition: value,
+        quantity: condition.jumlahKembali,
+      })
 
-    const newCondition = { ...condition, kondisiAkhir: value }
+      const newCondition = { ...condition, kondisiAkhir: value }
 
-    // Auto-calculate modal awal for lost items (placeholder - would use actual product data)
-    if (value === 'hilang') {
-      newCondition.modalAwal = 100000 // Placeholder - should come from product data
-      newCondition.isLostItem = true
-    } else {
-      delete newCondition.modalAwal
-      delete newCondition.isLostItem
-    }
+      // Auto-calculate modal awal for lost items (placeholder - would use actual product data)
+      if (value === 'hilang') {
+        newCondition.modalAwal = 100000 // Placeholder - should come from product data
+        newCondition.isLostItem = true
+      } else {
+        delete newCondition.modalAwal
+        delete newCondition.isLostItem
+      }
 
-    onChange(newCondition)
-  }, [condition, onChange])
+      onChange(newCondition)
+    },
+    [condition, onChange],
+  )
 
   // Handle quantity change
-  const handleQuantityChange = useCallback((value: string) => {
-    const quantity = parseInt(value) || 0
-    
-    kasirLogger.userInteraction.debug('handleQuantityChange', 'Quantity changed', {
-      previousQuantity: condition.jumlahKembali,
-      newQuantity: quantity,
-      condition: condition.kondisiAkhir
-    })
+  const handleQuantityChange = useCallback(
+    (value: string) => {
+      const quantity = parseInt(value) || 0
 
-    onChange({ ...condition, jumlahKembali: quantity })
-  }, [condition, onChange])
+      kasirLogger.userInteraction.debug('handleQuantityChange', 'Quantity changed', {
+        previousQuantity: condition.jumlahKembali,
+        newQuantity: quantity,
+        condition: condition.kondisiAkhir,
+      })
+
+      onChange({ ...condition, jumlahKembali: quantity })
+    },
+    [condition, onChange],
+  )
 
   // Handle remove condition
   const handleRemove = useCallback(() => {
     kasirLogger.userInteraction.info('handleRemove', 'Condition removed', {
       removedCondition: condition.kondisiAkhir,
-      quantity: condition.jumlahKembali
+      quantity: condition.jumlahKembali,
     })
     onRemove?.()
   }, [onRemove, condition])
@@ -122,9 +161,7 @@ export function ConditionRow({
         {/* Condition Selector */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-2">
-            <label className="text-sm font-medium text-gray-700">
-              Kondisi
-            </label>
+            <label className="text-sm font-medium text-gray-700">Kondisi</label>
             {conditionMeta.penalty === 'modal_awal' && (
               <Badge variant="outline" className="text-xs">
                 <Calculator className="w-3 h-3 mr-1" />
@@ -132,9 +169,9 @@ export function ConditionRow({
               </Badge>
             )}
           </div>
-          
-          <Select 
-            value={condition.kondisiAkhir || ''} 
+
+          <Select
+            value={condition.kondisiAkhir || ''}
             onValueChange={handleConditionChange}
             disabled={disabled}
           >
@@ -149,9 +186,11 @@ export function ConditionRow({
                       {option.label}
                     </Badge>
                     <span className="text-xs text-gray-500">
-                      {option.penalty === 'modal_awal' ? 'Modal Awal' : 
-                       option.penalty === 0 ? 'Tanpa Penalty' : 
-                       `Rp ${option.penalty.toLocaleString('id-ID')}`}
+                      {option.penalty === 'modal_awal'
+                        ? 'Modal Awal'
+                        : option.penalty === 0
+                          ? 'Tanpa Penalty'
+                          : `Rp ${option.penalty.toLocaleString('id-ID')}`}
                     </span>
                   </div>
                 </SelectItem>
@@ -162,9 +201,7 @@ export function ConditionRow({
 
         {/* Quantity Input */}
         <div className="w-24">
-          <label className="text-sm font-medium text-gray-700 mb-2 block">
-            Jumlah
-          </label>
+          <label className="text-sm font-medium text-gray-700 mb-2 block">Jumlah</label>
           <Input
             type="number"
             min="1"
@@ -236,7 +273,7 @@ export function ConditionRow({
               </span>
             )}
           </div>
-          
+
           <div className="text-right">
             {conditionMeta.penalty === 'modal_awal' ? (
               <span className="font-medium text-red-600">
@@ -247,9 +284,7 @@ export function ConditionRow({
                 Rp {(conditionMeta.penalty * condition.jumlahKembali).toLocaleString('id-ID')}
               </span>
             ) : (
-              <span className="font-medium text-green-600">
-                Tanpa Penalty
-              </span>
+              <span className="font-medium text-green-600">Tanpa Penalty</span>
             )}
           </div>
         </div>
