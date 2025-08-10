@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { ArrowLeft, CheckCircle, AlertCircle, Clock } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { EnhancedItemConditionForm } from './EnhancedItemConditionForm'
+import { UnifiedConditionForm } from './UnifiedConditionForm'
 import { EnhancedPenaltyDisplay } from './EnhancedPenaltyDisplay'
 import { ReturnConfirmation } from './ReturnConfirmation'
 import { useMultiConditionReturn } from '../../hooks/useMultiConditionReturn'
@@ -326,7 +326,7 @@ export function ReturnProcessPage({ onClose, initialTransactionId }: ReturnProce
                     (item) => item.jumlahDiambil > 0 && item.statusKembali !== 'lengkap',
                   )
                   .map((item) => (
-                    <EnhancedItemConditionForm
+                    <UnifiedConditionForm
                       key={item.id}
                       item={item}
                       value={itemConditions[item.id] || null}

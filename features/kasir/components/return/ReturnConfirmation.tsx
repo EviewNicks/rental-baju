@@ -22,7 +22,7 @@ import type {
   EnhancedItemCondition,
   MultiConditionPenaltyResult,
   ReturnProcessingResult 
-} from '../../types/multiConditionReturn'
+} from '../../types'
 
 // Backward compatibility interfaces
 interface ItemCondition {

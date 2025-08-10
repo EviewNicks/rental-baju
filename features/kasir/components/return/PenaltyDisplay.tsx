@@ -18,8 +18,7 @@ import type { TransaksiDetail } from '../../types'
 import type {
   EnhancedItemCondition,
   MultiConditionPenaltyResult
-} from '../../types/multiConditionReturn'
-import { DAILY_LATE_RATE } from '../../types/multiConditionReturn'
+} from '../../types'
 
 // Enhanced Penalty Display Props
 interface EnhancedPenaltyDisplayProps {

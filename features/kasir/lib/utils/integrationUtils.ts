@@ -8,7 +8,7 @@ import type {
   MultiConditionPenaltyResult,
   ProcessingMode,
   ReturnProcessingResult 
-} from '../../types/multiConditionReturn'
+} from '../../types'
 import type { TransaksiDetail } from '../../types'
 
 // ====================

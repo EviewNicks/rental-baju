@@ -806,6 +806,7 @@ export type ProcessingMode = 'single-condition' | 'multi-condition' | 'mixed'
 
 export interface MultiConditionPenaltyResult {
   totalPenalty: number
+  lateDays?: number
   conditionBreakdown: Array<{
     kondisiAkhir: string
     quantity: number
@@ -814,11 +815,37 @@ export interface MultiConditionPenaltyResult {
     calculationMethod: 'late_fee' | 'modal_awal' | 'none'
     description: string
   }>
+  breakdown?: Array<{
+    itemId: string
+    itemName: string
+    splitIndex?: number
+    kondisiAkhir: string
+    jumlahKembali: number
+    isLostItem: boolean
+    latePenalty: number
+    modalAwal?: number
+    penaltyAmount: number
+    calculationMethod: string
+    description: string
+    rateApplied?: number
+  }>
   summary: {
     totalQuantity: number
     lostItems: number
     goodItems: number
     damagedItems: number
+    totalConditions?: number
+    onTimeItems?: number
+    lateItems?: number
+    totalItems?: number
+    averageConditionsPerItem?: number
+  }
+  calculationMetadata?: {
+    calculatedAt: string
+    processingMode: ProcessingMode
+    itemCount: number
+    totalConditions: number
+    hasLateItems: boolean
   }
 }
 
@@ -837,6 +864,12 @@ export interface EnhancedReturnProcessingResult {
   transactionId: string
   returnedAt: Date
   penalty: number
+  itemsProcessed?: number
+  conditionSplitsProcessed?: number
+  totalPenalty?: number
+  message?: string
+  errors?: string[]
+  warnings?: string[]
   processedItems: Array<{
     itemId: string
     penalty: number
@@ -917,3 +950,72 @@ export interface TransactionFormPageProps {
   initialStep?: number
   onTransactionComplete?: (transactionId: string) => void
 }
+
+// ==========================================
+// TSK-24 UNIFIED MULTI-CONDITION TYPES
+// ==========================================
+
+export interface EnhancedItemCondition {
+  itemId: string
+  mode: 'single' | 'multi'
+  conditions: ConditionSplit[]
+  isValid: boolean
+  totalQuantity: number
+  remainingQuantity: number
+  validationError?: string
+}
+
+export interface ConditionValidationResult {
+  isValid: boolean
+  remaining: number
+  totalReturned: number
+  maxAllowed: number
+  error?: string
+  warnings?: string[]
+}
+
+export interface MultiConditionFormValidation {
+  itemValidations: Record<string, ConditionValidationResult>
+  isFormValid: boolean
+  canProceed: boolean
+  errors: string[]
+  warnings: string[]
+}
+
+export interface ModeToggleProps {
+  mode: 'single' | 'multi'
+  onModeChange: (mode: 'single' | 'multi') => void
+  disabled?: boolean
+  itemQuantity: number
+  showLabels?: boolean
+}
+
+export interface ConditionRowProps {
+  condition: ConditionSplit
+  onChange: (condition: ConditionSplit) => void
+  onRemove?: () => void
+  disabled?: boolean
+  canRemove?: boolean
+  autoFocus?: boolean
+  maxQuantity?: number
+  remainingQuantity?: number
+}
+
+export interface UnifiedConditionFormProps {
+  item: TransaksiItemResponse // Fix: Use the correct type name
+  value: EnhancedItemCondition | null
+  onChange: (condition: EnhancedItemCondition) => void
+  disabled?: boolean
+  isLoading?: boolean
+}
+
+export type ReturnProcessingResult = EnhancedReturnProcessingResult
+
+// Constants for penalty calculation
+export const DAILY_LATE_RATE = 5000 // Rp 5,000 per day late fee
+export const PENALTY_RATES = {
+  kotor: 5000,
+  'rusak ringan': 15000,
+  'rusak berat': 50000,
+  hilang: 'modal_awal'
+} as const

@@ -24,7 +24,7 @@ import type { TransaksiDetail } from '../../types'
 import type {
   EnhancedItemCondition,
   MultiConditionPenaltyResult
-} from '../../types/multiConditionReturn'
+} from '../../types'
 import { kasirLogger } from '../../services/logger'
 
 interface EnhancedPenaltyDisplayProps {
