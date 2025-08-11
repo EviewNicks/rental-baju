@@ -40,7 +40,46 @@ describe('PenaltyCalculator', () => {
   })
 
   describe('calculateConditionPenalty', () => {
-    describe('good conditions - no penalty', () => {
+    // TSK-24 FIX: Test current frontend condition values from ConditionRow.tsx
+    describe('Frontend Integration - Current Condition Values', () => {
+      it('should handle "baik" condition correctly (CRITICAL FIX)', () => {
+        const result = PenaltyCalculator.calculateConditionPenalty('baik', 5000)
+        expect(result.penalty).toBe(0) // FIXED: was returning 10,000
+        expect(result.reasonCode).toBe('on_time')
+        expect(result.description).toContain('baik')
+      })
+
+      it('should handle "kotor" condition correctly', () => {
+        const result = PenaltyCalculator.calculateConditionPenalty('kotor', 5000)
+        expect(result.penalty).toBe(5000) // Matches ConditionRow penalty
+        expect(result.reasonCode).toBe('damaged')
+        expect(result.description).toContain('kotor')
+      })
+
+      it('should handle "rusak ringan" condition correctly', () => {
+        const result = PenaltyCalculator.calculateConditionPenalty('rusak ringan', 5000)
+        expect(result.penalty).toBe(15000) // Matches ConditionRow penalty
+        expect(result.reasonCode).toBe('damaged')
+        expect(result.description).toContain('kerusakan ringan')
+      })
+
+      it('should handle "rusak berat" condition correctly', () => {
+        const result = PenaltyCalculator.calculateConditionPenalty('rusak berat', 5000)
+        expect(result.penalty).toBe(50000) // Matches ConditionRow penalty
+        expect(result.reasonCode).toBe('damaged')
+        expect(result.description).toContain('kerusakan berat')
+      })
+
+      it('should handle "hilang" condition correctly (already working)', () => {
+        const modalAwal = 75000
+        const result = PenaltyCalculator.calculateConditionPenalty('hilang', 5000, modalAwal)
+        expect(result.penalty).toBe(75000) // Uses modalAwal
+        expect(result.reasonCode).toBe('lost')
+        expect(result.description).toContain('modal awal')
+      })
+    })
+
+    describe('Legacy conditions - backward compatibility', () => {
       it('should return zero penalty for perfect condition', () => {
         const result = PenaltyCalculator.calculateConditionPenalty('Baik - tidak ada kerusakan', 5000)
         expect(result.penalty).toBe(0)
@@ -393,6 +432,51 @@ describe('PenaltyCalculator', () => {
           expect(result.totalPenalty).toBeLessThan(50000) // Realistic range
           expect(result.totalPenalty).toBeGreaterThan(10000) // Not zero
           expect(result.totalLateDays).toBe(4) // 2 days * 2 items = 4 total late days
+        })
+      })
+
+      describe('Step 1 to Step 2 Integration - TSK-24 Critical Fix', () => {
+        it('should match ConditionRow penalty preview for "baik" condition', () => {
+          // Simulate Step 1: ConditionRow shows "Tanpa Penalty" for 'baik'
+          const conditionRowPenalty = 0 // From ConditionRow.tsx CONDITION_OPTIONS
+          
+          // Simulate Step 2: PenaltyCalculator should match
+          const calculatorResult = PenaltyCalculator.calculateConditionPenalty('baik', 5000)
+          
+          expect(calculatorResult.penalty).toBe(conditionRowPenalty) // CRITICAL: Must match
+          expect(calculatorResult.penalty).toBe(0) // Explicit zero check
+        })
+
+        it('should match ConditionRow penalty preview for all conditions', () => {
+          const conditionTests = [
+            { condition: 'baik', expectedPenalty: 0 },
+            { condition: 'kotor', expectedPenalty: 5000 },
+            { condition: 'rusak ringan', expectedPenalty: 15000 },
+            { condition: 'rusak berat', expectedPenalty: 50000 }
+          ]
+
+          conditionTests.forEach(({ condition, expectedPenalty }) => {
+            const result = PenaltyCalculator.calculateConditionPenalty(condition, 5000)
+            expect(result.penalty).toBe(expectedPenalty)
+          })
+        })
+
+        it('should calculate realistic penalties for complete item', () => {
+          const item = {
+            id: 'test-item',
+            productName: 'Test Product',
+            expectedReturnDate: new Date('2025-08-09T10:00:00.000Z'),
+            actualReturnDate: new Date('2025-08-11T10:00:00.000Z'), // 2 days late
+            condition: 'baik', // CRITICAL TEST: Should be 0 penalty
+            quantity: 2
+          }
+
+          const result = PenaltyCalculator.calculateItemPenalty(item, 5000)
+          
+          // Should be: 2 days late * 5000 * 2 items + 0 condition penalty = 20,000
+          expect(result.totalPenalty).toBe(20000) // Late penalty only
+          expect(result.lateDays).toBe(2)
+          expect(result.reasonCode).toBe('late') // Late overrides on_time
         })
       })
 

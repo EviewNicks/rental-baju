@@ -1,10 +1,10 @@
 {
-  "numTotalTests": 44,
-  "numPassedTests": 40,
-  "numFailedTests": 4,
-  "numPendingTests": 0,
-  "startTime": "2025-08-11T06:03:07.502Z",
-  "endTime": "2025-08-11T06:03:09.229Z",
+  "numTotalTests": 52,
+  "numPassedTests": 3,
+  "numFailedTests": 0,
+  "numPendingTests": 49,
+  "startTime": "2025-08-11T11:21:27.721Z",
+  "endTime": "2025-08-11T11:21:29.243Z",
   "testResults": [
     {
       "testFilePath": "D:\\.work\\rental-software\\features\\kasir\\lib\\utils\\penaltyCalculator.test.ts",
@@ -15,10 +15,10 @@
             "calculateLatePenalty"
           ],
           "fullName": "PenaltyCalculator calculateLatePenalty should calculate no penalty for on-time return",
-          "status": "passed",
+          "status": "pending",
           "title": "should calculate no penalty for on-time return",
           "failureMessages": [],
-          "duration": 2
+          "duration": null
         },
         {
           "ancestorTitles": [
@@ -26,10 +26,10 @@
             "calculateLatePenalty"
           ],
           "fullName": "PenaltyCalculator calculateLatePenalty should calculate penalty for late return with default rate",
-          "status": "passed",
+          "status": "pending",
           "title": "should calculate penalty for late return with default rate",
           "failureMessages": [],
-          "duration": 2
+          "duration": null
         },
         {
           "ancestorTitles": [
@@ -37,10 +37,10 @@
             "calculateLatePenalty"
           ],
           "fullName": "PenaltyCalculator calculateLatePenalty should cap penalty at maximum days (365)",
-          "status": "passed",
+          "status": "pending",
           "title": "should cap penalty at maximum days (365)",
           "failureMessages": [],
-          "duration": 1
+          "duration": null
         },
         {
           "ancestorTitles": [
@@ -48,22 +48,82 @@
             "calculateLatePenalty"
           ],
           "fullName": "PenaltyCalculator calculateLatePenalty should handle fractional days by rounding up",
-          "status": "passed",
+          "status": "pending",
           "title": "should handle fractional days by rounding up",
           "failureMessages": [],
-          "duration": 1
+          "duration": null
         },
         {
           "ancestorTitles": [
             "PenaltyCalculator",
             "calculateConditionPenalty",
-            "good conditions - no penalty"
+            "Frontend Integration - Current Condition Values"
           ],
-          "fullName": "PenaltyCalculator calculateConditionPenalty good conditions - no penalty should return zero penalty for perfect condition",
-          "status": "passed",
+          "fullName": "PenaltyCalculator calculateConditionPenalty Frontend Integration - Current Condition Values should handle \"baik\" condition correctly (CRITICAL FIX)",
+          "status": "pending",
+          "title": "should handle \"baik\" condition correctly (CRITICAL FIX)",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "calculateConditionPenalty",
+            "Frontend Integration - Current Condition Values"
+          ],
+          "fullName": "PenaltyCalculator calculateConditionPenalty Frontend Integration - Current Condition Values should handle \"kotor\" condition correctly",
+          "status": "pending",
+          "title": "should handle \"kotor\" condition correctly",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "calculateConditionPenalty",
+            "Frontend Integration - Current Condition Values"
+          ],
+          "fullName": "PenaltyCalculator calculateConditionPenalty Frontend Integration - Current Condition Values should handle \"rusak ringan\" condition correctly",
+          "status": "pending",
+          "title": "should handle \"rusak ringan\" condition correctly",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "calculateConditionPenalty",
+            "Frontend Integration - Current Condition Values"
+          ],
+          "fullName": "PenaltyCalculator calculateConditionPenalty Frontend Integration - Current Condition Values should handle \"rusak berat\" condition correctly",
+          "status": "pending",
+          "title": "should handle \"rusak berat\" condition correctly",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "calculateConditionPenalty",
+            "Frontend Integration - Current Condition Values"
+          ],
+          "fullName": "PenaltyCalculator calculateConditionPenalty Frontend Integration - Current Condition Values should handle \"hilang\" condition correctly (already working)",
+          "status": "pending",
+          "title": "should handle \"hilang\" condition correctly (already working)",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "calculateConditionPenalty",
+            "Legacy conditions - backward compatibility"
+          ],
+          "fullName": "PenaltyCalculator calculateConditionPenalty Legacy conditions - backward compatibility should return zero penalty for perfect condition",
+          "status": "pending",
           "title": "should return zero penalty for perfect condition",
           "failureMessages": [],
-          "duration": 1
+          "duration": null
         },
         {
           "ancestorTitles": [
@@ -72,10 +132,10 @@
             "minor damage conditions"
           ],
           "fullName": "PenaltyCalculator calculateConditionPenalty minor damage conditions should apply 1x daily rate for light dirt",
-          "status": "passed",
+          "status": "pending",
           "title": "should apply 1x daily rate for light dirt",
           "failureMessages": [],
-          "duration": 1
+          "duration": null
         },
         {
           "ancestorTitles": [
@@ -84,10 +144,10 @@
             "minor damage conditions"
           ],
           "fullName": "PenaltyCalculator calculateConditionPenalty minor damage conditions should apply 1x daily rate for light stains",
-          "status": "passed",
+          "status": "pending",
           "title": "should apply 1x daily rate for light stains",
           "failureMessages": [],
-          "duration": 0
+          "duration": null
         },
         {
           "ancestorTitles": [
@@ -96,10 +156,10 @@
             "moderate damage conditions"
           ],
           "fullName": "PenaltyCalculator calculateConditionPenalty moderate damage conditions should apply 2x daily rate for small damage",
-          "status": "passed",
+          "status": "pending",
           "title": "should apply 2x daily rate for small damage",
           "failureMessages": [],
-          "duration": 1
+          "duration": null
         },
         {
           "ancestorTitles": [
@@ -108,10 +168,10 @@
             "moderate damage conditions"
           ],
           "fullName": "PenaltyCalculator calculateConditionPenalty moderate damage conditions should apply 2x daily rate for heavy stains",
-          "status": "passed",
+          "status": "pending",
           "title": "should apply 2x daily rate for heavy stains",
           "failureMessages": [],
-          "duration": 0
+          "duration": null
         },
         {
           "ancestorTitles": [
@@ -120,10 +180,10 @@
             "severe damage conditions"
           ],
           "fullName": "PenaltyCalculator calculateConditionPenalty severe damage conditions should apply 4x daily rate for major damage",
-          "status": "passed",
+          "status": "pending",
           "title": "should apply 4x daily rate for major damage",
           "failureMessages": [],
-          "duration": 1
+          "duration": null
         },
         {
           "ancestorTitles": [
@@ -132,10 +192,10 @@
             "lost item conditions - modalAwal integration"
           ],
           "fullName": "PenaltyCalculator calculateConditionPenalty lost item conditions - modalAwal integration should use modalAwal when provided for lost items",
-          "status": "passed",
+          "status": "pending",
           "title": "should use modalAwal when provided for lost items",
           "failureMessages": [],
-          "duration": 17
+          "duration": null
         },
         {
           "ancestorTitles": [
@@ -144,10 +204,10 @@
             "lost item conditions - modalAwal integration"
           ],
           "fullName": "PenaltyCalculator calculateConditionPenalty lost item conditions - modalAwal integration should use modalAwal for different lost conditions",
-          "status": "passed",
+          "status": "pending",
           "title": "should use modalAwal for different lost conditions",
           "failureMessages": [],
-          "duration": 0
+          "duration": null
         },
         {
           "ancestorTitles": [
@@ -156,10 +216,10 @@
             "lost item conditions - modalAwal integration"
           ],
           "fullName": "PenaltyCalculator calculateConditionPenalty lost item conditions - modalAwal integration should fallback to old calculation when modalAwal not provided",
-          "status": "passed",
+          "status": "pending",
           "title": "should fallback to old calculation when modalAwal not provided",
           "failureMessages": [],
-          "duration": 1
+          "duration": null
         },
         {
           "ancestorTitles": [
@@ -168,10 +228,10 @@
             "lost item conditions - modalAwal integration"
           ],
           "fullName": "PenaltyCalculator calculateConditionPenalty lost item conditions - modalAwal integration should handle zero modalAwal gracefully",
-          "status": "passed",
+          "status": "pending",
           "title": "should handle zero modalAwal gracefully",
           "failureMessages": [],
-          "duration": 0
+          "duration": null
         },
         {
           "ancestorTitles": [
@@ -180,10 +240,10 @@
             "unrecognized conditions"
           ],
           "fullName": "PenaltyCalculator calculateConditionPenalty unrecognized conditions should apply default moderate penalty for unknown conditions",
-          "status": "passed",
+          "status": "pending",
           "title": "should apply default moderate penalty for unknown conditions",
           "failureMessages": [],
-          "duration": 3
+          "duration": null
         },
         {
           "ancestorTitles": [
@@ -191,10 +251,10 @@
             "calculateItemPenalty"
           ],
           "fullName": "PenaltyCalculator calculateItemPenalty should calculate penalty for on-time return with good condition",
-          "status": "passed",
+          "status": "pending",
           "title": "should calculate penalty for on-time return with good condition",
           "failureMessages": [],
-          "duration": 1
+          "duration": null
         },
         {
           "ancestorTitles": [
@@ -202,10 +262,10 @@
             "calculateItemPenalty"
           ],
           "fullName": "PenaltyCalculator calculateItemPenalty should calculate penalty for late return with good condition",
-          "status": "passed",
+          "status": "pending",
           "title": "should calculate penalty for late return with good condition",
           "failureMessages": [],
-          "duration": 0
+          "duration": null
         },
         {
           "ancestorTitles": [
@@ -213,10 +273,10 @@
             "calculateItemPenalty"
           ],
           "fullName": "PenaltyCalculator calculateItemPenalty should calculate penalty for lost item with modalAwal",
-          "status": "passed",
+          "status": "pending",
           "title": "should calculate penalty for lost item with modalAwal",
           "failureMessages": [],
-          "duration": 1
+          "duration": null
         },
         {
           "ancestorTitles": [
@@ -224,10 +284,10 @@
             "calculateItemPenalty"
           ],
           "fullName": "PenaltyCalculator calculateItemPenalty should calculate combined penalty for late + damaged item",
-          "status": "passed",
+          "status": "pending",
           "title": "should calculate combined penalty for late + damaged item",
           "failureMessages": [],
-          "duration": 0
+          "duration": null
         },
         {
           "ancestorTitles": [
@@ -235,10 +295,10 @@
             "calculateItemPenalty"
           ],
           "fullName": "PenaltyCalculator calculateItemPenalty should multiply penalty by quantity",
-          "status": "passed",
+          "status": "pending",
           "title": "should multiply penalty by quantity",
           "failureMessages": [],
-          "duration": 0
+          "duration": null
         },
         {
           "ancestorTitles": [
@@ -246,10 +306,10 @@
             "calculateItemPenalty"
           ],
           "fullName": "PenaltyCalculator calculateItemPenalty should prioritize lost over damaged in reason code",
-          "status": "passed",
+          "status": "pending",
           "title": "should prioritize lost over damaged in reason code",
           "failureMessages": [],
-          "duration": 0
+          "duration": null
         },
         {
           "ancestorTitles": [
@@ -257,10 +317,10 @@
             "calculateTransactionPenalties"
           ],
           "fullName": "PenaltyCalculator calculateTransactionPenalties should calculate penalties for multiple items",
-          "status": "passed",
+          "status": "pending",
           "title": "should calculate penalties for multiple items",
           "failureMessages": [],
-          "duration": 1
+          "duration": null
         },
         {
           "ancestorTitles": [
@@ -268,12 +328,10 @@
             "calculateTransactionPenalties"
           ],
           "fullName": "PenaltyCalculator calculateTransactionPenalties should provide correct summary statistics",
-          "status": "failed",
+          "status": "pending",
           "title": "should provide correct summary statistics",
-          "failureMessages": [
-            "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: 0\nReceived: 1\n    at Object.toBe (D:\\.work\\rental-software\\features\\kasir\\lib\\utils\\penaltyCalculator.test.ts:274:42)\n    at Promise.finally.completed (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1559:28)\n    at new Promise (<anonymous>)\n    at callAsyncCircusFn (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1499:10)\n    at _callCircusTest (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1009:40)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at _runTest (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:949:3)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:839:13)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at run (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:757:3)\n    at runAndTransformResultsToJestFormat (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1920:21)\n    at jestAdapter (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\runner.js:101:19)\n    at runTestInternal (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\index.js:275:16)\n    at runTest (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\index.js:343:7)"
-          ],
-          "duration": 3
+          "failureMessages": [],
+          "duration": null
         },
         {
           "ancestorTitles": [
@@ -281,10 +339,10 @@
             "calculateTransactionPenalties"
           ],
           "fullName": "PenaltyCalculator calculateTransactionPenalties should handle empty items array",
-          "status": "passed",
+          "status": "pending",
           "title": "should handle empty items array",
           "failureMessages": [],
-          "duration": 1
+          "duration": null
         },
         {
           "ancestorTitles": [
@@ -293,12 +351,10 @@
             "formatPenaltyAmount"
           ],
           "fullName": "PenaltyCalculator utility methods formatPenaltyAmount should format penalty amount to Indonesian Rupiah",
-          "status": "failed",
+          "status": "pending",
           "title": "should format penalty amount to Indonesian Rupiah",
-          "failureMessages": [
-            "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: \"Rp 75.000\"\nReceived: \"Rp 75.000\"\n    at Object.toBe (D:\\.work\\rental-software\\features\\kasir\\lib\\utils\\penaltyCalculator.test.ts:296:62)\n    at Promise.finally.completed (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1559:28)\n    at new Promise (<anonymous>)\n    at callAsyncCircusFn (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1499:10)\n    at _callCircusTest (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1009:40)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at _runTest (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:949:3)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:839:13)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at run (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:757:3)\n    at runAndTransformResultsToJestFormat (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1920:21)\n    at jestAdapter (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\runner.js:101:19)\n    at runTestInternal (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\index.js:275:16)\n    at runTest (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\index.js:343:7)"
-          ],
-          "duration": 2
+          "failureMessages": [],
+          "duration": null
         },
         {
           "ancestorTitles": [
@@ -307,10 +363,10 @@
             "generatePenaltyDescription"
           ],
           "fullName": "PenaltyCalculator utility methods generatePenaltyDescription should generate description for zero penalty",
-          "status": "passed",
+          "status": "pending",
           "title": "should generate description for zero penalty",
           "failureMessages": [],
-          "duration": 1
+          "duration": null
         },
         {
           "ancestorTitles": [
@@ -319,12 +375,10 @@
             "generatePenaltyDescription"
           ],
           "fullName": "PenaltyCalculator utility methods generatePenaltyDescription should generate description with formatted amount",
-          "status": "failed",
+          "status": "pending",
           "title": "should generate description with formatted amount",
-          "failureMessages": [
-            "Error: expect(received).toContain(expected) // indexOf\n\nExpected substring: \"Rp 75.000\"\nReceived string:    \"Rp 75.000 - Item lost\"\n    at Object.toContain (D:\\.work\\rental-software\\features\\kasir\\lib\\utils\\penaltyCalculator.test.ts:336:24)\n    at Promise.finally.completed (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1559:28)\n    at new Promise (<anonymous>)\n    at callAsyncCircusFn (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1499:10)\n    at _callCircusTest (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1009:40)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at _runTest (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:949:3)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:839:13)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at run (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:757:3)\n    at runAndTransformResultsToJestFormat (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1920:21)\n    at jestAdapter (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\runner.js:101:19)\n    at runTestInternal (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\index.js:275:16)\n    at runTest (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\index.js:343:7)"
-          ],
-          "duration": 0
+          "failureMessages": [],
+          "duration": null
         },
         {
           "ancestorTitles": [
@@ -334,10 +388,10 @@
             "Correct date field usage (tglSelesai vs tglKembali)"
           ],
           "fullName": "PenaltyCalculator utility methods Date Field Validation - TSK-24 Bug Fix Correct date field usage (tglSelesai vs tglKembali) should calculate realistic penalty using correct expected return date",
-          "status": "passed",
+          "status": "pending",
           "title": "should calculate realistic penalty using correct expected return date",
           "failureMessages": [],
-          "duration": 0
+          "duration": null
         },
         {
           "ancestorTitles": [
@@ -347,12 +401,10 @@
             "Correct date field usage (tglSelesai vs tglKembali)"
           ],
           "fullName": "PenaltyCalculator utility methods Date Field Validation - TSK-24 Bug Fix Correct date field usage (tglSelesai vs tglKembali) should NOT produce massive penalty from wrong date field",
-          "status": "failed",
+          "status": "pending",
           "title": "should NOT produce massive penalty from wrong date field",
-          "failureMessages": [
-            "Error: expect(received).toBeGreaterThan(expected)\n\nExpected: > 7000000\nReceived:   1825000\n    at Object.toBeGreaterThan (D:\\.work\\rental-software\\features\\kasir\\lib\\utils\\penaltyCalculator.test.ts:355:32)\n    at Promise.finally.completed (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1559:28)\n    at new Promise (<anonymous>)\n    at callAsyncCircusFn (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1499:10)\n    at _callCircusTest (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1009:40)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at _runTest (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:949:3)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:839:13)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at run (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:757:3)\n    at runAndTransformResultsToJestFormat (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1920:21)\n    at jestAdapter (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\runner.js:101:19)\n    at runTestInternal (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\index.js:275:16)\n    at runTest (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\index.js:343:7)"
-          ],
-          "duration": 1
+          "failureMessages": [],
+          "duration": null
         },
         {
           "ancestorTitles": [
@@ -362,10 +414,10 @@
             "Correct date field usage (tglSelesai vs tglKembali)"
           ],
           "fullName": "PenaltyCalculator utility methods Date Field Validation - TSK-24 Bug Fix Correct date field usage (tglSelesai vs tglKembali) should handle realistic late return scenarios correctly",
-          "status": "passed",
+          "status": "pending",
           "title": "should handle realistic late return scenarios correctly",
           "failureMessages": [],
-          "duration": 0
+          "duration": null
         },
         {
           "ancestorTitles": [
@@ -375,10 +427,49 @@
             "Multi-condition penalty with correct date usage"
           ],
           "fullName": "PenaltyCalculator utility methods Date Field Validation - TSK-24 Bug Fix Multi-condition penalty with correct date usage should calculate realistic multi-condition penalty using tglSelesai",
-          "status": "passed",
+          "status": "pending",
           "title": "should calculate realistic multi-condition penalty using tglSelesai",
           "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "utility methods",
+            "Date Field Validation - TSK-24 Bug Fix",
+            "Step 1 to Step 2 Integration - TSK-24 Critical Fix"
+          ],
+          "fullName": "PenaltyCalculator utility methods Date Field Validation - TSK-24 Bug Fix Step 1 to Step 2 Integration - TSK-24 Critical Fix should match ConditionRow penalty preview for \"baik\" condition",
+          "status": "passed",
+          "title": "should match ConditionRow penalty preview for \"baik\" condition",
+          "failureMessages": [],
+          "duration": 3
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "utility methods",
+            "Date Field Validation - TSK-24 Bug Fix",
+            "Step 1 to Step 2 Integration - TSK-24 Critical Fix"
+          ],
+          "fullName": "PenaltyCalculator utility methods Date Field Validation - TSK-24 Bug Fix Step 1 to Step 2 Integration - TSK-24 Critical Fix should match ConditionRow penalty preview for all conditions",
+          "status": "passed",
+          "title": "should match ConditionRow penalty preview for all conditions",
+          "failureMessages": [],
           "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "utility methods",
+            "Date Field Validation - TSK-24 Bug Fix",
+            "Step 1 to Step 2 Integration - TSK-24 Critical Fix"
+          ],
+          "fullName": "PenaltyCalculator utility methods Date Field Validation - TSK-24 Bug Fix Step 1 to Step 2 Integration - TSK-24 Critical Fix should calculate realistic penalties for complete item",
+          "status": "passed",
+          "title": "should calculate realistic penalties for complete item",
+          "failureMessages": [],
+          "duration": 1
         },
         {
           "ancestorTitles": [
@@ -388,10 +479,10 @@
             "Date validation edge cases"
           ],
           "fullName": "PenaltyCalculator utility methods Date Field Validation - TSK-24 Bug Fix Date validation edge cases should handle invalid date strings gracefully",
-          "status": "passed",
+          "status": "pending",
           "title": "should handle invalid date strings gracefully",
           "failureMessages": [],
-          "duration": 1
+          "duration": null
         },
         {
           "ancestorTitles": [
@@ -401,10 +492,10 @@
             "Date validation edge cases"
           ],
           "fullName": "PenaltyCalculator utility methods Date Field Validation - TSK-24 Bug Fix Date validation edge cases should validate return date is not too far in past",
-          "status": "passed",
+          "status": "pending",
           "title": "should validate return date is not too far in past",
           "failureMessages": [],
-          "duration": 0
+          "duration": null
         },
         {
           "ancestorTitles": [
@@ -413,10 +504,10 @@
             "validatePenaltyInputs"
           ],
           "fullName": "PenaltyCalculator utility methods validatePenaltyInputs should validate correct inputs",
-          "status": "passed",
+          "status": "pending",
           "title": "should validate correct inputs",
           "failureMessages": [],
-          "duration": 0
+          "duration": null
         },
         {
           "ancestorTitles": [
@@ -425,10 +516,10 @@
             "validatePenaltyInputs"
           ],
           "fullName": "PenaltyCalculator utility methods validatePenaltyInputs should detect invalid dates",
-          "status": "passed",
+          "status": "pending",
           "title": "should detect invalid dates",
           "failureMessages": [],
-          "duration": 1
+          "duration": null
         },
         {
           "ancestorTitles": [
@@ -437,10 +528,10 @@
             "validatePenaltyInputs"
           ],
           "fullName": "PenaltyCalculator utility methods validatePenaltyInputs should detect empty condition",
-          "status": "passed",
+          "status": "pending",
           "title": "should detect empty condition",
           "failureMessages": [],
-          "duration": 0
+          "duration": null
         },
         {
           "ancestorTitles": [
@@ -449,10 +540,10 @@
             "validatePenaltyInputs"
           ],
           "fullName": "PenaltyCalculator utility methods validatePenaltyInputs should detect invalid quantity",
-          "status": "passed",
+          "status": "pending",
           "title": "should detect invalid quantity",
           "failureMessages": [],
-          "duration": 0
+          "duration": null
         },
         {
           "ancestorTitles": [
@@ -461,10 +552,10 @@
             "validatePenaltyInputs"
           ],
           "fullName": "PenaltyCalculator utility methods validatePenaltyInputs should detect very old return dates",
-          "status": "passed",
+          "status": "pending",
           "title": "should detect very old return dates",
           "failureMessages": [],
-          "duration": 0
+          "duration": null
         },
         {
           "ancestorTitles": [
@@ -473,10 +564,10 @@
             "validatePenaltyInputs"
           ],
           "fullName": "PenaltyCalculator utility methods validatePenaltyInputs should accumulate multiple errors",
-          "status": "passed",
+          "status": "pending",
           "title": "should accumulate multiple errors",
           "failureMessages": [],
-          "duration": 1
+          "duration": null
         },
         {
           "ancestorTitles": [
@@ -485,10 +576,10 @@
             "getBusinessRules"
           ],
           "fullName": "PenaltyCalculator utility methods getBusinessRules should return current business rules configuration",
-          "status": "passed",
+          "status": "pending",
           "title": "should return current business rules configuration",
           "failureMessages": [],
-          "duration": 0
+          "duration": null
         },
         {
           "ancestorTitles": [
@@ -496,10 +587,10 @@
             "edge cases and boundary conditions"
           ],
           "fullName": "PenaltyCalculator edge cases and boundary conditions should handle very large modalAwal values",
-          "status": "passed",
+          "status": "pending",
           "title": "should handle very large modalAwal values",
           "failureMessages": [],
-          "duration": 0
+          "duration": null
         },
         {
           "ancestorTitles": [
@@ -507,10 +598,10 @@
             "edge cases and boundary conditions"
           ],
           "fullName": "PenaltyCalculator edge cases and boundary conditions should handle leap year date calculations",
-          "status": "passed",
+          "status": "pending",
           "title": "should handle leap year date calculations",
           "failureMessages": [],
-          "duration": 1
+          "duration": null
         },
         {
           "ancestorTitles": [
@@ -518,10 +609,10 @@
             "edge cases and boundary conditions"
           ],
           "fullName": "PenaltyCalculator edge cases and boundary conditions should handle timezone differences correctly",
-          "status": "passed",
+          "status": "pending",
           "title": "should handle timezone differences correctly",
           "failureMessages": [],
-          "duration": 0
+          "duration": null
         },
         {
           "ancestorTitles": [
@@ -529,13 +620,13 @@
             "edge cases and boundary conditions"
           ],
           "fullName": "PenaltyCalculator edge cases and boundary conditions should handle case-insensitive condition matching",
-          "status": "passed",
+          "status": "pending",
           "title": "should handle case-insensitive condition matching",
           "failureMessages": [],
-          "duration": 0
+          "duration": null
         }
       ],
-      "failureMessage": "  ● PenaltyCalculator › calculateTransactionPenalties › should provide correct summary statistics\n\n    expect(received).toBe(expected) // Object.is equality\n\n    Expected: 0\n    Received: 1\n\n    \u001b[0m \u001b[90m 272 |\u001b[39m       \u001b[36mconst\u001b[39m result \u001b[33m=\u001b[39m \u001b[33mPenaltyCalculator\u001b[39m\u001b[33m.\u001b[39mcalculateTransactionPenalties(items\u001b[33m,\u001b[39m \u001b[35m5000\u001b[39m)\n     \u001b[90m 273 |\u001b[39m       \n    \u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 274 |\u001b[39m       expect(result\u001b[33m.\u001b[39msummary\u001b[33m.\u001b[39monTimeItems)\u001b[33m.\u001b[39mtoBe(\u001b[35m0\u001b[39m) \u001b[90m// Item 1 has no penalty but item 2 is late+damaged\u001b[39m\n     \u001b[90m     |\u001b[39m                                          \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n     \u001b[90m 275 |\u001b[39m       expect(result\u001b[33m.\u001b[39msummary\u001b[33m.\u001b[39mlateItems)\u001b[33m.\u001b[39mtoBe(\u001b[35m0\u001b[39m) \u001b[90m// Item 2 is damaged (priority)\u001b[39m\n     \u001b[90m 276 |\u001b[39m       expect(result\u001b[33m.\u001b[39msummary\u001b[33m.\u001b[39mdamagedItems)\u001b[33m.\u001b[39mtoBe(\u001b[35m1\u001b[39m) \u001b[90m// Item 2\u001b[39m\n     \u001b[90m 277 |\u001b[39m       expect(result\u001b[33m.\u001b[39msummary\u001b[33m.\u001b[39mlostItems)\u001b[33m.\u001b[39mtoBe(\u001b[35m1\u001b[39m) \u001b[90m// Item 3\u001b[39m\u001b[0m\n\n      at Object.toBe (features/kasir/lib/utils/penaltyCalculator.test.ts:274:42)\n\n  ● PenaltyCalculator › utility methods › formatPenaltyAmount › should format penalty amount to Indonesian Rupiah\n\n    expect(received).toBe(expected) // Object.is equality\n\n    Expected: \"Rp 75.000\"\n    Received: \"Rp 75.000\"\n\n    \u001b[0m \u001b[90m 294 |\u001b[39m     describe(\u001b[32m'formatPenaltyAmount'\u001b[39m\u001b[33m,\u001b[39m () \u001b[33m=>\u001b[39m {\n     \u001b[90m 295 |\u001b[39m       it(\u001b[32m'should format penalty amount to Indonesian Rupiah'\u001b[39m\u001b[33m,\u001b[39m () \u001b[33m=>\u001b[39m {\n    \u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 296 |\u001b[39m         expect(\u001b[33mPenaltyCalculator\u001b[39m\u001b[33m.\u001b[39mformatPenaltyAmount(\u001b[35m75000\u001b[39m))\u001b[33m.\u001b[39mtoBe(\u001b[32m'Rp 75.000'\u001b[39m)\n     \u001b[90m     |\u001b[39m                                                              \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n     \u001b[90m 297 |\u001b[39m         expect(\u001b[33mPenaltyCalculator\u001b[39m\u001b[33m.\u001b[39mformatPenaltyAmount(\u001b[35m1500000\u001b[39m))\u001b[33m.\u001b[39mtoBe(\u001b[32m'Rp 1.500.000'\u001b[39m)\n     \u001b[90m 298 |\u001b[39m         expect(\u001b[33mPenaltyCalculator\u001b[39m\u001b[33m.\u001b[39mformatPenaltyAmount(\u001b[35m0\u001b[39m))\u001b[33m.\u001b[39mtoBe(\u001b[32m'Rp 0'\u001b[39m)\n     \u001b[90m 299 |\u001b[39m       })\u001b[0m\n\n      at Object.toBe (features/kasir/lib/utils/penaltyCalculator.test.ts:296:62)\n\n  ● PenaltyCalculator › utility methods › generatePenaltyDescription › should generate description with formatted amount\n\n    expect(received).toContain(expected) // indexOf\n\n    Expected substring: \"Rp 75.000\"\n    Received string:    \"Rp 75.000 - Item lost\"\n\n    \u001b[0m \u001b[90m 334 |\u001b[39m         \n     \u001b[90m 335 |\u001b[39m         \u001b[36mconst\u001b[39m result \u001b[33m=\u001b[39m \u001b[33mPenaltyCalculator\u001b[39m\u001b[33m.\u001b[39mgeneratePenaltyDescription(penalty)\n    \u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 336 |\u001b[39m         expect(result)\u001b[33m.\u001b[39mtoContain(\u001b[32m'Rp 75.000'\u001b[39m)\n     \u001b[90m     |\u001b[39m                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n     \u001b[90m 337 |\u001b[39m         expect(result)\u001b[33m.\u001b[39mtoContain(\u001b[32m'Item lost'\u001b[39m)\n     \u001b[90m 338 |\u001b[39m       })\n     \u001b[90m 339 |\u001b[39m     })\u001b[0m\n\n      at Object.toContain (features/kasir/lib/utils/penaltyCalculator.test.ts:336:24)\n\n  ● PenaltyCalculator › utility methods › Date Field Validation - TSK-24 Bug Fix › Correct date field usage (tglSelesai vs tglKembali) › should NOT produce massive penalty from wrong date field\n\n    expect(received).toBeGreaterThan(expected)\n\n    Expected: > 7000000\n    Received:   1825000\n\n    \u001b[0m \u001b[90m 353 |\u001b[39m           \n     \u001b[90m 354 |\u001b[39m           \u001b[90m// This would produce ~1460 days * 5000 = ~7,300,000 penalty (THE BUG)\u001b[39m\n    \u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 355 |\u001b[39m           expect(buggyPenalty)\u001b[33m.\u001b[39mtoBeGreaterThan(\u001b[35m7000000\u001b[39m)\n     \u001b[90m     |\u001b[39m                                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n     \u001b[90m 356 |\u001b[39m           \n     \u001b[90m 357 |\u001b[39m           \u001b[90m// Document that this is the WRONG calculation\u001b[39m\n     \u001b[90m 358 |\u001b[39m           expect(buggyPenalty)\u001b[33m.\u001b[39mnot\u001b[33m.\u001b[39mtoBe(\u001b[35m10000\u001b[39m) \u001b[90m// Should not be realistic\u001b[39m\u001b[0m\n\n      at Object.toBeGreaterThan (features/kasir/lib/utils/penaltyCalculator.test.ts:355:32)\n"
+      "failureMessage": null
     }
   ]
 }

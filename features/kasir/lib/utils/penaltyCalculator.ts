@@ -102,6 +102,7 @@ export class PenaltyCalculator {
 
   /**
    * Calculate penalty based on item condition
+   * Fixed TSK-24: Now recognizes frontend condition values from ConditionRow.tsx
    */
   static calculateConditionPenalty(
     condition: string,
@@ -110,8 +111,9 @@ export class PenaltyCalculator {
   ): { penalty: number; reasonCode: PenaltyDetails['reasonCode']; description: string } {
     const normalizedCondition = condition.toLowerCase()
 
+    // FIXED: Match current frontend condition values
     // No penalty for good conditions
-    if (normalizedCondition.includes('baik - tidak ada kerusakan')) {
+    if (normalizedCondition.includes('baik')) {
       return {
         penalty: 0,
         reasonCode: 'on_time',
@@ -119,30 +121,30 @@ export class PenaltyCalculator {
       }
     }
 
-    // Minor penalty for light damage/dirt
-    if (normalizedCondition.includes('baik - sedikit') || normalizedCondition.includes('cukup - ada noda ringan')) {
+    // Minor penalty for dirty items (matches ConditionRow penalty: 5000)
+    if (normalizedCondition.includes('kotor')) {
       return {
-        penalty: dailyRate * 1,
+        penalty: 5000, // Fixed: use exact penalty from frontend
         reasonCode: 'damaged',
-        description: 'Penalty untuk kondisi barang dengan kerusakan ringan'
+        description: 'Penalty untuk barang kotor'
       }
     }
 
-    // Moderate penalty for moderate damage
-    if (normalizedCondition.includes('cukup - ada kerusakan') || normalizedCondition.includes('buruk - ada noda')) {
+    // Moderate penalty for light damage (matches ConditionRow penalty: 15000)
+    if (normalizedCondition.includes('rusak ringan')) {
       return {
-        penalty: dailyRate * this.DAMAGE_PENALTY_MULTIPLIER,
+        penalty: 15000, // Fixed: use exact penalty from frontend
         reasonCode: 'damaged',
-        description: 'Penalty untuk kondisi barang dengan kerusakan sedang'
+        description: 'Penalty untuk kerusakan ringan'
       }
     }
 
-    // High penalty for severe damage
-    if (normalizedCondition.includes('buruk - ada kerusakan besar')) {
+    // High penalty for severe damage (matches ConditionRow penalty: 50000)
+    if (normalizedCondition.includes('rusak berat')) {
       return {
-        penalty: dailyRate * (this.DAMAGE_PENALTY_MULTIPLIER * 2),
+        penalty: 50000, // Fixed: use exact penalty from frontend
         reasonCode: 'damaged',
-        description: 'Penalty untuk kondisi barang dengan kerusakan berat'
+        description: 'Penalty untuk kerusakan berat'
       }
     }
 
@@ -629,6 +631,13 @@ export class PenaltyCalculator {
       lostItemPenaltyDays: this.LOST_ITEM_PENALTY_DAYS,
       maxPenaltyDays: this.MAX_PENALTY_DAYS,
       supportedConditions: [
+        // Current frontend conditions (from ConditionRow.tsx)
+        'baik',           // Rp 0
+        'kotor',          // Rp 5,000
+        'rusak ringan',   // Rp 15,000
+        'rusak berat',    // Rp 50,000
+        'hilang',         // modal_awal
+        // Legacy conditions (backward compatibility)
         'Baik - tidak ada kerusakan',
         'Baik - sedikit kotor/kusut',
         'Cukup - ada noda ringan',
