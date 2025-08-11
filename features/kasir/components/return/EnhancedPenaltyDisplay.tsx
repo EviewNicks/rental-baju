@@ -16,7 +16,6 @@ import {
   TrendingUp,
   FileText,
   Layers,
-  Target,
   Eye,
   EyeOff,
 } from 'lucide-react'
@@ -162,7 +161,7 @@ export function EnhancedPenaltyDisplay({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-2">
       {/* Header with Processing Mode */}
       <Card className="p-4 bg-blue-50 border-blue-200">
         <div className="flex items-center justify-between">
@@ -176,6 +175,10 @@ export function EnhancedPenaltyDisplay({
                   : processingMode === 'mixed'
                     ? 'Campuran: Sebagian item multi-kondisi'
                     : 'Kondisi tunggal: Standard processing'}
+              </p>
+              {/* Client-side calculation preview indicator */}
+              <p className="text-xs text-blue-600 mt-1 italic">
+                Estimasi - akan dikonfirmasi saat submit
               </p>
             </div>
           </div>
@@ -204,7 +207,7 @@ export function EnhancedPenaltyDisplay({
       </Card>
 
       {/* Enhanced Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
         <Card className="p-4 bg-gradient-to-br from-green-50 to-green-100 border-green-200">
           <div className="flex items-center gap-3">
             <DollarSign className="h-6 w-6 text-green-600" />
@@ -212,7 +215,10 @@ export function EnhancedPenaltyDisplay({
               <div className="text-2xl font-bold text-green-700">
                 {formatCurrency(totalPenalty)}
               </div>
-              <div className="text-sm text-green-600">Total Penalty</div>
+              <div className="text-sm text-green-600">
+                Total Penalty
+                <span className="text-xs text-green-500 ml-2 italic">(Estimasi)</span>
+              </div>
             </div>
           </div>
         </Card>
@@ -233,28 +239,6 @@ export function EnhancedPenaltyDisplay({
             <div>
               <div className="text-xl font-bold text-gray-700">{summary.totalItems}</div>
               <div className="text-sm text-gray-600">Total Items</div>
-            </div>
-          </div>
-        </Card>
-
-        <Card className="p-4">
-          <div className="flex items-center gap-3">
-            <Layers className="h-5 w-5 text-purple-600" />
-            <div>
-              <div className="text-xl font-bold text-purple-600">{summary.totalConditions}</div>
-              <div className="text-sm text-gray-600">Total Kondisi</div>
-            </div>
-          </div>
-        </Card>
-
-        <Card className="p-4">
-          <div className="flex items-center gap-3">
-            <Target className="h-5 w-5 text-orange-600" />
-            <div>
-              <div className="text-xl font-bold text-orange-600">
-                {summary.averageConditionsPerItem?.toFixed(1) || '0.0'}
-              </div>
-              <div className="text-sm text-gray-600">Rata-rata / Item</div>
             </div>
           </div>
         </Card>
@@ -461,38 +445,6 @@ export function EnhancedPenaltyDisplay({
               ))}
             </div>
           </CardContent>
-        </Card>
-      )}
-
-      {/* Calculation Metadata */}
-      {calculationMetadata && showDetailedBreakdown && (
-        <Card className="p-4 bg-gray-50">
-          <h4 className="font-medium mb-3 flex items-center gap-2">
-            <Info className="h-4 w-4" />
-            Informasi Perhitungan
-          </h4>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-            <div>
-              <span className="text-gray-600">Mode Processing:</span>
-              <span className="ml-2 font-medium capitalize">
-                {calculationMetadata.processingMode}
-              </span>
-            </div>
-            <div>
-              <span className="text-gray-600">Items Processed:</span>
-              <span className="ml-2 font-medium">{calculationMetadata.itemsProcessed}</span>
-            </div>
-            <div>
-              <span className="text-gray-600">Condition Splits:</span>
-              <span className="ml-2 font-medium">{calculationMetadata.conditionSplits}</span>
-            </div>
-            <div>
-              <span className="text-gray-600">Calculated At:</span>
-              <span className="ml-2 font-medium">
-                {new Date(calculationMetadata.calculatedAt).toLocaleString('id-ID')}
-              </span>
-            </div>
-          </div>
         </Card>
       )}
     </div>

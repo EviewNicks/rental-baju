@@ -11,6 +11,7 @@ import type {
 } from '../types'
 import { kasirApi } from '../api'
 import { kasirLogger } from '../lib/logger'
+import { PenaltyCalculator } from '../lib/utils/penaltyCalculator'
 
 /**
  * Unified Return Process Hook - TSK-24 Phase-2 Simplified Architecture
@@ -410,72 +411,149 @@ export function useMultiConditionReturn(): UseMultiConditionReturnResult {
     return newValidation.canProceed
   }, [transaction, validateItemCondition, itemConditions]) // FIXED: itemConditions must be included since function uses it
 
-  // Calculate penalties for current conditions
+  // Calculate penalties for current conditions - Client-side using PenaltyCalculator utility
   const calculatePenalties = useCallback(async () => {
-    if (validateAllItems()) {
-      const timer = kasirLogger.performance.startTimer('calculatePenalties', 'Penalty calculation')
+    if (!transaction) {
+      kasirLogger.penaltyCalc.warn('calculatePenalties', 'No transaction available for calculation')
+      return
+    }
 
-      kasirLogger.penaltyCalc.info('calculatePenalties', 'Starting penalty calculation', {
-        transactionId: transaction?.kode,
+    // ENHANCED VALIDATION: Check for required date fields
+    if (!transaction.tglSelesai) {
+      kasirLogger.penaltyCalc.error('calculatePenalties', 'Missing expected return date (tglSelesai)', {
+        transactionId: transaction.kode,
+        tglSelesai: transaction.tglSelesai,
+        tglKembali: transaction.tglKembali,
+        availableFields: Object.keys(transaction)
+      })
+      toast.error('Tanggal selesai transaksi tidak ditemukan. Tidak dapat menghitung penalty.')
+      setError('Data tanggal transaksi tidak lengkap. Silakan hubungi administrator.')
+      return
+    }
+
+    // ENHANCED VALIDATION: Validate date format
+    const expectedDate = new Date(transaction.tglSelesai)
+    if (isNaN(expectedDate.getTime())) {
+      kasirLogger.penaltyCalc.error('calculatePenalties', 'Invalid expected return date format', {
+        transactionId: transaction.kode,
+        tglSelesai: transaction.tglSelesai,
+        parsedDate: expectedDate.toString()
+      })
+      toast.error('Format tanggal selesai transaksi tidak valid.')
+      setError('Format tanggal transaksi tidak valid. Silakan hubungi administrator.')
+      return
+    }
+
+    if (validateAllItems()) {
+      const timer = kasirLogger.performance.startTimer('calculatePenalties', 'Client-side penalty calculation')
+
+      kasirLogger.penaltyCalc.info('calculatePenalties', 'Starting client-side penalty calculation', {
+        transactionId: transaction.kode,
         itemCount: Object.keys(itemConditions).length,
+        processingMode: 'client-side',
       })
 
       try {
-        const result = await refetchPenalties()
-        if (result.data) {
-          // Transform API response to match interface
-          const penaltyData: MultiConditionPenaltyResult = {
-            ...result.data,
-            conditionBreakdown: [], // API doesn't provide this yet
-            breakdown: result.data.breakdown?.map((item) => ({
-              ...item,
-              penaltyAmount: item.conditionPenalty || 0,
-              modalAwal: item.modalAwalUsed,
-            })),
-            summary: {
-              totalQuantity: result.data.summary.totalItems,
-              lostItems: result.data.summary.lostItems,
-              goodItems: result.data.summary.onTimeItems,
-              damagedItems: result.data.summary.damagedItems,
-              totalConditions: result.data.summary.totalConditions,
-              onTimeItems: result.data.summary.onTimeItems,
-              lateItems: result.data.summary.lateItems,
-              totalItems: result.data.summary.totalItems,
-              averageConditionsPerItem: result.data.summary.averageConditionsPerItem,
-            },
-            calculationMetadata: result.data.calculationMetadata
-              ? {
-                  calculatedAt: result.data.calculationMetadata.calculatedAt,
-                  processingMode:
-                    result.data.calculationMetadata.processingMode === 'single'
-                      ? ('single-condition' as const)
-                      : result.data.calculationMetadata.processingMode === 'multi'
-                        ? ('multi-condition' as const)
-                        : ('mixed' as const),
-                  itemCount: result.data.calculationMetadata.itemsProcessed,
-                  totalConditions: result.data.calculationMetadata.conditionSplits,
-                  hasLateItems: result.data.lateDays > 0,
-                  itemsProcessed: result.data.calculationMetadata.itemsProcessed,
-                  conditionSplits: result.data.calculationMetadata.conditionSplits,
-                }
-              : undefined,
-          }
-          setPenaltyCalculation(penaltyData)
-
-          kasirLogger.penaltyCalc.info('calculatePenalties', 'Penalty calculation completed', {
-            totalPenalty: result.data.totalPenalty,
-            itemsWithPenalties: result.data.breakdown?.length || 0,
+        // Prepare data for PenaltyCalculator utility
+        const calculationItems = Object.entries(itemConditions).map(([itemId, condition]) => {
+          const transactionItem = transaction.items?.find(item => item.id === itemId)
+          
+          // CRITICAL FIX: Use tglSelesai (expected return date) instead of tglKembali (actual return date)
+          const expectedReturnDate = transaction.tglSelesai ? new Date(transaction.tglSelesai) : new Date()
+          
+          // Log date usage for debugging
+          kasirLogger.penaltyCalc.debug('calculatePenalties', 'Date fields for penalty calculation', {
+            transactionId: transaction.kode,
+            itemId,
+            expectedReturnDate: expectedReturnDate.toISOString(),
+            actualReturnDate: new Date().toISOString(),
+            tglSelesai: transaction.tglSelesai,
+            tglKembali: transaction.tglKembali,
+            dateSource: transaction.tglSelesai ? 'tglSelesai' : 'fallback_current_date'
           })
+          
+          return {
+            id: itemId,
+            productName: transactionItem?.produk?.name || 'Unknown Product',
+            expectedReturnDate,
+            actualReturnDate: new Date(), // Current date for penalty calculation
+            conditions: condition.conditions.map(cond => ({
+              kondisiAkhir: cond.kondisiAkhir,
+              jumlahKembali: cond.jumlahKembali,
+              modalAwal: cond.modalAwal
+            }))
+          }
+        })
+
+        // Use PenaltyCalculator utility for direct calculation
+        const penaltyResult = PenaltyCalculator.calculateMultiConditionPenalties(
+          calculationItems,
+          5000 // Default daily rate
+        )
+
+        // Transform result to match expected interface
+        const penaltyData: MultiConditionPenaltyResult = {
+          totalPenalty: penaltyResult.totalPenalty,
+          lateDays: penaltyResult.totalLateDays,
+          breakdown: penaltyResult.itemPenalties.map((item) => ({
+            itemId: item.itemId,
+            itemName: item.productName,
+            splitIndex: 0, // Client-side doesn't need split indexing
+            kondisiAkhir: item.conditionBreakdown?.[0]?.kondisiAkhir || 'Normal',
+            jumlahKembali: item.summary.totalQuantity,
+            isLostItem: item.conditionBreakdown?.some(c => c.reasonCode === 'lost') || false,
+            latePenalty: item.conditionBreakdown?.reduce((sum, c) => sum + c.latePenalty, 0) || 0,
+            conditionPenalty: item.conditionBreakdown?.reduce((sum, c) => sum + c.conditionPenalty, 0) || 0,
+            modalAwalUsed: item.conditionBreakdown?.find(c => c.reasonCode === 'lost')?.totalConditionPenalty,
+            totalItemPenalty: item.totalPenalty,
+            calculationMethod: item.conditionBreakdown?.[0]?.reasonCode === 'lost' ? 'modal_awal' : 
+                              item.conditionBreakdown?.[0]?.reasonCode === 'damaged' ? 'damage_fee' :
+                              item.conditionBreakdown?.[0]?.reasonCode === 'late' ? 'late_fee' : 'none',
+            description: PenaltyCalculator.generateMultiConditionDescription(item),
+            rateApplied: 5000, // Default daily rate
+          })),
+          summary: {
+            totalItems: penaltyResult.summary.totalItems,
+            totalConditions: penaltyResult.summary.totalQuantity,
+            onTimeItems: penaltyResult.summary.onTimeQuantity,
+            lateItems: penaltyResult.summary.lateQuantity,
+            damagedItems: penaltyResult.summary.damagedQuantity,
+            lostItems: penaltyResult.summary.lostQuantity,
+            totalQuantity: penaltyResult.summary.totalQuantity,
+            goodItems: penaltyResult.summary.onTimeQuantity, // Alias for onTimeItems
+            averageConditionsPerItem: penaltyResult.summary.totalQuantity / penaltyResult.summary.totalItems,
+          },
+          conditionBreakdown: [], // Not needed for client-side preview
+          calculationMetadata: {
+            calculatedAt: new Date().toISOString(),
+            processingMode: 'client-side' as const,
+            itemCount: calculationItems.length,
+            totalConditions: calculationItems.reduce((sum, item) => sum + item.conditions.length, 0),
+            hasLateItems: penaltyResult.totalLateDays > 0,
+            itemsProcessed: calculationItems.length,
+            conditionSplits: calculationItems.reduce((sum, item) => sum + item.conditions.length, 0),
+          }
         }
 
-        timer.end('Penalty calculation completed')
+        setPenaltyCalculation(penaltyData)
+
+        kasirLogger.penaltyCalc.info('calculatePenalties', 'Client-side penalty calculation completed', {
+          totalPenalty: penaltyResult.totalPenalty,
+          lateDays: penaltyResult.totalLateDays,
+          itemsProcessed: calculationItems.length,
+          conditionSplits: calculationItems.reduce((sum, item) => sum + item.conditions.length, 0),
+          processingMode: 'client-side'
+        })
+
+        timer.end('Client-side penalty calculation completed')
       } catch (error) {
         kasirLogger.penaltyCalc.error(
           'calculatePenalties',
-          'Penalty calculation failed',
+          'Client-side penalty calculation failed',
           error instanceof Error ? error : { error: String(error) },
         )
-        toast.error('Gagal menghitung penalty')
+        toast.error('Gagal menghitung penalty. Silakan coba lagi.')
+        setError('Gagal menghitung penalty. Silakan periksa kondisi barang dan coba lagi.')
       }
     } else {
       kasirLogger.validation.warn(
@@ -487,7 +565,7 @@ export function useMultiConditionReturn(): UseMultiConditionReturnResult {
         },
       )
     }
-  }, [validateAllItems, refetchPenalties, transaction?.kode, itemConditions, validation])
+  }, [validateAllItems, transaction, itemConditions, validation.errors, validation.canProceed])
 
   // Convert unified state to API request format (auto-detects single vs multi)
   const convertToApiRequest = useCallback((): EnhancedReturnRequest | null => {
