@@ -1,6 +1,5 @@
 export { ReturnProcessPage } from './ReturnProcessPage'
 export { TransactionLookup } from './TransactionLookup'
-export { PenaltyDisplay } from './PenaltyDisplay'
 export { ReturnConfirmation } from './ReturnConfirmation'
 
 // TSK-24 Phase-2: Unified Multi-Condition Components

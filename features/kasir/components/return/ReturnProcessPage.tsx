@@ -48,6 +48,7 @@ export function ReturnProcessPage({ onClose, initialTransactionId, kode }: Retur
     setCurrentStep,
     setTransaction,
     setItemCondition,
+    calculatePenalties,
     processEnhancedReturn,
     resetProcess,
     canProceedToNext: canProceedToNextStep,
@@ -64,31 +65,57 @@ export function ReturnProcessPage({ onClose, initialTransactionId, kode }: Retur
   // Set loaded transaction automatically (with type validation)
   useEffect(() => {
     if (loadedTransaction && !transaction) {
+      const processableItems =
+        loadedTransaction.items?.filter(
+          (item) => item.jumlahDiambil > 0 && item.statusKembali !== 'lengkap',
+        ) || []
+
       kasirLogger.returnProcess.info(
         'transaction loading',
         'Transaction loaded for return process',
         {
           transactionId: loadedTransaction.kode,
           itemCount: loadedTransaction.items?.length || 0,
+          processableItemCount: processableItems.length,
           hasItems: !!loadedTransaction.items,
           transactionStatus: loadedTransaction.status,
+          loadingSource: transactionId ? 'url-parameter' : 'prop',
+          itemStatuses:
+            loadedTransaction.items?.map((item) => ({
+              id: item.id,
+              productName: item.produk?.name,
+              jumlahDiambil: item.jumlahDiambil,
+              statusKembali: item.statusKembali,
+              canReturn: item.jumlahDiambil > 0 && item.statusKembali !== 'lengkap',
+            })) || [],
         },
       )
 
       // Ensure transaction has required items array for return processing
       if (loadedTransaction.items) {
         setTransaction(loadedTransaction as TransaksiDetail) // Safe cast - items verified
+
+        kasirLogger.returnProcess.info(
+          'transaction loading',
+          'Transaction set successfully - ready for return processing',
+          {
+            transactionId: loadedTransaction.kode,
+            processableItemCount: processableItems.length,
+            hasProcessableItems: processableItems.length > 0,
+          },
+        )
       } else {
         kasirLogger.returnProcess.error(
           'transaction loading',
           'Loaded transaction missing items array for return processing',
           {
             transactionId: loadedTransaction.kode,
+            transactionStructure: Object.keys(loadedTransaction),
           },
         )
       }
     }
-  }, [loadedTransaction, transaction, setTransaction])
+  }, [loadedTransaction, transaction, setTransaction, transactionId])
 
   // Step configuration with icons - Simplified 3-step workflow
   const steps = [
@@ -133,18 +160,49 @@ export function ReturnProcessPage({ onClose, initialTransactionId, kode }: Retur
     }
   }
 
-  const handleNext = () => {
+  const handleNext = async () => {
+    const nextStep = currentStep + 1
+    const stepConfig = steps.find((s) => s.id === nextStep)
+
     kasirLogger.returnProcess.debug('handleNext', 'User navigating forward in return process', {
       currentStep,
-      nextStep: currentStep + 1,
+      nextStep,
       maxStep: steps.length,
       transactionId: transaction?.kode,
       canProceed: canProceedToNextStep(currentStep),
       isLastStep: currentStep >= steps.length,
+      stepTitle: stepConfig?.title,
+      validationPassed: canProceedToNextStep(currentStep),
     })
 
     if (currentStep < steps.length) {
-      setCurrentStep(currentStep + 1)
+      setCurrentStep(nextStep)
+
+      // Log step entry for detailed flow tracking
+      kasirLogger.returnProcess.info('handleNext', `Entered step: ${stepConfig?.title}`, {
+        step: nextStep,
+        stepTitle: stepConfig?.title,
+        stepDescription: stepConfig?.description,
+        transactionId: transaction?.kode,
+        itemCount: transaction?.items?.length || 0,
+      })
+
+      // Auto-calculate penalties when entering step 2 
+      if (nextStep === 2) {
+        kasirLogger.penaltyCalc.info('handleNext', 'Auto-triggering penalty calculation for step 2', {
+          transactionId: transaction?.kode,
+          itemConditionsCount: Object.keys(itemConditions).length,
+        })
+        
+        try {
+          await calculatePenalties()
+        } catch (error) {
+          kasirLogger.penaltyCalc.error('handleNext', 'Auto penalty calculation failed', {
+            transactionId: transaction?.kode,
+            error: error instanceof Error ? error.message : String(error),
+          })
+        }
+      }
     }
   }
 
@@ -153,6 +211,20 @@ export function ReturnProcessPage({ onClose, initialTransactionId, kode }: Retur
   }
 
   const handleProcessComplete = () => {
+    kasirLogger.returnProcess.info(
+      'handleProcessComplete',
+      'Return process completed - resetting and closing',
+      {
+        transactionId: transaction?.kode,
+        completedStep: currentStep,
+        totalSteps: steps.length,
+        hasItemConditions: Object.keys(itemConditions).length > 0,
+        itemConditionCount: Object.keys(itemConditions).length,
+        hasPenaltyCalculation: !!penaltyCalculation,
+        penaltyAmount: penaltyCalculation?.totalPenalty || 0,
+      },
+    )
+
     resetProcess()
     handleClose()
   }
@@ -161,9 +233,50 @@ export function ReturnProcessPage({ onClose, initialTransactionId, kode }: Retur
   const handleItemConditionChange = useCallback(
     // eslint-disable-next-line
     (itemId: string, condition: any) => {
+      kasirLogger.returnProcess.debug('handleItemConditionChange', 'Item condition change requested - ENTRY', {
+        itemId,
+        conditionMode: condition?.mode,
+        conditionCount: condition?.conditions?.length || 0,
+        isValid: condition?.isValid,
+        totalQuantity: condition?.totalQuantity,
+        remainingQuantity: condition?.remainingQuantity,
+        hasValidationError: !!condition?.validationError,
+        transactionId: transaction?.kode,
+        hasCondition: !!condition,
+        conditionType: typeof condition,
+        hasSetItemConditionFunc: typeof setItemCondition === 'function',
+      })
+
+      if (!condition) {
+        kasirLogger.returnProcess.warn('handleItemConditionChange', 'Null condition received', {
+          itemId,
+          transactionId: transaction?.kode,
+        })
+        return
+      }
+
+      if (!itemId) {
+        kasirLogger.returnProcess.warn('handleItemConditionChange', 'Empty itemId received', {
+          condition: condition ? Object.keys(condition) : 'null',
+          transactionId: transaction?.kode,
+        })
+        return
+      }
+
+      kasirLogger.returnProcess.debug('handleItemConditionChange', 'Calling setItemCondition', {
+        itemId,
+        transactionId: transaction?.kode,
+        conditionStructure: condition ? Object.keys(condition) : 'null',
+      })
+
       setItemCondition(itemId, condition)
+
+      kasirLogger.returnProcess.debug('handleItemConditionChange', 'setItemCondition call completed', {
+        itemId,
+        transactionId: transaction?.kode,
+      })
     },
-    [setItemCondition],
+    [setItemCondition, transaction?.kode],
   )
 
   return (
@@ -372,7 +485,17 @@ export function ReturnProcessPage({ onClose, initialTransactionId, kode }: Retur
                 itemConditions={itemConditions}
                 penaltyCalculation={penaltyCalculation}
                 onPenaltyCalculated={(calculation) => {
-                  // Handle penalty calculation result
+                  kasirLogger.penaltyCalc.info(
+                    'onPenaltyCalculated',
+                    'Penalty calculation completed',
+                    {
+                      transactionId: transaction.kode,
+                      totalPenalty: calculation?.totalPenalty || 0,
+                      calculationMode: 'unified', // MultiConditionPenaltyResult doesn't have processingMode
+                      itemsWithPenalty: calculation?.breakdown?.length || 0,
+                      hasCalculation: !!calculation,
+                    },
+                  )
                   console.log('Penalty calculated:', calculation)
                 }}
                 isCalculating={isProcessing}

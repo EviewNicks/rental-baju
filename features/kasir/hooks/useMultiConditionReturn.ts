@@ -228,14 +228,80 @@ export function useMultiConditionReturn(): UseMultiConditionReturnResult {
   // Set item condition with validation (OPTIMIZED: batched state updates)
   const setItemCondition = useCallback(
     (itemId: string, condition: EnhancedItemCondition) => {
+      kasirLogger.stateManagement.debug(
+        'setItemCondition',
+        'Updating item condition state - ENTRY',
+        {
+          itemId,
+          conditionMode: condition?.mode,
+          conditionCount: condition?.conditions?.length || 0,
+          totalQuantity: condition?.totalQuantity,
+          remainingQuantity: condition?.remainingQuantity,
+          isValid: condition?.isValid,
+          transactionId: transaction?.kode,
+          conditionStructure: condition ? Object.keys(condition) : 'null',
+          hasConditions: condition && condition.conditions && condition.conditions.length > 0,
+        },
+      )
+
+      // Validate inputs
+      if (!condition) {
+        kasirLogger.stateManagement.error(
+          'setItemCondition',
+          'Null condition passed to setItemCondition',
+          { itemId, transactionId: transaction?.kode }
+        )
+        return
+      }
+
+      if (!itemId) {
+        kasirLogger.stateManagement.error(
+          'setItemCondition',
+          'Empty itemId passed to setItemCondition',
+          { condition: condition ? Object.keys(condition) : 'null', transactionId: transaction?.kode }
+        )
+        return
+      }
+
       // Calculate validation once
       const itemValidation = validateItemCondition(condition)
 
+      kasirLogger.validation.debug(
+        'setItemCondition',
+        'Item condition validation calculated',
+        {
+          itemId,
+          isValid: itemValidation.isValid,
+          remaining: itemValidation.remaining,
+          totalReturned: itemValidation.totalReturned,
+          maxAllowed: itemValidation.maxAllowed,
+          hasError: !!itemValidation.error,
+          warningCount: itemValidation.warnings?.length || 0,
+        },
+      )
+
       // Batch state updates to reduce re-renders
-      setItemConditions((prev) => ({
-        ...prev,
-        [itemId]: condition,
-      }))
+      setItemConditions((prev) => {
+        const updated = {
+          ...prev,
+          [itemId]: condition,
+        }
+        
+        kasirLogger.stateManagement.debug(
+          'setItemCondition',
+          'ItemConditions state will be updated',
+          {
+            itemId,
+            previousCount: Object.keys(prev).length,
+            newCount: Object.keys(updated).length,
+            allItemIds: Object.keys(updated),
+            transactionId: transaction?.kode,
+            conditionValid: condition?.isValid,
+          }
+        )
+        
+        return updated
+      })
 
       setValidation((prev) => ({
         ...prev,
@@ -247,7 +313,7 @@ export function useMultiConditionReturn(): UseMultiConditionReturnResult {
 
       setError(null)
     },
-    [validateItemCondition],
+    [validateItemCondition, transaction?.kode],
   )
 
   // Removed setItemMode - no longer needed with unified architecture
@@ -255,13 +321,28 @@ export function useMultiConditionReturn(): UseMultiConditionReturnResult {
 
   // Validate all items and update form validation (OPTIMIZED: stable dependencies)
   const validateAllItems = useCallback(() => {
-    if (!transaction) return false
+    if (!transaction) {
+      kasirLogger.validation.warn('validateAllItems', 'No transaction available for validation', {})
+      return false
+    }
 
     const itemValidations: Record<string, ConditionValidationResult> = {}
     const errors: string[] = []
     const warnings: string[] = []
 
     let allValid = true
+    const itemConditionCount = Object.keys(itemConditions).length
+
+    kasirLogger.validation.debug(
+      'validateAllItems',
+      'Starting form validation for all returnable items',
+      {
+        transactionId: transaction.kode,
+        itemConditionCount,
+        transactionItemCount: transaction.items?.length || 0,
+        returnableItemCount: transaction.items?.filter((item) => item.jumlahDiambil > 0 && item.statusKembali !== 'lengkap')?.length || 0,
+      },
+    )
 
     for (const [itemId, condition] of Object.entries(itemConditions)) {
       const itemValidation = validateItemCondition(condition)
@@ -279,14 +360,28 @@ export function useMultiConditionReturn(): UseMultiConditionReturnResult {
       }
     }
 
-    // Check that all transaction items have conditions
-    const transactionItemIds = transaction.items?.map((item) => item.id) || []
+    // Check that all RETURNABLE transaction items have conditions (only items shown in UI)
+    const returnableItems = transaction.items?.filter((item) => item.jumlahDiambil > 0 && item.statusKembali !== 'lengkap') || []
+    const transactionItemIds = returnableItems.map((item) => item.id)
     const conditionItemIds = Object.keys(itemConditions)
     const missingItems = transactionItemIds.filter((id) => !conditionItemIds.includes(id))
 
     if (missingItems.length > 0) {
       allValid = false
       errors.push(`Kondisi belum ditentukan untuk ${missingItems.length} item`)
+      
+      kasirLogger.validation.warn(
+        'validateAllItems',
+        'Missing item conditions detected',
+        {
+          transactionId: transaction.kode,
+          missingItemsCount: missingItems.length,
+          missingItemIds: missingItems,
+          totalReturnableItems: transactionItemIds.length,
+          itemsWithConditions: conditionItemIds.length,
+          returnableItems: returnableItems.map(item => ({ id: item.id, name: item.produk?.name })),
+        },
+      )
     }
 
     const newValidation: MultiConditionFormValidation = {
@@ -297,10 +392,23 @@ export function useMultiConditionReturn(): UseMultiConditionReturnResult {
       warnings,
     }
 
+    kasirLogger.validation.info(
+      'validateAllItems',
+      'Form validation completed',
+      {
+        transactionId: transaction.kode,
+        isFormValid: newValidation.isFormValid,
+        canProceed: newValidation.canProceed,
+        errorCount: errors.length,
+        warningCount: warnings.length,
+        allItemsValid: allValid,
+        validatedItemCount: Object.keys(itemValidations).length,
+      },
+    )
+
     setValidation(newValidation)
     return newValidation.canProceed
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [transaction, validateItemCondition]) // STABILITY FIX: removed itemConditions dependency
+  }, [transaction, validateItemCondition, itemConditions]) // FIXED: itemConditions must be included since function uses it
 
   // Calculate penalties for current conditions
   const calculatePenalties = useCallback(async () => {
@@ -431,22 +539,73 @@ export function useMultiConditionReturn(): UseMultiConditionReturnResult {
       errors?: string[]
       warnings?: string[]
     }> => {
+      kasirLogger.returnProcess.info(
+        'processEnhancedReturn',
+        'Starting enhanced return processing',
+        {
+          transactionId: transaction?.kode,
+          hasNotes: !!notes,
+          itemConditionsCount: Object.keys(itemConditions).length,
+        },
+      )
+
       if (!transaction) {
+        kasirLogger.returnProcess.error(
+          'processEnhancedReturn',
+          'Cannot process return - no transaction available',
+          {}
+        )
         throw new Error('Transaksi tidak ditemukan')
       }
 
       if (!validateAllItems()) {
+        kasirLogger.validation.error(
+          'processEnhancedReturn',
+          'Cannot process return - validation failed',
+          {
+            transactionId: transaction.kode,
+            validationErrors: validation.errors,
+            canProceed: validation.canProceed,
+          },
+        )
         throw new Error('Kondisi barang belum valid')
       }
 
       const apiRequest = convertToApiRequest()
       if (!apiRequest) {
+        kasirLogger.returnProcess.error(
+          'processEnhancedReturn',
+          'Failed to prepare API request for return processing',
+          {
+            transactionId: transaction.kode,
+            hasItemConditions: Object.keys(itemConditions).length > 0,
+          },
+        )
         throw new Error('Gagal menyiapkan data pengembalian')
       }
+
+      kasirLogger.apiCalls.debug(
+        'processEnhancedReturn',
+        'API request prepared successfully',
+        {
+          transactionId: transaction.kode,
+          itemCount: apiRequest.items.length,
+          hasNotes: !!notes,
+          requestSize: JSON.stringify(apiRequest).length,
+        },
+      )
 
       // Add notes if provided
       if (notes) {
         apiRequest.catatan = notes
+        kasirLogger.returnProcess.debug(
+          'processEnhancedReturn',
+          'Notes added to return request',
+          {
+            transactionId: transaction.kode,
+            notesLength: notes.length,
+          },
+        )
       }
 
       // Deduplication logic (same as original)
@@ -455,11 +614,36 @@ export function useMultiConditionReturn(): UseMultiConditionReturnResult {
       const timeDiff = now - lastRequestRef.current.timestamp
       const DEDUPLICATION_WINDOW = 30000 // 30 seconds
 
+      kasirLogger.apiCalls.debug(
+        'processEnhancedReturn',
+        'Deduplication check',
+        {
+          transactionId: transaction.kode,
+          currentFingerprint: requestFingerprint.substring(0, 50) + '...',
+          lastFingerprint: lastRequestRef.current.fingerprint.substring(0, 50) + '...',
+          timeDiffMs: timeDiff,
+          deduplicationWindowMs: DEDUPLICATION_WINDOW,
+          isDuplicate: lastRequestRef.current.fingerprint === requestFingerprint && timeDiff < DEDUPLICATION_WINDOW,
+        },
+      )
+
       if (
         lastRequestRef.current.fingerprint === requestFingerprint &&
         timeDiff < DEDUPLICATION_WINDOW
       ) {
         const remainingSeconds = Math.ceil((DEDUPLICATION_WINDOW - timeDiff) / 1000)
+        
+        kasirLogger.apiCalls.warn(
+          'processEnhancedReturn',
+          'Duplicate request blocked by deduplication',
+          {
+            transactionId: transaction.kode,
+            timeDiffMs: timeDiff,
+            remainingSeconds,
+            deduplicationWindowMs: DEDUPLICATION_WINDOW,
+          },
+        )
+
         toast.warning(`Request sedang diproses. Harap tunggu ${remainingSeconds} detik.`)
         throw new Error('Duplicate request blocked')
       }
@@ -483,7 +667,7 @@ export function useMultiConditionReturn(): UseMultiConditionReturnResult {
         lastRequestRef.current.promise = null
       }
     },
-    [transaction, validateAllItems, convertToApiRequest, processReturnMutation],
+    [transaction, validateAllItems, convertToApiRequest, processReturnMutation, validation.errors, validation.canProceed, itemConditions],
   )
 
   // Check if can proceed to next step
@@ -525,13 +709,12 @@ export function useMultiConditionReturn(): UseMultiConditionReturnResult {
     }
   }, [transaction, itemConditions])
 
-  // Auto-validate when item conditions change (FIXED: removed validateAllItems from deps)
+  // Auto-validate when item conditions change
   useEffect(() => {
     if (Object.keys(itemConditions).length > 0) {
       validateAllItems()
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [itemConditions]) // CRITICAL FIX: removed validateAllItems to break infinite loop
+  }, [itemConditions, validateAllItems]) // FIXED: validateAllItems is now stable with correct dependencies
 
   // Reset process to initial state
   const resetProcess = useCallback(() => {

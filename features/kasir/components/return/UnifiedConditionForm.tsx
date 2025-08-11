@@ -46,6 +46,21 @@ export function UnifiedConditionForm({
   const [currentCondition, setCurrentCondition] = useState<EnhancedItemCondition>(initialCondition)
   const [showSuggestion, setShowSuggestion] = useState(false)
 
+  // Debug logging for component initialization
+  useEffect(() => {
+    kasirLogger.returnProcess.debug(
+      'UnifiedConditionForm',
+      'Form component initialized',
+      {
+        itemId: item.id,
+        productName: item.produk?.name,
+        totalQuantity: item.jumlahDiambil,
+        initialMode: initialCondition.mode,
+        hasExistingValue: !!value,
+      },
+    )
+  }, [item.id, item.produk?.name, item.jumlahDiambil, initialCondition.mode, value])
+
   // Validation logic
   const validation = useMemo((): ConditionValidationResult => {
     const totalReturned = currentCondition.conditions.reduce(
@@ -77,7 +92,8 @@ export function UnifiedConditionForm({
       warnings.push('Banyak kondisi berbeda - pastikan sudah sesuai kebutuhan')
     }
 
-    return {
+    // Debug logging for validation state changes
+    const validationResult = {
       isValid: !error,
       remaining,
       totalReturned,
@@ -85,7 +101,25 @@ export function UnifiedConditionForm({
       error,
       warnings: warnings.length > 0 ? warnings : undefined,
     }
-  }, [currentCondition])
+
+    kasirLogger.validation.debug(
+      'validation',
+      'Form validation calculated',
+      {
+        itemId: item.id,
+        conditionCount: currentCondition.conditions.length,
+        totalReturned,
+        remaining,
+        maxAllowed: currentCondition.totalQuantity,
+        isValid: validationResult.isValid,
+        hasError: !!error,
+        warningCount: warnings.length,
+        validationState: error ? 'error' : validationResult.isValid && remaining === 0 ? 'complete' : totalReturned > 0 ? 'partial' : 'empty',
+      },
+    )
+
+    return validationResult
+  }, [currentCondition, item.id])
 
   // Smart suggestion logic - show when partial quantity entered and room for more conditions
   const shouldShowSuggestion = useMemo(() => {
@@ -96,8 +130,25 @@ export function UnifiedConditionForm({
     const firstCondition = currentCondition.conditions[0]
     if (!firstCondition?.kondisiAkhir || !firstCondition?.jumlahKembali) return false // Invalid first condition
 
-    return validation.remaining > 0 && validation.remaining < currentCondition.totalQuantity
-  }, [currentCondition, validation])
+    const shouldShow = validation.remaining > 0 && validation.remaining < currentCondition.totalQuantity
+
+    // Debug logging for progressive disclosure decision
+    kasirLogger.returnProcess.debug(
+      'shouldShowSuggestion',
+      'Progressive disclosure evaluation',
+      {
+        itemId: item.id,
+        conditionCount: currentCondition.conditions.length,
+        remaining: validation.remaining,
+        totalReturned: validation.totalReturned,
+        totalQuantity: currentCondition.totalQuantity,
+        shouldShow,
+        firstConditionValid: !!(firstCondition?.kondisiAkhir && firstCondition?.jumlahKembali),
+      },
+    )
+
+    return shouldShow
+  }, [currentCondition, validation, item.id])
 
   // Update parent when condition changes
   useEffect(() => {
@@ -107,7 +158,33 @@ export function UnifiedConditionForm({
       remainingQuantity: validation.remaining,
       validationError: validation.error,
     }
+
+    kasirLogger.returnProcess.debug(
+      'UnifiedConditionForm',
+      'onChange callback will be called',
+      {
+        itemId: item.id,
+        productName: item.produk?.name,
+        isValid: validation.isValid,
+        remainingQuantity: validation.remaining,
+        totalReturned: validation.totalReturned,
+        hasError: !!validation.error,
+        conditionsCount: currentCondition.conditions.length,
+        hasOnChangeCallback: typeof onChange === 'function',
+        conditionStructure: Object.keys(updatedCondition),
+      },
+    )
+
     onChange(updatedCondition)
+
+    kasirLogger.returnProcess.debug(
+      'UnifiedConditionForm',
+      'onChange callback completed',
+      {
+        itemId: item.id,
+        productName: item.produk?.name,
+      },
+    )
     //eslint-disable-next-line
   }, [currentCondition, validation])
 

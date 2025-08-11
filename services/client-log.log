@@ -1,26 +1,29 @@
-[{
-	"resource": "/d:/.work/rental-software/features/kasir/components/return/TransactionReturnPageClient.tsx",
-	"owner": "typescript",
-	"code": "2307",
-	"severity": 8,
-	"message": "Cannot find module '@/features/kasir/components/return' or its corresponding type declarations.",
-	"source": "ts",
-	"startLineNumber": 4,
-	"startColumn": 35,
-	"endLineNumber": 4,
-	"endColumn": 71,
-	"modelVersionId": 1
-},{
-	"resource": "/d:/.work/rental-software/features/kasir/components/return/TransactionReturnPageClient.tsx",
-	"owner": "typescript",
-	"code": "2686",
-	"severity": 8,
-	"message": "'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.",
-	"source": "ts",
-	"startLineNumber": 19,
-	"startColumn": 6,
-	"endLineNumber": 19,
-	"endColumn": 23,
-	"modelVersionId": 1
-}]
-
+[Fast Refresh] done in NaNms
+logger.ts:196 2025-08-11T05:01:37.832Z [INFO] [kasir:return-process][transaction loading] [KASIR] Transaction loaded for return process{  "transactionId": "TXN-20250809-001",  "itemCount": 2,  "processableItemCount": 2,  "hasItems": true,  "transactionStatus": "active",  "loadingSource": "url-parameter",  "itemStatuses": [    {      "id": "b3221755-304e-4a81-93f2-8589747c9f6b",      "productName": "Dress Elegant Red",      "jumlahDiambil": 2,      "statusKembali": "belum",      "canReturn": true    },    {      "id": "a2ff8f31-2f9e-4a07-8d0b-ac7446aa8f0c",      "productName": "Baju Merah",      "jumlahDiambil": 2,      "statusKembali": "belum",      "canReturn": true    }  ],  "performance": {    "timestamp": 1754888497832,    "memory": null  }}
+logger.ts:196 2025-08-11T05:01:37.832Z [INFO] [kasir:return-process][transaction loading] [KASIR] Transaction set successfully - ready for return processing{  "transactionId": "TXN-20250809-001",  "processableItemCount": 2,  "hasProcessableItems": true,  "performance": {    "timestamp": 1754888497832,    "memory": null  }}
+logger.ts:196 2025-08-11T05:01:37.890Z [INFO] [kasir:validation][validateAllItems] [KASIR] Form validation completed{  "transactionId": "TXN-20250809-001",  "isFormValid": false,  "canProceed": false,  "errorCount": 2,  "warningCount": 0,  "allItemsValid": false,  "validatedItemCount": 2,  "performance": {    "timestamp": 1754888497890,    "memory": null  }}
+logger.ts:196 2025-08-11T05:01:41.535Z [INFO] [kasir:validation][validateAllItems] [KASIR] Form validation completed{  "transactionId": "TXN-20250809-001",  "isFormValid": false,  "canProceed": false,  "errorCount": 1,  "warningCount": 0,  "allItemsValid": false,  "validatedItemCount": 2,  "performance": {    "timestamp": 1754888501535,    "memory": null  }}
+logger.ts:196 2025-08-11T05:01:44.094Z [INFO] [kasir:validation][validateAllItems] [KASIR] Form validation completed{  "transactionId": "TXN-20250809-001",  "isFormValid": true,  "canProceed": true,  "errorCount": 0,  "warningCount": 0,  "allItemsValid": true,  "validatedItemCount": 2,  "performance": {    "timestamp": 1754888504094,    "memory": null  }}
+logger.ts:196 2025-08-11T05:01:47.216Z [INFO] [kasir:validation][validateAllItems] [KASIR] Form validation completed{  "transactionId": "TXN-20250809-001",  "isFormValid": true,  "canProceed": true,  "errorCount": 0,  "warningCount": 1,  "allItemsValid": true,  "validatedItemCount": 2,  "performance": {    "timestamp": 1754888507216,    "memory": null  }}
+logger.ts:196 2025-08-11T05:01:49.273Z [INFO] [kasir:ui-interaction][handleAddCondition] [KASIR] New condition added{  "itemId": "b3221755-304e-4a81-93f2-8589747c9f6b",  "currentConditionsCount": 1,  "remainingQuantity": 1,  "performance": {    "timestamp": 1754888509273,    "memory": null  }}
+logger.ts:196 2025-08-11T05:01:49.331Z [INFO] [kasir:validation][validateAllItems] [KASIR] Form validation completed{  "transactionId": "TXN-20250809-001",  "isFormValid": false,  "canProceed": false,  "errorCount": 1,  "warningCount": 0,  "allItemsValid": false,  "validatedItemCount": 2,  "performance": {    "timestamp": 1754888509331,    "memory": null  }}
+logger.ts:196 2025-08-11T05:01:52.131Z [INFO] [kasir:validation][validateAllItems] [KASIR] Form validation completed{  "transactionId": "TXN-20250809-001",  "isFormValid": true,  "canProceed": true,  "errorCount": 0,  "warningCount": 0,  "allItemsValid": true,  "validatedItemCount": 2,  "performance": {    "timestamp": 1754888512131,    "memory": null  }}
+logger.ts:196 2025-08-11T05:01:55.111Z [INFO] [kasir:return-process][handleNext] [KASIR] Entered step: Hitung Penalty{  "step": 2,  "stepTitle": "Hitung Penalty",  "stepDescription": "Review penalty dan denda",  "transactionId": "TXN-20250809-001",  "itemCount": 2,  "performance": {    "timestamp": 1754888515111,    "memory": null  }}
+logger.ts:196 2025-08-11T05:01:55.111Z [INFO] [kasir:penalty-calc][handleNext] [KASIR] Auto-triggering penalty calculation for step 2{  "transactionId": "TXN-20250809-001",  "itemConditionsCount": 2,  "performance": {    "timestamp": 1754888515111,    "memory": null  }}
+logger.ts:196 2025-08-11T05:01:55.111Z [INFO] [kasir:validation][validateAllItems] [KASIR] Form validation completed{  "transactionId": "TXN-20250809-001",  "isFormValid": true,  "canProceed": true,  "errorCount": 0,  "warningCount": 0,  "allItemsValid": true,  "validatedItemCount": 2,  "performance": {    "timestamp": 1754888515111,    "memory": null  }}
+logger.ts:196 2025-08-11T05:01:55.112Z [INFO] [kasir:penalty-calc][calculatePenalties] [KASIR] Starting penalty calculation{  "transactionId": "TXN-20250809-001",  "itemCount": 2,  "performance": {    "timestamp": 1754888515112,    "memory": null  }}
+logger.ts:196 2025-08-11T05:01:55.113Z [INFO] [kasir:api-calls][calculateEnhancedPenalties] [KASIR] Starting enhanced penalty calculation{  "transactionId": "TXN-20250809-001",  "itemCount": 2,  "totalConditions": 3,  "hasMultiConditions": true,  "performance": {    "timestamp": 1754888515113,    "memory": null  }}
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 1863ms
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 162ms
+:3000/api/kasir/transaksi/TXN-20250809-001/pengembalian/calculate:1  Failed to load resource: the server responded with a status of 404 (Not Found)Understand this error
+hook.js:608 2025-08-11T05:01:57.217Z [ERROR] [kasir:penalty-calc][calculateEnhancedPenalties] [KASIR] Enhanced penalty calculation failed{  "name": "KasirApiError",  "message": "Terjadi kesalahan tidak terduga",  "stack": "KasirApiError: Terjadi kesalahan tidak terduga\n    at apiRequest (http://localhost:3000/_next/static/chunks/_1273161a._.js:4826:15)\n    at async KasirApi.calculateEnhancedPenalties (http://localhost:3000/_next/static/chunks/_1273161a._.js:4975:28)",  "performance": {    "timestamp": 1754888517217,    "memory": null  }}
+overrideMethod @ hook.js:608Understand this error
+logger.ts:196 2025-08-11T05:01:58.228Z [INFO] [kasir:api-calls][calculateEnhancedPenalties] [KASIR] Starting enhanced penalty calculation{  "transactionId": "TXN-20250809-001",  "itemCount": 2,  "totalConditions": 3,  "hasMultiConditions": true,  "performance": {    "timestamp": 1754888518228,    "memory": null  }}
+:3000/api/kasir/transaksi/TXN-20250809-001/pengembalian/calculate:1  Failed to load resource: the server responded with a status of 404 (Not Found)Understand this error
+hook.js:608 2025-08-11T05:01:58.414Z [ERROR] [kasir:penalty-calc][calculateEnhancedPenalties] [KASIR] Enhanced penalty calculation failed{  "name": "KasirApiError",  "message": "Terjadi kesalahan tidak terduga",  "stack": "KasirApiError: Terjadi kesalahan tidak terduga\n    at apiRequest (http://localhost:3000/_next/static/chunks/_1273161a._.js:4826:15)\n    at async KasirApi.calculateEnhancedPenalties (http://localhost:3000/_next/static/chunks/_1273161a._.js:4975:28)",  "performance": {    "timestamp": 1754888518414,    "memory": null  }}
+overrideMethod @ hook.js:608Understand this error
+logger.ts:196 2025-08-11T05:01:58.415Z [INFO] [kasir:performance][calculatePenalties] Penalty calculation completed{  "performance": {    "label": "[KASIR] Penalty calculation",    "duration": "3303ms"  }}
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 318ms
