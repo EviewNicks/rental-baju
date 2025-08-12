@@ -145,4 +145,186 @@
         ]
     },
     "message": "Detail transaksi berhasil diambil"
+}2025-08-12T01:43:55.176Z [ERROR] [API][PUT-pengembalian] Unified validation failed
+{
+  "requestId": "req-1754963033804-xq4mmkrcf",
+  "transactionCode": "TXN-20250809-001",
+  "format": "legacy",
+  "validationErrors": [
+    {
+      "field": "items.0.conditions.0.kondisiAkhir",
+      "message": "Kondisi akhir minimal 5 karakter untuk deskripsi yang jelas",
+      "code": "too_small"
+    }
+  ],
+  "requestBody": {
+    "items": [
+      {
+        "itemId": "b3221755-304e-4a81-93f2-8589747c9f6b",
+        "kondisiAkhir": "baik",
+        "jumlahKembali": 2
+      },
+      {
+        "itemId": "a2ff8f31-2f9e-4a07-8d0b-ac7446aa8f0c",
+        "kondisiAkhir": "kotor",
+        "jumlahKembali": 2
+      }
+    ],
+    "tglKembali": "2025-08-12T01:43:47.013Z",
+    "transactionId": "TXN-20250809-001"
+  },
+  "performance": {
+    "timestamp": 1754963035176,
+    "memory": {
+      "rss": 647073792,
+      "heapTotal": 345870336,
+      "heapUsed": 333365440,
+      "external": 6038863,
+      "arrayBuffers": 2033949
+    }
+  }
+}
+2025-08-12T01:43:55.206Z [ERROR] [API][PUT-pengembalian] API request failed
+{
+  "requestId": "req-1754963033804-xq4mmkrcf",
+  "transactionCode": "TXN-20250809-001",
+  "totalApiDuration": 1386,
+  "error": {
+    "name": "ZodError",
+    "message": "[\n  {\n    \"origin\": \"string\",\n    \"code\": \"too_small\",\n    \"minimum\": 5,\n    \"inclusive\": true,\n    \"path\": [\n      \"items\",\n      0,\n      \"conditions\",\n      0,\n      \"kondisiAkhir\"\n    ],\n    \"message\": \"Kondisi akhir minimal 5 karakter untuk deskripsi yang jelas\"\n  }\n]",
+    "stack": "ZodError: [\n  {\n    \"origin\": \"string\",\n    \"code\": \"too_small\",\n    \"minimum\": 5,\n    \"inclusive\": true,\n    \"path\": [\n      \"items\",\n      0,\n      \"conditions\",\n      0,\n      \"kondisiAkhir\"\n    ],\n    \"message\": \"Kondisi akhir minimal 5 karakter untuk deskripsi yang jelas\"\n  }\n]\n    at PUT (D:\\.work\\rental-software\\.next\\server\\chunks\\[root-of-the-server]__6645e8c4._.js:3734:212)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async AppRouteRouteModule.do (D:\\.work\\rental-software\\node_modules\\next\\dist\\compiled\\next-server\\app-route-turbo.runtime.dev.js:5:38782)\n    at async AppRouteRouteModule.handle (D:\\.work\\rental-software\\node_modules\\next\\dist\\compiled\\next-server\\app-route-turbo.runtime.dev.js:5:45984)\n    at async responseGenerator (D:\\.work\\rental-software\\.next\\server\\chunks\\node_modules_next_86b4de74._.js:13538:38)\n    at async AppRouteRouteModule.handleResponse (D:\\.work\\rental-software\\node_modules\\next\\dist\\compiled\\next-server\\app-route-turbo.runtime.dev.js:1:183770)\n    at async handleResponse (D:\\.work\\rental-software\\.next\\server\\chunks\\node_modules_next_86b4de74._.js:13600:32)\n    at async handler (D:\\.work\\rental-software\\.next\\server\\chunks\\node_modules_next_86b4de74._.js:13652:13)\n    at async doRender (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:1587:34)\n    at async DevServer.renderToResponseWithComponentsImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:1929:13)\n    at async DevServer.renderPageComponent (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:2395:24)\n    at async DevServer.renderToResponseImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:2435:32)\n    at async DevServer.pipeImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:1035:25)\n    at async NextNodeServer.handleCatchallRenderRequest (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\next-server.js:393:17)\n    at async DevServer.handleRequestImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:925:17)\n    at async D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\dev\\next-dev-server.js:398:20\n    at async Span.traceAsyncFn (D:\\.work\\rental-software\\node_modules\\next\\dist\\trace\\trace.js:157:20)\n    at async DevServer.handleRequest (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\dev\\next-dev-server.js:394:24)\n    at async invokeRender (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\lib\\router-server.js:239:21)\n    at async handleRequest (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\lib\\router-server.js:436:24)\n    at async requestHandlerImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\lib\\router-server.js:464:13)\n    at async Server.requestListener (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\lib\\start-server.js:218:13)"
+  },
+  "timestamp": "2025-08-12T01:43:55.206Z",
+  "performance": {
+    "timestamp": 1754963035206,
+    "memory": {
+      "rss": 647712768,
+      "heapTotal": 345870336,
+      "heapUsed": 333552984,
+      "external": 6038863,
+      "arrayBuffers": 2033949
+    }
+  }
+}
+2025-08-12T01:43:58.058Z [ERROR] [API][PUT-pengembalian] Unified validation failed
+{
+  "requestId": "req-1754963037686-1nqbe0vod",
+  "transactionCode": "TXN-20250809-001",
+  "format": "legacy",
+  "validationErrors": [
+    {
+      "field": "items.0.conditions.0.kondisiAkhir",
+      "message": "Kondisi akhir minimal 5 karakter untuk deskripsi yang jelas",
+      "code": "too_small"
+    }
+  ],
+  "requestBody": {
+    "items": [
+      {
+        "itemId": "b3221755-304e-4a81-93f2-8589747c9f6b",
+        "kondisiAkhir": "baik",
+        "jumlahKembali": 2
+      },
+      {
+        "itemId": "a2ff8f31-2f9e-4a07-8d0b-ac7446aa8f0c",
+        "kondisiAkhir": "kotor",
+        "jumlahKembali": 2
+      }
+    ],
+    "tglKembali": "2025-08-12T01:43:47.013Z",
+    "transactionId": "TXN-20250809-001"
+  },
+  "performance": {
+    "timestamp": 1754963038058,
+    "memory": {
+      "rss": 687341568,
+      "heapTotal": 389165056,
+      "heapUsed": 342497504,
+      "external": 4496927,
+      "arrayBuffers": 495396
+    }
+  }
+}
+2025-08-12T01:43:58.084Z [ERROR] [API][PUT-pengembalian] API request failed
+{
+  "requestId": "req-1754963037686-1nqbe0vod",
+  "transactionCode": "TXN-20250809-001",
+  "totalApiDuration": 387,
+  "error": {
+    "name": "ZodError",
+    "message": "[\n  {\n    \"origin\": \"string\",\n    \"code\": \"too_small\",\n    \"minimum\": 5,\n    \"inclusive\": true,\n    \"path\": [\n      \"items\",\n      0,\n      \"conditions\",\n      0,\n      \"kondisiAkhir\"\n    ],\n    \"message\": \"Kondisi akhir minimal 5 karakter untuk deskripsi yang jelas\"\n  }\n]",
+    "stack": "ZodError: [\n  {\n    \"origin\": \"string\",\n    \"code\": \"too_small\",\n    \"minimum\": 5,\n    \"inclusive\": true,\n    \"path\": [\n      \"items\",\n      0,\n      \"conditions\",\n      0,\n      \"kondisiAkhir\"\n    ],\n    \"message\": \"Kondisi akhir minimal 5 karakter untuk deskripsi yang jelas\"\n  }\n]\n    at PUT (D:\\.work\\rental-software\\.next\\server\\chunks\\[root-of-the-server]__6645e8c4._.js:3734:212)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async AppRouteRouteModule.do (D:\\.work\\rental-software\\node_modules\\next\\dist\\compiled\\next-server\\app-route-turbo.runtime.dev.js:5:38782)\n    at async AppRouteRouteModule.handle (D:\\.work\\rental-software\\node_modules\\next\\dist\\compiled\\next-server\\app-route-turbo.runtime.dev.js:5:45984)\n    at async responseGenerator (D:\\.work\\rental-software\\.next\\server\\chunks\\node_modules_next_86b4de74._.js:13538:38)\n    at async AppRouteRouteModule.handleResponse (D:\\.work\\rental-software\\node_modules\\next\\dist\\compiled\\next-server\\app-route-turbo.runtime.dev.js:1:183770)\n    at async handleResponse (D:\\.work\\rental-software\\.next\\server\\chunks\\node_modules_next_86b4de74._.js:13600:32)\n    at async handler (D:\\.work\\rental-software\\.next\\server\\chunks\\node_modules_next_86b4de74._.js:13652:13)\n    at async doRender (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:1587:34)\n    at async DevServer.renderToResponseWithComponentsImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:1929:13)\n    at async DevServer.renderPageComponent (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:2395:24)\n    at async DevServer.renderToResponseImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:2435:32)\n    at async DevServer.pipeImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:1035:25)\n    at async NextNodeServer.handleCatchallRenderRequest (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\next-server.js:393:17)\n    at async DevServer.handleRequestImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:925:17)\n    at async D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\dev\\next-dev-server.js:398:20\n    at async Span.traceAsyncFn (D:\\.work\\rental-software\\node_modules\\next\\dist\\trace\\trace.js:157:20)\n    at async DevServer.handleRequest (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\dev\\next-dev-server.js:394:24)\n    at async invokeRender (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\lib\\router-server.js:239:21)\n    at async handleRequest (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\lib\\router-server.js:436:24)\n    at async requestHandlerImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\lib\\router-server.js:464:13)\n    at async Server.requestListener (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\lib\\start-server.js:218:13)"
+  },
+  "timestamp": "2025-08-12T01:43:58.083Z",
+  "performance": {
+    "timestamp": 1754963038083,
+    "memory": {
+      "rss": 687345664,
+      "heapTotal": 389165056,
+      "heapUsed": 342548600,
+      "external": 4496927,
+      "arrayBuffers": 495396
+    }
+  }
+}
+2025-08-12T01:44:01.432Z [ERROR] [API][PUT-pengembalian] Unified validation failed
+{
+  "requestId": "req-1754963041003-3ym7wmpmc",
+  "transactionCode": "TXN-20250809-001",
+  "format": "legacy",
+  "validationErrors": [
+    {
+      "field": "items.0.conditions.0.kondisiAkhir",
+      "message": "Kondisi akhir minimal 5 karakter untuk deskripsi yang jelas",
+      "code": "too_small"
+    }
+  ],
+  "requestBody": {
+    "items": [
+      {
+        "itemId": "b3221755-304e-4a81-93f2-8589747c9f6b",
+        "kondisiAkhir": "baik",
+        "jumlahKembali": 2
+      },
+      {
+        "itemId": "a2ff8f31-2f9e-4a07-8d0b-ac7446aa8f0c",
+        "kondisiAkhir": "kotor",
+        "jumlahKembali": 2
+      }
+    ],
+    "tglKembali": "2025-08-12T01:43:47.013Z",
+    "transactionId": "TXN-20250809-001"
+  },
+  "performance": {
+    "timestamp": 1754963041432,
+    "memory": {
+      "rss": 698130432,
+      "heapTotal": 389992448,
+      "heapUsed": 361486768,
+      "external": 4696738,
+      "arrayBuffers": 695207
+    }
+  }
+}
+2025-08-12T01:44:01.449Z [ERROR] [API][PUT-pengembalian] API request failed
+{
+  "requestId": "req-1754963041003-3ym7wmpmc",
+  "transactionCode": "TXN-20250809-001",
+  "totalApiDuration": 439,
+  "error": {
+    "name": "ZodError",
+    "message": "[\n  {\n    \"origin\": \"string\",\n    \"code\": \"too_small\",\n    \"minimum\": 5,\n    \"inclusive\": true,\n    \"path\": [\n      \"items\",\n      0,\n      \"conditions\",\n      0,\n      \"kondisiAkhir\"\n    ],\n    \"message\": \"Kondisi akhir minimal 5 karakter untuk deskripsi yang jelas\"\n  }\n]",
+    "stack": "ZodError: [\n  {\n    \"origin\": \"string\",\n    \"code\": \"too_small\",\n    \"minimum\": 5,\n    \"inclusive\": true,\n    \"path\": [\n      \"items\",\n      0,\n      \"conditions\",\n      0,\n      \"kondisiAkhir\"\n    ],\n    \"message\": \"Kondisi akhir minimal 5 karakter untuk deskripsi yang jelas\"\n  }\n]\n    at PUT (D:\\.work\\rental-software\\.next\\server\\chunks\\[root-of-the-server]__6645e8c4._.js:3734:212)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async AppRouteRouteModule.do (D:\\.work\\rental-software\\node_modules\\next\\dist\\compiled\\next-server\\app-route-turbo.runtime.dev.js:5:38782)\n    at async AppRouteRouteModule.handle (D:\\.work\\rental-software\\node_modules\\next\\dist\\compiled\\next-server\\app-route-turbo.runtime.dev.js:5:45984)\n    at async responseGenerator (D:\\.work\\rental-software\\.next\\server\\chunks\\node_modules_next_86b4de74._.js:13538:38)\n    at async AppRouteRouteModule.handleResponse (D:\\.work\\rental-software\\node_modules\\next\\dist\\compiled\\next-server\\app-route-turbo.runtime.dev.js:1:183770)\n    at async handleResponse (D:\\.work\\rental-software\\.next\\server\\chunks\\node_modules_next_86b4de74._.js:13600:32)\n    at async handler (D:\\.work\\rental-software\\.next\\server\\chunks\\node_modules_next_86b4de74._.js:13652:13)\n    at async doRender (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:1587:34)\n    at async DevServer.renderToResponseWithComponentsImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:1929:13)\n    at async DevServer.renderPageComponent (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:2395:24)\n    at async DevServer.renderToResponseImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:2435:32)\n    at async DevServer.pipeImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:1035:25)\n    at async NextNodeServer.handleCatchallRenderRequest (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\next-server.js:393:17)\n    at async DevServer.handleRequestImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:925:17)\n    at async D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\dev\\next-dev-server.js:398:20\n    at async Span.traceAsyncFn (D:\\.work\\rental-software\\node_modules\\next\\dist\\trace\\trace.js:157:20)\n    at async DevServer.handleRequest (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\dev\\next-dev-server.js:394:24)\n    at async invokeRender (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\lib\\router-server.js:239:21)\n    at async handleRequest (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\lib\\router-server.js:436:24)\n    at async requestHandlerImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\lib\\router-server.js:464:13)\n    at async Server.requestListener (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\lib\\start-server.js:218:13)"
+  },
+  "timestamp": "2025-08-12T01:44:01.449Z",
+  "performance": {
+    "timestamp": 1754963041449,
+    "memory": {
+      "rss": 698130432,
+      "heapTotal": 389992448,
+      "heapUsed": 361525496,
+      "external": 4696738,
+      "arrayBuffers": 695207
+    }
+  }
 }

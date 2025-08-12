@@ -410,6 +410,7 @@ export function UnifiedConditionForm({
               autoFocus={index === currentCondition.conditions.length - 1 && index > 0}
               maxQuantity={currentCondition.totalQuantity}
               remainingQuantity={validation.remaining}
+              productModalAwal={item.produk.modalAwal}
             />
           ))}
 

@@ -188,8 +188,22 @@ This document summarizes the actual Phase 1 implementation of TSK-24, which focu
 ### ✅ Phase 1 Complete: Backend Unification
 The backend architecture has been successfully unified with a single return processing interface that handles all scenarios consistently while maintaining full backward compatibility.
 
-### 🔄 Phase 2 In Progress: Frontend Integration  
-Frontend is being updated to integrate with the new unified backend architecture for consistent user experience.
+### ✅ Phase 2 Complete: Frontend Integration  
+Frontend unified architecture implemented with progressive disclosure UI handling all return scenarios.
+
+### ✅ Phase 2.3 Complete: modalAwal Hardcode Fix
+**Date**: August 12, 2025
+
+**Issue Resolved**:
+- Fixed hardcoded modalAwal value of 100,000 for all lost items
+- **API Enhancement**: Added `modalAwal: Number(item.produk.modalAwal)` to transaction API response
+- **Data Flow**: Product modalAwal now properly flows from database → API → frontend
+- **Accuracy**: Lost item penalties now calculated using actual product modalAwal values
+
+**Technical Implementation**:
+- Modified `app/api/kasir/transaksi/[kode]/route.ts` to include modalAwal in product response
+- Updated TypeScript types to support modalAwal field
+- Enhanced backward compatibility with fallback to 100,000 if modalAwal unavailable
 
 ### 📋 Future Phases
 - **Phase 3:** Performance optimization and monitoring

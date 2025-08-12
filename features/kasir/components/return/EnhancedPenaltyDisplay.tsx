@@ -135,7 +135,7 @@ export function EnhancedPenaltyDisplay({
     )
   }
 
-  const { totalPenalty, lateDays, breakdown, summary, calculationMetadata } = penaltyCalculation
+  const { totalPenalty, lateDays, breakdown, summary } = penaltyCalculation
 
   if (compactView) {
     // Compact view for small spaces
@@ -286,17 +286,6 @@ export function EnhancedPenaltyDisplay({
           </div>
         </Card>
       </div>
-
-      {/* Late Penalty Info */}
-      {lateDays && lateDays > 0 && (
-        <Alert variant="destructive">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertDescription>
-            Pengembalian terlambat {lateDays} hari. Penalty keterlambatan dihitung per hari per unit
-            sesuai kondisi.
-          </AlertDescription>
-        </Alert>
-      )}
 
       {/* Multi-condition Processing Info */}
       {(processingMode === 'multi-condition' || processingMode === 'mixed') && (

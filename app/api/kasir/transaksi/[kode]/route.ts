@@ -91,6 +91,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
           id: item.produk.id,
           code: item.produk.code,
           name: item.produk.name,
+          modalAwal: Number(item.produk.modalAwal),
           imageUrl: item.produk.imageUrl,
           // Add missing product fields
           size: item.produk.size || null,
@@ -300,6 +301,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
           id: item.produk.id,
           code: item.produk.code,
           name: item.produk.name,
+          modalAwal: Number(item.produk.modalAwal),
           imageUrl: item.produk.imageUrl,
           // Add missing product fields
           size: item.produk.size || null,

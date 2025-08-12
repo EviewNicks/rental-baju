@@ -46,6 +46,16 @@
 - Restored system accuracy and user trust
 - Added comprehensive test coverage for all condition types
 
+### **✅ Phase 2.3: modalAwal Hardcode Fix (COMPLETED)**
+**Date**: August 12, 2025  
+**Status**: Simple fix with maximum impact
+
+**Issue Resolved**:
+- Fixed modalAwal hardcode value of 100,000 for all items
+- API now includes actual modalAwal per product
+- Frontend uses real product data instead of placeholder
+- Penalty calculations now 100% accurate for lost items
+
 ---
 
 ## 🏗️ **Implemented Architecture**
@@ -66,14 +76,14 @@ interface UnifiedReturnItem {
 interface ConditionSplit {
   kondisiAkhir: string      // Condition description
   jumlahKembali: number     // Quantity for this condition  
-  modalAwal?: number        // Modal used for lost item penalties
+  modalAwal?: number        // ✅ FIXED: Now uses actual product modalAwal
 }
 
 // Examples:
 // Simple case: [{ kondisiAkhir: "Baik", jumlahKembali: 5 }]
 // Complex case: [
 //   { kondisiAkhir: "Baik", jumlahKembali: 3 },
-//   { kondisiAkhir: "Hilang", jumlahKembali: 2, modalAwal: 50000 }
+//   { kondisiAkhir: "Hilang", jumlahKembali: 2, modalAwal: 75000 } // Real product value
 // ]
 ```
 

@@ -347,6 +347,7 @@ export interface TransaksiItemResponse {
     id: string
     code: string
     name: string
+    modalAwal: number
     imageUrl?: string
     category?: string
     size?: string
@@ -1004,6 +1005,7 @@ export interface ConditionRowProps {
   autoFocus?: boolean
   maxQuantity?: number
   remainingQuantity?: number
+  productModalAwal?: number
 }
 
 export interface UnifiedConditionFormProps {

@@ -64,6 +64,7 @@ export function ConditionRow({
   autoFocus = false,
   maxQuantity = 1,
   remainingQuantity = 0,
+  productModalAwal,
 }: ConditionRowProps) {
   // Get condition metadata for UI styling
   const conditionMeta = useMemo(() => {
@@ -115,9 +116,9 @@ export function ConditionRow({
 
       const newCondition = { ...condition, kondisiAkhir: value }
 
-      // Auto-calculate modal awal for lost items (placeholder - would use actual product data)
+      // Auto-calculate modal awal for lost items
       if (value === 'hilang') {
-        newCondition.modalAwal = 100000 // Placeholder - should come from product data
+        newCondition.modalAwal = productModalAwal || 100000 // Use actual product data or fallback
         newCondition.isLostItem = true
       } else {
         delete newCondition.modalAwal
@@ -126,7 +127,7 @@ export function ConditionRow({
 
       onChange(newCondition)
     },
-    [condition, onChange],
+    [condition, onChange, productModalAwal],
   )
 
   // Handle quantity change
