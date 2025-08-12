@@ -1,1276 +1,629 @@
 {
-  "numTotalTests": 112,
-  "numPassedTests": 112,
+  "numTotalTests": 52,
+  "numPassedTests": 3,
   "numFailedTests": 0,
-  "numPendingTests": 0,
-  "startTime": "2025-08-01T08:50:50.563Z",
-  "endTime": "2025-08-01T08:50:57.564Z",
+  "numPendingTests": 49,
+  "startTime": "2025-08-11T11:21:27.721Z",
+  "endTime": "2025-08-11T11:21:29.243Z",
   "testResults": [
     {
-      "testFilePath": "D:\\.work\\rental-software\\features\\kasir\\services\\penyewaService.test.ts",
+      "testFilePath": "D:\\.work\\rental-software\\features\\kasir\\lib\\utils\\penaltyCalculator.test.ts",
       "testFileResults": [
         {
           "ancestorTitles": [
-            "PenyewaService",
-            "createPenyewa"
+            "PenaltyCalculator",
+            "calculateLatePenalty"
           ],
-          "fullName": "PenyewaService createPenyewa should create penyewa successfully",
-          "status": "passed",
-          "title": "should create penyewa successfully",
+          "fullName": "PenaltyCalculator calculateLatePenalty should calculate no penalty for on-time return",
+          "status": "pending",
+          "title": "should calculate no penalty for on-time return",
           "failureMessages": [],
-          "duration": 107
+          "duration": null
         },
         {
           "ancestorTitles": [
-            "PenyewaService",
-            "createPenyewa"
+            "PenaltyCalculator",
+            "calculateLatePenalty"
           ],
-          "fullName": "PenyewaService createPenyewa should throw error if phone number already exists",
-          "status": "passed",
-          "title": "should throw error if phone number already exists",
+          "fullName": "PenaltyCalculator calculateLatePenalty should calculate penalty for late return with default rate",
+          "status": "pending",
+          "title": "should calculate penalty for late return with default rate",
           "failureMessages": [],
-          "duration": 16
+          "duration": null
         },
         {
           "ancestorTitles": [
-            "PenyewaService",
-            "createPenyewa"
+            "PenaltyCalculator",
+            "calculateLatePenalty"
           ],
-          "fullName": "PenyewaService createPenyewa should handle database errors",
-          "status": "passed",
-          "title": "should handle database errors",
+          "fullName": "PenaltyCalculator calculateLatePenalty should cap penalty at maximum days (365)",
+          "status": "pending",
+          "title": "should cap penalty at maximum days (365)",
           "failureMessages": [],
-          "duration": 4
+          "duration": null
         },
         {
           "ancestorTitles": [
-            "PenyewaService",
-            "getPenyewaById"
+            "PenaltyCalculator",
+            "calculateLatePenalty"
           ],
-          "fullName": "PenyewaService getPenyewaById should return penyewa by ID",
-          "status": "passed",
-          "title": "should return penyewa by ID",
+          "fullName": "PenaltyCalculator calculateLatePenalty should handle fractional days by rounding up",
+          "status": "pending",
+          "title": "should handle fractional days by rounding up",
           "failureMessages": [],
-          "duration": 2
+          "duration": null
         },
         {
           "ancestorTitles": [
-            "PenyewaService",
-            "getPenyewaById"
+            "PenaltyCalculator",
+            "calculateConditionPenalty",
+            "Frontend Integration - Current Condition Values"
           ],
-          "fullName": "PenyewaService getPenyewaById should throw error if penyewa not found",
-          "status": "passed",
-          "title": "should throw error if penyewa not found",
+          "fullName": "PenaltyCalculator calculateConditionPenalty Frontend Integration - Current Condition Values should handle \"baik\" condition correctly (CRITICAL FIX)",
+          "status": "pending",
+          "title": "should handle \"baik\" condition correctly (CRITICAL FIX)",
           "failureMessages": [],
-          "duration": 1
+          "duration": null
         },
         {
           "ancestorTitles": [
-            "PenyewaService",
-            "getPenyewaList"
+            "PenaltyCalculator",
+            "calculateConditionPenalty",
+            "Frontend Integration - Current Condition Values"
           ],
-          "fullName": "PenyewaService getPenyewaList should return paginated penyewa list",
-          "status": "passed",
-          "title": "should return paginated penyewa list",
+          "fullName": "PenaltyCalculator calculateConditionPenalty Frontend Integration - Current Condition Values should handle \"kotor\" condition correctly",
+          "status": "pending",
+          "title": "should handle \"kotor\" condition correctly",
           "failureMessages": [],
-          "duration": 2
+          "duration": null
         },
         {
           "ancestorTitles": [
-            "PenyewaService",
-            "getPenyewaList"
+            "PenaltyCalculator",
+            "calculateConditionPenalty",
+            "Frontend Integration - Current Condition Values"
           ],
-          "fullName": "PenyewaService getPenyewaList should search penyewa by name or phone",
-          "status": "passed",
-          "title": "should search penyewa by name or phone",
+          "fullName": "PenaltyCalculator calculateConditionPenalty Frontend Integration - Current Condition Values should handle \"rusak ringan\" condition correctly",
+          "status": "pending",
+          "title": "should handle \"rusak ringan\" condition correctly",
           "failureMessages": [],
-          "duration": 1
+          "duration": null
         },
         {
           "ancestorTitles": [
-            "PenyewaService",
-            "getPenyewaList"
+            "PenaltyCalculator",
+            "calculateConditionPenalty",
+            "Frontend Integration - Current Condition Values"
           ],
-          "fullName": "PenyewaService getPenyewaList should handle empty results",
-          "status": "passed",
-          "title": "should handle empty results",
+          "fullName": "PenaltyCalculator calculateConditionPenalty Frontend Integration - Current Condition Values should handle \"rusak berat\" condition correctly",
+          "status": "pending",
+          "title": "should handle \"rusak berat\" condition correctly",
           "failureMessages": [],
-          "duration": 1
+          "duration": null
         },
         {
           "ancestorTitles": [
-            "PenyewaService",
-            "updatePenyewa"
+            "PenaltyCalculator",
+            "calculateConditionPenalty",
+            "Frontend Integration - Current Condition Values"
           ],
-          "fullName": "PenyewaService updatePenyewa should update penyewa successfully",
-          "status": "passed",
-          "title": "should update penyewa successfully",
+          "fullName": "PenaltyCalculator calculateConditionPenalty Frontend Integration - Current Condition Values should handle \"hilang\" condition correctly (already working)",
+          "status": "pending",
+          "title": "should handle \"hilang\" condition correctly (already working)",
           "failureMessages": [],
-          "duration": 2
+          "duration": null
         },
         {
           "ancestorTitles": [
-            "PenyewaService",
-            "updatePenyewa"
+            "PenaltyCalculator",
+            "calculateConditionPenalty",
+            "Legacy conditions - backward compatibility"
           ],
-          "fullName": "PenyewaService updatePenyewa should throw error if penyewa not found",
-          "status": "passed",
-          "title": "should throw error if penyewa not found",
+          "fullName": "PenaltyCalculator calculateConditionPenalty Legacy conditions - backward compatibility should return zero penalty for perfect condition",
+          "status": "pending",
+          "title": "should return zero penalty for perfect condition",
           "failureMessages": [],
-          "duration": 1
+          "duration": null
         },
         {
           "ancestorTitles": [
-            "PenyewaService",
-            "updatePenyewa"
+            "PenaltyCalculator",
+            "calculateConditionPenalty",
+            "minor damage conditions"
           ],
-          "fullName": "PenyewaService updatePenyewa should validate phone uniqueness when updating phone",
-          "status": "passed",
-          "title": "should validate phone uniqueness when updating phone",
+          "fullName": "PenaltyCalculator calculateConditionPenalty minor damage conditions should apply 1x daily rate for light dirt",
+          "status": "pending",
+          "title": "should apply 1x daily rate for light dirt",
           "failureMessages": [],
-          "duration": 1
+          "duration": null
         },
         {
           "ancestorTitles": [
-            "PenyewaService",
-            "findPenyewaByPhone"
+            "PenaltyCalculator",
+            "calculateConditionPenalty",
+            "minor damage conditions"
           ],
-          "fullName": "PenyewaService findPenyewaByPhone should find penyewa by phone number",
-          "status": "passed",
-          "title": "should find penyewa by phone number",
+          "fullName": "PenaltyCalculator calculateConditionPenalty minor damage conditions should apply 1x daily rate for light stains",
+          "status": "pending",
+          "title": "should apply 1x daily rate for light stains",
           "failureMessages": [],
-          "duration": 1
+          "duration": null
         },
         {
           "ancestorTitles": [
-            "PenyewaService",
-            "findPenyewaByPhone"
+            "PenaltyCalculator",
+            "calculateConditionPenalty",
+            "moderate damage conditions"
           ],
-          "fullName": "PenyewaService findPenyewaByPhone should return null if penyewa not found",
-          "status": "passed",
-          "title": "should return null if penyewa not found",
+          "fullName": "PenaltyCalculator calculateConditionPenalty moderate damage conditions should apply 2x daily rate for small damage",
+          "status": "pending",
+          "title": "should apply 2x daily rate for small damage",
           "failureMessages": [],
-          "duration": 1
-        }
-      ],
-      "failureMessage": null
-    },
-    {
-      "testFilePath": "D:\\.work\\rental-software\\features\\kasir\\lib\\utils\\codeGenerator.test.ts",
-      "testFileResults": [
-        {
-          "ancestorTitles": [
-            "TransactionCodeGenerator Enhanced Features",
-            "UUID Validation"
-          ],
-          "fullName": "TransactionCodeGenerator Enhanced Features UUID Validation should validate correct UUID v4 format",
-          "status": "passed",
-          "title": "should validate correct UUID v4 format",
-          "failureMessages": [],
-          "duration": 12
+          "duration": null
         },
         {
           "ancestorTitles": [
-            "TransactionCodeGenerator Enhanced Features",
-            "UUID Validation"
+            "PenaltyCalculator",
+            "calculateConditionPenalty",
+            "moderate damage conditions"
           ],
-          "fullName": "TransactionCodeGenerator Enhanced Features UUID Validation should reject invalid UUID formats",
-          "status": "passed",
-          "title": "should reject invalid UUID formats",
+          "fullName": "PenaltyCalculator calculateConditionPenalty moderate damage conditions should apply 2x daily rate for heavy stains",
+          "status": "pending",
+          "title": "should apply 2x daily rate for heavy stains",
           "failureMessages": [],
-          "duration": 2
+          "duration": null
         },
         {
           "ancestorTitles": [
-            "TransactionCodeGenerator Enhanced Features",
-            "Parameter Type Detection"
+            "PenaltyCalculator",
+            "calculateConditionPenalty",
+            "severe damage conditions"
           ],
-          "fullName": "TransactionCodeGenerator Enhanced Features Parameter Type Detection should correctly detect UUID parameters",
-          "status": "passed",
-          "title": "should correctly detect UUID parameters",
+          "fullName": "PenaltyCalculator calculateConditionPenalty severe damage conditions should apply 4x daily rate for major damage",
+          "status": "pending",
+          "title": "should apply 4x daily rate for major damage",
           "failureMessages": [],
-          "duration": 0
+          "duration": null
         },
         {
           "ancestorTitles": [
-            "TransactionCodeGenerator Enhanced Features",
-            "Parameter Type Detection"
+            "PenaltyCalculator",
+            "calculateConditionPenalty",
+            "lost item conditions - modalAwal integration"
           ],
-          "fullName": "TransactionCodeGenerator Enhanced Features Parameter Type Detection should correctly detect transaction code parameters",
-          "status": "passed",
-          "title": "should correctly detect transaction code parameters",
+          "fullName": "PenaltyCalculator calculateConditionPenalty lost item conditions - modalAwal integration should use modalAwal when provided for lost items",
+          "status": "pending",
+          "title": "should use modalAwal when provided for lost items",
           "failureMessages": [],
-          "duration": 1
+          "duration": null
         },
         {
           "ancestorTitles": [
-            "TransactionCodeGenerator Enhanced Features",
-            "Parameter Type Detection"
+            "PenaltyCalculator",
+            "calculateConditionPenalty",
+            "lost item conditions - modalAwal integration"
           ],
-          "fullName": "TransactionCodeGenerator Enhanced Features Parameter Type Detection should correctly detect invalid parameters",
-          "status": "passed",
-          "title": "should correctly detect invalid parameters",
+          "fullName": "PenaltyCalculator calculateConditionPenalty lost item conditions - modalAwal integration should use modalAwal for different lost conditions",
+          "status": "pending",
+          "title": "should use modalAwal for different lost conditions",
           "failureMessages": [],
-          "duration": 2
+          "duration": null
         },
         {
           "ancestorTitles": [
-            "TransactionCodeGenerator Enhanced Features",
-            "Existing Transaction Code Functionality"
+            "PenaltyCalculator",
+            "calculateConditionPenalty",
+            "lost item conditions - modalAwal integration"
           ],
-          "fullName": "TransactionCodeGenerator Enhanced Features Existing Transaction Code Functionality should still validate transaction codes correctly",
-          "status": "passed",
-          "title": "should still validate transaction codes correctly",
+          "fullName": "PenaltyCalculator calculateConditionPenalty lost item conditions - modalAwal integration should fallback to old calculation when modalAwal not provided",
+          "status": "pending",
+          "title": "should fallback to old calculation when modalAwal not provided",
           "failureMessages": [],
-          "duration": 1
+          "duration": null
         },
         {
           "ancestorTitles": [
-            "TransactionCodeGenerator Enhanced Features",
-            "Existing Transaction Code Functionality"
+            "PenaltyCalculator",
+            "calculateConditionPenalty",
+            "lost item conditions - modalAwal integration"
           ],
-          "fullName": "TransactionCodeGenerator Enhanced Features Existing Transaction Code Functionality should reject invalid transaction codes",
-          "status": "passed",
-          "title": "should reject invalid transaction codes",
+          "fullName": "PenaltyCalculator calculateConditionPenalty lost item conditions - modalAwal integration should handle zero modalAwal gracefully",
+          "status": "pending",
+          "title": "should handle zero modalAwal gracefully",
           "failureMessages": [],
-          "duration": 1
-        }
-      ],
-      "failureMessage": null
-    },
-    {
-      "testFilePath": "D:\\.work\\rental-software\\features\\kasir\\services\\pembayaranService.test.ts",
-      "testFileResults": [
-        {
-          "ancestorTitles": [
-            "PembayaranService",
-            "createPembayaran"
-          ],
-          "fullName": "PembayaranService createPembayaran should create payment successfully",
-          "status": "passed",
-          "title": "should create payment successfully",
-          "failureMessages": [],
-          "duration": 39
+          "duration": null
         },
         {
           "ancestorTitles": [
-            "PembayaranService",
-            "createPembayaran"
+            "PenaltyCalculator",
+            "calculateConditionPenalty",
+            "unrecognized conditions"
           ],
-          "fullName": "PembayaranService createPembayaran should throw error if transaction not found",
-          "status": "passed",
-          "title": "should throw error if transaction not found",
+          "fullName": "PenaltyCalculator calculateConditionPenalty unrecognized conditions should apply default moderate penalty for unknown conditions",
+          "status": "pending",
+          "title": "should apply default moderate penalty for unknown conditions",
           "failureMessages": [],
-          "duration": 26
+          "duration": null
         },
         {
           "ancestorTitles": [
-            "PembayaranService",
-            "createPembayaran"
+            "PenaltyCalculator",
+            "calculateItemPenalty"
           ],
-          "fullName": "PembayaranService createPembayaran should throw error if transaction is cancelled",
-          "status": "passed",
-          "title": "should throw error if transaction is cancelled",
+          "fullName": "PenaltyCalculator calculateItemPenalty should calculate penalty for on-time return with good condition",
+          "status": "pending",
+          "title": "should calculate penalty for on-time return with good condition",
           "failureMessages": [],
-          "duration": 1
+          "duration": null
         },
         {
           "ancestorTitles": [
-            "PembayaranService",
-            "createPembayaran"
+            "PenaltyCalculator",
+            "calculateItemPenalty"
           ],
-          "fullName": "PembayaranService createPembayaran should throw error if transaction is completed",
-          "status": "passed",
-          "title": "should throw error if transaction is completed",
+          "fullName": "PenaltyCalculator calculateItemPenalty should calculate penalty for late return with good condition",
+          "status": "pending",
+          "title": "should calculate penalty for late return with good condition",
           "failureMessages": [],
-          "duration": 1
+          "duration": null
         },
         {
           "ancestorTitles": [
-            "PembayaranService",
-            "createPembayaran"
+            "PenaltyCalculator",
+            "calculateItemPenalty"
           ],
-          "fullName": "PembayaranService createPembayaran should throw error if payment amount is invalid",
-          "status": "passed",
-          "title": "should throw error if payment amount is invalid",
+          "fullName": "PenaltyCalculator calculateItemPenalty should calculate penalty for lost item with modalAwal",
+          "status": "pending",
+          "title": "should calculate penalty for lost item with modalAwal",
           "failureMessages": [],
-          "duration": 2
+          "duration": null
         },
         {
           "ancestorTitles": [
-            "PembayaranService",
-            "createPembayaran"
+            "PenaltyCalculator",
+            "calculateItemPenalty"
           ],
-          "fullName": "PembayaranService createPembayaran should handle overpayment validation",
-          "status": "passed",
-          "title": "should handle overpayment validation",
+          "fullName": "PenaltyCalculator calculateItemPenalty should calculate combined penalty for late + damaged item",
+          "status": "pending",
+          "title": "should calculate combined penalty for late + damaged item",
           "failureMessages": [],
-          "duration": 2
+          "duration": null
         },
         {
           "ancestorTitles": [
-            "PembayaranService",
-            "getTransactionPayments"
+            "PenaltyCalculator",
+            "calculateItemPenalty"
           ],
-          "fullName": "PembayaranService getTransactionPayments should return payments for a transaction",
-          "status": "passed",
-          "title": "should return payments for a transaction",
+          "fullName": "PenaltyCalculator calculateItemPenalty should multiply penalty by quantity",
+          "status": "pending",
+          "title": "should multiply penalty by quantity",
           "failureMessages": [],
-          "duration": 2
+          "duration": null
         },
         {
           "ancestorTitles": [
-            "PembayaranService",
-            "getPembayaranById"
+            "PenaltyCalculator",
+            "calculateItemPenalty"
           ],
-          "fullName": "PembayaranService getPembayaranById should return payment by ID",
-          "status": "passed",
-          "title": "should return payment by ID",
+          "fullName": "PenaltyCalculator calculateItemPenalty should prioritize lost over damaged in reason code",
+          "status": "pending",
+          "title": "should prioritize lost over damaged in reason code",
           "failureMessages": [],
-          "duration": 2
+          "duration": null
         },
         {
           "ancestorTitles": [
-            "PembayaranService",
-            "getPembayaranById"
+            "PenaltyCalculator",
+            "calculateTransactionPenalties"
           ],
-          "fullName": "PembayaranService getPembayaranById should throw error if payment not found",
-          "status": "passed",
-          "title": "should throw error if payment not found",
+          "fullName": "PenaltyCalculator calculateTransactionPenalties should calculate penalties for multiple items",
+          "status": "pending",
+          "title": "should calculate penalties for multiple items",
           "failureMessages": [],
-          "duration": 2
+          "duration": null
         },
         {
           "ancestorTitles": [
-            "PembayaranService",
-            "getPaymentSummary"
+            "PenaltyCalculator",
+            "calculateTransactionPenalties"
           ],
-          "fullName": "PembayaranService getPaymentSummary should return payment summary for transaction",
-          "status": "passed",
-          "title": "should return payment summary for transaction",
+          "fullName": "PenaltyCalculator calculateTransactionPenalties should provide correct summary statistics",
+          "status": "pending",
+          "title": "should provide correct summary statistics",
           "failureMessages": [],
-          "duration": 1
+          "duration": null
         },
         {
           "ancestorTitles": [
-            "PembayaranService",
-            "getPaymentSummary"
+            "PenaltyCalculator",
+            "calculateTransactionPenalties"
           ],
-          "fullName": "PembayaranService getPaymentSummary should throw error if transaction not found for summary",
-          "status": "passed",
-          "title": "should throw error if transaction not found for summary",
+          "fullName": "PenaltyCalculator calculateTransactionPenalties should handle empty items array",
+          "status": "pending",
+          "title": "should handle empty items array",
           "failureMessages": [],
-          "duration": 1
+          "duration": null
         },
         {
           "ancestorTitles": [
-            "PembayaranService",
-            "getPaymentSummary"
+            "PenaltyCalculator",
+            "utility methods",
+            "formatPenaltyAmount"
           ],
-          "fullName": "PembayaranService getPaymentSummary should handle transaction with no payments",
-          "status": "passed",
-          "title": "should handle transaction with no payments",
+          "fullName": "PenaltyCalculator utility methods formatPenaltyAmount should format penalty amount to Indonesian Rupiah",
+          "status": "pending",
+          "title": "should format penalty amount to Indonesian Rupiah",
           "failureMessages": [],
-          "duration": 2
+          "duration": null
         },
         {
           "ancestorTitles": [
-            "PembayaranService",
-            "getPaymentList"
+            "PenaltyCalculator",
+            "utility methods",
+            "generatePenaltyDescription"
           ],
-          "fullName": "PembayaranService getPaymentList should return paginated payment list",
-          "status": "passed",
-          "title": "should return paginated payment list",
+          "fullName": "PenaltyCalculator utility methods generatePenaltyDescription should generate description for zero penalty",
+          "status": "pending",
+          "title": "should generate description for zero penalty",
           "failureMessages": [],
-          "duration": 1
+          "duration": null
         },
         {
           "ancestorTitles": [
-            "PembayaranService",
-            "getPaymentList"
+            "PenaltyCalculator",
+            "utility methods",
+            "generatePenaltyDescription"
           ],
-          "fullName": "PembayaranService getPaymentList should filter payments by transaction ID",
-          "status": "passed",
-          "title": "should filter payments by transaction ID",
+          "fullName": "PenaltyCalculator utility methods generatePenaltyDescription should generate description with formatted amount",
+          "status": "pending",
+          "title": "should generate description with formatted amount",
           "failureMessages": [],
-          "duration": 2
+          "duration": null
         },
         {
           "ancestorTitles": [
-            "PembayaranService",
-            "getPaymentList"
+            "PenaltyCalculator",
+            "utility methods",
+            "Date Field Validation - TSK-24 Bug Fix",
+            "Correct date field usage (tglSelesai vs tglKembali)"
           ],
-          "fullName": "PembayaranService getPaymentList should filter payments by method",
-          "status": "passed",
-          "title": "should filter payments by method",
+          "fullName": "PenaltyCalculator utility methods Date Field Validation - TSK-24 Bug Fix Correct date field usage (tglSelesai vs tglKembali) should calculate realistic penalty using correct expected return date",
+          "status": "pending",
+          "title": "should calculate realistic penalty using correct expected return date",
           "failureMessages": [],
-          "duration": 1
+          "duration": null
         },
         {
           "ancestorTitles": [
-            "PembayaranService",
-            "getPaymentList"
+            "PenaltyCalculator",
+            "utility methods",
+            "Date Field Validation - TSK-24 Bug Fix",
+            "Correct date field usage (tglSelesai vs tglKembali)"
           ],
-          "fullName": "PembayaranService getPaymentList should filter payments by date range",
-          "status": "passed",
-          "title": "should filter payments by date range",
+          "fullName": "PenaltyCalculator utility methods Date Field Validation - TSK-24 Bug Fix Correct date field usage (tglSelesai vs tglKembali) should NOT produce massive penalty from wrong date field",
+          "status": "pending",
+          "title": "should NOT produce massive penalty from wrong date field",
           "failureMessages": [],
-          "duration": 1
+          "duration": null
         },
         {
           "ancestorTitles": [
-            "PembayaranService",
-            "cancelPayment"
+            "PenaltyCalculator",
+            "utility methods",
+            "Date Field Validation - TSK-24 Bug Fix",
+            "Correct date field usage (tglSelesai vs tglKembali)"
           ],
-          "fullName": "PembayaranService cancelPayment should cancel payment successfully",
-          "status": "passed",
-          "title": "should cancel payment successfully",
+          "fullName": "PenaltyCalculator utility methods Date Field Validation - TSK-24 Bug Fix Correct date field usage (tglSelesai vs tglKembali) should handle realistic late return scenarios correctly",
+          "status": "pending",
+          "title": "should handle realistic late return scenarios correctly",
           "failureMessages": [],
-          "duration": 2
+          "duration": null
         },
         {
           "ancestorTitles": [
-            "PembayaranService",
-            "cancelPayment"
+            "PenaltyCalculator",
+            "utility methods",
+            "Date Field Validation - TSK-24 Bug Fix",
+            "Multi-condition penalty with correct date usage"
           ],
-          "fullName": "PembayaranService cancelPayment should throw error if payment not found for cancellation",
-          "status": "passed",
-          "title": "should throw error if payment not found for cancellation",
+          "fullName": "PenaltyCalculator utility methods Date Field Validation - TSK-24 Bug Fix Multi-condition penalty with correct date usage should calculate realistic multi-condition penalty using tglSelesai",
+          "status": "pending",
+          "title": "should calculate realistic multi-condition penalty using tglSelesai",
           "failureMessages": [],
-          "duration": 1
+          "duration": null
         },
         {
           "ancestorTitles": [
-            "PembayaranService",
-            "cancelPayment"
+            "PenaltyCalculator",
+            "utility methods",
+            "Date Field Validation - TSK-24 Bug Fix",
+            "Step 1 to Step 2 Integration - TSK-24 Critical Fix"
           ],
-          "fullName": "PembayaranService cancelPayment should throw error if transaction is already cancelled",
+          "fullName": "PenaltyCalculator utility methods Date Field Validation - TSK-24 Bug Fix Step 1 to Step 2 Integration - TSK-24 Critical Fix should match ConditionRow penalty preview for \"baik\" condition",
           "status": "passed",
-          "title": "should throw error if transaction is already cancelled",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PembayaranService",
-            "getPaymentStats"
-          ],
-          "fullName": "PembayaranService getPaymentStats should return payment statistics",
-          "status": "passed",
-          "title": "should return payment statistics",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "PembayaranService",
-            "getPaymentStats"
-          ],
-          "fullName": "PembayaranService getPaymentStats should filter statistics by date range",
-          "status": "passed",
-          "title": "should filter statistics by date range",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PembayaranService",
-            "getPaymentStats"
-          ],
-          "fullName": "PembayaranService getPaymentStats should handle empty payment data",
-          "status": "passed",
-          "title": "should handle empty payment data",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PembayaranService",
-            "getPaymentStats"
-          ],
-          "fullName": "PembayaranService getPaymentStats should aggregate payments by method correctly",
-          "status": "passed",
-          "title": "should aggregate payments by method correctly",
-          "failureMessages": [],
-          "duration": 2
-        }
-      ],
-      "failureMessage": null
-    },
-    {
-      "testFilePath": "D:\\.work\\rental-software\\features\\kasir\\lib\\utils.test.ts",
-      "testFileResults": [
-        {
-          "ancestorTitles": [
-            "formatDate"
-          ],
-          "fullName": "formatDate should format valid date string correctly",
-          "status": "passed",
-          "title": "should format valid date string correctly",
-          "failureMessages": [],
-          "duration": 41
-        },
-        {
-          "ancestorTitles": [
-            "formatDate"
-          ],
-          "fullName": "formatDate should handle null/undefined dateString gracefully",
-          "status": "passed",
-          "title": "should handle null/undefined dateString gracefully",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "formatDate"
-          ],
-          "fullName": "formatDate should handle invalid date string gracefully",
-          "status": "passed",
-          "title": "should handle invalid date string gracefully",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "formatDate"
-          ],
-          "fullName": "formatDate should handle edge case dates",
-          "status": "passed",
-          "title": "should handle edge case dates",
-          "failureMessages": [],
-          "duration": 1
-        }
-      ],
-      "failureMessage": null
-    },
-    {
-      "testFilePath": "D:\\.work\\rental-software\\features\\kasir\\services\\availabilityService.test.ts",
-      "testFileResults": [
-        {
-          "ancestorTitles": [
-            "AvailabilityService",
-            "getProductAvailability"
-          ],
-          "fullName": "AvailabilityService getProductAvailability should calculate availability for product with no active rentals",
-          "status": "passed",
-          "title": "should calculate availability for product with no active rentals",
-          "failureMessages": [],
-          "duration": 13
-        },
-        {
-          "ancestorTitles": [
-            "AvailabilityService",
-            "getProductAvailability"
-          ],
-          "fullName": "AvailabilityService getProductAvailability should calculate availability considering active rentals",
-          "status": "passed",
-          "title": "should calculate availability considering active rentals",
+          "title": "should match ConditionRow penalty preview for \"baik\" condition",
           "failureMessages": [],
           "duration": 3
         },
         {
           "ancestorTitles": [
-            "AvailabilityService",
-            "getProductAvailability"
+            "PenaltyCalculator",
+            "utility methods",
+            "Date Field Validation - TSK-24 Bug Fix",
+            "Step 1 to Step 2 Integration - TSK-24 Critical Fix"
           ],
-          "fullName": "AvailabilityService getProductAvailability should exclude fully returned items from rental calculation",
+          "fullName": "PenaltyCalculator utility methods Date Field Validation - TSK-24 Bug Fix Step 1 to Step 2 Integration - TSK-24 Critical Fix should match ConditionRow penalty preview for all conditions",
           "status": "passed",
-          "title": "should exclude fully returned items from rental calculation",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "AvailabilityService",
-            "getProductAvailability"
-          ],
-          "fullName": "AvailabilityService getProductAvailability should handle ongoing rentals with no end date",
-          "status": "passed",
-          "title": "should handle ongoing rentals with no end date",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "AvailabilityService",
-            "getProductAvailability"
-          ],
-          "fullName": "AvailabilityService getProductAvailability should throw error if product not found",
-          "status": "passed",
-          "title": "should throw error if product not found",
-          "failureMessages": [],
-          "duration": 20
-        },
-        {
-          "ancestorTitles": [
-            "AvailabilityService",
-            "getProductAvailability"
-          ],
-          "fullName": "AvailabilityService getProductAvailability should ensure available quantity never goes below zero",
-          "status": "passed",
-          "title": "should ensure available quantity never goes below zero",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "AvailabilityService",
-            "getMultipleProductAvailability"
-          ],
-          "fullName": "AvailabilityService getMultipleProductAvailability should get availability for multiple products",
-          "status": "passed",
-          "title": "should get availability for multiple products",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "AvailabilityService",
-            "checkRentalAvailability"
-          ],
-          "fullName": "AvailabilityService checkRentalAvailability should return available=true when all items are available",
-          "status": "passed",
-          "title": "should return available=true when all items are available",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "AvailabilityService",
-            "checkRentalAvailability"
-          ],
-          "fullName": "AvailabilityService checkRentalAvailability should return conflicts when items are not available",
-          "status": "passed",
-          "title": "should return conflicts when items are not available",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "AvailabilityService",
-            "getCategoryAvailability"
-          ],
-          "fullName": "AvailabilityService getCategoryAvailability should get availability for all products in a category",
-          "status": "passed",
-          "title": "should get availability for all products in a category",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "AvailabilityService",
-            "reserveProducts"
-          ],
-          "fullName": "AvailabilityService reserveProducts should reserve products when available",
-          "status": "passed",
-          "title": "should reserve products when available",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "AvailabilityService",
-            "reserveProducts"
-          ],
-          "fullName": "AvailabilityService reserveProducts should throw error when products not available for reservation",
-          "status": "passed",
-          "title": "should throw error when products not available for reservation",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "AvailabilityService",
-            "getAvailabilitySummary"
-          ],
-          "fullName": "AvailabilityService getAvailabilitySummary should return availability summary for dashboard",
-          "status": "passed",
-          "title": "should return availability summary for dashboard",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "AvailabilityService",
-            "getLowStockProducts"
-          ],
-          "fullName": "AvailabilityService getLowStockProducts should return products with low availability",
-          "status": "passed",
-          "title": "should return products with low availability",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "AvailabilityService",
-            "getLowStockProducts"
-          ],
-          "fullName": "AvailabilityService getLowStockProducts should sort low stock products by availability ascending",
-          "status": "passed",
-          "title": "should sort low stock products by availability ascending",
+          "title": "should match ConditionRow penalty preview for all conditions",
           "failureMessages": [],
           "duration": 0
         },
         {
           "ancestorTitles": [
-            "AvailabilityService",
-            "validateTransactionItems"
+            "PenaltyCalculator",
+            "utility methods",
+            "Date Field Validation - TSK-24 Bug Fix",
+            "Step 1 to Step 2 Integration - TSK-24 Critical Fix"
           ],
-          "fullName": "AvailabilityService validateTransactionItems should validate all items successfully",
+          "fullName": "PenaltyCalculator utility methods Date Field Validation - TSK-24 Bug Fix Step 1 to Step 2 Integration - TSK-24 Critical Fix should calculate realistic penalties for complete item",
           "status": "passed",
-          "title": "should validate all items successfully",
+          "title": "should calculate realistic penalties for complete item",
           "failureMessages": [],
           "duration": 1
         },
         {
           "ancestorTitles": [
-            "AvailabilityService",
-            "validateTransactionItems"
+            "PenaltyCalculator",
+            "utility methods",
+            "Date Field Validation - TSK-24 Bug Fix",
+            "Date validation edge cases"
           ],
-          "fullName": "AvailabilityService validateTransactionItems should return error for nonexistent product",
-          "status": "passed",
-          "title": "should return error for nonexistent product",
+          "fullName": "PenaltyCalculator utility methods Date Field Validation - TSK-24 Bug Fix Date validation edge cases should handle invalid date strings gracefully",
+          "status": "pending",
+          "title": "should handle invalid date strings gracefully",
           "failureMessages": [],
-          "duration": 1
+          "duration": null
         },
         {
           "ancestorTitles": [
-            "AvailabilityService",
-            "validateTransactionItems"
+            "PenaltyCalculator",
+            "utility methods",
+            "Date Field Validation - TSK-24 Bug Fix",
+            "Date validation edge cases"
           ],
-          "fullName": "AvailabilityService validateTransactionItems should return error for inactive product",
-          "status": "passed",
-          "title": "should return error for inactive product",
+          "fullName": "PenaltyCalculator utility methods Date Field Validation - TSK-24 Bug Fix Date validation edge cases should validate return date is not too far in past",
+          "status": "pending",
+          "title": "should validate return date is not too far in past",
           "failureMessages": [],
-          "duration": 1
+          "duration": null
         },
         {
           "ancestorTitles": [
-            "AvailabilityService",
-            "validateTransactionItems"
+            "PenaltyCalculator",
+            "utility methods",
+            "validatePenaltyInputs"
           ],
-          "fullName": "AvailabilityService validateTransactionItems should return errors for insufficient quantity",
-          "status": "passed",
-          "title": "should return errors for insufficient quantity",
+          "fullName": "PenaltyCalculator utility methods validatePenaltyInputs should validate correct inputs",
+          "status": "pending",
+          "title": "should validate correct inputs",
           "failureMessages": [],
-          "duration": 0
+          "duration": null
         },
         {
           "ancestorTitles": [
-            "AvailabilityService",
-            "validateTransactionItems"
+            "PenaltyCalculator",
+            "utility methods",
+            "validatePenaltyInputs"
           ],
-          "fullName": "AvailabilityService validateTransactionItems should return warnings for low stock after rental",
-          "status": "passed",
-          "title": "should return warnings for low stock after rental",
+          "fullName": "PenaltyCalculator utility methods validatePenaltyInputs should detect invalid dates",
+          "status": "pending",
+          "title": "should detect invalid dates",
           "failureMessages": [],
-          "duration": 1
+          "duration": null
         },
         {
           "ancestorTitles": [
-            "AvailabilityService",
-            "validateTransactionItems"
+            "PenaltyCalculator",
+            "utility methods",
+            "validatePenaltyInputs"
           ],
-          "fullName": "AvailabilityService validateTransactionItems should handle errors gracefully during validation",
-          "status": "passed",
-          "title": "should handle errors gracefully during validation",
+          "fullName": "PenaltyCalculator utility methods validatePenaltyInputs should detect empty condition",
+          "status": "pending",
+          "title": "should detect empty condition",
           "failureMessages": [],
-          "duration": 1
+          "duration": null
         },
         {
           "ancestorTitles": [
-            "createAvailabilityService factory"
+            "PenaltyCalculator",
+            "utility methods",
+            "validatePenaltyInputs"
           ],
-          "fullName": "createAvailabilityService factory should create availability service instance",
-          "status": "passed",
-          "title": "should create availability service instance",
+          "fullName": "PenaltyCalculator utility methods validatePenaltyInputs should detect invalid quantity",
+          "status": "pending",
+          "title": "should detect invalid quantity",
           "failureMessages": [],
-          "duration": 1
-        }
-      ],
-      "failureMessage": null
-    },
-    {
-      "testFilePath": "D:\\.work\\rental-software\\features\\kasir\\services\\transaksiService.test.ts",
-      "testFileResults": [
-        {
-          "ancestorTitles": [
-            "TransaksiService",
-            "createTransaksi"
-          ],
-          "fullName": "TransaksiService createTransaksi should create transaksi successfully with auto-generated code",
-          "status": "passed",
-          "title": "should create transaksi successfully with auto-generated code",
-          "failureMessages": [],
-          "duration": 17
+          "duration": null
         },
         {
           "ancestorTitles": [
-            "TransaksiService",
-            "createTransaksi"
+            "PenaltyCalculator",
+            "utility methods",
+            "validatePenaltyInputs"
           ],
-          "fullName": "TransaksiService createTransaksi should throw error if penyewa not found",
-          "status": "passed",
-          "title": "should throw error if penyewa not found",
+          "fullName": "PenaltyCalculator utility methods validatePenaltyInputs should detect very old return dates",
+          "status": "pending",
+          "title": "should detect very old return dates",
           "failureMessages": [],
-          "duration": 25
+          "duration": null
         },
         {
           "ancestorTitles": [
-            "TransaksiService",
-            "createTransaksi"
+            "PenaltyCalculator",
+            "utility methods",
+            "validatePenaltyInputs"
           ],
-          "fullName": "TransaksiService createTransaksi should throw error if product not available",
-          "status": "passed",
-          "title": "should throw error if product not available",
+          "fullName": "PenaltyCalculator utility methods validatePenaltyInputs should accumulate multiple errors",
+          "status": "pending",
+          "title": "should accumulate multiple errors",
           "failureMessages": [],
-          "duration": 1
+          "duration": null
         },
         {
           "ancestorTitles": [
-            "TransaksiService",
-            "createTransaksi"
+            "PenaltyCalculator",
+            "utility methods",
+            "getBusinessRules"
           ],
-          "fullName": "TransaksiService createTransaksi should throw error if insufficient product quantity",
-          "status": "passed",
-          "title": "should throw error if insufficient product quantity",
+          "fullName": "PenaltyCalculator utility methods getBusinessRules should return current business rules configuration",
+          "status": "pending",
+          "title": "should return current business rules configuration",
           "failureMessages": [],
-          "duration": 2
+          "duration": null
         },
         {
           "ancestorTitles": [
-            "TransaksiService",
-            "getTransaksiById"
+            "PenaltyCalculator",
+            "edge cases and boundary conditions"
           ],
-          "fullName": "TransaksiService getTransaksiById should return transaksi by ID",
-          "status": "passed",
-          "title": "should return transaksi by ID",
+          "fullName": "PenaltyCalculator edge cases and boundary conditions should handle very large modalAwal values",
+          "status": "pending",
+          "title": "should handle very large modalAwal values",
           "failureMessages": [],
-          "duration": 1
+          "duration": null
         },
         {
           "ancestorTitles": [
-            "TransaksiService",
-            "getTransaksiById"
+            "PenaltyCalculator",
+            "edge cases and boundary conditions"
           ],
-          "fullName": "TransaksiService getTransaksiById should throw error if transaksi not found",
-          "status": "passed",
-          "title": "should throw error if transaksi not found",
+          "fullName": "PenaltyCalculator edge cases and boundary conditions should handle leap year date calculations",
+          "status": "pending",
+          "title": "should handle leap year date calculations",
           "failureMessages": [],
-          "duration": 2
+          "duration": null
         },
         {
           "ancestorTitles": [
-            "TransaksiService",
-            "getTransaksiByCode"
+            "PenaltyCalculator",
+            "edge cases and boundary conditions"
           ],
-          "fullName": "TransaksiService getTransaksiByCode should return transaksi by code",
-          "status": "passed",
-          "title": "should return transaksi by code",
+          "fullName": "PenaltyCalculator edge cases and boundary conditions should handle timezone differences correctly",
+          "status": "pending",
+          "title": "should handle timezone differences correctly",
           "failureMessages": [],
-          "duration": 2
+          "duration": null
         },
         {
           "ancestorTitles": [
-            "TransaksiService",
-            "getTransaksiList"
+            "PenaltyCalculator",
+            "edge cases and boundary conditions"
           ],
-          "fullName": "TransaksiService getTransaksiList should return paginated transaksi list",
-          "status": "passed",
-          "title": "should return paginated transaksi list",
+          "fullName": "PenaltyCalculator edge cases and boundary conditions should handle case-insensitive condition matching",
+          "status": "pending",
+          "title": "should handle case-insensitive condition matching",
           "failureMessages": [],
-          "duration": 3
-        },
-        {
-          "ancestorTitles": [
-            "TransaksiService",
-            "getTransaksiList"
-          ],
-          "fullName": "TransaksiService getTransaksiList should filter by status",
-          "status": "passed",
-          "title": "should filter by status",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "TransaksiService",
-            "getTransaksiList"
-          ],
-          "fullName": "TransaksiService getTransaksiList should search by code or penyewa name",
-          "status": "passed",
-          "title": "should search by code or penyewa name",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "TransaksiService",
-            "updateTransaksiStatus"
-          ],
-          "fullName": "TransaksiService updateTransaksiStatus should update transaksi status successfully",
-          "status": "passed",
-          "title": "should update transaksi status successfully",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "TransaksiService",
-            "updateTransaksiStatus"
-          ],
-          "fullName": "TransaksiService updateTransaksiStatus should throw error if transaksi not found",
-          "status": "passed",
-          "title": "should throw error if transaksi not found",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "TransaksiService",
-            "updateTransaksiStatus"
-          ],
-          "fullName": "TransaksiService updateTransaksiStatus should validate status transitions",
-          "status": "passed",
-          "title": "should validate status transitions",
-          "failureMessages": [],
-          "duration": 0
-        },
-        {
-          "ancestorTitles": [
-            "TransaksiService",
-            "getTransaksiStats"
-          ],
-          "fullName": "TransaksiService getTransaksiStats should return transaction statistics",
-          "status": "passed",
-          "title": "should return transaction statistics",
-          "failureMessages": [],
-          "duration": 0
-        }
-      ],
-      "failureMessage": null
-    },
-    {
-      "testFilePath": "D:\\.work\\rental-software\\features\\kasir\\lib\\validation\\pickupValidation.test.ts",
-      "testFileResults": [
-        {
-          "ancestorTitles": [
-            "PickupBusinessRules",
-            "validateTransactionStatus"
-          ],
-          "fullName": "PickupBusinessRules validateTransactionStatus should validate active transaction status",
-          "status": "passed",
-          "title": "should validate active transaction status",
-          "failureMessages": [],
-          "duration": 13
-        },
-        {
-          "ancestorTitles": [
-            "PickupBusinessRules",
-            "validateTransactionStatus"
-          ],
-          "fullName": "PickupBusinessRules validateTransactionStatus should reject non-active transaction status",
-          "status": "passed",
-          "title": "should reject non-active transaction status",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PickupBusinessRules",
-            "validatePickupQuantity"
-          ],
-          "fullName": "PickupBusinessRules validatePickupQuantity should reject zero or negative quantity",
-          "status": "passed",
-          "title": "should reject zero or negative quantity",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PickupBusinessRules",
-            "validatePickupQuantity"
-          ],
-          "fullName": "PickupBusinessRules validatePickupQuantity should reject quantity exceeding available",
-          "status": "passed",
-          "title": "should reject quantity exceeding available",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PickupBusinessRules",
-            "validatePickupQuantity"
-          ],
-          "fullName": "PickupBusinessRules validatePickupQuantity should warn for partial pickup",
-          "status": "passed",
-          "title": "should warn for partial pickup",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PickupBusinessRules",
-            "validateItemNotFullyPickedUp"
-          ],
-          "fullName": "PickupBusinessRules validateItemNotFullyPickedUp should allow pickup for available items",
-          "status": "passed",
-          "title": "should allow pickup for available items",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PickupBusinessRules",
-            "validateItemNotFullyPickedUp"
-          ],
-          "fullName": "PickupBusinessRules validateItemNotFullyPickedUp should reject pickup for fully picked up items",
-          "status": "passed",
-          "title": "should reject pickup for fully picked up items",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PickupBusinessRules",
-            "validatePickupBatchLimits"
-          ],
-          "fullName": "PickupBusinessRules validatePickupBatchLimits should validate normal batch size",
-          "status": "passed",
-          "title": "should validate normal batch size",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PickupBusinessRules",
-            "validatePickupBatchLimits"
-          ],
-          "fullName": "PickupBusinessRules validatePickupBatchLimits should warn for large batches",
-          "status": "passed",
-          "title": "should warn for large batches",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PickupBusinessRules",
-            "validatePickupBatchLimits"
-          ],
-          "fullName": "PickupBusinessRules validatePickupBatchLimits should reject batches exceeding item limit",
-          "status": "passed",
-          "title": "should reject batches exceeding item limit",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "PickupBusinessRules",
-            "validatePickupBatchLimits"
-          ],
-          "fullName": "PickupBusinessRules validatePickupBatchLimits should reject batches exceeding quantity limit",
-          "status": "passed",
-          "title": "should reject batches exceeding quantity limit",
-          "failureMessages": [],
-          "duration": 0
-        },
-        {
-          "ancestorTitles": [
-            "PickupBusinessRules",
-            "validateNoDuplicateItems"
-          ],
-          "fullName": "PickupBusinessRules validateNoDuplicateItems should validate unique items",
-          "status": "passed",
-          "title": "should validate unique items",
-          "failureMessages": [],
-          "duration": 0
-        },
-        {
-          "ancestorTitles": [
-            "PickupBusinessRules",
-            "validateNoDuplicateItems"
-          ],
-          "fullName": "PickupBusinessRules validateNoDuplicateItems should reject duplicate items",
-          "status": "passed",
-          "title": "should reject duplicate items",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PickupBusinessRules",
-            "validateBusinessHours"
-          ],
-          "fullName": "PickupBusinessRules validateBusinessHours should validate normal business hours",
-          "status": "passed",
-          "title": "should validate normal business hours",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PickupBusinessRules",
-            "validateBusinessHours"
-          ],
-          "fullName": "PickupBusinessRules validateBusinessHours should warn for weekend pickup",
-          "status": "passed",
-          "title": "should warn for weekend pickup",
-          "failureMessages": [],
-          "duration": 0
-        },
-        {
-          "ancestorTitles": [
-            "PickupBusinessRules",
-            "validateBusinessHours"
-          ],
-          "fullName": "PickupBusinessRules validateBusinessHours should warn for outside business hours",
-          "status": "passed",
-          "title": "should warn for outside business hours",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PickupBusinessRules",
-            "validateConcurrentPickup"
-          ],
-          "fullName": "PickupBusinessRules validateConcurrentPickup should validate when no concurrent pickup detected",
-          "status": "passed",
-          "title": "should validate when no concurrent pickup detected",
-          "failureMessages": [],
-          "duration": 0
-        },
-        {
-          "ancestorTitles": [
-            "PickupBusinessRules",
-            "validateConcurrentPickup"
-          ],
-          "fullName": "PickupBusinessRules validateConcurrentPickup should detect potential concurrent pickup",
-          "status": "passed",
-          "title": "should detect potential concurrent pickup",
-          "failureMessages": [],
-          "duration": 0
-        },
-        {
-          "ancestorTitles": [
-            "PickupValidator",
-            "validatePickupRequest"
-          ],
-          "fullName": "PickupValidator validatePickupRequest should perform comprehensive validation and return valid result",
-          "status": "passed",
-          "title": "should perform comprehensive validation and return valid result",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "PickupValidator",
-            "validatePickupRequest"
-          ],
-          "fullName": "PickupValidator validatePickupRequest should detect multiple validation errors",
-          "status": "passed",
-          "title": "should detect multiple validation errors",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PickupValidator",
-            "validatePickupRequest"
-          ],
-          "fullName": "PickupValidator validatePickupRequest should categorize validation results correctly",
-          "status": "passed",
-          "title": "should categorize validation results correctly",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PickupValidator",
-            "generateValidationReport"
-          ],
-          "fullName": "PickupValidator generateValidationReport should generate comprehensive validation report",
-          "status": "passed",
-          "title": "should generate comprehensive validation report",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PickupValidator",
-            "generateValidationReport"
-          ],
-          "fullName": "PickupValidator generateValidationReport should generate valid status report",
-          "status": "passed",
-          "title": "should generate valid status report",
-          "failureMessages": [],
-          "duration": 1
-        }
-      ],
-      "failureMessage": null
-    },
-    {
-      "testFilePath": "D:\\.work\\rental-software\\features\\kasir\\hooks\\usePickupProcess.test.ts",
-      "testFileResults": [
-        {
-          "ancestorTitles": [
-            "usePickupProcess"
-          ],
-          "fullName": "usePickupProcess should handle successful pickup",
-          "status": "passed",
-          "title": "should handle successful pickup",
-          "failureMessages": [],
-          "duration": 86
-        },
-        {
-          "ancestorTitles": [
-            "usePickupProcess"
-          ],
-          "fullName": "usePickupProcess should handle failed pickup",
-          "status": "passed",
-          "title": "should handle failed pickup",
-          "failureMessages": [],
-          "duration": 86
-        },
-        {
-          "ancestorTitles": [
-            "usePickupValidation"
-          ],
-          "fullName": "usePickupValidation should validate pickup items correctly",
-          "status": "passed",
-          "title": "should validate pickup items correctly",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "usePickupValidation"
-          ],
-          "fullName": "usePickupValidation should reject excessive pickup quantities",
-          "status": "passed",
-          "title": "should reject excessive pickup quantities",
-          "failureMessages": [],
-          "duration": 0
-        },
-        {
-          "ancestorTitles": [
-            "usePickupValidation"
-          ],
-          "fullName": "usePickupValidation should reject zero quantities",
-          "status": "passed",
-          "title": "should reject zero quantities",
-          "failureMessages": [],
-          "duration": 0
-        },
-        {
-          "ancestorTitles": [
-            "usePickupValidation"
-          ],
-          "fullName": "usePickupValidation should require at least one item for pickup",
-          "status": "passed",
-          "title": "should require at least one item for pickup",
-          "failureMessages": [],
-          "duration": 1
+          "duration": null
         }
       ],
       "failureMessage": null

@@ -5,6 +5,7 @@
  */
 
 import { PrismaClient } from '@prisma/client'
+import { calculateAvailableStock } from '../lib/typeUtils'
 
 export interface ProductAvailability {
   productId: string
@@ -39,13 +40,12 @@ export class AvailabilityService {
     productId: string,
     checkDate: Date = new Date()
   ): Promise<ProductAvailability> {
-    // Get product with new inventory tracking fields
+    // Get product with inventory tracking fields
     const product = await this.prisma.product.findUnique({
       where: { id: productId },
       select: {
         id: true,
         quantity: true,        // Total inventory (immutable)
-        availableStock: true,  // Currently available for rent
         rentedStock: true,     // Currently rented out
         status: true
       }
@@ -92,12 +92,14 @@ export class AvailabilityService {
     })
 
     // SIMPLIFIED: Use database fields directly instead of calculations
-    // This eliminates race conditions and complex calculations
+    // Calculate available stock using utility function
+    const availableQuantity = calculateAvailableStock(product.quantity, product.rentedStock)
+    
     return {
       productId,
       totalStock: product.quantity,           // Total inventory (unchanged during rentals)
       rentedQuantity: product.rentedStock,    // Currently rented out
-      availableQuantity: product.availableStock, // Currently available for rent
+      availableQuantity,                      // Calculated: quantity - rentedStock
       activeRentals: activeRentals.map(rental => ({
         transaksiId: rental.transaksi.id,
         transaksiKode: rental.transaksi.kode,
@@ -227,7 +229,6 @@ export class AvailabilityService {
       select: {
         id: true,
         quantity: true,
-        availableStock: true,
         rentedStock: true
       }
     })
@@ -238,12 +239,13 @@ export class AvailabilityService {
     let totalRented = 0
 
     for (const product of products) {
-      // SIMPLIFIED: Use database fields directly for summary
+      // Calculate available stock using utility function
+      const availableStock = calculateAvailableStock(product.quantity, product.rentedStock)
       totalRented += product.rentedStock
 
-      if (product.availableStock === 0) {
+      if (availableStock === 0) {
         outOfStock++
-      } else if (product.availableStock === product.quantity) {
+      } else if (availableStock === product.quantity) {
         fullyAvailable++
       } else {
         partiallyAvailable++
@@ -280,7 +282,6 @@ export class AvailabilityService {
         name: true,
         code: true,
         quantity: true,
-        availableStock: true,
         rentedStock: true,
         category: {
           select: { name: true }
@@ -291,14 +292,16 @@ export class AvailabilityService {
     const lowStockProducts = []
 
     for (const product of products) {
-      // SIMPLIFIED: Use database fields directly for low stock check
-      if (product.availableStock <= threshold && product.availableStock > 0) {
+      // Calculate available stock using utility function
+      const availableStock = calculateAvailableStock(product.quantity, product.rentedStock)
+      
+      if (availableStock <= threshold && availableStock > 0) {
         lowStockProducts.push({
           productId: product.id,
           productName: product.name,
           productCode: product.code,
           totalStock: product.quantity,
-          availableQuantity: product.availableStock,
+          availableQuantity: availableStock,
           categoryName: product.category.name
         })
       }

@@ -7,14 +7,14 @@
 import type {
   // Dashboard types
   DashboardStats,
-  
+
   // Penyewa types
   CreatePenyewaRequest,
   UpdatePenyewaRequest,
   PenyewaResponse,
   PenyewaListResponse,
   PenyewaQueryParams,
-  
+
   // Transaksi types
   CreateTransaksiRequest,
   UpdateTransaksiRequest,
@@ -22,18 +22,19 @@ import type {
   TransaksiListResponse,
   TransaksiQueryParams,
   TransactionStatus,
-  
+
   // Pembayaran types
   CreatePembayaranRequest,
   PembayaranResponse,
-  
+
   // Product types
   ProductAvailabilityListResponse,
   ProductAvailabilityQueryParams,
-  
+
   // API wrapper types
   ApiResponse,
 } from './types'
+import { kasirLogger } from './lib/logger'
 
 // Base API configuration
 const API_BASE_URL = '/api/kasir'
@@ -144,7 +145,7 @@ function sanitizeGenericInput(input: string): string {
 /**
  * Deep sanitize object recursively
  * Applies sanitization to nested objects and arrays
- * 
+ *
  * @deprecated Not currently used in API client - for future use
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -178,20 +179,115 @@ export class KasirApiError extends Error {
     public code: string,
     message: string,
     public details?: Record<string, unknown>,
-    public validationErrors?: Array<{ field: string; message: string }>
+    public validationErrors?: Array<{ field: string; message: string }>,
   ) {
     super(message)
     this.name = 'KasirApiError'
   }
 }
 
-// Generic fetch wrapper with error handling
-async function apiRequest<T>(
-  endpoint: string,
-  options: RequestInit = {}
-): Promise<T> {
-  const url = `${API_BASE_URL}${endpoint}`
+// Circuit breaker state management
+class CircuitBreaker {
+  private failureCount = 0
+  private lastFailureTime = 0
+  private state: 'CLOSED' | 'OPEN' | 'HALF_OPEN' = 'CLOSED'
   
+  constructor(
+    private failureThreshold = 3,
+    private recoveryTimeout = 30000, // 30 seconds
+  ) {}
+
+  async execute<T>(operation: () => Promise<T>): Promise<T> {
+    if (this.state === 'OPEN') {
+      if (Date.now() - this.lastFailureTime < this.recoveryTimeout) {
+        throw new KasirApiError('CIRCUIT_BREAKER_OPEN', 'Service temporarily unavailable. Please try again later.')
+      }
+      this.state = 'HALF_OPEN'
+    }
+
+    try {
+      const result = await operation()
+      this.onSuccess()
+      return result
+    } catch (error) {
+      this.onFailure()
+      throw error
+    }
+  }
+
+  private onSuccess() {
+    this.failureCount = 0
+    this.state = 'CLOSED'
+  }
+
+  private onFailure() {
+    this.failureCount++
+    this.lastFailureTime = Date.now()
+    
+    if (this.failureCount >= this.failureThreshold) {
+      this.state = 'OPEN'
+    }
+  }
+
+  getState() {
+    return this.state
+  }
+}
+
+// Global circuit breaker for return operations
+const returnCircuitBreaker = new CircuitBreaker(3, 30000)
+
+// Enhanced fetch wrapper with circuit breaker and retry logic
+async function apiRequestWithRetry<T>(
+  endpoint: string, 
+  options: RequestInit = {},
+  retryOptions = { maxRetries: 2, baseDelay: 1000 }
+): Promise<T> {
+  return returnCircuitBreaker.execute(async () => {
+    let lastError: Error | null = null
+    
+    for (let attempt = 0; attempt <= retryOptions.maxRetries; attempt++) {
+      try {
+        return await apiRequest<T>(endpoint, options)
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error(String(error))
+        
+        // Don't retry on validation errors or client errors (4xx)
+        if (error instanceof KasirApiError) {
+          if (error.code === 'VALIDATION_ERROR' || 
+              error.code === 'UNIFIED_CONDITION_VALIDATION_ERROR' ||
+              error.code === 'UNIFIED_QUANTITY_VALIDATION_ERROR') {
+            throw error // Don't retry validation errors
+          }
+        }
+        
+        // Don't retry on final attempt
+        if (attempt === retryOptions.maxRetries) {
+          break
+        }
+        
+        // Exponential backoff with jitter
+        const delay = retryOptions.baseDelay * Math.pow(2, attempt) + Math.random() * 1000
+        kasirLogger.apiCalls.warn('apiRequestWithRetry', `Attempt ${attempt + 1} failed, retrying in ${delay}ms`, {
+          endpoint,
+          error: lastError.message,
+          attempt: attempt + 1,
+          maxRetries: retryOptions.maxRetries,
+        })
+        
+        await new Promise(resolve => setTimeout(resolve, delay))
+      }
+    }
+    
+    // This should never happen as we have a lastError from the loop
+    throw lastError || new Error('Unknown error occurred during retry attempts')
+  })
+}
+
+// Generic fetch wrapper with error handling
+async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  const url = `${API_BASE_URL}${endpoint}`
+
   const config: RequestInit = {
     headers: {
       'Content-Type': 'application/json',
@@ -209,12 +305,14 @@ async function apiRequest<T>(
         code: 'UNKNOWN_ERROR',
         message: data.message || 'Terjadi kesalahan pada server',
       }
-      
+
       throw new KasirApiError(
         error.code,
         error.message,
         error.details,
-        Array.isArray(error.details) ? error.details as Array<{ field: string; message: string }> : undefined
+        Array.isArray(error.details)
+          ? (error.details as Array<{ field: string; message: string }>)
+          : undefined,
       )
     }
 
@@ -222,7 +320,7 @@ async function apiRequest<T>(
       throw new KasirApiError(
         data.error?.code || 'API_ERROR',
         data.message || 'Terjadi kesalahan',
-        data.error?.details
+        data.error?.details,
       )
     }
 
@@ -231,27 +329,21 @@ async function apiRequest<T>(
     if (error instanceof KasirApiError) {
       throw error
     }
-    
+
     // Handle network errors
     if (error instanceof TypeError && error.message.includes('fetch')) {
-      throw new KasirApiError(
-        'NETWORK_ERROR',
-        'Koneksi bermasalah. Silakan coba lagi.'
-      )
+      throw new KasirApiError('NETWORK_ERROR', 'Koneksi bermasalah. Silakan coba lagi.')
     }
-    
+
     // Handle other errors
-    throw new KasirApiError(
-      'UNKNOWN_ERROR',
-      'Terjadi kesalahan tidak terduga'
-    )
+    throw new KasirApiError('UNKNOWN_ERROR', 'Terjadi kesalahan tidak terduga')
   }
 }
 
 // Build query string from params
 function buildQueryString(params: Record<string, unknown>): string {
   const searchParams = new URLSearchParams()
-  
+
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined && value !== null && value !== '') {
       if (typeof value === 'object' && !Array.isArray(value)) {
@@ -263,7 +355,7 @@ function buildQueryString(params: Record<string, unknown>): string {
         })
       } else if (Array.isArray(value)) {
         // Handle arrays
-        value.forEach(item => {
+        value.forEach((item) => {
           searchParams.append(key, String(item))
         })
       } else {
@@ -271,7 +363,7 @@ function buildQueryString(params: Record<string, unknown>): string {
       }
     }
   })
-  
+
   return searchParams.toString()
 }
 
@@ -287,8 +379,10 @@ export class KasirApi {
   // Penyewa (Customer) Operations
   static async createPenyewa(data: CreatePenyewaRequest): Promise<PenyewaResponse> {
     // Sanitize input data before sending
-    const sanitizedData = sanitizePenyewaInput(data as unknown as Record<string, unknown>) as unknown as CreatePenyewaRequest
-    
+    const sanitizedData = sanitizePenyewaInput(
+      data as unknown as Record<string, unknown>,
+    ) as unknown as CreatePenyewaRequest
+
     return apiRequest<PenyewaResponse>('/penyewa', {
       method: 'POST',
       body: JSON.stringify(sanitizedData),
@@ -307,8 +401,10 @@ export class KasirApi {
 
   static async updatePenyewa(id: string, data: UpdatePenyewaRequest): Promise<PenyewaResponse> {
     // Sanitize input data before sending
-    const sanitizedData = sanitizePenyewaInput(data as unknown as Record<string, unknown>) as unknown as UpdatePenyewaRequest
-    
+    const sanitizedData = sanitizePenyewaInput(
+      data as unknown as Record<string, unknown>,
+    ) as unknown as UpdatePenyewaRequest
+
     return apiRequest<PenyewaResponse>(`/penyewa/${id}`, {
       method: 'PUT',
       body: JSON.stringify(sanitizedData),
@@ -333,15 +429,303 @@ export class KasirApi {
     return apiRequest<TransaksiListResponse>(endpoint)
   }
 
-  static async updateTransaksi(kode: string, data: UpdateTransaksiRequest): Promise<TransaksiResponse> {
+  static async updateTransaksi(
+    kode: string,
+    data: UpdateTransaksiRequest,
+  ): Promise<TransaksiResponse> {
     return apiRequest<TransaksiResponse>(`/transaksi/${kode}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     })
   }
 
+  // Process return for transaction (backward compatible)
+  static async processReturn(
+    transactionId: string,
+    returnData: {
+      items: Array<{
+        itemId: string
+        kondisiAkhir: string
+        jumlahKembali: number
+      }>
+      catatan?: string
+      tglKembali?: string
+    },
+  ): Promise<TransaksiResponse> {
+    return apiRequest<TransaksiResponse>(`/transaksi/${transactionId}/pengembalian`, {
+      method: 'PUT',
+      body: JSON.stringify(returnData),
+    })
+  }
+
+  // Enhanced multi-condition return processing (TSK-24 Phase 2)
+  static async processEnhancedReturn(
+    transactionId: string,
+    returnData: {
+      items: Array<{
+        itemId: string
+        // Single condition (existing format)
+        kondisiAkhir?: string
+        jumlahKembali?: number
+        // Multi-condition (enhanced format)
+        conditions?: Array<{
+          kondisiAkhir: string
+          jumlahKembali: number
+          modalAwal?: number
+        }>
+      }>
+      catatan?: string
+      tglKembali?: string
+    },
+  ): Promise<{
+    success: boolean
+    processingMode: 'single-condition' | 'multi-condition' | 'mixed'
+    transactionId: string
+    itemsProcessed: number
+    conditionSplitsProcessed: number
+    totalPenalty: number
+    message: string
+    errors?: string[]
+    warnings?: string[]
+  }> {
+    const timer = kasirLogger.performance.startTimer(
+      'processEnhancedReturn',
+      'Enhanced return API call',
+    )
+
+    // Detect processing mode for logging
+    const hasMultiConditions = returnData.items.some(
+      (item) => item.conditions && item.conditions.length > 1,
+    )
+    const totalConditions = returnData.items.reduce(
+      (sum, item) => sum + (item.conditions?.length || 1),
+      0,
+    )
+
+    kasirLogger.apiCalls.info('processEnhancedReturn', 'Starting enhanced return API call', {
+      transactionId,
+      itemCount: returnData.items.length,
+      totalConditions,
+      hasMultiConditions,
+      hasNotes: !!returnData.catatan,
+    })
+
+    try {
+      const result = await apiRequestWithRetry<{
+        success: boolean
+        processingMode: 'single-condition' | 'multi-condition' | 'mixed'
+        transactionId: string
+        itemsProcessed: number
+        conditionSplitsProcessed: number
+        totalPenalty: number
+        message: string
+        errors?: string[]
+        warnings?: string[]
+      }>(`/transaksi/${transactionId}/pengembalian`, {
+        method: 'PUT',
+        body: JSON.stringify(returnData),
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Multi-Condition': 'true', // Signal for enhanced processing
+          'X-Retry-Safe': 'true', // Indicate this operation is safe to retry
+        },
+      }, {
+        maxRetries: 2,
+        baseDelay: 1000,
+      })
+
+      kasirLogger.apiCalls.info('processEnhancedReturn', 'Enhanced return API call completed', {
+        success: result.success,
+        processingMode: result.processingMode,
+        itemsProcessed: result.itemsProcessed,
+        conditionSplitsProcessed: result.conditionSplitsProcessed,
+        totalPenalty: result.totalPenalty,
+        hasErrors: !!result.errors?.length,
+        hasWarnings: !!result.warnings?.length,
+      })
+
+      timer.end('Enhanced return API call completed')
+      return result
+    } catch (error) {
+      kasirLogger.apiCalls.error(
+        'processEnhancedReturn',
+        'Enhanced return API call failed',
+        error instanceof Error ? error : { error: String(error) },
+      )
+      throw error
+    }
+  }
+
+  // Calculate enhanced penalties for multi-condition scenarios
+  static async calculateEnhancedPenalties(
+    transactionId: string,
+    returnData: {
+      items: Array<{
+        itemId: string
+        // Single condition (existing format)
+        kondisiAkhir?: string
+        jumlahKembali?: number
+        // Multi-condition (enhanced format)
+        conditions?: Array<{
+          kondisiAkhir: string
+          jumlahKembali: number
+          modalAwal?: number
+        }>
+      }>
+      catatan?: string
+      tglKembali?: string
+    },
+  ): Promise<{
+    totalPenalty: number
+    lateDays: number
+    breakdown: Array<{
+      itemId: string
+      itemName: string
+      splitIndex?: number
+      kondisiAkhir: string
+      jumlahKembali: number
+      isLostItem: boolean
+      latePenalty: number
+      conditionPenalty: number
+      modalAwalUsed?: number
+      totalItemPenalty: number
+      calculationMethod: 'late_fee' | 'modal_awal' | 'damage_fee' | 'none'
+      description: string
+      rateApplied?: number
+    }>
+    summary: {
+      totalItems: number
+      totalConditions: number
+      onTimeItems: number
+      lateItems: number
+      damagedItems: number
+      lostItems: number
+      singleConditionItems: number
+      multiConditionItems: number
+      averageConditionsPerItem: number
+    }
+    calculationMetadata: {
+      processingMode: 'single' | 'multi' | 'mixed'
+      itemsProcessed: number
+      conditionSplits: number
+      calculatedAt: string
+    }
+  }> {
+    const timer = kasirLogger.performance.startTimer(
+      'calculateEnhancedPenalties',
+      'Enhanced penalty calculation API call',
+    )
+
+    // Analyze data for logging
+    const hasMultiConditions = returnData.items.some(
+      (item) => item.conditions && item.conditions.length > 1,
+    )
+    const totalConditions = returnData.items.reduce(
+      (sum, item) => sum + (item.conditions?.length || 1),
+      0,
+    )
+
+    kasirLogger.apiCalls.info(
+      'calculateEnhancedPenalties',
+      'Starting enhanced penalty calculation',
+      {
+        transactionId,
+        itemCount: returnData.items.length,
+        totalConditions,
+        hasMultiConditions,
+      },
+    )
+
+    try {
+      const result = await apiRequest<{
+        totalPenalty: number
+        lateDays: number
+        breakdown: Array<{
+          itemId: string
+          itemName: string
+          splitIndex?: number
+          kondisiAkhir: string
+          jumlahKembali: number
+          isLostItem: boolean
+          latePenalty: number
+          conditionPenalty: number
+          modalAwalUsed?: number
+          totalItemPenalty: number
+          calculationMethod: 'late_fee' | 'modal_awal' | 'damage_fee' | 'none'
+          description: string
+          rateApplied?: number
+        }>
+        summary: {
+          totalItems: number
+          totalConditions: number
+          onTimeItems: number
+          lateItems: number
+          damagedItems: number
+          lostItems: number
+          singleConditionItems: number
+          multiConditionItems: number
+          averageConditionsPerItem: number
+        }
+        calculationMetadata: {
+          processingMode: 'single' | 'multi' | 'mixed'
+          itemsProcessed: number
+          conditionSplits: number
+          calculatedAt: string
+        }
+      }>(`/transaksi/${transactionId}/pengembalian/calculate`, {
+        method: 'POST',
+        body: JSON.stringify(returnData),
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Multi-Condition': 'true',
+        },
+      })
+
+      kasirLogger.penaltyCalc.info(
+        'calculateEnhancedPenalties',
+        'Enhanced penalty calculation completed',
+        {
+          totalPenalty: result.totalPenalty,
+          lateDays: result.lateDays,
+          breakdownItems: result.breakdown.length,
+          processingMode: result.calculationMetadata.processingMode,
+          itemsProcessed: result.calculationMetadata.itemsProcessed,
+          conditionSplits: result.calculationMetadata.conditionSplits,
+        },
+      )
+
+      timer.end('Enhanced penalty calculation completed')
+      return result
+    } catch (error) {
+      kasirLogger.penaltyCalc.error(
+        'calculateEnhancedPenalties',
+        'Enhanced penalty calculation failed',
+        error instanceof Error ? error : { error: String(error) },
+      )
+      throw error
+    }
+  }
+
+  // Pickup operations (TSK-22 integration)
+  static async processPickup(
+    transactionId: string,
+    pickupData: {
+      items: Array<{
+        id: string
+        jumlahDiambil: number
+      }>
+    },
+  ): Promise<TransaksiResponse> {
+    return apiRequest<TransaksiResponse>(`/transaksi/${transactionId}/pickup`, {
+      method: 'PUT',
+      body: JSON.stringify(pickupData),
+    })
+  }
+
   // Produk (Product) Operations
-  static async getAvailableProducts(params: ProductAvailabilityQueryParams = {}): Promise<ProductAvailabilityListResponse> {
+  static async getAvailableProducts(
+    params: ProductAvailabilityQueryParams = {},
+  ): Promise<ProductAvailabilityListResponse> {
     const queryString = buildQueryString(params)
     const endpoint = queryString ? `/produk/available?${queryString}` : '/produk/available'
     return apiRequest<ProductAvailabilityListResponse>(endpoint)
@@ -356,8 +740,8 @@ export class KasirApi {
   }
 
   static async updatePembayaran(
-    id: string, 
-    data: Partial<Omit<CreatePembayaranRequest, 'transaksiId'>>
+    id: string,
+    data: Partial<Omit<CreatePembayaranRequest, 'transaksiId'>>,
   ): Promise<PembayaranResponse> {
     return apiRequest<PembayaranResponse>(`/pembayaran/${id}`, {
       method: 'PUT',
@@ -391,33 +775,102 @@ export const kasirApi = {
     getByKode: (kode: string) => KasirApi.getTransaksiByKode(kode),
     getAll: (params?: TransaksiQueryParams) => KasirApi.getTransaksiList(params),
     update: (kode: string, data: UpdateTransaksiRequest) => KasirApi.updateTransaksi(kode, data),
-    getByStatus: (status: string) => KasirApi.getTransaksiList({ status: status as TransactionStatus }),
+    getByStatus: (status: string) =>
+      KasirApi.getTransaksiList({ status: status as TransactionStatus }),
     search: (query: string) => KasirApi.getTransaksiList({ search: query } as TransaksiQueryParams),
   },
 
+  // Return operations (backward compatible)
+  processReturn: (
+    transactionId: string,
+    returnData: {
+      items: Array<{
+        itemId: string
+        kondisiAkhir: string
+        jumlahKembali: number
+      }>
+      catatan?: string
+      tglKembali?: string
+    },
+  ) => KasirApi.processReturn(transactionId, returnData),
+
+  // Enhanced multi-condition return operations (TSK-24 Phase 2)
+  processEnhancedReturn: (
+    transactionId: string,
+    returnData: {
+      items: Array<{
+        itemId: string
+        // Single condition (existing format)
+        kondisiAkhir?: string
+        jumlahKembali?: number
+        // Multi-condition (enhanced format)
+        conditions?: Array<{
+          kondisiAkhir: string
+          jumlahKembali: number
+          modalAwal?: number
+        }>
+      }>
+      catatan?: string
+      tglKembali?: string
+    },
+  ) => KasirApi.processEnhancedReturn(transactionId, returnData),
+
+  calculateEnhancedPenalties: (
+    transactionId: string,
+    returnData: {
+      items: Array<{
+        itemId: string
+        kondisiAkhir?: string
+        jumlahKembali?: number
+        conditions?: Array<{
+          kondisiAkhir: string
+          jumlahKembali: number
+          modalAwal?: number
+        }>
+      }>
+      catatan?: string
+      tglKembali?: string
+    },
+  ) => KasirApi.calculateEnhancedPenalties(transactionId, returnData),
+
+  // Transaction lookup by code (for return process)
+  getTransactionByCode: (code: string) => KasirApi.getTransaksiByKode(code),
+
+  // Pickup operations
+  processPickup: (
+    transactionId: string,
+    pickupData: {
+      items: Array<{
+        id: string
+        jumlahDiambil: number
+      }>
+    },
+  ) => KasirApi.processPickup(transactionId, pickupData),
+
   // Product shortcuts
   produk: {
-    getAvailable: (params?: ProductAvailabilityQueryParams) => KasirApi.getAvailableProducts(params),
+    getAvailable: (params?: ProductAvailabilityQueryParams) =>
+      KasirApi.getAvailableProducts(params),
     search: (query: string) => KasirApi.getAvailableProducts({ search: query, available: true }),
-    getByCategory: (categoryId: string) => KasirApi.getAvailableProducts({ categoryId, available: true }),
+    getByCategory: (categoryId: string) =>
+      KasirApi.getAvailableProducts({ categoryId, available: true }),
     getById: (id: string) => {
       // Get specific product details using the available products API
       // Since kasir available API doesn't support direct ID lookup, we'll filter in frontend
-      return KasirApi.getAvailableProducts({ search: '', available: false })
-        .then(response => {
-          const product = response.data.find(p => p.id === id)
-          if (!product) {
-            throw new Error(`Product with ID ${id} not found`)
-          }
-          return product
-        })
+      return KasirApi.getAvailableProducts({ search: '', available: false }).then((response) => {
+        const product = response.data.find((p) => p.id === id)
+        if (!product) {
+          throw new Error(`Product with ID ${id} not found`)
+        }
+        return product
+      })
     },
   },
 
   // Payment shortcuts
   pembayaran: {
     create: (data: CreatePembayaranRequest) => KasirApi.createPembayaran(data),
-    update: (id: string, data: Partial<Omit<CreatePembayaranRequest, 'transaksiId'>>) => 
+    update: (id: string, data: Partial<Omit<CreatePembayaranRequest, 'transaksiId'>>) =>
       KasirApi.updatePembayaran(id, data),
   },
 }

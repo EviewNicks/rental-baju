@@ -1,244 +1,330 @@
-2025-07-17T12:01:34.710Z [ERROR] [ProductService][createProduct] Gagal membuat produk
+== GET TRANSACTION CODE ===
+
 {
-  "error": {},
-  "performance": {
-    "timestamp": 1752753694709,
-    "memory": {
-      "rss": 950714368,
-      "heapTotal": 139264000,
-      "heapUsed": 131258328,
-      "external": 19428144,
-      "arrayBuffers": 6424131
+    "success": true,
+    "data": {
+        "id": "e911d80e-b37b-4003-b7fa-86b90e02fb25",
+        "kode": "TXN-20250808-001",
+        "penyewa": {
+            "id": "c11dfe97-735f-4d5b-9e58-74ecad4e3421",
+            "nama": "Newbie",
+            "telepon": "08123456789",
+            "alamat": "02/03, Jl.EMpang no.7 , Kel. Cppo"
+        },
+        "status": "active",
+        "totalHarga": 450000,
+        "jumlahBayar": 450000,
+        "sisaBayar": 0,
+        "tglMulai": "2025-08-09T00:00:00.000Z",
+        "tglSelesai": "2025-08-12T00:00:00.000Z",
+        "tglKembali": null,
+        "metodeBayar": "tunai",
+        "catatan": null,
+        "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
+        "createdAt": "2025-08-08T05:54:19.205Z",
+        "updatedAt": "2025-08-08T05:54:31.369Z",
+        "items": [
+            {
+                "id": "9a2db264-142a-4163-a559-1dd9603a5be1",
+                "produk": {
+                    "id": "187370f2-6fe3-40f9-8f0f-adbed01ac2bd",
+                    "code": "DRS2",
+                    "name": "Dress Elegant Red",
+                    "imageUrl": "products/image.png",
+                    "size": "M",
+                    "color": "Pink ",
+                    "category": "Baju Ungu"
+                },
+                "jumlah": 2,
+                "jumlahDiambil": 2,
+                "hargaSewa": 50000,
+                "durasi": 3,
+                "subtotal": 300000,
+                "kondisiAwal": "baik",
+                "kondisiAkhir": null,
+                "statusKembali": "belum",
+                "totalReturnPenalty": 0
+            },
+            {
+                "id": "b4f19749-4185-4eaf-8cdb-779620b34fc3",
+                "produk": {
+                    "id": "6bf8bdc3-44dd-4159-a6b7-0dd2f30e0e66",
+                    "code": "GMB5",
+                    "name": "Baju Merah",
+                    "imageUrl": "products/image.png",
+                    "size": "S",
+                    "color": "Pink ",
+                    "category": "Baju Ungu"
+                },
+                "jumlah": 1,
+                "jumlahDiambil": 1,
+                "hargaSewa": 50000,
+                "durasi": 3,
+                "subtotal": 150000,
+                "kondisiAwal": "baik",
+                "kondisiAkhir": null,
+                "statusKembali": "belum",
+                "totalReturnPenalty": 0
+            }
+        ],
+        "pembayaran": [
+            {
+                "id": "631b27f1-52fb-4272-8654-99094ea787f5",
+                "jumlah": 450000,
+                "metode": "tunai",
+                "referensi": null,
+                "catatan": "Pembayaran awal transaksi",
+                "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
+                "createdAt": "2025-08-08T05:54:31.046Z"
+            }
+        ],
+        "aktivitas": [
+            {
+                "id": "52691451-7133-469f-8131-799ee47a410d",
+                "tipe": "status_pickup",
+                "deskripsi": "Status pickup: 2 lengkap, 0 sebagian, 0 belum",
+                "data": {
+                    "timestamp": "2025-08-08T08:26:04.870Z",
+                    "pickupStats": {
+                        "totalItems": 2,
+                        "notPickedUp": 0,
+                        "fullyPickedUp": 2,
+                        "partiallyPickedUp": 0
+                    },
+                    "calculatedBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp"
+                },
+                "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
+                "createdAt": "2025-08-08T08:26:04.873Z"
+            },
+            {
+                "id": "85d7dd1b-80fb-4ed4-8d31-1916b0e1635b",
+                "tipe": "diambil",
+                "deskripsi": "Pickup dilakukan: 2 item, 1 item",
+                "data": {
+                    "items": [
+                        {
+                            "itemId": "9a2db264-142a-4163-a559-1dd9603a5be1",
+                            "jumlahDiambil": 2
+                        },
+                        {
+                            "itemId": "b4f19749-4185-4eaf-8cdb-779620b34fc3",
+                            "jumlahDiambil": 1
+                        }
+                    ],
+                    "timestamp": "2025-08-08T08:26:01.527Z",
+                    "processedBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp"
+                },
+                "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
+                "createdAt": "2025-08-08T08:26:01.531Z"
+            },
+            {
+                "id": "aad63df0-1986-456b-ba1d-544bdc960bf9",
+                "tipe": "dibayar",
+                "deskripsi": "Pembayaran tunai sebesar Rp 450.000",
+                "data": {
+                    "amount": 450000,
+                    "method": "tunai",
+                    "newTotal": "450000",
+                    "paymentId": "631b27f1-52fb-4272-8654-99094ea787f5",
+                    "remaining": "0"
+                },
+                "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
+                "createdAt": "2025-08-08T05:54:31.734Z"
+            },
+            {
+                "id": "43465303-aae7-478e-b1ba-f6bc0409d3de",
+                "tipe": "dibuat",
+                "deskripsi": "Transaksi TXN-20250808-001 dibuat",
+                "data": {
+                    "items": 2,
+                    "totalHarga": "450000"
+                },
+                "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
+                "createdAt": "2025-08-08T05:54:21.047Z"
+            }
+        ]
+    },
+    "message": "Detail transaksi berhasil diambil"
+}2025-08-12T01:43:55.176Z [ERROR] [API][PUT-pengembalian] Unified validation failed
+{
+  "requestId": "req-1754963033804-xq4mmkrcf",
+  "transactionCode": "TXN-20250809-001",
+  "format": "legacy",
+  "validationErrors": [
+    {
+      "field": "items.0.conditions.0.kondisiAkhir",
+      "message": "Kondisi akhir minimal 5 karakter untuk deskripsi yang jelas",
+      "code": "too_small"
     }
-  }
-}
-2025-07-17T12:03:44.308Z [ERROR] [ProductService][createProduct] Gagal membuat produk
-{
-  "error": {},
-  "performance": {
-    "timestamp": 1752753824307,
-    "memory": {
-      "rss": 1006800896,
-      "heapTotal": 145723392,
-      "heapUsed": 135917304,
-      "external": 23830032,
-      "arrayBuffers": 6424151
-    }
-  }
-}
-2025-07-17T12:06:03.227Z [ERROR] [ProductService][createProduct] Gagal membuat produk
-{
-  "error": {},
-  "performance": {
-    "timestamp": 1752753963227,
-    "memory": {
-      "rss": 1007587328,
-      "heapTotal": 150441984,
-      "heapUsed": 139585816,
-      "external": 6978540,
-      "arrayBuffers": 3052252
-    }
-  }
-}
-2025-07-17T12:06:17.396Z [ERROR] [ProductService][createProduct] Gagal membuat produk
-{
-  "error": {},
-  "performance": {
-    "timestamp": 1752753977396,
-    "memory": {
-      "rss": 1006084096,
-      "heapTotal": 149917696,
-      "heapUsed": 137455528,
-      "external": 4353776,
-      "arrayBuffers": 424104
-    }
-  }
-}
-2025-07-17T12:06:33.953Z [ERROR] [ProductService][createProduct] Gagal membuat produk
-{
-  "error": {},
-  "performance": {
-    "timestamp": 1752753993952,
-    "memory": {
-      "rss": 1008050176,
-      "heapTotal": 151162880,
-      "heapUsed": 145321968,
-      "external": 4387701,
-      "arrayBuffers": 461413
-    }
-  }
-}
-2025-07-17T12:12:35.311Z [ERROR] [ProductService][createProduct] Gagal membuat produk
-{
-  "error": {
-    "name": "PrismaClientValidationError",
-    "clientVersion": "6.11.1"
+  ],
+  "requestBody": {
+    "items": [
+      {
+        "itemId": "b3221755-304e-4a81-93f2-8589747c9f6b",
+        "kondisiAkhir": "baik",
+        "jumlahKembali": 2
+      },
+      {
+        "itemId": "a2ff8f31-2f9e-4a07-8d0b-ac7446aa8f0c",
+        "kondisiAkhir": "kotor",
+        "jumlahKembali": 2
+      }
+    ],
+    "tglKembali": "2025-08-12T01:43:47.013Z",
+    "transactionId": "TXN-20250809-001"
   },
   "performance": {
-    "timestamp": 1752754355311,
+    "timestamp": 1754963035176,
     "memory": {
-      "rss": 1027600384,
-      "heapTotal": 146771968,
-      "heapUsed": 137509736,
-      "external": 13370808,
-      "arrayBuffers": 12462365
+      "rss": 647073792,
+      "heapTotal": 345870336,
+      "heapUsed": 333365440,
+      "external": 6038863,
+      "arrayBuffers": 2033949
     }
   }
 }
-2025-07-17T12:13:00.445Z [ERROR] [ProductService][createProduct] Gagal membuat produk
+2025-08-12T01:43:55.206Z [ERROR] [API][PUT-pengembalian] API request failed
 {
-  "error": {},
-  "performance": {
-    "timestamp": 1752754380445,
-    "memory": {
-      "rss": 1025622016,
-      "heapTotal": 147034112,
-      "heapUsed": 138565688,
-      "external": 13417992,
-      "arrayBuffers": 12506165
-    }
-  }
-}
-2025-07-17T12:13:24.680Z [ERROR] [ProductService][createProduct] Gagal membuat produk
-{
-  "error": {},
-  "performance": {
-    "timestamp": 1752754404680,
-    "memory": {
-      "rss": 1016344576,
-      "heapTotal": 147296256,
-      "heapUsed": 141157856,
-      "external": 5147821,
-      "arrayBuffers": 1221533
-    }
-  }
-}
-2025-07-17T12:13:45.234Z [ERROR] [ProductService][createProduct] Gagal membuat produk
-{
-  "error": {},
-  "performance": {
-    "timestamp": 1752754425234,
-    "memory": {
-      "rss": 1016328192,
-      "heapTotal": 148344832,
-      "heapUsed": 138116992,
-      "external": 4352454,
-      "arrayBuffers": 422782
-    }
-  }
-}
-2025-07-17T12:14:21.321Z [ERROR] [ProductService][createProduct] Gagal membuat produk
-{
+  "requestId": "req-1754963033804-xq4mmkrcf",
+  "transactionCode": "TXN-20250809-001",
+  "totalApiDuration": 1386,
   "error": {
-    "name": "PrismaClientValidationError",
-    "clientVersion": "6.11.1"
+    "name": "ZodError",
+    "message": "[\n  {\n    \"origin\": \"string\",\n    \"code\": \"too_small\",\n    \"minimum\": 5,\n    \"inclusive\": true,\n    \"path\": [\n      \"items\",\n      0,\n      \"conditions\",\n      0,\n      \"kondisiAkhir\"\n    ],\n    \"message\": \"Kondisi akhir minimal 5 karakter untuk deskripsi yang jelas\"\n  }\n]",
+    "stack": "ZodError: [\n  {\n    \"origin\": \"string\",\n    \"code\": \"too_small\",\n    \"minimum\": 5,\n    \"inclusive\": true,\n    \"path\": [\n      \"items\",\n      0,\n      \"conditions\",\n      0,\n      \"kondisiAkhir\"\n    ],\n    \"message\": \"Kondisi akhir minimal 5 karakter untuk deskripsi yang jelas\"\n  }\n]\n    at PUT (D:\\.work\\rental-software\\.next\\server\\chunks\\[root-of-the-server]__6645e8c4._.js:3734:212)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async AppRouteRouteModule.do (D:\\.work\\rental-software\\node_modules\\next\\dist\\compiled\\next-server\\app-route-turbo.runtime.dev.js:5:38782)\n    at async AppRouteRouteModule.handle (D:\\.work\\rental-software\\node_modules\\next\\dist\\compiled\\next-server\\app-route-turbo.runtime.dev.js:5:45984)\n    at async responseGenerator (D:\\.work\\rental-software\\.next\\server\\chunks\\node_modules_next_86b4de74._.js:13538:38)\n    at async AppRouteRouteModule.handleResponse (D:\\.work\\rental-software\\node_modules\\next\\dist\\compiled\\next-server\\app-route-turbo.runtime.dev.js:1:183770)\n    at async handleResponse (D:\\.work\\rental-software\\.next\\server\\chunks\\node_modules_next_86b4de74._.js:13600:32)\n    at async handler (D:\\.work\\rental-software\\.next\\server\\chunks\\node_modules_next_86b4de74._.js:13652:13)\n    at async doRender (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:1587:34)\n    at async DevServer.renderToResponseWithComponentsImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:1929:13)\n    at async DevServer.renderPageComponent (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:2395:24)\n    at async DevServer.renderToResponseImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:2435:32)\n    at async DevServer.pipeImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:1035:25)\n    at async NextNodeServer.handleCatchallRenderRequest (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\next-server.js:393:17)\n    at async DevServer.handleRequestImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:925:17)\n    at async D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\dev\\next-dev-server.js:398:20\n    at async Span.traceAsyncFn (D:\\.work\\rental-software\\node_modules\\next\\dist\\trace\\trace.js:157:20)\n    at async DevServer.handleRequest (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\dev\\next-dev-server.js:394:24)\n    at async invokeRender (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\lib\\router-server.js:239:21)\n    at async handleRequest (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\lib\\router-server.js:436:24)\n    at async requestHandlerImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\lib\\router-server.js:464:13)\n    at async Server.requestListener (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\lib\\start-server.js:218:13)"
+  },
+  "timestamp": "2025-08-12T01:43:55.206Z",
+  "performance": {
+    "timestamp": 1754963035206,
+    "memory": {
+      "rss": 647712768,
+      "heapTotal": 345870336,
+      "heapUsed": 333552984,
+      "external": 6038863,
+      "arrayBuffers": 2033949
+    }
+  }
+}
+2025-08-12T01:43:58.058Z [ERROR] [API][PUT-pengembalian] Unified validation failed
+{
+  "requestId": "req-1754963037686-1nqbe0vod",
+  "transactionCode": "TXN-20250809-001",
+  "format": "legacy",
+  "validationErrors": [
+    {
+      "field": "items.0.conditions.0.kondisiAkhir",
+      "message": "Kondisi akhir minimal 5 karakter untuk deskripsi yang jelas",
+      "code": "too_small"
+    }
+  ],
+  "requestBody": {
+    "items": [
+      {
+        "itemId": "b3221755-304e-4a81-93f2-8589747c9f6b",
+        "kondisiAkhir": "baik",
+        "jumlahKembali": 2
+      },
+      {
+        "itemId": "a2ff8f31-2f9e-4a07-8d0b-ac7446aa8f0c",
+        "kondisiAkhir": "kotor",
+        "jumlahKembali": 2
+      }
+    ],
+    "tglKembali": "2025-08-12T01:43:47.013Z",
+    "transactionId": "TXN-20250809-001"
   },
   "performance": {
-    "timestamp": 1752754461321,
+    "timestamp": 1754963038058,
     "memory": {
-      "rss": 1016393728,
-      "heapTotal": 147296256,
-      "heapUsed": 137747920,
-      "external": 19418660,
-      "arrayBuffers": 18506824
+      "rss": 687341568,
+      "heapTotal": 389165056,
+      "heapUsed": 342497504,
+      "external": 4496927,
+      "arrayBuffers": 495396
     }
   }
 }
-2025-07-17T12:19:06.034Z [ERROR] [ProductService][createProduct] Gagal membuat produk
+2025-08-12T01:43:58.084Z [ERROR] [API][PUT-pengembalian] API request failed
 {
-  "error": {},
+  "requestId": "req-1754963037686-1nqbe0vod",
+  "transactionCode": "TXN-20250809-001",
+  "totalApiDuration": 387,
+  "error": {
+    "name": "ZodError",
+    "message": "[\n  {\n    \"origin\": \"string\",\n    \"code\": \"too_small\",\n    \"minimum\": 5,\n    \"inclusive\": true,\n    \"path\": [\n      \"items\",\n      0,\n      \"conditions\",\n      0,\n      \"kondisiAkhir\"\n    ],\n    \"message\": \"Kondisi akhir minimal 5 karakter untuk deskripsi yang jelas\"\n  }\n]",
+    "stack": "ZodError: [\n  {\n    \"origin\": \"string\",\n    \"code\": \"too_small\",\n    \"minimum\": 5,\n    \"inclusive\": true,\n    \"path\": [\n      \"items\",\n      0,\n      \"conditions\",\n      0,\n      \"kondisiAkhir\"\n    ],\n    \"message\": \"Kondisi akhir minimal 5 karakter untuk deskripsi yang jelas\"\n  }\n]\n    at PUT (D:\\.work\\rental-software\\.next\\server\\chunks\\[root-of-the-server]__6645e8c4._.js:3734:212)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async AppRouteRouteModule.do (D:\\.work\\rental-software\\node_modules\\next\\dist\\compiled\\next-server\\app-route-turbo.runtime.dev.js:5:38782)\n    at async AppRouteRouteModule.handle (D:\\.work\\rental-software\\node_modules\\next\\dist\\compiled\\next-server\\app-route-turbo.runtime.dev.js:5:45984)\n    at async responseGenerator (D:\\.work\\rental-software\\.next\\server\\chunks\\node_modules_next_86b4de74._.js:13538:38)\n    at async AppRouteRouteModule.handleResponse (D:\\.work\\rental-software\\node_modules\\next\\dist\\compiled\\next-server\\app-route-turbo.runtime.dev.js:1:183770)\n    at async handleResponse (D:\\.work\\rental-software\\.next\\server\\chunks\\node_modules_next_86b4de74._.js:13600:32)\n    at async handler (D:\\.work\\rental-software\\.next\\server\\chunks\\node_modules_next_86b4de74._.js:13652:13)\n    at async doRender (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:1587:34)\n    at async DevServer.renderToResponseWithComponentsImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:1929:13)\n    at async DevServer.renderPageComponent (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:2395:24)\n    at async DevServer.renderToResponseImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:2435:32)\n    at async DevServer.pipeImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:1035:25)\n    at async NextNodeServer.handleCatchallRenderRequest (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\next-server.js:393:17)\n    at async DevServer.handleRequestImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:925:17)\n    at async D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\dev\\next-dev-server.js:398:20\n    at async Span.traceAsyncFn (D:\\.work\\rental-software\\node_modules\\next\\dist\\trace\\trace.js:157:20)\n    at async DevServer.handleRequest (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\dev\\next-dev-server.js:394:24)\n    at async invokeRender (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\lib\\router-server.js:239:21)\n    at async handleRequest (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\lib\\router-server.js:436:24)\n    at async requestHandlerImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\lib\\router-server.js:464:13)\n    at async Server.requestListener (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\lib\\start-server.js:218:13)"
+  },
+  "timestamp": "2025-08-12T01:43:58.083Z",
   "performance": {
-    "timestamp": 1752754746034,
+    "timestamp": 1754963038083,
     "memory": {
-      "rss": 1015693312,
-      "heapTotal": 157859840,
-      "heapUsed": 151642512,
-      "external": 10395522,
-      "arrayBuffers": 9483695
+      "rss": 687345664,
+      "heapTotal": 389165056,
+      "heapUsed": 342548600,
+      "external": 4496927,
+      "arrayBuffers": 495396
     }
   }
 }
-2025-07-17T12:19:18.835Z [ERROR] [ProductService][createProduct] Gagal membuat produk
+2025-08-12T01:44:01.432Z [ERROR] [API][PUT-pengembalian] Unified validation failed
 {
-  "error": {},
+  "requestId": "req-1754963041003-3ym7wmpmc",
+  "transactionCode": "TXN-20250809-001",
+  "format": "legacy",
+  "validationErrors": [
+    {
+      "field": "items.0.conditions.0.kondisiAkhir",
+      "message": "Kondisi akhir minimal 5 karakter untuk deskripsi yang jelas",
+      "code": "too_small"
+    }
+  ],
+  "requestBody": {
+    "items": [
+      {
+        "itemId": "b3221755-304e-4a81-93f2-8589747c9f6b",
+        "kondisiAkhir": "baik",
+        "jumlahKembali": 2
+      },
+      {
+        "itemId": "a2ff8f31-2f9e-4a07-8d0b-ac7446aa8f0c",
+        "kondisiAkhir": "kotor",
+        "jumlahKembali": 2
+      }
+    ],
+    "tglKembali": "2025-08-12T01:43:47.013Z",
+    "transactionId": "TXN-20250809-001"
+  },
   "performance": {
-    "timestamp": 1752754758835,
+    "timestamp": 1754963041432,
     "memory": {
-      "rss": 1038110720,
-      "heapTotal": 168804352,
-      "heapUsed": 160046608,
-      "external": 10421277,
-      "arrayBuffers": 9512834
+      "rss": 698130432,
+      "heapTotal": 389992448,
+      "heapUsed": 361486768,
+      "external": 4696738,
+      "arrayBuffers": 695207
     }
   }
 }
-2025-07-17T12:19:42.841Z [ERROR] [ProductService][createProduct] Gagal membuat produk
+2025-08-12T01:44:01.449Z [ERROR] [API][PUT-pengembalian] API request failed
 {
-  "error": {},
+  "requestId": "req-1754963041003-3ym7wmpmc",
+  "transactionCode": "TXN-20250809-001",
+  "totalApiDuration": 439,
+  "error": {
+    "name": "ZodError",
+    "message": "[\n  {\n    \"origin\": \"string\",\n    \"code\": \"too_small\",\n    \"minimum\": 5,\n    \"inclusive\": true,\n    \"path\": [\n      \"items\",\n      0,\n      \"conditions\",\n      0,\n      \"kondisiAkhir\"\n    ],\n    \"message\": \"Kondisi akhir minimal 5 karakter untuk deskripsi yang jelas\"\n  }\n]",
+    "stack": "ZodError: [\n  {\n    \"origin\": \"string\",\n    \"code\": \"too_small\",\n    \"minimum\": 5,\n    \"inclusive\": true,\n    \"path\": [\n      \"items\",\n      0,\n      \"conditions\",\n      0,\n      \"kondisiAkhir\"\n    ],\n    \"message\": \"Kondisi akhir minimal 5 karakter untuk deskripsi yang jelas\"\n  }\n]\n    at PUT (D:\\.work\\rental-software\\.next\\server\\chunks\\[root-of-the-server]__6645e8c4._.js:3734:212)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async AppRouteRouteModule.do (D:\\.work\\rental-software\\node_modules\\next\\dist\\compiled\\next-server\\app-route-turbo.runtime.dev.js:5:38782)\n    at async AppRouteRouteModule.handle (D:\\.work\\rental-software\\node_modules\\next\\dist\\compiled\\next-server\\app-route-turbo.runtime.dev.js:5:45984)\n    at async responseGenerator (D:\\.work\\rental-software\\.next\\server\\chunks\\node_modules_next_86b4de74._.js:13538:38)\n    at async AppRouteRouteModule.handleResponse (D:\\.work\\rental-software\\node_modules\\next\\dist\\compiled\\next-server\\app-route-turbo.runtime.dev.js:1:183770)\n    at async handleResponse (D:\\.work\\rental-software\\.next\\server\\chunks\\node_modules_next_86b4de74._.js:13600:32)\n    at async handler (D:\\.work\\rental-software\\.next\\server\\chunks\\node_modules_next_86b4de74._.js:13652:13)\n    at async doRender (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:1587:34)\n    at async DevServer.renderToResponseWithComponentsImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:1929:13)\n    at async DevServer.renderPageComponent (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:2395:24)\n    at async DevServer.renderToResponseImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:2435:32)\n    at async DevServer.pipeImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:1035:25)\n    at async NextNodeServer.handleCatchallRenderRequest (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\next-server.js:393:17)\n    at async DevServer.handleRequestImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:925:17)\n    at async D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\dev\\next-dev-server.js:398:20\n    at async Span.traceAsyncFn (D:\\.work\\rental-software\\node_modules\\next\\dist\\trace\\trace.js:157:20)\n    at async DevServer.handleRequest (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\dev\\next-dev-server.js:394:24)\n    at async invokeRender (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\lib\\router-server.js:239:21)\n    at async handleRequest (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\lib\\router-server.js:436:24)\n    at async requestHandlerImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\lib\\router-server.js:464:13)\n    at async Server.requestListener (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\lib\\start-server.js:218:13)"
+  },
+  "timestamp": "2025-08-12T01:44:01.449Z",
   "performance": {
-    "timestamp": 1752754782841,
+    "timestamp": 1754963041449,
     "memory": {
-      "rss": 1038036992,
-      "heapTotal": 162054144,
-      "heapUsed": 154569864,
-      "external": 7022225,
-      "arrayBuffers": 3092553
-    }
-  }
-}
-2025-07-17T12:19:52.594Z [ERROR] [ProductService][createProduct] Gagal membuat produk
-{
-  "error": {},
-  "performance": {
-    "timestamp": 1752754792594,
-    "memory": {
-      "rss": 1035517952,
-      "heapTotal": 178307072,
-      "heapUsed": 153127984,
-      "external": 4520752,
-      "arrayBuffers": 591080
-    }
-  }
-}
-2025-07-17T12:20:34.542Z [ERROR] [ProductService][createProduct] Gagal membuat produk
-{
-  "error": {},
-  "performance": {
-    "timestamp": 1752754834542,
-    "memory": {
-      "rss": 1044336640,
-      "heapTotal": 171573248,
-      "heapUsed": 165385360,
-      "external": 5524438,
-      "arrayBuffers": 1598150
-    }
-  }
-}
-2025-07-17T12:23:04.180Z [ERROR] [ProductService][createProduct] Failed to upload image
-{
-  "uploadError": {},
-  "performance": {
-    "timestamp": 1752754984180,
-    "memory": {
-      "rss": 1049993216,
-      "heapTotal": 191676416,
-      "heapUsed": 169472168,
-      "external": 4518027,
-      "arrayBuffers": 584962
-    }
-  }
-}
-2025-07-17T12:23:04.184Z [ERROR] [ProductService][createProduct] Gagal membuat produk
-{
-  "error": {},
-  "performance": {
-    "timestamp": 1752754984184,
-    "memory": {
-      "rss": 1049993216,
-      "heapTotal": 191676416,
-      "heapUsed": 169482112,
-      "external": 4518027,
-      "arrayBuffers": 584962
+      "rss": 698130432,
+      "heapTotal": 389992448,
+      "heapUsed": 361525496,
+      "external": 4696738,
+      "arrayBuffers": 695207
     }
   }
 }

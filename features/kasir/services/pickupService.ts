@@ -171,7 +171,7 @@ export class PickupService {
           }
         })
 
-        return updatedTransaction as TransaksiWithDetails
+        return updatedTransaction as unknown as TransaksiWithDetails
       })
 
       // 3. Generate success message

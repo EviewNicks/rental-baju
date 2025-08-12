@@ -1,5 +1,15 @@
 'use client'
-import { Hash, Package, Tag, Box, DollarSign, CreditCard, FileText, Ruler, Palette } from 'lucide-react'
+import {
+  Hash,
+  Package,
+  Tag,
+  Box,
+  DollarSign,
+  CreditCard,
+  FileText,
+  Ruler,
+  Palette,
+} from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { FormField } from '@/features/manage-product/components/form-product/FormField'
 import { FormSection } from '@/features/manage-product/components/form-product/FormSection'
@@ -15,7 +25,7 @@ interface ProductFormData {
   colorId?: string
   quantity: number
   modalAwal: number
-  hargaSewa: number
+  currentPrice: number
   description: string
   imageUrl: string | null
   image?: File | null
@@ -43,7 +53,11 @@ export function ProductForm({
   categories,
 }: ProductFormProps) {
   // Fetch colors data
-  const { data: colorsData, isLoading: isLoadingColors, error: colorsError } = useColors({ isActive: true })
+  const {
+    data: colorsData,
+    isLoading: isLoadingColors,
+    error: colorsError,
+  } = useColors({ isActive: true })
   const colors = colorsData?.colors || []
 
   // Transform categories for select options
@@ -171,11 +185,19 @@ export function ProductForm({
                 value={formData.colorId || ''}
                 onChange={(value) => onInputChange('colorId', value)}
                 options={colorOptions}
-                placeholder={isLoadingColors ? "Memuat warna..." : colorsError ? "Error memuat warna" : "Pilih warna (opsional)"}
+                placeholder={
+                  isLoadingColors
+                    ? 'Memuat warna...'
+                    : colorsError
+                      ? 'Error memuat warna'
+                      : 'Pilih warna (opsional)'
+                }
                 error={errors.colorId}
                 touched={touched.colorId}
                 disabled={isLoadingColors || !!colorsError}
-                helpText={colorsError ? "Gagal memuat data warna" : "Pilih warna produk jika berlaku"}
+                helpText={
+                  colorsError ? 'Gagal memuat data warna' : 'Pilih warna produk jika berlaku'
+                }
                 data-testid="product-color-field"
               />
             </div>
@@ -214,24 +236,24 @@ export function ProductForm({
               <div className="space-y-2">
                 <FormField
                   type="text"
-                  name="hargaSewa"
+                  name="currentPrice"
                   label="Harga Sewa (Rp)"
                   icon={CreditCard}
-                  value={formatCurrency(formData.hargaSewa.toString())}
+                  value={formatCurrency(formData.currentPrice.toString())}
                   onChange={(value) => {
                     const numValue =
                       typeof value === 'string' ? value.replace(/\D/g, '') : value.toString()
-                    onInputChange('hargaSewa', Number(numValue))
+                    onInputChange('currentPrice', Number(numValue))
                   }}
                   onBlur={(value) => {
                     const numValue =
                       typeof value === 'string' ? value.replace(/\D/g, '') : value.toString()
-                    onBlur('hargaSewa', Number(numValue))
+                    onBlur('currentPrice', Number(numValue))
                   }}
                   placeholder="150,000"
                   prefix="Rp"
-                  error={errors.hargaSewa}
-                  touched={touched.hargaSewa}
+                  error={errors.currentPrice}
+                  touched={touched.currentPrice}
                   required
                   helpText="Harga sewa per sekali pakai"
                   data-testid="product-price-field"
@@ -260,7 +282,7 @@ export function ProductForm({
 
           {/* Image Upload */}
           <ImageUpload
-            value={formData.imageUrl || '/products/image.png'}
+            value={formData.imageUrl || undefined}
             onChange={(value) => onInputChange('imageUrl', value)}
             onFileChange={(file) => onInputChange('image', file)}
             data-testid="product-image-upload"

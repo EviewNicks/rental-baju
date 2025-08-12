@@ -238,7 +238,8 @@ export class ColorService {
                   ({} as any),
               color: undefined, // Avoid circular reference
               modalAwal: new Decimal(product.modalAwal as number),
-              hargaSewa: new Decimal(product.hargaSewa as number),
+              currentPrice: new Decimal(product.currentPrice as number),
+              rentedStock: product.rentedStock as number || 0,
               quantity: product.quantity as number,
               status: product.status as ProductStatus,
               imageUrl: product.imageUrl as string | undefined,

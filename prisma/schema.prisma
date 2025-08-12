@@ -20,11 +20,11 @@ model Product {
   name            String
   description     String?
   modalAwal       Decimal       @db.Decimal(10, 2) // Biaya pembuatan baju
-  hargaSewa       Decimal       @db.Decimal(10, 2) // Harga sewa per sekali
+  currentPrice    Decimal       @db.Decimal(10, 2) // Current rental price per unit
   quantity        Int           // Total inventory (immutable during rentals)
-  availableStock  Int           @default(0) // Currently available for rent
   rentedStock     Int           @default(0) // Currently rented out
-  // Invariant: quantity = availableStock + rentedStock
+  // Note: availableStock calculated as (quantity - rentedStock)
+  // Note: totalPendapatan calculated from TransaksiItem aggregation
   imageUrl        String?
   categoryId      String
   category        Category      @relation(fields: [categoryId], references: [id])
@@ -32,7 +32,6 @@ model Product {
   colorId         String?       // Relasi ke Color model
   color           Color?        @relation(fields: [colorId], references: [id])
   status          ProductStatus @default(AVAILABLE)
-  totalPendapatan Decimal       @db.Decimal(10, 2) @default(0) // Pendapatan kumulatif
   isActive        Boolean       @default(true)
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
@@ -48,7 +47,9 @@ model Product {
   @@index([size])
   @@index([colorId])
   @@index([categoryId, size, colorId])
-  @@index([availableStock])
+  @@index([rentedStock])
+  // Performance index for penalty calculation
+  @@index([id, modalAwal], name: "idx_product_penalty_calc")
 }
 
 model Category {
@@ -134,6 +135,9 @@ model Transaksi {
   @@index([status])
   @@index([penyewaId])
   @@index([createdAt])
+  // Performance indexes for return processing
+  @@index([status, id], name: "idx_transaksi_status_id_validation")
+  @@index([id, tglSelesai, status], name: "idx_transaksi_penalty_dates")
 }
 
 model TransaksiItem {
@@ -146,16 +150,48 @@ model TransaksiItem {
   durasi      Int      // Durasi sewa dalam hari
   subtotal    Decimal  @db.Decimal(10, 2) // Subtotal untuk item ini
   kondisiAwal String?  // Kondisi saat disewa
-  kondisiAkhir String? // Kondisi saat dikembalikan
   statusKembali String @default("belum") // belum, sebagian, lengkap
+  
+  // TSK-24 Phase 1: Unified return system fields
+  conditionCount        Int     @default(1)           // Track complexity for analytics (1 = simple, >1 = complex)
+  migratedFromSingleMode Boolean @default(false)     // Track migration history for audit
+  totalReturnPenalty    Decimal @db.Decimal(10, 2) @default(0) // Aggregated penalty from all conditions
   
   // Relations
   transaksi   Transaksi @relation(fields: [transaksiId], references: [id], onDelete: Cascade)
   produk      Product   @relation(fields: [produkId], references: [id])
+  returnConditions TransaksiItemReturn[] // Unified return conditions (always use this)
   
   @@map("transaksi_item")
   @@index([transaksiId])
   @@index([produkId])
+  // Performance indexes for unified return processing
+  @@index([id, statusKembali, jumlahDiambil], name: "idx_transaksi_item_status_lookup")
+  @@index([produkId, transaksiId, statusKembali], name: "idx_transaksi_item_product_join")
+  // TSK-24 Phase 1: Unified processing optimization indexes
+  @@index([id, statusKembali, conditionCount], name: "idx_transaksi_item_unified_processing")
+  @@index([migratedFromSingleMode, conditionCount], name: "idx_transaksi_item_migration_history")
+}
+
+// TSK-24: Multi-condition return tracking table
+model TransaksiItemReturn {
+  id                  String   @id @default(uuid())
+  transaksiItemId     String                              // Foreign key to TransaksiItem
+  kondisiAkhir        String                              // Condition description for this split
+  jumlahKembali       Int                                 // Quantity returned in this condition
+  penaltyAmount       Decimal  @db.Decimal(10, 2) @default(0) // Penalty for this condition split
+  modalAwalUsed       Decimal? @db.Decimal(10, 2)        // Modal awal used for lost item penalty calculation
+  penaltyCalculation  Json?                               // Detailed penalty breakdown (JSONB equivalent)
+  createdAt           DateTime @default(now())            // When this condition was recorded
+  createdBy           String                              // User who processed this condition
+  
+  // Relations
+  transaksiItem       TransaksiItem @relation(fields: [transaksiItemId], references: [id], onDelete: Cascade)
+  
+  // Constraints to ensure data integrity
+  @@map("transaksi_item_return")
+  @@index([transaksiItemId, createdAt], name: "idx_transaksi_item_return_timeline")
+  @@index([transaksiItemId, penaltyAmount], name: "idx_transaksi_item_return_penalty")
 }
 
 model Pembayaran {

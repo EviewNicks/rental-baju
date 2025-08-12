@@ -159,6 +159,190 @@ export class AuditService {
   }
 
   /**
+   * Log return processing activity with detailed penalty information
+   * Enhanced for troubleshooting pengembalian issues
+   */
+  async logReturnActivity(
+    transaksiId: string,
+    returnData: {
+      items: Array<{
+        itemId: string
+        kondisiAkhir: string
+        jumlahKembali: number
+      }>
+      totalPenalty: number
+      totalLateDays: number
+      catatan?: string
+      stage: string // 'validation' | 'calculation' | 'processing' | 'completed' | 'failed'
+    },
+    metadata?: Record<string, unknown>
+  ): Promise<void> {
+    try {
+      await this.prisma.aktivitasTransaksi.create({
+        data: {
+          transaksiId,
+          tipe: `return_${returnData.stage}`,
+          deskripsi: `Pengembalian ${returnData.stage}: ${returnData.items.length} item dengan penalty ${returnData.totalPenalty}`,
+          data: JSON.parse(JSON.stringify({
+            returnProcessing: {
+              items: returnData.items,
+              penaltyDetails: {
+                totalPenalty: returnData.totalPenalty,
+                totalLateDays: returnData.totalLateDays,
+              },
+              catatan: returnData.catatan,
+              stage: returnData.stage,
+              timestamp: new Date().toISOString(),
+            },
+            metadata: metadata || {},
+            performance: {
+              timestamp: new Date().toISOString(),
+            },
+          })),
+          createdBy: this.userId,
+        },
+      })
+    } catch (error) {
+      console.error('Failed to log return activity:', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        transaksiId,
+        stage: returnData.stage,
+      })
+    }
+  }
+
+  /**
+   * Log penalty calculation details for troubleshooting
+   */
+  async logPenaltyCalculation(
+    transaksiId: string,
+    penaltyData: {
+      calculationDuration: number
+      totalPenalty: number
+      lateDays: number
+      itemBreakdown: Array<{
+        itemId: string
+        productName: string
+        penalty: number
+        reason: string
+      }>
+      errors?: string[]
+    }
+  ): Promise<void> {
+    try {
+      await this.prisma.aktivitasTransaksi.create({
+        data: {
+          transaksiId,
+          tipe: 'penalty_calculated',
+          deskripsi: `Penalty calculation completed: ${penaltyData.totalPenalty} (${penaltyData.lateDays} hari terlambat)`,
+          data: JSON.parse(JSON.stringify({
+            penaltyCalculation: penaltyData,
+            performance: {
+              calculationDuration: penaltyData.calculationDuration,
+              timestamp: new Date().toISOString(),
+            },
+          })),
+          createdBy: this.userId,
+        },
+      })
+    } catch (error) {
+      console.error('Failed to log penalty calculation:', error)
+    }
+  }
+
+  /**
+   * Log return processing error for troubleshooting
+   */
+  async logReturnError(
+    transaksiId: string,
+    errorData: {
+      error: string
+      stage: string
+      stack?: string
+      context?: Record<string, unknown>
+      duration?: number
+    }
+  ): Promise<void> {
+    try {
+      await this.prisma.aktivitasTransaksi.create({
+        data: {
+          transaksiId,
+          tipe: 'return_error',
+          deskripsi: `Pengembalian gagal pada ${errorData.stage}: ${errorData.error}`,
+          data: JSON.parse(JSON.stringify({
+            errorDetails: {
+              error: errorData.error,
+              stage: errorData.stage,
+              stack: errorData.stack,
+              context: errorData.context,
+              timestamp: new Date().toISOString(),
+            },
+            performance: {
+              duration: errorData.duration,
+            },
+          })),
+          createdBy: this.userId,
+        },
+      })
+    } catch (error) {
+      console.error('Failed to log return error:', error)
+    }
+  }
+
+  /**
+   * Async (fire-and-forget) logging methods for performance optimization
+   * These methods don't block the main execution flow
+   */
+
+  /**
+   * Log return activity asynchronously (non-blocking)
+   */
+  logReturnActivityAsync(
+    transaksiId: string,
+    returnData: {
+      items: Array<{
+        itemId: string
+        kondisiAkhir: string
+        jumlahKembali: number
+      }>
+      totalPenalty: number
+      totalLateDays: number
+      catatan?: string
+      stage: string
+    },
+    metadata?: Record<string, unknown>
+  ): void {
+    // Fire and forget - don't await this
+    this.logReturnActivity(transaksiId, returnData, metadata).catch(error => {
+      console.error('Background audit logging failed:', error)
+    })
+  }
+
+  /**
+   * Log penalty calculation asynchronously (non-blocking)
+   */
+  logPenaltyCalculationAsync(
+    transaksiId: string,
+    penaltyData: {
+      calculationDuration: number
+      totalPenalty: number
+      lateDays: number
+      itemBreakdown: Array<{
+        itemId: string
+        productName: string
+        penalty: number
+        reason: string
+      }>
+      errors?: string[]
+    }
+  ): void {
+    // Fire and forget - don't await this
+    this.logPenaltyCalculation(transaksiId, penaltyData).catch(error => {
+      console.error('Background penalty calculation logging failed:', error)
+    })
+  }
+
+  /**
    * Get audit trail for specific entity
    */
   async getAuditTrail(

@@ -59,7 +59,10 @@
       "mcp__playwright__playwright_console_logs",
       "mcp__playwright__playwright_console_logs",
       "Bash(timeout 10s yarn app:*)",
-      "Bash(true)"
+      "Bash(true)",
+      "Bash(npx prisma db execute:*)",
+      "Bash(npx prisma:*)",
+      "Bash(cat:*)"
     ],
     "deny": []
   }
