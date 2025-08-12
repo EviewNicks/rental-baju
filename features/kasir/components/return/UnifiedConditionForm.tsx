@@ -69,7 +69,12 @@ export function UnifiedConditionForm({
     )
     const remaining = currentCondition.totalQuantity - totalReturned
     const hasValidConditions = currentCondition.conditions.every(
-      (c) => c.kondisiAkhir && c.jumlahKembali !== undefined && c.jumlahKembali > 0,
+      (c) => 
+        c.kondisiAkhir && 
+        c.kondisiAkhir.length >= 4 && 
+        c.kondisiAkhir.length <= 500 &&
+        c.jumlahKembali !== undefined && 
+        c.jumlahKembali > 0,
     )
 
     let error: string | undefined
@@ -80,7 +85,29 @@ export function UnifiedConditionForm({
     } else if (totalReturned === 0) {
       error = 'Minimal harus mengembalikan 1 unit atau tandai sebagai hilang'
     } else if (!hasValidConditions) {
-      error = 'Semua kondisi harus diisi dengan lengkap'
+      // Check specific validation issues
+      const invalidConditions = currentCondition.conditions.filter(c => 
+        !c.kondisiAkhir || 
+        c.kondisiAkhir.length < 4 || 
+        c.kondisiAkhir.length > 500 ||
+        !c.jumlahKembali || 
+        c.jumlahKembali <= 0
+      )
+      
+      if (invalidConditions.length > 0) {
+        const firstInvalid = invalidConditions[0]
+        if (!firstInvalid.kondisiAkhir) {
+          error = 'Semua kondisi harus dipilih'
+        } else if (firstInvalid.kondisiAkhir.length < 4) {
+          error = 'Kondisi harus minimal 4 karakter'
+        } else if (firstInvalid.kondisiAkhir.length > 500) {
+          error = 'Kondisi maksimal 500 karakter'
+        } else if (!firstInvalid.jumlahKembali || firstInvalid.jumlahKembali <= 0) {
+          error = 'Jumlah kembali harus lebih dari 0'
+        }
+      } else {
+        error = 'Semua kondisi harus diisi dengan lengkap'
+      }
     }
 
     // Progressive disclosure warnings/suggestions

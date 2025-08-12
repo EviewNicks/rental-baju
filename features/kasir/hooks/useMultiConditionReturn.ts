@@ -82,7 +82,7 @@ export function useMultiConditionReturn(): UseMultiConditionReturnResult {
   // All returns use unified ConditionSplit[] structure
 
   // Penalty calculation query (real-time)
-  const { isLoading: isCalculatingPenalty, refetch: refetchPenalties } = useQuery({
+  const { isLoading: isCalculatingPenalty } = useQuery({
     queryKey: ['penalty-calculation', transaction?.id, itemConditions],
     queryFn: async () => {
       if (!transaction || Object.keys(itemConditions).length === 0) {
@@ -504,7 +504,8 @@ export function useMultiConditionReturn(): UseMultiConditionReturnResult {
             isLostItem: item.conditionBreakdown?.some(c => c.reasonCode === 'lost') || false,
             latePenalty: item.conditionBreakdown?.reduce((sum, c) => sum + c.latePenalty, 0) || 0,
             conditionPenalty: item.conditionBreakdown?.reduce((sum, c) => sum + c.conditionPenalty, 0) || 0,
-            modalAwalUsed: item.conditionBreakdown?.find(c => c.reasonCode === 'lost')?.totalConditionPenalty,
+            penaltyAmount: item.conditionBreakdown?.reduce((sum, c) => sum + c.conditionPenalty, 0) || 0,
+            modalAwal: item.conditionBreakdown?.find(c => c.reasonCode === 'lost')?.totalConditionPenalty,
             totalItemPenalty: item.totalPenalty,
             calculationMethod: item.conditionBreakdown?.[0]?.reasonCode === 'lost' ? 'modal_awal' : 
                               item.conditionBreakdown?.[0]?.reasonCode === 'damaged' ? 'damage_fee' :
@@ -526,7 +527,7 @@ export function useMultiConditionReturn(): UseMultiConditionReturnResult {
           conditionBreakdown: [], // Not needed for client-side preview
           calculationMetadata: {
             calculatedAt: new Date().toISOString(),
-            processingMode: 'client-side' as const,
+            processingMode: 'multi-condition' as const,
             itemCount: calculationItems.length,
             totalConditions: calculationItems.reduce((sum, item) => sum + item.conditions.length, 0),
             hasLateItems: penaltyResult.totalLateDays > 0,

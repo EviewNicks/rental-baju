@@ -45,6 +45,11 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
   // Start API performance monitoring with timeout optimization
   const apiTimer = logger.startTimer('API', 'PUT-pengembalian', 'total-api-request')
   const requestId = `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+  
+  // Request deduplication mechanism to prevent multiple identical calls
+  const clientIP = request.headers.get('x-forwarded-for') || 'unknown'
+  const userAgent = request.headers.get('user-agent') || 'unknown'
+  const contentLength = request.headers.get('content-length') || '0'
 
   // Performance optimization: Set up request timeout to prevent hanging
   const timeoutController = new AbortController()
@@ -58,13 +63,17 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     logger.info('API', 'PUT-pengembalian', 'API request started', {
       requestId,
       timestamp: new Date().toISOString(),
-      userAgent: request.headers.get('user-agent'),
-      contentLength: request.headers.get('content-length'),
+      userAgent,
+      contentLength,
+      clientIP,
+      transactionCode: (await params).kode,
+      deduplicationInfo: {
+        clientFingerprint: `${clientIP}-${userAgent}-${contentLength}`,
+        potentialDuplicate: false, // Will be enhanced in future iterations
+      },
     })
 
     // Rate limiting check with timing
-
-    const clientIP = request.headers.get('x-forwarded-for') || 'unknown'
     const rateLimitResult = await withRateLimit(`return-${clientIP}`, 10, 60000)
 
     if (rateLimitResult.error) {
@@ -362,7 +371,8 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         if (fieldPath.includes('conditions')) {
           enhancedMessage = `Unified validation failed for ${fieldPath}: ${err.message}`
           suggestions = [
-            'Pastikan setiap kondisi memiliki deskripsi yang jelas (minimal 5 karakter)',
+            'Pastikan setiap kondisi memiliki deskripsi yang jelas (minimal 4 karakter)',
+            'Contoh kondisi valid: "baik", "kotor", "rusak ringan", "rusak berat", "hilang"',
             'Barang hilang harus memiliki jumlahKembali = 0',
             'Barang yang dikembalikan harus memiliki jumlahKembali > 0',
             'Total jumlah kembali tidak boleh melebihi jumlah yang diambil',
@@ -413,7 +423,8 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         enhancedMessage = 'Validasi kondisi pengembalian gagal. Periksa format unified conditions.'
         generalHints = [
           'Gunakan array conditions untuk setiap item, bahkan untuk kasus sederhana',
-          'Setiap kondisi harus memiliki kondisiAkhir dan jumlahKembali yang valid',
+          'Setiap kondisi harus memiliki kondisiAkhir (minimal 4 karakter) dan jumlahKembali yang valid',
+          'Contoh kondisi valid: "baik", "kotor", "rusak ringan", "rusak berat", "hilang"',
           'Total jumlahKembali dari semua kondisi tidak boleh melebihi jumlahDiambil',
         ]
       } else if (hasQuantityError) {

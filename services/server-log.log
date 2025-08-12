@@ -1,391 +1,136 @@
- ✓ Compiled in 3.1s
- ✓ Compiled in 3.2s
- ✓ Compiled in 2.9s
- GET /dashboard/transaction/TXN-20250809-001/return 200 in 6239ms
- GET /favicon.ico?favicon.45db1c09.ico 200 in 2131ms
- GET /api/kasir/transaksi/TXN-20250809-001 200 in 8348ms
- │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 694ms (cache skip)
+ GET /api/kasir/transaksi/TXN-20250809-001 200 in 10843ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 1567ms (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
+ ○ Compiling /dashboard/transaction/[kode]/return ...
+ ✓ Compiled /dashboard/transaction/[kode]/return in 3.4s
+ GET /dashboard/transaction/TXN-20250809-001/return 200 in 4655ms
+ GET /api/kasir/transaksi/TXN-20250809-001 200 in 4454ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 489ms (cache skip)
  │ │ Cache skipped reason: (auto no cache)
  ○ Compiling /api/kasir/transaksi/[kode]/pengembalian ...
  ✓ Compiled /api/kasir/transaksi/[kode]/pengembalian in 4.3s
-2025-08-12T01:43:53.805Z [INFO] [API][PUT-pengembalian] API request started
+2025-08-12T05:22:17.315Z [INFO] [API][PUT-pengembalian] API request started
 {
-  "requestId": "req-1754963033804-xq4mmkrcf",
-  "timestamp": "2025-08-12T01:43:53.804Z",
+  "requestId": "req-1754976137314-2jkj7t2ew",
+  "timestamp": "2025-08-12T05:22:17.314Z",
   "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
   "contentLength": "267",
-  "performance": {
-    "timestamp": 1754963033805,
-    "memory": {
-      "rss": 645525504,
-      "heapTotal": 345608192,
-      "heapUsed": 331373976,
-      "external": 6010488,
-      "arrayBuffers": 2027333
-    }
-  }
-}
-2025-08-12T01:43:55.144Z [INFO] [API][PUT-pengembalian] Legacy format detected - converting to unified format
-{
-  "requestId": "req-1754963033804-xq4mmkrcf",
-  "itemCount": 2,
-  "performance": {
-    "timestamp": 1754963035144,
-    "memory": {
-      "rss": 646860800,
-      "heapTotal": 345870336,
-      "heapUsed": 333159224,
-      "external": 6038863,
-      "arrayBuffers": 2033949
-    }
-  }
-}
-2025-08-12T01:43:55.176Z [ERROR] [API][PUT-pengembalian] Unified validation failed
-{
-  "requestId": "req-1754963033804-xq4mmkrcf",
+  "clientIP": "::1",
   "transactionCode": "TXN-20250809-001",
-  "format": "legacy",
-  "validationErrors": [
-    {
-      "field": "items.0.conditions.0.kondisiAkhir",
-      "message": "Kondisi akhir minimal 5 karakter untuk deskripsi yang jelas",
-      "code": "too_small"
-    }
-  ],
-  "requestBody": {
-    "items": [
-      {
-        "itemId": "b3221755-304e-4a81-93f2-8589747c9f6b",
-        "kondisiAkhir": "baik",
-        "jumlahKembali": 2
-      },
-      {
-        "itemId": "a2ff8f31-2f9e-4a07-8d0b-ac7446aa8f0c",
-        "kondisiAkhir": "kotor",
-        "jumlahKembali": 2
-      }
-    ],
-    "tglKembali": "2025-08-12T01:43:47.013Z",
-    "transactionId": "TXN-20250809-001"
+  "deduplicationInfo": {
+    "clientFingerprint": "::1-Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36-267",
+    "potentialDuplicate": false
   },
   "performance": {
-    "timestamp": 1754963035176,
+    "timestamp": 1754976137315,
     "memory": {
-      "rss": 647073792,
-      "heapTotal": 345870336,
-      "heapUsed": 333365440,
-      "external": 6038863,
-      "arrayBuffers": 2033949
+      "rss": 1128378368,
+      "heapTotal": 158715904,
+      "heapUsed": 152644048,
+      "external": 7030254,
+      "arrayBuffers": 3058788
     }
   }
 }
-2025-08-12T01:43:55.190Z [INFO] [API][PUT-pengembalian] API request failed
+2025-08-12T05:22:18.759Z [INFO] [API][PUT-pengembalian] Legacy format detected - converting to unified format
+{
+  "requestId": "req-1754976137314-2jkj7t2ew",
+  "itemCount": 2,
+  "performance": {
+    "timestamp": 1754976138759,
+    "memory": {
+      "rss": 1128620032,
+      "heapTotal": 158978048,
+      "heapUsed": 152679216,
+      "external": 7052457,
+      "arrayBuffers": 3064241
+    }
+  }
+}
+2025-08-12T05:22:18.767Z [INFO] [API][PUT-pengembalian] Unified validation successful
+{
+  "requestId": "req-1754976137314-2jkj7t2ew",
+  "format": "legacy",
+  "itemCount": 2,
+  "totalConditions": 2,
+  "performance": {
+    "timestamp": 1754976138767,
+    "memory": {
+      "rss": 1128665088,
+      "heapTotal": 158978048,
+      "heapUsed": 152871752,
+      "external": 7052457,
+      "arrayBuffers": 3064241
+    }
+  }
+}
+2025-08-12T05:22:27.464Z [DEBUG] [UnifiedReturnService][validateUnifiedReturn] Return validation successful
+{
+  "transactionId": "bba7a5ce-f5ec-4ef0-9c5f-e727c48299b6",
+  "itemsValidated": 2,
+  "transactionStatus": "active",
+  "performance": {
+    "timestamp": 1754976147464,
+    "memory": {
+      "rss": 1125003264,
+      "heapTotal": 159240192,
+      "heapUsed": 152723296,
+      "external": 7052528,
+      "arrayBuffers": 3059472
+    }
+  }
+}
+2025-08-12T05:22:31.945Z [INFO] [UnifiedReturnService][processUnifiedReturn] Unified return processing completed successfully
+{
+  "transactionId": "bba7a5ce-f5ec-4ef0-9c5f-e727c48299b6",
+  "totalPenalty": 10000,
+  "itemsProcessed": 2,
+  "conditionsProcessed": 2,
+  "processingTime": 8593,
+  "performance": {
+    "timestamp": 1754976151945,
+    "memory": {
+      "rss": 1125556224,
+      "heapTotal": 159240192,
+      "heapUsed": 153260440,
+      "external": 7047745,
+      "arrayBuffers": 3059529
+    }
+  }
+}
+2025-08-12T05:22:31.949Z [INFO] [API][PUT-pengembalian] Unified return processing completed
+{
+  "requestId": "req-1754976137314-2jkj7t2ew",
+  "format": "legacy",
+  "success": true,
+  "totalPenalty": 10000,
+  "processedItems": 2,
+  "totalConditions": 2,
+  "performance": {
+    "timestamp": 1754976151949,
+    "memory": {
+      "rss": 1125556224,
+      "heapTotal": 159240192,
+      "heapUsed": 153270136,
+      "external": 7047745,
+      "arrayBuffers": 3059529
+    }
+  }
+}
+2025-08-12T05:22:31.957Z [INFO] [API][PUT-pengembalian] API request completed successfully
 {
   "performance": {
     "label": "total-api-request",
-    "duration": "1386ms"
+    "duration": "14642ms"
   }
 }
-2025-08-12T01:43:55.206Z [ERROR] [API][PUT-pengembalian] API request failed
-{
-  "requestId": "req-1754963033804-xq4mmkrcf",
-  "transactionCode": "TXN-20250809-001",
-  "totalApiDuration": 1386,
-  "error": {
-    "name": "ZodError",
-    "message": "[\n  {\n    \"origin\": \"string\",\n    \"code\": \"too_small\",\n    \"minimum\": 5,\n    \"inclusive\": true,\n    \"path\": [\n      \"items\",\n      0,\n      \"conditions\",\n      0,\n      \"kondisiAkhir\"\n    ],\n    \"message\": \"Kondisi akhir minimal 5 karakter untuk deskripsi yang jelas\"\n  }\n]",
-    "stack": "ZodError: [\n  {\n    \"origin\": \"string\",\n    \"code\": \"too_small\",\n    \"minimum\": 5,\n    \"inclusive\": true,\n    \"path\": [\n      \"items\",\n      0,\n      \"conditions\",\n      0,\n      \"kondisiAkhir\"\n    ],\n    \"message\": \"Kondisi akhir minimal 5 karakter untuk deskripsi yang jelas\"\n  }\n]\n    at PUT (D:\\.work\\rental-software\\.next\\server\\chunks\\[root-of-the-server]__6645e8c4._.js:3734:212)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async AppRouteRouteModule.do (D:\\.work\\rental-software\\node_modules\\next\\dist\\compiled\\next-server\\app-route-turbo.runtime.dev.js:5:38782)\n    at async AppRouteRouteModule.handle (D:\\.work\\rental-software\\node_modules\\next\\dist\\compiled\\next-server\\app-route-turbo.runtime.dev.js:5:45984)\n    at async responseGenerator (D:\\.work\\rental-software\\.next\\server\\chunks\\node_modules_next_86b4de74._.js:13538:38)\n    at async AppRouteRouteModule.handleResponse (D:\\.work\\rental-software\\node_modules\\next\\dist\\compiled\\next-server\\app-route-turbo.runtime.dev.js:1:183770)\n    at async handleResponse (D:\\.work\\rental-software\\.next\\server\\chunks\\node_modules_next_86b4de74._.js:13600:32)\n    at async handler (D:\\.work\\rental-software\\.next\\server\\chunks\\node_modules_next_86b4de74._.js:13652:13)\n    at async doRender (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:1587:34)\n    at async DevServer.renderToResponseWithComponentsImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:1929:13)\n    at async DevServer.renderPageComponent (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:2395:24)\n    at async DevServer.renderToResponseImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:2435:32)\n    at async DevServer.pipeImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:1035:25)\n    at async NextNodeServer.handleCatchallRenderRequest (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\next-server.js:393:17)\n    at async DevServer.handleRequestImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:925:17)\n    at async D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\dev\\next-dev-server.js:398:20\n    at async Span.traceAsyncFn (D:\\.work\\rental-software\\node_modules\\next\\dist\\trace\\trace.js:157:20)\n    at async DevServer.handleRequest (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\dev\\next-dev-server.js:394:24)\n    at async invokeRender (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\lib\\router-server.js:239:21)\n    at async handleRequest (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\lib\\router-server.js:436:24)\n    at async requestHandlerImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\lib\\router-server.js:464:13)\n    at async Server.requestListener (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\lib\\start-server.js:218:13)"
-  },
-  "timestamp": "2025-08-12T01:43:55.206Z",
-  "performance": {
-    "timestamp": 1754963035206,
-    "memory": {
-      "rss": 647712768,
-      "heapTotal": 345870336,
-      "heapUsed": 333552984,
-      "external": 6038863,
-      "arrayBuffers": 2033949
-    }
-  }
-}
-PUT /api/kasir/transaksi/TXN-20250809-001/pengembalian error: Error [ZodError]: [
-  {
-    "origin": "string",
-    "code": "too_small",
-    "minimum": 5,
-    "inclusive": true,
-    "path": [
-      "items",
-      0,
-      "conditions",
-      0,
-      "kondisiAkhir"
-    ],
-    "message": "Kondisi akhir minimal 5 karakter untuk deskripsi yang jelas"
-  }
-]
-    at PUT (app\api\kasir\transaksi\[kode]\pengembalian\route.ts:158:49)    
-  156 |
-  157 |       // Validate using unified schema
-> 158 |       validatedData = unifiedReturnRequestSchema.parse(validatedData)
-      |                                                 ^
-  159 |
-  160 |       // Additional business rules validation
-  161 |       const businessValidation = validateUnifiedReturnRequest(validatedData)
- PUT /api/kasir/transaksi/TXN-20250809-001/pengembalian 400 in 8851ms
- │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 1309ms (cache skip)
+ PUT /api/kasir/transaksi/TXN-20250809-001/pengembalian 200 in 20831ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 1429ms (cache skip)
  │ │ Cache skipped reason: (auto no cache)
-2025-08-12T01:43:57.687Z [INFO] [API][PUT-pengembalian] API request started
-{
-  "requestId": "req-1754963037686-1nqbe0vod",
-  "timestamp": "2025-08-12T01:43:57.687Z",
-  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
-  "contentLength": "267",
-  "performance": {
-    "timestamp": 1754963037687,
-    "memory": {
-      "rss": 686587904,
-      "heapTotal": 389165056,
-      "heapUsed": 354870000,
-      "external": 4610641,
-      "arrayBuffers": 627456
-    }
-  }
-}
-2025-08-12T01:43:58.046Z [INFO] [API][PUT-pengembalian] Legacy format detected - converting to unified format
-{
-  "requestId": "req-1754963037686-1nqbe0vod",
-  "itemCount": 2,
-  "performance": {
-    "timestamp": 1754963038046,
-    "memory": {
-      "rss": 687341568,
-      "heapTotal": 389165056,
-      "heapUsed": 342437904,
-      "external": 4496927,
-      "arrayBuffers": 495396
-    }
-  }
-}
-2025-08-12T01:43:58.058Z [ERROR] [API][PUT-pengembalian] Unified validation failed
-{
-  "requestId": "req-1754963037686-1nqbe0vod",
-  "transactionCode": "TXN-20250809-001",
-  "format": "legacy",
-  "validationErrors": [
-    {
-      "field": "items.0.conditions.0.kondisiAkhir",
-      "message": "Kondisi akhir minimal 5 karakter untuk deskripsi yang jelas",
-      "code": "too_small"
-    }
-  ],
-  "requestBody": {
-    "items": [
-      {
-        "itemId": "b3221755-304e-4a81-93f2-8589747c9f6b",
-        "kondisiAkhir": "baik",
-        "jumlahKembali": 2
-      },
-      {
-        "itemId": "a2ff8f31-2f9e-4a07-8d0b-ac7446aa8f0c",
-        "kondisiAkhir": "kotor",
-        "jumlahKembali": 2
-      }
-    ],
-    "tglKembali": "2025-08-12T01:43:47.013Z",
-    "transactionId": "TXN-20250809-001"
-  },
-  "performance": {
-    "timestamp": 1754963038058,
-    "memory": {
-      "rss": 687341568,
-      "heapTotal": 389165056,
-      "heapUsed": 342497504,
-      "external": 4496927,
-      "arrayBuffers": 495396
-    }
-  }
-}
-2025-08-12T01:43:58.073Z [INFO] [API][PUT-pengembalian] API request failed
-{
-  "performance": {
-    "label": "total-api-request",
-    "duration": "387ms"
-  }
-}
-2025-08-12T01:43:58.084Z [ERROR] [API][PUT-pengembalian] API request failed
-{
-  "requestId": "req-1754963037686-1nqbe0vod",
-  "transactionCode": "TXN-20250809-001",
-  "totalApiDuration": 387,
-  "error": {
-    "name": "ZodError",
-    "message": "[\n  {\n    \"origin\": \"string\",\n    \"code\": \"too_small\",\n    \"minimum\": 5,\n    \"inclusive\": true,\n    \"path\": [\n      \"items\",\n      0,\n      \"conditions\",\n      0,\n      \"kondisiAkhir\"\n    ],\n    \"message\": \"Kondisi akhir minimal 5 karakter untuk deskripsi yang jelas\"\n  }\n]",
-    "stack": "ZodError: [\n  {\n    \"origin\": \"string\",\n    \"code\": \"too_small\",\n    \"minimum\": 5,\n    \"inclusive\": true,\n    \"path\": [\n      \"items\",\n      0,\n      \"conditions\",\n      0,\n      \"kondisiAkhir\"\n    ],\n    \"message\": \"Kondisi akhir minimal 5 karakter untuk deskripsi yang jelas\"\n  }\n]\n    at PUT (D:\\.work\\rental-software\\.next\\server\\chunks\\[root-of-the-server]__6645e8c4._.js:3734:212)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async AppRouteRouteModule.do (D:\\.work\\rental-software\\node_modules\\next\\dist\\compiled\\next-server\\app-route-turbo.runtime.dev.js:5:38782)\n    at async AppRouteRouteModule.handle (D:\\.work\\rental-software\\node_modules\\next\\dist\\compiled\\next-server\\app-route-turbo.runtime.dev.js:5:45984)\n    at async responseGenerator (D:\\.work\\rental-software\\.next\\server\\chunks\\node_modules_next_86b4de74._.js:13538:38)\n    at async AppRouteRouteModule.handleResponse (D:\\.work\\rental-software\\node_modules\\next\\dist\\compiled\\next-server\\app-route-turbo.runtime.dev.js:1:183770)\n    at async handleResponse (D:\\.work\\rental-software\\.next\\server\\chunks\\node_modules_next_86b4de74._.js:13600:32)\n    at async handler (D:\\.work\\rental-software\\.next\\server\\chunks\\node_modules_next_86b4de74._.js:13652:13)\n    at async doRender (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:1587:34)\n    at async DevServer.renderToResponseWithComponentsImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:1929:13)\n    at async DevServer.renderPageComponent (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:2395:24)\n    at async DevServer.renderToResponseImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:2435:32)\n    at async DevServer.pipeImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:1035:25)\n    at async NextNodeServer.handleCatchallRenderRequest (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\next-server.js:393:17)\n    at async DevServer.handleRequestImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:925:17)\n    at async D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\dev\\next-dev-server.js:398:20\n    at async Span.traceAsyncFn (D:\\.work\\rental-software\\node_modules\\next\\dist\\trace\\trace.js:157:20)\n    at async DevServer.handleRequest (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\dev\\next-dev-server.js:394:24)\n    at async invokeRender (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\lib\\router-server.js:239:21)\n    at async handleRequest (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\lib\\router-server.js:436:24)\n    at async requestHandlerImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\lib\\router-server.js:464:13)\n    at async Server.requestListener (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\lib\\start-server.js:218:13)"
-  },
-  "timestamp": "2025-08-12T01:43:58.083Z",
-  "performance": {
-    "timestamp": 1754963038083,
-    "memory": {
-      "rss": 687345664,
-      "heapTotal": 389165056,
-      "heapUsed": 342548600,
-      "external": 4496927,
-      "arrayBuffers": 495396
-    }
-  }
-}
-PUT /api/kasir/transaksi/TXN-20250809-001/pengembalian error: Error [ZodError]: [
-  {
-    "origin": "string",
-    "code": "too_small",
-    "minimum": 5,
-    "inclusive": true,
-    "path": [
-      "items",
-      0,
-      "conditions",
-      0,
-      "kondisiAkhir"
-    ],
-    "message": "Kondisi akhir minimal 5 karakter untuk deskripsi yang jelas"
-  }
-]
-    at PUT (app\api\kasir\transaksi\[kode]\pengembalian\route.ts:158:49)    
-  156 |
-  157 |       // Validate using unified schema
-> 158 |       validatedData = unifiedReturnRequestSchema.parse(validatedData)
-      |                                                 ^
-  159 |
-  160 |       // Additional business rules validation
-  161 |       const businessValidation = validateUnifiedReturnRequest(validatedData)
- PUT /api/kasir/transaksi/TXN-20250809-001/pengembalian 400 in 1303ms       
- │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 319ms (cache skip)
+ GET /dashboard/transaction/TXN-20250809-001 200 in 372ms
+ GET /api/kasir/transaksi/TXN-20250809-001 200 in 4475ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 697ms (cache skip)
  │ │ Cache skipped reason: (auto no cache)
-2025-08-12T01:44:01.004Z [INFO] [API][PUT-pengembalian] API request started
-{
-  "requestId": "req-1754963041003-3ym7wmpmc",
-  "timestamp": "2025-08-12T01:44:01.004Z",
-  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
-  "contentLength": "267",
-  "performance": {
-    "timestamp": 1754963041004,
-    "memory": {
-      "rss": 698130432,
-      "heapTotal": 389992448,
-      "heapUsed": 360090608,
-      "external": 4666631,
-      "arrayBuffers": 683466
-    }
-  }
-}
-2025-08-12T01:44:01.425Z [INFO] [API][PUT-pengembalian] Legacy format detected - converting to unified format
-{
-  "requestId": "req-1754963041003-3ym7wmpmc",
-  "itemCount": 2,
-  "performance": {
-    "timestamp": 1754963041425,
-    "memory": {
-      "rss": 698130432,
-      "heapTotal": 389992448,
-      "heapUsed": 361437536,
-      "external": 4696738,
-      "arrayBuffers": 695207
-    }
-  }
-}
-2025-08-12T01:44:01.432Z [ERROR] [API][PUT-pengembalian] Unified validation failed
-{
-  "requestId": "req-1754963041003-3ym7wmpmc",
-  "transactionCode": "TXN-20250809-001",
-  "format": "legacy",
-  "validationErrors": [
-    {
-      "field": "items.0.conditions.0.kondisiAkhir",
-      "message": "Kondisi akhir minimal 5 karakter untuk deskripsi yang jelas",
-      "code": "too_small"
-    }
-  ],
-  "requestBody": {
-    "items": [
-      {
-        "itemId": "b3221755-304e-4a81-93f2-8589747c9f6b",
-        "kondisiAkhir": "baik",
-        "jumlahKembali": 2
-      },
-      {
-        "itemId": "a2ff8f31-2f9e-4a07-8d0b-ac7446aa8f0c",
-        "kondisiAkhir": "kotor",
-        "jumlahKembali": 2
-      }
-    ],
-    "tglKembali": "2025-08-12T01:43:47.013Z",
-    "transactionId": "TXN-20250809-001"
-  },
-  "performance": {
-    "timestamp": 1754963041432,
-    "memory": {
-      "rss": 698130432,
-      "heapTotal": 389992448,
-      "heapUsed": 361486768,
-      "external": 4696738,
-      "arrayBuffers": 695207
-    }
-  }
-}
-2025-08-12T01:44:01.442Z [INFO] [API][PUT-pengembalian] API request failed
-{
-  "performance": {
-    "label": "total-api-request",
-    "duration": "439ms"
-  }
-}
-2025-08-12T01:44:01.449Z [ERROR] [API][PUT-pengembalian] API request failed 
-{
-  "requestId": "req-1754963041003-3ym7wmpmc",
-  "transactionCode": "TXN-20250809-001",
-  "totalApiDuration": 439,
-  "error": {
-    "name": "ZodError",
-    "message": "[\n  {\n    \"origin\": \"string\",\n    \"code\": \"too_small\",\n    \"minimum\": 5,\n    \"inclusive\": true,\n    \"path\": [\n      \"items\",\n      0,\n      \"conditions\",\n      0,\n      \"kondisiAkhir\"\n    ],\n    \"message\": \"Kondisi akhir minimal 5 karakter untuk deskripsi yang jelas\"\n  }\n]",
-    "stack": "ZodError: [\n  {\n    \"origin\": \"string\",\n    \"code\": \"too_small\",\n    \"minimum\": 5,\n    \"inclusive\": true,\n    \"path\": [\n      \"items\",\n      0,\n      \"conditions\",\n      0,\n      \"kondisiAkhir\"\n    ],\n    \"message\": \"Kondisi akhir minimal 5 karakter untuk deskripsi yang jelas\"\n  }\n]\n    at PUT (D:\\.work\\rental-software\\.next\\server\\chunks\\[root-of-the-server]__6645e8c4._.js:3734:212)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async AppRouteRouteModule.do (D:\\.work\\rental-software\\node_modules\\next\\dist\\compiled\\next-server\\app-route-turbo.runtime.dev.js:5:38782)\n    at async AppRouteRouteModule.handle (D:\\.work\\rental-software\\node_modules\\next\\dist\\compiled\\next-server\\app-route-turbo.runtime.dev.js:5:45984)\n    at async responseGenerator (D:\\.work\\rental-software\\.next\\server\\chunks\\node_modules_next_86b4de74._.js:13538:38)\n    at async AppRouteRouteModule.handleResponse (D:\\.work\\rental-software\\node_modules\\next\\dist\\compiled\\next-server\\app-route-turbo.runtime.dev.js:1:183770)\n    at async handleResponse (D:\\.work\\rental-software\\.next\\server\\chunks\\node_modules_next_86b4de74._.js:13600:32)\n    at async handler (D:\\.work\\rental-software\\.next\\server\\chunks\\node_modules_next_86b4de74._.js:13652:13)\n    at async doRender (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:1587:34)\n    at async DevServer.renderToResponseWithComponentsImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:1929:13)\n    at async DevServer.renderPageComponent (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:2395:24)\n    at async DevServer.renderToResponseImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:2435:32)\n    at async DevServer.pipeImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:1035:25)\n    at async NextNodeServer.handleCatchallRenderRequest (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\next-server.js:393:17)\n    at async DevServer.handleRequestImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:925:17)\n    at async D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\dev\\next-dev-server.js:398:20\n    at async Span.traceAsyncFn (D:\\.work\\rental-software\\node_modules\\next\\dist\\trace\\trace.js:157:20)\n    at async DevServer.handleRequest (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\dev\\next-dev-server.js:394:24)\n    at async invokeRender (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\lib\\router-server.js:239:21)\n    at async handleRequest (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\lib\\router-server.js:436:24)\n    at async requestHandlerImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\lib\\router-server.js:464:13)\n    at async Server.requestListener (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\lib\\start-server.js:218:13)"
-  },
-  "timestamp": "2025-08-12T01:44:01.449Z",
-  "performance": {
-    "timestamp": 1754963041449,
-    "memory": {
-      "rss": 698130432,
-      "heapTotal": 389992448,
-      "heapUsed": 361525496,
-      "external": 4696738,
-      "arrayBuffers": 695207
-    }
-  }
-}
-PUT /api/kasir/transaksi/TXN-20250809-001/pengembalian error: Error [ZodError]: [
-  {
-    "origin": "string",
-    "code": "too_small",
-    "minimum": 5,
-    "inclusive": true,
-    "path": [
-      "items",
-      0,
-      "conditions",
-      0,
-      "kondisiAkhir"
-    ],
-    "message": "Kondisi akhir minimal 5 karakter untuk deskripsi yang jelas"
-  }
-]
-    at PUT (app\api\kasir\transaksi\[kode]\pengembalian\route.ts:158:49)    
-  156 |
-  157 |       // Validate using unified schema
-> 158 |       validatedData = unifiedReturnRequestSchema.parse(validatedData)
-      |                                                 ^
-  159 |
-  160 |       // Additional business rules validation
-  161 |       const businessValidation = validateUnifiedReturnRequest(validatedData)
- PUT /api/kasir/transaksi/TXN-20250809-001/pengembalian 400 in 1231ms       
- │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 401ms (cache skip)
+ GET /api/kasir/transaksi/TXN-20250809-001 200 in 5150ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 442ms (cache skip)
  │ │ Cache skipped reason: (auto no cache)

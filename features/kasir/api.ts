@@ -186,6 +186,104 @@ export class KasirApiError extends Error {
   }
 }
 
+// Circuit breaker state management
+class CircuitBreaker {
+  private failureCount = 0
+  private lastFailureTime = 0
+  private state: 'CLOSED' | 'OPEN' | 'HALF_OPEN' = 'CLOSED'
+  
+  constructor(
+    private failureThreshold = 3,
+    private recoveryTimeout = 30000, // 30 seconds
+  ) {}
+
+  async execute<T>(operation: () => Promise<T>): Promise<T> {
+    if (this.state === 'OPEN') {
+      if (Date.now() - this.lastFailureTime < this.recoveryTimeout) {
+        throw new KasirApiError('CIRCUIT_BREAKER_OPEN', 'Service temporarily unavailable. Please try again later.')
+      }
+      this.state = 'HALF_OPEN'
+    }
+
+    try {
+      const result = await operation()
+      this.onSuccess()
+      return result
+    } catch (error) {
+      this.onFailure()
+      throw error
+    }
+  }
+
+  private onSuccess() {
+    this.failureCount = 0
+    this.state = 'CLOSED'
+  }
+
+  private onFailure() {
+    this.failureCount++
+    this.lastFailureTime = Date.now()
+    
+    if (this.failureCount >= this.failureThreshold) {
+      this.state = 'OPEN'
+    }
+  }
+
+  getState() {
+    return this.state
+  }
+}
+
+// Global circuit breaker for return operations
+const returnCircuitBreaker = new CircuitBreaker(3, 30000)
+
+// Enhanced fetch wrapper with circuit breaker and retry logic
+async function apiRequestWithRetry<T>(
+  endpoint: string, 
+  options: RequestInit = {},
+  retryOptions = { maxRetries: 2, baseDelay: 1000 }
+): Promise<T> {
+  return returnCircuitBreaker.execute(async () => {
+    let lastError: Error | null = null
+    
+    for (let attempt = 0; attempt <= retryOptions.maxRetries; attempt++) {
+      try {
+        return await apiRequest<T>(endpoint, options)
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error(String(error))
+        
+        // Don't retry on validation errors or client errors (4xx)
+        if (error instanceof KasirApiError) {
+          if (error.code === 'VALIDATION_ERROR' || 
+              error.code === 'UNIFIED_CONDITION_VALIDATION_ERROR' ||
+              error.code === 'UNIFIED_QUANTITY_VALIDATION_ERROR') {
+            throw error // Don't retry validation errors
+          }
+        }
+        
+        // Don't retry on final attempt
+        if (attempt === retryOptions.maxRetries) {
+          break
+        }
+        
+        // Exponential backoff with jitter
+        const delay = retryOptions.baseDelay * Math.pow(2, attempt) + Math.random() * 1000
+        kasirLogger.apiCalls.warn('apiRequestWithRetry', `Attempt ${attempt + 1} failed, retrying in ${delay}ms`, {
+          endpoint,
+          error: lastError.message,
+          attempt: attempt + 1,
+          maxRetries: retryOptions.maxRetries,
+        })
+        
+        await new Promise(resolve => setTimeout(resolve, delay))
+      }
+    }
+    
+    // This should never happen as we have a lastError from the loop
+    throw lastError || new Error('Unknown error occurred during retry attempts')
+  })
+}
+
 // Generic fetch wrapper with error handling
 async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`
@@ -413,7 +511,7 @@ export class KasirApi {
     })
 
     try {
-      const result = await apiRequest<{
+      const result = await apiRequestWithRetry<{
         success: boolean
         processingMode: 'single-condition' | 'multi-condition' | 'mixed'
         transactionId: string
@@ -429,7 +527,11 @@ export class KasirApi {
         headers: {
           'Content-Type': 'application/json',
           'X-Multi-Condition': 'true', // Signal for enhanced processing
+          'X-Retry-Safe': 'true', // Indicate this operation is safe to retry
         },
+      }, {
+        maxRetries: 2,
+        baseDelay: 1000,
       })
 
       kasirLogger.apiCalls.info('processEnhancedReturn', 'Enhanced return API call completed', {

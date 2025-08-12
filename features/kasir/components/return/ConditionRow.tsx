@@ -80,6 +80,10 @@ export function ConditionRow({
 
     if (!condition.kondisiAkhir) {
       errors.push('Kondisi harus dipilih')
+    } else if (condition.kondisiAkhir.length < 4) {
+      errors.push('Kondisi minimal 4 karakter')
+    } else if (condition.kondisiAkhir.length > 500) {
+      errors.push('Kondisi maksimal 500 karakter')
     }
 
     if (!condition.jumlahKembali || condition.jumlahKembali <= 0) {
@@ -171,33 +175,49 @@ export function ConditionRow({
             )}
           </div>
 
-          <Select
-            value={condition.kondisiAkhir || ''}
-            onValueChange={handleConditionChange}
-            disabled={disabled}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Pilih kondisi..." />
-            </SelectTrigger>
-            <SelectContent>
-              {CONDITION_OPTIONS.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline" className={`text-xs ${option.color}`}>
-                      {option.label}
-                    </Badge>
-                    <span className="text-xs text-gray-500">
-                      {option.penalty === 'modal_awal'
-                        ? 'Modal Awal'
-                        : option.penalty === 0
-                          ? 'Tanpa Penalty'
-                          : `Rp ${option.penalty.toLocaleString('id-ID')}`}
-                    </span>
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="space-y-2">
+            <Select
+              value={condition.kondisiAkhir || ''}
+              onValueChange={handleConditionChange}
+              disabled={disabled}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Pilih kondisi..." />
+              </SelectTrigger>
+              <SelectContent>
+                {CONDITION_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className={`text-xs ${option.color}`}>
+                        {option.label}
+                      </Badge>
+                      <span className="text-xs text-gray-500">
+                        {option.penalty === 'modal_awal'
+                          ? 'Modal Awal'
+                          : option.penalty === 0
+                            ? 'Tanpa Penalty'
+                            : `Rp ${option.penalty.toLocaleString('id-ID')}`}
+                      </span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            
+            {/* Character counter and validation hint */}
+            {condition.kondisiAkhir && (
+              <div className="flex items-center justify-between text-xs text-gray-500">
+                <span>
+                  {condition.kondisiAkhir.length >= 4 ? (
+                    <span className="text-green-600">✓ Valid ({condition.kondisiAkhir.length} karakter)</span>
+                  ) : (
+                    <span className="text-red-600">⚠ Minimal 4 karakter ({condition.kondisiAkhir.length}/4)</span>
+                  )}
+                </span>
+                <span className="text-gray-400">{condition.kondisiAkhir.length}/500</span>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Quantity Input */}

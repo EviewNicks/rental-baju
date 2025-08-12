@@ -38,7 +38,7 @@ export const unifiedConditionSchema = z
   .object({
     kondisiAkhir: z
       .string()
-      .min(5, 'Kondisi akhir minimal 5 karakter untuk deskripsi yang jelas')
+      .min(4, 'Kondisi akhir minimal 4 karakter')
       .max(500, 'Kondisi akhir maksimal 500 karakter')
       .regex(
         /^[a-zA-Z0-9\s.,;:()\-—–_!?'"\/]+$/,
@@ -307,9 +307,10 @@ const getValidationSuggestions = (issue: z.ZodIssue): string[] => {
 
   if (issue.path.includes('kondisiAkhir')) {
     suggestions.push(
-      'Gunakan deskripsi yang jelas seperti "Baik - dikembalikan tepat waktu"',
-      'Untuk barang hilang gunakan "Hilang/tidak dikembalikan"',
-      'Minimal 5 karakter untuk deskripsi yang memadai',
+      'Gunakan deskripsi yang jelas seperti "baik", "kotor", "rusak ringan"',
+      'Untuk barang hilang gunakan "hilang" atau "tidak dikembalikan"',
+      'Minimal 4 karakter untuk deskripsi yang memadai',
+      'Contoh kondisi valid: "baik", "kotor", "rusak ringan", "rusak berat", "hilang"',
     )
   }
 
