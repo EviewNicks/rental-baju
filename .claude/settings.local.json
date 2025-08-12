@@ -61,7 +61,8 @@
       "Bash(timeout 10s yarn app:*)",
       "Bash(true)",
       "Bash(npx prisma db execute:*)",
-      "Bash(npx prisma:*)"
+      "Bash(npx prisma:*)",
+      "Bash(cat:*)"
     ],
     "deny": []
   }

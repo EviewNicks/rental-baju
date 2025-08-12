@@ -136,7 +136,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"products\": [\n    {\n      \"id\": \"uuid-1\",\n      \"code\": \"DRS1\",\n      \"name\": \"Dress Elegant\",\n      \"description\": \"Dress untuk acara formal\",\n      \"categoryId\": \"cat-uuid-1\",\n      \"size\": \"M\",\n      \"colorId\": \"color-uuid-1\",\n      \"modalAwal\": \"150000.00\",\n      \"hargaSewa\": \"50000.00\",\n      \"quantity\": 5,\n      \"status\": \"AVAILABLE\",\n      \"imageUrl\": \"https://example.com/dress1.jpg\",\n      \"totalPendapatan\": \"0.00\",\n      \"isActive\": true,\n      \"createdAt\": \"2024-01-01T00:00:00Z\",\n      \"updatedAt\": \"2024-01-01T00:00:00Z\",\n      \"createdBy\": \"user123\",\n      \"category\": {\n        \"id\": \"cat-uuid-1\",\n        \"name\": \"Dress\",\n        \"color\": \"#EC4899\"\n      },\n      \"color\": {\n        \"id\": \"color-uuid-1\",\n        \"name\": \"Merah Marun\",\n        \"hexCode\": \"#800000\",\n        \"description\": \"Warna merah tua yang elegan\",\n        \"isActive\": true\n      }\n    }\n  ],\n  \"pagination\": {\n    \"page\": 1,\n    \"limit\": 2,\n    \"total\": 15,\n    \"totalPages\": 8\n  }\n}"
+              "body": "{\n  \"products\": [\n    {\n      \"id\": \"uuid-1\",\n      \"code\": \"DRS1\",\n      \"name\": \"Dress Elegant\",\n      \"description\": \"Dress untuk acara formal\",\n      \"categoryId\": \"cat-uuid-1\",\n      \"size\": \"M\",\n      \"colorId\": \"color-uuid-1\",\n      \"modalAwal\": \"150000.00\",\n      \"currentPrice\": \"50000.00\",\n      \"quantity\": 5,\n      \"rentedStock\": 0,\n      \"status\": \"AVAILABLE\",\n      \"imageUrl\": \"https://example.com/dress1.jpg\",\n      \"totalPendapatan\": \"0.00\",\n      \"isActive\": true,\n      \"createdAt\": \"2024-01-01T00:00:00Z\",\n      \"updatedAt\": \"2024-01-01T00:00:00Z\",\n      \"createdBy\": \"user123\",\n      \"category\": {\n        \"id\": \"cat-uuid-1\",\n        \"name\": \"Dress\",\n        \"color\": \"#EC4899\"\n      },\n      \"color\": {\n        \"id\": \"color-uuid-1\",\n        \"name\": \"Merah Marun\",\n        \"hexCode\": \"#800000\",\n        \"description\": \"Warna merah tua yang elegan\",\n        \"isActive\": true\n      }\n    }\n  ],\n  \"pagination\": {\n    \"page\": 1,\n    \"limit\": 2,\n    \"total\": 15,\n    \"totalPages\": 8\n  }\n}"
             }
           ]
         },
@@ -179,7 +179,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"id\": \"uuid-1\",\n  \"code\": \"DRS1\",\n  \"name\": \"Dress Elegant\",\n  \"description\": \"Dress untuk acara formal\",\n  \"categoryId\": \"cat-uuid-1\",\n  \"size\": \"M\",\n  \"colorId\": \"color-uuid-1\",\n  \"modalAwal\": \"150000.00\",\n  \"hargaSewa\": \"50000.00\",\n  \"quantity\": 5,\n  \"status\": \"AVAILABLE\",\n  \"imageUrl\": \"https://example.com/dress1.jpg\",\n  \"totalPendapatan\": \"0.00\",\n  \"isActive\": true,\n  \"createdAt\": \"2024-01-01T00:00:00Z\",\n  \"updatedAt\": \"2024-01-01T00:00:00Z\",\n  \"createdBy\": \"user123\",\n  \"category\": {\n    \"id\": \"cat-uuid-1\",\n    \"name\": \"Dress\",\n    \"color\": \"#EC4899\",\n    \"createdAt\": \"2024-01-01T00:00:00Z\",\n    \"updatedAt\": \"2024-01-01T00:00:00Z\",\n    \"createdBy\": \"system\"\n  },\n  \"color\": {\n    \"id\": \"color-uuid-1\",\n    \"name\": \"Merah Marun\",\n    \"hexCode\": \"#800000\",\n    \"description\": \"Warna merah tua yang elegan\",\n    \"isActive\": true,\n    \"createdAt\": \"2024-01-01T00:00:00Z\",\n    \"updatedAt\": \"2024-01-01T00:00:00Z\",\n    \"createdBy\": \"system\"\n  }\n}"
+              "body": "{\n  \"id\": \"uuid-1\",\n  \"code\": \"DRS1\",\n  \"name\": \"Dress Elegant\",\n  \"description\": \"Dress untuk acara formal\",\n  \"categoryId\": \"cat-uuid-1\",\n  \"size\": \"M\",\n  \"colorId\": \"color-uuid-1\",\n  \"modalAwal\": \"150000.00\",\n  \"currentPrice\": \"50000.00\",\n  \"quantity\": 5,\n  \"rentedStock\": 0,\n  \"status\": \"AVAILABLE\",\n  \"imageUrl\": \"https://example.com/dress1.jpg\",\n  \"totalPendapatan\": \"0.00\",\n  \"isActive\": true,\n  \"createdAt\": \"2024-01-01T00:00:00Z\",\n  \"updatedAt\": \"2024-01-01T00:00:00Z\",\n  \"createdBy\": \"user123\",\n  \"category\": {\n    \"id\": \"cat-uuid-1\",\n    \"name\": \"Dress\",\n    \"color\": \"#EC4899\",\n    \"createdAt\": \"2024-01-01T00:00:00Z\",\n    \"updatedAt\": \"2024-01-01T00:00:00Z\",\n    \"createdBy\": \"system\"\n  },\n  \"color\": {\n    \"id\": \"color-uuid-1\",\n    \"name\": \"Merah Marun\",\n    \"hexCode\": \"#800000\",\n    \"description\": \"Warna merah tua yang elegan\",\n    \"isActive\": true,\n    \"createdAt\": \"2024-01-01T00:00:00Z\",\n    \"updatedAt\": \"2024-01-01T00:00:00Z\",\n    \"createdBy\": \"system\"\n  }\n}"
             }
           ]
         },
@@ -216,9 +216,15 @@
                   "type": "text"
                 },
                 {
-                  "key": "hargaSewa",
+                  "key": "currentPrice",
                   "value": "50000",
-                  "description": "Harga sewa per sekali",
+                  "description": "Harga sewa saat ini per sekali",
+                  "type": "text"
+                },
+                {
+                  "key": "rentedStock",
+                  "value": "0",
+                  "description": "Jumlah stok yang sedang disewa",
                   "type": "text"
                 },
                 {
@@ -276,9 +282,15 @@
                   "type": "text"
                 },
                 {
-                  "key": "hargaSewa",
+                  "key": "currentPrice",
                   "value": "60000",
-                  "description": "Harga sewa baru",
+                  "description": "Harga sewa saat ini yang baru",
+                  "type": "text"
+                },
+                {
+                  "key": "rentedStock",
+                  "value": "2",
+                  "description": "Jumlah stok yang sedang disewa",
                   "type": "text"
                 },
                 {
@@ -768,8 +780,13 @@
                       "type": "text"
                     },
                     {
-                      "key": "hargaSewa",
+                      "key": "currentPrice",
                       "value": "25000",
+                      "type": "text"
+                    },
+                    {
+                      "key": "rentedStock",
+                      "value": "0",
                       "type": "text"
                     },
                     {

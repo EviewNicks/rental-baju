@@ -9,6 +9,11 @@ import { PenaltyCalculator, PenaltyDetails } from './penaltyCalculator'
 describe('PenaltyCalculator', () => {
   const testDate = new Date('2025-01-01T10:00:00.000Z')
   const lateDate = new Date('2025-01-04T10:00:00.000Z') // 3 days late
+  
+  // TSK-24-PENALTY-FIX: Test cases for date field validation
+  const expectedReturnDate = new Date('2025-08-09T10:00:00.000Z') // Expected return date (tglSelesai)
+  const actualReturnDate = new Date('2025-08-11T10:00:00.000Z')   // Current date (2 days late)
+  const wrongActualDate = new Date('2021-08-09T10:00:00.000Z')    // Old actual return date (tglKembali) - WRONG!
 
   describe('calculateLatePenalty', () => {
     it('should calculate no penalty for on-time return', () => {
@@ -35,7 +40,46 @@ describe('PenaltyCalculator', () => {
   })
 
   describe('calculateConditionPenalty', () => {
-    describe('good conditions - no penalty', () => {
+    // TSK-24 FIX: Test current frontend condition values from ConditionRow.tsx
+    describe('Frontend Integration - Current Condition Values', () => {
+      it('should handle "baik" condition correctly (CRITICAL FIX)', () => {
+        const result = PenaltyCalculator.calculateConditionPenalty('baik', 5000)
+        expect(result.penalty).toBe(0) // FIXED: was returning 10,000
+        expect(result.reasonCode).toBe('on_time')
+        expect(result.description).toContain('baik')
+      })
+
+      it('should handle "kotor" condition correctly', () => {
+        const result = PenaltyCalculator.calculateConditionPenalty('kotor', 5000)
+        expect(result.penalty).toBe(5000) // Matches ConditionRow penalty
+        expect(result.reasonCode).toBe('damaged')
+        expect(result.description).toContain('kotor')
+      })
+
+      it('should handle "rusak ringan" condition correctly', () => {
+        const result = PenaltyCalculator.calculateConditionPenalty('rusak ringan', 5000)
+        expect(result.penalty).toBe(15000) // Matches ConditionRow penalty
+        expect(result.reasonCode).toBe('damaged')
+        expect(result.description).toContain('kerusakan ringan')
+      })
+
+      it('should handle "rusak berat" condition correctly', () => {
+        const result = PenaltyCalculator.calculateConditionPenalty('rusak berat', 5000)
+        expect(result.penalty).toBe(50000) // Matches ConditionRow penalty
+        expect(result.reasonCode).toBe('damaged')
+        expect(result.description).toContain('kerusakan berat')
+      })
+
+      it('should handle "hilang" condition correctly (already working)', () => {
+        const modalAwal = 75000
+        const result = PenaltyCalculator.calculateConditionPenalty('hilang', 5000, modalAwal)
+        expect(result.penalty).toBe(75000) // Uses modalAwal
+        expect(result.reasonCode).toBe('lost')
+        expect(result.description).toContain('modal awal')
+      })
+    })
+
+    describe('Legacy conditions - backward compatibility', () => {
       it('should return zero penalty for perfect condition', () => {
         const result = PenaltyCalculator.calculateConditionPenalty('Baik - tidak ada kerusakan', 5000)
         expect(result.penalty).toBe(0)
@@ -330,6 +374,141 @@ describe('PenaltyCalculator', () => {
         const result = PenaltyCalculator.generatePenaltyDescription(penalty)
         expect(result).toContain('Rp 75.000')
         expect(result).toContain('Item lost')
+      })
+    })
+
+    // TSK-24-PENALTY-FIX: Critical test suite for date field validation issue
+    describe('Date Field Validation - TSK-24 Bug Fix', () => {
+      describe('Correct date field usage (tglSelesai vs tglKembali)', () => {
+        it('should calculate realistic penalty using correct expected return date', () => {
+          // Simulate correct usage: expectedReturnDate = transaction.tglSelesai (2 days ago)
+          const penalty = PenaltyCalculator.calculateLatePenalty(expectedReturnDate, actualReturnDate, 5000)
+          expect(penalty).toBe(10000) // 2 days * 5000 = realistic penalty
+        })
+
+        it('should NOT produce massive penalty from wrong date field', () => {
+          // Simulate the BUG: expectedReturnDate = transaction.tglKembali (4 years ago)
+          const buggyPenalty = PenaltyCalculator.calculateLatePenalty(wrongActualDate, actualReturnDate, 5000)
+          
+          // This would produce ~1460 days * 5000 = ~7,300,000 penalty (THE BUG)
+          expect(buggyPenalty).toBeGreaterThan(7000000)
+          
+          // Document that this is the WRONG calculation
+          expect(buggyPenalty).not.toBe(10000) // Should not be realistic
+        })
+
+        it('should handle realistic late return scenarios correctly', () => {
+          const oneDayLate = new Date('2025-08-10T10:00:00.000Z')
+          const threeDaysLate = new Date('2025-08-12T10:00:00.000Z')
+          const oneWeekLate = new Date('2025-08-16T10:00:00.000Z')
+
+          expect(PenaltyCalculator.calculateLatePenalty(expectedReturnDate, oneDayLate, 5000))
+            .toBe(5000) // 1 day late
+          
+          expect(PenaltyCalculator.calculateLatePenalty(expectedReturnDate, threeDaysLate, 5000))
+            .toBe(15000) // 3 days late
+          
+          expect(PenaltyCalculator.calculateLatePenalty(expectedReturnDate, oneWeekLate, 5000))
+            .toBe(35000) // 7 days late
+        })
+      })
+
+      describe('Multi-condition penalty with correct date usage', () => {
+        it('should calculate realistic multi-condition penalty using tglSelesai', () => {
+          const items = [{
+            id: 'test-item-1',
+            productName: 'Test Product',
+            expectedReturnDate, // Using correct expected return date
+            actualReturnDate,   // Current date (2 days late)
+            conditions: [
+              { kondisiAkhir: 'Baik - tidak ada kerusakan', jumlahKembali: 1 },
+              { kondisiAkhir: 'Cukup - ada noda ringan', jumlahKembali: 1 }
+            ]
+          }]
+
+          const result = PenaltyCalculator.calculateMultiConditionPenalties(items, 5000)
+          
+          // Should be realistic penalty: 2 days late * 5000 * 2 items + condition penalties
+          expect(result.totalPenalty).toBeLessThan(50000) // Realistic range
+          expect(result.totalPenalty).toBeGreaterThan(10000) // Not zero
+          expect(result.totalLateDays).toBe(4) // 2 days * 2 items = 4 total late days
+        })
+      })
+
+      describe('Step 1 to Step 2 Integration - TSK-24 Critical Fix', () => {
+        it('should match ConditionRow penalty preview for "baik" condition', () => {
+          // Simulate Step 1: ConditionRow shows "Tanpa Penalty" for 'baik'
+          const conditionRowPenalty = 0 // From ConditionRow.tsx CONDITION_OPTIONS
+          
+          // Simulate Step 2: PenaltyCalculator should match
+          const calculatorResult = PenaltyCalculator.calculateConditionPenalty('baik', 5000)
+          
+          expect(calculatorResult.penalty).toBe(conditionRowPenalty) // CRITICAL: Must match
+          expect(calculatorResult.penalty).toBe(0) // Explicit zero check
+        })
+
+        it('should match ConditionRow penalty preview for all conditions', () => {
+          const conditionTests = [
+            { condition: 'baik', expectedPenalty: 0 },
+            { condition: 'kotor', expectedPenalty: 5000 },
+            { condition: 'rusak ringan', expectedPenalty: 15000 },
+            { condition: 'rusak berat', expectedPenalty: 50000 }
+          ]
+
+          conditionTests.forEach(({ condition, expectedPenalty }) => {
+            const result = PenaltyCalculator.calculateConditionPenalty(condition, 5000)
+            expect(result.penalty).toBe(expectedPenalty)
+          })
+        })
+
+        it('should calculate realistic penalties for complete item', () => {
+          const item = {
+            id: 'test-item',
+            productName: 'Test Product',
+            expectedReturnDate: new Date('2025-08-09T10:00:00.000Z'),
+            actualReturnDate: new Date('2025-08-11T10:00:00.000Z'), // 2 days late
+            condition: 'baik', // CRITICAL TEST: Should be 0 penalty
+            quantity: 2
+          }
+
+          const result = PenaltyCalculator.calculateItemPenalty(item, 5000)
+          
+          // Should be: 2 days late * 5000 * 2 items + 0 condition penalty = 20,000
+          expect(result.totalPenalty).toBe(20000) // Late penalty only
+          expect(result.lateDays).toBe(2)
+          expect(result.reasonCode).toBe('late') // Late overrides on_time
+        })
+      })
+
+      describe('Date validation edge cases', () => {
+        it('should handle invalid date strings gracefully', () => {
+          const invalidDate = new Date('invalid-date')
+          expect(isNaN(invalidDate.getTime())).toBe(true)
+          
+          // Validation function should catch this
+          const validation = PenaltyCalculator.validatePenaltyInputs(
+            invalidDate,
+            actualReturnDate,
+            'Baik - tidak ada kerusakan',
+            1
+          )
+          
+          expect(validation.isValid).toBe(false)
+          expect(validation.errors).toContain('Tanggal yang diharapkan tidak valid')
+        })
+
+        it('should validate return date is not too far in past', () => {
+          const veryOldDate = new Date('2020-01-01T10:00:00.000Z') // 5 years ago
+          const validation = PenaltyCalculator.validatePenaltyInputs(
+            expectedReturnDate,
+            veryOldDate,
+            'Baik - tidak ada kerusakan',
+            1
+          )
+          
+          expect(validation.isValid).toBe(false)
+          expect(validation.errors).toContain('Tanggal pengembalian tidak boleh lebih dari 1 tahun yang lalu')
+        })
       })
     })
 

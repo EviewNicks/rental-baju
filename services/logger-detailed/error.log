@@ -1,137 +1,330 @@
- GET /dashboard 200 in 548ms
- GET /favicon.ico?favicon.45db1c09.ico 200 in 457ms
- GET /api/kasir/transaksi?page=1&limit=100 200 in 3681ms
- GET /dashboard/transaction/TXN-20250807-002 200 in 282ms
- GET /api/kasir/transaksi/TXN-20250807-002 200 in 4394ms
- │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 554m
-                                                                                 ms (cache skip)
- │ │ Cache skipped reason: (auto no cache)
- PATCH /api/kasir/transaksi/TXN-20250807-002/ambil 200 in 11454ms
- │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 505ms (cache skip)
- │ │ Cache skipped reason: (auto no cache)
- GET /api/kasir/transaksi/TXN-20250807-002 200 in 4538ms
- │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 662ms (cache skip)
- │ │ Cache skipped reason: (auto no cache)
- GET /api/kasir/transaksi/TXN-20250807-002 200 in 4822ms
- │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 605ms (cache skip)
- │ │ Cache skipped reason: (auto no cache)
- GET /dashboard/transaction/TXN-20250807-002/return 200 in 3185ms
- GET /api/kasir/transaksi/TXN-20250807-002 200 in 4615ms
- │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 1142ms (cache skip)
- │ │ Cache skipped reason: (auto no cache)
-2025-08-06T23:52:36.209Z [INFO] [API][PUT-pengembalian] API request started
+== GET TRANSACTION CODE ===
+
 {
-  "requestId": "req-1754524356209-zatqt3ogy",
-  "timestamp": "2025-08-06T23:52:36.209Z",
-  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
-  "contentLength": "164",
+    "success": true,
+    "data": {
+        "id": "e911d80e-b37b-4003-b7fa-86b90e02fb25",
+        "kode": "TXN-20250808-001",
+        "penyewa": {
+            "id": "c11dfe97-735f-4d5b-9e58-74ecad4e3421",
+            "nama": "Newbie",
+            "telepon": "08123456789",
+            "alamat": "02/03, Jl.EMpang no.7 , Kel. Cppo"
+        },
+        "status": "active",
+        "totalHarga": 450000,
+        "jumlahBayar": 450000,
+        "sisaBayar": 0,
+        "tglMulai": "2025-08-09T00:00:00.000Z",
+        "tglSelesai": "2025-08-12T00:00:00.000Z",
+        "tglKembali": null,
+        "metodeBayar": "tunai",
+        "catatan": null,
+        "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
+        "createdAt": "2025-08-08T05:54:19.205Z",
+        "updatedAt": "2025-08-08T05:54:31.369Z",
+        "items": [
+            {
+                "id": "9a2db264-142a-4163-a559-1dd9603a5be1",
+                "produk": {
+                    "id": "187370f2-6fe3-40f9-8f0f-adbed01ac2bd",
+                    "code": "DRS2",
+                    "name": "Dress Elegant Red",
+                    "imageUrl": "products/image.png",
+                    "size": "M",
+                    "color": "Pink ",
+                    "category": "Baju Ungu"
+                },
+                "jumlah": 2,
+                "jumlahDiambil": 2,
+                "hargaSewa": 50000,
+                "durasi": 3,
+                "subtotal": 300000,
+                "kondisiAwal": "baik",
+                "kondisiAkhir": null,
+                "statusKembali": "belum",
+                "totalReturnPenalty": 0
+            },
+            {
+                "id": "b4f19749-4185-4eaf-8cdb-779620b34fc3",
+                "produk": {
+                    "id": "6bf8bdc3-44dd-4159-a6b7-0dd2f30e0e66",
+                    "code": "GMB5",
+                    "name": "Baju Merah",
+                    "imageUrl": "products/image.png",
+                    "size": "S",
+                    "color": "Pink ",
+                    "category": "Baju Ungu"
+                },
+                "jumlah": 1,
+                "jumlahDiambil": 1,
+                "hargaSewa": 50000,
+                "durasi": 3,
+                "subtotal": 150000,
+                "kondisiAwal": "baik",
+                "kondisiAkhir": null,
+                "statusKembali": "belum",
+                "totalReturnPenalty": 0
+            }
+        ],
+        "pembayaran": [
+            {
+                "id": "631b27f1-52fb-4272-8654-99094ea787f5",
+                "jumlah": 450000,
+                "metode": "tunai",
+                "referensi": null,
+                "catatan": "Pembayaran awal transaksi",
+                "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
+                "createdAt": "2025-08-08T05:54:31.046Z"
+            }
+        ],
+        "aktivitas": [
+            {
+                "id": "52691451-7133-469f-8131-799ee47a410d",
+                "tipe": "status_pickup",
+                "deskripsi": "Status pickup: 2 lengkap, 0 sebagian, 0 belum",
+                "data": {
+                    "timestamp": "2025-08-08T08:26:04.870Z",
+                    "pickupStats": {
+                        "totalItems": 2,
+                        "notPickedUp": 0,
+                        "fullyPickedUp": 2,
+                        "partiallyPickedUp": 0
+                    },
+                    "calculatedBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp"
+                },
+                "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
+                "createdAt": "2025-08-08T08:26:04.873Z"
+            },
+            {
+                "id": "85d7dd1b-80fb-4ed4-8d31-1916b0e1635b",
+                "tipe": "diambil",
+                "deskripsi": "Pickup dilakukan: 2 item, 1 item",
+                "data": {
+                    "items": [
+                        {
+                            "itemId": "9a2db264-142a-4163-a559-1dd9603a5be1",
+                            "jumlahDiambil": 2
+                        },
+                        {
+                            "itemId": "b4f19749-4185-4eaf-8cdb-779620b34fc3",
+                            "jumlahDiambil": 1
+                        }
+                    ],
+                    "timestamp": "2025-08-08T08:26:01.527Z",
+                    "processedBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp"
+                },
+                "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
+                "createdAt": "2025-08-08T08:26:01.531Z"
+            },
+            {
+                "id": "aad63df0-1986-456b-ba1d-544bdc960bf9",
+                "tipe": "dibayar",
+                "deskripsi": "Pembayaran tunai sebesar Rp 450.000",
+                "data": {
+                    "amount": 450000,
+                    "method": "tunai",
+                    "newTotal": "450000",
+                    "paymentId": "631b27f1-52fb-4272-8654-99094ea787f5",
+                    "remaining": "0"
+                },
+                "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
+                "createdAt": "2025-08-08T05:54:31.734Z"
+            },
+            {
+                "id": "43465303-aae7-478e-b1ba-f6bc0409d3de",
+                "tipe": "dibuat",
+                "deskripsi": "Transaksi TXN-20250808-001 dibuat",
+                "data": {
+                    "items": 2,
+                    "totalHarga": "450000"
+                },
+                "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
+                "createdAt": "2025-08-08T05:54:21.047Z"
+            }
+        ]
+    },
+    "message": "Detail transaksi berhasil diambil"
+}2025-08-12T01:43:55.176Z [ERROR] [API][PUT-pengembalian] Unified validation failed
+{
+  "requestId": "req-1754963033804-xq4mmkrcf",
+  "transactionCode": "TXN-20250809-001",
+  "format": "legacy",
+  "validationErrors": [
+    {
+      "field": "items.0.conditions.0.kondisiAkhir",
+      "message": "Kondisi akhir minimal 5 karakter untuk deskripsi yang jelas",
+      "code": "too_small"
+    }
+  ],
+  "requestBody": {
+    "items": [
+      {
+        "itemId": "b3221755-304e-4a81-93f2-8589747c9f6b",
+        "kondisiAkhir": "baik",
+        "jumlahKembali": 2
+      },
+      {
+        "itemId": "a2ff8f31-2f9e-4a07-8d0b-ac7446aa8f0c",
+        "kondisiAkhir": "kotor",
+        "jumlahKembali": 2
+      }
+    ],
+    "tglKembali": "2025-08-12T01:43:47.013Z",
+    "transactionId": "TXN-20250809-001"
+  },
   "performance": {
-    "timestamp": 1754524356209,
+    "timestamp": 1754963035176,
     "memory": {
-      "rss": 724488192,
-      "heapTotal": 290840576,
-      "heapUsed": 260579080,
-      "external": 4615560,
-      "arrayBuffers": 642199
+      "rss": 647073792,
+      "heapTotal": 345870336,
+      "heapUsed": 333365440,
+      "external": 6038863,
+      "arrayBuffers": 2033949
     }
   }
 }
-2025-08-06T23:52:36.581Z [INFO] [API][PUT-pengembalian] Late return detected
+2025-08-12T01:43:55.206Z [ERROR] [API][PUT-pengembalian] API request failed
 {
-  "requestId": "req-1754524356209-zatqt3ogy",
-  "returnDate": "2025-08-06T23:52:34.894Z",
-  "daysLate": 1,
+  "requestId": "req-1754963033804-xq4mmkrcf",
+  "transactionCode": "TXN-20250809-001",
+  "totalApiDuration": 1386,
+  "error": {
+    "name": "ZodError",
+    "message": "[\n  {\n    \"origin\": \"string\",\n    \"code\": \"too_small\",\n    \"minimum\": 5,\n    \"inclusive\": true,\n    \"path\": [\n      \"items\",\n      0,\n      \"conditions\",\n      0,\n      \"kondisiAkhir\"\n    ],\n    \"message\": \"Kondisi akhir minimal 5 karakter untuk deskripsi yang jelas\"\n  }\n]",
+    "stack": "ZodError: [\n  {\n    \"origin\": \"string\",\n    \"code\": \"too_small\",\n    \"minimum\": 5,\n    \"inclusive\": true,\n    \"path\": [\n      \"items\",\n      0,\n      \"conditions\",\n      0,\n      \"kondisiAkhir\"\n    ],\n    \"message\": \"Kondisi akhir minimal 5 karakter untuk deskripsi yang jelas\"\n  }\n]\n    at PUT (D:\\.work\\rental-software\\.next\\server\\chunks\\[root-of-the-server]__6645e8c4._.js:3734:212)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async AppRouteRouteModule.do (D:\\.work\\rental-software\\node_modules\\next\\dist\\compiled\\next-server\\app-route-turbo.runtime.dev.js:5:38782)\n    at async AppRouteRouteModule.handle (D:\\.work\\rental-software\\node_modules\\next\\dist\\compiled\\next-server\\app-route-turbo.runtime.dev.js:5:45984)\n    at async responseGenerator (D:\\.work\\rental-software\\.next\\server\\chunks\\node_modules_next_86b4de74._.js:13538:38)\n    at async AppRouteRouteModule.handleResponse (D:\\.work\\rental-software\\node_modules\\next\\dist\\compiled\\next-server\\app-route-turbo.runtime.dev.js:1:183770)\n    at async handleResponse (D:\\.work\\rental-software\\.next\\server\\chunks\\node_modules_next_86b4de74._.js:13600:32)\n    at async handler (D:\\.work\\rental-software\\.next\\server\\chunks\\node_modules_next_86b4de74._.js:13652:13)\n    at async doRender (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:1587:34)\n    at async DevServer.renderToResponseWithComponentsImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:1929:13)\n    at async DevServer.renderPageComponent (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:2395:24)\n    at async DevServer.renderToResponseImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:2435:32)\n    at async DevServer.pipeImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:1035:25)\n    at async NextNodeServer.handleCatchallRenderRequest (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\next-server.js:393:17)\n    at async DevServer.handleRequestImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:925:17)\n    at async D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\dev\\next-dev-server.js:398:20\n    at async Span.traceAsyncFn (D:\\.work\\rental-software\\node_modules\\next\\dist\\trace\\trace.js:157:20)\n    at async DevServer.handleRequest (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\dev\\next-dev-server.js:394:24)\n    at async invokeRender (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\lib\\router-server.js:239:21)\n    at async handleRequest (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\lib\\router-server.js:436:24)\n    at async requestHandlerImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\lib\\router-server.js:464:13)\n    at async Server.requestListener (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\lib\\start-server.js:218:13)"
+  },
+  "timestamp": "2025-08-12T01:43:55.206Z",
   "performance": {
-    "timestamp": 1754524356581,
+    "timestamp": 1754963035206,
     "memory": {
-      "rss": 726179840,
-      "heapTotal": 290840576,
-      "heapUsed": 261505008,
-      "external": 4635731,
-      "arrayBuffers": 644112
+      "rss": 647712768,
+      "heapTotal": 345870336,
+      "heapUsed": 333552984,
+      "external": 6038863,
+      "arrayBuffers": 2033949
     }
   }
 }
-2025-08-06T23:52:48.045Z [INFO] [API][PUT-pengembalian] API request completed successfully
+2025-08-12T01:43:58.058Z [ERROR] [API][PUT-pengembalian] Unified validation failed
 {
+  "requestId": "req-1754963037686-1nqbe0vod",
+  "transactionCode": "TXN-20250809-001",
+  "format": "legacy",
+  "validationErrors": [
+    {
+      "field": "items.0.conditions.0.kondisiAkhir",
+      "message": "Kondisi akhir minimal 5 karakter untuk deskripsi yang jelas",
+      "code": "too_small"
+    }
+  ],
+  "requestBody": {
+    "items": [
+      {
+        "itemId": "b3221755-304e-4a81-93f2-8589747c9f6b",
+        "kondisiAkhir": "baik",
+        "jumlahKembali": 2
+      },
+      {
+        "itemId": "a2ff8f31-2f9e-4a07-8d0b-ac7446aa8f0c",
+        "kondisiAkhir": "kotor",
+        "jumlahKembali": 2
+      }
+    ],
+    "tglKembali": "2025-08-12T01:43:47.013Z",
+    "transactionId": "TXN-20250809-001"
+  },
   "performance": {
-    "label": "total-api-request",
-    "duration": "11836ms"
-  }
-}
- PUT /api/kasir/transaksi/TXN-20250807-002/pengembalian 200 in 12053ms
-2025-08-06T23:52:49.350Z [INFO] [API][PUT-pengembalian] API request started
-{
-  "requestId": "req-1754524369349-c265vas9c",
-  "timestamp": "2025-08-06T23:52:49.350Z",
-  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
-  "contentLength": "164",
-  "performance": {
-    "timestamp": 1754524369350,
+    "timestamp": 1754963038058,
     "memory": {
-      "rss": 728891392,
-      "heapTotal": 260431872,
-      "heapUsed": 253183160,
-      "external": 4492356,
-      "arrayBuffers": 510006
+      "rss": 687341568,
+      "heapTotal": 389165056,
+      "heapUsed": 342497504,
+      "external": 4496927,
+      "arrayBuffers": 495396
     }
   }
 }
-2025-08-06T23:52:49.892Z [INFO] [API][PUT-pengembalian] Late return detected
+2025-08-12T01:43:58.084Z [ERROR] [API][PUT-pengembalian] API request failed
 {
-  "requestId": "req-1754524369349-c265vas9c",
-  "returnDate": "2025-08-06T23:52:34.894Z",
-  "daysLate": 1,
+  "requestId": "req-1754963037686-1nqbe0vod",
+  "transactionCode": "TXN-20250809-001",
+  "totalApiDuration": 387,
+  "error": {
+    "name": "ZodError",
+    "message": "[\n  {\n    \"origin\": \"string\",\n    \"code\": \"too_small\",\n    \"minimum\": 5,\n    \"inclusive\": true,\n    \"path\": [\n      \"items\",\n      0,\n      \"conditions\",\n      0,\n      \"kondisiAkhir\"\n    ],\n    \"message\": \"Kondisi akhir minimal 5 karakter untuk deskripsi yang jelas\"\n  }\n]",
+    "stack": "ZodError: [\n  {\n    \"origin\": \"string\",\n    \"code\": \"too_small\",\n    \"minimum\": 5,\n    \"inclusive\": true,\n    \"path\": [\n      \"items\",\n      0,\n      \"conditions\",\n      0,\n      \"kondisiAkhir\"\n    ],\n    \"message\": \"Kondisi akhir minimal 5 karakter untuk deskripsi yang jelas\"\n  }\n]\n    at PUT (D:\\.work\\rental-software\\.next\\server\\chunks\\[root-of-the-server]__6645e8c4._.js:3734:212)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async AppRouteRouteModule.do (D:\\.work\\rental-software\\node_modules\\next\\dist\\compiled\\next-server\\app-route-turbo.runtime.dev.js:5:38782)\n    at async AppRouteRouteModule.handle (D:\\.work\\rental-software\\node_modules\\next\\dist\\compiled\\next-server\\app-route-turbo.runtime.dev.js:5:45984)\n    at async responseGenerator (D:\\.work\\rental-software\\.next\\server\\chunks\\node_modules_next_86b4de74._.js:13538:38)\n    at async AppRouteRouteModule.handleResponse (D:\\.work\\rental-software\\node_modules\\next\\dist\\compiled\\next-server\\app-route-turbo.runtime.dev.js:1:183770)\n    at async handleResponse (D:\\.work\\rental-software\\.next\\server\\chunks\\node_modules_next_86b4de74._.js:13600:32)\n    at async handler (D:\\.work\\rental-software\\.next\\server\\chunks\\node_modules_next_86b4de74._.js:13652:13)\n    at async doRender (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:1587:34)\n    at async DevServer.renderToResponseWithComponentsImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:1929:13)\n    at async DevServer.renderPageComponent (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:2395:24)\n    at async DevServer.renderToResponseImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:2435:32)\n    at async DevServer.pipeImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:1035:25)\n    at async NextNodeServer.handleCatchallRenderRequest (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\next-server.js:393:17)\n    at async DevServer.handleRequestImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:925:17)\n    at async D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\dev\\next-dev-server.js:398:20\n    at async Span.traceAsyncFn (D:\\.work\\rental-software\\node_modules\\next\\dist\\trace\\trace.js:157:20)\n    at async DevServer.handleRequest (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\dev\\next-dev-server.js:394:24)\n    at async invokeRender (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\lib\\router-server.js:239:21)\n    at async handleRequest (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\lib\\router-server.js:436:24)\n    at async requestHandlerImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\lib\\router-server.js:464:13)\n    at async Server.requestListener (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\lib\\start-server.js:218:13)"
+  },
+  "timestamp": "2025-08-12T01:43:58.083Z",
   "performance": {
-    "timestamp": 1754524369892,
+    "timestamp": 1754963038083,
     "memory": {
-      "rss": 728907776,
-      "heapTotal": 261742592,
-      "heapUsed": 252799176,
-      "external": 4500554,
-      "arrayBuffers": 512338
+      "rss": 687345664,
+      "heapTotal": 389165056,
+      "heapUsed": 342548600,
+      "external": 4496927,
+      "arrayBuffers": 495396
     }
   }
 }
- PUT /api/kasir/transaksi/TXN-20250807-002/pengembalian 409 in 5325ms
-2025-08-06T23:52:56.776Z [INFO] [API][PUT-pengembalian] API request started
+2025-08-12T01:44:01.432Z [ERROR] [API][PUT-pengembalian] Unified validation failed
 {
-  "requestId": "req-1754524376776-sgtvfd81y",
-  "timestamp": "2025-08-06T23:52:56.776Z",
-  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
-  "contentLength": "164",
+  "requestId": "req-1754963041003-3ym7wmpmc",
+  "transactionCode": "TXN-20250809-001",
+  "format": "legacy",
+  "validationErrors": [
+    {
+      "field": "items.0.conditions.0.kondisiAkhir",
+      "message": "Kondisi akhir minimal 5 karakter untuk deskripsi yang jelas",
+      "code": "too_small"
+    }
+  ],
+  "requestBody": {
+    "items": [
+      {
+        "itemId": "b3221755-304e-4a81-93f2-8589747c9f6b",
+        "kondisiAkhir": "baik",
+        "jumlahKembali": 2
+      },
+      {
+        "itemId": "a2ff8f31-2f9e-4a07-8d0b-ac7446aa8f0c",
+        "kondisiAkhir": "kotor",
+        "jumlahKembali": 2
+      }
+    ],
+    "tglKembali": "2025-08-12T01:43:47.013Z",
+    "transactionId": "TXN-20250809-001"
+  },
   "performance": {
-    "timestamp": 1754524376776,
+    "timestamp": 1754963041432,
     "memory": {
-      "rss": 726274048,
-      "heapTotal": 262266880,
-      "heapUsed": 253719896,
-      "external": 4525486,
-      "arrayBuffers": 545736
+      "rss": 698130432,
+      "heapTotal": 389992448,
+      "heapUsed": 361486768,
+      "external": 4696738,
+      "arrayBuffers": 695207
     }
   }
 }
-2025-08-06T23:52:57.348Z [INFO] [API][PUT-pengembalian] Late return detected
+2025-08-12T01:44:01.449Z [ERROR] [API][PUT-pengembalian] API request failed
 {
-  "requestId": "req-1754524376776-sgtvfd81y",
-  "returnDate": "2025-08-06T23:52:34.894Z",
-  "daysLate": 1,
+  "requestId": "req-1754963041003-3ym7wmpmc",
+  "transactionCode": "TXN-20250809-001",
+  "totalApiDuration": 439,
+  "error": {
+    "name": "ZodError",
+    "message": "[\n  {\n    \"origin\": \"string\",\n    \"code\": \"too_small\",\n    \"minimum\": 5,\n    \"inclusive\": true,\n    \"path\": [\n      \"items\",\n      0,\n      \"conditions\",\n      0,\n      \"kondisiAkhir\"\n    ],\n    \"message\": \"Kondisi akhir minimal 5 karakter untuk deskripsi yang jelas\"\n  }\n]",
+    "stack": "ZodError: [\n  {\n    \"origin\": \"string\",\n    \"code\": \"too_small\",\n    \"minimum\": 5,\n    \"inclusive\": true,\n    \"path\": [\n      \"items\",\n      0,\n      \"conditions\",\n      0,\n      \"kondisiAkhir\"\n    ],\n    \"message\": \"Kondisi akhir minimal 5 karakter untuk deskripsi yang jelas\"\n  }\n]\n    at PUT (D:\\.work\\rental-software\\.next\\server\\chunks\\[root-of-the-server]__6645e8c4._.js:3734:212)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async AppRouteRouteModule.do (D:\\.work\\rental-software\\node_modules\\next\\dist\\compiled\\next-server\\app-route-turbo.runtime.dev.js:5:38782)\n    at async AppRouteRouteModule.handle (D:\\.work\\rental-software\\node_modules\\next\\dist\\compiled\\next-server\\app-route-turbo.runtime.dev.js:5:45984)\n    at async responseGenerator (D:\\.work\\rental-software\\.next\\server\\chunks\\node_modules_next_86b4de74._.js:13538:38)\n    at async AppRouteRouteModule.handleResponse (D:\\.work\\rental-software\\node_modules\\next\\dist\\compiled\\next-server\\app-route-turbo.runtime.dev.js:1:183770)\n    at async handleResponse (D:\\.work\\rental-software\\.next\\server\\chunks\\node_modules_next_86b4de74._.js:13600:32)\n    at async handler (D:\\.work\\rental-software\\.next\\server\\chunks\\node_modules_next_86b4de74._.js:13652:13)\n    at async doRender (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:1587:34)\n    at async DevServer.renderToResponseWithComponentsImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:1929:13)\n    at async DevServer.renderPageComponent (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:2395:24)\n    at async DevServer.renderToResponseImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:2435:32)\n    at async DevServer.pipeImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:1035:25)\n    at async NextNodeServer.handleCatchallRenderRequest (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\next-server.js:393:17)\n    at async DevServer.handleRequestImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\base-server.js:925:17)\n    at async D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\dev\\next-dev-server.js:398:20\n    at async Span.traceAsyncFn (D:\\.work\\rental-software\\node_modules\\next\\dist\\trace\\trace.js:157:20)\n    at async DevServer.handleRequest (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\dev\\next-dev-server.js:394:24)\n    at async invokeRender (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\lib\\router-server.js:239:21)\n    at async handleRequest (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\lib\\router-server.js:436:24)\n    at async requestHandlerImpl (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\lib\\router-server.js:464:13)\n    at async Server.requestListener (D:\\.work\\rental-software\\node_modules\\next\\dist\\server\\lib\\start-server.js:218:13)"
+  },
+  "timestamp": "2025-08-12T01:44:01.449Z",
   "performance": {
-    "timestamp": 1754524377348,
+    "timestamp": 1754963041449,
     "memory": {
-      "rss": 726777856,
-      "heapTotal": 264888320,
-      "heapUsed": 253842384,
-      "external": 4537734,
-      "arrayBuffers": 549518
+      "rss": 698130432,
+      "heapTotal": 389992448,
+      "heapUsed": 361525496,
+      "external": 4696738,
+      "arrayBuffers": 695207
     }
   }
 }
- PUT /api/kasir/transaksi/TXN-20250807-002/pengembalian 409 in 6120ms
- GET /dashboard/transaction/TXN-20250807-002 200 in 414ms
- GET /api/kasir/transaksi/TXN-20250807-002 200 in 4218ms
- │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 524ms (cache skip)
- │ │ Cache skipped reason: (auto no cache)
- GET /api/kasir/transaksi/TXN-20250807-002 200 in 4371ms
- │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 462ms (cache skip)
- │ │ Cache skipped reason: (auto no cache)

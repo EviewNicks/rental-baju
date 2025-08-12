@@ -1,25 +1,43 @@
 'use client'
 
-import React, { useEffect } from 'react'
+import React, { useEffect, useCallback } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft, CheckCircle, AlertCircle, Clock } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { ItemConditionForm } from './ItemConditionForm'
-import { PenaltyDisplay } from './PenaltyDisplay'
+import { UnifiedConditionForm } from './UnifiedConditionForm'
+import { EnhancedPenaltyDisplay } from './EnhancedPenaltyDisplay'
 import { ReturnConfirmation } from './ReturnConfirmation'
-import { useReturnProcess } from '../../hooks/useReturnProcess'
+import { useMultiConditionReturn } from '../../hooks/useMultiConditionReturn'
 import { kasirApi } from '../../api'
 import type { TransaksiDetail } from '../../types'
+import { kasirLogger } from '../../lib/logger'
 
 interface ReturnProcessPageProps {
   onClose?: () => void
   initialTransactionId?: string
+  kode?: string
 }
 
-export function ReturnProcessPage({ onClose, initialTransactionId }: ReturnProcessPageProps) {
+export function ReturnProcessPage({ onClose, initialTransactionId, kode }: ReturnProcessPageProps) {
+  const router = useRouter()
+
+  // Use kode if provided, otherwise use initialTransactionId
+  const transactionId = kode || initialTransactionId
+
+  // Default close handler - navigate back to transaction detail
+  const defaultClose = useCallback(() => {
+    if (transactionId) {
+      router.push(`/dashboard/transaction/${transactionId}`)
+    } else {
+      router.back()
+    }
+  }, [router, transactionId])
+
+  const handleClose = onClose || defaultClose
   const {
     currentStep,
     transaction,
@@ -29,29 +47,75 @@ export function ReturnProcessPage({ onClose, initialTransactionId }: ReturnProce
     error,
     setCurrentStep,
     setTransaction,
-    setItemConditions,
-    setPenaltyCalculation,
-    processReturn,
+    setItemCondition,
+    calculatePenalties,
+    processEnhancedReturn,
     resetProcess,
-  } = useReturnProcess()
+    canProceedToNext: canProceedToNextStep,
+  } = useMultiConditionReturn()
 
-  // Auto-load transaction if initialTransactionId provided (simplified workflow)
+  // Auto-load transaction if transactionId provided (simplified workflow)
   const { data: loadedTransaction, isLoading: isLoadingTransaction } = useQuery({
-    queryKey: ['transaction-detail', initialTransactionId],
-    queryFn: () => kasirApi.getTransactionByCode(initialTransactionId!),
-    enabled: !!initialTransactionId && !transaction,
+    queryKey: ['transaction-detail', transactionId],
+    queryFn: () => kasirApi.getTransactionByCode(transactionId!),
+    enabled: !!transactionId && !transaction,
     retry: 1,
   })
 
   // Set loaded transaction automatically (with type validation)
   useEffect(() => {
     if (loadedTransaction && !transaction) {
+      const processableItems =
+        loadedTransaction.items?.filter(
+          (item) => item.jumlahDiambil > 0 && item.statusKembali !== 'lengkap',
+        ) || []
+
+      kasirLogger.returnProcess.info(
+        'transaction loading',
+        'Transaction loaded for return process',
+        {
+          transactionId: loadedTransaction.kode,
+          itemCount: loadedTransaction.items?.length || 0,
+          processableItemCount: processableItems.length,
+          hasItems: !!loadedTransaction.items,
+          transactionStatus: loadedTransaction.status,
+          loadingSource: transactionId ? 'url-parameter' : 'prop',
+          itemStatuses:
+            loadedTransaction.items?.map((item) => ({
+              id: item.id,
+              productName: item.produk?.name,
+              jumlahDiambil: item.jumlahDiambil,
+              statusKembali: item.statusKembali,
+              canReturn: item.jumlahDiambil > 0 && item.statusKembali !== 'lengkap',
+            })) || [],
+        },
+      )
+
       // Ensure transaction has required items array for return processing
       if (loadedTransaction.items) {
         setTransaction(loadedTransaction as TransaksiDetail) // Safe cast - items verified
+
+        kasirLogger.returnProcess.info(
+          'transaction loading',
+          'Transaction set successfully - ready for return processing',
+          {
+            transactionId: loadedTransaction.kode,
+            processableItemCount: processableItems.length,
+            hasProcessableItems: processableItems.length > 0,
+          },
+        )
+      } else {
+        kasirLogger.returnProcess.error(
+          'transaction loading',
+          'Loaded transaction missing items array for return processing',
+          {
+            transactionId: loadedTransaction.kode,
+            transactionStructure: Object.keys(loadedTransaction),
+          },
+        )
       }
     }
-  }, [loadedTransaction, transaction, setTransaction])
+  }, [loadedTransaction, transaction, setTransaction, transactionId])
 
   // Step configuration with icons - Simplified 3-step workflow
   const steps = [
@@ -82,68 +146,138 @@ export function ReturnProcessPage({ onClose, initialTransactionId }: ReturnProce
   const progressPercentage = (currentStep / steps.length) * 100
 
   const handleBack = () => {
+    kasirLogger.returnProcess.debug('handleBack', 'User navigating back in return process', {
+      currentStep,
+      transactionId: transaction?.kode,
+      canGoBack: currentStep > 1,
+      willClose: currentStep === 1 && !!onClose,
+    })
+
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1)
-    } else if (onClose) {
-      onClose()
+    } else {
+      handleClose()
     }
   }
 
-  const handleNext = () => {
+  const handleNext = async () => {
+    const nextStep = currentStep + 1
+    const stepConfig = steps.find((s) => s.id === nextStep)
+
+    kasirLogger.returnProcess.debug('handleNext', 'User navigating forward in return process', {
+      currentStep,
+      nextStep,
+      maxStep: steps.length,
+      transactionId: transaction?.kode,
+      canProceed: canProceedToNextStep(currentStep),
+      isLastStep: currentStep >= steps.length,
+      stepTitle: stepConfig?.title,
+      validationPassed: canProceedToNextStep(currentStep),
+    })
+
     if (currentStep < steps.length) {
-      setCurrentStep(currentStep + 1)
+      setCurrentStep(nextStep)
+
+      // Log step entry for detailed flow tracking
+      kasirLogger.returnProcess.info('handleNext', `Entered step: ${stepConfig?.title}`, {
+        step: nextStep,
+        stepTitle: stepConfig?.title,
+        stepDescription: stepConfig?.description,
+        transactionId: transaction?.kode,
+        itemCount: transaction?.items?.length || 0,
+      })
+
+      // Auto-calculate penalties when entering step 2 
+      if (nextStep === 2) {
+        kasirLogger.penaltyCalc.info('handleNext', 'Auto-triggering penalty calculation for step 2', {
+          transactionId: transaction?.kode,
+          itemConditionsCount: Object.keys(itemConditions).length,
+        })
+        
+        try {
+          await calculatePenalties()
+        } catch (error) {
+          kasirLogger.penaltyCalc.error('handleNext', 'Auto penalty calculation failed', {
+            transactionId: transaction?.kode,
+            error: error instanceof Error ? error.message : String(error),
+          })
+        }
+      }
     }
   }
 
   const canProceedToNext = () => {
-    switch (currentStep) {
-      case 1:
-        // Ensure transaction loaded AND at least one item has conditions set
-        const returnableItems =
-          transaction?.items?.filter(
-            (item) => item.jumlahDiambil > 0 && item.statusKembali !== 'lengkap',
-          ) || []
-        
-        const hasValidConditions = returnableItems.length > 0 && 
-          returnableItems.every(
-            (item) =>
-              itemConditions[item.id]?.kondisiAkhir &&
-              itemConditions[item.id]?.jumlahKembali !== undefined,
-          )
-        
-        const canProceed = !!transaction && returnableItems.length > 0 && hasValidConditions
-        
-        // Debug logging for step 1 validation
-        console.log('🎯 Step 1 Validation:', {
-          hasTransaction: !!transaction,
-          returnableItemsCount: returnableItems.length,
-          itemConditionsCount: Object.keys(itemConditions).length,
-          hasValidConditions,
-          canProceed,
-          itemConditions: itemConditions
-        })
-        
-        return canProceed
-      case 2:
-        // Debug logging for step 2 validation
-        console.log('🎯 Step 2 Validation:', {
-          hasPenaltyCalculation: !!penaltyCalculation,
-          penaltyCalculation: penaltyCalculation
-        })
-        return !!penaltyCalculation
-      case 3:
-        return true // Confirmation step can always proceed
-      default:
-        return false
-    }
+    return canProceedToNextStep(currentStep)
   }
 
   const handleProcessComplete = () => {
+    kasirLogger.returnProcess.info(
+      'handleProcessComplete',
+      'Return process completed - resetting and closing',
+      {
+        transactionId: transaction?.kode,
+        completedStep: currentStep,
+        totalSteps: steps.length,
+        hasItemConditions: Object.keys(itemConditions).length > 0,
+        itemConditionCount: Object.keys(itemConditions).length,
+        hasPenaltyCalculation: !!penaltyCalculation,
+        penaltyAmount: penaltyCalculation?.totalPenalty || 0,
+      },
+    )
+
     resetProcess()
-    if (onClose) {
-      onClose()
-    }
+    handleClose()
   }
+
+  // Stable handler for item condition changes - Fix Rules of Hooks
+  const handleItemConditionChange = useCallback(
+    // eslint-disable-next-line
+    (itemId: string, condition: any) => {
+      kasirLogger.returnProcess.debug('handleItemConditionChange', 'Item condition change requested - ENTRY', {
+        itemId,
+        conditionMode: condition?.mode,
+        conditionCount: condition?.conditions?.length || 0,
+        isValid: condition?.isValid,
+        totalQuantity: condition?.totalQuantity,
+        remainingQuantity: condition?.remainingQuantity,
+        hasValidationError: !!condition?.validationError,
+        transactionId: transaction?.kode,
+        hasCondition: !!condition,
+        conditionType: typeof condition,
+        hasSetItemConditionFunc: typeof setItemCondition === 'function',
+      })
+
+      if (!condition) {
+        kasirLogger.returnProcess.warn('handleItemConditionChange', 'Null condition received', {
+          itemId,
+          transactionId: transaction?.kode,
+        })
+        return
+      }
+
+      if (!itemId) {
+        kasirLogger.returnProcess.warn('handleItemConditionChange', 'Empty itemId received', {
+          condition: condition ? Object.keys(condition) : 'null',
+          transactionId: transaction?.kode,
+        })
+        return
+      }
+
+      kasirLogger.returnProcess.debug('handleItemConditionChange', 'Calling setItemCondition', {
+        itemId,
+        transactionId: transaction?.kode,
+        conditionStructure: condition ? Object.keys(condition) : 'null',
+      })
+
+      setItemCondition(itemId, condition)
+
+      kasirLogger.returnProcess.debug('handleItemConditionChange', 'setItemCondition call completed', {
+        itemId,
+        transactionId: transaction?.kode,
+      })
+    },
+    [setItemCondition, transaction?.kode],
+  )
 
   return (
     <div className="min-h-screen bg-neutral-100 p-4 md:p-6">
@@ -309,7 +443,6 @@ export function ReturnProcessPage({ onClose, initialTransactionId }: ReturnProce
           </CardHeader>
 
           <CardContent className="p-6 md:p-8">
-            {/* Loading State */}
             {isLoadingTransaction && (
               <div className="flex items-center justify-center py-12">
                 <div className="flex items-center gap-3 text-gray-600">
@@ -319,7 +452,6 @@ export function ReturnProcessPage({ onClose, initialTransactionId }: ReturnProce
               </div>
             )}
 
-            {/* No Transaction State */}
             {!isLoadingTransaction && !transaction && (
               <Alert>
                 <AlertCircle className="h-4 w-4" />
@@ -331,19 +463,42 @@ export function ReturnProcessPage({ onClose, initialTransactionId }: ReturnProce
             )}
 
             {currentStep === 1 && transaction && (
-              <ItemConditionForm
-                transaction={transaction}
-                itemConditions={itemConditions}
-                onConditionsChange={setItemConditions}
-                isLoading={isProcessing}
-              />
+              <div className="space-y-6">
+                {transaction.items
+                  ?.filter((item) => item.jumlahDiambil > 0 && item.statusKembali !== 'lengkap')
+                  .map((item) => (
+                    <UnifiedConditionForm
+                      key={item.id}
+                      item={item}
+                      value={itemConditions[item.id] || null}
+                      onChange={(condition) => handleItemConditionChange(item.id, condition)}
+                      disabled={isProcessing}
+                      isLoading={isProcessing}
+                    />
+                  ))}
+              </div>
             )}
 
             {currentStep === 2 && transaction && (
-              <PenaltyDisplay
+              <EnhancedPenaltyDisplay
                 transaction={transaction}
                 itemConditions={itemConditions}
-                onPenaltyCalculated={setPenaltyCalculation}
+                penaltyCalculation={penaltyCalculation}
+                onPenaltyCalculated={(calculation) => {
+                  kasirLogger.penaltyCalc.info(
+                    'onPenaltyCalculated',
+                    'Penalty calculation completed',
+                    {
+                      transactionId: transaction.kode,
+                      totalPenalty: calculation?.totalPenalty || 0,
+                      calculationMode: 'unified', // MultiConditionPenaltyResult doesn't have processingMode
+                      itemsWithPenalty: calculation?.breakdown?.length || 0,
+                      hasCalculation: !!calculation,
+                    },
+                  )
+                  console.log('Penalty calculated:', calculation)
+                }}
+                isCalculating={isProcessing}
               />
             )}
 
@@ -352,7 +507,7 @@ export function ReturnProcessPage({ onClose, initialTransactionId }: ReturnProce
                 transaction={transaction}
                 itemConditions={itemConditions}
                 penaltyCalculation={penaltyCalculation}
-                onProcess={processReturn}
+                onProcess={processEnhancedReturn}
                 onComplete={handleProcessComplete}
                 onBack={handleBack}
                 isLoading={isProcessing}

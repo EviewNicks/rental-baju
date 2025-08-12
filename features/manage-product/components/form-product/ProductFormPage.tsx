@@ -25,7 +25,7 @@ interface ProductFormData {
   colorId?: string
   quantity: number
   modalAwal: number
-  hargaSewa: number
+  currentPrice: number
   description: string
   imageUrl: string | null
   image?: File | null
@@ -37,7 +37,7 @@ interface CreateProductRequest {
   name: string
   description: string
   modalAwal: number
-  hargaSewa: number
+  currentPrice: number
   quantity: number
   categoryId: string
   size?: string
@@ -50,7 +50,7 @@ interface UpdateProductRequest {
   name: string
   description: string
   modalAwal: number
-  hargaSewa: number
+  currentPrice: number
   quantity: number
   categoryId: string
   size?: string
@@ -130,7 +130,7 @@ export function ProductFormPage({
     colorId: product?.colorId || '',
     quantity: product?.quantity || 1,
     modalAwal: product?.modalAwal ? Number(product.modalAwal) : 0,
-    hargaSewa: product?.hargaSewa ? Number(product.hargaSewa) : 0,
+    currentPrice: product?.currentPrice ? Number(product.currentPrice) : 0,
     description: product?.description || '',
     imageUrl: product?.imageUrl || null,
     image: null,
@@ -156,8 +156,8 @@ export function ProductFormPage({
     const modalAwalError = validateNumber(formData.modalAwal, 'Modal awal')
     if (modalAwalError) newErrors.modalAwal = modalAwalError
 
-    const hargaSewaError = validateNumber(formData.hargaSewa, 'Harga sewa')
-    if (hargaSewaError) newErrors.hargaSewa = hargaSewaError
+    const currentPriceError = validateNumber(formData.currentPrice, 'Harga sewa')
+    if (currentPriceError) newErrors.currentPrice = currentPriceError
 
     const quantityError = validateNumber(formData.quantity, 'Kuantitas', 0, 9999)
     if (quantityError) newErrors.quantity = quantityError
@@ -193,7 +193,7 @@ export function ProductFormPage({
       case 'modalAwal':
         error = validateNumber(typeof value === 'number' ? value : 0, 'Modal awal') || ''
         break
-      case 'hargaSewa':
+      case 'currentPrice':
         error = validateNumber(typeof value === 'number' ? value : 0, 'Harga sewa') || ''
         break
       case 'quantity':
@@ -231,7 +231,7 @@ export function ProductFormPage({
         size: true,
         colorId: true,
         modalAwal: true, 
-        hargaSewa: true, 
+        currentPrice: true, 
         quantity: true, 
         description: true 
       })
@@ -246,7 +246,7 @@ export function ProductFormPage({
           name: formData.name,
           description: formData.description,
           modalAwal: formData.modalAwal,
-          hargaSewa: formData.hargaSewa,
+          currentPrice: formData.currentPrice,
           quantity: formData.quantity,
           categoryId: formData.categoryId,
           size: formData.size || undefined,
@@ -266,7 +266,7 @@ export function ProductFormPage({
           name: formData.name,
           description: formData.description,
           modalAwal: formData.modalAwal,
-          hargaSewa: formData.hargaSewa,
+          currentPrice: formData.currentPrice,
           quantity: formData.quantity,
           categoryId: formData.categoryId,
           size: formData.size || undefined,

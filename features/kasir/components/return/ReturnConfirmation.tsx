@@ -18,7 +18,12 @@ import {
   ArrowLeft
 } from 'lucide-react'
 import type { TransaksiDetail } from '../../types'
+import type { 
+  EnhancedItemCondition,
+  MultiConditionPenaltyResult
+} from '../../types'
 
+// Backward compatibility interfaces
 interface ItemCondition {
   kondisiAkhir: string
   jumlahKembali: number
@@ -47,12 +52,96 @@ interface PenaltyCalculation {
 
 interface ReturnConfirmationProps {
   transaction: TransaksiDetail
-  itemConditions: Record<string, ItemCondition>
-  penaltyCalculation: PenaltyCalculation | null
-  onProcess: (notes?: string) => Promise<void>
+  // Support both old and new data structures
+  itemConditions: Record<string, ItemCondition> | Record<string, EnhancedItemCondition>
+  penaltyCalculation: PenaltyCalculation | MultiConditionPenaltyResult | null
+  onProcess: (notes?: string) => Promise<{
+    success: boolean
+    processingMode: 'single-condition' | 'multi-condition' | 'mixed'
+    transactionId: string
+    itemsProcessed: number
+    conditionSplitsProcessed: number
+    totalPenalty: number
+    message: string
+    errors?: string[]
+    warnings?: string[]
+  } | void>
   onComplete: () => void
   onBack?: () => void
   isLoading?: boolean
+}
+
+// Helper function to normalize item conditions to old format for display compatibility
+const normalizeItemConditions = (
+  conditions: Record<string, ItemCondition> | Record<string, EnhancedItemCondition>
+): Record<string, ItemCondition> => {
+  const normalized: Record<string, ItemCondition> = {}
+  
+  for (const [itemId, condition] of Object.entries(conditions)) {
+    if ('mode' in condition && 'conditions' in condition) {
+      // Enhanced multi-condition format
+      const enhanced = condition as EnhancedItemCondition
+      if (enhanced.mode === 'single' || enhanced.conditions.length === 1) {
+        // Single condition - use first condition
+        const firstCondition = enhanced.conditions[0]
+        normalized[itemId] = {
+          kondisiAkhir: firstCondition?.kondisiAkhir || '',
+          jumlahKembali: firstCondition?.jumlahKembali || 0
+        }
+      } else {
+        // Multi-condition - combine for display
+        const totalReturned = enhanced.conditions.reduce((sum, c) => sum + (c.jumlahKembali || 0), 0)
+        const conditionLabels = enhanced.conditions.map(c => `${c.kondisiAkhir} (${c.jumlahKembali})`).join(', ')
+        normalized[itemId] = {
+          kondisiAkhir: `Multi: ${conditionLabels}`,
+          jumlahKembali: totalReturned
+        }
+      }
+    } else {
+      // Old format - pass through
+      normalized[itemId] = condition as ItemCondition
+    }
+  }
+  
+  return normalized
+}
+
+// Helper function to normalize penalty calculation for display
+const normalizePenaltyCalculation = (
+  penalty: PenaltyCalculation | MultiConditionPenaltyResult | null
+): PenaltyCalculation | null => {
+  if (!penalty) return null
+  
+  if ('breakdown' in penalty && Array.isArray(penalty.breakdown)) {
+    // Check if it's the new enhanced format
+    if (penalty.breakdown[0] && 'calculationMethod' in penalty.breakdown[0]) {
+      // Enhanced format - convert to old format
+      const enhanced = penalty as MultiConditionPenaltyResult
+      return {
+        totalPenalty: enhanced.totalPenalty,
+        lateDays: enhanced.lateDays || 0,
+        breakdown: enhanced.breakdown?.map(item => ({
+          itemId: item.itemId,
+          itemName: item.itemName,
+          latePenalty: item.latePenalty,
+          conditionPenalty: item.conditionPenalty,
+          totalItemPenalty: item.totalItemPenalty,
+          kondisiAkhir: item.kondisiAkhir,
+          jumlahKembali: item.jumlahKembali,
+          isLostItem: item.isLostItem
+        })) || [],
+        summary: {
+          onTimeItems: enhanced.summary?.onTimeItems || 0,
+          lateItems: enhanced.summary?.lateItems || 0,
+          damagedItems: enhanced.summary?.damagedItems || 0,
+          lostItems: enhanced.summary?.lostItems || 0
+        }
+      }
+    }
+  }
+  
+  // Old format - pass through
+  return penalty as PenaltyCalculation
 }
 
 export function ReturnConfirmation({
@@ -72,6 +161,10 @@ export function ReturnConfirmation({
   // Enhanced button state management (CRITICAL FIX - prevent double submissions)
   const [lastSubmissionTime, setLastSubmissionTime] = useState<number>(0)
   const [submissionCount, setSubmissionCount] = useState<number>(0)
+  
+  // Normalize data for display compatibility
+  const normalizedConditions = normalizeItemConditions(itemConditions)
+  const normalizedPenalty = normalizePenaltyCalculation(penaltyCalculation)
   
   const handleProcess = async () => {
     const now = Date.now()
@@ -158,7 +251,7 @@ export function ReturnConfirmation({
   const returnableItems = transaction.items?.filter(item => 
     item.jumlahDiambil > 0 && 
     item.statusKembali !== 'lengkap' &&
-    itemConditions[item.id]
+    normalizedConditions[item.id]
   ) || []
 
   if (processComplete) {
@@ -178,8 +271,8 @@ export function ReturnConfirmation({
           <div className="text-sm text-green-700">
             <div className="font-medium mb-2">Ringkasan Pengembalian:</div>
             <div>• {returnableItems.length} item berhasil dikembalikan</div>
-            {penaltyCalculation && penaltyCalculation.totalPenalty > 0 && (
-              <div>• Total penalty: {formatCurrency(penaltyCalculation.totalPenalty)}</div>
+            {normalizedPenalty && normalizedPenalty.totalPenalty > 0 && (
+              <div>• Total penalty: {formatCurrency(normalizedPenalty.totalPenalty)}</div>
             )}
             <div>• Status transaksi: Dikembalikan</div>
           </div>
@@ -239,7 +332,7 @@ export function ReturnConfirmation({
         
         <div className="space-y-3">
           {returnableItems.map((item) => {
-            const condition = itemConditions[item.id]
+            const condition = normalizedConditions[item.id]
             const isLostItem = condition.kondisiAkhir.toLowerCase().includes('hilang') || 
                               condition.kondisiAkhir.toLowerCase().includes('tidak dikembalikan')
             
@@ -268,7 +361,7 @@ export function ReturnConfirmation({
       </Card>
 
       {/* Penalty Summary */}
-      {penaltyCalculation && (
+      {normalizedPenalty && (
         <Card className="p-6">
           <h4 className="font-semibold mb-4 flex items-center gap-2">
             <DollarSign className="h-5 w-5" />
@@ -276,23 +369,23 @@ export function ReturnConfirmation({
           </h4>
           
           <div className="space-y-3">
-            {penaltyCalculation.lateDays > 0 && (
+            {normalizedPenalty.lateDays > 0 && (
               <div className="flex justify-between text-sm">
-                <span>Penalty Keterlambatan ({penaltyCalculation.lateDays} hari)</span>
+                <span>Penalty Keterlambatan ({normalizedPenalty.lateDays} hari)</span>
                 <span className="font-medium">
                   {formatCurrency(
-                    penaltyCalculation.breakdown.reduce((sum, item) => sum + item.latePenalty, 0)
+                    normalizedPenalty.breakdown.reduce((sum, item) => sum + item.latePenalty, 0)
                   )}
                 </span>
               </div>
             )}
             
-            {penaltyCalculation.summary.damagedItems > 0 && (
+            {normalizedPenalty.summary.damagedItems > 0 && (
               <div className="flex justify-between text-sm">
-                <span>Penalty Kerusakan ({penaltyCalculation.summary.damagedItems} item)</span>
+                <span>Penalty Kerusakan ({normalizedPenalty.summary.damagedItems} item)</span>
                 <span className="font-medium">
                   {formatCurrency(
-                    penaltyCalculation.breakdown
+                    normalizedPenalty.breakdown
                       .filter(item => !item.isLostItem && item.conditionPenalty > 0)
                       .reduce((sum, item) => sum + item.conditionPenalty, 0)
                   )}
@@ -300,12 +393,12 @@ export function ReturnConfirmation({
               </div>
             )}
             
-            {penaltyCalculation.summary.lostItems > 0 && (
+            {normalizedPenalty.summary.lostItems > 0 && (
               <div className="flex justify-between text-sm">
-                <span>Penalty Barang Hilang ({penaltyCalculation.summary.lostItems} item)</span>
+                <span>Penalty Barang Hilang ({normalizedPenalty.summary.lostItems} item)</span>
                 <span className="font-medium">
                   {formatCurrency(
-                    penaltyCalculation.breakdown
+                    normalizedPenalty.breakdown
                       .filter(item => item.isLostItem)
                       .reduce((sum, item) => sum + item.conditionPenalty, 0)
                   )}
@@ -318,14 +411,14 @@ export function ReturnConfirmation({
             <div className="flex justify-between font-semibold">
               <span>Total Penalty</span>
               <span className="text-red-600">
-                {formatCurrency(penaltyCalculation.totalPenalty)}
+                {formatCurrency(normalizedPenalty.totalPenalty)}
               </span>
             </div>
             
             <div className="flex justify-between text-lg font-bold">
               <span>Total Sisa Bayar Setelah Pengembalian</span>
               <span>
-                {formatCurrency(transaction.sisaBayar + penaltyCalculation.totalPenalty)}
+                {formatCurrency(transaction.sisaBayar + normalizedPenalty.totalPenalty)}
               </span>
             </div>
           </div>

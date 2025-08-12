@@ -1,7 +1,4 @@
-import {
-  Clock,
-  Loader2,
-} from 'lucide-react'
+import { Clock, Loader2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/react-query'
@@ -14,7 +11,6 @@ interface ActivityTimelineProps {
   transactionCode?: string
   'data-testid'?: string
 }
-
 
 export function ActivityTimeline({
   timeline,

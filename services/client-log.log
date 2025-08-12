@@ -1,316 +1,51 @@
 [Fast Refresh] rebuilding
-report-hmr-latency.ts:26 [Fast Refresh] done in 193ms
-hook.js:608 Skipping auto-scroll behavior due to `position: sticky` or `position: fixed` on element: <div class=​"bg-white border-b border-neutral-200 sticky top-0 z-50 shadow-md w-full flex justify-center">​…​</div>​
-overrideMethod @ hook.js:608Understand this warning
-hook.js:608 Detected `scroll-behavior: smooth` on the `<html>` element. In a future version, Next.js will no longer automatically disable smooth scrolling during route transitions. To prepare for this change, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
-overrideMethod @ hook.js:608Understand this warning
+report-hmr-latency.ts:26 [Fast Refresh] done in 163ms
 turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
-report-hmr-latency.ts:26 [Fast Refresh] done in 128ms
-ActionButtonPanel.tsx:61 📋 Opening pickup modal Objectaction: "pickup"pickupStatus: {totalItems: 2, totalPickedUp: 0, totalRemaining: 2, hasRemainingItems: true}productsCount: 1transactionCode: "TXN-20250807-002"[[Prototype]]: Object
+report-hmr-latency.ts:26 [Fast Refresh] done in 2998ms
 turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
-report-hmr-latency.ts:26 [Fast Refresh] done in 116ms
+report-hmr-latency.ts:26 [Fast Refresh] done in 157ms
+ActionButtonPanel.tsx:37 📦 Processing return Object
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 3315ms
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 194ms
 turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
 report-hmr-latency.ts:26 [Fast Refresh] done in 181ms
-ActionButtonPanel.tsx:37 📦 Processing return Objectaction: "return"transactionCode: "TXN-20250807-002"[[Prototype]]: Object
 turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
-report-hmr-latency.ts:26 [Fast Refresh] done in 2611ms
+report-hmr-latency.ts:26 [Fast Refresh] done in 124ms
+logger.ts:196 2025-08-12T05:21:39.170Z [INFO] [kasir:return-process][transaction loading] [KASIR] Transaction loaded for return process{  "transactionId": "TXN-20250809-001",  "itemCount": 2,  "processableItemCount": 2,  "hasItems": true,  "transactionStatus": "active",  "loadingSource": "url-parameter",  "itemStatuses": [    {      "id": "b3221755-304e-4a81-93f2-8589747c9f6b",      "productName": "Dress Elegant Red",      "jumlahDiambil": 2,      "statusKembali": "belum",      "canReturn": true    },    {      "id": "a2ff8f31-2f9e-4a07-8d0b-ac7446aa8f0c",      "productName": "Baju Merah",      "jumlahDiambil": 2,      "statusKembali": "belum",      "canReturn": true    }  ],  "performance": {    "timestamp": 1754976099170,    "memory": null  }}
+logger.ts:196 2025-08-12T05:21:39.173Z [INFO] [kasir:return-process][transaction loading] [KASIR] Transaction set successfully - ready for return processing{  "transactionId": "TXN-20250809-001",  "processableItemCount": 2,  "hasProcessableItems": true,  "performance": {    "timestamp": 1754976099173,    "memory": null  }}
+logger.ts:196 2025-08-12T05:21:39.250Z [INFO] [kasir:validation][validateAllItems] [KASIR] Form validation completed{  "transactionId": "TXN-20250809-001",  "isFormValid": false,  "canProceed": false,  "errorCount": 2,  "warningCount": 0,  "allItemsValid": false,  "validatedItemCount": 2,  "performance": {    "timestamp": 1754976099250,    "memory": null  }}
+logger.ts:196 2025-08-12T05:21:43.113Z [INFO] [kasir:validation][validateAllItems] [KASIR] Form validation completed{  "transactionId": "TXN-20250809-001",  "isFormValid": false,  "canProceed": false,  "errorCount": 1,  "warningCount": 0,  "allItemsValid": false,  "validatedItemCount": 2,  "performance": {    "timestamp": 1754976103113,    "memory": null  }}
+logger.ts:196 2025-08-12T05:21:46.091Z [INFO] [kasir:validation][validateAllItems] [KASIR] Form validation completed{  "transactionId": "TXN-20250809-001",  "isFormValid": true,  "canProceed": true,  "errorCount": 0,  "warningCount": 0,  "allItemsValid": true,  "validatedItemCount": 2,  "performance": {    "timestamp": 1754976106091,    "memory": null  }}
+logger.ts:196 2025-08-12T05:21:49.002Z [INFO] [kasir:return-process][handleNext] [KASIR] Entered step: Hitung Penalty{  "step": 2,  "stepTitle": "Hitung Penalty",  "stepDescription": "Review penalty dan denda",  "transactionId": "TXN-20250809-001",  "itemCount": 2,  "performance": {    "timestamp": 1754976109002,    "memory": null  }}
+logger.ts:196 2025-08-12T05:21:49.003Z [INFO] [kasir:penalty-calc][handleNext] [KASIR] Auto-triggering penalty calculation for step 2{  "transactionId": "TXN-20250809-001",  "itemConditionsCount": 2,  "performance": {    "timestamp": 1754976109003,    "memory": null  }}
+logger.ts:196 2025-08-12T05:21:49.005Z [INFO] [kasir:validation][validateAllItems] [KASIR] Form validation completed{  "transactionId": "TXN-20250809-001",  "isFormValid": true,  "canProceed": true,  "errorCount": 0,  "warningCount": 0,  "allItemsValid": true,  "validatedItemCount": 2,  "performance": {    "timestamp": 1754976109005,    "memory": null  }}
+logger.ts:196 2025-08-12T05:21:49.006Z [INFO] [kasir:penalty-calc][calculatePenalties] [KASIR] Starting client-side penalty calculation{  "transactionId": "TXN-20250809-001",  "itemCount": 2,  "processingMode": "client-side",  "performance": {    "timestamp": 1754976109006,    "memory": null  }}
+logger.ts:196 2025-08-12T05:21:49.013Z [INFO] [kasir:penalty-calc][calculatePenalties] [KASIR] Client-side penalty calculation completed{  "totalPenalty": 10000,  "lateDays": 0,  "itemsProcessed": 2,  "conditionSplits": 2,  "processingMode": "client-side",  "performance": {    "timestamp": 1754976109013,    "memory": null  }}
+logger.ts:196 2025-08-12T05:21:49.013Z [INFO] [kasir:performance][calculatePenalties] Client-side penalty calculation completed{  "performance": {    "label": "[KASIR] Client-side penalty calculation",    "duration": "8ms"  }}
+logger.ts:196 2025-08-12T05:21:49.051Z [INFO] [kasir:penalty-calc][onPenaltyCalculated] [KASIR] Penalty calculation completed{  "transactionId": "TXN-20250809-001",  "totalPenalty": 10000,  "calculationMode": "unified",  "itemsWithPenalty": 2,  "hasCalculation": true,  "performance": {    "timestamp": 1754976109051,    "memory": null  }}
+ReturnProcessPage.tsx:499 Penalty calculated: Objectbreakdown: (2) [{…}, {…}]calculationMetadata: {calculatedAt: '2025-08-12T05:21:49.012Z', processingMode: 'multi-condition', itemCount: 2, totalConditions: 2, hasLateItems: false, …}calculatedAt: "2025-08-12T05:21:49.012Z"conditionSplits: 2hasLateItems: falseitemCount: 2itemsProcessed: 2processingMode: "multi-condition"totalConditions: 2[[Prototype]]: ObjectconditionBreakdown: []lateDays: 0summary: {totalItems: 2, totalConditions: 4, onTimeItems: 2, lateItems: 0, damagedItems: 2, …}totalPenalty: 10000[[Prototype]]: Object
+hook.js:377 2025-08-12T05:21:49.052Z [INFO] [kasir:penalty-calc][onPenaltyCalculated] [KASIR] Penalty calculation completed{  "transactionId": "TXN-20250809-001",  "totalPenalty": 10000,  "calculationMode": "unified",  "itemsWithPenalty": 2,  "hasCalculation": true,  "performance": {    "timestamp": 1754976109052,    "memory": null  }}
+hook.js:377 Penalty calculated: Object
+logger.ts:196 2025-08-12T05:21:53.189Z [INFO] [kasir:return-process][handleNext] [KASIR] Entered step: Konfirmasi{  "step": 3,  "stepTitle": "Konfirmasi",  "stepDescription": "Konfirmasi pengembalian",  "transactionId": "TXN-20250809-001",  "itemCount": 2,  "performance": {    "timestamp": 1754976113189,    "memory": null  }}
+ReturnConfirmation.tsx:202 🎯 Processing return submission Objectattempt: 1transactionCode: "TXN-20250809-001"[[Prototype]]: Objectconstructor: ƒ Object()hasOwnProperty: ƒ hasOwnProperty()isPrototypeOf: ƒ isPrototypeOf()propertyIsEnumerable: ƒ propertyIsEnumerable()toLocaleString: ƒ toLocaleString()toString: ƒ toString()valueOf: ƒ valueOf()__defineGetter__: ƒ __defineGetter__()__defineSetter__: ƒ __defineSetter__()__lookupGetter__: ƒ __lookupGetter__()__lookupSetter__: ƒ __lookupSetter__()__proto__: (...)get __proto__: ƒ __proto__()set __proto__: ƒ __proto__()
+logger.ts:196 2025-08-12T05:22:11.112Z [INFO] [kasir:return-process][processEnhancedReturn] [KASIR] Starting enhanced return processing{  "transactionId": "TXN-20250809-001",  "hasNotes": false,  "itemConditionsCount": 2,  "performance": {    "timestamp": 1754976131112,    "memory": null  }}
+logger.ts:196 2025-08-12T05:22:11.113Z [INFO] [kasir:validation][validateAllItems] [KASIR] Form validation completed{  "transactionId": "TXN-20250809-001",  "isFormValid": true,  "canProceed": true,  "errorCount": 0,  "warningCount": 0,  "allItemsValid": true,  "validatedItemCount": 2,  "performance": {    "timestamp": 1754976131113,    "memory": null  }}
+logger.ts:196 2025-08-12T05:22:11.163Z [INFO] [kasir:return-process][processReturnMutation] [KASIR] Starting unified return processing{  "transactionId": "TXN-20250809-001",  "itemCount": 2,  "performance": {    "timestamp": 1754976131163,    "memory": null  }}
+logger.ts:196 2025-08-12T05:22:11.163Z [INFO] [kasir:api-calls][processEnhancedReturn] [KASIR] Starting enhanced return API call{  "transactionId": "TXN-20250809-001",  "itemCount": 2,  "totalConditions": 2,  "hasMultiConditions": false,  "hasNotes": false,  "performance": {    "timestamp": 1754976131163,    "memory": null  }}
 turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
-report-hmr-latency.ts:26 [Fast Refresh] done in 484ms
-ReturnProcessPage.tsx:117 🎯 Step 1 Validation: ObjectcanProceed: falsehasTransaction: falsehasValidConditions: falseitemConditions: {}itemConditionsCount: 0returnableItemsCount: 0[[Prototype]]: Object
-hook.js:377 🎯 Step 1 Validation: ObjectcanProceed: falsehasTransaction: falsehasValidConditions: falseitemConditions: {}itemConditionsCount: 0returnableItemsCount: 0[[Prototype]]: Object
+report-hmr-latency.ts:26 [Fast Refresh] done in 4220ms
 turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
-report-hmr-latency.ts:26 [Fast Refresh] done in 199ms
-ReturnProcessPage.tsx:117 🎯 Step 1 Validation: ObjectcanProceed: falsehasTransaction: falsehasValidConditions: falseitemConditions: {}itemConditionsCount: 0returnableItemsCount: 0[[Prototype]]: Object
-hook.js:377 🎯 Step 1 Validation: ObjectcanProceed: falsehasTransaction: falsehasValidConditions: falseitemConditions: {}itemConditionsCount: 0returnableItemsCount: 0[[Prototype]]: Object
-ReturnProcessPage.tsx:117 🎯 Step 1 Validation: ObjectcanProceed: falsehasTransaction: truehasValidConditions: falseitemConditions: {}itemConditionsCount: 0returnableItemsCount: 1[[Prototype]]: Object
-hook.js:377 🎯 Step 1 Validation: ObjectcanProceed: falsehasTransaction: truehasValidConditions: falseitemConditions: {}itemConditionsCount: 0returnableItemsCount: 1[[Prototype]]: Object
-useReturnProcess.ts:268 🔄 ItemConditions updated: Objectconditions: {c75feb53-b231-45d0-a0d2-87af21959e33: {…}}conditionsCount: 1hasValidConditions: false[[Prototype]]: Object
-ReturnProcessPage.tsx:117 🎯 Step 1 Validation: ObjectcanProceed: falsehasTransaction: truehasValidConditions: falseitemConditions: {c75feb53-b231-45d0-a0d2-87af21959e33: {…}}itemConditionsCount: 1returnableItemsCount: 1[[Prototype]]: Object
-hook.js:377 🎯 Step 1 Validation: ObjectcanProceed: falsehasTransaction: truehasValidConditions: falseitemConditions: {c75feb53-b231-45d0-a0d2-87af21959e33: {…}}itemConditionsCount: 1returnableItemsCount: 1[[Prototype]]: Object
-useReturnProcess.ts:268 🔄 ItemConditions updated: Objectconditions: {c75feb53-b231-45d0-a0d2-87af21959e33: {…}}conditionsCount: 1hasValidConditions: true[[Prototype]]: Object
-ReturnProcessPage.tsx:117 🎯 Step 1 Validation: ObjectcanProceed: truehasTransaction: truehasValidConditions: trueitemConditions: {c75feb53-b231-45d0-a0d2-87af21959e33: {…}}itemConditionsCount: 1returnableItemsCount: 1[[Prototype]]: Object
-hook.js:377 🎯 Step 1 Validation: ObjectcanProceed: truehasTransaction: truehasValidConditions: trueitemConditions: {c75feb53-b231-45d0-a0d2-87af21959e33: {…}}itemConditionsCount: 1returnableItemsCount: 1[[Prototype]]: Object
-ReturnProcessPage.tsx:129 🎯 Step 2 Validation: ObjecthasPenaltyCalculation: falsepenaltyCalculation: null[[Prototype]]: Object
-hook.js:377 🎯 Step 2 Validation: ObjecthasPenaltyCalculation: falsepenaltyCalculation: null[[Prototype]]: Object
-ReturnProcessPage.tsx:129 🎯 Step 2 Validation: ObjecthasPenaltyCalculation: truepenaltyCalculation: {totalPenalty: 10000, lateDays: 0, breakdown: Array(1), summary: {…}}[[Prototype]]: Object
-hook.js:377 🎯 Step 2 Validation: ObjecthasPenaltyCalculation: truepenaltyCalculation: {totalPenalty: 10000, lateDays: 0, breakdown: Array(1), summary: {…}}[[Prototype]]: Object
-ReturnConfirmation.tsx:109 🎯 Processing return submission Objectattempt: 1transactionCode: "TXN-20250807-002"[[Prototype]]: Object
-useReturnProcess.ts:196 ✅ PROCESSING REQUEST: Objectfingerprint: "TXN-20250807-002:{\"items\":[{\"itemId\":\"c75feb53-b23..."timestamp: "2025-08-06T23:52:34.894Z"transactionCode: "TXN-20250807-002"[[Prototype]]: Object
-:3000/api/kasir/transaksi/TXN-20250807-002/pengembalian:1  Failed to load resource: net::ERR_CONTENT_DECODING_FAILEDUnderstand this error
-:3000/api/kasir/transaksi/TXN-20250807-002/pengembalian:1  Failed to load resource: the server responded with a status of 409 (Conflict)Understand this error
-:3000/api/kasir/transaksi/TXN-20250807-002/pengembalian:1  Failed to load resource: the server responded with a status of 409 (Conflict)Understand this error
-useReturnProcess.ts:228 🧹 CLEANUP: ObjectcleanupType: "promise_reference"fingerprintCleared: "TXN-20250807-002:{\"items\":[{\"i..."transactionCode: "TXN-20250807-002"[[Prototype]]: Object
-ReturnConfirmation.tsx:119 ✅ Return processing completed successfully
-useReturnProcess.ts:248 🧹 RESET CLEANUP: ObjectcleanupType: "process_reset"fingerprintCleared: "TXN-20250807-002:{\"items\":[{\"itemId\":\"c75feb53-b231-45d0-a0d2-87af21959e33\",\"kondisiAkhir\":\"Cukup - ada kerusakan kecil\",\"jumlahKembali\":2}],\"tglKembali\":\"2025-08-06T23:52:34.894Z\"}"hadPendingRequest: false[[Prototype]]: Object
-ReturnProcessPage.tsx:117 🎯 Step 1 Validation: ObjectcanProceed: falsehasTransaction: falsehasValidConditions: falseitemConditions: {}itemConditionsCount: 0returnableItemsCount: 0[[Prototype]]: Object
-hook.js:377 🎯 Step 1 Validation: ObjectcanProceed: falsehasTransaction: falsehasValidConditions: falseitemConditions: {}itemConditionsCount: 0returnableItemsCount: 0[[Prototype]]: Object
-ReturnProcessPage.tsx:117 🎯 Step 1 Validation: ObjectcanProceed: falsehasTransaction: truehasValidConditions: falseitemConditions: {}itemConditionsCount: 0returnableItemsCount: 1[[Prototype]]: Object
-hook.js:377 🎯 Step 1 Validation: ObjectcanProceed: falsehasTransaction: truehasValidConditions: falseitemConditions: {}itemConditionsCount: 0returnableItemsCount: 1[[Prototype]]: Object
-useReturnProcess.ts:268 🔄 ItemConditions updated: Objectconditions: {c75feb53-b231-45d0-a0d2-87af21959e33: {…}}conditionsCount: 1hasValidConditions: false[[Prototype]]: Object
-ReturnProcessPage.tsx:117 🎯 Step 1 Validation: ObjectcanProceed: falsehasTransaction: truehasValidConditions: falseitemConditions: {c75feb53-b231-45d0-a0d2-87af21959e33: {…}}itemConditionsCount: 1returnableItemsCount: 1[[Prototype]]: Object
-hook.js:377 🎯 Step 1 Validation: ObjectcanProceed: falsehasTransaction: truehasValidConditions: falseitemConditions: {c75feb53-b231-45d0-a0d2-87af21959e33: {…}}itemConditionsCount: 1returnableItemsCount: 1[[Prototype]]: Object
-hook.js:608 Skipping auto-scroll behavior due to `position: sticky` or `position: fixed` on element: <div class=​"bg-white border-b border-neutral-200 sticky top-0 z-50 shadow-md w-full flex justify-center">​…​</div>​
-overrideMethod @ hook.js:608Understand this warning
-useProduk.ts:11 [useProduk] Cache metrics ObjectcacheStrategy: "optimized-30s"isStale: falsequeryKey: "[\"kasir\",\"produk\",\"available\",{\"available\":true,\"search\":\"\"}]"timestamp: "2025-08-07T00:21:52.707Z"[[Prototype]]: Object
-useTransaksi.ts:87 [useTransaksi] Cache invalidation completed ObjectcacheKeysInvalidated: (2) ['transaksi.lists', 'produk.all']timestamp: "2025-08-07T00:22:28.086Z"transactionCode: "TXN-20250807-003"[[Prototype]]: Object
-ActionButtonPanel.tsx:61 📋 Opening pickup modal Objectaction: "pickup"pickupStatus: {totalItems: 2, totalPickedUp: 0, totalRemaining: 2, hasRemainingItems: true}productsCount: 1transactionCode: "TXN-20250807-003"[[Prototype]]: Object
-ActionButtonPanel.tsx:37 📦 Processing return {transactionCode: 'TXN-20250807-003', action: 'return'}action: "return"transactionCode: "TXN-20250807-003"[[Prototype]]: Object
-ReturnProcessPage.tsx:117 🎯 Step 1 Validation: {hasTransaction: false, returnableItemsCount: 0, itemConditionsCount: 0, hasValidConditions: false, canProceed: false, …}canProceed: falsehasTransaction: falsehasValidConditions: falseitemConditions: {}itemConditionsCount: 0returnableItemsCount: 0[[Prototype]]: Object
-ReturnProcessPage.tsx:117 🎯 Step 1 Validation: {hasTransaction: false, returnableItemsCount: 0, itemConditionsCount: 0, hasValidConditions: false, canProceed: false, …}canProceed: falsehasTransaction: falsehasValidConditions: falseitemConditions: {}itemConditionsCount: 0returnableItemsCount: 0[[Prototype]]: Object
-ReturnProcessPage.tsx:117 🎯 Step 1 Validation: {hasTransaction: false, returnableItemsCount: 0, itemConditionsCount: 0, hasValidConditions: false, canProceed: false, …}
-ReturnProcessPage.tsx:117 🎯 Step 1 Validation: {hasTransaction: false, returnableItemsCount: 0, itemConditionsCount: 0, hasValidConditions: false, canProceed: false, …}
-ReturnProcessPage.tsx:117 🎯 Step 1 Validation: {hasTransaction: true, returnableItemsCount: 1, itemConditionsCount: 0, hasValidConditions: false, canProceed: false, …}
-ReturnProcessPage.tsx:117 🎯 Step 1 Validation: {hasTransaction: true, returnableItemsCount: 1, itemConditionsCount: 0, hasValidConditions: false, canProceed: false, …}
-useReturnProcess.ts:268 🔄 ItemConditions updated: {conditionsCount: 1, hasValidConditions: false, conditions: {…}}conditions: {a55c0c35-ad81-4153-a300-81d856c21784: {…}}conditionsCount: 1hasValidConditions: false[[Prototype]]: Object
-ReturnProcessPage.tsx:117 🎯 Step 1 Validation: {hasTransaction: true, returnableItemsCount: 1, itemConditionsCount: 1, hasValidConditions: false, canProceed: false, …}
-ReturnProcessPage.tsx:117 🎯 Step 1 Validation: {hasTransaction: true, returnableItemsCount: 1, itemConditionsCount: 1, hasValidConditions: false, canProceed: false, …}
-useReturnProcess.ts:268 🔄 ItemConditions updated: {conditionsCount: 1, hasValidConditions: true, conditions: {…}}conditions: {a55c0c35-ad81-4153-a300-81d856c21784: {…}}conditionsCount: 1hasValidConditions: true[[Prototype]]: Object
-ReturnProcessPage.tsx:117 🎯 Step 1 Validation: {hasTransaction: true, returnableItemsCount: 1, itemConditionsCount: 1, hasValidConditions: true, canProceed: true, …}
-ReturnProcessPage.tsx:117 🎯 Step 1 Validation: {hasTransaction: true, returnableItemsCount: 1, itemConditionsCount: 1, hasValidConditions: true, canProceed: true, …}
-ReturnProcessPage.tsx:129 🎯 Step 2 Validation: {hasPenaltyCalculation: false, penaltyCalculation: null}hasPenaltyCalculation: falsepenaltyCalculation: null[[Prototype]]: Object
-ReturnProcessPage.tsx:129 🎯 Step 2 Validation: {hasPenaltyCalculation: false, penaltyCalculation: null}hasPenaltyCalculation: falsepenaltyCalculation: null[[Prototype]]: Object
-ReturnProcessPage.tsx:129 🎯 Step 2 Validation: {hasPenaltyCalculation: true, penaltyCalculation: {…}}hasPenaltyCalculation: truepenaltyCalculation: {totalPenalty: 0, lateDays: 0, breakdown: Array(1), summary: {…}}[[Prototype]]: Object
-ReturnProcessPage.tsx:129 🎯 Step 2 Validation: {hasPenaltyCalculation: true, penaltyCalculation: {…}}hasPenaltyCalculation: truepenaltyCalculation: {totalPenalty: 0, lateDays: 0, breakdown: Array(1), summary: {…}}[[Prototype]]: Object
-ReturnConfirmation.tsx:109 🎯 Processing return submission {attempt: 1, transactionCode: 'TXN-20250807-003'}
-useReturnProcess.ts:196 ✅ PROCESSING REQUEST: {transactionCode: 'TXN-20250807-003', fingerprint: 'TXN-20250807-003:{"items":[{"itemId":"a55c0c35-ad8...', timestamp: '2025-08-07T00:26:29.027Z'}
-api.ts:204  PUT http://localhost:3000/api/kasir/transaksi/TXN-20250807-003/pengembalian net::ERR_CONTENT_DECODING_FAILED 200 (OK)
-apiRequest @ api.ts:204
-processReturn @ api.ts:356
-processReturn @ api.ts:442
-useReturnProcess.useMutation @ useReturnProcess.ts:103
-fn @ mutation.ts:174
-run @ retryer.ts:153
-start @ retryer.ts:218
-execute @ mutation.ts:213
-await in execute
-mutate @ mutationObserver.ts:125
-useReturnProcess.useCallback[processReturn] @ useReturnProcess.ts:203
-handleProcess @ ReturnConfirmation.tsx:115
-executeDispatch @ react-dom-client.development.js:16921
-runWithFiberInDEV @ react-dom-client.development.js:872
-processDispatchQueue @ react-dom-client.development.js:16971
-(anonymous) @ react-dom-client.development.js:17572
-batchedUpdates$1 @ react-dom-client.development.js:3312
-dispatchEventForPluginEventSystem @ react-dom-client.development.js:17125
-dispatchEvent @ react-dom-client.development.js:21308
-dispatchDiscreteEvent @ react-dom-client.development.js:21276
-<button>
-exports.jsxDEV @ react-jsx-dev-runtime.development.js:345
-Button @ button.tsx:48
-react_stack_bottom_frame @ react-dom-client.development.js:23552
-renderWithHooksAgain @ react-dom-client.development.js:6863
-renderWithHooks @ react-dom-client.development.js:6775
-updateFunctionComponent @ react-dom-client.development.js:9069
-beginWork @ react-dom-client.development.js:10679
-runWithFiberInDEV @ react-dom-client.development.js:872
-performUnitOfWork @ react-dom-client.development.js:15677
-workLoopSync @ react-dom-client.development.js:15497
-renderRootSync @ react-dom-client.development.js:15477
-performWorkOnRoot @ react-dom-client.development.js:14941
-performSyncWorkOnRoot @ react-dom-client.development.js:16781
-flushSyncWorkAcrossRoots_impl @ react-dom-client.development.js:16627
-processRootScheduleInMicrotask @ react-dom-client.development.js:16665
-(anonymous) @ react-dom-client.development.js:16800
-<Button>
-exports.jsxDEV @ react-jsx-dev-runtime.development.js:345
-ReturnConfirmation @ ReturnConfirmation.tsx:391
-react_stack_bottom_frame @ react-dom-client.development.js:23552
-renderWithHooksAgain @ react-dom-client.development.js:6863
-renderWithHooks @ react-dom-client.development.js:6775
-updateFunctionComponent @ react-dom-client.development.js:9069
-beginWork @ react-dom-client.development.js:10679
-runWithFiberInDEV @ react-dom-client.development.js:872
-performUnitOfWork @ react-dom-client.development.js:15677
-workLoopSync @ react-dom-client.development.js:15497
-renderRootSync @ react-dom-client.development.js:15477
-performWorkOnRoot @ react-dom-client.development.js:14941
-performSyncWorkOnRoot @ react-dom-client.development.js:16781
-flushSyncWorkAcrossRoots_impl @ react-dom-client.development.js:16627
-processRootScheduleInMicrotask @ react-dom-client.development.js:16665
-(anonymous) @ react-dom-client.development.js:16800
-<ReturnConfirmation>
-exports.jsxDEV @ react-jsx-dev-runtime.development.js:345
-ReturnProcessPage @ ReturnProcessPage.tsx:351
-react_stack_bottom_frame @ react-dom-client.development.js:23552
-renderWithHooksAgain @ react-dom-client.development.js:6863
-renderWithHooks @ react-dom-client.development.js:6775
-updateFunctionComponent @ react-dom-client.development.js:9069
-beginWork @ react-dom-client.development.js:10679
-runWithFiberInDEV @ react-dom-client.development.js:872
-performUnitOfWork @ react-dom-client.development.js:15677
-workLoopSync @ react-dom-client.development.js:15497
-renderRootSync @ react-dom-client.development.js:15477
-performWorkOnRoot @ react-dom-client.development.js:14941
-performSyncWorkOnRoot @ react-dom-client.development.js:16781
-flushSyncWorkAcrossRoots_impl @ react-dom-client.development.js:16627
-processRootScheduleInMicrotask @ react-dom-client.development.js:16665
-(anonymous) @ react-dom-client.development.js:16800Understand this error
-api.ts:204  PUT http://localhost:3000/api/kasir/transaksi/TXN-20250807-003/pengembalian 409 (Conflict)
-apiRequest @ api.ts:204
-processReturn @ api.ts:356
-processReturn @ api.ts:442
-useReturnProcess.useMutation @ useReturnProcess.ts:103
-fn @ mutation.ts:174
-run @ retryer.ts:153
-(anonymous) @ retryer.ts:199
-Promise.then
-(anonymous) @ retryer.ts:195
-Promise.catch
-run @ retryer.ts:160
-start @ retryer.ts:218
-execute @ mutation.ts:213
-await in execute
-mutate @ mutationObserver.ts:125
-useReturnProcess.useCallback[processReturn] @ useReturnProcess.ts:203
-handleProcess @ ReturnConfirmation.tsx:115
-executeDispatch @ react-dom-client.development.js:16921
-runWithFiberInDEV @ react-dom-client.development.js:872
-processDispatchQueue @ react-dom-client.development.js:16971
-(anonymous) @ react-dom-client.development.js:17572
-batchedUpdates$1 @ react-dom-client.development.js:3312
-dispatchEventForPluginEventSystem @ react-dom-client.development.js:17125
-dispatchEvent @ react-dom-client.development.js:21308
-dispatchDiscreteEvent @ react-dom-client.development.js:21276
-<button>
-exports.jsxDEV @ react-jsx-dev-runtime.development.js:345
-Button @ button.tsx:48
-react_stack_bottom_frame @ react-dom-client.development.js:23552
-renderWithHooksAgain @ react-dom-client.development.js:6863
-renderWithHooks @ react-dom-client.development.js:6775
-updateFunctionComponent @ react-dom-client.development.js:9069
-beginWork @ react-dom-client.development.js:10679
-runWithFiberInDEV @ react-dom-client.development.js:872
-performUnitOfWork @ react-dom-client.development.js:15677
-workLoopSync @ react-dom-client.development.js:15497
-renderRootSync @ react-dom-client.development.js:15477
-performWorkOnRoot @ react-dom-client.development.js:14941
-performSyncWorkOnRoot @ react-dom-client.development.js:16781
-flushSyncWorkAcrossRoots_impl @ react-dom-client.development.js:16627
-processRootScheduleInMicrotask @ react-dom-client.development.js:16665
-(anonymous) @ react-dom-client.development.js:16800
-<Button>
-exports.jsxDEV @ react-jsx-dev-runtime.development.js:345
-ReturnConfirmation @ ReturnConfirmation.tsx:391
-react_stack_bottom_frame @ react-dom-client.development.js:23552
-renderWithHooksAgain @ react-dom-client.development.js:6863
-renderWithHooks @ react-dom-client.development.js:6775
-updateFunctionComponent @ react-dom-client.development.js:9069
-beginWork @ react-dom-client.development.js:10679
-runWithFiberInDEV @ react-dom-client.development.js:872
-performUnitOfWork @ react-dom-client.development.js:15677
-workLoopSync @ react-dom-client.development.js:15497
-renderRootSync @ react-dom-client.development.js:15477
-performWorkOnRoot @ react-dom-client.development.js:14941
-performSyncWorkOnRoot @ react-dom-client.development.js:16781
-flushSyncWorkAcrossRoots_impl @ react-dom-client.development.js:16627
-processRootScheduleInMicrotask @ react-dom-client.development.js:16665
-(anonymous) @ react-dom-client.development.js:16800
-<ReturnConfirmation>
-exports.jsxDEV @ react-jsx-dev-runtime.development.js:345
-ReturnProcessPage @ ReturnProcessPage.tsx:351
-react_stack_bottom_frame @ react-dom-client.development.js:23552
-renderWithHooksAgain @ react-dom-client.development.js:6863
-renderWithHooks @ react-dom-client.development.js:6775
-updateFunctionComponent @ react-dom-client.development.js:9069
-beginWork @ react-dom-client.development.js:10679
-runWithFiberInDEV @ react-dom-client.development.js:872
-performUnitOfWork @ react-dom-client.development.js:15677
-workLoopSync @ react-dom-client.development.js:15497
-renderRootSync @ react-dom-client.development.js:15477
-performWorkOnRoot @ react-dom-client.development.js:14941
-performSyncWorkOnRoot @ react-dom-client.development.js:16781
-flushSyncWorkAcrossRoots_impl @ react-dom-client.development.js:16627
-processRootScheduleInMicrotask @ react-dom-client.development.js:16665
-(anonymous) @ react-dom-client.development.js:16800Understand this error
-api.ts:204  PUT http://localhost:3000/api/kasir/transaksi/TXN-20250807-003/pengembalian 409 (Conflict)
-apiRequest @ api.ts:204
-processReturn @ api.ts:356
-processReturn @ api.ts:442
-useReturnProcess.useMutation @ useReturnProcess.ts:103
-fn @ mutation.ts:174
-run @ retryer.ts:153
-(anonymous) @ retryer.ts:199
-Promise.then
-(anonymous) @ retryer.ts:195
-Promise.catch
-run @ retryer.ts:160
-(anonymous) @ retryer.ts:199
-Promise.then
-(anonymous) @ retryer.ts:195
-Promise.catch
-run @ retryer.ts:160
-start @ retryer.ts:218
-execute @ mutation.ts:213
-await in execute
-mutate @ mutationObserver.ts:125
-useReturnProcess.useCallback[processReturn] @ useReturnProcess.ts:203
-handleProcess @ ReturnConfirmation.tsx:115
-executeDispatch @ react-dom-client.development.js:16921
-runWithFiberInDEV @ react-dom-client.development.js:872
-processDispatchQueue @ react-dom-client.development.js:16971
-(anonymous) @ react-dom-client.development.js:17572
-batchedUpdates$1 @ react-dom-client.development.js:3312
-dispatchEventForPluginEventSystem @ react-dom-client.development.js:17125
-dispatchEvent @ react-dom-client.development.js:21308
-dispatchDiscreteEvent @ react-dom-client.development.js:21276
-<button>
-exports.jsxDEV @ react-jsx-dev-runtime.development.js:345
-Button @ button.tsx:48
-react_stack_bottom_frame @ react-dom-client.development.js:23552
-renderWithHooksAgain @ react-dom-client.development.js:6863
-renderWithHooks @ react-dom-client.development.js:6775
-updateFunctionComponent @ react-dom-client.development.js:9069
-beginWork @ react-dom-client.development.js:10679
-runWithFiberInDEV @ react-dom-client.development.js:872
-performUnitOfWork @ react-dom-client.development.js:15677
-workLoopSync @ react-dom-client.development.js:15497
-renderRootSync @ react-dom-client.development.js:15477
-performWorkOnRoot @ react-dom-client.development.js:14941
-performSyncWorkOnRoot @ react-dom-client.development.js:16781
-flushSyncWorkAcrossRoots_impl @ react-dom-client.development.js:16627
-processRootScheduleInMicrotask @ react-dom-client.development.js:16665
-(anonymous) @ react-dom-client.development.js:16800
-<Button>
-exports.jsxDEV @ react-jsx-dev-runtime.development.js:345
-ReturnConfirmation @ ReturnConfirmation.tsx:391
-react_stack_bottom_frame @ react-dom-client.development.js:23552
-renderWithHooksAgain @ react-dom-client.development.js:6863
-renderWithHooks @ react-dom-client.development.js:6775
-updateFunctionComponent @ react-dom-client.development.js:9069
-beginWork @ react-dom-client.development.js:10679
-runWithFiberInDEV @ react-dom-client.development.js:872
-performUnitOfWork @ react-dom-client.development.js:15677
-workLoopSync @ react-dom-client.development.js:15497
-renderRootSync @ react-dom-client.development.js:15477
-performWorkOnRoot @ react-dom-client.development.js:14941
-performSyncWorkOnRoot @ react-dom-client.development.js:16781
-flushSyncWorkAcrossRoots_impl @ react-dom-client.development.js:16627
-processRootScheduleInMicrotask @ react-dom-client.development.js:16665
-(anonymous) @ react-dom-client.development.js:16800
-<ReturnConfirmation>
-exports.jsxDEV @ react-jsx-dev-runtime.development.js:345
-ReturnProcessPage @ ReturnProcessPage.tsx:351
-react_stack_bottom_frame @ react-dom-client.development.js:23552
-renderWithHooksAgain @ react-dom-client.development.js:6863
-renderWithHooks @ react-dom-client.development.js:6775
-updateFunctionComponent @ react-dom-client.development.js:9069
-beginWork @ react-dom-client.development.js:10679
-runWithFiberInDEV @ react-dom-client.development.js:872
-performUnitOfWork @ react-dom-client.development.js:15677
-workLoopSync @ react-dom-client.development.js:15497
-renderRootSync @ react-dom-client.development.js:15477
-performWorkOnRoot @ react-dom-client.development.js:14941
-performSyncWorkOnRoot @ react-dom-client.development.js:16781
-flushSyncWorkAcrossRoots_impl @ react-dom-client.development.js:16627
-processRootScheduleInMicrotask @ react-dom-client.development.js:16665
-(anonymous) @ react-dom-client.development.js:16800Understand this error
-useReturnProcess.ts:228 🧹 CLEANUP: {transactionCode: 'TXN-20250807-003', fingerprintCleared: 'TXN-20250807-003:{"items":[{"i...', cleanupType: 'promise_reference'}cleanupType: "promise_reference"fingerprintCleared: "TXN-20250807-003:{\"items\":[{\"i..."transactionCode: "TXN-20250807-003"[[Prototype]]: Object
-ReturnConfirmation.tsx:119 ✅ Return processing completed successfully
-useReturnProcess.ts:248 🧹 RESET CLEANUP: {hadPendingRequest: false, fingerprintCleared: 'TXN-20250807-003:{"items":[{"itemId":"a55c0c35-ad8…ali":2}],"tglKembali":"2025-08-07T00:26:29.027Z"}', cleanupType: 'process_reset'}cleanupType: "process_reset"fingerprintCleared: "TXN-20250807-003:{\"items\":[{\"itemId\":\"a55c0c35-ad81-4153-a300-81d856c21784\",\"kondisiAkhir\":\"Baik - sedikit kotor/kusut\",\"jumlahKembali\":2}],\"tglKembali\":\"2025-08-07T00:26:29.027Z\"}"hadPendingRequest: false[[Prototype]]: Object
-ReturnProcessPage.tsx:117 🎯 Step 1 Validation: {hasTransaction: false, returnableItemsCount: 0, itemConditionsCount: 0, hasValidConditions: false, canProceed: false, …}canProceed: falsehasTransaction: falsehasValidConditions: falseitemConditions: {}itemConditionsCount: 0returnableItemsCount: 0[[Prototype]]: Object
-ReturnProcessPage.tsx:117 🎯 Step 1 Validation: {hasTransaction: false, returnableItemsCount: 0, itemConditionsCount: 0, hasValidConditions: false, canProceed: false, …}canProceed: falsehasTransaction: falsehasValidConditions: falseitemConditions: {}itemConditionsCount: 0returnableItemsCount: 0[[Prototype]]: Object
-ReturnProcessPage.tsx:117 🎯 Step 1 Validation: {hasTransaction: true, returnableItemsCount: 1, itemConditionsCount: 0, hasValidConditions: false, canProceed: false, …}canProceed: falsehasTransaction: truehasValidConditions: falseitemConditions: {}itemConditionsCount: 0returnableItemsCount: 1[[Prototype]]: Object
-ReturnProcessPage.tsx:117 🎯 Step 1 Validation: {hasTransaction: true, returnableItemsCount: 1, itemConditionsCount: 0, hasValidConditions: false, canProceed: false, …}canProceed: falsehasTransaction: truehasValidConditions: falseitemConditions: {}itemConditionsCount: 0returnableItemsCount: 1[[Prototype]]: Object
-useReturnProcess.ts:268 🔄 ItemConditions updated: {conditionsCount: 1, hasValidConditions: false, conditions: {…}}
-ReturnProcessPage.tsx:117 🎯 Step 1 Validation: {hasTransaction: true, returnableItemsCount: 1, itemConditionsCount: 1, hasValidConditions: false, canProceed: false, …}canProceed: falsehasTransaction: truehasValidConditions: falseitemConditions: {a55c0c35-ad81-4153-a300-81d856c21784: {…}}itemConditionsCount: 1returnableItemsCount: 1[[Prototype]]: Object
-ReturnProcessPage.tsx:117 🎯 Step 1 Validation: 
+report-hmr-latency.ts:26 [Fast Refresh] done in 136ms
+logger.ts:196 2025-08-12T05:22:32.017Z [INFO] [kasir:api-calls][processEnhancedReturn] [KASIR] Enhanced return API call completed{  "processingMode": "unified",  "totalPenalty": 10000,  "hasErrors": false,  "hasWarnings": false,  "performance": {    "timestamp": 1754976152017,    "memory": null  }}
+logger.ts:196 2025-08-12T05:22:32.017Z [INFO] [kasir:performance][processEnhancedReturn] Enhanced return API call completed{  "performance": {    "label": "[KASIR] Enhanced return API call",    "duration": "20854ms"  }}
+logger.ts:196 2025-08-12T05:22:32.018Z [INFO] [kasir:performance][processReturnMutation] Enhanced return processing completed{  "performance": {    "label": "[KASIR] Enhanced return processing",    "duration": "20855ms"  }}
+logger.ts:196 2025-08-12T05:22:32.018Z [INFO] [kasir:return-process][onSuccess] [KASIR] Return processing completed successfully{  "transactionId": "TXN-20250809-001",  "itemsProcessed": 0,  "performance": {    "timestamp": 1754976152018,    "memory": null  }}
+ReturnConfirmation.tsx:212 ✅ Return processing completed successfully
+logger.ts:196 2025-08-12T05:22:35.025Z [INFO] [kasir:return-process][handleProcessComplete] [KASIR] Return process completed - resetting and closing{  "transactionId": "TXN-20250809-001",  "completedStep": 3,  "totalSteps": 3,  "hasItemConditions": true,  "itemConditionCount": 2,  "hasPenaltyCalculation": true,  "penaltyAmount": 10000,  "performance": {    "timestamp": 1754976155025,    "memory": null  }}
+logger.ts:196 2025-08-12T05:22:35.093Z [INFO] [kasir:return-process][transaction loading] [KASIR] Transaction loaded for return process{  "transactionId": "TXN-20250809-001",  "itemCount": 2,  "processableItemCount": 2,  "hasItems": true,  "transactionStatus": "active",  "loadingSource": "url-parameter",  "itemStatuses": [    {      "id": "b3221755-304e-4a81-93f2-8589747c9f6b",      "productName": "Dress Elegant Red",      "jumlahDiambil": 2,      "statusKembali": "belum",      "canReturn": true    },    {      "id": "a2ff8f31-2f9e-4a07-8d0b-ac7446aa8f0c",      "productName": "Baju Merah",      "jumlahDiambil": 2,      "statusKembali": "belum",      "canReturn": true    }  ],  "performance": {    "timestamp": 1754976155093,    "memory": null  }}
+logger.ts:196 2025-08-12T05:22:35.093Z [INFO] [kasir:return-process][transaction loading] [KASIR] Transaction set successfully - ready for return processing{  "transactionId": "TXN-20250809-001",  "processableItemCount": 2,  "hasProcessableItems": true,  "performance": {    "timestamp": 1754976155093,    "memory": null  }}
+logger.ts:196 2025-08-12T05:22:35.212Z [INFO] [kasir:validation][validateAllItems] [KASIR] Form validation completed{  "transactionId": "TXN-20250809-001",  "isFormValid": false,  "canProceed": false,  "errorCount": 2,  "warningCount": 0,  "allItemsValid": false,  "validatedItemCount": 2,  "performance": {    "timestamp": 1754976155212,    "memory": null  }}
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 453ms

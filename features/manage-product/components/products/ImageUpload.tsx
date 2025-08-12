@@ -6,6 +6,7 @@ import { ImageIcon, X, Upload } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
+import { getValidImageUrl } from '../../lib/utils/imageValidate'
 
 interface ImageUploadProps {
   value?: string
@@ -28,7 +29,7 @@ export function ImageUpload({ value, onChange, onFileChange, className }: ImageU
           onChange(result) // For preview display
         }
         reader.readAsDataURL(file)
-        
+
         // Pass the actual File object for upload
         if (onFileChange) {
           onFileChange(file)
@@ -68,7 +69,8 @@ export function ImageUpload({ value, onChange, onFileChange, className }: ImageU
         <div className="relative">
           <div className="w-48 h-48 mx-auto rounded-lg overflow-hidden bg-gray-100">
             <Image
-              src={preview || '/placeholder.svg'}
+              // src={preview || '/placeholder.svg'}
+              src={getValidImageUrl(preview)}
               alt="Preview"
               width={192}
               height={192}

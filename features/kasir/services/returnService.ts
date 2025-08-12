@@ -1,62 +1,64 @@
 /**
- * ReturnService - TSK-23
- * Service layer for return processing operations
- * Following existing TransaksiService patterns and TDD approach
+ * Unified Return Service - TSK-24 Phase 1
+ * Single-mode removal implementation with unified multi-condition architecture
+ * Eliminates dual-mode processing complexity through unified interface
  */
 
 import { PrismaClient } from '@prisma/client'
 import { Decimal } from '@prisma/client/runtime/library'
 import {
   ReturnRequest,
-  ReturnItemRequest,
-  ExtendedTransactionStatus,
-  validateReturnItemContext,
-} from '../lib/validation/returnSchema'
+  UnifiedValidationError,
+  isLostItemCondition,
+} from '../lib/validation/ReturnSchema'
 import { PenaltyCalculator, PenaltyCalculationResult } from '../lib/utils/penaltyCalculator'
 import { TransaksiService, TransaksiWithDetails, TransaksiForValidation } from './transaksiService'
 import { createAuditService, AuditService } from './auditService'
+import { logger } from '../../../services/logger'
 
-export interface ReturnEligibilityResult {
-  isEligible: boolean
-  reason?: string
-  transaction?: TransaksiWithDetails
-  eligibilityDetails?: {
-    currentStatus: string
-    hasUnreturnedItems: boolean
-    canProcessReturn: boolean
-  }
+// Unified return request interface - treats all returns as multi-condition
+interface UnifiedReturnRequest {
+  items: Array<{
+    itemId: string
+    conditions: Array<{
+      kondisiAkhir: string
+      jumlahKembali: number
+      modalAwal?: number
+    }>
+  }>
+  catatan?: string
+  tglKembali?: string
 }
 
-export interface ReturnProcessingResult {
+// Unified processing result interface
+interface UnifiedReturnProcessingResult {
   success: boolean
-  transactionId: string // Updated to match API usage
+  transactionId: string
   returnedAt: Date
-  penalty: number // Updated to match API usage
+  penalty: number
   processedItems: Array<{
     itemId: string
     penalty: number
     kondisiAkhir: string
     statusKembali: 'lengkap'
+    conditionBreakdown?: Array<{
+      kondisiAkhir: string
+      jumlahKembali: number
+      penaltyAmount: number
+    }>
   }>
-  
-  // Success case properties (optional for error cases)
-  transaksiId?: string
-  totalPenalty?: number
-  updatedTransaction?: {
-    id: string
-    status: ExtendedTransactionStatus
-    tglKembali: Date
-    sisaBayar: number
-  }
-  penaltyCalculation?: PenaltyCalculationResult
-  
-  // Error case properties (optional for success cases)
+  processingMode: 'unified' // Always unified in new architecture
   details?: {
-    statusCode: 'ALREADY_RETURNED' | 'INVALID_STATUS'
+    statusCode: 'ALREADY_RETURNED' | 'INVALID_STATUS' | 'VALIDATION_ERROR'
     message: string
     currentStatus: string
     originalReturnDate?: Date | null
     processingTime: number
+    validationErrors?: Array<{
+      field: string
+      message: string
+      code: string
+    }>
   }
 }
 
@@ -66,7 +68,7 @@ export interface ReturnValidationError {
   code: string
 }
 
-export class ReturnService {
+export class UnifiedReturnService {
   private transaksiService: TransaksiService
   private auditService: AuditService
 
@@ -79,12 +81,32 @@ export class ReturnService {
   }
 
   /**
-   * Combined validation for return processing (single database query)
-   * Optimized lean query to reduce response time by ~60%
+   * Convert legacy single-mode request to unified format
+   * This enables backward compatibility while using unified processing
    */
-  async validateReturnProcessing(
+  private convertLegacyRequest(request: ReturnRequest): UnifiedReturnRequest {
+    return {
+      items: request.items.map((item) => ({
+        itemId: item.itemId,
+        conditions: [
+          {
+            kondisiAkhir: item.kondisiAkhir,
+            jumlahKembali: item.jumlahKembali,
+          },
+        ],
+      })),
+      catatan: request.catatan,
+      tglKembali: request.tglKembali,
+    }
+  }
+
+  /**
+   * Unified validation for all return processing scenarios
+   * Single method handles both simple and complex returns
+   */
+  async validateUnifiedReturn(
     transaksiId: string,
-    returnItems: ReturnItemRequest[]
+    request: UnifiedReturnRequest,
   ): Promise<{
     isValid: boolean
     error?: string
@@ -92,7 +114,7 @@ export class ReturnService {
     transaction?: { transaction: TransaksiForValidation }
   }> {
     try {
-      // Optimized lean database query for validation only
+      // Get transaction for validation
       const transaction = await this.transaksiService.getTransaksiForValidation(transaksiId)
 
       // Check transaction status eligibility
@@ -100,7 +122,7 @@ export class ReturnService {
         return {
           isValid: false,
           error: `Transaksi dengan status '${transaction.status}' tidak dapat diproses pengembaliannya`,
-          details: { currentStatus: transaction.status }
+          details: { currentStatus: transaction.status },
         }
       }
 
@@ -113,13 +135,13 @@ export class ReturnService {
         return {
           isValid: false,
           error: 'Tidak ada barang yang perlu dikembalikan pada transaksi ini',
-          details: { hasUnreturnedItems: false }
+          details: { hasUnreturnedItems: false },
         }
       }
 
-      // Validate each return item
+      // Validate each return item with unified validation
       const errors: ReturnValidationError[] = []
-      for (const returnItem of returnItems) {
+      for (const returnItem of request.items) {
         const transactionItem = transaction.items.find((item) => item.id === returnItem.itemId)
 
         if (!transactionItem) {
@@ -131,219 +153,144 @@ export class ReturnService {
           continue
         }
 
-        // Smart business validation using schema integration
-        const adaptedTransactionItem = {
-          produk: {
-            name: transactionItem.produk.name,
-            modalAwal: transactionItem.produk.modalAwal ? Number(transactionItem.produk.modalAwal) : null
+        // Validate each condition within the item
+        let totalReturnQuantity = 0
+        for (
+          let conditionIndex = 0;
+          conditionIndex < returnItem.conditions.length;
+          conditionIndex++
+        ) {
+          const condition = returnItem.conditions[conditionIndex]
+
+          // Validate condition description
+          if (!condition.kondisiAkhir || condition.kondisiAkhir.trim() === '') {
+            errors.push({
+              field: `items[${returnItem.itemId}].conditions[${conditionIndex}].kondisiAkhir`,
+              message: 'Kondisi akhir harus diisi dengan deskripsi yang jelas (minimal 5 karakter)',
+              code: 'MISSING_CONDITION',
+            })
+            continue
           }
-        }
-        const businessValidation = validateReturnItemContext(returnItem, adaptedTransactionItem)
-        if (!businessValidation.isValid) {
-          errors.push(...businessValidation.errors)
+
+          // Validate quantity based on condition type
+          const isLostItem = isLostItemCondition(condition.kondisiAkhir)
+          if (isLostItem && condition.jumlahKembali !== 0) {
+            errors.push({
+              field: `items[${returnItem.itemId}].conditions[${conditionIndex}].jumlahKembali`,
+              message: 'Barang hilang atau tidak dikembalikan harus memiliki jumlah kembali = 0',
+              code: 'LOST_ITEM_INVALID_QUANTITY',
+            })
+          } else if (!isLostItem && condition.jumlahKembali <= 0) {
+            errors.push({
+              field: `items[${returnItem.itemId}].conditions[${conditionIndex}].jumlahKembali`,
+              message: 'Barang yang dikembalikan harus memiliki jumlah kembali lebih dari 0',
+              code: 'RETURNED_ITEM_INVALID_QUANTITY',
+            })
+          }
+
+          totalReturnQuantity += condition.jumlahKembali
         }
 
-        if (returnItem.jumlahKembali > transactionItem.jumlahDiambil) {
+        // Check that total return quantity doesn't exceed picked up quantity
+        if (totalReturnQuantity > transactionItem.jumlahDiambil) {
           errors.push({
-            field: 'jumlahKembali',
-            message: `Jumlah pengembalian (${returnItem.jumlahKembali}) tidak boleh melebihi jumlah yang diambil (${transactionItem.jumlahDiambil}) untuk item ${transactionItem.produk.name}`,
-            code: 'EXCESS_RETURN_QUANTITY',
-          })
-        }
-
-        // Validate condition
-        if (!returnItem.kondisiAkhir || returnItem.kondisiAkhir.trim() === '') {
-          errors.push({
-            field: 'kondisiAkhir',
-            message: `Kondisi akhir harus diisi untuk item ${transactionItem.produk.name}`,
-            code: 'MISSING_CONDITION',
+            field: `items[${returnItem.itemId}]`,
+            message: `Total jumlah kembali dari semua kondisi (${totalReturnQuantity}) melebihi jumlah yang diambil (${transactionItem.jumlahDiambil})`,
+            code: 'EXCESS_TOTAL_QUANTITY',
           })
         }
       }
 
       if (errors.length > 0) {
+        logger.warn('UnifiedReturnService', 'validateUnifiedReturn', 'Return validation failed', {
+          transactionId: transaksiId,
+          errorCount: errors.length,
+          itemsValidated: request.items.length,
+        })
+
         return {
           isValid: false,
           error: `Validasi item gagal: ${errors.map((e) => e.message).join(', ')}`,
-          details: { errors }
+          details: { errors },
         }
       }
+
+      logger.debug(
+        'UnifiedReturnService',
+        'validateUnifiedReturn',
+        'Return validation successful',
+        {
+          transactionId: transaksiId,
+          itemsValidated: request.items.length,
+          transactionStatus: transaction.status,
+        },
+      )
 
       return {
         isValid: true,
-        transaction: { transaction }
+        transaction: { transaction },
       }
     } catch (error) {
-      return {
-        isValid: false,
-        error: `Gagal validasi: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        details: { originalError: error }
-      }
-    }
-  }
-
-  /**
-   * Validate if a transaction is eligible for return processing
-   * @deprecated Use validateReturnProcessing instead for better performance
-   */
-  async validateReturnEligibility(transaksiId: string): Promise<ReturnEligibilityResult> {
-    try {
-      // Get transaction with full details
-      const transaction = await this.transaksiService.getTransaksiById(transaksiId)
-
-      // Check if transaction status allows returns
-      if (transaction.status !== 'active') {
-        return {
-          isEligible: false,
-          reason: `Transaksi dengan status '${transaction.status}' tidak dapat diproses pengembaliannya`,
-          transaction,
-        }
-      }
-
-      // Check if there are items that have been picked up but not returned
-      const hasUnreturnedItems = transaction.items.some(
-        (item) => item.jumlahDiambil > 0 && item.statusKembali !== 'lengkap',
-      )
-
-      if (!hasUnreturnedItems) {
-        return {
-          isEligible: false,
-          reason: 'Tidak ada barang yang perlu dikembalikan pada transaksi ini',
-          transaction,
-          eligibilityDetails: {
-            currentStatus: transaction.status,
-            hasUnreturnedItems: false,
-            canProcessReturn: false,
-          },
-        }
-      }
-
-      return {
-        isEligible: true,
-        transaction,
-        eligibilityDetails: {
-          currentStatus: transaction.status,
-          hasUnreturnedItems: true,
-          canProcessReturn: true,
-        },
-      }
-    } catch (error) {
-      throw new Error(
-        `Gagal memvalidasi kelayakan pengembalian: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      )
-    }
-  }
-
-  /**
-   * Validate return request items against transaction items
-   */
-  async validateReturnItems(
-    transaksiId: string,
-    returnItems: ReturnItemRequest[],
-  ): Promise<{ isValid: boolean; errors: ReturnValidationError[] }> {
-    const errors: ReturnValidationError[] = []
-
-    try {
-      // Get transaction details
-      const transaction = await this.transaksiService.getTransaksiById(transaksiId)
-
-      // Validate each return item
-      for (const returnItem of returnItems) {
-        const transactionItem = transaction.items.find((item) => item.id === returnItem.itemId)
-
-        if (!transactionItem) {
-          errors.push({
-            field: `items.${returnItem.itemId}`,
-            message: 'Item tidak ditemukan dalam transaksi',
-            code: 'ITEM_NOT_FOUND',
-          })
-          continue
-        }
-
-        // Check if item has been picked up
-        if (transactionItem.jumlahDiambil === 0) {
-          errors.push({
-            field: `items.${returnItem.itemId}`,
-            message: 'Item belum diambil, tidak dapat dikembalikan',
-            code: 'ITEM_NOT_PICKED_UP',
-          })
-          continue
-        }
-
-        // Check if item is already fully returned
-        if (transactionItem.statusKembali === 'lengkap') {
-          errors.push({
-            field: `items.${returnItem.itemId}`,
-            message: 'Item sudah dikembalikan sepenuhnya',
-            code: 'ITEM_ALREADY_RETURNED',
-          })
-          continue
-        }
-
-        // Check if return quantity is valid
-        const maxReturnableQuantity = transactionItem.jumlahDiambil
-        if (returnItem.jumlahKembali > maxReturnableQuantity) {
-          errors.push({
-            field: `items.${returnItem.itemId}`,
-            message: `Jumlah kembali (${returnItem.jumlahKembali}) melebihi jumlah yang diambil (${maxReturnableQuantity})`,
-            code: 'INVALID_RETURN_QUANTITY',
-          })
-        }
-      }
-
-      return {
-        isValid: errors.length === 0,
-        errors,
-      }
-    } catch (error) {
-      errors.push({
-        field: 'general',
-        message: `Gagal memvalidasi item pengembalian: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        code: 'VALIDATION_ERROR',
+      logger.error('UnifiedReturnService', 'validateUnifiedReturn', 'Return validation error', {
+        transactionId: transaksiId,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        itemsAttempted: request.items.length,
       })
 
       return {
         isValid: false,
-        errors,
+        error: `Gagal validasi: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        details: { originalError: error },
       }
     }
   }
 
   /**
-   * Calculate penalties for return items
+   * Calculate penalties for unified return request
    */
-  async calculateReturnPenalties(
+  async calculateUnifiedReturnPenalties(
     transaksiId: string,
-    returnItems: ReturnItemRequest[],
+    request: UnifiedReturnRequest,
     actualReturnDate: Date = new Date(),
   ): Promise<PenaltyCalculationResult> {
     try {
       // Get transaction details (optimized query for penalty calculation)
       const transaction = await this.transaksiService.getTransaksiForPenaltyCalculation(transaksiId)
 
-      // Prepare items for penalty calculation
-      const itemsForCalculation = returnItems.map((returnItem) => {
+      // Flatten all conditions into penalty calculation items
+      const itemsForCalculation = request.items.flatMap((returnItem) => {
         const transactionItem = transaction.items.find((item) => item.id === returnItem.itemId)
         if (!transactionItem) {
           throw new Error(`Item dengan ID ${returnItem.itemId} tidak ditemukan`)
         }
 
-        return {
-          id: returnItem.itemId,
+        return returnItem.conditions.map((condition) => ({
+          id: `${returnItem.itemId}-${condition.kondisiAkhir}`,
           productName: transactionItem.produk.name,
           expectedReturnDate: transaction.tglSelesai || new Date(),
           actualReturnDate,
-          condition: returnItem.kondisiAkhir,
-          quantity: returnItem.jumlahKembali,
-          modalAwal: Number(transactionItem.produk.modalAwal), // Added for lost item penalty calculation
-        }
+          condition: condition.kondisiAkhir,
+          quantity: condition.jumlahKembali,
+          modalAwal: condition.modalAwal || Number(transactionItem.produk.modalAwal),
+        }))
       })
 
-      // Calculate penalties using PenaltyCalculator
+      // Calculate penalties using existing PenaltyCalculator
       const penaltyResult = PenaltyCalculator.calculateTransactionPenalties(itemsForCalculation)
 
       return penaltyResult
     } catch (error) {
+      logger.error(
+        'UnifiedReturnService',
+        'calculateUnifiedReturnPenalties',
+        'Penalty calculation failed',
+        {
+          transactionId: transaksiId,
+          itemCount: request.items.length,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        },
+      )
+
       throw new Error(
         `Gagal menghitung penalty: ${error instanceof Error ? error.message : 'Unknown error'}`,
       )
@@ -351,21 +298,20 @@ export class ReturnService {
   }
 
   /**
-   * Process return transaction with atomic database operations
-   * Refactored to prevent transaction timeout by moving penalty calculation outside transaction
+   * Process unified return transaction
+   * Single method handles all return scenarios through unified architecture
    */
-  async processReturn(
+  async processUnifiedReturn(
     transaksiId: string,
-    request: ReturnRequest,
-  ): Promise<ReturnProcessingResult> {
+    request: UnifiedReturnRequest,
+  ): Promise<UnifiedReturnProcessingResult> {
     const startTime = Date.now()
-    
+
     try {
-      // Step 0: Early Status Validation (CRITICAL FIX - prevent 6s processing for invalid states)
-      // This lightweight check prevents expensive validation for already-processed transactions
-      const transactionForValidation = await this.transaksiService.getTransaksiForValidation(transaksiId)
-      
-      // Immediately return structured error for already-returned transactions
+      // Early status validation
+      const transactionForValidation =
+        await this.transaksiService.getTransaksiForValidation(transaksiId)
+
       if (transactionForValidation.status === 'dikembalikan') {
         return {
           success: false,
@@ -373,17 +319,17 @@ export class ReturnService {
           returnedAt: new Date(),
           penalty: 0,
           processedItems: [],
+          processingMode: 'unified',
           details: {
-            statusCode: 'ALREADY_RETURNED',
+            statusCode: 'ALREADY_RETURNED' as const,
             message: 'Transaksi sudah dikembalikan sebelumnya',
             currentStatus: transactionForValidation.status,
-            originalReturnDate: null, // Not available in validation context
-            processingTime: Date.now() - startTime
-          }
+            originalReturnDate: null,
+            processingTime: Date.now() - startTime,
+          },
         }
       }
 
-      // Return error for other non-active statuses
       if (transactionForValidation.status !== 'active') {
         return {
           success: false,
@@ -391,101 +337,47 @@ export class ReturnService {
           returnedAt: new Date(),
           penalty: 0,
           processedItems: [],
+          processingMode: 'unified',
           details: {
-            statusCode: 'INVALID_STATUS',
+            statusCode: 'INVALID_STATUS' as const,
             message: `Transaksi dengan status '${transactionForValidation.status}' tidak dapat diproses pengembaliannya`,
             currentStatus: transactionForValidation.status,
-            processingTime: Date.now() - startTime
-          }
+            processingTime: Date.now() - startTime,
+          },
         }
       }
 
-      // Step 1: Log return processing start (fire-and-forget async - zero blocking)
-      Promise.resolve().then(() => 
-        this.auditService.logReturnActivityAsync(transaksiId, {
-          items: request.items,
-          totalPenalty: 0,
-          totalLateDays: 0,
-          catatan: request.catatan,
-          stage: 'validation',
-        })
-      ).catch(() => {
-        // Silently handle logging errors to keep main process clean
-      })
-
-      // Step 2: Pre-transaction validations and calculations (parallel processing)
       const returnDate = request.tglKembali ? new Date(request.tglKembali) : new Date()
-      
+
       // Run validation and penalty calculation in parallel
-      const [combinedValidation, penaltyCalculation] = await Promise.all([
-        this.validateReturnProcessing(transaksiId, request.items),
-        this.calculateReturnPenalties(transaksiId, request.items, returnDate)
+      const [validation, penaltyCalculation] = await Promise.all([
+        this.validateUnifiedReturn(transaksiId, request),
+        this.calculateUnifiedReturnPenalties(transaksiId, request, returnDate),
       ])
-      
-      // Check validation results
-      if (!combinedValidation.isValid) {
-        const errorMessage = combinedValidation.error || 'Validation failed'
-        
-        await this.auditService.logReturnError(transaksiId, {
-          error: errorMessage,
-          stage: 'validation',
-          context: { details: combinedValidation.details },
-          duration: Date.now() - startTime,
-        })
-        throw new Error(errorMessage)
+
+      if (!validation.isValid) {
+        return {
+          success: false,
+          transactionId: transaksiId,
+          returnedAt: returnDate,
+          penalty: 0,
+          processedItems: [],
+          processingMode: 'unified',
+          details: {
+            statusCode: 'VALIDATION_ERROR' as const,
+            message: validation.error || 'Validation failed',
+            currentStatus: transactionForValidation.status,
+            processingTime: Date.now() - startTime,
+            validationErrors: validation.details?.errors as UnifiedValidationError[],
+          },
+        }
       }
-      
-      const eligibility = combinedValidation.transaction!.transaction
 
-      // Log calculation start (fire-and-forget async - zero blocking)
-      Promise.resolve().then(() =>
-        this.auditService.logReturnActivityAsync(transaksiId, {
-          items: request.items,
-          totalPenalty: penaltyCalculation.totalPenalty,
-          totalLateDays: penaltyCalculation.totalLateDays,
-          catatan: request.catatan,
-          stage: 'calculation',
-        })
-      ).catch(() => {
-        // Silently handle logging errors to keep main process clean
-      })
-
-      // Log penalty calculation details (fire-and-forget async - zero blocking)
-      Promise.resolve().then(() =>
-        this.auditService.logPenaltyCalculationAsync(transaksiId, {
-          calculationDuration: 0,
-          totalPenalty: penaltyCalculation.totalPenalty,
-          lateDays: penaltyCalculation.totalLateDays,
-          itemBreakdown: penaltyCalculation.itemPenalties.map(p => ({
-            itemId: p.itemId,
-            productName: p.productName,
-            penalty: p.totalPenalty,
-            reason: p.description,
-          })),
-        })
-      ).catch(() => {
-        // Silently handle logging errors to keep main process clean
-      })
-
-      // Log processing start (fire-and-forget async - zero blocking)
-      Promise.resolve().then(() =>
-        this.auditService.logReturnActivityAsync(transaksiId, {
-          items: request.items,
-          totalPenalty: penaltyCalculation.totalPenalty,
-          totalLateDays: penaltyCalculation.totalLateDays,
-          catatan: request.catatan,
-          stage: 'processing',
-        })
-      ).catch(() => {
-        // Silently handle logging errors to keep main process clean
-      })
-
-      // Step 3: Execute atomic database operations in transaction
-      const transactionStart = Date.now()
-      const transactionResult = await this.prisma.$transaction(
+      // Execute unified database transaction
+      const result = await this.prisma.$transaction(
         async (tx) => {
-          // Update transaction status and penalty
-          const updatedTransaction = await tx.transaksi.update({
+          // Update main transaction
+          await tx.transaksi.update({
             where: { id: transaksiId },
             data: {
               status: 'dikembalikan',
@@ -496,121 +388,159 @@ export class ReturnService {
             },
           })
 
-          // Prepare batch operations data
-          const processedItems = []
-          const transactionItemUpdates = []
-          const productStockUpdates = new Map<string, number>()
+          const processedItems: UnifiedReturnProcessingResult['processedItems'] = []
 
-          // Prepare all updates in memory first
-          for (const returnItem of request.items) {
-            // Find penalty details for this item
-            const itemPenalty = penaltyCalculation.itemPenalties.find(
-              (p) => p.itemId === returnItem.itemId,
-            )
+          // Process each item with its conditions
+          for (const item of request.items) {
+            let itemTotalPenalty = 0
+            const conditionBreakdown: Array<{
+              kondisiAkhir: string
+              jumlahKembali: number
+              penaltyAmount: number
+            }> = []
 
-            // Prepare transaction item update
-            transactionItemUpdates.push(
-              tx.transaksiItem.update({
-                where: { id: returnItem.itemId },
+            // Create TransaksiItemReturn records for each condition
+            for (const condition of item.conditions) {
+              // Calculate individual condition penalty
+              const conditionPenalty =
+                penaltyCalculation.itemPenalties.find((p) => p.itemId.startsWith(item.itemId))
+                  ?.totalPenalty || 0
+
+              // Create return condition record
+              await tx.transaksiItemReturn.create({
                 data: {
-                  kondisiAkhir: returnItem.kondisiAkhir,
-                  statusKembali: 'lengkap',
+                  transaksiItemId: item.itemId,
+                  kondisiAkhir: condition.kondisiAkhir,
+                  jumlahKembali: condition.jumlahKembali,
+                  penaltyAmount: conditionPenalty,
+                  modalAwalUsed: condition.modalAwal ? new Decimal(condition.modalAwal) : null,
+                  penaltyCalculation: {
+                    expectedReturnDate: returnDate,
+                    actualReturnDate: returnDate,
+                    calculationMethod: isLostItemCondition(condition.kondisiAkhir)
+                      ? 'modal_awal'
+                      : 'late_fee',
+                    description: `Unified processing: ${condition.kondisiAkhir} (${condition.jumlahKembali} unit)`,
+                  },
+                  createdBy: this.userId,
                 },
               })
-            )
 
-            // Prepare processed item result
-            processedItems.push({
-              itemId: returnItem.itemId,
-              penalty: itemPenalty?.totalPenalty || 0,
-              kondisiAkhir: returnItem.kondisiAkhir,
-              statusKembali: 'lengkap' as const,
-            })
-
-            // Aggregate product stock updates
-            const transactionItem = eligibility.items.find(
-              (item) => item.id === returnItem.itemId,
-            )
-            if (transactionItem) {
-              const currentIncrement = productStockUpdates.get(transactionItem.produkId) || 0
-              productStockUpdates.set(transactionItem.produkId, currentIncrement + returnItem.jumlahKembali)
+              itemTotalPenalty += conditionPenalty
+              conditionBreakdown.push({
+                kondisiAkhir: condition.kondisiAkhir,
+                jumlahKembali: condition.jumlahKembali,
+                penaltyAmount: conditionPenalty,
+              })
             }
-          }
 
-          // Execute all database operations in parallel for maximum performance
-          const productUpdatePromises = Array.from(productStockUpdates.entries()).map(([produkId, increment]) =>
-            tx.product.update({
-              where: { id: produkId },
+            // Update TransaksiItem with unified data
+            await tx.transaksiItem.update({
+              where: { id: item.itemId },
               data: {
-                quantity: {
-                  increment: increment,
-                },
+                statusKembali: 'lengkap',
+                totalReturnPenalty: itemTotalPenalty,
+                conditionCount: item.conditions.length, // Track complexity
               },
             })
-          )
-          
-          // Execute all updates in parallel: transaction items + product stocks
-          await Promise.all([
-            ...transactionItemUpdates,
-            ...productUpdatePromises
-          ])
 
-          const result = {
-            success: true,
-            transactionId: transaksiId, // Updated to match interface
-            returnedAt: returnDate,
-            penalty: penaltyCalculation.totalPenalty, // Updated to match interface
-            processedItems,
-            // Optional success properties
-            transaksiId, // Keep for backward compatibility
-            totalPenalty: penaltyCalculation.totalPenalty, // Keep for backward compatibility
-            updatedTransaction: {
-              id: updatedTransaction.id,
-              status: 'dikembalikan' as ExtendedTransactionStatus,
-              tglKembali: returnDate,
-              sisaBayar: Number(updatedTransaction.sisaBayar),
-            },
-            penaltyCalculation,
+            // Update product stock (sum all returned quantities)
+            const totalReturned = item.conditions.reduce((sum, c) => sum + c.jumlahKembali, 0)
+            const transactionItem = validation.transaction!.transaction.items.find(
+              (ti) => ti.id === item.itemId,
+            )
+            if (transactionItem) {
+              await tx.product.update({
+                where: { id: transactionItem.produkId },
+                data: {
+                  quantity: { increment: totalReturned },
+                },
+              })
+            }
+
+            processedItems.push({
+              itemId: item.itemId,
+              penalty: itemTotalPenalty,
+              kondisiAkhir:
+                item.conditions.length === 1 ? item.conditions[0].kondisiAkhir : 'multi-condition',
+              statusKembali: 'lengkap',
+              conditionBreakdown,
+            })
           }
 
-          return result
+          return {
+            success: true,
+            transactionId: transaksiId,
+            returnedAt: returnDate,
+            penalty: penaltyCalculation.totalPenalty,
+            processedItems,
+            processingMode: 'unified' as const,
+          }
         },
-        {
-          timeout: 10000, // Increase timeout to 10 seconds for safety
-        }
+        { timeout: 15000 }, // Increased timeout for complex operations
       )
-      
-      const transactionInternalDuration = Date.now() - transactionStart
 
-      // Log successful completion outside transaction (fire-and-forget async - zero blocking)
-      Promise.resolve().then(() =>
-        this.auditService.logReturnActivityAsync(transaksiId, {
-          items: request.items,
+      logger.info(
+        'UnifiedReturnService',
+        'processUnifiedReturn',
+        'Unified return processing completed successfully',
+        {
+          transactionId: transaksiId,
           totalPenalty: penaltyCalculation.totalPenalty,
-          totalLateDays: penaltyCalculation.totalLateDays,
-          catatan: request.catatan,
-          stage: 'completed',
-        }, {
-          totalDuration: Date.now() - startTime,
-          transactionDuration: transactionInternalDuration,
-        })
-      ).catch(() => {
-        // Silently handle logging errors to keep main process clean
-      })
+          itemsProcessed: request.items.length,
+          conditionsProcessed: request.items.reduce((sum, item) => sum + item.conditions.length, 0),
+          processingTime: Date.now() - startTime,
+        },
+      )
 
-      return transactionResult
+      return result
     } catch (error) {
-      // Log error to audit trail
-      await this.auditService.logReturnError(transaksiId, {
-        error: error instanceof Error ? error.message : 'Unknown error',
-        stage: 'processing',
-        stack: error instanceof Error ? error.stack : undefined,
-        duration: Date.now() - startTime,
-        context: {},
-      })
-      
-      throw new Error(`Gagal memproses pengembalian: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      logger.error(
+        'UnifiedReturnService',
+        'processUnifiedReturn',
+        'Unified return processing failed',
+        {
+          transactionId: transaksiId,
+          error: error instanceof Error ? error.message : 'Unknown error',
+          processingTime: Date.now() - startTime,
+          itemsAttempted: request.items?.length || 0,
+        },
+      )
+
+      throw new Error(
+        `Gagal memproses pengembalian unified: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      )
     }
+  }
+
+  /**
+   * Legacy compatibility method - processes old ReturnRequest format
+   * Converts to unified format internally for seamless migration
+   */
+  async processLegacyReturn(
+    transaksiId: string,
+    legacyRequest: ReturnRequest,
+  ): Promise<UnifiedReturnProcessingResult> {
+    // Convert legacy format to unified format
+    const unifiedRequest = this.convertLegacyRequest(legacyRequest)
+
+    // Log legacy compatibility usage for monitoring
+    logger.info(
+      'UnifiedReturnService',
+      'processLegacyReturn',
+      'Processing legacy return request through unified interface',
+      {
+        transactionId: transaksiId,
+        legacyItemCount: legacyRequest.items.length,
+        convertedConditionCount: unifiedRequest.items.reduce(
+          (sum, item) => sum + item.conditions.length,
+          0,
+        ),
+      },
+    )
+
+    // Process through unified interface
+    return await this.processUnifiedReturn(transaksiId, unifiedRequest)
   }
 
   /**
@@ -620,60 +550,18 @@ export class ReturnService {
     try {
       return await this.transaksiService.getTransaksiByCode(transactionCode)
     } catch (error) {
+      logger.error(
+        'UnifiedReturnService',
+        'getReturnTransactionByCode',
+        'Failed to fetch transaction',
+        {
+          transactionCode,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        },
+      )
+
       throw new Error(
         `Gagal mendapatkan transaksi: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      )
-    }
-  }
-
-  /**
-   * Get return history for a transaction
-   */
-  async getReturnHistory(transaksiId: string) {
-    try {
-      const activities = await this.prisma.aktivitasTransaksi.findMany({
-        where: {
-          transaksiId,
-          tipe: 'dikembalikan',
-        },
-        orderBy: {
-          createdAt: 'desc',
-        },
-        // include: {
-        //   user: {
-        //     select: {
-        //       id: true,
-        //       nama: true
-        //     }
-        //   }
-        // }
-      })
-
-      return activities.map((activity) => ({
-        id: activity.id,
-        returnDate: activity.createdAt,
-        processedBy: 'Unknown', // Fix: user relation not available
-        description: activity.deskripsi,
-        penaltyAmount:
-          activity.data && typeof activity.data === 'object' && 'penaltyDetails' in activity.data
-            ? (activity.data.penaltyDetails as { totalPenalty?: number })?.totalPenalty || 0
-            : 0,
-        items:
-          activity.data && typeof activity.data === 'object' && 'returnItems' in activity.data
-            ? (activity.data.returnItems as Array<{
-                itemId: string
-                kondisiAkhir: string
-                jumlahKembali: number
-              }>) || []
-            : [],
-        notes:
-          activity.data && typeof activity.data === 'object' && 'catatan' in activity.data
-            ? (activity.data.catatan as string) || null
-            : null,
-      }))
-    } catch (error) {
-      throw new Error(
-        `Gagal mendapatkan riwayat pengembalian: ${error instanceof Error ? error.message : 'Unknown error'}`,
       )
     }
   }

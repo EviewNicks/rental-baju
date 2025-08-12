@@ -91,6 +91,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
           id: item.produk.id,
           code: item.produk.code,
           name: item.produk.name,
+          modalAwal: Number(item.produk.modalAwal),
           imageUrl: item.produk.imageUrl,
           // Add missing product fields
           size: item.produk.size || null,
@@ -104,7 +105,28 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         subtotal: Number(item.subtotal),
         kondisiAwal: item.kondisiAwal,
         kondisiAkhir: item.kondisiAkhir,
-        statusKembali: item.statusKembali
+        statusKembali: item.statusKembali,
+        // TSK-24: Multi-condition return enhancements
+        ...(item.isMultiCondition && {
+          isMultiCondition: item.isMultiCondition
+        }),
+        ...(item.multiConditionSummary && {
+          multiConditionSummary: item.multiConditionSummary
+        }),
+        ...(item.totalReturnPenalty && {
+          totalReturnPenalty: Number(item.totalReturnPenalty)
+        }),
+        ...(item.returnConditions && item.returnConditions.length > 0 && {
+          conditionBreakdown: item.returnConditions.map(condition => ({
+            id: condition.id,
+            kondisiAkhir: condition.kondisiAkhir,
+            jumlahKembali: condition.jumlahKembali,
+            penaltyAmount: Number(condition.penaltyAmount),
+            modalAwalUsed: condition.modalAwalUsed ? Number(condition.modalAwalUsed) : null,
+            createdAt: condition.createdAt.toISOString(),
+            createdBy: condition.createdBy
+          }))
+        })
       })),
       pembayaran: transaksi.pembayaran.map(payment => ({
         id: payment.id,
@@ -279,6 +301,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
           id: item.produk.id,
           code: item.produk.code,
           name: item.produk.name,
+          modalAwal: Number(item.produk.modalAwal),
           imageUrl: item.produk.imageUrl,
           // Add missing product fields
           size: item.produk.size || null,
@@ -292,7 +315,28 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         subtotal: Number(item.subtotal),
         kondisiAwal: item.kondisiAwal,
         kondisiAkhir: item.kondisiAkhir,
-        statusKembali: item.statusKembali
+        statusKembali: item.statusKembali,
+        // TSK-24: Multi-condition return enhancements
+        ...(item.isMultiCondition && {
+          isMultiCondition: item.isMultiCondition
+        }),
+        ...(item.multiConditionSummary && {
+          multiConditionSummary: item.multiConditionSummary
+        }),
+        ...(item.totalReturnPenalty && {
+          totalReturnPenalty: Number(item.totalReturnPenalty)
+        }),
+        ...(item.returnConditions && item.returnConditions.length > 0 && {
+          conditionBreakdown: item.returnConditions.map(condition => ({
+            id: condition.id,
+            kondisiAkhir: condition.kondisiAkhir,
+            jumlahKembali: condition.jumlahKembali,
+            penaltyAmount: Number(condition.penaltyAmount),
+            modalAwalUsed: condition.modalAwalUsed ? Number(condition.modalAwalUsed) : null,
+            createdAt: condition.createdAt.toISOString(),
+            createdBy: condition.createdBy
+          }))
+        })
       })),
       pembayaran: fullTransaksi.pembayaran.map(payment => ({
         id: payment.id,
