@@ -3,9 +3,9 @@
 **Parent Task**: RPK-44 - Enhance Transaction Detail UI for Return System Display  
 **Phase**: A (ProductDetailCard) + B (ActivityTimeline)  
 **Type**: Frontend Development  
-**Priority**: <Ø **HIGH** - Phase A Ready, Phase B Blocked
+**Priority**: <ÔøΩ **HIGH** - Phase A Ready, Phase B Blocked
 
-## <Ø **Task Overview**
+## <ÔøΩ **Task Overview**
 
 **Objective**: Enhance transaction detail UI components to display comprehensive return system information, making return data accessible and user-friendly for kasir operators.
 
@@ -13,16 +13,16 @@
 
 **Status**: 
 - **Phase A** (ProductDetailCard):  **READY TO START** - Data Available
-- **Phase B** (ActivityTimeline): =´ **BLOCKED** - Waiting for be-rpk-44.md completion
+- **Phase B** (ActivityTimeline): =ÔøΩ **BLOCKED** - Waiting for be-rpk-44.md completion
 
 ---
 
-## =À **Implementation Phases**
+## =ÔøΩ **Implementation Phases**
 
 ### **Phase A: ProductDetailCard Enhancement**  **Ready to Proceed**
 
 #### **Available Data Structure**
-From API analysis (`features/kasir/docs/analyze.md`), the following return data is available:
+From API analysis (`features/kasir/docs/analyze.md`) and server log validation (`services/server-log.log`), the following return data is confirmed available:
 
 ```typescript
 interface ReturnData {
@@ -43,7 +43,7 @@ interface ReturnData {
 
 #### **UI Components to Implement**
 
-##### **1. Return Status Badge** Ò **2-3 hours**
+##### **1. Return Status Badge** ÔøΩ **2-3 hours**
 
 ```typescript
 // File: features/kasir/components/detail/ProductDetailCard.tsx
@@ -96,7 +96,7 @@ const ReturnStatusBadge: React.FC<ReturnStatusBadgeProps> = ({ status, hasReturn
 }
 ```
 
-##### **2. Condition Breakdown Display** Ò **3-4 hours**
+##### **2. Condition Breakdown Display** ÔøΩ **3-4 hours**
 
 ```typescript
 // Multi-condition return visualization
@@ -175,7 +175,7 @@ const ConditionBreakdown: React.FC<ConditionBreakdownProps> = ({
 }
 ```
 
-##### **3. Penalty Information Display** Ò **2 hours**
+##### **3. Penalty Information Display** ÔøΩ **2 hours**
 
 ```typescript
 // Penalty summary and breakdown
@@ -235,7 +235,7 @@ const PenaltyInfo: React.FC<PenaltyInfoProps> = ({
 }
 ```
 
-#### **Integration into ProductDetailCard** Ò **1-2 hours**
+#### **Integration into ProductDetailCard** ÔøΩ **1-2 hours**
 
 ```typescript
 // Updated ProductDetailCard component
@@ -283,7 +283,7 @@ const ProductDetailCard: React.FC<ProductDetailCardProps> = ({ item }) => {
 
 ---
 
-### **Phase B: ActivityTimeline Enhancement** =´ **BLOCKED - Requires be-rpk-44.md**
+### **Phase B: ActivityTimeline Enhancement** =ÔøΩ **BLOCKED - Requires be-rpk-44.md**
 
 #### **Prerequisites from Backend (be-rpk-44.md)**
 - Return activity creation (`dikembalikan` activity type)
@@ -292,7 +292,7 @@ const ProductDetailCard: React.FC<ProductDetailCardProps> = ({ item }) => {
 
 #### **Implementation Plan (Post-Backend Fixes)**
 
-##### **1. Activity Type Mapping Update** Ò **30 minutes**
+##### **1. Activity Type Mapping Update** ÔøΩ **30 minutes**
 
 ```typescript
 // File: features/kasir/hooks/useTransactionDetail.ts
@@ -305,10 +305,10 @@ function mapActivityTypeToAction(
     dibuat: 'created',
     dibayar: 'paid', 
     diambil: 'picked_up',
-    dikembalikan: 'returned',          // <ï NEW - Return activity
-    penalty_added: 'penalty_added',    // <ï NEW - Penalty activity
-    penalty_diterapkan: 'penalty_added', // <ï NEW - Penalty alias
-    pengembalian_selesai: 'return_completed', // <ï NEW - Return completion
+    dikembalikan: 'returned',          // <ÔøΩ NEW - Return activity
+    penalty_added: 'penalty_added',    // <ÔøΩ NEW - Penalty activity
+    penalty_diterapkan: 'penalty_added', // <ÔøΩ NEW - Penalty alias
+    pengembalian_selesai: 'return_completed', // <ÔøΩ NEW - Return completion
     terlambat: 'overdue',
     dibatalkan: 'penalty_added'
   }
@@ -321,7 +321,7 @@ type ActivityAction = 'created' | 'paid' | 'picked_up' | 'returned' | 'overdue' 
                      'reminder_sent' | 'penalty_added' | 'return_completed'
 ```
 
-##### **2. ActivityTimeline Return Event Display** Ò **4-5 hours**
+##### **2. ActivityTimeline Return Event Display** ÔøΩ **4-5 hours**
 
 ```typescript
 // File: features/kasir/components/detail/ActivityTimeline.tsx
@@ -492,11 +492,88 @@ const ActivityTimelineEntry: React.FC<ActivityEntryProps> = ({ activity }) => {
    - Add return-specific utility functions
    - Formatting helpers for return display
 
+### **Loading States & Error Handling**
+
+#### **Loading Components**
+```typescript
+const ReturnDataSkeleton: React.FC = () => (
+  <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 animate-pulse">
+    <div className="flex items-center gap-2 mb-3">
+      <div className="w-4 h-4 bg-gray-300 rounded"></div>
+      <div className="w-32 h-4 bg-gray-300 rounded"></div>
+      <div className="w-20 h-6 bg-gray-300 rounded"></div>
+    </div>
+    <div className="space-y-2">
+      <div className="w-full h-3 bg-gray-300 rounded"></div>
+      <div className="w-3/4 h-3 bg-gray-300 rounded"></div>
+    </div>
+  </div>
+)
+```
+
+#### **Error Boundaries**
+```typescript
+class ReturnDataErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = { hasError: false }
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true }
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4 text-yellow-600" />
+            <span className="text-sm font-medium text-yellow-800">
+              Return data display error
+            </span>
+          </div>
+        </div>
+      )
+    }
+    return this.props.children
+  }
+}
+```
+
+#### **Mobile Responsive Design**
+```typescript
+const MobileOptimizedReturnInfo: React.FC<ReturnInfoProps> = ({ item }) => {
+  const [isExpanded, setIsExpanded] = useState(false)
+  
+  return (
+    <div className="space-y-3">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <ReturnStatusBadge status={item.statusKembali} hasReturnData={true} />
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="sm:hidden text-sm text-blue-600"
+        >
+          {isExpanded ? 'Hide' : 'Show'} Details
+        </button>
+      </div>
+      
+      <div className={`${isExpanded ? 'block' : 'hidden'} sm:block`}>
+        <ConditionBreakdown
+          conditionBreakdown={item.conditionBreakdown}
+          isMultiCondition={item.conditionBreakdown?.length > 1}
+        />
+      </div>
+    </div>
+  )
+}
+```
+
 ---
 
 ##  **Testing Strategy**
 
-### **Phase A Testing** Ò **3-4 hours**
+### **Phase A Testing** ÔøΩ **3-4 hours**
 
 #### **Unit Tests**
 ```typescript
@@ -522,12 +599,69 @@ describe('ProductDetailCard Return Display', () => {
 
 #### **Integration Tests**
 ```typescript
-// Test ProductDetailCard with actual API data
-// Verify return data transformation and display
-// Test responsive design across device sizes
+// features/kasir/components/detail/__tests__/ProductDetailCard.integration.test.tsx
+describe('ProductDetailCard Integration', () => {
+  it('should handle real API response data', async () => {
+    const mockApiResponse = {
+      // Use actual API response structure from server-log.log
+      items: [{
+        statusKembali: 'lengkap',
+        totalReturnPenalty: 10000,
+        conditionBreakdown: [{
+          id: 'test-id',
+          kondisiAkhir: 'kotor',
+          jumlahKembali: 2,
+          penaltyAmount: 10000,
+          modalAwalUsed: null
+        }]
+      }]
+    }
+    
+    render(
+      <ProductDetailCard item={mockApiResponse.items[0]} />
+    )
+    
+    expect(screen.getByText('Dikembalikan Lengkap')).toBeInTheDocument()
+    expect(screen.getByText('kotor: 2 items')).toBeInTheDocument()
+    expect(screen.getByText('Rp 10.000')).toBeInTheDocument()
+  })
+
+  it('should display loading states correctly', () => {
+    render(<ReturnDataSkeleton />)
+    expect(screen.getByTestId('return-data-loading')).toBeInTheDocument()
+  })
+
+  it('should handle error boundaries gracefully', () => {
+    const ThrowError = () => {
+      throw new Error('Test error')
+    }
+    
+    render(
+      <ReturnDataErrorBoundary>
+        <ThrowError />
+      </ReturnDataErrorBoundary>
+    )
+    
+    expect(screen.getByText('Return data display error')).toBeInTheDocument()
+  })
+
+  it('should be responsive across device sizes', () => {
+    const { rerender } = render(<MobileOptimizedReturnInfo item={mockItem} />)
+    
+    // Test mobile view
+    global.innerWidth = 375
+    global.dispatchEvent(new Event('resize'))
+    expect(screen.getByText('Show Details')).toBeInTheDocument()
+    
+    // Test desktop view
+    global.innerWidth = 1024
+    global.dispatchEvent(new Event('resize'))
+    expect(screen.queryByText('Show Details')).not.toBeInTheDocument()
+  })
+})
 ```
 
-### **Phase B Testing** Ò **2-3 hours** (Post-Backend)
+### **Phase B Testing** ÔøΩ **2-3 hours** (Post-Backend)
 
 #### **Timeline Tests**
 ```typescript
@@ -549,7 +683,7 @@ describe('ActivityTimeline Return Events', () => {
 
 ---
 
-## <Ø **Success Criteria**
+## <ÔøΩ **Success Criteria**
 
 ### **Phase A Success Criteria**
 -  Return status clearly visible in ProductDetailCard
@@ -574,7 +708,7 @@ describe('ActivityTimeline Return Events', () => {
 
 ---
 
-## =  **Implementation Timeline**
+## =ÔøΩ **Implementation Timeline**
 
 ### **Phase A: ProductDetailCard Enhancement** (Can Start Immediately)
 | Task | Duration | Dependencies |
@@ -592,32 +726,32 @@ describe('ActivityTimeline Return Events', () => {
 | Activity Type Mapping Update | 30 min | be-rpk-44.md complete  |
 | Return Event Display Implementation | 4-5 hours | Backend activity creation  |
 | Integration Testing | 2-3 hours | Implementation complete |
-| **Phase B Total** | **7-8.5 hours** | **be-rpk-44.md completion** =´ |
+| **Phase B Total** | **7-8.5 hours** | **be-rpk-44.md completion** =ÔøΩ |
 
 ### **Overall Frontend Total**: **18-23.5 hours**
 
 ---
 
-## =® **Critical Dependencies**
+## =ÔøΩ **Critical Dependencies**
 
 ### **Phase A (Independent)**
 -  **No blockers** - Return data available in API responses
 -  **Can start immediately** - ProductDetailCard can display existing data
 
 ### **Phase B (Blocked)**  
-- =´ **MUST wait for be-rpk-44.md completion**
-- =´ **Requires return activity creation** in backend
-- =´ **Needs penalty activity logging** implementation
+- =ÔøΩ **MUST wait for be-rpk-44.md completion**
+- =ÔøΩ **Requires return activity creation** in backend
+- =ÔøΩ **Needs penalty activity logging** implementation
 
 ---
 
 ## = **Integration Points**
 
 ### **Data Flow**
-1. **API Response** í `useTransactionDetail` hook
-2. **Hook transformation** í UI-ready data structure  
-3. **Components** í Display return information
-4. **Real-time updates** í After return processing
+1. **API Response** ÔøΩ `useTransactionDetail` hook
+2. **Hook transformation** ÔøΩ UI-ready data structure  
+3. **Components** ÔøΩ Display return information
+4. **Real-time updates** ÔøΩ After return processing
 
 ### **Type Safety**
 ```typescript
@@ -663,7 +797,7 @@ interface ActivityDetail {
 
 ---
 
-## =° **Implementation Notes**
+## =ÔøΩ **Implementation Notes**
 
 ### **Phase A Approach**
 - **Progressive Enhancement**: Add return features without breaking existing functionality
@@ -683,7 +817,7 @@ interface ActivityDetail {
 
 ---
 
-## =À **Definition of Done**
+## =ÔøΩ **Definition of Done**
 
 ### **Phase A Complete When:**
 - [ ] Return status badge displays correctly for all status types
@@ -712,4 +846,122 @@ interface ActivityDetail {
 - **Phase B**: 1-2 working days (after backend completion)
 **Status**: 
 - **Phase A**:  Ready to Start
-- **Phase B**: =´ Blocked (Dependencies: be-rpk-44.md)
+- **Phase B**: =ÔøΩ Blocked (Dependencies: be-rpk-44.md)
+
+---
+
+# üîó **Backend-Frontend Integration Coordination Plan**
+
+## **Critical Integration Points**
+
+### **1. Data Contract Alignment**
+
+#### **Backend Output ‚Üí Frontend Input Mapping**
+```typescript
+// Backend Activity Data (be-rpk-44.md specification)
+interface BackendReturnActivity {
+  tipe: 'dikembalikan' | 'penalty_added'
+  deskripsi: string
+  data: {
+    conditions: Array<{
+      itemId: string
+      kondisiAkhir: string
+      jumlahKembali: number
+      penaltyAmount: number
+      produkName: string        // ‚ö†Ô∏è CRITICAL: Must include product name
+    }>
+    totalPenalty: number
+    itemsAffected: string[]     // ‚ö†Ô∏è CRITICAL: Must be product names
+    processingMode: 'unified'
+    totalConditions: number
+    timestamp: string           // ‚ö†Ô∏è CRITICAL: ISO 8601 format required
+  }
+}
+
+// Frontend Expected Format
+interface FrontendActivityData {
+  action: 'returned' | 'penalty_added'
+  description: string
+  timestamp: string
+  details: {
+    conditions?: Array<{
+      kondisiAkhir: string
+      jumlahKembali: number
+      penaltyAmount: number
+    }>
+    totalPenalty?: number
+    itemsAffected?: string[]
+    penaltyBreakdown?: Array<{...}>  // For penalty activities
+  }
+}
+```
+
+### **2. Deployment Sequence**
+
+#### **Coordinated Rollout Strategy**
+1. **Phase 0**: Backend API enhancement (be-rpk-44.md)
+   - Deploy return activity creation
+   - Validate activity data structure
+   - Test API responses include new activities
+
+2. **Phase A**: Frontend ProductDetailCard (Independent)
+   - Can deploy immediately with existing data
+   - No backend dependencies
+
+3. **Phase B**: Frontend ActivityTimeline (Dependent)
+   - Deploy after Phase 0 completion
+   - Requires backend activity creation to be active
+
+### **3. Integration Validation Checklist**
+
+#### **Backend Readiness Checklist**
+- [ ] `dikembalikan` activities created with all required fields
+- [ ] `penalty_added` activities created when penalties > 0
+- [ ] Activity data includes `produkName` for each condition
+- [ ] Activity data includes `timestamp` in ISO 8601 format
+- [ ] API response time <2 seconds with activities
+- [ ] Error handling prevents activity failures from breaking returns
+- [ ] Integration tests pass with frontend-expected data structure
+
+#### **Frontend Integration Checklist**
+- [ ] Activity type mapping handles new activity types
+- [ ] Return activities display correctly in ActivityTimeline
+- [ ] Penalty activities show detailed breakdown
+- [ ] Loading states handle activity data loading
+- [ ] Error boundaries prevent activity display errors from breaking page
+- [ ] Mobile responsive design works for activity displays
+- [ ] Integration tests pass with real backend activity data
+
+### **4. Risk Mitigation**
+
+#### **Integration Risks & Mitigation**
+1. **Data Format Mismatch**
+   - **Risk**: Backend activity data doesn't match frontend expectations
+   - **Mitigation**: Shared TypeScript interfaces, integration tests
+   - **Fallback**: Frontend graceful degradation for malformed data
+
+2. **Performance Impact**
+   - **Risk**: Activity creation/display degrades system performance  
+   - **Mitigation**: Async activity creation, frontend lazy loading
+   - **Fallback**: Disable activity display if performance thresholds exceeded
+
+3. **Deployment Coordination Failure**
+   - **Risk**: Frontend deploys before backend, breaking activity display
+   - **Mitigation**: Feature flags, phased deployment, rollback plan
+   - **Fallback**: Frontend handles missing activities gracefully
+
+---
+
+## **Final Integration Success Criteria**
+
+### **End-to-End Validation**
+- [ ] Complete return flow creates and displays activities correctly
+- [ ] Both simple and multi-condition returns show proper timeline
+- [ ] Penalty calculations appear accurately in activity timeline
+- [ ] Performance targets met under normal load
+- [ ] Error scenarios handled gracefully by both backend and frontend
+- [ ] Mobile and desktop displays work correctly for all activity types
+
+**Integration Owner**: Technical Lead  
+**Review Date**: Upon Phase 0 (Backend) completion  
+**Success Gate**: All integration validation items complete before Phase B deployment

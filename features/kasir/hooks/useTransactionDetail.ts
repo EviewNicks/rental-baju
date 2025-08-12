@@ -288,7 +288,10 @@ function mapActivityTypeToAction(
   > = {
     dibuat: 'created',
     dibayar: 'paid',
-    dikembalikan: 'returned',
+    diambil: 'picked_up',
+    dikembalikan: 'returned',        // NEW: Return activity mapping
+    penalty_added: 'penalty_added',  // NEW: Penalty activity mapping
+    penalty_diterapkan: 'penalty_added', // NEW: Penalty alias mapping
     terlambat: 'overdue',
     dibatalkan: 'penalty_added', // Map cancelled to penalty for now
   }
