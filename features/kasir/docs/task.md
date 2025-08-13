@@ -1,93 +1,60 @@
-# Task: Update Transaction Detail UI After Return Processing
+Implementasi FE-RPK-44: Frontend Enhancement untuk Return System  
+ Display
 
-## Context
+KONTEKS & STATUS:
 
-We have successfully implemented the return system (TSK-24) as
-documented in `features/kasir/docs/task-docs/TSK-24/design.md`. Now we  
- need to update the transaction detail page to reflect changes after
-return processing.
+- Backend return system (TSK-24/be-rpk-44.md) baru saja
+  diselesaikan (commit a52eb7c)
+- Task fe-rpk-44.md siap untuk implementasi frontend dengan 2 phase  
+  berbeda
+- Phase A (ProductDetailCard) READY - data tersedia di API
+- Phase B (ActivityTimeline) BLOCKED - menunggu backend activity  
+  creation
 
-## Objective
+TUJUAN IMPLEMENTASI:
+Enhance transaction detail UI untuk menampilkan return system
+information yang comprehensive, user-friendly untuk kasir
+operators. Fokus pada ProductDetailCard enhancement yang bisa
+dimulai immediate, dan prepare untuk ActivityTimeline enhancement  
+ setelah backend Phase B selesai.
 
-Update the transaction detail page
-(`app/(kasir)/dashboard/transaction/[kode]/page.tsx`) to properly
-display return-related information in:
+DELIVERABLES YANG DIINGINKAN:
 
-1. `features/kasir/components/detail/ActivityTimeline.tsx`
-2. `features/kasir/components/detail/ProductDetailCard.tsx`
+1. Working code implementation untuk Phase A components
+2. Implementation plan untuk Phase B (blocked phase)
+3. Testing strategy untuk kedua phases
+4. Integration notes untuk koordinasi dengan backend team
+5. Step-by-step execution plan dengan timeline estimation
 
-## Requirements
+SCOPE & CONSTRAINTS:
 
-### ActivityTimeline Component Requirements:
+- HANYA implement Phase A (ProductDetailCard) - Phase B menunggu  
+  backend
+- Gunakan existing API data structure yang sudah available
+- Maintain existing UI/UX patterns dan component architecture
+- Follow project's TypeScript dan testing standards
+- Ensure responsive design dan accessibility compliance
 
-- **Display return events** with timestamps and user information
-- **Show return status changes** (processing → completed → failed)
-- **Include penalty information** in timeline entries
-- **Display condition details** for each returned item
-- **Format**: Timeline entries with icons, timestamps, and expandable  
-  details
+TECHNICAL REQUIREMENTS:
 
-### ProductDetailCard Component Requirements:
+- File path: features/kasir/components/detail/ProductDetailCard.tsx
+- Data source: API sudah menyediakan return data
+  (conditionBreakdown, totalReturnPenalty, statusKembali)
+- UI patterns: Badge, breakdown display, penalty information
+- Testing: Unit tests untuk new components dengan >90% coverage
+- Performance target: <100ms render time untuk return information
 
-- **Update product status** to reflect return state
-  (returned/partial/pending)
-- **Show return quantity** vs original quantity
-- **Display condition information** (baik/rusak/hilang) with visual
-  indicators
-- **Include penalty amounts** per item if applicable
-- **Visual state**: Color-coded status badges and progress indicators
+SUCCESS CRITERIA:
+✓ Return status badge displays correctly untuk all status types
+✓ Multi-condition returns show detailed breakdown dengan penalty  
+ amounts
+✓ Code passes existing lint/typecheck standards
+✓ Responsive design works across mobile/desktop
+✓ Integration tests ready untuk Phase B coordination
+✓ Documentation updated untuk handoff ke backend team
 
-## Implementation Approach:
-
-1. **Analysis Phase**: Review current component structure and data flow
-2. **Data Integration**: Ensure components receive return-related data  
-   from API
-3. **UI Implementation**: Add return-specific UI elements and states
-4. **State Management**: Update component state handling for return data
-5. **Testing**: Validate UI updates with test return transactions
-
-## Success Criteria:
-
-- ✅ ActivityTimeline shows complete return process history
-- ✅ ProductDetailCard reflects accurate return status and quantities
-- ✅ UI updates in real-time after return processing
-- ✅ All return-related data displays correctly
-- ✅ Components maintain responsive design and accessibility
-
-## Technical Standards:
-
-- Follow existing TypeScript patterns
-- Maintain component performance (<100ms render time)
-- Ensure proper error handling for missing return data
-- Use existing UI component library (shadcn/ui)
-
-## Deliverables:
-
-1. Updated ActivityTimeline.tsx with return event display
-2. Updated ProductDetailCard.tsx with return status indicators
-3. Type definitions for return-related data structures
-4. Basic component tests for new functionality
-
-## Validation:
-
-Test with transaction code that has completed return processing to
-verify UI updates correctly reflect the return state.
-
-== prompt ==
-
-Kita telah menyelesaikan return system (TSK-24). Sekarang perlu update  
- transaction detail page
-`app/(kasir)/dashboard/transaction/[kode]/page.tsx` untuk komponen:
-
-1. `ActivityTimeline.tsx` - tambah return events dan status
-2. `ProductDetailCard.tsx` - update status barang dan quantity setelah  
-   return
-
-Requirements:
-
-- ActivityTimeline: tampilkan return events dengan timestamp dan penalty  
-  info
-- ProductDetailCard: update status return, quantity, dan kondisi barang
-- UI harus update otomatis setelah return processing selesai
-
-Deliverable: kedua komponen sudah menampilkan data return dengan benar.
+APPROACH:
+Gunakan TodoWrite untuk track implementation progress, implement  
+ components incrementally dengan testing, prepare integration points  
+ untuk Phase B, dan document dependencies untuk backend
+coordination.

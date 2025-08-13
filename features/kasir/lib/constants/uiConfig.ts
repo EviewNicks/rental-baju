@@ -12,6 +12,7 @@ import {
   AlertCircle,
   CheckCircle as CheckIcon,
   Info,
+  RotateCcw,
 } from 'lucide-react'
 import type { TransactionStatus } from '../../types'
 
@@ -52,7 +53,7 @@ export const actionIcons = {
   created: Package,
   paid: DollarSign,
   picked_up: CheckCircle,
-  returned: CheckCircle,
+  returned: RotateCcw,
   overdue: AlertTriangle,
   reminder_sent: MessageCircle,
   penalty_added: AlertTriangle,
@@ -62,7 +63,7 @@ export const actionColors = {
   created: 'text-blue-600 bg-blue-100',
   paid: 'text-green-600 bg-green-100',
   picked_up: 'text-green-600 bg-green-100',
-  returned: 'text-green-600 bg-green-100',
+  returned: 'text-blue-600 bg-blue-100',
   overdue: 'text-red-600 bg-red-100',
   reminder_sent: 'text-yellow-600 bg-yellow-100',
   penalty_added: 'text-red-600 bg-red-100',

@@ -1,5 +1,5 @@
-Lakukan evaluasi terkait task
-`features/kasir/docs/task-docs/RPK-44/be-rpk-44.md` terkait bagian  
- design system nya apakah telah sesuai atau masih perlu di improve  
- untuk mengerjakan task ini, dengan referensi
-`features/kasir/docs/task-docs/RPK-44/task.md`.
+Improved: "Evaluasi implementasi FE-RPK-44 dengan checklist: (1) bandingkan  
+ git status vs fe-rpk-44.md requirements, (2) verifikasi Phase A
+(ProductDetailCard) dan Phase B (ActivityTimeline) completion status, (3)
+identifikasi Definition of Done items yang outstanding, (4) berikan action
+plan untuk finalisasi dengan priority ranking."
