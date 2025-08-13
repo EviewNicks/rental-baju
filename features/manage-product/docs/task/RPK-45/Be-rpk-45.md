@@ -4,144 +4,130 @@
 **Phase**: 1 - Backend Development  
 **Priority**: High  
 **Sprint**: 1-2 (Week 1-4)  
-**Story Points**: 13  
+**Story Points**: 10 *(Reduced from 13 - Simplified approach)*  
 **Developer**: Backend Team  
 **Created**: 2025-08-13  
-**Status**: Planning  
+**Updated**: 2025-08-13 *(Architecture evaluation completed)*  
+**Status**: Ready for Implementation  
 
 ---
 
-## =� Phase Overview
+## 🎯 Phase Overview
 
-**Focus**: Database schema design, API development, and business logic implementation for Material Management System.
+**Focus**: Simple, incremental material management system aligned with existing architecture patterns.
 
-**Objective**: Create robust backend infrastructure supporting Material � ProductType � Product hierarchy with automated cost calculation capabilities.
+**Objective**: **Keep It Simple** - Add material cost calculation capability to existing product management with minimal disruption.
+
+**Key Principles**:
+- ✅ **Backward Compatible**: Existing products continue working unchanged
+- ✅ **Incremental**: New functionality optional, legacy flow preserved  
+- ✅ **Architecture Aligned**: Follows existing service layer patterns
+- ✅ **Performance Focused**: <2s response time targets with proper indexing
 
 **Key Deliverables**:
-- Complete database schema for Material and ProductType models
-- RESTful APIs for material and product type management  
-- Cost calculation business logic services
-- Database migration scripts with data integrity
-- Comprehensive unit and integration tests
+- Simplified database schema with backward compatibility
+- Clean API design following existing product patterns
+- Basic cost calculation service (no complex formulas)
+- Safe migration strategy with rollback capability
+- Unit tests for new services only
 
 ---
 
-## <� Sprint Breakdown
+## 📋 Simplified Sprint Breakdown
 
-### Sprint 1: Database Foundation & Material APIs (Week 1-2)
-**Story Points**: 8
+> **IMPORTANT**: This implementation follows "Keep It Simple" principle based on architecture evaluation. Focus on MVP functionality with clear backward compatibility.
 
-#### Database Schema Implementation
+### Sprint 1: Foundation & Basic Material Management (Week 1-2)  
+**Story Points**: 6 *(Simplified)*
+
+#### Phase 0: Architecture Alignment (CRITICAL - Must Complete First)
 **Tasks**:
-- [ ] **[BE-001]** Create Material table schema with proper constraints
-- [ ] **[BE-002]** Create ProductType table schema with material relationships  
-- [ ] **[BE-003]** Update Product table with material tracking columns
-- [ ] **[BE-004]** Add foreign key constraints and performance indexes
-- [ ] **[BE-005]** Create database migration scripts with rollback capability
+- [ ] **[BE-000]** Review and update existing ProductService to handle optional material fields
+- [ ] **[BE-001]** Create backward-compatible migration strategy document
+- [ ] **[BE-002]** Test existing transaction processing with new schema
 
 **Acceptance Criteria**:
-- Material table supports: name, type, pricePerUnit, unit, supplier, description
-- ProductType table links materials with processing costs
-- Product table enhanced with materialId, productTypeId, materialCost fields
-- All foreign key constraints properly configured
-- Performance indexes created for query optimization
-- Migration scripts tested on staging environment
+- ✅ Existing ProductService handles products with/without materials
+- ✅ Current transaction system continues working unchanged
+- ✅ Migration plan tested and verified safe
 
-#### Material Management APIs
+#### Database Schema - Simplified Approach
 **Tasks**:
-- [ ] **[BE-006]** Implement GET /api/materials with search and filtering
-- [ ] **[BE-007]** Create POST /api/materials with validation
-- [ ] **[BE-008]** Implement PUT /api/materials/[id] for updates
-- [ ] **[BE-009]** Create DELETE /api/materials/[id] with soft delete
-- [ ] **[BE-010]** Add GET /api/materials/price-history/[id] endpoint
+- [ ] **[BE-003]** Create simple Material table (minimal fields)
+- [ ] **[BE-004]** Update Product table with NULLABLE material columns only
+- [ ] **[BE-005]** Add essential indexes for performance  
+- [ ] **[BE-006]** Create safe migration scripts with validation
 
 **Acceptance Criteria**:
-- All CRUD operations working with proper HTTP status codes
-- Request validation with detailed error messages
-- Pagination support for material listings
-- Search functionality by name, type, and supplier
-- Price history tracking with audit trail
-- Soft delete maintaining referential integrity
+- Material table: id, name, pricePerUnit, unit, isActive, timestamps, createdBy (7 fields only)
+- Product table: materialCost DECIMAL(10,2) NULL, materialQuantity INT NULL (2 fields only)
+- All existing products remain functional (isCalculated NOT NULL check)
+- Migration tested on copy of production data
+- Rollback scripts validated
 
-#### MaterialService Business Logic
+#### Material Management APIs - Simplified
 **Tasks**:
-- [ ] **[BE-011]** Create MaterialService class with CRUD methods
-- [ ] **[BE-012]** Implement material filtering and search logic
-- [ ] **[BE-013]** Add price update functionality with history tracking
-- [ ] **[BE-014]** Create material validation rules
-- [ ] **[BE-015]** Add error handling and logging
+- [ ] **[BE-007]** Create MaterialService following existing ProductService pattern
+- [ ] **[BE-008]** Implement basic GET /api/materials (pagination + search)
+- [ ] **[BE-009]** Add POST /api/materials with validation
+- [ ] **[BE-010]** Add PUT /api/materials/[id] (basic update only)
+- [ ] **[BE-011]** Add DELETE /api/materials/[id] with soft delete
 
 **Acceptance Criteria**:
-- Service layer abstracts database operations from controllers
-- Comprehensive validation for material data integrity
-- Price history automatically tracked on updates  
-- Error handling with meaningful messages
-- Logging for audit and debugging purposes
+- MaterialService uses same constructor pattern as ProductService
+- API follows existing /api/products response format exactly
+- Basic CRUD operations only (no complex features)
+- Validation using existing error handling patterns
+- Consistent HTTP status codes and error messages
 
-### Sprint 2: ProductType & Cost Calculation (Week 3-4)  
-**Story Points**: 5
+### Sprint 2: Basic Cost Calculation (Week 3-4)  
+**Story Points**: 4 *(Simplified)*
 
-#### ProductType Management APIs
+#### Simple Cost Integration
 **Tasks**:
-- [ ] **[BE-016]** Implement GET /api/product-types with filtering
-- [ ] **[BE-017]** Create POST /api/product-types with material validation
-- [ ] **[BE-018]** Add PUT /api/product-types/[id] for updates
-- [ ] **[BE-019]** Implement DELETE /api/product-types/[id] with checks
-- [ ] **[BE-020]** Create POST /api/product-types/calculate-cost endpoint
+- [ ] **[BE-012]** Add materialId field to existing Product creation/update APIs
+- [ ] **[BE-013]** Create basic cost calculation: `materialCost = material.pricePerUnit * materialQuantity`
+- [ ] **[BE-014]** Update ProductService to handle optional material cost calculation
+- [ ] **[BE-015]** Add GET /api/products/[id]/material-cost endpoint
 
 **Acceptance Criteria**:
-- ProductType CRUD operations fully functional
-- Material availability validation before saving
-- Cost calculation endpoint with real-time processing
-- Dependency checking before deletion
-- Performance optimization for cost calculations
+- Product creation/update APIs accept optional materialId and materialQuantity
+- When materialId provided, automatically calculate and store materialCost
+- Original modalAwal logic preserved for products without materials  
+- Simple formula only: `materialCost = pricePerUnit * quantity` (no complex processing costs)
+- Backward compatibility: products without materials work unchanged
 
-#### Cost Calculation Services  
+#### Basic Material Integration
 **Tasks**:
-- [ ] **[BE-021]** Create CostCalculationService class
-- [ ] **[BE-022]** Implement calculateModalAwal method
-- [ ] **[BE-023]** Add calculateTotalCost with breakdown
-- [ ] **[BE-024]** Create recalculateProductCosts for price changes
-- [ ] **[BE-025]** Add cost validation and error handling
+- [ ] **[BE-016]** Add material lookup to Product detail API responses
+- [ ] **[BE-017]** Update product list to show materialCost when available
+- [ ] **[BE-018]** Add material cost validation (prevent negative values)
+- [ ] **[BE-019]** Create basic cost recalculation when material prices change
 
 **Acceptance Criteria**:
-- Formula: `modalAwal = (material.pricePerUnit � quantity) + processingCost`
-- Cost breakdown includes: material cost, processing cost, labor cost, overhead
-- Bulk recalculation when material prices change
-- Validation prevents negative costs and invalid calculations
-- Performance target: cost calculations complete within 500ms
-
-#### Enhanced Product APIs
-**Tasks**:
-- [ ] **[BE-026]** Add POST /api/products/calculate-modal-awal endpoint
-- [ ] **[BE-027]** Create GET /api/products/cost-breakdown/[id]
-- [ ] **[BE-028]** Implement PUT /api/products/recalculate-costs
-- [ ] **[BE-029]** Update product creation with cost calculation
-- [ ] **[BE-030]** Add cost override functionality for admin users
-
-**Acceptance Criteria**:
-- Product creation automatically calculates costs when productTypeId provided
-- Cost breakdown API returns detailed material and processing costs
-- Bulk recalculation endpoint for administrative use
-- Admin override capability with audit logging
-- Backward compatibility with existing product creation flow
+- Product API responses include material information when available
+- Material cost displayed alongside existing modalAwal
+- Cost recalculation triggered only when material price updated
+- Performance target: <2s for cost calculations on up to 100 products
 
 ---
 
-## =� Database Schema Details
+## 🗄️ Simplified Database Schema
 
-### New Tables
+> **CRITICAL**: This schema follows "Keep It Simple" principle with **backward compatibility** as top priority.
 
-#### Material Table
+### ⚠️ Migration Strategy 
+
+**IMPORTANT**: Migration must be done in phases to avoid breaking existing functionality.
+
+#### Phase 1: Add Material Table (Safe)
 ```sql
+-- New Material table - simple structure
 CREATE TABLE "Material" (
   "id" TEXT NOT NULL,
   "name" TEXT NOT NULL,
-  "type" TEXT NOT NULL, -- fabric, accessory, component
   "pricePerUnit" DECIMAL(10,2) NOT NULL,
-  "unit" TEXT NOT NULL, -- meter, piece, kg
-  "supplier" TEXT,
-  "description" TEXT,
+  "unit" TEXT NOT NULL, -- meter, piece, kg, etc
   "isActive" BOOLEAN DEFAULT true,
   "createdAt" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
   "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -149,166 +135,139 @@ CREATE TABLE "Material" (
   
   CONSTRAINT "Material_pkey" PRIMARY KEY ("id")
 );
+
+-- Essential index only
+CREATE INDEX "idx_material_active" ON "Material"("isActive", "name");
 ```
 
-#### ProductType Table  
+#### Phase 2: Add Product Material Fields (NULLABLE - Critical)
 ```sql
-CREATE TABLE "ProductType" (
-  "id" TEXT NOT NULL,
-  "name" TEXT NOT NULL,
-  "description" TEXT,
-  "materialId" TEXT NOT NULL,
-  "outputQuantity" INTEGER NOT NULL DEFAULT 1,
-  "processingCost" DECIMAL(10,2) NOT NULL DEFAULT 0,
-  "laborCost" DECIMAL(10,2) DEFAULT 0,
-  "overheadCost" DECIMAL(10,2) DEFAULT 0,
-  "isActive" BOOLEAN DEFAULT true,
-  "createdAt" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
-  "updatedAt" TIMESTAMP(3) NOT NULL,
-  "createdBy" TEXT NOT NULL,
-  
-  CONSTRAINT "ProductType_pkey" PRIMARY KEY ("id"),
-  CONSTRAINT "ProductType_materialId_fkey" 
-    FOREIGN KEY ("materialId") REFERENCES "Material"("id") 
-    ON DELETE RESTRICT ON UPDATE CASCADE
-);
-```
-
-### Product Table Updates
-```sql
+-- Add NULLABLE columns to Product table
+-- IMPORTANT: All columns must be NULLABLE for backward compatibility
 ALTER TABLE "Product" 
-ADD COLUMN "materialId" TEXT,
-ADD COLUMN "productTypeId" TEXT,
-ADD COLUMN "materialCost" DECIMAL(10,2) DEFAULT 0,
-ADD COLUMN "processingCost" DECIMAL(10,2) DEFAULT 0,
-ADD COLUMN "isCalculated" BOOLEAN DEFAULT false;
+ADD COLUMN "materialId" TEXT NULL,
+ADD COLUMN "materialCost" DECIMAL(10,2) NULL,
+ADD COLUMN "materialQuantity" INT NULL;
 
--- Foreign key constraints (nullable for backward compatibility)
+-- Add foreign key with ON DELETE SET NULL (safe deletion)
 ALTER TABLE "Product" ADD CONSTRAINT "Product_materialId_fkey" 
-FOREIGN KEY ("materialId") REFERENCES "Material"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+FOREIGN KEY ("materialId") REFERENCES "Material"("id") 
+ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE "Product" ADD CONSTRAINT "Product_productTypeId_fkey" 
-FOREIGN KEY ("productTypeId") REFERENCES "ProductType"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+-- Essential indexes for performance
+CREATE INDEX "idx_product_material" ON "Product"("materialId");
+CREATE INDEX "idx_product_material_cost" ON "Product"("materialCost") WHERE "materialCost" IS NOT NULL;
 ```
 
-### Performance Indexes
+#### Phase 3: Validation & Rollback Scripts
 ```sql
-CREATE INDEX "idx_material_active_type" ON "Material"("isActive", "type");
-CREATE INDEX "idx_product_type_material" ON "ProductType"("materialId", "isActive");
-CREATE INDEX "idx_product_material_calculated" ON "Product"("materialId", "isCalculated");
-CREATE INDEX "idx_material_supplier" ON "Material"("supplier", "isActive");
-CREATE INDEX "idx_product_type_cost" ON "ProductType"("processingCost", "isActive");
+-- Validation queries to ensure data integrity
+SELECT COUNT(*) as existing_products FROM "Product" WHERE "materialId" IS NULL; -- Should match current count
+SELECT COUNT(*) as material_products FROM "Product" WHERE "materialId" IS NOT NULL; -- Should be 0 initially
+
+-- Rollback script (if needed)
+-- ALTER TABLE "Product" DROP CONSTRAINT "Product_materialId_fkey";
+-- ALTER TABLE "Product" DROP COLUMN "materialId";
+-- ALTER TABLE "Product" DROP COLUMN "materialCost"; 
+-- ALTER TABLE "Product" DROP COLUMN "materialQuantity";
+-- DROP TABLE "Material";
 ```
 
 ---
 
-## =' API Specifications
+## 🔌 Simplified API Design
+
+> **IMPORTANT**: API design follows exact patterns from existing `/api/products` endpoints for consistency.
 
 ### Material Management Endpoints
 
 #### GET /api/materials
-**Purpose**: Retrieve materials with search and filtering
+**Purpose**: Retrieve materials with search and filtering (same pattern as products)
 **Query Parameters**:
-- `search` (string): Search by name or supplier
-- `type` (string): Filter by material type
-- `isActive` (boolean): Filter by active status
-- `page` (number): Page number for pagination
+- `search` (string): Search by name
+- `isActive` (boolean): Filter by active status (default: true)
+- `page` (number): Page number (default: 1)
 - `limit` (number): Items per page (default: 10)
 
-**Response**:
+**Response** (matches existing product API format exactly):
 ```typescript
 {
-  data: Material[],
+  materials: Material[], // Note: "materials" not "data"
   pagination: {
     page: number,
     limit: number, 
     total: number,
     totalPages: number
-  },
-  summary: {
-    activeCount: number,
-    inactiveCount: number,
-    typeBreakdown: Record<string, number>
   }
 }
 ```
 
 #### POST /api/materials
-**Purpose**: Create new material
+**Purpose**: Create new material (simplified fields only)
 **Request Body**:
 ```typescript
 {
   name: string,
-  type: 'fabric' | 'accessory' | 'component',
   pricePerUnit: number,
-  unit: string,
-  supplier?: string,
-  description?: string
+  unit: string
 }
 ```
 
-#### PUT /api/materials/[id]
-**Purpose**: Update material information
-**Special Handling**:
-- Price updates automatically create price history entry
-- Type changes require validation against existing ProductTypes
-- Name changes propagate to related ProductTypes
+#### PUT /api/materials/[id]  
+**Purpose**: Update material (basic update only)
+#### DELETE /api/materials/[id]
+**Purpose**: Soft delete material (set isActive = false)
 
-#### GET /api/materials/price-history/[id]
-**Purpose**: Retrieve material price change history
-**Response**:
+### Enhanced Product Endpoints
+
+#### GET /api/products (Updated)
+**New Response** (extends existing response):
 ```typescript
 {
-  materialId: string,
-  materialName: string,
-  history: Array<{
+  products: Product[], // Existing structure
+  pagination: { ... } // Existing structure
+}
+
+// Extended Product interface:
+interface Product {
+  // ... existing fields
+  materialId?: string | null,
+  materialCost?: number | null, // Converted from Decimal
+  materialQuantity?: number | null,
+  material?: { // Included when materialId exists
     id: string,
-    previousPrice: number,
-    newPrice: number,
-    changeDate: string,
-    changedBy: string,
-    reason?: string
-  }>
+    name: string,
+    pricePerUnit: number,
+    unit: string
+  }
 }
 ```
 
-### ProductType Management Endpoints
-
-#### GET /api/product-types
-**Purpose**: Retrieve product types with cost information
-**Query Parameters**:
-- `materialId` (string): Filter by material
-- `isActive` (boolean): Filter by active status
-- `includeCalculations` (boolean): Include cost breakdowns
-
-#### POST /api/product-types/calculate-cost
-**Purpose**: Calculate costs for given material and quantities
-**Request Body**:
+#### POST/PUT /api/products (Updated)
+**New Request Body** (extends existing):
 ```typescript
 {
-  materialId: string,
-  quantity: number,
-  processingCost: number,
-  laborCost?: number,
-  overheadCost?: number
+  // ... existing product fields
+  materialId?: string | null,
+  materialQuantity?: number | null
+  // materialCost calculated automatically from materialId + materialQuantity
 }
 ```
 
+#### GET /api/products/[id]/material-cost
+**Purpose**: Get detailed material cost calculation for a product
 **Response**:
 ```typescript
 {
-  materialCost: number,
-  processingCost: number,
-  laborCost: number,
-  overheadCost: number,
-  totalCost: number,
-  costPerUnit: number,
-  breakdown: {
-    materialPercentage: number,
-    processingPercentage: number,
-    laborPercentage: number,
-    overheadPercentage: number
-  }
+  productId: string,
+  materialCost: number | null,
+  calculation: {
+    materialId: string,
+    materialName: string,
+    pricePerUnit: number,
+    quantity: number,
+    totalCost: number // pricePerUnit * quantity
+  } | null
 }
 ```
 
@@ -317,33 +276,76 @@ CREATE INDEX "idx_product_type_cost" ON "ProductType"("processingCost", "isActiv
 ##  Definition of Done
 
 ### Sprint 1 Completion Criteria
-- [ ] All Material table operations (CRUD) working correctly
-- [ ] Material price history tracking functional
-- [ ] Database migration scripts tested on staging
-- [ ] Material APIs documented in OpenAPI format
-- [ ] Unit tests achieving >95% coverage for MaterialService
-- [ ] Integration tests passing for all Material endpoints
-- [ ] Performance benchmarks met (<500ms for queries)
+- [ ] **CRITICAL**: Existing product functionality unchanged (backward compatibility test)
+- [ ] **CRITICAL**: Migration tested on copy of production data  
+- [ ] Material table created with basic CRUD operations
+- [ ] MaterialService follows existing ProductService pattern exactly
+- [ ] GET/POST/PUT/DELETE /api/materials endpoints working
+- [ ] Basic unit tests for MaterialService (minimum 80% coverage)
 
 ### Sprint 2 Completion Criteria  
-- [ ] ProductType CRUD operations fully functional
-- [ ] Cost calculation formulas working correctly
-- [ ] Product APIs enhanced with cost calculation
-- [ ] All backend services properly tested
-- [ ] API documentation complete and accurate
-- [ ] Migration scripts ready for production deployment
-- [ ] Performance targets met for cost calculations (<2s)
+- [ ] **CRITICAL**: Product APIs handle materialId/materialQuantity fields
+- [ ] **CRITICAL**: Simple cost calculation working: `materialCost = pricePerUnit * quantity`
+- [ ] Product detail APIs include material information when available
+- [ ] Cost recalculation when material price changes (basic version)
+- [ ] Performance test: <2s for cost calculations on 100 products
 
-### Overall Phase 1 Success Criteria
-- [ ] Database schema supports complete Material � ProductType � Product hierarchy
-- [ ] All APIs functional with proper validation and error handling
-- [ ] Cost calculation accuracy verified with test cases
-- [ ] Migration strategy tested and documented
-- [ ] Code coverage >95% for all new services
-- [ ] Performance benchmarks met across all operations
-- [ ] Security review completed for new endpoints
-- [ ] Documentation complete for handoff to frontend team
+### Overall Success Criteria (MVP Ready)
+- [ ] **CRITICAL**: No breaking changes to existing product management  
+- [ ] **CRITICAL**: All existing transaction processing works unchanged
+- [ ] Database migration safe and reversible
+- [ ] Material management functional with basic features
+- [ ] Cost calculation integrated with product creation/updates
+- [ ] API documentation updated (basic level)
+- [ ] Handoff documentation for frontend team
+
+### 🚫 **OUT OF SCOPE** (Future Enhancements)
+- Complex ProductType modeling
+- Advanced cost breakdown calculations  
+- Price history tracking
+- Bulk recalculation utilities
+- Material supplier management
+- Complex business rules and validations
+- Advanced reporting features
 
 ---
 
-*This document defines the complete backend implementation scope for RPK-45 Phase 1. All acceptance criteria must be met before progressing to Frontend Development phase.*
+## 💡 Implementation Guidance
+
+### Service Integration Pattern
+```typescript
+// Follow existing ProductService pattern exactly
+export class MaterialService {
+  constructor(
+    private readonly prisma: PrismaClient,
+    private readonly userId: string,
+  ) {}
+  
+  // Use same error handling patterns
+  // Use same validation patterns
+  // Use same type conversion patterns
+}
+```
+
+### Cost Calculation Example
+```typescript
+// Simple calculation in ProductService
+if (materialId && materialQuantity) {
+  const material = await this.prisma.material.findUnique({ where: { id: materialId } })
+  if (material) {
+    updateData.materialCost = new Decimal(material.pricePerUnit).mul(materialQuantity)
+  }
+}
+```
+
+### Migration Safety Checklist
+- [ ] Test on staging environment first
+- [ ] All new columns are NULLABLE
+- [ ] Foreign keys use ON DELETE SET NULL  
+- [ ] Rollback scripts prepared and tested
+- [ ] Existing queries validated to work with new schema
+- [ ] Transaction processing tested with new fields
+
+---
+
+*This simplified document focuses on MVP implementation with backward compatibility as the top priority. Complex features deferred to future iterations.*

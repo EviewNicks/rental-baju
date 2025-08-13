@@ -63,7 +63,9 @@
       "Bash(npx prisma db execute:*)",
       "Bash(npx prisma:*)",
       "Bash(cat:*)",
-      "WebSearch"
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:www.npmjs.com)"
     ],
     "deny": []
   }

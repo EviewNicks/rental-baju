@@ -82,5 +82,11 @@
     "blocked_command": "cmd /c \"npm install -g @context7/mcp\"",
     "suggested_command": "cmd /c \"yarn install -g @context7/mcp\"",
     "reason": "Gunakan 'yarn install' sebagai pengganti 'npm install'."
+  },
+  {
+    "session_id": "52226287-f266-42aa-bd7c-087f355f51b0",
+    "blocked_command": "npm search @21st-dev magic mcp",
+    "suggested_command": "yarn search @21st-dev magic mcp",
+    "reason": "Gunakan 'yarn' sebagai default, kecuali ada alasan khusus."
   }
 ]
