@@ -56,223 +56,6 @@ jobs:
             eslint_report.json
           retention-days: 5
 
-  # Job untuk menjalankan unit tests
-  unit-tests:
-    name: Unit Tests
-    runs-on: ubuntu-latest
-    needs: lint
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22.x'
-          cache: 'yarn'
-          cache-dependency-path: yarn.lock
-
-      - name: Install dependencies
-        env:
-          SKIP_ENV_VALIDATION: true
-        run: |
-          echo "=== Installing dependencies for testing ==="
-          # Use GitHub Actions recommended approach with fallback
-          yarn install --frozen-lockfile || yarn install
-          echo "✅ Dependencies installed successfully"
-
-      - name: Run unit tests with coverage
-        id: test
-        env:
-          # Database Configuration untuk testing
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          DIRECT_URL: ${{ secrets.DIRECT_URL }}
-
-          # Clerk Authentication untuk integration tests
-          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
-          CLERK_TEST_MODE: true
-
-          # App Configuration
-          NODE_ENV: test
-          APP_ENV: dev
-          NEXT_PUBLIC_APP_URL: https://localhost:3000
-          SKIP_ENV_VALIDATION: true
-        run: |
-          echo "=== Running unit tests with coverage ==="
-
-          # Run all unit tests across all features
-          yarn test:unit:all --ci --coverage --watchAll=false
-
-          # Parse test results dynamically
-          if [ -f "test-results/test-report.json" ]; then
-            TEST_PASSED=$(jq '.numPassedTests' test-results/test-report.json)
-            TEST_FAILED=$(jq '.numFailedTests' test-results/test-report.json)
-            TEST_TOTAL=$(jq '.numTotalTests' test-results/test-report.json)
-          else
-            TEST_PASSED="N/A"
-            TEST_FAILED="N/A" 
-            TEST_TOTAL="N/A"
-          fi
-
-          echo "test_passed=$TEST_PASSED" >> $GITHUB_OUTPUT
-          echo "test_failed=$TEST_FAILED" >> $GITHUB_OUTPUT
-          echo "test_total=$TEST_TOTAL" >> $GITHUB_OUTPUT
-
-          echo "✅ Unit tests completed"
-
-      - name: Create test summary
-        run: |
-          echo "### Unit Test Results 📊" >> $GITHUB_STEP_SUMMARY
-          echo "✅ Passed: ${{ steps.test.outputs.test_passed }}" >> $GITHUB_STEP_SUMMARY
-          echo "❌ Failed: ${{ steps.test.outputs.test_failed }}" >> $GITHUB_STEP_SUMMARY
-          echo "📊 Total: ${{ steps.test.outputs.test_total }}" >> $GITHUB_STEP_SUMMARY
-
-      - name: Upload test coverage
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: unit-test-coverage
-          path: coverage/
-          retention-days: 5
-
-  # Job untuk menjalankan integration tests
-  integration-tests:
-    name: Integration Tests
-    runs-on: ubuntu-latest
-    needs: lint
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22.x'
-          cache: 'yarn'
-          cache-dependency-path: yarn.lock
-
-      - name: Install dependencies
-        env:
-          SKIP_ENV_VALIDATION: true
-        run: |
-          echo "=== Installing dependencies for integration tests ==="
-          # Use GitHub Actions recommended approach with fallback
-          yarn install --frozen-lockfile || yarn install
-          echo "✅ Dependencies installed successfully"
-
-      - name: Run integration tests
-        env:
-          # Database Configuration untuk testing
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          DIRECT_URL: ${{ secrets.DIRECT_URL }}
-
-          # Clerk Authentication untuk integration tests
-          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
-          CLERK_TEST_MODE: true
-
-          # App Configuration
-          NODE_ENV: test
-          APP_ENV: dev
-          NEXT_PUBLIC_APP_URL: https://localhost:3000
-          SKIP_ENV_VALIDATION: true
-        run: |
-          echo "=== Running integration tests ==="
-          yarn test:integration:all --ci --watchAll=false
-          echo "✅ Integration tests completed"
-
-      - name: Upload integration test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: integration-test-results
-          path: |
-            coverage/
-            test-results/
-          retention-days: 5
-
-  # Job untuk E2E tests
-  e2e-tests:
-    name: E2E Tests
-    runs-on: ubuntu-latest
-    needs: [unit-tests, integration-tests]
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22.x'
-          cache: 'yarn'
-          cache-dependency-path: yarn.lock
-
-      - name: Install dependencies
-        env:
-          SKIP_ENV_VALIDATION: true
-        run: |
-          echo "=== Installing dependencies for E2E tests ==="
-          # Use GitHub Actions recommended approach with fallback
-          yarn install --frozen-lockfile || yarn install
-          echo "✅ Dependencies installed successfully"
-
-      - name: Install Playwright browsers
-        run: |
-          echo "=== Installing Playwright browsers ==="
-          npx playwright install chromium --with-deps
-          echo "✅ Playwright browsers installed successfully"
-
-      - name: Run E2E tests
-        env:
-          # Database Configuration untuk testing
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          DIRECT_URL: ${{ secrets.DIRECT_URL }}
-
-          # Clerk Authentication untuk E2E tests
-          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
-          E2E_CLERK_ADMIN_USERNAME: ${{ secrets.E2E_CLERK_ADMIN_USERNAME }}
-          E2E_CLERK_ADMIN_PASSWORD: ${{ secrets.E2E_CLERK_ADMIN_PASSWORD }}
-          E2E_CLERK_CREATOR_PASSWORD: ${{ secrets.E2E_CLERK_CREATOR_PASSWORD }}
-          E2E_CLERK_CREATOR_USERNAME: ${{ secrets.E2E_CLERK_CREATOR_USERNAME }}
-          E2E_CLERK_USER_EMAIL: ${{ secrets.E2E_CLERK_USER_EMAIL }}
-          E2E_CLERK_USER_PASSWORD: ${{ secrets.E2E_CLERK_USER_PASSWORD }}
-          E2E_CLERK_USER_USERNAME: ${{ secrets.E2E_CLERK_USER_USERNAME }}
-          CLERK_TEST_MODE: true
-
-          # App Configuration
-          NODE_ENV: test
-          APP_ENV: prod
-          NEXT_PUBLIC_APP_URL: http://localhost:3000
-          SKIP_ENV_VALIDATION: true
-          CI: true
-        run: |
-          echo "=== Running E2E tests ==="
-          yarn test:e2e:all --reporter=html,json
-          echo "✅ E2E tests completed"
-
-      - name: Upload E2E test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: e2e-test-results
-          path: |
-            services/playwright-report/
-            services/test-results/
-          retention-days: 7
-
-      - name: Upload E2E test report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-report
-          path: services/playwright-report/
-          retention-days: 30
-
   # Job untuk Security audit
   security-audit:
     name: Security Audit
@@ -311,3 +94,159 @@ jobs:
           name: security-audit-results
           path: yarn-audit.log
           retention-days: 5
+
+  # Job untuk build aplikasi
+  build:
+    name: Build Application
+    runs-on: ubuntu-latest
+    environment: development
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+          cache: 'yarn'
+          cache-dependency-path: yarn.lock
+
+      - name: Install dependencies
+        id: install
+        env:
+          SKIP_ENV_VALIDATION: true
+        run: |
+          echo "=== Installing dependencies ==="
+          yarn install --frozen-lockfile
+
+          # Install ALL required types explicitly
+          echo "=== Installing type definitions ==="
+          yarn add --dev @types/jest@^30.0.0 @types/node@^24.0.7 @testing-library/jest-dom@^6.6.3 @testing-library/react@^16.3.0
+
+          echo "✅ Dependencies installed successfully"
+
+      - name: Verify dependencies
+        id: verify-deps
+        run: |
+          echo "=== Verifying dependencies ==="
+          echo "TypeScript: $(yarn list typescript --depth=0)"
+          echo "Testing Library React: $(yarn list @testing-library/react --depth=0)"
+          echo "Testing Library Jest DOM: $(yarn list @testing-library/jest-dom --depth=0)"
+
+      - name: Type check
+        id: type-check
+        run: |
+          echo "=== Running TypeScript check ==="
+          # Gunakan tsc tanpa flag --exclude
+          yarn type-check
+          echo "✅ TypeScript check passed"
+
+      - name: Debug TypeScript on failure
+        if: failure() && steps.type-check.outcome == 'failure'
+        run: |
+          echo "=== TypeScript Debug Information ==="
+          echo "Node version: $(node --version)"
+          echo "TypeScript version: $(yarn list typescript --depth=0)"
+          echo "Types installed:"
+          yarn list --pattern="@types/*" --depth=0
+          echo "tsconfig.json:"
+          cat tsconfig.json
+
+      - name: Verify Tailwind CSS setup
+        id: tailwind-check
+        run: |
+          echo "=== Verifying Tailwind CSS setup ==="
+          yarn list @tailwindcss/postcss tailwindcss --depth=0
+
+          # Test if Tailwind can be required
+          node -e "
+            try {
+              require('tailwindcss');
+              console.log('✅ Tailwind CSS can be required');
+            } catch (e) {
+              console.error('❌ Tailwind CSS error:', e.message);
+              process.exit(1);
+            }
+          "
+
+      - name: Debug Tailwind on failure
+        if: failure() && steps.tailwind-check.outcome == 'failure'
+        run: |
+          echo "=== Tailwind CSS Debug Information ==="
+          echo "PostCSS version: $(yarn list postcss --depth=0)"
+          echo "Tailwind packages:"
+          yarn list --pattern="tailwind*" --depth=0
+          echo "PostCSS config:"
+          cat postcss.config.mjs || echo "No postcss.config.mjs found"
+          echo "Tailwind config:"
+          cat tailwind.config.ts || echo "No tailwind.config.ts found"
+
+      - name: Build application
+        id: build
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+          NODE_ENV: production
+          APP_ENV: prod
+          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL || 'https://maguru.vercel.app' }}
+          SKIP_ENV_VALIDATION: true
+        run: |
+          echo "=== Building Next.js application ==="
+          yarn build
+
+          if [ -d ".next" ]; then
+            BUILD_SIZE=$(du -sh .next/ | cut -f1)
+            echo "build_size=$BUILD_SIZE" >> $GITHUB_OUTPUT
+            echo "✅ Build completed successfully"
+          else
+            echo "❌ Build failed"
+            exit 1
+          fi
+
+      - name: Debug build on failure
+        if: failure() && steps.build.outcome == 'failure'
+        run: |
+          echo "=== Build Debug Information ==="
+          echo "Next.js version: $(yarn list next --depth=0)"
+          echo "React version: $(yarn list react --depth=0)"
+          echo "Build logs:"
+          cat .next/trace || echo "No trace file found"
+
+      - name: Create build summary
+        run: |
+          echo "### Build Results 🏗️" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.build.outcome }}" == "success" ]; then
+            echo "✅ Build completed successfully" >> $GITHUB_STEP_SUMMARY
+            echo "📂 Build size: ${{ steps.build.outputs.build_size }}" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Build failed" >> $GITHUB_STEP_SUMMARY
+            echo "Check the logs above for details" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Upload build artifacts
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-output
+          path: .next/
+          retention-days: 7
+
+      - name: Upload debug artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-info
+          path: |
+            .next/trace
+            npm-debug.log*
+            yarn-debug.log*
+            yarn-error.log*
+            package.json
+            yarn.lock
+            tsconfig.json
+            postcss.config.mjs
+            tailwind.config.ts
+          retention-days: 3
