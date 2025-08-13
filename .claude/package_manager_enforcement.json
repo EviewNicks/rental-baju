@@ -52,5 +52,11 @@
     "blocked_command": "cd \"D:\\.work\\rental-software\" && npm run type-check",
     "suggested_command": "cd \"D:\\.work\\rental-software\" && yarn type-check",
     "reason": "Gunakan 'yarn' sebagai pengganti 'npm run' untuk workflow utama."
+  },
+  {
+    "session_id": "93d444a0-1d1d-4a5b-b086-bf72cd8e5822",
+    "blocked_command": "cd \"D:\\.work\\rental-software\" && npm run lint -- features/kasir/components/detail/ProductDetailCard.tsx",
+    "suggested_command": "cd \"D:\\.work\\rental-software\" && yarn lint -- features/kasir/components/detail/ProductDetailCard.tsx",
+    "reason": "Gunakan 'yarn' sebagai pengganti 'npm run' untuk workflow utama."
   }
 ]

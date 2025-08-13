@@ -1,38 +1,271 @@
-✓ Compiled /favicon.ico in 210ms
- GET /favicon.ico?favicon.45db1c09.ico 200 in 562ms
- GET /api/kasir/transaksi/TXN-20250809-001 200 in 21615ms
- │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 6273ms (cache skip)
- │ │ Cache skipped reason: (auto no cache)
- GET /api/kasir/transaksi/TXN-20250809-001 200 in 6127ms
- │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 1714ms (cache skip)
- │ │ 
+ ○ Compiling /dashboard/new ...
+ ✓ Compiled /dashboard/new in 4s
+ GET /dashboard/new 200 in 4161ms
+ ○ Compiling /api/kasir/produk/available ...
+ ✓ Compiled /api/kasir/produk/available in 4.4s
+ GET /api/kasir/produk/available?available=true 200 in 7184ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 450m
 
+
+
+
+
+                                                                                 ms (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
+ ○ Compiling /api/kasir/penyewa ...
+ ✓ Compiled /api/kasir/penyewa in 3.6s
+ GET /api/kasir/penyewa?limit=20 200 in 5343ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 460ms (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
+ POST /api/kasir/transaksi 201 in 17517ms
+ ○ Compiling /api/kasir/pembayaran ...
+ ✓ Compiled /api/kasir/pembayaran in 3.3s
+[PAYMENT_CREATE] Starting payment transaction for TXN-20250813-002
+[PAYMENT_CREATE] Payment record created: a76465df-9ec7-40f4-a361-41268b5a80ed
+[PAYMENT_CREATE] Transaction amounts updated for TXN-20250813-002
+[PAYMENT_CREATE] Activity log created: 987e5704-cef7-4ac8-9c6b-c338fc68089e
+[PAYMENT_CREATE] Activity verification successful: 987e5704-cef7-4ac8-9c6b-c338fc68089e
+[PAYMENT_CREATE] Payment transaction completed for TXN-20250813-002
+[PAYMENT_VERIFY] Activity verification successful after 0 retries
+[AUDIT] {
+  "entityType": "pembayaran",
+  "entityId": "a76465df-9ec7-40f4-a361-41268b5a80ed",
+  "action": "create",
+  "newData": {
+    "id": "a76465df-9ec7-40f4-a361-41268b5a80ed",
+    "transaksiId": "f6ae9134-6a05-4cbe-b2e8-59513eb27e83",
+    "jumlah": "600000",
+    "metode": "tunai",
+    "referensi": null,
+    "catatan": "Pembayaran awal transaksi",
+    "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
+    "createdAt": "2025-08-13T05:22:19.548Z",
+    "transaksi": {
+      "id": "f6ae9134-6a05-4cbe-b2e8-59513eb27e83",
+      "kode": "TXN-20250813-002",
+      "penyewa": {
+        "nama": "Newbie",
+        "telepon": "08123456789"
+      },
+      "totalHarga": "600000",
+      "jumlahBayar": "600000",
+      "sisaBayar": "0",
+      "status": "active"
+    }
+  },
+  "metadata": {
+    "operation": "payment_creation",
+    "transactionCode": "TXN-20250813-002",
+    "amount": 600000,
+    "method": "tunai"
+  },
+  "userId": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
+  "userRole": "kasir",
+  "timestamp": "2025-08-13T05:22:23.421Z"
+}
+[PAYMENT_CREATE] Payment creation process completed for TXN-20250813-002
+ POST /api/kasir/pembayaran 201 in 10717ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 1292ms (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
+ GET /dashboard 200 in 159ms
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 3200ms
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 4577ms
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 2882ms
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 3968ms
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 3800ms
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 3482ms
+ GET /dashboard/transaction/TXN-20250813-002 200 in 248ms
+ GET /api/kasir/transaksi/TXN-20250813-002 200 in 4477ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 1019ms (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
+ ○ Compiling /api/kasir/transaksi/[kode]/ambil ...
+ ✓ Compiled /api/kasir/transaksi/[kode]/ambil in 3.4s
+ PATCH /api/kasir/transaksi/TXN-20250813-002/ambil 200 in 17116ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 469ms (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
+ GET /api/kasir/transaksi/TXN-20250813-002 200 in 4088ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 308ms (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
+ GET /api/kasir/transaksi/TXN-20250813-002 200 in 6077ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 424ms (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
+ ○ Compiling /dashboard/transaction/[kode]/return ...
+ ✓ Compiled /dashboard/transaction/[kode]/return in 5.3s
+ GET /dashboard/transaction/TXN-20250813-002/return 200 in 7126ms
+ GET /api/kasir/transaksi/TXN-20250813-002 200 in 5249ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 730ms (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
+ ○ Compiling /api/kasir/transaksi/[kode]/pengembalian ...
+ ✓ Compiled /api/kasir/transaksi/[kode]/pengembalian in 4.7s
+2025-08-13T05:27:05.664Z [INFO] [API][PUT-pengembalian] API request started
 {
+  "requestId": "req-1755062825662-0dmarlvcf",
+  "timestamp": "2025-08-13T05:27:05.662Z",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+  "contentLength": "266",
+  "clientIP": "::1",
+  "transactionCode": "TXN-20250813-002",
+  "deduplicationInfo": {
+    "clientFingerprint": "::1-Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36-266",
+    "potentialDuplicate": false
+  },
+  "performance": {
+    "timestamp": 1755062825664,
+    "memory": {
+      "rss": 1172971520,
+      "heapTotal": 176533504,
+      "heapUsed": 170174376,
+      "external": 4793515,
+      "arrayBuffers": 823741
+    }
+  }
+}
+2025-08-13T05:27:07.007Z [INFO] [API][PUT-pengembalian] Legacy format detected - converting to unified format
+{
+  "requestId": "req-1755062825662-0dmarlvcf",
+  "itemCount": 2,
+  "performance": {
+    "timestamp": 1755062827007,
+    "memory": {
+      "rss": 1173000192,
+      "heapTotal": 175484928,
+      "heapUsed": 170179136,
+      "external": 4816896,
+      "arrayBuffers": 828680
+    }
+  }
+}
+2025-08-13T05:27:07.026Z [INFO] [API][PUT-pengembalian] Unified validation successful
+{
+  "requestId": "req-1755062825662-0dmarlvcf",
+  "format": "legacy",
+  "itemCount": 2,
+  "totalConditions": 2,
+  "performance": {
+    "timestamp": 1755062827026,
+    "memory": {
+      "rss": 1173045248,
+      "heapTotal": 175747072,
+      "heapUsed": 170350064,
+      "external": 4816896,
+      "arrayBuffers": 828680
+    }
+  }
+}
+2025-08-13T05:27:16.181Z [DEBUG] [UnifiedReturnService][validateUnifiedReturn] Return validation successful
+{
+  "transactionId": "f6ae9134-6a05-4cbe-b2e8-59513eb27e83",
+  "itemsValidated": 2,
+  "transactionStatus": "active",
+  "performance": {
+    "timestamp": 1755062836180,
+    "memory": {
+      "rss": 1170190336,
+      "heapTotal": 177319936,
+      "heapUsed": 170060944,
+      "external": 4813314,
+      "arrayBuffers": 825098
+    }
+  }
+}
+2025-08-13T05:27:22.118Z [DEBUG] [UnifiedReturnService][createReturnActivity] Activity created successfully
+{
+  "transactionId": "f6ae9134-6a05-4cbe-b2e8-59513eb27e83",
+  "activityType": "dikembalikan",
+  "description": "Item returned: 2 items processed",
+  "performance": {
+    "timestamp": 1755062842118,
+    "memory": {
+      "rss": 1170149376,
+      "heapTotal": 176271360,
+      "heapUsed": 169931928,
+      "external": 4813371,
+      "arrayBuffers": 825091
+    }
+  }
+}
+2025-08-13T05:27:22.127Z [INFO] [UnifiedReturnService][processUnifiedReturn] Unified return processing completed successfully
+{
+  "transactionId": "f6ae9134-6a05-4cbe-b2e8-59513eb27e83",
+  "totalPenalty": 0,
+  "itemsProcessed": 2,
+  "conditionsProcessed": 2,
+  "processingTime": 10040,
+  "activitiesCreated": 1,
+  "performance": {
+    "timestamp": 1755062842127,
+    "memory": {
+      "rss": 1170149376,
+      "heapTotal": 176271360,
+      "heapUsed": 169941840,
+      "external": 4813371,
+      "arrayBuffers": 825091
+    }
+  }
+}
+2025-08-13T05:27:22.139Z [INFO] [API][PUT-pengembalian] Unified return processing completed
+{
+  "requestId": "req-1755062825662-0dmarlvcf",
+  "format": "legacy",
+  "success": true,
+  "totalPenalty": 0,
+  "processedItems": 2,
+  "totalConditions": 2,
+  "performance": {
+    "timestamp": 1755062842138,
+    "memory": {
+      "rss": 1170149376,
+      "heapTotal": 176271360,
+      "heapUsed": 169951144,
+      "external": 4813371,
+      "arrayBuffers": 825091
+    }
+  }
+}
+2025-08-13T05:27:22.149Z [INFO] [API][PUT-pengembalian] API request completed successfully
+{
+  "performance": {
+    "label": "total-api-request",
+    "duration": "16487ms"
+  }
+}
+ PUT /api/kasir/transaksi/TXN-20250813-002/pengembalian 200 in 23248ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 1305ms (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
+ GET /dashboard/transaction/TXN-20250813-002 200 in 774ms
+ GET /api/kasir/transaksi/TXN-20250813-002 200 in 5466ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 577ms (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
+ GET /api/kasir/transaksi/TXN-20250813-002 200 in 5171ms
+ │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 452ms (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
+
+ {
     "success": true,
     "data": {
-        "id": "bba7a5ce-f5ec-4ef0-9c5f-e727c48299b6",
-        "kode": "TXN-20250809-001",
+        "id": "f6ae9134-6a05-4cbe-b2e8-59513eb27e83",
+        "kode": "TXN-20250813-002",
         "penyewa": {
-            "id": "3a28c8a6-9730-41ef-9689-fea26bf44eb8",
-            "nama": "aRDIANSYAH",
-            "telepon": "089756394336",
-            "alamat": "Jl.empang no.7 kota ini"
+            "id": "c11dfe97-735f-4d5b-9e58-74ecad4e3421",
+            "nama": "Newbie",
+            "telepon": "08123456789",
+            "alamat": "02/03, Jl.EMpang no.7 , Kel. Cppo"
         },
         "status": "dikembalikan",
         "totalHarga": 600000,
         "jumlahBayar": 600000,
-        "sisaBayar": 10000,
-        "tglMulai": "2025-08-10T00:00:00.000Z",
-        "tglSelesai": "2025-08-13T00:00:00.000Z",
-        "tglKembali": "2025-08-12T05:22:11.114Z",
+        "sisaBayar": 0,
+        "tglMulai": "2025-08-14T00:00:00.000Z",
+        "tglSelesai": "2025-08-17T00:00:00.000Z",
+        "tglKembali": "2025-08-13T05:26:58.880Z",
         "metodeBayar": "tunai",
         "catatan": null,
         "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
-        "createdAt": "2025-08-09T05:32:09.490Z",
-        "updatedAt": "2025-08-12T05:22:28.913Z",
+        "createdAt": "2025-08-13T05:22:05.606Z",
+        "updatedAt": "2025-08-13T05:27:18.145Z",
         "items": [
             {
-                "id": "b3221755-304e-4a81-93f2-8589747c9f6b",
+                "id": "03419a91-f0dd-4bc3-afbd-373c251f8057",
                 "produk": {
                     "id": "187370f2-6fe3-40f9-8f0f-adbed01ac2bd",
                     "code": "DRS2",
@@ -54,18 +287,18 @@
                 "totalReturnPenalty": 0,
                 "conditionBreakdown": [
                     {
-                        "id": "f36b1e84-6476-4252-81a0-48f102b530b8",
+                        "id": "805c3321-ec31-4e22-8c43-3d5d4ff6e5c2",
                         "kondisiAkhir": "baik",
                         "jumlahKembali": 2,
                         "penaltyAmount": 0,
                         "modalAwalUsed": null,
-                        "createdAt": "2025-08-12T05:22:29.286Z",
+                        "createdAt": "2025-08-13T05:27:18.560Z",
                         "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp"
                     }
                 ]
             },
             {
-                "id": "a2ff8f31-2f9e-4a07-8d0b-ac7446aa8f0c",
+                "id": "f765aabd-fe03-4d20-af1f-55a676eb6231",
                 "produk": {
                     "id": "6bf8bdc3-44dd-4159-a6b7-0dd2f30e0e66",
                     "code": "GMB5",
@@ -82,17 +315,17 @@
                 "durasi": 3,
                 "subtotal": 300000,
                 "kondisiAwal": "baik",
-                "kondisiAkhir": "kotor",
+                "kondisiAkhir": "baik",
                 "statusKembali": "lengkap",
-                "totalReturnPenalty": 10000,
+                "totalReturnPenalty": 0,
                 "conditionBreakdown": [
                     {
-                        "id": "a743a08a-12e3-4419-aca1-760ccd239aee",
-                        "kondisiAkhir": "kotor",
+                        "id": "46658c49-7320-4f0b-b336-21fd01c8fd11",
+                        "kondisiAkhir": "baik",
                         "jumlahKembali": 2,
-                        "penaltyAmount": 10000,
+                        "penaltyAmount": 0,
                         "modalAwalUsed": null,
-                        "createdAt": "2025-08-12T05:22:30.262Z",
+                        "createdAt": "2025-08-13T05:27:19.651Z",
                         "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp"
                     }
                 ]
@@ -100,31 +333,55 @@
         ],
         "pembayaran": [
             {
-                "id": "419364f9-a20c-4525-bb7d-a210258e0a37",
-                "jumlah": 100000,
-                "metode": "tunai",
-                "referensi": null,
-                "catatan": null,
-                "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
-                "createdAt": "2025-08-09T05:33:23.203Z"
-            },
-            {
-                "id": "a474978d-4323-49a4-89f7-c5be4ec3fb8d",
-                "jumlah": 500000,
+                "id": "a76465df-9ec7-40f4-a361-41268b5a80ed",
+                "jumlah": 600000,
                 "metode": "tunai",
                 "referensi": null,
                 "catatan": "Pembayaran awal transaksi",
                 "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
-                "createdAt": "2025-08-09T05:32:20.756Z"
+                "createdAt": "2025-08-13T05:22:19.548Z"
             }
         ],
         "aktivitas": [
             {
-                "id": "214d4116-8c24-4a58-969e-b13bad2bdb6c",
+                "id": "6372b727-981f-4936-b826-59469f3ee4eb",
+                "tipe": "dikembalikan",
+                "deskripsi": "Item returned: 2 items processed",
+                "data": {
+                    "timestamp": "2025-08-13T05:27:21.301Z",
+                    "conditions": [
+                        {
+                            "itemId": "03419a91-f0dd-4bc3-afbd-373c251f8057",
+                            "produkName": "Dress Elegant Red",
+                            "kondisiAkhir": "baik",
+                            "jumlahKembali": 2,
+                            "penaltyAmount": 0
+                        },
+                        {
+                            "itemId": "f765aabd-fe03-4d20-af1f-55a676eb6231",
+                            "produkName": "Baju Merah",
+                            "kondisiAkhir": "baik",
+                            "jumlahKembali": 2,
+                            "penaltyAmount": 0
+                        }
+                    ],
+                    "totalPenalty": 0,
+                    "itemsAffected": [
+                        "Dress Elegant Red",
+                        "Baju Merah"
+                    ],
+                    "processingMode": "unified",
+                    "totalConditions": 2
+                },
+                "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
+                "createdAt": "2025-08-13T05:27:21.304Z"
+            },
+            {
+                "id": "110f2121-2b0e-411a-863c-a7966ff6a306",
                 "tipe": "status_pickup",
                 "deskripsi": "Status pickup: 2 lengkap, 0 sebagian, 0 belum",
                 "data": {
-                    "timestamp": "2025-08-09T05:34:02.004Z",
+                    "timestamp": "2025-08-13T05:26:12.258Z",
                     "pickupStats": {
                         "totalItems": 2,
                         "notPickedUp": 0,
@@ -134,67 +391,53 @@
                     "calculatedBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp"
                 },
                 "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
-                "createdAt": "2025-08-09T05:34:02.006Z"
+                "createdAt": "2025-08-13T05:26:12.260Z"
             },
             {
-                "id": "ed7fd6c7-04bd-4fbf-b076-61684a54fa51",
+                "id": "9ea0b86f-d352-4903-bbf1-a5619201bd38",
                 "tipe": "diambil",
                 "deskripsi": "Pickup dilakukan: 2 item, 2 item",
                 "data": {
                     "items": [
                         {
-                            "itemId": "b3221755-304e-4a81-93f2-8589747c9f6b",
+                            "itemId": "03419a91-f0dd-4bc3-afbd-373c251f8057",
                             "jumlahDiambil": 2
                         },
                         {
-                            "itemId": "a2ff8f31-2f9e-4a07-8d0b-ac7446aa8f0c",
+                            "itemId": "f765aabd-fe03-4d20-af1f-55a676eb6231",
                             "jumlahDiambil": 2
                         }
                     ],
-                    "timestamp": "2025-08-09T05:33:58.589Z",
+                    "timestamp": "2025-08-13T05:26:08.390Z",
                     "processedBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp"
                 },
                 "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
-                "createdAt": "2025-08-09T05:33:58.592Z"
+                "createdAt": "2025-08-13T05:26:08.394Z"
             },
             {
-                "id": "c07b4b90-74ee-43bb-bec2-2cc1da0a0107",
+                "id": "987e5704-cef7-4ac8-9c6b-c338fc68089e",
                 "tipe": "dibayar",
-                "deskripsi": "Pembayaran tunai sebesar Rp 100.000",
+                "deskripsi": "Pembayaran tunai sebesar Rp 600.000",
                 "data": {
-                    "amount": 100000,
+                    "amount": 600000,
                     "method": "tunai",
                     "newTotal": "600000",
-                    "paymentId": "419364f9-a20c-4525-bb7d-a210258e0a37",
+                    "paymentId": "a76465df-9ec7-40f4-a361-41268b5a80ed",
                     "remaining": "0"
                 },
                 "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
-                "createdAt": "2025-08-09T05:33:23.834Z"
+                "createdAt": "2025-08-13T05:22:20.273Z"
             },
             {
-                "id": "b76b4f28-9ce6-43de-8b7e-563f2085ad58",
-                "tipe": "dibayar",
-                "deskripsi": "Pembayaran tunai sebesar Rp 500.000",
-                "data": {
-                    "amount": 500000,
-                    "method": "tunai",
-                    "newTotal": "500000",
-                    "paymentId": "a474978d-4323-49a4-89f7-c5be4ec3fb8d",
-                    "remaining": "100000"
-                },
-                "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
-                "createdAt": "2025-08-09T05:32:21.497Z"
-            },
-            {
-                "id": "9f422f75-5729-4296-8390-34df17f62d81",
+                "id": "fbbfd6f1-2fdf-447c-9a91-46d4fedc75cd",
                 "tipe": "dibuat",
-                "deskripsi": "Transaksi TXN-20250809-001 dibuat",
+                "deskripsi": "Transaksi TXN-20250813-002 dibuat",
                 "data": {
                     "items": 2,
                     "totalHarga": "600000"
                 },
                 "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
-                "createdAt": "2025-08-09T05:32:11.218Z"
+                "createdAt": "2025-08-13T05:22:07.954Z"
             }
         ]
     },

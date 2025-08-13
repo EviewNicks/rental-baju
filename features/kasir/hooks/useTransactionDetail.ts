@@ -246,6 +246,23 @@ async function transformApiToUI(apiData: TransaksiResponse): Promise<Transaction
           jumlahDiambil: item.jumlahDiambil || 0, // How many items have been picked up
           remainingQuantity: Math.max(0, item.jumlah - (item.jumlahDiambil || 0)), // How many items are left to pick up
         },
+        // CRITICAL FIX: Add missing return status fields
+        statusKembali: item.statusKembali,
+        // Handle optional return fields that may not exist in TypeScript interface
+        ...('totalReturnPenalty' in item && item.totalReturnPenalty !== undefined ? {
+          totalReturnPenalty: item.totalReturnPenalty as number
+        } : {}),
+        ...('conditionBreakdown' in item && item.conditionBreakdown ? {
+          conditionBreakdown: item.conditionBreakdown as Array<{
+            id: string
+            kondisiAkhir: string
+            jumlahKembali: number
+            penaltyAmount: number
+            modalAwalUsed?: number | null
+            createdAt?: string
+            createdBy?: string
+          }>
+        } : {}),
       }
     }),
 

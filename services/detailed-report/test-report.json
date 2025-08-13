@@ -1,28 +1,158 @@
 {
-  "numTotalTests": 1,
+  "numTotalTests": 14,
   "numPassedTests": 0,
   "numFailedTests": 1,
-  "numPendingTests": 0,
-  "startTime": "2025-08-12T15:04:11.294Z",
-  "endTime": "2025-08-12T15:04:14.795Z",
+  "numPendingTests": 13,
+  "startTime": "2025-08-13T06:37:27.599Z",
+  "endTime": "2025-08-13T06:37:34.555Z",
   "testResults": [
     {
-      "testFilePath": "D:\\.work\\rental-software\\features\\kasir\\components\\detail\\__tests__\\ProductDetailCard.simple.test.tsx",
+      "testFilePath": "D:\\.work\\rental-software\\features\\kasir\\components\\detail\\__tests__\\ProductDetailCard.test.tsx",
       "testFileResults": [
         {
           "ancestorTitles": [
-            "ProductDetailCard Simple Test"
+            "ProductDetailCard"
           ],
-          "fullName": "ProductDetailCard Simple Test should render without crashing",
+          "fullName": "ProductDetailCard should render product information correctly",
+          "status": "pending",
+          "title": "should render product information correctly",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "ProductDetailCard"
+          ],
+          "fullName": "ProductDetailCard should not display return information when no return data exists",
+          "status": "pending",
+          "title": "should not display return information when no return data exists",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "ProductDetailCard"
+          ],
+          "fullName": "ProductDetailCard should display return status badge when return data exists",
+          "status": "pending",
+          "title": "should display return status badge when return data exists",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "ProductDetailCard"
+          ],
+          "fullName": "ProductDetailCard should show condition breakdown for multi-condition returns",
+          "status": "pending",
+          "title": "should show condition breakdown for multi-condition returns",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "ProductDetailCard"
+          ],
+          "fullName": "ProductDetailCard should display penalty information correctly",
+          "status": "pending",
+          "title": "should display penalty information correctly",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "ProductDetailCard"
+          ],
+          "fullName": "ProductDetailCard should handle single condition return correctly",
+          "status": "pending",
+          "title": "should handle single condition return correctly",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "ProductDetailCard"
+          ],
+          "fullName": "ProductDetailCard should show mobile toggle button on small screens",
+          "status": "pending",
+          "title": "should show mobile toggle button on small screens",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "ProductDetailCard"
+          ],
+          "fullName": "ProductDetailCard should toggle return details visibility on mobile",
+          "status": "pending",
+          "title": "should toggle return details visibility on mobile",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "ProductDetailCard"
+          ],
+          "fullName": "ProductDetailCard should handle missing return data gracefully",
+          "status": "pending",
+          "title": "should handle missing return data gracefully",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "ProductDetailCard"
+          ],
+          "fullName": "ProductDetailCard should handle zero penalty amounts correctly",
           "status": "failed",
-          "title": "should render without crashing",
+          "title": "should handle zero penalty amounts correctly",
           "failureMessages": [
-            "Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined. You likely forgot to export your component from the file it's defined in, or you might have mixed up default and named imports.\n\nCheck the render method of `ProductDetailCard`.\n    at createFiberFromTypeAndProps (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:4259:28)\n    at createFiberFromElement (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:4273:14)\n    at createChild (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:7297:26)\n    at reconcileChildrenArray (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:7629:25)\n    at reconcileChildFibersImpl (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:7952:30)\n    at D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:8057:33\n    at reconcileChildren (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:8621:13)\n    at beginWork (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:10793:13)\n    at runWithFiberInDEV (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:1522:13)\n    at performUnitOfWork (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:15140:22)\n    at workLoopSync (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:14956:41)\n    at renderRootSync (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:14936:11)\n    at performWorkOnRoot (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:14462:44)\n    at performWorkOnRootViaSchedulerTask (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:16216:7)\n    at flushActQueue (D:\\.work\\rental-software\\node_modules\\react\\cjs\\react.development.js:566:34)\n    at process.env.NODE_ENV.exports.act (D:\\.work\\rental-software\\node_modules\\react\\cjs\\react.development.js:860:10)\n    at D:\\.work\\rental-software\\node_modules\\@testing-library\\react\\dist\\act-compat.js:47:25\n    at renderRoot (D:\\.work\\rental-software\\node_modules\\@testing-library\\react\\dist\\pure.js:190:26)\n    at render (D:\\.work\\rental-software\\node_modules\\@testing-library\\react\\dist\\pure.js:292:10)\n    at Object.<anonymous> (D:\\.work\\rental-software\\features\\kasir\\components\\detail\\__tests__\\ProductDetailCard.simple.test.tsx:42:33)\n    at Promise.finally.completed (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1559:28)\n    at new Promise (<anonymous>)\n    at callAsyncCircusFn (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1499:10)\n    at _callCircusTest (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1009:40)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at _runTest (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:949:3)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:839:13)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at run (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:757:3)\n    at runAndTransformResultsToJestFormat (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1920:21)\n    at jestAdapter (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\runner.js:101:19)\n    at runTestInternal (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\index.js:275:16)\n    at runTest (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\index.js:343:7)"
+            "Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined. You likely forgot to export your component from the file it's defined in, or you might have mixed up default and named imports.\n\nCheck the render method of `ProductDetailCard`.\n    at createFiberFromTypeAndProps (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:4259:28)\n    at createFiberFromElement (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:4273:14)\n    at createChild (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:7297:26)\n    at reconcileChildrenArray (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:7629:25)\n    at reconcileChildFibersImpl (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:7952:30)\n    at D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:8057:33\n    at reconcileChildren (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:8621:13)\n    at beginWork (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:10793:13)\n    at runWithFiberInDEV (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:1522:13)\n    at performUnitOfWork (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:15140:22)\n    at workLoopSync (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:14956:41)\n    at renderRootSync (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:14936:11)\n    at performWorkOnRoot (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:14462:44)\n    at performWorkOnRootViaSchedulerTask (D:\\.work\\rental-software\\node_modules\\react-dom\\cjs\\react-dom-client.development.js:16216:7)\n    at flushActQueue (D:\\.work\\rental-software\\node_modules\\react\\cjs\\react.development.js:566:34)\n    at process.env.NODE_ENV.exports.act (D:\\.work\\rental-software\\node_modules\\react\\cjs\\react.development.js:860:10)\n    at D:\\.work\\rental-software\\node_modules\\@testing-library\\react\\dist\\act-compat.js:47:25\n    at renderRoot (D:\\.work\\rental-software\\node_modules\\@testing-library\\react\\dist\\pure.js:190:26)\n    at render (D:\\.work\\rental-software\\node_modules\\@testing-library\\react\\dist\\pure.js:292:10)\n    at Object.<anonymous> (D:\\.work\\rental-software\\features\\kasir\\components\\detail\\__tests__\\ProductDetailCard.test.tsx:209:11)\n    at Promise.finally.completed (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1559:28)\n    at new Promise (<anonymous>)\n    at callAsyncCircusFn (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1499:10)\n    at _callCircusTest (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1009:40)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at _runTest (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:949:3)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:839:13)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at run (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:757:3)\n    at runAndTransformResultsToJestFormat (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1920:21)\n    at jestAdapter (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\runner.js:101:19)\n    at runTestInternal (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\index.js:275:16)\n    at runTest (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\index.js:343:7)"
           ],
-          "duration": 94
+          "duration": 81
+        },
+        {
+          "ancestorTitles": [
+            "ProductDetailCard"
+          ],
+          "fullName": "ProductDetailCard should display pickup status when available",
+          "status": "pending",
+          "title": "should display pickup status when available",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "ProductDetailCard"
+          ],
+          "fullName": "ProductDetailCard should render condition labels correctly",
+          "status": "pending",
+          "title": "should render condition labels correctly",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "ProductDetailCard"
+          ],
+          "fullName": "ProductDetailCard should have proper accessibility attributes",
+          "status": "pending",
+          "title": "should have proper accessibility attributes",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "ReturnStatusBadge"
+          ],
+          "fullName": "ReturnStatusBadge should render different status variants correctly",
+          "status": "pending",
+          "title": "should render different status variants correctly",
+          "failureMessages": [],
+          "duration": null
         }
       ],
-      "failureMessage": "  ● ProductDetailCard Simple Test › should render without crashing\n\n    Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined. You likely forgot to export your component from the file it's defined in, or you might have mixed up default and named imports.\n\n    Check the render method of `ProductDetailCard`.\n\n    \u001b[0m \u001b[90m 40 |\u001b[39m describe(\u001b[32m'ProductDetailCard Simple Test'\u001b[39m\u001b[33m,\u001b[39m () \u001b[33m=>\u001b[39m {\n     \u001b[90m 41 |\u001b[39m   it(\u001b[32m'should render without crashing'\u001b[39m\u001b[33m,\u001b[39m () \u001b[33m=>\u001b[39m {\n    \u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 42 |\u001b[39m     \u001b[36mconst\u001b[39m { container } \u001b[33m=\u001b[39m render(\u001b[33m<\u001b[39m\u001b[33mProductDetailCard\u001b[39m item\u001b[33m=\u001b[39m{mockItem} \u001b[33m/\u001b[39m\u001b[33m>\u001b[39m)\n     \u001b[90m    |\u001b[39m                                 \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n     \u001b[90m 43 |\u001b[39m     expect(container)\u001b[33m.\u001b[39mtoBeInTheDocument()\n     \u001b[90m 44 |\u001b[39m   })\n     \u001b[90m 45 |\u001b[39m })\u001b[0m\n\n      at createFiberFromTypeAndProps (node_modules/react-dom/cjs/react-dom-client.development.js:4259:28)\n      at createFiberFromElement (node_modules/react-dom/cjs/react-dom-client.development.js:4273:14)\n      at createChild (node_modules/react-dom/cjs/react-dom-client.development.js:7297:26)\n      at reconcileChildrenArray (node_modules/react-dom/cjs/react-dom-client.development.js:7629:25)\n      at reconcileChildFibersImpl (node_modules/react-dom/cjs/react-dom-client.development.js:7952:30)\n      at node_modules/react-dom/cjs/react-dom-client.development.js:8057:33\n      at reconcileChildren (node_modules/react-dom/cjs/react-dom-client.development.js:8621:13)\n      at beginWork (node_modules/react-dom/cjs/react-dom-client.development.js:10793:13)\n      at runWithFiberInDEV (node_modules/react-dom/cjs/react-dom-client.development.js:1522:13)\n      at performUnitOfWork (node_modules/react-dom/cjs/react-dom-client.development.js:15140:22)\n      at workLoopSync (node_modules/react-dom/cjs/react-dom-client.development.js:14956:41)\n      at renderRootSync (node_modules/react-dom/cjs/react-dom-client.development.js:14936:11)\n      at performWorkOnRoot (node_modules/react-dom/cjs/react-dom-client.development.js:14462:44)\n      at performWorkOnRootViaSchedulerTask (node_modules/react-dom/cjs/react-dom-client.development.js:16216:7)\n      at flushActQueue (node_modules/react/cjs/react.development.js:566:34)\n      at process.env.NODE_ENV.exports.act (node_modules/react/cjs/react.development.js:860:10)\n      at node_modules/@testing-library/react/dist/act-compat.js:47:25\n      at renderRoot (node_modules/@testing-library/react/dist/pure.js:190:26)\n      at render (node_modules/@testing-library/react/dist/pure.js:292:10)\n      at Object.<anonymous> (features/kasir/components/detail/__tests__/ProductDetailCard.simple.test.tsx:42:33)\n"
+      "failureMessage": "  ● ProductDetailCard › should handle zero penalty amounts correctly\n\n    Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined. You likely forgot to export your component from the file it's defined in, or you might have mixed up default and named imports.\n\n    Check the render method of `ProductDetailCard`.\n\n    \u001b[0m \u001b[90m 207 |\u001b[39m     }\n     \u001b[90m 208 |\u001b[39m     \n    \u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 209 |\u001b[39m     render(\u001b[33m<\u001b[39m\u001b[33mProductDetailCard\u001b[39m item\u001b[33m=\u001b[39m{noPenaltyItem} \u001b[33m/\u001b[39m\u001b[33m>\u001b[39m)\n     \u001b[90m     |\u001b[39m           \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n     \u001b[90m 210 |\u001b[39m     \n     \u001b[90m 211 |\u001b[39m     expect(screen\u001b[33m.\u001b[39mgetByText(\u001b[32m'Detail Kondisi Pengembalian'\u001b[39m))\u001b[33m.\u001b[39mtoBeInTheDocument()\n     \u001b[90m 212 |\u001b[39m     expect(screen\u001b[33m.\u001b[39mqueryByText(\u001b[32m'Informasi Denda Pengembalian'\u001b[39m))\u001b[33m.\u001b[39mnot\u001b[33m.\u001b[39mtoBeInTheDocument()\u001b[0m\n\n      at createFiberFromTypeAndProps (node_modules/react-dom/cjs/react-dom-client.development.js:4259:28)\n      at createFiberFromElement (node_modules/react-dom/cjs/react-dom-client.development.js:4273:14)\n      at createChild (node_modules/react-dom/cjs/react-dom-client.development.js:7297:26)\n      at reconcileChildrenArray (node_modules/react-dom/cjs/react-dom-client.development.js:7629:25)\n      at reconcileChildFibersImpl (node_modules/react-dom/cjs/react-dom-client.development.js:7952:30)\n      at node_modules/react-dom/cjs/react-dom-client.development.js:8057:33\n      at reconcileChildren (node_modules/react-dom/cjs/react-dom-client.development.js:8621:13)\n      at beginWork (node_modules/react-dom/cjs/react-dom-client.development.js:10793:13)\n      at runWithFiberInDEV (node_modules/react-dom/cjs/react-dom-client.development.js:1522:13)\n      at performUnitOfWork (node_modules/react-dom/cjs/react-dom-client.development.js:15140:22)\n      at workLoopSync (node_modules/react-dom/cjs/react-dom-client.development.js:14956:41)\n      at renderRootSync (node_modules/react-dom/cjs/react-dom-client.development.js:14936:11)\n      at performWorkOnRoot (node_modules/react-dom/cjs/react-dom-client.development.js:14462:44)\n      at performWorkOnRootViaSchedulerTask (node_modules/react-dom/cjs/react-dom-client.development.js:16216:7)\n      at flushActQueue (node_modules/react/cjs/react.development.js:566:34)\n      at process.env.NODE_ENV.exports.act (node_modules/react/cjs/react.development.js:860:10)\n      at node_modules/@testing-library/react/dist/act-compat.js:47:25\n      at renderRoot (node_modules/@testing-library/react/dist/pure.js:190:26)\n      at render (node_modules/@testing-library/react/dist/pure.js:292:10)\n      at Object.<anonymous> (features/kasir/components/detail/__tests__/ProductDetailCard.test.tsx:209:11)\n"
     }
   ]
 }

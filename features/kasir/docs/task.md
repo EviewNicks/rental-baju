@@ -1,60 +1,44 @@
-Implementasi FE-RPK-44: Frontend Enhancement untuk Return System  
- Display
+Lakukan root cause analysis sistematis untuk issue "status product tidak
+berubah menjadi 'dikembalikan'" dengan langkah berikut:
 
-KONTEKS & STATUS:
+**CONTEXT:**
 
-- Backend return system (TSK-24/be-rpk-44.md) baru saja
-  diselesaikan (commit a52eb7c)
-- Task fe-rpk-44.md siap untuk implementasi frontend dengan 2 phase  
-  berbeda
-- Phase A (ProductDetailCard) READY - data tersedia di API
-- Phase B (ActivityTimeline) BLOCKED - menunggu backend activity  
-  creation
+- Telah mengimplementasikan hasil analisis dari
+  `features/kasir/docs/analyze.md`
+- Telah melakukan implementasi pada
+  `features/kasir/components/detail/ProductDetailCard.tsx`
+- Issue masih persisten setelah implementasi
+- Referensi visual: `features/kasir/docs/image.png`
+- Log files: `services/client-log.log`, `services/server-log.log`
 
-TUJUAN IMPLEMENTASI:
-Enhance transaction detail UI untuk menampilkan return system
-information yang comprehensive, user-friendly untuk kasir
-operators. Fokus pada ProductDetailCard enhancement yang bisa
-dimulai immediate, dan prepare untuk ActivityTimeline enhancement  
- setelah backend Phase B selesai.
+**ANALISIS YANG DIPERLUKAN:**
 
-DELIVERABLES YANG DIINGINKAN:
+1. **Code Flow Analysis**: Trace lengkap dari UI action hingga database update
+2. **State Management Review**: Periksa React state, context, dan data flow
+3. **API Integration Check**: Validasi request/response antara
+   frontend-backend
+4. **Database Transaction Analysis**: Periksa SQL queries dan transaction
+   handling
+5. **Log Pattern Analysis**: Identifikasi error patterns atau missing
+   operations
 
-1. Working code implementation untuk Phase A components
-2. Implementation plan untuk Phase B (blocked phase)
-3. Testing strategy untuk kedua phases
-4. Integration notes untuk koordinasi dengan backend team
-5. Step-by-step execution plan dengan timeline estimation
+**OUTPUT FORMAT:**
 
-SCOPE & CONSTRAINTS:
+- **Root Cause Summary** (1-2 kalimat)
+- **Technical Details** (code snippets dengan line numbers)
+- **Impact Assessment** (scope dan severity)
+- **Action Plan** (prioritized list dengan effort estimation)
+- **Validation Steps** (cara memverifikasi fix berhasil)
 
-- HANYA implement Phase A (ProductDetailCard) - Phase B menunggu  
-  backend
-- Gunakan existing API data structure yang sudah available
-- Maintain existing UI/UX patterns dan component architecture
-- Follow project's TypeScript dan testing standards
-- Ensure responsive design dan accessibility compliance
+**SUCCESS CRITERIA:**
 
-TECHNICAL REQUIREMENTS:
+- Masalah teridentifikasi dengan confidence level >90%
+- Solusi dapat diimplementasikan dalam <2 hours
+- Fix dapat diverifikasi melalui testing scenario yang jelas
 
-- File path: features/kasir/components/detail/ProductDetailCard.tsx
-- Data source: API sudah menyediakan return data
-  (conditionBreakdown, totalReturnPenalty, statusKembali)
-- UI patterns: Badge, breakdown display, penalty information
-- Testing: Unit tests untuk new components dengan >90% coverage
-- Performance target: <100ms render time untuk return information
+**DELIVERABLES:**
 
-SUCCESS CRITERIA:
-✓ Return status badge displays correctly untuk all status types
-✓ Multi-condition returns show detailed breakdown dengan penalty  
- amounts
-✓ Code passes existing lint/typecheck standards
-✓ Responsive design works across mobile/desktop
-✓ Integration tests ready untuk Phase B coordination
-✓ Documentation updated untuk handoff ke backend team
+- Markdown report dengan sections di atas
+- Code diffs untuk recommended fixes
+- Test scenarios untuk validation
 
-APPROACH:
-Gunakan TodoWrite untuk track implementation progress, implement  
- components incrementally dengan testing, prepare integration points  
- untuk Phase B, dan document dependencies untuk backend
-coordination.
