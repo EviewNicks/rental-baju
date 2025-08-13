@@ -62,7 +62,8 @@
       "Bash(true)",
       "Bash(npx prisma db execute:*)",
       "Bash(npx prisma:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "WebSearch"
     ],
     "deny": []
   }
