@@ -1,86 +1,80 @@
-# FE-RPK-45: Frontend Development - Material Management UI
+# FE-RPK-45: Frontend Development - Material Management UI (Simplified)
 
 **Parent Task**: RPK-45  
 **Phase**: 2 - Frontend Development  
 **Priority**: High  
 **Sprint**: 2-3 (Week 3-6)  
-**Story Points**: 8  
+**Story Points**: 6 (Reduced from 8)  
 **Developer**: Frontend Team  
 **Created**: 2025-08-13  
-**Updated**: 2025-08-14 (Evaluation Completed)  
-**Status**: Revised  
+**Updated**: 2025-08-14 (Simplified & Navigation Pattern Revised)  
+**Status**: Revised - Simplified for MVP  
 **Dependencies**: BE-RPK-45 (Backend APIs must be completed)
 
 ---
 
-## =� Evaluation Summary
+## =� Simplification Summary
 
-**Architecture Compliance**: 7.2/10 (85% pattern alignment)  
-**Key Findings**: Component complexity reduced from 12+ to 6-8 components, 3-layer architecture enforced  
-**Critical Fixes**: Remove unnecessary contexts, consolidate form components, simplify cost calculation  
-**Reference**: See `/docs/evaluation.md` for detailed analysis
+**Scope Reduction**: Advanced features removed to focus on MVP functionality  
+**Navigation Pattern**: Unified Material/Category/Color management with tab-based navigation  
+**Development Effort**: Reduced from 8 to 6 story points (25% reduction)  
+**Architecture Compliance**: Consistent page-based pattern across all management features  
+**Reference**: See `/docs/analyze.md` for detailed user flow analysis
 
 ---
 
 ## =� Phase Overview
 
-**Focus**: User interface development for Material Management System with enhanced product creation workflow.
+**Focus**: Simplified Material Management System with unified navigation pattern for Material, Category, and Color management.
 
-**Objective**: Build intuitive, responsive UI components that integrate seamlessly with backend APIs and provide excellent user experience for material-based product management.
+**Objective**: Build intuitive, consistent UI components that integrate seamlessly with backend APIs and provide excellent user experience with reduced complexity for MVP.
 
 **Key Deliverables**:
-- Complete Material and ProductType management interfaces
-- Enhanced Product creation form with cost calculation
-- Cost breakdown displays and reporting components
+- Unified Material/Category/Color management page with tab navigation
+- Core Material CRUD operations (simplified scope)
+- ProductType integration with basic cost calculation
+- Enhanced Product creation form with material workflow
 - Mobile-responsive design with accessibility compliance
-- Comprehensive E2E testing for user workflows
+- Focused E2E testing for core user workflows
+
+**Removed from MVP Scope**:
+- Price History Tracking functionality
+- Bulk Import operations
+- Advanced cost visualization and reporting
+- Complex audit trail systems
 
 ---
 
 ## <� Sprint Breakdown
 
-### Sprint 2: Material & ProductType UI (Week 3-4)
-**Story Points**: 5
+### Sprint 2: Unified Management Page & Core Material CRUD (Week 3-4)
+**Story Points**: 3
 
-#### Material Management Components
+#### Unified Management Page with Tab Navigation
 **Tasks**:
-- [ ] **[FE-001]** Create MaterialForm component for CRUD operations
-- [ ] **[FE-002]** Build MaterialList with search, filter, and pagination
-- [ ] **[FE-003]** Develop MaterialManagement main page layout
-- [ ] **[FE-004]** Add PriceHistoryModal for material price tracking
-- [ ] **[FE-005]** Implement MaterialImportModal for bulk operations
+- [ ] **[FE-001]** Create ProductManagementPage with Material/Category/Color tabs
+- [ ] **[FE-002]** Implement tab navigation with URL hash routing
+- [ ] **[FE-003]** Migrate existing Category and Color management to tabs
+- [ ] **[FE-004]** Build MaterialTab component with core CRUD operations
+- [ ] **[FE-005]** Create MaterialForm component (simplified, no price history)
 
 **Acceptance Criteria**:
+- Single page accessible at `/producer/manage-product/materials`
+- Tab navigation between Material, Category, and Color management
+- URL hash routing preserves tab state on refresh
+- Consistent UI patterns across all three tabs
 - Material CRUD operations work seamlessly with backend APIs
 - Real-time search and filtering with debounce optimization
 - Responsive design works on mobile, tablet, and desktop
-- Price history display with clear change tracking
-- Bulk import with CSV/Excel file validation
 - Loading states and error handling for all operations
-
-#### ProductType Management Components
-**Tasks**:
-- [ ] **[FE-006]** Create ProductTypeForm with material selection
-- [ ] **[FE-007]** Build ProductTypeList with cost information display
-- [ ] **[FE-008]** Develop ProductTypeManagement page
-- [ ] **[FE-009]** Add CostCalculator for real-time cost preview
-- [ ] **[FE-010]** Create MaterialSelector with search functionality
-
-**Acceptance Criteria**:
-- ProductType creation links materials with processing costs
-- Real-time cost calculation preview as user inputs data
-- Material selector with search and availability validation
-- Cost breakdown visualization with percentage displays
-- Form validation prevents invalid cost configurations
-- Responsive design with mobile-first approach
 
 #### Hook Development for Data Management
 **Tasks**:
-- [ ] **[FE-011]** Create useMaterials hook following useProducts.ts patterns
-- [ ] **[FE-012]** Develop useCreateMaterial using standard mutation pattern
-- [ ] **[FE-013]** Add useUpdateMaterial with cache invalidation
-- [ ] **[FE-014]** Implement useMaterialPriceHistory hook with conditional fetching
-- [ ] **[FE-015]** Create useProductTypes with material relationships
+- [ ] **[FE-006]** Create useMaterials hook following useProducts.ts patterns
+- [ ] **[FE-007]** Develop useCreateMaterial using standard mutation pattern
+- [ ] **[FE-008]** Add useUpdateMaterial with cache invalidation
+- [ ] **[FE-009]** Create useProductTypes with material relationships
+- [ ] **[FE-010]** Implement MaterialSelector component with search functionality
 
 **Acceptance Criteria**:
 - Follow existing useProducts.ts hook patterns for consistency
@@ -90,55 +84,100 @@
 - Error handling delegated to UI layer (no optimistic updates for MVP)
 - Conditional fetching with enabled: !!id pattern
 
-### Sprint 3: Enhanced Product Creation (Week 5-6)
+### Sprint 3: ProductType Integration & Enhanced Product Creation (Week 5-6)
 **Story Points**: 3
+
+#### ProductType Management Components
+**Tasks**:
+- [ ] **[FE-011]** Create ProductTypeForm with material selection
+- [ ] **[FE-012]** Build ProductTypeList with cost information display
+- [ ] **[FE-013]** Add ProductType tab to unified management page
+- [ ] **[FE-014]** Implement basic cost calculation for ProductTypes
+- [ ] **[FE-015]** Create CostBreakdownDisplay component (simplified)
+
+**Acceptance Criteria**:
+- ProductType creation links materials with processing costs
+- Basic cost calculation preview as user inputs data
+- Material selector with search and availability validation
+- Simple cost breakdown display (no complex charts)
+- Form validation prevents invalid cost configurations
+- Responsive design with mobile-first approach
 
 #### Enhanced Product Form Components
 **Tasks**:
 - [ ] **[FE-016]** Update EnhancedProductForm with material workflow
-- [ ] **[FE-017]** Build CostBreakdownDisplay component
-- [ ] **[FE-018]** Create ProductTypeSelector with cost preview
-- [ ] **[FE-019]** Add CostOverrideModal for admin users
-- [ ] **[FE-020]** Implement quantity-based cost calculations
+- [ ] **[FE-017]** Create ProductTypeSelector with cost preview
+- [ ] **[FE-018]** Implement quantity-based cost calculations
+- [ ] **[FE-019]** Add basic cost override for admin users
+- [ ] **[FE-020]** Ensure backward compatibility with existing manual product creation
 
 **Acceptance Criteria**:
 - Product creation workflow guides user through material selection
-- Cost breakdown shows material vs processing cost percentages
+- Cost breakdown shows basic material vs processing cost information
 - Real-time cost updates as user changes quantity or product type
-- Admin users can override calculated costs with audit logging
+- Admin users can override calculated costs (simple modal)
 - Backward compatibility with existing manual product creation
 - Form validation ensures data consistency
 
-#### Cost Visualization & Reporting
-**Tasks**:
-- [ ] **[FE-021]** Create cost breakdown charts using Chart.js/Recharts
-- [ ] **[FE-022]** Build cost comparison components
-- [ ] **[FE-023]** Add profit margin calculation displays
-- [ ] **[FE-024]** Implement cost history tracking visualization
-- [ ] **[FE-025]** Create printable cost reports
+---
 
-**Acceptance Criteria**:
-- Interactive charts show cost distribution and trends
-- Cost comparison helps users make informed decisions
-- Profit margin calculations based on selling price
-- Historical cost data displayed in timeline format
-- Export functionality for reports and accounting
-- Mobile-optimized chart displays
+## 🎯 Tab-Based Navigation Architecture
 
-#### State Management & Context
-**Tasks**:
-- [ ] **[FE-026]** Implement MaterialContext for global state
-- [ ] **[FE-027]** Create ProductTypeContext for template management
-- [ ] **[FE-028]** Add cost calculation hooks integration
-- [ ] **[FE-029]** Implement cache invalidation strategies
-- [ ] **[FE-030]** Add global error handling and notifications
+### URL Structure & Routing
+```
+/producer/manage-product/materials
+├── #material (default tab)
+├── #category 
+└── #color
+```
 
-**Acceptance Criteria**:
-- Global state maintains data consistency across components
-- Context providers optimize re-renders with proper memoization
-- Cache invalidation ensures data freshness
-- Error boundaries handle component failures gracefully
-- Toast notifications provide user feedback for all actions
+### Component Architecture
+```
+ProductManagementPage.tsx
+├── TabNavigation.tsx
+├── MaterialTab.tsx
+│   ├── MaterialList.tsx
+│   ├── MaterialForm.tsx
+│   └── MaterialSelector.tsx
+├── CategoryTab.tsx (migrated from modal)
+│   ├── CategoryList.tsx
+│   ├── CategoryForm.tsx
+│   └── CategoryManagement.tsx
+└── ColorTab.tsx (migrated from modal)
+    ├── ColorList.tsx
+    ├── ColorForm.tsx
+    └── ColorManagement.tsx
+```
+
+### Navigation Pattern Consistency
+| **Feature** | **Previous Pattern** | **New Pattern** |
+|-------------|---------------------|-----------------|
+| **Material** | Not implemented | Page-based with tabs |
+| **Category** | Modal overlay | Tab within page |
+| **Color** | Modal overlay | Tab within page |
+| **Product** | Page-based | Unchanged (remains page-based) |
+
+### Hash Routing Implementation
+```typescript
+// useTabNavigation.ts
+export function useTabNavigation() {
+  const [activeTab, setActiveTab] = useState('material')
+  
+  useEffect(() => {
+    const hash = window.location.hash.slice(1)
+    if (['material', 'category', 'color'].includes(hash)) {
+      setActiveTab(hash)
+    }
+  }, [])
+  
+  const switchTab = (tab: string) => {
+    setActiveTab(tab)
+    window.location.hash = tab
+  }
+  
+  return { activeTab, switchTab }
+}
+```
 
 ---
 
@@ -176,41 +215,15 @@ export interface ClientMaterial {
   description?: string
   unit: string
   pricePerUnit: number
-  currentPrice: number
   isActive: boolean
   createdAt: Date | string
   updatedAt: Date | string
   createdBy: string
-  priceHistory?: MaterialPriceHistory[]
 }
 
 // Material with relationships
 export interface Material extends BaseMaterial {
-  priceHistory?: MaterialPriceHistory[]
   productTypes?: ProductType[]
-}
-
-// === MATERIAL PRICE HISTORY ===
-export interface MaterialPriceHistory {
-  id: string
-  materialId: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  oldPrice: any // Prisma Decimal
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  newPrice: any // Prisma Decimal
-  changeReason?: string
-  changedAt: Date
-  changedBy: string
-}
-
-export interface ClientMaterialPriceHistory {
-  id: string
-  materialId: string
-  oldPrice: number
-  newPrice: number
-  changeReason?: string
-  changedAt: Date | string
-  changedBy: string
 }
 
 // === PRODUCT TYPE TYPES ===
@@ -281,7 +294,6 @@ export interface MaterialFormData {
   description?: string
   unit: string
   pricePerUnit: number
-  priceChangeReason?: string // For updates only
 }
 
 export interface ProductTypeFormData {
@@ -337,30 +349,34 @@ export interface EnhancedProductFormData extends ProductFormData {
 
 ---
 
-## <� Revised Component Architecture (3 Layers Max)
+## <� Revised Component Architecture (Simplified & Tab-Based)
 
-**Simplified Structure**: Following evaluation recommendations to reduce complexity
+**Unified Structure**: Consolidating Material, Category, and Color management in single page with tab navigation
 
-### Layer 1: Page Containers (3 Components)
-- **MaterialManagementPage.tsx** - Reuse ProductListPage pattern
-- **MaterialFormPage.tsx** - Reuse ProductFormPage pattern  
-- **EnhancedProductFormPage.tsx** - Extend existing ProductFormPage
+### Layer 1: Main Page Container
+- **ProductManagementPage.tsx** - Main page with tab navigation for Material/Category/Color
+- **TabNavigation.tsx** - Tab switching component with hash routing
 
-### Layer 2: Core Components (3 Components)
-- **MaterialTable.tsx** - Reuse ProductTable pattern
-- **MaterialForm.tsx** - Reuse ProductForm pattern
-- **CostDisplay.tsx** - Simple cost breakdown display
+### Layer 2: Tab Content Components (3 Tabs)
+- **MaterialTab.tsx** - Material management content (new)
+- **CategoryTab.tsx** - Migrated from CategoryManagement modal
+- **ColorTab.tsx** - Migrated from ColorManagement modal
 
-### Layer 3: Shared Utilities (2 Components)
-- **MaterialSelector.tsx** - Simple dropdown/modal
-- **PriceHistoryModal.tsx** - Reuse existing modal patterns
+### Layer 3: Core CRUD Components (Per Tab)
+- **MaterialList.tsx** & **MaterialForm.tsx** - Reuse ProductTable/ProductForm patterns
+- **CategoryList.tsx** & **CategoryForm.tsx** - Existing components (keep as-is)
+- **ColorList.tsx** & **ColorForm.tsx** - Existing components (keep as-is)
+
+### Layer 4: Shared Utilities
+- **MaterialSelector.tsx** - Simple dropdown for ProductType integration
+- **CostDisplay.tsx** - Simple cost breakdown (no complex charts)
 
 ### Key Simplifications Applied
 ```typescript
+// Removed: PriceHistoryModal, MaterialImportModal (advanced features)
 // Removed: MaterialContext, ProductTypeContext (use React Query cache)
-// Merged: ProductTypeForm into MaterialForm
-// Simplified: CostCalculator → CostDisplay (no real-time updates)
-// Consolidated: Multiple specialized components into core patterns
+// Simplified: CostCalculator → CostDisplay (basic display only)
+// Unified: All management features in single page with tabs
 ```
 
 ---
@@ -724,81 +740,74 @@ const CostBreakdownGrid = ({ breakdown }: { breakdown: CostBreakdown }) => (
 
 ---
 
-## = Architecture Alignment Summary
+## = Simplification & Navigation Pattern Summary
 
-**Document Updated**: 2025-08-14 | **Architecture Review**: ⚠️ **REVISED BASED ON EVALUATION**
+**Document Updated**: 2025-08-14 | **Scope**: ⚠️ **SIMPLIFIED FOR MVP + TAB-BASED NAVIGATION**
 
-### ✅ **Critical Improvements Applied**
+### ✅ **Major Changes Applied**
 
-#### **1. Hook Architecture Alignment (HIGH PRIORITY)**
-- Updated hook definitions to follow `useProducts.ts` patterns
-- Implemented simple query key factory (no complex hierarchical keys) 
-- Added standard React Query caching (`staleTime: 2min`, `placeholderData`)
-- Simplified cache invalidation with `queryKeys.all` pattern
-- Removed over-engineered optimistic updates for MVP approach
+#### **1. Feature Scope Reduction (MVP Focus)**
+- **Removed**: Price History Tracking, Bulk Import functionality
+- **Removed**: Advanced cost visualization and complex reporting
+- **Removed**: Complex audit trail systems and price change tracking
+- **Retained**: Core Material CRUD, ProductType integration, Enhanced Product creation
+- **Result**: 25% reduction in development effort (8 → 6 story points)
 
-#### **2. API Integration Standardization (HIGH PRIORITY)**
-- Aligned with existing `api.ts` structure and patterns
-- Added `materialApi` and `productTypeApi` following consistent patterns
-- Used existing `buildQueryParams`, `handleResponse` helpers
-- Maintained JSON for simple data, FormData only when needed
-- Consistent error handling delegation to UI layer
+#### **2. Navigation Pattern Unification (Consistency)**
+- **Changed**: Material management from page-based to tab-based
+- **Changed**: Category and Color management from modal-based to tab-based
+- **Created**: Single unified page `/producer/manage-product/materials` with 3 tabs
+- **Added**: Hash routing for tab state preservation
+- **Result**: Consistent UI patterns across all management features
 
-#### **3. Type System Consistency (HIGH PRIORITY)**
-- Followed existing type conventions from `/features/manage-product/types/index.ts`
-- Implemented Base/Client/Full type patterns for Material and ProductType
-- Maintained Decimal (server-side) vs number (client-side) separation
-- Added proper type guards and validation functions
-- Extended existing ProductFormData with EnhancedProductFormData
+#### **3. Component Architecture Simplification**
+- **Unified**: Material/Category/Color management in single page
+- **Simplified**: Material components follow existing ProductTable/ProductForm patterns
+- **Migrated**: Existing Category/Color modal components to tab containers
+- **Consolidated**: Shared navigation and validation patterns
+- **Result**: Better code maintainability and user experience consistency
 
-#### **4. Component Interface Simplification (HIGH PRIORITY)**
-- Simplified all component interfaces for MVP approach
-- Reduced complexity while maintaining functionality
-- Followed existing component patterns (ProductFormPage, ProductTable, etc.)
-- Removed over-engineered features (real-time updates, complex visualizations)
-- Maintained backward compatibility with existing flows
+### 📊 **Before vs After Comparison**
 
-#### **5. Testing Strategy Alignment (MEDIUM PRIORITY)**
-- Updated examples to follow existing project testing conventions
-- Added MSW integration patterns following project structure
-- Used Indonesian labels and proper test data patterns
-- Aligned E2E structure with existing Playwright test organization
-- Co-located unit tests following existing patterns
+| **Aspect** | **Before (Original Scope)** | **After (Simplified MVP)** |
+|------------|---------------------------|---------------------------|
+| **Story Points** | 8 points | 6 points (25% reduction) |
+| **Advanced Features** | Price History + Bulk Import | Core CRUD only |
+| **Navigation Pattern** | Mixed (page + modal) | Unified (tab-based) |
+| **Component Count** | 12+ components | 8 components |
+| **Testing Complexity** | Complex multi-flow | Focused core workflows |
+| **Development Risk** | High (complex features) | Low (proven patterns) |
 
-#### **6. Design System Integration (MEDIUM PRIORITY)**
-- Updated to use existing Tailwind conventions
-- Removed custom CSS in favor of existing component library patterns
-- Followed existing responsive breakpoints and spacing
-- Used existing color scheme and badge patterns
-- Simplified responsive design implementation
+### 🎯 **Development Benefits**
 
-### 📊 **Architecture Compliance Metrics**
+- **Faster Implementation**: 25% reduction in development time
+- **Consistent UX**: All management features use same navigation pattern  
+- **Lower Risk**: Removed complex features that could delay MVP
+- **Better Maintainability**: Unified architecture across all management features
+- **Easier Testing**: Focused test coverage on core functionality
 
-| **Aspect** | **Before** | **After** | **Status** |
-|------------|------------|-----------|------------|
-| Hook Patterns | Custom complex patterns | useProducts.ts alignment | ✅ **100% Aligned** |
-| API Structure | Over-engineered adapters | Simple api.ts extension | ✅ **100% Aligned** |
-| Type System | Inconsistent patterns | Existing convention compliance | ✅ **100% Aligned** |
-| Component Complexity | Over-engineered interfaces | MVP-focused simplification | ✅ **Simplified** |
-| Testing Patterns | Generic examples | Project-specific patterns | ✅ **100% Aligned** |
-| Design System | Custom Tailwind config | Existing pattern reuse | ✅ **100% Aligned** |
+### 📋 **Implementation Roadmap**
 
-### 🎯 **Development Impact**
+#### **Phase 1: Tab Infrastructure (Week 1)**
+1. Create ProductManagementPage with tab navigation
+2. Implement hash routing for tab switching
+3. Migrate Category/Color management to tab containers
 
-- **Reduced Development Time**: 30-40% faster implementation due to pattern reuse
-- **Improved Maintainability**: Consistent patterns across entire codebase
-- **Better Team Alignment**: Clear architectural guidance for development team
-- **Risk Mitigation**: Eliminated over-engineering risks with proven patterns
-- **Quality Assurance**: Built-in quality through existing tested patterns
+#### **Phase 2: Material CRUD (Week 2-3)**
+1. Build MaterialTab with core CRUD operations
+2. Implement useMaterials hooks following existing patterns
+3. Create MaterialForm and MaterialList components
 
-### 📋 **Next Steps for Development Team**
+#### **Phase 3: ProductType Integration (Week 4-5)**
+1. Add ProductType management with basic cost calculation
+2. Integrate material selection in ProductType creation
+3. Update Enhanced Product form with material workflow
 
-1. **Implementation Priority**: Start with Material management components (Sprint 2)
-2. **Pattern Reference**: Use existing `/features/manage-product/` components as templates
-3. **Testing Approach**: Follow co-located testing with MSW for integration
-4. **Type Safety**: Implement types in `/features/manage-product/types/index.ts`
-5. **API Extension**: Add new APIs to existing `/features/manage-product/api.ts`
+#### **Phase 4: Testing & Polish (Week 6)**
+1. Comprehensive E2E testing for core workflows
+2. Performance optimization and accessibility compliance
+3. Documentation and handoff preparation
 
 ---
 
-*This document now provides 100% architectural alignment with the current system. All patterns follow established conventions and support rapid, maintainable MVP development.*
+*This document now provides a realistic, simplified scope for MVP development with consistent navigation patterns across all management features.*
