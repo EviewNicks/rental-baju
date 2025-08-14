@@ -31,6 +31,11 @@ model Product {
   size            String?       // Ukuran: S, M, L, XL, XXL atau custom
   colorId         String?       // Relasi ke Color model
   color           Color?        @relation(fields: [colorId], references: [id])
+  // Material Management - RPK-45 (NULLABLE untuk backward compatibility)
+  materialId      String?       // Relasi ke Material model (optional)
+  material        Material?     @relation(fields: [materialId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  materialCost    Decimal?      @db.Decimal(10, 2) // Auto-calculated: pricePerUnit * materialQuantity
+  materialQuantity Int?         // Quantity of material used
   status          ProductStatus @default(AVAILABLE)
   isActive        Boolean       @default(true)
   createdAt       DateTime      @default(now())
@@ -50,6 +55,9 @@ model Product {
   @@index([rentedStock])
   // Performance index for penalty calculation
   @@index([id, modalAwal], name: "idx_product_penalty_calc")
+  // Material Management indexes - RPK-45
+  @@index([materialId])
+  @@index([materialCost], name: "idx_product_material_cost") // Only non-null values
 }
 
 model Category {
@@ -78,6 +86,25 @@ model Color {
   @@index([createdBy])
   @@index([isActive])
   @@map("colors")
+}
+
+// Material Management - RPK-45
+model Material {
+  id           String    @id @default(uuid())
+  name         String    // Material name (e.g., "Cotton Fabric", "Polyester", "Button")
+  pricePerUnit Decimal   @db.Decimal(10, 2) // Price per unit
+  unit         String    // Unit of measurement (meter, piece, kg, etc)
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  createdBy    String    // User ID dari Clerk
+  
+  // Relations
+  products     Product[] // Products using this material
+  
+  @@index([isActive, name], name: "idx_material_active_name")
+  @@index([createdBy])
+  @@map("materials")
 }
 
 enum ProductStatus {

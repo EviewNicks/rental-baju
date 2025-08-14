@@ -99,6 +99,9 @@ export async function POST(request: NextRequest) {
     const categoryId = formData.get('categoryId') as string
     const size = (formData.get('size') as string) || undefined
     const colorId = (formData.get('colorId') as string) || undefined
+    // Material Management fields - RPK-45
+    const materialId = (formData.get('materialId') as string) || undefined
+    const materialQuantityStr = (formData.get('materialQuantity') as string) || undefined
     const image = formData.get('image') as File | null
 
     // Convert string to numbers
@@ -106,6 +109,8 @@ export async function POST(request: NextRequest) {
     const currentPrice = parseFloat(currentPriceStr) // ✅ Fixed: use currentPrice instead of hargaSewa
     const quantity = parseInt(quantityStr)
     const rentedStock = parseInt(rentedStockStr) // ✅ Added rentedStock parsing
+    // Material Management - RPK-45
+    const materialQuantity = materialQuantityStr ? parseInt(materialQuantityStr) : undefined
 
     // Validate required fields and number conversions
     if (!code || !name || !categoryId) {
@@ -127,6 +132,32 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Validate materialQuantity if provided
+    if (materialQuantityStr && (isNaN(materialQuantity!) || materialQuantity! <= 0)) {
+      return NextResponse.json(
+        {
+          error: {
+            message: 'Material quantity harus berupa angka positif',
+            code: 'VALIDATION_ERROR',
+          },
+        },
+        { status: 400 },
+      )
+    }
+
+    // Validate materialId and materialQuantity consistency
+    if (materialId && !materialQuantity) {
+      return NextResponse.json(
+        {
+          error: {
+            message: 'Material quantity wajib diisi jika material dipilih',
+            code: 'VALIDATION_ERROR',
+          },
+        },
+        { status: 400 },
+      )
+    }
+
     // Prepare request data
     const createRequest = {
       code,
@@ -139,6 +170,9 @@ export async function POST(request: NextRequest) {
       categoryId,
       size,
       colorId,
+      // Material Management fields - RPK-45
+      materialId,
+      materialQuantity,
       image,
     }
 
