@@ -1,52 +1,32 @@
-Saya perlu melakukan re-evaluasi dan simplifikasi untuk task RPK-45
-berdasarkan analisis troubleshoot.md. Tolong lakukan evaluasi komprehensif  
- pada dokumentasi berikut:
+Berdasarkan update dokumentasi Architecture simplification di
+features\manage-product\docs\task\RPK-45\Be-rpk-45.md, saya perlu mengimplementasikan  
+ perubahan backend untuk task RPK-45.
 
-Files to evaluate:
+Yang dibutuhkan:
 
-- features/manage-product/docs/task/RPK-45/RPK-45.md (main task)
-- features/manage-product/docs/task/RPK-45/be-rpk-45.md (backend spec)
-- features/manage-product/docs/task/RPK-45/fe-rpk-45.md (frontend spec)
-
-Focus Area: Material Field Simplification
-
-Specific Changes Required:
-
-1. Material Model Simplification:
-
-
-    - Remove type field (hanya fokus kain/fabric)
-    - Standardize unit field to "meter" with decimal support (e.g., 1.5 meter)
-    - Remove supplier field
-    - Remove description field
-    - Remove isActive field
-
+1. Analisis commit 812a9e7 dan 78b85df untuk memahami perubahan yang sudah dilakukan
+2. Review dokumentasi task terbaru untuk memahami arsitektur yang disederhanakan
+3. Implementasikan perubahan backend sesuai dengan arsitektur baru
+4. Pastikan kompatibilitas dengan frontend yang ada
 
 Deliverables:
 
-1. Updated Backend Schema: Prisma model dengan field yang disederhanakan
-2. Updated Frontend Components: Form dan display components yang sesuai
-3. Updated API Specifications: Endpoints yang disesuaikan dengan model baru
-4. Migration Strategy: Langkah-langkah untuk update existing data
+- Kode backend yang diupdate sesuai arsitektur simplification
+- Validasi bahwa API endpoints masih berfungsi dengan baik
+- Update dokumentasi teknis jika diperlukan
 
+Acceptance Criteria:
 
-Validation Criteria:
+- Backend berjalan tanpa error setelah perubahan
+- Semua existing tests masih pass
+- API responses sesuai dengan kontrak yang ada
 
-- Material model hanya memiliki: name, unit (default: meter), quantity, price
-- Tidak ada reference ke ProductType di manapun
-- API responses tetap konsisten dengan existing frontend expectations
-- Migration script dapat handle existing data
+Mulai dengan analisis commit dan dokumentasi terlebih dahulu, lalu buat rencana
+implementasi yang detail.
 
 ====
 
-Tolong evaluasi dan sederhanakan Material field di RPK-45 docs (RPK-45.md,  
- be-rpk-45.md, fe-rpk-45.md):
-
-Material simplification:
-
-- Remove: type, supplier, description, isActive fields
-- Keep: name, unit (fixed as "meter" with decimal support), quantity, price
-- Remove all ProductType documentation
-
-Output: Updated backend schema, frontend components, API specs, dan migration  
- notes dalam format markdown.
+Tolong implementasikan update backend untuk task RPK-45 berdasarkan Architecture
+simplification yang ada di dokumentasi. Analisis dulu commit 812a9e7 dan 78b85df, lalu  
+ update implementasi backend-nya sesuai arsitektur yang disederhanakan. Pastikan API  
+ masih berfungsi dengan baik setelah perubahan.
