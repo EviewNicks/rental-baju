@@ -19,6 +19,7 @@ const mockPrisma = {
     create: jest.fn(),
     update: jest.fn(),
     updateMany: jest.fn(),
+    delete: jest.fn(),
   },
   product: {
     count: jest.fn(),
@@ -52,11 +53,10 @@ describe('MaterialService', () => {
 
       // Mock: Successful creation
       const mockCreatedMaterial = {
-        id: 'material-123',
+        id: '123e4567-e89b-12d3-a456-426614174000',
         name: 'Test Material',
         pricePerUnit: new Decimal(100.0),
         unit: 'meter',
-        isActive: true,
         createdAt: new Date(),
         updatedAt: new Date(),
         createdBy: mockUserId,
@@ -66,11 +66,10 @@ describe('MaterialService', () => {
       const result = await materialService.createMaterial(validCreateRequest)
 
       expect(result).toEqual({
-        id: 'material-123',
+        id: '123e4567-e89b-12d3-a456-426614174000',
         name: 'Test Material',
         pricePerUnit: 100.0,
         unit: 'meter',
-        isActive: true,
         createdAt: expect.any(Date),
         updatedAt: expect.any(Date),
         createdBy: mockUserId,
@@ -81,7 +80,6 @@ describe('MaterialService', () => {
           name: 'Test Material',
           pricePerUnit: new Decimal(100.0),
           unit: 'meter',
-          isActive: true,
           createdBy: mockUserId,
         },
       })
@@ -92,7 +90,6 @@ describe('MaterialService', () => {
       ;(mockPrisma.material.findFirst as jest.Mock).mockResolvedValue({
         id: 'existing-material',
         name: 'Test Material',
-        isActive: true,
       })
 
       await expect(materialService.createMaterial(validCreateRequest)).rejects.toThrow(
@@ -120,7 +117,7 @@ describe('MaterialService', () => {
   })
 
   describe('updateMaterial', () => {
-    const materialId = 'material-123'
+    const materialId = '123e4567-e89b-12d3-a456-426614174000'
     const validUpdateRequest = {
       name: 'Updated Material',
       pricePerUnit: 150.0,
@@ -135,7 +132,6 @@ describe('MaterialService', () => {
         name: 'Old Material',
         pricePerUnit: new Decimal(100.0),
         unit: 'meter',
-        isActive: true,
         createdAt: new Date(),
         updatedAt: new Date(),
         createdBy: mockUserId,
@@ -152,7 +148,6 @@ describe('MaterialService', () => {
         name: 'Updated Material',
         pricePerUnit: new Decimal(150.0),
         unit: 'kilogram',
-        isActive: true,
         createdAt: new Date(),
         updatedAt: new Date(),
         createdBy: mockUserId,
@@ -166,7 +161,6 @@ describe('MaterialService', () => {
         name: 'Updated Material',
         pricePerUnit: 150.0,
         unit: 'kilogram',
-        isActive: true,
         createdAt: expect.any(Date),
         updatedAt: expect.any(Date),
         createdBy: mockUserId,
@@ -178,8 +172,7 @@ describe('MaterialService', () => {
           name: 'Updated Material',
           pricePerUnit: new Decimal(150.0),
           unit: 'kilogram',
-          isActive: true,
-          updatedAt: expect.any(Date),
+            updatedAt: expect.any(Date),
         },
       })
     })
@@ -188,10 +181,10 @@ describe('MaterialService', () => {
       ;(mockPrisma.material.findUnique as jest.Mock).mockResolvedValue(null)
 
       await expect(
-        materialService.updateMaterial('non-existent-id', validUpdateRequest),
+        materialService.updateMaterial('123e4567-e89b-12d3-a456-426614174999', validUpdateRequest),
       ).rejects.toThrow(NotFoundError)
       await expect(
-        materialService.updateMaterial('non-existent-id', validUpdateRequest),
+        materialService.updateMaterial('123e4567-e89b-12d3-a456-426614174999', validUpdateRequest),
       ).rejects.toThrow('Material tidak ditemukan')
     })
 
@@ -200,7 +193,6 @@ describe('MaterialService', () => {
       ;(mockPrisma.material.findFirst as jest.Mock).mockResolvedValue({
         id: 'other-material-id',
         name: 'Updated Material',
-        isActive: true,
       })
 
       await expect(
@@ -213,7 +205,7 @@ describe('MaterialService', () => {
   })
 
   describe('getMaterialById', () => {
-    const materialId = 'material-123'
+    const materialId = '123e4567-e89b-12d3-a456-426614174000'
 
     it('should return material jika ada', async () => {
       const mockMaterial = {
@@ -221,7 +213,6 @@ describe('MaterialService', () => {
         name: 'Test Material',
         pricePerUnit: new Decimal(100.0),
         unit: 'meter',
-        isActive: true,
         createdAt: new Date(),
         updatedAt: new Date(),
         createdBy: mockUserId,
@@ -235,7 +226,6 @@ describe('MaterialService', () => {
         name: 'Test Material',
         pricePerUnit: 100.0,
         unit: 'meter',
-        isActive: true,
         createdAt: expect.any(Date),
         updatedAt: expect.any(Date),
         createdBy: mockUserId,
@@ -245,41 +235,36 @@ describe('MaterialService', () => {
     it('should throw NotFoundError jika material tidak ada', async () => {
       ;(mockPrisma.material.findUnique as jest.Mock).mockResolvedValue(null)
 
-      await expect(materialService.getMaterialById('non-existent-id')).rejects.toThrow(
+      await expect(materialService.getMaterialById('123e4567-e89b-12d3-a456-426614174999')).rejects.toThrow(
         NotFoundError,
       )
-      await expect(materialService.getMaterialById('non-existent-id')).rejects.toThrow(
+      await expect(materialService.getMaterialById('123e4567-e89b-12d3-a456-426614174999')).rejects.toThrow(
         'Material tidak ditemukan',
       )
     })
   })
 
   describe('deleteMaterial', () => {
-    const materialId = 'material-123'
+    const materialId = '123e4567-e89b-12d3-a456-426614174000'
 
     beforeEach(() => {
       // Mock: Existing material
       ;(mockPrisma.material.findUnique as jest.Mock).mockResolvedValue({
         id: materialId,
         name: 'Test Material',
-        isActive: true,
       })
     })
 
     it('should delete material successfully jika tidak digunakan', async () => {
       // Mock: No products using this material
       ;(mockPrisma.product.count as jest.Mock).mockResolvedValue(0)
-      ;(mockPrisma.material.update as jest.Mock).mockResolvedValue({})
+      ;(mockPrisma.material.delete as jest.Mock).mockResolvedValue({})
 
       const result = await materialService.deleteMaterial(materialId)
 
       expect(result).toBe(true)
-      expect(mockPrisma.material.update).toHaveBeenCalledWith({
+      expect(mockPrisma.material.delete).toHaveBeenCalledWith({
         where: { id: materialId },
-        data: {
-          isActive: false,
-          updatedAt: expect.any(Date),
-        },
       })
     })
 
@@ -298,7 +283,7 @@ describe('MaterialService', () => {
     it('should throw NotFoundError jika material tidak ada', async () => {
       ;(mockPrisma.material.findUnique as jest.Mock).mockResolvedValue(null)
 
-      await expect(materialService.deleteMaterial('non-existent-id')).rejects.toThrow(
+      await expect(materialService.deleteMaterial('123e4567-e89b-12d3-a456-426614174999')).rejects.toThrow(
         NotFoundError,
       )
     })
@@ -311,7 +296,6 @@ describe('MaterialService', () => {
         name: 'Material 1',
         pricePerUnit: new Decimal(100.0),
         unit: 'meter',
-        isActive: true,
         createdAt: new Date(),
         updatedAt: new Date(),
         createdBy: mockUserId,
@@ -321,7 +305,6 @@ describe('MaterialService', () => {
         name: 'Material 2',
         pricePerUnit: new Decimal(200.0),
         unit: 'kilogram',
-        isActive: true,
         createdAt: new Date(),
         updatedAt: new Date(),
         createdBy: mockUserId,
@@ -364,8 +347,7 @@ describe('MaterialService', () => {
 
       expect(mockPrisma.material.findMany).toHaveBeenCalledWith({
         where: {
-          isActive: true,
-          OR: [
+            OR: [
             { name: { contains: 'Material 1', mode: 'insensitive' } },
             { unit: { contains: 'Material 1', mode: 'insensitive' } },
           ],
@@ -386,8 +368,7 @@ describe('MaterialService', () => {
           name: 'A Material',
           pricePerUnit: new Decimal(100.0),
           unit: 'meter',
-          isActive: true,
-          createdAt: new Date(),
+            createdAt: new Date(),
           updatedAt: new Date(),
           createdBy: mockUserId,
         },
@@ -396,8 +377,7 @@ describe('MaterialService', () => {
           name: 'B Material',
           pricePerUnit: new Decimal(200.0),
           unit: 'kilogram',
-          isActive: true,
-          createdAt: new Date(),
+            createdAt: new Date(),
           updatedAt: new Date(),
           createdBy: mockUserId,
         },
@@ -412,7 +392,7 @@ describe('MaterialService', () => {
       expect(result[1].name).toBe('B Material')
 
       expect(mockPrisma.material.findMany).toHaveBeenCalledWith({
-        where: { isActive: true },
+        where: {},
         orderBy: { name: 'asc' },
       })
     })

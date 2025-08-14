@@ -11,13 +11,13 @@ import { Decimal } from '@prisma/client/runtime/library'
 
 /**
  * Base Material interface (server-side dengan Decimal)
+ * Ultra-simplified schema - only 4 core fields + system fields
  */
 export interface BaseMaterial {
   id: string
   name: string
   pricePerUnit: Decimal
   unit: string
-  isActive: boolean
   createdAt: Date
   updatedAt: Date
   createdBy: string
@@ -25,13 +25,13 @@ export interface BaseMaterial {
 
 /**
  * Material interface (client-side dengan number)
+ * Ultra-simplified schema - only 4 core fields + system fields
  */
 export interface Material {
   id: string
   name: string
   pricePerUnit: number // Client-side number
   unit: string
-  isActive: boolean
   createdAt: Date
   updatedAt: Date
   createdBy: string
@@ -52,22 +52,22 @@ export interface CreateMaterialRequest {
 
 /**
  * Update Material Request (API payload)
+ * Ultra-simplified - no isActive field
  */
 export interface UpdateMaterialRequest {
   name?: string
   pricePerUnit?: number
   unit?: string
-  isActive?: boolean
 }
 
 /**
  * Material Query Parameters
+ * Ultra-simplified - no isActive filtering
  */
 export interface MaterialQueryParams {
   page?: number
   limit?: number
   search?: string
-  isActive?: boolean
   unit?: string | string[]
 }
 

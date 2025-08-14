@@ -22,13 +22,12 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Get query parameters
+    // Get query parameters (ultra-simplified - no isActive filtering)
     const { searchParams } = new URL(request.url)
     const query = {
       page: parseInt(searchParams.get('page') || '1'),
       limit: parseInt(searchParams.get('limit') || '10'),
       search: searchParams.get('search') || undefined,
-      isActive: searchParams.get('isActive') !== 'false', // default true
       unit: searchParams.getAll('unit').length > 0 ? searchParams.getAll('unit') : undefined,
     }
 

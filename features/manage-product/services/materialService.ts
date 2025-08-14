@@ -40,7 +40,6 @@ export class MaterialService {
           equals: validatedData.name,
           mode: 'insensitive', // Case-insensitive check
         },
-        isActive: true,
       },
     })
 
@@ -54,7 +53,6 @@ export class MaterialService {
         name: validatedData.name,
         pricePerUnit: new Decimal(validatedData.pricePerUnit),
         unit: validatedData.unit,
-        isActive: true,
         createdBy: this.userId,
       },
     })
@@ -75,7 +73,6 @@ export class MaterialService {
     const existingMaterial = await this.prisma.material.findUnique({
       where: {
         id: validatedId,
-        isActive: true,
       },
     })
 
@@ -91,7 +88,6 @@ export class MaterialService {
             equals: validatedData.name,
             mode: 'insensitive',
           },
-          isActive: true,
           id: {
             not: validatedId,
           },
@@ -111,7 +107,6 @@ export class MaterialService {
     // Add fields with proper type conversion
     if (validatedData.name !== undefined) updateData.name = validatedData.name
     if (validatedData.unit !== undefined) updateData.unit = validatedData.unit
-    if (validatedData.isActive !== undefined) updateData.isActive = validatedData.isActive
 
     // Convert number to Decimal for monetary fields
     if (validatedData.pricePerUnit !== undefined) {
@@ -133,12 +128,10 @@ export class MaterialService {
   async getMaterials(query: MaterialQueryParams): Promise<MaterialListResponse> {
     // Validate and parse query parameters
     const validatedQuery = materialQuerySchema.parse(query)
-    const { page, limit, search, isActive, unit } = validatedQuery
+    const { page, limit, search, unit } = validatedQuery
 
     // Build where clause
-    const where: Record<string, unknown> = {
-      isActive: isActive ?? true,
-    }
+    const where: Record<string, unknown> = {}
 
     // Handle unit filtering (support multiple values)
     if (unit) {
@@ -200,7 +193,6 @@ export class MaterialService {
     const material = await this.prisma.material.findUnique({
       where: {
         id: validatedId,
-        isActive: true,
       },
     })
 
@@ -212,7 +204,7 @@ export class MaterialService {
   }
 
   /**
-   * Soft delete a material
+   * Delete a material (hard delete - ultra-simplified)
    */
   async deleteMaterial(id: string): Promise<boolean> {
     // Validate input
@@ -222,7 +214,6 @@ export class MaterialService {
     const existingMaterial = await this.prisma.material.findUnique({
       where: {
         id: validatedId,
-        isActive: true,
       },
     })
 
@@ -234,7 +225,6 @@ export class MaterialService {
     const productsUsingMaterial = await this.prisma.product.count({
       where: {
         materialId: validatedId,
-        isActive: true,
       },
     })
 
@@ -244,26 +234,20 @@ export class MaterialService {
       )
     }
 
-    // Soft delete
-    await this.prisma.material.update({
+    // Hard delete (ultra-simplified approach)
+    await this.prisma.material.delete({
       where: { id: validatedId },
-      data: {
-        isActive: false,
-        updatedAt: new Date(),
-      },
     })
 
     return true
   }
 
   /**
-   * Get active materials for dropdown/selection purposes
+   * Get all materials for dropdown/selection purposes (ultra-simplified)
    */
   async getActiveMaterials(): Promise<Material[]> {
     const materials = await this.prisma.material.findMany({
-      where: {
-        isActive: true,
-      },
+      where: {},
       orderBy: {
         name: 'asc',
       },
@@ -284,7 +268,6 @@ export class MaterialService {
     const existingMaterial = await this.prisma.material.findUnique({
       where: {
         id: validatedId,
-        isActive: true,
       },
     })
 
@@ -310,7 +293,6 @@ export class MaterialService {
           materialQuantity: {
             not: null,
           },
-          isActive: true,
         },
         data: {
           materialCost: new Decimal(newPrice), // This will be multiplied by quantity in a proper implementation
@@ -330,6 +312,7 @@ export class MaterialService {
 
   /**
    * Convert Prisma material result to application Material type
+   * Ultra-simplified - no isActive field
    */
   private convertPrismaMaterialToMaterial(prismaMaterial: Record<string, unknown>): Material {
     return {
@@ -337,7 +320,6 @@ export class MaterialService {
       name: prismaMaterial.name as string,
       pricePerUnit: Number(prismaMaterial.pricePerUnit as Decimal), // Convert Decimal to number
       unit: prismaMaterial.unit as string,
-      isActive: prismaMaterial.isActive as boolean,
       createdAt: prismaMaterial.createdAt as Date,
       updatedAt: prismaMaterial.updatedAt as Date,
       createdBy: prismaMaterial.createdBy as string,

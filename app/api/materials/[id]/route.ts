@@ -3,7 +3,7 @@
  * 
  * GET /api/materials/[id] - Mendapatkan material berdasarkan ID
  * PUT /api/materials/[id] - Update material berdasarkan ID  
- * DELETE /api/materials/[id] - Soft delete material berdasarkan ID
+ * DELETE /api/materials/[id] - Delete material berdasarkan ID (hard delete - ultra-simplified)
  */
 
 import { NextRequest, NextResponse } from 'next/server'

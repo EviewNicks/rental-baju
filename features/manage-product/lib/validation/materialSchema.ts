@@ -60,12 +60,12 @@ export const createMaterialSchema = z.object({
 
 /**
  * Update Material Schema
+ * Ultra-simplified - no isActive field
  */
 export const updateMaterialSchema = z.object({
   name: materialNameSchema.optional(),
   pricePerUnit: pricePerUnitSchema.optional(),
   unit: unitSchema.optional(),
-  isActive: z.boolean().optional(),
 })
 
 /**
@@ -81,6 +81,7 @@ export const materialParamsSchema = z.object({
 
 /**
  * Material Query Schema
+ * Ultra-simplified - no isActive filtering
  */
 export const materialQuerySchema = z.object({
   page: z
@@ -99,9 +100,6 @@ export const materialQuerySchema = z.object({
     .max(100, 'Search maksimal 100 karakter')
     .trim()
     .optional(),
-  isActive: z
-    .boolean()
-    .default(true),
   unit: z
     .union([z.string(), z.array(z.string())])
     .optional(),
