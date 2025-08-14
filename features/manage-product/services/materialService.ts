@@ -327,41 +327,6 @@ export class MaterialService {
     return this.convertPrismaMaterialToMaterial(result)
   }
 
-  /**
-   * Calculate cost untuk given material dan quantity
-   */
-  async calculateMaterialCost(materialId: string, quantity: number): Promise<{
-    materialId: string;
-    materialName: string;
-    pricePerUnit: number;
-    unit: string;
-    quantity: number;
-    totalCost: number;
-  }> {
-    // Validate input
-    if (!materialId || typeof materialId !== 'string') {
-      throw new Error('Material ID tidak valid')
-    }
-
-    if (!quantity || typeof quantity !== 'number' || quantity <= 0) {
-      throw new Error('Quantity harus berupa angka positif')
-    }
-
-    // Get material by ID
-    const material = await this.getMaterialById(materialId)
-
-    // Calculate total cost
-    const totalCost = material.pricePerUnit * quantity
-
-    return {
-      materialId: material.id,
-      materialName: material.name,
-      pricePerUnit: material.pricePerUnit,
-      unit: material.unit,
-      quantity,
-      totalCost,
-    }
-  }
 
   /**
    * Convert Prisma material result to application Material type

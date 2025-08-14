@@ -377,58 +377,6 @@ describe('MaterialService', () => {
     })
   })
 
-  describe('calculateMaterialCost', () => {
-    const materialId = 'material-123'
-    const mockMaterial = {
-      id: materialId,
-      name: 'Test Material',
-      pricePerUnit: 100.0,
-      unit: 'meter',
-      isActive: true,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      createdBy: mockUserId,
-    }
-
-    beforeEach(() => {
-      // Mock getMaterialById
-      jest.spyOn(materialService, 'getMaterialById').mockResolvedValue(mockMaterial)
-    })
-
-    it('should calculate material cost correctly', async () => {
-      const result = await materialService.calculateMaterialCost(materialId, 5)
-
-      expect(result).toEqual({
-        materialId: materialId,
-        materialName: 'Test Material',
-        pricePerUnit: 100.0,
-        unit: 'meter',
-        quantity: 5,
-        totalCost: 500.0,
-      })
-    })
-
-    it('should throw error untuk invalid materialId', async () => {
-      await expect(materialService.calculateMaterialCost('', 5)).rejects.toThrow(
-        'Material ID tidak valid',
-      )
-      await expect(materialService.calculateMaterialCost(null as any, 5)).rejects.toThrow(
-        'Material ID tidak valid',
-      )
-    })
-
-    it('should throw error untuk invalid quantity', async () => {
-      await expect(materialService.calculateMaterialCost(materialId, 0)).rejects.toThrow(
-        'Quantity harus berupa angka positif',
-      )
-      await expect(materialService.calculateMaterialCost(materialId, -5)).rejects.toThrow(
-        'Quantity harus berupa angka positif',
-      )
-      await expect(
-        materialService.calculateMaterialCost(materialId, null as any),
-      ).rejects.toThrow('Quantity harus berupa angka positif')
-    })
-  })
 
   describe('getActiveMaterials', () => {
     it('should return only active materials ordered by name', async () => {

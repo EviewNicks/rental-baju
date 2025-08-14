@@ -7,8 +7,18 @@
 **Story Points**: 8  
 **Developer**: Frontend Team  
 **Created**: 2025-08-13  
-**Status**: Planning  
+**Updated**: 2025-08-14 (Evaluation Completed)  
+**Status**: Revised  
 **Dependencies**: BE-RPK-45 (Backend APIs must be completed)
+
+---
+
+## =� Evaluation Summary
+
+**Architecture Compliance**: 7.2/10 (85% pattern alignment)  
+**Key Findings**: Component complexity reduced from 12+ to 6-8 components, 3-layer architecture enforced  
+**Critical Fixes**: Remove unnecessary contexts, consolidate form components, simplify cost calculation  
+**Reference**: See `/docs/evaluation.md` for detailed analysis
 
 ---
 
@@ -327,137 +337,30 @@ export interface EnhancedProductFormData extends ProductFormData {
 
 ---
 
-## <� Component Architecture
+## <� Revised Component Architecture (3 Layers Max)
 
-### Material Management Components
+**Simplified Structure**: Following evaluation recommendations to reduce complexity
 
-#### MaterialForm.tsx
+### Layer 1: Page Containers (3 Components)
+- **MaterialManagementPage.tsx** - Reuse ProductListPage pattern
+- **MaterialFormPage.tsx** - Reuse ProductFormPage pattern  
+- **EnhancedProductFormPage.tsx** - Extend existing ProductFormPage
+
+### Layer 2: Core Components (3 Components)
+- **MaterialTable.tsx** - Reuse ProductTable pattern
+- **MaterialForm.tsx** - Reuse ProductForm pattern
+- **CostDisplay.tsx** - Simple cost breakdown display
+
+### Layer 3: Shared Utilities (2 Components)
+- **MaterialSelector.tsx** - Simple dropdown/modal
+- **PriceHistoryModal.tsx** - Reuse existing modal patterns
+
+### Key Simplifications Applied
 ```typescript
-// Simplified MVP interface following existing form patterns
-interface MaterialFormProps {
-  material?: ClientMaterial
-  onSubmit: (data: MaterialFormData) => void
-  onCancel: () => void
-  isLoading?: boolean
-}
-
-// MVP Features (simplified):
-// - Basic form validation with controlled inputs
-// - Price change reason field for updates (conditional)
-// - Material type selection (simple dropdown)
-// - Unit selection from predefined list
-// - Follow existing ProductFormPage patterns for consistency
-```
-
-#### MaterialList.tsx
-```typescript
-// Simplified interface following existing list patterns
-interface MaterialListProps {
-  filters?: MaterialFilters
-  onMaterialSelect?: (material: ClientMaterial) => void
-  selectionMode?: boolean
-}
-
-// MVP Features (simplified):
-// - Basic table view like ProductTable component
-// - Simple search and filter (no advanced filtering)
-// - Server-side pagination using existing patterns
-// - Click to select material (for ProductType creation)
-// - Follow existing SearchFilterBar patterns
-```
-
-#### PriceHistoryModal.tsx
-```typescript
-// Simplified MVP modal following existing modal patterns
-interface PriceHistoryModalProps {
-  materialId: string
-  materialName: string
-  isOpen: boolean
-  onClose: () => void
-}
-
-// MVP Features (simplified):
-// - Simple table displaying price changes chronologically
-// - Show date, old price, new price, reason, changed by
-// - Basic responsive design using existing modal components
-// - No charts initially (can be added later)
-```
-
-### ProductType Management Components
-
-#### ProductTypeForm.tsx
-```typescript
-// Simplified MVP interface following form patterns
-interface ProductTypeFormProps {
-  productType?: ClientProductType
-  onSubmit: (data: ProductTypeFormData) => void
-  onCancel: () => void
-  isLoading?: boolean
-}
-
-// MVP Features (simplified):
-// - Material selection using simple dropdown
-// - Basic cost input fields (processing, labor, overhead)
-// - Simple quantity inputs with validation
-// - Basic cost calculation display (no real-time preview)
-// - Follow existing form validation patterns
-```
-
-#### CostCalculator.tsx
-```typescript
-// Simplified MVP calculator component
-interface CostCalculatorProps {
-  materialPrice: number
-  materialQuantity: number
-  processingCost: number
-  laborCost: number
-  overheadCost: number
-  outputQuantity: number
-  onChange: (calculation: CostBreakdown) => void
-}
-
-// MVP Features (simplified):
-// - Basic calculation: (materialPrice * quantity + processing + labor + overhead) / outputQuantity
-// - Simple display of total cost per unit
-// - Calculate percentages for each cost component
-// - Update on prop changes (not real-time typing)
-```
-
-### Enhanced Product Form Components
-
-#### EnhancedProductForm.tsx
-```typescript
-// Extends existing ProductFormPage with material features
-interface EnhancedProductFormProps {
-  product?: ClientProduct
-  onSubmit: (data: EnhancedProductFormData) => void
-  onCancel: () => void
-  mode: 'create' | 'edit'
-}
-
-// MVP Features (simplified):
-// - Add ProductType selector above existing form
-// - Simple toggle: "Use calculated cost" vs "Manual cost"
-// - When ProductType selected, populate cost automatically
-// - Keep existing ProductFormPage structure
-// - Backward compatibility with existing manual flow
-```
-
-#### CostBreakdownDisplay.tsx
-```typescript
-// Simple cost breakdown display for MVP
-interface CostBreakdownDisplayProps {
-  costBreakdown: CostBreakdown
-  showPercentages?: boolean
-  size?: 'small' | 'medium'
-}
-
-// MVP Features (simplified):
-// - Simple card layout showing cost components
-// - Material cost, processing cost, labor cost, overhead cost
-// - Total cost prominently displayed
-// - Percentage breakdown as text (no charts initially)
-// - Responsive design using existing component patterns
+// Removed: MaterialContext, ProductTypeContext (use React Query cache)
+// Merged: ProductTypeForm into MaterialForm
+// Simplified: CostCalculator → CostDisplay (no real-time updates)
+// Consolidated: Multiple specialized components into core patterns
 ```
 
 ---
@@ -730,167 +633,7 @@ const handleSubmit = async (data: MaterialFormData) => {
 
 ---
 
-## >� Testing Strategy
 
-### Unit Testing (Target: >90% Coverage)
-
-#### Component Tests with Testing Library
-```typescript
-// MaterialForm.test.tsx
-describe('MaterialForm', () => {
-  it('should validate required fields', async () => {
-    render(<MaterialForm onSubmit={jest.fn()} onCancel={jest.fn()} />);
-    
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
-    
-    await waitFor(() => {
-      expect(screen.getByText('Name is required')).toBeInTheDocument();
-      expect(screen.getByText('Price per unit is required')).toBeInTheDocument();
-    });
-  });
-  
-  it('should show price change reason field when updating price', async () => {
-    const material = mockMaterial({ pricePerUnit: 10000 });
-    
-    render(
-      <MaterialForm 
-        material={material}
-        onSubmit={jest.fn()} 
-        onCancel={jest.fn()} 
-      />
-    );
-    
-    fireEvent.change(screen.getByLabelText('Price per unit'), {
-      target: { value: '15000' }
-    });
-    
-    await waitFor(() => {
-      expect(screen.getByLabelText('Price change reason')).toBeInTheDocument();
-    });
-  });
-});
-```
-
-#### Hook Tests
-```typescript
-// useMaterials.test.tsx
-describe('useMaterials', () => {
-  it('should fetch materials with filters', async () => {
-    const mockData = {
-      data: [mockMaterial()],
-      pagination: { page: 1, total: 1 }
-    };
-    
-    jest.spyOn(materialApi, 'getMaterials').mockResolvedValue(mockData);
-    
-    const { result } = renderHook(() => 
-      useMaterials({ type: 'fabric', isActive: true })
-    );
-    
-    await waitFor(() => {
-      expect(result.current.materials).toEqual(mockData.data);
-    });
-    
-    expect(materialApi.getMaterials).toHaveBeenCalledWith({
-      type: 'fabric',
-      isActive: true
-    });
-  });
-});
-```
-
-### Integration Tests
-Using MSW (Mock Service Worker) following existing project patterns:
-
-#### User Workflow Tests
-```typescript
-// material-management.integration.test.tsx
-describe('Material Management Integration', () => {
-  beforeEach(() => {
-    setupMSWHandlers();
-  });
-  
-  it('should complete create material workflow', async () => {
-    render(<MaterialManagement />);
-    
-    // Click create button
-    fireEvent.click(screen.getByRole('button', { name: 'Add Material' }));
-    
-    // Fill form
-    fireEvent.change(screen.getByLabelText('Material name'), {
-      target: { value: 'Cotton Fabric' }
-    });
-    fireEvent.change(screen.getByLabelText('Price per unit'), {
-      target: { value: '15000' }
-    });
-    
-    // Submit
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
-    
-    // Verify success
-    await waitFor(() => {
-      expect(screen.getByText('Material created successfully')).toBeInTheDocument();
-      expect(screen.getByText('Cotton Fabric')).toBeInTheDocument();
-    });
-  });
-});
-```
-
-### E2E Testing with Playwright
-
-#### Complete User Workflows
-```typescript
-// material-to-product.e2e.test.ts
-test.describe('Material to Product Creation Flow', () => {
-  test('should create material, product type, and product', async ({ page }) => {
-    // Login
-    await page.goto('/login');
-    await page.fill('[data-testid="email"]', 'admin@test.com');
-    await page.fill('[data-testid="password"]', 'password');
-    await page.click('[data-testid="login-button"]');
-    
-    // Navigate to materials
-    await page.goto('/producer/materials');
-    
-    // Create material
-    await page.click('[data-testid="add-material"]');
-    await page.fill('[data-testid="material-name"]', 'Test Fabric');
-    await page.fill('[data-testid="price-per-unit"]', '20000');
-    await page.selectOption('[data-testid="material-type"]', 'fabric');
-    await page.click('[data-testid="save-material"]');
-    
-    // Verify material creation
-    await expect(page.locator('text=Test Fabric')).toBeVisible();
-    
-    // Create product type
-    await page.goto('/producer/product-types');
-    await page.click('[data-testid="add-product-type"]');
-    await page.fill('[data-testid="product-type-name"]', 'Test Product Type');
-    await page.click('[data-testid="material-selector"]');
-    await page.click('text=Test Fabric');
-    await page.fill('[data-testid="processing-cost"]', '5000');
-    await page.click('[data-testid="save-product-type"]');
-    
-    // Create product
-    await page.goto('/producer/products');
-    await page.click('[data-testid="add-product"]');
-    await page.click('[data-testid="product-type-selector"]');
-    await page.click('text=Test Product Type');
-    
-    // Verify cost calculation
-    await expect(page.locator('[data-testid="calculated-cost"]')).toContainText('25000');
-    
-    await page.fill('[data-testid="product-name"]', 'Test Product');
-    await page.click('[data-testid="save-product"]');
-    
-    // Verify product creation
-    await expect(page.locator('text=Test Product')).toBeVisible();
-    await expect(page.locator('text=25000')).toBeVisible();
-  });
-});
-```
-
----
 
 ## <� Design System Integration
 
@@ -978,13 +721,12 @@ const CostBreakdownGrid = ({ breakdown }: { breakdown: CostBreakdown }) => (
 - [ ] User feedback collected and incorporated
 - [ ] Documentation complete for handoff to QA
 
----
 
 ---
 
 ## = Architecture Alignment Summary
 
-**Document Updated**: 2025-08-13 | **Architecture Review**: ✅ **COMPLETED**
+**Document Updated**: 2025-08-14 | **Architecture Review**: ⚠️ **REVISED BASED ON EVALUATION**
 
 ### ✅ **Critical Improvements Applied**
 
