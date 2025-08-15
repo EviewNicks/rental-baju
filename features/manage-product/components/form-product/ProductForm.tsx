@@ -14,6 +14,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { FormField } from '@/features/manage-product/components/form-product/FormField'
 import { FormSection } from '@/features/manage-product/components/form-product/FormSection'
 import { ImageUpload } from '@/features/manage-product/components/products/ImageUpload'
+import { MaterialSelector } from '@/features/manage-product/components/material/MaterialSelector'
 import { useColors } from '@/features/manage-product/hooks/useCategories'
 import type { ClientCategory, ClientColor } from '@/features/manage-product/types'
 
@@ -23,6 +24,8 @@ interface ProductFormData {
   categoryId: string
   size?: string
   colorId?: string
+  materialId?: string
+  materialQuantity?: number
   quantity: number
   modalAwal: number
   currentPrice: number
@@ -201,6 +204,16 @@ export function ProductForm({
                 data-testid="product-color-field"
               />
             </div>
+          </FormSection>
+
+          {/* Material Selection (Optional) */}
+          <FormSection title="Material (Opsional)" data-testid="material-section">
+            <MaterialSelector
+              selectedMaterialId={formData.materialId}
+              materialQuantity={formData.materialQuantity}
+              onMaterialChange={(materialId) => onInputChange('materialId', materialId)}
+              onQuantityChange={(quantity) => onInputChange('materialQuantity', quantity)}
+            />
           </FormSection>
 
           {/* Informasi Harga */}

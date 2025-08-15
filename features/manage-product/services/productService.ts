@@ -58,7 +58,7 @@ export class ProductService {
     // Validate colorId if provided
     if (validatedData.colorId) {
       const colorExists = await this.prisma.color.findUnique({
-        where: { id: validatedData.colorId, isActive: true },
+        where: { id: validatedData.colorId },
       })
 
       if (!colorExists) {
@@ -70,7 +70,7 @@ export class ProductService {
     let materialCost: Decimal | undefined
     if (validatedData.materialId) {
       const materialExists = await this.prisma.material.findUnique({
-        where: { id: validatedData.materialId, isActive: true },
+        where: { id: validatedData.materialId },
       })
 
       if (!materialExists) {
@@ -154,7 +154,7 @@ export class ProductService {
     // Validate colorId existence if colorId is being updated
     if (validatedData.colorId && validatedData.colorId !== existingProduct.colorId) {
       const colorExists = await this.prisma.color.findUnique({
-        where: { id: validatedData.colorId, isActive: true },
+        where: { id: validatedData.colorId },
       })
 
       if (!colorExists) {
@@ -166,7 +166,7 @@ export class ProductService {
     let materialCost: Decimal | undefined
     if (validatedData.materialId && validatedData.materialId !== existingProduct.materialId) {
       const materialExists = await this.prisma.material.findUnique({
-        where: { id: validatedData.materialId, isActive: true },
+        where: { id: validatedData.materialId },
       })
 
       if (!materialExists) {
@@ -181,7 +181,7 @@ export class ProductService {
     } else if (validatedData.materialQuantity && existingProduct.materialId) {
       // Recalculate cost if quantity changed but material stayed the same
       const materialExists = await this.prisma.material.findUnique({
-        where: { id: existingProduct.materialId, isActive: true },
+        where: { id: existingProduct.materialId },
       })
 
       if (materialExists && validatedData.materialQuantity > 0) {

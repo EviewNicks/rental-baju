@@ -23,6 +23,8 @@ interface ProductFormData {
   categoryId: string
   size?: string
   colorId?: string
+  materialId?: string
+  materialQuantity?: number
   quantity: number
   modalAwal: number
   currentPrice: number
@@ -42,6 +44,8 @@ interface CreateProductRequest {
   categoryId: string
   size?: string
   colorId?: string
+  materialId?: string
+  materialQuantity?: number
   image?: File
   imageUrl?: string
 }
@@ -55,6 +59,8 @@ interface UpdateProductRequest {
   categoryId: string
   size?: string
   colorId?: string
+  materialId?: string
+  materialQuantity?: number
   image?: File
   imageUrl?: string
 }
@@ -128,6 +134,8 @@ export function ProductFormPage({
     categoryId: product?.categoryId || '',
     size: product?.size || '',
     colorId: product?.colorId || '',
+    materialId: product?.materialId || undefined,
+    materialQuantity: product?.materialQuantity || undefined,
     quantity: product?.quantity || 1,
     modalAwal: product?.modalAwal ? Number(product.modalAwal) : 0,
     currentPrice: product?.currentPrice ? Number(product.currentPrice) : 0,
@@ -190,6 +198,14 @@ export function ProductFormPage({
         // ColorId is optional, no validation needed
         error = ''
         break
+      case 'materialId':
+        // MaterialId is optional, no validation needed
+        error = ''
+        break
+      case 'materialQuantity':
+        // MaterialQuantity is optional, no validation needed
+        error = ''
+        break
       case 'modalAwal':
         error = validateNumber(typeof value === 'number' ? value : 0, 'Modal awal') || ''
         break
@@ -230,6 +246,8 @@ export function ProductFormPage({
         categoryId: true, 
         size: true,
         colorId: true,
+        materialId: true,
+        materialQuantity: true,
         modalAwal: true, 
         currentPrice: true, 
         quantity: true, 
@@ -251,6 +269,8 @@ export function ProductFormPage({
           categoryId: formData.categoryId,
           size: formData.size || undefined,
           colorId: formData.colorId || undefined,
+          materialId: formData.materialId || undefined,
+          materialQuantity: formData.materialQuantity || undefined,
           image: formData.image || undefined,
           imageUrl: formData.imageUrl || undefined,
         }
@@ -271,6 +291,8 @@ export function ProductFormPage({
           categoryId: formData.categoryId,
           size: formData.size || undefined,
           colorId: formData.colorId || undefined,
+          materialId: formData.materialId || undefined,
+          materialQuantity: formData.materialQuantity || undefined,
           image: formData.image || undefined,
           imageUrl: formData.imageUrl || undefined,
         }
