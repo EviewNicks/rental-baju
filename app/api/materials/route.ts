@@ -9,7 +9,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { MaterialService } from '@/features/manage-product/services/materialService'
 import { prisma } from '@/lib/prisma'
-import { ConflictError, NotFoundError } from '@/features/manage-product/lib/errors/AppError'
+import { ConflictError } from '@/features/manage-product/lib/errors/AppError'
 
 export async function GET(request: NextRequest) {
   try {

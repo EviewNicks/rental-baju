@@ -23,8 +23,7 @@ const materialNameSchema = z
  */
 const pricePerUnitSchema = z
   .number({
-    required_error: 'Harga per unit wajib diisi',
-    invalid_type_error: 'Harga per unit harus berupa angka',
+    message: 'Harga per unit harus berupa angka valid',
   })
   .positive('Harga per unit harus lebih besar dari 0')
   .max(999999.99, 'Harga per unit maksimal 999,999.99')
@@ -172,7 +171,7 @@ export function validateMaterialName(name: string): string | null {
     return null
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return error.errors[0]?.message || 'Nama material tidak valid'
+      return error.issues[0]?.message || 'Nama material tidak valid'
     }
     return 'Nama material tidak valid'
   }
@@ -187,7 +186,7 @@ export function validatePricePerUnit(price: number): string | null {
     return null
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return error.errors[0]?.message || 'Harga per unit tidak valid'
+      return error.issues[0]?.message || 'Harga per unit tidak valid'
     }
     return 'Harga per unit tidak valid'
   }
@@ -202,7 +201,7 @@ export function validateUnit(unit: string): string | null {
     return null
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return error.errors[0]?.message || 'Satuan tidak valid'
+      return error.issues[0]?.message || 'Satuan tidak valid'
     }
     return 'Satuan tidak valid'
   }

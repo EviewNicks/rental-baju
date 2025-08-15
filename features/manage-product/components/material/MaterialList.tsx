@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
+import { useDebounce } from '@/features/manage-product/hooks/useDebounce'
 import type { Material } from '@/features/manage-product/types/material'
 
 interface MaterialListProps {
@@ -16,10 +17,13 @@ interface MaterialListProps {
 
 export function MaterialList({ materials, onEdit, onDelete, loading }: MaterialListProps) {
   const [searchTerm, setSearchTerm] = useState('')
+  
+  // Debounce search term to improve performance
+  const debouncedSearchTerm = useDebounce(searchTerm, 300)
 
-  // Filter materials by search term
+  // Filter materials by debounced search term
   const filteredMaterials = materials.filter(material =>
-    material.name.toLowerCase().includes(searchTerm.toLowerCase())
+    material.name.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
   )
 
   if (loading) {
@@ -42,7 +46,7 @@ export function MaterialList({ materials, onEdit, onDelete, loading }: MaterialL
       </div>
 
       {filteredMaterials.length === 0 ? (
-        <EmptyState hasSearch={searchTerm.length > 0} />
+        <EmptyState hasSearch={debouncedSearchTerm.length > 0} />
       ) : (
         <div className="space-y-3">
           {filteredMaterials.map((material) => (

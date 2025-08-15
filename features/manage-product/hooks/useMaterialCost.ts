@@ -53,7 +53,7 @@ export function useMaterialCost(
       formattedCost,
       isValid,
     }
-  }, [material?.id, material?.pricePerUnit, quantity, currency])
+  }, [material, quantity, currency])
 }
 
 /**

@@ -4,7 +4,8 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { MaterialList } from './MaterialList'
 import { MaterialForm } from './MaterialForm'
-import { DeleteConfirmationDialog } from '../category/DeleteConfirmationDialog'
+import { MaterialDeleteConfirmationDialog } from './MaterialDeleteConfirmationDialog'
+import { ManageProductErrorBoundary } from '../shared/ManageProductErrorBoundary'
 import {
   useMaterials,
   useCreateMaterial,
@@ -20,7 +21,7 @@ interface MaterialManagementProps {
   className?: string
 }
 
-export function MaterialManagement({ className }: MaterialManagementProps) {
+function MaterialManagementContent({ className }: MaterialManagementProps) {
   const [mode, setMode] = useState<MaterialModalMode>('view')
   const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
@@ -141,14 +142,42 @@ export function MaterialManagement({ className }: MaterialManagementProps) {
         )}
       </div>
 
-      <DeleteConfirmationDialog
+      <MaterialDeleteConfirmationDialog
         isOpen={deleteDialogOpen}
         onClose={() => setDeleteDialogOpen(false)}
         onConfirm={handleConfirmDelete}
-        // Reuse existing dialog with material data
-        category={selectedMaterial as any} // Type compatibility hack for reusing existing dialog
+        material={selectedMaterial}
         loading={deleteMaterialMutation.isPending}
       />
     </>
+  )
+}
+
+export function MaterialManagement(props: MaterialManagementProps) {
+  return (
+    <ManageProductErrorBoundary
+      fallback={
+        <div className="flex flex-col items-center justify-center p-8 text-center">
+          <div className="text-red-500 mb-2">
+            <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.732 19.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+          </div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Terjadi Kesalahan</h3>
+          <p className="text-gray-600 mb-4">
+            Maaf, terjadi kesalahan saat memuat halaman manajemen material. 
+            Silakan refresh halaman atau hubungi administrator jika masalah berlanjut.
+          </p>
+          <Button 
+            onClick={() => window.location.reload()} 
+            className="bg-yellow-400 hover:bg-yellow-500 text-black"
+          >
+            Refresh Halaman
+          </Button>
+        </div>
+      }
+    >
+      <MaterialManagementContent {...props} />
+    </ManageProductErrorBoundary>
   )
 }

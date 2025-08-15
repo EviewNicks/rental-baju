@@ -1,6 +1,5 @@
 'use client'
 
-import { TabsContent } from '@/components/ui/tabs'
 import { TabNavigation, useTabNavigation } from './TabNavigation'
 import { MaterialManagement } from '../material/MaterialManagement'
 import { CategoryManagement } from '../category/CategoryManagement'
