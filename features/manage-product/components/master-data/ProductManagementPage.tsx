@@ -1,12 +1,42 @@
 'use client'
 
-import { TabNavigation, useTabNavigation } from './TabNavigation'
+import { TabNavigation, useTabNavigation, type TabValue } from './TabNavigation'
 import { MaterialManagement } from '../material/MaterialManagement'
 import { CategoryManagement } from '../category/CategoryManagement'
 import { ColorManagement } from '../color/ColorManagement'
+import { logger } from '@/services/logger'
+import { useEffect } from 'react'
+
+// Component-specific logger for product management page
+const pageLogger = logger.child('ProductManagementPage')
 
 export function ProductManagementPage() {
   const { activeTab, switchTab } = useTabNavigation()
+
+  // Log component mount and initialization
+  useEffect(() => {
+    pageLogger.info('componentMount', 'Product Management Page mounted', {
+      initialTab: activeTab
+    })
+  }, [activeTab])
+
+  // Log tab changes for user behavior tracking
+  useEffect(() => {
+    pageLogger.info('tabChange', 'User navigated to different tab', {
+      activeTab,
+      timestamp: Date.now()
+    })
+  }, [activeTab])
+
+  // Enhanced tab switching with logging
+  const handleTabChange = (tab: string) => {
+    pageLogger.info('handleTabChange', 'User initiated tab change', {
+      fromTab: activeTab,
+      toTab: tab,
+      userAction: 'click'
+    })
+    switchTab(tab as TabValue)
+  }
 
   return (
     <div className="space-y-6 p-6">
@@ -19,7 +49,7 @@ export function ProductManagementPage() {
       </div>
 
       {/* Tab Navigation */}
-      <TabNavigation activeTab={activeTab} onTabChange={switchTab} />
+      <TabNavigation activeTab={activeTab} onTabChange={handleTabChange} />
 
       {/* Tab Content */}
       <div className="mt-6">

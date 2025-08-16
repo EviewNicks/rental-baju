@@ -1,52 +1,66 @@
-Berdasarkan implementasi Task RPK-45 yang sudah selesai (dokumentasi di  
- features/manage-product/docs/result-docs/RPK-45/result-fe-rpk-45.md),
-saya perlu menambahkan logging system yang strategis untuk debugging dan  
- error monitoring pada frontend implementation phase.
+Context: Saya sedang mengerjakan project rental management dengan Next.js
 
-**Deliverable yang Diinginkan:**
+- TypeScript + Prisma. Terjadi error pada komponen
+  MaterialManagementContent saat menjalankan testing untuk task RPK-45.
 
-- Logger service implementation di services/logger.ts
-- Strategic logger integration pada components dan hooks yang diupdate  
-  dalam RPK-45
-- Documentation update untuk logging strategy
-- Format: TypeScript dengan proper types dan interfaces
+Request: Tolong lakukan analisis sistematis dan perbaikan error
+berdasarkan log berikut:
 
-**Proses Implementasi Sistematis:**
+- File task: features/manage-product/docs/task/RPK-45/RPK-45.md
+- Error logs: services/client.log dan services/server.log
 
-1. **Analysis Phase**: Review result-fe-rpk-45.md dan fe-rpk-45.md untuk identify
-   components/hooks yang diimplementasi/diupdate
-2. **Strategic Integration**: Add logging pada:
-   - Critical error points (API calls, data processing)
-   - State changes di hooks
-   - Component lifecycle events yang penting
-   - User interaction points yang complex
-3. **Git Context Integration**: Use git commits 50019c6 to d09bbd6 untuk  
-   identify exact implementation scope
-4. **Validation**: Ensure log output is actionable dan easy to trace
+Process yang diharapkan:
 
-**Quality & Performance Criteria:**
+1. Analisis Logs: Baca dan interpretasi error dari kedua log files
+2. Root Cause Analysis: Identifikasi penyebab utama error pada
+   MaterialManagementContent
+3. Code Review: Periksa implementasi komponen terkait
+4. Solution Implementation: Implementasikan perbaikan yang diperlukan
+5. Validation: Pastikan solusi tidak menimbulkan regression
 
-- **Log Volume Limit**: Maximum 10-15 log statements per component/hook
-- **Maintainability**: Each log must have clear purpose dan actionable  
-  information
-- **Performance Impact**: Minimal overhead, conditional logging untuk
-  development
-- **Structure Standard**: Consistent log format dengan timestamp, level,  
-  component, message, context
-- **Traceability**: Logs harus provide clear debugging path untuk common  
-  issues
+Output yang diinginkan:
 
-**Technical Specifications:**
+- Laporan analisis error (format markdown)
+- Kode perbaikan yang diimplementasikan
+- Penjelasan perubahan yang dilakukan
+- Rekomendasi untuk mencegah error serupa
 
-- Logger service dengan singleton pattern
-- Support for log filtering berdasarkan component/module
-- Integration dengan existing error handling patterns
-- Console output untuk development, extendable untuk production
-  monitoring
+Kriteria sukses: Error teratasi, testing berjalan lancar, tidak ada
+breaking changes pada fitur lain.
 
-**Context & Constraints:**
+4. Improved Prompt — Minimal
 
-- Focus pada components/hooks dari RPK-45 implementation
-- Balance antara debugging value dan log noise
-- Maintain existing code structure, minimal intrusive changes
-- Git range: commits 50019c6 to d09bbd6 sebagai implementation boundary
+Analisis error MaterialManagementContent dari testing RPK-45. Log
+tersedia di services/client.log dan services/server.log. Tolong:
+
+1. Identifikasi root cause dari logs
+2. Review file task di features/manage-product/docs/task/RPK-45/RPK-45.md
+3. Implementasikan perbaikan
+4. Berikan laporan analisis + solusi dalam format markdown
+
+5. Templates & Examples
+
+Template untuk analisis error debugging:
+
+## Error Analysis Report
+
+### 1. Error Summary
+
+- Component: [nama komponen]
+- Error Type: [runtime/compile/test error]
+- Severity: [High/Medium/Low]
+
+### 2. Root Cause Analysis
+
+- Primary cause: [penjelasan]
+- Contributing factors: [faktor pendukung]
+
+### 3. Solution Implemented
+
+- Files modified: [daftar file]
+- Changes made: [ringkasan perubahan]
+
+### 4. Validation Results
+
+- Tests status: [pass/fail]
+- Side effects: [ada/tidak ada]

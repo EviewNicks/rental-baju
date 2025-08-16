@@ -1,0 +1,47 @@
+[Fast Refresh] rebuilding
+logger.ts:196 2025-08-16T23:13:46.140Z [INFO] [MaterialList][filterMaterials] material_filtering completed{  "performance": {    "label": "material_filtering",    "duration": "0ms"  }}
+logger.ts:196 2025-08-16T23:13:46.140Z [INFO] [MaterialList][filterMaterials] material_filtering completed{  "performance": {    "label": "material_filtering",    "duration": "0ms"  }}
+logger.ts:196 2025-08-16T23:13:46.182Z [INFO] [ProductManagementPage][componentMount] Product Management Page mounted{  "initialTab": "material",  "performance": {    "timestamp": 1755386026181,    "memory": null  }}
+logger.ts:196 2025-08-16T23:13:46.183Z [INFO] [ProductManagementPage][tabChange] User navigated to different tab{  "activeTab": "material",  "timestamp": 1755386026183,  "performance": {    "timestamp": 1755386026183,    "memory": null  }}
+logger.ts:196 2025-08-16T23:13:46.191Z [INFO] [ProductManagementPage][componentMount] Product Management Page mounted{  "initialTab": "material",  "performance": {    "timestamp": 1755386026191,    "memory": null  }}
+logger.ts:196 2025-08-16T23:13:46.194Z [INFO] [ProductManagementPage][tabChange] User navigated to different tab{  "activeTab": "material",  "timestamp": 1755386026194,  "performance": {    "timestamp": 1755386026194,    "memory": null  }}
+report-hmr-latency.ts:26 [Fast Refresh] done in 202ms
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 3980ms
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 200ms
+logger.ts:196 2025-08-16T23:13:51.322Z [INFO] [useMaterials][getMaterials] Materials query completed successfully{  "performance": {    "label": "materials_query",    "duration": "5154ms"  }}
+logger.ts:196 2025-08-16T23:13:51.323Z [INFO] [useMaterials][getMaterials] Materials query failed{  "performance": {    "label": "materials_query",    "duration": "5155ms"  }}
+logger.ts:254 2025-08-16T23:13:51.323Z [ERROR] [useMaterials][getMaterials] Failed to fetch materials{  "name": "TypeError",  "message": "Cannot read properties of undefined (reading 'length')",  "stack": "TypeError: Cannot read properties of undefined (reading 'length')\n    at useMaterials.useQuery (http://localhost:3000/_next/static/chunks/_ec8a99a5._.js:3142:44)",  "performance": {    "timestamp": 1755386031323,    "memory": null  }}
+logger.ts:196 2025-08-16T23:13:53.310Z [INFO] [useMaterials][getMaterials] Materials query completed successfully{  "performance": {    "label": "materials_query",    "duration": "966ms"  }}
+logger.ts:196 2025-08-16T23:13:53.312Z [INFO] [useMaterials][getMaterials] Materials query failed{  "performance": {    "label": "materials_query",    "duration": "968ms"  }}
+2025-08-16T23:13:53.310Z [INFO] [useMaterials][getMaterials] Materials query completed successfully{  "performance": {    "label": "materials_query",    "duration": "966ms"  }}
+logger.ts:196 2025-08-16T23:13:53.312Z [INFO] [useMaterials][getMaterials] Materials query failed{  "performance": {    "label": "materials_query",    "duration": "968ms"  }}
+logger.ts:254 2025-08-16T23:13:53.312Z [ERROR] [useMaterials][getMaterials] Failed to fetch materials
+{
+  "name": "TypeError",
+  "message": "Cannot read properties of undefined (reading 'length')",
+  "stack": "TypeError: Cannot read properties of undefined (reading 'length')\n    at useMaterials.useQuery (http://localhost:3000/_next/static/chunks/_ec8a99a5._.js:3142:44)",
+  "performance": {
+    "timestamp": 1755386033312,
+    "memory": null
+  }
+}
+[Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 103ms
+logger.ts:196 2025-08-16T23:13:56.475Z [INFO] [useMaterials][getMaterials] Materials query completed successfully{  "performance": {    "label": "materials_query",    "duration": "1153ms"  }}
+logger.ts:196 2025-08-16T23:13:56.476Z [INFO] [useMaterials][getMaterials] Materials query failed{  "performance": {    "label": "materials_query",    "duration": "1154ms"  }}
+
+2025-08-16T23:13:56.477Z [ERROR] [useMaterials][getMaterials] Failed to fetch materials{  "name": "TypeError",  "message": "Cannot read properties of undefined (reading 'length')",  "stack": "TypeError: Cannot read properties of undefined (reading 'length')\n    at useMaterials.useQuery (http://localhost:3000/_next/static/chunks/_ec8a99a5._.js:3142:44)",  "performance": {    "timestamp": 1755386036477,    "memory": null  }}
+2025-08-16T23:14:01.358Z [INFO] [useMaterials][getMaterials] Materials query completed successfully{  "performance": {    "label": "materials_query",    "duration": "872ms"  }}
+logger.ts:196 2025-08-16T23:14:01.359Z [INFO] [useMaterials][getMaterials] Materials query failed{  "performance": {    "label": "materials_query",    "duration": "873ms"  }}
+2025-08-16T23:14:01.360Z [ERROR] [useMaterials][getMaterials] Failed to fetch materials{  "name": "TypeError",  "message": "Cannot read properties of undefined (reading 'length')",  "stack": "TypeError: Cannot read properties of undefined (reading 'length')\n    at useMaterials.useQuery (http://localhost:3000/_next/static/chunks/_ec8a99a5._.js:3142:44)",  "performance": {    "timestamp": 1755386041360,    "memory": null  }}
+2025-08-16T23:14:01.392Z [INFO] [MaterialList][filterMaterials] material_filtering completed{  "performance": {    "label": "material_filtering",    "duration": "0ms"  }}
+logger.ts:196 2025-08-16T23:14:01.394Z [INFO] [MaterialList][renderEmptyState] Rendering empty state{  "hasSearch": false,  "searchTerm": "",  "totalMaterials": 0,  "isFiltered": false,  "performance": {    "timestamp": 1755386041394,    "memory": null  }}
+logger.ts:196 2025-08-16T23:14:01.395Z [INFO] [MaterialList][filterMaterials] material_filtering completed{  "performance": {    "label": "material_filtering",    "duration": "0ms"  }}
+logger.ts:196 2025-08-16T23:14:01.397Z [INFO] [MaterialList][renderEmptyState] Rendering empty state{  "hasSearch": false,  "searchTerm": "",  "totalMaterials": 0,  "isFiltered": false,  "performance": {    "timestamp": 1755386041397,    "memory": null  }}
+2025-08-16T23:14:01.411Z [ERROR] [MaterialManagement][MaterialManagementContent] Error loading materials data{  "name": "TypeError",  "message": "Cannot read properties of undefined (reading 'length')",  "stack": "TypeError: Cannot read properties of undefined (reading 'length')\n    at useMaterials.useQuery (http://localhost:3000/_next/static/chunks/_ec8a99a5._.js:3142:44)",  "performance": {    "timestamp": 1755386041411,    "memory": null  }}
+2025-08-16T23:14:01.434Z [INFO] [MaterialList][filterMaterials] material_filtering completed{  "performance": {    "label": "material_filtering",    "duration": "0ms"  }}
+logger.ts:196 2025-08-16T23:14:01.435Z [INFO] [MaterialList][renderEmptyState] Rendering empty state{  "hasSearch": false,  "searchTerm": "",  "totalMaterials": 0,  "isFiltered": false,  "performance": {    "timestamp": 1755386041435,    "memory": null  }}
+logger.ts:196 2025-08-16T23:14:01.436Z [INFO] [MaterialList][filterMaterials] material_filtering completed{  "performance": {    "label": "material_filtering",    "duration": "0ms"  }}
+logger.ts:196 2025-08-16T23:14:01.437Z [INFO] [MaterialList][renderEmptyState] Rendering empty state{  "hasSearch": false,  "searchTerm": "",  "totalMaterials": 0,  "isFiltered": false,  "performance": {    "timestamp": 1755386041437,    "memory": null  }}

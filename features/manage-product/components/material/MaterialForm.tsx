@@ -7,6 +7,10 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { ArrowLeft, Save, X } from 'lucide-react'
 import type { Material, MaterialFormData, MaterialUnit } from '@/features/manage-product/types/material'
+import { logger } from '@/services/logger'
+
+// Component-specific logger for material form
+const formLogger = logger.child('MaterialForm')
 
 // Ultra-simplified material units (aligned with backend schema)
 const MATERIAL_UNITS: { value: MaterialUnit; label: string }[] = [
@@ -41,25 +45,54 @@ export function MaterialForm({ mode, material, onSubmit, onCancel, existingMater
 
   // Initialize form data
   useEffect(() => {
+    formLogger.debug('formInitialization', 'Initializing material form', {
+      mode,
+      materialId: material?.id,
+      materialName: material?.name,
+      existingMaterialsCount: existingMaterials.length
+    })
+
     if (mode === 'edit' && material) {
-      setFormData({
+      const initialData = {
         name: material.name,
         pricePerUnit: material.pricePerUnit.toString(),
         unit: material.unit,
+      }
+      setFormData(initialData)
+      
+      formLogger.info('formInitialization', 'Form initialized for editing', {
+        materialId: material.id,
+        materialName: material.name,
+        initialData
       })
     } else {
-      setFormData({
+      const defaultData = {
         name: '',
         pricePerUnit: '',
         unit: 'meter',
+      }
+      setFormData(defaultData)
+      
+      formLogger.info('formInitialization', 'Form initialized for adding new material', {
+        defaultUnit: 'meter'
       })
     }
     setErrors({})
-  }, [mode, material])
+  }, [mode, material, existingMaterials.length])
 
   // Validation function
   const validateForm = (): boolean => {
+    const timer = logger.startTimer('MaterialForm', 'validateForm', 'form_validation')
     const newErrors: Partial<MaterialFormData> = {}
+
+    formLogger.debug('validateForm', 'Starting form validation', {
+      formData: {
+        name: formData.name,
+        pricePerUnit: formData.pricePerUnit,
+        unit: formData.unit
+      },
+      mode
+    })
 
     // Name validation
     if (!formData.name.trim()) {
@@ -75,6 +108,11 @@ export function MaterialForm({ mode, material, onSubmit, onCancel, existingMater
       )
       if (isDuplicate) {
         newErrors.name = 'Nama material sudah digunakan'
+        formLogger.warn('validateForm', 'Duplicate material name detected', {
+          attemptedName: formData.name.trim(),
+          mode,
+          currentMaterialId: material?.id
+        })
       }
     }
 
@@ -87,6 +125,12 @@ export function MaterialForm({ mode, material, onSubmit, onCancel, existingMater
       newErrors.pricePerUnit = 'Harga per unit wajib diisi'
     } else if (isNaN(price) || price <= 0) {
       newErrors.pricePerUnit = 'Harga per unit harus berupa angka positif'
+      formLogger.warn('validateForm', 'Invalid price value detected', {
+        priceInput: formData.pricePerUnit,
+        parsedPrice: price,
+        isNaN: isNaN(price),
+        isNegativeOrZero: price <= 0
+      })
     }
 
     // Unit validation
@@ -94,28 +138,77 @@ export function MaterialForm({ mode, material, onSubmit, onCancel, existingMater
       newErrors.unit = 'Satuan material wajib dipilih'
     }
 
+    const duration = timer.end()
+    const isValid = Object.keys(newErrors).length === 0
+    
+    formLogger.info('validateForm', 'Form validation completed', {
+      isValid,
+      errorCount: Object.keys(newErrors).length,
+      errors: Object.keys(newErrors),
+      duration: `${duration}ms`
+    })
+
     setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
+    return isValid
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    const timer = logger.startTimer('MaterialForm', 'handleSubmit', 'form_submit')
+    
+    formLogger.info('handleSubmit', 'User initiated form submission', {
+      mode,
+      materialId: material?.id,
+      materialName: formData.name.trim()
+    })
     
     if (!validateForm()) {
+      timer.end('Form submission cancelled due to validation errors')
+      formLogger.warn('handleSubmit', 'Form submission prevented by validation errors', {
+        mode,
+        formData: {
+          name: formData.name,
+          pricePerUnit: formData.pricePerUnit,
+          unit: formData.unit
+        }
+      })
       return
     }
 
     setIsSubmitting(true)
     try {
-      await onSubmit({
+      const submitData = {
         name: formData.name.trim(),
         pricePerUnit: typeof formData.pricePerUnit === 'string' 
           ? parseFloat(formData.pricePerUnit) 
           : formData.pricePerUnit,
         unit: formData.unit,
+      }
+      
+      formLogger.debug('handleSubmit', 'Calling parent onSubmit function', {
+        submitData,
+        mode
+      })
+      
+      await onSubmit(submitData)
+      const duration = timer.end('Form submission completed successfully')
+      
+      formLogger.info('handleSubmit', 'Form submitted successfully', {
+        mode,
+        materialName: submitData.name,
+        duration: `${duration}ms`,
+        operation: mode
       })
     } catch (error) {
-      console.error('Form submission error:', error)
+      timer.end('Form submission failed')
+      formLogger.error('handleSubmit', 'Form submission failed', {
+        mode,
+        materialName: formData.name.trim(),
+        error: error instanceof Error ? {
+          name: error.name,
+          message: error.message
+        } : error
+      })
     } finally {
       setIsSubmitting(false)
     }
@@ -123,8 +216,40 @@ export function MaterialForm({ mode, material, onSubmit, onCancel, existingMater
 
   const formatCurrency = (value: string) => {
     // Remove non-numeric characters except decimal point
+    const originalValue = value
     const numericValue = value.replace(/[^\d.]/g, '')
+    
+    if (originalValue !== numericValue) {
+      formLogger.debug('formatCurrency', 'Currency input formatted', {
+        originalValue,
+        formattedValue: numericValue,
+        removedChars: originalValue.length - numericValue.length
+      })
+    }
+    
     return numericValue
+  }
+
+  // Log significant form field changes for UX analysis
+  const handleNameChange = (value: string) => {
+    setFormData({ ...formData, name: value })
+    
+    if (value.length > 0 && value.length % 5 === 0) {
+      formLogger.debug('handleNameChange', 'Material name input progress', {
+        currentLength: value.length,
+        mode,
+        hasContent: value.trim().length > 0
+      })
+    }
+  }
+
+  const handleUnitChange = (value: string) => {
+    formLogger.info('handleUnitChange', 'User changed material unit', {
+      previousUnit: formData.unit,
+      newUnit: value,
+      mode
+    })
+    setFormData({ ...formData, unit: value })
   }
 
   return (
@@ -166,7 +291,7 @@ export function MaterialForm({ mode, material, onSubmit, onCancel, existingMater
               id="name"
               type="text"
               value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              onChange={(e) => handleNameChange(e.target.value)}
               placeholder="Contoh: Kain Katun Premium"
               className={errors.name ? 'border-red-500' : ''}
             />
@@ -180,7 +305,7 @@ export function MaterialForm({ mode, material, onSubmit, onCancel, existingMater
             <Label htmlFor="unit" className="text-sm font-medium text-gray-700">
               Satuan *
             </Label>
-            <Select value={formData.unit} onValueChange={(value) => setFormData({ ...formData, unit: value })}>
+            <Select value={formData.unit} onValueChange={handleUnitChange}>
               <SelectTrigger className={errors.unit ? 'border-red-500' : ''}>
                 <SelectValue placeholder="Pilih satuan material" />
               </SelectTrigger>

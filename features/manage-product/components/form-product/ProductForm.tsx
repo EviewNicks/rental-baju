@@ -17,6 +17,11 @@ import { ImageUpload } from '@/features/manage-product/components/products/Image
 import { MaterialSelector } from '@/features/manage-product/components/material/MaterialSelector'
 import { useColors } from '@/features/manage-product/hooks/useCategories'
 import type { ClientCategory, ClientColor } from '@/features/manage-product/types'
+import { logger } from '@/services/logger'
+import { useEffect } from 'react'
+
+// Component-specific logger for product form
+const formLogger = logger.child('ProductForm')
 
 interface ProductFormData {
   code: string
@@ -55,6 +60,17 @@ export function ProductForm({
   formatCurrency,
   categories,
 }: ProductFormProps) {
+  // Log component mount and form data initialization
+  useEffect(() => {
+    formLogger.debug('componentMount', 'ProductForm component mounted', {
+      hasFormData: !!formData,
+      categoriesCount: categories.length,
+      hasMaterial: !!formData.materialId,
+      materialQuantity: formData.materialQuantity,
+      formDataKeys: Object.keys(formData)
+    })
+  }, [formData, categories.length])
+
   // Fetch colors data
   const {
     data: colorsData,
@@ -62,6 +78,83 @@ export function ProductForm({
     error: colorsError,
   } = useColors({ isActive: true })
   const colors = colorsData?.colors || []
+
+  // Log colors data loading state
+  useEffect(() => {
+    if (isLoadingColors) {
+      formLogger.debug('colorsLoading', 'Loading colors data for product form')
+    } else if (colorsError) {
+      formLogger.error('colorsLoadError', 'Failed to load colors for product form', colorsError)
+    } else if (colors.length > 0) {
+      formLogger.info('colorsLoaded', 'Colors loaded successfully for product form', {
+        colorsCount: colors.length
+      })
+    }
+  }, [isLoadingColors, colorsError, colors.length])
+
+  // Log material integration state changes
+  useEffect(() => {
+    if (formData.materialId) {
+      formLogger.info('materialIntegration', 'Material selected in product form', {
+        materialId: formData.materialId,
+        materialQuantity: formData.materialQuantity,
+        hasBothMaterialAndQuantity: !!(formData.materialId && formData.materialQuantity)
+      })
+    }
+  }, [formData.materialId, formData.materialQuantity])
+
+  // Log form validation errors for debugging
+  useEffect(() => {
+    const errorKeys = Object.keys(errors).filter(key => errors[key])
+    if (errorKeys.length > 0) {
+      formLogger.warn('formValidationErrors', 'Form validation errors detected', {
+        errorFields: errorKeys,
+        errorCount: errorKeys.length,
+        hasMaterialErrors: errorKeys.some(key => key.includes('material')),
+        formSection: {
+          basicInfo: errorKeys.some(key => ['code', 'name', 'categoryId', 'quantity'].includes(key)),
+          material: errorKeys.some(key => ['materialId', 'materialQuantity'].includes(key)),
+          price: errorKeys.some(key => ['modalAwal', 'currentPrice'].includes(key))
+        }
+      })
+    }
+  }, [errors])
+
+  // Handle material integration changes with logging
+  const handleMaterialChange = (materialId: string | undefined) => {
+    formLogger.info('handleMaterialChange', 'User changed material in product form', {
+      previousMaterialId: formData.materialId,
+      newMaterialId: materialId,
+      hasQuantity: !!formData.materialQuantity,
+      willClearQuantity: !materialId && !!formData.materialQuantity
+    })
+    
+    onInputChange('materialId', materialId)
+    
+    // Clear quantity if material is deselected
+    if (!materialId && formData.materialQuantity) {
+      formLogger.debug('handleMaterialChange', 'Clearing material quantity due to material deselection')
+      onInputChange('materialQuantity', undefined)
+    }
+  }
+
+  const handleMaterialQuantityChange = (quantity: number | undefined) => {
+    formLogger.info('handleMaterialQuantityChange', 'User changed material quantity in product form', {
+      materialId: formData.materialId,
+      previousQuantity: formData.materialQuantity,
+      newQuantity: quantity,
+      hasValidMaterial: !!formData.materialId
+    })
+    
+    if (!formData.materialId && quantity) {
+      formLogger.warn('handleMaterialQuantityChange', 'Quantity provided without material selection', {
+        quantity,
+        materialId: formData.materialId
+      })
+    }
+    
+    onInputChange('materialQuantity', quantity)
+  }
 
   // Transform categories for select options
   // Defensive: categories fallback ke array kosong jika undefined/null
@@ -211,8 +304,8 @@ export function ProductForm({
             <MaterialSelector
               selectedMaterialId={formData.materialId}
               materialQuantity={formData.materialQuantity}
-              onMaterialChange={(materialId) => onInputChange('materialId', materialId)}
-              onQuantityChange={(quantity) => onInputChange('materialQuantity', quantity)}
+              onMaterialChange={handleMaterialChange}
+              onQuantityChange={handleMaterialQuantityChange}
             />
           </FormSection>
 

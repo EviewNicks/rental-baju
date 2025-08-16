@@ -3,6 +3,10 @@
 import { useState, useEffect } from 'react'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Package, Tag, Palette } from 'lucide-react'
+import { logger } from '@/services/logger'
+
+// Component-specific logger for tab navigation
+const navLogger = logger.child('TabNavigation')
 
 export type TabValue = 'material' | 'category' | 'color'
 
@@ -39,14 +43,43 @@ export function useTabNavigation() {
   useEffect(() => {
     // Read hash on mount
     const hash = window.location.hash.slice(1) as TabValue
-    if (['material', 'category', 'color'].includes(hash)) {
+    const validTabs = ['material', 'category', 'color']
+    
+    navLogger.debug('hashRouting', 'Initializing tab from URL hash', {
+      currentHash: hash,
+      isValidTab: validTabs.includes(hash),
+      defaultTab: 'material'
+    })
+    
+    if (validTabs.includes(hash)) {
       setActiveTab(hash)
+      navLogger.info('hashRouting', 'Tab initialized from URL hash', {
+        initialTab: hash
+      })
+    } else {
+      navLogger.debug('hashRouting', 'Using default tab (invalid or empty hash)', {
+        hash,
+        defaultTab: 'material'
+      })
     }
   }, [])
 
   const switchTab = (tab: TabValue) => {
+    const previousTab = activeTab
+    
+    navLogger.info('switchTab', 'Switching active tab', {
+      fromTab: previousTab,
+      toTab: tab,
+      method: 'hash_routing'
+    })
+    
     setActiveTab(tab)
     window.location.hash = tab
+    
+    navLogger.debug('switchTab', 'Tab switch completed', {
+      newActiveTab: tab,
+      urlHash: window.location.hash
+    })
   }
 
   return { activeTab, switchTab }

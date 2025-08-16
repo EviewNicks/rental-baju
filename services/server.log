@@ -1,0 +1,36 @@
+ ○ Compiling /producer/manage-product ...
+ ✓ Compiled /producer/manage-product in 2.3s
+ GET /producer/manage-product 200 in 2495ms
+ ○ Compiling /api/categories ...
+ GET /api/products 200 in 949ms
+ ✓ Compiled /api/categories in 4.1s
+ GET /api/categories 200 in 5400ms
+ GET /api/colors?isActive=true 200 in 5692ms
+ GET /producer/manage-product 200 in 2122ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 453ms
+ GET /api/categories 200 in 1114ms
+ GET /api/colors?isActive=true 200 in 1191ms
+ GET /api/products 200 in 2246ms
+{
+    "products": [],
+    "pagination": {
+        "page": 1,
+        "limit": 10,
+        "total": 0,
+        "totalPages": 0
+    }
+}
+ GET /api/products 200 in 989ms
+ GET /api/colors?search=&isActive=true&includeProducts=false 200 in 1198ms
+ {
+    "colors": []
+}
+ ○ Compiling /producer/manage-product/materials ...
+ ✓ Compiled /producer/manage-product/materials in 3.5s
+ GET /producer/manage-product/materials 200 in 3679ms
+ ○ Compiling /api/materials ...
+ ✓ Compiled /api/materials in 4.1s
+ GET /api/materials?limit=50 200 in 5120ms
+ GET /api/materials?limit=50 200 in 922ms
+ GET /api/materials?limit=50 200 in 1108ms
+ GET /api/materials?limit=50 200 in 811ms

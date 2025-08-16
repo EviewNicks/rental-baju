@@ -1,12 +1,16 @@
 'use client'
 
 import { Edit, Trash2, Package, Search } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { useDebounce } from '@/features/manage-product/hooks/useDebounce'
 import type { Material } from '@/features/manage-product/types/material'
+import { logger } from '@/services/logger'
+
+// Component-specific logger for material list
+const listLogger = logger.child('MaterialList')
 
 interface MaterialListProps {
   materials: Material[]
@@ -21,12 +25,85 @@ export function MaterialList({ materials, onEdit, onDelete, loading }: MaterialL
   // Debounce search term to improve performance
   const debouncedSearchTerm = useDebounce(searchTerm, 300)
 
-  // Filter materials by debounced search term
-  const filteredMaterials = materials.filter(material =>
-    material.name.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
-  )
+  // Log component mount and data changes
+  useEffect(() => {
+    listLogger.debug('componentMount', 'MaterialList component mounted', {
+      materialsCount: materials.length,
+      loading
+    })
+  }, [materials.length, loading])
+
+  useEffect(() => {
+    if (materials.length > 0) {
+      listLogger.info('materialsLoaded', 'Materials data loaded successfully', {
+        materialsCount: materials.length,
+        materialNames: materials.slice(0, 5).map(m => m.name) // Log first 5 for debugging
+      })
+    }
+  }, [materials])
+
+  // Filter materials by debounced search term with performance logging
+  const filteredMaterials = (() => {
+    const timer = logger.startTimer('MaterialList', 'filterMaterials', 'material_filtering')
+    
+    const filtered = materials.filter(material =>
+      material.name.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
+    )
+    
+    const duration = timer.end()
+    
+    // Log search performance and results
+    if (debouncedSearchTerm) {
+      listLogger.info('filterMaterials', 'Search filtering completed', {
+        searchTerm: debouncedSearchTerm,
+        totalMaterials: materials.length,
+        filteredCount: filtered.length,
+        duration: `${duration}ms`,
+        filterEfficiency: `${((filtered.length / materials.length) * 100).toFixed(1)}%`
+      })
+    }
+    
+    return filtered
+  })()
+
+  // Handle search term changes with logging
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value)
+    
+    if (value.length === 0) {
+      listLogger.debug('handleSearchChange', 'Search cleared', {
+        previousLength: searchTerm.length
+      })
+    } else if (value.length === 1) {
+      listLogger.debug('handleSearchChange', 'User started searching', {
+        materialsCount: materials.length
+      })
+    }
+  }
+
+  // Handle user interactions with logging
+  const handleEdit = (material: Material) => {
+    listLogger.info('handleEdit', 'User initiated material edit', {
+      materialId: material.id,
+      materialName: material.name,
+      fromSearch: debouncedSearchTerm.length > 0,
+      searchTerm: debouncedSearchTerm || null
+    })
+    onEdit(material)
+  }
+
+  const handleDelete = (material: Material) => {
+    listLogger.info('handleDelete', 'User initiated material deletion', {
+      materialId: material.id,
+      materialName: material.name,
+      fromSearch: debouncedSearchTerm.length > 0,
+      searchTerm: debouncedSearchTerm || null
+    })
+    onDelete(material)
+  }
 
   if (loading) {
+    listLogger.debug('renderSkeleton', 'Rendering loading skeleton state')
     return <MaterialListSkeleton />
   }
 
@@ -39,14 +116,22 @@ export function MaterialList({ materials, onEdit, onDelete, loading }: MaterialL
           <Input
             placeholder="Cari material..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => handleSearchChange(e.target.value)}
             className="pl-10"
           />
         </div>
       </div>
 
       {filteredMaterials.length === 0 ? (
-        <EmptyState hasSearch={debouncedSearchTerm.length > 0} />
+        (() => {
+          listLogger.info('renderEmptyState', 'Rendering empty state', {
+            hasSearch: debouncedSearchTerm.length > 0,
+            searchTerm: debouncedSearchTerm,
+            totalMaterials: materials.length,
+            isFiltered: debouncedSearchTerm.length > 0
+          })
+          return <EmptyState hasSearch={debouncedSearchTerm.length > 0} />
+        })()
       ) : (
         <div className="space-y-3">
           {filteredMaterials.map((material) => (
@@ -75,7 +160,7 @@ export function MaterialList({ materials, onEdit, onDelete, loading }: MaterialL
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => onEdit(material)}
+                  onClick={() => handleEdit(material)}
                   className="hover:bg-blue-50 hover:border-blue-200"
                 >
                   <Edit className="w-4 h-4" />
@@ -83,7 +168,7 @@ export function MaterialList({ materials, onEdit, onDelete, loading }: MaterialL
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => onDelete(material)}
+                  onClick={() => handleDelete(material)}
                   className="hover:bg-red-50 hover:border-red-200 text-red-600"
                 >
                   <Trash2 className="w-4 h-4" />

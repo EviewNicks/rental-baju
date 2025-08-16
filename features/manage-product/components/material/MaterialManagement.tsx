@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { MaterialList } from './MaterialList'
 import { MaterialForm } from './MaterialForm'
@@ -14,6 +14,10 @@ import {
 } from '@/features/manage-product/hooks/useMaterials'
 import { showSuccess, showError } from '@/lib/notifications'
 import type { Material, MaterialFormData } from '@/features/manage-product/types/material'
+import { logger } from '@/services/logger'
+
+// Component-specific logger for material management
+const componentLogger = logger.child('MaterialManagement')
 
 type MaterialModalMode = 'view' | 'add' | 'edit'
 
@@ -27,50 +31,117 @@ function MaterialManagementContent({ className }: MaterialManagementProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
 
   // API hooks - following exact useCategories pattern
-  const { data: materialsData, isLoading: loading } = useMaterials({ limit: 50 })
+  const { data: materialsData, isLoading: loading, error } = useMaterials({ limit: 50 })
   const createMaterialMutation = useCreateMaterial()
   const updateMaterialMutation = useUpdateMaterial()
   const deleteMaterialMutation = useDeleteMaterial()
 
   const materials = materialsData?.materials || []
 
+  // Log component mount and data loading state
+  React.useEffect(() => {
+    componentLogger.debug('MaterialManagementContent', 'Component mounted', {
+      materialsCount: materials.length,
+      loading,
+      hasError: !!error
+    })
+
+    if (error) {
+      componentLogger.error('MaterialManagementContent', 'Error loading materials data', error)
+    }
+  }, [materials.length, loading, error])
+
+  // Log mode changes for user behavior tracking
+  React.useEffect(() => {
+    componentLogger.debug('MaterialManagementContent', 'Mode changed', {
+      newMode: mode,
+      selectedMaterialId: selectedMaterial?.id,
+      selectedMaterialName: selectedMaterial?.name
+    })
+  }, [mode, selectedMaterial])
+
   const handleAddMaterial = () => {
+    componentLogger.info('handleAddMaterial', 'User initiated add material workflow', {
+      currentMode: mode,
+      materialsCount: materials.length
+    })
     setSelectedMaterial(null)
     setMode('add')
   }
 
   const handleEditMaterial = (material: Material) => {
+    componentLogger.info('handleEditMaterial', 'User initiated edit material workflow', {
+      materialId: material.id,
+      materialName: material.name,
+      currentMode: mode
+    })
     setSelectedMaterial(material)
     setMode('edit')
   }
 
   const handleDeleteMaterial = (material: Material) => {
+    componentLogger.info('handleDeleteMaterial', 'User initiated delete material workflow', {
+      materialId: material.id,
+      materialName: material.name,
+      currentMode: mode
+    })
     setSelectedMaterial(material)
     setDeleteDialogOpen(true)
   }
 
   const handleFormSubmit = async (formData: MaterialFormData) => {
+    const timer = logger.startTimer('MaterialManagement', 'handleFormSubmit', 'material_form_submit')
+    
     try {
+      componentLogger.info('handleFormSubmit', 'Starting material form submission', {
+        mode,
+        materialName: formData.name,
+        materialId: selectedMaterial?.id,
+        pricePerUnit: formData.pricePerUnit,
+        unit: formData.unit
+      })
+
       if (mode === 'add') {
-        await createMaterialMutation.mutateAsync({
+        const materialData = {
           name: formData.name,
           pricePerUnit: typeof formData.pricePerUnit === 'string' 
             ? parseFloat(formData.pricePerUnit) 
             : formData.pricePerUnit,
           unit: formData.unit,
+        }
+        
+        await createMaterialMutation.mutateAsync(materialData)
+        const duration = timer.end('Material creation completed successfully')
+        
+        componentLogger.info('handleFormSubmit', 'Material created successfully', {
+          materialName: formData.name,
+          duration: `${duration}ms`,
+          operation: 'create'
         })
+        
         showSuccess('Material berhasil ditambahkan', `Material ${formData.name} telah dibuat`)
       } else if (mode === 'edit' && selectedMaterial) {
+        const updateData = {
+          name: formData.name,
+          pricePerUnit: typeof formData.pricePerUnit === 'string' 
+            ? parseFloat(formData.pricePerUnit) 
+            : formData.pricePerUnit,
+          unit: formData.unit,
+        }
+        
         await updateMaterialMutation.mutateAsync({
           id: selectedMaterial.id,
-          data: {
-            name: formData.name,
-            pricePerUnit: typeof formData.pricePerUnit === 'string' 
-              ? parseFloat(formData.pricePerUnit) 
-              : formData.pricePerUnit,
-            unit: formData.unit,
-          },
+          data: updateData,
         })
+        const duration = timer.end('Material update completed successfully')
+        
+        componentLogger.info('handleFormSubmit', 'Material updated successfully', {
+          materialId: selectedMaterial.id,
+          materialName: formData.name,
+          duration: `${duration}ms`,
+          operation: 'update'
+        })
+        
         showSuccess(
           'Material berhasil diperbarui',
           `Perubahan pada material ${formData.name} telah disimpan`,
@@ -80,30 +151,74 @@ function MaterialManagementContent({ className }: MaterialManagementProps) {
       setMode('view')
       setSelectedMaterial(null)
     } catch (error) {
+      timer.end('Material form submission failed')
       const errorMessage = error instanceof Error ? error.message : 'Gagal menyimpan material'
+      
+      componentLogger.error('handleFormSubmit', 'Material form submission failed', {
+        mode,
+        materialName: formData.name,
+        materialId: selectedMaterial?.id,
+        error: error instanceof Error ? {
+          name: error.name,
+          message: error.message
+        } : error
+      })
+      
       showError('Gagal menyimpan material', errorMessage)
-      console.error('Error saving material:', error)
       throw error
     }
   }
 
   const handleFormCancel = () => {
+    componentLogger.info('handleFormCancel', 'User cancelled material form', {
+      mode,
+      materialId: selectedMaterial?.id,
+      materialName: selectedMaterial?.name
+    })
     setMode('view')
     setSelectedMaterial(null)
   }
 
   const handleConfirmDelete = async () => {
-    if (!selectedMaterial) return
+    if (!selectedMaterial) {
+      componentLogger.warn('handleConfirmDelete', 'Delete confirmation called without selected material')
+      return
+    }
+
+    const timer = logger.startTimer('MaterialManagement', 'handleConfirmDelete', 'material_delete')
 
     try {
+      componentLogger.info('handleConfirmDelete', 'Starting material deletion', {
+        materialId: selectedMaterial.id,
+        materialName: selectedMaterial.name
+      })
+
       await deleteMaterialMutation.mutateAsync(selectedMaterial.id)
+      const duration = timer.end('Material deletion completed successfully')
+      
+      componentLogger.info('handleConfirmDelete', 'Material deleted successfully', {
+        materialId: selectedMaterial.id,
+        materialName: selectedMaterial.name,
+        duration: `${duration}ms`
+      })
+      
       showSuccess('Material berhasil dihapus', `Material ${selectedMaterial.name} telah dihapus`)
       setDeleteDialogOpen(false)
       setSelectedMaterial(null)
     } catch (error) {
+      timer.end('Material deletion failed')
       const errorMessage = error instanceof Error ? error.message : 'Gagal menghapus material'
+      
+      componentLogger.error('handleConfirmDelete', 'Material deletion failed', {
+        materialId: selectedMaterial.id,
+        materialName: selectedMaterial.name,
+        error: error instanceof Error ? {
+          name: error.name,
+          message: error.message
+        } : error
+      })
+      
       showError('Gagal menghapus material', errorMessage)
-      console.error('Error deleting material:', error)
     }
   }
 

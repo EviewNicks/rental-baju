@@ -6,6 +6,11 @@ import { Input } from '@/components/ui/input'
 import { Package, Calculator } from 'lucide-react'
 import { useMaterials } from '@/features/manage-product/hooks/useMaterials'
 import type { Material } from '@/features/manage-product/types/material'
+import { logger } from '@/services/logger'
+import { useEffect, useMemo } from 'react'
+
+// Component-specific logger for material selector
+const selectorLogger = logger.child('MaterialSelector')
 
 interface MaterialSelectorProps {
   selectedMaterialId?: string
@@ -24,20 +29,117 @@ export function MaterialSelector({
   disabled = false,
   className = '',
 }: MaterialSelectorProps) {
-  const { data: materialsData, isLoading } = useMaterials({ limit: 100 })
-  const materials = materialsData?.materials || []
+  const { data: materialsData, isLoading, error } = useMaterials({ limit: 100 })
+  const materials = useMemo(() => materialsData?.materials || [], [materialsData?.materials])
+  
+  // Log component initialization
+  useEffect(() => {
+    selectorLogger.debug('componentInit', 'MaterialSelector initialized', {
+      selectedMaterialId,
+      materialQuantity,
+      disabled,
+      className: className || 'none'
+    })
+  }, [selectedMaterialId, materialQuantity, disabled, className])
+
+  // Log materials data loading state
+  useEffect(() => {
+    if (isLoading) {
+      selectorLogger.debug('materialsLoading', 'Loading materials for selector')
+    } else if (error) {
+      selectorLogger.error('materialsLoadError', 'Failed to load materials for selector', error)
+    } else if (materials.length > 0) {
+      selectorLogger.info('materialsLoaded', 'Materials loaded successfully for selector', {
+        materialsCount: materials.length,
+        topMaterials: materials.slice(0, 3).map((m: Material) => ({ id: m.id, name: m.name }))
+      })
+    }
+  }, [isLoading, error, materials])
   
   const selectedMaterial = materials.find((m: Material) => m.id === selectedMaterialId)
   
-  // Calculate material cost
-  const materialCost = selectedMaterial && materialQuantity 
-    ? selectedMaterial.pricePerUnit * materialQuantity 
-    : 0
+  // Calculate material cost with logging
+  const materialCost = (() => {
+    if (!selectedMaterial || !materialQuantity) {
+      return 0
+    }
+    
+    const cost = selectedMaterial.pricePerUnit * materialQuantity
+    
+    selectorLogger.debug('calculateCost', 'Material cost calculated', {
+      materialId: selectedMaterial.id,
+      materialName: selectedMaterial.name,
+      pricePerUnit: selectedMaterial.pricePerUnit,
+      quantity: materialQuantity,
+      totalCost: cost
+    })
+    
+    return cost
+  })()
+
+  const handleMaterialChange = (materialId: string | undefined) => {
+    const material = materials.find((m: Material) => m.id === materialId)
+    
+    selectorLogger.info('handleMaterialChange', 'User changed material selection', {
+      previousMaterialId: selectedMaterialId,
+      newMaterialId: materialId,
+      previousMaterialName: selectedMaterial?.name,
+      newMaterialName: material?.name,
+      hasQuantity: !!materialQuantity
+    })
+    
+    onMaterialChange(materialId)
+  }
 
   const handleQuantityChange = (value: string) => {
+    const originalQuantity = materialQuantity
     const quantity = parseFloat(value)
-    onQuantityChange(isNaN(quantity) || quantity <= 0 ? undefined : quantity)
+    const validQuantity = isNaN(quantity) || quantity <= 0 ? undefined : quantity
+    
+    if (validQuantity !== originalQuantity) {
+      selectorLogger.info('handleQuantityChange', 'User changed material quantity', {
+        materialId: selectedMaterialId,
+        materialName: selectedMaterial?.name,
+        previousQuantity: originalQuantity,
+        newQuantity: validQuantity,
+        inputValue: value,
+        isValid: validQuantity !== undefined
+      })
+      
+      if (validQuantity === undefined && value.length > 0) {
+        selectorLogger.warn('handleQuantityChange', 'Invalid quantity input detected', {
+          inputValue: value,
+          parsedValue: quantity,
+          isNaN: isNaN(quantity),
+          isNegativeOrZero: quantity <= 0
+        })
+      }
+    }
+    
+    onQuantityChange(validQuantity)
   }
+
+  // Log material selection state changes for debugging
+  useEffect(() => {
+    if (selectedMaterialId && !selectedMaterial) {
+      selectorLogger.warn('materialSelectionMismatch', 'Selected material ID not found in loaded materials', {
+        selectedMaterialId,
+        availableMaterialIds: materials.map((m: Material) => m.id),
+        materialsCount: materials.length
+      })
+    }
+  }, [selectedMaterialId, selectedMaterial, materials])
+
+  // Log cost calculation edge cases
+  useEffect(() => {
+    if (selectedMaterial && materialQuantity && materialCost === 0) {
+      selectorLogger.warn('costCalculationError', 'Material cost calculation resulted in zero despite valid inputs', {
+        materialId: selectedMaterial.id,
+        pricePerUnit: selectedMaterial.pricePerUnit,
+        quantity: materialQuantity
+      })
+    }
+  }, [selectedMaterial, materialQuantity, materialCost])
 
   return (
     <div className={`space-y-4 ${className}`}>
@@ -49,7 +151,7 @@ export function MaterialSelector({
         </Label>
         <Select 
           value={selectedMaterialId || ''} 
-          onValueChange={(value) => onMaterialChange(value || undefined)}
+          onValueChange={(value) => handleMaterialChange(value || undefined)}
           disabled={disabled || isLoading}
         >
           <SelectTrigger>
