@@ -21,10 +21,10 @@ interface ProductFormData {
   code: string
   name: string
   categoryId: string
-  size?: string
-  colorId?: string
-  materialId?: string
-  materialQuantity?: number
+  size?: string | undefined
+  colorId?: string | undefined
+  materialId?: string | undefined
+  materialQuantity?: number | undefined
   quantity: number
   modalAwal: number
   currentPrice: number
@@ -132,8 +132,9 @@ export function ProductFormPage({
     code: product?.code || '',
     name: product?.name || '',
     categoryId: product?.categoryId || '',
-    size: product?.size || '',
-    colorId: product?.colorId || '',
+    // Fix: Initialize optional fields with undefined instead of empty strings to prevent Select.Item errors
+    size: product?.size || undefined,
+    colorId: product?.colorId || undefined,
     materialId: product?.materialId || undefined,
     materialQuantity: product?.materialQuantity || undefined,
     quantity: product?.quantity || 1,

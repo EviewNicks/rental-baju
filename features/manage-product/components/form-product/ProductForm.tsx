@@ -67,7 +67,7 @@ export function ProductForm({
       categoriesCount: categories.length,
       hasMaterial: !!formData.materialId,
       materialQuantity: formData.materialQuantity,
-      formDataKeys: Object.keys(formData)
+      formDataKeys: Object.keys(formData),
     })
   }, [formData, categories.length])
 
@@ -87,7 +87,7 @@ export function ProductForm({
       formLogger.error('colorsLoadError', 'Failed to load colors for product form', colorsError)
     } else if (colors.length > 0) {
       formLogger.info('colorsLoaded', 'Colors loaded successfully for product form', {
-        colorsCount: colors.length
+        colorsCount: colors.length,
       })
     }
   }, [isLoadingColors, colorsError, colors.length])
@@ -98,24 +98,26 @@ export function ProductForm({
       formLogger.info('materialIntegration', 'Material selected in product form', {
         materialId: formData.materialId,
         materialQuantity: formData.materialQuantity,
-        hasBothMaterialAndQuantity: !!(formData.materialId && formData.materialQuantity)
+        hasBothMaterialAndQuantity: !!(formData.materialId && formData.materialQuantity),
       })
     }
   }, [formData.materialId, formData.materialQuantity])
 
   // Log form validation errors for debugging
   useEffect(() => {
-    const errorKeys = Object.keys(errors).filter(key => errors[key])
+    const errorKeys = Object.keys(errors).filter((key) => errors[key])
     if (errorKeys.length > 0) {
       formLogger.warn('formValidationErrors', 'Form validation errors detected', {
         errorFields: errorKeys,
         errorCount: errorKeys.length,
-        hasMaterialErrors: errorKeys.some(key => key.includes('material')),
+        hasMaterialErrors: errorKeys.some((key) => key.includes('material')),
         formSection: {
-          basicInfo: errorKeys.some(key => ['code', 'name', 'categoryId', 'quantity'].includes(key)),
-          material: errorKeys.some(key => ['materialId', 'materialQuantity'].includes(key)),
-          price: errorKeys.some(key => ['modalAwal', 'currentPrice'].includes(key))
-        }
+          basicInfo: errorKeys.some((key) =>
+            ['code', 'name', 'categoryId', 'quantity'].includes(key),
+          ),
+          material: errorKeys.some((key) => ['materialId', 'materialQuantity'].includes(key)),
+          price: errorKeys.some((key) => ['modalAwal', 'currentPrice'].includes(key)),
+        },
       })
     }
   }, [errors])
@@ -126,33 +128,44 @@ export function ProductForm({
       previousMaterialId: formData.materialId,
       newMaterialId: materialId,
       hasQuantity: !!formData.materialQuantity,
-      willClearQuantity: !materialId && !!formData.materialQuantity
+      willClearQuantity: !materialId && !!formData.materialQuantity,
     })
-    
+
     onInputChange('materialId', materialId)
-    
+
     // Clear quantity if material is deselected
     if (!materialId && formData.materialQuantity) {
-      formLogger.debug('handleMaterialChange', 'Clearing material quantity due to material deselection')
+      formLogger.debug(
+        'handleMaterialChange',
+        'Clearing material quantity due to material deselection',
+      )
       onInputChange('materialQuantity', undefined)
     }
   }
 
   const handleMaterialQuantityChange = (quantity: number | undefined) => {
-    formLogger.info('handleMaterialQuantityChange', 'User changed material quantity in product form', {
-      materialId: formData.materialId,
-      previousQuantity: formData.materialQuantity,
-      newQuantity: quantity,
-      hasValidMaterial: !!formData.materialId
-    })
-    
+    formLogger.info(
+      'handleMaterialQuantityChange',
+      'User changed material quantity in product form',
+      {
+        materialId: formData.materialId,
+        previousQuantity: formData.materialQuantity,
+        newQuantity: quantity,
+        hasValidMaterial: !!formData.materialId,
+      },
+    )
+
     if (!formData.materialId && quantity) {
-      formLogger.warn('handleMaterialQuantityChange', 'Quantity provided without material selection', {
-        quantity,
-        materialId: formData.materialId
-      })
+      formLogger.warn(
+        'handleMaterialQuantityChange',
+        'Quantity provided without material selection',
+        {
+          quantity,
+          materialId: formData.materialId,
+        },
+      )
     }
-    
+
     onInputChange('materialQuantity', quantity)
   }
 

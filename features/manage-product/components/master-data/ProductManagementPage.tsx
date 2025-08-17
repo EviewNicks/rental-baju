@@ -4,6 +4,7 @@ import { TabNavigation, useTabNavigation, type TabValue } from './TabNavigation'
 import { MaterialManagement } from '../material/MaterialManagement'
 import { CategoryManagement } from '../category/CategoryManagement'
 import { ColorManagement } from '../color/ColorManagement'
+import { PageNavigation } from '../shared/PageNavigation'
 import { logger } from '@/services/logger'
 import { useEffect } from 'react'
 
@@ -40,6 +41,14 @@ export function ProductManagementPage() {
 
   return (
     <div className="space-y-6 p-6">
+      {/* Navigation */}
+      <PageNavigation 
+        currentPage="Data Master Produk"
+        parentPath="/producer/manage-product"
+        parentLabel="Kelola Produk"
+        className="mb-4"
+      />
+
       {/* Page Header */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Kelola Data Master Produk</h1>
