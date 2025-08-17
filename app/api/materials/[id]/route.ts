@@ -13,9 +13,9 @@ import { prisma } from '@/lib/prisma'
 import { ConflictError, NotFoundError } from '@/features/manage-product/lib/errors/AppError'
 
 interface RouteParams {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 export async function GET(request: NextRequest, { params }: RouteParams) {
@@ -29,7 +29,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       )
     }
 
-    const { id } = params
+    const { id } = await params
 
     // Initialize service
     const materialService = new MaterialService(prisma, userId)
@@ -39,7 +39,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json(material, { status: 200 })
   } catch (error) {
-    console.error(`GET /api/materials/${params.id} error:`, error)
+    console.error(`GET /api/materials/${(await params).id} error:`, error)
 
     if (error instanceof NotFoundError) {
       return NextResponse.json(
@@ -73,7 +73,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       )
     }
 
-    const { id } = params
+    const { id } = await params
 
     // Parse JSON request body
     const body = await request.json()
@@ -140,7 +140,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json(material, { status: 200 })
   } catch (error) {
-    console.error(`PUT /api/materials/${params.id} error:`, error)
+    console.error(`PUT /api/materials/${(await params).id} error:`, error)
 
     if (error instanceof NotFoundError) {
       return NextResponse.json(
@@ -181,7 +181,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       )
     }
 
-    const { id } = params
+    const { id } = await params
 
     // Initialize service
     const materialService = new MaterialService(prisma, userId)
@@ -197,7 +197,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       { status: 200 }
     )
   } catch (error) {
-    console.error(`DELETE /api/materials/${params.id} error:`, error)
+    console.error(`DELETE /api/materials/${(await params).id} error:`, error)
 
     if (error instanceof NotFoundError) {
       return NextResponse.json(

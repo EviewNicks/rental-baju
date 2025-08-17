@@ -27,17 +27,19 @@ export function MaterialList({ materials, onEdit, onDelete, loading }: MaterialL
 
   // Log component mount and data changes
   useEffect(() => {
+    const safeMaterialsLength = Array.isArray(materials) ? materials.length : 0
     listLogger.debug('componentMount', 'MaterialList component mounted', {
-      materialsCount: materials.length,
+      materialsCount: safeMaterialsLength,
       loading
     })
-  }, [materials.length, loading])
+  }, [materials, loading])
 
   useEffect(() => {
-    if (materials.length > 0) {
+    const safeMaterials = Array.isArray(materials) ? materials : []
+    if (safeMaterials.length > 0) {
       listLogger.info('materialsLoaded', 'Materials data loaded successfully', {
-        materialsCount: materials.length,
-        materialNames: materials.slice(0, 5).map(m => m.name) // Log first 5 for debugging
+        materialsCount: safeMaterials.length,
+        materialNames: safeMaterials.slice(0, 5).map(m => m?.name || 'Unknown') // Log first 5 for debugging
       })
     }
   }, [materials])
@@ -46,8 +48,11 @@ export function MaterialList({ materials, onEdit, onDelete, loading }: MaterialL
   const filteredMaterials = (() => {
     const timer = logger.startTimer('MaterialList', 'filterMaterials', 'material_filtering')
     
-    const filtered = materials.filter(material =>
-      material.name.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
+    // Defensive programming: handle undefined/null materials array
+    const safeMaterials = Array.isArray(materials) ? materials : []
+    
+    const filtered = safeMaterials.filter(material =>
+      material?.name?.toLowerCase()?.includes(debouncedSearchTerm.toLowerCase()) || false
     )
     
     const duration = timer.end()
@@ -56,10 +61,10 @@ export function MaterialList({ materials, onEdit, onDelete, loading }: MaterialL
     if (debouncedSearchTerm) {
       listLogger.info('filterMaterials', 'Search filtering completed', {
         searchTerm: debouncedSearchTerm,
-        totalMaterials: materials.length,
+        totalMaterials: safeMaterials.length,
         filteredCount: filtered.length,
         duration: `${duration}ms`,
-        filterEfficiency: `${((filtered.length / materials.length) * 100).toFixed(1)}%`
+        filterEfficiency: safeMaterials.length > 0 ? `${((filtered.length / safeMaterials.length) * 100).toFixed(1)}%` : '0%'
       })
     }
     
@@ -75,8 +80,9 @@ export function MaterialList({ materials, onEdit, onDelete, loading }: MaterialL
         previousLength: searchTerm.length
       })
     } else if (value.length === 1) {
+      const safeMaterialsLength = Array.isArray(materials) ? materials.length : 0
       listLogger.debug('handleSearchChange', 'User started searching', {
-        materialsCount: materials.length
+        materialsCount: safeMaterialsLength
       })
     }
   }
@@ -124,10 +130,11 @@ export function MaterialList({ materials, onEdit, onDelete, loading }: MaterialL
 
       {filteredMaterials.length === 0 ? (
         (() => {
+          const safeMaterialsLength = Array.isArray(materials) ? materials.length : 0
           listLogger.info('renderEmptyState', 'Rendering empty state', {
             hasSearch: debouncedSearchTerm.length > 0,
             searchTerm: debouncedSearchTerm,
-            totalMaterials: materials.length,
+            totalMaterials: safeMaterialsLength,
             isFiltered: debouncedSearchTerm.length > 0
           })
           return <EmptyState hasSearch={debouncedSearchTerm.length > 0} />

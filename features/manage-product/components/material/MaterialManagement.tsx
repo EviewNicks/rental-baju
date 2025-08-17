@@ -36,6 +36,7 @@ function MaterialManagementContent({ className }: MaterialManagementProps) {
   const updateMaterialMutation = useUpdateMaterial()
   const deleteMaterialMutation = useDeleteMaterial()
 
+  // Fix: Correctly access materials data from API response structure
   const materials = materialsData?.materials || []
 
   // Log component mount and data loading state

@@ -32,7 +32,7 @@ export function useMaterials(params?: MaterialQueryParams) {
         const duration = timer.end('Materials query completed successfully')
         
         hookLogger.info('getMaterials', 'Materials fetched successfully', {
-          count: result.data.length,
+          count: result.materials?.length || 0,
           duration: `${duration}ms`,
           hasFilters: !!params?.search
         })

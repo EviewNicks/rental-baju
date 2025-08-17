@@ -262,3 +262,11 @@
     "duration": "16487ms"
   }
 }
+2025-08-17T01:03:31.579Z [INFO] [MaterialList][filterMaterials] material_filtering completed
+{
+  "performance": {
+    "label": "material_filtering",
+    "duration": "0ms"
+  }
+}
+2025-08-17T01:03:31.585Z [DEBUG] [MaterialList][renderSkeleton] Rendering loading skeleton state
