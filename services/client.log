@@ -1,0 +1,17 @@
+[Fast Refresh] done in 276ms
+logger.ts:196 2025-08-18T00:23:07.509Z [INFO] [ProductForm][colorsLoaded] Colors loaded successfully for product form{  "colorsCount": 1,  "performance": {    "timestamp": 1755476587509,    "memory": null  }}
+hook.js:377 2025-08-18T00:23:07.512Z [INFO] [ProductForm][colorsLoaded] Colors loaded successfully for product form{  "colorsCount": 1,  "performance": {    "timestamp": 1755476587512,    "memory": null  }}
+logger.ts:196 2025-08-18T00:23:08.525Z [INFO] [useMaterials][getMaterials] Materials query completed successfully{  "performance": {    "label": "materials_query",    "duration": "1017ms"  }}
+logger.ts:196 2025-08-18T00:23:08.526Z [INFO] [useMaterials][getMaterials] Materials fetched successfully{  "count": 1,  "duration": "1017ms",  "hasFilters": false,  "performance": {    "timestamp": 1755476588526,    "memory": null  }}
+image:1  Failed to load resource: the server responded with a status of 400 (Bad Request)Understand this error
+image:1  Failed to load resource: the server responded with a status of 400 (Bad Request)Understand this error
+image:1  Failed to load resource: the server responded with a status of 400 (Bad Request)Understand this error
+image:1  Failed to load resource: the server responded with a status of 400 (Bad Request)Understand this error
+image:1  Failed to load resource: the server responded with a status of 400 (Bad Request)Understand this error
+image:1  Failed to load resource: the server responded with a status of 400 (Bad Request)Understand this error
+image:1  Failed to load resource: the server responded with a status of 400 (Bad Request)Understand this error
+image:1  Failed to load resource: the server responded with a status of 400 (Bad Request)Understand this error
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 112ms
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 664ms
