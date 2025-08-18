@@ -27,6 +27,14 @@ export const productBaseSchema = z.object({
   categoryId: z.string().uuid('ID kategori tidak valid'),
   size: z.string().max(10, 'Ukuran maksimal 10 karakter').optional(),
   colorId: z.string().uuid('ID warna tidak valid').optional(),
+  // Material Management fields - RPK-45 (optional untuk backward compatibility)
+  materialId: z.string().uuid('ID material tidak valid').optional(),
+  materialQuantity: z
+    .number()
+    .int('Jumlah material harus berupa bilangan bulat')
+    .min(1, 'Jumlah material minimal 1')
+    .max(99999, 'Jumlah material maksimal 99,999')
+    .optional(),
 })
 
 /**

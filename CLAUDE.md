@@ -21,6 +21,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - Always in Plan mode to make a plan
 - after get the plan, make sure you write the plan to .claude/tasks/TASK_NAME.md
+- after task compleated, make sure you write the report to .claude/reports/TASK_NAME.md
 - The plan should be a detailed implementation plan and the reasoning behind them, as well as tasks broken down
 - if the task require external knowledge or certain package, also research to get latest knowledge (use Task tool for research)
 - Don't over plan it, always think MVP.
@@ -238,9 +239,11 @@ yarn env:validate          # Validate environment variables
 **Root Cause**: Backend API (`/api/kasir/transaksi`) returns `itemCount` field but not full `items[]` array. Frontend `useTransactions` hook expected `items` array and failed transformation when undefined.
 
 **Solution Applied**:
+
 1. **Frontend Fallback**: Modified `useTransactions.ts` line 65-66 to use `itemCount` as fallback:
+
    ```typescript
-   items: transaction?.items?.map((item: any) => item?.produk?.name || '') || 
+   items: transaction?.items?.map((item: any) => item?.produk?.name || '') ||
           (transaction?.itemCount ? [`${transaction.itemCount} item(s)`] : ['Tidak ada item']),
    ```
 

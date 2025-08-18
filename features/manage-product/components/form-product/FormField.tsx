@@ -13,6 +13,11 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
+import { logger } from '@/services/logger'
+import { useEffect } from 'react'
+
+// Component-specific logger for form field debugging
+const fieldLogger = logger.child('FormField')
 
 interface BaseFieldProps {
   name: string
@@ -49,7 +54,7 @@ interface TextareaFieldProps extends BaseFieldProps {
 
 interface SelectFieldProps extends BaseFieldProps {
   type: 'select'
-  value: string
+  value: string | undefined
   onChange: (value: string) => void
   options: Array<{ value: string; label: string; color?: string; disabled?: boolean }>
   placeholder?: string
@@ -66,6 +71,33 @@ export function FormField(props: FormFieldProps) {
   const hasSuccess = !error && touched && props.value
 
   const fieldClassName = cn(hasError && 'border-red-500', hasSuccess && 'border-green-500')
+
+  // Enhanced debug logging for Select components to trace Select.Item errors
+  useEffect(() => {
+    if (props.type === 'select') {
+      const selectProps = props as SelectFieldProps
+      fieldLogger.debug('selectFieldDebug', `Select field ${name} props analysis`, {
+        fieldName: name,
+        value: selectProps.value,
+        valueType: typeof selectProps.value,
+        valueLength: selectProps.value?.length,
+        isEmpty: selectProps.value === '',
+        isUndefined: selectProps.value === undefined,
+        isNull: selectProps.value === null,
+        optionsCount: selectProps.options?.length || 0,
+        optionsDetails: selectProps.options?.map(opt => ({
+          value: opt.value,
+          valueType: typeof opt.value,
+          valueLength: opt.value?.length,
+          isEmpty: opt.value === '',
+          label: opt.label
+        })) || [],
+        hasEmptyOptionsValues: selectProps.options?.some(opt => opt.value === '') || false,
+        finalSelectValue: selectProps.value && selectProps.value.trim() !== '' ? selectProps.value : undefined,
+        willCauseError: selectProps.value === '' || selectProps.options?.some(opt => opt.value === '') || false
+      })
+    }
+  }, [props, name])
 
   return (
     <div className="space-y-2" data-testid={testId}>
@@ -133,24 +165,77 @@ export function FormField(props: FormFieldProps) {
       )}
 
       {props.type === 'select' && (
-        <Select value={props.value || undefined} onValueChange={props.onChange} disabled={props.disabled}>
+        <Select 
+          value={
+            // Triple-layer safety check to prevent empty string values
+            props.value && 
+            typeof props.value === 'string' && 
+            props.value.trim() !== '' 
+              ? props.value 
+              : undefined
+          } 
+          onValueChange={props.onChange} 
+          disabled={props.disabled}
+        >
           <SelectTrigger className={fieldClassName} data-testid={testId ? `${testId}-trigger` : undefined}>
             <SelectValue placeholder={props.placeholder} />
           </SelectTrigger>
           <SelectContent data-testid={testId ? `${testId}-content` : undefined}>
-            {props.options.map((option) => (
-              <SelectItem key={option.value} value={option.value} disabled={option.disabled} data-testid={testId ? `${testId}-option-${option.value}` : undefined}>
-                <div className="flex items-center gap-2">
-                  {option.color && (
-                    <div
-                      className="w-3 h-3 rounded-full"
-                      style={{ backgroundColor: option.color }}
-                    />
-                  )}
-                  {option.label}
-                </div>
-              </SelectItem>
-            ))}
+            {(props.options || [])
+              .filter((option) => {
+                // Enhanced filtering with comprehensive validation
+                const isValid = option &&
+                  option.value !== null &&
+                  option.value !== undefined &&
+                  typeof option.value === 'string' &&
+                  option.value.trim() !== '' &&
+                  option.value !== ' '
+                
+                if (!isValid) {
+                  fieldLogger.warn('invalidOptionFiltered', `Invalid option filtered out in ${name}`, {
+                    option,
+                    fieldName: name,
+                    reason: !option ? 'null_option' : 
+                           option.value === null ? 'null_value' :
+                           option.value === undefined ? 'undefined_value' :
+                           typeof option.value !== 'string' ? 'non_string_value' :
+                           option.value.trim() === '' ? 'empty_string' :
+                           option.value === ' ' ? 'whitespace_only' : 'unknown'
+                  })
+                }
+                
+                return isValid
+              })
+              .map((option) => {
+                // Additional safety check before rendering SelectItem
+                if (!option.value || option.value.trim() === '') {
+                  fieldLogger.error('selectItemRenderError', `Attempting to render SelectItem with invalid value in ${name}`, {
+                    option,
+                    fieldName: name,
+                    value: option.value
+                  })
+                  return null
+                }
+                
+                return (
+                  <SelectItem 
+                    key={option.value} 
+                    value={option.value} 
+                    disabled={option.disabled} 
+                    data-testid={testId ? `${testId}-option-${option.value}` : undefined}
+                  >
+                    <div className="flex items-center gap-2">
+                      {option.color && (
+                        <div
+                          className="w-3 h-3 rounded-full"
+                          style={{ backgroundColor: option.color }}
+                        />
+                      )}
+                      {option.label}
+                    </div>
+                  </SelectItem>
+                )
+              })}
           </SelectContent>
         </Select>
       )}

@@ -105,6 +105,10 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const categoryId = (formData.get('categoryId') as string) || undefined
     const size = (formData.get('size') as string) || undefined
     const colorId = (formData.get('colorId') as string) || undefined
+    // Material Management fields - RPK-45
+    const materialId = (formData.get('materialId') as string) || undefined
+    const materialQuantityStr = (formData.get('materialQuantity') as string) || undefined
+    const materialQuantity = materialQuantityStr ? parseInt(materialQuantityStr) : undefined
     const image = formData.get('image') as File | null
 
     // Prepare update data
@@ -119,6 +123,35 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     if (categoryId !== undefined) updateData.categoryId = categoryId
     if (size !== undefined) updateData.size = size
     if (colorId !== undefined) updateData.colorId = colorId
+    // Material Management fields - RPK-45
+    if (materialId !== undefined) updateData.materialId = materialId
+    if (materialQuantity !== undefined) updateData.materialQuantity = materialQuantity
+
+    // Validate materialQuantity if provided
+    if (materialQuantityStr && (isNaN(materialQuantity!) || materialQuantity! <= 0)) {
+      return NextResponse.json(
+        {
+          error: {
+            message: 'Material quantity harus berupa angka positif',
+            code: 'VALIDATION_ERROR',
+          },
+        },
+        { status: 400 },
+      )
+    }
+
+    // Validate materialId and materialQuantity consistency
+    if (materialId && !materialQuantity) {
+      return NextResponse.json(
+        {
+          error: {
+            message: 'Material quantity wajib diisi jika material dipilih',
+            code: 'VALIDATION_ERROR',
+          },
+        },
+        { status: 400 },
+      )
+    }
 
     // Validate with schema if there's data to update
     if (Object.keys(updateData).length > 0) {

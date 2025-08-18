@@ -68,14 +68,29 @@ export function ImageUpload({ value, onChange, onFileChange, className }: ImageU
       {preview ? (
         <div className="relative">
           <div className="w-48 h-48 mx-auto rounded-lg overflow-hidden bg-gray-100">
-            <Image
-              // src={preview || '/placeholder.svg'}
-              src={getValidImageUrl(preview)}
-              alt="Preview"
-              width={192}
-              height={192}
-              className="w-full h-full object-cover"
-            />
+            {(() => {
+              // Detect URL type for conditional rendering
+              const isPreviewUrl = preview?.startsWith('data:') || preview?.startsWith('blob:')
+              
+              return isPreviewUrl ? (
+                // Use native img for blob/data URLs (client-side only)
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={preview}
+                  alt="Preview"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                // Use Next.js Image for HTTP URLs (server-optimized)
+                <Image
+                  src={getValidImageUrl(preview)}
+                  alt="Preview"
+                  width={192}
+                  height={192}
+                  className="w-full h-full object-cover"
+                />
+              )
+            })()}
           </div>
           <Button
             type="button"

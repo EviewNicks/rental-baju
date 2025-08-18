@@ -1,20 +1,15 @@
 'use client'
 
 import { Plus, Settings } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-// import { CategoryManagementModal } from '@/features/manage-product/components/category/CategoryManagementModal'
-// import { useCategoryModal } from '@/features/manage-product/hooks/usecategoryModal'
-
-import { MasterDataManagementModal } from '../master-data/MasterDataManagementModal'
-import { useMasterDataModal } from '../../hooks/useMasterDataModal'
 
 interface ProductHeaderProps {
   onAddProduct: () => void
 }
 
 export function ProductHeader({ onAddProduct }: ProductHeaderProps) {
-  // const { isOpen, openModal, closeModal } = useCategoryModal()
-  const { isOpen, defaultTab, openModal, closeModal } = useMasterDataModal()
+  const router = useRouter()
 
   return (
     <>
@@ -42,7 +37,7 @@ export function ProductHeader({ onAddProduct }: ProductHeaderProps) {
               <Button
                 variant="outline"
                 className="flex items-center gap-2 bg-transparent"
-                onClick={() => openModal('categories')}
+                onClick={() => router.push('/producer/manage-product/materials')}
               >
                 <Settings className="w-4 h-4" />
                 Kelola Data Master
@@ -60,8 +55,6 @@ export function ProductHeader({ onAddProduct }: ProductHeaderProps) {
         </div>
       </div>
 
-      {/* <CategoryManagementModal isOpen={isOpen} onClose={closeModal} /> */}
-      <MasterDataManagementModal isOpen={isOpen} onClose={closeModal} defaultTab={defaultTab} />
     </>
   )
 }

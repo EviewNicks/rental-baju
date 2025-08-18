@@ -62,7 +62,12 @@
       "Bash(true)",
       "Bash(npx prisma db execute:*)",
       "Bash(npx prisma:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:www.npmjs.com)",
+      "mcp__sequential-thinking__sequentialthinking",
+      "mcp__sequential-thinking__sequentialthinking"
     ],
     "deny": []
   }

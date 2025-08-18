@@ -46,6 +46,12 @@ const mockPrisma = {
   category: {
     findUnique: jest.fn(),
   },
+  color: {
+    findUnique: jest.fn(),
+  },
+  material: {
+    findUnique: jest.fn(),
+  },
 } as unknown as jest.Mocked<PrismaClient>
 
 describe('ProductService', () => {
@@ -67,7 +73,7 @@ describe('ProductService', () => {
       name: 'Dress Elegant',
       description: 'Dress untuk acara formal',
       modalAwal: 150000,
-      hargaSewa: 50000,
+      currentPrice: 50000,
       quantity: 5,
       categoryId: 'cat-123',
       image: undefined,
@@ -79,8 +85,9 @@ describe('ProductService', () => {
       name: 'Dress Elegant',
       description: 'Dress untuk acara formal',
       modalAwal: new Decimal(150000),
-      hargaSewa: new Decimal(50000),
+      currentPrice: new Decimal(50000),
       quantity: 5,
+      rentedStock: 0,
       categoryId: 'cat-123',
       category: {
         id: 'cat-123',
@@ -121,17 +128,24 @@ describe('ProductService', () => {
           name: 'Dress Elegant',
           description: 'Dress untuk acara formal',
           modalAwal: new Decimal(150000),
-          hargaSewa: new Decimal(50000),
+          currentPrice: new Decimal(50000),
           quantity: 5,
+          rentedStock: 0,
           categoryId: 'cat-123',
+          size: undefined,
+          colorId: undefined,
+          materialId: undefined,
+          materialCost: undefined,
+          materialQuantity: undefined,
           imageUrl: undefined,
           status: 'AVAILABLE',
-          totalPendapatan: new Decimal(0),
           isActive: true,
           createdBy: mockUserId,
         },
         include: {
           category: true,
+          color: true,
+          material: true,
         },
       })
       expect(result).toEqual(mockCreatedProduct)
@@ -180,13 +194,124 @@ describe('ProductService', () => {
         'Database connection failed',
       )
     })
+
+    // Material Management Integration Tests - RPK-45
+    it('should create product dengan material integration successfully', async () => {
+      // Arrange
+      const mockMaterialRequest: CreateProductRequest = {
+        code: 'DRS2',
+        name: 'Dress dengan Material',
+        description: 'Dress dengan material premium',
+        modalAwal: 200000,
+        currentPrice: 75000,
+        quantity: 3,
+        categoryId: 'cat-123',
+        materialId: 'material-123',
+        materialQuantity: 2,
+        image: undefined,
+      }
+
+      const mockMaterial = {
+        id: 'material-123',
+        name: 'Satin Premium',
+        pricePerUnit: new Decimal(50000),
+        unit: 'meter',
+        isActive: true,
+      }
+
+      const mockCreatedProductWithMaterial: Product = {
+        ...mockCreatedProduct,
+        id: 'prod-124',
+        code: 'DRS2',
+        name: 'Dress dengan Material',
+        description: 'Dress dengan material premium',
+        modalAwal: new Decimal(200000),
+        currentPrice: new Decimal(75000),
+        quantity: 3,
+        materialId: 'material-123',
+        materialCost: new Decimal(100000), // 50000 * 2
+        materialQuantity: 2,
+        material: {
+          id: 'material-123',
+          name: 'Satin Premium',
+          pricePerUnit: 50000,
+          unit: 'meter',
+          isActive: true,
+          products: [],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          createdBy: mockUserId,
+        },
+      }
+
+      ;(createProductSchema.parse as jest.Mock).mockReturnValue(mockMaterialRequest)
+      ;(mockPrisma.product.findFirst as jest.Mock).mockResolvedValue(null)
+      ;(mockPrisma.category.findUnique as jest.Mock).mockResolvedValue({ id: 'cat-123' })
+      ;(mockPrisma.material.findUnique as jest.Mock).mockResolvedValue(mockMaterial)
+      ;(mockPrisma.product.create as jest.Mock).mockResolvedValue(mockCreatedProductWithMaterial)
+
+      // Act
+      const result = await productService.createProduct(mockMaterialRequest)
+
+      // Assert
+      expect(mockPrisma.material.findUnique).toHaveBeenCalledWith({
+        where: { id: 'material-123', isActive: true },
+      })
+      expect(mockPrisma.product.create).toHaveBeenCalledWith({
+        data: {
+          code: 'DRS2',
+          name: 'Dress dengan Material',
+          description: 'Dress dengan material premium',
+          modalAwal: new Decimal(200000),
+          currentPrice: new Decimal(75000),
+          quantity: 3,
+          rentedStock: 0,
+          categoryId: 'cat-123',
+          size: undefined,
+          colorId: undefined,
+          materialId: 'material-123',
+          materialCost: new Decimal(100000), // 50000 * 2 = 100000
+          materialQuantity: 2,
+          imageUrl: undefined,
+          status: 'AVAILABLE',
+          isActive: true,
+          createdBy: mockUserId,
+        },
+        include: {
+          category: true,
+          color: true,
+          material: true,
+        },
+      })
+      expect(result).toEqual(mockCreatedProductWithMaterial)
+    })
+
+    it('should throw error jika material tidak ditemukan', async () => {
+      // Arrange
+      const invalidMaterialRequest: CreateProductRequest = {
+        ...mockCreateRequest,
+        materialId: 'non-existent-material',
+        materialQuantity: 2,
+      }
+
+      ;(createProductSchema.parse as jest.Mock).mockReturnValue(invalidMaterialRequest)
+      ;(mockPrisma.product.findFirst as jest.Mock).mockResolvedValue(null)
+      ;(mockPrisma.category.findUnique as jest.Mock).mockResolvedValue({ id: 'cat-123' })
+      ;(mockPrisma.material.findUnique as jest.Mock).mockResolvedValue(null)
+
+      // Act & Assert
+      await expect(productService.createProduct(invalidMaterialRequest)).rejects.toThrow(
+        'Material dengan ID non-existent-material tidak ditemukan',
+      )
+      expect(mockPrisma.product.create).not.toHaveBeenCalled()
+    })
   })
 
   describe('updateProduct', () => {
     const productId = 'prod-123'
     const mockUpdateRequest: UpdateProductRequest = {
       name: 'Updated Dress Name',
-      hargaSewa: 60000,
+      currentPrice: 60000,
     }
 
     const mockExistingProduct = {

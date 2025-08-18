@@ -58,11 +58,28 @@ export class ProductService {
     // Validate colorId if provided
     if (validatedData.colorId) {
       const colorExists = await this.prisma.color.findUnique({
-        where: { id: validatedData.colorId, isActive: true },
+        where: { id: validatedData.colorId },
       })
 
       if (!colorExists) {
         throw new NotFoundError(`Warna dengan ID ${validatedData.colorId} tidak ditemukan`)
+      }
+    }
+
+    // Validate materialId if provided - RPK-45
+    let materialCost: Decimal | undefined
+    if (validatedData.materialId) {
+      const materialExists = await this.prisma.material.findUnique({
+        where: { id: validatedData.materialId },
+      })
+
+      if (!materialExists) {
+        throw new NotFoundError(`Material dengan ID ${validatedData.materialId} tidak ditemukan`)
+      }
+
+      // Calculate material cost if materialQuantity is provided
+      if (validatedData.materialQuantity && validatedData.materialQuantity > 0) {
+        materialCost = new Decimal(materialExists.pricePerUnit).mul(validatedData.materialQuantity)
       }
     }
 
@@ -79,6 +96,10 @@ export class ProductService {
         categoryId: validatedData.categoryId,
         size: validatedData.size,
         colorId: validatedData.colorId,
+        // Material Management fields - RPK-45
+        materialId: validatedData.materialId || undefined,
+        materialCost: materialCost || undefined,
+        materialQuantity: validatedData.materialQuantity || undefined,
         imageUrl: request.imageUrl || undefined, // ✅ Gunakan imageUrl dari request
         status: 'AVAILABLE',
         // totalPendapatan removed - now calculated from transaction history
@@ -88,6 +109,7 @@ export class ProductService {
       include: {
         category: true,
         color: true, // Include color relation
+        material: true, // Include material relation - RPK-45
       },
     })
 
@@ -132,11 +154,38 @@ export class ProductService {
     // Validate colorId existence if colorId is being updated
     if (validatedData.colorId && validatedData.colorId !== existingProduct.colorId) {
       const colorExists = await this.prisma.color.findUnique({
-        where: { id: validatedData.colorId, isActive: true },
+        where: { id: validatedData.colorId },
       })
 
       if (!colorExists) {
         throw new NotFoundError(`Warna dengan ID ${validatedData.colorId} tidak ditemukan`)
+      }
+    }
+
+    // Validate materialId and calculate material cost if provided - RPK-45
+    let materialCost: Decimal | undefined
+    if (validatedData.materialId && validatedData.materialId !== existingProduct.materialId) {
+      const materialExists = await this.prisma.material.findUnique({
+        where: { id: validatedData.materialId },
+      })
+
+      if (!materialExists) {
+        throw new NotFoundError(`Material dengan ID ${validatedData.materialId} tidak ditemukan`)
+      }
+
+      // Calculate material cost if materialQuantity is provided or exists
+      const quantityToUse = validatedData.materialQuantity ?? existingProduct.materialQuantity ?? 0
+      if (quantityToUse > 0) {
+        materialCost = new Decimal(materialExists.pricePerUnit).mul(quantityToUse)
+      }
+    } else if (validatedData.materialQuantity && existingProduct.materialId) {
+      // Recalculate cost if quantity changed but material stayed the same
+      const materialExists = await this.prisma.material.findUnique({
+        where: { id: existingProduct.materialId },
+      })
+
+      if (materialExists && validatedData.materialQuantity > 0) {
+        materialCost = new Decimal(materialExists.pricePerUnit).mul(validatedData.materialQuantity)
       }
     }
 
@@ -153,6 +202,11 @@ export class ProductService {
     if (validatedData.size !== undefined) updateData.size = validatedData.size
     if (validatedData.colorId !== undefined) updateData.colorId = validatedData.colorId
     if (validatedData.rentedStock !== undefined) updateData.rentedStock = validatedData.rentedStock
+
+    // Material Management fields - RPK-45
+    if (validatedData.materialId !== undefined) updateData.materialId = validatedData.materialId
+    if (validatedData.materialQuantity !== undefined) updateData.materialQuantity = validatedData.materialQuantity
+    if (materialCost !== undefined) updateData.materialCost = materialCost
 
     // Handle imageUrl update (added from API layer)
     if ('imageUrl' in request && request.imageUrl !== undefined) {
@@ -174,6 +228,7 @@ export class ProductService {
       include: {
         category: true,
         color: true, // Include color relation
+        material: true, // Include material relation - RPK-45
       },
     })
 
@@ -238,6 +293,7 @@ export class ProductService {
         include: {
           category: true,
           color: true, // Include color relation
+          material: true, // Include material relation - RPK-45
         },
         orderBy: {
           createdAt: 'desc',
@@ -279,6 +335,7 @@ export class ProductService {
       include: {
         category: true,
         color: true, // Include color relation
+        material: true, // Include material relation - RPK-45
       },
     })
 
@@ -360,6 +417,7 @@ export class ProductService {
       include: {
         category: true,
         color: true, // Include color relation
+        material: true, // Include material relation - RPK-45
       },
     })
 
@@ -408,6 +466,23 @@ export class ProductService {
       currentPrice: prismaProduct.currentPrice as Decimal, // ✅ Fixed: return currentPrice instead of hargaSewa
       quantity: prismaProduct.quantity as number,
       rentedStock: (prismaProduct.rentedStock as number) || 0, // ✅ Added rentedStock field
+      // Material Management fields - RPK-45
+      materialId: prismaProduct.materialId as string | undefined,
+      materialCost: prismaProduct.materialCost as Decimal | undefined,
+      materialQuantity: prismaProduct.materialQuantity as number | undefined,
+      material: prismaProduct.material
+        ? {
+            id: (prismaProduct.material as Record<string, unknown>).id as string,
+            name: (prismaProduct.material as Record<string, unknown>).name as string,
+            pricePerUnit: (prismaProduct.material as Record<string, unknown>).pricePerUnit as Decimal,
+            unit: (prismaProduct.material as Record<string, unknown>).unit as string,
+            isActive: (prismaProduct.material as Record<string, unknown>).isActive as boolean,
+            products: [], // Avoid circular reference in conversion
+            createdAt: (prismaProduct.material as Record<string, unknown>).createdAt as Date,
+            updatedAt: (prismaProduct.material as Record<string, unknown>).updatedAt as Date,
+            createdBy: (prismaProduct.material as Record<string, unknown>).createdBy as string,
+          }
+        : undefined,
       status: prismaProduct.status as ProductStatus,
       imageUrl: prismaProduct.imageUrl as string | undefined,
       totalPendapatan: prismaProduct.totalPendapatan as Decimal,

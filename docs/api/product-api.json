@@ -1,8 +1,8 @@
 {
   "info": {
-    "name": "Product Management API Enhanced",
-    "description": "Enhanced API untuk manajemen produk, kategori, dan warna dengan authentication Clerk. Include Size & Color Management features.",
-    "version": "2.0.0",
+    "name": "Producer API Collection - Complete",
+    "description": "Complete API collection untuk Producer role: manajemen produk, kategori, warna, dan material dengan authentication Clerk. Include Size & Color Management features dan Material Management System (RPK-45).\n\n🔗 DEPENDENCIES & EXECUTION ORDER:\n1. Setup: Login → Get session token\n2. Prerequisites: Create Category → Create Color → (Optional) Create Material\n3. Products: Create/Update products dengan material integration\n4. Testing: Run integration scenarios\n\n📋 REQUIRED VARIABLES:\n- base_url: http://localhost:3000\n- clerk_session_token: From browser cookies\n- Auto-captured: product_id, category_id, color_id, material_id\n\n📚 Full documentation: docs/api/TEST_EXECUTION_REPORT.md",
+    "version": "3.0.0",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -35,6 +35,11 @@
       "key": "color_id",
       "value": "",
       "description": "ID warna untuk testing"
+    },
+    {
+      "key": "material_id",
+      "value": "",
+      "description": "ID material untuk testing"
     }
   ],
   "item": [
@@ -136,7 +141,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"products\": [\n    {\n      \"id\": \"uuid-1\",\n      \"code\": \"DRS1\",\n      \"name\": \"Dress Elegant\",\n      \"description\": \"Dress untuk acara formal\",\n      \"categoryId\": \"cat-uuid-1\",\n      \"size\": \"M\",\n      \"colorId\": \"color-uuid-1\",\n      \"modalAwal\": \"150000.00\",\n      \"currentPrice\": \"50000.00\",\n      \"quantity\": 5,\n      \"rentedStock\": 0,\n      \"status\": \"AVAILABLE\",\n      \"imageUrl\": \"https://example.com/dress1.jpg\",\n      \"totalPendapatan\": \"0.00\",\n      \"isActive\": true,\n      \"createdAt\": \"2024-01-01T00:00:00Z\",\n      \"updatedAt\": \"2024-01-01T00:00:00Z\",\n      \"createdBy\": \"user123\",\n      \"category\": {\n        \"id\": \"cat-uuid-1\",\n        \"name\": \"Dress\",\n        \"color\": \"#EC4899\"\n      },\n      \"color\": {\n        \"id\": \"color-uuid-1\",\n        \"name\": \"Merah Marun\",\n        \"hexCode\": \"#800000\",\n        \"description\": \"Warna merah tua yang elegan\",\n        \"isActive\": true\n      }\n    }\n  ],\n  \"pagination\": {\n    \"page\": 1,\n    \"limit\": 2,\n    \"total\": 15,\n    \"totalPages\": 8\n  }\n}"
+              "body": "{\n  \"products\": [\n    {\n      \"id\": \"uuid-1\",\n      \"code\": \"DRS1\",\n      \"name\": \"Dress Elegant\",\n      \"description\": \"Dress untuk acara formal\",\n      \"categoryId\": \"cat-uuid-1\",\n      \"size\": \"M\",\n      \"colorId\": \"color-uuid-1\",\n      \"materialId\": \"material-uuid-1\",\n      \"materialCost\": 75000,\n      \"materialQuantity\": 3,\n      \"modalAwal\": \"150000.00\",\n      \"currentPrice\": \"50000.00\",\n      \"quantity\": 5,\n      \"rentedStock\": 0,\n      \"status\": \"AVAILABLE\",\n      \"imageUrl\": \"https://example.com/dress1.jpg\",\n      \"totalPendapatan\": \"0.00\",\n      \"isActive\": true,\n      \"createdAt\": \"2024-01-01T00:00:00Z\",\n      \"updatedAt\": \"2024-01-01T00:00:00Z\",\n      \"createdBy\": \"user123\",\n      \"category\": {\n        \"id\": \"cat-uuid-1\",\n        \"name\": \"Dress\",\n        \"color\": \"#EC4899\"\n      },\n      \"color\": {\n        \"id\": \"color-uuid-1\",\n        \"name\": \"Merah Marun\",\n        \"hexCode\": \"#800000\",\n        \"description\": \"Warna merah tua yang elegan\",\n        \"isActive\": true\n      },\n      \"material\": {\n        \"id\": \"material-uuid-1\",\n        \"name\": \"Katun Premium\",\n        \"pricePerUnit\": 25000,\n        \"unit\": \"meter\"\n      }\n    }\n  ],\n  \"pagination\": {\n    \"page\": 1,\n    \"limit\": 2,\n    \"total\": 15,\n    \"totalPages\": 8\n  }\n}"
             }
           ]
         },
@@ -179,7 +184,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"id\": \"uuid-1\",\n  \"code\": \"DRS1\",\n  \"name\": \"Dress Elegant\",\n  \"description\": \"Dress untuk acara formal\",\n  \"categoryId\": \"cat-uuid-1\",\n  \"size\": \"M\",\n  \"colorId\": \"color-uuid-1\",\n  \"modalAwal\": \"150000.00\",\n  \"currentPrice\": \"50000.00\",\n  \"quantity\": 5,\n  \"rentedStock\": 0,\n  \"status\": \"AVAILABLE\",\n  \"imageUrl\": \"https://example.com/dress1.jpg\",\n  \"totalPendapatan\": \"0.00\",\n  \"isActive\": true,\n  \"createdAt\": \"2024-01-01T00:00:00Z\",\n  \"updatedAt\": \"2024-01-01T00:00:00Z\",\n  \"createdBy\": \"user123\",\n  \"category\": {\n    \"id\": \"cat-uuid-1\",\n    \"name\": \"Dress\",\n    \"color\": \"#EC4899\",\n    \"createdAt\": \"2024-01-01T00:00:00Z\",\n    \"updatedAt\": \"2024-01-01T00:00:00Z\",\n    \"createdBy\": \"system\"\n  },\n  \"color\": {\n    \"id\": \"color-uuid-1\",\n    \"name\": \"Merah Marun\",\n    \"hexCode\": \"#800000\",\n    \"description\": \"Warna merah tua yang elegan\",\n    \"isActive\": true,\n    \"createdAt\": \"2024-01-01T00:00:00Z\",\n    \"updatedAt\": \"2024-01-01T00:00:00Z\",\n    \"createdBy\": \"system\"\n  }\n}"
+              "body": "{\n  \"id\": \"uuid-1\",\n  \"code\": \"DRS1\",\n  \"name\": \"Dress Elegant\",\n  \"description\": \"Dress untuk acara formal\",\n  \"categoryId\": \"cat-uuid-1\",\n  \"size\": \"M\",\n  \"colorId\": \"color-uuid-1\",\n  \"materialId\": \"material-uuid-1\",\n  \"materialCost\": 75000,\n  \"materialQuantity\": 3,\n  \"modalAwal\": \"150000.00\",\n  \"currentPrice\": \"50000.00\",\n  \"quantity\": 5,\n  \"rentedStock\": 0,\n  \"status\": \"AVAILABLE\",\n  \"imageUrl\": \"https://example.com/dress1.jpg\",\n  \"totalPendapatan\": \"0.00\",\n  \"isActive\": true,\n  \"createdAt\": \"2024-01-01T00:00:00Z\",\n  \"updatedAt\": \"2024-01-01T00:00:00Z\",\n  \"createdBy\": \"user123\",\n  \"category\": {\n    \"id\": \"cat-uuid-1\",\n    \"name\": \"Dress\",\n    \"color\": \"#EC4899\",\n    \"createdAt\": \"2024-01-01T00:00:00Z\",\n    \"updatedAt\": \"2024-01-01T00:00:00Z\",\n    \"createdBy\": \"system\"\n  },\n  \"color\": {\n    \"id\": \"color-uuid-1\",\n    \"name\": \"Merah Marun\",\n    \"hexCode\": \"#800000\",\n    \"description\": \"Warna merah tua yang elegan\",\n    \"isActive\": true,\n    \"createdAt\": \"2024-01-01T00:00:00Z\",\n    \"updatedAt\": \"2024-01-01T00:00:00Z\",\n    \"createdBy\": \"system\"\n  },\n  \"material\": {\n    \"id\": \"material-uuid-1\",\n    \"name\": \"Katun Premium\",\n    \"pricePerUnit\": 25000,\n    \"unit\": \"meter\",\n    \"isActive\": true,\n    \"createdAt\": \"2024-01-01T00:00:00Z\",\n    \"updatedAt\": \"2024-01-01T00:00:00Z\",\n    \"createdBy\": \"user123\"\n  }\n}"
             }
           ]
         },
@@ -252,6 +257,18 @@
                   "type": "text"
                 },
                 {
+                  "key": "materialId",
+                  "value": "{{material_id}}",
+                  "description": "ID material untuk perhitungan biaya material (opsional)",
+                  "type": "text"
+                },
+                {
+                  "key": "materialQuantity",
+                  "value": "3",
+                  "description": "Jumlah material yang digunakan (opsional, diperlukan jika materialId diisi)",
+                  "type": "text"
+                },
+                {
                   "key": "image",
                   "type": "file",
                   "description": "Gambar produk (opsional)"
@@ -263,7 +280,7 @@
               "host": ["{{base_url}}"],
               "path": ["api", "products"]
             },
-            "description": "Membuat produk baru dengan size & color fields dan upload gambar"
+            "description": "Membuat produk baru dengan size, color, dan material fields plus upload gambar. Material fields opsional untuk perhitungan otomatis biaya material."
           },
           "response": []
         },
@@ -306,6 +323,18 @@
                   "type": "text"
                 },
                 {
+                  "key": "materialId",
+                  "value": "{{material_id}}",
+                  "description": "ID material baru untuk update biaya material (opsional)",
+                  "type": "text"
+                },
+                {
+                  "key": "materialQuantity",
+                  "value": "5",
+                  "description": "Jumlah material baru (opsional, auto-recalculate material cost)",
+                  "type": "text"
+                },
+                {
                   "key": "image",
                   "type": "file",
                   "description": "Gambar produk baru (opsional)"
@@ -317,7 +346,7 @@
               "host": ["{{base_url}}"],
               "path": ["api", "products", "{{product_id}}"]
             },
-            "description": "Mengupdate produk berdasarkan ID dengan size & color support"
+            "description": "Mengupdate produk berdasarkan ID dengan size, color, dan material support. Material fields opsional untuk update biaya material otomatis."
           },
           "response": []
         },
@@ -718,6 +747,309 @@
       ]
     },
     {
+      "name": "Material Management",
+      "item": [
+        {
+          "name": "Get All Materials",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/materials?page=1&limit=10&search=&isActive=true&unit=meter,piece",
+              "host": ["{{base_url}}"],
+              "path": ["api", "materials"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Halaman yang diminta (default: 1)"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Jumlah item per halaman (default: 10)"
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "description": "Pencarian berdasarkan nama material"
+                },
+                {
+                  "key": "isActive",
+                  "value": "true",
+                  "description": "Filter material aktif/nonaktif (default: true)"
+                },
+                {
+                  "key": "unit",
+                  "value": "meter,piece",
+                  "description": "Filter berdasarkan satuan (multiple values separated by comma)"
+                }
+              ]
+            },
+            "description": "Mendapatkan daftar material dengan pagination dan filter untuk manajemen material"
+          },
+          "response": [
+            {
+              "name": "Materials List Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/materials?page=1&limit=2",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "materials"],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "2"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"materials\": [\n    {\n      \"id\": \"material-uuid-1\",\n      \"name\": \"Katun Premium\",\n      \"pricePerUnit\": 25000,\n      \"unit\": \"meter\",\n      \"isActive\": true,\n      \"createdAt\": \"2024-01-01T00:00:00Z\",\n      \"updatedAt\": \"2024-01-01T00:00:00Z\",\n      \"createdBy\": \"user123\"\n    },\n    {\n      \"id\": \"material-uuid-2\",\n      \"name\": \"Sutra Halus\",\n      \"pricePerUnit\": 50000,\n      \"unit\": \"meter\",\n      \"isActive\": true,\n      \"createdAt\": \"2024-01-01T00:00:00Z\",\n      \"updatedAt\": \"2024-01-01T00:00:00Z\",\n      \"createdBy\": \"user123\"\n    }\n  ],\n  \"pagination\": {\n    \"page\": 1,\n    \"limit\": 2,\n    \"total\": 15,\n    \"totalPages\": 8\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Material by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/materials/{{material_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "materials", "{{material_id}}"]
+            },
+            "description": "Mendapatkan detail material berdasarkan ID"
+          },
+          "response": [
+            {
+              "name": "Material Detail Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/materials/{{material_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "materials", "{{material_id}}"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"id\": \"material-uuid-1\",\n  \"name\": \"Katun Premium\",\n  \"pricePerUnit\": 25000,\n  \"unit\": \"meter\",\n  \"isActive\": true,\n  \"createdAt\": \"2024-01-01T00:00:00Z\",\n  \"updatedAt\": \"2024-01-01T00:00:00Z\",\n  \"createdBy\": \"user123\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create Material",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Denim Premium\",\n  \"pricePerUnit\": 35000,\n  \"unit\": \"meter\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/materials",
+              "host": ["{{base_url}}"],
+              "path": ["api", "materials"]
+            },
+            "description": "Membuat material baru dengan validasi nama unik dan harga positif"
+          },
+          "response": [
+            {
+              "name": "Material Created Response",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Denim Premium\",\n  \"pricePerUnit\": 35000,\n  \"unit\": \"meter\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/materials",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "materials"]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"id\": \"material-uuid-new\",\n  \"name\": \"Denim Premium\",\n  \"pricePerUnit\": 35000,\n  \"unit\": \"meter\",\n  \"isActive\": true,\n  \"createdAt\": \"2024-01-01T00:00:00Z\",\n  \"updatedAt\": \"2024-01-01T00:00:00Z\",\n  \"createdBy\": \"user123\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Material",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Denim Premium Updated\",\n  \"pricePerUnit\": 40000,\n  \"unit\": \"meter\",\n  \"isActive\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/materials/{{material_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "materials", "{{material_id}}"]
+            },
+            "description": "Mengupdate material berdasarkan ID dengan validasi fields opsional"
+          },
+          "response": [
+            {
+              "name": "Material Updated Response",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Denim Premium Updated\",\n  \"pricePerUnit\": 40000,\n  \"unit\": \"meter\",\n  \"isActive\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/materials/{{material_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "materials", "{{material_id}}"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"id\": \"material-uuid-1\",\n  \"name\": \"Denim Premium Updated\",\n  \"pricePerUnit\": 40000,\n  \"unit\": \"meter\",\n  \"isActive\": true,\n  \"createdAt\": \"2024-01-01T00:00:00Z\",\n  \"updatedAt\": \"2024-01-01T12:00:00Z\",\n  \"createdBy\": \"user123\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Material",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/materials/{{material_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "materials", "{{material_id}}"]
+            },
+            "description": "Soft delete material berdasarkan ID dengan conflict detection"
+          },
+          "response": [
+            {
+              "name": "Material Deleted Response",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/materials/{{material_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "materials", "{{material_id}}"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"Material berhasil dihapus\",\n  \"success\": true\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "Integration Test Scenarios",
       "item": [
         {
@@ -916,6 +1248,215 @@
               "response": []
             }
           ]
+        },
+        {
+          "name": "Test Scenario: Material-Product Integration (RPK-45)",
+          "item": [
+            {
+              "name": "1. Create Material for Testing",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Test Material Katun\",\n  \"pricePerUnit\": 30000,\n  \"unit\": \"meter\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/materials",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "materials"]
+                },
+                "description": "Create material untuk testing material-product integration"
+              },
+              "response": []
+            },
+            {
+              "name": "2. Create Product with Material Integration",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "code",
+                      "value": "MATL",
+                      "type": "text"
+                    },
+                    {
+                      "key": "name",
+                      "value": "Test Product with Material Cost",
+                      "type": "text"
+                    },
+                    {
+                      "key": "description",
+                      "value": "Product for testing material integration",
+                      "type": "text"
+                    },
+                    {
+                      "key": "modalAwal",
+                      "value": "200000",
+                      "type": "text"
+                    },
+                    {
+                      "key": "currentPrice",
+                      "value": "75000",
+                      "type": "text"
+                    },
+                    {
+                      "key": "rentedStock",
+                      "value": "0",
+                      "type": "text"
+                    },
+                    {
+                      "key": "quantity",
+                      "value": "2",
+                      "type": "text"
+                    },
+                    {
+                      "key": "categoryId",
+                      "value": "{{category_id}}",
+                      "type": "text"
+                    },
+                    {
+                      "key": "size",
+                      "value": "L",
+                      "type": "text"
+                    },
+                    {
+                      "key": "colorId",
+                      "value": "{{color_id}}",
+                      "type": "text"
+                    },
+                    {
+                      "key": "materialId",
+                      "value": "{{material_id}}",
+                      "type": "text",
+                      "description": "Material dari step 1"
+                    },
+                    {
+                      "key": "materialQuantity",
+                      "value": "4",
+                      "type": "text",
+                      "description": "4 meter material = 4 * 30000 = 120000"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/products",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "products"]
+                },
+                "description": "Create product dengan material fields untuk auto-calculate material cost"
+              },
+              "response": []
+            },
+            {
+              "name": "3. Verify Material Cost Calculation",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/products/{{product_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "products", "{{product_id}}"]
+                },
+                "description": "Verify product has correct material cost: 4 * 30000 = 120000"
+              },
+              "response": []
+            },
+            {
+              "name": "4. Update Material Price",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Test Material Katun Updated\",\n  \"pricePerUnit\": 35000,\n  \"unit\": \"meter\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/materials/{{material_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "materials", "{{material_id}}"]
+                },
+                "description": "Update material price untuk test recalculation"
+              },
+              "response": []
+            },
+            {
+              "name": "5. Update Product Material Quantity",
+              "request": {
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "materialQuantity",
+                      "value": "6",
+                      "type": "text",
+                      "description": "6 meter material = 6 * 35000 = 210000"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/products/{{product_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "products", "{{product_id}}"]
+                },
+                "description": "Test updating material quantity and auto-recalculation"
+              },
+              "response": []
+            },
+            {
+              "name": "6. Verify Updated Material Cost",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/products/{{product_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "products", "{{product_id}}"]
+                },
+                "description": "Verify material cost updated to: 6 * 35000 = 210000"
+              },
+              "response": []
+            },
+            {
+              "name": "7. Test Material Deletion Conflict",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/materials/{{material_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "materials", "{{material_id}}"]
+                },
+                "description": "Test material deletion with existing product usage - should handle gracefully"
+              },
+              "response": []
+            }
+          ]
         }
       ]
     }
@@ -939,20 +1480,63 @@
       "script": {
         "type": "text/javascript",
         "exec": [
-          "// Enhanced test script for size & color features",
-          "pm.test('Status code is 200 or 201', function () {",
+          "// Enhanced test script for Material Management System (RPK-45)",
+          "pm.test('Status code is success (200, 201)', function () {",
           "  pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
           "});",
           "",
-          "pm.test('Response has required structure', function () {",
-          "  const response = pm.response.json();",
-          "  pm.expect(response).to.have.property('id');",
+          "pm.test('Response time is under 2s', function () {",
+          "  pm.expect(pm.response.responseTime).to.be.below(2000);",
           "});",
           "",
-          "// Test enhanced product response structure",
-          "if (pm.request.url.path.includes('products')) {",
-          "  pm.test('Product has enhanced fields', function () {",
+          "pm.test('Response has valid structure', function () {",
+          "  const response = pm.response.json();",
+          "  if (pm.response.code !== 200 && pm.response.code !== 201) return;",
+          "  ",
+          "  // For delete responses",
+          "  if (response.message && response.success !== undefined) {",
+          "    pm.expect(response).to.have.property('success');",
+          "  } else {",
+          "    pm.expect(response).to.have.property('id');",
+          "  }",
+          "});",
+          "",
+          "// Test Material Management response structure",
+          "if (pm.request.url.path.includes('materials')) {",
+          "  pm.test('Material response has required fields', function () {",
           "    const response = pm.response.json();",
+          "    if (pm.response.code !== 200 && pm.response.code !== 201) return;",
+          "    ",
+          "    if (response.materials) {",
+          "      // Materials list response",
+          "      pm.expect(response).to.have.property('pagination');",
+          "      const material = response.materials[0];",
+          "      if (material) {",
+          "        pm.expect(material).to.have.property('name');",
+          "        pm.expect(material).to.have.property('pricePerUnit');",
+          "        pm.expect(material).to.have.property('unit');",
+          "        pm.expect(material).to.have.property('isActive');",
+          "        pm.expect(material.pricePerUnit).to.be.a('number');",
+          "        pm.expect(material.pricePerUnit).to.be.above(0);",
+          "      }",
+          "    } else if (response.id && response.name) {",
+          "      // Single material response",
+          "      pm.expect(response).to.have.property('name');",
+          "      pm.expect(response).to.have.property('pricePerUnit');",
+          "      pm.expect(response).to.have.property('unit');",
+          "      pm.expect(response).to.have.property('isActive');",
+          "      pm.expect(response.pricePerUnit).to.be.a('number');",
+          "      pm.expect(response.pricePerUnit).to.be.above(0);",
+          "    }",
+          "  });",
+          "}",
+          "",
+          "// Test enhanced product response structure with material fields",
+          "if (pm.request.url.path.includes('products')) {",
+          "  pm.test('Product has enhanced fields (size, color, material)', function () {",
+          "    const response = pm.response.json();",
+          "    if (pm.response.code !== 200 && pm.response.code !== 201) return;",
+          "    ",
           "    if (response.products) {",
           "      // List response",
           "      const product = response.products[0];",
@@ -960,12 +1544,28 @@
           "        pm.expect(product).to.have.property('size');",
           "        pm.expect(product).to.have.property('colorId');",
           "        pm.expect(product).to.have.property('color');",
+          "        // Material fields (optional)",
+          "        if (product.materialId) {",
+          "          pm.expect(product).to.have.property('materialCost');",
+          "          pm.expect(product).to.have.property('materialQuantity');",
+          "          pm.expect(product).to.have.property('material');",
+          "          pm.expect(product.materialCost).to.be.a('number');",
+          "          pm.expect(product.materialQuantity).to.be.a('number');",
+          "        }",
           "      }",
           "    } else if (response.id) {",
           "      // Single product response",
           "      pm.expect(response).to.have.property('size');",
           "      pm.expect(response).to.have.property('colorId');",
           "      pm.expect(response).to.have.property('color');",
+          "      // Material fields (optional)",
+          "      if (response.materialId) {",
+          "        pm.expect(response).to.have.property('materialCost');",
+          "        pm.expect(response).to.have.property('materialQuantity');",
+          "        pm.expect(response).to.have.property('material');",
+          "        pm.expect(response.materialCost).to.be.a('number');",
+          "        pm.expect(response.materialQuantity).to.be.a('number');",
+          "      }",
           "    }",
           "  });",
           "}",
@@ -1001,9 +1601,44 @@
           "      pm.collectionVariables.set('category_id', response.id);",
           "    } else if (pm.request.url.path.includes('colors')) {",
           "      pm.collectionVariables.set('color_id', response.id);",
+          "    } else if (pm.request.url.path.includes('materials')) {",
+          "      pm.collectionVariables.set('material_id', response.id);",
           "    }",
           "  }",
-          "}"
+          "}",
+          "",
+          "// Error scenario testing",
+          "pm.test('Error responses have proper structure', function () {",
+          "  if (pm.response.code >= 400) {",
+          "    const response = pm.response.json();",
+          "    pm.expect(response).to.have.property('error');",
+          "    pm.expect(response.error).to.have.property('message');",
+          "    pm.expect(response.error).to.have.property('code');",
+          "  }",
+          "});",
+          "",
+          "// Authentication testing",
+          "pm.test('Unauthorized requests return 401', function () {",
+          "  if (pm.response.code === 401) {",
+          "    const response = pm.response.json();",
+          "    pm.expect(response.error.code).to.eql('UNAUTHORIZED');",
+          "  }",
+          "});",
+          "",
+          "// Material-specific validation",
+          "if (pm.request.url.path.includes('materials') && pm.request.method === 'POST') {",
+          "  pm.test('Material creation validates required fields', function () {",
+          "    if (pm.response.code === 400) {",
+          "      const response = pm.response.json();",
+          "      pm.expect(response.error.code).to.be.oneOf(['VALIDATION_ERROR', 'CONFLICT']);",
+          "    }",
+          "  });",
+          "}",
+          "",
+          "// Performance monitoring",
+          "pm.test('API performance meets SLA (<2s)', function () {",
+          "  pm.expect(pm.response.responseTime).to.be.below(2000);",
+          "});"
         ]
       }
     }

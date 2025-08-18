@@ -1,9 +1,11 @@
 {
   "mcpServers": {
-    "playwright": {
+    "@21st-dev/magic": {
       "command": "npx",
       "args": [
-        "@playwright/mcp@latest"
+        "-y",
+        "@21st-dev/magic@latest",
+        "API_KEY=\"966b67569f9b194f037231d76d1ca901f89b08a37de40fe3375c249f272425b0\""
       ]
     }
   }
