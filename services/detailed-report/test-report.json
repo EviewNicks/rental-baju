@@ -62,7 +62,7 @@
           "status": "passed",
           "title": "should create product dengan material integration successfully",
           "failureMessages": [],
-          "duration": 4
+          "duration": null
         },
         {
           "ancestorTitles": [
@@ -73,7 +73,7 @@
           "status": "passed",
           "title": "should throw error jika material tidak ditemukan",
           "failureMessages": [],
-          "duration": 1
+          "duration": null
         },
         {
           "ancestorTitles": [
@@ -97,7 +97,7 @@
           "status": "passed",
           "title": "should throw error when product not found",
           "failureMessages": [],
-          "duration": 1
+          "duration": null
         },
         {
           "ancestorTitles": [
@@ -193,7 +193,7 @@
           "status": "passed",
           "title": "should soft delete product successfully - happy path",
           "failureMessages": [],
-          "duration": 2
+          "duration": null
         },
         {
           "ancestorTitles": [
@@ -204,7 +204,7 @@
           "status": "passed",
           "title": "should throw error when product not found",
           "failureMessages": [],
-          "duration": 1
+          "duration": null
         },
         {
           "ancestorTitles": [
@@ -228,7 +228,7 @@
           "status": "passed",
           "title": "should throw error when trying to set same status",
           "failureMessages": [],
-          "duration": 1
+          "duration": null
         },
         {
           "ancestorTitles": [

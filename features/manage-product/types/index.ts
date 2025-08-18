@@ -71,11 +71,8 @@ export interface ClientProduct {
   rentedStock: number
   // Material Management fields - RPK-45 (client-safe numbers)
   materialId?: string
-  materialCost?: number
   materialQuantity?: number
   status: ProductStatus
-  imageUrl?: string
-  totalPendapatan: number
   isActive: boolean
   createdAt: Date | string
   updatedAt: Date | string

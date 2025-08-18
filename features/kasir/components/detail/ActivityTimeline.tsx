@@ -39,24 +39,31 @@ const ReturnActivityDisplay: React.FC<ReturnActivityProps> = ({ activity }) => {
         {/* Return Details Expansion */}
         {activity.details && (
           <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
-            <div className="text-sm font-medium text-blue-900 mb-2">
-              Detail Pengembalian
-            </div>
-            
-            {activity.details.conditions?.map((condition: { kondisiAkhir: string; jumlahKembali: number; penaltyAmount: number }, idx: number) => (
-              <div key={idx} className="flex justify-between items-center text-sm text-blue-800 mb-1">
-                <span className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-blue-600"></div>
-                  {condition.kondisiAkhir}: {condition.jumlahKembali} item{condition.jumlahKembali > 1 ? 's' : ''}
-                </span>
-                {condition.penaltyAmount > 0 && (
-                  <span className="font-medium text-red-600">
-                    Denda: {formatCurrency(condition.penaltyAmount)}
+            <div className="text-sm font-medium text-blue-900 mb-2">Detail Pengembalian</div>
+
+            {activity.details.conditions?.map(
+              (
+                condition: { kondisiAkhir: string; jumlahKembali: number; penaltyAmount: number },
+                idx: number,
+              ) => (
+                <div
+                  key={idx}
+                  className="flex justify-between items-center text-sm text-blue-800 mb-1"
+                >
+                  <span className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-blue-600"></div>
+                    {condition.kondisiAkhir}: {condition.jumlahKembali} item
+                    {condition.jumlahKembali > 1 ? 's' : ''}
                   </span>
-                )}
-              </div>
-            ))}
-            
+                  {condition.penaltyAmount > 0 && (
+                    <span className="font-medium text-red-600">
+                      Denda: {formatCurrency(condition.penaltyAmount)}
+                    </span>
+                  )}
+                </div>
+              ),
+            )}
+
             {activity.details.totalPenalty > 0 && (
               <div className="mt-2 pt-2 border-t border-blue-300">
                 <div className="flex justify-between text-sm font-medium">
@@ -67,7 +74,7 @@ const ReturnActivityDisplay: React.FC<ReturnActivityProps> = ({ activity }) => {
                 </div>
               </div>
             )}
-            
+
             {activity.details.itemsAffected && (
               <div className="mt-2 text-xs text-blue-700">
                 Item: {activity.details.itemsAffected.join(', ')}
@@ -107,34 +114,49 @@ const PenaltyActivityDisplay: React.FC<PenaltyActivityProps> = ({ activity }) =>
         {/* Penalty Details */}
         {activity.details && (
           <div className="mt-3 p-3 bg-red-50 rounded-lg border border-red-200">
-            <div className="text-sm font-medium text-red-900 mb-2">
-              Rincian Denda
-            </div>
-            
-            {activity.details.penaltyBreakdown?.map((penalty: { produkName: string; penaltyAmount: number; conditions?: { kondisiAkhir: string; penaltyAmount: number }[] }, idx: number) => (
-              <div key={idx} className="mb-3 last:mb-0">
-                <div className="flex justify-between text-sm">
-                  <span className="font-medium text-red-800">
-                    {penalty.produkName}
-                  </span>
-                  <span className="font-bold text-red-800">
-                    {formatCurrency(penalty.penaltyAmount)}
-                  </span>
-                </div>
-                
-                {penalty.conditions?.map((condition: { kondisiAkhir: string; penaltyAmount: number }, condIdx: number) => (
-                  <div key={condIdx} className="ml-4 mt-1 text-xs text-red-700 flex justify-between">
-                    <span>{condition.kondisiAkhir}</span>
-                    <span>{formatCurrency(condition.penaltyAmount)}</span>
+            <div className="text-sm font-medium text-red-900 mb-2">Rincian Denda</div>
+
+            {activity.details.penaltyBreakdown?.map(
+              (
+                penalty: {
+                  produkName: string
+                  penaltyAmount: number
+                  conditions?: { kondisiAkhir: string; penaltyAmount: number }[]
+                },
+                idx: number,
+              ) => (
+                <div key={idx} className="mb-3 last:mb-0">
+                  <div className="flex justify-between text-sm">
+                    <span className="font-medium text-red-800">{penalty.produkName}</span>
+                    <span className="font-bold text-red-800">
+                      {formatCurrency(penalty.penaltyAmount)}
+                    </span>
                   </div>
-                ))}
-              </div>
-            ))}
-            
+
+                  {penalty.conditions?.map(
+                    (
+                      condition: { kondisiAkhir: string; penaltyAmount: number },
+                      condIdx: number,
+                    ) => (
+                      <div
+                        key={condIdx}
+                        className="ml-4 mt-1 text-xs text-red-700 flex justify-between"
+                      >
+                        <span>{condition.kondisiAkhir}</span>
+                        <span>{formatCurrency(condition.penaltyAmount)}</span>
+                      </div>
+                    ),
+                  )}
+                </div>
+              ),
+            )}
+
             <div className="mt-3 pt-3 border-t border-red-300">
               <div className="flex justify-between text-sm font-bold text-red-900">
                 <span>Total Denda:</span>
-                <span>{formatCurrency(activity.details.totalPenalty || activity.details.amount)}</span>
+                <span>
+                  {formatCurrency(activity.details.totalPenalty || activity.details.amount)}
+                </span>
               </div>
             </div>
           </div>

@@ -468,7 +468,6 @@ export class ProductService {
       rentedStock: (prismaProduct.rentedStock as number) || 0, // ✅ Added rentedStock field
       // Material Management fields - RPK-45
       materialId: prismaProduct.materialId as string | undefined,
-      materialCost: prismaProduct.materialCost as Decimal | undefined,
       materialQuantity: prismaProduct.materialQuantity as number | undefined,
       material: prismaProduct.material
         ? {
@@ -484,8 +483,6 @@ export class ProductService {
           }
         : undefined,
       status: prismaProduct.status as ProductStatus,
-      imageUrl: prismaProduct.imageUrl as string | undefined,
-      totalPendapatan: prismaProduct.totalPendapatan as Decimal,
       isActive: prismaProduct.isActive as boolean,
       createdAt: prismaProduct.createdAt as Date,
       updatedAt: prismaProduct.updatedAt as Date,
