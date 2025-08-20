@@ -8,7 +8,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { UnifiedReturnService } from '@/features/kasir/services/ReturnService'
+import { UnifiedReturnService } from '@/features/kasir/services/returnService'
 import {
   unifiedReturnRequestSchema,
   convertLegacyToUnified,

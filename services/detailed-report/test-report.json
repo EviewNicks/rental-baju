@@ -1,632 +1,248 @@
 {
-  "numTotalTests": 52,
-  "numPassedTests": 3,
-  "numFailedTests": 0,
-  "numPendingTests": 49,
-  "startTime": "2025-08-11T11:21:27.721Z",
-  "endTime": "2025-08-11T11:21:29.243Z",
+  "numTotalTests": 20,
+  "numPassedTests": 14,
+  "numFailedTests": 6,
+  "numPendingTests": 0,
+  "startTime": "2025-08-14T14:42:30.091Z",
+  "endTime": "2025-08-14T14:42:32.595Z",
   "testResults": [
     {
-      "testFilePath": "D:\\.work\\rental-software\\features\\kasir\\lib\\utils\\penaltyCalculator.test.ts",
+      "testFilePath": "D:\\.work\\rental-software\\features\\manage-product\\services\\productService.test.ts",
       "testFileResults": [
         {
           "ancestorTitles": [
-            "PenaltyCalculator",
-            "calculateLatePenalty"
+            "ProductService",
+            "createProduct"
           ],
-          "fullName": "PenaltyCalculator calculateLatePenalty should calculate no penalty for on-time return",
-          "status": "pending",
-          "title": "should calculate no penalty for on-time return",
-          "failureMessages": [],
-          "duration": null
-        },
-        {
-          "ancestorTitles": [
-            "PenaltyCalculator",
-            "calculateLatePenalty"
-          ],
-          "fullName": "PenaltyCalculator calculateLatePenalty should calculate penalty for late return with default rate",
-          "status": "pending",
-          "title": "should calculate penalty for late return with default rate",
-          "failureMessages": [],
-          "duration": null
-        },
-        {
-          "ancestorTitles": [
-            "PenaltyCalculator",
-            "calculateLatePenalty"
-          ],
-          "fullName": "PenaltyCalculator calculateLatePenalty should cap penalty at maximum days (365)",
-          "status": "pending",
-          "title": "should cap penalty at maximum days (365)",
-          "failureMessages": [],
-          "duration": null
-        },
-        {
-          "ancestorTitles": [
-            "PenaltyCalculator",
-            "calculateLatePenalty"
-          ],
-          "fullName": "PenaltyCalculator calculateLatePenalty should handle fractional days by rounding up",
-          "status": "pending",
-          "title": "should handle fractional days by rounding up",
-          "failureMessages": [],
-          "duration": null
-        },
-        {
-          "ancestorTitles": [
-            "PenaltyCalculator",
-            "calculateConditionPenalty",
-            "Frontend Integration - Current Condition Values"
-          ],
-          "fullName": "PenaltyCalculator calculateConditionPenalty Frontend Integration - Current Condition Values should handle \"baik\" condition correctly (CRITICAL FIX)",
-          "status": "pending",
-          "title": "should handle \"baik\" condition correctly (CRITICAL FIX)",
-          "failureMessages": [],
-          "duration": null
-        },
-        {
-          "ancestorTitles": [
-            "PenaltyCalculator",
-            "calculateConditionPenalty",
-            "Frontend Integration - Current Condition Values"
-          ],
-          "fullName": "PenaltyCalculator calculateConditionPenalty Frontend Integration - Current Condition Values should handle \"kotor\" condition correctly",
-          "status": "pending",
-          "title": "should handle \"kotor\" condition correctly",
-          "failureMessages": [],
-          "duration": null
-        },
-        {
-          "ancestorTitles": [
-            "PenaltyCalculator",
-            "calculateConditionPenalty",
-            "Frontend Integration - Current Condition Values"
-          ],
-          "fullName": "PenaltyCalculator calculateConditionPenalty Frontend Integration - Current Condition Values should handle \"rusak ringan\" condition correctly",
-          "status": "pending",
-          "title": "should handle \"rusak ringan\" condition correctly",
-          "failureMessages": [],
-          "duration": null
-        },
-        {
-          "ancestorTitles": [
-            "PenaltyCalculator",
-            "calculateConditionPenalty",
-            "Frontend Integration - Current Condition Values"
-          ],
-          "fullName": "PenaltyCalculator calculateConditionPenalty Frontend Integration - Current Condition Values should handle \"rusak berat\" condition correctly",
-          "status": "pending",
-          "title": "should handle \"rusak berat\" condition correctly",
-          "failureMessages": [],
-          "duration": null
-        },
-        {
-          "ancestorTitles": [
-            "PenaltyCalculator",
-            "calculateConditionPenalty",
-            "Frontend Integration - Current Condition Values"
-          ],
-          "fullName": "PenaltyCalculator calculateConditionPenalty Frontend Integration - Current Condition Values should handle \"hilang\" condition correctly (already working)",
-          "status": "pending",
-          "title": "should handle \"hilang\" condition correctly (already working)",
-          "failureMessages": [],
-          "duration": null
-        },
-        {
-          "ancestorTitles": [
-            "PenaltyCalculator",
-            "calculateConditionPenalty",
-            "Legacy conditions - backward compatibility"
-          ],
-          "fullName": "PenaltyCalculator calculateConditionPenalty Legacy conditions - backward compatibility should return zero penalty for perfect condition",
-          "status": "pending",
-          "title": "should return zero penalty for perfect condition",
-          "failureMessages": [],
-          "duration": null
-        },
-        {
-          "ancestorTitles": [
-            "PenaltyCalculator",
-            "calculateConditionPenalty",
-            "minor damage conditions"
-          ],
-          "fullName": "PenaltyCalculator calculateConditionPenalty minor damage conditions should apply 1x daily rate for light dirt",
-          "status": "pending",
-          "title": "should apply 1x daily rate for light dirt",
-          "failureMessages": [],
-          "duration": null
-        },
-        {
-          "ancestorTitles": [
-            "PenaltyCalculator",
-            "calculateConditionPenalty",
-            "minor damage conditions"
-          ],
-          "fullName": "PenaltyCalculator calculateConditionPenalty minor damage conditions should apply 1x daily rate for light stains",
-          "status": "pending",
-          "title": "should apply 1x daily rate for light stains",
-          "failureMessages": [],
-          "duration": null
-        },
-        {
-          "ancestorTitles": [
-            "PenaltyCalculator",
-            "calculateConditionPenalty",
-            "moderate damage conditions"
-          ],
-          "fullName": "PenaltyCalculator calculateConditionPenalty moderate damage conditions should apply 2x daily rate for small damage",
-          "status": "pending",
-          "title": "should apply 2x daily rate for small damage",
-          "failureMessages": [],
-          "duration": null
-        },
-        {
-          "ancestorTitles": [
-            "PenaltyCalculator",
-            "calculateConditionPenalty",
-            "moderate damage conditions"
-          ],
-          "fullName": "PenaltyCalculator calculateConditionPenalty moderate damage conditions should apply 2x daily rate for heavy stains",
-          "status": "pending",
-          "title": "should apply 2x daily rate for heavy stains",
-          "failureMessages": [],
-          "duration": null
-        },
-        {
-          "ancestorTitles": [
-            "PenaltyCalculator",
-            "calculateConditionPenalty",
-            "severe damage conditions"
-          ],
-          "fullName": "PenaltyCalculator calculateConditionPenalty severe damage conditions should apply 4x daily rate for major damage",
-          "status": "pending",
-          "title": "should apply 4x daily rate for major damage",
-          "failureMessages": [],
-          "duration": null
-        },
-        {
-          "ancestorTitles": [
-            "PenaltyCalculator",
-            "calculateConditionPenalty",
-            "lost item conditions - modalAwal integration"
-          ],
-          "fullName": "PenaltyCalculator calculateConditionPenalty lost item conditions - modalAwal integration should use modalAwal when provided for lost items",
-          "status": "pending",
-          "title": "should use modalAwal when provided for lost items",
-          "failureMessages": [],
-          "duration": null
-        },
-        {
-          "ancestorTitles": [
-            "PenaltyCalculator",
-            "calculateConditionPenalty",
-            "lost item conditions - modalAwal integration"
-          ],
-          "fullName": "PenaltyCalculator calculateConditionPenalty lost item conditions - modalAwal integration should use modalAwal for different lost conditions",
-          "status": "pending",
-          "title": "should use modalAwal for different lost conditions",
-          "failureMessages": [],
-          "duration": null
-        },
-        {
-          "ancestorTitles": [
-            "PenaltyCalculator",
-            "calculateConditionPenalty",
-            "lost item conditions - modalAwal integration"
-          ],
-          "fullName": "PenaltyCalculator calculateConditionPenalty lost item conditions - modalAwal integration should fallback to old calculation when modalAwal not provided",
-          "status": "pending",
-          "title": "should fallback to old calculation when modalAwal not provided",
-          "failureMessages": [],
-          "duration": null
-        },
-        {
-          "ancestorTitles": [
-            "PenaltyCalculator",
-            "calculateConditionPenalty",
-            "lost item conditions - modalAwal integration"
-          ],
-          "fullName": "PenaltyCalculator calculateConditionPenalty lost item conditions - modalAwal integration should handle zero modalAwal gracefully",
-          "status": "pending",
-          "title": "should handle zero modalAwal gracefully",
-          "failureMessages": [],
-          "duration": null
-        },
-        {
-          "ancestorTitles": [
-            "PenaltyCalculator",
-            "calculateConditionPenalty",
-            "unrecognized conditions"
-          ],
-          "fullName": "PenaltyCalculator calculateConditionPenalty unrecognized conditions should apply default moderate penalty for unknown conditions",
-          "status": "pending",
-          "title": "should apply default moderate penalty for unknown conditions",
-          "failureMessages": [],
-          "duration": null
-        },
-        {
-          "ancestorTitles": [
-            "PenaltyCalculator",
-            "calculateItemPenalty"
-          ],
-          "fullName": "PenaltyCalculator calculateItemPenalty should calculate penalty for on-time return with good condition",
-          "status": "pending",
-          "title": "should calculate penalty for on-time return with good condition",
-          "failureMessages": [],
-          "duration": null
-        },
-        {
-          "ancestorTitles": [
-            "PenaltyCalculator",
-            "calculateItemPenalty"
-          ],
-          "fullName": "PenaltyCalculator calculateItemPenalty should calculate penalty for late return with good condition",
-          "status": "pending",
-          "title": "should calculate penalty for late return with good condition",
-          "failureMessages": [],
-          "duration": null
-        },
-        {
-          "ancestorTitles": [
-            "PenaltyCalculator",
-            "calculateItemPenalty"
-          ],
-          "fullName": "PenaltyCalculator calculateItemPenalty should calculate penalty for lost item with modalAwal",
-          "status": "pending",
-          "title": "should calculate penalty for lost item with modalAwal",
-          "failureMessages": [],
-          "duration": null
-        },
-        {
-          "ancestorTitles": [
-            "PenaltyCalculator",
-            "calculateItemPenalty"
-          ],
-          "fullName": "PenaltyCalculator calculateItemPenalty should calculate combined penalty for late + damaged item",
-          "status": "pending",
-          "title": "should calculate combined penalty for late + damaged item",
-          "failureMessages": [],
-          "duration": null
-        },
-        {
-          "ancestorTitles": [
-            "PenaltyCalculator",
-            "calculateItemPenalty"
-          ],
-          "fullName": "PenaltyCalculator calculateItemPenalty should multiply penalty by quantity",
-          "status": "pending",
-          "title": "should multiply penalty by quantity",
-          "failureMessages": [],
-          "duration": null
-        },
-        {
-          "ancestorTitles": [
-            "PenaltyCalculator",
-            "calculateItemPenalty"
-          ],
-          "fullName": "PenaltyCalculator calculateItemPenalty should prioritize lost over damaged in reason code",
-          "status": "pending",
-          "title": "should prioritize lost over damaged in reason code",
-          "failureMessages": [],
-          "duration": null
-        },
-        {
-          "ancestorTitles": [
-            "PenaltyCalculator",
-            "calculateTransactionPenalties"
-          ],
-          "fullName": "PenaltyCalculator calculateTransactionPenalties should calculate penalties for multiple items",
-          "status": "pending",
-          "title": "should calculate penalties for multiple items",
-          "failureMessages": [],
-          "duration": null
-        },
-        {
-          "ancestorTitles": [
-            "PenaltyCalculator",
-            "calculateTransactionPenalties"
-          ],
-          "fullName": "PenaltyCalculator calculateTransactionPenalties should provide correct summary statistics",
-          "status": "pending",
-          "title": "should provide correct summary statistics",
-          "failureMessages": [],
-          "duration": null
-        },
-        {
-          "ancestorTitles": [
-            "PenaltyCalculator",
-            "calculateTransactionPenalties"
-          ],
-          "fullName": "PenaltyCalculator calculateTransactionPenalties should handle empty items array",
-          "status": "pending",
-          "title": "should handle empty items array",
-          "failureMessages": [],
-          "duration": null
-        },
-        {
-          "ancestorTitles": [
-            "PenaltyCalculator",
-            "utility methods",
-            "formatPenaltyAmount"
-          ],
-          "fullName": "PenaltyCalculator utility methods formatPenaltyAmount should format penalty amount to Indonesian Rupiah",
-          "status": "pending",
-          "title": "should format penalty amount to Indonesian Rupiah",
-          "failureMessages": [],
-          "duration": null
-        },
-        {
-          "ancestorTitles": [
-            "PenaltyCalculator",
-            "utility methods",
-            "generatePenaltyDescription"
-          ],
-          "fullName": "PenaltyCalculator utility methods generatePenaltyDescription should generate description for zero penalty",
-          "status": "pending",
-          "title": "should generate description for zero penalty",
-          "failureMessages": [],
-          "duration": null
-        },
-        {
-          "ancestorTitles": [
-            "PenaltyCalculator",
-            "utility methods",
-            "generatePenaltyDescription"
-          ],
-          "fullName": "PenaltyCalculator utility methods generatePenaltyDescription should generate description with formatted amount",
-          "status": "pending",
-          "title": "should generate description with formatted amount",
-          "failureMessages": [],
-          "duration": null
-        },
-        {
-          "ancestorTitles": [
-            "PenaltyCalculator",
-            "utility methods",
-            "Date Field Validation - TSK-24 Bug Fix",
-            "Correct date field usage (tglSelesai vs tglKembali)"
-          ],
-          "fullName": "PenaltyCalculator utility methods Date Field Validation - TSK-24 Bug Fix Correct date field usage (tglSelesai vs tglKembali) should calculate realistic penalty using correct expected return date",
-          "status": "pending",
-          "title": "should calculate realistic penalty using correct expected return date",
-          "failureMessages": [],
-          "duration": null
-        },
-        {
-          "ancestorTitles": [
-            "PenaltyCalculator",
-            "utility methods",
-            "Date Field Validation - TSK-24 Bug Fix",
-            "Correct date field usage (tglSelesai vs tglKembali)"
-          ],
-          "fullName": "PenaltyCalculator utility methods Date Field Validation - TSK-24 Bug Fix Correct date field usage (tglSelesai vs tglKembali) should NOT produce massive penalty from wrong date field",
-          "status": "pending",
-          "title": "should NOT produce massive penalty from wrong date field",
-          "failureMessages": [],
-          "duration": null
-        },
-        {
-          "ancestorTitles": [
-            "PenaltyCalculator",
-            "utility methods",
-            "Date Field Validation - TSK-24 Bug Fix",
-            "Correct date field usage (tglSelesai vs tglKembali)"
-          ],
-          "fullName": "PenaltyCalculator utility methods Date Field Validation - TSK-24 Bug Fix Correct date field usage (tglSelesai vs tglKembali) should handle realistic late return scenarios correctly",
-          "status": "pending",
-          "title": "should handle realistic late return scenarios correctly",
-          "failureMessages": [],
-          "duration": null
-        },
-        {
-          "ancestorTitles": [
-            "PenaltyCalculator",
-            "utility methods",
-            "Date Field Validation - TSK-24 Bug Fix",
-            "Multi-condition penalty with correct date usage"
-          ],
-          "fullName": "PenaltyCalculator utility methods Date Field Validation - TSK-24 Bug Fix Multi-condition penalty with correct date usage should calculate realistic multi-condition penalty using tglSelesai",
-          "status": "pending",
-          "title": "should calculate realistic multi-condition penalty using tglSelesai",
-          "failureMessages": [],
-          "duration": null
-        },
-        {
-          "ancestorTitles": [
-            "PenaltyCalculator",
-            "utility methods",
-            "Date Field Validation - TSK-24 Bug Fix",
-            "Step 1 to Step 2 Integration - TSK-24 Critical Fix"
-          ],
-          "fullName": "PenaltyCalculator utility methods Date Field Validation - TSK-24 Bug Fix Step 1 to Step 2 Integration - TSK-24 Critical Fix should match ConditionRow penalty preview for \"baik\" condition",
+          "fullName": "ProductService createProduct should create product successfully - happy path",
           "status": "passed",
-          "title": "should match ConditionRow penalty preview for \"baik\" condition",
+          "title": "should create product successfully - happy path",
           "failureMessages": [],
-          "duration": 3
+          "duration": 5
         },
         {
           "ancestorTitles": [
-            "PenaltyCalculator",
-            "utility methods",
-            "Date Field Validation - TSK-24 Bug Fix",
-            "Step 1 to Step 2 Integration - TSK-24 Critical Fix"
+            "ProductService",
+            "createProduct"
           ],
-          "fullName": "PenaltyCalculator utility methods Date Field Validation - TSK-24 Bug Fix Step 1 to Step 2 Integration - TSK-24 Critical Fix should match ConditionRow penalty preview for all conditions",
+          "fullName": "ProductService createProduct should throw error when product code already exists",
           "status": "passed",
-          "title": "should match ConditionRow penalty preview for all conditions",
+          "title": "should throw error when product code already exists",
           "failureMessages": [],
-          "duration": 0
+          "duration": 31
         },
         {
           "ancestorTitles": [
-            "PenaltyCalculator",
-            "utility methods",
-            "Date Field Validation - TSK-24 Bug Fix",
-            "Step 1 to Step 2 Integration - TSK-24 Critical Fix"
+            "ProductService",
+            "createProduct"
           ],
-          "fullName": "PenaltyCalculator utility methods Date Field Validation - TSK-24 Bug Fix Step 1 to Step 2 Integration - TSK-24 Critical Fix should calculate realistic penalties for complete item",
+          "fullName": "ProductService createProduct should handle validation error gracefully",
           "status": "passed",
-          "title": "should calculate realistic penalties for complete item",
+          "title": "should handle validation error gracefully",
+          "failureMessages": [],
+          "duration": 5
+        },
+        {
+          "ancestorTitles": [
+            "ProductService",
+            "createProduct"
+          ],
+          "fullName": "ProductService createProduct should handle database error during creation",
+          "status": "passed",
+          "title": "should handle database error during creation",
           "failureMessages": [],
           "duration": 1
         },
         {
           "ancestorTitles": [
-            "PenaltyCalculator",
-            "utility methods",
-            "Date Field Validation - TSK-24 Bug Fix",
-            "Date validation edge cases"
+            "ProductService",
+            "createProduct"
           ],
-          "fullName": "PenaltyCalculator utility methods Date Field Validation - TSK-24 Bug Fix Date validation edge cases should handle invalid date strings gracefully",
-          "status": "pending",
-          "title": "should handle invalid date strings gracefully",
+          "fullName": "ProductService createProduct should create product dengan material integration successfully",
+          "status": "passed",
+          "title": "should create product dengan material integration successfully",
           "failureMessages": [],
           "duration": null
         },
         {
           "ancestorTitles": [
-            "PenaltyCalculator",
-            "utility methods",
-            "Date Field Validation - TSK-24 Bug Fix",
-            "Date validation edge cases"
+            "ProductService",
+            "createProduct"
           ],
-          "fullName": "PenaltyCalculator utility methods Date Field Validation - TSK-24 Bug Fix Date validation edge cases should validate return date is not too far in past",
-          "status": "pending",
-          "title": "should validate return date is not too far in past",
+          "fullName": "ProductService createProduct should throw error jika material tidak ditemukan",
+          "status": "passed",
+          "title": "should throw error jika material tidak ditemukan",
           "failureMessages": [],
           "duration": null
         },
         {
           "ancestorTitles": [
-            "PenaltyCalculator",
-            "utility methods",
-            "validatePenaltyInputs"
+            "ProductService",
+            "updateProduct"
           ],
-          "fullName": "PenaltyCalculator utility methods validatePenaltyInputs should validate correct inputs",
-          "status": "pending",
-          "title": "should validate correct inputs",
+          "fullName": "ProductService updateProduct should update product successfully - happy path",
+          "status": "failed",
+          "title": "should update product successfully - happy path",
+          "failureMessages": [
+            "Error: expect(jest.fn()).toHaveBeenCalledWith(...expected)\n\n- Expected\n+ Received\n\n  Object {\n    \"data\": Object {\n-     \"hargaSewa\": \"60000\",\n+     \"currentPrice\": \"60000\",\n      \"name\": \"Updated Dress Name\",\n-     \"updatedAt\": Any<Date>,\n+     \"updatedAt\": 2025-08-14T14:42:32.503Z,\n    },\n    \"include\": Object {\n      \"category\": true,\n+     \"color\": true,\n+     \"material\": true,\n    },\n    \"where\": Object {\n      \"id\": \"prod-123\",\n    },\n  },\n\nNumber of calls: 1\n    at Object.toHaveBeenCalledWith (D:\\.work\\rental-software\\features\\manage-product\\services\\productService.test.ts:368:41)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)"
+          ],
+          "duration": 14
+        },
+        {
+          "ancestorTitles": [
+            "ProductService",
+            "updateProduct"
+          ],
+          "fullName": "ProductService updateProduct should throw error when product not found",
+          "status": "passed",
+          "title": "should throw error when product not found",
           "failureMessages": [],
           "duration": null
         },
         {
           "ancestorTitles": [
-            "PenaltyCalculator",
-            "utility methods",
-            "validatePenaltyInputs"
+            "ProductService",
+            "updateProduct"
           ],
-          "fullName": "PenaltyCalculator utility methods validatePenaltyInputs should detect invalid dates",
-          "status": "pending",
-          "title": "should detect invalid dates",
+          "fullName": "ProductService updateProduct should handle empty update request gracefully",
+          "status": "failed",
+          "title": "should handle empty update request gracefully",
+          "failureMessages": [
+            "Error: expect(jest.fn()).toHaveBeenCalledWith(...expected)\n\n- Expected\n+ Received\n\n  Object {\n    \"data\": Object {\n-     \"updatedAt\": Any<Date>,\n+     \"updatedAt\": 2025-08-14T14:42:32.518Z,\n    },\n    \"include\": Object {\n      \"category\": true,\n+     \"color\": true,\n+     \"material\": true,\n    },\n    \"where\": Object {\n      \"id\": \"prod-123\",\n    },\n  },\n\nNumber of calls: 1\n    at Object.toHaveBeenCalledWith (D:\\.work\\rental-software\\features\\manage-product\\services\\productService.test.ts:407:41)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)"
+          ],
+          "duration": 2
+        },
+        {
+          "ancestorTitles": [
+            "ProductService",
+            "getProducts"
+          ],
+          "fullName": "ProductService getProducts should get products with pagination and filters - happy path",
+          "status": "failed",
+          "title": "should get products with pagination and filters - happy path",
+          "failureMessages": [
+            "Error: expect(jest.fn()).toHaveBeenCalledWith(...expected)\n\n- Expected\n+ Received\n\n@@ -1,8 +1,10 @@\n  Object {\n    \"include\": Object {\n      \"category\": true,\n+     \"color\": true,\n+     \"material\": true,\n    },\n    \"orderBy\": Object {\n      \"createdAt\": \"desc\",\n    },\n    \"skip\": 0,,\n\nNumber of calls: 1\n    at Object.toHaveBeenCalledWith (D:\\.work\\rental-software\\features\\manage-product\\services\\productService.test.ts:480:43)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)"
+          ],
+          "duration": 2
+        },
+        {
+          "ancestorTitles": [
+            "ProductService",
+            "getProducts"
+          ],
+          "fullName": "ProductService getProducts should handle query without filters",
+          "status": "failed",
+          "title": "should handle query without filters",
+          "failureMessages": [
+            "Error: expect(jest.fn()).toHaveBeenCalledWith(...expected)\n\n- Expected\n+ Received\n\n@@ -1,8 +1,10 @@\n  Object {\n    \"include\": Object {\n      \"category\": true,\n+     \"color\": true,\n+     \"material\": true,\n    },\n    \"orderBy\": Object {\n      \"createdAt\": \"desc\",\n    },\n    \"skip\": 0,,\n\nNumber of calls: 1\n    at Object.toHaveBeenCalledWith (D:\\.work\\rental-software\\features\\manage-product\\services\\productService.test.ts:526:43)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)"
+          ],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "ProductService",
+            "getProducts"
+          ],
+          "fullName": "ProductService getProducts should handle empty results",
+          "status": "passed",
+          "title": "should handle empty results",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "ProductService",
+            "getProductById"
+          ],
+          "fullName": "ProductService getProductById should get product by ID successfully - happy path",
+          "status": "failed",
+          "title": "should get product by ID successfully - happy path",
+          "failureMessages": [
+            "Error: expect(jest.fn()).toHaveBeenCalledWith(...expected)\n\n- Expected\n+ Received\n\n@@ -1,8 +1,10 @@\n  Object {\n    \"include\": Object {\n      \"category\": true,\n+     \"color\": true,\n+     \"material\": true,\n    },\n    \"where\": Object {\n      \"id\": \"prod-123\",\n      \"isActive\": true,\n    },,\n\nNumber of calls: 1\n    at Object.toHaveBeenCalledWith (D:\\.work\\rental-software\\features\\manage-product\\services\\productService.test.ts:602:45)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)"
+          ],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "ProductService",
+            "getProductById"
+          ],
+          "fullName": "ProductService getProductById should throw error when product not found",
+          "status": "passed",
+          "title": "should throw error when product not found",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "ProductService",
+            "getProductById"
+          ],
+          "fullName": "ProductService getProductById should handle invalid ID format",
+          "status": "passed",
+          "title": "should handle invalid ID format",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "ProductService",
+            "deleteProduct"
+          ],
+          "fullName": "ProductService deleteProduct should soft delete product successfully - happy path",
+          "status": "passed",
+          "title": "should soft delete product successfully - happy path",
           "failureMessages": [],
           "duration": null
         },
         {
           "ancestorTitles": [
-            "PenaltyCalculator",
-            "utility methods",
-            "validatePenaltyInputs"
+            "ProductService",
+            "deleteProduct"
           ],
-          "fullName": "PenaltyCalculator utility methods validatePenaltyInputs should detect empty condition",
-          "status": "pending",
-          "title": "should detect empty condition",
+          "fullName": "ProductService deleteProduct should throw error when product not found",
+          "status": "passed",
+          "title": "should throw error when product not found",
           "failureMessages": [],
           "duration": null
         },
         {
           "ancestorTitles": [
-            "PenaltyCalculator",
-            "utility methods",
-            "validatePenaltyInputs"
+            "ProductService",
+            "updateProductStatus"
           ],
-          "fullName": "PenaltyCalculator utility methods validatePenaltyInputs should detect invalid quantity",
-          "status": "pending",
-          "title": "should detect invalid quantity",
+          "fullName": "ProductService updateProductStatus should update product status successfully - happy path",
+          "status": "failed",
+          "title": "should update product status successfully - happy path",
+          "failureMessages": [
+            "Error: expect(jest.fn()).toHaveBeenCalledWith(...expected)\n\n- Expected\n+ Received\n\n  Object {\n    \"data\": Object {\n      \"status\": \"MAINTENANCE\",\n-     \"updatedAt\": Any<Date>,\n+     \"updatedAt\": 2025-08-14T14:42:32.531Z,\n    },\n    \"include\": Object {\n      \"category\": true,\n+     \"color\": true,\n+     \"material\": true,\n    },\n    \"where\": Object {\n      \"id\": \"prod-123\",\n    },\n  },\n\nNumber of calls: 1\n    at Object.toHaveBeenCalledWith (D:\\.work\\rental-software\\features\\manage-product\\services\\productService.test.ts:733:41)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)"
+          ],
+          "duration": 2
+        },
+        {
+          "ancestorTitles": [
+            "ProductService",
+            "updateProductStatus"
+          ],
+          "fullName": "ProductService updateProductStatus should throw error when trying to set same status",
+          "status": "passed",
+          "title": "should throw error when trying to set same status",
           "failureMessages": [],
           "duration": null
         },
         {
           "ancestorTitles": [
-            "PenaltyCalculator",
-            "utility methods",
-            "validatePenaltyInputs"
+            "ProductService",
+            "updateProductStatus"
           ],
-          "fullName": "PenaltyCalculator utility methods validatePenaltyInputs should detect very old return dates",
-          "status": "pending",
-          "title": "should detect very old return dates",
+          "fullName": "ProductService updateProductStatus should handle invalid status value",
+          "status": "passed",
+          "title": "should handle invalid status value",
           "failureMessages": [],
-          "duration": null
-        },
-        {
-          "ancestorTitles": [
-            "PenaltyCalculator",
-            "utility methods",
-            "validatePenaltyInputs"
-          ],
-          "fullName": "PenaltyCalculator utility methods validatePenaltyInputs should accumulate multiple errors",
-          "status": "pending",
-          "title": "should accumulate multiple errors",
-          "failureMessages": [],
-          "duration": null
-        },
-        {
-          "ancestorTitles": [
-            "PenaltyCalculator",
-            "utility methods",
-            "getBusinessRules"
-          ],
-          "fullName": "PenaltyCalculator utility methods getBusinessRules should return current business rules configuration",
-          "status": "pending",
-          "title": "should return current business rules configuration",
-          "failureMessages": [],
-          "duration": null
-        },
-        {
-          "ancestorTitles": [
-            "PenaltyCalculator",
-            "edge cases and boundary conditions"
-          ],
-          "fullName": "PenaltyCalculator edge cases and boundary conditions should handle very large modalAwal values",
-          "status": "pending",
-          "title": "should handle very large modalAwal values",
-          "failureMessages": [],
-          "duration": null
-        },
-        {
-          "ancestorTitles": [
-            "PenaltyCalculator",
-            "edge cases and boundary conditions"
-          ],
-          "fullName": "PenaltyCalculator edge cases and boundary conditions should handle leap year date calculations",
-          "status": "pending",
-          "title": "should handle leap year date calculations",
-          "failureMessages": [],
-          "duration": null
-        },
-        {
-          "ancestorTitles": [
-            "PenaltyCalculator",
-            "edge cases and boundary conditions"
-          ],
-          "fullName": "PenaltyCalculator edge cases and boundary conditions should handle timezone differences correctly",
-          "status": "pending",
-          "title": "should handle timezone differences correctly",
-          "failureMessages": [],
-          "duration": null
-        },
-        {
-          "ancestorTitles": [
-            "PenaltyCalculator",
-            "edge cases and boundary conditions"
-          ],
-          "fullName": "PenaltyCalculator edge cases and boundary conditions should handle case-insensitive condition matching",
-          "status": "pending",
-          "title": "should handle case-insensitive condition matching",
-          "failureMessages": [],
-          "duration": null
+          "duration": 1
         }
       ],
-      "failureMessage": null
+      "failureMessage": "  ● ProductService › updateProduct › should update product successfully - happy path\n\n    expect(jest.fn()).toHaveBeenCalledWith(...expected)\n\n    - Expected\n    + Received\n\n      Object {\n        \"data\": Object {\n    -     \"hargaSewa\": \"60000\",\n    +     \"currentPrice\": \"60000\",\n          \"name\": \"Updated Dress Name\",\n    -     \"updatedAt\": Any<Date>,\n    +     \"updatedAt\": 2025-08-14T14:42:32.503Z,\n        },\n        \"include\": Object {\n          \"category\": true,\n    +     \"color\": true,\n    +     \"material\": true,\n        },\n        \"where\": Object {\n          \"id\": \"prod-123\",\n        },\n      },\n\n    Number of calls: 1\n\n    \u001b[0m \u001b[90m 366 |\u001b[39m         include\u001b[33m:\u001b[39m { category\u001b[33m:\u001b[39m \u001b[36mtrue\u001b[39m }\u001b[33m,\u001b[39m\n     \u001b[90m 367 |\u001b[39m       })\n    \u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 368 |\u001b[39m       expect(mockPrisma\u001b[33m.\u001b[39mproduct\u001b[33m.\u001b[39mupdate)\u001b[33m.\u001b[39mtoHaveBeenCalledWith({\n     \u001b[90m     |\u001b[39m                                         \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n     \u001b[90m 369 |\u001b[39m         where\u001b[33m:\u001b[39m { id\u001b[33m:\u001b[39m productId }\u001b[33m,\u001b[39m\n     \u001b[90m 370 |\u001b[39m         data\u001b[33m:\u001b[39m {\n     \u001b[90m 371 |\u001b[39m           name\u001b[33m:\u001b[39m \u001b[32m'Updated Dress Name'\u001b[39m\u001b[33m,\u001b[39m\u001b[0m\n\n      at Object.toHaveBeenCalledWith (features/manage-product/services/productService.test.ts:368:41)\n\n  ● ProductService › updateProduct › should handle empty update request gracefully\n\n    expect(jest.fn()).toHaveBeenCalledWith(...expected)\n\n    - Expected\n    + Received\n\n      Object {\n        \"data\": Object {\n    -     \"updatedAt\": Any<Date>,\n    +     \"updatedAt\": 2025-08-14T14:42:32.518Z,\n        },\n        \"include\": Object {\n          \"category\": true,\n    +     \"color\": true,\n    +     \"material\": true,\n        },\n        \"where\": Object {\n          \"id\": \"prod-123\",\n        },\n      },\n\n    Number of calls: 1\n\n    \u001b[0m \u001b[90m 405 |\u001b[39m\n     \u001b[90m 406 |\u001b[39m       \u001b[90m// Assert\u001b[39m\n    \u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 407 |\u001b[39m       expect(mockPrisma\u001b[33m.\u001b[39mproduct\u001b[33m.\u001b[39mupdate)\u001b[33m.\u001b[39mtoHaveBeenCalledWith({\n     \u001b[90m     |\u001b[39m                                         \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n     \u001b[90m 408 |\u001b[39m         where\u001b[33m:\u001b[39m { id\u001b[33m:\u001b[39m productId }\u001b[33m,\u001b[39m\n     \u001b[90m 409 |\u001b[39m         data\u001b[33m:\u001b[39m {\n     \u001b[90m 410 |\u001b[39m           updatedAt\u001b[33m:\u001b[39m expect\u001b[33m.\u001b[39many(\u001b[33mDate\u001b[39m)\u001b[33m,\u001b[39m\u001b[0m\n\n      at Object.toHaveBeenCalledWith (features/manage-product/services/productService.test.ts:407:41)\n\n  ● ProductService › getProducts › should get products with pagination and filters - happy path\n\n    expect(jest.fn()).toHaveBeenCalledWith(...expected)\n\n    - Expected\n    + Received\n\n    @@ -1,8 +1,10 @@\n      Object {\n        \"include\": Object {\n          \"category\": true,\n    +     \"color\": true,\n    +     \"material\": true,\n        },\n        \"orderBy\": Object {\n          \"createdAt\": \"desc\",\n        },\n        \"skip\": 0,,\n\n    Number of calls: 1\n\n    \u001b[0m \u001b[90m 478 |\u001b[39m       \u001b[90m// Assert\u001b[39m\n     \u001b[90m 479 |\u001b[39m       expect(productQuerySchema\u001b[33m.\u001b[39mparse)\u001b[33m.\u001b[39mtoHaveBeenCalledWith(mockQuery)\n    \u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 480 |\u001b[39m       expect(mockPrisma\u001b[33m.\u001b[39mproduct\u001b[33m.\u001b[39mfindMany)\u001b[33m.\u001b[39mtoHaveBeenCalledWith({\n     \u001b[90m     |\u001b[39m                                           \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n     \u001b[90m 481 |\u001b[39m         where\u001b[33m:\u001b[39m {\n     \u001b[90m 482 |\u001b[39m           isActive\u001b[33m:\u001b[39m \u001b[36mtrue\u001b[39m\u001b[33m,\u001b[39m\n     \u001b[90m 483 |\u001b[39m           categoryId\u001b[33m:\u001b[39m \u001b[32m'cat-123'\u001b[39m\u001b[33m,\u001b[39m\u001b[0m\n\n      at Object.toHaveBeenCalledWith (features/manage-product/services/productService.test.ts:480:43)\n\n  ● ProductService › getProducts › should handle query without filters\n\n    expect(jest.fn()).toHaveBeenCalledWith(...expected)\n\n    - Expected\n    + Received\n\n    @@ -1,8 +1,10 @@\n      Object {\n        \"include\": Object {\n          \"category\": true,\n    +     \"color\": true,\n    +     \"material\": true,\n        },\n        \"orderBy\": Object {\n          \"createdAt\": \"desc\",\n        },\n        \"skip\": 0,,\n\n    Number of calls: 1\n\n    \u001b[0m \u001b[90m 524 |\u001b[39m\n     \u001b[90m 525 |\u001b[39m       \u001b[90m// Assert\u001b[39m\n    \u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 526 |\u001b[39m       expect(mockPrisma\u001b[33m.\u001b[39mproduct\u001b[33m.\u001b[39mfindMany)\u001b[33m.\u001b[39mtoHaveBeenCalledWith({\n     \u001b[90m     |\u001b[39m                                           \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n     \u001b[90m 527 |\u001b[39m         where\u001b[33m:\u001b[39m {\n     \u001b[90m 528 |\u001b[39m           isActive\u001b[33m:\u001b[39m \u001b[36mtrue\u001b[39m\u001b[33m,\u001b[39m\n     \u001b[90m 529 |\u001b[39m         }\u001b[33m,\u001b[39m\u001b[0m\n\n      at Object.toHaveBeenCalledWith (features/manage-product/services/productService.test.ts:526:43)\n\n  ● ProductService › getProductById › should get product by ID successfully - happy path\n\n    expect(jest.fn()).toHaveBeenCalledWith(...expected)\n\n    - Expected\n    + Received\n\n    @@ -1,8 +1,10 @@\n      Object {\n        \"include\": Object {\n          \"category\": true,\n    +     \"color\": true,\n    +     \"material\": true,\n        },\n        \"where\": Object {\n          \"id\": \"prod-123\",\n          \"isActive\": true,\n        },,\n\n    Number of calls: 1\n\n    \u001b[0m \u001b[90m 600 |\u001b[39m       \u001b[90m// Assert\u001b[39m\n     \u001b[90m 601 |\u001b[39m       expect(productParamsSchema\u001b[33m.\u001b[39mparse)\u001b[33m.\u001b[39mtoHaveBeenCalledWith({ id\u001b[33m:\u001b[39m productId })\n    \u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 602 |\u001b[39m       expect(mockPrisma\u001b[33m.\u001b[39mproduct\u001b[33m.\u001b[39mfindUnique)\u001b[33m.\u001b[39mtoHaveBeenCalledWith({\n     \u001b[90m     |\u001b[39m                                             \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n     \u001b[90m 603 |\u001b[39m         where\u001b[33m:\u001b[39m { id\u001b[33m:\u001b[39m productId\u001b[33m,\u001b[39m isActive\u001b[33m:\u001b[39m \u001b[36mtrue\u001b[39m }\u001b[33m,\u001b[39m\n     \u001b[90m 604 |\u001b[39m         include\u001b[33m:\u001b[39m {\n     \u001b[90m 605 |\u001b[39m           category\u001b[33m:\u001b[39m \u001b[36mtrue\u001b[39m\u001b[33m,\u001b[39m\u001b[0m\n\n      at Object.toHaveBeenCalledWith (features/manage-product/services/productService.test.ts:602:45)\n\n  ● ProductService › updateProductStatus › should update product status successfully - happy path\n\n    expect(jest.fn()).toHaveBeenCalledWith(...expected)\n\n    - Expected\n    + Received\n\n      Object {\n        \"data\": Object {\n          \"status\": \"MAINTENANCE\",\n    -     \"updatedAt\": Any<Date>,\n    +     \"updatedAt\": 2025-08-14T14:42:32.531Z,\n        },\n        \"include\": Object {\n          \"category\": true,\n    +     \"color\": true,\n    +     \"material\": true,\n        },\n        \"where\": Object {\n          \"id\": \"prod-123\",\n        },\n      },\n\n    Number of calls: 1\n\n    \u001b[0m \u001b[90m 731 |\u001b[39m         where\u001b[33m:\u001b[39m { id\u001b[33m:\u001b[39m productId\u001b[33m,\u001b[39m isActive\u001b[33m:\u001b[39m \u001b[36mtrue\u001b[39m }\u001b[33m,\u001b[39m\n     \u001b[90m 732 |\u001b[39m       })\n    \u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 733 |\u001b[39m       expect(mockPrisma\u001b[33m.\u001b[39mproduct\u001b[33m.\u001b[39mupdate)\u001b[33m.\u001b[39mtoHaveBeenCalledWith({\n     \u001b[90m     |\u001b[39m                                         \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n     \u001b[90m 734 |\u001b[39m         where\u001b[33m:\u001b[39m { id\u001b[33m:\u001b[39m productId }\u001b[33m,\u001b[39m\n     \u001b[90m 735 |\u001b[39m         data\u001b[33m:\u001b[39m {\n     \u001b[90m 736 |\u001b[39m           status\u001b[33m:\u001b[39m newStatus\u001b[33m,\u001b[39m\u001b[0m\n\n      at Object.toHaveBeenCalledWith (features/manage-product/services/productService.test.ts:733:41)\n"
     }
   ]
 }

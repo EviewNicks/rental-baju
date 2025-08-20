@@ -1,0 +1,14 @@
+✓ Compiled in 842ms
+ ✓ Compiled in 883ms
+ GET /producer/manage-product/add 200 in 461ms
+ GET /api/materials?limit=100 200 in 988ms
+ GET /api/categories?isActive=true 200 in 1002ms
+ ⨯ The requested resource isn't a valid image for /blob:http://localhost:3000/45278ef6-6abd-4fa5-868c-68dec5f893b0 received null
+ ⨯ The requested resource isn't a valid image for /blob:http://localhost:3000/45278ef6-6abd-4fa5-868c-68dec5f893b0 received null
+ ⨯ The requested resource isn't a valid image for /blob:http://localhost:3000/c2f81149-bd47-4a18-88f4-1e9a15968919 received null
+ ⨯ The requested resource isn't a valid image for /blob:http://localhost:3000/c2f81149-bd47-4a18-88f4-1e9a15968919 received null
+ ⨯ The requested resource isn't a valid image for /blob:http://localhost:3000/3c5e353f-445e-4a55-bade-aeb5b330917e received null
+ ⨯ The requested resource isn't a valid image for /blob:http://localhost:3000/3c5e353f-445e-4a55-bade-aeb5b330917e received null
+ ⨯ The requested resource isn't a valid image for /blob:http://localhost:3000/3192d286-54c1-4e27-a738-464284081136 received null
+ ⨯ The requested resource isn't a valid image for /blob:http://localhost:3000/3192d286-54c1-4e27-a738-464284081136 received null
+ ✓ Compiled in 649ms

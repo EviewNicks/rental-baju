@@ -52,5 +52,41 @@
     "blocked_command": "cd \"D:\\.work\\rental-software\" && npm run type-check",
     "suggested_command": "cd \"D:\\.work\\rental-software\" && yarn type-check",
     "reason": "Gunakan 'yarn' sebagai pengganti 'npm run' untuk workflow utama."
+  },
+  {
+    "session_id": "93d444a0-1d1d-4a5b-b086-bf72cd8e5822",
+    "blocked_command": "cd \"D:\\.work\\rental-software\" && npm run lint -- features/kasir/components/detail/ProductDetailCard.tsx",
+    "suggested_command": "cd \"D:\\.work\\rental-software\" && yarn lint -- features/kasir/components/detail/ProductDetailCard.tsx",
+    "reason": "Gunakan 'yarn' sebagai pengganti 'npm run' untuk workflow utama."
+  },
+  {
+    "session_id": "18bfa238-c3a2-48ae-84ce-55723e65c1c7",
+    "blocked_command": "npm list -g @context7/mcp @modelcontextprotocol/server-playwright",
+    "suggested_command": "yarn list -g @context7/mcp @modelcontextprotocol/server-playwright",
+    "reason": "Gunakan 'yarn' sebagai default, kecuali ada alasan khusus."
+  },
+  {
+    "session_id": "18bfa238-c3a2-48ae-84ce-55723e65c1c7",
+    "blocked_command": "npm list -g --depth=0 | grep -E \"(context7|playwright)\"",
+    "suggested_command": "yarn list -g --depth=0 | grep -E \"(context7|playwright)\"",
+    "reason": "Gunakan 'yarn' sebagai default, kecuali ada alasan khusus."
+  },
+  {
+    "session_id": "18bfa238-c3a2-48ae-84ce-55723e65c1c7",
+    "blocked_command": "npm install -g @context7/mcp",
+    "suggested_command": "yarn install -g @context7/mcp",
+    "reason": "Gunakan 'yarn install' sebagai pengganti 'npm install'."
+  },
+  {
+    "session_id": "18bfa238-c3a2-48ae-84ce-55723e65c1c7",
+    "blocked_command": "cmd /c \"npm install -g @context7/mcp\"",
+    "suggested_command": "cmd /c \"yarn install -g @context7/mcp\"",
+    "reason": "Gunakan 'yarn install' sebagai pengganti 'npm install'."
+  },
+  {
+    "session_id": "52226287-f266-42aa-bd7c-087f355f51b0",
+    "blocked_command": "npm search @21st-dev magic mcp",
+    "suggested_command": "yarn search @21st-dev magic mcp",
+    "reason": "Gunakan 'yarn' sebagai default, kecuali ada alasan khusus."
   }
 ]

@@ -217,6 +217,64 @@ export const colorApi = {
   }
 }
 
+// === MATERIAL API ===
+export const materialApi = {
+  // Get all materials with filtering (ultra-simplified)
+  getMaterials: async (params?: {
+    search?: string
+    page?: number
+    limit?: number
+    unit?: string | string[]
+  }) => {
+    const queryString = params ? buildQueryParams(params) : ''
+    const url = `${API_BASE_URL}/materials${queryString ? `?${queryString}` : ''}`
+    const response = await fetch(url)
+    return handleResponse(response)
+  },
+
+  // Get single material by ID
+  getMaterialById: async (id: string) => {
+    const response = await fetch(`${API_BASE_URL}/materials/${id}`)
+    return handleResponse(response)
+  },
+
+  // Create new material (4-field ultra-simplified)
+  createMaterial: async (data: {
+    name: string
+    pricePerUnit: number
+    unit: string
+  }) => {
+    const response = await fetch(`${API_BASE_URL}/materials`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    })
+    return handleResponse(response)
+  },
+
+  // Update existing material (4-field ultra-simplified)
+  updateMaterial: async (id: string, data: {
+    name?: string
+    pricePerUnit?: number
+    unit?: string
+  }) => {
+    const response = await fetch(`${API_BASE_URL}/materials/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    })
+    return handleResponse(response)
+  },
+
+  // Delete material (hard delete)
+  deleteMaterial: async (id: string) => {
+    const response = await fetch(`${API_BASE_URL}/materials/${id}`, {
+      method: 'DELETE'
+    })
+    return handleResponse(response)
+  }
+}
+
 // === FILE UPLOAD API ===
 export const fileApi = {
   // Upload single file

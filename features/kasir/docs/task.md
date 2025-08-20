@@ -1,93 +1,44 @@
-# Task: Update Transaction Detail UI After Return Processing
+Lakukan root cause analysis sistematis untuk issue "status product tidak
+berubah menjadi 'dikembalikan'" dengan langkah berikut:
 
-## Context
+**CONTEXT:**
 
-We have successfully implemented the return system (TSK-24) as
-documented in `features/kasir/docs/task-docs/TSK-24/design.md`. Now we  
- need to update the transaction detail page to reflect changes after
-return processing.
+- Telah mengimplementasikan hasil analisis dari
+  `features/kasir/docs/analyze.md`
+- Telah melakukan implementasi pada
+  `features/kasir/components/detail/ProductDetailCard.tsx`
+- Issue masih persisten setelah implementasi
+- Referensi visual: `features/kasir/docs/image.png`
+- Log files: `services/client-log.log`, `services/server-log.log`
 
-## Objective
+**ANALISIS YANG DIPERLUKAN:**
 
-Update the transaction detail page
-(`app/(kasir)/dashboard/transaction/[kode]/page.tsx`) to properly
-display return-related information in:
+1. **Code Flow Analysis**: Trace lengkap dari UI action hingga database update
+2. **State Management Review**: Periksa React state, context, dan data flow
+3. **API Integration Check**: Validasi request/response antara
+   frontend-backend
+4. **Database Transaction Analysis**: Periksa SQL queries dan transaction
+   handling
+5. **Log Pattern Analysis**: Identifikasi error patterns atau missing
+   operations
 
-1. `features/kasir/components/detail/ActivityTimeline.tsx`
-2. `features/kasir/components/detail/ProductDetailCard.tsx`
+**OUTPUT FORMAT:**
 
-## Requirements
+- **Root Cause Summary** (1-2 kalimat)
+- **Technical Details** (code snippets dengan line numbers)
+- **Impact Assessment** (scope dan severity)
+- **Action Plan** (prioritized list dengan effort estimation)
+- **Validation Steps** (cara memverifikasi fix berhasil)
 
-### ActivityTimeline Component Requirements:
+**SUCCESS CRITERIA:**
 
-- **Display return events** with timestamps and user information
-- **Show return status changes** (processing → completed → failed)
-- **Include penalty information** in timeline entries
-- **Display condition details** for each returned item
-- **Format**: Timeline entries with icons, timestamps, and expandable  
-  details
+- Masalah teridentifikasi dengan confidence level >90%
+- Solusi dapat diimplementasikan dalam <2 hours
+- Fix dapat diverifikasi melalui testing scenario yang jelas
 
-### ProductDetailCard Component Requirements:
+**DELIVERABLES:**
 
-- **Update product status** to reflect return state
-  (returned/partial/pending)
-- **Show return quantity** vs original quantity
-- **Display condition information** (baik/rusak/hilang) with visual
-  indicators
-- **Include penalty amounts** per item if applicable
-- **Visual state**: Color-coded status badges and progress indicators
+- Markdown report dengan sections di atas
+- Code diffs untuk recommended fixes
+- Test scenarios untuk validation
 
-## Implementation Approach:
-
-1. **Analysis Phase**: Review current component structure and data flow
-2. **Data Integration**: Ensure components receive return-related data  
-   from API
-3. **UI Implementation**: Add return-specific UI elements and states
-4. **State Management**: Update component state handling for return data
-5. **Testing**: Validate UI updates with test return transactions
-
-## Success Criteria:
-
-- ✅ ActivityTimeline shows complete return process history
-- ✅ ProductDetailCard reflects accurate return status and quantities
-- ✅ UI updates in real-time after return processing
-- ✅ All return-related data displays correctly
-- ✅ Components maintain responsive design and accessibility
-
-## Technical Standards:
-
-- Follow existing TypeScript patterns
-- Maintain component performance (<100ms render time)
-- Ensure proper error handling for missing return data
-- Use existing UI component library (shadcn/ui)
-
-## Deliverables:
-
-1. Updated ActivityTimeline.tsx with return event display
-2. Updated ProductDetailCard.tsx with return status indicators
-3. Type definitions for return-related data structures
-4. Basic component tests for new functionality
-
-## Validation:
-
-Test with transaction code that has completed return processing to
-verify UI updates correctly reflect the return state.
-
-== prompt ==
-
-Kita telah menyelesaikan return system (TSK-24). Sekarang perlu update  
- transaction detail page
-`app/(kasir)/dashboard/transaction/[kode]/page.tsx` untuk komponen:
-
-1. `ActivityTimeline.tsx` - tambah return events dan status
-2. `ProductDetailCard.tsx` - update status barang dan quantity setelah  
-   return
-
-Requirements:
-
-- ActivityTimeline: tampilkan return events dengan timestamp dan penalty  
-  info
-- ProductDetailCard: update status return, quantity, dan kondisi barang
-- UI harus update otomatis setelah return processing selesai
-
-Deliverable: kedua komponen sudah menampilkan data return dengan benar.

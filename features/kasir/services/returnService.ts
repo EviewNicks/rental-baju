@@ -4,7 +4,7 @@
  * Eliminates dual-mode processing complexity through unified interface
  */
 
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient, Prisma } from '@prisma/client'
 import { Decimal } from '@prisma/client/runtime/library'
 import {
   ReturnRequest,
@@ -78,6 +78,56 @@ export class UnifiedReturnService {
   ) {
     this.transaksiService = new TransaksiService(prisma, userId)
     this.auditService = createAuditService(prisma, userId)
+  }
+
+  /**
+   * Create return activity record for transaction timeline
+   * Safe method that logs failures without breaking main return flow
+   */
+  private async createReturnActivity(
+    transaksiId: string,
+    activityData: {
+      tipe: string
+      deskripsi: string
+      data: Prisma.InputJsonValue
+    }
+  ): Promise<void> {
+    try {
+      await this.prisma.aktivitasTransaksi.create({
+        data: {
+          transaksiId,
+          tipe: activityData.tipe,
+          deskripsi: activityData.deskripsi,
+          data: activityData.data,
+          createdBy: this.userId
+        }
+      })
+
+      logger.debug(
+        'UnifiedReturnService',
+        'createReturnActivity',
+        'Activity created successfully',
+        {
+          transactionId: transaksiId,
+          activityType: activityData.tipe,
+          description: activityData.deskripsi,
+        }
+      )
+    } catch (error) {
+      // Log activity creation failure but don't break main return flow
+      logger.error(
+        'UnifiedReturnService',
+        'createReturnActivity',
+        'Failed to create return activity',
+        {
+          transactionId: transaksiId,
+          activityType: activityData.tipe,
+          error: error instanceof Error ? error.message : 'Unknown error',
+          userId: this.userId
+        }
+      )
+      // Don't throw - activity creation failure shouldn't break return processing
+    }
   }
 
   /**
@@ -480,6 +530,52 @@ export class UnifiedReturnService {
         { timeout: 15000 }, // Increased timeout for complex operations
       )
 
+      // Create return activity after successful processing
+      await this.createReturnActivity(transaksiId, {
+        tipe: 'dikembalikan',
+        deskripsi: `Item returned: ${result.processedItems.length} items processed`,
+        data: {
+          conditions: result.processedItems.map(item => ({
+            itemId: item.itemId,
+            kondisiAkhir: item.kondisiAkhir,
+            jumlahKembali: item.conditionBreakdown?.reduce((sum, c) => sum + c.jumlahKembali, 0) || 1,
+            penaltyAmount: item.penalty,
+            produkName: validation.transaction!.transaction.items.find(ti => ti.id === item.itemId)?.produk?.name || 'Unknown'
+          })),
+          totalPenalty: penaltyCalculation.totalPenalty,
+          itemsAffected: result.processedItems.map(item => 
+            validation.transaction!.transaction.items.find(ti => ti.id === item.itemId)?.produk?.name || 'Unknown'
+          ),
+          processingMode: result.processingMode,
+          totalConditions: request.items.reduce((sum, item) => sum + item.conditions.length, 0),
+          timestamp: new Date().toISOString()
+        }
+      })
+
+      // Create penalty-specific activity if penalties exist
+      if (penaltyCalculation.totalPenalty > 0) {
+        await this.createReturnActivity(transaksiId, {
+          tipe: 'penalty_added',
+          deskripsi: `Penalty applied: Rp ${penaltyCalculation.totalPenalty.toLocaleString('id-ID')} for condition damages`,
+          data: {
+            totalPenalty: penaltyCalculation.totalPenalty,
+            penaltyBreakdown: result.processedItems
+              .filter(item => item.penalty > 0)
+              .map(item => ({
+                itemId: item.itemId,
+                produkName: validation.transaction!.transaction.items.find(ti => ti.id === item.itemId)?.produk?.name || 'Unknown',
+                penaltyAmount: item.penalty,
+                conditions: item.conditionBreakdown?.map(c => ({
+                  kondisiAkhir: c.kondisiAkhir,
+                  penaltyAmount: c.penaltyAmount
+                })) || []
+              })),
+            calculationMethod: 'condition-based',
+            timestamp: new Date().toISOString()
+          }
+        })
+      }
+
       logger.info(
         'UnifiedReturnService',
         'processUnifiedReturn',
@@ -490,6 +586,7 @@ export class UnifiedReturnService {
           itemsProcessed: request.items.length,
           conditionsProcessed: request.items.reduce((sum, item) => sum + item.conditions.length, 0),
           processingTime: Date.now() - startTime,
+          activitiesCreated: penaltyCalculation.totalPenalty > 0 ? 2 : 1
         },
       )
 

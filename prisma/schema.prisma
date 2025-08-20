@@ -15,30 +15,30 @@ model User {
 }
 
 model Product {
-  id              String        @id @default(uuid())
-  code            String        @unique // 4 digit alfanumerik uppercase (PRD1, DRES2, dll)
-  name            String
-  description     String?
-  modalAwal       Decimal       @db.Decimal(10, 2) // Biaya pembuatan baju
-  currentPrice    Decimal       @db.Decimal(10, 2) // Current rental price per unit
-  quantity        Int           // Total inventory (immutable during rentals)
-  rentedStock     Int           @default(0) // Currently rented out
-  // Note: availableStock calculated as (quantity - rentedStock)
-  // Note: totalPendapatan calculated from TransaksiItem aggregation
-  imageUrl        String?
-  categoryId      String
-  category        Category      @relation(fields: [categoryId], references: [id])
-  size            String?       // Ukuran: S, M, L, XL, XXL atau custom
-  colorId         String?       // Relasi ke Color model
-  color           Color?        @relation(fields: [colorId], references: [id])
-  status          ProductStatus @default(AVAILABLE)
-  isActive        Boolean       @default(true)
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-  createdBy       String        // User ID dari Clerk
-  
-  // Relations for kasir feature
-  transaksiItems  TransaksiItem[]
+  id               String          @id @default(uuid())
+  code             String          @unique
+  name             String
+  description      String?
+  modalAwal        Decimal         @db.Decimal(10, 2)
+  currentPrice     Decimal         @db.Decimal(10, 2)
+  quantity         Int
+  rentedStock      Int             @default(0)
+  imageUrl         String?
+  categoryId       String
+  size             String?
+  colorId          String?
+  materialId       String?
+  materialCost     Decimal?        @db.Decimal(10, 2)
+  materialQuantity Int?
+  status           ProductStatus   @default(AVAILABLE)
+  isActive         Boolean         @default(true)
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  createdBy        String
+  category         Category        @relation(fields: [categoryId], references: [id])
+  color            Color?          @relation(fields: [colorId], references: [id])
+  material         Material?       @relation(fields: [materialId], references: [id])
+  transaksiItems   TransaksiItem[]
 
   @@index([isActive])
   @@index([categoryId])
@@ -48,18 +48,19 @@ model Product {
   @@index([colorId])
   @@index([categoryId, size, colorId])
   @@index([rentedStock])
-  // Performance index for penalty calculation
-  @@index([id, modalAwal], name: "idx_product_penalty_calc")
+  @@index([id, modalAwal], map: "idx_product_penalty_calc")
+  @@index([materialId])
+  @@index([materialCost], map: "idx_product_material_cost")
 }
 
 model Category {
   id        String    @id @default(uuid())
   name      String    @unique
-  color     String    // Hex color untuk badge
-  products  Product[]
+  color     String
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
-  createdBy String    // User ID dari Clerk
+  createdBy String
+  products  Product[]
 
   @@index([createdBy])
 }
@@ -67,181 +68,176 @@ model Category {
 model Color {
   id          String    @id @default(uuid())
   name        String    @unique
-  hexCode     String?   // Hex color code (optional)
-  description String?   // Deskripsi warna (optional)
+  hexCode     String?
+  description String?
   isActive    Boolean   @default(true)
-  products    Product[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-  createdBy   String    // User ID dari Clerk
+  createdBy   String
+  products    Product[]
 
   @@index([createdBy])
   @@index([isActive])
   @@map("colors")
 }
 
-enum ProductStatus {
-  AVAILABLE    // Tersedia
-  RENTED       // Disewa
-  MAINTENANCE  // Maintenance
+model Material {
+  id           String    @id @default(uuid())
+  name         String    @unique
+  pricePerUnit Decimal   @db.Decimal(10, 2)
+  unit         String    @default("meter")
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  createdBy    String
+  products     Product[]
+
+  @@index([name])
+  @@index([createdBy])
+  @@map("materials")
 }
 
-// Kasir Feature Models - RPK-26
 model Penyewa {
-  id        String   @id @default(uuid())
-  nama      String   // Nama lengkap penyewa
-  telepon   String   @unique // Nomor telepon (unique)
-  alamat    String   // Alamat lengkap
-  email     String?  // Email (optional)
-  nik       String?  // NIK/KTP (optional)
-  foto      String?  // URL foto profil
-  catatan   String?  // Catatan khusus
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
-  // Relations
+  id        String      @id @default(uuid())
+  nama      String
+  telepon   String      @unique
+  alamat    String
+  email     String?
+  nik       String?
+  foto      String?
+  catatan   String?
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
   transaksi Transaksi[]
-  
-  @@map("penyewa")
+
   @@index([telepon])
   @@index([nama])
+  @@map("penyewa")
 }
 
 model Transaksi {
-  id           String   @id @default(uuid())
-  kode         String   @unique // Format: TXN-YYYYMMDD-XXX
-  penyewaId    String
-  status       String   @default("active") // active, selesai, terlambat, cancelled
-  totalHarga   Decimal  @db.Decimal(10, 2) @default(0)
-  jumlahBayar  Decimal  @db.Decimal(10, 2) @default(0) // Total yang sudah dibayar
-  sisaBayar    Decimal  @db.Decimal(10, 2) @default(0) // Sisa yang harus dibayar
-  tglMulai     DateTime // Tanggal mulai sewa
-  tglSelesai   DateTime? // Tanggal selesai sewa
-  tglKembali   DateTime? // Tanggal aktual pengembalian
-  metodeBayar  String   @default("tunai") // tunai, transfer, kartu"
-  catatan      String?  // Catatan transaksi
-  createdBy    String   // User ID yang membuat
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  
-  // Relations
-  penyewa      Penyewa @relation(fields: [penyewaId], references: [id])
-  items        TransaksiItem[]
-  pembayaran   Pembayaran[]
-  aktivitas    AktivitasTransaksi[]
-  
-  @@map("transaksi")
+  id          String               @id @default(uuid())
+  kode        String               @unique
+  penyewaId   String
+  status      String               @default("active")
+  totalHarga  Decimal              @default(0) @db.Decimal(10, 2)
+  jumlahBayar Decimal              @default(0) @db.Decimal(10, 2)
+  sisaBayar   Decimal              @default(0) @db.Decimal(10, 2)
+  tglMulai    DateTime
+  tglSelesai  DateTime?
+  tglKembali  DateTime?
+  metodeBayar String               @default("tunai")
+  catatan     String?
+  createdBy   String
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+  aktivitas   AktivitasTransaksi[]
+  pembayaran  Pembayaran[]
+  penyewa     Penyewa              @relation(fields: [penyewaId], references: [id])
+  items       TransaksiItem[]
+
   @@index([kode])
   @@index([status])
   @@index([penyewaId])
   @@index([createdAt])
-  // Performance indexes for return processing
-  @@index([status, id], name: "idx_transaksi_status_id_validation")
-  @@index([id, tglSelesai, status], name: "idx_transaksi_penalty_dates")
+  @@index([status, id], map: "idx_transaksi_status_id_validation")
+  @@index([id, tglSelesai, status], map: "idx_transaksi_penalty_dates")
+  @@map("transaksi")
 }
 
 model TransaksiItem {
-  id          String   @id @default(uuid())
-  transaksiId String
-  produkId    String
-  jumlah      Int      @default(1) // Quantity
-  jumlahDiambil Int    @default(0) // Quantity picked up from total jumlah
-  hargaSewa   Decimal  @db.Decimal(10, 2) // Harga sewa per hari
-  durasi      Int      // Durasi sewa dalam hari
-  subtotal    Decimal  @db.Decimal(10, 2) // Subtotal untuk item ini
-  kondisiAwal String?  // Kondisi saat disewa
-  statusKembali String @default("belum") // belum, sebagian, lengkap
-  
-  // TSK-24 Phase 1: Unified return system fields
-  conditionCount        Int     @default(1)           // Track complexity for analytics (1 = simple, >1 = complex)
-  migratedFromSingleMode Boolean @default(false)     // Track migration history for audit
-  totalReturnPenalty    Decimal @db.Decimal(10, 2) @default(0) // Aggregated penalty from all conditions
-  
-  // Relations
-  transaksi   Transaksi @relation(fields: [transaksiId], references: [id], onDelete: Cascade)
-  produk      Product   @relation(fields: [produkId], references: [id])
-  returnConditions TransaksiItemReturn[] // Unified return conditions (always use this)
-  
-  @@map("transaksi_item")
+  id                     String                @id @default(uuid())
+  transaksiId            String
+  produkId               String
+  jumlah                 Int                   @default(1)
+  jumlahDiambil          Int                   @default(0)
+  hargaSewa              Decimal               @db.Decimal(10, 2)
+  durasi                 Int
+  subtotal               Decimal               @db.Decimal(10, 2)
+  kondisiAwal            String?
+  statusKembali          String                @default("belum")
+  conditionCount         Int                   @default(1)
+  migratedFromSingleMode Boolean               @default(false)
+  totalReturnPenalty     Decimal               @default(0) @db.Decimal(10, 2)
+  produk                 Product               @relation(fields: [produkId], references: [id])
+  transaksi              Transaksi             @relation(fields: [transaksiId], references: [id], onDelete: Cascade)
+  returnConditions       TransaksiItemReturn[]
+
   @@index([transaksiId])
   @@index([produkId])
-  // Performance indexes for unified return processing
-  @@index([id, statusKembali, jumlahDiambil], name: "idx_transaksi_item_status_lookup")
-  @@index([produkId, transaksiId, statusKembali], name: "idx_transaksi_item_product_join")
-  // TSK-24 Phase 1: Unified processing optimization indexes
-  @@index([id, statusKembali, conditionCount], name: "idx_transaksi_item_unified_processing")
-  @@index([migratedFromSingleMode, conditionCount], name: "idx_transaksi_item_migration_history")
+  @@index([id, statusKembali, jumlahDiambil], map: "idx_transaksi_item_status_lookup")
+  @@index([produkId, transaksiId, statusKembali], map: "idx_transaksi_item_product_join")
+  @@index([id, statusKembali, conditionCount], map: "idx_transaksi_item_unified_processing")
+  @@index([migratedFromSingleMode, conditionCount], map: "idx_transaksi_item_migration_history")
+  @@map("transaksi_item")
 }
 
-// TSK-24: Multi-condition return tracking table
 model TransaksiItemReturn {
-  id                  String   @id @default(uuid())
-  transaksiItemId     String                              // Foreign key to TransaksiItem
-  kondisiAkhir        String                              // Condition description for this split
-  jumlahKembali       Int                                 // Quantity returned in this condition
-  penaltyAmount       Decimal  @db.Decimal(10, 2) @default(0) // Penalty for this condition split
-  modalAwalUsed       Decimal? @db.Decimal(10, 2)        // Modal awal used for lost item penalty calculation
-  penaltyCalculation  Json?                               // Detailed penalty breakdown (JSONB equivalent)
-  createdAt           DateTime @default(now())            // When this condition was recorded
-  createdBy           String                              // User who processed this condition
-  
-  // Relations
-  transaksiItem       TransaksiItem @relation(fields: [transaksiItemId], references: [id], onDelete: Cascade)
-  
-  // Constraints to ensure data integrity
+  id                 String        @id @default(uuid())
+  transaksiItemId    String
+  kondisiAkhir       String
+  jumlahKembali      Int
+  penaltyAmount      Decimal       @default(0) @db.Decimal(10, 2)
+  modalAwalUsed      Decimal?      @db.Decimal(10, 2)
+  penaltyCalculation Json?
+  createdAt          DateTime      @default(now())
+  createdBy          String
+  transaksiItem      TransaksiItem @relation(fields: [transaksiItemId], references: [id], onDelete: Cascade)
+
+  @@index([transaksiItemId, createdAt], map: "idx_transaksi_item_return_timeline")
+  @@index([transaksiItemId, penaltyAmount], map: "idx_transaksi_item_return_penalty")
   @@map("transaksi_item_return")
-  @@index([transaksiItemId, createdAt], name: "idx_transaksi_item_return_timeline")
-  @@index([transaksiItemId, penaltyAmount], name: "idx_transaksi_item_return_penalty")
 }
 
 model Pembayaran {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   transaksiId String
-  jumlah      Decimal  @db.Decimal(10, 2) // Jumlah pembayaran
-  metode      String   // tunai, transfer, kartu
-  referensi   String?  // Nomor referensi transfer
-  catatan     String?  // Catatan pembayaran
-  createdBy   String   // User yang input pembayaran
-  createdAt   DateTime @default(now())
-  
-  // Relations
+  jumlah      Decimal   @db.Decimal(10, 2)
+  metode      String
+  referensi   String?
+  catatan     String?
+  createdBy   String
+  createdAt   DateTime  @default(now())
   transaksi   Transaksi @relation(fields: [transaksiId], references: [id], onDelete: Cascade)
-  
-  @@map("pembayaran")
+
   @@index([transaksiId])
   @@index([createdAt])
+  @@map("pembayaran")
 }
 
 model AktivitasTransaksi {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   transaksiId String
-  tipe        String   // dibuat, dibayar, dikembalikan, terlambat, dibatalkan
-  deskripsi   String   // Deskripsi aktivitas
-  data        Json?    // Data tambahan (optional)
-  createdBy   String   // User yang melakukan aktivitas
-  createdAt   DateTime @default(now())
-  
-  // Relations
+  tipe        String
+  deskripsi   String
+  data        Json?
+  createdBy   String
+  createdAt   DateTime  @default(now())
   transaksi   Transaksi @relation(fields: [transaksiId], references: [id], onDelete: Cascade)
-  
-  @@map("aktivitas_transaksi")
+
   @@index([transaksiId])
   @@index([tipe])
   @@index([createdAt])
+  @@map("aktivitas_transaksi")
 }
 
 model FileUpload {
   id         String   @id @default(uuid())
-  filename   String   // Original filename
-  url        String   // Supabase storage URL
-  mimetype   String   // File mime type
-  size       Int      // File size in bytes
-  entityType String   // produk, penyewa, transaksi
-  entityId   String   // ID of related entity
-  createdBy  String   // User who uploaded
+  filename   String
+  url        String
+  mimetype   String
+  size       Int
+  entityType String
+  entityId   String
+  createdBy  String
   createdAt  DateTime @default(now())
-  
-  @@map("file_upload")
+
   @@index([entityType, entityId])
   @@index([createdAt])
+  @@map("file_upload")
+}
+
+enum ProductStatus {
+  AVAILABLE
+  RENTED
+  MAINTENANCE
 }

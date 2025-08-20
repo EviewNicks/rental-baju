@@ -48,3 +48,37 @@ export type {
   UnifiedReturnItem as ReturnItem,
   UnifiedValidationError as ValidationError
 } from './Return'
+
+// RPK-44: Return activity logging types
+export interface ReturnActivityData {
+  conditions: Array<{
+    itemId: string
+    kondisiAkhir: string
+    jumlahKembali: number  
+    penaltyAmount: number
+    produkName: string
+  }>
+  totalPenalty: number
+  itemsAffected: string[]  // Array of product names
+  processingMode: 'unified'
+  totalConditions: number
+  timestamp: string  // ISO 8601 format
+}
+
+export interface PenaltyActivityData {
+  totalPenalty: number
+  penaltyBreakdown: Array<{
+    itemId: string
+    produkName: string
+    penaltyAmount: number
+    conditions: Array<{
+      kondisiAkhir: string
+      penaltyAmount: number
+    }>
+  }>
+  calculationMethod: 'condition-based' | 'modal_awal' | 'late_fee'
+  timestamp: string  // ISO 8601 format
+}
+
+// Enhanced ActivityAction type including new return activities
+export type ActivityAction = 'created' | 'paid' | 'picked_up' | 'returned' | 'overdue' | 'reminder_sent' | 'penalty_added' | 'return_completed'

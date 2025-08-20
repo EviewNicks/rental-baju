@@ -3,8 +3,10 @@
 import { useState } from 'react'
 import { ColorList } from './ColorList'
 import { ColorForm } from './ColorForm'
-import { DeleteConfirmationDialog } from '../category/DeleteConfirmationDialog'
+import { ColorDeleteConfirmationDialog } from './ColorDeleteConfirmationDialog'
+import { ManageProductErrorBoundary } from '../shared/ManageProductErrorBoundary'
 import { useColors, useCreateColor, useUpdateColor, useDeleteColor } from '../../hooks/useCategories'
+import { showSuccess, showError } from '@/lib/notifications'
 import type { Color, ColorFormData, ColorModalMode } from '../../types/color'
 import { Button } from '@/components/ui/button'
 
@@ -12,7 +14,7 @@ interface ColorManagementProps {
   className?: string
 }
 
-export function ColorManagement({ className }: ColorManagementProps) {
+function ColorManagementContent({ className }: ColorManagementProps) {
   // Use simplified hooks instead of manual state management
   const { data: colorsData, isLoading } = useColors({ isActive: true })
   const colors = colorsData?.colors || []
@@ -49,6 +51,7 @@ export function ColorManagement({ className }: ColorManagementProps) {
           name: formData.name,
           hexCode: formData.hexCode,
         })
+        showSuccess('Warna berhasil ditambahkan', `Warna ${formData.name} telah dibuat`)
       } else if (mode === 'edit' && selectedColor) {
         await updateColorMutation.mutateAsync({
           id: selectedColor.id,
@@ -57,12 +60,15 @@ export function ColorManagement({ className }: ColorManagementProps) {
             hexCode: formData.hexCode,
           }
         })
+        showSuccess('Warna berhasil diperbarui', `Perubahan pada warna ${formData.name} telah disimpan`)
       }
 
       setMode('view')
       setSelectedColor(null)
     } catch (error) {
       console.error('Error saving color:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Terjadi kesalahan tidak terduga'
+      showError('Gagal menyimpan warna', errorMessage)
       throw error
     }
   }
@@ -77,10 +83,13 @@ export function ColorManagement({ className }: ColorManagementProps) {
 
     try {
       await deleteColorMutation.mutateAsync(selectedColor.id)
+      showSuccess('Warna berhasil dihapus', `Warna ${selectedColor.name} telah dihapus`)
       setDeleteDialogOpen(false)
       setSelectedColor(null)
     } catch (error) {
       console.error('Error deleting color:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Terjadi kesalahan tidak terduga'
+      showError('Gagal menghapus warna', errorMessage)
     }
   }
 
@@ -117,14 +126,21 @@ export function ColorManagement({ className }: ColorManagementProps) {
         )}
       </div>
 
-      <DeleteConfirmationDialog
+      <ColorDeleteConfirmationDialog
         isOpen={deleteDialogOpen}
         onClose={() => setDeleteDialogOpen(false)}
         onConfirm={handleConfirmDelete}
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        category={selectedColor as any} // Reusing the same dialog component
+        color={selectedColor}
         loading={deleteColorMutation.isPending}
       />
     </>
+  )
+}
+
+export function ColorManagement({ className }: ColorManagementProps) {
+  return (
+    <ManageProductErrorBoundary>
+      <ColorManagementContent className={className} />
+    </ManageProductErrorBoundary>
   )
 }

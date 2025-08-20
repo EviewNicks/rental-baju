@@ -21,6 +21,11 @@ export interface BaseProduct {
   currentPrice: any // Prisma Decimal (server-side only)
   quantity: number
   rentedStock: number
+  // Material Management fields - RPK-45 (NULLABLE untuk backward compatibility)
+  materialId?: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  materialCost?: any // Prisma Decimal (server-side only)
+  materialQuantity?: number
   status: ProductStatus
   imageUrl?: string
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -64,6 +69,10 @@ export interface ClientProduct {
   currentPrice: number
   quantity: number
   rentedStock: number
+  // Material Management fields - RPK-45 (client-safe numbers)
+  materialId?: string
+  materialCost?: number
+  materialQuantity?: number
   status: ProductStatus
   imageUrl?: string
   totalPendapatan: number
@@ -73,6 +82,7 @@ export interface ClientProduct {
   createdBy: string
   category: ClientCategory
   color?: ClientColor
+  material?: ClientMaterial
 }
 
 export interface ClientCategory {
@@ -97,10 +107,40 @@ export interface ClientColor {
   products: ClientProduct[]
 }
 
+// Material Management - RPK-45
+export interface BaseMaterial {
+  id: string
+  name: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  pricePerUnit: any // Prisma Decimal (server-side only)
+  unit: string
+  isActive: boolean
+  createdAt: Date
+  updatedAt: Date
+  createdBy: string
+}
+
+export interface ClientMaterial {
+  id: string
+  name: string
+  pricePerUnit: number
+  unit: string
+  isActive: boolean
+  createdAt: Date | string
+  updatedAt: Date | string
+  createdBy: string
+  products: ClientProduct[]
+}
+
+export interface Material extends BaseMaterial {
+  products: Product[]
+}
+
 // Full types with relationships
 export interface Product extends BaseProduct {
   category: Category
   color?: Color
+  material?: Material
 }
 
 export interface Category extends BaseCategory {
@@ -166,6 +206,9 @@ export interface CreateProductRequest {
   categoryId: string
   size?: string
   colorId?: string
+  // Material Management fields - RPK-45
+  materialId?: string
+  materialQuantity?: number
   image?: File
   imageUrl?: string
 }
@@ -179,6 +222,9 @@ export interface UpdateProductRequest {
   categoryId?: string
   size?: string
   colorId?: string
+  // Material Management fields - RPK-45
+  materialId?: string
+  materialQuantity?: number
   image?: File
   imageUrl?: string
 }
