@@ -4,11 +4,11 @@
 **Analysis Date**: 2025-08-13  
 **Investigation**: Full Stack Data Flow Analysis  
 
-## <¯ **ROOT CAUSE IDENTIFIED**
+## <ï¿½ **ROOT CAUSE IDENTIFIED**
 
 The issue is **NOT in the ProductDetailCard component** but in the **data transformation layer**. The API correctly provides return data, but the `useTransactionDetail` hook's `transformApiToUI` function **fails to map return-related fields**.
 
-## =Ê **Evidence-Based Analysis**
+## =ï¿½ **Evidence-Based Analysis**
 
 ###  **API Layer - WORKING CORRECTLY**
 
@@ -103,7 +103,7 @@ products: items.map((item) => {
 })
 ```
 
-## =Ë **Data Flow Analysis**
+## =ï¿½ **Data Flow Analysis**
 
 | Layer | Component | Status | Return Data |
 |-------|-----------|--------|-------------|
@@ -112,21 +112,21 @@ products: items.map((item) => {
 | **Hook** | `useTransactionDetail` | L **BROKEN** | **Drops return fields in transformation** |
 | **UI** | `ProductDetailCard` |  FIXED | Would display correctly with proper data |
 
-## <¯ **Impact Analysis**
+## <ï¿½ **Impact Analysis**
 
 ### **Current Behavior**
 1. API returns complete return data 
 2. Hook transformation drops return fields L
-3. UI receives incomplete data ’ Shows pickup status L
+3. UI receives incomplete data ï¿½ Shows pickup status L
 4. User sees incorrect status display L
 
 ### **Expected Behavior (After Fix)**
 1. API returns complete return data 
 2. Hook transformation preserves return fields   
-3. UI receives complete data ’ Shows return status 
+3. UI receives complete data ï¿½ Shows return status 
 4. User sees correct status display 
 
-## =€ **Implementation Priority**
+## =ï¿½ **Implementation Priority**
 
 ### **HIGH PRIORITY (CRITICAL)**
 1. **Fix Hook Transformation** - Add missing field mapping in `transformApiToUI`
@@ -142,7 +142,7 @@ products: items.map((item) => {
 7. **Performance** - Optimize transformation logic if needed
 8. **Monitoring** - Add logging for transformation debugging
 
-## =Ý **Fix Validation Strategy**
+## =ï¿½ **Fix Validation Strategy**
 
 ### **Test Scenarios**
 1. **TXN-20250813-002**: Both items with `statusKembali: "lengkap"`
@@ -156,16 +156,17 @@ products: items.map((item) => {
 -  Condition breakdown and penalties show correctly
 -  No regression in existing pickup functionality
 
-## = **Root Cause Summary**
+## =
+ **Root Cause Summary**
 
 **Primary Issue**: Data transformation layer failure
-- **Where**: `useTransactionDetail.ts` ’ `transformApiToUI` function
+- **Where**: `useTransactionDetail.ts` ï¿½ `transformApiToUI` function
 - **What**: Missing field mapping for return-related data
 - **Impact**: Complete return data available in API but lost in UI transformation
 - **Fix Complexity**: Low (add 3 field mappings)
 - **Risk Level**: Low (additive change, no breaking modifications)
 
-## =Ê **Stack Health Assessment**
+## =ï¿½ **Stack Health Assessment**
 
 | Component | Health | Issues |
 |-----------|--------|--------|
@@ -174,9 +175,9 @@ products: items.map((item) => {
 | API Layer |  HEALTHY | Correct response format |
 | Hook Transformation | L **CRITICAL** | **Missing field mapping** |
 | UI Components |  HEALTHY | Logic ready for return data |
-| Type Definitions |   PARTIAL | May need return field types |
+| Type Definitions | ï¿½ PARTIAL | May need return field types |
 
-## <¯ **Conclusion**
+## <ï¿½ **Conclusion**
 
 The issue is a **classic data transformation gap** where the API provides complete data but the frontend transformation layer fails to map critical fields. This explains why:
 
