@@ -1,36 +1,42 @@
- Konteks: Berdasarkan analysis di docs/analyze.md, telah diidentifikasi         
-  bahwa image preview gagal karena Next.js Image component tidak dapat
-  menangani blob URLs dari FileReader.
+Terdapat error pada Category Management di file
+@features/manage-product/components/master-data/ProductManagementPage.tsx. Berdasarkan
+services/server.log, kemungkinan terjadi syntax error yang mungkin disebabkan oleh merge commit  
+ c104627.
 
-  Request: Implementasikan fix untuk local image preview di file 
-  features/manage-product/components/products/ImageUpload.tsx menggunakan        
-  Option 2 (conditional rendering approach) dari analysis report.
+Yang Dibutuhkan:
 
-  Spesifikasi Implementation:
-  1. Deteksi URL type: Tambahkan logic untuk detect blob/data URLs vs HTTP       
-  URLs
-  2. Conditional rendering: Gunakan <img> tag untuk blob URLs, <Image> 
-  component untuk saved images
-  3. Preserve existing functionality: Pastikan file upload ke Supabase tetap     
-   berfungsi
-  4. Maintain styling: Gunakan className yang sama untuk konsistensi visual      
+1. Analisis Root Cause - Investigasi apakah masalah disebabkan oleh:
 
-  Code Requirements:
-  - Tambahkan variable isPreviewUrl untuk detect blob URLs
-  - Implement conditional rendering di preview section (lines 68-89)
-  - Preserve existing error handling dan file validation
-  - Maintain TypeScript type safety
 
-  Acceptance Criteria:
-  - Image preview muncul immediately setelah file selection
-  - No more blob URL errors di console
-  - File upload ke Supabase tetap berfungsi normal
-  - Visual styling tetap konsisten
+    - Konflik merge pada commit c104627
+    - Inkonsistensi dengan schema database di @prisma/schema.prisma
+    - Perubahan struktur data yang tidak terupdate
 
-  Testing Steps:
-  1. Select image file → verify preview shows instantly
-  2. Submit form → verify upload to Supabase works
-  3. Check browser console → no blob URL errors
-  4. Test dengan different image formats (JPG, PNG, WebP)
+2. Analisis Flow Komprehensif:
 
-  Expected Changes: ~10 lines of code modification di ImageUpload.tsx
+
+    - Review file ProductManagementPage.tsx untuk syntax errors
+    - Verifikasi kompabilitas dengan Prisma schema terkini
+    - Check dependencies dan imports yang mungkin broken
+    - Analisis perubahan dari merge commit sebelumnya
+
+3. Output yang Diinginkan:
+
+
+    - Diagnosa Masalah: Detail error dengan lokasi file dan baris
+    - Root Cause Analysis: Penyebab utama masalah dengan evidence
+    - Action Plan: Langkah perbaikan prioritas tinggi ke rendah
+    - Verification Steps: Cara memvalidasi perbaikan berhasil
+
+Kriteria Keberhasilan:
+
+- Category Management berfungsi normal tanpa error di server.log
+- Tidak ada breaking changes pada fitur manage-product lainnya
+- Schema Prisma konsisten dengan implementasi frontend
+
+Tools yang Diperlukan:
+
+- Read server.log untuk detail error
+- Analyze ProductManagementPage.tsx untuk syntax issues
+- Compare Prisma schema dengan usage di code
+- Git diff analysis untuk commit c104627

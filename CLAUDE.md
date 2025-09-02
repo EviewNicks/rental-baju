@@ -101,6 +101,10 @@ yarn test:e2e:report        # View test reports
 
 # Coverage
 yarn test:coverage          # Run tests with coverage report (minimum 80% target)
+
+# Running specific tests
+yarn test                   # Run Jest with specific pattern (as configured)
+yarn test:watch             # Run Jest in watch mode
 ```
 
 **Testing Approach:**
@@ -115,6 +119,9 @@ yarn test:coverage          # Run tests with coverage report (minimum 80% target
 ```bash
 yarn test:db               # Test database connection
 yarn env:validate          # Validate environment variables
+npx prisma generate        # Generate Prisma client (runs automatically in postinstall)
+npx prisma migrate dev     # Create and apply new migrations
+npx prisma db seed         # Seed database with initial data
 ```
 
 ## Development Workflow
@@ -250,3 +257,34 @@ yarn env:validate          # Validate environment variables
 2. **UI Enhancement**: Added visual styling in `TransactionsTable.tsx` to distinguish fallback displays from actual item names.
 
 **Future Enhancement**: Consider updating backend to include full `items` array with product details in GET `/api/kasir/transaksi` response.
+
+## Additional Development Commands
+
+### Build & Analysis
+
+```bash
+yarn build:analyze         # Analyze bundle size with ANALYZE=true
+```
+
+### Environment Setup
+
+```bash
+yarn install               # Install dependencies
+```
+
+## Testing Documentation Standards
+
+### Test File Documentation
+- Each test file should include a header comment explaining its purpose
+- Complex tests require Given-When-Then structure documentation
+- Unit tests are co-located with implementation files (`.test.ts`)
+- Integration tests are in `__tests__/integration/[feature]/`
+- E2E tests are in `__tests__/playwright/[feature]/` with BDD format
+
+### Test Reports Location
+Test reports and documentation are stored in:
+- `docs/task/[feature-name]/report-test/`
+  - `unit-test-report.md`
+  - `integration-test-report.md`
+  - `e2e-test-report.md`
+  - `performance-test-report.md`

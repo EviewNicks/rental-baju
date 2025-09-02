@@ -350,7 +350,7 @@ describe('CategoryService', () => {
             code: 'SMPL',
             description: 'Sample description',
             modalAwal: new Decimal(100000),
-            hargaSewa: new Decimal(25000),
+            currentPrice: new Decimal(25000),
             quantity: 3,
             status: 'AVAILABLE' as ProductStatus,
             imageUrl: undefined,

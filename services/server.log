@@ -1,14 +1,131 @@
-✓ Compiled in 842ms
- ✓ Compiled in 883ms
- GET /producer/manage-product/add 200 in 461ms
- GET /api/materials?limit=100 200 in 988ms
- GET /api/categories?isActive=true 200 in 1002ms
- ⨯ The requested resource isn't a valid image for /blob:http://localhost:3000/45278ef6-6abd-4fa5-868c-68dec5f893b0 received null
- ⨯ The requested resource isn't a valid image for /blob:http://localhost:3000/45278ef6-6abd-4fa5-868c-68dec5f893b0 received null
- ⨯ The requested resource isn't a valid image for /blob:http://localhost:3000/c2f81149-bd47-4a18-88f4-1e9a15968919 received null
- ⨯ The requested resource isn't a valid image for /blob:http://localhost:3000/c2f81149-bd47-4a18-88f4-1e9a15968919 received null
- ⨯ The requested resource isn't a valid image for /blob:http://localhost:3000/3c5e353f-445e-4a55-bade-aeb5b330917e received null
- ⨯ The requested resource isn't a valid image for /blob:http://localhost:3000/3c5e353f-445e-4a55-bade-aeb5b330917e received null
- ⨯ The requested resource isn't a valid image for /blob:http://localhost:3000/3192d286-54c1-4e27-a738-464284081136 received null
- ⨯ The requested resource isn't a valid image for /blob:http://localhost:3000/3192d286-54c1-4e27-a738-464284081136 received null
- ✓ Compiled in 649ms
+⏭️ Environment validation skipped (development/test mode)
+ ○ Compiling middleware ...
+ ✓ Compiled middleware in 907ms
+⏭️ Environment validation skipped (development/test mode)
+ ✓ Ready in 5.9s
+⏭️ Environment validation skipped (development/test mode)
+ ○ Compiling / ...
+ ✓ Compiled / in 10s
+ GET / 200 in 11015ms
+ ○ Compiling /favicon.ico ...
+ ✓ Compiled /favicon.ico in 1780ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 2280ms
+ GET / 200 in 389ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 368ms
+ ○ Compiling /sign-in/[[...sign-in]] ...
+ ✓ Compiled /sign-in/[[...sign-in]] in 1416ms
+ GET /sign-in 200 in 3048ms
+ GET /sign-in/SignIn_clerk_catchall_check_1756777050107 200 in 213ms
+ POST /sign-in/factor-one 200 in 242ms
+ GET /sign-in/factor-one/SignIn_clerk_catchall_check_1756777063274 200 in 194ms
+ GET / 200 in 152ms
+ GET / 200 in 154ms
+ ○ Compiling /producer/manage-product ...
+ ✓ Compiled /producer/manage-product in 1990ms
+ GET /producer/manage-product 200 in 2105ms
+ ○ Compiling /api/categories ...
+ ✓ Compiled /api/categories in 3.3s
+(node:21360) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)     
+ GET /api/categories 200 in 7518ms
+ GET /api/colors?isActive=true 200 in 7536ms
+ GET /api/products 200 in 8215ms
+ ○ Compiling /producer/manage-product/materials ...
+ ✓ Compiled /producer/manage-product/materials in 3.3s
+ GET /producer/manage-product/materials 200 in 3498ms
+ ○ Compiling /api/materials ...
+ ✓ Compiled /api/materials in 3s
+ GET /api/materials?limit=50 200 in 3838ms
+file:///D:/.work/rental-software/node_modules/@prisma/client/runtime/library.mjs: Invalid source map. Only conformant source maps can be used to find the original code. Cause: TypeError [ERR_INVALID_ARG_TYPE]: The "payload" argument must be of type object. Received null
+GET /api/categories error: Error: [DecimalError] Invalid argument: undefined
+    at <unknown> (features\manage-product\services\categoryService.ts:221:31)  
+    at Array.map (<anonymous>)
+    at CategoryService.convertPrismaCategoryToCategory (features\manage-product\services\categoryService.ts:207:65)
+    at <unknown> (features\manage-product\services\categoryService.ts:137:11)  
+    at Array.map (<anonymous>)
+    at CategoryService.getCategories (features\manage-product\services\categoryService.ts:136:22)
+    at async GET (app\api\categories\route.ts:37:23)
+  219 |               status: product.status as ProductStatus,
+  220 |               imageUrl: product.imageUrl as string | undefined,        
+> 221 |               totalPendapatan: new Decimal(product.totalPendapatan as number),
+      |                               ^
+  222 |               isActive: product.isActive as boolean,
+  223 |               createdAt: product.createdAt as Date,
+  224 |               updatedAt: product.updatedAt as Date,
+ GET /api/categories?includeProducts=true 500 in 1200ms
+file:///D:/.work/rental-software/node_modules/@prisma/client/runtime/library.mjs: Invalid source map. Only conformant source maps can be used to find the original code. Cause: TypeError [ERR_INVALID_ARG_TYPE]: The "payload" argument must be of type object. Received null
+GET /api/categories error: Error: [DecimalError] Invalid argument: undefined
+    at <unknown> (features\manage-product\services\categoryService.ts:221:31)  
+    at Array.map (<anonymous>)
+    at CategoryService.convertPrismaCategoryToCategory (features\manage-product\services\categoryService.ts:207:65)
+    at <unknown> (features\manage-product\services\categoryService.ts:137:11)  
+    at Array.map (<anonymous>)
+    at CategoryService.getCategories (features\manage-product\services\categoryService.ts:136:22)
+    at async GET (app\api\categories\route.ts:37:23)
+  219 |               status: product.status as ProductStatus,
+  220 |               imageUrl: product.imageUrl as string | undefined,        
+> 221 |               totalPendapatan: new Decimal(product.totalPendapatan as number),
+      |                               ^
+  222 |               isActive: product.isActive as boolean,
+  223 |               createdAt: product.createdAt as Date,
+  224 |               updatedAt: product.updatedAt as Date,
+ GET /api/categories?includeProducts=true 500 in 1236ms
+file:///D:/.work/rental-software/node_modules/@prisma/client/runtime/library.mjs: Invalid source map. Only conformant source maps can be used to find the original code. Cause: TypeError [ERR_INVALID_ARG_TYPE]: The "payload" argument must be of type object. Received null
+GET /api/categories error: Error: [DecimalError] Invalid argument: undefined
+    at <unknown> (features\manage-product\services\categoryService.ts:221:31)  
+    at Array.map (<anonymous>)
+    at CategoryService.convertPrismaCategoryToCategory (features\manage-product\services\categoryService.ts:207:65)
+    at <unknown> (features\manage-product\services\categoryService.ts:137:11)  
+    at Array.map (<anonymous>)
+    at CategoryService.getCategories (features\manage-product\services\categoryService.ts:136:22)
+    at async GET (app\api\categories\route.ts:37:23)
+  219 |               status: product.status as ProductStatus,
+  220 |               imageUrl: product.imageUrl as string | undefined,        
+> 221 |               totalPendapatan: new Decimal(product.totalPendapatan as number),
+      |                               ^
+  222 |               isActive: product.isActive as boolean,
+  223 |               createdAt: product.createdAt as Date,
+  224 |               updatedAt: product.updatedAt as Date,
+ GET /api/categories?includeProducts=true 500 in 1123ms
+file:///D:/.work/rental-software/node_modules/@prisma/client/runtime/library.mjs: Invalid source map. Only conformant source maps can be used to find the original code. Cause: TypeError [ERR_INVALID_ARG_TYPE]: The "payload" argument must be of type object. Received null
+GET /api/categories error: Error: [DecimalError] Invalid argument: undefined
+    at <unknown> (features\manage-product\services\categoryService.ts:221:31)  
+    at Array.map (<anonymous>)
+    at CategoryService.convertPrismaCategoryToCategory (features\manage-product\services\categoryService.ts:207:65)
+    at <unknown> (features\manage-product\services\categoryService.ts:137:11)  
+    at Array.map (<anonymous>)
+    at CategoryService.getCategories (features\manage-product\services\categoryService.ts:136:22)
+    at async GET (app\api\categories\route.ts:37:23)
+  219 |               status: product.status as ProductStatus,
+  220 |               imageUrl: product.imageUrl as string | undefined,        
+> 221 |               totalPendapatan: new Decimal(product.totalPendapatan as number),
+      |                               ^
+  222 |               isActive: product.isActive as boolean,
+  223 |               createdAt: product.createdAt as Date,
+  224 |               updatedAt: product.updatedAt as Date,
+ GET /api/categories?includeProducts=true 500 in 1131ms
+ GET /producer/manage-product 200 in 166ms
+ ○ Compiling /producer/manage-product/add ...
+ ✓ Compiled /producer/manage-product/add in 1492ms
+ GET /producer/manage-product/add 200 in 1649ms
+ GET /api/materials?limit=100 200 in 854ms
+ GET /api/categories?isActive=true 200 in 857ms
+ POST /api/products 201 in 5717ms
+ │ POST https://pmjxdencfgkbjuyjndbp.supabase.co/storage/v1/object/products/products/87YT/1756777223048.jpg 200 in 1542ms (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
+ GET /producer/manage-product 200 in 176ms
+ GET /api/products 200 in 1567ms
+ GET / 200 in 411ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 394ms
+ GET /sign-in 200 in 195ms
+ GET /sign-in/SignIn_clerk_catchall_check_1756777256201 200 in 209ms
+ POST /sign-in/factor-one 200 in 247ms
+ GET /sign-in/factor-one/SignIn_clerk_catchall_check_1756777271607 200 in 224ms
+ GET / 200 in 151ms
+ GET / 200 in 184ms
+ ○ Compiling /dashboard ...
+ ✓ Compiled /dashboard in 2.7s
+ GET /dashboard 200 in 2899ms
+ ○ Compiling /api/kasir/transaksi ...
+ ✓ Compiled /api/kasir/transaksi in 2.9s
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 5358ms

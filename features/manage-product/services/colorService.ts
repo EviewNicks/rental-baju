@@ -243,7 +243,7 @@ export class ColorService {
               quantity: product.quantity as number,
               status: product.status as ProductStatus,
               imageUrl: product.imageUrl as string | undefined,
-              totalPendapatan: new Decimal(product.totalPendapatan as number),
+              totalPendapatan: new Decimal(0), // TODO: Calculate from transaction history (field removed from schema)
               isActive: product.isActive as boolean,
               createdAt: product.createdAt as Date,
               updatedAt: product.updatedAt as Date,

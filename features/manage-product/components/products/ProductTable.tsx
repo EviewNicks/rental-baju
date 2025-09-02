@@ -129,7 +129,7 @@ export function ProductTable({
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right font-medium text-green-600" data-testid={`product-${product.code}-revenue`}>
-                    {formatCurrency(Number(product.totalPendapatan))}
+                    {formatCurrency(Number(product.totalPendapatan || 0))}
                   </TableCell>
                   <TableCell className="text-center" data-testid={`product-${product.code}-actions`}>
                     <DropdownMenu>

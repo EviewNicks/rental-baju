@@ -177,7 +177,7 @@ export function ProductInfoSection({ product, className }: ProductInfoSectionPro
 
           <InfoField label="Total Pendapatan">
             <p className="text-lg font-semibold text-green-600">
-              {formatCurrency(Number(product.totalPendapatan))}
+              {formatCurrency(Number(product.totalPendapatan || 0))}
             </p>
           </InfoField>
         </div>
