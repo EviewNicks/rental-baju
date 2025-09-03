@@ -5,12 +5,9 @@ interface VisuallyHiddenProps {
   asChild?: boolean
 }
 
-export const VisuallyHidden: React.FC<VisuallyHiddenProps> = ({ 
-  children, 
-  asChild = false 
-}) => {
+export const VisuallyHidden: React.FC<VisuallyHiddenProps> = ({ children, asChild = false }) => {
   const Component = asChild ? React.Fragment : 'span'
-  
+
   const visuallyHiddenStyles = {
     position: 'absolute' as const,
     width: '1px',
@@ -20,28 +17,31 @@ export const VisuallyHidden: React.FC<VisuallyHiddenProps> = ({
     overflow: 'hidden',
     clip: 'rect(0, 0, 0, 0)',
     whiteSpace: 'nowrap' as const,
-    border: '0'
+    border: '0',
   }
 
   if (asChild) {
     return (
-      <>{React.Children.map(children, (child) => {
-        if (React.isValidElement(child)) {
-          return React.cloneElement(child, {
-            ...child.props,
-            style: { ...child.props.style, ...visuallyHiddenStyles }
-          })
-        }
-        return child
-      })}</>
+      <>
+        {React.Children.map(children, (child) => {
+          if (React.isValidElement(child)) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const props = child.props as any
+            return React.cloneElement(child, {
+              ...props,
+              style: {
+                ...(props?.style || {}),
+                ...visuallyHiddenStyles,
+              },
+            })
+          }
+          return child
+        })}
+      </>
     )
   }
 
-  return (
-    <Component style={visuallyHiddenStyles}>
-      {children}
-    </Component>
-  )
+  return <Component style={visuallyHiddenStyles}>{children}</Component>
 }
 
 VisuallyHidden.displayName = 'VisuallyHidden'
