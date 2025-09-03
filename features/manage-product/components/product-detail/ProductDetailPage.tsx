@@ -16,7 +16,7 @@ import {
 import { ProductImageSection } from './ProductImageSection'
 import { ProductInfoSection } from './ProductInfoSection'
 import { ProductActionButtons } from './ProductActionButton'
-import { SystemInfoCard } from './SystemInfoCard'
+import { ProductHistoryCard } from './ProductHistoryCard'
 import { PricingCard } from './PricingCard'
 import { StatusInventoryCard } from './StatusInventoryCard'
 import { useProduct, useDeleteProduct } from '@/features/manage-product/hooks/useProducts'
@@ -168,7 +168,7 @@ export function ProductDetailPage({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           <StatusInventoryCard product={product} />
           <PricingCard product={product} />
-          <SystemInfoCard product={product} />
+          <ProductHistoryCard product={product} />
         </div>
 
         {/* Action Buttons - Mobile & Small Tablet: Show at bottom */}
