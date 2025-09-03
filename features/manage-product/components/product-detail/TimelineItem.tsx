@@ -17,7 +17,11 @@ interface TimelineItemProps {
   'data-testid'?: string
 }
 
-export function TimelineItem({ item, isLast = false, 'data-testid': dataTestId }: TimelineItemProps) {
+export function TimelineItem({
+  item,
+  isLast = false,
+  'data-testid': dataTestId,
+}: TimelineItemProps) {
   // Determine icon and color based on transaction status
   const getStatusDisplay = (status: string) => {
     switch (status.toLowerCase()) {
@@ -51,7 +55,6 @@ export function TimelineItem({ item, isLast = false, 'data-testid': dataTestId }
   }
 
   const statusDisplay = getStatusDisplay(item.status)
-  const Icon = statusDisplay.icon
 
   // Format revenue display with penalty breakdown
   const formatRevenue = () => {
@@ -69,23 +72,13 @@ export function TimelineItem({ item, isLast = false, 'data-testid': dataTestId }
   }
 
   return (
-    <div 
-      data-testid={dataTestId}
-      className="relative pb-6"
-    >
+    <div data-testid={dataTestId} className="relative pb-6">
       <div className="flex items-start gap-4">
-        {/* Status Icon */}
-        <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${statusDisplay.colorClass}`}>
-          <Icon className="h-5 w-5" />
-        </div>
-
         {/* Content */}
         <div className="flex-1 min-w-0">
           {/* Header: Transaction Code and Date */}
           <div className="flex items-center justify-between flex-wrap gap-2">
-            <h4 className="text-sm font-medium text-gray-900">
-              {item.transactionCode}
-            </h4>
+            <h4 className="text-sm font-medium text-gray-900">{item.transactionCode}</h4>
             <time className="text-xs text-gray-500 flex-shrink-0">
               {formatDate(item.transactionDate.toString())}
             </time>
@@ -105,9 +98,7 @@ export function TimelineItem({ item, isLast = false, 'data-testid': dataTestId }
               {/* Duration */}
               <div>
                 <span className="text-gray-500">Durasi:</span>
-                <div className="font-medium text-gray-900">
-                  {item.duration} hari
-                </div>
+                <div className="font-medium text-gray-900">{item.duration} hari</div>
               </div>
 
               {/* Quantity */}
@@ -121,9 +112,17 @@ export function TimelineItem({ item, isLast = false, 'data-testid': dataTestId }
               {/* Status */}
               <div>
                 <span className="text-gray-500">Status:</span>
-                <div className={`font-medium ${statusDisplay.colorClass.includes('green') ? 'text-green-700' : 
-                  statusDisplay.colorClass.includes('red') ? 'text-red-700' : 
-                  statusDisplay.colorClass.includes('blue') ? 'text-blue-700' : 'text-gray-700'}`}>
+                <div
+                  className={`font-medium ${
+                    statusDisplay.colorClass.includes('green')
+                      ? 'text-green-700'
+                      : statusDisplay.colorClass.includes('red')
+                        ? 'text-red-700'
+                        : statusDisplay.colorClass.includes('blue')
+                          ? 'text-blue-700'
+                          : 'text-gray-700'
+                  }`}
+                >
                   {statusDisplay.label}
                 </div>
               </div>
@@ -133,11 +132,9 @@ export function TimelineItem({ item, isLast = false, 'data-testid': dataTestId }
             <div className="mt-3 pt-3 border-t border-gray-200">
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">Total Pendapatan:</span>
-                <div className="text-sm">
-                  {formatRevenue()}
-                </div>
+                <div className="text-sm">{formatRevenue()}</div>
               </div>
-              
+
               {/* Revenue Breakdown if penalties exist */}
               {item.penaltyAmount > 0 && (
                 <div className="mt-2 space-y-1">
@@ -155,16 +152,15 @@ export function TimelineItem({ item, isLast = false, 'data-testid': dataTestId }
 
             {/* Rental Period */}
             <div className="mt-2 text-xs text-gray-500">
-              Periode: {formatDate(item.rentalStart.toString())} - {item.rentalEnd ? formatDate(item.rentalEnd.toString()) : 'Belum selesai'}
+              Periode: {formatDate(item.rentalStart.toString())} -{' '}
+              {item.rentalEnd ? formatDate(item.rentalEnd.toString()) : 'Belum selesai'}
             </div>
           </div>
         </div>
       </div>
 
       {/* Timeline Connector Line */}
-      {!isLast && (
-        <div className="absolute left-5 mt-4 w-0.5 h-6 bg-gray-200"></div>
-      )}
+      {!isLast && <div className="absolute left-5 mt-4 w-0.5 h-6 bg-gray-200"></div>}
     </div>
   )
 }
@@ -178,7 +174,7 @@ export function TimelineItemSkeleton() {
       <div className="flex items-start gap-4">
         {/* Icon skeleton */}
         <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse"></div>
-        
+
         {/* Content skeleton */}
         <div className="flex-1 min-w-0 space-y-3">
           {/* Header skeleton */}
@@ -186,10 +182,10 @@ export function TimelineItemSkeleton() {
             <div className="h-4 bg-gray-200 rounded w-24 animate-pulse"></div>
             <div className="h-3 bg-gray-200 rounded w-20 animate-pulse"></div>
           </div>
-          
+
           {/* Customer info skeleton */}
           <div className="h-3 bg-gray-200 rounded w-40 animate-pulse"></div>
-          
+
           {/* Details skeleton */}
           <div className="p-3 bg-gray-50 rounded-lg space-y-2">
             <div className="grid grid-cols-3 gap-3">
@@ -201,7 +197,7 @@ export function TimelineItemSkeleton() {
           </div>
         </div>
       </div>
-      
+
       {/* Connector line */}
       <div className="absolute left-5 mt-4 w-0.5 h-6 bg-gray-200"></div>
     </div>

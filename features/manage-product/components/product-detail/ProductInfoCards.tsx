@@ -45,14 +45,20 @@ export function BasicInfoCard({ product }: BasicInfoCardProps) {
         </InfoField>
 
         <InfoField label="Kategori">
-          <Badge variant="outline" className={`${getCategoryBadge(product.category.color)} text-sm font-medium`}>
+          <Badge
+            variant="outline"
+            className={`${getCategoryBadge(product.category.color)} text-sm font-medium`}
+          >
             {product.category.name}
           </Badge>
         </InfoField>
 
         {product.size && (
           <InfoField label="Ukuran">
-            <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-200 text-sm font-medium">
+            <Badge
+              variant="secondary"
+              className="bg-blue-50 text-blue-700 border-blue-200 text-sm font-medium"
+            >
               {product.size}
             </Badge>
           </InfoField>
@@ -80,7 +86,7 @@ export function BasicInfoCard({ product }: BasicInfoCardProps) {
 // export function ColorInfoCard({ product }: ColorInfoCardProps) {
 //   if (!product.color) return null
 //   ...
-// } 
+// }
 // Removed - functionality moved to EnhancedBasicInfoCard
 
 // SystemInfoCard moved to separate file: ./SystemInfoCard.tsx
@@ -105,8 +111,8 @@ export function EnhancedBasicInfoCard({ product }: EnhancedBasicInfoCardProps) {
           {product.color && (
             <div className="flex flex-wrap items-center gap-3 p-4 bg-gray-50 rounded-lg">
               <div className="flex items-center gap-2">
-                <div 
-                  className="w-6 h-6 rounded-full border-2 border-gray-300 shadow-sm" 
+                <div
+                  className="w-6 h-6 rounded-full border-2 border-gray-300 shadow-sm"
                   style={{ backgroundColor: product.color.hexCode || '#gray' }}
                   title={`Kode Warna: ${product.color.hexCode}`}
                 />
@@ -130,19 +136,43 @@ export function EnhancedBasicInfoCard({ product }: EnhancedBasicInfoCardProps) {
 
         {/* Category + Size */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <InfoField label="Kategori">
-            <Badge variant="outline" className={`${getCategoryBadge(product.category.color)} text-base font-medium py-2 px-4`}>
+          <div className="text-center p-2 bg-yellow-50 rounded-lg border border-yellow-200">
+            <p className="text-sm text-yellow-600 font-medium">Kategori</p>
+            <Badge
+              variant="outline"
+              className={`${getCategoryBadge(product.category.color)} text-base font-medium py-2 mt-1`}
+            >
               {product.category.name}
             </Badge>
-          </InfoField>
-          
+          </div>
+
           {product.size && (
-            <InfoField label="Ukuran">
-              <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-200 text-base font-medium py-2 px-4">
+            <div className="text-center p-2 bg-yellow-50 rounded-lg border border-yellow-200">
+              <p className="text-sm text-yellow-600 font-medium">Ukuran </p>
+              <Badge
+                variant="outline"
+                className="bg-blue-50 text-blue-700 border-blue-200 text-base font-medium py-2 px-4"
+              >
                 {product.size}
               </Badge>
-            </InfoField>
+            </div>
           )}
+        </div>
+
+        {/* Quick Stats */}
+        <div className="pb-4 border-b border-gray-200">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="text-center p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+              <p className="text-sm text-yellow-600 font-medium">Status</p>
+              <Badge variant="outline" className={`${getStatusBadge(product.status)} mt-1`}>
+                {product.status}
+              </Badge>
+            </div>
+            <div className="text-center p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+              <p className="text-sm text-yellow-600 font-medium">Stok</p>
+              <p className="text-lg font-bold ">{product.quantity} pcs</p>
+            </div>
+          </div>
         </div>
 
         {/* Description */}
@@ -153,22 +183,6 @@ export function EnhancedBasicInfoCard({ product }: EnhancedBasicInfoCardProps) {
             </p>
           </InfoField>
         )}
-
-        {/* Quick Stats */}
-        <div className="pt-4 border-t border-gray-200">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="text-center p-3 bg-yellow-50 rounded-lg border border-yellow-200">
-              <p className="text-sm text-yellow-600 font-medium">Status</p>
-              <Badge variant="outline" className={`${getStatusBadge(product.status)} mt-1`}>
-                {product.status}
-              </Badge>
-            </div>
-            <div className="text-center p-3 bg-blue-50 rounded-lg border border-blue-200">
-              <p className="text-sm text-blue-600 font-medium">Stok</p>
-              <p className="text-lg font-bold text-blue-700">{product.quantity} pcs</p>
-            </div>
-          </div>
-        </div>
       </CardContent>
     </Card>
   )

@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -20,6 +20,8 @@ import { ProductHistoryCard } from './ProductHistoryCard'
 import { PricingCard } from './PricingCard'
 import { StatusInventoryCard } from './StatusInventoryCard'
 import { useProduct, useDeleteProduct } from '@/features/manage-product/hooks/useProducts'
+import { useProductHistory } from '../../hooks/useProductHistory'
+import { computeFinancialSummary } from '../../lib/utils/financialSummary'
 import { showSuccess, showError } from '@/lib/notifications'
 import type { Product } from '@/features/manage-product/types'
 
@@ -38,6 +40,20 @@ export function ProductDetailPage({
 
   // Use real API data through hooks
   const { data: product, isLoading, error: productError, refetch } = useProduct(productId)
+
+  // Fetch product history data for financial summary
+  const { data: historyData, isLoading: historyLoading } = useProductHistory(productId, {
+    page: 1,
+    limit: 10,
+    sortBy: 'date',
+    sortOrder: 'desc',
+  })
+
+  // Compute financial data for PricingCard
+  const financialData = useMemo(() => 
+    computeFinancialSummary(historyData?.data, historyLoading), 
+    [historyData?.data, historyLoading]
+  )
 
   const deleteProductMutation = useDeleteProduct()
 
@@ -167,7 +183,7 @@ export function ProductDetailPage({
         {/* Bottom Section: Supporting Cards - Status & Inventory, Pricing, System Info */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           <StatusInventoryCard product={product} />
-          <PricingCard product={product} />
+          <PricingCard product={product} financialData={financialData} />
           <ProductHistoryCard product={product} />
         </div>
 

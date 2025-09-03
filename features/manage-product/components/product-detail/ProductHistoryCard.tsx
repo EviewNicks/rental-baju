@@ -7,13 +7,12 @@
 'use client'
 
 import React from 'react'
-import { History, Clock, TrendingUp, AlertCircle, RefreshCw } from 'lucide-react'
+import { History, AlertCircle, RefreshCw } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useProductHistory, useProductHistoryPagination } from '../../hooks/useProductHistory'
 import { TimelineItem, TimelineItemSkeleton } from './TimelineItem'
 import { PaginationControls } from './PaginationControls'
-import { formatCurrency } from '@/features/kasir/lib/utils/client'
 import type { Product } from '../../types'
 import type { ProductHistoryItem } from '../../types/productHistory'
 
@@ -23,10 +22,10 @@ interface ProductHistoryCardProps {
   'data-testid'?: string
 }
 
-export function ProductHistoryCard({ 
-  product, 
+export function ProductHistoryCard({
+  product,
   className,
-  'data-testid': dataTestId 
+  'data-testid': dataTestId,
 }: ProductHistoryCardProps) {
   // Pagination state
   const { page, setPage } = useProductHistoryPagination(1, 10)
@@ -56,76 +55,20 @@ export function ProductHistoryCard({
     refetch()
   }
 
-  // Calculate summary statistics if data available
-  const renderSummary = () => {
-    if (!historyData?.data?.length) return null
-
-    const totalRevenue = historyData.data.reduce((sum: number, item: ProductHistoryItem) => sum + item.totalRevenue, 0)
-    const totalTransactions = historyData.data.length
-    const avgDuration = Math.round(
-      historyData.data.reduce((sum: number, item: ProductHistoryItem) => sum + item.duration, 0) / totalTransactions
-    )
-
-    return (
-      <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-green-50 rounded-lg border border-blue-100">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {/* Total Revenue */}
-          <div className="text-center">
-            <div className="flex items-center justify-center gap-2 mb-1">
-              <TrendingUp className="h-4 w-4 text-green-600" />
-              <span className="text-sm font-medium text-gray-600">Total Pendapatan</span>
-            </div>
-            <div className="text-lg font-bold text-green-700">
-              {formatCurrency(totalRevenue)}
-            </div>
-          </div>
-
-          {/* Total Transactions */}
-          <div className="text-center">
-            <div className="flex items-center justify-center gap-2 mb-1">
-              <History className="h-4 w-4 text-blue-600" />
-              <span className="text-sm font-medium text-gray-600">Transaksi</span>
-            </div>
-            <div className="text-lg font-bold text-blue-700">
-              {totalTransactions} kali
-            </div>
-          </div>
-
-          {/* Average Duration */}
-          <div className="text-center">
-            <div className="flex items-center justify-center gap-2 mb-1">
-              <Clock className="h-4 w-4 text-purple-600" />
-              <span className="text-sm font-medium text-gray-600">Rata-rata</span>
-            </div>
-            <div className="text-lg font-bold text-purple-700">
-              {avgDuration} hari
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
   // Loading state
   if (isLoading && !historyData) {
     return (
-      <Card className={`h-fit hover:shadow-xl transition-all duration-300 ${className}`} data-testid={dataTestId}>
-        <CardHeader className="pb-4">
+      <Card
+        className={`h-fit hover:shadow-xl transition-all duration-300 ${className}`}
+        data-testid={dataTestId}
+      >
+        <CardHeader>
           <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
             <History className="w-5 h-5 text-gray-600" />
             Riwayat Sewa
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Summary skeleton */}
-          <div className="p-4 bg-gray-50 rounded-lg">
-            <div className="grid grid-cols-3 gap-4">
-              <div className="h-16 bg-gray-200 rounded animate-pulse"></div>
-              <div className="h-16 bg-gray-200 rounded animate-pulse"></div>
-              <div className="h-16 bg-gray-200 rounded animate-pulse"></div>
-            </div>
-          </div>
-
           {/* Timeline skeleton */}
           <div className="space-y-6">
             {Array.from({ length: 3 }).map((_, index) => (
@@ -140,7 +83,10 @@ export function ProductHistoryCard({
   // Error state
   if (isError) {
     return (
-      <Card className={`h-fit hover:shadow-xl transition-all duration-300 ${className}`} data-testid={dataTestId}>
+      <Card
+        className={`h-fit hover:shadow-xl transition-all duration-300 ${className}`}
+        data-testid={dataTestId}
+      >
         <CardHeader className="pb-4">
           <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
             <History className="w-5 h-5 text-gray-600" />
@@ -150,9 +96,7 @@ export function ProductHistoryCard({
         <CardContent>
           <div className="text-center py-8">
             <AlertCircle className="h-8 w-8 mx-auto mb-3 text-red-400" />
-            <h3 className="text-sm font-medium text-gray-900 mb-2">
-              Gagal memuat riwayat sewa
-            </h3>
+            <h3 className="text-sm font-medium text-gray-900 mb-2">Gagal memuat riwayat sewa</h3>
             <p className="text-xs text-gray-600 mb-4">
               {error instanceof Error ? error.message : 'Terjadi kesalahan saat memuat data'}
             </p>
@@ -174,7 +118,10 @@ export function ProductHistoryCard({
   // Empty state
   if (!historyData?.data?.length) {
     return (
-      <Card className={`h-fit hover:shadow-xl transition-all duration-300 ${className}`} data-testid={dataTestId}>
+      <Card
+        className={`h-fit hover:shadow-xl transition-all duration-300 ${className}`}
+        data-testid={dataTestId}
+      >
         <CardHeader className="pb-4">
           <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
             <History className="w-5 h-5 text-gray-600" />
@@ -184,12 +131,8 @@ export function ProductHistoryCard({
         <CardContent>
           <div className="text-center py-8 text-gray-500">
             <History className="h-8 w-8 mx-auto mb-3 text-gray-400" />
-            <h3 className="text-sm font-medium text-gray-900 mb-1">
-              Belum ada riwayat sewa
-            </h3>
-            <p className="text-xs text-gray-600">
-              Produk ini belum pernah disewakan
-            </p>
+            <h3 className="text-sm font-medium text-gray-900 mb-1">Belum ada riwayat sewa</h3>
+            <p className="text-xs text-gray-600">Produk ini belum pernah disewakan</p>
           </div>
         </CardContent>
       </Card>
@@ -198,8 +141,11 @@ export function ProductHistoryCard({
 
   // Main render with data
   return (
-    <Card className={`h-fit hover:shadow-xl transition-all duration-300 ${className}`} data-testid={dataTestId}>
-      <CardHeader className="pb-4">
+    <Card
+      className={`h-fit hover:shadow-xl transition-all duration-300 ${className}`}
+      data-testid={dataTestId}
+    >
+      <CardHeader>
         <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
           <History className="w-5 h-5 text-gray-600" />
           Riwayat Sewa
@@ -210,11 +156,8 @@ export function ProductHistoryCard({
           )}
         </CardTitle>
       </CardHeader>
-      
-      <CardContent className="space-y-6">
-        {/* Summary Statistics */}
-        {renderSummary()}
 
+      <CardContent className="space-y-2   pt-2">
         {/* Timeline */}
         <div className="space-y-6">
           {historyData.data.map((historyItem: ProductHistoryItem, index: number) => (
