@@ -56,7 +56,7 @@ export function ProductTable({
                 <TableHead className="w-32 text-right" data-testid="header-modal">Modal Awal</TableHead>
                 <TableHead className="w-32 text-right" data-testid="header-price">Harga Sewa</TableHead>
                 <TableHead className="w-32 text-center" data-testid="header-status">Status</TableHead>
-                <TableHead className="w-36 text-right" data-testid="header-revenue">Pendapatan</TableHead>
+                <TableHead className="w-36 text-right" data-testid="header-revenue">Total Pendapatan</TableHead>
                 <TableHead className="w-32 text-center" data-testid="header-actions">Aksi</TableHead>
               </TableRow>
             </TableHeader>

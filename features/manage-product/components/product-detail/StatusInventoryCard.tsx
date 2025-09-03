@@ -79,10 +79,10 @@ export function StatusInventoryCard({ product, className }: StatusInventoryCardP
   const statusText = getStatusText(product.status)
   const StatusIcon = statusConfig.icon
 
-  // Calculate availability
-  const availableQuantity = product.status === 'AVAILABLE' ? product.quantity : 0
-  const rentedQuantity = product.status === 'RENTED' ? product.quantity : 0
-  const maintenanceQuantity = product.status === 'MAINTENANCE' ? product.quantity : 0
+  // Calculate availability based on actual stock data
+  const rentedQuantity = Math.max(0, Math.min(product.rentedStock || 0, product.quantity))
+  const availableQuantity = Math.max(0, product.quantity - rentedQuantity)
+  const maintenanceQuantity = 0 // Not tracked in current data model
 
   return (
     <Card className={`h-fit hover:shadow-xl transition-all duration-300 border-l-4 ${statusConfig.border} ${className}`}>
