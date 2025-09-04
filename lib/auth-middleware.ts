@@ -100,6 +100,30 @@ export async function requireAdminAccess() {
 }
 
 /**
+ * Owner-only authorization middleware
+ * For highest-level operations requiring owner privileges
+ */
+export async function requireOwnerAccess() {
+  return requireAuthAndRole(['owner'])
+}
+
+/**
+ * Producer-level authorization middleware
+ * For operations requiring producer or higher privileges (owner/producer)
+ */
+export async function requireProducerAccess() {
+  return requireAuthAndRole(['owner', 'producer'])
+}
+
+/**
+ * Enhanced kasir authorization middleware
+ * For kasir operations accessible by kasir, producer, admin, or owner roles
+ */
+export async function requireKasirAccessEnhanced() {
+  return requireAuthAndRole(['owner', 'producer', 'admin', 'kasir'])
+}
+
+/**
  * Enhanced role validation with permissions
  */
 export interface Permission {
@@ -108,12 +132,64 @@ export interface Permission {
 }
 
 export interface RolePermissions {
+  owner: Permission[]
+  producer: Permission[]
   admin: Permission[]
   kasir: Permission[]
   user: Permission[]
 }
 
+/**
+ * Role hierarchy mapping - defines which roles inherit from others
+ * Higher roles inherit permissions from lower roles in the hierarchy
+ */
+export const ROLE_HIERARCHY: Record<string, string[]> = {
+  owner: ['owner', 'producer', 'admin', 'kasir'],    // Owner has all permissions
+  producer: ['producer', 'admin', 'kasir'],          // Producer has admin + kasir permissions
+  admin: ['admin', 'kasir'],                         // Admin has kasir permissions (legacy)
+  kasir: ['kasir'],                                  // Kasir has only kasir permissions
+  user: ['user']                                     // User has limited permissions
+}
+
 export const KASIR_PERMISSIONS: RolePermissions = {
+  owner: [
+    // Owner has full access to all resources and actions
+    { resource: 'penyewa', action: 'create' },
+    { resource: 'penyewa', action: 'read' },
+    { resource: 'penyewa', action: 'update' },
+    { resource: 'penyewa', action: 'delete' },
+    { resource: 'transaksi', action: 'create' },
+    { resource: 'transaksi', action: 'read' },
+    { resource: 'transaksi', action: 'update' },
+    { resource: 'transaksi', action: 'delete' },
+    { resource: 'pembayaran', action: 'create' },
+    { resource: 'pembayaran', action: 'read' },
+    { resource: 'pembayaran', action: 'update' },
+    { resource: 'pembayaran', action: 'delete' },
+    { resource: 'produk', action: 'create' },
+    { resource: 'produk', action: 'read' },
+    { resource: 'produk', action: 'update' },
+    { resource: 'produk', action: 'delete' },
+    { resource: 'audit', action: 'read' },
+    { resource: 'dashboard', action: 'read' },
+    { resource: 'reports', action: 'read' }
+  ],
+  producer: [
+    // Producer has product management + kasir operational access
+    { resource: 'penyewa', action: 'create' },
+    { resource: 'penyewa', action: 'read' },
+    { resource: 'penyewa', action: 'update' },
+    { resource: 'transaksi', action: 'create' },
+    { resource: 'transaksi', action: 'read' },
+    { resource: 'transaksi', action: 'update' },
+    { resource: 'pembayaran', action: 'create' },
+    { resource: 'pembayaran', action: 'read' },
+    { resource: 'produk', action: 'create' },
+    { resource: 'produk', action: 'read' },
+    { resource: 'produk', action: 'update' },
+    { resource: 'produk', action: 'delete' },
+    { resource: 'dashboard', action: 'read' }
+  ],
   admin: [
     // Admin has full access
     { resource: 'penyewa', action: 'create' },
@@ -148,15 +224,49 @@ export const KASIR_PERMISSIONS: RolePermissions = {
 }
 
 /**
- * Check if user has specific permission
+ * Check if user has specific permission using role hierarchy
  */
 export function hasPermission(
   userRole: string,
   resource: string,
   action: 'create' | 'read' | 'update' | 'delete'
 ): boolean {
-  const rolePermissions = KASIR_PERMISSIONS[userRole as keyof RolePermissions] || []
-  return rolePermissions.some(p => p.resource === resource && p.action === action)
+  // Get all roles this user inherits from (including their own role)
+  const inheritedRoles = ROLE_HIERARCHY[userRole] || []
+  
+  // Check if any of the inherited roles has the required permission
+  for (const role of inheritedRoles) {
+    const rolePermissions = KASIR_PERMISSIONS[role as keyof RolePermissions] || []
+    if (rolePermissions.some(p => p.resource === resource && p.action === action)) {
+      return true
+    }
+  }
+  
+  return false // Fail-safe default: no permission found
+}
+
+/**
+ * Utility functions for role validation
+ */
+export function getRoleHierarchy(userRole: string): string[] {
+  return ROLE_HIERARCHY[userRole] || []
+}
+
+export function hasRoleAccess(userRole: string, requiredRole: string): boolean {
+  const inheritedRoles = getRoleHierarchy(userRole)
+  return inheritedRoles.includes(requiredRole)
+}
+
+export function isOwnerRole(userRole: string): boolean {
+  return userRole === 'owner'
+}
+
+export function isProducerRole(userRole: string): boolean {
+  return userRole === 'producer' || isOwnerRole(userRole)
+}
+
+export function isKasirRole(userRole: string): boolean {
+  return userRole === 'kasir' || isProducerRole(userRole) || isOwnerRole(userRole)
 }
 
 /**
