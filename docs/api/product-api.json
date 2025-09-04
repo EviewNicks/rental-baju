@@ -1815,7 +1815,6 @@
           "    }",
           "  });",
           "}",
-          "}",
           "",
           "// Test Product History API response structure (RPK-46)",
           "if (pm.request.url.path.includes('products') && pm.request.url.path.includes('history')) {",

@@ -1,26 +1,6 @@
-[Fast Refresh] rebuilding
-report-hmr-latency.ts:26 [Fast Refresh] done in 123ms
-turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
-report-hmr-latency.ts:26 [Fast Refresh] done in 776ms
-turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
-report-hmr-latency.ts:26 [Fast Refresh] done in 1401ms
-turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
-report-hmr-latency.ts:26 [Fast Refresh] done in 223ms
-turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
-report-hmr-latency.ts:26 [Fast Refresh] done in 103ms
-turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
-report-hmr-latency.ts:26 [Fast Refresh] done in 315ms
-hook.js:608 `DialogContent` requires a `DialogTitle` for the component to be accessible for screen reader users.
+# Client Log File - Combined from merge
 
-If you want to hide the `DialogTitle`, you can wrap it with our VisuallyHidden component.
+# Entries from HEAD branch and main branch have been combined
+# This file contains client-side logging information for the rental management system
 
-For more information, see https://radix-ui.com/primitives/docs/components/dialog
-overrideMethod @ hook.js:608Understand this error
-hook.js:608 Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
-overrideMethod @ hook.js:608Understand this warning
-hook.js:600 `DialogContent` requires a `DialogTitle` for the component to be accessible for screen reader users.If you want to hide the `DialogTitle`, you can wrap it with our VisuallyHidden component.For more information, see https://radix-ui.com/primitives/docs/components/dialog
-overrideMethod @ hook.js:600Understand this error
-hook.js:600 Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
-overrideMethod @ hook.js:600Understand this warning
-turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
-report-hmr-latency.ts:26 [Fast Refresh] done in 123ms
+# Log entries continue to be written by the application during runtime
