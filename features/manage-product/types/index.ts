@@ -29,7 +29,7 @@ export interface BaseProduct {
   status: ProductStatus
   imageUrl?: string
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  totalPendapatan: any // Prisma Decimal (server-side only)
+  totalPendapatan: any // Calculated field from transaction history (not stored in DB)
   isActive: boolean
   createdAt: Date
   updatedAt: Date
@@ -75,7 +75,7 @@ export interface ClientProduct {
   materialQuantity?: number
   status: ProductStatus
   imageUrl?: string
-  totalPendapatan: number
+  totalPendapatan: number // Calculated field from transaction history
   isActive: boolean
   createdAt: Date | string
   updatedAt: Date | string

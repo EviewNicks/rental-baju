@@ -112,6 +112,19 @@ export const productApi = {
       method: 'DELETE'
     })
     return handleResponse(response)
+  },
+
+  // Get product rental history - RPK-46
+  getProductHistory: async (id: string, params?: {
+    page?: number
+    limit?: number
+    sortBy?: 'date' | 'revenue'
+    sortOrder?: 'asc' | 'desc'
+  }) => {
+    const queryString = params ? buildQueryParams(params) : ''
+    const url = `${API_BASE_URL}/products/${id}/history${queryString ? `?${queryString}` : ''}`
+    const response = await fetch(url)
+    return handleResponse(response)
   }
 }
 

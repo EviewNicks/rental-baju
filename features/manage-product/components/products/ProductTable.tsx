@@ -56,7 +56,7 @@ export function ProductTable({
                 <TableHead className="w-32 text-right" data-testid="header-modal">Modal Awal</TableHead>
                 <TableHead className="w-32 text-right" data-testid="header-price">Harga Sewa</TableHead>
                 <TableHead className="w-32 text-center" data-testid="header-status">Status</TableHead>
-                <TableHead className="w-36 text-right" data-testid="header-revenue">Pendapatan</TableHead>
+                <TableHead className="w-36 text-right" data-testid="header-revenue">Total Pendapatan</TableHead>
                 <TableHead className="w-32 text-center" data-testid="header-actions">Aksi</TableHead>
               </TableRow>
             </TableHeader>
@@ -129,7 +129,7 @@ export function ProductTable({
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right font-medium text-green-600" data-testid={`product-${product.code}-revenue`}>
-                    {formatCurrency(Number(product.totalPendapatan))}
+                    {formatCurrency(Number(product.totalPendapatan || 0))}
                   </TableCell>
                   <TableCell className="text-center" data-testid={`product-${product.code}-actions`}>
                     <DropdownMenu>
