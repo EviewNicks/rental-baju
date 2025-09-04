@@ -68,7 +68,8 @@
       "WebFetch(domain:www.npmjs.com)",
       "mcp__sequential-thinking__sequentialthinking",
       "mcp__sequential-thinking__sequentialthinking",
-      "mcp__playwright__playwright_hover"
+      "mcp__playwright__playwright_hover",
+      "Bash(git fetch:*)"
     ],
     "deny": []
   }
