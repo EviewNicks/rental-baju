@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -16,7 +16,12 @@ import {
 import { ProductImageSection } from './ProductImageSection'
 import { ProductInfoSection } from './ProductInfoSection'
 import { ProductActionButtons } from './ProductActionButton'
+import { ProductHistoryCard } from './ProductHistoryCard'
+import { PricingCard } from './PricingCard'
+import { StatusInventoryCard } from './StatusInventoryCard'
 import { useProduct, useDeleteProduct } from '@/features/manage-product/hooks/useProducts'
+import { useProductHistory } from '../../hooks/useProductHistory'
+import { computeFinancialSummary } from '../../lib/utils/financialSummary'
 import { showSuccess, showError } from '@/lib/notifications'
 import type { Product } from '@/features/manage-product/types'
 
@@ -35,6 +40,20 @@ export function ProductDetailPage({
 
   // Use real API data through hooks
   const { data: product, isLoading, error: productError, refetch } = useProduct(productId)
+
+  // Fetch product history data for financial summary
+  const { data: historyData, isLoading: historyLoading } = useProductHistory(productId, {
+    page: 1,
+    limit: 10,
+    sortBy: 'date',
+    sortOrder: 'desc',
+  })
+
+  // Compute financial data for PricingCard
+  const financialData = useMemo(() => 
+    computeFinancialSummary(historyData?.data, historyLoading), 
+    [historyData?.data, historyLoading]
+  )
 
   const deleteProductMutation = useDeleteProduct()
 
@@ -126,26 +145,26 @@ export function ProductDetailPage({
           </Breadcrumb>
 
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Detail Produk</h1>
-            <p className="text-gray-600 mt-1">Informasi lengkap tentang produk {product.name}</p>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-1 h-8 bg-yellow-400 rounded-full"></div>
+              <h1 className="text-3xl font-bold text-gray-900">Detail Produk</h1>
+            </div>
+            <p className="text-lg text-gray-600">Informasi lengkap tentang produk</p>
+            <p className="text-xl font-semibold text-gray-900 mt-1">{product.name}</p>
           </div>
         </div>
       </div>
 
       {/* Content */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Card className="shadow-md">
-          <CardContent className="p-6 md:p-8">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Image Section */}
-              <ProductImageSection imageUrl={product.imageUrl} productName={product.name} />
-
-              {/* Info Section */}
-              <ProductInfoSection product={product} />
-            </div>
-
-            {/* Action Buttons */}
-            <div className="mt-8 pt-6 border-t border-gray-200">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Top Section: Image+Actions | Enhanced Basic Info */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          {/* Left: Product Image + Action Buttons Container */}
+          <div className="space-y-6">
+            <ProductImageSection imageUrl={product.imageUrl} productName={product.name} />
+            
+            {/* Action Buttons - Tablet & Desktop: Below Image, Mobile: Will be shown below */}
+            <div className="hidden lg:block">
               <ProductActionButtons
                 product={product}
                 onEdit={handleEdit}
@@ -153,8 +172,34 @@ export function ProductDetailPage({
                 layout="horizontal"
               />
             </div>
-          </CardContent>
-        </Card>
+          </div>
+
+          {/* Right: Enhanced Basic Info (from ProductInfoSection) */}
+          <div>
+            <ProductInfoSection product={product} />
+          </div>
+        </div>
+
+        {/* Bottom Section: Supporting Cards - Status & Inventory, Pricing, System Info */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          <StatusInventoryCard product={product} />
+          <PricingCard product={product} financialData={financialData} />
+          <ProductHistoryCard product={product} />
+        </div>
+
+        {/* Action Buttons - Mobile & Small Tablet: Show at bottom */}
+        <div className="mb-8 lg:hidden">
+          <Card className="shadow-md">
+            <CardContent className="p-6">
+              <ProductActionButtons
+                product={product}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                layout="horizontal"
+              />
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   )
@@ -165,39 +210,81 @@ function ProductDetailSkeleton() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white border-b border-gray-200">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="animate-pulse">
             <div className="h-8 bg-gray-200 rounded w-32 mb-4"></div>
             <div className="h-4 bg-gray-200 rounded w-64 mb-2"></div>
-            <div className="h-8 bg-gray-200 rounded w-48"></div>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-1 h-8 bg-gray-200 rounded-full"></div>
+              <div className="h-8 bg-gray-200 rounded w-48"></div>
+            </div>
+            <div className="h-4 bg-gray-200 rounded w-56"></div>
+            <div className="h-6 bg-gray-200 rounded w-64 mt-1"></div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Card className="shadow-md">
-          <CardContent className="p-6 md:p-8">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <div className="animate-pulse">
-                <div className="aspect-[4/3] bg-gray-200 rounded-lg"></div>
-              </div>
-              <div className="animate-pulse space-y-6">
-                <div className="space-y-2">
-                  <div className="h-4 bg-gray-200 rounded w-24"></div>
-                  <div className="h-6 bg-gray-200 rounded w-full"></div>
-                </div>
-                <div className="space-y-2">
-                  <div className="h-4 bg-gray-200 rounded w-24"></div>
-                  <div className="h-6 bg-gray-200 rounded w-3/4"></div>
-                </div>
-                <div className="space-y-2">
-                  <div className="h-4 bg-gray-200 rounded w-24"></div>
-                  <div className="h-6 bg-gray-200 rounded w-1/2"></div>
-                </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Top Section Skeleton: Image+Actions | Enhanced Basic Info */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          {/* Left Side - Image + Action Buttons Skeleton */}
+          <div className="animate-pulse space-y-6">
+            <div className="aspect-[4/3] bg-gray-200 rounded-lg"></div>
+            <div className="hidden lg:block">
+              <div className="flex gap-3">
+                <div className="h-12 bg-gray-200 rounded-md flex-1"></div>
+                <div className="h-12 bg-gray-200 rounded-md flex-1"></div>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+
+          {/* Right Side - Enhanced Basic Info Skeleton */}
+          <div className="animate-pulse">
+            <div className="bg-white rounded-lg border p-6 space-y-6">
+              <div className="h-6 bg-gray-200 rounded w-32"></div>
+              <div className="space-y-3">
+                <div className="h-10 bg-gray-200 rounded w-full"></div>
+                <div className="h-6 bg-gray-200 rounded w-3/4"></div>
+                <div className="h-6 bg-gray-200 rounded w-1/2"></div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="h-8 bg-gray-200 rounded"></div>
+                <div className="h-8 bg-gray-200 rounded"></div>
+              </div>
+              <div className="h-20 bg-gray-200 rounded"></div>
+            </div>
+            
+            {/* Supporting Info Skeleton - 3 columns */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+              <div className="bg-white rounded-lg border p-6 space-y-4">
+                <div className="h-6 bg-gray-200 rounded w-28"></div>
+                <div className="h-4 bg-gray-200 rounded w-20"></div>
+                <div className="h-6 bg-gray-200 rounded w-16"></div>
+              </div>
+              <div className="bg-white rounded-lg border p-6 space-y-4">
+                <div className="h-6 bg-gray-200 rounded w-32"></div>
+                <div className="bg-yellow-50 rounded-lg p-4">
+                  <div className="h-8 bg-gray-200 rounded w-32"></div>
+                </div>
+              </div>
+              <div className="bg-white rounded-lg border p-6 space-y-4">
+                <div className="h-6 bg-gray-200 rounded w-36"></div>
+                <div className="h-6 bg-gray-200 rounded w-24"></div>
+                <div className="h-8 bg-gray-200 rounded w-16"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Action Buttons Skeleton */}
+        <div className="mb-8 lg:hidden animate-pulse">
+          <div className="bg-white rounded-lg border p-6">
+            <div className="flex gap-3">
+              <div className="h-12 bg-gray-200 rounded-md flex-1"></div>
+              <div className="h-12 bg-gray-200 rounded-md flex-1"></div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   )

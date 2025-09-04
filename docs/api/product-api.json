@@ -372,6 +372,252 @@
       ]
     },
     {
+      "name": "Product History (RPK-46)",
+      "item": [
+        {
+          "name": "Get Product History - Success",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/products/{{product_id}}/history?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "products", "{{product_id}}", "history"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Halaman data (default: 1)"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Jumlah item per halaman (default: 10, max: 50)"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "date",
+                  "description": "Urutan berdasarkan: date, revenue (default: date)",
+                  "disabled": true
+                },
+                {
+                  "key": "sortOrder",
+                  "value": "desc",
+                  "description": "Arah urutan: asc, desc (default: desc)",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Mendapatkan riwayat rental produk dengan pagination. Customer data dimask untuk Producer role."
+          },
+          "response": [
+            {
+              "name": "Product History Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/products/{{product_id}}/history?page=1&limit=10",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "products", "{{product_id}}", "history"],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "10"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"id\": \"trans-item-uuid-1\",\n      \"transactionCode\": \"TRX-001\",\n      \"transactionDate\": \"2024-11-15T10:30:00Z\",\n      \"rentalStart\": \"2024-11-15T10:30:00Z\",\n      \"rentalEnd\": \"2024-11-22T10:30:00Z\",\n      \"customerName\": \"John D.\",\n      \"customerContact\": \"081****567\",\n      \"baseRevenue\": 150000,\n      \"penaltyAmount\": 25000,\n      \"totalRevenue\": 175000,\n      \"status\": \"completed\",\n      \"itemQuantity\": 2,\n      \"duration\": 7\n    },\n    {\n      \"id\": \"trans-item-uuid-2\",\n      \"transactionCode\": \"TRX-002\",\n      \"transactionDate\": \"2024-11-10T14:00:00Z\",\n      \"rentalStart\": \"2024-11-10T14:00:00Z\",\n      \"rentalEnd\": \"2024-11-17T14:00:00Z\",\n      \"customerName\": \"Sarah M.\",\n      \"customerContact\": \"082****123\",\n      \"baseRevenue\": 200000,\n      \"penaltyAmount\": 0,\n      \"totalRevenue\": 200000,\n      \"status\": \"completed\",\n      \"itemQuantity\": 1,\n      \"duration\": 7\n    }\n  ],\n  \"pagination\": {\n    \"page\": 1,\n    \"limit\": 10,\n    \"total\": 25,\n    \"totalPages\": 3\n  },\n  \"summary\": {\n    \"totalRevenue\": 2500000,\n    \"totalTransactions\": 25,\n    \"averageRentalDuration\": 6\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Product History - Unauthorized",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/products/{{product_id}}/history",
+              "host": ["{{base_url}}"],
+              "path": ["api", "products", "{{product_id}}", "history"]
+            },
+            "description": "Test authentication - request tanpa session token harus return 401"
+          },
+          "response": [
+            {
+              "name": "Unauthorized Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/products/{{product_id}}/history",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "products", "{{product_id}}", "history"]
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"message\": \"Unauthorized\",\n    \"code\": \"UNAUTHORIZED\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Product History - Not Found",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/products/non-existent-uuid/history",
+              "host": ["{{base_url}}"],
+              "path": ["api", "products", "non-existent-uuid", "history"]
+            },
+            "description": "Test error handling - product yang tidak ada harus return 404"
+          },
+          "response": [
+            {
+              "name": "Not Found Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/products/non-existent-uuid/history",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "products", "non-existent-uuid", "history"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"message\": \"Produk dengan ID non-existent-uuid tidak ditemukan\",\n    \"code\": \"NOT_FOUND\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Product History - Pagination Test",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/products/{{product_id}}/history?page=2&limit=5&sortBy=revenue&sortOrder=desc",
+              "host": ["{{base_url}}"],
+              "path": ["api", "products", "{{product_id}}", "history"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "2",
+                  "description": "Halaman ke-2"
+                },
+                {
+                  "key": "limit",
+                  "value": "5",
+                  "description": "5 item per halaman"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "revenue",
+                  "description": "Urutan berdasarkan revenue"
+                },
+                {
+                  "key": "sortOrder",
+                  "value": "desc",
+                  "description": "Dari yang terbesar"
+                }
+              ]
+            },
+            "description": "Test pagination dan sorting functionality"
+          },
+          "response": [
+            {
+              "name": "Pagination Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/products/{{product_id}}/history?page=2&limit=5",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "products", "{{product_id}}", "history"],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "2"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "5"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"id\": \"trans-item-uuid-6\",\n      \"transactionCode\": \"TRX-006\",\n      \"transactionDate\": \"2024-11-05T09:15:00Z\",\n      \"rentalStart\": \"2024-11-05T09:15:00Z\",\n      \"rentalEnd\": \"2024-11-12T09:15:00Z\",\n      \"customerName\": \"Ahmad F.\",\n      \"customerContact\": \"083****789\",\n      \"baseRevenue\": 180000,\n      \"penaltyAmount\": 0,\n      \"totalRevenue\": 180000,\n      \"status\": \"completed\",\n      \"itemQuantity\": 1,\n      \"duration\": 7\n    }\n  ],\n  \"pagination\": {\n    \"page\": 2,\n    \"limit\": 5,\n    \"total\": 25,\n    \"totalPages\": 5\n  },\n  \"summary\": {\n    \"totalRevenue\": 2500000,\n    \"totalTransactions\": 25,\n    \"averageRentalDuration\": 6\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "Color Management",
       "item": [
         {
@@ -1566,6 +1812,42 @@
           "        pm.expect(response.materialCost).to.be.a('number');",
           "        pm.expect(response.materialQuantity).to.be.a('number');",
           "      }",
+          "    }",
+          "  });",
+          "}",
+          "}",
+          "",
+          "// Test Product History API response structure (RPK-46)",
+          "if (pm.request.url.path.includes('products') && pm.request.url.path.includes('history')) {",
+          "  pm.test('Product History has correct structure', function () {",
+          "    const response = pm.response.json();",
+          "    if (pm.response.code !== 200) return;",
+          "    ",
+          "    // Success response structure validation",
+          "    pm.expect(response).to.have.property('success');",
+          "    pm.expect(response.success).to.eql(true);",
+          "    pm.expect(response).to.have.property('data');",
+          "    pm.expect(response.data).to.be.an('array');",
+          "    ",
+          "    // Pagination structure validation",
+          "    pm.expect(response).to.have.property('pagination');",
+          "    pm.expect(response.pagination).to.have.property('page');",
+          "    pm.expect(response.pagination).to.have.property('limit');",
+          "    pm.expect(response.pagination).to.have.property('total');",
+          "    pm.expect(response.pagination).to.have.property('totalPages');",
+          "    ",
+          "    // Data structure validation (if has data)",
+          "    if (response.data.length > 0) {",
+          "      const historyItem = response.data[0];",
+          "      pm.expect(historyItem).to.have.property('id');",
+          "      pm.expect(historyItem).to.have.property('transactionCode');",
+          "      pm.expect(historyItem).to.have.property('customerName');",
+          "      pm.expect(historyItem).to.have.property('baseRevenue');",
+          "      pm.expect(historyItem).to.have.property('totalRevenue');",
+          "      ",
+          "      // Revenue calculation validation",
+          "      const expectedTotal = historyItem.baseRevenue + historyItem.penaltyAmount;",
+          "      pm.expect(historyItem.totalRevenue).to.eql(expectedTotal);",
           "    }",
           "  });",
           "}",

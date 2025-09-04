@@ -294,6 +294,12 @@ export class ProductService {
           category: true,
           color: true, // Include color relation
           material: true, // Include material relation - RPK-45
+          // Include transaction items for total revenue calculation
+          transaksiItems: {
+            select: {
+              subtotal: true, // Only select subtotal field for performance
+            },
+          },
         },
         orderBy: {
           createdAt: 'desc',
@@ -336,6 +342,12 @@ export class ProductService {
         category: true,
         color: true, // Include color relation
         material: true, // Include material relation - RPK-45
+        // Include transaction items for total revenue calculation
+        transaksiItems: {
+          select: {
+            subtotal: true, // Only select subtotal field for performance
+          },
+        },
       },
     })
 
@@ -425,6 +437,25 @@ export class ProductService {
   }
 
   /**
+   * Calculate total revenue from transaction items
+   * Aggregates subtotal from all related transaction items
+   */
+  private calculateTotalRevenue(prismaProduct: Record<string, unknown>): Decimal {
+    const transaksiItems = prismaProduct.transaksiItems as Array<{ subtotal: Decimal | number }>
+    
+    if (!transaksiItems?.length) {
+      return new Decimal(0)
+    }
+    
+    const total = transaksiItems.reduce((sum, item) => {
+      const itemRevenue = Number(item.subtotal) || 0
+      return sum + itemRevenue
+    }, 0)
+    
+    return new Decimal(total)
+  }
+
+  /**
    * Convert Prisma product result to application Product type
    */
   private convertPrismaProductToProduct(prismaProduct: Record<string, unknown>): Product {
@@ -485,7 +516,7 @@ export class ProductService {
         : undefined,
       status: prismaProduct.status as ProductStatus,
       imageUrl: prismaProduct.imageUrl as string | undefined,
-      totalPendapatan: prismaProduct.totalPendapatan as Decimal,
+      totalPendapatan: this.calculateTotalRevenue(prismaProduct),
       isActive: prismaProduct.isActive as boolean,
       createdAt: prismaProduct.createdAt as Date,
       updatedAt: prismaProduct.updatedAt as Date,
