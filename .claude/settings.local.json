@@ -1,6 +1,15 @@
 {
   "permissions": {
     "allow": [
+      "Read",
+      "Write",
+      "Edit",
+      "MultiEdit",
+      "Glob",
+      "Grep",
+      "TodoWrite",
+      "Task",
+      "mcp__*",
       "Bash(SuperClaude install:*)",
       "Bash(python:*)",
       "Bash(yarn test:*)",
@@ -69,7 +78,29 @@
       "mcp__sequential-thinking__sequentialthinking",
       "mcp__playwright__playwright_hover",
       "Bash(git fetch:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Read(/D:\\.work\\rental-software\\features\\homepage\\component/**)",
+      "Read(/D:\\.work\\rental-software\\features\\homepage\\component/**)",
+      "Read(/D:\\.work\\rental-software\\features\\auth\\hooks/**)",
+      "Read(/D:\\.work\\rental-software\\app\\owner/**)",
+      "Read(/D:\\.work\\rental-software\\app\\owner/**)",
+      "Read(/D:\\.work\\rental-software\\app\\(kasir)/**)",
+      "Read(/D:\\.work\\rental-software\\features\\homepage\\component/**)",
+      "Read(/D:\\.work\\rental-software\\features\\auth\\hooks/**)",
+      "Read(/D:\\.work\\rental-software\\app\\(kasir)/**)",
+      "Read(/D:\\.work\\rental-software\\app\\producer/**)",
+      "Read(/D:\\.work\\rental-software\\app\\owner/**)",
+      "Read(/D:\\.work\\rental-software\\app\\owner/**)",
+      "Read(/D:\\.work\\rental-software\\app\\(kasir)\\dashboard/**)",
+      "Read(/D:\\.work\\rental-software\\app\\producer\\manage-product/**)",
+      "Read(/D:\\.work\\rental-software\\app\\owner/**)",
+      "Read(/D:\\.work\\rental-software\\app\\producer/**)",
+      "Read(/D:\\.work\\rental-software\\app\\(kasir)/**)",
+      "Read(/D:\\.work\\rental-software\\features\\auth\\hooks/**)",
+      "Read(/D:\\.work\\rental-software\\app\\owner/**)",
+      "Read(/D:\\.work\\rental-software\\app\\api\\kasir\\produk\\available/**)",
+      "Read(/D:\\.work\\rental-software\\features\\manage-product\\docs\\task/**)",
+      "Read(/D:\\.work\\rental-software\\app\\api\\kasir\\produk\\available/**)"
     ],
     "deny": []
   }
