@@ -6,7 +6,6 @@ import {
   CheckCircle,
   MessageCircle,
   DollarSign,
-  Download,
   RefreshCw,
   AlertTriangle,
   Package,
@@ -168,21 +167,6 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
             Proses Pembayaran
           </Button>
         )}
-
-        {/* Print Receipt */}
-        <Button
-          onClick={() => handleAction('receipt')}
-          disabled={isProcessing === 'receipt'}
-          variant="outline"
-          className="w-full"
-        >
-          {isProcessing === 'receipt' ? (
-            <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-          ) : (
-            <Download className="h-4 w-4 mr-2" />
-          )}
-          {isProcessing === 'receipt' ? 'Mencetak...' : 'Cetak Struk'}
-        </Button>
       </div>
 
       {/* Status Info */}

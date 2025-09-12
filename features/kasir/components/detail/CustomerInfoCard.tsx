@@ -1,4 +1,4 @@
-import { User, Phone, Mail, MapPin, CreditCard, Calendar, FileText, Receipt } from 'lucide-react'
+import { User, Phone, Mail, MapPin, CreditCard, FileText, Receipt } from 'lucide-react'
 import Image from 'next/image'
 import type { Customer } from '../../types'
 import { formatDate } from '../../lib/utils/client'
@@ -77,16 +77,6 @@ export function CustomerInfoCard({ customer, 'data-testid': dataTestId }: Custom
                 </span>
               </div>
             )}
-
-            <div className="flex items-center gap-3 text-gray-600">
-              <Calendar className="h-4 w-4" aria-hidden="true" />
-              <time
-                dateTime={customer.createdAt}
-                aria-label={`Tanggal bergabung: ${formatDate(customer.createdAt)}`}
-              >
-                Bergabung {formatDate(customer.createdAt)}
-              </time>
-            </div>
           </div>
 
           <div className="flex items-start gap-3 text-gray-600">

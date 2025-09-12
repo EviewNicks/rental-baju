@@ -33,7 +33,8 @@ export class PickupService {
    */
   async validatePickupRequest(
     transactionId: string, 
-    items: PickupItemRequest[]
+    items: PickupItemRequest[],
+    catatan?: string
   ): Promise<PickupValidationResult> {
     try {
       // 1. Check if transaction exists and get current state
@@ -65,7 +66,7 @@ export class PickupService {
       }
 
       // 3. Run comprehensive validation using business rules
-      const validationResult = PickupValidator.validatePickupRequest(context, items)
+      const validationResult = PickupValidator.validatePickupRequest(context, items, catatan)
 
       // 4. Transform to service interface format
       return {
@@ -90,11 +91,12 @@ export class PickupService {
    */
   async processPickup(
     transactionId: string,
-    items: PickupItemRequest[]
+    items: PickupItemRequest[],
+    catatan?: string
   ): Promise<PickupProcessResult> {
     try {
       // 1. Validate the pickup request first
-      const validation = await this.validatePickupRequest(transactionId, items)
+      const validation = await this.validatePickupRequest(transactionId, items, catatan)
       
       if (!validation.valid) {
         return {
@@ -119,21 +121,26 @@ export class PickupService {
           })
         }
 
-        // Create activity log
+        // Create activity log with optional note (RPK-48)
         const itemsDescription = items.map(item => `${item.jumlahDiambil} item`).join(', ')
+        const activityData = {
+          items: items.map(item => ({
+            itemId: item.id,
+            jumlahDiambil: item.jumlahDiambil
+          })),
+          processedBy: this.userId,
+          timestamp: new Date().toISOString(),
+          ...(catatan && { catatan })
+        }
+
         await tx.aktivitasTransaksi.create({
           data: {
             transaksiId: transactionId,
             tipe: 'diambil',
-            deskripsi: `Pickup dilakukan: ${itemsDescription}`,
-            data: {
-              items: items.map(item => ({
-                itemId: item.id,
-                jumlahDiambil: item.jumlahDiambil
-              })),
-              processedBy: this.userId,
-              timestamp: new Date().toISOString()
-            },
+            deskripsi: catatan 
+              ? `Pickup dilakukan: ${itemsDescription} - ${catatan}` 
+              : `Pickup dilakukan: ${itemsDescription}`,
+            data: activityData,
             createdBy: this.userId
           }
         })

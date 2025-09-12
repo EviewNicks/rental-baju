@@ -210,7 +210,16 @@ export const pickupRequestSchema = z.object({
   items: z
     .array(pickupItemSchema)
     .min(1, 'Minimal harus ada 1 item yang diambil')
-    .max(50, 'Maksimal 50 item dapat diproses sekaligus')
+    .max(50, 'Maksimal 50 item dapat diproses sekaligus'),
+  catatan: z
+    .string()
+    .max(1000, 'Catatan pickup maksimal 1000 karakter')
+    .optional()
+    .transform((val) => {
+      // Sanitize and normalize input
+      if (!val || val.trim() === '') return undefined
+      return val.trim()
+    })
 }).refine((data) => {
   // Ensure no duplicate item IDs
   const itemIds = data.items.map(item => item.id)
