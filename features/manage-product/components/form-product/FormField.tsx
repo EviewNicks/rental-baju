@@ -138,9 +138,32 @@ export function FormField(props: FormFieldProps) {
           <Input
             id={name}
             type="number"
-            value={props.value}
-            onChange={(e) => props.onChange(Number(e.target.value))}
-            onBlur={(e) => props.onBlur(Number(e.target.value))}
+            value={props.value === 0 ? '' : props.value}
+            onChange={(e) => {
+              // Real-time leading zero removal
+              const sanitized = e.target.value.replace(/^0+(?=\d)/, '')
+              
+              // Handle empty input - store as 0 internally but display empty
+              if (sanitized === '' || sanitized === '0') {
+                props.onChange(0)
+                return
+              }
+              
+              const numValue = Number(sanitized)
+              props.onChange(numValue)
+            }}
+            onBlur={(e) => {
+              // Same logic on blur for consistency
+              const sanitized = e.target.value.replace(/^0+(?=\d)/, '')
+              
+              if (sanitized === '' || sanitized === '0') {
+                props.onBlur(0)
+                return
+              }
+              
+              const numValue = Number(sanitized)
+              props.onBlur(numValue)
+            }}
             placeholder={props.placeholder}
             min={props.min}
             max={props.max}

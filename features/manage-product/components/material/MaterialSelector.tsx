@@ -59,7 +59,8 @@ export function MaterialSelector({
 
   const handleQuantityChange = (value: string) => {
     const quantity = parseFloat(value)
-    const validQuantity = isNaN(quantity) || quantity <= 0 ? undefined : quantity
+    // Allow 0 as valid quantity, only treat NaN or negative as invalid
+    const validQuantity = isNaN(quantity) || quantity < 0 ? 0 : quantity
     onQuantityChange(validQuantity)
   }
 
@@ -107,8 +108,19 @@ export function MaterialSelector({
             type="number"
             min="0"
             step="0.1"
-            value={materialQuantity || ''}
-            onChange={(e) => handleQuantityChange(e.target.value)}
+            value={materialQuantity === 0 ? '' : materialQuantity || ''}
+            onChange={(e) => {
+              // Real-time leading zero removal
+              const sanitized = e.target.value.replace(/^0+(?=\d)/, '')
+              
+              // Handle empty input - store as 0 internally but display empty
+              if (sanitized === '' || sanitized === '0') {
+                handleQuantityChange('0')
+                return
+              }
+              
+              handleQuantityChange(sanitized)
+            }}
             placeholder={`Jumlah dalam ${selectedMaterial.unit}`}
             disabled={disabled}
           />
