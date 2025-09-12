@@ -11,6 +11,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import { CheckCircle, Package, AlertCircle, Minus, Plus } from 'lucide-react'
 import {
   usePickupProcess,
@@ -38,6 +39,7 @@ export function PickupModal({ isOpen, onClose, transaction }: PickupModalProps) 
   const [pickupItems, setPickupItems] = useState<PickupItemState[]>([])
   const [showSuccess, setShowSuccess] = useState(false)
   const [showConfirmation, setShowConfirmation] = useState(false)
+  const [pickupNote, setPickupNote] = useState('')
 
   const {
     mutate: processPickup,
@@ -154,6 +156,7 @@ export function PickupModal({ isOpen, onClose, transaction }: PickupModalProps) 
         id: item.id,
         jumlahDiambil: item.jumlahDiambil,
       })),
+      catatan: pickupNote.trim() || undefined, // Include note if not empty (RPK-48)
     })
   }
 
@@ -161,6 +164,7 @@ export function PickupModal({ isOpen, onClose, transaction }: PickupModalProps) 
     setShowSuccess(false)
     setShowConfirmation(false)
     setPickupItems([])
+    setPickupNote('') // Reset note when modal closes (RPK-48)
     reset()
     onClose()
   }
@@ -190,6 +194,14 @@ export function PickupModal({ isOpen, onClose, transaction }: PickupModalProps) 
                   <span className="text-gray-600">Waktu:</span>
                   <span className="font-medium">{new Date().toLocaleString('id-ID')}</span>
                 </div>
+                {pickupNote.trim() && (
+                  <div className="mt-2 pt-2 border-t border-green-300">
+                    <div className="text-sm text-gray-600 mb-1">Catatan:</div>
+                    <div className="text-sm font-medium text-gray-800 bg-green-25 p-2 rounded">
+                      {pickupNote.trim()}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -239,6 +251,25 @@ export function PickupModal({ isOpen, onClose, transaction }: PickupModalProps) 
                   <span className="text-sm font-medium">{item.jumlahDiambil} pcs</span>
                 </div>
               ))}
+            </div>
+
+            {/* Pickup Note Input - RPK-48 */}
+            <div className="space-y-2 mb-4">
+              <Label htmlFor="pickup-note" className="text-sm font-medium text-gray-900">
+                Catatan Pickup (opsional)
+              </Label>
+              <Textarea
+                id="pickup-note"
+                placeholder="Tambahkan catatan pickup jika diperlukan..."
+                value={pickupNote}
+                onChange={(e) => setPickupNote(e.target.value)}
+                maxLength={1000}
+                rows={3}
+                className="resize-none"
+              />
+              <div className="text-xs text-gray-500 text-right">
+                {pickupNote.length}/1000 karakter
+              </div>
             </div>
 
             <div className="flex gap-3">

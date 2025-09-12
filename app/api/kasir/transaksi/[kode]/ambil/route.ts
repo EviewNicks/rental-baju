@@ -52,7 +52,7 @@ export async function PATCH(
       )
     }
 
-    const { items } = validation.data
+    const { items, catatan } = validation.data
 
     // 5. Get transaction by code
     const transaksiService = new TransaksiService(prisma, user.id)
@@ -76,7 +76,7 @@ export async function PATCH(
 
     // 6. Process pickup using PickupService
     const pickupService = createPickupService(prisma, user.id)
-    const result = await pickupService.processPickup(transaction.id, items)
+    const result = await pickupService.processPickup(transaction.id, items, catatan)
 
     if (!result.success) {
       return NextResponse.json(

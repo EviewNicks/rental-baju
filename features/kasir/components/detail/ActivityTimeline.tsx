@@ -80,6 +80,65 @@ const ReturnActivityDisplay: React.FC<ReturnActivityProps> = ({ activity }) => {
   )
 }
 
+// Pickup Activity Display Component - RPK-48
+interface PickupActivityProps {
+  activity: ActivityLog
+}
+
+const PickupActivityDisplay: React.FC<PickupActivityProps> = ({ activity }) => {
+  const Icon = actionIcons[activity.action] || Package
+  const colorClass = actionColors[activity.action] || 'text-blue-600 bg-blue-100'
+
+  return (
+    <div className="flex items-start gap-4">
+      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${colorClass}`}>
+        <Icon className="h-5 w-5" />
+      </div>
+
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center justify-between">
+          <h4 className="text-sm font-medium text-gray-900">Item Diambil</h4>
+          <time className="text-xs text-gray-500">{formatDate(activity.timestamp)}</time>
+        </div>
+
+        <p className="text-sm text-gray-600 mt-1">{activity.description}</p>
+        <div className="text-xs text-gray-600 mt-1">Oleh: {activity.performedBy}</div>
+
+        {/* Pickup Details Expansion */}
+        {activity.details && (
+          <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+            <div className="text-sm font-medium text-blue-900 mb-2">
+              Detail Pengambilan
+            </div>
+            
+            {activity.details.items && Array.isArray(activity.details.items) && (
+              <div className="space-y-1 mb-2">
+                {activity.details.items.map((item: { itemId: string; jumlahDiambil: number }, idx: number) => (
+                  <div key={idx} className="flex items-center text-sm text-blue-800">
+                    <div className="w-2 h-2 rounded-full bg-blue-600 mr-2"></div>
+                    <span>
+                      Item: {item.jumlahDiambil} unit diambil
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            {activity.details.catatan && (
+              <div className="mt-2 pt-2 border-t border-blue-300">
+                <div className="text-sm font-medium text-blue-900 mb-1">Catatan:</div>
+                <div className="text-sm text-blue-800 bg-blue-25 p-2 rounded italic">
+                  &ldquo;{activity.details.catatan}&rdquo;
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 // Penalty Activity Display Component
 interface PenaltyActivityProps {
   activity: ActivityLog
@@ -285,6 +344,19 @@ export function ActivityTimeline({
             return (
               <div key={activity.id} className="relative pb-6">
                 <ReturnActivityDisplay activity={activity} />
+                {index < deduplicatedTimeline.length - 1 && (
+                  <div className="absolute left-5 mt-4 w-0.5 h-6 bg-gray-200"></div>
+                )}
+              </div>
+            )
+          }
+
+          // Special handling for pickup activities - RPK-48
+          if (activity.action === 'picked_up' || 
+              (activity.description && activity.description.includes('Pickup dilakukan'))) {
+            return (
+              <div key={activity.id} className="relative pb-6">
+                <PickupActivityDisplay activity={activity} />
                 {index < deduplicatedTimeline.length - 1 && (
                   <div className="absolute left-5 mt-4 w-0.5 h-6 bg-gray-200"></div>
                 )}
