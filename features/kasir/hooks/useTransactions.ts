@@ -6,6 +6,7 @@ import { queryKeys } from '@/lib/react-query'
 import { kasirApi } from '../api'
 import type { TransactionFilters } from '../types'
 import type { TransactionStatus, TransaksiQueryParams } from '../types'
+import { calculateEnhancedStatus } from '../lib/utils/statusUtils'
 
 interface UseTransactionsOptions {
   enabled?: boolean
@@ -66,7 +67,7 @@ export function useTransactions(options: UseTransactionsOptions = {}) {
       totalAmount: transaction.totalHarga,
       amountPaid: transaction.jumlahBayar,
       remainingAmount: transaction.sisaBayar,
-      status: transaction.status,
+      status: calculateEnhancedStatus(transaction.status, transaction.items || [], transaction.tglSelesai),
       startDate: transaction.tglMulai,
       endDate: transaction.tglSelesai || undefined,
       returnDate: transaction.tglKembali || undefined,

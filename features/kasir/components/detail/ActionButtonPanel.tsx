@@ -2,15 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import {
-  CheckCircle,
-  MessageCircle,
-  DollarSign,
-  RefreshCw,
-  AlertTriangle,
-  Package,
-  RotateCcw,
-} from 'lucide-react'
+import { CheckCircle, DollarSign, RefreshCw, AlertTriangle, Package, RotateCcw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { PaymentModal } from './PaymentModal'
 import { PickupModal } from './PickupModal'
@@ -92,12 +84,11 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
   // Calculate pickup status for enhanced logic
   const pickupStatus = calculateTransactionPickupStatus(transaction)
 
-  // Enhanced button visibility logic
+  // Enhanced button visibility logic - FIXED: Allow actions for both 'active' and 'terlambat' status
   const canReturn =
-    transaction.status === 'active' &&
+    (transaction.status === 'active' || transaction.status === 'terlambat') &&
     transaction.products?.some((p) => p.jumlahDiambil && p.jumlahDiambil > 0)
-  const canPickup = transaction.status === 'active' && isPickupAvailable(transaction)
-  const canSendReminder = transaction.status === 'terlambat'
+  const canPickup = (transaction.status === 'active' || transaction.status === 'terlambat') && isPickupAvailable(transaction)
   const needsPayment =
     transaction.amountPaid < transaction.totalAmount ||
     (transaction.penalties && transaction.penalties.some((p) => p.status === 'pending'))
@@ -136,23 +127,6 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
               <RotateCcw className="h-4 w-4 mr-2" />
             )}
             {isProcessing === 'return' ? 'Membuka...' : 'Proses Pengembalian'}
-          </Button>
-        )}
-
-        {/* Send Reminder */}
-        {canSendReminder && (
-          <Button
-            onClick={() => handleAction('reminder')}
-            disabled={isProcessing === 'reminder'}
-            variant="outline"
-            className="w-full border-yellow-400 text-yellow-600 hover:bg-yellow-50"
-          >
-            {isProcessing === 'reminder' ? (
-              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              <MessageCircle className="h-4 w-4 mr-2" />
-            )}
-            {isProcessing === 'reminder' ? 'Mengirim...' : 'Kirim Pengingat'}
           </Button>
         )}
 

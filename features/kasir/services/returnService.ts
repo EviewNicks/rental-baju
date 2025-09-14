@@ -167,11 +167,11 @@ export class UnifiedReturnService {
       // Get transaction for validation
       const transaction = await this.transaksiService.getTransaksiForValidation(transaksiId)
 
-      // Check transaction status eligibility
-      if (transaction.status !== 'active') {
+      // Check transaction status eligibility - allow both active and overdue transactions
+      if (transaction.status !== 'active' && transaction.status !== 'terlambat') {
         return {
           isValid: false,
-          error: `Transaksi dengan status '${transaction.status}' tidak dapat diproses pengembaliannya`,
+          error: `Transaksi dengan status '${transaction.status}' tidak dapat diproses pengembaliannya. Hanya transaksi dengan status 'active' atau 'terlambat' yang dapat diproses.`,
           details: { currentStatus: transaction.status },
         }
       }
@@ -380,7 +380,7 @@ export class UnifiedReturnService {
         }
       }
 
-      if (transactionForValidation.status !== 'active') {
+      if (transactionForValidation.status !== 'active' && transactionForValidation.status !== 'terlambat') {
         return {
           success: false,
           transactionId: transaksiId,
@@ -390,7 +390,7 @@ export class UnifiedReturnService {
           processingMode: 'unified',
           details: {
             statusCode: 'INVALID_STATUS' as const,
-            message: `Transaksi dengan status '${transactionForValidation.status}' tidak dapat diproses pengembaliannya`,
+            message: `Transaksi dengan status '${transactionForValidation.status}' tidak dapat diproses pengembaliannya. Hanya transaksi dengan status 'active' atau 'terlambat' yang dapat diproses.`,
             currentStatus: transactionForValidation.status,
             processingTime: Date.now() - startTime,
           },

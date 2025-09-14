@@ -1,76 +1,80 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Card } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
+import React, { useState } from 'react'
+import { Search, AlertTriangle, CheckCircle, Package } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
+import { Input } from '@/components/ui/input'
+import { Card } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Search, AlertTriangle, CheckCircle, Clock, Package } from 'lucide-react'
-import { useQuery } from '@tanstack/react-query'
-import type { TransaksiDetail, TransaksiResponse, TransaksiItemResponse } from '../../types'
+import { Badge } from '@/components/ui/badge'
+import { Separator } from '@/components/ui/separator'
+import { useDebounce } from '@/features/manage-product/hooks/useDebounce'
 import { kasirApi } from '../../api'
+import type { TransaksiResponse, TransaksiItemResponse } from '../../types'
 
 interface TransactionLookupProps {
-  onTransactionFound: (transaction: TransaksiDetail) => void
-  initialTransactionId?: string
-  isLoading?: boolean
+  onTransactionSelect: (transaction: TransaksiResponse) => void
 }
 
-export function TransactionLookup({
-  onTransactionFound,
-  initialTransactionId,
-  isLoading = false,
-}: TransactionLookupProps) {
-  const [searchCode, setSearchCode] = useState(initialTransactionId || '')
-  const [searchTrigger, setSearchTrigger] = useState<string | null>(null)
+export function TransactionLookup({ onTransactionSelect }: TransactionLookupProps) {
+  const [searchCode, setSearchCode] = useState('')
+  const [transaction, setTransaction] = useState<TransaksiResponse | null>(null)
+  const [isSearching, setIsSearching] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  // Query untuk get transaction details
-  const {
-    data: transaction,
-    error,
-    isLoading: isSearching,
-  } = useQuery({
-    queryKey: ['transaction-detail', searchTrigger],
-    queryFn: () => kasirApi.getTransactionByCode(searchTrigger!),
-    enabled: !!searchTrigger,
-    retry: false,
-  })
+  // Debounce search input for better UX
+  const debouncedSearchCode = useDebounce(searchCode, 300)
 
-  // Auto-search if initialTransactionId provided
-  useEffect(() => {
-    if (initialTransactionId && !searchTrigger) {
-      setSearchTrigger(initialTransactionId)
+  const handleSearch = async (code: string) => {
+    if (!code.trim()) {
+      setTransaction(null)
+      setError(null)
+      return
     }
-  }, [initialTransactionId, searchTrigger])
 
-  // Handle successful transaction fetch
-  useEffect(() => {
-    if (transaction && !error && transaction.items) {
-      // Ensure we have required items array for TransaksiDetail
-      const transactionDetail: TransaksiDetail = {
-        ...transaction,
-        items: transaction.items, // TypeScript now knows items exists
-      }
-      onTransactionFound(transactionDetail)
-    }
-  }, [transaction, error, onTransactionFound])
+    setIsSearching(true)
+    setError(null)
 
-  const handleSearch = () => {
-    if (searchCode.trim()) {
-      setSearchTrigger(searchCode.trim())
+    try {
+      console.info('🔍 Searching transaction for return', {
+        searchCode: code,
+        action: 'return_lookup',
+      })
+
+      const result = await kasirApi.transaksi.getByKode(code)
+
+      console.info('✅ Transaction found for return', {
+        transactionCode: result.kode,
+        status: result.status,
+        hasItems: result.items && result.items.length > 0,
+        action: 'return_lookup',
+      })
+
+      setTransaction(result)
+      setError(null)
+    } catch (err) {
+      console.error('❌ Transaction search failed', {
+        searchCode: code,
+        error: err instanceof Error ? err.message : 'Unknown error',
+        action: 'return_lookup',
+      })
+
+      setTransaction(null)
+      setError(err instanceof Error ? err.message : 'Gagal mencari transaksi')
+    } finally {
+      setIsSearching(false)
     }
   }
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleSearch()
-    }
-  }
+  // Auto search when debounced code changes
+  React.useEffect(() => {
+    handleSearch(debouncedSearchCode)
+  }, [debouncedSearchCode])
 
+  // FIXED: Allow returns for both 'active' and 'terlambat' status
   const canReturn = (transaction: TransaksiResponse) => {
     return (
-      transaction.status === 'active' &&
+      (transaction.status === 'active' || transaction.status === 'terlambat') &&
       transaction.items?.some((item: TransaksiItemResponse) => item.jumlahDiambil > 0)
     )
   }
@@ -78,201 +82,241 @@ export function TransactionLookup({
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'active':
-        return <Clock className="h-4 w-4 text-blue-600" />
-      case 'selesai':
-        return <CheckCircle className="h-4 w-4 text-green-600" />
+        return <CheckCircle className="h-4 w-4 text-blue-600" />
       case 'terlambat':
         return <AlertTriangle className="h-4 w-4 text-red-600" />
-      case 'dikembalikan':
-        return <Package className="h-4 w-4 text-gray-600" />
+      case 'selesai':
+        return <CheckCircle className="h-4 w-4 text-green-600" />
       default:
-        return <Clock className="h-4 w-4 text-gray-400" />
+        return <Package className="h-4 w-4 text-gray-600" />
     }
   }
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active':
-        return 'text-blue-600 bg-blue-50'
-      case 'selesai':
-        return 'text-green-600 bg-green-50'
+        return 'bg-blue-100 text-blue-800'
       case 'terlambat':
-        return 'text-red-600 bg-red-50'
-      case 'dikembalikan':
-        return 'text-gray-600 bg-gray-50'
+        return 'bg-red-100 text-red-800'
+      case 'selesai':
+        return 'bg-green-100 text-green-800'
       default:
-        return 'text-gray-600 bg-gray-50'
+        return 'bg-gray-100 text-gray-800'
+    }
+  }
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'active':
+        return 'Aktif'
+      case 'terlambat':
+        return 'Terlambat'
+      case 'selesai':
+        return 'Selesai'
+      default:
+        return status
+    }
+  }
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0,
+    }).format(amount)
+  }
+
+  const formatDate = (date: string) => {
+    return new Intl.DateTimeFormat('id-ID', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    }).format(new Date(date))
+  }
+
+  const handleContinue = () => {
+    if (transaction && canReturn(transaction)) {
+      console.info('📦 Starting return process', {
+        transactionCode: transaction.kode,
+        status: transaction.status,
+        itemsCount: transaction.items?.length || 0,
+        action: 'return_process_start',
+      })
+      onTransactionSelect(transaction)
     }
   }
 
   return (
     <div className="space-y-6">
-      {/* Search Form */}
-      <div className="space-y-4">
-        <div>
-          <Label htmlFor="transaction-code">Kode Transaksi</Label>
-          <div className="flex gap-2 mt-1">
-            <Input
-              id="transaction-code"
-              type="text"
-              placeholder="TXN-20250127-001"
-              value={searchCode}
-              onChange={(e) => setSearchCode(e.target.value)}
-              onKeyPress={handleKeyPress}
-              disabled={isLoading || isSearching}
-              className="flex-1"
-            />
-            <Button
-              onClick={handleSearch}
-              disabled={!searchCode.trim() || isLoading || isSearching}
-            >
-              <Search className="h-4 w-4 mr-2" />
-              {isSearching ? 'Mencari...' : 'Cari'}
-            </Button>
+      {/* Search Input */}
+      <Card className="p-6">
+        <div className="space-y-4">
+          <div>
+            <label htmlFor="search-code" className="block text-sm font-medium text-gray-700 mb-2">
+              Kode Transaksi
+            </label>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                id="search-code"
+                type="text"
+                placeholder="Masukkan kode transaksi (contoh: TXN-20250127-001)"
+                value={searchCode}
+                onChange={(e) => setSearchCode(e.target.value)}
+                className="pl-10"
+                disabled={isSearching}
+              />
+            </div>
           </div>
-          <p className="text-sm text-gray-500 mt-1">
-            Masukkan kode transaksi (contoh: TXN-20250127-001)
-          </p>
-        </div>
-      </div>
 
-      {/* Error Display */}
-      {error && (
-        <Alert variant="destructive">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertDescription>
-            Transaksi tidak ditemukan atau terjadi kesalahan. Pastikan kode transaksi benar dan coba
-            lagi.
-          </AlertDescription>
-        </Alert>
-      )}
+          {isSearching && (
+            <div className="text-sm text-gray-600 flex items-center gap-2">
+              <div className="animate-spin h-4 w-4 border-2 border-blue-600 border-t-transparent rounded-full" />
+              Mencari transaksi...
+            </div>
+          )}
+
+          {error && !isSearching && (
+            <Alert variant="destructive">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+        </div>
+      </Card>
 
       {/* Transaction Details */}
-      {transaction && !error && (
-        <Card className="p-4">
+      {transaction && !isSearching && (
+        <Card className="p-6">
           <div className="space-y-4">
             {/* Header */}
             <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-semibold text-lg">Detail Transaksi</h3>
-                <p className="text-gray-600">{transaction.kode}</p>
-              </div>
-              <div
-                className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(transaction.status)}`}
-              >
+              <h3 className="text-lg font-semibold text-gray-900">Detail Transaksi</h3>
+              <div className="flex items-center gap-2">
                 {getStatusIcon(transaction.status)}
-                {transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1)}
+                <Badge className={getStatusColor(transaction.status)}>
+                  {getStatusLabel(transaction.status)}
+                </Badge>
               </div>
             </div>
 
-            {/* Customer Info */}
-            <div className="border-t pt-4">
-              <h4 className="font-medium mb-2">Informasi Penyewa</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="text-gray-600">Nama:</span>
-                  <span className="ml-2 font-medium">{transaction.penyewa.nama}</span>
-                </div>
-                <div>
-                  <span className="text-gray-600">Telepon:</span>
-                  <span className="ml-2 font-medium">{transaction.penyewa.telepon}</span>
-                </div>
-                <div className="md:col-span-2">
-                  <span className="text-gray-600">Alamat:</span>
-                  <span className="ml-2">{transaction.penyewa.alamat}</span>
+            <Separator />
+
+            {/* Transaction Info */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <h4 className="text-sm font-medium text-gray-700 mb-2">Informasi Transaksi</h4>
+                <div className="space-y-1 text-sm">
+                  <div>
+                    <span className="text-gray-600">Kode:</span>{' '}
+                    <span className="font-medium">{transaction.kode}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Total:</span>{' '}
+                    <span className="font-medium">{formatCurrency(transaction.totalHarga)}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Dibayar:</span>{' '}
+                    <span className="font-medium">{formatCurrency(transaction.jumlahBayar)}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Sisa:</span>{' '}
+                    <span className="font-medium">{formatCurrency(transaction.sisaBayar)}</span>
+                  </div>
                 </div>
               </div>
+
+              <div>
+                <h4 className="text-sm font-medium text-gray-700 mb-2">Informasi Penyewa</h4>
+                <div className="space-y-1 text-sm">
+                  <div>
+                    <span className="text-gray-600">Nama:</span>{' '}
+                    <span className="font-medium">{transaction.penyewa.nama}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Telepon:</span>{' '}
+                    <span className="font-medium">{transaction.penyewa.telepon}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Alamat:</span>{' '}
+                    <span className="font-medium">{transaction.penyewa.alamat}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Date Info */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <span className="text-sm text-gray-600">Tanggal Mulai:</span>
+                <div className="font-medium">{formatDate(transaction.tglMulai)}</div>
+              </div>
+              {transaction.tglSelesai && (
+                <div>
+                  <span className="text-sm text-gray-600">Tanggal Selesai:</span>
+                  <div className="font-medium">{formatDate(transaction.tglSelesai)}</div>
+                </div>
+              )}
+              {transaction.tglKembali && (
+                <div>
+                  <span className="text-sm text-gray-600">Tanggal Kembali:</span>
+                  <div className="font-medium">{formatDate(transaction.tglKembali)}</div>
+                </div>
+              )}
             </div>
 
             {/* Items Summary */}
             {transaction.items && transaction.items.length > 0 && (
-              <div className="border-t pt-4">
-                <h4 className="font-medium mb-2">
-                  Barang Disewa ({transaction.items.length} item)
-                </h4>
-                <div className="space-y-2">
-                  {transaction.items.map((item) => (
-                    <div
-                      key={item.id}
-                      className="flex justify-between items-center text-sm p-2 bg-gray-50 rounded"
-                    >
-                      <div>
-                        <span className="font-medium">{item.produk.name}</span>
-                        <span className="text-gray-600 ml-2">x{item.jumlah}</span>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-gray-600">
-                          Diambil: {item.jumlahDiambil} / {item.jumlah}
-                        </div>
-                        <div
-                          className={
-                            item.statusKembali === 'lengkap' ? 'text-green-600' : 'text-blue-600'
-                          }
-                        >
-                          {item.statusKembali === 'lengkap'
-                            ? 'Sudah dikembalikan'
-                            : 'Belum dikembalikan'}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+              <div>
+                <h4 className="text-sm font-medium text-gray-700 mb-2">Ringkasan Barang</h4>
+                <div className="text-sm">
+                  <span className="text-gray-600">Total barang:</span>{' '}
+                  <span className="font-medium">
+                    {transaction.items.reduce((sum, item) => sum + item.jumlah, 0)} item
+                  </span>
+                  <br />
+                  <span className="text-gray-600">Sudah diambil:</span>{' '}
+                  <span className="font-medium">
+                    {transaction.items.reduce((sum, item) => sum + (item.jumlahDiambil || 0), 0)}{' '}
+                    item
+                  </span>
                 </div>
               </div>
             )}
 
-            {/* Transaction Info */}
-            <div className="border-t pt-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                <div>
-                  <span className="text-gray-600">Total Harga:</span>
-                  <div className="font-medium">
-                    Rp {transaction.totalHarga.toLocaleString('id-ID')}
-                  </div>
-                </div>
-                <div>
-                  <span className="text-gray-600">Sudah Dibayar:</span>
-                  <div className="font-medium text-green-600">
-                    Rp {transaction.jumlahBayar.toLocaleString('id-ID')}
-                  </div>
-                </div>
-                <div>
-                  <span className="text-gray-600">Sisa Bayar:</span>
-                  <div
-                    className={`font-medium ${transaction.sisaBayar > 0 ? 'text-red-600' : 'text-green-600'}`}
-                  >
-                    Rp {transaction.sisaBayar.toLocaleString('id-ID')}
-                  </div>
-                </div>
-              </div>
-            </div>
+            {/* Action Alert */}
+            <Separator />
+            
+            {canReturn(transaction) ? (
+              <Alert>
+                <CheckCircle className="h-4 w-4" />
+                <AlertDescription>
+                  Transaksi ini dapat diproses untuk pengembalian. Terdapat{' '}
+                  {transaction.items?.filter((item) => item.jumlahDiambil > 0).length || 0}{' '}
+                  barang yang belum dikembalikan.
+                </AlertDescription>
+              </Alert>
+            ) : (
+              <Alert variant="destructive">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>
+                  Transaksi ini tidak dapat diproses untuk pengembalian.
+                  {/* FIXED: Updated message to include 'terlambat' status */}
+                  {transaction.status !== 'active' && transaction.status !== 'terlambat' && ' Status transaksi bukan active atau terlambat.'}
+                  {!transaction.items?.some((item) => item.jumlahDiambil > 0) &&
+                    ' Tidak ada barang yang sudah diambil.'}
+                </AlertDescription>
+              </Alert>
+            )}
 
-            {/* Return Eligibility */}
-            <div className="border-t pt-4">
-              {canReturn(transaction) ? (
-                <Alert>
-                  <CheckCircle className="h-4 w-4" />
-                  <AlertDescription>
-                    Transaksi ini dapat diproses untuk pengembalian. Ada{' '}
-                    {
-                      transaction.items?.filter(
-                        (item) => item.jumlahDiambil > 0 && item.statusKembali !== 'lengkap',
-                      ).length
-                    }{' '}
-                    barang yang belum dikembalikan.
-                  </AlertDescription>
-                </Alert>
-              ) : (
-                <Alert variant="destructive">
-                  <AlertTriangle className="h-4 w-4" />
-                  <AlertDescription>
-                    Transaksi ini tidak dapat diproses untuk pengembalian.
-                    {transaction.status !== 'active' && ' Status transaksi bukan active.'}
-                    {!transaction.items?.some((item) => item.jumlahDiambil > 0) &&
-                      ' Tidak ada barang yang sudah diambil.'}
-                  </AlertDescription>
-                </Alert>
-              )}
-            </div>
+            {/* Continue Button */}
+            {canReturn(transaction) && (
+              <div className="flex justify-end">
+                <Button onClick={handleContinue} className="bg-green-600 hover:bg-green-700">
+                  Lanjutkan Pengembalian
+                </Button>
+              </div>
+            )}
           </div>
         </Card>
       )}
@@ -286,7 +330,8 @@ export function TransactionLookup({
               <h4 className="font-medium text-blue-900 mb-1">Tips Pencarian</h4>
               <ul className="text-sm text-blue-700 space-y-1">
                 <li>• Pastikan kode transaksi lengkap (contoh: TXN-20250127-001)</li>
-                <li>• Hanya transaksi dengan status &quot;active&quot; yang dapat dikembalikan</li>
+                {/* FIXED: Updated help text to include 'terlambat' status */}
+                <li>• Hanya transaksi dengan status "active" atau "terlambat" yang dapat dikembalikan</li>
                 <li>• Pastikan ada barang yang sudah diambil untuk dikembalikan</li>
               </ul>
             </div>

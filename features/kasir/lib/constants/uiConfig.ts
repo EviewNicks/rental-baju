@@ -16,9 +16,10 @@ import {
 } from 'lucide-react'
 import type { TransactionStatus } from '../../types'
 
-// Transaction Status Configuration
+// Transaction Status Configuration  
+// Note: Includes both current and legacy status values for backward compatibility
 export const statusConfig: Record<
-  TransactionStatus,
+  string, // More flexible type to handle legacy statuses
   { label: string; className: string; description: string }
 > = {
   active: {
@@ -26,9 +27,14 @@ export const statusConfig: Record<
     className: 'bg-blue-100 text-blue-800 border-blue-200',
     description: 'Transaksi sedang berjalan',
   },
+  diambil: {
+    label: 'Diambil',
+    className: 'bg-green-100 text-green-800 border-green-200',
+    description: 'Barang sudah diambil customer',
+  },
   selesai: {
     label: 'Selesai',
-    className: 'bg-green-100 text-green-800 border-green-200',
+    className: 'bg-red-100 text-red-800 border-red-200',
     description: 'Transaksi telah selesai',
   },
   terlambat: {
@@ -41,10 +47,11 @@ export const statusConfig: Record<
     className: 'bg-gray-100 text-gray-800 border-gray-200',
     description: 'Transaksi dibatalkan',
   },
+  // Legacy status mapping for backward compatibility
   dikembalikan: {
-    label: 'Dikembalikan',
-    className: 'bg-green-100 text-green-800 border-green-200',
-    description: 'Transaksi telah dikembalikan',
+    label: 'Selesai', // Display as 'Selesai' for consistency
+    className: 'bg-red-100 text-red-800 border-red-200',
+    description: 'Transaksi telah selesai',
   },
 }
 

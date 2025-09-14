@@ -3,8 +3,9 @@
 import { useQuery } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/react-query'
 import { kasirApi } from '../api'
-import type { TransactionDetail } from '../types'
+import type { TransactionDetail, TransactionStatus, TransaksiItemResponse } from '../types'
 import type { TransaksiResponse } from '../types'
+import { calculateEnhancedStatus } from '../lib/utils/statusUtils'
 
 interface UseTransactionDetailOptions {
   enabled?: boolean
@@ -182,6 +183,7 @@ export function useTransactionDetail(
   }
 }
 
+
 /**
  * Transform API TransaksiResponse to UI TransactionDetail type
  * Uses existing transaction item data with product information
@@ -189,6 +191,9 @@ export function useTransactionDetail(
 async function transformApiToUI(apiData: TransaksiResponse): Promise<TransactionDetail> {
   // Use items from transaction data - API returns items array, not fullItems
   const items = apiData.items || []
+
+  // Calculate enhanced status based on pickup status
+  const calculatedStatus = calculateEnhancedStatus(apiData.status, items, apiData.tglSelesai)
 
   const transformed: TransactionDetail = {
     id: apiData.id,
@@ -203,7 +208,7 @@ async function transformApiToUI(apiData: TransaksiResponse): Promise<Transaction
     totalAmount: apiData.totalHarga,
     amountPaid: apiData.jumlahBayar,
     remainingAmount: apiData.sisaBayar,
-    status: apiData.status,
+    status: calculatedStatus,
     paymentMethod: apiData.metodeBayar,
     notes: apiData.catatan || '',
     createdAt: apiData.createdAt,
@@ -306,7 +311,8 @@ function mapActivityTypeToAction(
     dibuat: 'created',
     dibayar: 'paid',
     diambil: 'picked_up',
-    dikembalikan: 'returned',        // NEW: Return activity mapping
+    selesai: 'returned',              // UPDATED: Map selesai to returned activity
+    dikembalikan: 'returned',         // LEGACY: Keep for backward compatibility
     penalty_added: 'penalty_added',  // NEW: Penalty activity mapping
     penalty_diterapkan: 'penalty_added', // NEW: Penalty alias mapping
     terlambat: 'overdue',

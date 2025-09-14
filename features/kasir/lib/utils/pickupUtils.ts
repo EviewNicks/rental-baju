@@ -35,10 +35,11 @@ export function calculateTransactionPickupStatus(transaction: TransactionDetail)
 
 /**
  * Check if pickup is available for a transaction
+ * FIXED: Allow pickup for both 'active' and 'terlambat' status
  */
 export function isPickupAvailable(transaction: TransactionDetail): boolean {
-  // Pickup is available if transaction is active and has remaining items
-  if (transaction.status !== 'active') {
+  // Pickup is available if transaction is active or overdue and has remaining items
+  if (transaction.status !== 'active' && transaction.status !== 'terlambat') {
     return false
   }
 
