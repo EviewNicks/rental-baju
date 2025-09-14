@@ -6,7 +6,8 @@ import { queryKeys } from '@/lib/react-query'
 import { kasirApi } from '../api'
 import type { TransactionFilters } from '../types'
 import type { TransactionStatus, TransaksiQueryParams } from '../types'
-import { calculateEnhancedStatus } from '../lib/utils/statusUtils'
+import { calculateEnhancedStatus, hasValidItemData } from '../lib/utils/statusUtils'
+import { logger } from '@/services/logger'
 
 interface UseTransactionsOptions {
   enabled?: boolean
@@ -53,29 +54,93 @@ export function useTransactions(options: UseTransactionsOptions = {}) {
 
   // Transform API data to match component expectations
   const transactions = useMemo(() => {
+    const log = logger.child('useTransactions')
+
     // API returns TransaksiListResponse structure
-    if (!transactionData?.data) return []
-    
-    return transactionData.data.map((transaction) => ({
-      id: transaction.id,
-      transactionCode: transaction.kode,
-      customerName: transaction.penyewa.nama,
-      customerPhone: transaction.penyewa.telepon,
-      customerAddress: transaction.penyewa.alamat,
-      // Use the actual items array with product names from API
-      items: transaction.items?.map((item) => item.produk?.name || 'Produk tidak diketahui') || ['Tidak ada item'],
-      totalAmount: transaction.totalHarga,
-      amountPaid: transaction.jumlahBayar,
-      remainingAmount: transaction.sisaBayar,
-      status: calculateEnhancedStatus(transaction.status, transaction.items || [], transaction.tglSelesai),
-      startDate: transaction.tglMulai,
-      endDate: transaction.tglSelesai || undefined,
-      returnDate: transaction.tglKembali || undefined,
-      paymentMethod: transaction.metodeBayar,
-      notes: transaction.catatan || '',
-      createdAt: transaction.createdAt,
-      updatedAt: transaction.updatedAt,
-    }))
+    if (!transactionData?.data) {
+      log.debug('transactions', 'No transaction data available', {
+        hasData: !!transactionData,
+        dataLength: transactionData?.data?.length || 0
+      })
+      return []
+    }
+
+    log.info('transactions', 'Processing transactions for display', {
+      transactionCount: transactionData.data.length
+    })
+
+    return transactionData.data.map((transaction) => {
+      // Analyze item data quality for status calculation
+      const itemsData = transaction.items || []
+      const hasValidItems = hasValidItemData(itemsData)
+
+      log.debug('transform', 'Processing transaction', {
+        transactionId: transaction.id,
+        transactionCode: transaction.kode,
+        baseStatus: transaction.status,
+        itemsLength: itemsData.length,
+        hasValidItems,
+        hasPickupFlag: 'hasPickup' in transaction ? transaction.hasPickup : undefined
+      })
+
+      // Calculate status with fallback logic and comprehensive logging
+      const finalStatus = (() => {
+        try {
+          // If we have valid item data, use enhanced calculation
+          if (hasValidItems) {
+            const enhancedStatus = calculateEnhancedStatus(
+              transaction.status,
+              itemsData,
+              transaction.tglSelesai,
+              'hasPickup' in transaction ? (transaction as any).hasPickup : undefined
+            )
+
+            log.info('transform', 'Enhanced status calculation successful', {
+              transactionId: transaction.id,
+              from: transaction.status,
+              to: enhancedStatus,
+              method: 'enhanced'
+            })
+
+            return enhancedStatus
+          } else {
+            // Fallback: use base status when item data is insufficient
+            log.info('transform', 'Using base status due to insufficient item data', {
+              transactionId: transaction.id,
+              baseStatus: transaction.status,
+              method: 'fallback',
+              reason: 'invalid-item-data'
+            })
+
+            return transaction.status
+          }
+        } catch (error) {
+          log.error('transform', 'Status calculation failed, using base status', error as Error)
+          return transaction.status
+        }
+      })()
+
+      return {
+        id: transaction.id,
+        transactionCode: transaction.kode,
+        customerName: transaction.penyewa.nama,
+        customerPhone: transaction.penyewa.telepon,
+        customerAddress: transaction.penyewa.alamat,
+        // Use the actual items array with product names from API
+        items: itemsData?.map((item) => item.produk?.name || 'Produk tidak diketahui') || ['Tidak ada item'],
+        totalAmount: transaction.totalHarga,
+        amountPaid: transaction.jumlahBayar,
+        remainingAmount: transaction.sisaBayar,
+        status: finalStatus,
+        startDate: transaction.tglMulai,
+        endDate: transaction.tglSelesai || undefined,
+        returnDate: transaction.tglKembali || undefined,
+        paymentMethod: transaction.metodeBayar,
+        notes: transaction.catatan || '',
+        createdAt: transaction.createdAt,
+        updatedAt: transaction.updatedAt,
+      }
+    })
   }, [transactionData])
 
   // Calculate transaction counts from summary

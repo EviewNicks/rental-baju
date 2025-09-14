@@ -192,8 +192,9 @@ async function transformApiToUI(apiData: TransaksiResponse): Promise<Transaction
   // Use items from transaction data - API returns items array, not fullItems
   const items = apiData.items || []
 
-  // Calculate enhanced status based on pickup status
-  const calculatedStatus = calculateEnhancedStatus(apiData.status, items, apiData.tglSelesai)
+  // Calculate enhanced status based on pickup status with server-side optimization
+  const hasPickup = items.some(item => (item.jumlahDiambil || 0) > 0)
+  const calculatedStatus = calculateEnhancedStatus(apiData.status, items, apiData.tglSelesai, hasPickup)
 
   const transformed: TransactionDetail = {
     id: apiData.id,

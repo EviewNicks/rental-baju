@@ -149,6 +149,7 @@ export interface TransaksiWithCustomer extends TransaksiCore {
 // Transaction summary for list views (optimized response)
 export interface TransaksiSummary extends TransaksiWithCustomer {
   itemCount: number // For performance - avoids loading full items
+  hasPickup: boolean // Server-calculated pickup status for enhanced status calculation
   metodeBayar: PaymentMethod
   catatan?: string
   createdBy: string
@@ -394,9 +395,10 @@ export interface TransaksiResponse extends TransaksiCore {
   catatan?: string
   createdBy: string
   tglKembali?: string // Will be validated against item status in Phase 2
-  
+
   // For list endpoint - simplified items with product names (when itemCount is used)
   itemCount?: number
+  hasPickup?: boolean // Optional server-calculated pickup status for enhanced status calculation
   // For detail endpoint - full item details (API returns full details in items field)
   items?: TransaksiItemResponse[]
   pembayaran?: PembayaranResponse[]
