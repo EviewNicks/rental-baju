@@ -415,6 +415,7 @@ export interface TransaksiListResponse {
   }
   summary: {
     totalActive: number
+    totalDiambil: number
     totalSelesai: number
     totalTerlambat: number
     totalCancelled: number

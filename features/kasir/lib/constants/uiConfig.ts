@@ -14,9 +14,8 @@ import {
   Info,
   RotateCcw,
 } from 'lucide-react'
-import type { TransactionStatus } from '../../types'
 
-// Transaction Status Configuration  
+// Transaction Status Configuration
 // Note: Includes both current and legacy status values for backward compatibility
 export const statusConfig: Record<
   string, // More flexible type to handle legacy statuses
@@ -34,7 +33,7 @@ export const statusConfig: Record<
   },
   selesai: {
     label: 'Selesai',
-    className: 'bg-red-100 text-red-800 border-red-200',
+    className: 'bg-yellow-100 text-yellow-800 border-yellow-200',
     description: 'Transaksi telah selesai',
   },
   terlambat: {
@@ -50,7 +49,7 @@ export const statusConfig: Record<
   // Legacy status mapping for backward compatibility
   dikembalikan: {
     label: 'Selesai', // Display as 'Selesai' for consistency
-    className: 'bg-red-100 text-red-800 border-red-200',
+    className: 'bg-yellow-100 text-yellow-800 border-yellow-200',
     description: 'Transaksi telah selesai',
   },
 }

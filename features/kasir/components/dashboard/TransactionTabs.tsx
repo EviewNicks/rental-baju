@@ -5,6 +5,9 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 import { Search } from 'lucide-react'
+import { statusConfig } from '../../lib/constants/uiConfig'
+import { logger } from '@/services/logger'
+import { useEffect } from 'react'
 
 interface TransactionTabsProps {
   activeTab: TransactionStatus | 'all'
@@ -13,8 +16,10 @@ interface TransactionTabsProps {
   onSearchChange: (value: string) => void
   counts: {
     active: number
+    diambil: number
     completed: number
     overdue: number
+    cancelled: number
     total: number
   }
 }
@@ -24,6 +29,45 @@ interface SearchInputProps {
   onChange: (value: string) => void
   placeholder?: string
   className?: string
+}
+
+// Dynamic tab configuration based on statusConfig
+const TAB_ORDER: (TransactionStatus | 'all')[] = ['all', 'active', 'diambil', 'selesai', 'terlambat', 'cancelled']
+
+interface TabConfig {
+  value: TransactionStatus | 'all'
+  label: string
+  countKey: keyof TransactionTabsProps['counts']
+  testId: string
+}
+
+function getTabConfiguration(): TabConfig[] {
+  return TAB_ORDER.map((status) => {
+    if (status === 'all') {
+      return {
+        value: 'all',
+        label: 'Semua',
+        countKey: 'total' as const,
+        testId: 'tab-all'
+      }
+    }
+
+    const config = statusConfig[status]
+    const countKeyMap: Record<TransactionStatus, keyof TransactionTabsProps['counts']> = {
+      active: 'active',
+      diambil: 'diambil',
+      selesai: 'completed',
+      terlambat: 'overdue',
+      cancelled: 'cancelled'
+    }
+
+    return {
+      value: status,
+      label: config?.label || status,
+      countKey: countKeyMap[status],
+      testId: `tab-${status}`
+    }
+  })
 }
 
 function SearchInput({
@@ -54,6 +98,35 @@ export function TransactionTabs({
   onSearchChange,
   counts,
 }: TransactionTabsProps) {
+  const log = logger.child('TransactionTabs')
+  const tabConfigs = getTabConfiguration()
+
+  // Enhanced logging for count data and tab changes
+  useEffect(() => {
+    log.debug('render', 'Count data received', {
+      counts,
+      activeTab,
+      totalSum: Object.values(counts).reduce((sum, count) => sum + count, 0),
+      timestamp: Date.now()
+    })
+  }, [counts, activeTab, log])
+
+  // Log tab configuration mapping
+  useEffect(() => {
+    log.debug('configuration', 'Tab configuration loaded', {
+      tabConfigs: tabConfigs.map(config => ({
+        value: config.value,
+        label: config.label,
+        countKey: config.countKey,
+        displayCount: counts[config.countKey]
+      })),
+      mapping: {
+        'selesai': 'completed',
+        'terlambat': 'overdue'
+      }
+    })
+  }, [tabConfigs, counts, log])
+
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
@@ -64,20 +137,14 @@ export function TransactionTabs({
           data-testid="transaction-tabs"
         >
           <TabsList>
-            <TabsTrigger value="all" data-testid="tab-all">
-              Semua <span className="ml-1 text-xs text-muted-foreground">({counts.total})</span>
-            </TabsTrigger>
-            <TabsTrigger value="active" data-testid="tab-active">
-              Aktif <span className="ml-1 text-xs text-muted-foreground">({counts.active})</span>
-            </TabsTrigger>
-            <TabsTrigger value="selesai" data-testid="tab-selesai">
-              Selesai{' '}
-              <span className="ml-1 text-xs text-muted-foreground">({counts.completed})</span>
-            </TabsTrigger>
-            <TabsTrigger value="terlambat" data-testid="tab-terlambat">
-              Terlambat{' '}
-              <span className="ml-1 text-xs text-muted-foreground">({counts.overdue})</span>
-            </TabsTrigger>
+            {tabConfigs.map(({ value, label, countKey, testId }) => (
+              <TabsTrigger key={value} value={value} data-testid={testId}>
+                {label}{' '}
+                <span className="ml-1 text-xs text-muted-foreground">
+                  ({counts[countKey]})
+                </span>
+              </TabsTrigger>
+            ))}
           </TabsList>
         </Tabs>
         <SearchInput

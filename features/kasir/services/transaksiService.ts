@@ -15,6 +15,8 @@ import { TransactionCodeGenerator } from '../lib/utils/codeGenerator'
 import { PriceCalculator } from '../lib/utils/server'
 import { createAvailabilityService, AvailabilityService } from './availabilityService'
 import { calculateAvailableStock } from '../lib/typeUtils'
+import type { TransactionStatus, TransaksiItemResponse } from '../types'
+import { logger } from '@/services/logger'
 
 export interface TransaksiWithDetails extends Transaksi {
   penyewa: {
@@ -130,10 +132,153 @@ export interface TransaksiListResponse {
   }
   summary: {
     totalActive: number
+    totalDiambil: number
     totalSelesai: number
     totalTerlambat: number
     totalCancelled: number
   }
+}
+
+/**
+ * Calculate enhanced transaction status based on pickup status and business rules
+ * Moved from frontend statusUtils to backend for consistent status processing
+ * Priority: terlambat > cancelled > selesai > diambil > active
+ *
+ * @param baseStatus - Original status from database
+ * @param items - Transaction items array to check pickup status
+ * @param endDate - Optional end date to check for overdue status
+ * @param hasPickup - Optional server-provided pickup flag for performance
+ * @returns Enhanced status based on business logic
+ */
+function calculateEnhancedStatus(
+  baseStatus: TransactionStatus,
+  items: Array<{ jumlahDiambil: number; statusKembali?: string }> | undefined,
+  endDate?: string | Date,
+  hasPickup?: boolean
+): TransactionStatus {
+  const log = logger.child('transaksiService')
+
+  log.debug('calculateEnhancedStatus', 'Starting backend status calculation', {
+    baseStatus,
+    itemsCount: items?.length || 0,
+    endDate,
+    endDateExists: !!endDate,
+    hasPickupFlag: hasPickup,
+    hasItems: !!items?.length,
+    currentTime: new Date().toISOString()
+  })
+
+  // Priority 1: Check if explicit overdue status (terlambat)
+  if (baseStatus === 'terlambat') {
+    log.debug('calculateEnhancedStatus', 'Backend: Status is terlambat', { result: 'terlambat' })
+    return 'terlambat'
+  }
+
+  // Priority 2: Check if cancelled
+  if (baseStatus === 'cancelled') {
+    log.debug('calculateEnhancedStatus', 'Backend: Status is cancelled', { result: 'cancelled' })
+    return 'cancelled'
+  }
+
+  // Priority 3: Check if explicit completed status (selesai)
+  if (baseStatus === 'selesai') {
+    log.debug('calculateEnhancedStatus', 'Backend: Status is selesai', { result: 'selesai' })
+    return 'selesai'
+  }
+
+  log.debug('calculateEnhancedStatus', 'Backend: Checking completion status FIRST (before overdue)')
+
+  // Priority 4: Check if all items have been returned (auto-complete logic)
+  // This runs BEFORE overdue check to prioritize completion over timing
+  if (baseStatus === 'active' || baseStatus === 'diambil' || baseStatus === 'dikembalikan') {
+    if (items && items.length > 0) {
+      const itemStatuses = items.map(item => ({
+        statusKembali: item.statusKembali,
+        jumlahDiambil: item.jumlahDiambil
+      }))
+
+      const allItemsReturned = items.every(item => {
+        // Check if this item has been fully returned using statusKembali
+        return item.statusKembali === 'lengkap'
+      })
+
+      log.debug('calculateEnhancedStatus', 'Backend: Checking completion status', {
+        baseStatus,
+        totalItems: items.length,
+        itemStatuses,
+        allItemsReturned
+      })
+
+      if (allItemsReturned) {
+        log.info('calculateEnhancedStatus', 'Backend: All items returned, marking as selesai (HIGHEST PRIORITY)', {
+          result: 'selesai',
+          baseStatus,
+          totalItems: items.length,
+          returnStatuses: items.map(item => item.statusKembali),
+          businessRule: 'backend-completion-overrides-all-status'
+        })
+        return 'selesai'
+      } else {
+        log.debug('calculateEnhancedStatus', 'Backend: Not all items returned, continuing status checks', {
+          totalItems: items.length,
+          itemDetails: items.map(item => ({
+            statusKembali: item.statusKembali,
+            jumlahDiambil: item.jumlahDiambil
+          }))
+        })
+      }
+    }
+  }
+
+  // Priority 5: Check if current date is past end date (manual overdue check)
+  // This runs AFTER completion check to allow completed transactions to show as 'selesai'
+  if (endDate && (baseStatus === 'active' || baseStatus === 'diambil')) {
+    const now = new Date()
+    const dueDate = typeof endDate === 'string' ? new Date(endDate) : endDate
+    const isOverdue = now > dueDate
+
+    log.debug('calculateEnhancedStatus', 'Backend: Checking overdue status', {
+      endDate,
+      currentDate: now.toISOString(),
+      dueDate: !isNaN(dueDate.getTime()) ? dueDate.toISOString() : 'Invalid Date',
+      isOverdue,
+      daysDifference: Math.floor((now.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24))
+    })
+
+    if (isOverdue && !isNaN(dueDate.getTime())) {
+      log.info('calculateEnhancedStatus', 'Backend: Detected overdue transaction (AFTER completion check)', {
+        endDate: dueDate.toISOString(),
+        result: 'terlambat',
+        reasonCompleted: false,
+        statusFlow: 'backend-overdue-detection-after-completion'
+      })
+      return 'terlambat'
+    }
+  }
+
+  // Priority 6: Check if any items have been picked up
+  if (baseStatus === 'active') {
+    // Use server flag if available, fallback to item parsing
+    const pickupDetected = hasPickup ?? (items?.some(item => item.jumlahDiambil > 0) || false)
+
+    log.debug('calculateEnhancedStatus', 'Backend: Checking pickup status', {
+      hasPickupFlag: hasPickup,
+      itemsAvailable: !!items?.length,
+      itemBasedPickup: items?.some(item => item.jumlahDiambil > 0),
+      finalPickupDetected: pickupDetected
+    })
+
+    if (pickupDetected) {
+      log.info('calculateEnhancedStatus', 'Backend: Pickup detected, changing to diambil', {
+        result: 'diambil',
+        source: hasPickup !== undefined ? 'server-flag' : 'item-parsing'
+      })
+      return 'diambil'
+    }
+  }
+
+  log.debug('calculateEnhancedStatus', 'Backend: Using base status', { result: baseStatus })
+  return baseStatus
 }
 
 export class TransaksiService {
@@ -526,18 +671,14 @@ export class TransaksiService {
   }
 
   /**
-   * Get paginated list of transactions with filters
+   * Get paginated list of transactions with enhanced status calculation
+   * Applies status enhancement and filtering on enhanced status for accurate results
    */
   async getTransaksiList(params: TransaksiQueryParams): Promise<TransaksiListResponse> {
     const { page, limit, status, search, penyewaId, dateStart, dateEnd } = params
-    const skip = (page - 1) * limit
 
-    // Build where clause
+    // Build where clause for database filtering (exclude status for now - we'll filter by enhanced status)
     const whereClause: Record<string, unknown> = {}
-
-    if (status) {
-      whereClause.status = status
-    }
 
     if (penyewaId) {
       whereClause.penyewaId = penyewaId
@@ -557,11 +698,9 @@ export class TransaksiService {
       ]
     }
 
-    // Get data and summary in parallel
-    const [data, total, summary] = await Promise.all([
+    // Get all transactions (we'll filter by enhanced status in memory)
+    const [allTransactions, summary] = await Promise.all([
       this.prisma.transaksi.findMany({
-        skip,
-        take: limit,
         orderBy: { createdAt: 'desc' },
         where: Object.keys(whereClause).length > 0 ? whereClause : undefined,
         include: {
@@ -593,16 +732,36 @@ export class TransaksiService {
           },
         },
       }),
-      this.prisma.transaksi.count({
-        where: Object.keys(whereClause).length > 0 ? whereClause : undefined,
-      }),
       this.getTransaksiStats(),
     ])
 
+    // Apply enhanced status calculation and filtering
+    const enhancedTransactions = allTransactions.map((transaction) => {
+      const enhancedStatus = calculateEnhancedStatus(
+        transaction.status as TransactionStatus,
+        transaction.items,
+        transaction.tglSelesai?.toISOString()
+      )
+
+      return {
+        ...transaction,
+        status: enhancedStatus,
+      }
+    })
+
+    // Filter by enhanced status if requested
+    const filteredTransactions = status
+      ? enhancedTransactions.filter((transaction) => transaction.status === status)
+      : enhancedTransactions
+
+    // Apply pagination to filtered results
+    const skip = (page - 1) * limit
+    const paginatedData = filteredTransactions.slice(skip, skip + limit)
+    const total = filteredTransactions.length
     const totalPages = Math.ceil(total / limit)
 
     return {
-      data: data as unknown as TransaksiWithDetails[],
+      data: paginatedData as unknown as TransaksiWithDetails[],
       pagination: {
         page,
         limit,
@@ -673,42 +832,99 @@ export class TransaksiService {
   }
 
   /**
-   * Get transaction statistics
+   * Get transaction statistics with enhanced status calculation
+   * Applies status enhancement logic to provide accurate counts for frontend
    */
   async getTransaksiStats(): Promise<{
     totalActive: number
+    totalDiambil: number
     totalSelesai: number
     totalTerlambat: number
     totalCancelled: number
   }> {
-    const stats = await this.prisma.transaksi.groupBy({
-      by: ['status'],
-      _count: {
+    const log = logger.child('transaksiService')
+
+    log.debug('getTransaksiStats', 'Starting backend stats calculation')
+
+    // Fetch all transactions with basic data needed for status calculation
+    const transactions = await this.prisma.transaksi.findMany({
+      select: {
+        id: true,
+        kode: true,
         status: true,
-      },
+        tglSelesai: true,
+        items: {
+          select: {
+            jumlahDiambil: true,
+            statusKembali: true,
+          }
+        }
+      }
+    })
+
+    log.debug('getTransaksiStats', 'Backend: Fetched transactions for stats', {
+      totalTransactions: transactions.length,
+      transactionIds: transactions.map(t => ({ id: t.id, kode: t.kode, status: t.status }))
     })
 
     const result = {
       totalActive: 0,
+      totalDiambil: 0,
       totalSelesai: 0,
       totalTerlambat: 0,
       totalCancelled: 0,
     }
 
-    stats.forEach((stat) => {
-      switch (stat.status) {
+    // Apply enhanced status calculation to each transaction
+    transactions.forEach((transaction, index) => {
+      log.debug('getTransaksiStats', `Backend: Processing transaction ${index + 1}/${transactions.length}`, {
+        transactionId: transaction.id,
+        kode: transaction.kode,
+        originalStatus: transaction.status,
+        hasItems: !!transaction.items?.length,
+        itemsData: transaction.items?.map(item => ({
+          jumlahDiambil: item.jumlahDiambil,
+          statusKembali: item.statusKembali
+        }))
+      })
+
+      const enhancedStatus = calculateEnhancedStatus(
+        transaction.status as TransactionStatus,
+        transaction.items,
+        transaction.tglSelesai?.toISOString()
+      )
+
+      log.debug('getTransaksiStats', `Backend: Enhanced status calculated for ${transaction.kode}`, {
+        originalStatus: transaction.status,
+        enhancedStatus,
+        transformation: transaction.status !== enhancedStatus ? 'CHANGED' : 'UNCHANGED'
+      })
+
+      switch (enhancedStatus) {
         case 'active':
-          result.totalActive = stat._count.status
+          result.totalActive++
+          break
+        case 'diambil':
+          result.totalDiambil++
           break
         case 'selesai':
-          result.totalSelesai = stat._count.status
+          result.totalSelesai++
           break
         case 'terlambat':
-          result.totalTerlambat = stat._count.status
+          result.totalTerlambat++
           break
         case 'cancelled':
-          result.totalCancelled = stat._count.status
+          result.totalCancelled++
           break
+      }
+    })
+
+    log.info('getTransaksiStats', 'Backend: Final stats calculated', {
+      result,
+      totalProcessed: transactions.length,
+      mapping: {
+        'selesai': result.totalSelesai,
+        'terlambat': result.totalTerlambat
       }
     })
 

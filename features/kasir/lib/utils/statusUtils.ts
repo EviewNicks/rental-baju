@@ -27,19 +27,76 @@ export function calculateEnhancedStatus(
   log.debug('calculateEnhancedStatus', 'Status calculation started', {
     baseStatus,
     itemsCount: items?.length || 0,
-    endDate: !!endDate,
+    endDate,
+    endDateExists: !!endDate,
     hasPickupFlag: hasPickup,
-    hasItems: !!items?.length
+    hasItems: !!items?.length,
+    currentTime: new Date().toISOString()
   })
 
-  // Priority 1: Check if overdue (terlambat)
+  // Priority 1: Check if cancelled (immutable status)
+  if (baseStatus === 'cancelled') {
+    log.debug('calculateEnhancedStatus', 'Status is cancelled', { result: 'cancelled' })
+    return 'cancelled'
+  }
+
+  log.debug('calculateEnhancedStatus', 'Cancelled check passed, checking completion next')
+
+  // Priority 2: Check if all items have been returned (HIGHEST BUSINESS PRIORITY)
+  // Completion overrides ALL other status calculations including explicit database status
+  if (items && items.length > 0) {
+    const itemStatuses = items.map(item => ({
+      statusKembali: item.statusKembali,
+      jumlahDiambil: item.jumlahDiambil
+    }))
+
+    const allItemsReturned = items.every(item => {
+      // Check if this item has been fully returned using statusKembali
+      return item.statusKembali === 'lengkap'
+    })
+
+    log.debug('calculateEnhancedStatus', 'Checking completion status', {
+      baseStatus,
+      totalItems: items.length,
+      itemStatuses,
+      allItemsReturned
+    })
+
+    if (allItemsReturned) {
+      log.info('calculateEnhancedStatus', 'All items returned, marking as selesai (HIGHEST PRIORITY)', {
+        result: 'selesai',
+        baseStatus,
+        totalItems: items.length,
+        returnStatuses: items.map(item => item.statusKembali),
+        businessRule: 'completion-overrides-all-status'
+      })
+      return 'selesai'
+    } else {
+      log.debug('calculateEnhancedStatus', 'Not all items returned, continuing status checks', {
+        totalItems: items.length,
+        itemDetails: items.map(item => ({
+          statusKembali: item.statusKembali,
+          jumlahDiambil: item.jumlahDiambil
+        }))
+      })
+    }
+  }
+
+  // Priority 3: Check if explicit completed status (selesai)
+  if (baseStatus === 'selesai') {
+    log.debug('calculateEnhancedStatus', 'Status is selesai', { result: 'selesai' })
+    return 'selesai'
+  }
+
+  // Priority 4: Check if explicit overdue status (terlambat)
   if (baseStatus === 'terlambat') {
     log.debug('calculateEnhancedStatus', 'Status is terlambat', { result: 'terlambat' })
     return 'terlambat'
   }
 
-  // Check if current date is past end date (manual overdue check)
-  if (endDate && baseStatus === 'active') {
+  // Priority 5: Check if current date is past end date (manual overdue check)
+  // This runs AFTER completion check to allow completed transactions to show as 'selesai'
+  if (endDate && (baseStatus === 'active' || baseStatus === 'diambil')) {
     const now = new Date()
     const dueDate = new Date(endDate)
     const isOverdue = now > dueDate
@@ -48,31 +105,22 @@ export function calculateEnhancedStatus(
       endDate,
       currentDate: now.toISOString(),
       dueDate: !isNaN(dueDate.getTime()) ? dueDate.toISOString() : 'Invalid Date',
-      isOverdue
+      isOverdue,
+      daysDifference: Math.floor((now.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24))
     })
 
     if (isOverdue) {
-      log.info('calculateEnhancedStatus', 'Detected overdue transaction', {
+      log.info('calculateEnhancedStatus', 'Detected overdue transaction (AFTER completion check)', {
         endDate,
-        result: 'terlambat'
+        result: 'terlambat',
+        reasonCompleted: false,
+        statusFlow: 'overdue-detection-after-completion'
       })
       return 'terlambat'
     }
   }
 
-  // Priority 2: Check if cancelled
-  if (baseStatus === 'cancelled') {
-    log.debug('calculateEnhancedStatus', 'Status is cancelled', { result: 'cancelled' })
-    return 'cancelled'
-  }
-
-  // Priority 3: Check if completed (selesai - all items returned)
-  if (baseStatus === 'selesai') {
-    log.debug('calculateEnhancedStatus', 'Status is selesai', { result: 'selesai' })
-    return 'selesai'
-  }
-
-  // Priority 4: Check if any items have been picked up
+  // Priority 6: Check if any items have been picked up
   if (baseStatus === 'active') {
     // Use server flag if available, fallback to item parsing
     const pickupDetected = hasPickup ?? (items?.some(item => item.jumlahDiambil > 0) || false)

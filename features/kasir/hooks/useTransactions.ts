@@ -6,7 +6,6 @@ import { queryKeys } from '@/lib/react-query'
 import { kasirApi } from '../api'
 import type { TransactionFilters } from '../types'
 import type { TransactionStatus, TransaksiQueryParams } from '../types'
-import { calculateEnhancedStatus, hasValidItemData } from '../lib/utils/statusUtils'
 import { logger } from '@/services/logger'
 
 interface UseTransactionsOptions {
@@ -70,55 +69,14 @@ export function useTransactions(options: UseTransactionsOptions = {}) {
     })
 
     return transactionData.data.map((transaction) => {
-      // Analyze item data quality for status calculation
       const itemsData = transaction.items || []
-      const hasValidItems = hasValidItemData(itemsData)
 
-      log.debug('transform', 'Processing transaction', {
+      log.debug('transform', 'Processing transaction with backend-enhanced status', {
         transactionId: transaction.id,
         transactionCode: transaction.kode,
-        baseStatus: transaction.status,
-        itemsLength: itemsData.length,
-        hasValidItems,
-        hasPickupFlag: 'hasPickup' in transaction ? transaction.hasPickup : undefined
+        enhancedStatus: transaction.status,
+        itemsLength: itemsData.length
       })
-
-      // Calculate status with fallback logic and comprehensive logging
-      const finalStatus = (() => {
-        try {
-          // If we have valid item data, use enhanced calculation
-          if (hasValidItems) {
-            const enhancedStatus = calculateEnhancedStatus(
-              transaction.status,
-              itemsData,
-              transaction.tglSelesai,
-              'hasPickup' in transaction ? (transaction as any).hasPickup : undefined
-            )
-
-            log.info('transform', 'Enhanced status calculation successful', {
-              transactionId: transaction.id,
-              from: transaction.status,
-              to: enhancedStatus,
-              method: 'enhanced'
-            })
-
-            return enhancedStatus
-          } else {
-            // Fallback: use base status when item data is insufficient
-            log.info('transform', 'Using base status due to insufficient item data', {
-              transactionId: transaction.id,
-              baseStatus: transaction.status,
-              method: 'fallback',
-              reason: 'invalid-item-data'
-            })
-
-            return transaction.status
-          }
-        } catch (error) {
-          log.error('transform', 'Status calculation failed, using base status', error as Error)
-          return transaction.status
-        }
-      })()
 
       return {
         id: transaction.id,
@@ -131,7 +89,7 @@ export function useTransactions(options: UseTransactionsOptions = {}) {
         totalAmount: transaction.totalHarga,
         amountPaid: transaction.jumlahBayar,
         remainingAmount: transaction.sisaBayar,
-        status: finalStatus,
+        status: transaction.status, // Backend now provides enhanced status directly
         startDate: transaction.tglMulai,
         endDate: transaction.tglSelesai || undefined,
         returnDate: transaction.tglKembali || undefined,
@@ -145,23 +103,55 @@ export function useTransactions(options: UseTransactionsOptions = {}) {
 
   // Calculate transaction counts from summary
   const counts = useMemo(() => {
+    const log = logger.child('useTransactions')
+
+    log.debug('counts', 'Starting frontend count calculation from API summary')
+
     // API returns summary in TransaksiListResponse
     if (!transactionData?.summary) {
+      log.debug('counts', 'No summary data available from API', {
+        hasTransactionData: !!transactionData,
+        hasSummary: !!transactionData?.summary
+      })
       return {
         active: 0,
+        diambil: 0,
         completed: 0,
         overdue: 0,
+        cancelled: 0,
         total: 0,
       }
     }
 
     const { summary } = transactionData
-    return {
+
+    log.debug('counts', 'Frontend: Processing raw API summary data', {
+      rawSummary: summary,
+      summaryKeys: Object.keys(summary || {}),
+      summaryValues: Object.values(summary || {})
+    })
+
+    const calculatedCounts = {
       active: summary?.totalActive || 0,
+      diambil: summary?.totalDiambil || 0,
       completed: summary?.totalSelesai || 0,
       overdue: summary?.totalTerlambat || 0,
-      total: (summary?.totalActive || 0) + (summary?.totalSelesai || 0) + (summary?.totalTerlambat || 0) + (summary?.totalCancelled || 0),
+      cancelled: summary?.totalCancelled || 0,
+      total: (summary?.totalActive || 0) + (summary?.totalDiambil || 0) + (summary?.totalSelesai || 0) + (summary?.totalTerlambat || 0) + (summary?.totalCancelled || 0),
     }
+
+    log.info('counts', 'Frontend: Final count calculation completed', {
+      apiSummaryRaw: summary,
+      frontendCounts: calculatedCounts,
+      mapping: {
+        'totalSelesai → completed': summary?.totalSelesai,
+        'totalTerlambat → overdue': summary?.totalTerlambat
+      },
+      calculatedTotal: calculatedCounts.total,
+      individualSum: calculatedCounts.active + calculatedCounts.diambil + calculatedCounts.completed + calculatedCounts.overdue + calculatedCounts.cancelled
+    })
+
+    return calculatedCounts
   }, [transactionData])
 
   const updateFilters = (newFilters: Partial<TransactionFilters>) => {
