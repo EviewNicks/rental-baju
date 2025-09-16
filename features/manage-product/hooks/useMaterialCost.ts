@@ -7,10 +7,6 @@
 import { useMemo } from 'react'
 import type { Material } from '@/features/manage-product/types/material'
 import { calculateCostFromMaterial, formatMaterialCost } from '@/features/manage-product/lib/utils/materialCalculations'
-import { logger } from '@/services/logger'
-
-// Component-specific logger for material cost calculations
-const costLogger = logger.child('useMaterialCost')
 
 interface UseMaterialCostReturn {
   /** Calculated total cost (raw number) */
@@ -48,38 +44,10 @@ export function useMaterialCost(
   currency: string = 'Rp'
 ): UseMaterialCostReturn {
   return useMemo(() => {
-    const timer = logger.startTimer('useMaterialCost', 'calculateCost', 'cost_calculation')
-    
     try {
-      // Log input validation
-      if (!material) {
-        costLogger.debug('calculateCost', 'No material provided for cost calculation', {
-          quantity,
-          currency
-        })
-      } else if (quantity <= 0) {
-        costLogger.warn('calculateCost', 'Invalid quantity for cost calculation', {
-          materialId: material.id,
-          materialName: material.name,
-          quantity,
-          expectedQuantity: '>0'
-        })
-      }
-
       const totalCost = calculateCostFromMaterial(material, quantity)
       const formattedCost = formatMaterialCost(totalCost, currency)
       const isValid = totalCost > 0
-      const duration = timer.end()
-
-      // Log calculation result
-      costLogger.debug('calculateCost', 'Material cost calculation completed', {
-        materialId: material?.id,
-        materialName: material?.name,
-        quantity,
-        totalCost,
-        isValid,
-        duration: `${duration}ms`
-      })
 
       return {
         totalCost,
@@ -87,9 +55,6 @@ export function useMaterialCost(
         isValid,
       }
     } catch (error) {
-      timer.end('Cost calculation failed')
-      costLogger.error('calculateCost', 'Material cost calculation failed', error as Error)
-      
       // Return safe fallback
       return {
         totalCost: 0,
@@ -123,44 +88,16 @@ export function useBatchMaterialCost(
   currency: string = 'Rp'
 ) {
   return useMemo(() => {
-    const timer = logger.startTimer('useMaterialCost', 'batchCalculation', 'batch_cost_calculation')
-    
     try {
-      costLogger.debug('batchCalculation', 'Starting batch material cost calculation', {
-        materialCount: materials.length,
-        currency
-      })
-
-      const individualCosts = materials.map(({ material, quantity }, index) => {
-        const cost = calculateCostFromMaterial(material, quantity)
-        
-        if (quantity <= 0 && material) {
-          costLogger.warn('batchCalculation', 'Invalid quantity in batch calculation', {
-            batchIndex: index,
-            materialId: material.id,
-            quantity
-          })
-        }
-        
-        return cost
+      const individualCosts = materials.map(({ material, quantity }) => {
+        return calculateCostFromMaterial(material, quantity)
       })
 
       const totalCost = individualCosts.reduce((sum, cost) => sum + cost, 0)
       const formattedTotal = formatMaterialCost(totalCost, currency)
-      const formattedIndividual = individualCosts.map(cost => 
+      const formattedIndividual = individualCosts.map(cost =>
         formatMaterialCost(cost, currency)
       )
-      
-      const duration = timer.end()
-      const validCount = individualCosts.filter(cost => cost > 0).length
-      
-      costLogger.info('batchCalculation', 'Batch material cost calculation completed', {
-        materialCount: materials.length,
-        validCalculations: validCount,
-        totalCost,
-        duration: `${duration}ms`,
-        avgCostPerMaterial: materials.length > 0 ? totalCost / materials.length : 0
-      })
 
       return {
         individualCosts,
@@ -170,9 +107,6 @@ export function useBatchMaterialCost(
         isValid: totalCost > 0,
       }
     } catch (error) {
-      timer.end('Batch calculation failed')
-      costLogger.error('batchCalculation', 'Batch material cost calculation failed', error as Error)
-      
       // Return safe fallback
       const fallbackIndividual = materials.map(() => 0)
       return {

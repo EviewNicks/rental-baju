@@ -15,8 +15,7 @@ import { TransactionCodeGenerator } from '../lib/utils/codeGenerator'
 import { PriceCalculator } from '../lib/utils/server'
 import { createAvailabilityService, AvailabilityService } from './availabilityService'
 import { calculateAvailableStock } from '../lib/typeUtils'
-import type { TransactionStatus, TransaksiItemResponse } from '../types'
-import { logger } from '@/services/logger'
+import type { TransactionStatus } from '../types'
 
 export interface TransaksiWithDetails extends Transaksi {
   penyewa: {
@@ -154,78 +153,34 @@ function calculateEnhancedStatus(
   baseStatus: TransactionStatus,
   items: Array<{ jumlahDiambil: number; statusKembali?: string }> | undefined,
   endDate?: string | Date,
-  hasPickup?: boolean
+  hasPickup?: boolean,
 ): TransactionStatus {
-  const log = logger.child('transaksiService')
-
-  log.debug('calculateEnhancedStatus', 'Starting backend status calculation', {
-    baseStatus,
-    itemsCount: items?.length || 0,
-    endDate,
-    endDateExists: !!endDate,
-    hasPickupFlag: hasPickup,
-    hasItems: !!items?.length,
-    currentTime: new Date().toISOString()
-  })
-
   // Priority 1: Check if explicit overdue status (terlambat)
   if (baseStatus === 'terlambat') {
-    log.debug('calculateEnhancedStatus', 'Backend: Status is terlambat', { result: 'terlambat' })
     return 'terlambat'
   }
 
   // Priority 2: Check if cancelled
   if (baseStatus === 'cancelled') {
-    log.debug('calculateEnhancedStatus', 'Backend: Status is cancelled', { result: 'cancelled' })
     return 'cancelled'
   }
 
   // Priority 3: Check if explicit completed status (selesai)
   if (baseStatus === 'selesai') {
-    log.debug('calculateEnhancedStatus', 'Backend: Status is selesai', { result: 'selesai' })
     return 'selesai'
   }
-
-  log.debug('calculateEnhancedStatus', 'Backend: Checking completion status FIRST (before overdue)')
 
   // Priority 4: Check if all items have been returned (auto-complete logic)
   // This runs BEFORE overdue check to prioritize completion over timing
   if (baseStatus === 'active' || baseStatus === 'diambil' || baseStatus === 'dikembalikan') {
     if (items && items.length > 0) {
-      const itemStatuses = items.map(item => ({
-        statusKembali: item.statusKembali,
-        jumlahDiambil: item.jumlahDiambil
-      }))
-
-      const allItemsReturned = items.every(item => {
+      const allItemsReturned = items.every((item) => {
         // Check if this item has been fully returned using statusKembali
         return item.statusKembali === 'lengkap'
       })
 
-      log.debug('calculateEnhancedStatus', 'Backend: Checking completion status', {
-        baseStatus,
-        totalItems: items.length,
-        itemStatuses,
-        allItemsReturned
-      })
-
       if (allItemsReturned) {
-        log.info('calculateEnhancedStatus', 'Backend: All items returned, marking as selesai (HIGHEST PRIORITY)', {
-          result: 'selesai',
-          baseStatus,
-          totalItems: items.length,
-          returnStatuses: items.map(item => item.statusKembali),
-          businessRule: 'backend-completion-overrides-all-status'
-        })
         return 'selesai'
-      } else {
-        log.debug('calculateEnhancedStatus', 'Backend: Not all items returned, continuing status checks', {
-          totalItems: items.length,
-          itemDetails: items.map(item => ({
-            statusKembali: item.statusKembali,
-            jumlahDiambil: item.jumlahDiambil
-          }))
-        })
       }
     }
   }
@@ -237,21 +192,7 @@ function calculateEnhancedStatus(
     const dueDate = typeof endDate === 'string' ? new Date(endDate) : endDate
     const isOverdue = now > dueDate
 
-    log.debug('calculateEnhancedStatus', 'Backend: Checking overdue status', {
-      endDate,
-      currentDate: now.toISOString(),
-      dueDate: !isNaN(dueDate.getTime()) ? dueDate.toISOString() : 'Invalid Date',
-      isOverdue,
-      daysDifference: Math.floor((now.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24))
-    })
-
     if (isOverdue && !isNaN(dueDate.getTime())) {
-      log.info('calculateEnhancedStatus', 'Backend: Detected overdue transaction (AFTER completion check)', {
-        endDate: dueDate.toISOString(),
-        result: 'terlambat',
-        reasonCompleted: false,
-        statusFlow: 'backend-overdue-detection-after-completion'
-      })
       return 'terlambat'
     }
   }
@@ -259,25 +200,13 @@ function calculateEnhancedStatus(
   // Priority 6: Check if any items have been picked up
   if (baseStatus === 'active') {
     // Use server flag if available, fallback to item parsing
-    const pickupDetected = hasPickup ?? (items?.some(item => item.jumlahDiambil > 0) || false)
-
-    log.debug('calculateEnhancedStatus', 'Backend: Checking pickup status', {
-      hasPickupFlag: hasPickup,
-      itemsAvailable: !!items?.length,
-      itemBasedPickup: items?.some(item => item.jumlahDiambil > 0),
-      finalPickupDetected: pickupDetected
-    })
+    const pickupDetected = hasPickup ?? (items?.some((item) => item.jumlahDiambil > 0) || false)
 
     if (pickupDetected) {
-      log.info('calculateEnhancedStatus', 'Backend: Pickup detected, changing to diambil', {
-        result: 'diambil',
-        source: hasPickup !== undefined ? 'server-flag' : 'item-parsing'
-      })
       return 'diambil'
     }
   }
 
-  log.debug('calculateEnhancedStatus', 'Backend: Using base status', { result: baseStatus })
   return baseStatus
 }
 
@@ -740,7 +669,7 @@ export class TransaksiService {
       const enhancedStatus = calculateEnhancedStatus(
         transaction.status as TransactionStatus,
         transaction.items,
-        transaction.tglSelesai?.toISOString()
+        transaction.tglSelesai?.toISOString(),
       )
 
       return {
@@ -842,10 +771,6 @@ export class TransaksiService {
     totalTerlambat: number
     totalCancelled: number
   }> {
-    const log = logger.child('transaksiService')
-
-    log.debug('getTransaksiStats', 'Starting backend stats calculation')
-
     // Fetch all transactions with basic data needed for status calculation
     const transactions = await this.prisma.transaksi.findMany({
       select: {
@@ -857,14 +782,9 @@ export class TransaksiService {
           select: {
             jumlahDiambil: true,
             statusKembali: true,
-          }
-        }
-      }
-    })
-
-    log.debug('getTransaksiStats', 'Backend: Fetched transactions for stats', {
-      totalTransactions: transactions.length,
-      transactionIds: transactions.map(t => ({ id: t.id, kode: t.kode, status: t.status }))
+          },
+        },
+      },
     })
 
     const result = {
@@ -876,29 +796,12 @@ export class TransaksiService {
     }
 
     // Apply enhanced status calculation to each transaction
-    transactions.forEach((transaction, index) => {
-      log.debug('getTransaksiStats', `Backend: Processing transaction ${index + 1}/${transactions.length}`, {
-        transactionId: transaction.id,
-        kode: transaction.kode,
-        originalStatus: transaction.status,
-        hasItems: !!transaction.items?.length,
-        itemsData: transaction.items?.map(item => ({
-          jumlahDiambil: item.jumlahDiambil,
-          statusKembali: item.statusKembali
-        }))
-      })
-
+    transactions.forEach((transaction) => {
       const enhancedStatus = calculateEnhancedStatus(
         transaction.status as TransactionStatus,
         transaction.items,
-        transaction.tglSelesai?.toISOString()
+        transaction.tglSelesai?.toISOString(),
       )
-
-      log.debug('getTransaksiStats', `Backend: Enhanced status calculated for ${transaction.kode}`, {
-        originalStatus: transaction.status,
-        enhancedStatus,
-        transformation: transaction.status !== enhancedStatus ? 'CHANGED' : 'UNCHANGED'
-      })
 
       switch (enhancedStatus) {
         case 'active':
@@ -916,15 +819,6 @@ export class TransaksiService {
         case 'cancelled':
           result.totalCancelled++
           break
-      }
-    })
-
-    log.info('getTransaksiStats', 'Backend: Final stats calculated', {
-      result,
-      totalProcessed: transactions.length,
-      mapping: {
-        'selesai': result.totalSelesai,
-        'terlambat': result.totalTerlambat
       }
     })
 

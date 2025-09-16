@@ -6,8 +6,6 @@ import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 import { Search } from 'lucide-react'
 import { statusConfig } from '../../lib/constants/uiConfig'
-import { logger } from '@/services/logger'
-import { useEffect } from 'react'
 
 interface TransactionTabsProps {
   activeTab: TransactionStatus | 'all'
@@ -98,34 +96,7 @@ export function TransactionTabs({
   onSearchChange,
   counts,
 }: TransactionTabsProps) {
-  const log = logger.child('TransactionTabs')
   const tabConfigs = getTabConfiguration()
-
-  // Enhanced logging for count data and tab changes
-  useEffect(() => {
-    log.debug('render', 'Count data received', {
-      counts,
-      activeTab,
-      totalSum: Object.values(counts).reduce((sum, count) => sum + count, 0),
-      timestamp: Date.now()
-    })
-  }, [counts, activeTab, log])
-
-  // Log tab configuration mapping
-  useEffect(() => {
-    log.debug('configuration', 'Tab configuration loaded', {
-      tabConfigs: tabConfigs.map(config => ({
-        value: config.value,
-        label: config.label,
-        countKey: config.countKey,
-        displayCount: counts[config.countKey]
-      })),
-      mapping: {
-        'selesai': 'completed',
-        'terlambat': 'overdue'
-      }
-    })
-  }, [tabConfigs, counts, log])
 
   return (
     <div className="space-y-4">

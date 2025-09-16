@@ -2,9 +2,6 @@
   "permissions": {
     "allow": [
       "Read",
-      "Write",
-      "Edit",
-      "MultiEdit",
       "Glob",
       "Grep",
       "TodoWrite",

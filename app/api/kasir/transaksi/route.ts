@@ -18,7 +18,6 @@ import {
 } from '@/features/kasir/lib/validation/kasirSchema'
 import { ZodError } from 'zod'
 import { createSuccessResponse } from '@/features/kasir/types'
-import { logger } from '@/services/logger'
 
 export async function POST(request: NextRequest) {
   try {
@@ -113,8 +112,6 @@ export async function POST(request: NextRequest) {
     )
     return NextResponse.json(response, { status })
   } catch (error) {
-    console.error('POST /api/kasir/transaksi error:', error)
-
     // Handle validation errors
     if (error instanceof ZodError) {
       return NextResponse.json(
@@ -207,15 +204,10 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
-  const log = logger.child('transaksi-api')
-  const timer = logger.startTimer('transaksi-api', 'GET', 'List transactions with pickup detection')
-
   try {
     // Authentication check
     const { userId } = await auth()
     if (!userId) {
-      log.warn('GET', 'Unauthorized access attempt', { userId })
-      timer.end('Authentication failed')
       return NextResponse.json(
         {
           success: false,
@@ -225,7 +217,6 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    log.info('GET', 'Transaction list request started', { userId })
 
     // Parse query parameters
     const { searchParams } = new URL(request.url)
@@ -239,10 +230,6 @@ export async function GET(request: NextRequest) {
       dateEnd: searchParams.get('dateEnd') || undefined
     }
 
-    log.debug('GET', 'Query parameters parsed', {
-      queryParams,
-      userId
-    })
 
     // Validate query parameters
     const validatedQuery = transaksiQuerySchema.parse(queryParams)
@@ -250,35 +237,16 @@ export async function GET(request: NextRequest) {
     // Initialize transaksi service
     const transaksiService = new TransaksiService(prisma, userId)
 
-    // Get transaksi list with performance tracking
-    const serviceTimer = logger.startTimer('transaksi-api', 'GET', 'Service getTransaksiList')
+    // Get transaksi list
     const result = await transaksiService.getTransaksiList(validatedQuery)
-    serviceTimer.end('Service call completed')
 
-    log.info('GET', 'Transactions fetched successfully', {
-      count: result.data.length,
-      hasItemData: result.data.every(t => t.items.length > 0),
-      userId
-    })
 
     // Format response data with pickup detection
-    const processingTimer = logger.startTimer('transaksi-api', 'GET', 'Data processing and pickup detection')
-
     const formattedData = {
       data: result.data.map(transaksi => {
         // Calculate pickup status server-side for performance
         const hasPickup = transaksi.items.some(item => (item.jumlahDiambil || 0) > 0)
 
-        log.debug('GET', 'Processing transaction pickup status', {
-          transactionId: transaksi.id,
-          itemCount: transaksi.items.length,
-          hasPickup,
-          pickupDetails: transaksi.items.map(item => ({
-            itemId: item.id,
-            jumlah: item.jumlah,
-            jumlahDiambil: item.jumlahDiambil || 0
-          }))
-        })
 
         return {
           id: transaksi.id,
@@ -323,35 +291,21 @@ export async function GET(request: NextRequest) {
       summary: result.summary
     }
 
-    processingTimer.end('Data processing completed')
 
     const { response, status } = createSuccessResponse(
       formattedData,
       'Data transaksi berhasil diambil'
     )
 
-    timer.end('Transaction list request completed successfully')
-
-    log.info('GET', 'Response sent successfully', {
-      dataCount: formattedData.data.length,
-      hasPickupFlags: formattedData.data.filter(t => t.hasPickup).length,
-      userId
-    })
 
     return NextResponse.json(response, { status })
   } catch (error) {
     // Get userId from auth for error logging (may be null if auth fails)
     const { userId: errorUserId } = await auth().catch(() => ({ userId: null }))
 
-    timer.end('Transaction list request failed')
-    log.error('GET', 'Transaction list request failed', error as Error)
 
     // Handle validation errors
     if (error instanceof ZodError) {
-      log.warn('GET', 'Validation error in query parameters', {
-        errors: error.issues,
-        userId: errorUserId
-      })
       return NextResponse.json(
         {
           success: false,
@@ -371,10 +325,6 @@ export async function GET(request: NextRequest) {
     // Handle database connection errors
     if (error && typeof error === 'object' && 'message' in error &&
         typeof error.message === 'string' && error.message.includes('connection pool')) {
-      log.error('GET', 'Database connection timeout', {
-        error: error.message,
-        userId: errorUserId
-      })
       return NextResponse.json(
         {
           success: false,
@@ -388,11 +338,6 @@ export async function GET(request: NextRequest) {
     }
 
     // Generic server error
-    log.error('GET', 'Unexpected server error', {
-      error: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : undefined,
-      userId: errorUserId
-    })
     return NextResponse.json(
       {
         success: false,

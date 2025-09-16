@@ -18,7 +18,6 @@ import {
 import { TransactionCodeGenerator } from '@/features/kasir/lib/utils/codeGenerator'
 import { ZodError } from 'zod'
 import { requirePermission, withRateLimit } from '@/lib/auth-middleware'
-import { logger } from '@/services/logger'
 
 interface RouteParams {
   params: Promise<{
@@ -42,8 +41,6 @@ interface LegacyRequestBodyType {
 // Unified request body is now handled by UnifiedReturnRequest type from schema
 
 export async function PUT(request: NextRequest, { params }: RouteParams) {
-  // Start API performance monitoring with timeout optimization
-  const apiTimer = logger.startTimer('API', 'PUT-pengembalian', 'total-api-request')
   const requestId = `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 
   // Request deduplication mechanism to prevent multiple identical calls
@@ -59,19 +56,6 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
   let requestBody: LegacyRequestBodyType | UnifiedReturnRequest | null = null
 
   try {
-    // Log API request start with deduplication tracking (CRITICAL: Track multiple calls)
-    logger.info('API', 'PUT-pengembalian', 'API request started', {
-      requestId,
-      timestamp: new Date().toISOString(),
-      userAgent,
-      contentLength,
-      clientIP,
-      transactionCode: (await params).kode,
-      deduplicationInfo: {
-        clientFingerprint: `${clientIP}-${userAgent}-${contentLength}`,
-        potentialDuplicate: false, // Will be enhanced in future iterations
-      },
-    })
 
     // Rate limiting check with timing
     const rateLimitResult = await withRateLimit(`return-${clientIP}`, 10, 60000)
@@ -137,15 +121,6 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
           !('conditions' in firstItem)
         ) {
           isLegacyFormat = true
-          logger.info(
-            'API',
-            'PUT-pengembalian',
-            'Legacy format detected - converting to unified format',
-            {
-              requestId,
-              itemCount: body.items.length,
-            },
-          )
 
           // Convert legacy format to unified format
           const legacyBody = body as LegacyRequestBodyType
@@ -181,26 +156,8 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         throw zodError
       }
 
-      logger.info('API', 'PUT-pengembalian', 'Unified validation successful', {
-        requestId,
-        format: isLegacyFormat ? 'legacy' : 'unified',
-        itemCount: validatedData.items.length,
-        totalConditions: validatedData.items.reduce((sum, item) => sum + item.conditions.length, 0),
-      })
     } catch (validationError) {
       if (validationError instanceof ZodError) {
-        logger.error('API', 'PUT-pengembalian', 'Unified validation failed', {
-          requestId,
-          transactionCode: kode,
-          format: isLegacyFormat ? 'legacy' : 'unified',
-          validationErrors: validationError.issues.map((err) => ({
-            field: err.path.join('.'),
-            message: err.message,
-            code: err.code,
-          })),
-          requestBody: requestBody,
-        })
-
         throw validationError // Re-throw to be handled by main catch block
       }
       throw validationError
@@ -221,14 +178,6 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     // TSK-24 Phase 1: Use unified processing for all scenarios
     const result = await unifiedReturnService.processUnifiedReturn(transaksiId, validatedData)
 
-    logger.info('API', 'PUT-pengembalian', 'Unified return processing completed', {
-      requestId,
-      format: isLegacyFormat ? 'legacy' : 'unified',
-      success: result.success,
-      totalPenalty: result.penalty,
-      processedItems: result.processedItems.length,
-      totalConditions: validatedData.items.reduce((sum, item) => sum + item.conditions.length, 0),
-    })
 
     // Handle structured error responses from service (CRITICAL FIX - proper HTTP codes)
     if (!result.success) {
@@ -300,7 +249,6 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       }
     }
 
-    const totalApiDuration = apiTimer.end('API request completed successfully')
 
     // Optimized response with compression and performance headers
     const response = NextResponse.json(
@@ -316,7 +264,6 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
           'Cache-Control': 'no-cache, no-store, must-revalidate',
           'Content-Type': 'application/json; charset=utf-8',
           'X-Request-ID': requestId,
-          'X-Processing-Time': `${totalApiDuration}ms`,
           'X-Performance-Optimized': 'true',
           // CORS optimization for frontend
           'Access-Control-Allow-Origin': '*',
@@ -337,25 +284,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     // Clear timeout on error
     clearTimeout(timeoutId)
 
-    // Capture error timing and details
-    const totalApiDuration = apiTimer.end('API request failed')
     const { kode } = await params
-
-    // Enhanced error logging with performance context
-    logger.error('API', 'PUT-pengembalian', 'API request failed', {
-      requestId,
-      transactionCode: kode,
-      totalApiDuration,
-      error:
-        error instanceof Error
-          ? {
-              name: error.name,
-              message: error.message,
-              stack: error.stack,
-            }
-          : error,
-      timestamp: new Date().toISOString(),
-    })
 
     console.error(`PUT /api/kasir/transaksi/${kode}/pengembalian error:`, error)
 

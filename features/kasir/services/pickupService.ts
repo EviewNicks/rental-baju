@@ -78,7 +78,6 @@ export class PickupService {
       }
 
     } catch (error) {
-      console.error('Error validating pickup request:', error)
       return {
         valid: false,
         errors: ['Terjadi kesalahan saat validasi pickup']
@@ -192,13 +191,7 @@ export class PickupService {
       }
 
     } catch (error) {
-      console.error('Error processing pickup:', error)
-      return {
-        success: false,
-        transaction: {} as TransaksiWithDetails,
-        message: 'Gagal memproses pickup',
-        error: error instanceof Error ? error.message : 'Unknown error'
-      }
+      throw new Error('Gagal memproses pickup')
     }
   }
 
@@ -256,7 +249,6 @@ export class PickupService {
       // Only return affects transaction status (active -> selesai)
 
     } catch (error) {
-      console.error('Error updating transaction pickup status:', error)
       // Don't throw here as this is a secondary operation
     }
   }
@@ -323,7 +315,6 @@ export class PickupService {
       }
 
     } catch (error) {
-      console.error('Error getting pickup summary:', error)
       return null
     }
   }

@@ -7,11 +7,7 @@ import { Package } from 'lucide-react'
 import { useMaterials } from '@/features/manage-product/hooks/useMaterials'
 import type { Material } from '@/features/manage-product/types/material'
 import { MaterialCostDisplay } from './MaterialCostDisplay'
-import { logger } from '@/services/logger'
-import { useEffect, useMemo } from 'react'
-
-// Component-specific logger for material selector
-const selectorLogger = logger.child('MaterialSelector')
+import { useMemo } from 'react'
 
 // Constants for select values
 const NO_MATERIAL_VALUE = 'none'
@@ -36,12 +32,7 @@ export function MaterialSelector({
   const { data: materialsData, isLoading, error } = useMaterials({ limit: 100 })
   const materials = useMemo(() => materialsData?.materials || [], [materialsData?.materials])
   
-  // Log only critical errors
-  useEffect(() => {
-    if (error) {
-      selectorLogger.error('materialsLoadError', 'Failed to load materials for selector', error)
-    }
-  }, [error])
+  // Error handling managed by React Query
   
   const selectedMaterial = materials.find((m: Material) => m.id === selectedMaterialId)
   

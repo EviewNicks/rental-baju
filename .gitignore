@@ -56,3 +56,4 @@ __tests__/playwright/.clerk/
 
 # clerk configuration (can include secrets)
 /.clerk/
+

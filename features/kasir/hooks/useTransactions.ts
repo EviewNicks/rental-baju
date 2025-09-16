@@ -6,7 +6,6 @@ import { queryKeys } from '@/lib/react-query'
 import { kasirApi } from '../api'
 import type { TransactionFilters } from '../types'
 import type { TransactionStatus, TransaksiQueryParams } from '../types'
-import { logger } from '@/services/logger'
 
 interface UseTransactionsOptions {
   enabled?: boolean
@@ -53,30 +52,13 @@ export function useTransactions(options: UseTransactionsOptions = {}) {
 
   // Transform API data to match component expectations
   const transactions = useMemo(() => {
-    const log = logger.child('useTransactions')
-
     // API returns TransaksiListResponse structure
     if (!transactionData?.data) {
-      log.debug('transactions', 'No transaction data available', {
-        hasData: !!transactionData,
-        dataLength: transactionData?.data?.length || 0
-      })
       return []
     }
 
-    log.info('transactions', 'Processing transactions for display', {
-      transactionCount: transactionData.data.length
-    })
-
     return transactionData.data.map((transaction) => {
       const itemsData = transaction.items || []
-
-      log.debug('transform', 'Processing transaction with backend-enhanced status', {
-        transactionId: transaction.id,
-        transactionCode: transaction.kode,
-        enhancedStatus: transaction.status,
-        itemsLength: itemsData.length
-      })
 
       return {
         id: transaction.id,
@@ -103,16 +85,8 @@ export function useTransactions(options: UseTransactionsOptions = {}) {
 
   // Calculate transaction counts from summary
   const counts = useMemo(() => {
-    const log = logger.child('useTransactions')
-
-    log.debug('counts', 'Starting frontend count calculation from API summary')
-
     // API returns summary in TransaksiListResponse
     if (!transactionData?.summary) {
-      log.debug('counts', 'No summary data available from API', {
-        hasTransactionData: !!transactionData,
-        hasSummary: !!transactionData?.summary
-      })
       return {
         active: 0,
         diambil: 0,
@@ -125,13 +99,7 @@ export function useTransactions(options: UseTransactionsOptions = {}) {
 
     const { summary } = transactionData
 
-    log.debug('counts', 'Frontend: Processing raw API summary data', {
-      rawSummary: summary,
-      summaryKeys: Object.keys(summary || {}),
-      summaryValues: Object.values(summary || {})
-    })
-
-    const calculatedCounts = {
+    return {
       active: summary?.totalActive || 0,
       diambil: summary?.totalDiambil || 0,
       completed: summary?.totalSelesai || 0,
@@ -139,19 +107,6 @@ export function useTransactions(options: UseTransactionsOptions = {}) {
       cancelled: summary?.totalCancelled || 0,
       total: (summary?.totalActive || 0) + (summary?.totalDiambil || 0) + (summary?.totalSelesai || 0) + (summary?.totalTerlambat || 0) + (summary?.totalCancelled || 0),
     }
-
-    log.info('counts', 'Frontend: Final count calculation completed', {
-      apiSummaryRaw: summary,
-      frontendCounts: calculatedCounts,
-      mapping: {
-        'totalSelesai → completed': summary?.totalSelesai,
-        'totalTerlambat → overdue': summary?.totalTerlambat
-      },
-      calculatedTotal: calculatedCounts.total,
-      individualSum: calculatedCounts.active + calculatedCounts.diambil + calculatedCounts.completed + calculatedCounts.overdue + calculatedCounts.cancelled
-    })
-
-    return calculatedCounts
   }, [transactionData])
 
   const updateFilters = (newFilters: Partial<TransactionFilters>) => {
