@@ -8,6 +8,7 @@ import type {
   MultiConditionPenaltyResult,
   EnhancedReturnRequest,
   ConditionValidationResult,
+  ConditionCategory,
 } from '../types'
 import { kasirApi } from '../api'
 import { kasirLogger } from '../lib/logger'
@@ -189,7 +190,13 @@ export function useMultiConditionReturn(): UseMultiConditionReturnResult {
       const totalReturned = condition.conditions.reduce((sum, c) => sum + (c.jumlahKembali || 0), 0)
       const remaining = condition.totalQuantity - totalReturned
       const hasValidConditions = condition.conditions.every(
-        (c) => c.kondisiAkhir && c.jumlahKembali !== undefined,
+        (c) =>
+          c.kondisiAkhir &&
+          c.kondisiAkhir.length >= 4 &&
+          c.jumlahKembali !== undefined &&
+          c.jumlahKembali > 0 &&
+          c.conditionCategory &&
+          (!c.useManualPricing || (c.manualPrice !== undefined && c.manualPrice >= 0)),
       )
 
       let error: string | undefined
@@ -480,7 +487,10 @@ export function useMultiConditionReturn(): UseMultiConditionReturnResult {
             conditions: condition.conditions.map(cond => ({
               kondisiAkhir: cond.kondisiAkhir,
               jumlahKembali: cond.jumlahKembali,
-              modalAwal: cond.modalAwal
+              modalAwal: cond.modalAwal,
+              conditionCategory: cond.conditionCategory,
+              manualPrice: cond.manualPrice,
+              useManualPricing: cond.useManualPricing
             }))
           }
         })
@@ -584,15 +594,27 @@ export function useMultiConditionReturn(): UseMultiConditionReturnResult {
             kondisiAkhir: c.kondisiAkhir,
             jumlahKembali: c.jumlahKembali,
             modalAwal: c.modalAwal,
+            conditionCategory: c.conditionCategory,
+            manualPrice: c.manualPrice,
+            useManualPricing: c.useManualPricing,
           })),
         }
       } else {
         // Single-condition format (backward compatible)
-        const singleCondition = condition.conditions[0] || { kondisiAkhir: '', jumlahKembali: 0 }
+        const singleCondition = condition.conditions[0] || {
+          kondisiAkhir: '',
+          jumlahKembali: 0,
+          conditionCategory: 'BAIK' as ConditionCategory,
+          useManualPricing: false,
+          manualPrice: 0
+        }
         return {
           itemId,
           kondisiAkhir: singleCondition.kondisiAkhir,
           jumlahKembali: singleCondition.jumlahKembali,
+          conditionCategory: singleCondition.conditionCategory,
+          manualPrice: singleCondition.manualPrice,
+          useManualPricing: singleCondition.useManualPricing,
         }
       }
     })
@@ -777,7 +799,13 @@ export function useMultiConditionReturn(): UseMultiConditionReturnResult {
         initialConditions[item.id] = {
           itemId: item.id,
           mode: 'single', // Always starts simple, grows as needed
-          conditions: [{ kondisiAkhir: '', jumlahKembali: item.jumlahDiambil }],
+          conditions: [{
+            kondisiAkhir: '',
+            jumlahKembali: item.jumlahDiambil,
+            conditionCategory: 'BAIK' as ConditionCategory,
+            useManualPricing: false,
+            manualPrice: 0
+          }],
           isValid: false,
           totalQuantity: item.jumlahDiambil,
           remainingQuantity: item.jumlahDiambil,

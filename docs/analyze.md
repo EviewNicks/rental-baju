@@ -1,449 +1,398 @@
-# Analysis Reports Collection
+# Product Condition Input System - Technical Specification
 
-This document contains various analysis reports for the rental management system.
-
----
-
-# Category Management Error Analysis Report
-
-**Analysis Date**: 2025-09-02  
-**Issue**: Category Management functionality failing with DecimalError  
-**Investigation**: Comprehensive architectural analysis using Sequential MCP  
-
-## =� **ROOT CAUSE IDENTIFIED**
-
-The Category Management error is caused by a **database schema inconsistency** where the `totalPendapatan` field was removed from the Product table but service layer code still attempts to access it directly.
-
-## =� **Evidence-Based Analysis**
-
-### **Error Details**
-- **Primary Error**: `[DecimalError] Invalid argument: undefined`
-- **Location**: `features/manage-product/services/categoryService.ts:221`
-- **Frequency**: Recurring on every GET `/api/categories?includeProducts=true` request
-- **Impact**: Complete Category Management functionality failure
-
-### **Stack Trace Analysis**
-```
-Error: [DecimalError] Invalid argument: undefined
-    at categoryService.ts:221:31
-    at Array.map (<anonymous>)
-    at CategoryService.convertPrismaCategoryToCategory (categoryService.ts:207:65)
-    at CategoryService.getCategories (categoryService.ts:136:22)
-    at async GET (app/api/categories/route.ts:37:23)
-
-> 221 |  totalPendapatan: new Decimal(product.totalPendapatan as number),
-     |                   ^
-```
-
-### **Database Schema Investigation**
-
-#### **Current Prisma Schema** ( CORRECT)
-The Product model in `prisma/schema.prisma` does **NOT** include `totalPendapatan` field:
-```prisma
-model Product {
-  id               String          @id @default(uuid())
-  code             String          @unique
-  name             String
-  // ... other fields ...
-  // L totalPendapatan field is NOT present
-}
-```
-
-#### **Migration History** (= KEY EVIDENCE)
-Migration `20250807121000_tsk_24_multi_condition_return` explicitly **DROPPED** the field:
-```sql
--- You are about to drop the column `totalPendapatan` on the `Product` table. 
--- All the data in the column will be lost.
-DROP COLUMN "totalPendapatan",
-```
-
-#### **TypeScript Types** (L INCONSISTENT)
-The type definitions still expect the field to exist:
-```typescript
-// features/manage-product/types/index.ts:32
-export interface BaseProduct {
-  // ... other fields ...
-  totalPendapatan: any // Prisma Decimal (server-side only) L Field removed from DB
-}
-```
-
-## = **Root Cause Analysis**
-
-### **Timeline of Changes**
-1. **Original Design**: `totalPendapatan` was stored as a direct field in the Product table
-2. **Architecture Decision**: Field was identified as redundant and should be calculated from transaction history
-3. **Database Migration** (TSK-24): Field was dropped from the database schema
-4. **Code Update Gap**: Service layer conversion functions were not updated to handle the removed field
-5. **Merge Conflict**: Commit `c104627` merged changes that maintained the old field references
-
-### **Technical Debt Accumulation**
-The issue manifested because:
-- **Database**: Field removed (correct)
-- **Types**: Field still defined (incorrect)
-- **Service Layer**: Field still accessed directly (incorrect)  
-- **Frontend**: Field still expected (incorrect)
-
-## =� **Impact Assessment**
-
-### **Affected Components**
-| Component | Status | Impact Level |
-|-----------|--------|--------------|
-| **Category Management UI** | L **BROKEN** | **CRITICAL** |
-| **Product listing with categories** | L **BROKEN** | **HIGH** |
-| **Category API endpoints** | L **BROKEN** | **HIGH** |
-| **Color management** | L **LIKELY AFFECTED** | **HIGH** |
-| **Material management** |  **WORKING** | **NONE** |
-
-### **Business Impact**
-- **Producer Role**: Cannot manage product categories
-- **Data Integrity**: Category relationships cannot be displayed
-- **User Experience**: ProductManagementPage category tab non-functional
-- **Development Workflow**: Blocked feature development in product management
-
-## =� **Comprehensive Fix Action Plan**
-
-### **IMMEDIATE FIXES (Priority 1)**
-
-#### **1. Update categoryService.ts**
-**File**: `features/manage-product/services/categoryService.ts:221`
-**Action**: Replace direct field access with calculated value
-
-```typescript
-// L CURRENT (BROKEN)
-totalPendapatan: new Decimal(product.totalPendapatan as number),
-
-//  FIXED (Calculate from transaction history or default to 0)
-totalPendapatan: new Decimal(0), // TODO: Calculate from transaction history
-```
-
-#### **2. Update colorService.ts** 
-**File**: `features/manage-product/services/colorService.ts`
-**Action**: Same fix as categoryService.ts
-
-```typescript
-// Apply same totalPendapatan fix
-totalPendapatan: new Decimal(0), // TODO: Calculate from transaction history
-```
-
-#### **3. Update productService.ts**
-**File**: `features/manage-product/services/productService.ts`
-**Action**: Verify conversion function handles missing field correctly
-
-### **SYSTEMATIC FIXES (Priority 2)**
-
-#### **4. Implement Revenue Calculation**
-**Location**: Create `features/kasir/lib/revenueCalculator.ts`
-**Purpose**: Calculate `totalPendapatan` from transaction history
-
-```typescript
-// Suggested implementation
-export function calculateTotalRevenue(productId: string): Promise<Decimal> {
-  // Query transaction items for this product
-  // Sum all completed rental revenues  
-  // Return calculated total
-}
-```
-
-#### **5. Update Type Definitions**
-**File**: `features/manage-product/types/index.ts`
-**Action**: Mark field as calculated, not stored
-
-```typescript
-export interface BaseProduct {
-  // ... other fields ...
-  totalPendapatan?: any // Calculated field, not stored in DB
-}
-```
-
-#### **6. Fix Frontend Components**
-**Files**:
-- `features/manage-product/components/products/ProductTable.tsx`
-- `features/manage-product/components/products/ProductGrid.tsx`
-- `features/manage-product/components/product-detail/ProductInfoSection.tsx`
-
-**Action**: Handle undefined `totalPendapatan` gracefully or fetch calculated value
-
-### **TESTING & VALIDATION (Priority 3)**
-
-#### **7. Update Test Data**
-**Files**:
-- `features/manage-product/services/categoryService.test.ts`
-- `features/manage-product/services/productService.test.ts`
-- `features/manage-product/data/mock-products.ts`
-
-**Action**: Update test data to reflect new calculated field approach
-
-#### **8. Integration Testing**
-- Test category listing with products
-- Verify product revenue display
-- Validate API responses
-- Check frontend rendering
-
-##  **Step-by-Step Implementation Guide**
-
-### **Phase 1: Emergency Fix (30 minutes)**
-1. **Apply immediate fixes to stop the errors**:
-   ```bash
-   # Fix categoryService.ts line 221
-   # Fix colorService.ts similar line
-   # Test: yarn app, navigate to Category Management
-   ```
-
-2. **Verify fix works**:
-   - Category Management UI loads without errors
-   - Categories with products display correctly
-   - No more DecimalError in server logs
-
-### **Phase 2: Proper Implementation (2-4 hours)**
-1. **Implement revenue calculation logic**
-2. **Update all affected service layers**
-3. **Fix frontend components**
-4. **Update type definitions**
-
-### **Phase 3: Testing & Documentation (1 hour)**
-1. **Run comprehensive tests**
-2. **Update API documentation**
-3. **Document the architectural change**
-
-## = **Verification Checklist**
-
-### **Success Criteria**
-- [ ] Category Management UI loads without errors
-- [ ] Product listings with categories work correctly
-- [ ] API endpoint `/api/categories?includeProducts=true` returns 200
-- [ ] No DecimalError messages in server logs
-- [ ] Frontend displays product revenue correctly (0 or calculated value)
-
-### **Regression Testing**
-- [ ] Material management still works
-- [ ] Product creation/editing unaffected
-- [ ] Other product-related features functional
-
-## =� **Lessons Learned & Prevention**
-
-### **Process Improvements**
-1. **Schema Migration Checklist**: Include code impact analysis
-2. **Type Safety**: Implement stricter type checking for database fields
-3. **Integration Tests**: Add tests for service layer data conversion
-4. **Documentation**: Update architectural decisions when removing fields
-
-### **Technical Debt Prevention**
-- **Database-Code Sync**: Automated validation between schema and types
-- **Migration Reviews**: Require code review for all schema changes
-- **Calculated Fields**: Clear documentation for derived/calculated data
-
-## =� **Root Cause Summary**
-
-| **Factor** | **Description** | **Responsibility** |
-|------------|-----------------|-------------------|
-| **Primary Cause** | Database field removal without code updates | **Architecture/Migration** |
-| **Contributing Factor** | Merge conflict resolution missed inconsistencies | **Code Review Process** |
-| **Amplifying Factor** | No integration tests for service layer conversions | **Testing Strategy** |
-| **Detection Gap** | Manual testing didn't cover category with products scenario | **QA Process** |
-
-## <� **Conclusion**
-
-The Category Management error is a **classic database-code synchronization issue** caused by incomplete migration follow-through. The `totalPendapatan` field was correctly removed from the database for architectural reasons but the service layer code was not updated accordingly.
-
-**Recovery Path**: The immediate fix is simple (default to 0), but the proper solution requires implementing the intended calculated field approach for product revenue tracking.
-
-**Prevention**: This issue highlights the need for automated schema-code consistency checks and comprehensive integration testing for service layer data transformations.
-
----
-
-**Analysis Completed**: 2025-09-02  
-**Method**: Sequential MCP architectural analysis  
-**Evidence**: Server logs, git history, code analysis, schema comparison  
-**Next Action**: Implement Phase 1 emergency fix followed by Phase 2 proper solution
-
----
-
-# Image Preview Analysis Report
-
-**Date:** 2025-08-18  
-**Issue:** Image preview tidak berfungsi pada ImageUpload component  
-**Analysis Scope:** Local preview vs Supabase upload untuk preview functionality
+**Component Focus**: ReturnProcessPage.tsx (lines 468-483) with UnifiedConditionForm Integration
+**Analysis Date**: 2025-09-16
+**Target Audience**: Senior Developers
 
 ## Executive Summary
 
-**Jawaban Langsung:** **TIDAK**, image preview TIDAK perlu melakukan upload ke Supabase terlebih dahulu. Masalah yang terjadi adalah issue rendering lokal yang dapat diperbaiki dengan solusi sederhana.
+This document provides a comprehensive technical analysis of the product condition input system within the rental return process. The system implements a unified multi-condition architecture that handles both simple single-condition returns and complex multi-condition scenarios through progressive disclosure. The analysis covers the complete data flow from user input through state management to penalty calculation integration.
 
-**Root Cause:** Next.js Image component tidak dapat menangani blob URLs yang dihasilkan oleh FileReader.readAsDataURL()
+## 1. Component Interaction Flow
 
-**Recommended Solution:** Perbaiki conditional rendering untuk handle blob URLs secara lokal (d10 baris kode)
+### 1.1 Primary Component Architecture
 
-## Detailed Analysis
+The product condition input system centers around the interaction between **ReturnProcessPage.tsx** and **UnifiedConditionForm.tsx**, following a unidirectional data flow pattern with React hooks for state management.
 
-### 1. Log Analysis Results
-
-#### Server Log (services/server.log)
-```
-/ The requested resource isn't a valid image for /blob:http://localhost:3000/[uuid] received null
-```
-- **Issue:** Next.js server tidak dapat memproses blob URLs
-- **Frequency:** Multiple occurrences untuk setiap file upload attempt
-- **Impact:** Image preview gagal ditampilkan
-
-#### Client Log (services/client.log)
-```
-Failed to load resource: the server responded with a status of 400 (Bad Request)
-```
-- **Issue:** Browser tidak dapat memuat image resource
-- **Context:** Terjadi bersamaan dengan blob URL errors
-- **Pattern:** Consistent 400 errors untuk image requests
-
-### 2. Code Architecture Analysis
-
-#### Current Implementation Flow
-```
-1. User selects file � FileReader.readAsDataURL() 
-2. Creates blob URL (data:image/jpeg;base64,...) 
-3. Calls onChange(blobURL) 
-4. getValidImageUrl() validates URL 
-5. Next.js Image component renders
-6. Upload to Supabase only happens on form submit
-```
-
-#### Problem Points Identified
-- **ImageUpload.tsx:73** - getValidImageUrl() tidak handle blob URLs
-- **imageValidate.ts:1-17** - Hanya validate http/https/relative paths
-- **Next.js Image component** - Tidak kompatibel dengan blob URLs
-
-### 3. Current File Upload Service Analysis
-
-#### Supabase Integration (fileUploadService.ts)
--  **Upload mechanism:** Working correctly
--  **Error handling:** Comprehensive retry logic
--  **File validation:** Proper schema validation
--  **Path generation:** Unique timestamp-based paths
-- **Usage:** Only triggered on form submission, NOT for preview
-
-#### Key Insight
-Upload ke Supabase sudah berfungsi dengan baik dan hanya dipanggil saat form submit. Preview adalah operasi terpisah yang seharusnya berjalan secara lokal.
-
-## "Keep it Simple" Solution Recommendations
-
-###  Recommended: Fix Local Preview (Simple)
-
-**Approach:** Conditional rendering berdasarkan URL type
+**ReturnProcessPage.tsx (Lines 468-483)**:
 ```typescript
-// Option 1: Update getValidImageUrl function
-export const getValidImageUrl = (imageUrl: string | null | undefined): string => {
-  if (!imageUrl) return '/products/image.png'
-  
-  // Handle blob/data URLs (for preview)
-  if (imageUrl.startsWith('data:') || imageUrl.startsWith('blob:')) {
-    return imageUrl
-  }
-  
-  // Handle absolute URLs
-  if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-    return imageUrl
-  }
-  
-  // Handle relative paths
-  if (!imageUrl.startsWith('/')) {
-    return `/${imageUrl}`
-  }
-  
-  return imageUrl
-}
-
-// Option 2: Conditional rendering in ImageUpload.tsx
-const isPreviewUrl = preview?.startsWith('data:') || preview?.startsWith('blob:')
-return (
-  <div className="w-48 h-48 mx-auto rounded-lg overflow-hidden bg-gray-100">
-    {isPreviewUrl ? (
-      <img
-        src={preview}
-        alt="Preview"
-        className="w-full h-full object-cover"
-      />
-    ) : (
-      <Image
-        src={getValidImageUrl(preview)}
-        alt="Preview"
-        width={192}
-        height={192}
-        className="w-full h-full object-cover"
-      />
-    )}
+{currentStep === 1 && transaction && (
+  <div className="space-y-6">
+    {transaction.items
+      ?.filter((item) => item.jumlahDiambil > 0 && item.statusKembali !== 'lengkap')
+      .map((item) => (
+        <UnifiedConditionForm
+          key={item.id}
+          item={item}
+          value={itemConditions[item.id] || null}
+          onChange={(condition) => handleItemConditionChange(item.id, condition)}
+          disabled={isProcessing}
+          isLoading={isProcessing}
+        />
+      ))}
   </div>
+)}
+```
+
+This implementation demonstrates several key architectural decisions:
+
+1. **Conditional Rendering**: Only renders during step 1 of the return process
+2. **Data Filtering**: Filters items to show only those with `jumlahDiambil > 0` and incomplete return status
+3. **State Binding**: Each form is bound to `itemConditions[item.id]` for individual state management
+4. **Callback Pattern**: Uses `handleItemConditionChange` for centralized state updates
+
+### 1.2 Event Handling Chain
+
+The event flow follows this precise sequence:
+
+1. **User Input**: User modifies condition data in UnifiedConditionForm
+2. **Form Validation**: Internal validation triggers within UnifiedConditionForm
+3. **Callback Execution**: `onChange` prop fires with updated condition data
+4. **Handler Processing**: `handleItemConditionChange` processes the update (lines 233-279)
+5. **State Update**: `setItemCondition` updates the global state
+6. **Re-render Cascade**: React re-renders affected components with new state
+
+**handleItemConditionChange Implementation (Lines 233-279)**:
+```typescript
+const handleItemConditionChange = useCallback(
+  (itemId: string, condition: any) => {
+    kasirLogger.returnProcess.debug('handleItemConditionChange', 'Item condition change requested - ENTRY', {
+      itemId,
+      conditionMode: condition?.mode,
+      conditionCount: condition?.conditions?.length || 0,
+      isValid: condition?.isValid,
+      totalQuantity: condition?.totalQuantity,
+    })
+
+    if (!condition || !itemId) {
+      kasirLogger.returnProcess.warn('handleItemConditionChange', 'Invalid parameters', {
+        itemId, transactionId: transaction?.kode
+      })
+      return
+    }
+
+    setItemCondition(itemId, condition)
+  },
+  [setItemCondition, transaction?.kode],
 )
 ```
 
-**Benefits:**
-- � Instant preview (no network delay)
-- =� No storage costs untuk preview
-- =� Minimal code changes (5-10 lines)
-- <� Maintains current architecture
--  Follows "Keep it Simple" principle
+### 1.3 State Management Architecture
 
-### L Not Recommended: Upload to Supabase for Preview
+The system utilizes the **useMultiConditionReturn** hook for centralized state management. This hook provides:
 
-**Why avoid this approach:**
-- Adds unnecessary complexity
-- Requires new API endpoints
-- Network latency untuk preview
-- Additional storage costs
-- Complex cleanup logic needed
-- Violates "Keep it Simple" principle
+- **itemConditions**: `Record<string, EnhancedItemCondition>` - Core state container
+- **setItemCondition**: State update function with validation
+- **validation**: Real-time form validation state
+- **penaltyCalculation**: Calculated penalty results
 
-## Implementation Plan
-
-### Phase 1: Quick Fix (Immediate - d30 minutes)
-1. Update `getValidImageUrl()` function to handle blob URLs
-2. Test with existing ImageUpload component
-3. Verify preview functionality works
-
-### Phase 2: Enhanced Solution (Optional - d60 minutes)
-1. Implement conditional rendering approach
-2. Add proper error boundaries
-3. Update unit tests
-
-## Technical Specifications
-
-### File Changes Required
-- `features/manage-product/lib/utils/imageValidate.ts` (5 lines)
-- OR `features/manage-product/components/products/ImageUpload.tsx` (10 lines)
-
-### Testing Strategy
-```bash
-# Test local preview
-1. Select image file
-2. Verify preview displays immediately
-3. Confirm blob URL is generated
-4. Test form submission still uploads to Supabase
-
-# Test error cases
-1. Invalid file types
-2. Large files (>5MB)
-3. Network disconnection during form submit
+**Hook Integration Pattern**:
+```typescript
+const {
+  itemConditions,
+  setItemCondition,
+  penaltyCalculation,
+  isProcessing,
+  // ... other state and actions
+} = useMultiConditionReturn()
 ```
 
-## Risk Assessment
+## 2. Data Structure Analysis
 
-| Risk Factor | Probability | Impact | Mitigation |
-|-------------|-------------|---------|-------------|
-| Local preview failure | Low | Medium | Fallback to placeholder image |
-| Browser compatibility | Very Low | Low | Modern browsers support blob URLs |
-| Performance impact | None | None | Local operation only |
-| Upload functionality break | None | None | Separate from preview logic |
+### 2.1 EnhancedItemCondition Interface
+
+The core data structure for individual item conditions follows this TypeScript interface:
+
+```typescript
+export interface EnhancedItemCondition {
+  itemId: string                    // Unique identifier linking to TransaksiItem
+  mode: 'single' | 'multi'         // Internal mode tracking (simplified)
+  conditions: ConditionSplit[]      // Array of condition entries
+  isValid: boolean                  // Validation state
+  totalQuantity: number             // Total items originally taken
+  remainingQuantity: number         // Items not yet returned
+  validationError?: string          // Error message if invalid
+}
+```
+
+**Key Design Principles**:
+
+1. **Unified Structure**: All returns use the same interface, whether single or multi-condition
+2. **Validation Integration**: Built-in validation state prevents invalid submissions
+3. **Quantity Tracking**: Maintains both total and remaining quantities for accurate calculation
+4. **Error Handling**: Embedded error messages for immediate user feedback
+
+### 2.2 ConditionSplit Structure
+
+Individual condition entries within the `conditions` array follow this pattern:
+
+```typescript
+export interface ConditionSplit {
+  kondisiAkhir: string          // Condition description (required, 4-500 chars)
+  jumlahKembali: number         // Quantity being returned in this condition
+  modalAwal?: number            // Optional override for penalty calculation
+  penaltyAmount?: number        // Calculated penalty (output only)
+}
+```
+
+### 2.3 itemConditions Record Management
+
+The global state maintains a `Record<string, EnhancedItemCondition>` structure:
+
+```typescript
+const [itemConditions, setItemConditions] = useState<Record<string, EnhancedItemCondition>>({})
+```
+
+**Key Management Features**:
+
+1. **Dynamic Keys**: Uses `item.id` as keys for direct item access
+2. **Lazy Initialization**: Conditions are created on first user interaction
+3. **Null Handling**: Gracefully handles missing conditions with `|| null` fallbacks
+4. **State Persistence**: Maintains state across component re-renders
+
+## 3. Business Rules & Validation
+
+### 3.1 Real-time Validation Logic
+
+The UnifiedConditionForm implements comprehensive validation through the `validation` computed property (lines 65-123):
+
+```typescript
+const validation = useMemo((): ConditionValidationResult => {
+  const totalReturned = currentCondition.conditions.reduce(
+    (sum, c) => sum + (c.jumlahKembali || 0), 0
+  )
+  const remaining = currentCondition.totalQuantity - totalReturned
+  const hasValidConditions = currentCondition.conditions.every(
+    (c) =>
+      c.kondisiAkhir &&
+      c.kondisiAkhir.length >= 4 &&
+      c.kondisiAkhir.length <= 500 &&
+      c.jumlahKembali !== undefined &&
+      c.jumlahKembali > 0,
+  )
+
+  let error: string | undefined
+
+  if (totalReturned > currentCondition.totalQuantity) {
+    error = `Total ${totalReturned} melebihi maksimal ${currentCondition.totalQuantity} unit`
+  } else if (totalReturned === 0) {
+    error = 'Minimal harus mengembalikan 1 unit atau tandai sebagai hilang'
+  } else if (!hasValidConditions) {
+    error = 'Semua kondisi harus dipilih'
+  }
+
+  return {
+    isValid: !error,
+    remaining,
+    totalReturned,
+    maxAllowed: currentCondition.totalQuantity,
+    error,
+    warnings: []
+  }
+}, [currentCondition])
+```
+
+### 3.2 Validation Constraints
+
+**Quantity Constraints**:
+- Minimum return: 1 unit
+- Maximum return: `item.jumlahDiambil` (original pickup quantity)
+- Total across conditions cannot exceed maximum
+
+**Condition Description Constraints**:
+- Minimum length: 4 characters
+- Maximum length: 500 characters
+- Required field (cannot be empty)
+
+**Business Logic Constraints**:
+- Each condition must have a positive quantity
+- Sum of all condition quantities must not exceed total
+- At least one condition must be specified
+
+### 3.3 Error Handling Mechanisms
+
+The system implements multiple layers of error handling:
+
+1. **Input Validation**: Real-time validation as user types
+2. **State Validation**: Validation before state updates
+3. **Submission Validation**: Final validation before processing
+4. **Server Validation**: Backend validation with error propagation
+
+**Error Display Pattern**:
+```typescript
+{validation.error && (
+  <Alert variant="destructive">
+    <AlertCircle className="h-4 w-4" />
+    <AlertDescription>{validation.error}</AlertDescription>
+  </Alert>
+)}
+```
+
+## 4. Integration Points
+
+### 4.1 API Integration Architecture
+
+The system integrates with backend services through multiple API endpoints:
+
+**Primary Integration Endpoint**:
+```typescript
+kasirApi.calculateEnhancedPenalties(transaction.kode, apiRequest)
+```
+
+**Data Flow Sequence**:
+1. User completes condition input
+2. `calculatePenalties()` triggered from useMultiConditionReturn
+3. `convertToApiRequest()` transforms state to API format
+4. Backend processes penalty calculation
+5. Results updated in `penaltyCalculation` state
+
+### 4.2 State Synchronization Patterns
+
+**setItemCondition Implementation (Lines 230-302)**:
+```typescript
+const setItemCondition = useCallback(
+  (itemId: string, condition: EnhancedItemCondition) => {
+    // Input validation
+    if (!condition || !itemId) {
+      kasirLogger.stateManagement.error('setItemCondition', 'Invalid parameters', {
+        itemId, transactionId: transaction?.kode
+      })
+      return
+    }
+
+    // Calculate validation once
+    const itemValidation = validateItemCondition(condition)
+
+    // Batch state updates to reduce re-renders
+    setItemConditions((prev) => ({
+      ...prev,
+      [itemId]: condition,
+    }))
+
+    // Update global validation state
+    setValidation((prev) => ({
+      ...prev,
+      itemValidations: {
+        ...prev.itemValidations,
+        [itemId]: itemValidation,
+      },
+    }))
+  },
+  [validateItemCondition, transaction?.kode]
+)
+```
+
+**Key Synchronization Features**:
+
+1. **Batched Updates**: Multiple state updates grouped to prevent excessive re-renders
+2. **Validation Coupling**: Condition and validation states updated atomically
+3. **Logging Integration**: Comprehensive logging for debugging and monitoring
+4. **Error Propagation**: Validation errors propagated to global state
+
+### 4.3 Backend Service Integration
+
+**PenaltyCalculator Integration**:
+The system integrates with `PenaltyCalculator` utility for business logic processing:
+
+```typescript
+export interface MultiConditionPenaltyDetails {
+  itemId: string
+  productName: string
+  expectedReturnDate: Date
+  actualReturnDate: Date
+  totalPenalty: number
+  conditionBreakdown: Array<{
+    kondisiAkhir: string
+    quantity: number
+    lateDays: number
+    conditionPenalty: number
+    latePenalty: number
+  }>
+}
+```
+
+**API Request Transformation**:
+```typescript
+const convertToApiRequest = (): EnhancedReturnRequest | null => {
+  if (!transaction || Object.keys(itemConditions).length === 0) return null
+
+  return {
+    items: Object.entries(itemConditions).map(([itemId, condition]) => ({
+      itemId,
+      conditions: condition.conditions.map(c => ({
+        kondisiAkhir: c.kondisiAkhir,
+        jumlahKembali: c.jumlahKembali,
+        modalAwal: c.modalAwal
+      }))
+    })),
+    catatan: '',
+    tglKembali: new Date().toISOString()
+  }
+}
+```
+
+## 5. Performance Considerations
+
+### 5.1 Re-render Optimization
+
+The system implements several performance optimizations:
+
+1. **useCallback Hooks**: Memoized event handlers prevent unnecessary re-renders
+2. **useMemo Validation**: Expensive validation calculations are memoized
+3. **Batched State Updates**: Multiple state changes grouped into single updates
+4. **Selective Re-rendering**: Only affected components re-render on state changes
+
+### 5.2 State Management Efficiency
+
+**Efficient State Structure**:
+- Record-based lookup for O(1) item access
+- Shallow comparison optimizations with React.memo potential
+- Minimal state surface area to reduce update frequency
+
+## 6. Error Recovery and Debugging
+
+### 6.1 Logging Strategy
+
+The system implements comprehensive logging through `kasirLogger`:
+
+```typescript
+kasirLogger.returnProcess.debug('handleItemConditionChange', 'Item condition change requested - ENTRY', {
+  itemId,
+  conditionMode: condition?.mode,
+  conditionCount: condition?.conditions?.length || 0,
+  isValid: condition?.isValid,
+  totalQuantity: condition?.totalQuantity,
+})
+```
+
+**Logging Categories**:
+- `returnProcess`: User interactions and process flow
+- `stateManagement`: State updates and synchronization
+- `validation`: Validation results and errors
+
+### 6.2 Recovery Mechanisms
+
+The system provides several recovery paths:
+
+1. **Reset Process**: `resetProcess()` clears all state for fresh start
+2. **Individual Item Reset**: Users can modify individual item conditions
+3. **Validation Feedback**: Real-time feedback guides users to valid states
+4. **Error Boundaries**: Graceful degradation for unexpected errors
 
 ## Conclusion
 
-**Final Answer:** Image preview dapat dan HARUS ditampilkan tanpa upload ke Supabase terlebih dahulu. Solusi "Keep it Simple" adalah memperbaiki handling blob URLs dalam fungsi validasi atau rendering component.
+The product condition input system demonstrates a sophisticated implementation of unified multi-condition return processing. The architecture successfully balances flexibility with usability, providing a progressive disclosure interface that scales from simple to complex return scenarios while maintaining data integrity and user experience quality.
 
-**Next Steps:**
-1. Implement recommended fix (Option 1 or 2)
-2. Test functionality end-to-end
-3. Monitor for any edge cases
+**Key Strengths**:
+- Unified data model eliminates mode complexity
+- Real-time validation provides immediate feedback
+- Comprehensive logging enables effective debugging
+- Performance optimizations ensure smooth user experience
 
-**Architecture Decision:** Maintain separation antara preview (local) dan upload (Supabase) functionality untuk optimal user experience dan cost efficiency.
+**Integration Points**:
+- Clean separation between UI and business logic
+- Well-defined API contracts for backend integration
+- Robust error handling and recovery mechanisms
+- Scalable state management architecture
 
----
-
-**Analysis Completed:** 2025-08-18  
-**Confidence Level:** High (95%)  
-**Implementation Effort:** Low (d1 hour)  
-**Business Impact:** Immediate improvement in user experience
+This technical foundation supports both current return processing requirements and future feature extensions while maintaining code quality and maintainability standards.

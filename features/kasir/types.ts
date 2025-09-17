@@ -14,6 +14,31 @@ export type ActivityType = 'dibuat' | 'dibayar' | 'diambil' | 'selesai' | 'terla
 export type ReturnStatus = 'belum' | 'sebagian' | 'lengkap'
 export type TransactionStep = 1 | 2 | 3
 
+// New condition categories enum for manual pricing system
+export enum ConditionCategory {
+  BAIK = 'BAIK',
+  KOTOR = 'KOTOR',
+  RUSAK_RINGAN = 'RUSAK_RINGAN',
+  RUSAK_BERAT = 'RUSAK_BERAT',
+  HILANG = 'HILANG'
+}
+
+// Condition category labels for UI display
+export const ConditionCategoryLabels: Record<ConditionCategory, string> = {
+  [ConditionCategory.BAIK]: 'Baik',
+  [ConditionCategory.KOTOR]: 'Kotor',
+  [ConditionCategory.RUSAK_RINGAN]: 'Rusak Ringan',
+  [ConditionCategory.RUSAK_BERAT]: 'Rusak Berat',
+  [ConditionCategory.HILANG]: 'Hilang'
+}
+
+// Penalty system types for new flat + manual pricing structure
+export interface FlatPenaltySettings {
+  latePenaltyAmount: number // Default 20000 (20k flat penalty)
+  enableManualPricing: boolean
+  categoryPriceRanges: Record<ConditionCategory, { min: number; max: number }>
+}
+
 // ==========================================
 // CUSTOMER TYPES
 // ==========================================
@@ -395,6 +420,10 @@ export interface TransaksiResponse extends TransaksiCore {
   catatan?: string
   createdBy: string
   tglKembali?: string // Will be validated against item status in Phase 2
+
+  // New flat penalty system fields
+  flatLatePenalty: number // Default 20000 (20k flat penalty)
+  isLateReturn: boolean // Flag for late return status
 
   // For list endpoint - simplified items with product names (when itemCount is used)
   itemCount?: number
@@ -781,12 +810,17 @@ export function createErrorResponse(
 // RETURN PROCESSING TYPES - Multi-Condition Support (TSK-24)
 // ==========================================
 
-// Multi-condition return support for enhanced return system
+// Multi-condition return support for enhanced return system with manual pricing
 export interface ConditionSplit {
   kondisiAkhir: string
   jumlahKembali: number
   isLostItem?: boolean
   modalAwal?: number
+
+  // New manual pricing fields
+  conditionCategory: ConditionCategory
+  manualPrice?: number
+  useManualPricing: boolean
 }
 
 export interface MultiConditionReturnItem {
@@ -804,6 +838,10 @@ export interface EnhancedReturnRequest {
   items: MultiConditionReturnItem[]
   catatan?: string
   tglKembali?: string
+
+  // New flat penalty system fields
+  applyFlatLatePenalty?: boolean // Whether to apply 20k flat late penalty
+  customLatePenalty?: number // Override default 20k penalty if needed
 }
 
 export type ProcessingMode = 'single-condition' | 'multi-condition' | 'mixed'
@@ -811,19 +849,29 @@ export type ProcessingMode = 'single-condition' | 'multi-condition' | 'mixed'
 export interface MultiConditionPenaltyResult {
   totalPenalty: number
   lateDays?: number
+
+  // New flat penalty system fields
+  flatLatePenalty: number // Always 20k if late
+  conditionPenalties: number // Sum of all manual pricing
+  isLateReturn: boolean
+
   conditionBreakdown: Array<{
     kondisiAkhir: string
+    conditionCategory: ConditionCategory
     quantity: number
     penaltyPerUnit: number
     totalConditionPenalty: number
-    calculationMethod: 'late_fee' | 'modal_awal' | 'none'
+    calculationMethod: 'flat_late' | 'manual_pricing' | 'modal_awal' | 'none'
     description: string
+    manualPrice?: number
+    useManualPricing: boolean
   }>
   breakdown?: Array<{
     itemId: string
     itemName: string
     splitIndex?: number
     kondisiAkhir: string
+    conditionCategory: ConditionCategory
     jumlahKembali: number
     isLostItem: boolean
     latePenalty: number
@@ -831,6 +879,8 @@ export interface MultiConditionPenaltyResult {
     modalAwalUsed?: number
     penaltyAmount: number
     conditionPenalty: number
+    manualPrice?: number
+    useManualPricing: boolean
     totalItemPenalty: number
     calculationMethod: string
     description: string
@@ -846,6 +896,8 @@ export interface MultiConditionPenaltyResult {
     lateItems?: number
     totalItems?: number
     averageConditionsPerItem?: number
+    totalManuallyPriced?: number
+    totalFlatPenalties?: number
   }
   calculationMetadata?: {
     calculatedAt: string
@@ -855,6 +907,8 @@ export interface MultiConditionPenaltyResult {
     hasLateItems: boolean
     itemsProcessed?: number
     conditionSplits?: number
+    usesManualPricing: boolean
+    usesFlatPenalty: boolean
   }
 }
 

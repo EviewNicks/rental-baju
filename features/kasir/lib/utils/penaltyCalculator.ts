@@ -82,6 +82,10 @@ export class PenaltyCalculator {
   private static readonly LOST_ITEM_PENALTY_DAYS = 30 // Equivalent to 30 days penalty
   private static readonly MAX_PENALTY_DAYS = 365 // Maximum penalty days per item
 
+  // New flat penalty system
+  private static readonly FLAT_LATE_PENALTY = 20000 // IDR 20,000 flat penalty for late returns
+  private static readonly ENABLE_MANUAL_PRICING = true // Enable manual pricing system
+
   /**
    * Calculate penalty for late return based on dates
    */
@@ -622,6 +626,201 @@ export class PenaltyCalculator {
   }
 
   /**
+   * Calculate flat penalty for late return transactions
+   * NEW: Flat 20k penalty system instead of per-day calculation
+   */
+  static calculateFlatLatePenalty(
+    expectedDate: Date,
+    actualDate: Date,
+    customAmount?: number
+  ): { isLate: boolean; penalty: number; lateDays: number } {
+    const timeDiff = actualDate.getTime() - expectedDate.getTime()
+    const lateDays = Math.max(0, Math.ceil(timeDiff / (1000 * 60 * 60 * 24)))
+    const isLate = lateDays > 0
+
+    return {
+      isLate,
+      penalty: isLate ? (customAmount || this.FLAT_LATE_PENALTY) : 0,
+      lateDays
+    }
+  }
+
+  /**
+   * Calculate manual pricing penalty for condition categories
+   * NEW: Manual pricing system for condition-based penalties
+   */
+  static calculateManualPricingPenalty(
+    conditionCategory: string,
+    manualPrice: number,
+    quantity: number,
+    useManualPricing: boolean = true
+  ): {
+    penalty: number
+    description: string
+    reasonCode: 'manual_pricing' | 'on_time'
+  } {
+    if (!useManualPricing || manualPrice <= 0) {
+      return {
+        penalty: 0,
+        description: 'Tidak ada penalty kondisi',
+        reasonCode: 'on_time'
+      }
+    }
+
+    const totalPenalty = manualPrice * quantity
+    return {
+      penalty: totalPenalty,
+      description: `Manual pricing untuk kondisi ${conditionCategory}: ${manualPrice.toLocaleString('id-ID')} x ${quantity} unit`,
+      reasonCode: 'manual_pricing'
+    }
+  }
+
+  /**
+   * Calculate enhanced penalty with flat system and manual pricing
+   * NEW: Main method for new penalty calculation system
+   */
+  static calculateEnhancedPenalty(
+    item: {
+      id: string
+      productName: string
+      expectedReturnDate: Date
+      actualReturnDate: Date
+      conditionCategory?: string
+      manualPrice?: number
+      quantity: number
+      useManualPricing?: boolean
+      modalAwal?: number
+    },
+    applyFlatLatePenalty: boolean = true,
+    customLatePenalty?: number
+  ): {
+    itemId: string
+    productName: string
+    flatLatePenalty: number
+    conditionPenalty: number
+    totalPenalty: number
+    isLate: boolean
+    lateDays: number
+    description: string
+    breakdown: {
+      flatPenalty: number
+      manualPricing: number
+    }
+  } {
+    // Calculate flat late penalty
+    const latePenaltyResult = this.calculateFlatLatePenalty(
+      item.expectedReturnDate,
+      item.actualReturnDate,
+      customLatePenalty
+    )
+
+    const flatLatePenalty = applyFlatLatePenalty ? latePenaltyResult.penalty : 0
+
+    // Calculate manual pricing penalty
+    const manualPricingResult = this.calculateManualPricingPenalty(
+      item.conditionCategory || 'BAIK',
+      item.manualPrice || 0,
+      item.quantity,
+      item.useManualPricing
+    )
+
+    const totalPenalty = flatLatePenalty + manualPricingResult.penalty
+
+    // Generate description
+    let description = ''
+    if (flatLatePenalty > 0 && manualPricingResult.penalty > 0) {
+      description = `Kombinasi penalty keterlambatan (${this.formatPenaltyAmount(flatLatePenalty)}) dan ${manualPricingResult.description.toLowerCase()}`
+    } else if (flatLatePenalty > 0) {
+      description = `Penalty keterlambatan flat rate (${latePenaltyResult.lateDays} hari)`
+    } else if (manualPricingResult.penalty > 0) {
+      description = manualPricingResult.description
+    } else {
+      description = 'Tidak ada penalty - dikembalikan tepat waktu dalam kondisi baik'
+    }
+
+    return {
+      itemId: item.id,
+      productName: item.productName,
+      flatLatePenalty,
+      conditionPenalty: manualPricingResult.penalty,
+      totalPenalty,
+      isLate: latePenaltyResult.isLate,
+      lateDays: latePenaltyResult.lateDays,
+      description,
+      breakdown: {
+        flatPenalty: flatLatePenalty,
+        manualPricing: manualPricingResult.penalty
+      }
+    }
+  }
+
+  /**
+   * Calculate transaction penalties with new flat + manual pricing system
+   * NEW: Enhanced version for the new penalty system
+   */
+  static calculateEnhancedTransactionPenalties(
+    items: Array<{
+      id: string
+      productName: string
+      expectedReturnDate: Date
+      actualReturnDate: Date
+      conditionCategory?: string
+      manualPrice?: number
+      quantity: number
+      useManualPricing?: boolean
+      modalAwal?: number
+    }>,
+    settings?: {
+      applyFlatLatePenalty?: boolean
+      customLatePenalty?: number
+    }
+  ): {
+    totalPenalty: number
+    flatLatePenalty: number
+    conditionPenalties: number
+    isLateReturn: boolean
+    itemPenalties: Array<ReturnType<typeof PenaltyCalculator.calculateEnhancedPenalty>>
+    summary: {
+      totalItems: number
+      lateItems: number
+      onTimeItems: number
+      manuallyPricedItems: number
+      totalFlatPenalties: number
+      totalManualPricing: number
+    }
+  } {
+    const { applyFlatLatePenalty = true, customLatePenalty } = settings || {}
+
+    const itemPenalties = items.map(item =>
+      this.calculateEnhancedPenalty(item, applyFlatLatePenalty, customLatePenalty)
+    )
+
+    const flatLatePenalty = itemPenalties.reduce((sum, penalty) => sum + penalty.flatLatePenalty, 0)
+    const conditionPenalties = itemPenalties.reduce((sum, penalty) => sum + penalty.conditionPenalty, 0)
+    const totalPenalty = flatLatePenalty + conditionPenalties
+
+    const isLateReturn = itemPenalties.some(penalty => penalty.isLate)
+    const lateItems = itemPenalties.filter(penalty => penalty.isLate).length
+    const manuallyPricedItems = itemPenalties.filter(penalty => penalty.conditionPenalty > 0).length
+
+    return {
+      totalPenalty,
+      flatLatePenalty,
+      conditionPenalties,
+      isLateReturn,
+      itemPenalties,
+      summary: {
+        totalItems: itemPenalties.length,
+        lateItems,
+        onTimeItems: itemPenalties.length - lateItems,
+        manuallyPricedItems,
+        totalFlatPenalties: flatLatePenalty,
+        totalManualPricing: conditionPenalties
+      }
+    }
+  }
+
+  /**
    * Get penalty business rules configuration
    */
   static getBusinessRules() {
@@ -630,6 +829,9 @@ export class PenaltyCalculator {
       damagePenaltyMultiplier: this.DAMAGE_PENALTY_MULTIPLIER,
       lostItemPenaltyDays: this.LOST_ITEM_PENALTY_DAYS,
       maxPenaltyDays: this.MAX_PENALTY_DAYS,
+      // New flat penalty system rules
+      flatLatePenalty: this.FLAT_LATE_PENALTY,
+      enableManualPricing: this.ENABLE_MANUAL_PRICING,
       supportedConditions: [
         // Current frontend conditions (from ConditionRow.tsx)
         'baik',           // Rp 0
@@ -645,6 +847,14 @@ export class PenaltyCalculator {
         'Buruk - ada noda berat',
         'Buruk - ada kerusakan besar',
         'Hilang/tidak dikembalikan'
+      ],
+      // New condition categories for manual pricing
+      conditionCategories: [
+        'BAIK',
+        'KOTOR',
+        'RUSAK_RINGAN',
+        'RUSAK_BERAT',
+        'HILANG'
       ]
     }
   }

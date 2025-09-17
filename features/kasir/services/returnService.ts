@@ -296,7 +296,7 @@ export class UnifiedReturnService {
   }
 
   /**
-   * Calculate penalties for unified return request
+   * Calculate penalties for unified return request with enhanced flat + manual pricing system
    */
   async calculateUnifiedReturnPenalties(
     transaksiId: string,
@@ -307,28 +307,89 @@ export class UnifiedReturnService {
       // Get transaction details (optimized query for penalty calculation)
       const transaction = await this.transaksiService.getTransaksiForPenaltyCalculation(transaksiId)
 
-      // Flatten all conditions into penalty calculation items
-      const itemsForCalculation = request.items.flatMap((returnItem) => {
-        const transactionItem = transaction.items.find((item) => item.id === returnItem.itemId)
-        if (!transactionItem) {
-          throw new Error(`Item dengan ID ${returnItem.itemId} tidak ditemukan`)
+      // Check if request has new manual pricing fields
+      const hasManualPricing = request.items.some(item =>
+        item.conditions.some(condition =>
+          'conditionCategory' in condition && 'manualPrice' in condition
+        )
+      )
+
+      if (hasManualPricing) {
+        // Use new enhanced penalty calculation with flat + manual pricing
+        const itemsForEnhancedCalculation = request.items.flatMap((returnItem) => {
+          const transactionItem = transaction.items.find((item) => item.id === returnItem.itemId)
+          if (!transactionItem) {
+            throw new Error(`Item dengan ID ${returnItem.itemId} tidak ditemukan`)
+          }
+
+          return returnItem.conditions.map((condition) => ({
+            id: `${returnItem.itemId}-${condition.kondisiAkhir}`,
+            productName: transactionItem.produk.name,
+            expectedReturnDate: transaction.tglSelesai || new Date(),
+            actualReturnDate,
+            conditionCategory: (condition as any).conditionCategory || 'BAIK',
+            manualPrice: (condition as any).manualPrice || 0,
+            quantity: condition.jumlahKembali,
+            useManualPricing: (condition as any).useManualPricing || false,
+            modalAwal: condition.modalAwal || Number(transactionItem.produk.modalAwal),
+          }))
+        })
+
+        // Use enhanced penalty calculation with flat penalty system
+        const enhancedResult = PenaltyCalculator.calculateEnhancedTransactionPenalties(
+          itemsForEnhancedCalculation,
+          {
+            applyFlatLatePenalty: (request as any).applyFlatLatePenalty !== false,
+            customLatePenalty: (request as any).customLatePenalty
+          }
+        )
+
+        // Convert to standard PenaltyCalculationResult format for backward compatibility
+        return {
+          totalPenalty: enhancedResult.totalPenalty,
+          totalLateDays: enhancedResult.itemPenalties.reduce((sum, p) => sum + p.lateDays, 0),
+          itemPenalties: enhancedResult.itemPenalties.map(penalty => ({
+            itemId: penalty.itemId,
+            productName: penalty.productName,
+            expectedReturnDate: transaction.tglSelesai || new Date(),
+            actualReturnDate,
+            lateDays: penalty.lateDays,
+            dailyPenaltyRate: 20000, // Flat penalty rate
+            modalAwal: undefined,
+            totalPenalty: penalty.totalPenalty,
+            reasonCode: penalty.isLate ? 'late' : 'on_time',
+            description: penalty.description
+          })),
+          summary: {
+            onTimeItems: enhancedResult.summary.onTimeItems,
+            lateItems: enhancedResult.summary.lateItems,
+            damagedItems: enhancedResult.summary.manuallyPricedItems,
+            lostItems: 0 // Will be counted in manual pricing
+          }
         }
+      } else {
+        // Fallback to existing penalty calculation for backward compatibility
+        const itemsForCalculation = request.items.flatMap((returnItem) => {
+          const transactionItem = transaction.items.find((item) => item.id === returnItem.itemId)
+          if (!transactionItem) {
+            throw new Error(`Item dengan ID ${returnItem.itemId} tidak ditemukan`)
+          }
 
-        return returnItem.conditions.map((condition) => ({
-          id: `${returnItem.itemId}-${condition.kondisiAkhir}`,
-          productName: transactionItem.produk.name,
-          expectedReturnDate: transaction.tglSelesai || new Date(),
-          actualReturnDate,
-          condition: condition.kondisiAkhir,
-          quantity: condition.jumlahKembali,
-          modalAwal: condition.modalAwal || Number(transactionItem.produk.modalAwal),
-        }))
-      })
+          return returnItem.conditions.map((condition) => ({
+            id: `${returnItem.itemId}-${condition.kondisiAkhir}`,
+            productName: transactionItem.produk.name,
+            expectedReturnDate: transaction.tglSelesai || new Date(),
+            actualReturnDate,
+            condition: condition.kondisiAkhir,
+            quantity: condition.jumlahKembali,
+            modalAwal: condition.modalAwal || Number(transactionItem.produk.modalAwal),
+          }))
+        })
 
-      // Calculate penalties using existing PenaltyCalculator
-      const penaltyResult = PenaltyCalculator.calculateTransactionPenalties(itemsForCalculation)
-
-      return penaltyResult
+        // Calculate penalties using existing PenaltyCalculator for legacy support
+        const penaltyResult = PenaltyCalculator.calculateTransactionPenalties(itemsForCalculation)
+        return penaltyResult
+      }
     } catch (error) {
       logger.error(
         'UnifiedReturnService',
@@ -426,12 +487,15 @@ export class UnifiedReturnService {
       // Execute unified database transaction
       const result = await this.prisma.$transaction(
         async (tx) => {
-          // Update main transaction
+          // Update main transaction with flat penalty info
+          const isLateReturn = new Date() > new Date(transaction.tglSelesai || new Date())
           await tx.transaksi.update({
             where: { id: transaksiId },
             data: {
               status: 'dikembalikan',
               tglKembali: returnDate,
+              isLateReturn,
+              flatLatePenalty: isLateReturn ? 20000 : 0,
               sisaBayar: {
                 increment: new Decimal(penaltyCalculation.totalPenalty),
               },
@@ -456,21 +520,29 @@ export class UnifiedReturnService {
                 penaltyCalculation.itemPenalties.find((p) => p.itemId.startsWith(item.itemId))
                   ?.totalPenalty || 0
 
-              // Create return condition record
+              // Check if condition has manual pricing fields
+              const hasManualPricing = 'conditionCategory' in condition && 'manualPrice' in condition
+
+              // Create return condition record with enhanced fields
               await tx.transaksiItemReturn.create({
                 data: {
                   transaksiItemId: item.itemId,
                   kondisiAkhir: condition.kondisiAkhir,
+                  conditionCategory: hasManualPricing ? (condition as any).conditionCategory : 'BAIK',
                   jumlahKembali: condition.jumlahKembali,
                   penaltyAmount: conditionPenalty,
+                  manualPrice: hasManualPricing ? new Decimal((condition as any).manualPrice || 0) : null,
+                  useManualPricing: hasManualPricing ? (condition as any).useManualPricing || false : false,
                   modalAwalUsed: condition.modalAwal ? new Decimal(condition.modalAwal) : null,
                   penaltyCalculation: {
                     expectedReturnDate: returnDate,
                     actualReturnDate: returnDate,
-                    calculationMethod: isLostItemCondition(condition.kondisiAkhir)
-                      ? 'modal_awal'
-                      : 'late_fee',
-                    description: `Unified processing: ${condition.kondisiAkhir} (${condition.jumlahKembali} unit)`,
+                    calculationMethod: hasManualPricing
+                      ? ((condition as any).useManualPricing ? 'manual_pricing' : 'flat_late')
+                      : (isLostItemCondition(condition.kondisiAkhir) ? 'modal_awal' : 'late_fee'),
+                    description: hasManualPricing
+                      ? `Enhanced processing: ${(condition as any).conditionCategory} - ${condition.kondisiAkhir} (${condition.jumlahKembali} unit)`
+                      : `Unified processing: ${condition.kondisiAkhir} (${condition.jumlahKembali} unit)`,
                   },
                   createdBy: this.userId,
                 },

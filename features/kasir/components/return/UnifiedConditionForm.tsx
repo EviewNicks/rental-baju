@@ -6,12 +6,13 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Package, Plus, Lightbulb, CheckCircle, AlertCircle } from 'lucide-react'
-import { ConditionRow } from './ConditionRow'
+import { ConditionPricingForm } from './ConditionPricingForm'
 import type {
   UnifiedConditionFormProps,
   EnhancedItemCondition,
   ConditionSplit,
   ConditionValidationResult,
+  ConditionCategory,
 } from '../../types'
 import { kasirLogger } from '../../lib/logger'
 
@@ -37,7 +38,13 @@ export function UnifiedConditionForm({
   const initialCondition: EnhancedItemCondition = value || {
     itemId: item.id,
     mode: 'single', // Internal mode tracking (simplified)
-    conditions: [{ kondisiAkhir: '', jumlahKembali: item.jumlahDiambil }],
+    conditions: [{
+      kondisiAkhir: '',
+      jumlahKembali: item.jumlahDiambil,
+      conditionCategory: 'BAIK' as ConditionCategory,
+      useManualPricing: false,
+      manualPrice: 0
+    }],
     isValid: false,
     totalQuantity: item.jumlahDiambil,
     remainingQuantity: item.jumlahDiambil,
@@ -69,12 +76,14 @@ export function UnifiedConditionForm({
     )
     const remaining = currentCondition.totalQuantity - totalReturned
     const hasValidConditions = currentCondition.conditions.every(
-      (c) => 
-        c.kondisiAkhir && 
-        c.kondisiAkhir.length >= 4 && 
+      (c) =>
+        c.kondisiAkhir &&
+        c.kondisiAkhir.length >= 4 &&
         c.kondisiAkhir.length <= 500 &&
-        c.jumlahKembali !== undefined && 
-        c.jumlahKembali > 0,
+        c.jumlahKembali !== undefined &&
+        c.jumlahKembali > 0 &&
+        c.conditionCategory &&
+        (!c.useManualPricing || (c.manualPrice !== undefined && c.manualPrice >= 0)),
     )
 
     let error: string | undefined
@@ -86,24 +95,30 @@ export function UnifiedConditionForm({
       error = 'Minimal harus mengembalikan 1 unit atau tandai sebagai hilang'
     } else if (!hasValidConditions) {
       // Check specific validation issues
-      const invalidConditions = currentCondition.conditions.filter(c => 
-        !c.kondisiAkhir || 
-        c.kondisiAkhir.length < 4 || 
+      const invalidConditions = currentCondition.conditions.filter(c =>
+        !c.kondisiAkhir ||
+        c.kondisiAkhir.length < 4 ||
         c.kondisiAkhir.length > 500 ||
-        !c.jumlahKembali || 
-        c.jumlahKembali <= 0
+        !c.jumlahKembali ||
+        c.jumlahKembali <= 0 ||
+        !c.conditionCategory ||
+        (c.useManualPricing && (c.manualPrice === undefined || c.manualPrice < 0))
       )
-      
+
       if (invalidConditions.length > 0) {
         const firstInvalid = invalidConditions[0]
         if (!firstInvalid.kondisiAkhir) {
           error = 'Semua kondisi harus dipilih'
+        } else if (!firstInvalid.conditionCategory) {
+          error = 'Kategori kondisi harus dipilih'
         } else if (firstInvalid.kondisiAkhir.length < 4) {
           error = 'Kondisi harus minimal 4 karakter'
         } else if (firstInvalid.kondisiAkhir.length > 500) {
           error = 'Kondisi maksimal 500 karakter'
         } else if (!firstInvalid.jumlahKembali || firstInvalid.jumlahKembali <= 0) {
           error = 'Jumlah kembali harus lebih dari 0'
+        } else if (firstInvalid.useManualPricing && (firstInvalid.manualPrice === undefined || firstInvalid.manualPrice < 0)) {
+          error = 'Harga manual harus diisi dan tidak boleh negatif'
         }
       } else {
         error = 'Semua kondisi harus diisi dengan lengkap'
@@ -250,6 +265,9 @@ export function UnifiedConditionForm({
         {
           kondisiAkhir: '',
           jumlahKembali: suggestedQuantity, // Auto-suggest remaining quantity
+          conditionCategory: 'BAIK' as ConditionCategory,
+          useManualPricing: false,
+          manualPrice: 0
         },
       ],
     }))
@@ -423,7 +441,7 @@ export function UnifiedConditionForm({
         {/* Condition Rows - Progressive List */}
         <div className="space-y-4">
           {currentCondition.conditions.map((condition, index) => (
-            <ConditionRow
+            <ConditionPricingForm
               key={index}
               condition={condition}
               onChange={(newCondition) => handleConditionChange(index, newCondition)}
@@ -437,7 +455,7 @@ export function UnifiedConditionForm({
               autoFocus={index === currentCondition.conditions.length - 1 && index > 0}
               maxQuantity={currentCondition.totalQuantity}
               remainingQuantity={validation.remaining}
-              productModalAwal={item.produk.modalAwal}
+              productModalAwal={item.produk?.modalAwal || 0}
             />
           ))}
 

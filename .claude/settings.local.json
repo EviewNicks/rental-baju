@@ -101,7 +101,8 @@
       "mcp__atlassian__getAccessibleAtlassianResources",
       "mcp__atlassian__getConfluencePage",
       "mcp__atlassian__getVisibleJiraProjects",
-      "mcp__atlassian__createJiraIssue"
+      "mcp__atlassian__createJiraIssue",
+      "Bash(dir:*)"
     ],
     "deny": []
   }
