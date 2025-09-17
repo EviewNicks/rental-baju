@@ -40,7 +40,7 @@ export function getReturnableItems(transaction: TransaksiDetail): TransaksiItemR
  */
 export function canReturnTransaction(transaction: TransaksiDetail): boolean {
   return (
-    (transaction.status === 'active' || transaction.status === 'terlambat') && 
+    (transaction.status === 'active' || transaction.status === 'terlambat' || transaction.status === 'diambil') &&
     getReturnableItems(transaction).length > 0
   )
 }
@@ -209,11 +209,11 @@ export interface ReturnEligibility {
 }
 
 export function checkReturnEligibility(transaction: TransaksiDetail): ReturnEligibility {
-  // FIXED: Allow returns for both 'active' and 'terlambat' status
-  if (transaction.status !== 'active' && transaction.status !== 'terlambat') {
+  // FIXED: Allow returns for 'active', 'terlambat', and 'diambil' status
+  if (transaction.status !== 'active' && transaction.status !== 'terlambat' && transaction.status !== 'diambil') {
     return {
       canReturn: false,
-      reason: 'Status transaksi bukan active atau terlambat',
+      reason: 'Status transaksi bukan active, terlambat, atau diambil',
       returnableItemsCount: 0
     }
   }

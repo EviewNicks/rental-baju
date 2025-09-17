@@ -167,11 +167,11 @@ export class UnifiedReturnService {
       // Get transaction for validation
       const transaction = await this.transaksiService.getTransaksiForValidation(transaksiId)
 
-      // Check transaction status eligibility - allow both active and overdue transactions
-      if (transaction.status !== 'active' && transaction.status !== 'terlambat') {
+      // Check transaction status eligibility - allow active, overdue, and picked up transactions
+      if (transaction.status !== 'active' && transaction.status !== 'terlambat' && transaction.status !== 'diambil') {
         return {
           isValid: false,
-          error: `Transaksi dengan status '${transaction.status}' tidak dapat diproses pengembaliannya. Hanya transaksi dengan status 'active' atau 'terlambat' yang dapat diproses.`,
+          error: `Transaksi dengan status '${transaction.status}' tidak dapat diproses pengembaliannya. Hanya transaksi dengan status 'active', 'terlambat', atau 'diambil' yang dapat diproses.`,
           details: { currentStatus: transaction.status },
         }
       }
@@ -441,7 +441,7 @@ export class UnifiedReturnService {
         }
       }
 
-      if (transactionForValidation.status !== 'active' && transactionForValidation.status !== 'terlambat') {
+      if (transactionForValidation.status !== 'active' && transactionForValidation.status !== 'terlambat' && transactionForValidation.status !== 'diambil') {
         return {
           success: false,
           transactionId: transaksiId,
@@ -451,7 +451,7 @@ export class UnifiedReturnService {
           processingMode: 'unified',
           details: {
             statusCode: 'INVALID_STATUS' as const,
-            message: `Transaksi dengan status '${transactionForValidation.status}' tidak dapat diproses pengembaliannya. Hanya transaksi dengan status 'active' atau 'terlambat' yang dapat diproses.`,
+            message: `Transaksi dengan status '${transactionForValidation.status}' tidak dapat diproses pengembaliannya. Hanya transaksi dengan status 'active', 'terlambat', atau 'diambil' yang dapat diproses.`,
             currentStatus: transactionForValidation.status,
             processingTime: Date.now() - startTime,
           },
@@ -488,7 +488,7 @@ export class UnifiedReturnService {
       const result = await this.prisma.$transaction(
         async (tx) => {
           // Update main transaction with flat penalty info
-          const isLateReturn = new Date() > new Date(transaction.tglSelesai || new Date())
+          const isLateReturn = new Date() > new Date(transactionForValidation.tglSelesai || new Date())
           await tx.transaksi.update({
             where: { id: transaksiId },
             data: {

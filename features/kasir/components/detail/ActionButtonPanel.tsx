@@ -2,12 +2,15 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useQueryClient } from '@tanstack/react-query'
 import { CheckCircle, DollarSign, RefreshCw, AlertTriangle, Package, RotateCcw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { PaymentModal } from './PaymentModal'
 import { PickupModal } from './PickupModal'
 import type { TransactionDetail } from '../../types'
 import { isPickupAvailable, calculateTransactionPickupStatus } from '../../lib/utils/client'
+import { queryKeys } from '@/lib/react-query'
+import { logger } from '@/services/logger'
 
 interface ActionButtonsPanelProps {
   transaction: TransactionDetail
@@ -18,6 +21,10 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false)
   const [isPickupModalOpen, setIsPickupModalOpen] = useState(false)
   const router = useRouter()
+  const queryClient = useQueryClient()
+
+  // Create logger instance for this component
+  const componentLogger = logger.child('ActionButtonPanel')
 
   const handleAction = async (action: string) => {
     setIsProcessing(action)
@@ -84,14 +91,34 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
   // Calculate pickup status for enhanced logic
   const pickupStatus = calculateTransactionPickupStatus(transaction)
 
-  // Enhanced button visibility logic - FIXED: Allow actions for both 'active' and 'terlambat' status
+  // Enhanced button visibility logic - FIXED: Allow actions for 'active', 'terlambat', and 'diambil' status
   const canReturn =
-    (transaction.status === 'active' || transaction.status === 'terlambat') &&
+    (transaction.status === 'active' || transaction.status === 'terlambat' || transaction.status === 'diambil') &&
     transaction.products?.some((p) => p.jumlahDiambil && p.jumlahDiambil > 0)
   const canPickup = (transaction.status === 'active' || transaction.status === 'terlambat') && isPickupAvailable(transaction)
   const needsPayment =
     transaction.amountPaid < transaction.totalAmount ||
     (transaction.penalties && transaction.penalties.some((p) => p.status === 'pending'))
+
+  // COMPREHENSIVE LOGGING for debugging button visibility
+  componentLogger.debug('render', 'Button visibility calculation', {
+    transactionCode: transaction.transactionCode,
+    status: transaction.status,
+    canReturn,
+    canPickup,
+    needsPayment,
+    productsCount: transaction.products?.length || 0,
+    productsWithPickup: transaction.products?.map(p => ({
+      id: p.id,
+      productName: p.product.name,
+      quantity: p.quantity,
+      jumlahDiambil: p.jumlahDiambil,
+      hasPickup: (p.jumlahDiambil || 0) > 0
+    })),
+    totalAmount: transaction.totalAmount,
+    amountPaid: transaction.amountPaid,
+    penalties: transaction.penalties?.map(p => ({ status: p.status }))
+  })
 
   return (
     <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-6 space-y-4">
@@ -158,6 +185,12 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
               Transaksi terlambat
             </div>
           )}
+          {transaction.status === 'diambil' && (
+            <div className="flex items-center gap-2 text-green-600">
+              <Package className="h-4 w-4" />
+              Barang telah diambil
+            </div>
+          )}
           {transaction.status === 'selesai' && (
             <div className="flex items-center gap-2 text-green-600">
               <CheckCircle className="h-4 w-4" />
@@ -181,8 +214,20 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
       <PickupModal
         isOpen={isPickupModalOpen}
         onClose={() => {
+          componentLogger.info('onClose', 'Pickup modal closing - triggering data refresh')
+
           setIsPickupModalOpen(false)
           setIsProcessing(null)
+
+          // Force refresh transaction data to ensure updated jumlahDiambil values
+          queryClient.invalidateQueries({
+            queryKey: queryKeys.kasir.transaksi.detail(transaction.transactionCode),
+          })
+
+          componentLogger.debug('onClose', 'Query invalidation triggered', {
+            transactionCode: transaction.transactionCode,
+            queryKey: queryKeys.kasir.transaksi.detail(transaction.transactionCode)
+          })
         }}
         transaction={transaction}
       />

@@ -74,7 +74,9 @@ export function TransactionLookup({ onTransactionSelect }: TransactionLookupProp
   // FIXED: Allow returns for both 'active' and 'terlambat' status
   const canReturn = (transaction: TransaksiResponse) => {
     return (
-      (transaction.status === 'active' || transaction.status === 'terlambat') &&
+      (transaction.status === 'active' ||
+        transaction.status === 'terlambat' ||
+        transaction.status === 'diambil') &&
       transaction.items?.some((item: TransaksiItemResponse) => item.jumlahDiambil > 0)
     )
   }
@@ -286,14 +288,14 @@ export function TransactionLookup({ onTransactionSelect }: TransactionLookupProp
 
             {/* Action Alert */}
             <Separator />
-            
+
             {canReturn(transaction) ? (
               <Alert>
                 <CheckCircle className="h-4 w-4" />
                 <AlertDescription>
                   Transaksi ini dapat diproses untuk pengembalian. Terdapat{' '}
-                  {transaction.items?.filter((item) => item.jumlahDiambil > 0).length || 0}{' '}
-                  barang yang belum dikembalikan.
+                  {transaction.items?.filter((item) => item.jumlahDiambil > 0).length || 0} barang
+                  yang belum dikembalikan.
                 </AlertDescription>
               </Alert>
             ) : (
@@ -302,7 +304,10 @@ export function TransactionLookup({ onTransactionSelect }: TransactionLookupProp
                 <AlertDescription>
                   Transaksi ini tidak dapat diproses untuk pengembalian.
                   {/* FIXED: Updated message to include 'terlambat' status */}
-                  {transaction.status !== 'active' && transaction.status !== 'terlambat' && ' Status transaksi bukan active atau terlambat.'}
+                  {transaction.status !== 'active' &&
+                    transaction.status !== 'terlambat' &&
+                    transaction.status !== 'diambil' &&
+                    ' Status transaksi bukan active, terlambat, atau diambil.'}
                   {!transaction.items?.some((item) => item.jumlahDiambil > 0) &&
                     ' Tidak ada barang yang sudah diambil.'}
                 </AlertDescription>
@@ -331,7 +336,10 @@ export function TransactionLookup({ onTransactionSelect }: TransactionLookupProp
               <ul className="text-sm text-blue-700 space-y-1">
                 <li>• Pastikan kode transaksi lengkap (contoh: TXN-20250127-001)</li>
                 {/* FIXED: Updated help text to include 'terlambat' status */}
-                <li>• Hanya transaksi dengan status "active" atau "terlambat" yang dapat dikembalikan</li>
+                <li>
+                  • Hanya transaksi dengan status &quo active %quo atau %quo terlambat %quo yang
+                  dapat dikembalikan
+                </li>
                 <li>• Pastikan ada barang yang sudah diambil untuk dikembalikan</li>
               </ul>
             </div>

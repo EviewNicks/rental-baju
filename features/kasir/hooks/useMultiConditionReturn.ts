@@ -8,6 +8,8 @@ import type {
   MultiConditionPenaltyResult,
   EnhancedReturnRequest,
   ConditionValidationResult,
+} from '../types'
+import {
   ConditionCategory,
 } from '../types'
 import { kasirApi } from '../api'
@@ -505,13 +507,18 @@ export function useMultiConditionReturn(): UseMultiConditionReturnResult {
         const penaltyData: MultiConditionPenaltyResult = {
           totalPenalty: penaltyResult.totalPenalty,
           lateDays: penaltyResult.totalLateDays,
+          flatLatePenalty: 20000, // Default flat penalty amount
+          conditionPenalties: 0, // No additional condition penalties with flat system
+          isLateReturn: penaltyResult.totalLateDays > 0,
           breakdown: penaltyResult.itemPenalties.map((item) => ({
             itemId: item.itemId,
             itemName: item.productName,
             splitIndex: 0, // Client-side doesn't need split indexing
             kondisiAkhir: item.conditionBreakdown?.[0]?.kondisiAkhir || 'Normal',
+            conditionCategory: ConditionCategory.BAIK, // Default to BAIK category
             jumlahKembali: item.summary.totalQuantity,
             isLostItem: item.conditionBreakdown?.some(c => c.reasonCode === 'lost') || false,
+            useManualPricing: false, // Default to automatic pricing
             latePenalty: item.conditionBreakdown?.reduce((sum, c) => sum + c.latePenalty, 0) || 0,
             conditionPenalty: item.conditionBreakdown?.reduce((sum, c) => sum + c.conditionPenalty, 0) || 0,
             penaltyAmount: item.conditionBreakdown?.reduce((sum, c) => sum + c.conditionPenalty, 0) || 0,
@@ -543,6 +550,8 @@ export function useMultiConditionReturn(): UseMultiConditionReturnResult {
             hasLateItems: penaltyResult.totalLateDays > 0,
             itemsProcessed: calculationItems.length,
             conditionSplits: calculationItems.reduce((sum, item) => sum + item.conditions.length, 0),
+            usesManualPricing: false, // Default to automatic pricing
+            usesFlatPenalty: true, // Using flat penalty system
           }
         }
 

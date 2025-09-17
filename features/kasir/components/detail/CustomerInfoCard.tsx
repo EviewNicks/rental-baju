@@ -110,9 +110,13 @@ export function CustomerInfoCard({ customer, 'data-testid': dataTestId }: Custom
                         className={`px-2 py-1 rounded-full text-xs ${
                           transaction.status === 'active'
                             ? 'bg-blue-100 text-blue-800'
-                            : transaction.status === 'selesai'
+                            : transaction.status === 'diambil'
                               ? 'bg-green-100 text-green-800'
-                              : 'bg-gray-100 text-gray-800'
+                              : transaction.status === 'terlambat'
+                                ? 'bg-red-100 text-red-800'
+                                : transaction.status === 'selesai'
+                                  ? 'bg-green-100 text-green-800'
+                                  : 'bg-gray-100 text-gray-800'
                         }`}
                       >
                         {transaction.status}
