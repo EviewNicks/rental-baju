@@ -187,13 +187,17 @@ export function ReturnProcessPage({ onClose, initialTransactionId, kode }: Retur
         itemCount: transaction?.items?.length || 0,
       })
 
-      // Auto-calculate penalties when entering step 2 
+      // Auto-calculate penalties when entering step 2
       if (nextStep === 2) {
-        kasirLogger.penaltyCalc.info('handleNext', 'Auto-triggering penalty calculation for step 2', {
-          transactionId: transaction?.kode,
-          itemConditionsCount: Object.keys(itemConditions).length,
-        })
-        
+        kasirLogger.penaltyCalc.info(
+          'handleNext',
+          'Auto-triggering penalty calculation for step 2',
+          {
+            transactionId: transaction?.kode,
+            itemConditionsCount: Object.keys(itemConditions).length,
+          },
+        )
+
         try {
           await calculatePenalties()
         } catch (error) {
@@ -233,19 +237,23 @@ export function ReturnProcessPage({ onClose, initialTransactionId, kode }: Retur
   const handleItemConditionChange = useCallback(
     // eslint-disable-next-line
     (itemId: string, condition: any) => {
-      kasirLogger.returnProcess.debug('handleItemConditionChange', 'Item condition change requested - ENTRY', {
-        itemId,
-        conditionMode: condition?.mode,
-        conditionCount: condition?.conditions?.length || 0,
-        isValid: condition?.isValid,
-        totalQuantity: condition?.totalQuantity,
-        remainingQuantity: condition?.remainingQuantity,
-        hasValidationError: !!condition?.validationError,
-        transactionId: transaction?.kode,
-        hasCondition: !!condition,
-        conditionType: typeof condition,
-        hasSetItemConditionFunc: typeof setItemCondition === 'function',
-      })
+      kasirLogger.returnProcess.debug(
+        'handleItemConditionChange',
+        'Item condition change requested - ENTRY',
+        {
+          itemId,
+          conditionMode: condition?.mode,
+          conditionCount: condition?.conditions?.length || 0,
+          isValid: condition?.isValid,
+          totalQuantity: condition?.totalQuantity,
+          remainingQuantity: condition?.remainingQuantity,
+          hasValidationError: !!condition?.validationError,
+          transactionId: transaction?.kode,
+          hasCondition: !!condition,
+          conditionType: typeof condition,
+          hasSetItemConditionFunc: typeof setItemCondition === 'function',
+        },
+      )
 
       if (!condition) {
         kasirLogger.returnProcess.warn('handleItemConditionChange', 'Null condition received', {
@@ -271,10 +279,14 @@ export function ReturnProcessPage({ onClose, initialTransactionId, kode }: Retur
 
       setItemCondition(itemId, condition)
 
-      kasirLogger.returnProcess.debug('handleItemConditionChange', 'setItemCondition call completed', {
-        itemId,
-        transactionId: transaction?.kode,
-      })
+      kasirLogger.returnProcess.debug(
+        'handleItemConditionChange',
+        'setItemCondition call completed',
+        {
+          itemId,
+          transactionId: transaction?.kode,
+        },
+      )
     },
     [setItemCondition, transaction?.kode],
   )
@@ -433,8 +445,8 @@ export function ReturnProcessPage({ onClose, initialTransactionId, kode }: Retur
         )}
 
         {/* Enhanced Step Content */}
-        <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm mb-8">
-          <CardHeader className="border-b border-neutral-100 bg-neutral-50/50">
+        <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm mb-6 gap-2">
+          <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 ">
             <CardTitle className="flex items-center gap-3 text-xl">
               {currentStepConfig?.icon && (
                 <div className={`p-2 rounded-lg ${currentStepConfig.color}`}>
@@ -445,7 +457,7 @@ export function ReturnProcessPage({ onClose, initialTransactionId, kode }: Retur
             </CardTitle>
           </CardHeader>
 
-          <CardContent className="p-6 md:p-8">
+          <CardContent className="px-2 md:px-4">
             {isLoadingTransaction && (
               <div className="flex items-center justify-center py-12">
                 <div className="flex items-center gap-3 text-gray-600">

@@ -12,48 +12,41 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Switch } from '@/components/ui/switch'
-import { Label } from '@/components/ui/label'
 import { Trash2, AlertTriangle, Calculator, DollarSign } from 'lucide-react'
 import type { ConditionSplit, ConditionCategory } from '../../types'
 import { kasirLogger } from '../../lib/logger'
 
-// Condition category options with UI metadata
+// Condition category options with UI metadata (simplified - no suggested prices)
 const CONDITION_CATEGORIES = [
   {
     value: 'BAIK' as ConditionCategory,
     label: 'Baik',
     color: 'bg-green-100 text-green-800 border-green-200',
     description: 'Kondisi sempurna tanpa kerusakan',
-    suggestedPrice: 0,
   },
   {
     value: 'KOTOR' as ConditionCategory,
     label: 'Kotor',
     color: 'bg-yellow-100 text-yellow-800 border-yellow-200',
     description: 'Perlu pencucian atau pembersihan',
-    suggestedPrice: 5000,
   },
   {
     value: 'RUSAK_RINGAN' as ConditionCategory,
     label: 'Rusak Ringan',
     color: 'bg-orange-100 text-orange-800 border-orange-200',
     description: 'Kerusakan kecil yang dapat diperbaiki',
-    suggestedPrice: 15000,
   },
   {
     value: 'RUSAK_BERAT' as ConditionCategory,
     label: 'Rusak Berat',
     color: 'bg-red-100 text-red-800 border-red-200',
     description: 'Kerusakan signifikan sulit diperbaiki',
-    suggestedPrice: 50000,
   },
   {
     value: 'HILANG' as ConditionCategory,
     label: 'Hilang',
     color: 'bg-gray-100 text-gray-800 border-gray-200',
     description: 'Item tidak dikembalikan',
-    suggestedPrice: 0, // Will use modal awal
   },
 ] as const
 
@@ -114,10 +107,10 @@ export function ConditionPricingForm({
       errors.push(`Jumlah tidak boleh lebih dari ${maxQuantity}`)
     }
 
-    // Manual pricing validation
-    if (condition.useManualPricing) {
+    // Manual pricing validation - required for non-BAIK categories
+    if (condition.conditionCategory && condition.conditionCategory !== 'BAIK') {
       if (condition.manualPrice === undefined || condition.manualPrice < 0) {
-        errors.push('Harga manual harus diisi dan tidak boleh negatif')
+        errors.push('Harga penalty harus diisi untuk kondisi selain "Baik"')
       }
     }
 
@@ -160,20 +153,20 @@ export function ConditionPricingForm({
         ...condition,
         conditionCategory: value,
         kondisiAkhir: categoryMeta?.label || '',
+        useManualPricing: value !== 'BAIK', // Auto-set based on category
       }
 
-      // Set suggested price for manual pricing if not using manual override
-      if (!condition.useManualPricing && categoryMeta) {
-        if (value === 'HILANG') {
-          newCondition.manualPrice = productModalAwal
-        } else {
-          newCondition.manualPrice = categoryMeta.suggestedPrice
-        }
+      // Set price based on simplified logic
+      if (value === 'BAIK') {
+        newCondition.manualPrice = 0 // Fixed for BAIK category
+      } else {
+        // For other categories, keep existing price or clear it to force manual input
+        newCondition.manualPrice = condition.manualPrice || undefined
       }
 
       onChange(newCondition)
     },
-    [condition, onChange, productModalAwal],
+    [condition, onChange],
   )
 
   // Handle description change
@@ -205,32 +198,6 @@ export function ConditionPricingForm({
     [condition, onChange],
   )
 
-  // Handle manual pricing toggle
-  const handleManualPricingToggle = useCallback(
-    (enabled: boolean) => {
-      kasirLogger.userInteraction.debug('handleManualPricingToggle', 'Manual pricing toggled', {
-        enabled,
-        currentPrice: condition.manualPrice,
-      })
-
-      const newCondition = { ...condition, useManualPricing: enabled }
-
-      // Set suggested price when enabling manual pricing
-      if (enabled && !condition.manualPrice) {
-        if (condition.conditionCategory === 'HILANG') {
-          newCondition.manualPrice = productModalAwal
-        } else {
-          const categoryMeta = CONDITION_CATEGORIES.find(
-            (cat) => cat.value === condition.conditionCategory,
-          )
-          newCondition.manualPrice = categoryMeta?.suggestedPrice || 0
-        }
-      }
-
-      onChange(newCondition)
-    },
-    [condition, onChange, productModalAwal],
-  )
 
   // Handle manual price change
   const handleManualPriceChange = useCallback(
@@ -256,24 +223,13 @@ export function ConditionPricingForm({
     onRemove?.()
   }, [onRemove, condition])
 
-  // Calculate effective price
+  // Calculate effective price - simplified logic
   const effectivePrice = useMemo(() => {
-    if (condition.useManualPricing) {
-      return condition.manualPrice || 0
+    if (condition.conditionCategory === 'BAIK') {
+      return 0 // Fixed price for BAIK category
     }
-
-    if (condition.conditionCategory === 'HILANG') {
-      return productModalAwal
-    }
-
-    return conditionMeta.suggestedPrice
-  }, [
-    condition.useManualPricing,
-    condition.manualPrice,
-    condition.conditionCategory,
-    productModalAwal,
-    conditionMeta.suggestedPrice,
-  ])
+    return condition.manualPrice || 0 // Manual input for other categories
+  }, [condition.conditionCategory, condition.manualPrice])
 
   return (
     <div className="space-y-4">
@@ -301,11 +257,6 @@ export function ConditionPricingForm({
                       </Badge>
                       <div className="text-left">
                         <div className="text-xs text-gray-500">{category.description}</div>
-                        {category.value !== 'HILANG' && (
-                          <div className="text-xs text-gray-400">
-                            Saran: Rp {category.suggestedPrice.toLocaleString('id-ID')}
-                          </div>
-                        )}
                       </div>
                     </div>
                   </SelectItem>
@@ -362,43 +313,36 @@ export function ConditionPricingForm({
             />
           </div>
 
-          {/* Manual Pricing Toggle */}
+          {/* Spacer for consistent layout */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">Harga Manual</label>
-            <div className="flex items-center space-x-2">
-              <Switch
-                checked={condition.useManualPricing}
-                onCheckedChange={handleManualPricingToggle}
-                disabled={disabled}
-              />
-              <Label htmlFor="manual-pricing" className="text-sm">
-                {condition.useManualPricing ? 'Aktif' : 'Otomatis'}
-              </Label>
-            </div>
+            <div className="h-8"></div>
           </div>
 
           {/* Price Input */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-700">
-              {condition.useManualPricing ? 'Harga (IDR)' : 'Harga Saran'}
+              Harga Penalty (IDR)
             </label>
             <div className="relative">
               <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
                 type="number"
                 min="0"
-                value={condition.useManualPricing ? condition.manualPrice || '' : effectivePrice}
+                value={condition.conditionCategory === 'BAIK' ? 0 : condition.manualPrice || ''}
                 onChange={(e) => handleManualPriceChange(e.target.value)}
-                disabled={disabled || !condition.useManualPricing}
+                disabled={disabled || condition.conditionCategory === 'BAIK'}
                 className="pl-10"
-                placeholder="0"
+                placeholder={condition.conditionCategory === 'BAIK' ? '0' : 'Masukkan harga penalty'}
               />
             </div>
-            {!condition.useManualPricing && (
+            {condition.conditionCategory === 'BAIK' && (
+              <div className="text-xs text-green-600">
+                ✓ Kondisi baik - tidak ada penalty
+              </div>
+            )}
+            {condition.conditionCategory === 'HILANG' && (
               <div className="text-xs text-gray-500">
-                {condition.conditionCategory === 'HILANG'
-                  ? 'Berdasarkan modal awal produk'
-                  : 'Berdasarkan kategori kondisi'}
+                Disarankan: modal awal produk (Rp {productModalAwal.toLocaleString('id-ID')})
               </div>
             )}
           </div>
@@ -458,12 +402,6 @@ export function ConditionPricingForm({
             <Badge variant="outline" className={conditionMeta.color}>
               {condition.jumlahKembali}x {conditionMeta.label}
             </Badge>
-            {condition.useManualPricing && (
-              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                <Calculator className="w-3 h-3 mr-1" />
-                Manual
-              </Badge>
-            )}
             {condition.conditionCategory === 'HILANG' && (
               <span className="text-gray-600">
                 Modal: Rp {productModalAwal.toLocaleString('id-ID')}

@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Package, Plus, Lightbulb, CheckCircle, AlertCircle } from 'lucide-react'
+import { Package, Plus, Lightbulb, CheckCircle, AlertCircle, Clock } from 'lucide-react'
 import { ConditionPricingForm } from './ConditionPricingForm'
 import type {
   UnifiedConditionFormProps,
@@ -34,38 +34,37 @@ export function UnifiedConditionForm({
   disabled = false,
   isLoading = false,
 }: UnifiedConditionFormProps) {
-  // Initialize with unified structure (always array)
+  // Initialize with unified structure (always array) - Default to BAIK for better UX
   const initialCondition: EnhancedItemCondition = value || {
     itemId: item.id,
     mode: 'single', // Internal mode tracking (simplified)
-    conditions: [{
-      kondisiAkhir: '',
-      jumlahKembali: item.jumlahDiambil,
-      conditionCategory: 'BAIK' as ConditionCategory,
-      useManualPricing: false,
-      manualPrice: 0
-    }],
-    isValid: false,
+    conditions: [
+      {
+        kondisiAkhir: 'Baik', // Default valid description for BAIK category
+        jumlahKembali: item.jumlahDiambil,
+        conditionCategory: 'BAIK' as ConditionCategory,
+        useManualPricing: false,
+        manualPrice: 0,
+      },
+    ],
+    isValid: true, // Valid by default with BAIK condition
     totalQuantity: item.jumlahDiambil,
-    remainingQuantity: item.jumlahDiambil,
+    remainingQuantity: 0, // No remaining since all items allocated to BAIK
   }
 
   const [currentCondition, setCurrentCondition] = useState<EnhancedItemCondition>(initialCondition)
   const [showSuggestion, setShowSuggestion] = useState(false)
+  const [touched, setTouched] = useState(true) // Start as touched with valid BAIK defaults
 
   // Debug logging for component initialization
   useEffect(() => {
-    kasirLogger.returnProcess.debug(
-      'UnifiedConditionForm',
-      'Form component initialized',
-      {
-        itemId: item.id,
-        productName: item.produk?.name,
-        totalQuantity: item.jumlahDiambil,
-        initialMode: initialCondition.mode,
-        hasExistingValue: !!value,
-      },
-    )
+    kasirLogger.returnProcess.debug('UnifiedConditionForm', 'Form component initialized', {
+      itemId: item.id,
+      productName: item.produk?.name,
+      totalQuantity: item.jumlahDiambil,
+      initialMode: initialCondition.mode,
+      hasExistingValue: !!value,
+    })
   }, [item.id, item.produk?.name, item.jumlahDiambil, initialCondition.mode, value])
 
   // Validation logic
@@ -95,14 +94,15 @@ export function UnifiedConditionForm({
       error = 'Minimal harus mengembalikan 1 unit atau tandai sebagai hilang'
     } else if (!hasValidConditions) {
       // Check specific validation issues
-      const invalidConditions = currentCondition.conditions.filter(c =>
-        !c.kondisiAkhir ||
-        c.kondisiAkhir.length < 4 ||
-        c.kondisiAkhir.length > 500 ||
-        !c.jumlahKembali ||
-        c.jumlahKembali <= 0 ||
-        !c.conditionCategory ||
-        (c.useManualPricing && (c.manualPrice === undefined || c.manualPrice < 0))
+      const invalidConditions = currentCondition.conditions.filter(
+        (c) =>
+          !c.kondisiAkhir ||
+          c.kondisiAkhir.length < 4 ||
+          c.kondisiAkhir.length > 500 ||
+          !c.jumlahKembali ||
+          c.jumlahKembali <= 0 ||
+          !c.conditionCategory ||
+          (c.useManualPricing && (c.manualPrice === undefined || c.manualPrice < 0)),
       )
 
       if (invalidConditions.length > 0) {
@@ -111,13 +111,14 @@ export function UnifiedConditionForm({
           error = 'Semua kondisi harus dipilih'
         } else if (!firstInvalid.conditionCategory) {
           error = 'Kategori kondisi harus dipilih'
-        } else if (firstInvalid.kondisiAkhir.length < 4) {
-          error = 'Kondisi harus minimal 4 karakter'
         } else if (firstInvalid.kondisiAkhir.length > 500) {
           error = 'Kondisi maksimal 500 karakter'
         } else if (!firstInvalid.jumlahKembali || firstInvalid.jumlahKembali <= 0) {
           error = 'Jumlah kembali harus lebih dari 0'
-        } else if (firstInvalid.useManualPricing && (firstInvalid.manualPrice === undefined || firstInvalid.manualPrice < 0)) {
+        } else if (
+          firstInvalid.useManualPricing &&
+          (firstInvalid.manualPrice === undefined || firstInvalid.manualPrice < 0)
+        ) {
           error = 'Harga manual harus diisi dan tidak boleh negatif'
         }
       } else {
@@ -144,21 +145,23 @@ export function UnifiedConditionForm({
       warnings: warnings.length > 0 ? warnings : undefined,
     }
 
-    kasirLogger.validation.debug(
-      'validation',
-      'Form validation calculated',
-      {
-        itemId: item.id,
-        conditionCount: currentCondition.conditions.length,
-        totalReturned,
-        remaining,
-        maxAllowed: currentCondition.totalQuantity,
-        isValid: validationResult.isValid,
-        hasError: !!error,
-        warningCount: warnings.length,
-        validationState: error ? 'error' : validationResult.isValid && remaining === 0 ? 'complete' : totalReturned > 0 ? 'partial' : 'empty',
-      },
-    )
+    kasirLogger.validation.debug('validation', 'Form validation calculated', {
+      itemId: item.id,
+      conditionCount: currentCondition.conditions.length,
+      totalReturned,
+      remaining,
+      maxAllowed: currentCondition.totalQuantity,
+      isValid: validationResult.isValid,
+      hasError: !!error,
+      warningCount: warnings.length,
+      validationState: error
+        ? 'error'
+        : validationResult.isValid && remaining === 0
+          ? 'complete'
+          : totalReturned > 0
+            ? 'partial'
+            : 'empty',
+    })
 
     return validationResult
   }, [currentCondition, item.id])
@@ -172,22 +175,19 @@ export function UnifiedConditionForm({
     const firstCondition = currentCondition.conditions[0]
     if (!firstCondition?.kondisiAkhir || !firstCondition?.jumlahKembali) return false // Invalid first condition
 
-    const shouldShow = validation.remaining > 0 && validation.remaining < currentCondition.totalQuantity
+    const shouldShow =
+      validation.remaining > 0 && validation.remaining < currentCondition.totalQuantity
 
     // Debug logging for progressive disclosure decision
-    kasirLogger.returnProcess.debug(
-      'shouldShowSuggestion',
-      'Progressive disclosure evaluation',
-      {
-        itemId: item.id,
-        conditionCount: currentCondition.conditions.length,
-        remaining: validation.remaining,
-        totalReturned: validation.totalReturned,
-        totalQuantity: currentCondition.totalQuantity,
-        shouldShow,
-        firstConditionValid: !!(firstCondition?.kondisiAkhir && firstCondition?.jumlahKembali),
-      },
-    )
+    kasirLogger.returnProcess.debug('shouldShowSuggestion', 'Progressive disclosure evaluation', {
+      itemId: item.id,
+      conditionCount: currentCondition.conditions.length,
+      remaining: validation.remaining,
+      totalReturned: validation.totalReturned,
+      totalQuantity: currentCondition.totalQuantity,
+      shouldShow,
+      firstConditionValid: !!(firstCondition?.kondisiAkhir && firstCondition?.jumlahKembali),
+    })
 
     return shouldShow
   }, [currentCondition, validation, item.id])
@@ -201,32 +201,24 @@ export function UnifiedConditionForm({
       validationError: validation.error,
     }
 
-    kasirLogger.returnProcess.debug(
-      'UnifiedConditionForm',
-      'onChange callback will be called',
-      {
-        itemId: item.id,
-        productName: item.produk?.name,
-        isValid: validation.isValid,
-        remainingQuantity: validation.remaining,
-        totalReturned: validation.totalReturned,
-        hasError: !!validation.error,
-        conditionsCount: currentCondition.conditions.length,
-        hasOnChangeCallback: typeof onChange === 'function',
-        conditionStructure: Object.keys(updatedCondition),
-      },
-    )
+    kasirLogger.returnProcess.debug('UnifiedConditionForm', 'onChange callback will be called', {
+      itemId: item.id,
+      productName: item.produk?.name,
+      isValid: validation.isValid,
+      remainingQuantity: validation.remaining,
+      totalReturned: validation.totalReturned,
+      hasError: !!validation.error,
+      conditionsCount: currentCondition.conditions.length,
+      hasOnChangeCallback: typeof onChange === 'function',
+      conditionStructure: Object.keys(updatedCondition),
+    })
 
     onChange(updatedCondition)
 
-    kasirLogger.returnProcess.debug(
-      'UnifiedConditionForm',
-      'onChange callback completed',
-      {
-        itemId: item.id,
-        productName: item.produk?.name,
-      },
-    )
+    kasirLogger.returnProcess.debug('UnifiedConditionForm', 'onChange callback completed', {
+      itemId: item.id,
+      productName: item.produk?.name,
+    })
     //eslint-disable-next-line
   }, [currentCondition, validation])
 
@@ -240,12 +232,17 @@ export function UnifiedConditionForm({
         jumlahKembali: newCondition.jumlahKembali,
       })
 
+      // Mark form as touched when user starts interacting
+      if (!touched) {
+        setTouched(true)
+      }
+
       setCurrentCondition((prev) => ({
         ...prev,
         conditions: prev.conditions.map((cond, i) => (i === index ? newCondition : cond)),
       }))
     },
-    [item.id],
+    [item.id, touched],
   )
 
   // Add new condition (progressive disclosure)
@@ -267,7 +264,7 @@ export function UnifiedConditionForm({
           jumlahKembali: suggestedQuantity, // Auto-suggest remaining quantity
           conditionCategory: 'BAIK' as ConditionCategory,
           useManualPricing: false,
-          manualPrice: 0
+          manualPrice: 0,
         },
       ],
     }))
@@ -330,10 +327,10 @@ export function UnifiedConditionForm({
 
   return (
     <Card className={`transition-all duration-200 ${getCardStyling()}`}>
-      <CardHeader className="pb-4">
+      <CardHeader>
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-blue-100 text-blue-600">
+          <div className="flex items-center gap-2">
+            <div className="rounded-lg bg-blue-100 text-blue-600">
               <Package className="h-5 w-5" />
             </div>
             <div>
@@ -366,17 +363,24 @@ export function UnifiedConditionForm({
                 <CheckCircle className="w-3 h-3 mr-1" />
                 Lengkap
               </Badge>
-            ) : validation.error ? (
+            ) : validation.error && touched ? (
               <Badge variant="destructive">
                 <AlertCircle className="w-3 h-3 mr-1" />
-                Error
+                Perlu Diperbaiki
               </Badge>
             ) : validation.totalReturned > 0 ? (
               <Badge className="bg-yellow-500 text-black">
-                Sebagian ({validation.totalReturned}/{currentCondition.totalQuantity})
+                Dalam Proses ({validation.totalReturned}/{currentCondition.totalQuantity})
+              </Badge>
+            ) : touched ? (
+              <Badge className="bg-blue-100 text-blue-800 border-blue-200">
+                <Clock className="w-3 h-3 mr-1" />
+                Sedang Diisi
               </Badge>
             ) : (
-              <Badge variant="outline">Belum diisi</Badge>
+              <Badge variant="outline" className="text-gray-600">
+                Siap Diisi
+              </Badge>
             )}
           </div>
         </div>
@@ -414,8 +418,8 @@ export function UnifiedConditionForm({
           </Alert>
         )}
 
-        {/* Validation Error Display */}
-        {validation.error && (
+        {/* Validation Error Display - Only show when touched */}
+        {validation.error && touched && (
           <Alert variant="destructive" className="mt-4">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>{validation.error}</AlertDescription>
@@ -484,9 +488,13 @@ export function UnifiedConditionForm({
               Status:{' '}
               {validation.isValid && validation.remaining === 0
                 ? '✅ Lengkap'
-                : validation.totalReturned > 0
-                  ? '⏳ Sebagian'
-                  : '⚠️ Belum diisi'}
+                : validation.error && touched
+                  ? '❌ Perlu diperbaiki'
+                  : validation.totalReturned > 0
+                    ? '⏳ Dalam proses'
+                    : touched
+                      ? '📝 Sedang diisi'
+                      : '📋 Siap diisi'}
             </span>
             {validation.remaining > 0 && <span>Sisa: {validation.remaining} unit</span>}
             <span>
