@@ -83,6 +83,7 @@ export interface ClientProduct {
   category: ClientCategory
   color?: ClientColor
   material?: ClientMaterial
+  sizes: ClientProductSize[]
 }
 
 export interface ClientCategory {
@@ -136,11 +137,42 @@ export interface Material extends BaseMaterial {
   products: Product[]
 }
 
+// ProductSize Types
+export interface BaseProductSize {
+  id: string
+  productId: string
+  ageCategory: AgeCategory
+  size: SizeEnum
+  quantity: number
+  isActive: boolean
+  createdAt: Date
+  updatedAt: Date
+  createdBy: string
+}
+
+export interface ClientProductSize {
+  id: string
+  productId: string
+  ageCategory: AgeCategory
+  size: SizeEnum
+  quantity: number
+  isActive: boolean
+  createdAt: Date | string
+  updatedAt: Date | string
+  createdBy: string
+  product?: ClientProduct
+}
+
+export interface ProductSize extends BaseProductSize {
+  product: Product
+}
+
 // Full types with relationships
 export interface Product extends BaseProduct {
   category: Category
   color?: Color
   material?: Material
+  sizes: ProductSize[]
 }
 
 export interface Category extends BaseCategory {
@@ -167,6 +199,8 @@ export interface PrismaCategory extends BaseCategory {
 
 export type ViewMode = 'table' | 'card' | 'grid'
 export type ProductStatus = 'AVAILABLE' | 'RENTED' | 'MAINTENANCE'
+export type AgeCategory = 'ADULT' | 'CHILD' | 'UNIVERSAL'
+export type SizeEnum = 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL'
 
 // Filter types untuk UI components
 export type CategoryFilterValue = string | undefined
@@ -294,4 +328,53 @@ export interface ProductFormData {
   currentPrice: number // ✅ Renamed from hargaSewa to match database schema
   description: string
   imageUrl: string | null
+}
+
+/**
+ * Size Management Request/Response Types
+ */
+
+export interface CreateProductSizeRequest {
+  ageCategory: AgeCategory
+  size: SizeEnum
+  quantity: number
+  isActive?: boolean
+}
+
+export interface UpdateProductSizeRequest {
+  id?: string
+  ageCategory: AgeCategory
+  size: SizeEnum
+  quantity: number
+  isActive?: boolean
+}
+
+export interface CreateProductWithSizesRequest extends CreateProductRequest {
+  hasSizes?: boolean
+  sizes?: CreateProductSizeRequest[]
+}
+
+export interface UpdateProductWithSizesRequest extends UpdateProductRequest {
+  hasSizes?: boolean
+  sizes?: UpdateProductSizeRequest[]
+}
+
+// Enhanced Product types with size helpers
+export interface EnhancedClientProduct extends ClientProduct {
+  hasAdvancedSizing: boolean
+  sizeMode: 'legacy' | 'advanced' | 'none'
+  displaySizes: string[]
+}
+
+// Size management validation types
+export interface SizeValidationError {
+  field: string
+  message: string
+  ageCategory?: AgeCategory
+  size?: SizeEnum
+}
+
+export interface SizeValidationResult {
+  isValid: boolean
+  errors: SizeValidationError[]
 }

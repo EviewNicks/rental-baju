@@ -11,7 +11,7 @@ import { auth } from '@clerk/nextjs/server'
 import { ProductService } from '@/features/manage-product/services/productService'
 import { FileUploadService } from '@/features/manage-product/services/fileUploadService'
 import { prisma } from '@/lib/prisma'
-import { updateProductSchema } from '@/features/manage-product/lib/validation/productSchema'
+import { updateProductSchema, updateProductWithSizesSchema } from '@/features/manage-product/lib/validation/productSchema'
 import { NotFoundError } from '@/features/manage-product/lib/errors/AppError'
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -109,6 +109,23 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const materialQuantity = materialQuantityStr ? parseInt(materialQuantityStr) : undefined
     const image = formData.get('image') as File | null
 
+    // Size Management fields
+    const hasSizesStr = formData.get('hasSizes') as string
+    const hasSizes = hasSizesStr ? hasSizesStr === 'true' : undefined
+    const sizesStr = formData.get('sizes') as string
+    let sizes: Array<{ id?: string; ageCategory: string; size: string; quantity: number; isActive?: boolean }> = []
+
+    if (hasSizes !== undefined && sizesStr) {
+      try {
+        sizes = JSON.parse(sizesStr)
+      } catch {
+        return NextResponse.json(
+          { error: { message: 'Format data ukuran tidak valid', code: 'VALIDATION_ERROR' } },
+          { status: 400 },
+        )
+      }
+    }
+
     // Prepare update data
     const updateData: Record<string, unknown> = {}
 
@@ -124,6 +141,9 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     // Material Management fields - RPK-45
     if (materialId !== undefined) updateData.materialId = materialId
     if (materialQuantity !== undefined) updateData.materialQuantity = materialQuantity
+    // Size Management fields
+    if (hasSizes !== undefined) updateData.hasSizes = hasSizes
+    if (sizes.length > 0 || hasSizes !== undefined) updateData.sizes = sizes
 
     // Validate materialQuantity if provided
     if (materialQuantityStr && (isNaN(materialQuantity!) || materialQuantity! <= 0)) {
@@ -153,7 +173,13 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     // Validate with schema if there's data to update
     if (Object.keys(updateData).length > 0) {
-      updateProductSchema.parse(updateData)
+      // Use enhanced schema if size management fields are present
+      const hasManagermentFields = hasSizes !== undefined || sizes.length > 0
+      if (hasManagermentFields) {
+        updateProductWithSizesSchema.parse(updateData)
+      } else {
+        updateProductSchema.parse(updateData)
+      }
     }
 
     // Initialize services
@@ -192,8 +218,11 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       }
     }
 
-    // Update product (this will also validate category existence)
-    const product = await productService.updateProduct(id, updateData)
+    // Update product (use enhanced method for size management or regular method for backward compatibility)
+    const hasManagermentFields = hasSizes !== undefined || sizes.length > 0
+    const product = hasManagermentFields
+      ? await productService.updateProductWithSizes(id, updateData)
+      : await productService.updateProduct(id, updateData)
 
     return NextResponse.json(product, { status: 200 })
   } catch (error) {

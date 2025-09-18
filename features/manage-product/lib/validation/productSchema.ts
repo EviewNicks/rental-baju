@@ -108,6 +108,111 @@ export const colorSchema = z.object({
 
 export const updateColorSchema = colorSchema.partial()
 
+// ============== SIZE MANAGEMENT SCHEMAS ==============
+
+/**
+ * Schema untuk enum AgeCategory
+ */
+export const ageCategorySchema = z.enum(['ADULT', 'CHILD', 'UNIVERSAL'], {
+  message: 'Kategori umur harus ADULT, CHILD, atau UNIVERSAL',
+})
+
+/**
+ * Schema untuk enum SizeEnum
+ */
+export const sizeEnumSchema = z.enum(['XS', 'S', 'M', 'L', 'XL', 'XXL'], {
+  message: 'Ukuran harus XS, S, M, L, XL, atau XXL',
+})
+
+/**
+ * Schema untuk single ProductSize
+ */
+export const productSizeSchema = z.object({
+  ageCategory: ageCategorySchema,
+  size: sizeEnumSchema,
+  quantity: z
+    .number()
+    .int('Kuantitas harus berupa bilangan bulat')
+    .min(1, 'Kuantitas minimal 1')
+    .max(9999, 'Kuantitas maksimal 9999'),
+  isActive: z.boolean().default(true),
+})
+
+/**
+ * Schema untuk update ProductSize (dengan id optional)
+ */
+export const updateProductSizeSchema = productSizeSchema.extend({
+  id: z.string().uuid('ID ukuran produk tidak valid').optional(),
+})
+
+/**
+ * Schema untuk array of sizes dengan business rules validation
+ */
+export const productSizesArraySchema = z
+  .array(productSizeSchema)
+  .refine(
+    (sizes) => {
+      // Business Rule: No duplicate size within same age category
+      const combinations = sizes.map((s) => `${s.ageCategory}-${s.size}`)
+      const uniqueCombinations = new Set(combinations)
+      return combinations.length === uniqueCombinations.size
+    },
+    {
+      message: 'Tidak boleh ada ukuran duplikat dalam kategori umur yang sama',
+    },
+  )
+  .refine(
+    (sizes) => {
+      // Business Rule: All quantities must be positive
+      return sizes.every((s) => s.quantity > 0)
+    },
+    {
+      message: 'Semua kuantitas ukuran harus lebih dari 0',
+    },
+  )
+
+/**
+ * Enhanced product creation schema dengan size management
+ */
+export const createProductWithSizesSchema = productBaseSchema.extend({
+  image: z.union([z.instanceof(File), z.undefined(), z.null()]).optional(),
+  hasSizes: z.boolean().default(false),
+  sizes: productSizesArraySchema.optional(),
+}).refine(
+  (data) => {
+    // Business Rule: If hasSizes is true, sizes array should not be empty
+    if (data.hasSizes && (!data.sizes || data.sizes.length === 0)) {
+      return false
+    }
+    return true
+  },
+  {
+    message: 'Jika produk memiliki ukuran, minimal 1 ukuran harus ditambahkan',
+    path: ['sizes'],
+  },
+)
+
+/**
+ * Enhanced product update schema dengan size management
+ */
+export const updateProductWithSizesSchema = productBaseSchema.partial().extend({
+  image: imageFileSchema.optional(),
+  hasSizes: z.boolean().optional(),
+  sizes: z.array(updateProductSizeSchema).optional(),
+}).refine(
+  (data) => {
+    // Business Rule: If hasSizes is true, sizes array should not be empty
+    if (data.hasSizes === true && (!data.sizes || data.sizes.length === 0)) {
+      return false
+    }
+    return true
+  },
+  {
+    message: 'Jika produk memiliki ukuran, minimal 1 ukuran harus ditambahkan',
+    path: ['sizes'],
+  },
+)
+
 // ============== QUERY & PARAMS SCHEMAS ==============
 
 /**

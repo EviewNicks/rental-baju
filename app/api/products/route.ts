@@ -10,7 +10,7 @@ import { auth } from '@clerk/nextjs/server'
 import { ProductService } from '@/features/manage-product/services/productService'
 import { FileUploadService } from '@/features/manage-product/services/fileUploadService'
 import { prisma } from '@/lib/prisma'
-import { createProductSchema } from '@/features/manage-product/lib/validation/productSchema'
+import { createProductSchema, createProductWithSizesSchema } from '@/features/manage-product/lib/validation/productSchema'
 import { ConflictError } from '@/features/manage-product/lib/errors/AppError'
 
 export async function GET(request: NextRequest) {
@@ -102,6 +102,22 @@ export async function POST(request: NextRequest) {
     const materialQuantityStr = (formData.get('materialQuantity') as string) || undefined
     const image = formData.get('image') as File | null
 
+    // Size Management fields
+    const hasSizes = formData.get('hasSizes') === 'true'
+    const sizesStr = formData.get('sizes') as string
+    let sizes: Array<{ ageCategory: string; size: string; quantity: number; isActive?: boolean }> = []
+
+    if (hasSizes && sizesStr) {
+      try {
+        sizes = JSON.parse(sizesStr)
+      } catch {
+        return NextResponse.json(
+          { error: { message: 'Format data ukuran tidak valid', code: 'VALIDATION_ERROR' } },
+          { status: 400 },
+        )
+      }
+    }
+
     // Convert string to numbers
     const modalAwal = parseFloat(modalAwalStr)
     const currentPrice = parseFloat(currentPriceStr) // ✅ Fixed: use currentPrice instead of hargaSewa
@@ -171,11 +187,16 @@ export async function POST(request: NextRequest) {
       // Material Management fields - RPK-45
       materialId,
       materialQuantity,
+      // Size Management fields
+      hasSizes,
+      sizes,
       image,
     }
 
-    // Validate with schema
-    const validatedData = createProductSchema.parse(createRequest)
+    // Validate with schema - use enhanced schema for size management
+    const validatedData = hasSizes
+      ? createProductWithSizesSchema.parse(createRequest)
+      : createProductSchema.parse(createRequest)
 
     // Initialize services
     const productService = new ProductService(prisma, userId)
@@ -206,7 +227,10 @@ export async function POST(request: NextRequest) {
       imageUrl, // Add uploaded image URL
     }
 
-    const product = await productService.createProduct(productData)
+    // Use enhanced service method for size management or regular method for backward compatibility
+    const product = hasSizes
+      ? await productService.createProductWithSizes(productData)
+      : await productService.createProduct(productData)
 
     return NextResponse.json(product, { status: 201 })
   } catch (error) {

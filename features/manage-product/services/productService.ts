@@ -9,6 +9,10 @@ import {
   updateProductSchema,
   productQuerySchema,
   productParamsSchema,
+  createProductWithSizesSchema,
+  updateProductWithSizesSchema,
+  productSizeSchema,
+  updateProductSizeSchema,
 } from '../lib/validation/productSchema'
 import { NotFoundError, ConflictError } from '../lib/errors/AppError'
 import type {
@@ -18,8 +22,29 @@ import type {
   UpdateProductRequest,
   ProductListResponse,
   ProductStatus,
+  CreateProductWithSizesRequest,
+  UpdateProductWithSizesRequest,
+  CreateProductSizeRequest,
+  UpdateProductSizeRequest,
+  ProductSize,
+  SizeValidationResult,
+  AgeCategory,
+  SizeEnum,
+  ClientProduct,
+  EnhancedClientProduct,
 } from '../types'
 import { Decimal } from '@prisma/client/runtime/library'
+import {
+  getProductSizeMode,
+  getDisplaySizes,
+  getFormattedSizeDisplay,
+  getTotalQuantity,
+  hasProductSizes,
+  enhanceClientProduct,
+  createSizeSummary,
+  validateSizeCompatibility,
+  migrateLegacySizeToAdvanced,
+} from '../lib/utils/sizeManagementUtils'
 
 export class ProductService {
   constructor(
@@ -294,6 +319,10 @@ export class ProductService {
           category: true,
           color: true, // Include color relation
           material: true, // Include material relation - RPK-45
+          sizes: {
+            where: { isActive: true },
+            orderBy: [{ ageCategory: 'asc' }, { size: 'asc' }],
+          }, // Include product sizes
           // Include transaction items for total revenue calculation
           transaksiItems: {
             select: {
@@ -342,6 +371,10 @@ export class ProductService {
         category: true,
         color: true, // Include color relation
         material: true, // Include material relation - RPK-45
+        sizes: {
+          where: { isActive: true },
+          orderBy: [{ ageCategory: 'asc' }, { size: 'asc' }],
+        }, // Include product sizes
         // Include transaction items for total revenue calculation
         transaksiItems: {
           select: {
@@ -436,6 +469,647 @@ export class ProductService {
     return this.convertPrismaProductToProduct(updatedProduct)
   }
 
+  // ============== SIZE MANAGEMENT METHODS ==============
+
+  /**
+   * Create product with sizes - Enhanced version of createProduct
+   */
+  async createProductWithSizes(request: CreateProductWithSizesRequest): Promise<Product> {
+    // Validate input
+    const validatedData = createProductWithSizesSchema.parse(request)
+
+    // Check if product code already exists
+    const existingProduct = await this.prisma.product.findFirst({
+      where: {
+        code: validatedData.code,
+        isActive: true,
+      },
+    })
+
+    if (existingProduct) {
+      throw new ConflictError(`Kode produk ${validatedData.code} sudah digunakan`)
+    }
+
+    // Validate category existence
+    await this.validateCategoryExists(validatedData.categoryId)
+
+    // Validate color and material if provided
+    if (validatedData.colorId) {
+      await this.validateColorExists(validatedData.colorId)
+    }
+
+    let materialCost: Decimal | undefined
+    if (validatedData.materialId) {
+      materialCost = await this.validateAndCalculateMaterialCost(
+        validatedData.materialId,
+        validatedData.materialQuantity,
+      )
+    }
+
+    // Create product with sizes in transaction
+    const result = await this.prisma.$transaction(async (tx) => {
+      // Create the product first
+      const product = await tx.product.create({
+        data: {
+          code: validatedData.code,
+          name: validatedData.name,
+          description: validatedData.description,
+          modalAwal: new Decimal(validatedData.modalAwal),
+          currentPrice: new Decimal(validatedData.currentPrice),
+          quantity: validatedData.quantity,
+          rentedStock: 0,
+          categoryId: validatedData.categoryId,
+          size: validatedData.size,
+          colorId: validatedData.colorId,
+          materialId: validatedData.materialId || undefined,
+          materialCost: materialCost || undefined,
+          materialQuantity: validatedData.materialQuantity || undefined,
+          imageUrl: request.imageUrl || undefined,
+          status: 'AVAILABLE',
+          isActive: true,
+          createdBy: this.userId,
+        },
+      })
+
+      // Create sizes if provided
+      if (validatedData.hasSizes && validatedData.sizes && validatedData.sizes.length > 0) {
+        await tx.productSize.createMany({
+          data: validatedData.sizes.map((size) => ({
+            productId: product.id,
+            ageCategory: size.ageCategory,
+            size: size.size,
+            quantity: size.quantity,
+            isActive: size.isActive ?? true,
+            createdBy: this.userId,
+          })),
+        })
+      }
+
+      return product
+    })
+
+    // Fetch complete product with relationships
+    return this.getProductById(result.id)
+  }
+
+  /**
+   * Update product with sizes - Enhanced version of updateProduct
+   */
+  async updateProductWithSizes(
+    id: string,
+    request: UpdateProductWithSizesRequest,
+  ): Promise<Product> {
+    // Validate input
+    const { id: validatedId } = productParamsSchema.parse({ id })
+    const validatedData = updateProductWithSizesSchema.parse(request)
+
+    // Check if product exists
+    const existingProduct = await this.prisma.product.findUnique({
+      where: {
+        id: validatedId,
+        isActive: true,
+      },
+      include: {
+        sizes: true,
+      },
+    })
+
+    if (!existingProduct) {
+      throw new NotFoundError('Produk tidak ditemukan')
+    }
+
+    // Validate related entities if being updated
+    if (validatedData.categoryId && validatedData.categoryId !== existingProduct.categoryId) {
+      await this.validateCategoryExists(validatedData.categoryId)
+    }
+
+    if (validatedData.colorId && validatedData.colorId !== existingProduct.colorId) {
+      await this.validateColorExists(validatedData.colorId)
+    }
+
+    let materialCost: Decimal | undefined
+    if (validatedData.materialId && validatedData.materialId !== existingProduct.materialId) {
+      materialCost = await this.validateAndCalculateMaterialCost(
+        validatedData.materialId,
+        validatedData.materialQuantity,
+      )
+    }
+
+    // Update product with sizes in transaction
+    await this.prisma.$transaction(async (tx) => {
+      // Update the product
+      const updateData: Record<string, unknown> = {
+        updatedAt: new Date(),
+      }
+
+      // Add fields with proper type conversion
+      if (validatedData.name !== undefined) updateData.name = validatedData.name
+      if (validatedData.description !== undefined) updateData.description = validatedData.description
+      if (validatedData.quantity !== undefined) updateData.quantity = validatedData.quantity
+      if (validatedData.categoryId !== undefined) updateData.categoryId = validatedData.categoryId
+      if (validatedData.size !== undefined) updateData.size = validatedData.size
+      if (validatedData.colorId !== undefined) updateData.colorId = validatedData.colorId
+      if (validatedData.rentedStock !== undefined) updateData.rentedStock = validatedData.rentedStock
+      if (validatedData.materialId !== undefined) updateData.materialId = validatedData.materialId
+      if (validatedData.materialQuantity !== undefined)
+        updateData.materialQuantity = validatedData.materialQuantity
+      if (materialCost !== undefined) updateData.materialCost = materialCost
+
+      if ('imageUrl' in request && request.imageUrl !== undefined) {
+        updateData.imageUrl = request.imageUrl
+      }
+
+      if (validatedData.modalAwal !== undefined) {
+        updateData.modalAwal = new Decimal(validatedData.modalAwal)
+      }
+      if (validatedData.currentPrice !== undefined) {
+        updateData.currentPrice = new Decimal(validatedData.currentPrice)
+      }
+
+      await tx.product.update({
+        where: { id: validatedId },
+        data: updateData,
+      })
+
+      // Handle sizes update if provided
+      if (validatedData.hasSizes !== undefined && validatedData.sizes !== undefined) {
+        if (validatedData.hasSizes && validatedData.sizes.length > 0) {
+          // Delete existing sizes
+          await tx.productSize.deleteMany({
+            where: { productId: validatedId },
+          })
+
+          // Create new sizes
+          await tx.productSize.createMany({
+            data: validatedData.sizes.map((size) => ({
+              productId: validatedId,
+              ageCategory: size.ageCategory,
+              size: size.size,
+              quantity: size.quantity,
+              isActive: size.isActive ?? true,
+              createdBy: this.userId,
+            })),
+          })
+        } else if (!validatedData.hasSizes) {
+          // Remove all sizes if hasSizes is false
+          await tx.productSize.deleteMany({
+            where: { productId: validatedId },
+          })
+        }
+      }
+    })
+
+    // Fetch updated product with relationships
+    return this.getProductById(validatedId)
+  }
+
+  /**
+   * Get product sizes for a specific product
+   */
+  async getProductSizes(productId: string): Promise<ProductSize[]> {
+    const { id: validatedId } = productParamsSchema.parse({ id: productId })
+
+    const sizes = await this.prisma.productSize.findMany({
+      where: {
+        productId: validatedId,
+        isActive: true,
+      },
+      include: {
+        product: {
+          include: {
+            category: true,
+            color: true,
+            material: true,
+          },
+        },
+      },
+      orderBy: [{ ageCategory: 'asc' }, { size: 'asc' }],
+    })
+
+    return sizes.map((size) => this.convertPrismaProductSizeToProductSize(size))
+  }
+
+  /**
+   * Create sizes for an existing product
+   */
+  async createProductSizes(
+    productId: string,
+    sizes: CreateProductSizeRequest[],
+  ): Promise<ProductSize[]> {
+    const { id: validatedId } = productParamsSchema.parse({ id: productId })
+
+    // Validate product exists
+    const product = await this.prisma.product.findUnique({
+      where: { id: validatedId, isActive: true },
+    })
+
+    if (!product) {
+      throw new NotFoundError('Produk tidak ditemukan')
+    }
+
+    // Validate sizes data
+    const validatedSizes = sizes.map((size) => productSizeSchema.parse(size))
+
+    // Check for duplicates within the request
+    const combinations = validatedSizes.map((s) => `${s.ageCategory}-${s.size}`)
+    const uniqueCombinations = new Set(combinations)
+    if (combinations.length !== uniqueCombinations.size) {
+      throw new ConflictError('Tidak boleh ada ukuran duplikat dalam kategori umur yang sama')
+    }
+
+    // Check for existing duplicates in database
+    const existingSizes = await this.prisma.productSize.findMany({
+      where: {
+        productId: validatedId,
+        isActive: true,
+        OR: validatedSizes.map((size) => ({
+          ageCategory: size.ageCategory,
+          size: size.size,
+        })),
+      },
+    })
+
+    if (existingSizes.length > 0) {
+      const existingCombinations = existingSizes.map((s) => `${s.ageCategory}-${s.size}`)
+      throw new ConflictError(
+        `Ukuran berikut sudah ada: ${existingCombinations.join(', ')}`,
+      )
+    }
+
+    // Create sizes
+    await this.prisma.productSize.createMany({
+      data: validatedSizes.map((size) => ({
+        productId: validatedId,
+        ageCategory: size.ageCategory,
+        size: size.size,
+        quantity: size.quantity,
+        isActive: size.isActive ?? true,
+        createdBy: this.userId,
+      })),
+    })
+
+    return this.getProductSizes(validatedId)
+  }
+
+  /**
+   * Update multiple sizes for a product
+   */
+  async updateProductSizes(
+    productId: string,
+    sizes: UpdateProductSizeRequest[],
+  ): Promise<ProductSize[]> {
+    const { id: validatedId } = productParamsSchema.parse({ id: productId })
+
+    // Validate sizes data
+    const validatedSizes = sizes.map((size) => updateProductSizeSchema.parse(size))
+
+    await this.prisma.$transaction(async (tx) => {
+      for (const size of validatedSizes) {
+        if (size.id) {
+          // Update existing size
+          await tx.productSize.update({
+            where: { id: size.id },
+            data: {
+              ageCategory: size.ageCategory,
+              size: size.size,
+              quantity: size.quantity,
+              isActive: size.isActive ?? true,
+              updatedAt: new Date(),
+            },
+          })
+        } else {
+          // Create new size
+          await tx.productSize.create({
+            data: {
+              productId: validatedId,
+              ageCategory: size.ageCategory,
+              size: size.size,
+              quantity: size.quantity,
+              isActive: size.isActive ?? true,
+              createdBy: this.userId,
+            },
+          })
+        }
+      }
+    })
+
+    return this.getProductSizes(validatedId)
+  }
+
+  /**
+   * Delete specific sizes
+   */
+  async deleteProductSizes(productId: string, sizeIds: string[]): Promise<boolean> {
+    const { id: validatedId } = productParamsSchema.parse({ id: productId })
+
+    // Validate that all size IDs exist and belong to the product
+    const existingSizes = await this.prisma.productSize.findMany({
+      where: {
+        id: { in: sizeIds },
+        productId: validatedId,
+      },
+    })
+
+    if (existingSizes.length !== sizeIds.length) {
+      throw new NotFoundError('Beberapa ukuran tidak ditemukan')
+    }
+
+    // Soft delete sizes
+    await this.prisma.productSize.updateMany({
+      where: {
+        id: { in: sizeIds },
+        productId: validatedId,
+      },
+      data: {
+        isActive: false,
+        updatedAt: new Date(),
+      },
+    })
+
+    return true
+  }
+
+  // ============== BACKWARD COMPATIBILITY METHODS ==============
+
+  /**
+   * Get product with enhanced size information (unified interface)
+   */
+  async getEnhancedProductById(id: string): Promise<EnhancedClientProduct> {
+    const product = await this.getProductById(id)
+    return enhanceClientProduct(product as unknown as ClientProduct)
+  }
+
+  /**
+   * Migrate legacy product to advanced sizing
+   */
+  async migrateLegacyProductToAdvanced(
+    productId: string,
+    defaultAgeCategory: AgeCategory = 'ADULT'
+  ): Promise<Product> {
+    const { id: validatedId } = productParamsSchema.parse({ id: productId })
+
+    // Get current product
+    const product = await this.getProductById(validatedId)
+    const sizeMode = getProductSizeMode(product)
+
+    if (sizeMode !== 'legacy') {
+      throw new ConflictError('Produk bukan menggunakan sistem ukuran lama')
+    }
+
+    // Create advanced sizes from legacy data
+    const newSizes = migrateLegacySizeToAdvanced(product, defaultAgeCategory)
+
+    if (newSizes.length === 0) {
+      throw new ConflictError('Ukuran lama tidak dapat dikonversi ke sistem baru')
+    }
+
+    // Update product with new sizes
+    return this.updateProductWithSizes(validatedId, {
+      hasSizes: true,
+      sizes: newSizes.map(size => ({
+        ageCategory: size.ageCategory,
+        size: size.size,
+        quantity: size.quantity,
+        isActive: size.isActive,
+      })),
+      size: undefined, // Remove legacy size
+    })
+  }
+
+  /**
+   * Get product size summary (unified interface for listing)
+   */
+  async getProductSizeSummary(productId: string): Promise<{
+    mode: 'legacy' | 'advanced' | 'none'
+    count: number
+    display: string
+    hasStock: boolean
+    totalQuantity: number
+  }> {
+    const product = await this.getProductById(productId)
+    const summary = createSizeSummary(product)
+    const totalQuantity = getTotalQuantity(product)
+
+    return {
+      ...summary,
+      totalQuantity,
+    }
+  }
+
+  /**
+   * Validate size compatibility for updates
+   */
+  async validateProductSizeUpdate(
+    productId: string,
+    newSizes?: UpdateProductSizeRequest[]
+  ): Promise<{ isCompatible: boolean; warnings: string[] }> {
+    const product = await this.getProductById(productId)
+
+    // Convert UpdateProductSizeRequest to ProductSize for validation
+    const sizesForValidation: ProductSize[] = newSizes?.map(size => ({
+      id: size.id || '',
+      productId: productId,
+      ageCategory: size.ageCategory,
+      size: size.size,
+      quantity: size.quantity,
+      isActive: size.isActive ?? true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      createdBy: this.userId,
+      product: {} as Product,
+    })) || []
+
+    return validateSizeCompatibility(product, sizesForValidation)
+  }
+
+  /**
+   * Get unified size display for any product
+   */
+  async getProductSizeDisplay(productId: string): Promise<{
+    sizes: string[]
+    formatted: string
+    mode: 'legacy' | 'advanced' | 'none'
+  }> {
+    const product = await this.getProductById(productId)
+    const sizes = getDisplaySizes(product)
+    const formatted = getFormattedSizeDisplay(product)
+    const mode = getProductSizeMode(product)
+
+    return { sizes, formatted, mode }
+  }
+
+  /**
+   * Check if product has any sizing information
+   */
+  async hasProductSizing(productId: string): Promise<boolean> {
+    const product = await this.getProductById(productId)
+    return hasProductSizes(product)
+  }
+
+  /**
+   * Get products with enhanced size information (for listing)
+   */
+  async getProductsWithSizeInfo(query: Record<string, unknown>): Promise<{
+    products: Array<Product & {
+      sizeMode: 'legacy' | 'advanced' | 'none'
+      sizeSummary: { count: number; display: string; hasStock: boolean }
+      totalQuantity: number
+    }>
+    pagination: {
+      page: number
+      limit: number
+      total: number
+      totalPages: number
+    }
+  }> {
+    const result = await this.getProducts(query)
+
+    const enhancedProducts = result.products.map(product => {
+      const sizeMode = getProductSizeMode(product)
+      const sizeSummary = createSizeSummary(product)
+      const totalQuantity = getTotalQuantity(product)
+
+      return {
+        ...product,
+        sizeMode,
+        sizeSummary,
+        totalQuantity,
+      }
+    })
+
+    return {
+      products: enhancedProducts,
+      pagination: result.pagination,
+    }
+  }
+
+  /**
+   * Bulk migrate legacy products to advanced sizing
+   */
+  async bulkMigrateLegacyProducts(
+    productIds: string[],
+    defaultAgeCategory: AgeCategory = 'ADULT'
+  ): Promise<{
+    migrated: Product[]
+    failed: Array<{ id: string; reason: string }>
+  }> {
+    const migrated: Product[] = []
+    const failed: Array<{ id: string; reason: string }> = []
+
+    for (const productId of productIds) {
+      try {
+        const product = await this.migrateLegacyProductToAdvanced(productId, defaultAgeCategory)
+        migrated.push(product)
+      } catch (error) {
+        failed.push({
+          id: productId,
+          reason: error instanceof Error ? error.message : 'Unknown error',
+        })
+      }
+    }
+
+    return { migrated, failed }
+  }
+
+  // ============== HELPER METHODS ==============
+
+  /**
+   * Validate size data with business rules
+   */
+  private validateSizeData(sizes: CreateProductSizeRequest[]): SizeValidationResult {
+    const errors: Array<{ field: string; message: string }> = []
+
+    // Check for duplicates
+    const combinations = sizes.map((s) => `${s.ageCategory}-${s.size}`)
+    const uniqueCombinations = new Set(combinations)
+    if (combinations.length !== uniqueCombinations.size) {
+      errors.push({
+        field: 'sizes',
+        message: 'Tidak boleh ada ukuran duplikat dalam kategori umur yang sama',
+      })
+    }
+
+    // Check quantities
+    const invalidQuantities = sizes.filter((s) => s.quantity <= 0)
+    if (invalidQuantities.length > 0) {
+      errors.push({
+        field: 'quantities',
+        message: 'Semua kuantitas ukuran harus lebih dari 0',
+      })
+    }
+
+    return {
+      isValid: errors.length === 0,
+      errors,
+    }
+  }
+
+  /**
+   * Helper method to validate category exists
+   */
+  private async validateCategoryExists(categoryId: string): Promise<void> {
+    const categoryExists = await this.prisma.category.findUnique({
+      where: { id: categoryId },
+    })
+
+    if (!categoryExists) {
+      throw new NotFoundError(`Category dengan ID ${categoryId} tidak ditemukan`)
+    }
+  }
+
+  /**
+   * Helper method to validate color exists
+   */
+  private async validateColorExists(colorId: string): Promise<void> {
+    const colorExists = await this.prisma.color.findUnique({
+      where: { id: colorId },
+    })
+
+    if (!colorExists) {
+      throw new NotFoundError(`Warna dengan ID ${colorId} tidak ditemukan`)
+    }
+  }
+
+  /**
+   * Helper method to validate material and calculate cost
+   */
+  private async validateAndCalculateMaterialCost(
+    materialId: string,
+    materialQuantity?: number,
+  ): Promise<Decimal | undefined> {
+    const materialExists = await this.prisma.material.findUnique({
+      where: { id: materialId },
+    })
+
+    if (!materialExists) {
+      throw new NotFoundError(`Material dengan ID ${materialId} tidak ditemukan`)
+    }
+
+    if (materialQuantity && materialQuantity > 0) {
+      return new Decimal(materialExists.pricePerUnit).mul(materialQuantity)
+    }
+
+    return undefined
+  }
+
+  /**
+   * Convert Prisma ProductSize to application ProductSize type
+   */
+  private convertPrismaProductSizeToProductSize(prismaSize: Record<string, unknown>): ProductSize {
+    return {
+      id: prismaSize.id as string,
+      productId: prismaSize.productId as string,
+      ageCategory: prismaSize.ageCategory as AgeCategory,
+      size: prismaSize.size as SizeEnum,
+      quantity: prismaSize.quantity as number,
+      isActive: prismaSize.isActive as boolean,
+      createdAt: prismaSize.createdAt as Date,
+      updatedAt: prismaSize.updatedAt as Date,
+      createdBy: prismaSize.createdBy as string,
+      product: this.convertPrismaProductToProduct(prismaSize.product as Record<string, unknown>),
+    }
+  }
+
   /**
    * Calculate total revenue from transaction items
    * Aggregates subtotal from all related transaction items
@@ -517,6 +1191,18 @@ export class ProductService {
       status: prismaProduct.status as ProductStatus,
       imageUrl: prismaProduct.imageUrl as string | undefined,
       totalPendapatan: this.calculateTotalRevenue(prismaProduct),
+      sizes: (prismaProduct.sizes as Array<Record<string, unknown>>)?.map((size) => ({
+        id: size.id as string,
+        productId: size.productId as string,
+        ageCategory: size.ageCategory as AgeCategory,
+        size: size.size as SizeEnum,
+        quantity: size.quantity as number,
+        isActive: size.isActive as boolean,
+        createdAt: size.createdAt as Date,
+        updatedAt: size.updatedAt as Date,
+        createdBy: size.createdBy as string,
+        product: {} as Product, // Avoid circular reference
+      })) || [],
       isActive: prismaProduct.isActive as boolean,
       createdAt: prismaProduct.createdAt as Date,
       updatedAt: prismaProduct.updatedAt as Date,
