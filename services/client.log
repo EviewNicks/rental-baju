@@ -1,6 +1,20 @@
-# Client Log File - Combined from merge
-
-# Entries from HEAD branch and main branch have been combined
-# This file contains client-side logging information for the rental management system
-
-# Log entries continue to be written by the application during runtime
+[Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 513ms
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 155ms
+useTransactionDetail.ts:218 🔄 Transform Data Debug: Object
+logger.ts:196 2025-09-17T12:07:57.150Z [INFO] [statusUtils][calculateEnhancedStatus] Pickup detected, changing to diambil{  "result": "diambil",  "source": "server-flag",  "performance": {    "timestamp": 1758110877150,    "memory": null  }}
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 345ms
+useTransactionDetail.ts:218 🔄 Transform Data Debug: {transactionCode: 'TXN-20250917-001', hasFullItems: false, hasItems: true, itemsCount: 1, sourceField: 'items', …}
+logger.ts:196 2025-09-17T12:08:07.311Z [INFO] [statusUtils][calculateEnhancedStatus] Pickup detected, changing to diambil{  "result": "diambil",  "source": "server-flag",  "performance": {    "timestamp": 1758110887311,    "memory": null  }}
+useTransactionDetail.ts:218 🔄 Transform Data Debug: {transactionCode: 'TXN-20250917-001', hasFullItems: false, hasItems: true, itemsCount: 1, sourceField: 'items', …}hasFullItems: falsehasItems: trueitemsCount: 1itemsWithPickup: 1sourceField: "items"transactionCode: "TXN-20250917-001"[[Prototype]]: Object
+logger.ts:196 2025-09-17T12:08:12.308Z [INFO] [statusUtils][calculateEnhancedStatus] Pickup detected, changing to diambil{  "result": "diambil",  "source": "server-flag",  "performance": {    "timestamp": 1758110892308,    "memory": null  }}
+useTransactionDetail.ts:218 🔄 Transform Data Debug: {transactionCode: 'TXN-20250917-001', hasFullItems: false, hasItems: true, itemsCount: 1, sourceField: 'items', …}hasFullItems: falsehasItems: trueitemsCount: 1itemsWithPickup: 1sourceField: "items"transactionCode: "TXN-20250917-001"[[Prototype]]: Object
+logger.ts:196 2025-09-17T12:08:17.315Z [INFO] [statusUtils][calculateEnhancedStatus] Pickup detected, changing to diambil{  "result": "diambil",  "source": "server-flag",  "performance": {    "timestamp": 1758110897315,    "memory": null  }}
+useTransactionDetail.ts:218 🔄 Transform Data Debug: {transactionCode: 'TXN-20250917-001', hasFullItems: false, hasItems: true, itemsCount: 1, sourceField: 'items', …}hasFullItems: falsehasItems: trueitemsCount: 1itemsWithPickup: 1sourceField: "items"transactionCode: "TXN-20250917-001"[[Prototype]]: Object
+logger.ts:196 2025-09-17T12:08:27.324Z [INFO] [statusUtils][calculateEnhancedStatus] Pickup detected, changing to diambil{  "result": "diambil",  "source": "server-flag",  "performance": {    "timestamp": 1758110907323,    "memory": null  }}
+useTransactionDetail.ts:218 🔄 Transform Data Debug: {transactionCode: 'TXN-20250917-001', hasFullItems: false, hasItems: true, itemsCount: 1, sourceField: 'items', …}
+logger.ts:196 2025-09-17T12:08:27.338Z [INFO] [statusUtils][calculateEnhancedStatus] Pickup detected, changing to diambil{  "result": "diambil",  "source": "server-flag",  "performance": {    "timestamp": 1758110907338,    "memory": null  }}
+useTransactionDetail.ts:218 🔄 Transform Data Debug: {transactionCode: 'TXN-20250917-001', hasFullItems: false, hasItems: true, itemsCount: 1, sourceField: 'items', …}
+logger.ts:196 2025-09-17T12:08:37.317Z [INFO] [statusUtils][calculateEnhancedStatus] Pickup detected, changing to diambil{  "result": "diambil",  "source": "server-flag",  "performance": {    "timestamp": 1758110917317,    "memory": null  }}

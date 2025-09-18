@@ -1,6 +1,34 @@
-# Server Log File - Combined from merge
+PS D:\.work\rental-software> yarn add @radix-ui/react-switch
+yarn add v1.22.22
+[1/4] Resolving packages...
+[2/4] Fetching packages...
+[3/4] Linking dependencies...
+warning " > @typescript-eslint/eslint-plugin@8.39.0" has incorrect peer dependency "@typescript-eslint/parser@^8.39.0".
+warning "@typescript-eslint/parser > @typescript-eslint/typescript-estree@8.38.0" has incorrect peer dependency "typescript@>=4.8.4 <5.9.0".
+warning "@typescript-eslint/parser > @typescript-eslint/typescript-estree > @typescript-eslint/project-service@8.38.0" has incorrect peer dependency "typescript@>=4.8.4 <5.9.0".
+warning "@typescript-eslint/parser > @typescript-eslint/typescript-estree > @typescript-eslint/tsconfig-utils@8.38.0" has incorrect peer dependency "typescript@>=4.8.4 <5.9.0".
+error Error: EPERM: operation not permitted, unlink 'D:\.work\rental-software\node_modules\lightningcss-win32-x64-msvc\lightningcss.win32-x64-msvc.node'info Visit https://yarnpkg.com/en/docs/cli/add for documentation about this command.
+PS D:\.work\rental-software> npx shadcn@latest add switch
+✔ Checking registry.
+⠇ Installing dependencies.
 
-# Entries from HEAD branch and main branch have been combined  
-# This file contains server-side logging information for the rental management system
+Something went wrong. Please check the error below for more details.
+If the problem persists, please open an issue on GitHub.
 
-# Log entries continue to be written by the application during runtime
+Command failed with exit code 1: yarn add "@radix-ui/react-switch"
+
+warning " > @typescript-eslint/eslint-plugin@8.39.0" has incorrect peer dependency "@typescript-eslint/parser@^8.39.0".
+warning " > @typescript-eslint/parser@8.38.0" has incorrect peer dependency "typescript@>=4.8.4 <5.9.0".
+warning "@typescript-eslint/parser > @typescript-eslint/typescript-estree@8.38.0" has incorrect peer dependency "typescript@>=4.8.4 <5.9.0".
+warning "@typescript-eslint/parser > @typescript-eslint/typescript-estree > @typescript-eslint/project-service@8.38.0" has incorrect peer dependency "typescript@>=4.8.4 <5.9.0".
+warning "@typescript-eslint/parser > @typescript-eslint/typescript-estree > @typescript-eslint/tsconfig-utils@8.38.0" has incorrect peer dependency "typescript@>=4.8.4 <5.9.0".
+error Error: EPERM: operation not permitted, unlink 'D:\.work\rental-software\node_modules\@tailwindcss\oxide-win32-x64-msvc\tailwindcss-oxide.win32-x64-msvc.node'
+
+
+yarn add v1.22.22
+[1/4] Resolving packages...
+[2/4] Fetching packages...
+[3/4] Linking dependencies...
+info Visit https://yarnpkg.com/en/docs/cli/add for documentation about this command.
+
+PS D:\.work\rental-software>
