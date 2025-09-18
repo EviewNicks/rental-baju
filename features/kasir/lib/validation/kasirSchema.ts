@@ -114,7 +114,7 @@ export const updateTransaksiItemSchema = z.object({
 })
 
 export const updateTransaksiSchema = z.object({
-  status: z.enum(['active', 'selesai', 'terlambat', 'cancelled', 'dikembalikan']).optional(),
+  status: z.enum(['active', 'diambil', 'selesai', 'terlambat', 'cancelled']).optional(),
   tglKembali: z.string().datetime('Format tanggal kembali tidak valid (ISO 8601)').optional(),
   catatan: z.string().max(1000, 'Catatan maksimal 1000 karakter').optional(),
   items: z.array(updateTransaksiItemSchema).optional()
@@ -123,7 +123,7 @@ export const updateTransaksiSchema = z.object({
 export const transaksiQuerySchema = z.object({
   page: z.coerce.number().min(1).default(1),
   limit: z.coerce.number().min(1).max(100).default(10),
-  status: z.enum(['active', 'selesai', 'terlambat', 'cancelled', 'dikembalikan']).optional(),
+  status: z.enum(['active', 'diambil', 'selesai', 'terlambat', 'cancelled']).optional(),
   search: z.string().optional(),
   penyewaId: z.string().uuid().optional(),
   dateStart: z.string().datetime().optional(),
@@ -210,7 +210,16 @@ export const pickupRequestSchema = z.object({
   items: z
     .array(pickupItemSchema)
     .min(1, 'Minimal harus ada 1 item yang diambil')
-    .max(50, 'Maksimal 50 item dapat diproses sekaligus')
+    .max(50, 'Maksimal 50 item dapat diproses sekaligus'),
+  catatan: z
+    .string()
+    .max(1000, 'Catatan pickup maksimal 1000 karakter')
+    .optional()
+    .transform((val) => {
+      // Sanitize and normalize input
+      if (!val || val.trim() === '') return undefined
+      return val.trim()
+    })
 }).refine((data) => {
   // Ensure no duplicate item IDs
   const itemIds = data.items.map(item => item.id)

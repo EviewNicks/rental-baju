@@ -275,6 +275,7 @@ yarn install               # Install dependencies
 ## Testing Documentation Standards
 
 ### Test File Documentation
+
 - Each test file should include a header comment explaining its purpose
 - Complex tests require Given-When-Then structure documentation
 - Unit tests are co-located with implementation files (`.test.ts`)
@@ -282,9 +283,12 @@ yarn install               # Install dependencies
 - E2E tests are in `__tests__/playwright/[feature]/` with BDD format
 
 ### Test Reports Location
+
 Test reports and documentation are stored in:
+
 - `docs/task/[feature-name]/report-test/`
   - `unit-test-report.md`
   - `integration-test-report.md`
   - `e2e-test-report.md`
   - `performance-test-report.md`
+- add to memeory untuk project ini lewatkan pengujian unit test , integration tets nya

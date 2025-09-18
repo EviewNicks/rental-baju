@@ -45,8 +45,6 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(result, { status: 200 })
   } catch (error) {
-    console.error('GET /api/products error:', error)
-
     if (error instanceof Error) {
       return NextResponse.json(
         { error: { message: error.message, code: 'INTERNAL_ERROR' } },
@@ -189,8 +187,8 @@ export async function POST(request: NextRequest) {
       try {
         const uploadResult = await fileUploadService.uploadProductImage(image, validatedData.code)
         imageUrl = uploadResult?.url
-      } catch (uploadError) {
-        console.error('Image upload error:', uploadError)
+      } catch {
+        // Image upload failed
         return NextResponse.json(
           { error: { message: 'Failed to upload image', code: 'UPLOAD_ERROR' } },
           { status: 400 },
@@ -212,8 +210,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(product, { status: 201 })
   } catch (error) {
-    console.error('POST /api/products error:', error)
-
     if (error instanceof ConflictError) {
       return NextResponse.json(
         { error: { message: error.message, code: 'CONFLICT' } },

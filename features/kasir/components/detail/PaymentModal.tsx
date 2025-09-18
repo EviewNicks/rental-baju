@@ -116,9 +116,9 @@ export function PaymentModal({ isOpen, onClose, transaction }: PaymentModalProps
           </DialogDescription>
         </DialogHeader>
 
-        <div className="py-4">
+        <div>
           {/* Transaction Summary */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-2 mb-4">
             <h4 className="font-medium text-blue-900 mb-3">Ringkasan Tagihan</h4>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">

@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowLeft, Download, AlertTriangle, RefreshCw } from 'lucide-react'
+import { ArrowLeft, AlertTriangle, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { StatusBadge } from '@/features/kasir/components/ui/status-badge'
 import { CustomerInfoCard } from './CustomerInfoCard'
@@ -190,10 +190,6 @@ export function TransactionDetailPage({ transactionId }: TransactionDetailPagePr
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Refresh
               </Button>
-              <Button variant="outline" size="sm">
-                <Download className="h-4 w-4 mr-2" />
-                Cetak
-              </Button>
             </div>
           </div>
         </div>
@@ -249,9 +245,9 @@ export function TransactionDetailPage({ transactionId }: TransactionDetailPagePr
             </div>
 
             {/* Activity Timeline */}
-            <ActivityTimeline 
-              data-testid="activity-timeline" 
-              timeline={transaction.timeline} 
+            <ActivityTimeline
+              data-testid="activity-timeline"
+              timeline={transaction.timeline}
               transactionCode={transaction.transactionCode}
             />
           </div>

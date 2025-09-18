@@ -5,6 +5,7 @@ import { queryKeys } from '@/lib/react-query'
 import { kasirApi } from '../api'
 import type { TransactionDetail } from '../types'
 import type { TransaksiResponse } from '../types'
+import { calculateEnhancedStatus } from '../lib/utils/statusUtils'
 
 interface UseTransactionDetailOptions {
   enabled?: boolean
@@ -182,20 +183,70 @@ export function useTransactionDetail(
   }
 }
 
+
 /**
  * Transform API TransaksiResponse to UI TransactionDetail type
  * Uses existing transaction item data with product information
+ * FIXED: Handle both 'fullItems' (from pickup response) and 'items' (from GET response)
  */
 async function transformApiToUI(apiData: TransaksiResponse): Promise<TransactionDetail> {
-  // Use items from transaction data - API returns items array, not fullItems
-  const items = apiData.items || []
+  // Validation: Ensure apiData is valid
+  if (!apiData) {
+    throw new Error('Invalid API response: apiData is null or undefined')
+  }
+
+  if (!apiData.id || !apiData.kode) {
+    throw new Error('Invalid API response: Missing required transaction fields (id, kode)')
+  }
+
+  // CRITICAL FIX: Prioritize 'fullItems' from pickup response, fallback to 'items' from GET response
+  const rawItems = (apiData as unknown as Record<string, unknown>).fullItems || apiData.items || []
+
+  // Validation: Ensure items is an array
+  if (!Array.isArray(rawItems)) {
+    console.warn('Transform warning: items field is not an array, using empty array', {
+      transactionCode: apiData.kode,
+      itemsType: typeof rawItems,
+      hasFullItems: !!(apiData as unknown as Record<string, unknown>).fullItems,
+      hasItems: !!apiData.items
+    })
+  }
+
+  const items = Array.isArray(rawItems) ? rawItems : []
+
+  // Enhanced logging for debugging pickup issues
+  console.info('🔄 Transform Data Debug:', {
+    transactionCode: apiData.kode,
+    hasFullItems: !!(apiData as unknown as Record<string, unknown>).fullItems,
+    hasItems: !!apiData.items,
+    itemsCount: items.length,
+    sourceField: (apiData as unknown as Record<string, unknown>).fullItems ? 'fullItems' : 'items',
+    itemsWithPickup: items.filter(item => (item.jumlahDiambil || 0) > 0).length
+  })
+
+  // Validation: Ensure penyewa data is valid
+  if (!apiData.penyewa) {
+    throw new Error(`Invalid API response: Missing penyewa data for transaction ${apiData.kode}`)
+  }
+
+  if (!apiData.penyewa.nama || !apiData.penyewa.telepon) {
+    console.warn('Transform warning: Missing penyewa required fields', {
+      transactionCode: apiData.kode,
+      hasNama: !!apiData.penyewa.nama,
+      hasTelepon: !!apiData.penyewa.telepon
+    })
+  }
+
+  // Calculate enhanced status based on pickup status with server-side optimization
+  const hasPickup = items.some(item => (item.jumlahDiambil || 0) > 0)
+  const calculatedStatus = calculateEnhancedStatus(apiData.status, items, apiData.tglSelesai, hasPickup)
 
   const transformed: TransactionDetail = {
     id: apiData.id,
     transactionCode: apiData.kode,
-    customerName: apiData.penyewa.nama,
-    customerPhone: apiData.penyewa.telepon,
-    customerAddress: apiData.penyewa.alamat,
+    customerName: apiData.penyewa.nama || 'N/A',
+    customerPhone: apiData.penyewa.telepon || 'N/A',
+    customerAddress: apiData.penyewa.alamat || '',
     items: items.map((item) => item.produk.name),
     startDate: apiData.tglMulai,
     endDate: apiData.tglSelesai || undefined,
@@ -203,7 +254,7 @@ async function transformApiToUI(apiData: TransaksiResponse): Promise<Transaction
     totalAmount: apiData.totalHarga,
     amountPaid: apiData.jumlahBayar,
     remainingAmount: apiData.sisaBayar,
-    status: apiData.status,
+    status: calculatedStatus,
     paymentMethod: apiData.metodeBayar,
     notes: apiData.catatan || '',
     createdAt: apiData.createdAt,
@@ -306,7 +357,8 @@ function mapActivityTypeToAction(
     dibuat: 'created',
     dibayar: 'paid',
     diambil: 'picked_up',
-    dikembalikan: 'returned',        // NEW: Return activity mapping
+    selesai: 'returned',              // UPDATED: Map selesai to returned activity
+    dikembalikan: 'returned',         // LEGACY: Keep for backward compatibility
     penalty_added: 'penalty_added',  // NEW: Penalty activity mapping
     penalty_diterapkan: 'penalty_added', // NEW: Penalty alias mapping
     terlambat: 'overdue',

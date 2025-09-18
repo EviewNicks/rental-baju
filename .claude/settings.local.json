@@ -2,9 +2,6 @@
   "permissions": {
     "allow": [
       "Read",
-      "Write",
-      "Edit",
-      "MultiEdit",
       "Glob",
       "Grep",
       "TodoWrite",
@@ -100,7 +97,12 @@
       "Read(/D:\\.work\\rental-software\\app\\owner/**)",
       "Read(/D:\\.work\\rental-software\\app\\api\\kasir\\produk\\available/**)",
       "Read(/D:\\.work\\rental-software\\features\\manage-product\\docs\\task/**)",
-      "Read(/D:\\.work\\rental-software\\app\\api\\kasir\\produk\\available/**)"
+      "Read(/D:\\.work\\rental-software\\app\\api\\kasir\\produk\\available/**)",
+      "mcp__atlassian__getAccessibleAtlassianResources",
+      "mcp__atlassian__getConfluencePage",
+      "mcp__atlassian__getVisibleJiraProjects",
+      "mcp__atlassian__createJiraIssue",
+      "Bash(dir:*)"
     ],
     "deny": []
   }

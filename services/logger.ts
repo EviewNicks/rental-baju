@@ -351,52 +351,22 @@ export const logger: Logger = {
   },
 }
 
-// Tambahkan fungsi untuk menyimpan ke file hanya jika di server-side dan bukan Edge Runtime
+// Initialize file logging for server-side only
 if (isServer && !isEdgeRuntime) {
   try {
-    // Gunakan dynamic import untuk fs dan path
-    // Ini hanya akan dijalankan di server-side Node.js
-    import('fs')
-      .then((fs) => {
-        import('path')
-          .then((path) => {
-            // Buat direktori log jika belum ada
-            const LOG_DIR = path.join(process.cwd(), 'services', 'logger-detailed')
-            if (!fs.existsSync(LOG_DIR)) {
-              fs.mkdirSync(LOG_DIR, { recursive: true })
-            }
-
-            // Tambahkan fungsi _saveToFile ke logger
-            logger._saveToFile = (level: string, message: string) => {
-              try {
-                const today = new Date().toISOString().split('T')[0]
-                const combinedLogPath = path.join(LOG_DIR, 'combined.log')
-                const dailyLogPath = path.join(LOG_DIR, `app-${today}.log`)
-                const errorLogPath = path.join(LOG_DIR, 'error.log')
-
-                // Append ke combined.log
-                fs.appendFileSync(combinedLogPath, message + '\n')
-
-                // Append ke daily log
-                fs.appendFileSync(dailyLogPath, message + '\n')
-
-                // Jika level error, append juga ke error.log
-                if (level === 'error') {
-                  fs.appendFileSync(errorLogPath, message + '\n')
-                }
-              } catch (err) {
-                console.error('Failed to write log to file:', err)
-              }
-            }
-          })
-          .catch((err) => {
-            console.error('Failed to import path module:', err)
-          })
-      })
-      .catch((err) => {
-        console.error('Failed to import fs module:', err)
-      })
+    // Use require() instead of import() to avoid webpack analysis
+    // This will only execute on server-side Node.js environment
+    // Try both .js (compiled) and .ts (development) extensions
+    let fileLoggerModule
+    try {
+      fileLoggerModule = eval('require')('./logger-file.server.js')
+    } catch {
+      fileLoggerModule = eval('require')('./logger-file.server')
+    }
+    logger._saveToFile = (level: string, message: string) => {
+      fileLoggerModule.fileLogger.saveToFile(level, message)
+    }
   } catch (err) {
-    console.error('Failed to setup file logging:', err)
+    console.error('Failed to initialize file logging:', err)
   }
 }

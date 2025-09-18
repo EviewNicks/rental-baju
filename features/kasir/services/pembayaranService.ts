@@ -92,7 +92,6 @@ export class PembayaranService {
 
     // 3. Create payment record and update transaction in a database transaction with consistency checks
     const result = await this.prisma.$transaction(async (tx) => {
-      console.log(`[PAYMENT_CREATE] Starting payment transaction for ${transaksi.kode}`)
       
       // Create payment record
       const pembayaran = await tx.pembayaran.create({
@@ -105,7 +104,6 @@ export class PembayaranService {
           createdBy: this.userId
         }
       })
-      console.log(`[PAYMENT_CREATE] Payment record created: ${pembayaran.id}`)
 
       // Update transaction payment amounts
       const newJumlahBayar = transaksi.jumlahBayar.add(data.jumlah)
@@ -121,7 +119,6 @@ export class PembayaranService {
           sisaBayar: newSisaBayar
         }
       })
-      console.log(`[PAYMENT_CREATE] Transaction amounts updated for ${transaksi.kode}`)
 
       // Create activity log
       const aktivitas = await tx.aktivitasTransaksi.create({
@@ -140,7 +137,6 @@ export class PembayaranService {
           createdBy: this.userId
         }
       })
-      console.log(`[PAYMENT_CREATE] Activity log created: ${aktivitas.id}`)
 
       // 🔥 FIX: Verify activity was created within transaction
       const activityVerification = await tx.aktivitasTransaksi.findUnique({
@@ -150,7 +146,6 @@ export class PembayaranService {
       if (!activityVerification) {
         throw new Error(`Critical error: Activity ${aktivitas.id} creation verification failed`)
       }
-      console.log(`[PAYMENT_CREATE] Activity verification successful: ${aktivitas.id}`)
 
       // Get payment with transaction details for response
       const paymentWithDetails = await tx.pembayaran.findUnique({
@@ -172,7 +167,6 @@ export class PembayaranService {
         }
       })
 
-      console.log(`[PAYMENT_CREATE] Payment transaction completed for ${transaksi.kode}`)
       return paymentWithDetails!
     }, {
       // 🔥 FIX: Increase transaction timeout and set isolation level for consistency
@@ -202,11 +196,9 @@ export class PembayaranService {
         
         if (activityCheck) {
           activityExists = true
-          console.log(`[PAYMENT_VERIFY] Activity verification successful after ${retryCount} retries`)
         } else {
           retryCount++
           if (retryCount < maxRetries) {
-            console.log(`[PAYMENT_VERIFY] Activity not found, retrying (${retryCount}/${maxRetries})`)
             await new Promise(resolve => setTimeout(resolve, 200 * retryCount)) // Exponential backoff
           }
         }
@@ -238,7 +230,6 @@ export class PembayaranService {
       }
     )
 
-    console.log(`[PAYMENT_CREATE] Payment creation process completed for ${transaksi.kode}`)
     return result as PembayaranWithDetails
   }
 

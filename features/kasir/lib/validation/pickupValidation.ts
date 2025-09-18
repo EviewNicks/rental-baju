@@ -272,6 +272,49 @@ export class PickupBusinessRules {
       severity: 'info'
     }
   }
+
+  /**
+   * Rule 8: Validate pickup note content and security - RPK-48
+   */
+  static validatePickupNote(note?: string): BusinessRuleResult {
+    if (!note) {
+      return {
+        valid: true,
+        ruleCode: 'NO_PICKUP_NOTE',
+        message: 'Tidak ada catatan pickup',
+        severity: 'info'
+      }
+    }
+
+    // Length validation
+    if (note.length > 1000) {
+      return {
+        valid: false,
+        ruleCode: 'PICKUP_NOTE_TOO_LONG',
+        message: `Catatan pickup terlalu panjang (${note.length}/1000 karakter)`,
+        severity: 'error'
+      }
+    }
+
+    // XSS prevention - basic HTML tag detection
+    const htmlTagRegex = /<[^>]*>/g
+    if (htmlTagRegex.test(note)) {
+      return {
+        valid: false,
+        ruleCode: 'PICKUP_NOTE_INVALID_CONTENT',
+        message: 'Catatan pickup tidak boleh mengandung HTML tags',
+        severity: 'error'
+      }
+    }
+
+    // Success case
+    return {
+      valid: true,
+      ruleCode: 'PICKUP_NOTE_VALID',
+      message: `Catatan pickup valid (${note.length} karakter)`,
+      severity: 'info'
+    }
+  }
 }
 
 /**
@@ -280,7 +323,8 @@ export class PickupBusinessRules {
 export class PickupValidator {
   static validatePickupRequest(
     context: ValidationContext,
-    pickupItems: PickupItemRequest[]
+    pickupItems: PickupItemRequest[],
+    catatan?: string
   ): {
     valid: boolean
     errors: BusinessRuleResult[]
@@ -300,6 +344,9 @@ export class PickupValidator {
 
     // 4. Business hours validation
     results.push(PickupBusinessRules.validateBusinessHours())
+
+    // 5. Pickup note validation (RPK-48)
+    results.push(PickupBusinessRules.validatePickupNote(catatan))
 
     // 5. Individual item validations
     for (const pickupItem of pickupItems) {

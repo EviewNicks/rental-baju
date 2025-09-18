@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -28,57 +28,52 @@ export function Stepper({ steps, currentStep, onStepClick, className }: StepperP
   if (!isClient) {
     return (
       <div className={cn('w-full', className)}>
-        <div className="flex items-center justify-between">
-          {steps.map((step, index) => {
-            const isCompleted = step.id < currentStep
-            const isCurrent = step.id === currentStep
-
-            return (
-              <div key={step.id} className="flex items-center flex-1">
-                {/* Step Circle - Static version */}
-                <div className="flex flex-col items-center">
+        <div className="flex items-center w-full">
+          {steps.map((step, index) => (
+            <React.Fragment key={step.id}>
+              {/* Step Circle - Static version */}
+              <div className="flex flex-col items-center">
+                <div
+                  className={cn(
+                    'w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold',
+                    'border-2',
+                    step.id < currentStep && 'bg-green-500 border-green-500 text-white',
+                    step.id === currentStep && 'bg-yellow-400 border-yellow-400 text-gray-900',
+                    step.id > currentStep && 'bg-gray-100 border-gray-300 text-gray-500',
+                  )}
+                >
+                  {step.id < currentStep ? <Check className="h-5 w-5" /> : step.id}
+                </div>
+                <div className="mt-2 text-center">
                   <div
                     className={cn(
-                      'w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold',
-                      'border-2',
-                      isCompleted && 'bg-green-500 border-green-500 text-white',
-                      isCurrent && 'bg-yellow-400 border-yellow-400 text-gray-900',
-                      !isCompleted && !isCurrent && 'bg-gray-100 border-gray-300 text-gray-500',
+                      'text-sm font-medium',
+                      step.id === currentStep && 'text-gray-900',
+                      step.id < currentStep && 'text-green-600',
+                      step.id > currentStep && 'text-gray-500',
                     )}
                   >
-                    {isCompleted ? <Check className="h-5 w-5" /> : step.id}
+                    {step.title}
                   </div>
-                  <div className="mt-2 text-center">
-                    <div
-                      className={cn(
-                        'text-sm font-medium',
-                        isCurrent && 'text-gray-900',
-                        isCompleted && 'text-green-600',
-                        !isCompleted && !isCurrent && 'text-gray-500',
-                      )}
-                    >
-                      {step.title}
-                    </div>
-                    {step.description && (
-                      <div className="text-xs text-gray-500 mt-1">{step.description}</div>
-                    )}
-                  </div>
+                  {step.description && (
+                    <div className="text-xs text-gray-500 mt-1">{step.description}</div>
+                  )}
                 </div>
-
-                {/* Connector Line */}
-                {index < steps.length - 1 && (
-                  <div className="flex-1 mx-4 mt-[-20px]">
-                    <div
-                      className={cn(
-                        'h-0.5',
-                        step.id < currentStep ? 'bg-green-500' : 'bg-gray-300',
-                      )}
-                    />
-                  </div>
-                )}
               </div>
-            )
-          })}
+
+              {/* Connector Line */}
+              {index < steps.length - 1 && (
+                <div className="flex-1 mx-4">
+                  <div
+                    className={cn(
+                      'h-0.5 transition-colors duration-200',
+                      step.id < currentStep ? 'bg-green-500' : 'bg-gray-300',
+                    )}
+                  />
+                </div>
+              )}
+            </React.Fragment>
+          ))}
         </div>
       </div>
     )
@@ -87,14 +82,14 @@ export function Stepper({ steps, currentStep, onStepClick, className }: StepperP
   // Client-side render with interactive buttons
   return (
     <div className={cn('w-full', className)}>
-      <div className="flex items-center justify-between">
+      <div className="flex items-center w-full">
         {steps.map((step, index) => {
           const isCompleted = step.id < currentStep
           const isCurrent = step.id === currentStep
           const isClickable = onStepClick && (isCompleted || step.id <= currentStep + 1)
 
           return (
-            <div key={step.id} className="flex items-center flex-1">
+            <React.Fragment key={step.id}>
               {/* Step Circle */}
               <div className="flex flex-col items-center">
                 <button
@@ -133,7 +128,7 @@ export function Stepper({ steps, currentStep, onStepClick, className }: StepperP
 
               {/* Connector Line */}
               {index < steps.length - 1 && (
-                <div className="flex-1 mx-4 mt-[-20px]">
+                <div className="flex-1 mx-4">
                   <div
                     className={cn(
                       'h-0.5 transition-colors duration-200',
@@ -142,7 +137,7 @@ export function Stepper({ steps, currentStep, onStepClick, className }: StepperP
                   />
                 </div>
               )}
-            </div>
+            </React.Fragment>
           )
         })}
       </div>

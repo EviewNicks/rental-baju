@@ -12,9 +12,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { prisma } from '@/lib/prisma'
 import { TransaksiService } from '@/features/kasir/services/transaksiService'
-import { 
-  createTransaksiSchema, 
-  transaksiQuerySchema 
+import {
+  createTransaksiSchema,
+  transaksiQuerySchema
 } from '@/features/kasir/lib/validation/kasirSchema'
 import { ZodError } from 'zod'
 import { createSuccessResponse } from '@/features/kasir/types'
@@ -112,8 +112,6 @@ export async function POST(request: NextRequest) {
     )
     return NextResponse.json(response, { status })
   } catch (error) {
-    console.error('POST /api/kasir/transaksi error:', error)
-
     // Handle validation errors
     if (error instanceof ZodError) {
       return NextResponse.json(
@@ -219,6 +217,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
+
     // Parse query parameters
     const { searchParams } = new URL(request.url)
     const queryParams = {
@@ -231,6 +230,7 @@ export async function GET(request: NextRequest) {
       dateEnd: searchParams.get('dateEnd') || undefined
     }
 
+
     // Validate query parameters
     const validatedQuery = transaksiQuerySchema.parse(queryParams)
 
@@ -240,55 +240,66 @@ export async function GET(request: NextRequest) {
     // Get transaksi list
     const result = await transaksiService.getTransaksiList(validatedQuery)
 
-    // Format response data
+
+    // Format response data with pickup detection
     const formattedData = {
-      data: result.data.map(transaksi => ({
-        id: transaksi.id,
-        kode: transaksi.kode,
-        penyewa: {
-          id: transaksi.penyewa.id,
-          nama: transaksi.penyewa.nama,
-          telepon: transaksi.penyewa.telepon,
-          alamat: transaksi.penyewa.alamat
-        },
-        status: transaksi.status,
-        totalHarga: Number(transaksi.totalHarga),
-        jumlahBayar: Number(transaksi.jumlahBayar),
-        sisaBayar: Number(transaksi.sisaBayar),
-        tglMulai: transaksi.tglMulai.toISOString(),
-        tglSelesai: transaksi.tglSelesai?.toISOString() || null,
-        tglKembali: transaksi.tglKembali?.toISOString() || null,
-        metodeBayar: transaksi.metodeBayar,
-        catatan: transaksi.catatan,
-        createdBy: transaksi.createdBy,
-        createdAt: transaksi.createdAt.toISOString(),
-        updatedAt: transaksi.updatedAt.toISOString(),
-        itemCount: transaksi.items.length,
-        items: transaksi.items.map(item => ({
-          produk: {
-            id: item.produk.id,
-            name: item.produk.name
+      data: result.data.map(transaksi => {
+        // Calculate pickup status server-side for performance
+        const hasPickup = transaksi.items.some(item => (item.jumlahDiambil || 0) > 0)
+
+
+        return {
+          id: transaksi.id,
+          kode: transaksi.kode,
+          penyewa: {
+            id: transaksi.penyewa.id,
+            nama: transaksi.penyewa.nama,
+            telepon: transaksi.penyewa.telepon,
+            alamat: transaksi.penyewa.alamat
           },
-          jumlah: item.jumlah
-        })),
-        recentPayment: transaksi.pembayaran[0] ? {
-          jumlah: Number(transaksi.pembayaran[0].jumlah),
-          metode: transaksi.pembayaran[0].metode,
-          createdAt: transaksi.pembayaran[0].createdAt.toISOString()
-        } : null
-      })),
+          status: transaksi.status,
+          totalHarga: Number(transaksi.totalHarga),
+          jumlahBayar: Number(transaksi.jumlahBayar),
+          sisaBayar: Number(transaksi.sisaBayar),
+          tglMulai: transaksi.tglMulai.toISOString(),
+          tglSelesai: transaksi.tglSelesai?.toISOString() || null,
+          tglKembali: transaksi.tglKembali?.toISOString() || null,
+          metodeBayar: transaksi.metodeBayar,
+          catatan: transaksi.catatan,
+          createdBy: transaksi.createdBy,
+          createdAt: transaksi.createdAt.toISOString(),
+          updatedAt: transaksi.updatedAt.toISOString(),
+          itemCount: transaksi.items.length,
+          hasPickup, // NEW: Server-calculated pickup flag for status calculation
+          items: transaksi.items.map(item => ({
+            id: item.id, // Include item ID for future operations
+            produk: {
+              id: item.produk.id,
+              name: item.produk.name
+            },
+            jumlah: item.jumlah,
+            jumlahDiambil: item.jumlahDiambil || 0 // NEW: Include pickup data for status calculation
+          })),
+          recentPayment: transaksi.pembayaran[0] ? {
+            jumlah: Number(transaksi.pembayaran[0].jumlah),
+            metode: transaksi.pembayaran[0].metode,
+            createdAt: transaksi.pembayaran[0].createdAt.toISOString()
+          } : null
+        }
+      }),
       pagination: result.pagination,
       summary: result.summary
     }
+
 
     const { response, status } = createSuccessResponse(
       formattedData,
       'Data transaksi berhasil diambil'
     )
+
+
     return NextResponse.json(response, { status })
   } catch (error) {
-    console.error('GET /api/kasir/transaksi error:', error)
-
     // Handle validation errors
     if (error instanceof ZodError) {
       return NextResponse.json(
@@ -308,7 +319,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Handle database connection errors
-    if (error && typeof error === 'object' && 'message' in error && 
+    if (error && typeof error === 'object' && 'message' in error &&
         typeof error.message === 'string' && error.message.includes('connection pool')) {
       return NextResponse.json(
         {

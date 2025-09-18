@@ -115,25 +115,27 @@ model Penyewa {
 }
 
 model Transaksi {
-  id          String               @id @default(uuid())
-  kode        String               @unique
-  penyewaId   String
-  status      String               @default("active")
-  totalHarga  Decimal              @default(0) @db.Decimal(10, 2)
-  jumlahBayar Decimal              @default(0) @db.Decimal(10, 2)
-  sisaBayar   Decimal              @default(0) @db.Decimal(10, 2)
-  tglMulai    DateTime
-  tglSelesai  DateTime?
-  tglKembali  DateTime?
-  metodeBayar String               @default("tunai")
-  catatan     String?
-  createdBy   String
-  createdAt   DateTime             @default(now())
-  updatedAt   DateTime             @updatedAt
-  aktivitas   AktivitasTransaksi[]
-  pembayaran  Pembayaran[]
-  penyewa     Penyewa              @relation(fields: [penyewaId], references: [id])
-  items       TransaksiItem[]
+  id             String               @id @default(uuid())
+  kode           String               @unique
+  penyewaId      String
+  status         String               @default("active")
+  totalHarga     Decimal              @default(0) @db.Decimal(10, 2)
+  jumlahBayar    Decimal              @default(0) @db.Decimal(10, 2)
+  sisaBayar      Decimal              @default(0) @db.Decimal(10, 2)
+  tglMulai       DateTime
+  tglSelesai     DateTime?
+  tglKembali     DateTime?
+  metodeBayar    String               @default("tunai")
+  catatan        String?
+  flatLatePenalty Decimal             @default(20000) @db.Decimal(10, 2)
+  isLateReturn   Boolean              @default(false)
+  createdBy      String
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  aktivitas      AktivitasTransaksi[]
+  pembayaran     Pembayaran[]
+  penyewa        Penyewa              @relation(fields: [penyewaId], references: [id])
+  items          TransaksiItem[]
 
   @@index([kode])
   @@index([status])
@@ -141,6 +143,7 @@ model Transaksi {
   @@index([createdAt])
   @@index([status, id], map: "idx_transaksi_status_id_validation")
   @@index([id, tglSelesai, status], map: "idx_transaksi_penalty_dates")
+  @@index([isLateReturn], map: "idx_transaksi_late_penalty")
   @@map("transaksi")
 }
 
@@ -172,19 +175,24 @@ model TransaksiItem {
 }
 
 model TransaksiItemReturn {
-  id                 String        @id @default(uuid())
+  id                 String            @id @default(uuid())
   transaksiItemId    String
   kondisiAkhir       String
+  conditionCategory  ConditionCategory @default(BAIK)
   jumlahKembali      Int
-  penaltyAmount      Decimal       @default(0) @db.Decimal(10, 2)
-  modalAwalUsed      Decimal?      @db.Decimal(10, 2)
+  penaltyAmount      Decimal           @default(0) @db.Decimal(10, 2)
+  manualPrice        Decimal?          @db.Decimal(10, 2)
+  useManualPricing   Boolean           @default(false)
+  modalAwalUsed      Decimal?          @db.Decimal(10, 2)
   penaltyCalculation Json?
-  createdAt          DateTime      @default(now())
+  createdAt          DateTime          @default(now())
   createdBy          String
-  transaksiItem      TransaksiItem @relation(fields: [transaksiItemId], references: [id], onDelete: Cascade)
+  transaksiItem      TransaksiItem     @relation(fields: [transaksiItemId], references: [id], onDelete: Cascade)
 
   @@index([transaksiItemId, createdAt], map: "idx_transaksi_item_return_timeline")
   @@index([transaksiItemId, penaltyAmount], map: "idx_transaksi_item_return_penalty")
+  @@index([conditionCategory], map: "idx_transaksi_item_return_condition")
+  @@index([useManualPricing, manualPrice], map: "idx_transaksi_item_return_manual_pricing")
   @@map("transaksi_item_return")
 }
 
@@ -240,4 +248,12 @@ enum ProductStatus {
   AVAILABLE
   RENTED
   MAINTENANCE
+}
+
+enum ConditionCategory {
+  BAIK
+  KOTOR
+  RUSAK_RINGAN
+  RUSAK_BERAT
+  HILANG
 }

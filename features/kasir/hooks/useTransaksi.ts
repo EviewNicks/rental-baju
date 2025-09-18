@@ -84,11 +84,7 @@ export function useCreateTransaksi() {
         queryKey: queryKeys.kasir.produk.all(),
       })
       
-      console.log('[useTransaksi] Cache invalidation completed', {
-        transactionCode: newTransaksi.kode,
-        cacheKeysInvalidated: ['transaksi.lists', 'produk.all'],
-        timestamp: new Date().toISOString()
-      })
+      // Cache invalidation completed
 
       // Invalidate payment cache for this transaction
       queryClient.invalidateQueries({

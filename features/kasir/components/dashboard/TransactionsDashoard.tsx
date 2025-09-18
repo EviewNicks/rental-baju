@@ -7,7 +7,8 @@ import { useTransactions } from '../../hooks/useTransactions'
 import { TransactionTabs } from './TransactionTabs'
 import { TransactionTable } from './TransactionsTable'
 import { Button } from '@/components/ui/button'
-import { Plus } from 'lucide-react'
+import { AuthenticationControls } from '@/features/auth/components/AuthenticationControls'
+import { Plus, Shirt } from 'lucide-react'
 
 export function TransactionsDashboard() {
   const [activeTab, setActiveTab] = useState<TransactionStatus | 'all'>('all')
@@ -28,35 +29,69 @@ export function TransactionsDashboard() {
   // Handle error state
   if (error) {
     return (
-      <div
-        className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4"
-        data-testid="kasir-main-content"
-      >
-        <div className="max-w-7xl mx-auto space-y-6">
-          <div className="text-center space-y-2" data-testid="kasir-header">
-            <h1 className="text-2xl font-bold text-gray-900" data-testid="kasir-title">
-              RentalBaju
-            </h1>
-            <p className="text-gray-600" data-testid="kasir-subtitle">
-              Daftar Transaksi Penyewaan
-            </p>
-          </div>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+        {/* Top Tier: Authentication Navigation */}
+        <div className="bg-white/95 backdrop-blur-sm border-b border-neutral-100 sticky top-0 z-50" data-testid="kasir-auth-nav">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center h-12">
+              {/* Brand/Logo */}
+              <Link href="/" className="flex items-center space-x-2 group" data-testid="kasir-brand-link">
+                <div className="w-8 h-8 bg-gradient-to-br from-gold-500 to-gold-600 rounded-lg flex items-center justify-center transition-transform duration-200 group-hover:scale-105">
+                  <Shirt className="w-5 h-5 text-white" />
+                </div>
+                <span className="text-xl font-bold text-neutral-900 transition-colors duration-200 group-hover:text-gold-500">
+                  RentalBaju
+                </span>
+              </Link>
 
-          <div
-            className="bg-red-50 border border-red-200 rounded-xl p-6 text-center"
-            data-testid="error-boundary"
-          >
-            <div className="text-red-600 mb-2">⚠️ Terjadi Kesalahan</div>
-            <p className="text-red-700 mb-4" data-testid="error-message">
-              {error.message || 'Gagal memuat data transaksi'}
-            </p>
-            <Button
-              onClick={refreshTransactions}
-              className="bg-red-600 hover:bg-red-700 text-white"
-              data-testid="retry-button"
+              {/* Authentication Controls */}
+              <div className="hidden md:flex">
+                <AuthenticationControls 
+                  showDashboardLink={true}
+                  showLogo={false} 
+                />
+              </div>
+
+              {/* Mobile Authentication Menu */}
+              <div className="md:hidden">
+                <AuthenticationControls 
+                  showDashboardLink={true}
+                  showLogo={false}
+                  className="space-x-2" 
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Error Content */}
+        <div className="p-4" data-testid="kasir-main-content">
+          <div className="max-w-7xl mx-auto space-y-6">
+            <div className="text-center space-y-2" data-testid="kasir-header">
+              <h1 className="text-2xl font-bold text-gray-900" data-testid="kasir-title">
+                Dashboard Kasir
+              </h1>
+              <p className="text-gray-600" data-testid="kasir-subtitle">
+                Daftar Transaksi Penyewaan
+              </p>
+            </div>
+
+            <div
+              className="bg-red-50 border border-red-200 rounded-xl p-6 text-center"
+              data-testid="error-boundary"
             >
-              Coba Lagi
-            </Button>
+              <div className="text-red-600 mb-2">⚠️ Terjadi Kesalahan</div>
+              <p className="text-red-700 mb-4" data-testid="error-message">
+                {error.message || 'Gagal memuat data transaksi'}
+              </p>
+              <Button
+                onClick={refreshTransactions}
+                className="bg-red-600 hover:bg-red-700 text-white"
+                data-testid="retry-button"
+              >
+                Coba Lagi
+              </Button>
+            </div>
           </div>
         </div>
       </div>
@@ -64,20 +99,56 @@ export function TransactionsDashboard() {
   }
 
   return (
-    <div
-      className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4"
-      data-testid="kasir-main-content"
-    >
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="text-center space-y-2" data-testid="kasir-header">
-          <h1 className="text-2xl font-bold text-gray-900" data-testid="kasir-title">
-            RentalBaju
-          </h1>
-          <p className="text-gray-600" data-testid="kasir-subtitle">
-            Daftar Transaksi Penyewaan
-          </p>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      {/* Top Tier: Authentication Navigation */}
+      <div className="bg-white/95 backdrop-blur-sm border-b border-neutral-100 sticky top-0 z-50" data-testid="kasir-auth-nav">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-12">
+            {/* Brand/Logo */}
+            <Link href="/" className="flex items-center space-x-2 group" data-testid="kasir-brand-link">
+              <div className="w-8 h-8 bg-gradient-to-br from-gold-500 to-gold-600 rounded-lg flex items-center justify-center transition-transform duration-200 group-hover:scale-105">
+                <Shirt className="w-5 h-5 text-white" />
+              </div>
+              <span className="text-xl font-bold text-neutral-900 transition-colors duration-200 group-hover:text-gold-500">
+                RentalBaju
+              </span>
+            </Link>
+
+            {/* Authentication Controls */}
+            <div className="hidden md:flex">
+              <AuthenticationControls 
+                showDashboardLink={true}
+                showLogo={false} 
+              />
+            </div>
+
+            {/* Mobile Authentication Menu */}
+            <div className="md:hidden">
+              <AuthenticationControls 
+                showDashboardLink={true}
+                showLogo={false}
+                className="space-x-2" 
+              />
+            </div>
+          </div>
         </div>
+      </div>
+
+      {/* Main Content */}
+      <div
+        className="p-4"
+        data-testid="kasir-main-content"
+      >
+        <div className="max-w-7xl mx-auto space-y-6">
+          {/* Page Header */}
+          <div className="text-center space-y-2" data-testid="kasir-header">
+            <h1 className="text-2xl font-bold text-gray-900" data-testid="kasir-title">
+              Dashboard Kasir
+            </h1>
+            <p className="text-gray-600" data-testid="kasir-subtitle">
+              Daftar Transaksi Penyewaan
+            </p>
+          </div>
 
         {/* Add Transaction Button */}
         <div className="flex justify-end">
@@ -101,8 +172,9 @@ export function TransactionsDashboard() {
           counts={counts}
         />
 
-        {/* Transactions Table */}
-        <TransactionTable transactions={transactions} isLoading={isLoading} />
+          {/* Transactions Table */}
+          <TransactionTable transactions={transactions} isLoading={isLoading} />
+        </div>
       </div>
     </div>
   )
