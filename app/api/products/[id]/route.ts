@@ -171,7 +171,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         if (currentProduct.imageUrl) {
           try {
             oldImagePath = fileUploadService.extractPathFromUrl(currentProduct.imageUrl)
-          } catch (error) {
+          } catch {
             // Failed to extract old image path
           }
         }
@@ -183,7 +183,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
           oldImagePath,
         )
         updateData.imageUrl = uploadResult?.url
-      } catch (uploadError) {
+      } catch {
         // Image upload failed
         return NextResponse.json(
           { error: { message: 'Failed to upload image', code: 'UPLOAD_ERROR' } },

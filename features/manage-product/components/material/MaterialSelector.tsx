@@ -29,7 +29,7 @@ export function MaterialSelector({
   disabled = false,
   className = '',
 }: MaterialSelectorProps) {
-  const { data: materialsData, isLoading, error } = useMaterials({ limit: 100 })
+  const { data: materialsData, isLoading } = useMaterials({ limit: 100 })
   const materials = useMemo(() => materialsData?.materials || [], [materialsData?.materials])
   
   // Error handling managed by React Query

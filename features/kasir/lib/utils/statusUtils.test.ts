@@ -11,7 +11,7 @@ import {
   hasPickupItems,
   isOverdue
 } from './statusUtils'
-import { TransactionStatus, TransaksiItemResponse } from '../../types'
+import { TransaksiItemResponse } from '../../types'
 
 describe('Status Utils Functions', () => {
 
@@ -146,8 +146,8 @@ describe('Status Utils Functions', () => {
     test('should return false for non-array input', () => {
       expect(hasValidItemData(null)).toBe(false)
       expect(hasValidItemData(undefined)).toBe(false)
-      expect(hasValidItemData('not an array' as any)).toBe(false)
-      expect(hasValidItemData(123 as any)).toBe(false)
+      expect(hasValidItemData('not an array' as unknown as TransaksiItemResponse[])).toBe(false)
+      expect(hasValidItemData(123 as unknown as TransaksiItemResponse[])).toBe(false)
     })
 
     test('should return false for empty array', () => {

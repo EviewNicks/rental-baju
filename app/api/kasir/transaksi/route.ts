@@ -300,10 +300,6 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(response, { status })
   } catch (error) {
-    // Get userId from auth for error logging (may be null if auth fails)
-    const { userId: errorUserId } = await auth().catch(() => ({ userId: null }))
-
-
     // Handle validation errors
     if (error instanceof ZodError) {
       return NextResponse.json(

@@ -71,7 +71,7 @@ export function useDeleteMaterial() {
     mutationFn: (id: string) => {
       return materialApi.deleteMaterial(id)
     },
-    onSuccess: (_, id) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.materials.all })
     },
   })

@@ -187,7 +187,7 @@ export async function POST(request: NextRequest) {
       try {
         const uploadResult = await fileUploadService.uploadProductImage(image, validatedData.code)
         imageUrl = uploadResult?.url
-      } catch (uploadError) {
+      } catch {
         // Image upload failed
         return NextResponse.json(
           { error: { message: 'Failed to upload image', code: 'UPLOAD_ERROR' } },

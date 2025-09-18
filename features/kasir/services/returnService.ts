@@ -14,6 +14,7 @@ import {
 import { PenaltyCalculator, PenaltyCalculationResult } from '../lib/utils/penaltyCalculator'
 import { TransaksiService, TransaksiWithDetails, TransaksiForValidation } from './transaksiService'
 import { createAuditService, AuditService } from './auditService'
+import { ConditionCategory } from '../types'
 import { logger } from '../../../services/logger'
 
 // Unified return request interface - treats all returns as multi-condition
@@ -24,10 +25,15 @@ interface UnifiedReturnRequest {
       kondisiAkhir: string
       jumlahKembali: number
       modalAwal?: number
+      conditionCategory?: ConditionCategory
+      manualPrice?: number
+      useManualPricing?: boolean
     }>
   }>
   catatan?: string
   tglKembali?: string
+  applyFlatLatePenalty?: boolean
+  customLatePenalty?: number
 }
 
 // Unified processing result interface
@@ -327,10 +333,10 @@ export class UnifiedReturnService {
             productName: transactionItem.produk.name,
             expectedReturnDate: transaction.tglSelesai || new Date(),
             actualReturnDate,
-            conditionCategory: (condition as any).conditionCategory || 'BAIK',
-            manualPrice: (condition as any).manualPrice || 0,
+            conditionCategory: condition.conditionCategory || 'BAIK',
+            manualPrice: condition.manualPrice || 0,
             quantity: condition.jumlahKembali,
-            useManualPricing: (condition as any).useManualPricing || false,
+            useManualPricing: condition.useManualPricing || false,
             modalAwal: condition.modalAwal || Number(transactionItem.produk.modalAwal),
           }))
         })
@@ -339,8 +345,8 @@ export class UnifiedReturnService {
         const enhancedResult = PenaltyCalculator.calculateEnhancedTransactionPenalties(
           itemsForEnhancedCalculation,
           {
-            applyFlatLatePenalty: (request as any).applyFlatLatePenalty !== false,
-            customLatePenalty: (request as any).customLatePenalty
+            applyFlatLatePenalty: request.applyFlatLatePenalty !== false,
+            customLatePenalty: request.customLatePenalty
           }
         )
 
@@ -528,20 +534,20 @@ export class UnifiedReturnService {
                 data: {
                   transaksiItemId: item.itemId,
                   kondisiAkhir: condition.kondisiAkhir,
-                  conditionCategory: hasManualPricing ? (condition as any).conditionCategory : 'BAIK',
+                  conditionCategory: hasManualPricing ? condition.conditionCategory : 'BAIK',
                   jumlahKembali: condition.jumlahKembali,
                   penaltyAmount: conditionPenalty,
-                  manualPrice: hasManualPricing ? new Decimal((condition as any).manualPrice || 0) : null,
-                  useManualPricing: hasManualPricing ? (condition as any).useManualPricing || false : false,
+                  manualPrice: hasManualPricing ? new Decimal(condition.manualPrice || 0) : null,
+                  useManualPricing: hasManualPricing ? condition.useManualPricing || false : false,
                   modalAwalUsed: condition.modalAwal ? new Decimal(condition.modalAwal) : null,
                   penaltyCalculation: {
                     expectedReturnDate: returnDate,
                     actualReturnDate: returnDate,
                     calculationMethod: hasManualPricing
-                      ? ((condition as any).useManualPricing ? 'manual_pricing' : 'flat_late')
+                      ? (condition.useManualPricing ? 'manual_pricing' : 'flat_late')
                       : (isLostItemCondition(condition.kondisiAkhir) ? 'modal_awal' : 'late_fee'),
                     description: hasManualPricing
-                      ? `Enhanced processing: ${(condition as any).conditionCategory} - ${condition.kondisiAkhir} (${condition.jumlahKembali} unit)`
+                      ? `Enhanced processing: ${condition.conditionCategory} - ${condition.kondisiAkhir} (${condition.jumlahKembali} unit)`
                       : `Unified processing: ${condition.kondisiAkhir} (${condition.jumlahKembali} unit)`,
                   },
                   createdBy: this.userId,

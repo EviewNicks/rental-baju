@@ -3,7 +3,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/react-query'
 import { kasirApi } from '../api'
-import type { TransactionDetail, TransactionStatus, TransaksiItemResponse } from '../types'
+import type { TransactionDetail } from '../types'
 import type { TransaksiResponse } from '../types'
 import { calculateEnhancedStatus } from '../lib/utils/statusUtils'
 
@@ -200,14 +200,14 @@ async function transformApiToUI(apiData: TransaksiResponse): Promise<Transaction
   }
 
   // CRITICAL FIX: Prioritize 'fullItems' from pickup response, fallback to 'items' from GET response
-  const rawItems = (apiData as any).fullItems || apiData.items || []
+  const rawItems = (apiData as unknown as Record<string, unknown>).fullItems || apiData.items || []
 
   // Validation: Ensure items is an array
   if (!Array.isArray(rawItems)) {
     console.warn('Transform warning: items field is not an array, using empty array', {
       transactionCode: apiData.kode,
       itemsType: typeof rawItems,
-      hasFullItems: !!(apiData as any).fullItems,
+      hasFullItems: !!(apiData as unknown as Record<string, unknown>).fullItems,
       hasItems: !!apiData.items
     })
   }
@@ -217,10 +217,10 @@ async function transformApiToUI(apiData: TransaksiResponse): Promise<Transaction
   // Enhanced logging for debugging pickup issues
   console.info('🔄 Transform Data Debug:', {
     transactionCode: apiData.kode,
-    hasFullItems: !!(apiData as any).fullItems,
+    hasFullItems: !!(apiData as unknown as Record<string, unknown>).fullItems,
     hasItems: !!apiData.items,
     itemsCount: items.length,
-    sourceField: (apiData as any).fullItems ? 'fullItems' : 'items',
+    sourceField: (apiData as unknown as Record<string, unknown>).fullItems ? 'fullItems' : 'items',
     itemsWithPickup: items.filter(item => (item.jumlahDiambil || 0) > 0).length
   })
 

@@ -177,7 +177,7 @@ export function isOverdue(endDate?: string): boolean {
  * @param items - Transaction items array to validate
  * @returns true if items contain valid pickup information
  */
-export function hasValidItemData(items?: any[]): boolean {
+export function hasValidItemData(items?: TransaksiItemResponse[]): boolean {
   const log = logger.child('statusUtils')
 
   if (!Array.isArray(items)) {

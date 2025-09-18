@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Trash2, AlertTriangle, Calculator, DollarSign } from 'lucide-react'
+import { Trash2, AlertTriangle, DollarSign } from 'lucide-react'
 import type { ConditionSplit, ConditionCategory } from '../../types'
 import { kasirLogger } from '../../lib/logger'
 

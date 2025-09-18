@@ -77,7 +77,7 @@ export class PickupService {
           : undefined
       }
 
-    } catch (error) {
+    } catch {
       return {
         valid: false,
         errors: ['Terjadi kesalahan saat validasi pickup']
@@ -190,7 +190,7 @@ export class PickupService {
         message
       }
 
-    } catch (error) {
+    } catch {
       throw new Error('Gagal memproses pickup')
     }
   }
@@ -248,7 +248,7 @@ export class PickupService {
       // Note: Transaction status remains 'active' as pickup doesn't change transaction lifecycle
       // Only return affects transaction status (active -> selesai)
 
-    } catch (error) {
+    } catch {
       // Don't throw here as this is a secondary operation
     }
   }
@@ -314,7 +314,7 @@ export class PickupService {
         items
       }
 
-    } catch (error) {
+    } catch {
       return null
     }
   }

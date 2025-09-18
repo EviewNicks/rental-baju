@@ -54,7 +54,7 @@ export function useMaterialCost(
         formattedCost,
         isValid,
       }
-    } catch (error) {
+    } catch {
       // Return safe fallback
       return {
         totalCost: 0,
@@ -106,7 +106,7 @@ export function useBatchMaterialCost(
         formattedIndividual,
         isValid: totalCost > 0,
       }
-    } catch (error) {
+    } catch {
       // Return safe fallback
       const fallbackIndividual = materials.map(() => 0)
       return {

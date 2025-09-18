@@ -45,15 +45,10 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
   // Request deduplication mechanism to prevent multiple identical calls
   const clientIP = request.headers.get('x-forwarded-for') || 'unknown'
-  const userAgent = request.headers.get('user-agent') || 'unknown'
-  const contentLength = request.headers.get('content-length') || '0'
 
   // Performance optimization: Set up request timeout to prevent hanging
   const timeoutController = new AbortController()
   const timeoutId = setTimeout(() => timeoutController.abort(), 30000) // 30 second timeout
-
-  // Declare variables that need to be accessible in error handler
-  let requestBody: LegacyRequestBodyType | UnifiedReturnRequest | null = null
 
   try {
 
@@ -103,7 +98,6 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     // Parse and validate request body with timing
 
     const body = await request.json()
-    requestBody = body // Store reference for error handling
 
     // TSK-24 Phase 1: Unified validation with automatic format detection
     let validatedData: UnifiedReturnRequest
