@@ -8,10 +8,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { ProductService } from '@/features/manage-product/services/productService'
+import { ProductSizeAggregationService } from '@/features/manage-product/services/productSizeAggregationService'
 import { FileUploadService } from '@/features/manage-product/services/fileUploadService'
 import { prisma } from '@/lib/prisma'
 import { createProductSchema, createProductWithSizesSchema } from '@/features/manage-product/lib/validation/productSchema'
 import { ConflictError } from '@/features/manage-product/lib/errors/AppError'
+import type { Product } from '@/features/manage-product/types'
 
 export async function GET(request: NextRequest) {
   try {
@@ -37,11 +39,41 @@ export async function GET(request: NextRequest) {
       colorId: searchParams.getAll('colorId').length > 0 ? searchParams.getAll('colorId') : undefined,
     }
 
-    // Initialize service
+    // Aggregation options
+    const includeAggregation = searchParams.get('includeAggregation') === 'true'
+    const includeBreakdown = searchParams.get('includeBreakdown') !== 'false' // default true
+
+    // Initialize services
     const productService = new ProductService(prisma, userId)
 
     // Get products
     const result = await productService.getProducts(query)
+
+    // Add aggregation data if requested
+    if (includeAggregation && result.products.length > 0) {
+      const aggregationService = new ProductSizeAggregationService(prisma, {
+        includeBreakdown,
+      })
+
+      // Add aggregation data to each product
+      const productsWithAggregation = await Promise.all(
+        result.products.map(async (product: Product) => {
+          try {
+            const aggregation = await aggregationService.getProductAggregation(product.id)
+            return {
+              ...product,
+              aggregation,
+            }
+          } catch (error) {
+            // If aggregation fails, include product without aggregation data
+            console.warn(`Failed to get aggregation for product ${product.id}:`, error)
+            return product
+          }
+        })
+      )
+
+      result.products = productsWithAggregation
+    }
 
     return NextResponse.json(result, { status: 200 })
   } catch (error) {

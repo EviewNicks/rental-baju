@@ -32,6 +32,12 @@ import type {
   SizeEnum,
   ClientProduct,
   EnhancedClientProduct,
+  ProductSizeAggregation,
+  ProductResponseWithAggregation,
+  AggregatedSizeView,
+  CategoryBreakdown,
+  BusinessLogicValidationResult,
+  BusinessCapabilitiesReport,
 } from '../types'
 import { Decimal } from '@prisma/client/runtime/library'
 import {
@@ -45,6 +51,7 @@ import {
   validateSizeCompatibility,
   migrateLegacySizeToAdvanced,
 } from '../lib/utils/sizeManagementUtils'
+import { ProductSizeAggregationService } from './productSizeAggregationService'
 
 export class ProductService {
   constructor(
@@ -256,6 +263,11 @@ export class ProductService {
         material: true, // Include material relation - RPK-45
       },
     })
+
+    // Clear aggregation cache if size-related fields were updated
+    if (validatedData.quantity !== undefined || validatedData.size !== undefined) {
+      this.clearProductAggregationCache(validatedId)
+    }
 
     return this.convertPrismaProductToProduct(updatedProduct)
   }
@@ -659,6 +671,9 @@ export class ProductService {
       }
     })
 
+    // Clear aggregation cache since sizes were potentially updated
+    this.clearProductAggregationCache(validatedId)
+
     // Fetch updated product with relationships
     return this.getProductById(validatedId)
   }
@@ -748,6 +763,9 @@ export class ProductService {
       })),
     })
 
+    // Clear aggregation cache since new sizes were created
+    this.clearProductAggregationCache(validatedId)
+
     return this.getProductSizes(validatedId)
   }
 
@@ -793,6 +811,9 @@ export class ProductService {
       }
     })
 
+    // Clear aggregation cache since sizes were updated
+    this.clearProductAggregationCache(validatedId)
+
     return this.getProductSizes(validatedId)
   }
 
@@ -825,6 +846,9 @@ export class ProductService {
         updatedAt: new Date(),
       },
     })
+
+    // Clear aggregation cache since sizes were deleted
+    this.clearProductAggregationCache(validatedId)
 
     return true
   }
@@ -1009,6 +1033,302 @@ export class ProductService {
     }
 
     return { migrated, failed }
+  }
+
+  // ============== AGGREGATION INTEGRATION METHODS ==============
+
+  /**
+   * Get product with optional aggregation data
+   */
+  async getProductWithAggregation(
+    id: string,
+    includeAggregation: boolean = false,
+    includeBreakdown: boolean = true
+  ): Promise<ProductResponseWithAggregation> {
+    const product = await this.getProductById(id)
+
+    if (!includeAggregation) {
+      return product
+    }
+
+    const aggregationService = this.getAggregationService(includeBreakdown)
+
+    try {
+      const aggregation = await aggregationService.getProductAggregation(product.id)
+      return {
+        ...product,
+        aggregation,
+      }
+    } catch (error) {
+      console.warn(`Failed to get aggregation for product ${product.id}:`, error)
+      return product
+    }
+  }
+
+  /**
+   * Get products with optional aggregation data
+   */
+  async getProductsWithAggregation(
+    query: Record<string, unknown> & {
+      includeAggregation?: boolean
+      includeBreakdown?: boolean
+    }
+  ): Promise<ProductListResponse & {
+    products: ProductResponseWithAggregation[]
+  }> {
+    const { includeAggregation = false, includeBreakdown = true, ...productQuery } = query
+    const result = await this.getProducts(productQuery)
+
+    if (!includeAggregation) {
+      return result as ProductListResponse & { products: ProductResponseWithAggregation[] }
+    }
+
+    const aggregationService = this.getAggregationService(includeBreakdown)
+
+    const productsWithAggregation = await Promise.all(
+      result.products.map(async (product) => {
+        try {
+          const aggregation = await aggregationService.getProductAggregation(product.id)
+          return {
+            ...product,
+            aggregation,
+          }
+        } catch (error) {
+          console.warn(`Failed to get aggregation for product ${product.id}:`, error)
+          return product
+        }
+      })
+    )
+
+    return {
+      ...result,
+      products: productsWithAggregation,
+    }
+  }
+
+  /**
+   * Get aggregated sizes for a product
+   */
+  async getProductAggregatedSizes(
+    productId: string,
+    includeBreakdown: boolean = true
+  ): Promise<AggregatedSizeView[]> {
+    // Validate product exists
+    await this.getProductById(productId)
+
+    const aggregationService = this.getAggregationService(includeBreakdown)
+    const result = await aggregationService.getAggregatedSizes(productId, includeBreakdown)
+
+    return result.data
+  }
+
+  /**
+   * Get complete aggregation data for a product
+   */
+  async getProductAggregation(
+    productId: string,
+    includeBreakdown: boolean = true
+  ): Promise<ProductSizeAggregation> {
+    // Validate product exists
+    await this.getProductById(productId)
+
+    const aggregationService = this.getAggregationService(includeBreakdown)
+    return aggregationService.getProductAggregation(productId)
+  }
+
+  /**
+   * Get category breakdown for a product
+   */
+  async getProductCategoryBreakdown(productId: string): Promise<CategoryBreakdown> {
+    // Validate product exists
+    await this.getProductById(productId)
+
+    const aggregationService = this.getAggregationService(true)
+    return aggregationService.getAgeCategoryDistribution(productId)
+      .then(result => result.categoryPercentages)
+  }
+
+  /**
+   * Clear aggregation cache for a product (called after updates)
+   */
+  private clearProductAggregationCache(productId: string): void {
+    const aggregationService = this.getAggregationService()
+    aggregationService.clearProductCache(productId)
+  }
+
+  /**
+   * Validate business logic preservation for a product
+   */
+  async validateBusinessLogicPreservation(productId: string): Promise<BusinessLogicValidationResult> {
+    // Validate product exists
+    await this.getProductById(productId)
+
+    const aggregationService = this.getAggregationService(true)
+
+    // Run all validation checks in parallel for efficiency
+    const [
+      aggregationConsistency,
+      rentalTracking,
+      analyticsCapabilities,
+      inventoryManagement,
+    ] = await Promise.all([
+      aggregationService.validateAggregationConsistency(productId),
+      aggregationService.validateRentalTrackingCapabilities(productId),
+      aggregationService.validateAnalyticsCapabilities(productId),
+      aggregationService.validateInventoryCapabilities(productId),
+    ])
+
+    // Determine overall health and recommendations
+    const recommendations: string[] = []
+    let overallHealth: 'excellent' | 'good' | 'needs_attention' | 'critical' = 'excellent'
+
+    // Check aggregation consistency
+    if (!aggregationConsistency.isConsistent) {
+      overallHealth = 'critical'
+      recommendations.push('Data inconsistency detected - immediate attention required')
+    }
+
+    // Check rental tracking capabilities
+    if (!rentalTracking.canTrackByAgeCategory) {
+      if (overallHealth !== 'critical') overallHealth = 'needs_attention'
+      recommendations.push('Consider adding age category tracking for better rental management')
+    }
+
+    // Check analytics capabilities
+    if (!analyticsCapabilities.canGenerateReports) {
+      if (overallHealth === 'excellent') overallHealth = 'good'
+      recommendations.push('Limited analytics available - consider expanding size variety')
+    }
+
+    // Check inventory health
+    if (inventoryManagement.inventoryHealth === 'critical') {
+      overallHealth = 'critical'
+      recommendations.push('Critical inventory issues detected - review restocking recommendations')
+    } else if (inventoryManagement.inventoryHealth === 'needs_attention') {
+      if (overallHealth === 'excellent') overallHealth = 'needs_attention'
+      recommendations.push('Some inventory items need attention')
+    }
+
+    // Business capability recommendations
+    if (rentalTracking.businessCapabilities.length < 2) {
+      recommendations.push('Expand size portfolio for enhanced business capabilities')
+    }
+
+    if (analyticsCapabilities.analyticsBreakdown.complexityScore < 3) {
+      recommendations.push('Consider adding more age categories or sizes for better analytics')
+    }
+
+    // If no issues found
+    if (recommendations.length === 0) {
+      recommendations.push('All business logic capabilities are well-preserved')
+    }
+
+    return {
+      aggregationConsistency,
+      rentalTracking,
+      analyticsCapabilities,
+      inventoryManagement,
+      overallHealth,
+      recommendations,
+    }
+  }
+
+  /**
+   * Get comprehensive business capabilities report
+   */
+  async getBusinessCapabilitiesReport(productId: string): Promise<BusinessCapabilitiesReport> {
+    const product = await this.getProductById(productId)
+    const validation = await this.validateBusinessLogicPreservation(productId)
+
+    // Build capability matrix
+    const capabilityMatrix = {
+      rental: {
+        ageCategoryTracking: validation.rentalTracking.canTrackByAgeCategory,
+        sizeSpecificTracking: validation.rentalTracking.canTrackBySpecificSize,
+        multiGenerationalSupport: validation.rentalTracking.businessCapabilities.includes('Multi-generational rental support'),
+      },
+      analytics: {
+        reportGeneration: validation.analyticsCapabilities.canGenerateReports,
+        trendAnalysis: validation.analyticsCapabilities.availableMetrics.length > 3,
+        performanceMetrics: validation.analyticsCapabilities.businessInsights.length > 2,
+      },
+      inventory: {
+        categoryRestocking: validation.inventoryManagement.canRestockByCategory,
+        utilizationTracking: validation.inventoryManagement.canTrackUtilization,
+        healthMonitoring: validation.inventoryManagement.inventoryHealth !== 'critical',
+      },
+    }
+
+    // Calculate business value score
+    const capabilities = [
+      capabilityMatrix.rental.ageCategoryTracking,
+      capabilityMatrix.rental.sizeSpecificTracking,
+      capabilityMatrix.rental.multiGenerationalSupport,
+      capabilityMatrix.analytics.reportGeneration,
+      capabilityMatrix.analytics.trendAnalysis,
+      capabilityMatrix.analytics.performanceMetrics,
+      capabilityMatrix.inventory.categoryRestocking,
+      capabilityMatrix.inventory.utilizationTracking,
+      capabilityMatrix.inventory.healthMonitoring,
+    ]
+
+    const score = capabilities.filter(Boolean).length
+    let level: 'basic' | 'intermediate' | 'advanced' | 'enterprise' = 'basic'
+
+    if (score >= 8) level = 'enterprise'
+    else if (score >= 6) level = 'advanced'
+    else if (score >= 4) level = 'intermediate'
+
+    // Identify strengths and improvement areas
+    const strengths: string[] = []
+    const improvementAreas: string[] = []
+
+    if (capabilityMatrix.rental.ageCategoryTracking && capabilityMatrix.rental.sizeSpecificTracking) {
+      strengths.push('Comprehensive rental tracking capabilities')
+    }
+
+    if (capabilityMatrix.analytics.reportGeneration && capabilityMatrix.analytics.trendAnalysis) {
+      strengths.push('Advanced analytics and reporting capabilities')
+    }
+
+    if (capabilityMatrix.inventory.categoryRestocking && capabilityMatrix.inventory.utilizationTracking) {
+      strengths.push('Robust inventory management system')
+    }
+
+    if (!capabilityMatrix.rental.multiGenerationalSupport) {
+      improvementAreas.push('Consider adding multi-generational product support')
+    }
+
+    if (!capabilityMatrix.analytics.performanceMetrics) {
+      improvementAreas.push('Expand metrics collection for better business insights')
+    }
+
+    if (!capabilityMatrix.inventory.healthMonitoring) {
+      improvementAreas.push('Address inventory health issues for optimal operations')
+    }
+
+    return {
+      productId,
+      productName: product.name,
+      capabilityMatrix,
+      businessValue: {
+        score,
+        level,
+        strengths,
+        improvementAreas,
+      },
+    }
+  }
+
+  /**
+   * Get or create aggregation service instance
+   */
+  private getAggregationService(includeBreakdown: boolean = true): ProductSizeAggregationService {
+    return new ProductSizeAggregationService(this.prisma, {
+      includeBreakdown,
+      enableCaching: true,
+      cacheExpiryMinutes: 15,
+    })
   }
 
   // ============== HELPER METHODS ==============

@@ -2,6 +2,9 @@
  * API Route: Product by ID
  *
  * GET /api/products/[id] - Mendapatkan detail produk berdasarkan ID
+ *   Query Parameters:
+ *   - includeAggregation: boolean - Include aggregated size data
+ *   - includeBreakdown: boolean - Include age category breakdown (default: true)
  * PUT /api/products/[id] - Mengupdate produk berdasarkan ID
  * DELETE /api/products/[id] - Soft delete produk berdasarkan ID
  */
@@ -9,6 +12,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { ProductService } from '@/features/manage-product/services/productService'
+import { ProductSizeAggregationService } from '@/features/manage-product/services/productSizeAggregationService'
 import { FileUploadService } from '@/features/manage-product/services/fileUploadService'
 import { prisma } from '@/lib/prisma'
 import { updateProductSchema, updateProductWithSizesSchema } from '@/features/manage-product/lib/validation/productSchema'
@@ -27,11 +31,36 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     const { id } = await params
 
+    // Get query parameters for aggregation
+    const { searchParams } = new URL(request.url)
+    const includeAggregation = searchParams.get('includeAggregation') === 'true'
+    const includeBreakdown = searchParams.get('includeBreakdown') !== 'false' // default true
+
     // Initialize service
     const productService = new ProductService(prisma, userId)
 
     // Get product by ID
     const product = await productService.getProductById(id)
+
+    // Add aggregation data if requested
+    if (includeAggregation) {
+      const aggregationService = new ProductSizeAggregationService(prisma, {
+        includeBreakdown,
+      })
+
+      try {
+        const aggregation = await aggregationService.getProductAggregation(product.id)
+
+        return NextResponse.json({
+          ...product,
+          aggregation,
+        }, { status: 200 })
+      } catch (error) {
+        // If aggregation fails, include product without aggregation data
+        console.warn(`Failed to get aggregation for product ${product.id}:`, error)
+        return NextResponse.json(product, { status: 200 })
+      }
+    }
 
     return NextResponse.json(product, { status: 200 })
   } catch (error) {

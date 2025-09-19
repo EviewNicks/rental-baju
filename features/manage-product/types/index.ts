@@ -378,3 +378,170 @@ export interface SizeValidationResult {
   isValid: boolean
   errors: SizeValidationError[]
 }
+
+// ============== SIZE AGGREGATION INTERFACES ==============
+// Phase 1: Hybrid Size Management - Aggregation Layer Types
+
+/**
+ * Aggregated view of a single size across all age categories
+ * Example: M: 5 total (Dewasa: 2, Anak: 3)
+ */
+export interface AggregatedSizeView {
+  size: SizeEnum
+  totalQuantity: number
+  breakdown: {
+    adult?: number
+    child?: number
+    universal?: number
+  }
+  hasMultipleCategories: boolean
+}
+
+/**
+ * Category breakdown for aggregation analysis
+ */
+export interface CategoryBreakdown {
+  adult: number
+  child: number
+  universal: number
+  total: number
+}
+
+/**
+ * Complete aggregation data for a product
+ */
+export interface ProductSizeAggregation {
+  productId: string
+  totalQuantity: number
+  aggregatedSizes: AggregatedSizeView[]
+  hasAdvancedSizing: boolean
+  categoryBreakdown: CategoryBreakdown
+  lastCalculated: Date
+}
+
+/**
+ * Product response with optional aggregation data
+ */
+export interface ProductResponseWithAggregation extends Product {
+  aggregation?: ProductSizeAggregation
+}
+
+/**
+ * Client-safe product with aggregation data
+ */
+export interface ClientProductWithAggregation extends ClientProduct {
+  aggregation?: ProductSizeAggregation
+}
+
+/**
+ * Aggregation service configuration
+ */
+export interface AggregationConfig {
+  enableCaching: boolean
+  cacheExpiryMinutes: number
+  includeBreakdown: boolean
+}
+
+/**
+ * Aggregation query parameters for API endpoints
+ */
+export interface AggregationQueryParams {
+  includeBreakdown?: boolean
+  includeMetadata?: boolean
+  cacheBypass?: boolean
+}
+
+/**
+ * Aggregation service response wrapper
+ */
+export interface AggregationServiceResponse<T> {
+  data: T
+  metadata: {
+    calculatedAt: Date
+    fromCache: boolean
+    calculationTimeMs: number
+  }
+}
+
+/**
+ * Business logic validation interfaces
+ */
+export interface AggregationConsistencyResult {
+  isConsistent: boolean
+  errors: string[]
+  detailedTotal: number
+  aggregatedTotal: number
+}
+
+export interface RentalTrackingCapabilities {
+  canTrackByAgeCategory: boolean
+  canTrackBySpecificSize: boolean
+  availableForRental: {
+    adult: { [size: string]: number }
+    child: { [size: string]: number }
+    universal: { [size: string]: number }
+  }
+  businessCapabilities: string[]
+}
+
+export interface AnalyticsCapabilities {
+  canGenerateReports: boolean
+  availableMetrics: string[]
+  analyticsBreakdown: {
+    totalItems: number
+    uniqueSizes: number
+    ageCategories: number
+    complexityScore: number
+  }
+  businessInsights: string[]
+}
+
+export interface InventoryManagementCapabilities {
+  canRestockByCategory: boolean
+  canTrackUtilization: boolean
+  restockingRecommendations: Array<{
+    ageCategory: AgeCategory
+    size: SizeEnum
+    currentStock: number
+    recommendedAction: 'increase' | 'decrease' | 'maintain'
+    reason: string
+  }>
+  inventoryHealth: 'good' | 'needs_attention' | 'critical'
+}
+
+export interface BusinessLogicValidationResult {
+  aggregationConsistency: AggregationConsistencyResult
+  rentalTracking: RentalTrackingCapabilities
+  analyticsCapabilities: AnalyticsCapabilities
+  inventoryManagement: InventoryManagementCapabilities
+  overallHealth: 'excellent' | 'good' | 'needs_attention' | 'critical'
+  recommendations: string[]
+}
+
+export interface BusinessCapabilitiesReport {
+  productId: string
+  productName: string
+  capabilityMatrix: {
+    rental: {
+      ageCategoryTracking: boolean
+      sizeSpecificTracking: boolean
+      multiGenerationalSupport: boolean
+    }
+    analytics: {
+      reportGeneration: boolean
+      trendAnalysis: boolean
+      performanceMetrics: boolean
+    }
+    inventory: {
+      categoryRestocking: boolean
+      utilizationTracking: boolean
+      healthMonitoring: boolean
+    }
+  }
+  businessValue: {
+    score: number
+    level: 'basic' | 'intermediate' | 'advanced' | 'enterprise'
+    strengths: string[]
+    improvementAreas: string[]
+  }
+}
