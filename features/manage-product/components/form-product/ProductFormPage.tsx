@@ -14,7 +14,7 @@ import {
 import { ProductForm } from '@/features/manage-product/components/form-product/ProductForm'
 import { useCategories } from '@/features/manage-product/hooks/useCategories'
 import { useCreateProduct, useUpdateProduct } from '@/features/manage-product/hooks/useProducts'
-import type { ClientProduct } from '@/features/manage-product/types'
+import type { ClientProduct, AggregatedSizeView } from '@/features/manage-product/types'
 
 // Local form data interface with numbers for form handling
 interface ProductFormData {
@@ -31,6 +31,10 @@ interface ProductFormData {
   description: string
   imageUrl: string | null
   image?: File | null
+
+  // Hybrid Size Management (new fields)
+  hasSizes: boolean
+  aggregatedSizes?: AggregatedSizeView[]
 }
 
 // Request interfaces for API calls
@@ -143,6 +147,10 @@ export function ProductFormPage({
     description: product?.description || '',
     imageUrl: product?.imageUrl || null,
     image: null,
+
+    // Hybrid Size Management initialization
+    hasSizes: !!product?.size || (product?.sizes && product.sizes.length > 0) || false,
+    aggregatedSizes: undefined, // Will be loaded via useAggregatedSizes if needed
   })
 
   // Simple error state management

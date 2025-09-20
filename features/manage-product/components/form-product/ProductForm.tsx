@@ -15,8 +15,16 @@ import { FormField } from '@/features/manage-product/components/form-product/For
 import { FormSection } from '@/features/manage-product/components/form-product/FormSection'
 import { ImageUpload } from '@/features/manage-product/components/products/ImageUpload'
 import { MaterialSelector } from '@/features/manage-product/components/material/MaterialSelector'
+import { SizeManagementSection } from '@/features/manage-product/components/size-management/SizeManagementSection'
 import { useColors } from '@/features/manage-product/hooks/useCategories'
-import type { ClientCategory, ClientColor } from '@/features/manage-product/types'
+import { useAggregatedSizes } from '@/features/manage-product/hooks/useAggregatedSizes'
+import { getProductSizeMode } from '@/features/manage-product/lib/utils/sizeManagementUtils'
+import type {
+  ClientCategory,
+  ClientColor,
+  ClientProduct,
+  AggregatedSizeView,
+} from '@/features/manage-product/types'
 import { logger } from '@/services/logger'
 import { useEffect } from 'react'
 
@@ -27,7 +35,7 @@ interface ProductFormData {
   code: string
   name: string
   categoryId: string
-  size?: string
+  size?: string // Legacy size field (backward compatibility)
   colorId?: string
   materialId?: string
   materialQuantity?: number
@@ -37,6 +45,10 @@ interface ProductFormData {
   description: string
   imageUrl: string | null
   image?: File | null
+
+  // Hybrid Size Management (new fields)
+  hasSizes: boolean
+  aggregatedSizes?: AggregatedSizeView[]
 }
 
 interface ProductFormProps {
@@ -49,6 +61,13 @@ interface ProductFormProps {
   onBlur: (name: string, value: any) => void
   formatCurrency: (value: string) => string
   categories: ClientCategory[]
+
+  // Optional product data for size mode detection (edit mode)
+  product?: ClientProduct
+
+  // Size management handlers
+  onHasSizesChange?: (hasSizes: boolean) => void
+  onAggregatedSizesChange?: (sizes: AggregatedSizeView[]) => void
 }
 
 export function ProductForm({
@@ -59,7 +78,24 @@ export function ProductForm({
   onBlur,
   formatCurrency,
   categories,
+  product,
+  onHasSizesChange,
+  onAggregatedSizesChange,
 }: ProductFormProps) {
+  // Size mode detection and state management
+  const sizeMode = product ? getProductSizeMode(product) : 'none'
+  const productId = product?.id
+
+  // Fetch aggregated sizes for existing products with advanced sizing
+  const {
+    data: aggregatedSizes,
+    isLoading: isLoadingAggregatedSizes,
+    error: aggregatedSizesError,
+  } = useAggregatedSizes(productId, {
+    enabled: !!productId && sizeMode === 'advanced',
+    includeBreakdown: true,
+  })
+
   // Log component mount and form data initialization
   useEffect(() => {
     formLogger.debug('componentMount', 'ProductForm component mounted', {
@@ -68,8 +104,44 @@ export function ProductForm({
       hasMaterial: !!formData.materialId,
       materialQuantity: formData.materialQuantity,
       formDataKeys: Object.keys(formData),
+      sizeMode,
+      productId,
+      hasAggregatedSizes: aggregatedSizes.length > 0,
     })
-  }, [formData, categories.length])
+  }, [formData, categories.length, sizeMode, productId, aggregatedSizes.length])
+
+  // Log size mode detection and data loading
+  useEffect(() => {
+    if (product) {
+      formLogger.info('sizeMode', 'Size mode detected for product', {
+        productId: product.id,
+        sizeMode,
+        hasLegacySize: !!product.size,
+        hasAdvancedSizes: product.sizes?.length > 0,
+        aggregatedSizesCount: aggregatedSizes.length,
+      })
+    }
+  }, [product, sizeMode, aggregatedSizes.length])
+
+  // Log aggregated sizes loading state
+  useEffect(() => {
+    if (sizeMode === 'advanced') {
+      if (isLoadingAggregatedSizes) {
+        formLogger.debug('aggregatedSizesLoading', 'Loading aggregated sizes for product form')
+      } else if (aggregatedSizesError) {
+        formLogger.error(
+          'aggregatedSizesLoadError',
+          'Failed to load aggregated sizes',
+          aggregatedSizesError,
+        )
+      } else if (aggregatedSizes.length > 0) {
+        formLogger.info('aggregatedSizesLoaded', 'Aggregated sizes loaded successfully', {
+          sizesCount: aggregatedSizes.length,
+          totalQuantity: aggregatedSizes.reduce((sum, size) => sum + size.totalQuantity, 0),
+        })
+      }
+    }
+  }, [sizeMode, isLoadingAggregatedSizes, aggregatedSizesError, aggregatedSizes])
 
   // Fetch colors data
   const {
@@ -120,7 +192,68 @@ export function ProductForm({
         },
       })
     }
-  }, [errors])
+  }, [errors, formData.aggregatedSizes])
+
+  // Handle size management changes with logging
+  const handleHasSizesChange = (hasSizes: boolean) => {
+    formLogger.info('handleHasSizesChange', 'User changed has sizes setting', {
+      previousHasSizes: formData.hasSizes,
+      newHasSizes: hasSizes,
+      sizeMode,
+      willClearData: !hasSizes && (formData.size || formData.aggregatedSizes?.length),
+    })
+
+    if (onHasSizesChange) {
+      onHasSizesChange(hasSizes)
+    } else {
+      onInputChange('hasSizes', hasSizes)
+    }
+
+    // Clear size data when disabled
+    if (!hasSizes) {
+      if (formData.size) {
+        formLogger.debug('handleHasSizesChange', 'Clearing legacy size due to hasSizes disabled')
+        onInputChange('size', '')
+      }
+      if (formData.aggregatedSizes && formData.aggregatedSizes.length > 0) {
+        formLogger.debug(
+          'handleHasSizesChange',
+          'Clearing aggregated sizes due to hasSizes disabled',
+        )
+        if (onAggregatedSizesChange) {
+          onAggregatedSizesChange([])
+        } else {
+          onInputChange('aggregatedSizes', [])
+        }
+      }
+    }
+  }
+
+  const handleAggregatedSizesChange = (sizes: AggregatedSizeView[]) => {
+    formLogger.info('handleAggregatedSizesChange', 'User changed aggregated sizes', {
+      previousSizesCount: formData.aggregatedSizes?.length || 0,
+      newSizesCount: sizes.length,
+      totalQuantity: sizes.reduce((sum, size) => sum + size.totalQuantity, 0),
+      sizeMode,
+    })
+
+    if (onAggregatedSizesChange) {
+      onAggregatedSizesChange(sizes)
+    } else {
+      onInputChange('aggregatedSizes', sizes)
+    }
+  }
+
+  const handleLegacySizeChange = (size: string) => {
+    formLogger.info('handleLegacySizeChange', 'User changed legacy size field', {
+      previousSize: formData.size,
+      newSize: size,
+      sizeMode,
+      hasAggregatedSizes: (formData.aggregatedSizes?.length || 0) > 0,
+    })
+
+    onInputChange('size', size)
+  }
 
   // Handle material integration changes with logging
   const handleMaterialChange = (materialId: string | undefined) => {
@@ -271,10 +404,12 @@ export function ProductForm({
                 data-testid="product-quantity-field"
               />
 
+              {/* Legacy size field - will be removed when SizeManagementSection is complete */}
+              {/* Temporarily keeping both for backward compatibility testing */}
               <FormField
                 type="select"
                 name="size"
-                label="Ukuran"
+                label="Ukuran (Legacy)"
                 icon={Ruler}
                 value={formData.size || ''}
                 onChange={(value) => onInputChange('size', value)}
@@ -282,8 +417,8 @@ export function ProductForm({
                 placeholder="Pilih ukuran (opsional)"
                 error={errors.size}
                 touched={touched.size}
-                helpText="Pilih ukuran produk jika berlaku"
-                data-testid="product-size-field"
+                helpText="Field lama - akan diganti dengan manajemen ukuran baru"
+                data-testid="product-size-field-legacy"
               />
 
               <FormField
@@ -321,6 +456,20 @@ export function ProductForm({
               onQuantityChange={handleMaterialQuantityChange}
             />
           </FormSection>
+
+          {/* Size Management Section (New Hybrid System) */}
+          <SizeManagementSection
+            product={product}
+            hasSizes={formData.hasSizes}
+            onHasSizesChange={handleHasSizesChange}
+            legacySize={formData.size}
+            onLegacySizeChange={handleLegacySizeChange}
+            aggregatedSizes={formData.aggregatedSizes || aggregatedSizes}
+            onAggregatedSizesChange={handleAggregatedSizesChange}
+            errors={errors}
+            touched={touched}
+            isEditing={false} // TODO: Determine based on form mode
+          />
 
           {/* Informasi Harga */}
           <FormSection title="Informasi Harga" data-testid="price-info-section">
