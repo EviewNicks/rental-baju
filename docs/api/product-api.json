@@ -1,8 +1,8 @@
 {
   "info": {
-    "name": "Producer API Collection - Complete",
-    "description": "Complete API collection untuk Producer role: manajemen produk, kategori, warna, dan material dengan authentication Clerk. Include Size & Color Management features dan Material Management System (RPK-45).\n\n🔗 DEPENDENCIES & EXECUTION ORDER:\n1. Setup: Login → Get session token\n2. Prerequisites: Create Category → Create Color → (Optional) Create Material\n3. Products: Create/Update products dengan material integration\n4. Testing: Run integration scenarios\n\n📋 REQUIRED VARIABLES:\n- base_url: http://localhost:3000\n- clerk_session_token: From browser cookies\n- Auto-captured: product_id, category_id, color_id, material_id\n\n📚 Full documentation: docs/api/TEST_EXECUTION_REPORT.md",
-    "version": "3.0.0",
+    "name": "Producer API Collection - Advanced Size Management",
+    "description": "Complete API collection untuk Producer role dengan Advanced Size Management System. Includes produk, kategori, warna, material, dan hybrid size management (commits 83e9b26, dec3c0e).\n\n🆕 NEW SIZE MANAGEMENT FEATURES:\n• Advanced multi-size products dengan age categories (ANAK/DEWASA)\n• Aggregated size display dengan breakdown capabilities\n• Business logic validation dan performance monitoring\n• Hybrid architecture: legacy + advanced size support\n• Real-time aggregation dengan caching (5min TTL)\n\n🔗 DEPENDENCIES & EXECUTION ORDER:\n1. Setup: Login → Get session token\n2. Prerequisites: Create Category → Create Color → (Optional) Create Material\n3. Products: Create/Update products dengan size management\n4. Size Management: Test aggregation, validation, hybrid scenarios\n5. Testing: Run comprehensive integration scenarios\n\n📋 REQUIRED VARIABLES:\n- base_url: http://localhost:3000\n- clerk_session_token: From browser cookies\n- Auto-captured: product_id, category_id, color_id, material_id, size_id\n\n⚡ PERFORMANCE TARGETS:\n- Aggregation: <50ms calculation time\n- Cache Hit Rate: >80% untuk optimal performance\n- Response Time: <2s SLA maintained\n\n📚 Full documentation: docs/api/manage-product-endpoints.md | docs/api/manage-product-business-logic.md",
+    "version": "4.0.0",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -40,6 +40,11 @@
       "key": "material_id",
       "value": "",
       "description": "ID material untuk testing"
+    },
+    {
+      "key": "size_id",
+      "value": "",
+      "description": "ID size untuk advanced size management testing"
     }
   ],
   "item": [
@@ -57,7 +62,7 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/products?page=1&limit=10&search=&categoryId=&status=&isActive=true&size=M,L&colorId={{color_id}}",
+              "raw": "{{base_url}}/api/products?page=1&limit=10&search=&categoryId=&status=&isActive=true&size=M,L&colorId={{color_id}}&includeAggregation=true",
               "host": ["{{base_url}}"],
               "path": ["api", "products"],
               "query": [
@@ -100,10 +105,15 @@
                   "key": "colorId",
                   "value": "{{color_id}}",
                   "description": "Filter berdasarkan warna (multiple color IDs separated by comma)"
+                },
+                {
+                  "key": "includeAggregation",
+                  "value": "true",
+                  "description": "Include advanced size aggregation data untuk products dengan hasSizes=true. Default: false untuk performa optimal"
                 }
               ]
             },
-            "description": "Mendapatkan daftar produk dengan pagination, filter, dan enhanced size/color filtering"
+            "description": "Mendapatkan daftar produk dengan pagination, filter, enhanced size/color filtering, dan optional size aggregation data. \n\n🆕 SIZE AGGREGATION:\n• includeAggregation=true: Include aggregated size data untuk advanced size management\n• Hanya ditampilkan untuk products dengan hasSizes=true\n• Performance optimized dengan caching (5min TTL)\n• Compatible dengan semua existing filters"
           },
           "response": [
             {
@@ -121,7 +131,7 @@
                       "value": "1"
                     },
                     {
-                      "key": "limit", 
+                      "key": "limit",
                       "value": "2"
                     },
                     {
@@ -156,15 +166,22 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/products/{{product_id}}",
+              "raw": "{{base_url}}/api/products/{{product_id}}?includeAggregation=true",
               "host": ["{{base_url}}"],
-              "path": ["api", "products", "{{product_id}}"]
+              "path": ["api", "products", "{{product_id}}"],
+              "query": [
+                {
+                  "key": "includeAggregation",
+                  "value": "true",
+                  "description": "Include advanced size aggregation data jika product menggunakan hasSizes=true. Default: false untuk performa optimal"
+                }
+              ]
             },
-            "description": "Mendapatkan detail produk berdasarkan ID dengan color relation"
+            "description": "Mendapatkan detail produk berdasarkan ID dengan color relation dan optional size aggregation data"
           },
           "response": [
             {
-              "name": "Enhanced Product Detail Response", 
+              "name": "Enhanced Product Detail Response",
               "originalRequest": {
                 "method": "GET",
                 "header": [],
@@ -269,6 +286,18 @@
                   "type": "text"
                 },
                 {
+                  "key": "hasSizes",
+                  "value": "false",
+                  "description": "Enable advanced size management (true) atau gunakan legacy single size (false). Default: false untuk backward compatibility",
+                  "type": "text"
+                },
+                {
+                  "key": "sizes",
+                  "value": "[{\"ageCategory\":\"DEWASA\",\"size\":\"M\",\"quantity\":3,\"isActive\":true},{\"ageCategory\":\"DEWASA\",\"size\":\"L\",\"quantity\":2,\"isActive\":true}]",
+                  "description": "Advanced size management data dalam format JSON array. Required jika hasSizes=true. Format: [{\"ageCategory\":\"ANAK|DEWASA\",\"size\":\"S|M|L|XL|XXL\",\"quantity\":number,\"isActive\":boolean}]",
+                  "type": "text"
+                },
+                {
                   "key": "image",
                   "type": "file",
                   "description": "Gambar produk (opsional)"
@@ -280,7 +309,7 @@
               "host": ["{{base_url}}"],
               "path": ["api", "products"]
             },
-            "description": "Membuat produk baru dengan size, color, dan material fields plus upload gambar. Material fields opsional untuk perhitungan otomatis biaya material."
+            "description": "Membuat produk baru dengan hybrid size management system, color, dan material fields plus upload gambar. \n\n🆕 SIZE MANAGEMENT OPTIONS:\n• Legacy Mode (hasSizes=false): Single size field untuk backward compatibility\n• Advanced Mode (hasSizes=true): Multiple sizes dengan age categories (ANAK/DEWASA)\n• Material fields opsional untuk perhitungan otomatis biaya material\n• Auto-aggregation: Total quantity dihitung otomatis dari sizes array\n\n📋 VALIDATION RULES:\n• Jika hasSizes=true, field sizes wajib diisi\n• Age categories: ANAK atau DEWASA\n• Sizes: S, M, L, XL, XXL\n• Quantity total = sum of all size quantities"
           },
           "response": []
         },
@@ -335,6 +364,18 @@
                   "type": "text"
                 },
                 {
+                  "key": "hasSizes",
+                  "value": "true",
+                  "description": "Enable advanced size management (true) atau gunakan legacy single size (false). Dapat diubah dari legacy ke advanced atau sebaliknya",
+                  "type": "text"
+                },
+                {
+                  "key": "sizes",
+                  "value": "[{\"ageCategory\":\"DEWASA\",\"size\":\"M\",\"quantity\":2,\"isActive\":true},{\"ageCategory\":\"DEWASA\",\"size\":\"L\",\"quantity\":3,\"isActive\":true},{\"ageCategory\":\"ANAK\",\"size\":\"S\",\"quantity\":1,\"isActive\":true}]",
+                  "description": "Update advanced size management data dalam format JSON array. Required jika hasSizes=true. Format: [{\"ageCategory\":\"ANAK|DEWASA\",\"size\":\"S|M|L|XL|XXL\",\"quantity\":number,\"isActive\":boolean}]",
+                  "type": "text"
+                },
+                {
                   "key": "image",
                   "type": "file",
                   "description": "Gambar produk baru (opsional)"
@@ -346,7 +387,7 @@
               "host": ["{{base_url}}"],
               "path": ["api", "products", "{{product_id}}"]
             },
-            "description": "Mengupdate produk berdasarkan ID dengan size, color, dan material support. Material fields opsional untuk update biaya material otomatis."
+            "description": "Mengupdate produk berdasarkan ID dengan hybrid size management system, color, dan material support.\n\n🔄 SIZE MANAGEMENT MIGRATION:\n• Legacy → Advanced: Dapat mengubah hasSizes dari false ke true\n• Advanced → Legacy: Dapat mengubah hasSizes dari true ke false  \n• Size Migration: Otomatis maintain data consistency\n• Material fields opsional untuk update biaya material otomatis\n\n📋 UPDATE SCENARIOS:\n• Update single size (legacy mode)\n• Update multiple sizes (advanced mode)\n• Add/remove sizes dari existing advanced product\n• Migrate dari legacy ke advanced size system\n• Auto-recalculation quantity dari sizes array"
           },
           "response": []
         },
@@ -612,6 +653,427 @@
               ],
               "cookie": [],
               "body": "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"id\": \"trans-item-uuid-6\",\n      \"transactionCode\": \"TRX-006\",\n      \"transactionDate\": \"2024-11-05T09:15:00Z\",\n      \"rentalStart\": \"2024-11-05T09:15:00Z\",\n      \"rentalEnd\": \"2024-11-12T09:15:00Z\",\n      \"customerName\": \"Ahmad F.\",\n      \"customerContact\": \"083****789\",\n      \"baseRevenue\": 180000,\n      \"penaltyAmount\": 0,\n      \"totalRevenue\": 180000,\n      \"status\": \"completed\",\n      \"itemQuantity\": 1,\n      \"duration\": 7\n    }\n  ],\n  \"pagination\": {\n    \"page\": 2,\n    \"limit\": 5,\n    \"total\": 25,\n    \"totalPages\": 5\n  },\n  \"summary\": {\n    \"totalRevenue\": 2500000,\n    \"totalTransactions\": 25,\n    \"averageRentalDuration\": 6\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Size Management (Advanced)",
+      "item": [
+        {
+          "name": "Get Aggregated Sizes - Basic",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/products/{{product_id}}/sizes/aggregated?includeBreakdown=true&includeMetadata=false",
+              "host": ["{{base_url}}"],
+              "path": ["api", "products", "{{product_id}}", "sizes", "aggregated"],
+              "query": [
+                {
+                  "key": "includeBreakdown",
+                  "value": "true",
+                  "description": "Include age category breakdown (Dewasa: 2, Anak: 3)"
+                },
+                {
+                  "key": "includeMetadata",
+                  "value": "false",
+                  "description": "Include aggregation metadata (calculation time, cache status)"
+                },
+                {
+                  "key": "cacheBypass",
+                  "value": "false",
+                  "description": "Bypass cache untuk fresh calculation",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Mendapatkan data aggregated sizes untuk advanced size management. Shows 'M: 5 total dari Dewasa 2 + Anak 3' format."
+          },
+          "response": [
+            {
+              "name": "Aggregated Sizes Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/products/{{product_id}}/sizes/aggregated?includeBreakdown=true",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "products", "{{product_id}}", "sizes", "aggregated"],
+                  "query": [
+                    {
+                      "key": "includeBreakdown",
+                      "value": "true"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "public, max-age=300"
+                },
+                {
+                  "key": "X-Aggregation-Time",
+                  "value": "42ms"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"productId\": \"{{product_id}}\",\n  \"productName\": \"Dress Elegant Advanced\",\n  \"aggregatedSizes\": [\n    {\n      \"size\": \"M\",\n      \"totalQuantity\": 5,\n      \"availableQuantity\": 3,\n      \"rentedQuantity\": 2,\n      \"hasMultipleCategories\": true,\n      \"breakdown\": {\n        \"adult\": 2,\n        \"child\": 3\n      }\n    },\n    {\n      \"size\": \"L\",\n      \"totalQuantity\": 3,\n      \"availableQuantity\": 3,\n      \"rentedQuantity\": 0,\n      \"hasMultipleCategories\": false,\n      \"breakdown\": {\n        \"adult\": 3\n      }\n    }\n  ],\n  \"metadata\": {\n    \"calculatedAt\": \"2024-11-20T10:30:00Z\",\n    \"fromCache\": false,\n    \"calculationTimeMs\": 42\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Aggregated Sizes - With Metadata",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/products/{{product_id}}/sizes/aggregated?includeBreakdown=true&includeMetadata=true&cacheBypass=false",
+              "host": ["{{base_url}}"],
+              "path": ["api", "products", "{{product_id}}", "sizes", "aggregated"],
+              "query": [
+                {
+                  "key": "includeBreakdown",
+                  "value": "true",
+                  "description": "Include detailed breakdown by age category"
+                },
+                {
+                  "key": "includeMetadata",
+                  "value": "true",
+                  "description": "Include performance metadata untuk monitoring"
+                },
+                {
+                  "key": "cacheBypass",
+                  "value": "false",
+                  "description": "Use cache jika available (default behavior)"
+                }
+              ]
+            },
+            "description": "Test aggregated sizes dengan metadata lengkap untuk performance monitoring dan cache analysis."
+          },
+          "response": [
+            {
+              "name": "Aggregated Sizes with Metadata",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/products/{{product_id}}/sizes/aggregated?includeMetadata=true",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "products", "{{product_id}}", "sizes", "aggregated"],
+                  "query": [
+                    {
+                      "key": "includeMetadata",
+                      "value": "true"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "public, max-age=300"
+                },
+                {
+                  "key": "X-Cache-Status",
+                  "value": "HIT"
+                },
+                {
+                  "key": "X-Aggregation-Time",
+                  "value": "5ms"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"productId\": \"{{product_id}}\",\n  \"productName\": \"Dress Elegant Advanced\",\n  \"aggregatedSizes\": [\n    {\n      \"size\": \"M\",\n      \"totalQuantity\": 5,\n      \"availableQuantity\": 3,\n      \"rentedQuantity\": 2,\n      \"hasMultipleCategories\": true,\n      \"breakdown\": {\n        \"adult\": 2,\n        \"child\": 3\n      }\n    }\n  ],\n  \"metadata\": {\n    \"calculatedAt\": \"2024-11-20T10:25:00Z\",\n    \"fromCache\": true,\n    \"calculationTimeMs\": 5,\n    \"cacheKey\": \"agg:{{product_id}}:breakdown:true\",\n    \"cacheTTL\": 300,\n    \"systemInfo\": {\n      \"aggregationEnabled\": true,\n      \"businessLogicPreserved\": true,\n      \"hybridArchitecture\": true\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Aggregated Sizes - Cache Bypass",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/products/{{product_id}}/sizes/aggregated?includeBreakdown=false&includeMetadata=true&cacheBypass=true",
+              "host": ["{{base_url}}"],
+              "path": ["api", "products", "{{product_id}}", "sizes", "aggregated"],
+              "query": [
+                {
+                  "key": "includeBreakdown",
+                  "value": "false",
+                  "description": "Skip breakdown untuk faster response"
+                },
+                {
+                  "key": "includeMetadata",
+                  "value": "true",
+                  "description": "Monitor fresh calculation performance"
+                },
+                {
+                  "key": "cacheBypass",
+                  "value": "true",
+                  "description": "Force fresh calculation untuk testing"
+                }
+              ]
+            },
+            "description": "Test performance dengan fresh calculation (bypass cache) untuk validasi target <50ms."
+          },
+          "response": [
+            {
+              "name": "Fresh Calculation Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/products/{{product_id}}/sizes/aggregated?cacheBypass=true&includeMetadata=true",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "products", "{{product_id}}", "sizes", "aggregated"],
+                  "query": [
+                    {
+                      "key": "cacheBypass",
+                      "value": "true"
+                    },
+                    {
+                      "key": "includeMetadata",
+                      "value": "true"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "X-Cache-Status",
+                  "value": "BYPASS"
+                },
+                {
+                  "key": "X-Aggregation-Time",
+                  "value": "38ms"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"productId\": \"{{product_id}}\",\n  \"productName\": \"Dress Elegant Advanced\",\n  \"aggregatedSizes\": [\n    {\n      \"size\": \"M\",\n      \"totalQuantity\": 5,\n      \"availableQuantity\": 3,\n      \"rentedQuantity\": 2,\n      \"hasMultipleCategories\": true\n    }\n  ],\n  \"metadata\": {\n    \"calculatedAt\": \"2024-11-20T10:32:00Z\",\n    \"fromCache\": false,\n    \"calculationTimeMs\": 38,\n    \"cacheKey\": \"agg:{{product_id}}:breakdown:false\",\n    \"systemInfo\": {\n      \"aggregationEnabled\": true,\n      \"performanceTarget\": \"<50ms\",\n      \"actualPerformance\": \"38ms ✅\"\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Business Logic Validation - Full",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/products/{{product_id}}/validation?type=full&format=detailed",
+              "host": ["{{base_url}}"],
+              "path": ["api", "products", "{{product_id}}", "validation"],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "full",
+                  "description": "Full validation: consistency + capabilities + performance"
+                },
+                {
+                  "key": "format",
+                  "value": "detailed",
+                  "description": "Detailed response dengan recommendations"
+                }
+              ]
+            },
+            "description": "Comprehensive business logic validation untuk memastikan system health dan data consistency."
+          },
+          "response": [
+            {
+              "name": "Full Validation Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/products/{{product_id}}/validation?type=full&format=detailed",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "products", "{{product_id}}", "validation"],
+                  "query": [
+                    {
+                      "key": "type",
+                      "value": "full"
+                    },
+                    {
+                      "key": "format",
+                      "value": "detailed"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"productId\": \"{{product_id}}\",\n  \"productName\": \"Dress Elegant Advanced\",\n  \"validationType\": \"full\",\n  \"validationResult\": {\n    \"overallHealth\": \"excellent\",\n    \"isConsistent\": true,\n    \"aggregationConsistency\": {\n      \"isValid\": true,\n      \"totalQuantityMatch\": true,\n      \"calculatedTotal\": 8,\n      \"actualTotal\": 8,\n      \"errors\": [],\n      \"warnings\": []\n    },\n    \"businessCapabilities\": {\n      \"rentalTracking\": true,\n      \"inventoryManagement\": true,\n      \"sizeManagement\": true,\n      \"reportingCapability\": true,\n      \"hybridArchitecture\": true\n    },\n    \"performanceMetrics\": {\n      \"aggregationTime\": \"42ms\",\n      \"cacheHitRate\": \"87%\",\n      \"meetsTargets\": true\n    },\n    \"recommendations\": [\n      {\n        \"type\": \"performance\",\n        \"priority\": \"low\",\n        \"message\": \"Consider pre-warming cache for frequently accessed products\",\n        \"action\": \"Implement background cache refresh for top 100 products\"\n      }\n    ]\n  },\n  \"metadata\": {\n    \"timestamp\": \"2024-11-20T10:35:00Z\",\n    \"version\": \"4.0.0\",\n    \"validationTimeMs\": 156,\n    \"systemInfo\": {\n      \"aggregationEnabled\": true,\n      \"businessLogicPreserved\": true,\n      \"hybridArchitecture\": true,\n      \"backwardCompatible\": true\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Business Logic Validation - Consistency Only",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/products/{{product_id}}/validation?type=consistency&format=summary",
+              "host": ["{{base_url}}"],
+              "path": ["api", "products", "{{product_id}}", "validation"],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "consistency",
+                  "description": "Focus on data consistency validation only"
+                },
+                {
+                  "key": "format",
+                  "value": "summary",
+                  "description": "Summary format untuk quick check"
+                }
+              ]
+            },
+            "description": "Quick consistency check untuk memvalidasi quantity = sum(sizes) dan data integrity."
+          },
+          "response": [
+            {
+              "name": "Consistency Check Summary",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/products/{{product_id}}/validation?type=consistency&format=summary",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "products", "{{product_id}}", "validation"],
+                  "query": [
+                    {
+                      "key": "type",
+                      "value": "consistency"
+                    },
+                    {
+                      "key": "format",
+                      "value": "summary"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"productId\": \"{{product_id}}\",\n  \"productName\": \"Dress Elegant Advanced\",\n  \"validationType\": \"consistency\",\n  \"isHealthy\": true,\n  \"keyMetrics\": {\n    \"overallHealth\": \"excellent\",\n    \"isConsistent\": true,\n    \"dataIntegrityScore\": 100,\n    \"recommendationCount\": 0\n  },\n  \"quickSummary\": {\n    \"totalQuantity\": 8,\n    \"calculatedFromSizes\": 8,\n    \"match\": true,\n    \"status\": \"✅ All checks passed\"\n  },\n  \"timestamp\": \"2024-11-20T10:37:00Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Business Logic Validation - Error Case",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/products/non-existent-id/validation?type=full",
+              "host": ["{{base_url}}"],
+              "path": ["api", "products", "non-existent-id", "validation"],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "full"
+                }
+              ]
+            },
+            "description": "Test error handling untuk product yang tidak ada."
+          },
+          "response": [
+            {
+              "name": "Validation Not Found",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/products/non-existent-id/validation?type=full",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "products", "non-existent-id", "validation"],
+                  "query": [
+                    {
+                      "key": "type",
+                      "value": "full"
+                    }
+                  ]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"error\": {\n    \"message\": \"Product dengan ID non-existent-id tidak ditemukan\",\n    \"code\": \"PRODUCT_NOT_FOUND\",\n    \"details\": \"Validation tidak dapat dilakukan untuk product yang tidak ada\"\n  }\n}"
             }
           ]
         }
