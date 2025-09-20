@@ -39,7 +39,7 @@ model Product {
   color            Color?          @relation(fields: [colorId], references: [id])
   material         Material?       @relation(fields: [materialId], references: [id])
   sizes            ProductSize[]
-  transaksiItems   TransaksiItem[]
+  transaksiItems   TransaksiItem[] 
 
   @@index([isActive])
   @@index([categoryId])
