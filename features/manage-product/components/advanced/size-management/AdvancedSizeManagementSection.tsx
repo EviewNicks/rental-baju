@@ -134,7 +134,11 @@ export function AdvancedSizeManagementSection({
     const aggregated: AdvancedAggregatedSizeView[] = Array.from(sizeGroups.entries()).map(([size, data]) => ({
       size,
       totalQuantity: data.totalQuantity,
-      breakdown: data.breakdown,
+      breakdown: {
+        adult: data.breakdown.ADULT || undefined,
+        child: data.breakdown.CHILD || undefined,
+        universal: data.breakdown.UNIVERSAL || undefined,
+      },
       hasMultipleCategories: data.hasMultipleCategories,
       availableForRental: data.totalQuantity, // TODO: subtract rented quantities
     }))
@@ -186,7 +190,7 @@ export function AdvancedSizeManagementSection({
   // Add new size
   const handleAddSize = useCallback(() => {
     if (!canAddSize()) {
-      sizeLogger.warn('Cannot add size - validation failed', {
+      sizeLogger.warn('handleAddSize', 'Cannot add size - validation failed', {
         selectedSize,
         selectedAgeCategory,
         quantity,
@@ -208,7 +212,7 @@ export function AdvancedSizeManagementSection({
     // Reset form for next entry
     setQuantity(1)
 
-    sizeLogger.info('Size added successfully', { newSize, totalSizes: updatedSizes.length })
+    sizeLogger.info('handleAddSize', 'Size added successfully', { newSize, totalSizes: updatedSizes.length })
   }, [sizes, selectedSize, selectedAgeCategory, quantity, onSizesChange, canAddSize])
 
   // Remove size by index
@@ -217,7 +221,7 @@ export function AdvancedSizeManagementSection({
     const updatedSizes = sizes.filter((_, i) => i !== index)
     onSizesChange(updatedSizes)
 
-    sizeLogger.info('Size removed successfully', { removedSize, remainingSizes: updatedSizes.length })
+    sizeLogger.info('handleRemoveSize', 'Size removed successfully', { removedSize, remainingSizes: updatedSizes.length })
   }, [sizes, onSizesChange])
 
   // Update quantity for existing size
@@ -228,7 +232,7 @@ export function AdvancedSizeManagementSection({
     updatedSizes[index] = { ...updatedSizes[index], quantity: newQuantity }
     onSizesChange(updatedSizes)
 
-    sizeLogger.info('Size quantity updated', { index, newQuantity })
+    sizeLogger.info('handleQuantityChange', 'Size quantity updated', { index, newQuantity })
   }, [sizes, onSizesChange])
 
   // Get error message for current state

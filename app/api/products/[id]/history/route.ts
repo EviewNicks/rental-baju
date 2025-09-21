@@ -9,8 +9,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { ProductHistoryService } from '@/features/manage-product/services/productHistoryService'
 import { prisma } from '@/lib/prisma'
+import { advancedProductParamsSchema } from '@/features/manage-product/lib/validation/advancedProductSchema'
 import type { UserRole, HistoryQueryParams } from '@/features/manage-product/types/productHistory'
-import { 
+import {
   isValidSortBy,
   isValidSortOrder,
   DEFAULT_PAGE_SIZE,
@@ -37,19 +38,9 @@ export async function GET(
       )
     }
 
-    // Extract product ID from params
-    const { id: productId } = await params
-
-    // Validate product ID
-    if (!productId || typeof productId !== 'string') {
-      return NextResponse.json(
-        { 
-          success: false,
-          error: { message: 'Product ID is required', code: 'VALIDATION_ERROR' } 
-        },
-        { status: 400 },
-      )
-    }
+    // Extract and validate product ID from params
+    const { id } = await params
+    const { id: productId } = advancedProductParamsSchema.parse({ id })
 
     // Extract and validate query parameters
     const { searchParams } = new URL(request.url)

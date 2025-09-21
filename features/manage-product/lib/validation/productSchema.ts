@@ -68,17 +68,15 @@ export const productSchema = productBaseSchema.extend({
  * Schema untuk create product dengan file upload
  * Perbaikan: Gunakan union type untuk handle optional file dengan lebih baik
  */
-export const createProductSchema = productBaseSchema.extend({
-  image: z.union([z.instanceof(File), z.undefined(), z.null()]).optional(),
-})
+// DEPRECATED: Legacy createProductSchema removed
+// Use createProductWithSizesSchema for advanced-only architecture
 
 /**
  * Schema untuk update product dengan file upload
  * Digunakan untuk multipart form data saat update
  */
-export const updateProductSchema = productBaseSchema.partial().extend({
-  image: imageFileSchema.optional(),
-})
+// DEPRECATED: Legacy updateProductSchema removed
+// Use updateProductWithSizesSchema for advanced-only architecture
 
 // ============== CATEGORY SCHEMAS ==============
 
@@ -176,42 +174,16 @@ export const productSizesArraySchema = z
  */
 export const createProductWithSizesSchema = productBaseSchema.extend({
   image: z.union([z.instanceof(File), z.undefined(), z.null()]).optional(),
-  hasSizes: z.boolean().default(false),
-  sizes: productSizesArraySchema.optional(),
-}).refine(
-  (data) => {
-    // Business Rule: If hasSizes is true, sizes array should not be empty
-    if (data.hasSizes && (!data.sizes || data.sizes.length === 0)) {
-      return false
-    }
-    return true
-  },
-  {
-    message: 'Jika produk memiliki ukuran, minimal 1 ukuran harus ditambahkan',
-    path: ['sizes'],
-  },
-)
+  sizes: productSizesArraySchema.min(1, 'Minimal 1 ukuran harus ditambahkan'),
+})
 
 /**
  * Enhanced product update schema dengan size management
  */
 export const updateProductWithSizesSchema = productBaseSchema.partial().extend({
   image: imageFileSchema.optional(),
-  hasSizes: z.boolean().optional(),
   sizes: z.array(updateProductSizeSchema).optional(),
-}).refine(
-  (data) => {
-    // Business Rule: If hasSizes is true, sizes array should not be empty
-    if (data.hasSizes === true && (!data.sizes || data.sizes.length === 0)) {
-      return false
-    }
-    return true
-  },
-  {
-    message: 'Jika produk memiliki ukuran, minimal 1 ukuran harus ditambahkan',
-    path: ['sizes'],
-  },
-)
+})
 
 // ============== QUERY & PARAMS SCHEMAS ==============
 
@@ -273,3 +245,19 @@ export const colorQuerySchema = z.object({
 export const colorParamsSchema = z.object({
   id: z.string().uuid('ID warna tidak valid'),
 })
+
+// ============== ADVANCED-ONLY ALIASES ==============
+
+/**
+ * Simplified aliases for advanced-only architecture
+ * These provide cleaner imports for the unified advanced schema
+ */
+export const createProductSchema = createProductWithSizesSchema
+export const updateProductSchema = updateProductWithSizesSchema
+
+/**
+ * Validation helper for advanced size arrays
+ */
+export const validateAdvancedSizeArraySchema = (sizes: unknown[]) => {
+  return productSizesArraySchema.safeParse(sizes)
+}

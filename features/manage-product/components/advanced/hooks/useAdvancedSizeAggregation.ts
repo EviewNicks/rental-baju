@@ -187,7 +187,11 @@ export function useAdvancedSizeAggregation(
         .map(([size, data]) => ({
           size,
           totalQuantity: data.totalQuantity,
-          breakdown: data.breakdown,
+          breakdown: {
+            adult: data.breakdown.ADULT || undefined,
+            child: data.breakdown.CHILD || undefined,
+            universal: data.breakdown.UNIVERSAL || undefined,
+          },
           hasMultipleCategories: data.hasMultipleCategories,
           availableForRental: data.totalQuantity, // TODO: subtract rented quantities from real data
         }))
@@ -208,7 +212,7 @@ export function useAdvancedSizeAggregation(
       }
 
       setLastCalculated(new Date())
-      aggregationLogger.info('Aggregation calculated successfully', {
+      aggregationLogger.info('aggregateSizes', 'Aggregation calculated successfully', {
         sizesCount: sizes.length,
         aggregatedCount: aggregated.length,
         calculationTimeMs: calculationTime,
@@ -219,7 +223,7 @@ export function useAdvancedSizeAggregation(
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Calculation failed'
       setError(errorMessage)
-      aggregationLogger.error('Aggregation calculation failed', { error: err })
+      aggregationLogger.error('aggregateSizes', 'Aggregation calculation failed', { error: err })
       return []
     } finally {
       setIsCalculating(false)
@@ -327,13 +331,13 @@ export function useAdvancedSizeAggregation(
 
   // Actions
   const recalculate = useCallback(() => {
-    aggregationLogger.info('Manual recalculation triggered')
+    aggregationLogger.info('forceRecalculate', 'Manual recalculation triggered')
     calculateAggregatedSizes()
   }, [calculateAggregatedSizes])
 
   const clearCache = useCallback(() => {
     queryClient.removeQueries({ queryKey: [cacheKey] })
-    aggregationLogger.info('Cache cleared')
+    aggregationLogger.info('clearCache', 'Cache cleared')
   }, [queryClient, cacheKey])
 
   const exportData = useCallback(() => {
@@ -351,7 +355,7 @@ export function useAdvancedSizeAggregation(
 
   // Initialize hook
   useEffect(() => {
-    aggregationLogger.info('Advanced size aggregation hook initialized', {
+    aggregationLogger.info('useAdvancedSizeAggregation', 'Advanced size aggregation hook initialized', {
       sizesCount: sizes.length,
       options: config,
     })

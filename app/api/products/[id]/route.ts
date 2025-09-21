@@ -15,7 +15,7 @@ import { ProductService } from '@/features/manage-product/services/productServic
 import { ProductSizeAggregationService } from '@/features/manage-product/services/productSizeAggregationService'
 import { FileUploadService } from '@/features/manage-product/services/fileUploadService'
 import { prisma } from '@/lib/prisma'
-import { updateProductSchema, updateProductWithSizesSchema } from '@/features/manage-product/lib/validation/productSchema'
+import { updateProductSchema } from '@/features/manage-product/lib/validation/productSchema'
 import { NotFoundError } from '@/features/manage-product/lib/errors/AppError'
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -138,15 +138,21 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const materialQuantity = materialQuantityStr ? parseInt(materialQuantityStr) : undefined
     const image = formData.get('image') as File | null
 
-    // Size Management fields
-    const hasSizesStr = formData.get('hasSizes') as string
-    const hasSizes = hasSizesStr ? hasSizesStr === 'true' : undefined
+    // Size Management fields - Advanced only (no hasSizes flag)
     const sizesStr = formData.get('sizes') as string
     let sizes: Array<{ id?: string; ageCategory: string; size: string; quantity: number; isActive?: boolean }> = []
 
-    if (hasSizes !== undefined && sizesStr) {
+    // Parse sizes if provided (for updates)
+    if (sizesStr) {
       try {
         sizes = JSON.parse(sizesStr)
+        // Validate that if sizes are provided, array should not be empty
+        if (sizes.length === 0) {
+          return NextResponse.json(
+            { error: { message: 'Jika menyediakan data ukuran, minimal 1 ukuran harus ada', code: 'VALIDATION_ERROR' } },
+            { status: 400 },
+          )
+        }
       } catch {
         return NextResponse.json(
           { error: { message: 'Format data ukuran tidak valid', code: 'VALIDATION_ERROR' } },
@@ -170,9 +176,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     // Material Management fields - RPK-45
     if (materialId !== undefined) updateData.materialId = materialId
     if (materialQuantity !== undefined) updateData.materialQuantity = materialQuantity
-    // Size Management fields
-    if (hasSizes !== undefined) updateData.hasSizes = hasSizes
-    if (sizes.length > 0 || hasSizes !== undefined) updateData.sizes = sizes
+    // Size Management fields - Advanced only
+    if (sizes.length > 0) updateData.sizes = sizes
 
     // Validate materialQuantity if provided
     if (materialQuantityStr && (isNaN(materialQuantity!) || materialQuantity! <= 0)) {
@@ -200,15 +205,10 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       )
     }
 
-    // Validate with schema if there's data to update
+    // Validate with advanced schema if there's data to update
     if (Object.keys(updateData).length > 0) {
-      // Use enhanced schema if size management fields are present
-      const hasManagermentFields = hasSizes !== undefined || sizes.length > 0
-      if (hasManagermentFields) {
-        updateProductWithSizesSchema.parse(updateData)
-      } else {
-        updateProductSchema.parse(updateData)
-      }
+      // Always use advanced schema (all products have sizes in advanced-only mode)
+      updateProductSchema.parse(updateData)
     }
 
     // Initialize services
@@ -247,11 +247,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       }
     }
 
-    // Update product (use enhanced method for size management or regular method for backward compatibility)
-    const hasManagermentFields = hasSizes !== undefined || sizes.length > 0
-    const product = hasManagermentFields
-      ? await productService.updateProductWithSizes(id, updateData)
-      : await productService.updateProduct(id, updateData)
+    // Update product using advanced-only architecture
+    const product = await productService.updateProduct(id, updateData)
 
     return NextResponse.json(product, { status: 200 })
   } catch (error) {

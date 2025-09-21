@@ -13,21 +13,21 @@ import { z } from 'zod'
  * Advanced Age Category enum validation
  */
 export const advancedAgeCategorySchema = z.enum(['ADULT', 'CHILD', 'UNIVERSAL'], {
-  errorMap: () => ({ message: 'Kategori umur harus ADULT, CHILD, atau UNIVERSAL' }),
+  message: 'Kategori umur harus ADULT, CHILD, atau UNIVERSAL',
 })
 
 /**
  * Advanced Size enum validation
  */
 export const advancedSizeEnumSchema = z.enum(['XS', 'S', 'M', 'L', 'XL', 'XXL'], {
-  errorMap: () => ({ message: 'Ukuran harus XS, S, M, L, XL, atau XXL' }),
+  message: 'Ukuran harus XS, S, M, L, XL, atau XXL',
 })
 
 /**
  * Product status enum validation
  */
 export const advancedProductStatusSchema = z.enum(['AVAILABLE', 'RENTED', 'MAINTENANCE'], {
-  errorMap: () => ({ message: 'Status produk harus AVAILABLE, RENTED, atau MAINTENANCE' }),
+  message: 'Status produk harus AVAILABLE, RENTED, atau MAINTENANCE',
 })
 
 // ============== BASE SCHEMAS ==============
@@ -289,7 +289,7 @@ export const bulkMigrationSchema = z.object({
  */
 export const advancedProductExportSchema = z.object({
   format: z.enum(['json', 'csv', 'xlsx'], {
-    errorMap: () => ({ message: 'Format harus json, csv, atau xlsx' }),
+    message: 'Format harus json, csv, atau xlsx',
   }),
   includeAggregation: z.boolean().optional().default(false),
   includeBusinessCapabilities: z.boolean().optional().default(false),

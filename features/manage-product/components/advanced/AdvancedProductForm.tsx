@@ -9,6 +9,7 @@ import {
   FileText,
   Palette,
   AlertTriangle,
+  Box,
 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -107,7 +108,7 @@ export function AdvancedProductForm({
 
   // Log component mount and initialization
   useEffect(() => {
-    formLogger.info('AdvancedProductForm mounted', {
+    formLogger.info('useEffect', 'AdvancedProductForm mounted', {
       mode: product ? 'edit' : 'create',
       productId,
       sizesCount: formData.sizes.length,
@@ -115,7 +116,7 @@ export function AdvancedProductForm({
 
     // Validation on mount
     if (formData.sizes.length === 0) {
-      formLogger.warn('Form mounted with no sizes - invalid state')
+      formLogger.warn('useEffect', 'Form mounted with no sizes - invalid state')
     }
   }, [productId, formData.sizes.length])
 
@@ -139,22 +140,22 @@ export function AdvancedProductForm({
       )}
 
       {/* Basic Product Information */}
-      <FormSection title="Informasi Produk" icon={Package}>
+      <FormSection title="Informasi Produk">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField
             label="Kode Produk"
             name="code"
             type="text"
             value={formData.code}
-            onChange={onInputChange}
-            onBlur={onBlur}
+            onChange={(value) => onInputChange('code', value)}
+            onBlur={(value) => onBlur('code', value)}
             error={errors?.code}
             touched={touched?.code}
             placeholder="Contoh: A001"
             maxLength={4}
             icon={Hash}
             required
-            description="4 karakter alfanumerik uppercase"
+            helpText="4 karakter alfanumerik uppercase"
           />
 
           <FormField
@@ -162,8 +163,8 @@ export function AdvancedProductForm({
             name="name"
             type="text"
             value={formData.name}
-            onChange={onInputChange}
-            onBlur={onBlur}
+            onChange={(value) => onInputChange('name', value)}
+            onBlur={(value) => onBlur('name', value)}
             error={errors?.name}
             touched={touched?.name}
             placeholder="Nama produk"
@@ -178,8 +179,8 @@ export function AdvancedProductForm({
           name="description"
           type="textarea"
           value={formData.description}
-          onChange={onInputChange}
-          onBlur={onBlur}
+          onChange={(value) => onInputChange('description', value)}
+          onBlur={(value) => onBlur('description', value)}
           error={errors?.description}
           touched={touched?.description}
           placeholder="Deskripsi produk (opsional)"
@@ -194,8 +195,7 @@ export function AdvancedProductForm({
             name="categoryId"
             type="select"
             value={formData.categoryId}
-            onChange={onInputChange}
-            onBlur={onBlur}
+            onChange={(value) => onInputChange('categoryId', value)}
             error={errors?.categoryId}
             touched={touched?.categoryId}
             placeholder="Pilih kategori"
@@ -212,13 +212,11 @@ export function AdvancedProductForm({
             name="colorId"
             type="select"
             value={formData.colorId || ''}
-            onChange={onInputChange}
-            onBlur={onBlur}
+            onChange={(value) => onInputChange('colorId', value)}
             error={errors?.colorId}
             touched={touched?.colorId}
             placeholder="Pilih warna (opsional)"
             icon={Palette}
-            loading={isLoadingColors}
             options={colors.map((color: ClientColor) => ({
               value: color.id,
               label: color.name,
@@ -228,19 +226,18 @@ export function AdvancedProductForm({
       </FormSection>
 
       {/* Financial Information */}
-      <FormSection title="Informasi Keuangan" icon={DollarSign}>
+      <FormSection title="Informasi Keuangan">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField
             label="Modal Awal"
             name="modalAwal"
-            type="currency"
+            type="number"
             value={formData.modalAwal}
-            onChange={onInputChange}
-            onBlur={onBlur}
+            onChange={(value) => onInputChange('modalAwal', value)}
+            onBlur={(value) => onBlur('modalAwal', value)}
             error={errors?.modalAwal}
             touched={touched?.modalAwal}
             placeholder="Modal awal"
-            formatCurrency={formatCurrency}
             icon={CreditCard}
             required
           />
@@ -248,14 +245,13 @@ export function AdvancedProductForm({
           <FormField
             label="Harga Sewa"
             name="currentPrice"
-            type="currency"
+            type="number"
             value={formData.currentPrice}
-            onChange={onInputChange}
-            onBlur={onBlur}
+            onChange={(value) => onInputChange('currentPrice', value)}
+            onBlur={(value) => onBlur('currentPrice', value)}
             error={errors?.currentPrice}
             touched={touched?.currentPrice}
             placeholder="Harga sewa per hari"
-            formatCurrency={formatCurrency}
             icon={DollarSign}
             required
           />
@@ -263,12 +259,7 @@ export function AdvancedProductForm({
       </FormSection>
 
       {/* Advanced Size Management - REQUIRED */}
-      <FormSection
-        title="Manajemen Ukuran"
-        icon={Package}
-        required
-        description="Setiap produk HARUS memiliki minimal 1 ukuran. Tidak ada dukungan untuk ukuran tunggal."
-      >
+      <FormSection title="Manajemen Ukuran">
         <AdvancedSizeManagementSection
           productId={productId}
           sizes={formData.sizes}
@@ -297,31 +288,21 @@ export function AdvancedProductForm({
       </FormSection>
 
       {/* Material Management (Optional) */}
-      <FormSection title="Manajemen Material" icon={Package} optional>
+      <FormSection title="Manajemen Material">
         <MaterialSelector
-          materialId={formData.materialId}
+          selectedMaterialId={formData.materialId}
           materialQuantity={formData.materialQuantity}
           onMaterialChange={(materialId) => onInputChange('materialId', materialId)}
           onQuantityChange={(quantity) => onInputChange('materialQuantity', quantity)}
-          errors={{
-            materialId: errors?.materialId,
-            materialQuantity: errors?.materialQuantity,
-          }}
-          touched={{
-            materialId: touched?.materialId,
-            materialQuantity: touched?.materialQuantity,
-          }}
         />
       </FormSection>
 
       {/* Image Upload */}
-      <FormSection title="Gambar Produk" icon={Package} optional>
+      <FormSection title="Gambar Produk">
         <ImageUpload
-          currentImageUrl={formData.imageUrl}
-          onImageChange={(file) => onInputChange('image', file)}
-          onImageUrlChange={(url) => onInputChange('imageUrl', url)}
-          error={errors?.image}
-          touched={touched?.image}
+          value={formData.imageUrl || undefined}
+          onChange={(url) => onInputChange('imageUrl', url)}
+          onFileChange={(file) => onInputChange('image', file)}
         />
       </FormSection>
 

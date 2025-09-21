@@ -9,10 +9,9 @@ import {
   updateProductSchema,
   productQuerySchema,
   productParamsSchema,
-  createProductWithSizesSchema,
-  updateProductWithSizesSchema,
   productSizeSchema,
   updateProductSizeSchema,
+  validateAdvancedSizeArraySchema,
 } from '../lib/validation/productSchema'
 import { NotFoundError, ConflictError } from '../lib/errors/AppError'
 import type {
@@ -59,218 +58,11 @@ export class ProductService {
     private readonly userId: string,
   ) {}
 
-  /**
-   * Create a new product
-   */
-  async createProduct(request: CreateProductRequest): Promise<Product> {
-    // Validate input
-    const validatedData = createProductSchema.parse(request)
+  // Legacy createProduct method removed - advanced-only architecture
+  // All products now require sizes via createProduct() method
 
-    // Check if product code already exists
-    const existingProduct = await this.prisma.product.findFirst({
-      where: {
-        code: validatedData.code,
-        isActive: true,
-      },
-    })
-
-    if (existingProduct) {
-      throw new ConflictError(`Kode produk ${validatedData.code} sudah digunakan`)
-    }
-
-    // Validate category existence
-    const categoryExists = await this.prisma.category.findUnique({
-      where: { id: validatedData.categoryId },
-    })
-
-    if (!categoryExists) {
-      throw new NotFoundError(`Category dengan ID ${validatedData.categoryId} tidak ditemukan`)
-    }
-
-    // Validate colorId if provided
-    if (validatedData.colorId) {
-      const colorExists = await this.prisma.color.findUnique({
-        where: { id: validatedData.colorId },
-      })
-
-      if (!colorExists) {
-        throw new NotFoundError(`Warna dengan ID ${validatedData.colorId} tidak ditemukan`)
-      }
-    }
-
-    // Validate materialId if provided - RPK-45
-    let materialCost: Decimal | undefined
-    if (validatedData.materialId) {
-      const materialExists = await this.prisma.material.findUnique({
-        where: { id: validatedData.materialId },
-      })
-
-      if (!materialExists) {
-        throw new NotFoundError(`Material dengan ID ${validatedData.materialId} tidak ditemukan`)
-      }
-
-      // Calculate material cost if materialQuantity is provided
-      if (validatedData.materialQuantity && validatedData.materialQuantity > 0) {
-        materialCost = new Decimal(materialExists.pricePerUnit).mul(validatedData.materialQuantity)
-      }
-    }
-
-    // Create product with Decimal conversion
-    const prismaProduct = await this.prisma.product.create({
-      data: {
-        code: validatedData.code,
-        name: validatedData.name,
-        description: validatedData.description,
-        modalAwal: new Decimal(validatedData.modalAwal), // ✅ Konversi number ke Decimal
-        currentPrice: new Decimal(validatedData.currentPrice), // ✅ Fixed: use currentPrice from validated data
-        quantity: validatedData.quantity,
-        rentedStock: 0, // ✅ Initialize rentedStock to 0 for new products
-        categoryId: validatedData.categoryId,
-        size: validatedData.size,
-        colorId: validatedData.colorId,
-        // Material Management fields - RPK-45
-        materialId: validatedData.materialId || undefined,
-        materialCost: materialCost || undefined,
-        materialQuantity: validatedData.materialQuantity || undefined,
-        imageUrl: request.imageUrl || undefined, // ✅ Gunakan imageUrl dari request
-        status: 'AVAILABLE',
-        // totalPendapatan removed - now calculated from transaction history
-        isActive: true,
-        createdBy: this.userId,
-      },
-      include: {
-        category: true,
-        color: true, // Include color relation
-        material: true, // Include material relation - RPK-45
-      },
-    })
-
-    // Convert Prisma types to application types
-    return this.convertPrismaProductToProduct(prismaProduct)
-  }
-
-  /**
-   * Update an existing product
-   */
-  async updateProduct(id: string, request: UpdateProductRequest): Promise<Product> {
-    // Validate input
-    const { id: validatedId } = productParamsSchema.parse({ id })
-    const validatedData = updateProductSchema.parse(request)
-
-    // Check if product exists and get current data in one query
-    const existingProduct = await this.prisma.product.findUnique({
-      where: {
-        id: validatedId,
-        isActive: true,
-      },
-      include: {
-        category: true,
-      },
-    })
-
-    if (!existingProduct) {
-      throw new NotFoundError('Produk tidak ditemukan')
-    }
-
-    // Validate category existence if categoryId is being updated
-    if (validatedData.categoryId && validatedData.categoryId !== existingProduct.categoryId) {
-      const categoryExists = await this.prisma.category.findUnique({
-        where: { id: validatedData.categoryId },
-      })
-
-      if (!categoryExists) {
-        throw new NotFoundError(`Category dengan ID ${validatedData.categoryId} tidak ditemukan`)
-      }
-    }
-
-    // Validate colorId existence if colorId is being updated
-    if (validatedData.colorId && validatedData.colorId !== existingProduct.colorId) {
-      const colorExists = await this.prisma.color.findUnique({
-        where: { id: validatedData.colorId },
-      })
-
-      if (!colorExists) {
-        throw new NotFoundError(`Warna dengan ID ${validatedData.colorId} tidak ditemukan`)
-      }
-    }
-
-    // Validate materialId and calculate material cost if provided - RPK-45
-    let materialCost: Decimal | undefined
-    if (validatedData.materialId && validatedData.materialId !== existingProduct.materialId) {
-      const materialExists = await this.prisma.material.findUnique({
-        where: { id: validatedData.materialId },
-      })
-
-      if (!materialExists) {
-        throw new NotFoundError(`Material dengan ID ${validatedData.materialId} tidak ditemukan`)
-      }
-
-      // Calculate material cost if materialQuantity is provided or exists
-      const quantityToUse = validatedData.materialQuantity ?? existingProduct.materialQuantity ?? 0
-      if (quantityToUse > 0) {
-        materialCost = new Decimal(materialExists.pricePerUnit).mul(quantityToUse)
-      }
-    } else if (validatedData.materialQuantity && existingProduct.materialId) {
-      // Recalculate cost if quantity changed but material stayed the same
-      const materialExists = await this.prisma.material.findUnique({
-        where: { id: existingProduct.materialId },
-      })
-
-      if (materialExists && validatedData.materialQuantity > 0) {
-        materialCost = new Decimal(materialExists.pricePerUnit).mul(validatedData.materialQuantity)
-      }
-    }
-
-    // Prepare update data with Decimal conversion
-    const updateData: Record<string, unknown> = {
-      updatedAt: new Date(),
-    }
-
-    // Add fields with proper type conversion
-    if (validatedData.name !== undefined) updateData.name = validatedData.name
-    if (validatedData.description !== undefined) updateData.description = validatedData.description
-    if (validatedData.quantity !== undefined) updateData.quantity = validatedData.quantity
-    if (validatedData.categoryId !== undefined) updateData.categoryId = validatedData.categoryId
-    if (validatedData.size !== undefined) updateData.size = validatedData.size
-    if (validatedData.colorId !== undefined) updateData.colorId = validatedData.colorId
-    if (validatedData.rentedStock !== undefined) updateData.rentedStock = validatedData.rentedStock
-
-    // Material Management fields - RPK-45
-    if (validatedData.materialId !== undefined) updateData.materialId = validatedData.materialId
-    if (validatedData.materialQuantity !== undefined) updateData.materialQuantity = validatedData.materialQuantity
-    if (materialCost !== undefined) updateData.materialCost = materialCost
-
-    // Handle imageUrl update (added from API layer)
-    if ('imageUrl' in request && request.imageUrl !== undefined) {
-      updateData.imageUrl = request.imageUrl
-    }
-
-    // Convert number to Decimal for monetary fields
-    if (validatedData.modalAwal !== undefined) {
-      updateData.modalAwal = new Decimal(validatedData.modalAwal) // ✅ Konversi number ke Decimal
-    }
-    if (validatedData.currentPrice !== undefined) {
-      updateData.currentPrice = new Decimal(validatedData.currentPrice) // ✅ Fixed: use currentPrice instead of hargaSewa
-    }
-
-    // Update product
-    const updatedProduct = await this.prisma.product.update({
-      where: { id: validatedId },
-      data: updateData,
-      include: {
-        category: true,
-        color: true, // Include color relation
-        material: true, // Include material relation - RPK-45
-      },
-    })
-
-    // Clear aggregation cache if size-related fields were updated
-    if (validatedData.quantity !== undefined || validatedData.size !== undefined) {
-      this.clearProductAggregationCache(validatedId)
-    }
-
-    return this.convertPrismaProductToProduct(updatedProduct)
-  }
+  // Legacy updateProduct method removed - advanced-only architecture
+  // All products now require sizes via updateProduct() method
 
   /**
    * Get products with pagination and filtering
@@ -484,11 +276,12 @@ export class ProductService {
   // ============== SIZE MANAGEMENT METHODS ==============
 
   /**
-   * Create product with sizes - Enhanced version of createProduct
+   * Create a new product (advanced-only architecture)
+   * All products now require sizes - no legacy single-size support
    */
-  async createProductWithSizes(request: CreateProductWithSizesRequest): Promise<Product> {
+  async createProduct(request: CreateProductWithSizesRequest): Promise<Product> {
     // Validate input
-    const validatedData = createProductWithSizesSchema.parse(request)
+    const validatedData = createProductSchema.parse(request)
 
     // Check if product code already exists
     const existingProduct = await this.prisma.product.findFirst({
@@ -543,8 +336,8 @@ export class ProductService {
         },
       })
 
-      // Create sizes if provided
-      if (validatedData.hasSizes && validatedData.sizes && validatedData.sizes.length > 0) {
+      // Create sizes - REQUIRED for all products in advanced-only architecture
+      if (validatedData.sizes && validatedData.sizes.length > 0) {
         await tx.productSize.createMany({
           data: validatedData.sizes.map((size) => ({
             productId: product.id,
@@ -565,15 +358,16 @@ export class ProductService {
   }
 
   /**
-   * Update product with sizes - Enhanced version of updateProduct
+   * Update an existing product (advanced-only architecture)
+   * All products now support sizes - no legacy single-size support
    */
-  async updateProductWithSizes(
+  async updateProduct(
     id: string,
     request: UpdateProductWithSizesRequest,
   ): Promise<Product> {
     // Validate input
     const { id: validatedId } = productParamsSchema.parse({ id })
-    const validatedData = updateProductWithSizesSchema.parse(request)
+    const validatedData = updateProductSchema.parse(request)
 
     // Check if product exists
     const existingProduct = await this.prisma.product.findUnique({
@@ -643,9 +437,9 @@ export class ProductService {
         data: updateData,
       })
 
-      // Handle sizes update if provided
-      if (validatedData.hasSizes !== undefined && validatedData.sizes !== undefined) {
-        if (validatedData.hasSizes && validatedData.sizes.length > 0) {
+      // Handle sizes update - advanced-only architecture
+      if (validatedData.sizes !== undefined) {
+        if (validatedData.sizes.length > 0) {
           // Delete existing sizes
           await tx.productSize.deleteMany({
             where: { productId: validatedId },
@@ -662,8 +456,8 @@ export class ProductService {
               createdBy: this.userId,
             })),
           })
-        } else if (!validatedData.hasSizes) {
-          // Remove all sizes if hasSizes is false
+        } else {
+          // Remove all sizes if empty array provided
           await tx.productSize.deleteMany({
             where: { productId: validatedId },
           })
@@ -888,8 +682,7 @@ export class ProductService {
     }
 
     // Update product with new sizes
-    return this.updateProductWithSizes(validatedId, {
-      hasSizes: true,
+    return this.updateProduct(validatedId, {
       sizes: newSizes.map(size => ({
         ageCategory: size.ageCategory,
         size: size.size,

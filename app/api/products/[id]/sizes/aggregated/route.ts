@@ -1,23 +1,22 @@
 /**
- * API Route: Products Aggregated Sizes
+ * API Route: Advanced Products Aggregated Sizes
  *
- * GET /api/products/[id]/sizes/aggregated - Get aggregated size data for a product
+ * GET /api/products/[id]/sizes/aggregated - Get advanced aggregated size data for a product
  *
- * Purpose: Provide aggregated size views for UI consumption while preserving
- * detailed business logic tracking in the background
+ * Purpose: Provide advanced-only aggregated size views for UI consumption with enhanced
+ * business intelligence and performance monitoring. Uses advanced size management system.
  */
 
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
-import { ProductSizeAggregationService } from '@/features/manage-product/services/productSizeAggregationService'
+import { AdvancedProductSizeAggregationService } from '@/features/manage-product/services/advancedProductSizeAggregationService'
 import { prisma } from '@/lib/prisma'
-import { productParamsSchema } from '@/features/manage-product/lib/validation/productSchema'
+import { advancedProductParamsSchema } from '@/features/manage-product/lib/validation/advancedProductSchema'
 import { NotFoundError } from '@/features/manage-product/lib/errors/AppError'
-import type { AggregationQueryParams } from '@/features/manage-product/types'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Authentication check
@@ -29,15 +28,17 @@ export async function GET(
       )
     }
 
+    const { id } = await params
+
     // Validate product ID parameter
-    const { id: validatedId } = productParamsSchema.parse({ id: params.id })
+    const { id: validatedId } = advancedProductParamsSchema.parse({ id })
 
     // Parse query parameters
     const { searchParams } = new URL(request.url)
-    const queryParams: AggregationQueryParams = {
+    const queryParams = {
       includeBreakdown: searchParams.get('includeBreakdown') !== 'false', // Default true
-      includeMetadata: searchParams.get('includeMetadata') === 'true',    // Default false
-      cacheBypass: searchParams.get('cacheBypass') === 'true',           // Default false
+      includeRentalTracking: searchParams.get('includeRentalTracking') !== 'false', // Default true
+      forceRefresh: searchParams.get('forceRefresh') === 'true',           // Default false
     }
 
     // Verify product exists
@@ -60,16 +61,21 @@ export async function GET(
       )
     }
 
-    // Initialize aggregation service
-    const aggregationService = new ProductSizeAggregationService(prisma, {
-      enableCaching: !queryParams.cacheBypass,
+    // Initialize advanced aggregation service
+    const aggregationService = new AdvancedProductSizeAggregationService(prisma, {
+      enableCaching: !queryParams.forceRefresh,
       includeBreakdown: queryParams.includeBreakdown,
+      includeRentalTracking: queryParams.includeRentalTracking,
     })
 
-    // Get aggregated sizes
-    const aggregationResponse = await aggregationService.getAggregatedSizes(
+    // Get advanced aggregated sizes
+    const aggregationResponse = await aggregationService.getAdvancedAggregatedSizes(
       validatedId,
-      queryParams.includeBreakdown
+      {
+        includeBreakdown: queryParams.includeBreakdown,
+        includeRentalTracking: queryParams.includeRentalTracking,
+        forceRefresh: queryParams.forceRefresh,
+      }
     )
 
     // Prepare response based on query parameters
@@ -77,13 +83,11 @@ export async function GET(
       productId: validatedId,
       productName: product.name,
       aggregatedSizes: aggregationResponse.data,
-      ...(queryParams.includeMetadata && {
-        metadata: aggregationResponse.metadata,
-      }),
+      metadata: aggregationResponse.metadata,
     }
 
     // Set cache headers for performance
-    const cacheMaxAge = queryParams.cacheBypass ? 0 : 300 // 5 minutes
+    const cacheMaxAge = queryParams.forceRefresh ? 0 : 300 // 5 minutes
     const headers = {
       'Cache-Control': `public, max-age=${cacheMaxAge}, stale-while-revalidate=60`,
     }

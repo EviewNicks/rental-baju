@@ -204,7 +204,7 @@ export function useAdvancedProductForm({
 
       return null
     } catch (error) {
-      formLogger.error('Field validation error', { fieldName, error })
+      formLogger.error('validateField', 'Field validation error', { fieldName, error })
       return 'Validasi gagal'
     }
   }, [formData, mode])
@@ -240,7 +240,7 @@ export function useAdvancedProductForm({
       }))
     }
 
-    formLogger.debug('Form field updated', { name, value })
+    formLogger.debug('setValue', 'Form field updated', { name, value })
   }, [errors])
 
   // Set multiple values
@@ -262,7 +262,7 @@ export function useAdvancedProductForm({
       })
     }
 
-    formLogger.debug('Multiple form fields updated', { fields: Object.keys(values) })
+    formLogger.debug('setValues', 'Multiple form fields updated', { fields: Object.keys(values) })
   }, [errors])
 
   // Handle input change
@@ -284,7 +284,7 @@ export function useAdvancedProductForm({
       [name]: error,
     }))
 
-    formLogger.debug('Field blurred and validated', { name, hasError: !!error })
+    formLogger.debug('onBlur', 'Field blurred and validated', { name, hasError: !!error })
   }, [validateField])
 
   // Handle sizes change
@@ -297,14 +297,14 @@ export function useAdvancedProductForm({
       sizes: true,
     }))
 
-    formLogger.info('Sizes updated', { sizesCount: sizes.length })
+    formLogger.info('onSizesChange', 'Sizes updated', { sizesCount: sizes.length })
   }, [setValue])
 
   // Handle aggregated sizes change (for display purposes)
   const handleAggregatedSizesChange = useCallback((sizes: AdvancedAggregatedSizeView[]) => {
     // This is primarily for display/analytics purposes
     // The actual sizes data is managed by handleSizesChange
-    formLogger.debug('Aggregated sizes updated', { aggregatedCount: sizes.length })
+    formLogger.debug('onAggregatedSizesChange', 'Aggregated sizes updated', { aggregatedCount: sizes.length })
   }, [])
 
   // Currency formatting utility
@@ -367,10 +367,10 @@ export function useAdvancedProductForm({
       // Call submit handler
       if (onSubmit) {
         await onSubmit(formData)
-        formLogger.info('Form submitted successfully', { mode, sizesCount: formData.sizes.length })
+        formLogger.info('onSubmit', 'Form submitted successfully', { mode, sizesCount: formData.sizes.length })
       }
     } catch (error) {
-      formLogger.error('Form submission failed', { error, mode })
+      formLogger.error('onSubmit', 'Form submission failed', { error, mode })
       toast.error('Gagal menyimpan produk. Silakan coba lagi.')
     } finally {
       setIsSubmitting(false)
@@ -403,7 +403,7 @@ export function useAdvancedProductForm({
     setErrors({})
     setTouched({})
 
-    formLogger.info('Form reset', { mode })
+    formLogger.info('resetForm', 'Form reset', { mode })
   }, [initialData, mode])
 
   // Auto-save effect (if enabled)
@@ -412,7 +412,7 @@ export function useAdvancedProductForm({
 
     const timeoutId = setTimeout(() => {
       if (onSubmit) {
-        formLogger.debug('Auto-saving form')
+        formLogger.debug('useEffect', 'Auto-saving form')
         handleSubmit()
       }
     }, autoSaveDelayMs)
@@ -422,7 +422,7 @@ export function useAdvancedProductForm({
 
   // Initialize form logging
   useEffect(() => {
-    formLogger.info('Advanced product form initialized', {
+    formLogger.info('useEffect', 'Advanced product form initialized', {
       mode,
       hasInitialData: !!initialData,
       enableAutoSave,

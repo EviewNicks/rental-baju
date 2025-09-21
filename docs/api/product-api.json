@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Producer API Collection - Advanced Size Management",
-    "description": "Complete API collection untuk Producer role dengan Advanced Size Management System. Includes produk, kategori, warna, material, dan hybrid size management (commits 83e9b26, dec3c0e).\n\n🆕 NEW SIZE MANAGEMENT FEATURES:\n• Advanced multi-size products dengan age categories (ANAK/DEWASA)\n• Aggregated size display dengan breakdown capabilities\n• Business logic validation dan performance monitoring\n• Hybrid architecture: legacy + advanced size support\n• Real-time aggregation dengan caching (5min TTL)\n\n🔗 DEPENDENCIES & EXECUTION ORDER:\n1. Setup: Login → Get session token\n2. Prerequisites: Create Category → Create Color → (Optional) Create Material\n3. Products: Create/Update products dengan size management\n4. Size Management: Test aggregation, validation, hybrid scenarios\n5. Testing: Run comprehensive integration scenarios\n\n📋 REQUIRED VARIABLES:\n- base_url: http://localhost:3000\n- clerk_session_token: From browser cookies\n- Auto-captured: product_id, category_id, color_id, material_id, size_id\n\n⚡ PERFORMANCE TARGETS:\n- Aggregation: <50ms calculation time\n- Cache Hit Rate: >80% untuk optimal performance\n- Response Time: <2s SLA maintained\n\n📚 Full documentation: docs/api/manage-product-endpoints.md | docs/api/manage-product-business-logic.md",
+    "description": "Complete API collection untuk Producer role dengan Advanced-Only Size Management System. Includes produk, kategori, warna, material, dan advanced size management (atomic switch implementation).\n\n🆕 ADVANCED-ONLY ARCHITECTURE:\n• All products now require sizes dengan age categories (ADULT/CHILD/UNIVERSAL)\n• Aggregated size display dengan breakdown capabilities\n• Business logic validation dan performance monitoring\n• Pure advanced architecture: no legacy single-size support\n• Real-time aggregation dengan caching (5min TTL)\n\n🔗 DEPENDENCIES & EXECUTION ORDER:\n1. Setup: Login → Get session token\n2. Prerequisites: Create Category → Create Color → (Optional) Create Material\n3. Products: Create/Update products dengan advanced size management\n4. Size Management: Test aggregation, validation, advanced scenarios\n5. Testing: Run comprehensive integration scenarios\n\n📋 REQUIRED VARIABLES:\n- base_url: http://localhost:3000\n- clerk_session_token: From browser cookies\n- Auto-captured: product_id, category_id, color_id, material_id, size_id\n\n⚡ PERFORMANCE TARGETS:\n- Aggregation: <50ms calculation time\n- Cache Hit Rate: >80% untuk optimal performance\n- Response Time: <2s SLA maintained\n\n📚 Full documentation: docs/api/manage-product-endpoints.md | docs/api/manage-product-business-logic.md",
     "version": "4.0.0",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
@@ -109,11 +109,11 @@
                 {
                   "key": "includeAggregation",
                   "value": "true",
-                  "description": "Include advanced size aggregation data untuk products dengan hasSizes=true. Default: false untuk performa optimal"
+                  "description": "Include advanced size aggregation data untuk all products. Default: false untuk performa optimal"
                 }
               ]
             },
-            "description": "Mendapatkan daftar produk dengan pagination, filter, enhanced size/color filtering, dan optional size aggregation data. \n\n🆕 SIZE AGGREGATION:\n• includeAggregation=true: Include aggregated size data untuk advanced size management\n• Hanya ditampilkan untuk products dengan hasSizes=true\n• Performance optimized dengan caching (5min TTL)\n• Compatible dengan semua existing filters"
+            "description": "Mendapatkan daftar produk dengan pagination, filter, enhanced size/color filtering, dan optional size aggregation data. \n\n🆕 SIZE AGGREGATION:\n• includeAggregation=true: Include aggregated size data untuk advanced size management\n• Ditampilkan untuk all products (advanced-only architecture)\n• Performance optimized dengan caching (5min TTL)\n• Compatible dengan semua existing filters"
           },
           "response": [
             {
@@ -173,7 +173,7 @@
                 {
                   "key": "includeAggregation",
                   "value": "true",
-                  "description": "Include advanced size aggregation data jika product menggunakan hasSizes=true. Default: false untuk performa optimal"
+                  "description": "Include advanced size aggregation data untuk product. Default: false untuk performa optimal"
                 }
               ]
             },
@@ -286,15 +286,9 @@
                   "type": "text"
                 },
                 {
-                  "key": "hasSizes",
-                  "value": "false",
-                  "description": "Enable advanced size management (true) atau gunakan legacy single size (false). Default: false untuk backward compatibility",
-                  "type": "text"
-                },
-                {
                   "key": "sizes",
-                  "value": "[{\"ageCategory\":\"DEWASA\",\"size\":\"M\",\"quantity\":3,\"isActive\":true},{\"ageCategory\":\"DEWASA\",\"size\":\"L\",\"quantity\":2,\"isActive\":true}]",
-                  "description": "Advanced size management data dalam format JSON array. Required jika hasSizes=true. Format: [{\"ageCategory\":\"ANAK|DEWASA\",\"size\":\"S|M|L|XL|XXL\",\"quantity\":number,\"isActive\":boolean}]",
+                  "value": "[{\"ageCategory\":\"ADULT\",\"size\":\"M\",\"quantity\":3,\"isActive\":true},{\"ageCategory\":\"ADULT\",\"size\":\"L\",\"quantity\":2,\"isActive\":true}]",
+                  "description": "Advanced size management data dalam format JSON array. REQUIRED for all products. Format: [{\"ageCategory\":\"ADULT|CHILD|UNIVERSAL\",\"size\":\"XS|S|M|L|XL|XXL\",\"quantity\":number,\"isActive\":boolean}]",
                   "type": "text"
                 },
                 {
@@ -309,7 +303,7 @@
               "host": ["{{base_url}}"],
               "path": ["api", "products"]
             },
-            "description": "Membuat produk baru dengan hybrid size management system, color, dan material fields plus upload gambar. \n\n🆕 SIZE MANAGEMENT OPTIONS:\n• Legacy Mode (hasSizes=false): Single size field untuk backward compatibility\n• Advanced Mode (hasSizes=true): Multiple sizes dengan age categories (ANAK/DEWASA)\n• Material fields opsional untuk perhitungan otomatis biaya material\n• Auto-aggregation: Total quantity dihitung otomatis dari sizes array\n\n📋 VALIDATION RULES:\n• Jika hasSizes=true, field sizes wajib diisi\n• Age categories: ANAK atau DEWASA\n• Sizes: S, M, L, XL, XXL\n• Quantity total = sum of all size quantities"
+            "description": "Membuat produk baru dengan advanced-only size management system, color, dan material fields plus upload gambar. \n\n🆕 ADVANCED-ONLY ARCHITECTURE:\n• All products require multiple sizes dengan age categories (ADULT/CHILD/UNIVERSAL)\n• No legacy single-size support - pure advanced architecture\n• Material fields opsional untuk perhitungan otomatis biaya material\n• Auto-aggregation: Total quantity dihitung otomatis dari sizes array\n\n📋 VALIDATION RULES:\n• Field sizes REQUIRED untuk semua produk\n• Age categories: ADULT, CHILD, atau UNIVERSAL\n• Sizes: XS, S, M, L, XL, XXL\n• Quantity total = sum of all size quantities"
           },
           "response": []
         },
@@ -364,15 +358,9 @@
                   "type": "text"
                 },
                 {
-                  "key": "hasSizes",
-                  "value": "true",
-                  "description": "Enable advanced size management (true) atau gunakan legacy single size (false). Dapat diubah dari legacy ke advanced atau sebaliknya",
-                  "type": "text"
-                },
-                {
                   "key": "sizes",
-                  "value": "[{\"ageCategory\":\"DEWASA\",\"size\":\"M\",\"quantity\":2,\"isActive\":true},{\"ageCategory\":\"DEWASA\",\"size\":\"L\",\"quantity\":3,\"isActive\":true},{\"ageCategory\":\"ANAK\",\"size\":\"S\",\"quantity\":1,\"isActive\":true}]",
-                  "description": "Update advanced size management data dalam format JSON array. Required jika hasSizes=true. Format: [{\"ageCategory\":\"ANAK|DEWASA\",\"size\":\"S|M|L|XL|XXL\",\"quantity\":number,\"isActive\":boolean}]",
+                  "value": "[{\"ageCategory\":\"ADULT\",\"size\":\"M\",\"quantity\":2,\"isActive\":true},{\"ageCategory\":\"ADULT\",\"size\":\"L\",\"quantity\":3,\"isActive\":true},{\"ageCategory\":\"CHILD\",\"size\":\"S\",\"quantity\":1,\"isActive\":true}]",
+                  "description": "Update advanced size management data dalam format JSON array. Advanced-only architecture. Format: [{\"ageCategory\":\"ADULT|CHILD|UNIVERSAL\",\"size\":\"XS|S|M|L|XL|XXL\",\"quantity\":number,\"isActive\":boolean}]",
                   "type": "text"
                 },
                 {
@@ -387,7 +375,7 @@
               "host": ["{{base_url}}"],
               "path": ["api", "products", "{{product_id}}"]
             },
-            "description": "Mengupdate produk berdasarkan ID dengan hybrid size management system, color, dan material support.\n\n🔄 SIZE MANAGEMENT MIGRATION:\n• Legacy → Advanced: Dapat mengubah hasSizes dari false ke true\n• Advanced → Legacy: Dapat mengubah hasSizes dari true ke false  \n• Size Migration: Otomatis maintain data consistency\n• Material fields opsional untuk update biaya material otomatis\n\n📋 UPDATE SCENARIOS:\n• Update single size (legacy mode)\n• Update multiple sizes (advanced mode)\n• Add/remove sizes dari existing advanced product\n• Migrate dari legacy ke advanced size system\n• Auto-recalculation quantity dari sizes array"
+            "description": "Mengupdate produk berdasarkan ID dengan advanced-only size management system, color, dan material support.\n\n🔄 ADVANCED-ONLY UPDATES:\n• All products use advanced size management\n• No legacy mode - pure advanced architecture\n• Size updates: Otomatis maintain data consistency\n• Material fields opsional untuk update biaya material otomatis\n\n📋 UPDATE SCENARIOS:\n• Update multiple sizes (advanced-only mode)\n• Add/remove sizes dari existing products\n• Modify age categories dan size combinations\n• Auto-recalculation quantity dari sizes array"
           },
           "response": []
         },

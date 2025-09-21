@@ -12,14 +12,13 @@
  * - Type-safe operations with advanced-only interfaces
  */
 
-import { PrismaClient, Decimal } from '@prisma/client'
+import { PrismaClient } from '@prisma/client'
+import { Decimal } from '@prisma/client/runtime/library'
 import {
   ConflictError,
   NotFoundError,
   ValidationError,
-  type BusinessLogicValidationResult,
-  type SizeValidationResult,
-} from '../lib/errors'
+} from '../lib/errors/AppError'
 import {
   advancedProductParamsSchema,
   advancedProductQuerySchema,
@@ -55,10 +54,10 @@ import type {
   SizeEnum,
   ProductStatus,
 
-  // Validation Functions
-  validateAdvancedSizeArray,
-  validateAdvancedSizeRequest,
 } from '../types/advanced'
+import {
+  validateAdvancedSizeArraySchema,
+} from '../lib/validation/advancedProductSchema'
 import { AdvancedProductSizeAggregationService } from './advancedProductSizeAggregationService'
 
 export interface AdvancedProductListResponse {
@@ -106,9 +105,9 @@ export class AdvancedProductService {
     const validatedData = createAdvancedProductSchema.parse(request)
 
     // Advanced size validation
-    const sizeValidation = validateAdvancedSizeArray(validatedData.sizes)
-    if (!sizeValidation.isValid) {
-      throw new ValidationError('Size validation failed', sizeValidation.errors)
+    const sizeValidation = validateAdvancedSizeArraySchema(validatedData.sizes)
+    if (!sizeValidation.success) {
+      throw new ValidationError('Size validation failed', sizeValidation.error)
     }
 
     // Check if product code already exists
@@ -231,9 +230,9 @@ export class AdvancedProductService {
 
     // Validate sizes if provided
     if (validatedData.sizes) {
-      const sizeValidation = validateAdvancedSizeArray(validatedData.sizes)
-      if (!sizeValidation.isValid) {
-        throw new ValidationError('Size validation failed', sizeValidation.errors)
+      const sizeValidation = validateAdvancedSizeArraySchema(validatedData.sizes)
+      if (!sizeValidation.success) {
+        throw new ValidationError('Size validation failed', sizeValidation.error)
       }
     }
 
@@ -552,9 +551,9 @@ export class AdvancedProductService {
     }
 
     // Validate sizes data
-    const sizeValidation = validateAdvancedSizeArray(sizes)
-    if (!sizeValidation.isValid) {
-      throw new ValidationError('Size validation failed', sizeValidation.errors)
+    const sizeValidation = validateAdvancedSizeArraySchema(sizes)
+    if (!sizeValidation.success) {
+      throw new ValidationError('Size validation failed', sizeValidation.error)
     }
 
     // Check for existing duplicates in database
@@ -631,14 +630,14 @@ export class AdvancedProductService {
     const aggregationService = this.getAdvancedAggregationService()
 
     try {
-      const aggregation = await aggregationService.getAdvancedAggregatedSizes(product.id, {
-        includeBreakdown,
-        includeRentalTracking,
+      const aggregation = await aggregationService.getAdvancedProductAggregation(product.id, {
+        includeBusinessIntelligence: includeBreakdown,
+        includePerformanceMetrics: includeRentalTracking,
       })
 
       return {
         ...product,
-        aggregation: aggregation.data,
+        aggregation,
       }
     } catch (error) {
       console.warn(`Failed to get aggregation for product ${product.id}:`, error)
@@ -845,7 +844,7 @@ export class AdvancedProductService {
    */
   private clearProductAggregationCache(productId: string): void {
     const aggregationService = this.getAdvancedAggregationService()
-    aggregationService.clearCache(productId)
+    aggregationService.clearProductCache(productId)
   }
 
   /**

@@ -11,7 +11,7 @@ import { ProductService } from '@/features/manage-product/services/productServic
 import { ProductSizeAggregationService } from '@/features/manage-product/services/productSizeAggregationService'
 import { FileUploadService } from '@/features/manage-product/services/fileUploadService'
 import { prisma } from '@/lib/prisma'
-import { createProductSchema, createProductWithSizesSchema } from '@/features/manage-product/lib/validation/productSchema'
+import { createProductSchema } from '@/features/manage-product/lib/validation/productSchema'
 import { ConflictError } from '@/features/manage-product/lib/errors/AppError'
 import type { Product } from '@/features/manage-product/types'
 
@@ -134,20 +134,31 @@ export async function POST(request: NextRequest) {
     const materialQuantityStr = (formData.get('materialQuantity') as string) || undefined
     const image = formData.get('image') as File | null
 
-    // Size Management fields
-    const hasSizes = formData.get('hasSizes') === 'true'
+    // Size Management fields - REQUIRED for advanced-only architecture
     const sizesStr = formData.get('sizes') as string
     let sizes: Array<{ ageCategory: string; size: string; quantity: number; isActive?: boolean }> = []
 
-    if (hasSizes && sizesStr) {
-      try {
-        sizes = JSON.parse(sizesStr)
-      } catch {
+    // Parse sizes - REQUIRED since all products must have sizes
+    if (!sizesStr) {
+      return NextResponse.json(
+        { error: { message: 'Field sizes wajib diisi - semua produk harus memiliki ukuran', code: 'VALIDATION_ERROR' } },
+        { status: 400 },
+      )
+    }
+
+    try {
+      sizes = JSON.parse(sizesStr)
+      if (!sizes || sizes.length === 0) {
         return NextResponse.json(
-          { error: { message: 'Format data ukuran tidak valid', code: 'VALIDATION_ERROR' } },
+          { error: { message: 'Minimal 1 ukuran harus ditambahkan', code: 'VALIDATION_ERROR' } },
           { status: 400 },
         )
       }
+    } catch {
+      return NextResponse.json(
+        { error: { message: 'Format data ukuran tidak valid', code: 'VALIDATION_ERROR' } },
+        { status: 400 },
+      )
     }
 
     // Convert string to numbers
@@ -219,16 +230,13 @@ export async function POST(request: NextRequest) {
       // Material Management fields - RPK-45
       materialId,
       materialQuantity,
-      // Size Management fields
-      hasSizes,
+      // Size Management fields - Advanced only
       sizes,
       image,
     }
 
-    // Validate with schema - use enhanced schema for size management
-    const validatedData = hasSizes
-      ? createProductWithSizesSchema.parse(createRequest)
-      : createProductSchema.parse(createRequest)
+    // Validate with advanced-only schema (all products require sizes)
+    const validatedData = createProductSchema.parse(createRequest)
 
     // Initialize services
     const productService = new ProductService(prisma, userId)
@@ -259,10 +267,8 @@ export async function POST(request: NextRequest) {
       imageUrl, // Add uploaded image URL
     }
 
-    // Use enhanced service method for size management or regular method for backward compatibility
-    const product = hasSizes
-      ? await productService.createProductWithSizes(productData)
-      : await productService.createProduct(productData)
+    // Create product using advanced-only architecture
+    const product = await productService.createProduct(productData)
 
     return NextResponse.json(product, { status: 201 })
   } catch (error) {

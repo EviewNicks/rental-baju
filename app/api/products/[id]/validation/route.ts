@@ -1,31 +1,30 @@
 /**
- * API Route: Product Business Logic Validation
+ * API Route: Advanced Product Business Logic Validation
  *
- * GET /api/products/[id]/validation - Validate business logic preservation
+ * GET /api/products/[id]/validation - Validate advanced-only business logic
  *   Query Parameters:
  *   - type: 'full' | 'consistency' | 'capabilities' - Type of validation (default: full)
  *   - format: 'detailed' | 'summary' - Response format (default: detailed)
  *
- * Purpose: Validate that the hybrid size management system preserves
+ * Purpose: Validate that the advanced size management system maintains
  * all business logic capabilities for rental tracking, analytics, and inventory
  */
 
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
-import { ProductService } from '@/features/manage-product/services/productService'
-import { ProductSizeAggregationService } from '@/features/manage-product/services/productSizeAggregationService'
+import { AdvancedProductService } from '@/features/manage-product/services/advancedProductService'
+import { AdvancedProductSizeAggregationService } from '@/features/manage-product/services/advancedProductSizeAggregationService'
 import { prisma } from '@/lib/prisma'
-import { productParamsSchema } from '@/features/manage-product/lib/validation/productSchema'
+import { advancedProductParamsSchema } from '@/features/manage-product/lib/validation/advancedProductSchema'
 import { NotFoundError } from '@/features/manage-product/lib/errors/AppError'
 import type {
-  AggregationConsistencyResult,
-  BusinessLogicValidationResult,
-  BusinessCapabilitiesReport
-} from '@/features/manage-product/types'
+  AdvancedBusinessValidationResult,
+  AdvancedProductCapabilities
+} from '@/features/manage-product/types/advanced'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Authentication check
@@ -37,20 +36,22 @@ export async function GET(
       )
     }
 
+    const { id } = await params
+
     // Validate product ID parameter
-    const { id: validatedId } = productParamsSchema.parse({ id: params.id })
+    const { id: validatedId } = advancedProductParamsSchema.parse({ id })
 
     // Parse query parameters
     const { searchParams } = new URL(request.url)
     const validationType = searchParams.get('type') || 'full'
     const responseFormat = searchParams.get('format') || 'detailed'
 
-    // Initialize services
-    const productService = new ProductService(prisma, userId)
-    const aggregationService = new ProductSizeAggregationService(prisma)
+    // Initialize advanced services
+    const productService = new AdvancedProductService(prisma, userId)
+    const aggregationService = new AdvancedProductSizeAggregationService(prisma)
 
     // Verify product exists
-    const product = await productService.getProductById(validatedId)
+    const product = await productService.getProductAdvanced(validatedId)
 
     if (!product) {
       return NextResponse.json(
@@ -59,23 +60,23 @@ export async function GET(
       )
     }
 
-    let validationResult: AggregationConsistencyResult | BusinessCapabilitiesReport | BusinessLogicValidationResult
+    let validationResult: AdvancedBusinessValidationResult | AdvancedProductCapabilities
 
     switch (validationType) {
       case 'consistency':
-        // Only validate aggregation consistency
-        validationResult = await aggregationService.validateAggregationConsistency(validatedId)
+        // Validate advanced business logic consistency
+        validationResult = await productService.validateAdvancedBusinessLogic(validatedId)
         break
 
       case 'capabilities':
-        // Get business capabilities report
-        validationResult = await productService.getBusinessCapabilitiesReport(validatedId)
+        // Get advanced business capabilities analysis
+        validationResult = await productService.analyzeAdvancedProductCapabilities(validatedId)
         break
 
       case 'full':
       default:
-        // Full business logic preservation validation
-        validationResult = await productService.validateBusinessLogicPreservation(validatedId)
+        // Full advanced business logic validation
+        validationResult = await productService.validateAdvancedBusinessLogic(validatedId)
         break
     }
 
@@ -85,26 +86,23 @@ export async function GET(
         productId: validatedId,
         productName: product.name,
         validationType,
-        isHealthy: validationType === 'full' && 'overallHealth' in validationResult
-          ? ['excellent', 'good'].includes(validationResult.overallHealth)
-          : validationType === 'consistency' && 'isConsistent' in validationResult
-          ? validationResult.isConsistent !== false
+        isHealthy: validationType === 'capabilities' && 'businessValue' in validationResult
+          ? ['advanced', 'enterprise'].includes(validationResult.businessValue)
+          : validationType === 'consistency' && 'errors' in validationResult
+          ? validationResult.errors.length === 0
+          : validationType === 'full' && 'errors' in validationResult
+          ? validationResult.errors.length === 0
           : true,
-        keyMetrics: validationType === 'full'
+        keyMetrics: validationType === 'capabilities'
           ? {
-              overallHealth: (validationResult as BusinessLogicValidationResult).overallHealth,
-              recommendationCount: (validationResult as BusinessLogicValidationResult).recommendations?.length || 0,
-              businessCapabilities: (validationResult as BusinessLogicValidationResult).rentalTracking?.businessCapabilities?.length || 0
-            }
-          : validationType === 'capabilities'
-          ? {
-              businessLevel: (validationResult as BusinessCapabilitiesReport).businessValue?.level,
-              capabilityScore: (validationResult as BusinessCapabilitiesReport).businessValue?.score,
-              strengthCount: (validationResult as BusinessCapabilitiesReport).businessValue?.strengths?.length || 0
+              businessValue: (validationResult as AdvancedProductCapabilities).businessValue,
+              complexityScore: (validationResult as AdvancedProductCapabilities).complexityScore,
+              recommendedActionsCount: (validationResult as AdvancedProductCapabilities).recommendedActions?.length || 0
             }
           : {
-              isConsistent: (validationResult as AggregationConsistencyResult).isConsistent,
-              errorCount: (validationResult as AggregationConsistencyResult).errors?.length || 0
+              sizeConsistency: (validationResult as AdvancedBusinessValidationResult).sizeConsistency,
+              uniqueCombinations: (validationResult as AdvancedBusinessValidationResult).uniqueCombinations,
+              errorCount: (validationResult as AdvancedBusinessValidationResult).errors?.length || 0
             },
         timestamp: new Date().toISOString()
       }
@@ -120,11 +118,11 @@ export async function GET(
       validationResult,
       metadata: {
         timestamp: new Date().toISOString(),
-        version: '1.0.0',
+        version: '2.0.0',
         systemInfo: {
-          aggregationEnabled: true,
-          businessLogicPreserved: true,
-          hybridArchitecture: true
+          advancedSizeManagement: true,
+          businessLogicValidation: true,
+          advancedArchitecture: true
         }
       }
     }
