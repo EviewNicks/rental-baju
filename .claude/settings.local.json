@@ -51,7 +51,6 @@
       "Bash(cmd /c:*)",
       "Bash(npx playwright:*)",
       "Bash(set NODE_ENV=test)",
-      "Bash(npx prisma migrate dev:*)",
       "Bash(npx prisma db seed:*)",
       "Bash(yarn dev)",
       "Bash(npx prisma generate:*)",
@@ -102,7 +101,8 @@
       "mcp__atlassian__getConfluencePage",
       "mcp__atlassian__getVisibleJiraProjects",
       "mcp__atlassian__createJiraIssue",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Bash(npx tsx:*)"
     ],
     "deny": []
   }

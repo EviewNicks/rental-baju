@@ -102,7 +102,7 @@
                   "description": "Filter berdasarkan ukuran (multiple values separated by comma). Example: S,M,L,XL,XXL"
                 },
                 {
-                  "key": "colorId",
+                   "key": "colorId",
                   "value": "{{color_id}}",
                   "description": "Filter berdasarkan warna (multiple color IDs separated by comma)"
                 },
