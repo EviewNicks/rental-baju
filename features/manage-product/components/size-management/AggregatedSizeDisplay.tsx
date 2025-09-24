@@ -1,8 +1,10 @@
 'use client'
 
+import { useState } from 'react'
 import { Package, Plus, Minus, Eye, EyeOff } from 'lucide-react'
 import type { AggregatedSizeView, AgeCategory } from '@/features/manage-product/types'
 import { formatAgeCategory } from '@/features/manage-product/lib/utils/sizeManagementUtils'
+import { SizeCreationModal } from './SizeCreationModal'
 
 interface AggregatedSizeDisplayProps {
   aggregatedSizes: AggregatedSizeView[]
@@ -26,6 +28,9 @@ export function AggregatedSizeDisplay({
   onSizeChange,
   className = '',
 }: AggregatedSizeDisplayProps) {
+  // Modal state
+  const [isModalOpen, setIsModalOpen] = useState(false)
+
   // Calculate totals
   const totalQuantity = aggregatedSizes.reduce((sum, size) => sum + size.totalQuantity, 0)
   const totalSizes = aggregatedSizes.length
@@ -47,6 +52,20 @@ export function AggregatedSizeDisplay({
 
     const updatedSizes = aggregatedSizes.filter((size) => size.size !== sizeToRemove)
     onSizeChange(updatedSizes)
+  }
+
+  // Handle new size creation from modal
+  const handleSizeCreate = (newSize: AggregatedSizeView) => {
+    if (!editable || !onSizeChange) return
+
+    const updatedSizes = [...aggregatedSizes, newSize]
+    onSizeChange(updatedSizes)
+    setIsModalOpen(false)
+  }
+
+  // Handle modal close
+  const handleModalClose = () => {
+    setIsModalOpen(false)
   }
 
   // Render quantity input for editable mode
@@ -216,6 +235,7 @@ export function AggregatedSizeDisplay({
         <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
           <button
             type="button"
+            onClick={() => setIsModalOpen(true)}
             className="flex items-center justify-center gap-2 mx-auto px-4 py-2 text-sm text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-md transition-colors"
             title="Tambah ukuran baru"
           >
@@ -239,6 +259,14 @@ export function AggregatedSizeDisplay({
           </div>
         </div>
       )}
+
+      {/* Size Creation Modal */}
+      <SizeCreationModal
+        isOpen={isModalOpen}
+        onClose={handleModalClose}
+        onSizeCreate={handleSizeCreate}
+        existingSizes={aggregatedSizes}
+      />
     </div>
   )
 }

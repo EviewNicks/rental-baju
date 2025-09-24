@@ -13,7 +13,6 @@ export interface BaseProduct {
   name: string
   description?: string
   categoryId: string
-  size?: string
   colorId?: string
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   modalAwal: any // Prisma Decimal (server-side only)
@@ -63,7 +62,6 @@ export interface ClientProduct {
   name: string
   description?: string
   categoryId: string
-  size?: string
   colorId?: string
   modalAwal: number
   currentPrice: number
@@ -238,7 +236,7 @@ export interface CreateProductRequest {
   currentPrice: number // ✅ Renamed from hargaSewa to match database schema
   quantity: number
   categoryId: string
-  size?: string
+  sizes: string // JSON string format required by backend - Advanced-only architecture
   colorId?: string
   // Material Management fields - RPK-45
   materialId?: string
@@ -254,7 +252,7 @@ export interface UpdateProductRequest {
   currentPrice?: number // ✅ Renamed from hargaSewa to match database schema
   quantity?: number
   categoryId?: string
-  size?: string
+  sizes: string // JSON string format required by backend - Advanced-only architecture
   colorId?: string
   // Material Management fields - RPK-45
   materialId?: string
@@ -321,13 +319,15 @@ export interface ProductFormData {
   code: string
   name: string
   categoryId: string
-  size?: string
   colorId?: string
   quantity: number
   modalAwal: number // ✅ Ubah dari Decimal ke number
   currentPrice: number // ✅ Renamed from hargaSewa to match database schema
   description: string
   imageUrl: string | null
+  // Advanced-only Size Management (required for all products)
+  hasSizes: boolean
+  aggregatedSizes?: AggregatedSizeView[]
 }
 
 /**
@@ -350,19 +350,19 @@ export interface UpdateProductSizeRequest {
 }
 
 export interface CreateProductWithSizesRequest extends CreateProductRequest {
-  hasSizes?: boolean
-  sizes?: CreateProductSizeRequest[]
+  // Advanced-only architecture: all products require sizes
+  sizes: CreateProductSizeRequest[]
 }
 
 export interface UpdateProductWithSizesRequest extends UpdateProductRequest {
-  hasSizes?: boolean
-  sizes?: UpdateProductSizeRequest[]
+  // Advanced-only architecture: all products require sizes
+  sizes: UpdateProductSizeRequest[]
 }
 
-// Enhanced Product types with size helpers
+// Enhanced Product types with size helpers (Advanced-only)
 export interface EnhancedClientProduct extends ClientProduct {
-  hasAdvancedSizing: boolean
-  sizeMode: 'legacy' | 'advanced' | 'none'
+  hasAdvancedSizing: boolean // Always true in advanced-only architecture
+  sizeMode: 'advanced' // Only advanced mode supported
   displaySizes: string[]
 }
 

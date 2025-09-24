@@ -105,5 +105,6 @@
       "Bash(npx tsx:*)"
     ],
     "deny": []
-  }
+  },
+  "outputStyle": "developer-learning"
 }

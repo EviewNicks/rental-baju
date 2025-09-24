@@ -21,7 +21,6 @@ interface ProductFormData {
   code: string
   name: string
   categoryId: string
-  size?: string | undefined
   colorId?: string | undefined
   materialId?: string | undefined
   materialQuantity?: number | undefined
@@ -32,10 +31,23 @@ interface ProductFormData {
   imageUrl: string | null
   image?: File | null
 
-  // Hybrid Size Management (new fields)
-  hasSizes: boolean
+  // Advanced-only Size Management (required for all products)
+  hasSizes: boolean // Always true in advanced-only architecture
   aggregatedSizes?: AggregatedSizeView[]
 }
+
+// Utility function to transform aggregated sizes to backend format
+const transformSizesToBackendFormat = (aggregatedSizes: AggregatedSizeView[]): string => {
+  const sizes = aggregatedSizes.flatMap(aggSize =>
+    Object.entries(aggSize.breakdown).map(([ageCategory, quantity]) => ({
+      ageCategory: ageCategory.toUpperCase() as "ADULT" | "CHILD" | "UNIVERSAL",
+      size: aggSize.size,
+      quantity: quantity,
+      isActive: true
+    }))
+  );
+  return JSON.stringify(sizes);
+};
 
 // Request interfaces for API calls
 interface CreateProductRequest {
@@ -46,7 +58,7 @@ interface CreateProductRequest {
   currentPrice: number
   quantity: number
   categoryId: string
-  size?: string
+  sizes: string // JSON string format required by backend
   colorId?: string
   materialId?: string
   materialQuantity?: number
@@ -61,7 +73,7 @@ interface UpdateProductRequest {
   currentPrice: number
   quantity: number
   categoryId: string
-  size?: string
+  sizes: string // JSON string format required by backend
   colorId?: string
   materialId?: string
   materialQuantity?: number
@@ -110,6 +122,37 @@ const validateDescription = (description: string): string | null => {
   return null
 }
 
+const validateSizes = (aggregatedSizes?: AggregatedSizeView[]): string | null => {
+  if (!aggregatedSizes || aggregatedSizes.length === 0) {
+    return 'Produk harus memiliki setidaknya satu ukuran (Advanced-only architecture)'
+  }
+
+  // Validate each size entry
+  for (const sizeEntry of aggregatedSizes) {
+    if (!sizeEntry.size || !['XS', 'S', 'M', 'L', 'XL', 'XXL'].includes(sizeEntry.size)) {
+      return `Ukuran tidak valid: ${sizeEntry.size}. Harus salah satu dari: XS, S, M, L, XL, XXL`
+    }
+
+    if (!sizeEntry.breakdown || Object.keys(sizeEntry.breakdown).length === 0) {
+      return `Breakdown kategori usia diperlukan untuk ukuran ${sizeEntry.size}`
+    }
+
+    // Validate age categories
+    for (const ageCategory of Object.keys(sizeEntry.breakdown)) {
+      if (!['adult', 'child', 'universal'].includes(ageCategory.toLowerCase())) {
+        return `Kategori usia tidak valid: ${ageCategory}. Harus salah satu dari: ADULT, CHILD, UNIVERSAL`
+      }
+
+      const quantity = sizeEntry.breakdown[ageCategory]
+      if (quantity <= 0) {
+        return `Kuantitas harus lebih dari 0 untuk ${sizeEntry.size} - ${ageCategory}`
+      }
+    }
+  }
+
+  return null
+}
+
 export function ProductFormPage({
   mode,
   product,
@@ -137,7 +180,6 @@ export function ProductFormPage({
     name: product?.name || '',
     categoryId: product?.categoryId || '',
     // Fix: Initialize optional fields with undefined instead of empty strings to prevent Select.Item errors
-    size: product?.size || undefined,
     colorId: product?.colorId || undefined,
     materialId: product?.materialId || undefined,
     materialQuantity: product?.materialQuantity || undefined,
@@ -148,8 +190,8 @@ export function ProductFormPage({
     imageUrl: product?.imageUrl || null,
     image: null,
 
-    // Hybrid Size Management initialization
-    hasSizes: !!product?.size || (product?.sizes && product.sizes.length > 0) || false,
+    // Advanced-only Size Management (enforced - all products require sizes)
+    hasSizes: true, // Always true in advanced-only architecture
     aggregatedSizes: undefined, // Will be loaded via useAggregatedSizes if needed
   })
 
@@ -176,11 +218,14 @@ export function ProductFormPage({
     const currentPriceError = validateNumber(formData.currentPrice, 'Harga sewa')
     if (currentPriceError) newErrors.currentPrice = currentPriceError
 
-    const quantityError = validateNumber(formData.quantity, 'Kuantitas', 0, 9999)
-    if (quantityError) newErrors.quantity = quantityError
+    // Quantity is auto-calculated from aggregated sizes, no manual validation needed
 
     const descriptionError = validateDescription(formData.description)
     if (descriptionError) newErrors.description = descriptionError
+
+    // Validate sizes array (required for advanced-only architecture)
+    const sizesError = validateSizes(formData.aggregatedSizes)
+    if (sizesError) newErrors.sizes = sizesError
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -222,7 +267,8 @@ export function ProductFormPage({
         error = validateNumber(typeof value === 'number' ? value : 0, 'Harga sewa') || ''
         break
       case 'quantity':
-        error = validateNumber(typeof value === 'number' ? value : 0, 'Kuantitas', 0, 9999) || ''
+        // Quantity is auto-calculated from aggregated sizes, no manual validation needed
+        error = ''
         break
       case 'description':
         error = validateDescription(typeof value === 'string' ? value : '') || ''
@@ -245,27 +291,55 @@ export function ProductFormPage({
     validateSingleField(name, value)
   }
 
+  // Size management handlers
+  const handleHasSizesChange = (hasSizes: boolean) => {
+    // In advanced-only architecture, sizes are always required
+    // This function is kept for backward compatibility but enforces hasSizes = true
+    setFormData(prev => ({
+      ...prev,
+      hasSizes: true, // Always enforce sizes requirement
+      aggregatedSizes: prev.aggregatedSizes // Keep existing sizes
+    }))
+  }
+
+  const handleAggregatedSizesChange = (sizes: AggregatedSizeView[]) => {
+    setFormData(prev => ({
+      ...prev,
+      aggregatedSizes: sizes,
+      // Auto-calculate total quantity from sizes
+      quantity: sizes.reduce((sum, size) => sum + size.totalQuantity, 0)
+    }))
+
+    // Clear any existing sizes validation error
+    if (errors.sizes) {
+      setErrors(prev => ({ ...prev, sizes: '' }))
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     if (!validateForm()) {
-      setTouched({ 
-        code: true, 
-        name: true, 
-        categoryId: true, 
-        size: true,
+      setTouched({
+        code: true,
+        name: true,
+        categoryId: true,
+        sizes: true, // Replace legacy size with sizes validation
         colorId: true,
         materialId: true,
         materialQuantity: true,
-        modalAwal: true, 
-        currentPrice: true, 
-        quantity: true, 
-        description: true 
+        modalAwal: true,
+        currentPrice: true,
+        quantity: true,
+        description: true
       })
       return
     }
 
     try {
+      // Transform aggregated sizes to backend format
+      const sizesData = transformSizesToBackendFormat(formData.aggregatedSizes || []);
+
       if (mode === 'add') {
         // Create new product
         const createData: CreateProductRequest = {
@@ -276,7 +350,7 @@ export function ProductFormPage({
           currentPrice: formData.currentPrice,
           quantity: formData.quantity,
           categoryId: formData.categoryId,
-          size: formData.size || undefined,
+          sizes: sizesData, // Use transformed sizes array
           colorId: formData.colorId || undefined,
           materialId: formData.materialId || undefined,
           materialQuantity: formData.materialQuantity || undefined,
@@ -298,7 +372,7 @@ export function ProductFormPage({
           currentPrice: formData.currentPrice,
           quantity: formData.quantity,
           categoryId: formData.categoryId,
-          size: formData.size || undefined,
+          sizes: sizesData, // Use transformed sizes array
           colorId: formData.colorId || undefined,
           materialId: formData.materialId || undefined,
           materialQuantity: formData.materialQuantity || undefined,
@@ -383,6 +457,9 @@ export function ProductFormPage({
             onBlur={handleBlur}
             formatCurrency={formatCurrency}
             categories={categories}
+            product={product}
+            onHasSizesChange={handleHasSizesChange}
+            onAggregatedSizesChange={handleAggregatedSizesChange}
           />
 
           {/* Action Buttons */}

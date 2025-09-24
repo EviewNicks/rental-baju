@@ -35,7 +35,6 @@ interface ProductFormData {
   code: string
   name: string
   categoryId: string
-  size?: string // Legacy size field (backward compatibility)
   colorId?: string
   materialId?: string
   materialQuantity?: number
@@ -46,7 +45,7 @@ interface ProductFormData {
   imageUrl: string | null
   image?: File | null
 
-  // Hybrid Size Management (new fields)
+  // Advanced-only Size Management (required for all products)
   hasSizes: boolean
   aggregatedSizes?: AggregatedSizeView[]
 }
@@ -310,15 +309,6 @@ export function ProductForm({
     color: category.color,
   }))
 
-  // Size options with preset values
-  const sizeOptions = [
-    { value: 'XS', label: 'XS (Extra Small)' },
-    { value: 'S', label: 'S (Small)' },
-    { value: 'M', label: 'M (Medium)' },
-    { value: 'L', label: 'L (Large)' },
-    { value: 'XL', label: 'XL (Extra Large)' },
-    { value: 'XXL', label: 'XXL (Double Extra Large)' },
-  ]
 
   // Transform colors for select options
   const colorOptions = colors.map((color: ClientColor) => ({
@@ -386,40 +376,31 @@ export function ProductForm({
                 data-testid="product-category-field"
               />
 
-              <FormField
-                type="number"
-                name="quantity"
-                label="Jumlah Stok"
-                icon={Box}
-                value={formData.quantity}
-                onChange={(value) => onInputChange('quantity', value)}
-                onBlur={(value) => onBlur('quantity', value)}
-                placeholder="1"
-                min={0}
-                max={9999}
-                error={errors.quantity}
-                touched={touched.quantity}
-                required
-                helpText="Masukkan jumlah stok yang tersedia"
-                data-testid="product-quantity-field"
-              />
+              <div className="space-y-2">
+                <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                  <Box className="w-4 h-4" />
+                  Jumlah Stok (Auto-calculated)
+                  <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="number"
+                  value={formData.quantity}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-500 cursor-not-allowed"
+                  disabled
+                  readOnly
+                  data-testid="product-quantity-field"
+                />
+                <p className="text-xs text-gray-500">
+                  Jumlah stok dihitung otomatis dari total ukuran produk
+                </p>
+                {errors.quantity && touched.quantity && (
+                  <p className="text-sm text-red-500 flex items-center gap-1">
+                    <span>×</span>
+                    {errors.quantity}
+                  </p>
+                )}
+              </div>
 
-              {/* Legacy size field - will be removed when SizeManagementSection is complete */}
-              {/* Temporarily keeping both for backward compatibility testing */}
-              <FormField
-                type="select"
-                name="size"
-                label="Ukuran (Legacy)"
-                icon={Ruler}
-                value={formData.size || ''}
-                onChange={(value) => onInputChange('size', value)}
-                options={sizeOptions}
-                placeholder="Pilih ukuran (opsional)"
-                error={errors.size}
-                touched={touched.size}
-                helpText="Field lama - akan diganti dengan manajemen ukuran baru"
-                data-testid="product-size-field-legacy"
-              />
 
               <FormField
                 type="select"
@@ -457,18 +438,14 @@ export function ProductForm({
             />
           </FormSection>
 
-          {/* Size Management Section (New Hybrid System) */}
+          {/* Size Management Section - Streamlined Interface */}
           <SizeManagementSection
-            product={product}
-            hasSizes={formData.hasSizes}
-            onHasSizesChange={handleHasSizesChange}
-            legacySize={formData.size}
-            onLegacySizeChange={handleLegacySizeChange}
             aggregatedSizes={formData.aggregatedSizes || aggregatedSizes}
             onAggregatedSizesChange={handleAggregatedSizesChange}
-            errors={errors}
-            touched={touched}
-            isEditing={false} // TODO: Determine based on form mode
+            errors={{
+              sizes: errors.sizes || errors.aggregatedSizes
+            }}
+            isEditing={true} // Enable size editing for product forms
           />
 
           {/* Informasi Harga */}
