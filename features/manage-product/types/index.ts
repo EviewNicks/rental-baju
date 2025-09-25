@@ -197,7 +197,7 @@ export interface PrismaCategory extends BaseCategory {
 
 export type ViewMode = 'table' | 'card' | 'grid'
 export type ProductStatus = 'AVAILABLE' | 'RENTED' | 'MAINTENANCE'
-export type AgeCategory = 'ADULT' | 'CHILD' | 'UNIVERSAL'
+export type AgeCategory = 'DEWASA' | 'ANAK'
 export type SizeEnum = 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL'
 
 // Filter types untuk UI components
@@ -390,20 +390,28 @@ export interface AggregatedSizeView {
   size: SizeEnum
   totalQuantity: number
   breakdown: {
-    adult?: number
-    child?: number
-    universal?: number
+    dewasa?: number
+    anak?: number
   }
   hasMultipleCategories: boolean
+}
+
+/**
+ * Simplified size entry for inline table management
+ */
+export interface SimplifiedSizeEntry {
+  id: string
+  size: SizeEnum
+  ageCategory: AgeCategory
+  quantity: number
 }
 
 /**
  * Category breakdown for aggregation analysis
  */
 export interface CategoryBreakdown {
-  adult: number
-  child: number
-  universal: number
+  dewasa: number
+  anak: number
   total: number
 }
 
@@ -477,9 +485,8 @@ export interface RentalTrackingCapabilities {
   canTrackByAgeCategory: boolean
   canTrackBySpecificSize: boolean
   availableForRental: {
-    adult: { [size: string]: number }
-    child: { [size: string]: number }
-    universal: { [size: string]: number }
+    dewasa: { [size: string]: number }
+    anak: { [size: string]: number }
   }
   businessCapabilities: string[]
 }

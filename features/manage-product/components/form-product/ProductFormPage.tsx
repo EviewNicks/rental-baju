@@ -14,7 +14,11 @@ import {
 import { ProductForm } from '@/features/manage-product/components/form-product/ProductForm'
 import { useCategories } from '@/features/manage-product/hooks/useCategories'
 import { useCreateProduct, useUpdateProduct } from '@/features/manage-product/hooks/useProducts'
-import type { ClientProduct, AggregatedSizeView } from '@/features/manage-product/types'
+import type {
+  ClientProduct,
+  AggregatedSizeView,
+  SimplifiedSizeEntry,
+} from '@/features/manage-product/types'
 
 // Local form data interface with numbers for form handling
 interface ProductFormData {
@@ -31,23 +35,37 @@ interface ProductFormData {
   imageUrl: string | null
   image?: File | null
 
-  // Advanced-only Size Management (required for all products)
+  // Simplified Size Management (required for all products)
   hasSizes: boolean // Always true in advanced-only architecture
-  aggregatedSizes?: AggregatedSizeView[]
+  simplifiedSizes?: SimplifiedSizeEntry[]
+  aggregatedSizes?: AggregatedSizeView[] // Keep for backward compatibility
 }
 
-// Utility function to transform aggregated sizes to backend format
+// Utility function to transform simplified sizes to backend format (NEW SYSTEM)
+const transformSimplifiedSizesToBackendFormat = (
+  simplifiedSizes: SimplifiedSizeEntry[],
+): string => {
+  const sizes = simplifiedSizes.map((sizeEntry) => ({
+    ageCategory: sizeEntry.ageCategory === 'DEWASA' ? 'ADULT' : 'CHILD', // Map DEWASA→ADULT, ANAK→CHILD
+    size: sizeEntry.size,
+    quantity: sizeEntry.quantity,
+    isActive: true,
+  }))
+  return JSON.stringify(sizes)
+}
+
+// Legacy function to transform aggregated sizes to backend format (BACKWARD COMPATIBILITY)
 const transformSizesToBackendFormat = (aggregatedSizes: AggregatedSizeView[]): string => {
-  const sizes = aggregatedSizes.flatMap(aggSize =>
+  const sizes = aggregatedSizes.flatMap((aggSize) =>
     Object.entries(aggSize.breakdown).map(([ageCategory, quantity]) => ({
-      ageCategory: ageCategory.toUpperCase() as "ADULT" | "CHILD" | "UNIVERSAL",
+      ageCategory: ageCategory === 'dewasa' ? 'ADULT' : ageCategory === 'anak' ? 'CHILD' : 'ADULT', // Updated mapping
       size: aggSize.size,
       quantity: quantity,
-      isActive: true
-    }))
-  );
-  return JSON.stringify(sizes);
-};
+      isActive: true,
+    })),
+  )
+  return JSON.stringify(sizes)
+}
 
 // Request interfaces for API calls
 interface CreateProductRequest {
@@ -110,7 +128,12 @@ const validateCategoryId = (categoryId: string): string | null => {
   return null
 }
 
-const validateNumber = (value: number, field: string, min: number = 0, max?: number): string | null => {
+const validateNumber = (
+  value: number,
+  field: string,
+  min: number = 0,
+  max?: number,
+): string | null => {
   if (value === undefined || value === null) return `${field} wajib diisi`
   if (value < min) return `${field} minimal ${min}`
   if (max && value > max) return `${field} maksimal ${max}`
@@ -122,32 +145,36 @@ const validateDescription = (description: string): string | null => {
   return null
 }
 
-const validateSizes = (aggregatedSizes?: AggregatedSizeView[]): string | null => {
-  if (!aggregatedSizes || aggregatedSizes.length === 0) {
-    return 'Produk harus memiliki setidaknya satu ukuran (Advanced-only architecture)'
+// Updated validation for simplified sizes system
+const validateSimplifiedSizes = (simplifiedSizes?: SimplifiedSizeEntry[]): string | null => {
+  if (!simplifiedSizes || simplifiedSizes.length === 0) {
+    return 'Produk harus memiliki setidaknya satu ukuran'
   }
 
   // Validate each size entry
-  for (const sizeEntry of aggregatedSizes) {
+  for (const sizeEntry of simplifiedSizes) {
     if (!sizeEntry.size || !['XS', 'S', 'M', 'L', 'XL', 'XXL'].includes(sizeEntry.size)) {
       return `Ukuran tidak valid: ${sizeEntry.size}. Harus salah satu dari: XS, S, M, L, XL, XXL`
     }
 
-    if (!sizeEntry.breakdown || Object.keys(sizeEntry.breakdown).length === 0) {
-      return `Breakdown kategori usia diperlukan untuk ukuran ${sizeEntry.size}`
+    if (!sizeEntry.ageCategory || !['DEWASA', 'ANAK'].includes(sizeEntry.ageCategory)) {
+      return `Kategori usia tidak valid: ${sizeEntry.ageCategory}. Harus DEWASA atau ANAK`
     }
 
-    // Validate age categories
-    for (const ageCategory of Object.keys(sizeEntry.breakdown)) {
-      if (!['adult', 'child', 'universal'].includes(ageCategory.toLowerCase())) {
-        return `Kategori usia tidak valid: ${ageCategory}. Harus salah satu dari: ADULT, CHILD, UNIVERSAL`
-      }
-
-      const quantity = sizeEntry.breakdown[ageCategory]
-      if (quantity <= 0) {
-        return `Kuantitas harus lebih dari 0 untuk ${sizeEntry.size} - ${ageCategory}`
-      }
+    if (sizeEntry.quantity <= 0) {
+      return `Kuantitas harus lebih dari 0 untuk ${sizeEntry.size} - ${sizeEntry.ageCategory}`
     }
+
+    if (sizeEntry.quantity > 999) {
+      return `Kuantitas tidak boleh lebih dari 999 untuk ${sizeEntry.size} - ${sizeEntry.ageCategory}`
+    }
+  }
+
+  // Check for duplicates (same size + age category combination)
+  const combinations = simplifiedSizes.map((s) => `${s.size}-${s.ageCategory}`)
+  const uniqueCombinations = new Set(combinations)
+  if (combinations.length !== uniqueCombinations.size) {
+    return 'Terdapat kombinasi ukuran dan kategori usia yang duplikat'
   }
 
   return null
@@ -190,9 +217,10 @@ export function ProductFormPage({
     imageUrl: product?.imageUrl || null,
     image: null,
 
-    // Advanced-only Size Management (enforced - all products require sizes)
+    // Simplified Size Management (enforced - all products require sizes)
     hasSizes: true, // Always true in advanced-only architecture
-    aggregatedSizes: undefined, // Will be loaded via useAggregatedSizes if needed
+    simplifiedSizes: [], // Initialize empty array for new simplified system
+    aggregatedSizes: undefined, // Keep for backward compatibility
   })
 
   // Simple error state management
@@ -223,8 +251,8 @@ export function ProductFormPage({
     const descriptionError = validateDescription(formData.description)
     if (descriptionError) newErrors.description = descriptionError
 
-    // Validate sizes array (required for advanced-only architecture)
-    const sizesError = validateSizes(formData.aggregatedSizes)
+    // Validate sizes array (use simplified sizes system)
+    const sizesError = validateSimplifiedSizes(formData.simplifiedSizes)
     if (sizesError) newErrors.sizes = sizesError
 
     setErrors(newErrors)
@@ -233,7 +261,7 @@ export function ProductFormPage({
 
   const validateSingleField = (name: string, value: string | number | File | null): void => {
     let error = ''
-    
+
     switch (name) {
       case 'code':
         error = validateProductCode(typeof value === 'string' ? value : '') || ''
@@ -274,45 +302,61 @@ export function ProductFormPage({
         error = validateDescription(typeof value === 'string' ? value : '') || ''
         break
     }
-    
-    setErrors(prev => ({ ...prev, [name]: error }))
+
+    setErrors((prev) => ({ ...prev, [name]: error }))
   }
 
   const handleInputChange = (name: string, value: string | number | File | null) => {
     setFormData((prev) => ({ ...prev, [name]: value }))
     // Clear error when user starts typing
     if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }))
+      setErrors((prev) => ({ ...prev, [name]: '' }))
     }
   }
 
   const handleBlur = (name: string, value: string | number | File | null) => {
-    setTouched(prev => ({ ...prev, [name]: true }))
+    setTouched((prev) => ({ ...prev, [name]: true }))
     validateSingleField(name, value)
   }
 
   // Size management handlers
-  const handleHasSizesChange = (hasSizes: boolean) => {
+  const handleHasSizesChange = () => {
     // In advanced-only architecture, sizes are always required
     // This function is kept for backward compatibility but enforces hasSizes = true
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       hasSizes: true, // Always enforce sizes requirement
-      aggregatedSizes: prev.aggregatedSizes // Keep existing sizes
+      aggregatedSizes: prev.aggregatedSizes, // Keep existing sizes
     }))
   }
 
-  const handleAggregatedSizesChange = (sizes: AggregatedSizeView[]) => {
-    setFormData(prev => ({
+  // Handler for new simplified sizes system
+  const handleSimplifiedSizesChange = (sizes: SimplifiedSizeEntry[]) => {
+    setFormData((prev) => ({
       ...prev,
-      aggregatedSizes: sizes,
+      simplifiedSizes: sizes,
       // Auto-calculate total quantity from sizes
-      quantity: sizes.reduce((sum, size) => sum + size.totalQuantity, 0)
+      quantity: sizes.reduce((sum, size) => sum + size.quantity, 0),
     }))
 
     // Clear any existing sizes validation error
     if (errors.sizes) {
-      setErrors(prev => ({ ...prev, sizes: '' }))
+      setErrors((prev) => ({ ...prev, sizes: '' }))
+    }
+  }
+
+  // Legacy handler for backward compatibility
+  const handleAggregatedSizesChange = (sizes: AggregatedSizeView[]) => {
+    setFormData((prev) => ({
+      ...prev,
+      aggregatedSizes: sizes,
+      // Auto-calculate total quantity from sizes
+      quantity: sizes.reduce((sum, size) => sum + size.totalQuantity, 0),
+    }))
+
+    // Clear any existing sizes validation error
+    if (errors.sizes) {
+      setErrors((prev) => ({ ...prev, sizes: '' }))
     }
   }
 
@@ -331,14 +375,17 @@ export function ProductFormPage({
         modalAwal: true,
         currentPrice: true,
         quantity: true,
-        description: true
+        description: true,
       })
       return
     }
 
     try {
-      // Transform aggregated sizes to backend format
-      const sizesData = transformSizesToBackendFormat(formData.aggregatedSizes || []);
+      // Transform sizes to backend format using new simplified system
+      const sizesData =
+        formData.simplifiedSizes && formData.simplifiedSizes.length > 0
+          ? transformSimplifiedSizesToBackendFormat(formData.simplifiedSizes)
+          : transformSizesToBackendFormat(formData.aggregatedSizes || []) // Fallback for backward compatibility
 
       if (mode === 'add') {
         // Create new product
@@ -358,7 +405,11 @@ export function ProductFormPage({
           imageUrl: formData.imageUrl || undefined,
         }
 
-        await createProductMutation.mutateAsync(createData as unknown as FormData | Record<string, string | number | boolean | File | null>)
+        await createProductMutation.mutateAsync(
+          createData as unknown as
+            | FormData
+            | Record<string, string | number | boolean | File | null>,
+        )
       } else {
         // Update existing product
         if (!product?.id) {
@@ -380,7 +431,12 @@ export function ProductFormPage({
           imageUrl: formData.imageUrl || undefined,
         }
 
-        await updateProductMutation.mutateAsync({ id: product.id, data: updateData as unknown as FormData | Record<string, string | number | boolean | File | null> })
+        await updateProductMutation.mutateAsync({
+          id: product.id,
+          data: updateData as unknown as
+            | FormData
+            | Record<string, string | number | boolean | File | null>,
+        })
       }
 
       // Success - redirect to product list
@@ -429,21 +485,30 @@ export function ProductFormPage({
           </Breadcrumb>
 
           <div data-testid="page-title-section">
-            <h1 className="text-3xl font-bold text-gray-900" data-testid="page-title">{title}</h1>
-            <p className="text-gray-600 mt-1" data-testid="page-subtitle">{subtitle}</p>
+            <h1 className="text-3xl font-bold text-gray-900" data-testid="page-title">
+              {title}
+            </h1>
+            <p className="text-gray-600 mt-1" data-testid="page-subtitle">
+              {subtitle}
+            </p>
           </div>
         </div>
       </div>
 
       {/* Form */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8" data-testid="product-form-content">
+      <div
+        className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
+        data-testid="product-form-content"
+      >
         {/* Show errors */}
         {(categoriesError || createProductMutation.error || updateProductMutation.error) && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md">
             <p className="text-red-600 text-sm">
               {categoriesError && 'Gagal memuat data kategori. Silakan refresh halaman.'}
-              {createProductMutation.error && `Error creating product: ${createProductMutation.error.message}`}
-              {updateProductMutation.error && `Error updating product: ${updateProductMutation.error.message}`}
+              {createProductMutation.error &&
+                `Error creating product: ${createProductMutation.error.message}`}
+              {updateProductMutation.error &&
+                `Error updating product: ${updateProductMutation.error.message}`}
             </p>
           </div>
         )}
@@ -460,23 +525,34 @@ export function ProductFormPage({
             product={product}
             onHasSizesChange={handleHasSizesChange}
             onAggregatedSizesChange={handleAggregatedSizesChange}
+            onSimplifiedSizesChange={handleSimplifiedSizesChange}
           />
 
           {/* Action Buttons */}
           <div className="flex justify-end space-x-4 mt-8" data-testid="form-actions">
-            <Button type="button" variant="outline" onClick={() => router.back()} data-testid="cancel-button">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => router.back()}
+              data-testid="cancel-button"
+            >
               <X className="w-4 h-4 mr-2" />
               Batal
             </Button>
-            <Button type="button" variant="secondary" onClick={handleSaveDraft} data-testid="save-draft-button">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={handleSaveDraft}
+              data-testid="save-draft-button"
+            >
               <Save className="w-4 h-4 mr-2" />
               Simpan Draft
             </Button>
             <Button
               type="submit"
               disabled={
-                createProductMutation.isPending || 
-                updateProductMutation.isPending || 
+                createProductMutation.isPending ||
+                updateProductMutation.isPending ||
                 isLoadingCategories
               }
               className="bg-yellow-400 hover:bg-yellow-500 text-black"

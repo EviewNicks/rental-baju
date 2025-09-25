@@ -1,21 +1,11 @@
 'use client'
-import {
-  Hash,
-  Package,
-  Tag,
-  Box,
-  DollarSign,
-  CreditCard,
-  FileText,
-  Ruler,
-  Palette,
-} from 'lucide-react'
+import { Hash, Package, Tag, Box, DollarSign, CreditCard, FileText, Palette } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { FormField } from '@/features/manage-product/components/form-product/FormField'
 import { FormSection } from '@/features/manage-product/components/form-product/FormSection'
 import { ImageUpload } from '@/features/manage-product/components/products/ImageUpload'
 import { MaterialSelector } from '@/features/manage-product/components/material/MaterialSelector'
-import { SizeManagementSection } from '@/features/manage-product/components/size-management/SizeManagementSection'
+import { InlineSizeManagement } from '@/features/manage-product/components/form-product/InlineSizeManagement'
 import { useColors } from '@/features/manage-product/hooks/useCategories'
 import { useAggregatedSizes } from '@/features/manage-product/hooks/useAggregatedSizes'
 import { getProductSizeMode } from '@/features/manage-product/lib/utils/sizeManagementUtils'
@@ -24,6 +14,7 @@ import type {
   ClientColor,
   ClientProduct,
   AggregatedSizeView,
+  SimplifiedSizeEntry,
 } from '@/features/manage-product/types'
 import { logger } from '@/services/logger'
 import { useEffect } from 'react'
@@ -45,9 +36,10 @@ interface ProductFormData {
   imageUrl: string | null
   image?: File | null
 
-  // Advanced-only Size Management (required for all products)
+  // Simplified Size Management (required for all products)
   hasSizes: boolean
-  aggregatedSizes?: AggregatedSizeView[]
+  simplifiedSizes?: SimplifiedSizeEntry[]
+  aggregatedSizes?: AggregatedSizeView[] // Keep for backward compatibility during transition
 }
 
 interface ProductFormProps {
@@ -67,6 +59,7 @@ interface ProductFormProps {
   // Size management handlers
   onHasSizesChange?: (hasSizes: boolean) => void
   onAggregatedSizesChange?: (sizes: AggregatedSizeView[]) => void
+  onSimplifiedSizesChange?: (sizes: SimplifiedSizeEntry[]) => void
 }
 
 export function ProductForm({
@@ -80,6 +73,7 @@ export function ProductForm({
   product,
   onHasSizesChange,
   onAggregatedSizesChange,
+  onSimplifiedSizesChange,
 }: ProductFormProps) {
   // Size mode detection and state management
   const sizeMode = product ? getProductSizeMode(product) : 'none'
@@ -309,7 +303,6 @@ export function ProductForm({
     color: category.color,
   }))
 
-
   // Transform colors for select options
   const colorOptions = colors.map((color: ClientColor) => ({
     value: color.id,
@@ -401,7 +394,6 @@ export function ProductForm({
                 )}
               </div>
 
-
               <FormField
                 type="select"
                 name="colorId"
@@ -438,15 +430,20 @@ export function ProductForm({
             />
           </FormSection>
 
-          {/* Size Management Section - Streamlined Interface */}
-          <SizeManagementSection
-            aggregatedSizes={formData.aggregatedSizes || aggregatedSizes}
-            onAggregatedSizesChange={handleAggregatedSizesChange}
-            errors={{
-              sizes: errors.sizes || errors.aggregatedSizes
-            }}
-            isEditing={true} // Enable size editing for product forms
-          />
+          {/* Simplified Inline Size Management */}
+          <FormSection title="Ukuran & Stok" data-testid="size-management-section">
+            <InlineSizeManagement
+              sizes={formData.simplifiedSizes || []}
+              onSizesChange={(sizes) => {
+                if (onSimplifiedSizesChange) {
+                  onSimplifiedSizesChange(sizes)
+                } else {
+                  onInputChange('simplifiedSizes', sizes)
+                }
+              }}
+              errors={errors.sizes}
+            />
+          </FormSection>
 
           {/* Informasi Harga */}
           <FormSection title="Informasi Harga" data-testid="price-info-section">
