@@ -13,26 +13,22 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { AdvancedProductService } from '@/features/manage-product/services/advancedProductService'
-import { AdvancedProductSizeAggregationService } from '@/features/manage-product/services/advancedProductSizeAggregationService'
 import { prisma } from '@/lib/prisma'
 import { advancedProductParamsSchema } from '@/features/manage-product/lib/validation/advancedProductSchema'
 import { NotFoundError } from '@/features/manage-product/lib/errors/AppError'
 import type {
   AdvancedBusinessValidationResult,
-  AdvancedProductCapabilities
+  AdvancedProductCapabilities,
 } from '@/features/manage-product/types/advanced'
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     // Authentication check
     const { userId } = await auth()
     if (!userId) {
       return NextResponse.json(
         { error: { message: 'Unauthorized', code: 'UNAUTHORIZED' } },
-        { status: 401 }
+        { status: 401 },
       )
     }
 
@@ -48,7 +44,6 @@ export async function GET(
 
     // Initialize advanced services
     const productService = new AdvancedProductService(prisma, userId)
-    const aggregationService = new AdvancedProductSizeAggregationService(prisma)
 
     // Verify product exists
     const product = await productService.getProductAdvanced(validatedId)
@@ -56,7 +51,7 @@ export async function GET(
     if (!product) {
       return NextResponse.json(
         { error: { message: 'Product not found', code: 'NOT_FOUND' } },
-        { status: 404 }
+        { status: 404 },
       )
     }
 
@@ -86,25 +81,31 @@ export async function GET(
         productId: validatedId,
         productName: product.name,
         validationType,
-        isHealthy: validationType === 'capabilities' && 'businessValue' in validationResult
-          ? ['advanced', 'enterprise'].includes(validationResult.businessValue)
-          : validationType === 'consistency' && 'errors' in validationResult
-          ? validationResult.errors.length === 0
-          : validationType === 'full' && 'errors' in validationResult
-          ? validationResult.errors.length === 0
-          : true,
-        keyMetrics: validationType === 'capabilities'
-          ? {
-              businessValue: (validationResult as AdvancedProductCapabilities).businessValue,
-              complexityScore: (validationResult as AdvancedProductCapabilities).complexityScore,
-              recommendedActionsCount: (validationResult as AdvancedProductCapabilities).recommendedActions?.length || 0
-            }
-          : {
-              sizeConsistency: (validationResult as AdvancedBusinessValidationResult).sizeConsistency,
-              uniqueCombinations: (validationResult as AdvancedBusinessValidationResult).uniqueCombinations,
-              errorCount: (validationResult as AdvancedBusinessValidationResult).errors?.length || 0
-            },
-        timestamp: new Date().toISOString()
+        isHealthy:
+          validationType === 'capabilities' && 'businessValue' in validationResult
+            ? ['advanced', 'enterprise'].includes(validationResult.businessValue)
+            : validationType === 'consistency' && 'errors' in validationResult
+              ? validationResult.errors.length === 0
+              : validationType === 'full' && 'errors' in validationResult
+                ? validationResult.errors.length === 0
+                : true,
+        keyMetrics:
+          validationType === 'capabilities'
+            ? {
+                businessValue: (validationResult as AdvancedProductCapabilities).businessValue,
+                complexityScore: (validationResult as AdvancedProductCapabilities).complexityScore,
+                recommendedActionsCount:
+                  (validationResult as AdvancedProductCapabilities).recommendedActions?.length || 0,
+              }
+            : {
+                sizeConsistency: (validationResult as AdvancedBusinessValidationResult)
+                  .sizeConsistency,
+                uniqueCombinations: (validationResult as AdvancedBusinessValidationResult)
+                  .uniqueCombinations,
+                errorCount:
+                  (validationResult as AdvancedBusinessValidationResult).errors?.length || 0,
+              },
+        timestamp: new Date().toISOString(),
       }
 
       return NextResponse.json(summary, { status: 200 })
@@ -122,20 +123,19 @@ export async function GET(
         systemInfo: {
           advancedSizeManagement: true,
           businessLogicValidation: true,
-          advancedArchitecture: true
-        }
-      }
+          advancedArchitecture: true,
+        },
+      },
     }
 
     return NextResponse.json(response, { status: 200 })
-
   } catch (error) {
     console.error('Error in business logic validation API:', error)
 
     if (error instanceof NotFoundError) {
       return NextResponse.json(
         { error: { message: error.message, code: 'NOT_FOUND' } },
-        { status: 404 }
+        { status: 404 },
       )
     }
 
@@ -147,9 +147,9 @@ export async function GET(
             message: 'Invalid product ID format',
             code: 'VALIDATION_ERROR',
             details: error.message,
-          }
+          },
         },
-        { status: 400 }
+        { status: 400 },
       )
     }
 
@@ -158,10 +158,10 @@ export async function GET(
       {
         error: {
           message: 'Internal server error during validation',
-          code: 'VALIDATION_INTERNAL_ERROR'
-        }
+          code: 'VALIDATION_INTERNAL_ERROR',
+        },
       },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }

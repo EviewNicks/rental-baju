@@ -75,9 +75,12 @@ interface UseAdvancedProductFormReturn {
   isSubmitting: boolean
 
   // Form handlers
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   setValue: (name: string, value: any) => void
   setValues: (values: Partial<AdvancedProductFormData>) => void
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   handleInputChange: (name: string, value: any) => void
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   handleBlur: (name: string, value: any) => void
   handleSizesChange: (sizes: CreateAdvancedProductSizeRequest[]) => void
   handleAggregatedSizesChange: (sizes: AdvancedAggregatedSizeView[]) => void
@@ -144,7 +147,7 @@ export function useAdvancedProductForm({
         description: initialData.description || '',
         imageUrl: initialData.imageUrl || null,
         image: null,
-        sizes: initialData.sizes.map(size => ({
+        sizes: initialData.sizes.map((size) => ({
           ageCategory: size.ageCategory,
           size: size.size,
           quantity: size.quantity,
@@ -173,48 +176,51 @@ export function useAdvancedProductForm({
   }, [formData, initialFormData])
 
   // Field validation function
-  const validateField = useCallback((fieldName: string): string | null => {
-    try {
-      const schema = mode === 'create' ? createAdvancedProductSchema : updateAdvancedProductSchema
+  const validateField = useCallback(
+    (fieldName: string): string | null => {
+      try {
+        const schema = mode === 'create' ? createAdvancedProductSchema : updateAdvancedProductSchema
 
-      // Special validation for sizes
-      if (fieldName === 'sizes') {
-        if (formData.sizes.length === 0) {
-          return 'Minimal 1 ukuran harus ditambahkan'
+        // Special validation for sizes
+        if (fieldName === 'sizes') {
+          if (formData.sizes.length === 0) {
+            return 'Minimal 1 ukuran harus ditambahkan'
+          }
+
+          const sizeValidation = validateAdvancedSizeArraySchema(formData.sizes)
+          if (!sizeValidation.success) {
+            return sizeValidation.error?.issues[0]?.message || 'Validasi ukuran gagal'
+          }
+
+          return null
         }
 
-        const sizeValidation = validateAdvancedSizeArraySchema(formData.sizes)
-        if (!sizeValidation.success) {
-          return sizeValidation.error?.issues[0]?.message || 'Validasi ukuran gagal'
+        // Validate individual field
+        const fieldValue = formData[fieldName as keyof AdvancedProductFormData]
+        const fieldSchema = schema.shape[fieldName as keyof typeof schema.shape]
+
+        if (fieldSchema) {
+          const result = fieldSchema.safeParse(fieldValue)
+          if (!result.success) {
+            return result.error.issues[0]?.message || 'Validasi gagal'
+          }
         }
 
         return null
+      } catch (error) {
+        formLogger.error('validateField', 'Field validation error', { fieldName, error })
+        return 'Validasi gagal'
       }
-
-      // Validate individual field
-      const fieldValue = formData[fieldName as keyof AdvancedProductFormData]
-      const fieldSchema = schema.shape[fieldName as keyof typeof schema.shape]
-
-      if (fieldSchema) {
-        const result = fieldSchema.safeParse(fieldValue)
-        if (!result.success) {
-          return result.error.issues[0]?.message || 'Validasi gagal'
-        }
-      }
-
-      return null
-    } catch (error) {
-      formLogger.error('validateField', 'Field validation error', { fieldName, error })
-      return 'Validasi gagal'
-    }
-  }, [formData, mode])
+    },
+    [formData, mode],
+  )
 
   // Form validation function
   const validate = useCallback((): boolean => {
     const newErrors: FormErrors = {}
 
     // Validate all fields
-    Object.keys(formData).forEach(fieldName => {
+    Object.keys(formData).forEach((fieldName) => {
       const error = validateField(fieldName)
       if (error) {
         newErrors[fieldName] = error
@@ -226,85 +232,104 @@ export function useAdvancedProductForm({
   }, [formData, validateField])
 
   // Set single value
-  const setValue = useCallback((name: string, value: any) => {
-    setFormData(prev => ({
-      ...prev,
-      [name]: value,
-    }))
-
-    // Clear error when user starts typing
-    if (errors[name]) {
-      setErrors(prev => ({
+  const setValue = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (name: string, value: any) => {
+      setFormData((prev) => ({
         ...prev,
-        [name]: null,
+        [name]: value,
       }))
-    }
 
-    formLogger.debug('setValue', 'Form field updated', { name, value })
-  }, [errors])
+      // Clear error when user starts typing
+      if (errors[name]) {
+        setErrors((prev) => ({
+          ...prev,
+          [name]: null,
+        }))
+      }
+
+      formLogger.debug('setValue', 'Form field updated', { name, value })
+    },
+    [errors],
+  )
 
   // Set multiple values
-  const setValues = useCallback((values: Partial<AdvancedProductFormData>) => {
-    setFormData(prev => ({
-      ...prev,
-      ...values,
-    }))
+  const setValues = useCallback(
+    (values: Partial<AdvancedProductFormData>) => {
+      setFormData((prev) => ({
+        ...prev,
+        ...values,
+      }))
 
-    // Clear errors for updated fields
-    const updatedFields = Object.keys(values)
-    if (updatedFields.some(field => errors[field])) {
-      setErrors(prev => {
-        const newErrors = { ...prev }
-        updatedFields.forEach(field => {
-          delete newErrors[field]
+      // Clear errors for updated fields
+      const updatedFields = Object.keys(values)
+      if (updatedFields.some((field) => errors[field])) {
+        setErrors((prev) => {
+          const newErrors = { ...prev }
+          updatedFields.forEach((field) => {
+            delete newErrors[field]
+          })
+          return newErrors
         })
-        return newErrors
-      })
-    }
+      }
 
-    formLogger.debug('setValues', 'Multiple form fields updated', { fields: Object.keys(values) })
-  }, [errors])
+      formLogger.debug('setValues', 'Multiple form fields updated', { fields: Object.keys(values) })
+    },
+    [errors],
+  )
 
   // Handle input change
-  const handleInputChange = useCallback((name: string, value: any) => {
-    setValue(name, value)
-  }, [setValue])
+  const handleInputChange = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (name: string, value: any) => {
+      setValue(name, value)
+    },
+    [setValue],
+  )
 
   // Handle blur (for validation)
-  const handleBlur = useCallback((name: string, value: any) => {
-    setTouched(prev => ({
-      ...prev,
-      [name]: true,
-    }))
+  const handleBlur = useCallback(
+    (name: string) => {
+      setTouched((prev) => ({
+        ...prev,
+        [name]: true,
+      }))
 
-    // Validate field on blur
-    const error = validateField(name)
-    setErrors(prev => ({
-      ...prev,
-      [name]: error,
-    }))
+      // Validate field on blur
+      const error = validateField(name)
+      setErrors((prev) => ({
+        ...prev,
+        [name]: error,
+      }))
 
-    formLogger.debug('onBlur', 'Field blurred and validated', { name, hasError: !!error })
-  }, [validateField])
+      formLogger.debug('onBlur', 'Field blurred and validated', { name, hasError: !!error })
+    },
+    [validateField],
+  )
 
   // Handle sizes change
-  const handleSizesChange = useCallback((sizes: CreateAdvancedProductSizeRequest[]) => {
-    setValue('sizes', sizes)
+  const handleSizesChange = useCallback(
+    (sizes: CreateAdvancedProductSizeRequest[]) => {
+      setValue('sizes', sizes)
 
-    // Mark sizes as touched
-    setTouched(prev => ({
-      ...prev,
-      sizes: true,
-    }))
+      // Mark sizes as touched
+      setTouched((prev) => ({
+        ...prev,
+        sizes: true,
+      }))
 
-    formLogger.info('onSizesChange', 'Sizes updated', { sizesCount: sizes.length })
-  }, [setValue])
+      formLogger.info('onSizesChange', 'Sizes updated', { sizesCount: sizes.length })
+    },
+    [setValue],
+  )
 
   // Handle aggregated sizes change (for display purposes)
   const handleAggregatedSizesChange = useCallback((sizes: AdvancedAggregatedSizeView[]) => {
     // This is primarily for display/analytics purposes
     // The actual sizes data is managed by handleSizesChange
-    formLogger.debug('onAggregatedSizesChange', 'Aggregated sizes updated', { aggregatedCount: sizes.length })
+    formLogger.debug('onAggregatedSizesChange', 'Aggregated sizes updated', {
+      aggregatedCount: sizes.length,
+    })
   }, [])
 
   // Currency formatting utility
@@ -330,7 +355,7 @@ export function useAdvancedProductForm({
   const getSizesSummary = useCallback(() => {
     const count = formData.sizes.length
     const totalQuantity = getTotalQuantity()
-    const uniqueAgeCategories = new Set(formData.sizes.map(s => s.ageCategory)).size
+    const uniqueAgeCategories = new Set(formData.sizes.map((s) => s.ageCategory)).size
 
     return {
       count,
@@ -340,64 +365,72 @@ export function useAdvancedProductForm({
   }, [formData.sizes, getTotalQuantity])
 
   // Form submission
-  const handleSubmit = useCallback(async (e?: React.FormEvent) => {
-    if (e) {
-      e.preventDefault()
-    }
-
-    setIsSubmitting(true)
-
-    try {
-      // Validate form
-      if (!validate()) {
-        toast.error('Formulir mengandung kesalahan. Silakan periksa kembali.')
-        return
+  const handleSubmit = useCallback(
+    async (e?: React.FormEvent) => {
+      if (e) {
+        e.preventDefault()
       }
 
-      // Check required sizes
-      if (formData.sizes.length === 0) {
-        toast.error('Minimal 1 ukuran harus ditambahkan')
-        setErrors(prev => ({
-          ...prev,
-          sizes: 'Minimal 1 ukuran harus ditambahkan'
-        }))
-        return
-      }
+      setIsSubmitting(true)
 
-      // Call submit handler
-      if (onSubmit) {
-        await onSubmit(formData)
-        formLogger.info('onSubmit', 'Form submitted successfully', { mode, sizesCount: formData.sizes.length })
+      try {
+        // Validate form
+        if (!validate()) {
+          toast.error('Formulir mengandung kesalahan. Silakan periksa kembali.')
+          return
+        }
+
+        // Check required sizes
+        if (formData.sizes.length === 0) {
+          toast.error('Minimal 1 ukuran harus ditambahkan')
+          setErrors((prev) => ({
+            ...prev,
+            sizes: 'Minimal 1 ukuran harus ditambahkan',
+          }))
+          return
+        }
+
+        // Call submit handler
+        if (onSubmit) {
+          await onSubmit(formData)
+          formLogger.info('onSubmit', 'Form submitted successfully', {
+            mode,
+            sizesCount: formData.sizes.length,
+          })
+        }
+      } catch (error) {
+        formLogger.error('onSubmit', 'Form submission failed', { error, mode })
+        toast.error('Gagal menyimpan produk. Silakan coba lagi.')
+      } finally {
+        setIsSubmitting(false)
       }
-    } catch (error) {
-      formLogger.error('onSubmit', 'Form submission failed', { error, mode })
-      toast.error('Gagal menyimpan produk. Silakan coba lagi.')
-    } finally {
-      setIsSubmitting(false)
-    }
-  }, [formData, onSubmit, validate, mode])
+    },
+    [formData, onSubmit, validate, mode],
+  )
 
   // Reset form
   const reset = useCallback(() => {
-    const resetData = initialData ? {
-      code: initialData.code,
-      name: initialData.name,
-      categoryId: initialData.categoryId,
-      colorId: initialData.colorId || '',
-      materialId: initialData.materialId || '',
-      materialQuantity: initialData.materialQuantity || 0,
-      modalAwal: initialData.modalAwal,
-      currentPrice: initialData.currentPrice,
-      description: initialData.description || '',
-      imageUrl: initialData.imageUrl || null,
-      image: null,
-      sizes: initialData.sizes.map(size => ({
-        ageCategory: size.ageCategory,
-        size: size.size,
-        quantity: size.quantity,
-        isActive: size.isActive,
-      })),
-    } : getDefaultFormData()
+    const resetData = initialData
+      ? {
+          code: initialData.code,
+          name: initialData.name,
+          categoryId: initialData.categoryId,
+          colorId: initialData.colorId || '',
+          materialId: initialData.materialId || '',
+          materialQuantity: initialData.materialQuantity || 0,
+          modalAwal: initialData.modalAwal,
+          currentPrice: initialData.currentPrice,
+          description: initialData.description || '',
+          imageUrl: initialData.imageUrl || null,
+          image: null,
+          sizes: initialData.sizes.map((size) => ({
+            ageCategory: size.ageCategory,
+            size: size.size,
+            quantity: size.quantity,
+            isActive: size.isActive,
+          })),
+        }
+      : getDefaultFormData()
 
     setFormData(resetData)
     setErrors({})

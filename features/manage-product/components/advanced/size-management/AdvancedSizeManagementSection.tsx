@@ -1,14 +1,7 @@
 'use client'
 
 import { useState, useMemo, useCallback } from 'react'
-import {
-  Plus,
-  Trash2,
-  AlertTriangle,
-  Package,
-  Users,
-  BarChart3,
-} from 'lucide-react'
+import { Plus, Trash2, AlertTriangle, Package, Users, BarChart3 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -84,7 +77,6 @@ interface AdvancedSizeManagementSectionProps {
  * - Integrates with advanced validation schemas
  */
 export function AdvancedSizeManagementSection({
-  productId,
   sizes,
   onSizesChange,
   onAggregatedSizesChange,
@@ -103,14 +95,17 @@ export function AdvancedSizeManagementSection({
   const aggregatedSizes = useMemo(() => {
     if (!showAggregation || sizes.length === 0) return []
 
-    const sizeGroups = new Map<SizeEnum, {
-      totalQuantity: number
-      breakdown: Record<AgeCategory, number>
-      hasMultipleCategories: boolean
-    }>()
+    const sizeGroups = new Map<
+      SizeEnum,
+      {
+        totalQuantity: number
+        breakdown: Record<AgeCategory, number>
+        hasMultipleCategories: boolean
+      }
+    >()
 
     // Group sizes by size enum
-    sizes.forEach(size => {
+    sizes.forEach((size) => {
       if (!sizeGroups.has(size.size)) {
         sizeGroups.set(size.size, {
           totalQuantity: 0,
@@ -126,22 +121,24 @@ export function AdvancedSizeManagementSection({
 
     // Calculate if each size has multiple categories
     sizeGroups.forEach((group) => {
-      const nonZeroCategories = Object.values(group.breakdown).filter(count => count > 0).length
+      const nonZeroCategories = Object.values(group.breakdown).filter((count) => count > 0).length
       group.hasMultipleCategories = nonZeroCategories > 1
     })
 
     // Convert to aggregated view format
-    const aggregated: AdvancedAggregatedSizeView[] = Array.from(sizeGroups.entries()).map(([size, data]) => ({
-      size,
-      totalQuantity: data.totalQuantity,
-      breakdown: {
-        adult: data.breakdown.ADULT || undefined,
-        child: data.breakdown.CHILD || undefined,
-        universal: data.breakdown.UNIVERSAL || undefined,
-      },
-      hasMultipleCategories: data.hasMultipleCategories,
-      availableForRental: data.totalQuantity, // TODO: subtract rented quantities
-    }))
+    const aggregated: AdvancedAggregatedSizeView[] = Array.from(sizeGroups.entries()).map(
+      ([size, data]) => ({
+        size,
+        totalQuantity: data.totalQuantity,
+        breakdown: {
+          adult: data.breakdown.ADULT || undefined,
+          child: data.breakdown.CHILD || undefined,
+          universal: data.breakdown.UNIVERSAL || undefined,
+        },
+        hasMultipleCategories: data.hasMultipleCategories,
+        availableForRental: data.totalQuantity, // TODO: subtract rented quantities
+      }),
+    )
 
     // Notify parent of aggregation changes
     if (onAggregatedSizesChange) {
@@ -155,11 +152,14 @@ export function AdvancedSizeManagementSection({
   const businessInsights = useMemo(() => {
     if (!showBusinessInsights) return null
 
-    const uniqueAgeCategories = new Set(sizes.map(s => s.ageCategory)).size
-    const uniqueSizes = new Set(sizes.map(s => s.size)).size
+    const uniqueAgeCategories = new Set(sizes.map((s) => s.ageCategory)).size
+    const uniqueSizes = new Set(sizes.map((s) => s.size)).size
     const totalQuantity = sizes.reduce((sum, s) => sum + s.quantity, 0)
 
-    const complexityScore = Math.min(10, (uniqueAgeCategories * 2) + (uniqueSizes * 1.5) + (sizes.length * 0.5))
+    const complexityScore = Math.min(
+      10,
+      uniqueAgeCategories * 2 + uniqueSizes * 1.5 + sizes.length * 0.5,
+    )
 
     let businessValue: 'basic' | 'intermediate' | 'advanced' | 'enterprise' = 'basic'
     if (complexityScore >= 8) businessValue = 'enterprise'
@@ -180,8 +180,8 @@ export function AdvancedSizeManagementSection({
   // Validation for new size entry
   const canAddSize = useCallback(() => {
     // Check for duplicate combination
-    const isDuplicate = sizes.some(s =>
-      s.size === selectedSize && s.ageCategory === selectedAgeCategory
+    const isDuplicate = sizes.some(
+      (s) => s.size === selectedSize && s.ageCategory === selectedAgeCategory,
     )
 
     return !isDuplicate && quantity > 0
@@ -194,7 +194,9 @@ export function AdvancedSizeManagementSection({
         selectedSize,
         selectedAgeCategory,
         quantity,
-        isDuplicate: sizes.some(s => s.size === selectedSize && s.ageCategory === selectedAgeCategory),
+        isDuplicate: sizes.some(
+          (s) => s.size === selectedSize && s.ageCategory === selectedAgeCategory,
+        ),
       })
       return
     }
@@ -212,28 +214,40 @@ export function AdvancedSizeManagementSection({
     // Reset form for next entry
     setQuantity(1)
 
-    sizeLogger.info('handleAddSize', 'Size added successfully', { newSize, totalSizes: updatedSizes.length })
+    sizeLogger.info('handleAddSize', 'Size added successfully', {
+      newSize,
+      totalSizes: updatedSizes.length,
+    })
   }, [sizes, selectedSize, selectedAgeCategory, quantity, onSizesChange, canAddSize])
 
   // Remove size by index
-  const handleRemoveSize = useCallback((index: number) => {
-    const removedSize = sizes[index]
-    const updatedSizes = sizes.filter((_, i) => i !== index)
-    onSizesChange(updatedSizes)
+  const handleRemoveSize = useCallback(
+    (index: number) => {
+      const removedSize = sizes[index]
+      const updatedSizes = sizes.filter((_, i) => i !== index)
+      onSizesChange(updatedSizes)
 
-    sizeLogger.info('handleRemoveSize', 'Size removed successfully', { removedSize, remainingSizes: updatedSizes.length })
-  }, [sizes, onSizesChange])
+      sizeLogger.info('handleRemoveSize', 'Size removed successfully', {
+        removedSize,
+        remainingSizes: updatedSizes.length,
+      })
+    },
+    [sizes, onSizesChange],
+  )
 
   // Update quantity for existing size
-  const handleUpdateQuantity = useCallback((index: number, newQuantity: number) => {
-    if (newQuantity < 1) return
+  const handleUpdateQuantity = useCallback(
+    (index: number, newQuantity: number) => {
+      if (newQuantity < 1) return
 
-    const updatedSizes = [...sizes]
-    updatedSizes[index] = { ...updatedSizes[index], quantity: newQuantity }
-    onSizesChange(updatedSizes)
+      const updatedSizes = [...sizes]
+      updatedSizes[index] = { ...updatedSizes[index], quantity: newQuantity }
+      onSizesChange(updatedSizes)
 
-    sizeLogger.info('handleQuantityChange', 'Size quantity updated', { index, newQuantity })
-  }, [sizes, onSizesChange])
+      sizeLogger.info('handleQuantityChange', 'Size quantity updated', { index, newQuantity })
+    },
+    [sizes, onSizesChange],
+  )
 
   // Get error message for current state
   const getCurrentError = () => {
@@ -292,12 +306,15 @@ export function AdvancedSizeManagementSection({
             {/* Size Selection */}
             <div>
               <Label htmlFor="size">Ukuran</Label>
-              <Select value={selectedSize} onValueChange={(value) => setSelectedSize(value as SizeEnum)}>
+              <Select
+                value={selectedSize}
+                onValueChange={(value) => setSelectedSize(value as SizeEnum)}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {SIZE_OPTIONS.map(option => (
+                  {SIZE_OPTIONS.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
                       {option.label}
                     </SelectItem>
@@ -309,12 +326,15 @@ export function AdvancedSizeManagementSection({
             {/* Age Category Selection */}
             <div>
               <Label htmlFor="ageCategory">Kategori Umur</Label>
-              <Select value={selectedAgeCategory} onValueChange={(value) => setSelectedAgeCategory(value as AgeCategory)}>
+              <Select
+                value={selectedAgeCategory}
+                onValueChange={(value) => setSelectedAgeCategory(value as AgeCategory)}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {AGE_CATEGORY_OPTIONS.map(option => (
+                  {AGE_CATEGORY_OPTIONS.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
                       <div>
                         <div>{option.label}</div>
@@ -341,11 +361,7 @@ export function AdvancedSizeManagementSection({
 
             {/* Add Button */}
             <div className="flex items-end">
-              <Button
-                onClick={handleAddSize}
-                disabled={!canAddSize()}
-                className="w-full"
-              >
+              <Button onClick={handleAddSize} disabled={!canAddSize()} className="w-full">
                 <Plus className="w-4 h-4 mr-2" />
                 Tambah
               </Button>
@@ -357,7 +373,8 @@ export function AdvancedSizeManagementSection({
             <Alert className="mt-4">
               <AlertTriangle className="h-4 w-4" />
               <AlertDescription>
-                Kombinasi {selectedSize} - {selectedAgeCategory} sudah ada. Pilih kombinasi yang berbeda.
+                Kombinasi {selectedSize} - {selectedAgeCategory} sudah ada. Pilih kombinasi yang
+                berbeda.
               </AlertDescription>
             </Alert>
           )}
@@ -384,13 +401,16 @@ export function AdvancedSizeManagementSection({
           <CardContent>
             <div className="space-y-3">
               {sizes.map((size, index) => (
-                <div key={index} className="flex items-center justify-between p-3 border rounded-lg bg-muted/30">
+                <div
+                  key={index}
+                  className="flex items-center justify-between p-3 border rounded-lg bg-muted/30"
+                >
                   <div className="flex items-center space-x-4">
                     <Badge variant="outline" className="font-mono">
                       {size.size}
                     </Badge>
                     <Badge variant="secondary">
-                      {AGE_CATEGORY_OPTIONS.find(opt => opt.value === size.ageCategory)?.label}
+                      {AGE_CATEGORY_OPTIONS.find((opt) => opt.value === size.ageCategory)?.label}
                     </Badge>
                     <span className="font-medium">{size.quantity} pcs</span>
                   </div>
@@ -404,11 +424,7 @@ export function AdvancedSizeManagementSection({
                       onChange={(e) => handleUpdateQuantity(index, parseInt(e.target.value) || 1)}
                       className="w-20"
                     />
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => handleRemoveSize(index)}
-                    >
+                    <Button variant="destructive" size="sm" onClick={() => handleRemoveSize(index)}>
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
@@ -424,7 +440,8 @@ export function AdvancedSizeManagementSection({
         <Alert>
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
-            Produk advanced memerlukan minimal 1 ukuran. Gunakan form di atas untuk menambahkan ukuran pertama.
+            Produk advanced memerlukan minimal 1 ukuran. Gunakan form di atas untuk menambahkan
+            ukuran pertama.
           </AlertDescription>
         </Alert>
       )}

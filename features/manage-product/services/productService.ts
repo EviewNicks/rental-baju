@@ -11,14 +11,11 @@ import {
   productParamsSchema,
   productSizeSchema,
   updateProductSizeSchema,
-  validateAdvancedSizeArraySchema,
 } from '../lib/validation/productSchema'
 import { NotFoundError, ConflictError } from '../lib/errors/AppError'
 import type {
   Product,
   Category,
-  CreateProductRequest,
-  UpdateProductRequest,
   ProductListResponse,
   ProductStatus,
   CreateProductWithSizesRequest,
@@ -361,10 +358,7 @@ export class ProductService {
    * Update an existing product (advanced-only architecture)
    * All products now support sizes - no legacy single-size support
    */
-  async updateProduct(
-    id: string,
-    request: UpdateProductWithSizesRequest,
-  ): Promise<Product> {
+  async updateProduct(id: string, request: UpdateProductWithSizesRequest): Promise<Product> {
     // Validate input
     const { id: validatedId } = productParamsSchema.parse({ id })
     const validatedData = updateProductSchema.parse(request)
@@ -410,12 +404,14 @@ export class ProductService {
 
       // Add fields with proper type conversion
       if (validatedData.name !== undefined) updateData.name = validatedData.name
-      if (validatedData.description !== undefined) updateData.description = validatedData.description
+      if (validatedData.description !== undefined)
+        updateData.description = validatedData.description
       if (validatedData.quantity !== undefined) updateData.quantity = validatedData.quantity
       if (validatedData.categoryId !== undefined) updateData.categoryId = validatedData.categoryId
       if (validatedData.size !== undefined) updateData.size = validatedData.size
       if (validatedData.colorId !== undefined) updateData.colorId = validatedData.colorId
-      if (validatedData.rentedStock !== undefined) updateData.rentedStock = validatedData.rentedStock
+      if (validatedData.rentedStock !== undefined)
+        updateData.rentedStock = validatedData.rentedStock
       if (validatedData.materialId !== undefined) updateData.materialId = validatedData.materialId
       if (validatedData.materialQuantity !== undefined)
         updateData.materialQuantity = validatedData.materialQuantity
@@ -540,9 +536,7 @@ export class ProductService {
 
     if (existingSizes.length > 0) {
       const existingCombinations = existingSizes.map((s) => `${s.ageCategory}-${s.size}`)
-      throw new ConflictError(
-        `Ukuran berikut sudah ada: ${existingCombinations.join(', ')}`,
-      )
+      throw new ConflictError(`Ukuran berikut sudah ada: ${existingCombinations.join(', ')}`)
     }
 
     // Create sizes
@@ -660,10 +654,7 @@ export class ProductService {
   /**
    * Migrate legacy product to advanced sizing
    */
-  async migrateLegacyProductToAdvanced(
-    productId: string,
-    defaultAgeCategory: AgeCategory = 'ADULT'
-  ): Promise<Product> {
+  async migrateLegacyProductToAdvanced(productId: string): Promise<Product> {
     const { id: validatedId } = productParamsSchema.parse({ id: productId })
 
     // Get current product
@@ -675,7 +666,7 @@ export class ProductService {
     }
 
     // Create advanced sizes from legacy data
-    const newSizes = migrateLegacySizeToAdvanced(product, defaultAgeCategory)
+    const newSizes = migrateLegacySizeToAdvanced()
 
     if (newSizes.length === 0) {
       throw new ConflictError('Ukuran lama tidak dapat dikonversi ke sistem baru')
@@ -683,13 +674,13 @@ export class ProductService {
 
     // Update product with new sizes
     return this.updateProduct(validatedId, {
-      sizes: newSizes.map(size => ({
+      sizes: newSizes.map((size) => ({
         ageCategory: size.ageCategory,
         size: size.size,
         quantity: size.quantity,
         isActive: size.isActive,
       })),
-      size: undefined, // Remove legacy size
+      // Note: Legacy size property no longer exists
     })
   }
 
@@ -718,23 +709,24 @@ export class ProductService {
    */
   async validateProductSizeUpdate(
     productId: string,
-    newSizes?: UpdateProductSizeRequest[]
+    newSizes?: UpdateProductSizeRequest[],
   ): Promise<{ isCompatible: boolean; warnings: string[] }> {
     const product = await this.getProductById(productId)
 
     // Convert UpdateProductSizeRequest to ProductSize for validation
-    const sizesForValidation: ProductSize[] = newSizes?.map(size => ({
-      id: size.id || '',
-      productId: productId,
-      ageCategory: size.ageCategory,
-      size: size.size,
-      quantity: size.quantity,
-      isActive: size.isActive ?? true,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      createdBy: this.userId,
-      product: {} as Product,
-    })) || []
+    const sizesForValidation: ProductSize[] =
+      newSizes?.map((size) => ({
+        id: size.id || '',
+        productId: productId,
+        ageCategory: size.ageCategory,
+        size: size.size,
+        quantity: size.quantity,
+        isActive: size.isActive ?? true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        createdBy: this.userId,
+        product: {} as Product,
+      })) || []
 
     return validateSizeCompatibility(product, sizesForValidation)
   }
@@ -767,11 +759,13 @@ export class ProductService {
    * Get products with enhanced size information (for listing)
    */
   async getProductsWithSizeInfo(query: Record<string, unknown>): Promise<{
-    products: Array<Product & {
-      sizeMode: 'legacy' | 'advanced' | 'none'
-      sizeSummary: { count: number; display: string; hasStock: boolean }
-      totalQuantity: number
-    }>
+    products: Array<
+      Product & {
+        sizeMode: 'legacy' | 'advanced' | 'none'
+        sizeSummary: { count: number; display: string; hasStock: boolean }
+        totalQuantity: number
+      }
+    >
     pagination: {
       page: number
       limit: number
@@ -781,7 +775,7 @@ export class ProductService {
   }> {
     const result = await this.getProducts(query)
 
-    const enhancedProducts = result.products.map(product => {
+    const enhancedProducts = result.products.map((product) => {
       const sizeMode = getProductSizeMode(product)
       const sizeSummary = createSizeSummary(product)
       const totalQuantity = getTotalQuantity(product)
@@ -803,10 +797,7 @@ export class ProductService {
   /**
    * Bulk migrate legacy products to advanced sizing
    */
-  async bulkMigrateLegacyProducts(
-    productIds: string[],
-    defaultAgeCategory: AgeCategory = 'ADULT'
-  ): Promise<{
+  async bulkMigrateLegacyProducts(productIds: string[]): Promise<{
     migrated: Product[]
     failed: Array<{ id: string; reason: string }>
   }> {
@@ -815,7 +806,7 @@ export class ProductService {
 
     for (const productId of productIds) {
       try {
-        const product = await this.migrateLegacyProductToAdvanced(productId, defaultAgeCategory)
+        const product = await this.migrateLegacyProductToAdvanced(productId)
         migrated.push(product)
       } catch (error) {
         failed.push({
@@ -836,7 +827,7 @@ export class ProductService {
   async getProductWithAggregation(
     id: string,
     includeAggregation: boolean = false,
-    includeBreakdown: boolean = true
+    includeBreakdown: boolean = true,
   ): Promise<ProductResponseWithAggregation> {
     const product = await this.getProductById(id)
 
@@ -865,10 +856,12 @@ export class ProductService {
     query: Record<string, unknown> & {
       includeAggregation?: boolean
       includeBreakdown?: boolean
+    },
+  ): Promise<
+    ProductListResponse & {
+      products: ProductResponseWithAggregation[]
     }
-  ): Promise<ProductListResponse & {
-    products: ProductResponseWithAggregation[]
-  }> {
+  > {
     const { includeAggregation = false, includeBreakdown = true, ...productQuery } = query
     const result = await this.getProducts(productQuery)
 
@@ -890,7 +883,7 @@ export class ProductService {
           console.warn(`Failed to get aggregation for product ${product.id}:`, error)
           return product
         }
-      })
+      }),
     )
 
     return {
@@ -904,7 +897,7 @@ export class ProductService {
    */
   async getProductAggregatedSizes(
     productId: string,
-    includeBreakdown: boolean = true
+    includeBreakdown: boolean = true,
   ): Promise<AggregatedSizeView[]> {
     // Validate product exists
     await this.getProductById(productId)
@@ -920,7 +913,7 @@ export class ProductService {
    */
   async getProductAggregation(
     productId: string,
-    includeBreakdown: boolean = true
+    includeBreakdown: boolean = true,
   ): Promise<ProductSizeAggregation> {
     // Validate product exists
     await this.getProductById(productId)
@@ -937,8 +930,9 @@ export class ProductService {
     await this.getProductById(productId)
 
     const aggregationService = this.getAggregationService(true)
-    return aggregationService.getAgeCategoryDistribution(productId)
-      .then(result => result.categoryPercentages)
+    return aggregationService
+      .getAgeCategoryDistribution(productId)
+      .then((result) => result.categoryPercentages)
   }
 
   /**
@@ -952,24 +946,22 @@ export class ProductService {
   /**
    * Validate business logic preservation for a product
    */
-  async validateBusinessLogicPreservation(productId: string): Promise<BusinessLogicValidationResult> {
+  async validateBusinessLogicPreservation(
+    productId: string,
+  ): Promise<BusinessLogicValidationResult> {
     // Validate product exists
     await this.getProductById(productId)
 
     const aggregationService = this.getAggregationService(true)
 
     // Run all validation checks in parallel for efficiency
-    const [
-      aggregationConsistency,
-      rentalTracking,
-      analyticsCapabilities,
-      inventoryManagement,
-    ] = await Promise.all([
-      aggregationService.validateAggregationConsistency(productId),
-      aggregationService.validateRentalTrackingCapabilities(productId),
-      aggregationService.validateAnalyticsCapabilities(productId),
-      aggregationService.validateInventoryCapabilities(productId),
-    ])
+    const [aggregationConsistency, rentalTracking, analyticsCapabilities, inventoryManagement] =
+      await Promise.all([
+        aggregationService.validateAggregationConsistency(productId),
+        aggregationService.validateRentalTrackingCapabilities(productId),
+        aggregationService.validateAnalyticsCapabilities(productId),
+        aggregationService.validateInventoryCapabilities(productId),
+      ])
 
     // Determine overall health and recommendations
     const recommendations: string[] = []
@@ -1038,7 +1030,9 @@ export class ProductService {
       rental: {
         ageCategoryTracking: validation.rentalTracking.canTrackByAgeCategory,
         sizeSpecificTracking: validation.rentalTracking.canTrackBySpecificSize,
-        multiGenerationalSupport: validation.rentalTracking.businessCapabilities.includes('Multi-generational rental support'),
+        multiGenerationalSupport: validation.rentalTracking.businessCapabilities.includes(
+          'Multi-generational rental support',
+        ),
       },
       analytics: {
         reportGeneration: validation.analyticsCapabilities.canGenerateReports,
@@ -1076,7 +1070,10 @@ export class ProductService {
     const strengths: string[] = []
     const improvementAreas: string[] = []
 
-    if (capabilityMatrix.rental.ageCategoryTracking && capabilityMatrix.rental.sizeSpecificTracking) {
+    if (
+      capabilityMatrix.rental.ageCategoryTracking &&
+      capabilityMatrix.rental.sizeSpecificTracking
+    ) {
       strengths.push('Comprehensive rental tracking capabilities')
     }
 
@@ -1084,7 +1081,10 @@ export class ProductService {
       strengths.push('Advanced analytics and reporting capabilities')
     }
 
-    if (capabilityMatrix.inventory.categoryRestocking && capabilityMatrix.inventory.utilizationTracking) {
+    if (
+      capabilityMatrix.inventory.categoryRestocking &&
+      capabilityMatrix.inventory.utilizationTracking
+    ) {
       strengths.push('Robust inventory management system')
     }
 
@@ -1229,16 +1229,16 @@ export class ProductService {
    */
   private calculateTotalRevenue(prismaProduct: Record<string, unknown>): Decimal {
     const transaksiItems = prismaProduct.transaksiItems as Array<{ subtotal: Decimal | number }>
-    
+
     if (!transaksiItems?.length) {
       return new Decimal(0)
     }
-    
+
     const total = transaksiItems.reduce((sum, item) => {
       const itemRevenue = Number(item.subtotal) || 0
       return sum + itemRevenue
     }, 0)
-    
+
     return new Decimal(total)
   }
 
@@ -1252,7 +1252,7 @@ export class ProductService {
       name: prismaProduct.name as string,
       description: prismaProduct.description as string,
       categoryId: prismaProduct.categoryId as string,
-      size: prismaProduct.size as string | undefined,
+      // Note: Legacy size property no longer exists in Product interface
       colorId: prismaProduct.colorId as string | undefined,
       category: prismaProduct.category
         ? {
@@ -1292,7 +1292,8 @@ export class ProductService {
         ? {
             id: (prismaProduct.material as Record<string, unknown>).id as string,
             name: (prismaProduct.material as Record<string, unknown>).name as string,
-            pricePerUnit: (prismaProduct.material as Record<string, unknown>).pricePerUnit as Decimal,
+            pricePerUnit: (prismaProduct.material as Record<string, unknown>)
+              .pricePerUnit as Decimal,
             unit: (prismaProduct.material as Record<string, unknown>).unit as string,
             isActive: (prismaProduct.material as Record<string, unknown>).isActive as boolean,
             products: [], // Avoid circular reference in conversion
@@ -1304,18 +1305,19 @@ export class ProductService {
       status: prismaProduct.status as ProductStatus,
       imageUrl: prismaProduct.imageUrl as string | undefined,
       totalPendapatan: this.calculateTotalRevenue(prismaProduct),
-      sizes: (prismaProduct.sizes as Array<Record<string, unknown>>)?.map((size) => ({
-        id: size.id as string,
-        productId: size.productId as string,
-        ageCategory: size.ageCategory as AgeCategory,
-        size: size.size as SizeEnum,
-        quantity: size.quantity as number,
-        isActive: size.isActive as boolean,
-        createdAt: size.createdAt as Date,
-        updatedAt: size.updatedAt as Date,
-        createdBy: size.createdBy as string,
-        product: {} as Product, // Avoid circular reference
-      })) || [],
+      sizes:
+        (prismaProduct.sizes as Array<Record<string, unknown>>)?.map((size) => ({
+          id: size.id as string,
+          productId: size.productId as string,
+          ageCategory: size.ageCategory as AgeCategory,
+          size: size.size as SizeEnum,
+          quantity: size.quantity as number,
+          isActive: size.isActive as boolean,
+          createdAt: size.createdAt as Date,
+          updatedAt: size.updatedAt as Date,
+          createdBy: size.createdBy as string,
+          product: {} as Product, // Avoid circular reference
+        })) || [],
       isActive: prismaProduct.isActive as boolean,
       createdAt: prismaProduct.createdAt as Date,
       updatedAt: prismaProduct.updatedAt as Date,

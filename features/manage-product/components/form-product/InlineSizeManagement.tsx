@@ -16,10 +16,10 @@ import type { SimplifiedSizeEntry, SizeEnum, AgeCategory } from '@/features/mana
 // Available clothing sizes for rental business
 const CLOTHING_SIZES: SizeEnum[] = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
 
-// Age categories - simplified to DEWASA and ANAK only
+// Age categories - using standardized enum values
 const AGE_CATEGORIES: { value: AgeCategory; label: string }[] = [
-  { value: 'DEWASA', label: 'Dewasa' },
-  { value: 'ANAK', label: 'Anak' },
+  { value: 'ADULT', label: 'Dewasa' },
+  { value: 'CHILD', label: 'Anak' },
 ]
 
 interface InlineSizeManagementProps {
@@ -36,7 +36,7 @@ export function InlineSizeManagement({ sizes, onSizesChange, errors }: InlineSiz
     quantity: number
   }>({
     size: '',
-    ageCategory: 'DEWASA', // Default to DEWASA
+    ageCategory: 'ADULT', // Default to ADULT
     quantity: 1,
   })
 
@@ -93,7 +93,7 @@ export function InlineSizeManagement({ sizes, onSizesChange, errors }: InlineSiz
       // Reset form
       setNewEntry({
         size: '',
-        ageCategory: 'DEWASA',
+        ageCategory: 'ADULT',
         quantity: 1,
       })
       setLocalErrors({})
@@ -110,6 +110,7 @@ export function InlineSizeManagement({ sizes, onSizesChange, errors }: InlineSiz
   const totalQuantity = sizes.reduce((sum, entry) => sum + entry.quantity, 0)
 
   // Clear local errors when values change - simplified version
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleNewEntryChange = (field: string, value: any) => {
     setNewEntry((prev) => ({ ...prev, [field]: value }))
     setLocalErrors((prev) => ({ ...prev, [field]: undefined, duplicate: undefined }))

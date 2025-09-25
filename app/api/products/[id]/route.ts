@@ -17,6 +17,7 @@ import { FileUploadService } from '@/features/manage-product/services/fileUpload
 import { prisma } from '@/lib/prisma'
 import { updateProductSchema } from '@/features/manage-product/lib/validation/productSchema'
 import { NotFoundError } from '@/features/manage-product/lib/errors/AppError'
+import type { UpdateProductWithSizesRequest } from '@/features/manage-product/types'
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -248,7 +249,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     // Update product using advanced-only architecture
-    const product = await productService.updateProduct(id, updateData)
+    const product = await productService.updateProduct(id, updateData as unknown as UpdateProductWithSizesRequest)
 
     return NextResponse.json(product, { status: 200 })
   } catch (error) {

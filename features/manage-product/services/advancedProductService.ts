@@ -14,11 +14,7 @@
 
 import { PrismaClient } from '@prisma/client'
 import { Decimal } from '@prisma/client/runtime/library'
-import {
-  ConflictError,
-  NotFoundError,
-  ValidationError,
-} from '../lib/errors/AppError'
+import { ConflictError, NotFoundError, ValidationError } from '../lib/errors/AppError'
 import {
   advancedProductParamsSchema,
   advancedProductQuerySchema,
@@ -30,34 +26,24 @@ import type {
   AdvancedProduct,
   AdvancedProductSize,
   AdvancedCategory,
-  AdvancedColor,
-  AdvancedMaterial,
 
   // Request Types
   CreateAdvancedProductRequest,
   UpdateAdvancedProductRequest,
   CreateAdvancedProductSizeRequest,
-  UpdateAdvancedProductSizeRequest,
 
   // Response Types
   AdvancedProductSizeAggregation,
   AdvancedAggregatedSizeView,
-  AdvancedCategoryBreakdown,
   AdvancedBusinessValidationResult,
   AdvancedProductCapabilities,
-
-  // Validation Types
-  AdvancedSizeValidationResult,
 
   // Utility Types
   AgeCategory,
   SizeEnum,
   ProductStatus,
-
 } from '../types/advanced'
-import {
-  validateAdvancedSizeArraySchema,
-} from '../lib/validation/advancedProductSchema'
+import { validateAdvancedSizeArraySchema } from '../lib/validation/advancedProductSchema'
 import { AdvancedProductSizeAggregationService } from './advancedProductSizeAggregationService'
 
 export interface AdvancedProductListResponse {
@@ -86,7 +72,7 @@ export interface AdvancedProductResponseWithAggregation extends AdvancedProduct 
 export class AdvancedProductService {
   constructor(
     private readonly prisma: PrismaClient,
-    private readonly userId: string
+    private readonly userId: string,
   ) {}
 
   // ============== CORE ADVANCED PRODUCT METHODS ==============
@@ -262,11 +248,13 @@ export class AdvancedProductService {
 
       // Basic field updates
       if (validatedData.name !== undefined) updateData.name = validatedData.name
-      if (validatedData.description !== undefined) updateData.description = validatedData.description
+      if (validatedData.description !== undefined)
+        updateData.description = validatedData.description
       if (validatedData.categoryId !== undefined) updateData.categoryId = validatedData.categoryId
       if (validatedData.colorId !== undefined) updateData.colorId = validatedData.colorId
       if (validatedData.materialId !== undefined) updateData.materialId = validatedData.materialId
-      if (validatedData.materialQuantity !== undefined) updateData.materialQuantity = validatedData.materialQuantity
+      if (validatedData.materialQuantity !== undefined)
+        updateData.materialQuantity = validatedData.materialQuantity
       if (materialCost !== undefined) updateData.materialCost = materialCost
 
       if ('imageUrl' in request && request.imageUrl !== undefined) {
@@ -570,9 +558,7 @@ export class AdvancedProductService {
 
     if (existingSizes.length > 0) {
       const existingCombinations = existingSizes.map((s) => `${s.ageCategory}-${s.size}`)
-      throw new ConflictError(
-        `Ukuran berikut sudah ada: ${existingCombinations.join(', ')}`,
-      )
+      throw new ConflictError(`Ukuran berikut sudah ada: ${existingCombinations.join(', ')}`)
     }
 
     // Create sizes and update product quantity
@@ -618,14 +604,11 @@ export class AdvancedProductService {
     options: {
       includeBreakdown?: boolean
       includeRentalTracking?: boolean
-    } = {}
+    } = {},
   ): Promise<AdvancedProductResponseWithAggregation> {
     const product = await this.getProductAdvanced(id)
 
-    const {
-      includeBreakdown = true,
-      includeRentalTracking = true,
-    } = options
+    const { includeBreakdown = true, includeRentalTracking = true } = options
 
     const aggregationService = this.getAdvancedAggregationService()
 
@@ -653,7 +636,7 @@ export class AdvancedProductService {
     options: {
       includeBreakdown?: boolean
       includeRentalTracking?: boolean
-    } = {}
+    } = {},
   ): Promise<AdvancedAggregatedSizeView[]> {
     // Validate product exists and is advanced
     await this.getProductAdvanced(productId)
@@ -667,15 +650,18 @@ export class AdvancedProductService {
   /**
    * Validate advanced business logic for a product
    */
-  async validateAdvancedBusinessLogic(productId: string): Promise<AdvancedBusinessValidationResult> {
+  async validateAdvancedBusinessLogic(
+    productId: string,
+  ): Promise<AdvancedBusinessValidationResult> {
     const product = await this.getProductAdvanced(productId)
 
     const sizeConsistency = product.sizes.length > 0
     const uniqueCombinations = this.validateUniqueSizeCombinations(product.sizes)
-    const minimumQuantities = product.sizes.every(size => size.quantity > 0)
-    const validEnumValues = product.sizes.every(size =>
-      ['ADULT', 'CHILD', 'UNIVERSAL'].includes(size.ageCategory) &&
-      ['XS', 'S', 'M', 'L', 'XL', 'XXL'].includes(size.size)
+    const minimumQuantities = product.sizes.every((size) => size.quantity > 0)
+    const validEnumValues = product.sizes.every(
+      (size) =>
+        ['ADULT', 'CHILD', 'UNIVERSAL'].includes(size.ageCategory) &&
+        ['XS', 'S', 'M', 'L', 'XL', 'XXL'].includes(size.size),
     )
 
     const errors: string[] = []
@@ -701,7 +687,7 @@ export class AdvancedProductService {
       warnings.push('Consider adding more size variations for better business capabilities')
     }
 
-    const uniqueAgeCategories = new Set(product.sizes.map(s => s.ageCategory)).size
+    const uniqueAgeCategories = new Set(product.sizes.map((s) => s.ageCategory)).size
     if (uniqueAgeCategories === 1) {
       warnings.push('Consider adding multiple age categories for broader market reach')
     }
@@ -719,17 +705,22 @@ export class AdvancedProductService {
   /**
    * Analyze advanced product capabilities
    */
-  async analyzeAdvancedProductCapabilities(productId: string): Promise<AdvancedProductCapabilities> {
+  async analyzeAdvancedProductCapabilities(
+    productId: string,
+  ): Promise<AdvancedProductCapabilities> {
     const product = await this.getProductAdvanced(productId)
 
-    const uniqueAgeCategories = new Set(product.sizes.map(s => s.ageCategory)).size
-    const uniqueSizes = new Set(product.sizes.map(s => s.size)).size
+    const uniqueAgeCategories = new Set(product.sizes.map((s) => s.ageCategory)).size
+    const uniqueSizes = new Set(product.sizes.map((s) => s.size)).size
 
     const canTrackByAgeCategory = uniqueAgeCategories > 1
     const canTrackBySpecificSize = uniqueSizes > 1
 
     // Calculate complexity score (0-10)
-    const complexityScore = Math.min(10, (uniqueAgeCategories * 2) + (uniqueSizes * 1.5) + (product.sizes.length * 0.5))
+    const complexityScore = Math.min(
+      10,
+      uniqueAgeCategories * 2 + uniqueSizes * 1.5 + product.sizes.length * 0.5,
+    )
 
     let businessValue: 'basic' | 'intermediate' | 'advanced' | 'enterprise' = 'basic'
     if (complexityScore >= 8) businessValue = 'enterprise'
@@ -817,7 +808,7 @@ export class AdvancedProductService {
    * Validate unique size combinations
    */
   private validateUniqueSizeCombinations(sizes: AdvancedProductSize[]): boolean {
-    const combinations = sizes.map(s => `${s.ageCategory}-${s.size}`)
+    const combinations = sizes.map((s) => `${s.ageCategory}-${s.size}`)
     return combinations.length === new Set(combinations).size
   }
 
@@ -865,7 +856,9 @@ export class AdvancedProductService {
   /**
    * Convert Prisma product to AdvancedProduct type
    */
-  private convertPrismaProductToAdvancedProduct(prismaProduct: Record<string, unknown>): AdvancedProduct {
+  private convertPrismaProductToAdvancedProduct(
+    prismaProduct: Record<string, unknown>,
+  ): AdvancedProduct {
     return {
       id: prismaProduct.id as string,
       code: prismaProduct.code as string,
@@ -915,7 +908,9 @@ export class AdvancedProductService {
             id: (prismaProduct.color as Record<string, unknown>).id as string,
             name: (prismaProduct.color as Record<string, unknown>).name as string,
             hexCode: (prismaProduct.color as Record<string, unknown>).hexCode as string | undefined,
-            description: (prismaProduct.color as Record<string, unknown>).description as string | undefined,
+            description: (prismaProduct.color as Record<string, unknown>).description as
+              | string
+              | undefined,
             isActive: (prismaProduct.color as Record<string, unknown>).isActive as boolean,
             createdAt: (prismaProduct.color as Record<string, unknown>).createdAt as Date,
             updatedAt: (prismaProduct.color as Record<string, unknown>).updatedAt as Date,
@@ -928,7 +923,9 @@ export class AdvancedProductService {
         ? {
             id: (prismaProduct.material as Record<string, unknown>).id as string,
             name: (prismaProduct.material as Record<string, unknown>).name as string,
-            pricePerUnit: Number((prismaProduct.material as Record<string, unknown>).pricePerUnit as Decimal),
+            pricePerUnit: Number(
+              (prismaProduct.material as Record<string, unknown>).pricePerUnit as Decimal,
+            ),
             unit: (prismaProduct.material as Record<string, unknown>).unit as string,
             isActive: (prismaProduct.material as Record<string, unknown>).isActive as boolean,
             createdAt: (prismaProduct.material as Record<string, unknown>).createdAt as Date,
@@ -943,7 +940,9 @@ export class AdvancedProductService {
   /**
    * Convert Prisma ProductSize to AdvancedProductSize type
    */
-  private convertPrismaProductSizeToAdvancedProductSize(prismaSize: Record<string, unknown>): AdvancedProductSize {
+  private convertPrismaProductSizeToAdvancedProductSize(
+    prismaSize: Record<string, unknown>,
+  ): AdvancedProductSize {
     return {
       id: prismaSize.id as string,
       productId: prismaSize.productId as string,

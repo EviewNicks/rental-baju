@@ -46,7 +46,7 @@ const transformSimplifiedSizesToBackendFormat = (
   simplifiedSizes: SimplifiedSizeEntry[],
 ): string => {
   const sizes = simplifiedSizes.map((sizeEntry) => ({
-    ageCategory: sizeEntry.ageCategory === 'DEWASA' ? 'ADULT' : 'CHILD', // Map DEWASA→ADULT, ANAK→CHILD
+    ageCategory: sizeEntry.ageCategory, // Already using standardized enum values
     size: sizeEntry.size,
     quantity: sizeEntry.quantity,
     isActive: true,
@@ -522,7 +522,7 @@ export function ProductFormPage({
             onBlur={handleBlur}
             formatCurrency={formatCurrency}
             categories={categories}
-            product={product}
+            product={product || undefined}
             onHasSizesChange={handleHasSizesChange}
             onAggregatedSizesChange={handleAggregatedSizesChange}
             onSimplifiedSizesChange={handleSimplifiedSizesChange}

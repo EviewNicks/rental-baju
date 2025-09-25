@@ -71,8 +71,6 @@ export function ProductForm({
   formatCurrency,
   categories,
   product,
-  onHasSizesChange,
-  onAggregatedSizesChange,
   onSimplifiedSizesChange,
 }: ProductFormProps) {
   // Size mode detection and state management
@@ -109,7 +107,7 @@ export function ProductForm({
       formLogger.info('sizeMode', 'Size mode detected for product', {
         productId: product.id,
         sizeMode,
-        hasLegacySize: !!product.size,
+        hasLegacySize: false, // Legacy size field no longer exists
         hasAdvancedSizes: product.sizes?.length > 0,
         aggregatedSizesCount: aggregatedSizes.length,
       })
@@ -187,66 +185,7 @@ export function ProductForm({
     }
   }, [errors, formData.aggregatedSizes])
 
-  // Handle size management changes with logging
-  const handleHasSizesChange = (hasSizes: boolean) => {
-    formLogger.info('handleHasSizesChange', 'User changed has sizes setting', {
-      previousHasSizes: formData.hasSizes,
-      newHasSizes: hasSizes,
-      sizeMode,
-      willClearData: !hasSizes && (formData.size || formData.aggregatedSizes?.length),
-    })
-
-    if (onHasSizesChange) {
-      onHasSizesChange(hasSizes)
-    } else {
-      onInputChange('hasSizes', hasSizes)
-    }
-
-    // Clear size data when disabled
-    if (!hasSizes) {
-      if (formData.size) {
-        formLogger.debug('handleHasSizesChange', 'Clearing legacy size due to hasSizes disabled')
-        onInputChange('size', '')
-      }
-      if (formData.aggregatedSizes && formData.aggregatedSizes.length > 0) {
-        formLogger.debug(
-          'handleHasSizesChange',
-          'Clearing aggregated sizes due to hasSizes disabled',
-        )
-        if (onAggregatedSizesChange) {
-          onAggregatedSizesChange([])
-        } else {
-          onInputChange('aggregatedSizes', [])
-        }
-      }
-    }
-  }
-
-  const handleAggregatedSizesChange = (sizes: AggregatedSizeView[]) => {
-    formLogger.info('handleAggregatedSizesChange', 'User changed aggregated sizes', {
-      previousSizesCount: formData.aggregatedSizes?.length || 0,
-      newSizesCount: sizes.length,
-      totalQuantity: sizes.reduce((sum, size) => sum + size.totalQuantity, 0),
-      sizeMode,
-    })
-
-    if (onAggregatedSizesChange) {
-      onAggregatedSizesChange(sizes)
-    } else {
-      onInputChange('aggregatedSizes', sizes)
-    }
-  }
-
-  const handleLegacySizeChange = (size: string) => {
-    formLogger.info('handleLegacySizeChange', 'User changed legacy size field', {
-      previousSize: formData.size,
-      newSize: size,
-      sizeMode,
-      hasAggregatedSizes: (formData.aggregatedSizes?.length || 0) > 0,
-    })
-
-    onInputChange('size', size)
-  }
+  // Legacy size change function no longer needed - sizes are handled through advanced sizing system
 
   // Handle material integration changes with logging
   const handleMaterialChange = (materialId: string | undefined) => {
@@ -441,7 +380,7 @@ export function ProductForm({
                   onInputChange('simplifiedSizes', sizes)
                 }
               }}
-              errors={errors.sizes}
+              errors={errors.sizes || undefined}
             />
           </FormSection>
 

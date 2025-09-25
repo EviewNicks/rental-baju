@@ -1,11 +1,10 @@
 'use client'
 
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 import type {
   CreateAdvancedProductSizeRequest,
   AdvancedAggregatedSizeView,
-  AdvancedProductSizeAggregation,
   AgeCategory,
   SizeEnum,
 } from '@/features/manage-product/types/advanced'
@@ -80,6 +79,7 @@ interface UseAdvancedSizeAggregationReturn {
   // Actions
   recalculate: () => void
   clearCache: () => void
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   exportData: () => any
 
   // Utilities
@@ -114,9 +114,10 @@ const defaultOptions: UseAdvancedSizeAggregationOptions = {
  */
 export function useAdvancedSizeAggregation(
   sizes: CreateAdvancedProductSizeRequest[],
-  options: UseAdvancedSizeAggregationOptions = {}
+  options: UseAdvancedSizeAggregationOptions = {},
 ): UseAdvancedSizeAggregationReturn {
-  const config = { ...defaultOptions, ...options }
+  // Memoize config to prevent unnecessary re-renders
+  const config = useMemo(() => ({ ...defaultOptions, ...options }), [options])
 
   // State
   const [isCalculating, setIsCalculating] = useState(false)
@@ -148,14 +149,17 @@ export function useAdvancedSizeAggregation(
         return []
       }
 
-      const sizeGroups = new Map<SizeEnum, {
-        totalQuantity: number
-        breakdown: Record<AgeCategory, number>
-        hasMultipleCategories: boolean
-      }>()
+      const sizeGroups = new Map<
+        SizeEnum,
+        {
+          totalQuantity: number
+          breakdown: Record<AgeCategory, number>
+          hasMultipleCategories: boolean
+        }
+      >()
 
       // Group sizes by size enum
-      sizes.forEach(size => {
+      sizes.forEach((size) => {
         if (!sizeGroups.has(size.size)) {
           sizeGroups.set(size.size, {
             totalQuantity: 0,
@@ -171,11 +175,11 @@ export function useAdvancedSizeAggregation(
 
       // Calculate if each size has multiple categories and clean breakdown
       sizeGroups.forEach((group) => {
-        const nonZeroCategories = Object.values(group.breakdown).filter(count => count > 0).length
+        const nonZeroCategories = Object.values(group.breakdown).filter((count) => count > 0).length
         group.hasMultipleCategories = nonZeroCategories > 1
 
         // Clean up breakdown to remove zero values
-        Object.keys(group.breakdown).forEach(category => {
+        Object.keys(group.breakdown).forEach((category) => {
           if (group.breakdown[category as AgeCategory] === 0) {
             delete group.breakdown[category as AgeCategory]
           }
@@ -219,7 +223,6 @@ export function useAdvancedSizeAggregation(
       })
 
       return aggregated
-
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Calculation failed'
       setError(errorMessage)
@@ -231,46 +234,57 @@ export function useAdvancedSizeAggregation(
   }, [sizes])
 
   // Calculate business insights
-  const calculateBusinessInsights = useCallback((aggregated: AdvancedAggregatedSizeView[]): BusinessInsights => {
-    const uniqueAgeCategories = new Set(sizes.map(s => s.ageCategory)).size
-    const uniqueSizes = new Set(sizes.map(s => s.size)).size
-    const totalQuantity = sizes.reduce((sum, s) => sum + s.quantity, 0)
+  const calculateBusinessInsights = useCallback(
+    //
+    ([]: AdvancedAggregatedSizeView[]): BusinessInsights => {
+      const uniqueAgeCategories = new Set(sizes.map((s) => s.ageCategory)).size
+      const uniqueSizes = new Set(sizes.map((s) => s.size)).size
+      const totalQuantity = sizes.reduce((sum, s) => sum + s.quantity, 0)
 
-    // Calculate complexity score (0-10)
-    const complexityScore = Math.min(10, (uniqueAgeCategories * 2) + (uniqueSizes * 1.5) + (sizes.length * 0.5))
+      // Calculate complexity score (0-10)
+      const complexityScore = Math.min(
+        10,
+        uniqueAgeCategories * 2 + uniqueSizes * 1.5 + sizes.length * 0.5,
+      )
 
-    // Determine business value
-    let businessValue: 'basic' | 'intermediate' | 'advanced' | 'enterprise' = 'basic'
-    if (complexityScore >= 8) businessValue = 'enterprise'
-    else if (complexityScore >= 6) businessValue = 'advanced'
-    else if (complexityScore >= 4) businessValue = 'intermediate'
+      // Determine business value
+      let businessValue: 'basic' | 'intermediate' | 'advanced' | 'enterprise' = 'basic'
+      if (complexityScore >= 8) businessValue = 'enterprise'
+      else if (complexityScore >= 6) businessValue = 'advanced'
+      else if (complexityScore >= 4) businessValue = 'intermediate'
 
-    // Generate recommendations
-    const recommendations: string[] = []
-    if (uniqueAgeCategories === 1) {
-      recommendations.push('Pertimbangkan menambah kategori umur lain untuk segmentasi yang lebih baik')
-    }
-    if (uniqueSizes < 3) {
-      recommendations.push('Tambah variasi ukuran untuk melayani kebutuhan pelanggan yang lebih beragam')
-    }
-    if (totalQuantity < 10) {
-      recommendations.push('Tingkatkan total stok untuk availability yang lebih baik')
-    }
-    if (recommendations.length === 0) {
-      recommendations.push('Konfigurasi ukuran sudah optimal')
-    }
+      // Generate recommendations
+      const recommendations: string[] = []
+      if (uniqueAgeCategories === 1) {
+        recommendations.push(
+          'Pertimbangkan menambah kategori umur lain untuk segmentasi yang lebih baik',
+        )
+      }
+      if (uniqueSizes < 3) {
+        recommendations.push(
+          'Tambah variasi ukuran untuk melayani kebutuhan pelanggan yang lebih beragam',
+        )
+      }
+      if (totalQuantity < 10) {
+        recommendations.push('Tingkatkan total stok untuk availability yang lebih baik')
+      }
+      if (recommendations.length === 0) {
+        recommendations.push('Konfigurasi ukuran sudah optimal')
+      }
 
-    return {
-      uniqueAgeCategories,
-      uniqueSizes,
-      totalQuantity,
-      complexityScore: Math.round(complexityScore * 10) / 10,
-      businessValue,
-      canTrackByAgeCategory: uniqueAgeCategories > 1,
-      canTrackBySpecificSize: uniqueSizes > 1,
-      recommendations,
-    }
-  }, [sizes])
+      return {
+        uniqueAgeCategories,
+        uniqueSizes,
+        totalQuantity,
+        complexityScore: Math.round(complexityScore * 10) / 10,
+        businessValue,
+        canTrackByAgeCategory: uniqueAgeCategories > 1,
+        canTrackBySpecificSize: uniqueSizes > 1,
+        recommendations,
+      }
+    },
+    [sizes],
+  )
 
   // Memoized aggregated sizes calculation
   const aggregatedSizes = useMemo(() => {
@@ -278,7 +292,7 @@ export function useAdvancedSizeAggregation(
       return calculateAggregatedSizes()
     }
     return []
-  }, [sizes, config.enableRealTimeCalculation, calculateAggregatedSizes])
+  }, [config.enableRealTimeCalculation, calculateAggregatedSizes])
 
   // Memoized business insights
   const businessInsights = useMemo(() => {
@@ -299,7 +313,7 @@ export function useAdvancedSizeAggregation(
 
   const categoryDistribution = useMemo((): Record<AgeCategory, number> => {
     const distribution: Record<AgeCategory, number> = { ADULT: 0, CHILD: 0, UNIVERSAL: 0 }
-    sizes.forEach(size => {
+    sizes.forEach((size) => {
       distribution[size.ageCategory] += size.quantity
     })
     return distribution
@@ -317,13 +331,19 @@ export function useAdvancedSizeAggregation(
   }, [categoryDistribution, totalQuantity])
 
   // Utility functions
-  const getSizeByEnum = useCallback((sizeEnum: SizeEnum): AdvancedAggregatedSizeView | undefined => {
-    return aggregatedSizes.find(size => size.size === sizeEnum)
-  }, [aggregatedSizes])
+  const getSizeByEnum = useCallback(
+    (sizeEnum: SizeEnum): AdvancedAggregatedSizeView | undefined => {
+      return aggregatedSizes.find((size) => size.size === sizeEnum)
+    },
+    [aggregatedSizes],
+  )
 
-  const getCategoryTotal = useCallback((category: AgeCategory): number => {
-    return categoryDistribution[category]
-  }, [categoryDistribution])
+  const getCategoryTotal = useCallback(
+    (category: AgeCategory): number => {
+      return categoryDistribution[category]
+    },
+    [categoryDistribution],
+  )
 
   const getComplexityScore = useCallback((): number => {
     return businessInsights?.complexityScore || 0
@@ -351,14 +371,26 @@ export function useAdvancedSizeAggregation(
       lastCalculated,
       performanceMetrics: performanceRef.current,
     }
-  }, [aggregatedSizes, businessInsights, totalQuantity, totalSizes, categoryDistribution, categoryPercentages, lastCalculated])
+  }, [
+    aggregatedSizes,
+    businessInsights,
+    totalQuantity,
+    totalSizes,
+    categoryDistribution,
+    categoryPercentages,
+    lastCalculated,
+  ])
 
   // Initialize hook
   useEffect(() => {
-    aggregationLogger.info('useAdvancedSizeAggregation', 'Advanced size aggregation hook initialized', {
-      sizesCount: sizes.length,
-      options: config,
-    })
+    aggregationLogger.info(
+      'useAdvancedSizeAggregation',
+      'Advanced size aggregation hook initialized',
+      {
+        sizesCount: sizes.length,
+        options: config,
+      },
+    )
   }, [sizes.length, config])
 
   return {
@@ -393,7 +425,9 @@ export function useAdvancedSizeAggregation(
 /**
  * Calculate optimization score based on calculation time
  */
-function calculateOptimizationScore(timeMs: number): 'excellent' | 'good' | 'needs_attention' | 'critical' {
+function calculateOptimizationScore(
+  timeMs: number,
+): 'excellent' | 'good' | 'needs_attention' | 'critical' {
   if (timeMs < 25) return 'excellent'
   if (timeMs < 50) return 'good'
   if (timeMs < 100) return 'needs_attention'

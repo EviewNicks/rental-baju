@@ -9,7 +9,7 @@ import type {
   ProductSize,
   AgeCategory,
   SizeEnum,
-  EnhancedClientProduct
+  EnhancedClientProduct,
 } from '../../types'
 
 /**
@@ -26,10 +26,7 @@ export function getProductSizeMode(product: Product | ClientProduct): SizeMode {
     return 'advanced'
   }
 
-  // Check if product has legacy sizing (single size field)
-  if (product.size && product.size.trim() !== '') {
-    return 'legacy'
-  }
+  // Legacy sizing no longer supported - all products use advanced sizing
 
   // No sizing
   return 'none'
@@ -43,10 +40,10 @@ export function getDisplaySizes(product: Product | ClientProduct): string[] {
 
   switch (mode) {
     case 'advanced':
-      return product.sizes.map(size => `${size.ageCategory}-${size.size}`)
+      return product.sizes.map((size) => `${size.ageCategory}-${size.size}`)
     case 'legacy':
-      return [product.size!]
     case 'none':
+    default:
       return []
   }
 }
@@ -78,7 +75,7 @@ export function getFormattedSizeDisplay(product: Product | ClientProduct): strin
 function groupSizesByCategory(sizes: string[]): Record<string, string[]> {
   const grouped: Record<string, string[]> = {}
 
-  sizes.forEach(sizeStr => {
+  sizes.forEach((sizeStr) => {
     if (sizeStr.includes('-')) {
       const [category, size] = sizeStr.split('-')
       if (!grouped[category]) {
@@ -130,7 +127,7 @@ export function enhanceClientProduct(product: ClientProduct): EnhancedClientProd
   return {
     ...product,
     hasAdvancedSizing: sizeMode === 'advanced',
-    sizeMode,
+    sizeMode: 'advanced' as const, // Advanced-only architecture
     displaySizes,
   }
 }
@@ -161,23 +158,12 @@ export function createSizeSummary(product: Product | ClientProduct): {
  */
 export function validateSizeCompatibility(
   product: Product | ClientProduct,
-  newSizes?: ProductSize[]
+  newSizes?: ProductSize[],
 ): { isCompatible: boolean; warnings: string[] } {
   const warnings: string[] = []
   const currentMode = getProductSizeMode(product)
 
-  // If switching from legacy to advanced
-  if (currentMode === 'legacy' && newSizes && newSizes.length > 0) {
-    warnings.push('Produk akan beralih dari ukuran tunggal ke manajemen ukuran lanjutan')
-
-    // Check if legacy size matches any of the new sizes
-    const legacySize = product.size?.toUpperCase()
-    const newSizeValues = newSizes.map(s => s.size)
-
-    if (legacySize && !newSizeValues.includes(legacySize as SizeEnum)) {
-      warnings.push(`Ukuran lama "${product.size}" tidak ditemukan dalam ukuran baru`)
-    }
-  }
+  // Legacy sizing no longer supported - all products use advanced sizing
 
   // If switching from advanced to legacy
   if (currentMode === 'advanced' && (!newSizes || newSizes.length === 0)) {
@@ -192,35 +178,11 @@ export function validateSizeCompatibility(
 
 /**
  * Migration helper: Convert legacy size to advanced sizes
+ * NOTE: Legacy sizing is no longer supported - all products use advanced sizing
  */
-export function migrateLegacySizeToAdvanced(
-  product: Product | ClientProduct,
-  defaultAgeCategory: AgeCategory = 'ADULT'
-): ProductSize[] {
-  if (!product.size) {
-    return []
-  }
-
-  const sizeValue = product.size.toUpperCase() as SizeEnum
-  const validSizes: SizeEnum[] = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
-
-  if (!validSizes.includes(sizeValue)) {
-    // Invalid size, cannot migrate
-    return []
-  }
-
-  return [{
-    id: '', // Will be generated on save
-    productId: product.id,
-    ageCategory: defaultAgeCategory,
-    size: sizeValue,
-    quantity: product.quantity,
-    isActive: true,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    createdBy: '', // Will be set by service
-    product: {} as Product, // Avoid circular reference
-  }]
+export function migrateLegacySizeToAdvanced(): ProductSize[] {
+  // Legacy sizing no longer supported - return empty array
+  return []
 }
 
 /**
@@ -276,10 +238,12 @@ export function formatSize(size: SizeEnum): string {
 /**
  * Create default sizes for a new product
  */
-export function createDefaultSizes(ageCategory: AgeCategory = 'ADULT'): Omit<ProductSize, 'id' | 'productId' | 'createdAt' | 'updatedAt' | 'createdBy' | 'product'>[] {
+export function createDefaultSizes(
+  ageCategory: AgeCategory = 'ADULT',
+): Omit<ProductSize, 'id' | 'productId' | 'createdAt' | 'updatedAt' | 'createdBy' | 'product'>[] {
   const commonSizes: SizeEnum[] = ['S', 'M', 'L', 'XL']
 
-  return commonSizes.map(size => ({
+  return commonSizes.map((size) => ({
     ageCategory,
     size,
     quantity: 1,

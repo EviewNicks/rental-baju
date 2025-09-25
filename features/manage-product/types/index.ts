@@ -197,7 +197,7 @@ export interface PrismaCategory extends BaseCategory {
 
 export type ViewMode = 'table' | 'card' | 'grid'
 export type ProductStatus = 'AVAILABLE' | 'RENTED' | 'MAINTENANCE'
-export type AgeCategory = 'DEWASA' | 'ANAK'
+export type AgeCategory = 'ADULT' | 'CHILD' | 'UNIVERSAL'
 export type SizeEnum = 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL'
 
 // Filter types untuk UI components
@@ -349,12 +349,12 @@ export interface UpdateProductSizeRequest {
   isActive?: boolean
 }
 
-export interface CreateProductWithSizesRequest extends CreateProductRequest {
+export interface CreateProductWithSizesRequest extends Omit<CreateProductRequest, 'sizes'> {
   // Advanced-only architecture: all products require sizes
   sizes: CreateProductSizeRequest[]
 }
 
-export interface UpdateProductWithSizesRequest extends UpdateProductRequest {
+export interface UpdateProductWithSizesRequest extends Omit<UpdateProductRequest, 'sizes'> {
   // Advanced-only architecture: all products require sizes
   sizes: UpdateProductSizeRequest[]
 }
@@ -390,8 +390,9 @@ export interface AggregatedSizeView {
   size: SizeEnum
   totalQuantity: number
   breakdown: {
-    dewasa?: number
-    anak?: number
+    adult?: number
+    child?: number
+    universal?: number
   }
   hasMultipleCategories: boolean
 }
@@ -410,8 +411,9 @@ export interface SimplifiedSizeEntry {
  * Category breakdown for aggregation analysis
  */
 export interface CategoryBreakdown {
-  dewasa: number
-  anak: number
+  adult: number
+  child: number
+  universal: number
   total: number
 }
 
@@ -485,8 +487,9 @@ export interface RentalTrackingCapabilities {
   canTrackByAgeCategory: boolean
   canTrackBySpecificSize: boolean
   availableForRental: {
-    dewasa: { [size: string]: number }
-    anak: { [size: string]: number }
+    adult: { [size: string]: number }
+    child: { [size: string]: number }
+    universal: { [size: string]: number }
   }
   businessCapabilities: string[]
 }

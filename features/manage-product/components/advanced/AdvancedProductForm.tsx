@@ -2,7 +2,6 @@
 
 import {
   Hash,
-  Package,
   Tag,
   DollarSign,
   CreditCard,
@@ -65,7 +64,6 @@ interface AdvancedProductFormProps {
   onInputChange: (name: string, value: any) => void
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onBlur: (name: string, value: any) => void
-  formatCurrency: (value: string) => string
   categories: ClientCategory[]
 
   // Optional product data for edit mode
@@ -91,7 +89,6 @@ export function AdvancedProductForm({
   touched,
   onInputChange,
   onBlur,
-  formatCurrency,
   categories,
   product,
   onSizesChange,
@@ -102,8 +99,6 @@ export function AdvancedProductForm({
   // Fetch colors data for form dropdown
   const {
     data: colors = [],
-    isLoading: isLoadingColors,
-    error: colorsError,
   } = useColors()
 
   // Log component mount and initialization
@@ -118,7 +113,7 @@ export function AdvancedProductForm({
     if (formData.sizes.length === 0) {
       formLogger.warn('useEffect', 'Form mounted with no sizes - invalid state')
     }
-  }, [productId, formData.sizes.length])
+  }, [product, productId, formData.sizes.length])
 
   // Calculate total quantity from sizes
   const totalQuantity = formData.sizes.reduce((sum, size) => sum + size.quantity, 0)

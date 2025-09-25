@@ -18,16 +18,18 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import type {
   AdvancedAggregatedSizeView,
   AgeCategory,
-  SizeEnum,
 } from '@/features/manage-product/types/advanced'
 
 // Age category display configuration
-const AGE_CATEGORY_CONFIG: Record<AgeCategory, {
-  label: string
-  color: string
-  bgColor: string
-  icon: string
-}> = {
+const AGE_CATEGORY_CONFIG: Record<
+  AgeCategory,
+  {
+    label: string
+    color: string
+    bgColor: string
+    icon: string
+  }
+> = {
   ADULT: {
     label: 'Dewasa',
     color: 'text-blue-600',
@@ -91,7 +93,7 @@ export function AdvancedAggregatedSizeDisplay({
 
     // Calculate age category distribution
     const categoryTotals: Record<AgeCategory, number> = { ADULT: 0, CHILD: 0, UNIVERSAL: 0 }
-    aggregatedSizes.forEach(size => {
+    aggregatedSizes.forEach((size) => {
       Object.entries(size.breakdown).forEach(([category, quantity]) => {
         if (quantity > 0) {
           categoryTotals[category as AgeCategory] += quantity
@@ -102,7 +104,8 @@ export function AdvancedAggregatedSizeDisplay({
     const categoryPercentages: Record<AgeCategory, number> = {
       ADULT: totalQuantity > 0 ? Math.round((categoryTotals.ADULT / totalQuantity) * 100) : 0,
       CHILD: totalQuantity > 0 ? Math.round((categoryTotals.CHILD / totalQuantity) * 100) : 0,
-      UNIVERSAL: totalQuantity > 0 ? Math.round((categoryTotals.UNIVERSAL / totalQuantity) * 100) : 0,
+      UNIVERSAL:
+        totalQuantity > 0 ? Math.round((categoryTotals.UNIVERSAL / totalQuantity) * 100) : 0,
     }
 
     return {
@@ -124,7 +127,8 @@ export function AdvancedAggregatedSizeDisplay({
     if (businessInsights.uniqueSizes < 3) {
       recommendations.push({
         type: 'info',
-        message: 'Pertimbangkan menambah variasi ukuran untuk melayani kebutuhan pelanggan yang lebih beragam.',
+        message:
+          'Pertimbangkan menambah variasi ukuran untuk melayani kebutuhan pelanggan yang lebih beragam.',
       })
     }
 
@@ -132,7 +136,8 @@ export function AdvancedAggregatedSizeDisplay({
     if (businessInsights.uniqueAgeCategories === 1) {
       recommendations.push({
         type: 'warning',
-        message: 'Menambahkan kategori umur lain dapat meningkatkan segmentasi dan analisis bisnis.',
+        message:
+          'Menambahkan kategori umur lain dapat meningkatkan segmentasi dan analisis bisnis.',
       })
     }
 
@@ -140,7 +145,8 @@ export function AdvancedAggregatedSizeDisplay({
     if (businessInsights.businessValue === 'basic') {
       recommendations.push({
         type: 'info',
-        message: 'Tingkatkan kompleksitas ukuran untuk kemampuan analisis bisnis yang lebih mendalam.',
+        message:
+          'Tingkatkan kompleksitas ukuran untuk kemampuan analisis bisnis yang lebih mendalam.',
       })
     } else if (businessInsights.businessValue === 'enterprise') {
       recommendations.push({
@@ -153,7 +159,8 @@ export function AdvancedAggregatedSizeDisplay({
     if (overallStats.averageQuantityPerSize < 2) {
       recommendations.push({
         type: 'warning',
-        message: 'Rata-rata stok per ukuran rendah. Pertimbangkan meningkatkan kuantitas untuk availability yang lebih baik.',
+        message:
+          'Rata-rata stok per ukuran rendah. Pertimbangkan meningkatkan kuantitas untuk availability yang lebih baik.',
       })
     }
 
@@ -164,9 +171,7 @@ export function AdvancedAggregatedSizeDisplay({
     return (
       <Alert>
         <Info className="h-4 w-4" />
-        <AlertDescription>
-          Tidak ada data agregasi ukuran untuk ditampilkan.
-        </AlertDescription>
+        <AlertDescription>Tidak ada data agregasi ukuran untuk ditampilkan.</AlertDescription>
       </Alert>
     )
   }
@@ -192,12 +197,14 @@ export function AdvancedAggregatedSizeDisplay({
               <div className="text-sm text-muted-foreground">Total Kuantitas</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-purple-600">{overallStats.averageQuantityPerSize}</div>
+              <div className="text-2xl font-bold text-purple-600">
+                {overallStats.averageQuantityPerSize}
+              </div>
               <div className="text-sm text-muted-foreground">Rata-rata/Ukuran</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-orange-600">
-                {Object.values(overallStats.categoryTotals).filter(count => count > 0).length}
+                {Object.values(overallStats.categoryTotals).filter((count) => count > 0).length}
               </div>
               <div className="text-sm text-muted-foreground">Kategori Aktif</div>
             </div>
@@ -252,10 +259,7 @@ export function AdvancedAggregatedSizeDisplay({
                             </span>
                           </div>
                           <div className="flex-1">
-                            <Progress
-                              value={percentage}
-                              className="h-2"
-                            />
+                            <Progress value={percentage} className="h-2" />
                           </div>
                           <div className="text-sm font-medium min-w-[60px] text-right">
                             {quantity} pcs ({percentage}%)
@@ -289,7 +293,9 @@ export function AdvancedAggregatedSizeDisplay({
 
               return (
                 <div key={category} className="flex items-center space-x-4">
-                  <div className={`flex items-center space-x-2 min-w-[120px] p-2 rounded-lg ${categoryConfig.bgColor}`}>
+                  <div
+                    className={`flex items-center space-x-2 min-w-[120px] p-2 rounded-lg ${categoryConfig.bgColor}`}
+                  >
                     <span className="text-lg">{categoryConfig.icon}</span>
                     <span className={`font-medium ${categoryConfig.color}`}>
                       {categoryConfig.label}
@@ -324,8 +330,13 @@ export function AdvancedAggregatedSizeDisplay({
                 <h4 className="font-medium">Level Bisnis</h4>
                 <div className="flex items-center space-x-3">
                   <Badge
-                    variant={businessInsights.businessValue === 'enterprise' ? 'default' :
-                            businessInsights.businessValue === 'advanced' ? 'secondary' : 'outline'}
+                    variant={
+                      businessInsights.businessValue === 'enterprise'
+                        ? 'default'
+                        : businessInsights.businessValue === 'advanced'
+                          ? 'secondary'
+                          : 'outline'
+                    }
                     className="capitalize"
                   >
                     {businessInsights.businessValue}

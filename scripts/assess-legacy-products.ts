@@ -8,6 +8,7 @@
  */
 
 import { prisma } from '../lib/prisma'
+import fs from 'fs'
 
 interface AssessmentResult {
   totalProducts: number
@@ -46,9 +47,9 @@ async function assessLegacyProducts(): Promise<AssessmentResult> {
   const productsWithSizes = await prisma.product.count({
     where: {
       sizes: {
-        some: {}
-      }
-    }
+        some: {},
+      },
+    },
   })
   console.log(`✅ Products with advanced sizes: ${productsWithSizes}`)
 
@@ -60,8 +61,8 @@ async function assessLegacyProducts(): Promise<AssessmentResult> {
   const legacyProducts = await prisma.product.findMany({
     where: {
       sizes: {
-        none: {}
-      }
+        none: {},
+      },
     },
     select: {
       id: true,
@@ -71,17 +72,17 @@ async function assessLegacyProducts(): Promise<AssessmentResult> {
       quantity: true,
       sizes: {
         select: {
-          id: true
-        }
-      }
-    }
+          id: true,
+        },
+      },
+    },
   })
 
   // 5. Legacy field analysis
-  const productsWithLegacySize = legacyProducts.filter(p => p.size && p.size.trim() !== '').length
-  const productsWithLegacyQuantity = legacyProducts.filter(p => p.quantity > 0).length
-  const productsWithBothLegacyFields = legacyProducts.filter(p =>
-    p.size && p.size.trim() !== '' && p.quantity > 0
+  const productsWithLegacySize = legacyProducts.filter((p) => p.size && p.size.trim() !== '').length
+  const productsWithLegacyQuantity = legacyProducts.filter((p) => p.quantity > 0).length
+  const productsWithBothLegacyFields = legacyProducts.filter(
+    (p) => p.size && p.size.trim() !== '' && p.quantity > 0,
   ).length
 
   // 6. Determine migration complexity
@@ -97,14 +98,14 @@ async function assessLegacyProducts(): Promise<AssessmentResult> {
   }
 
   // 7. Detailed analysis for each legacy product
-  const detailedAnalysis = legacyProducts.map(product => ({
+  const detailedAnalysis = legacyProducts.map((product) => ({
     id: product.id,
     code: product.code,
     name: product.name,
     legacySize: product.size || undefined,
     legacyQuantity: product.quantity,
     existingSizes: product.sizes.length,
-    migrationAction: determineMigrationAction(product)
+    migrationAction: determineMigrationAction(product),
   }))
 
   // 8. Compile results
@@ -116,19 +117,20 @@ async function assessLegacyProducts(): Promise<AssessmentResult> {
     legacyDataSummary: {
       productsWithLegacySize,
       productsWithLegacyQuantity,
-      productsWithBothLegacyFields
+      productsWithBothLegacyFields,
     },
     migrationStrategy: {
       defaultAgeCategory: 'UNIVERSAL',
       defaultSize: 'M',
-      preserveQuantity: true
+      preserveQuantity: true,
     },
-    detailedAnalysis
+    detailedAnalysis,
   }
 
   return result
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function determineMigrationAction(product: any): string {
   if (product.sizes.length > 0) {
     return 'Already has advanced sizes - skip'
@@ -157,9 +159,15 @@ function displayResults(result: AssessmentResult) {
   console.log(`   Migration Complexity: ${result.migrationComplexity.toUpperCase()}`)
 
   console.log(`\n📈 LEGACY DATA ANALYSIS:`)
-  console.log(`   Products with Legacy Size Field: ${result.legacyDataSummary.productsWithLegacySize}`)
-  console.log(`   Products with Legacy Quantity: ${result.legacyDataSummary.productsWithLegacyQuantity}`)
-  console.log(`   Products with Both Legacy Fields: ${result.legacyDataSummary.productsWithBothLegacyFields}`)
+  console.log(
+    `   Products with Legacy Size Field: ${result.legacyDataSummary.productsWithLegacySize}`,
+  )
+  console.log(
+    `   Products with Legacy Quantity: ${result.legacyDataSummary.productsWithLegacyQuantity}`,
+  )
+  console.log(
+    `   Products with Both Legacy Fields: ${result.legacyDataSummary.productsWithBothLegacyFields}`,
+  )
 
   console.log(`\n🔧 MIGRATION STRATEGY:`)
   console.log(`   Default Age Category: ${result.migrationStrategy.defaultAgeCategory}`)
@@ -197,11 +205,9 @@ async function main() {
     displayResults(result)
 
     // Save results to file for reference
-    const fs = require('fs')
     const resultFile = `assessment-result-${new Date().toISOString().split('T')[0]}.json`
     fs.writeFileSync(resultFile, JSON.stringify(result, null, 2))
     console.log(`\n💾 Results saved to: ${resultFile}`)
-
   } catch (error) {
     console.error('❌ Assessment failed:', error)
     process.exit(1)

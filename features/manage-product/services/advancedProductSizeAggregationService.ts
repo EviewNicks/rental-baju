@@ -12,16 +12,14 @@
 
 import { PrismaClient } from '@prisma/client'
 import type {
-  AdvancedProduct,
   AdvancedProductSize,
   AdvancedAggregatedSizeView,
   AdvancedProductSizeAggregation,
   AdvancedCategoryBreakdown,
   SizeEnum,
   AgeCategory,
-  AdvancedSizeValidationResult,
   AdvancedBusinessValidationResult,
-  AdvancedProductCapabilities
+  AdvancedProductCapabilities,
 } from '../types/advanced'
 
 export interface AdvancedAggregationConfig {
@@ -71,7 +69,7 @@ export class AdvancedProductSizeAggregationService {
 
   constructor(
     private readonly prisma: PrismaClient,
-    config?: Partial<AdvancedAggregationConfig>
+    config?: Partial<AdvancedAggregationConfig>,
   ) {
     this.config = {
       enableCaching: true,
@@ -95,7 +93,7 @@ export class AdvancedProductSizeAggregationService {
       includeBreakdown?: boolean
       includeRentalTracking?: boolean
       forceRefresh?: boolean
-    } = {}
+    } = {},
   ): Promise<AggregationServiceResponse<AdvancedAggregatedSizeView[]>> {
     const startTime = Date.now()
     const startMemory = process.memoryUsage().heapUsed
@@ -103,7 +101,7 @@ export class AdvancedProductSizeAggregationService {
     const {
       includeBreakdown = this.config.includeBreakdown,
       includeRentalTracking = this.config.includeRentalTracking,
-      forceRefresh = false
+      forceRefresh = false,
     } = options
 
     const cacheKey = `advanced_aggregated_${productId}_${includeBreakdown}_${includeRentalTracking}`
@@ -134,7 +132,7 @@ export class AdvancedProductSizeAggregationService {
       const aggregatedSizes = this.aggregateAdvancedSizesBySize(
         productSizes,
         includeBreakdown,
-        includeRentalTracking
+        includeRentalTracking,
       )
 
       // Cache result
@@ -143,12 +141,12 @@ export class AdvancedProductSizeAggregationService {
       }
 
       return this.wrapResponse(aggregatedSizes, false, startTime, startMemory)
-
     } catch (error) {
-      const calculationTime = Date.now() - startTime
       console.error(`Advanced aggregation failed for product ${productId}:`, error)
 
-      throw new Error(`Aggregation failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Aggregation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      )
     }
   }
 
@@ -160,7 +158,7 @@ export class AdvancedProductSizeAggregationService {
     options: {
       includeBusinessIntelligence?: boolean
       includePerformanceMetrics?: boolean
-    } = {}
+    } = {},
   ): Promise<AdvancedProductSizeAggregation> {
     const startTime = Date.now()
     const cacheKey = `advanced_product_aggregation_${productId}_${JSON.stringify(options)}`
@@ -193,8 +191,8 @@ export class AdvancedProductSizeAggregationService {
         calculatedAt: new Date(),
         fromCache: false,
         calculationTimeMs: calculationTime,
-        performance
-      }
+        performance,
+      },
     }
 
     // Add business intelligence if requested
@@ -208,7 +206,7 @@ export class AdvancedProductSizeAggregationService {
     }
 
     // Track performance
-    this.recordPerformanceMetrics(calculationTime, false)
+    this.recordPerformanceMetrics(calculationTime)
 
     return aggregation
   }
@@ -218,12 +216,16 @@ export class AdvancedProductSizeAggregationService {
    */
   async getAdvancedTotalQuantity(
     productId: string,
-    options: { includeRented?: boolean } = {}
+    options: { includeRented?: boolean } = {},
   ): Promise<{ total: number; available: number; rented: number }> {
     const cacheKey = `advanced_total_${productId}_${options.includeRented}`
 
     if (this.config.enableCaching) {
-      const cached = this.getFromAdvancedCache<{ total: number; available: number; rented: number }>(cacheKey)
+      const cached = this.getFromAdvancedCache<{
+        total: number
+        available: number
+        rented: number
+      }>(cacheKey)
       if (cached) return cached
     }
 
@@ -247,7 +249,9 @@ export class AdvancedProductSizeAggregationService {
   /**
    * Validate advanced size management with comprehensive business rules
    */
-  async validateAdvancedBusinessRules(productId: string): Promise<AdvancedBusinessValidationResult> {
+  async validateAdvancedBusinessRules(
+    productId: string,
+  ): Promise<AdvancedBusinessValidationResult> {
     const productSizes = await this.getAdvancedProductSizes(productId, false)
     const errors: string[] = []
     const warnings: string[] = []
@@ -258,7 +262,7 @@ export class AdvancedProductSizeAggregationService {
     }
 
     // Rule 2: No duplicate size+ageCategory combinations
-    const combinations = productSizes.map(s => `${s.size}-${s.ageCategory}`)
+    const combinations = productSizes.map((s) => `${s.size}-${s.ageCategory}`)
     const uniqueCombinations = new Set(combinations)
     const sizeConsistency = combinations.length === uniqueCombinations.size
 
@@ -267,7 +271,7 @@ export class AdvancedProductSizeAggregationService {
     }
 
     // Rule 3: All quantities must be positive
-    const minimumQuantities = productSizes.every(s => s.quantity > 0)
+    const minimumQuantities = productSizes.every((s) => s.quantity > 0)
     if (!minimumQuantities) {
       errors.push('All size quantities must be greater than 0')
     }
@@ -276,8 +280,8 @@ export class AdvancedProductSizeAggregationService {
     const validSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
     const validCategories = ['ADULT', 'CHILD', 'UNIVERSAL']
 
-    const validEnumValues = productSizes.every(s =>
-      validSizes.includes(s.size) && validCategories.includes(s.ageCategory)
+    const validEnumValues = productSizes.every(
+      (s) => validSizes.includes(s.size) && validCategories.includes(s.ageCategory),
     )
 
     if (!validEnumValues) {
@@ -300,26 +304,28 @@ export class AdvancedProductSizeAggregationService {
       minimumQuantities,
       validEnumValues,
       errors,
-      warnings
+      warnings,
     }
   }
 
   /**
    * Analyze product capabilities for business intelligence
    */
-  async analyzeAdvancedProductCapabilities(productId: string): Promise<AdvancedProductCapabilities> {
+  async analyzeAdvancedProductCapabilities(
+    productId: string,
+  ): Promise<AdvancedProductCapabilities> {
     const productSizes = await this.getAdvancedProductSizes(productId, true)
     const aggregation = await this.getAdvancedProductAggregation(productId)
 
-    const ageCategories = new Set(productSizes.map(s => s.ageCategory))
-    const sizes = new Set(productSizes.map(s => s.size))
+    const ageCategories = new Set(productSizes.map((s) => s.ageCategory))
+    const sizes = new Set(productSizes.map((s) => s.size))
 
     const canTrackByAgeCategory = ageCategories.size > 1
     const canTrackBySpecificSize = sizes.size > 1
 
     // Calculate complexity score
-    const complexityScore = (ageCategories.size * sizes.size) +
-      (productSizes.length > 10 ? 10 : productSizes.length)
+    const complexityScore =
+      ageCategories.size * sizes.size + (productSizes.length > 10 ? 10 : productSizes.length)
 
     // Determine business value tier
     let businessValue: 'basic' | 'intermediate' | 'advanced' | 'enterprise' = 'basic'
@@ -356,7 +362,7 @@ export class AdvancedProductSizeAggregationService {
       canTrackBySpecificSize,
       complexityScore,
       businessValue,
-      recommendedActions
+      recommendedActions,
     }
   }
 
@@ -367,17 +373,15 @@ export class AdvancedProductSizeAggregationService {
    */
   private async getAdvancedProductSizes(
     productId: string,
-    includeRentalTracking: boolean = false
+    includeRentalTracking: boolean = false,
   ): Promise<AdvancedProductSize[]> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const queryOptions: any = {
       where: {
         productId,
         isActive: true,
       },
-      orderBy: [
-        { size: 'asc' },
-        { ageCategory: 'asc' },
-      ],
+      orderBy: [{ size: 'asc' }, { ageCategory: 'asc' }],
     }
 
     // Add rental tracking if requested
@@ -391,24 +395,26 @@ export class AdvancedProductSizeAggregationService {
             //     rental: { status: 'ACTIVE' }
             //   }
             // }
-          }
-        }
+          },
+        },
       }
     }
 
     const productSizes = await this.prisma.productSize.findMany(queryOptions)
 
-    return productSizes.map((size): AdvancedProductSize => ({
-      id: size.id,
-      productId: size.productId,
-      ageCategory: size.ageCategory as AgeCategory,
-      size: size.size as SizeEnum,
-      quantity: size.quantity,
-      isActive: size.isActive,
-      createdAt: size.createdAt,
-      updatedAt: size.updatedAt,
-      createdBy: size.createdBy,
-    }))
+    return productSizes.map(
+      (size): AdvancedProductSize => ({
+        id: size.id,
+        productId: size.productId,
+        ageCategory: size.ageCategory as AgeCategory,
+        size: size.size as SizeEnum,
+        quantity: size.quantity,
+        isActive: size.isActive,
+        createdAt: size.createdAt,
+        updatedAt: size.updatedAt,
+        createdBy: size.createdBy,
+      }),
+    )
   }
 
   /**
@@ -417,23 +423,26 @@ export class AdvancedProductSizeAggregationService {
   private aggregateAdvancedSizesBySize(
     productSizes: AdvancedProductSize[],
     includeBreakdown: boolean,
-    includeRentalTracking: boolean
+    includeRentalTracking: boolean,
   ): AdvancedAggregatedSizeView[] {
-    const sizeMap = new Map<SizeEnum, {
-      totalQuantity: number
-      breakdown: { adult: number; child: number; universal: number }
-      categories: Set<AgeCategory>
-      rentedQuantity?: number
-    }>()
+    const sizeMap = new Map<
+      SizeEnum,
+      {
+        totalQuantity: number
+        breakdown: { adult: number; child: number; universal: number }
+        categories: Set<AgeCategory>
+        rentedQuantity?: number
+      }
+    >()
 
     // Group and sum by size
-    productSizes.forEach(ps => {
+    productSizes.forEach((ps) => {
       if (!sizeMap.has(ps.size)) {
         sizeMap.set(ps.size, {
           totalQuantity: 0,
           breakdown: { adult: 0, child: 0, universal: 0 },
           categories: new Set(),
-          ...(includeRentalTracking && { rentedQuantity: 0 })
+          ...(includeRentalTracking && { rentedQuantity: 0 }),
         })
       }
 
@@ -456,33 +465,39 @@ export class AdvancedProductSizeAggregationService {
     })
 
     // Convert to AdvancedAggregatedSizeView array
-    return Array.from(sizeMap.entries()).map(([size, data]) => {
-      const result: AdvancedAggregatedSizeView = {
-        size,
-        totalQuantity: data.totalQuantity,
-        breakdown: includeBreakdown ? {
-          ...(data.breakdown.adult > 0 && { adult: data.breakdown.adult }),
-          ...(data.breakdown.child > 0 && { child: data.breakdown.child }),
-          ...(data.breakdown.universal > 0 && { universal: data.breakdown.universal }),
-        } : {},
-        hasMultipleCategories: data.categories.size > 1,
-        availableForRental: includeRentalTracking
-          ? data.totalQuantity - (data.rentedQuantity || 0)
-          : data.totalQuantity
-      }
+    return Array.from(sizeMap.entries())
+      .map(([size, data]) => {
+        const result: AdvancedAggregatedSizeView = {
+          size,
+          totalQuantity: data.totalQuantity,
+          breakdown: includeBreakdown
+            ? {
+                ...(data.breakdown.adult > 0 && { adult: data.breakdown.adult }),
+                ...(data.breakdown.child > 0 && { child: data.breakdown.child }),
+                ...(data.breakdown.universal > 0 && { universal: data.breakdown.universal }),
+              }
+            : {},
+          hasMultipleCategories: data.categories.size > 1,
+          availableForRental: includeRentalTracking
+            ? data.totalQuantity - (data.rentedQuantity || 0)
+            : data.totalQuantity,
+        }
 
-      return result
-    }).sort((a, b) => {
-      // Sort by size order: XS, S, M, L, XL, XXL
-      const sizeOrder = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
-      return sizeOrder.indexOf(a.size) - sizeOrder.indexOf(b.size)
-    })
+        return result
+      })
+      .sort((a, b) => {
+        // Sort by size order: XS, S, M, L, XL, XXL
+        const sizeOrder = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
+        return sizeOrder.indexOf(a.size) - sizeOrder.indexOf(b.size)
+      })
   }
 
   /**
    * Calculate enhanced category breakdown with percentages
    */
-  private calculateAdvancedCategoryBreakdown(productSizes: AdvancedProductSize[]): AdvancedCategoryBreakdown {
+  private calculateAdvancedCategoryBreakdown(
+    productSizes: AdvancedProductSize[],
+  ): AdvancedCategoryBreakdown {
     const breakdown: AdvancedCategoryBreakdown = {
       adult: 0,
       child: 0,
@@ -491,11 +506,11 @@ export class AdvancedProductSizeAggregationService {
       distribution: {
         adultPercentage: 0,
         childPercentage: 0,
-        universalPercentage: 0
-      }
+        universalPercentage: 0,
+      },
     }
 
-    productSizes.forEach(ps => {
+    productSizes.forEach((ps) => {
       switch (ps.ageCategory) {
         case 'ADULT':
           breakdown.adult += ps.quantity
@@ -518,30 +533,6 @@ export class AdvancedProductSizeAggregationService {
     }
 
     return breakdown
-  }
-
-  /**
-   * Calculate currently rented quantity (placeholder - would integrate with rental system)
-   */
-  private async calculateRentedQuantity(productId: string): Promise<number> {
-    // TODO: Integrate with actual rental transaction system
-    // This is a placeholder implementation
-
-    // const rentedItems = await this.prisma.rentalTransactionItem.aggregate({
-    //   where: {
-    //     productId,
-    //     transaction: {
-    //       status: 'ACTIVE'
-    //     }
-    //   },
-    //   _sum: {
-    //     quantity: true
-    //   }
-    // })
-
-    // return rentedItems._sum.quantity || 0
-
-    return 0 // Placeholder
   }
 
   // ============== ENHANCED CACHE MANAGEMENT ==============
@@ -582,8 +573,8 @@ export class AdvancedProductSizeAggregationService {
         calculationTimeMs: calculationTime,
         cacheHitRatio: this.calculateCacheHitRatio(),
         memoryUsageMB: memoryUsage,
-        complexity: this.determineComplexity(calculationTime)
-      }
+        complexity: this.determineComplexity(calculationTime),
+      },
     }
 
     this.cache.set(key, entry)
@@ -612,13 +603,13 @@ export class AdvancedProductSizeAggregationService {
     data: T,
     fromCache: boolean,
     startTime: number,
-    startMemory: number
+    startMemory: number,
   ): AggregationServiceResponse<T> {
     const calculationTime = Date.now() - startTime
     const performance = this.evaluatePerformance(calculationTime)
 
     // Record performance metrics
-    this.recordPerformanceMetrics(calculationTime, fromCache)
+    this.recordPerformanceMetrics(calculationTime)
 
     return {
       data,
@@ -630,13 +621,15 @@ export class AdvancedProductSizeAggregationService {
         cacheStats: {
           hitRatio: this.calculateCacheHitRatio(),
           totalEntries: this.cache.size,
-          memoryUsage: `${Math.round((process.memoryUsage().heapUsed - startMemory) / 1024 / 1024 * 100) / 100}MB`
-        }
-      }
+          memoryUsage: `${Math.round(((process.memoryUsage().heapUsed - startMemory) / 1024 / 1024) * 100) / 100}MB`,
+        },
+      },
     }
   }
 
-  private evaluatePerformance(timeMs: number): 'excellent' | 'good' | 'needs_attention' | 'critical' {
+  private evaluatePerformance(
+    timeMs: number,
+  ): 'excellent' | 'good' | 'needs_attention' | 'critical' {
     if (timeMs < 25) return 'excellent'
     if (timeMs < this.config.performanceThresholdMs) return 'good'
     if (timeMs < this.config.performanceThresholdMs * 2) return 'needs_attention'
@@ -649,12 +642,12 @@ export class AdvancedProductSizeAggregationService {
     return 'high'
   }
 
-  private recordPerformanceMetrics(calculationTime: number, fromCache: boolean): void {
+  private recordPerformanceMetrics(calculationTime: number): void {
     const metric: PerformanceMetrics = {
       calculationTimeMs: calculationTime,
       cacheHitRatio: this.calculateCacheHitRatio(),
       memoryUsageMB: process.memoryUsage().heapUsed / 1024 / 1024,
-      complexity: this.determineComplexity(calculationTime)
+      complexity: this.determineComplexity(calculationTime),
     }
 
     this.performanceHistory.push(metric)
@@ -666,7 +659,9 @@ export class AdvancedProductSizeAggregationService {
 
     // Log performance warnings
     if (calculationTime > this.config.performanceThresholdMs * 2) {
-      console.warn(`Slow aggregation calculation: ${calculationTime}ms (threshold: ${this.config.performanceThresholdMs}ms)`)
+      console.warn(
+        `Slow aggregation calculation: ${calculationTime}ms (threshold: ${this.config.performanceThresholdMs}ms)`,
+      )
     }
   }
 
@@ -674,9 +669,28 @@ export class AdvancedProductSizeAggregationService {
     if (this.performanceHistory.length === 0) return 0
 
     const recentMetrics = this.performanceHistory.slice(-20) // Last 20 operations
-    const cacheHits = recentMetrics.filter(m => m.calculationTimeMs < 5).length // Very fast = likely cache hit
+    const cacheHits = recentMetrics.filter((m) => m.calculationTimeMs < 5).length // Very fast = likely cache hit
 
     return (cacheHits / recentMetrics.length) * 100
+  }
+
+  // ============== RENTAL TRACKING METHODS ==============
+
+  /**
+   * Calculate rented quantity for a product
+   * Uses the rentedStock field from the product
+   */
+  private async calculateRentedQuantity(productId: string): Promise<number> {
+    const product = await this.prisma.product.findUnique({
+      where: { id: productId },
+      select: { rentedStock: true },
+    })
+
+    if (!product) {
+      throw new Error(`Product with ID ${productId} not found`)
+    }
+
+    return Math.max(0, product.rentedStock || 0)
   }
 
   // ============== PUBLIC UTILITY METHODS ==============
@@ -685,10 +699,8 @@ export class AdvancedProductSizeAggregationService {
    * Clear cache for specific product
    */
   public clearProductCache(productId: string): void {
-    const keysToDelete = Array.from(this.cache.keys()).filter(key =>
-      key.includes(productId)
-    )
-    keysToDelete.forEach(key => this.cache.delete(key))
+    const keysToDelete = Array.from(this.cache.keys()).filter((key) => key.includes(productId))
+    keysToDelete.forEach((key) => this.cache.delete(key))
   }
 
   /**
@@ -701,16 +713,18 @@ export class AdvancedProductSizeAggregationService {
     memoryUsage: string
     recentPerformance: PerformanceMetrics[]
   } {
-    const avgTime = this.performanceHistory.length > 0
-      ? this.performanceHistory.reduce((sum, m) => sum + m.calculationTimeMs, 0) / this.performanceHistory.length
-      : 0
+    const avgTime =
+      this.performanceHistory.length > 0
+        ? this.performanceHistory.reduce((sum, m) => sum + m.calculationTimeMs, 0) /
+          this.performanceHistory.length
+        : 0
 
     return {
       avgCalculationTime: Math.round(avgTime * 100) / 100,
       cacheHitRatio: this.calculateCacheHitRatio(),
       totalCacheEntries: this.cache.size,
-      memoryUsage: `${Math.round(process.memoryUsage().heapUsed / 1024 / 1024 * 100) / 100}MB`,
-      recentPerformance: this.performanceHistory.slice(-10)
+      memoryUsage: `${Math.round((process.memoryUsage().heapUsed / 1024 / 1024) * 100) / 100}MB`,
+      recentPerformance: this.performanceHistory.slice(-10),
     }
   }
 

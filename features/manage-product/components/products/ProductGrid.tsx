@@ -53,9 +53,12 @@ export function ProductGrid({ products, onProductClick }: ProductGridProps) {
                 >
                   {product.category.name}
                 </Badge>
-                {product.size && (
+                {product.sizes && product.sizes.length > 0 && (
                   <Badge variant="outline" className="font-mono text-xs">
-                    {product.size}
+                    {product.sizes.length === 1
+                      ? `${product.sizes[0].size} (${product.sizes[0].ageCategory})`
+                      : `${product.sizes.length} ukuran`
+                    }
                   </Badge>
                 )}
                 {product.color && (
