@@ -1,0 +1,132 @@
+2025-09-03T11:09:21.970Z [INFO] [API][PUT-pengembalian] API request started
+{
+  "requestId": "req-1756897761970-rm71ewvjb",
+  "timestamp": "2025-09-03T11:09:21.970Z",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36",
+  "contentLength": "176",
+  "clientIP": "::1",
+  "transactionCode": "TXN-20250903-001",
+  "deduplicationInfo": {
+    "clientFingerprint": "::1-Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36-176",
+    "potentialDuplicate": false
+  },
+  "performance": {
+    "timestamp": 1756897761970,
+    "memory": {
+      "rss": 896798720,
+      "heapTotal": 245366784,
+      "heapUsed": 235990048,
+      "external": 4539639,
+      "arrayBuffers": 556733
+    }
+  }
+}
+2025-09-03T11:09:22.643Z [INFO] [API][PUT-pengembalian] Legacy format detected - converting to unified format
+{
+  "requestId": "req-1756897761970-rm71ewvjb",
+  "itemCount": 1,
+  "performance": {
+    "timestamp": 1756897762643,
+    "memory": {
+      "rss": 898007040,
+      "heapTotal": 245366784,
+      "heapUsed": 236606928,
+      "external": 4562528,
+      "arrayBuffers": 560997
+    }
+  }
+}
+2025-09-03T11:09:22.650Z [INFO] [API][PUT-pengembalian] Unified validation successful
+{
+  "requestId": "req-1756897761970-rm71ewvjb",
+  "format": "legacy",
+  "itemCount": 1,
+  "totalConditions": 1,
+  "performance": {
+    "timestamp": 1756897762650,
+    "memory": {
+      "rss": 899141632,
+      "heapTotal": 245366784,
+      "heapUsed": 236773344,
+      "external": 4562528,
+      "arrayBuffers": 560997
+    }
+  }
+}
+2025-09-03T11:09:27.909Z [DEBUG] [UnifiedReturnService][validateUnifiedReturn] Return validation successful
+{
+  "transactionId": "5665c345-d38d-48fd-be9f-07721b87a09c",
+  "itemsValidated": 1,
+  "transactionStatus": "active",
+  "performance": {
+    "timestamp": 1756897767909,
+    "memory": {
+      "rss": 900849664,
+      "heapTotal": 245628928,
+      "heapUsed": 235858872,
+      "external": 4557864,
+      "arrayBuffers": 556333
+    }
+  }
+}
+2025-09-03T11:09:29.865Z [DEBUG] [UnifiedReturnService][createReturnActivity] Activity created successfully
+{
+  "transactionId": "5665c345-d38d-48fd-be9f-07721b87a09c",
+  "activityType": "dikembalikan",
+  "description": "Item returned: 1 items processed",
+  "performance": {
+    "timestamp": 1756897769865,
+    "memory": {
+      "rss": 900898816,
+      "heapTotal": 245628928,
+      "heapUsed": 236246248,
+      "external": 4557921,
+      "arrayBuffers": 556390
+    }
+  }
+}
+2025-09-03T11:09:29.869Z [INFO] [UnifiedReturnService][processUnifiedReturn] Unified return processing completed successfully
+{
+  "transactionId": "5665c345-d38d-48fd-be9f-07721b87a09c",
+  "totalPenalty": 0,
+  "itemsProcessed": 1,
+  "conditionsProcessed": 1,
+  "processingTime": 4626,
+  "activitiesCreated": 1,
+  "performance": {
+    "timestamp": 1756897769868,
+    "memory": {
+      "rss": 900902912,
+      "heapTotal": 245628928,
+      "heapUsed": 236256248,
+      "external": 4557921,
+      "arrayBuffers": 556390
+    }
+  }
+}
+2025-09-03T11:09:29.873Z [INFO] [API][PUT-pengembalian] Unified return processing completed
+{
+  "requestId": "req-1756897761970-rm71ewvjb",
+  "format": "legacy",
+  "success": true,
+  "totalPenalty": 0,
+  "processedItems": 1,
+  "totalConditions": 1,
+  "performance": {
+    "timestamp": 1756897769873,
+    "memory": {
+      "rss": 900902912,
+      "heapTotal": 245628928,
+      "heapUsed": 236265608,
+      "external": 4557921,
+      "arrayBuffers": 556390
+    }
+  }
+}
+2025-09-03T11:09:29.878Z [INFO] [API][PUT-pengembalian] API request completed successfully
+{
+  "performance": {
+    "label": "total-api-request",
+    "duration": "7908ms"
+  }
+}
