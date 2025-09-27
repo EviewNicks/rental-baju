@@ -15,6 +15,9 @@ import { createProductSchema } from '@/features/manage-product/lib/validation/pr
 import { ConflictError } from '@/features/manage-product/lib/errors/AppError'
 import type { Product } from '@/features/manage-product/types'
 
+// Supported image formats for upload
+const SUPPORTED_IMAGE_FORMATS = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
+
 export async function GET(request: NextRequest) {
   try {
     // Authentication check
@@ -134,6 +137,24 @@ export async function POST(request: NextRequest) {
     const materialQuantityStr = (formData.get('materialQuantity') as string) || undefined
     const image = formData.get('image') as File | null
 
+    // Validate image format if image is provided
+    if (image && image.size > 0) {
+      if (!SUPPORTED_IMAGE_FORMATS.includes(image.type.toLowerCase())) {
+        return NextResponse.json(
+          {
+            error: {
+              message: 'Format gambar tidak didukung',
+              code: 'IMAGE_FORMAT_ERROR',
+              field: 'image',
+              details: `Format ${image.type} tidak didukung. Gunakan JPG, PNG, atau WebP.`,
+              supportedFormats: SUPPORTED_IMAGE_FORMATS
+            },
+          },
+          { status: 400 },
+        )
+      }
+    }
+
     // Size Management fields - REQUIRED for advanced-only architecture
     const sizesStr = formData.get('sizes') as string
     let sizes: Array<{ ageCategory: string; size: string; quantity: number; isActive?: boolean }> = []
@@ -248,10 +269,20 @@ export async function POST(request: NextRequest) {
       try {
         const uploadResult = await fileUploadService.uploadProductImage(image, validatedData.code)
         imageUrl = uploadResult?.url
-      } catch {
-        // Image upload failed
+      } catch (uploadError) {
+        // Image upload failed - provide specific error details
+        const errorMessage = uploadError instanceof Error ? uploadError.message : 'Unknown upload error'
         return NextResponse.json(
-          { error: { message: 'Failed to upload image', code: 'UPLOAD_ERROR' } },
+          {
+            error: {
+              message: 'Gagal mengunggah gambar',
+              code: 'IMAGE_UPLOAD_ERROR',
+              field: 'image',
+              details: errorMessage.includes('HEIC') || errorMessage.includes('heic')
+                ? 'Format HEIC tidak didukung. Gunakan JPG, PNG, atau WebP.'
+                : `Upload gagal: ${errorMessage}`,
+            },
+          },
           { status: 400 },
         )
       }
@@ -274,14 +305,27 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     if (error instanceof ConflictError) {
       return NextResponse.json(
-        { error: { message: error.message, code: 'CONFLICT' } },
+        {
+          error: {
+            message: error.message,
+            code: 'CONFLICT',
+            field: 'code', // Assume product code conflicts are most common
+            details: 'Produk dengan kode ini sudah ada. Gunakan kode yang berbeda.',
+          },
+        },
         { status: 409 },
       )
     }
 
     if (error instanceof Error && error.message.includes('validation')) {
       return NextResponse.json(
-        { error: { message: error.message, code: 'VALIDATION_ERROR' } },
+        {
+          error: {
+            message: 'Data tidak valid',
+            code: 'VALIDATION_ERROR',
+            details: error.message,
+          },
+        },
         { status: 400 },
       )
     }

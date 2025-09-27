@@ -88,5 +88,11 @@
     "blocked_command": "npm search @21st-dev magic mcp",
     "suggested_command": "yarn search @21st-dev magic mcp",
     "reason": "Gunakan 'yarn' sebagai default, kecuali ada alasan khusus."
+  },
+  {
+    "session_id": "40aad7c9-be9e-4add-aeb1-f3f97c627250",
+    "blocked_command": "cd \"D:/.work/rental-software\" && npm run type-check",
+    "suggested_command": "cd \"D:/.work/rental-software\" && yarn type-check",
+    "reason": "Gunakan 'yarn' sebagai pengganti 'npm run' untuk workflow utama."
   }
 ]

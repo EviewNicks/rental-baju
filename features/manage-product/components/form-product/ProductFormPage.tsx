@@ -20,6 +20,9 @@ import type {
   SimplifiedSizeEntry,
 } from '@/features/manage-product/types'
 
+// Image format validation constants
+const SUPPORTED_IMAGE_FORMATS = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
+
 // Local form data interface with numbers for form handling
 interface ProductFormData {
   code: string
@@ -45,13 +48,28 @@ interface ProductFormData {
 const transformSimplifiedSizesToBackendFormat = (
   simplifiedSizes: SimplifiedSizeEntry[],
 ): string => {
+  console.log('[DEBUG] transformSimplifiedSizesToBackendFormat input:', {
+    inputSizes: simplifiedSizes,
+    inputCount: simplifiedSizes.length,
+  })
+
   const sizes = simplifiedSizes.map((sizeEntry) => ({
     ageCategory: sizeEntry.ageCategory, // Already using standardized enum values
     size: sizeEntry.size,
     quantity: sizeEntry.quantity,
     isActive: true,
+    // Note: 'id' field is intentionally excluded - only used for frontend state management
   }))
-  return JSON.stringify(sizes)
+
+  const jsonString = JSON.stringify(sizes)
+
+  console.log('[DEBUG] transformSimplifiedSizesToBackendFormat output:', {
+    transformedSizes: sizes,
+    jsonString: jsonString,
+    jsonLength: jsonString.length,
+  })
+
+  return jsonString
 }
 
 // Legacy function to transform aggregated sizes to backend format (BACKWARD COMPATIBILITY)
@@ -157,8 +175,8 @@ const validateSimplifiedSizes = (simplifiedSizes?: SimplifiedSizeEntry[]): strin
       return `Ukuran tidak valid: ${sizeEntry.size}. Harus salah satu dari: XS, S, M, L, XL, XXL`
     }
 
-    if (!sizeEntry.ageCategory || !['DEWASA', 'ANAK'].includes(sizeEntry.ageCategory)) {
-      return `Kategori usia tidak valid: ${sizeEntry.ageCategory}. Harus DEWASA atau ANAK`
+    if (!sizeEntry.ageCategory || !['ADULT', 'CHILD'].includes(sizeEntry.ageCategory)) {
+      return `Kategori usia tidak valid: ${sizeEntry.ageCategory}. Harus ADULT atau CHILD`
     }
 
     if (sizeEntry.quantity <= 0) {
@@ -177,6 +195,14 @@ const validateSimplifiedSizes = (simplifiedSizes?: SimplifiedSizeEntry[]): strin
     return 'Terdapat kombinasi ukuran dan kategori usia yang duplikat'
   }
 
+  return null
+}
+
+// Image format validation function
+const validateImageFormat = (file: File): string | null => {
+  if (!SUPPORTED_IMAGE_FORMATS.includes(file.type.toLowerCase())) {
+    return `Format ${file.type} tidak didukong. Gunakan JPG, PNG, atau WebP.`
+  }
   return null
 }
 
@@ -226,6 +252,7 @@ export function ProductFormPage({
   // Simple error state management
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [touched, setTouched] = useState<Record<string, boolean>>({})
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Simple validation function
   const validateForm = (): boolean => {
@@ -307,6 +334,15 @@ export function ProductFormPage({
   }
 
   const handleInputChange = (name: string, value: string | number | File | null) => {
+    // Validate image format if uploading an image
+    if (name === 'image' && value instanceof File) {
+      const imageError = validateImageFormat(value)
+      if (imageError) {
+        setErrors((prev) => ({ ...prev, image: imageError }))
+        return // Don't update form data if image format is invalid
+      }
+    }
+
     setFormData((prev) => ({ ...prev, [name]: value }))
     // Clear error when user starts typing
     if (errors[name]) {
@@ -332,6 +368,19 @@ export function ProductFormPage({
 
   // Handler for new simplified sizes system
   const handleSimplifiedSizesChange = (sizes: SimplifiedSizeEntry[]) => {
+    console.log('[DEBUG] handleSimplifiedSizesChange called with:', {
+      sizesCount: sizes.length,
+      sizes: sizes,
+      totalQuantity: sizes.reduce((sum, size) => sum + size.quantity, 0),
+      hasIds: sizes.some((s) => s.id),
+      sizeStructure: sizes.map((s) => ({
+        size: s.size,
+        ageCategory: s.ageCategory,
+        quantity: s.quantity,
+        id: s.id,
+      })),
+    })
+
     setFormData((prev) => ({
       ...prev,
       simplifiedSizes: sizes,
@@ -363,6 +412,11 @@ export function ProductFormPage({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
+    // Prevent multiple submissions
+    if (isSubmitting) return
+
+    setIsSubmitting(true)
+
     if (!validateForm()) {
       setTouched({
         code: true,
@@ -377,16 +431,17 @@ export function ProductFormPage({
         quantity: true,
         description: true,
       })
+      setIsSubmitting(false)
       return
     }
 
-    try {
-      // Transform sizes to backend format using new simplified system
-      const sizesData =
-        formData.simplifiedSizes && formData.simplifiedSizes.length > 0
-          ? transformSimplifiedSizesToBackendFormat(formData.simplifiedSizes)
-          : transformSizesToBackendFormat(formData.aggregatedSizes || []) // Fallback for backward compatibility
+    // Transform sizes to backend format using new simplified system - moved outside try block to fix ReferenceError
+    const sizesData =
+      formData.simplifiedSizes && formData.simplifiedSizes.length > 0
+        ? transformSimplifiedSizesToBackendFormat(formData.simplifiedSizes)
+        : transformSizesToBackendFormat(formData.aggregatedSizes || []) // Fallback for backward compatibility
 
+    try {
       if (mode === 'add') {
         // Create new product
         const createData: CreateProductRequest = {
@@ -405,11 +460,31 @@ export function ProductFormPage({
           imageUrl: formData.imageUrl || undefined,
         }
 
-        await createProductMutation.mutateAsync(
-          createData as unknown as
-            | FormData
-            | Record<string, string | number | boolean | File | null>,
-        )
+        console.log('[DEBUG] About to create product with data:', {
+          createData: createData,
+          sizesDataType: typeof sizesData,
+          sizesDataValue: sizesData,
+          originalSimplifiedSizes: formData.simplifiedSizes,
+          hasImage: !!formData.image,
+          imageName: formData.image?.name,
+        })
+
+        // Convert to FormData for proper API handling
+        const formDataToSend = new FormData()
+        Object.entries(createData).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            if (value instanceof File) {
+              formDataToSend.append(key, value)
+            } else if (typeof value === 'object') {
+              // Handle complex objects like sizes array
+              formDataToSend.append(key, JSON.stringify(value))
+            } else {
+              formDataToSend.append(key, String(value))
+            }
+          }
+        })
+
+        await createProductMutation.mutateAsync(formDataToSend)
       } else {
         // Update existing product
         if (!product?.id) {
@@ -431,19 +506,41 @@ export function ProductFormPage({
           imageUrl: formData.imageUrl || undefined,
         }
 
+        // Convert to FormData for proper API handling
+        const formDataToSend = new FormData()
+        Object.entries(updateData).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            if (value instanceof File) {
+              formDataToSend.append(key, value)
+            } else if (typeof value === 'object') {
+              // Handle complex objects like sizes array
+              formDataToSend.append(key, JSON.stringify(value))
+            } else {
+              formDataToSend.append(key, String(value))
+            }
+          }
+        })
+
         await updateProductMutation.mutateAsync({
           id: product.id,
-          data: updateData as unknown as
-            | FormData
-            | Record<string, string | number | boolean | File | null>,
+          data: formDataToSend,
         })
       }
 
       // Success - redirect to product list
       router.push('/producer/manage-product')
     } catch (error) {
-      console.error(`Error ${mode === 'add' ? 'creating' : 'updating'} product:`, error)
+      console.error(`[DEBUG] Error ${mode === 'add' ? 'creating' : 'updating'} product:`, {
+        error: error,
+        errorMessage: error instanceof Error ? error.message : String(error),
+        formData: formData,
+        sizesData: sizesData,
+        transformedSizes: formData.simplifiedSizes,
+        mutationError: mode === 'add' ? createProductMutation.error : updateProductMutation.error,
+      })
       // Error handling is already done in the mutations
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -503,13 +600,127 @@ export function ProductFormPage({
         {/* Show errors */}
         {(categoriesError || createProductMutation.error || updateProductMutation.error) && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md">
-            <p className="text-red-600 text-sm">
-              {categoriesError && 'Gagal memuat data kategori. Silakan refresh halaman.'}
-              {createProductMutation.error &&
-                `Error creating product: ${createProductMutation.error.message}`}
-              {updateProductMutation.error &&
-                `Error updating product: ${updateProductMutation.error.message}`}
-            </p>
+            <div className="flex items-start">
+              <div className="flex-shrink-0">
+                <div className="w-5 h-5 text-red-400">⚠️</div>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-red-800">
+                  {categoriesError && 'Kesalahan Memuat Data'}
+                  {createProductMutation.error && 'Gagal Membuat Produk'}
+                  {updateProductMutation.error && 'Gagal Mengupdate Produk'}
+                </h3>
+                <div className="mt-2 text-sm text-red-700">
+                  {categoriesError && (
+                    <p>
+                      Gagal memuat data kategori. Silakan refresh halaman atau hubungi
+                      administrator.
+                    </p>
+                  )}
+                  {createProductMutation.error && (
+                    <p>
+                      {(() => {
+                        // Check if error has structured response (new enhanced format)
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        const errorData = (createProductMutation.error as any)?.response?.data
+                          ?.error
+
+                        if (errorData?.code) {
+                          switch (errorData.code) {
+                            case 'IMAGE_FORMAT_ERROR':
+                              return (
+                                errorData.details ||
+                                'Format gambar tidak didukung. Gunakan JPG, PNG, atau WebP.'
+                              )
+                            case 'IMAGE_UPLOAD_ERROR':
+                              return (
+                                errorData.details || 'Gagal mengunggah gambar. Silakan coba lagi.'
+                              )
+                            case 'CONFLICT':
+                              return (
+                                errorData.details ||
+                                'Kode produk sudah digunakan. Silakan gunakan kode yang berbeda.'
+                              )
+                            case 'VALIDATION_ERROR':
+                              return (
+                                errorData.details || 'Data tidak valid. Silakan periksa kembali.'
+                              )
+                            default:
+                              return errorData.message || createProductMutation.error.message
+                          }
+                        }
+
+                        // Fallback to old string-based error handling
+                        return createProductMutation.error.message.includes('Category') ||
+                          createProductMutation.error.message.includes('Kategori')
+                          ? 'Kategori produk tidak valid. Silakan pilih kategori yang tersedia.'
+                          : createProductMutation.error.message.includes('Kode produk')
+                            ? 'Kode produk sudah digunakan. Silakan gunakan kode yang berbeda.'
+                            : createProductMutation.error.message.includes('Warna')
+                              ? 'Warna produk tidak valid. Silakan pilih warna yang tersedia.'
+                              : createProductMutation.error.message.includes('Material')
+                                ? 'Material produk tidak valid. Silakan pilih material yang tersedia.'
+                                : `${createProductMutation.error.message}. Silakan periksa kembali data yang dimasukkan.`
+                      })()}
+                    </p>
+                  )}
+                  {updateProductMutation.error && (
+                    <p>
+                      {(() => {
+                        // Check if error has structured response (new enhanced format)
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        const errorData = (updateProductMutation.error as any)?.response?.data
+                          ?.error
+
+                        if (errorData?.code) {
+                          switch (errorData.code) {
+                            case 'IMAGE_FORMAT_ERROR':
+                              return (
+                                errorData.details ||
+                                'Format gambar tidak didukung. Gunakan JPG, PNG, atau WebP.'
+                              )
+                            case 'IMAGE_UPLOAD_ERROR':
+                              return (
+                                errorData.details || 'Gagal mengunggah gambar. Silakan coba lagi.'
+                              )
+                            case 'CONFLICT':
+                              return (
+                                errorData.details ||
+                                'Kode produk sudah digunakan. Silakan gunakan kode yang berbeda.'
+                              )
+                            case 'VALIDATION_ERROR':
+                              return (
+                                errorData.details || 'Data tidak valid. Silakan periksa kembali.'
+                              )
+                            default:
+                              return errorData.message || updateProductMutation.error.message
+                          }
+                        }
+
+                        // Fallback to old string-based error handling
+                        return updateProductMutation.error.message.includes('tidak ditemukan')
+                          ? 'Produk tidak ditemukan. Silakan refresh halaman.'
+                          : `${updateProductMutation.error.message}. Silakan periksa kembali data yang dimasukkan.`
+                      })()}
+                    </p>
+                  )}
+                </div>
+                {(createProductMutation.error || updateProductMutation.error) && (
+                  <div className="mt-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        createProductMutation.reset()
+                        updateProductMutation.reset()
+                      }}
+                      className="text-sm text-red-600 hover:text-red-500 underline"
+                    >
+                      Tutup pesan ini
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         )}
 
@@ -551,6 +762,7 @@ export function ProductFormPage({
             <Button
               type="submit"
               disabled={
+                isSubmitting ||
                 createProductMutation.isPending ||
                 updateProductMutation.isPending ||
                 isLoadingCategories
@@ -558,7 +770,9 @@ export function ProductFormPage({
               className="bg-yellow-400 hover:bg-yellow-500 text-black"
               data-testid="submit-button"
             >
-              {createProductMutation.isPending || updateProductMutation.isPending ? (
+              {isSubmitting ||
+              createProductMutation.isPending ||
+              updateProductMutation.isPending ? (
                 <>
                   <div className="w-4 h-4 mr-2 animate-spin rounded-full border-2 border-black border-t-transparent" />
                   {mode === 'add' ? 'Menyimpan...' : 'Mengupdate...'}
