@@ -3,6 +3,9 @@
  * Replaces over-engineered adapter layer with standard fetch calls
  */
 
+// Import types for size management
+import type { AggregatedSizeView, AggregationQueryParams } from './types'
+
 // Base API configuration
 const API_BASE_URL = '/api'
 
@@ -308,6 +311,88 @@ export const fileApi = {
     const response = await fetch(`${API_BASE_URL}/upload/${filename}`, {
       method: 'DELETE'
     })
+    return handleResponse(response)
+  }
+}
+
+// === SIZE MANAGEMENT API ===
+export const sizeApi = {
+  // Get aggregated sizes with breakdown and metadata options
+  getAggregatedSizes: async (
+    productId: string,
+    params?: AggregationQueryParams
+  ) => {
+    const queryString = params ? buildQueryParams(params as Record<string, string | number | boolean | string[] | undefined | null>) : ''
+    const url = `${API_BASE_URL}/products/${productId}/sizes/aggregated${queryString ? `?${queryString}` : ''}`
+    const response = await fetch(url)
+    return handleResponse(response)
+  },
+
+  // Update product sizes for editing functionality (Phase 2b)
+  updateProductSizes: async (
+    productId: string,
+    sizes: AggregatedSizeView[]
+  ) => {
+    const response = await fetch(`${API_BASE_URL}/products/${productId}/sizes`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sizes })
+    })
+    return handleResponse(response)
+  },
+
+  // Validate size configuration for form validation
+  validateSizeConfiguration: async (
+    productId: string,
+    sizeData: {
+      hasSizes: boolean
+      legacySize?: string
+      aggregatedSizes?: AggregatedSizeView[]
+    }
+  ) => {
+    const response = await fetch(`${API_BASE_URL}/products/${productId}/sizes/validate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(sizeData)
+    })
+    return handleResponse(response)
+  },
+
+  // Bulk update multiple products' sizes for efficiency
+  bulkUpdateSizes: async (updates: Array<{
+    productId: string
+    sizes: AggregatedSizeView[]
+  }>) => {
+    const response = await fetch(`${API_BASE_URL}/products/sizes/bulk-update`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ updates })
+    })
+    return handleResponse(response)
+  },
+
+  // Get detailed size breakdown for business intelligence
+  getSizeBreakdown: async (
+    productId: string,
+    params?: {
+      groupBy?: 'ageCategory' | 'size' | 'both'
+      includeHistory?: boolean
+      dateRange?: { start: string; end: string }
+    }
+  ) => {
+    let queryString = ''
+    if (params) {
+      const query = new URLSearchParams()
+      if (params.groupBy) query.append('groupBy', params.groupBy)
+      if (params.includeHistory) query.append('includeHistory', 'true')
+      if (params.dateRange) {
+        query.append('startDate', params.dateRange.start)
+        query.append('endDate', params.dateRange.end)
+      }
+      queryString = query.toString()
+    }
+    const url = `${API_BASE_URL}/products/${productId}/sizes/breakdown${queryString ? `?${queryString}` : ''}`
+    const response = await fetch(url)
     return handleResponse(response)
   }
 }

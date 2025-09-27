@@ -12,7 +12,7 @@ import {
   colorParamsSchema,
 } from '../lib/validation/productSchema'
 import { NotFoundError, ConflictError } from '../lib/errors/AppError'
-import type { Color, CreateColorRequest, UpdateColorRequest, ProductStatus } from '../types'
+import type { Color, CreateColorRequest, UpdateColorRequest, ProductStatus, ProductSize } from '../types'
 
 export class ColorService {
   constructor(
@@ -245,6 +245,9 @@ export class ColorService {
               imageUrl: product.imageUrl as string | undefined,
               totalPendapatan: new Decimal(0), // TODO: Calculate from transaction history (field removed from schema)
               isActive: product.isActive as boolean,
+              sizes: (product.sizes as ProductSize[]) || [], // Add sizes property for backward compatibility
+              materialId: product.materialId as string | undefined, // Material ID field
+              materialQuantity: product.materialQuantity as number | undefined, // Material quantity field
               createdAt: product.createdAt as Date,
               updatedAt: product.updatedAt as Date,
               createdBy: product.createdBy as string,

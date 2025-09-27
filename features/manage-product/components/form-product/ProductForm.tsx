@@ -1,22 +1,21 @@
 'use client'
-import {
-  Hash,
-  Package,
-  Tag,
-  Box,
-  DollarSign,
-  CreditCard,
-  FileText,
-  Ruler,
-  Palette,
-} from 'lucide-react'
+import { Hash, Package, Tag, Box, DollarSign, CreditCard, FileText, Palette } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { FormField } from '@/features/manage-product/components/form-product/FormField'
 import { FormSection } from '@/features/manage-product/components/form-product/FormSection'
 import { ImageUpload } from '@/features/manage-product/components/products/ImageUpload'
 import { MaterialSelector } from '@/features/manage-product/components/material/MaterialSelector'
+import { InlineSizeManagement } from '@/features/manage-product/components/form-product/InlineSizeManagement'
 import { useColors } from '@/features/manage-product/hooks/useCategories'
-import type { ClientCategory, ClientColor } from '@/features/manage-product/types'
+import { useAggregatedSizes } from '@/features/manage-product/hooks/useAggregatedSizes'
+import { getProductSizeMode } from '@/features/manage-product/lib/utils/sizeManagementUtils'
+import type {
+  ClientCategory,
+  ClientColor,
+  ClientProduct,
+  AggregatedSizeView,
+  SimplifiedSizeEntry,
+} from '@/features/manage-product/types'
 import { logger } from '@/services/logger'
 import { useEffect } from 'react'
 
@@ -27,7 +26,6 @@ interface ProductFormData {
   code: string
   name: string
   categoryId: string
-  size?: string
   colorId?: string
   materialId?: string
   materialQuantity?: number
@@ -37,6 +35,11 @@ interface ProductFormData {
   description: string
   imageUrl: string | null
   image?: File | null
+
+  // Simplified Size Management (required for all products)
+  hasSizes: boolean
+  simplifiedSizes?: SimplifiedSizeEntry[]
+  aggregatedSizes?: AggregatedSizeView[] // Keep for backward compatibility during transition
 }
 
 interface ProductFormProps {
@@ -49,6 +52,14 @@ interface ProductFormProps {
   onBlur: (name: string, value: any) => void
   formatCurrency: (value: string) => string
   categories: ClientCategory[]
+
+  // Optional product data for size mode detection (edit mode)
+  product?: ClientProduct
+
+  // Size management handlers
+  onHasSizesChange?: (hasSizes: boolean) => void
+  onAggregatedSizesChange?: (sizes: AggregatedSizeView[]) => void
+  onSimplifiedSizesChange?: (sizes: SimplifiedSizeEntry[]) => void
 }
 
 export function ProductForm({
@@ -59,7 +70,23 @@ export function ProductForm({
   onBlur,
   formatCurrency,
   categories,
+  product,
+  onSimplifiedSizesChange,
 }: ProductFormProps) {
+  // Size mode detection and state management
+  const sizeMode = product ? getProductSizeMode(product) : 'none'
+  const productId = product?.id
+
+  // Fetch aggregated sizes for existing products with advanced sizing
+  const {
+    data: aggregatedSizes,
+    isLoading: isLoadingAggregatedSizes,
+    error: aggregatedSizesError,
+  } = useAggregatedSizes(productId, {
+    enabled: !!productId && sizeMode === 'advanced',
+    includeBreakdown: true,
+  })
+
   // Log component mount and form data initialization
   useEffect(() => {
     formLogger.debug('componentMount', 'ProductForm component mounted', {
@@ -68,8 +95,44 @@ export function ProductForm({
       hasMaterial: !!formData.materialId,
       materialQuantity: formData.materialQuantity,
       formDataKeys: Object.keys(formData),
+      sizeMode,
+      productId,
+      hasAggregatedSizes: aggregatedSizes.length > 0,
     })
-  }, [formData, categories.length])
+  }, [formData, categories.length, sizeMode, productId, aggregatedSizes.length])
+
+  // Log size mode detection and data loading
+  useEffect(() => {
+    if (product) {
+      formLogger.info('sizeMode', 'Size mode detected for product', {
+        productId: product.id,
+        sizeMode,
+        hasLegacySize: false, // Legacy size field no longer exists
+        hasAdvancedSizes: product.sizes?.length > 0,
+        aggregatedSizesCount: aggregatedSizes.length,
+      })
+    }
+  }, [product, sizeMode, aggregatedSizes.length])
+
+  // Log aggregated sizes loading state
+  useEffect(() => {
+    if (sizeMode === 'advanced') {
+      if (isLoadingAggregatedSizes) {
+        formLogger.debug('aggregatedSizesLoading', 'Loading aggregated sizes for product form')
+      } else if (aggregatedSizesError) {
+        formLogger.error(
+          'aggregatedSizesLoadError',
+          'Failed to load aggregated sizes',
+          aggregatedSizesError,
+        )
+      } else if (aggregatedSizes.length > 0) {
+        formLogger.info('aggregatedSizesLoaded', 'Aggregated sizes loaded successfully', {
+          sizesCount: aggregatedSizes.length,
+          totalQuantity: aggregatedSizes.reduce((sum, size) => sum + size.totalQuantity, 0),
+        })
+      }
+    }
+  }, [sizeMode, isLoadingAggregatedSizes, aggregatedSizesError, aggregatedSizes])
 
   // Fetch colors data
   const {
@@ -120,7 +183,9 @@ export function ProductForm({
         },
       })
     }
-  }, [errors])
+  }, [errors, formData.aggregatedSizes])
+
+  // Legacy size change function no longer needed - sizes are handled through advanced sizing system
 
   // Handle material integration changes with logging
   const handleMaterialChange = (materialId: string | undefined) => {
@@ -176,16 +241,6 @@ export function ProductForm({
     label: category.name,
     color: category.color,
   }))
-
-  // Size options with preset values
-  const sizeOptions = [
-    { value: 'XS', label: 'XS (Extra Small)' },
-    { value: 'S', label: 'S (Small)' },
-    { value: 'M', label: 'M (Medium)' },
-    { value: 'L', label: 'L (Large)' },
-    { value: 'XL', label: 'XL (Extra Large)' },
-    { value: 'XXL', label: 'XXL (Double Extra Large)' },
-  ]
 
   // Transform colors for select options
   const colorOptions = colors.map((color: ClientColor) => ({
@@ -253,38 +308,30 @@ export function ProductForm({
                 data-testid="product-category-field"
               />
 
-              <FormField
-                type="number"
-                name="quantity"
-                label="Jumlah Stok"
-                icon={Box}
-                value={formData.quantity}
-                onChange={(value) => onInputChange('quantity', value)}
-                onBlur={(value) => onBlur('quantity', value)}
-                placeholder="1"
-                min={0}
-                max={9999}
-                error={errors.quantity}
-                touched={touched.quantity}
-                required
-                helpText="Masukkan jumlah stok yang tersedia"
-                data-testid="product-quantity-field"
-              />
-
-              <FormField
-                type="select"
-                name="size"
-                label="Ukuran"
-                icon={Ruler}
-                value={formData.size || ''}
-                onChange={(value) => onInputChange('size', value)}
-                options={sizeOptions}
-                placeholder="Pilih ukuran (opsional)"
-                error={errors.size}
-                touched={touched.size}
-                helpText="Pilih ukuran produk jika berlaku"
-                data-testid="product-size-field"
-              />
+              <div className="space-y-2">
+                <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                  <Box className="w-4 h-4" />
+                  Jumlah Stok (Auto-calculated)
+                  <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="number"
+                  value={formData.quantity}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-500 cursor-not-allowed"
+                  disabled
+                  readOnly
+                  data-testid="product-quantity-field"
+                />
+                <p className="text-xs text-gray-500">
+                  Jumlah stok dihitung otomatis dari total ukuran produk
+                </p>
+                {errors.quantity && touched.quantity && (
+                  <p className="text-sm text-red-500 flex items-center gap-1">
+                    <span>×</span>
+                    {errors.quantity}
+                  </p>
+                )}
+              </div>
 
               <FormField
                 type="select"
@@ -319,6 +366,21 @@ export function ProductForm({
               materialQuantity={formData.materialQuantity}
               onMaterialChange={handleMaterialChange}
               onQuantityChange={handleMaterialQuantityChange}
+            />
+          </FormSection>
+
+          {/* Simplified Inline Size Management */}
+          <FormSection title="Ukuran & Stok" data-testid="size-management-section">
+            <InlineSizeManagement
+              sizes={formData.simplifiedSizes || []}
+              onSizesChange={(sizes) => {
+                if (onSimplifiedSizesChange) {
+                  onSimplifiedSizesChange(sizes)
+                } else {
+                  onInputChange('simplifiedSizes', sizes)
+                }
+              }}
+              errors={errors.sizes || undefined}
             />
           </FormSection>
 

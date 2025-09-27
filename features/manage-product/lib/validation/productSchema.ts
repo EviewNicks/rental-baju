@@ -68,17 +68,15 @@ export const productSchema = productBaseSchema.extend({
  * Schema untuk create product dengan file upload
  * Perbaikan: Gunakan union type untuk handle optional file dengan lebih baik
  */
-export const createProductSchema = productBaseSchema.extend({
-  image: z.union([z.instanceof(File), z.undefined(), z.null()]).optional(),
-})
+// DEPRECATED: Legacy createProductSchema removed
+// Use createProductWithSizesSchema for advanced-only architecture
 
 /**
  * Schema untuk update product dengan file upload
  * Digunakan untuk multipart form data saat update
  */
-export const updateProductSchema = productBaseSchema.partial().extend({
-  image: imageFileSchema.optional(),
-})
+// DEPRECATED: Legacy updateProductSchema removed
+// Use updateProductWithSizesSchema for advanced-only architecture
 
 // ============== CATEGORY SCHEMAS ==============
 
@@ -107,6 +105,85 @@ export const colorSchema = z.object({
 })
 
 export const updateColorSchema = colorSchema.partial()
+
+// ============== SIZE MANAGEMENT SCHEMAS ==============
+
+/**
+ * Schema untuk enum AgeCategory
+ */
+export const ageCategorySchema = z.enum(['ADULT', 'CHILD', 'UNIVERSAL'], {
+  message: 'Kategori umur harus ADULT, CHILD, atau UNIVERSAL',
+})
+
+/**
+ * Schema untuk enum SizeEnum
+ */
+export const sizeEnumSchema = z.enum(['XS', 'S', 'M', 'L', 'XL', 'XXL'], {
+  message: 'Ukuran harus XS, S, M, L, XL, atau XXL',
+})
+
+/**
+ * Schema untuk single ProductSize
+ */
+export const productSizeSchema = z.object({
+  ageCategory: ageCategorySchema,
+  size: sizeEnumSchema,
+  quantity: z
+    .number()
+    .int('Kuantitas harus berupa bilangan bulat')
+    .min(1, 'Kuantitas minimal 1')
+    .max(9999, 'Kuantitas maksimal 9999'),
+  isActive: z.boolean().default(true),
+})
+
+/**
+ * Schema untuk update ProductSize (dengan id optional)
+ */
+export const updateProductSizeSchema = productSizeSchema.extend({
+  id: z.string().uuid('ID ukuran produk tidak valid').optional(),
+})
+
+/**
+ * Schema untuk array of sizes dengan business rules validation
+ */
+export const productSizesArraySchema = z
+  .array(productSizeSchema)
+  .refine(
+    (sizes) => {
+      // Business Rule: No duplicate size within same age category
+      const combinations = sizes.map((s) => `${s.ageCategory}-${s.size}`)
+      const uniqueCombinations = new Set(combinations)
+      return combinations.length === uniqueCombinations.size
+    },
+    {
+      message: 'Tidak boleh ada ukuran duplikat dalam kategori umur yang sama',
+    },
+  )
+  .refine(
+    (sizes) => {
+      // Business Rule: All quantities must be positive
+      return sizes.every((s) => s.quantity > 0)
+    },
+    {
+      message: 'Semua kuantitas ukuran harus lebih dari 0',
+    },
+  )
+
+/**
+ * Enhanced product creation schema dengan size management
+ */
+export const createProductWithSizesSchema = productBaseSchema.extend({
+  image: z.union([z.instanceof(File), z.undefined(), z.null()]).optional(),
+  sizes: productSizesArraySchema.min(1, 'Minimal 1 ukuran harus ditambahkan'),
+})
+
+/**
+ * Enhanced product update schema dengan size management
+ */
+export const updateProductWithSizesSchema = productBaseSchema.partial().extend({
+  image: imageFileSchema.optional(),
+  sizes: z.array(updateProductSizeSchema).optional(),
+})
 
 // ============== QUERY & PARAMS SCHEMAS ==============
 
@@ -168,3 +245,19 @@ export const colorQuerySchema = z.object({
 export const colorParamsSchema = z.object({
   id: z.string().uuid('ID warna tidak valid'),
 })
+
+// ============== ADVANCED-ONLY ALIASES ==============
+
+/**
+ * Simplified aliases for advanced-only architecture
+ * These provide cleaner imports for the unified advanced schema
+ */
+export const createProductSchema = createProductWithSizesSchema
+export const updateProductSchema = updateProductWithSizesSchema
+
+/**
+ * Validation helper for advanced size arrays
+ */
+export const validateAdvancedSizeArraySchema = (sizes: unknown[]) => {
+  return productSizesArraySchema.safeParse(sizes)
+}

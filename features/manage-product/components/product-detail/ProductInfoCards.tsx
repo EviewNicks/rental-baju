@@ -53,14 +53,24 @@ export function BasicInfoCard({ product }: BasicInfoCardProps) {
           </Badge>
         </InfoField>
 
-        {product.size && (
+        {product.sizes && product.sizes.length > 0 && (
           <InfoField label="Ukuran">
-            <Badge
-              variant="secondary"
-              className="bg-blue-50 text-blue-700 border-blue-200 text-sm font-medium"
-            >
-              {product.size}
-            </Badge>
+            <div className="flex flex-wrap gap-1">
+              {product.sizes.slice(0, 3).map((size, index) => (
+                <Badge
+                  key={index}
+                  variant="secondary"
+                  className="bg-blue-50 text-blue-700 border-blue-200 text-sm font-medium"
+                >
+                  {size.size} ({size.ageCategory})
+                </Badge>
+              ))}
+              {product.sizes.length > 3 && (
+                <Badge variant="secondary" className="text-xs">
+                  +{product.sizes.length - 3} lainnya
+                </Badge>
+              )}
+            </div>
           </InfoField>
         )}
 
@@ -146,15 +156,25 @@ export function EnhancedBasicInfoCard({ product }: EnhancedBasicInfoCardProps) {
             </Badge>
           </div>
 
-          {product.size && (
+          {product.sizes && product.sizes.length > 0 && (
             <div className="text-center p-2 bg-yellow-50 rounded-lg border border-yellow-200">
               <p className="text-sm text-yellow-600 font-medium">Ukuran </p>
-              <Badge
-                variant="outline"
-                className="bg-blue-50 text-blue-700 border-blue-200 text-base font-medium py-2 px-4"
-              >
-                {product.size}
-              </Badge>
+              <div className="flex flex-wrap gap-1 justify-center mt-1">
+                {product.sizes.slice(0, 2).map((size, index) => (
+                  <Badge
+                    key={index}
+                    variant="outline"
+                    className="bg-blue-50 text-blue-700 border-blue-200 text-sm font-medium py-1 px-2"
+                  >
+                    {size.size} ({size.ageCategory})
+                  </Badge>
+                ))}
+                {product.sizes.length > 2 && (
+                  <Badge variant="outline" className="text-xs">
+                    +{product.sizes.length - 2}
+                  </Badge>
+                )}
+              </div>
             </div>
           )}
         </div>

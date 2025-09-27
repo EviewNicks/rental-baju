@@ -8,10 +8,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { ProductService } from '@/features/manage-product/services/productService'
+import { ProductSizeAggregationService } from '@/features/manage-product/services/productSizeAggregationService'
 import { FileUploadService } from '@/features/manage-product/services/fileUploadService'
 import { prisma } from '@/lib/prisma'
 import { createProductSchema } from '@/features/manage-product/lib/validation/productSchema'
 import { ConflictError } from '@/features/manage-product/lib/errors/AppError'
+import type { Product } from '@/features/manage-product/types'
+
+// Supported image formats for upload
+const SUPPORTED_IMAGE_FORMATS = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
 
 export async function GET(request: NextRequest) {
   try {
@@ -37,11 +42,41 @@ export async function GET(request: NextRequest) {
       colorId: searchParams.getAll('colorId').length > 0 ? searchParams.getAll('colorId') : undefined,
     }
 
-    // Initialize service
+    // Aggregation options
+    const includeAggregation = searchParams.get('includeAggregation') === 'true'
+    const includeBreakdown = searchParams.get('includeBreakdown') !== 'false' // default true
+
+    // Initialize services
     const productService = new ProductService(prisma, userId)
 
     // Get products
     const result = await productService.getProducts(query)
+
+    // Add aggregation data if requested
+    if (includeAggregation && result.products.length > 0) {
+      const aggregationService = new ProductSizeAggregationService(prisma, {
+        includeBreakdown,
+      })
+
+      // Add aggregation data to each product
+      const productsWithAggregation = await Promise.all(
+        result.products.map(async (product: Product) => {
+          try {
+            const aggregation = await aggregationService.getProductAggregation(product.id)
+            return {
+              ...product,
+              aggregation,
+            }
+          } catch (error) {
+            // If aggregation fails, include product without aggregation data
+            console.warn(`Failed to get aggregation for product ${product.id}:`, error)
+            return product
+          }
+        })
+      )
+
+      result.products = productsWithAggregation
+    }
 
     return NextResponse.json(result, { status: 200 })
   } catch (error) {
@@ -101,6 +136,51 @@ export async function POST(request: NextRequest) {
     const materialId = (formData.get('materialId') as string) || undefined
     const materialQuantityStr = (formData.get('materialQuantity') as string) || undefined
     const image = formData.get('image') as File | null
+
+    // Validate image format if image is provided
+    if (image && image.size > 0) {
+      if (!SUPPORTED_IMAGE_FORMATS.includes(image.type.toLowerCase())) {
+        return NextResponse.json(
+          {
+            error: {
+              message: 'Format gambar tidak didukung',
+              code: 'IMAGE_FORMAT_ERROR',
+              field: 'image',
+              details: `Format ${image.type} tidak didukung. Gunakan JPG, PNG, atau WebP.`,
+              supportedFormats: SUPPORTED_IMAGE_FORMATS
+            },
+          },
+          { status: 400 },
+        )
+      }
+    }
+
+    // Size Management fields - REQUIRED for advanced-only architecture
+    const sizesStr = formData.get('sizes') as string
+    let sizes: Array<{ ageCategory: string; size: string; quantity: number; isActive?: boolean }> = []
+
+    // Parse sizes - REQUIRED since all products must have sizes
+    if (!sizesStr) {
+      return NextResponse.json(
+        { error: { message: 'Field sizes wajib diisi - semua produk harus memiliki ukuran', code: 'VALIDATION_ERROR' } },
+        { status: 400 },
+      )
+    }
+
+    try {
+      sizes = JSON.parse(sizesStr)
+      if (!sizes || sizes.length === 0) {
+        return NextResponse.json(
+          { error: { message: 'Minimal 1 ukuran harus ditambahkan', code: 'VALIDATION_ERROR' } },
+          { status: 400 },
+        )
+      }
+    } catch {
+      return NextResponse.json(
+        { error: { message: 'Format data ukuran tidak valid', code: 'VALIDATION_ERROR' } },
+        { status: 400 },
+      )
+    }
 
     // Convert string to numbers
     const modalAwal = parseFloat(modalAwalStr)
@@ -171,10 +251,12 @@ export async function POST(request: NextRequest) {
       // Material Management fields - RPK-45
       materialId,
       materialQuantity,
+      // Size Management fields - Advanced only
+      sizes,
       image,
     }
 
-    // Validate with schema
+    // Validate with advanced-only schema (all products require sizes)
     const validatedData = createProductSchema.parse(createRequest)
 
     // Initialize services
@@ -187,10 +269,20 @@ export async function POST(request: NextRequest) {
       try {
         const uploadResult = await fileUploadService.uploadProductImage(image, validatedData.code)
         imageUrl = uploadResult?.url
-      } catch {
-        // Image upload failed
+      } catch (uploadError) {
+        // Image upload failed - provide specific error details
+        const errorMessage = uploadError instanceof Error ? uploadError.message : 'Unknown upload error'
         return NextResponse.json(
-          { error: { message: 'Failed to upload image', code: 'UPLOAD_ERROR' } },
+          {
+            error: {
+              message: 'Gagal mengunggah gambar',
+              code: 'IMAGE_UPLOAD_ERROR',
+              field: 'image',
+              details: errorMessage.includes('HEIC') || errorMessage.includes('heic')
+                ? 'Format HEIC tidak didukung. Gunakan JPG, PNG, atau WebP.'
+                : `Upload gagal: ${errorMessage}`,
+            },
+          },
           { status: 400 },
         )
       }
@@ -206,20 +298,34 @@ export async function POST(request: NextRequest) {
       imageUrl, // Add uploaded image URL
     }
 
+    // Create product using advanced-only architecture
     const product = await productService.createProduct(productData)
 
     return NextResponse.json(product, { status: 201 })
   } catch (error) {
     if (error instanceof ConflictError) {
       return NextResponse.json(
-        { error: { message: error.message, code: 'CONFLICT' } },
+        {
+          error: {
+            message: error.message,
+            code: 'CONFLICT',
+            field: 'code', // Assume product code conflicts are most common
+            details: 'Produk dengan kode ini sudah ada. Gunakan kode yang berbeda.',
+          },
+        },
         { status: 409 },
       )
     }
 
     if (error instanceof Error && error.message.includes('validation')) {
       return NextResponse.json(
-        { error: { message: error.message, code: 'VALIDATION_ERROR' } },
+        {
+          error: {
+            message: 'Data tidak valid',
+            code: 'VALIDATION_ERROR',
+            details: error.message,
+          },
+        },
         { status: 400 },
       )
     }

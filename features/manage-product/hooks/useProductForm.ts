@@ -37,7 +37,7 @@ export function useProductForm({
     name: initialData?.name || '',
     description: initialData?.description || '',
     category: typeof initialData?.category === 'string' ? initialData.category : initialData?.categoryId || '',
-    size: initialData?.size || '',
+    // Note: size property removed - now handled through advanced sizing system
     colorId: initialData?.colorId || '',
     modalAwal: initialData?.modalAwal || 0,
     currentPrice: initialData?.currentPrice || 0,

@@ -2,6 +2,9 @@
  * API Route: Product by ID
  *
  * GET /api/products/[id] - Mendapatkan detail produk berdasarkan ID
+ *   Query Parameters:
+ *   - includeAggregation: boolean - Include aggregated size data
+ *   - includeBreakdown: boolean - Include age category breakdown (default: true)
  * PUT /api/products/[id] - Mengupdate produk berdasarkan ID
  * DELETE /api/products/[id] - Soft delete produk berdasarkan ID
  */
@@ -9,10 +12,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { ProductService } from '@/features/manage-product/services/productService'
+import { ProductSizeAggregationService } from '@/features/manage-product/services/productSizeAggregationService'
 import { FileUploadService } from '@/features/manage-product/services/fileUploadService'
 import { prisma } from '@/lib/prisma'
 import { updateProductSchema } from '@/features/manage-product/lib/validation/productSchema'
 import { NotFoundError } from '@/features/manage-product/lib/errors/AppError'
+import type { UpdateProductWithSizesRequest } from '@/features/manage-product/types'
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -27,11 +32,36 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     const { id } = await params
 
+    // Get query parameters for aggregation
+    const { searchParams } = new URL(request.url)
+    const includeAggregation = searchParams.get('includeAggregation') === 'true'
+    const includeBreakdown = searchParams.get('includeBreakdown') !== 'false' // default true
+
     // Initialize service
     const productService = new ProductService(prisma, userId)
 
     // Get product by ID
     const product = await productService.getProductById(id)
+
+    // Add aggregation data if requested
+    if (includeAggregation) {
+      const aggregationService = new ProductSizeAggregationService(prisma, {
+        includeBreakdown,
+      })
+
+      try {
+        const aggregation = await aggregationService.getProductAggregation(product.id)
+
+        return NextResponse.json({
+          ...product,
+          aggregation,
+        }, { status: 200 })
+      } catch (error) {
+        // If aggregation fails, include product without aggregation data
+        console.warn(`Failed to get aggregation for product ${product.id}:`, error)
+        return NextResponse.json(product, { status: 200 })
+      }
+    }
 
     return NextResponse.json(product, { status: 200 })
   } catch (error) {
@@ -109,6 +139,29 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const materialQuantity = materialQuantityStr ? parseInt(materialQuantityStr) : undefined
     const image = formData.get('image') as File | null
 
+    // Size Management fields - Advanced only (no hasSizes flag)
+    const sizesStr = formData.get('sizes') as string
+    let sizes: Array<{ id?: string; ageCategory: string; size: string; quantity: number; isActive?: boolean }> = []
+
+    // Parse sizes if provided (for updates)
+    if (sizesStr) {
+      try {
+        sizes = JSON.parse(sizesStr)
+        // Validate that if sizes are provided, array should not be empty
+        if (sizes.length === 0) {
+          return NextResponse.json(
+            { error: { message: 'Jika menyediakan data ukuran, minimal 1 ukuran harus ada', code: 'VALIDATION_ERROR' } },
+            { status: 400 },
+          )
+        }
+      } catch {
+        return NextResponse.json(
+          { error: { message: 'Format data ukuran tidak valid', code: 'VALIDATION_ERROR' } },
+          { status: 400 },
+        )
+      }
+    }
+
     // Prepare update data
     const updateData: Record<string, unknown> = {}
 
@@ -124,6 +177,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     // Material Management fields - RPK-45
     if (materialId !== undefined) updateData.materialId = materialId
     if (materialQuantity !== undefined) updateData.materialQuantity = materialQuantity
+    // Size Management fields - Advanced only
+    if (sizes.length > 0) updateData.sizes = sizes
 
     // Validate materialQuantity if provided
     if (materialQuantityStr && (isNaN(materialQuantity!) || materialQuantity! <= 0)) {
@@ -151,8 +206,9 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       )
     }
 
-    // Validate with schema if there's data to update
+    // Validate with advanced schema if there's data to update
     if (Object.keys(updateData).length > 0) {
+      // Always use advanced schema (all products have sizes in advanced-only mode)
       updateProductSchema.parse(updateData)
     }
 
@@ -192,8 +248,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       }
     }
 
-    // Update product (this will also validate category existence)
-    const product = await productService.updateProduct(id, updateData)
+    // Update product using advanced-only architecture
+    const product = await productService.updateProduct(id, updateData as unknown as UpdateProductWithSizesRequest)
 
     return NextResponse.json(product, { status: 200 })
   } catch (error) {

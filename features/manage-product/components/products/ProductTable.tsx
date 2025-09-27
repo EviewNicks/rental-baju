@@ -93,9 +93,12 @@ export function ProductTable({
                     </Badge>
                   </TableCell>
                   <TableCell className="text-center" data-testid={`product-${product.code}-size`}>
-                    {product.size ? (
+                    {product.sizes && product.sizes.length > 0 ? (
                       <Badge variant="outline" className="font-mono text-xs" data-testid={`product-${product.code}-size-badge`}>
-                        {product.size}
+                        {product.sizes.length === 1
+                          ? `${product.sizes[0].size} (${product.sizes[0].ageCategory})`
+                          : `${product.sizes.length} ukuran`
+                        }
                       </Badge>
                     ) : (
                       <span className="text-gray-400">-</span>

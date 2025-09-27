@@ -14,14 +14,20 @@ import {
 import { ProductForm } from '@/features/manage-product/components/form-product/ProductForm'
 import { useCategories } from '@/features/manage-product/hooks/useCategories'
 import { useCreateProduct, useUpdateProduct } from '@/features/manage-product/hooks/useProducts'
-import type { ClientProduct } from '@/features/manage-product/types'
+import type {
+  ClientProduct,
+  AggregatedSizeView,
+  SimplifiedSizeEntry,
+} from '@/features/manage-product/types'
+
+// Image format validation constants
+const SUPPORTED_IMAGE_FORMATS = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
 
 // Local form data interface with numbers for form handling
 interface ProductFormData {
   code: string
   name: string
   categoryId: string
-  size?: string | undefined
   colorId?: string | undefined
   materialId?: string | undefined
   materialQuantity?: number | undefined
@@ -31,6 +37,52 @@ interface ProductFormData {
   description: string
   imageUrl: string | null
   image?: File | null
+
+  // Simplified Size Management (required for all products)
+  hasSizes: boolean // Always true in advanced-only architecture
+  simplifiedSizes?: SimplifiedSizeEntry[]
+  aggregatedSizes?: AggregatedSizeView[] // Keep for backward compatibility
+}
+
+// Utility function to transform simplified sizes to backend format (NEW SYSTEM)
+const transformSimplifiedSizesToBackendFormat = (
+  simplifiedSizes: SimplifiedSizeEntry[],
+): string => {
+  console.log('[DEBUG] transformSimplifiedSizesToBackendFormat input:', {
+    inputSizes: simplifiedSizes,
+    inputCount: simplifiedSizes.length,
+  })
+
+  const sizes = simplifiedSizes.map((sizeEntry) => ({
+    ageCategory: sizeEntry.ageCategory, // Already using standardized enum values
+    size: sizeEntry.size,
+    quantity: sizeEntry.quantity,
+    isActive: true,
+    // Note: 'id' field is intentionally excluded - only used for frontend state management
+  }))
+
+  const jsonString = JSON.stringify(sizes)
+
+  console.log('[DEBUG] transformSimplifiedSizesToBackendFormat output:', {
+    transformedSizes: sizes,
+    jsonString: jsonString,
+    jsonLength: jsonString.length,
+  })
+
+  return jsonString
+}
+
+// Legacy function to transform aggregated sizes to backend format (BACKWARD COMPATIBILITY)
+const transformSizesToBackendFormat = (aggregatedSizes: AggregatedSizeView[]): string => {
+  const sizes = aggregatedSizes.flatMap((aggSize) =>
+    Object.entries(aggSize.breakdown).map(([ageCategory, quantity]) => ({
+      ageCategory: ageCategory === 'dewasa' ? 'ADULT' : ageCategory === 'anak' ? 'CHILD' : 'ADULT', // Updated mapping
+      size: aggSize.size,
+      quantity: quantity,
+      isActive: true,
+    })),
+  )
+  return JSON.stringify(sizes)
 }
 
 // Request interfaces for API calls
@@ -42,7 +94,7 @@ interface CreateProductRequest {
   currentPrice: number
   quantity: number
   categoryId: string
-  size?: string
+  sizes: string // JSON string format required by backend
   colorId?: string
   materialId?: string
   materialQuantity?: number
@@ -57,7 +109,7 @@ interface UpdateProductRequest {
   currentPrice: number
   quantity: number
   categoryId: string
-  size?: string
+  sizes: string // JSON string format required by backend
   colorId?: string
   materialId?: string
   materialQuantity?: number
@@ -94,7 +146,12 @@ const validateCategoryId = (categoryId: string): string | null => {
   return null
 }
 
-const validateNumber = (value: number, field: string, min: number = 0, max?: number): string | null => {
+const validateNumber = (
+  value: number,
+  field: string,
+  min: number = 0,
+  max?: number,
+): string | null => {
   if (value === undefined || value === null) return `${field} wajib diisi`
   if (value < min) return `${field} minimal ${min}`
   if (max && value > max) return `${field} maksimal ${max}`
@@ -103,6 +160,49 @@ const validateNumber = (value: number, field: string, min: number = 0, max?: num
 
 const validateDescription = (description: string): string | null => {
   if (description.length > 500) return 'Deskripsi maksimal 500 karakter'
+  return null
+}
+
+// Updated validation for simplified sizes system
+const validateSimplifiedSizes = (simplifiedSizes?: SimplifiedSizeEntry[]): string | null => {
+  if (!simplifiedSizes || simplifiedSizes.length === 0) {
+    return 'Produk harus memiliki setidaknya satu ukuran'
+  }
+
+  // Validate each size entry
+  for (const sizeEntry of simplifiedSizes) {
+    if (!sizeEntry.size || !['XS', 'S', 'M', 'L', 'XL', 'XXL'].includes(sizeEntry.size)) {
+      return `Ukuran tidak valid: ${sizeEntry.size}. Harus salah satu dari: XS, S, M, L, XL, XXL`
+    }
+
+    if (!sizeEntry.ageCategory || !['ADULT', 'CHILD'].includes(sizeEntry.ageCategory)) {
+      return `Kategori usia tidak valid: ${sizeEntry.ageCategory}. Harus ADULT atau CHILD`
+    }
+
+    if (sizeEntry.quantity <= 0) {
+      return `Kuantitas harus lebih dari 0 untuk ${sizeEntry.size} - ${sizeEntry.ageCategory}`
+    }
+
+    if (sizeEntry.quantity > 999) {
+      return `Kuantitas tidak boleh lebih dari 999 untuk ${sizeEntry.size} - ${sizeEntry.ageCategory}`
+    }
+  }
+
+  // Check for duplicates (same size + age category combination)
+  const combinations = simplifiedSizes.map((s) => `${s.size}-${s.ageCategory}`)
+  const uniqueCombinations = new Set(combinations)
+  if (combinations.length !== uniqueCombinations.size) {
+    return 'Terdapat kombinasi ukuran dan kategori usia yang duplikat'
+  }
+
+  return null
+}
+
+// Image format validation function
+const validateImageFormat = (file: File): string | null => {
+  if (!SUPPORTED_IMAGE_FORMATS.includes(file.type.toLowerCase())) {
+    return `Format ${file.type} tidak didukong. Gunakan JPG, PNG, atau WebP.`
+  }
   return null
 }
 
@@ -133,7 +233,6 @@ export function ProductFormPage({
     name: product?.name || '',
     categoryId: product?.categoryId || '',
     // Fix: Initialize optional fields with undefined instead of empty strings to prevent Select.Item errors
-    size: product?.size || undefined,
     colorId: product?.colorId || undefined,
     materialId: product?.materialId || undefined,
     materialQuantity: product?.materialQuantity || undefined,
@@ -143,11 +242,17 @@ export function ProductFormPage({
     description: product?.description || '',
     imageUrl: product?.imageUrl || null,
     image: null,
+
+    // Simplified Size Management (enforced - all products require sizes)
+    hasSizes: true, // Always true in advanced-only architecture
+    simplifiedSizes: [], // Initialize empty array for new simplified system
+    aggregatedSizes: undefined, // Keep for backward compatibility
   })
 
   // Simple error state management
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [touched, setTouched] = useState<Record<string, boolean>>({})
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Simple validation function
   const validateForm = (): boolean => {
@@ -168,11 +273,14 @@ export function ProductFormPage({
     const currentPriceError = validateNumber(formData.currentPrice, 'Harga sewa')
     if (currentPriceError) newErrors.currentPrice = currentPriceError
 
-    const quantityError = validateNumber(formData.quantity, 'Kuantitas', 0, 9999)
-    if (quantityError) newErrors.quantity = quantityError
+    // Quantity is auto-calculated from aggregated sizes, no manual validation needed
 
     const descriptionError = validateDescription(formData.description)
     if (descriptionError) newErrors.description = descriptionError
+
+    // Validate sizes array (use simplified sizes system)
+    const sizesError = validateSimplifiedSizes(formData.simplifiedSizes)
+    if (sizesError) newErrors.sizes = sizesError
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -180,7 +288,7 @@ export function ProductFormPage({
 
   const validateSingleField = (name: string, value: string | number | File | null): void => {
     let error = ''
-    
+
     switch (name) {
       case 'code':
         error = validateProductCode(typeof value === 'string' ? value : '') || ''
@@ -214,48 +322,124 @@ export function ProductFormPage({
         error = validateNumber(typeof value === 'number' ? value : 0, 'Harga sewa') || ''
         break
       case 'quantity':
-        error = validateNumber(typeof value === 'number' ? value : 0, 'Kuantitas', 0, 9999) || ''
+        // Quantity is auto-calculated from aggregated sizes, no manual validation needed
+        error = ''
         break
       case 'description':
         error = validateDescription(typeof value === 'string' ? value : '') || ''
         break
     }
-    
-    setErrors(prev => ({ ...prev, [name]: error }))
+
+    setErrors((prev) => ({ ...prev, [name]: error }))
   }
 
   const handleInputChange = (name: string, value: string | number | File | null) => {
+    // Validate image format if uploading an image
+    if (name === 'image' && value instanceof File) {
+      const imageError = validateImageFormat(value)
+      if (imageError) {
+        setErrors((prev) => ({ ...prev, image: imageError }))
+        return // Don't update form data if image format is invalid
+      }
+    }
+
     setFormData((prev) => ({ ...prev, [name]: value }))
     // Clear error when user starts typing
     if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }))
+      setErrors((prev) => ({ ...prev, [name]: '' }))
     }
   }
 
   const handleBlur = (name: string, value: string | number | File | null) => {
-    setTouched(prev => ({ ...prev, [name]: true }))
+    setTouched((prev) => ({ ...prev, [name]: true }))
     validateSingleField(name, value)
+  }
+
+  // Size management handlers
+  const handleHasSizesChange = () => {
+    // In advanced-only architecture, sizes are always required
+    // This function is kept for backward compatibility but enforces hasSizes = true
+    setFormData((prev) => ({
+      ...prev,
+      hasSizes: true, // Always enforce sizes requirement
+      aggregatedSizes: prev.aggregatedSizes, // Keep existing sizes
+    }))
+  }
+
+  // Handler for new simplified sizes system
+  const handleSimplifiedSizesChange = (sizes: SimplifiedSizeEntry[]) => {
+    console.log('[DEBUG] handleSimplifiedSizesChange called with:', {
+      sizesCount: sizes.length,
+      sizes: sizes,
+      totalQuantity: sizes.reduce((sum, size) => sum + size.quantity, 0),
+      hasIds: sizes.some((s) => s.id),
+      sizeStructure: sizes.map((s) => ({
+        size: s.size,
+        ageCategory: s.ageCategory,
+        quantity: s.quantity,
+        id: s.id,
+      })),
+    })
+
+    setFormData((prev) => ({
+      ...prev,
+      simplifiedSizes: sizes,
+      // Auto-calculate total quantity from sizes
+      quantity: sizes.reduce((sum, size) => sum + size.quantity, 0),
+    }))
+
+    // Clear any existing sizes validation error
+    if (errors.sizes) {
+      setErrors((prev) => ({ ...prev, sizes: '' }))
+    }
+  }
+
+  // Legacy handler for backward compatibility
+  const handleAggregatedSizesChange = (sizes: AggregatedSizeView[]) => {
+    setFormData((prev) => ({
+      ...prev,
+      aggregatedSizes: sizes,
+      // Auto-calculate total quantity from sizes
+      quantity: sizes.reduce((sum, size) => sum + size.totalQuantity, 0),
+    }))
+
+    // Clear any existing sizes validation error
+    if (errors.sizes) {
+      setErrors((prev) => ({ ...prev, sizes: '' }))
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
+    // Prevent multiple submissions
+    if (isSubmitting) return
+
+    setIsSubmitting(true)
+
     if (!validateForm()) {
-      setTouched({ 
-        code: true, 
-        name: true, 
-        categoryId: true, 
-        size: true,
+      setTouched({
+        code: true,
+        name: true,
+        categoryId: true,
+        sizes: true, // Replace legacy size with sizes validation
         colorId: true,
         materialId: true,
         materialQuantity: true,
-        modalAwal: true, 
-        currentPrice: true, 
-        quantity: true, 
-        description: true 
+        modalAwal: true,
+        currentPrice: true,
+        quantity: true,
+        description: true,
       })
+      setIsSubmitting(false)
       return
     }
+
+    // Transform sizes to backend format using new simplified system - moved outside try block to fix ReferenceError
+    const sizesData =
+      formData.simplifiedSizes && formData.simplifiedSizes.length > 0
+        ? transformSimplifiedSizesToBackendFormat(formData.simplifiedSizes)
+        : transformSizesToBackendFormat(formData.aggregatedSizes || []) // Fallback for backward compatibility
 
     try {
       if (mode === 'add') {
@@ -268,7 +452,7 @@ export function ProductFormPage({
           currentPrice: formData.currentPrice,
           quantity: formData.quantity,
           categoryId: formData.categoryId,
-          size: formData.size || undefined,
+          sizes: sizesData, // Use transformed sizes array
           colorId: formData.colorId || undefined,
           materialId: formData.materialId || undefined,
           materialQuantity: formData.materialQuantity || undefined,
@@ -276,7 +460,31 @@ export function ProductFormPage({
           imageUrl: formData.imageUrl || undefined,
         }
 
-        await createProductMutation.mutateAsync(createData as unknown as FormData | Record<string, string | number | boolean | File | null>)
+        console.log('[DEBUG] About to create product with data:', {
+          createData: createData,
+          sizesDataType: typeof sizesData,
+          sizesDataValue: sizesData,
+          originalSimplifiedSizes: formData.simplifiedSizes,
+          hasImage: !!formData.image,
+          imageName: formData.image?.name,
+        })
+
+        // Convert to FormData for proper API handling
+        const formDataToSend = new FormData()
+        Object.entries(createData).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            if (value instanceof File) {
+              formDataToSend.append(key, value)
+            } else if (typeof value === 'object') {
+              // Handle complex objects like sizes array
+              formDataToSend.append(key, JSON.stringify(value))
+            } else {
+              formDataToSend.append(key, String(value))
+            }
+          }
+        })
+
+        await createProductMutation.mutateAsync(formDataToSend)
       } else {
         // Update existing product
         if (!product?.id) {
@@ -290,7 +498,7 @@ export function ProductFormPage({
           currentPrice: formData.currentPrice,
           quantity: formData.quantity,
           categoryId: formData.categoryId,
-          size: formData.size || undefined,
+          sizes: sizesData, // Use transformed sizes array
           colorId: formData.colorId || undefined,
           materialId: formData.materialId || undefined,
           materialQuantity: formData.materialQuantity || undefined,
@@ -298,14 +506,41 @@ export function ProductFormPage({
           imageUrl: formData.imageUrl || undefined,
         }
 
-        await updateProductMutation.mutateAsync({ id: product.id, data: updateData as unknown as FormData | Record<string, string | number | boolean | File | null> })
+        // Convert to FormData for proper API handling
+        const formDataToSend = new FormData()
+        Object.entries(updateData).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            if (value instanceof File) {
+              formDataToSend.append(key, value)
+            } else if (typeof value === 'object') {
+              // Handle complex objects like sizes array
+              formDataToSend.append(key, JSON.stringify(value))
+            } else {
+              formDataToSend.append(key, String(value))
+            }
+          }
+        })
+
+        await updateProductMutation.mutateAsync({
+          id: product.id,
+          data: formDataToSend,
+        })
       }
 
       // Success - redirect to product list
       router.push('/producer/manage-product')
     } catch (error) {
-      console.error(`Error ${mode === 'add' ? 'creating' : 'updating'} product:`, error)
+      console.error(`[DEBUG] Error ${mode === 'add' ? 'creating' : 'updating'} product:`, {
+        error: error,
+        errorMessage: error instanceof Error ? error.message : String(error),
+        formData: formData,
+        sizesData: sizesData,
+        transformedSizes: formData.simplifiedSizes,
+        mutationError: mode === 'add' ? createProductMutation.error : updateProductMutation.error,
+      })
       // Error handling is already done in the mutations
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -347,22 +582,145 @@ export function ProductFormPage({
           </Breadcrumb>
 
           <div data-testid="page-title-section">
-            <h1 className="text-3xl font-bold text-gray-900" data-testid="page-title">{title}</h1>
-            <p className="text-gray-600 mt-1" data-testid="page-subtitle">{subtitle}</p>
+            <h1 className="text-3xl font-bold text-gray-900" data-testid="page-title">
+              {title}
+            </h1>
+            <p className="text-gray-600 mt-1" data-testid="page-subtitle">
+              {subtitle}
+            </p>
           </div>
         </div>
       </div>
 
       {/* Form */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8" data-testid="product-form-content">
+      <div
+        className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
+        data-testid="product-form-content"
+      >
         {/* Show errors */}
         {(categoriesError || createProductMutation.error || updateProductMutation.error) && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md">
-            <p className="text-red-600 text-sm">
-              {categoriesError && 'Gagal memuat data kategori. Silakan refresh halaman.'}
-              {createProductMutation.error && `Error creating product: ${createProductMutation.error.message}`}
-              {updateProductMutation.error && `Error updating product: ${updateProductMutation.error.message}`}
-            </p>
+            <div className="flex items-start">
+              <div className="flex-shrink-0">
+                <div className="w-5 h-5 text-red-400">⚠️</div>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-red-800">
+                  {categoriesError && 'Kesalahan Memuat Data'}
+                  {createProductMutation.error && 'Gagal Membuat Produk'}
+                  {updateProductMutation.error && 'Gagal Mengupdate Produk'}
+                </h3>
+                <div className="mt-2 text-sm text-red-700">
+                  {categoriesError && (
+                    <p>
+                      Gagal memuat data kategori. Silakan refresh halaman atau hubungi
+                      administrator.
+                    </p>
+                  )}
+                  {createProductMutation.error && (
+                    <p>
+                      {(() => {
+                        // Check if error has structured response (new enhanced format)
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        const errorData = (createProductMutation.error as any)?.response?.data
+                          ?.error
+
+                        if (errorData?.code) {
+                          switch (errorData.code) {
+                            case 'IMAGE_FORMAT_ERROR':
+                              return (
+                                errorData.details ||
+                                'Format gambar tidak didukung. Gunakan JPG, PNG, atau WebP.'
+                              )
+                            case 'IMAGE_UPLOAD_ERROR':
+                              return (
+                                errorData.details || 'Gagal mengunggah gambar. Silakan coba lagi.'
+                              )
+                            case 'CONFLICT':
+                              return (
+                                errorData.details ||
+                                'Kode produk sudah digunakan. Silakan gunakan kode yang berbeda.'
+                              )
+                            case 'VALIDATION_ERROR':
+                              return (
+                                errorData.details || 'Data tidak valid. Silakan periksa kembali.'
+                              )
+                            default:
+                              return errorData.message || createProductMutation.error.message
+                          }
+                        }
+
+                        // Fallback to old string-based error handling
+                        return createProductMutation.error.message.includes('Category') ||
+                          createProductMutation.error.message.includes('Kategori')
+                          ? 'Kategori produk tidak valid. Silakan pilih kategori yang tersedia.'
+                          : createProductMutation.error.message.includes('Kode produk')
+                            ? 'Kode produk sudah digunakan. Silakan gunakan kode yang berbeda.'
+                            : createProductMutation.error.message.includes('Warna')
+                              ? 'Warna produk tidak valid. Silakan pilih warna yang tersedia.'
+                              : createProductMutation.error.message.includes('Material')
+                                ? 'Material produk tidak valid. Silakan pilih material yang tersedia.'
+                                : `${createProductMutation.error.message}. Silakan periksa kembali data yang dimasukkan.`
+                      })()}
+                    </p>
+                  )}
+                  {updateProductMutation.error && (
+                    <p>
+                      {(() => {
+                        // Check if error has structured response (new enhanced format)
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        const errorData = (updateProductMutation.error as any)?.response?.data
+                          ?.error
+
+                        if (errorData?.code) {
+                          switch (errorData.code) {
+                            case 'IMAGE_FORMAT_ERROR':
+                              return (
+                                errorData.details ||
+                                'Format gambar tidak didukung. Gunakan JPG, PNG, atau WebP.'
+                              )
+                            case 'IMAGE_UPLOAD_ERROR':
+                              return (
+                                errorData.details || 'Gagal mengunggah gambar. Silakan coba lagi.'
+                              )
+                            case 'CONFLICT':
+                              return (
+                                errorData.details ||
+                                'Kode produk sudah digunakan. Silakan gunakan kode yang berbeda.'
+                              )
+                            case 'VALIDATION_ERROR':
+                              return (
+                                errorData.details || 'Data tidak valid. Silakan periksa kembali.'
+                              )
+                            default:
+                              return errorData.message || updateProductMutation.error.message
+                          }
+                        }
+
+                        // Fallback to old string-based error handling
+                        return updateProductMutation.error.message.includes('tidak ditemukan')
+                          ? 'Produk tidak ditemukan. Silakan refresh halaman.'
+                          : `${updateProductMutation.error.message}. Silakan periksa kembali data yang dimasukkan.`
+                      })()}
+                    </p>
+                  )}
+                </div>
+                {(createProductMutation.error || updateProductMutation.error) && (
+                  <div className="mt-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        createProductMutation.reset()
+                        updateProductMutation.reset()
+                      }}
+                      className="text-sm text-red-600 hover:text-red-500 underline"
+                    >
+                      Tutup pesan ini
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         )}
 
@@ -375,29 +733,46 @@ export function ProductFormPage({
             onBlur={handleBlur}
             formatCurrency={formatCurrency}
             categories={categories}
+            product={product || undefined}
+            onHasSizesChange={handleHasSizesChange}
+            onAggregatedSizesChange={handleAggregatedSizesChange}
+            onSimplifiedSizesChange={handleSimplifiedSizesChange}
           />
 
           {/* Action Buttons */}
           <div className="flex justify-end space-x-4 mt-8" data-testid="form-actions">
-            <Button type="button" variant="outline" onClick={() => router.back()} data-testid="cancel-button">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => router.back()}
+              data-testid="cancel-button"
+            >
               <X className="w-4 h-4 mr-2" />
               Batal
             </Button>
-            <Button type="button" variant="secondary" onClick={handleSaveDraft} data-testid="save-draft-button">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={handleSaveDraft}
+              data-testid="save-draft-button"
+            >
               <Save className="w-4 h-4 mr-2" />
               Simpan Draft
             </Button>
             <Button
               type="submit"
               disabled={
-                createProductMutation.isPending || 
-                updateProductMutation.isPending || 
+                isSubmitting ||
+                createProductMutation.isPending ||
+                updateProductMutation.isPending ||
                 isLoadingCategories
               }
               className="bg-yellow-400 hover:bg-yellow-500 text-black"
               data-testid="submit-button"
             >
-              {createProductMutation.isPending || updateProductMutation.isPending ? (
+              {isSubmitting ||
+              createProductMutation.isPending ||
+              updateProductMutation.isPending ? (
                 <>
                   <div className="w-4 h-4 mr-2 animate-spin rounded-full border-2 border-black border-t-transparent" />
                   {mode === 'add' ? 'Menyimpan...' : 'Mengupdate...'}

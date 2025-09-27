@@ -354,17 +354,25 @@ export const logger: Logger = {
 // Initialize file logging for server-side only
 if (isServer && !isEdgeRuntime) {
   try {
-    // Use require() instead of import() to avoid webpack analysis
+    // Use dynamic import for server-side file logging
     // This will only execute on server-side Node.js environment
-    // Try both .js (compiled) and .ts (development) extensions
     let fileLoggerModule
     try {
-      fileLoggerModule = eval('require')('./logger-file.server.js')
+      // Try importing the TypeScript file directly in development
+      fileLoggerModule = eval('require')('./logger-file.server.ts')
     } catch {
-      fileLoggerModule = eval('require')('./logger-file.server')
+      try {
+        // Try importing the compiled JavaScript file in production
+        fileLoggerModule = eval('require')('./logger-file.server.js')
+      } catch {
+        // Fallback to the default import without extension
+        fileLoggerModule = eval('require')('./logger-file.server')
+      }
     }
     logger._saveToFile = (level: string, message: string) => {
-      fileLoggerModule.fileLogger.saveToFile(level, message)
+      if (fileLoggerModule && fileLoggerModule.fileLogger) {
+        fileLoggerModule.fileLogger.saveToFile(level, message)
+      }
     }
   } catch (err) {
     console.error('Failed to initialize file logging:', err)
