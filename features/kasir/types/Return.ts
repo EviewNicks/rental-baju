@@ -12,12 +12,18 @@ import { TransaksiWithDetails } from '../services/transaksiService'
 
 /**
  * Single condition within unified structure - all returns use this format
+ * Enhanced with manual pricing support
  */
 export interface UnifiedCondition {
   kondisiAkhir: string
   jumlahKembali: number
   modalAwal?: number // Optional override for penalty calculation
   penaltyAmount?: number // Calculated penalty for this condition (output only)
+
+  // New manual pricing fields
+  conditionCategory: import('../types').ConditionCategory
+  manualPrice?: number
+  useManualPricing: boolean
 }
 
 /**
@@ -30,11 +36,16 @@ export interface UnifiedReturnItem {
 
 /**
  * Unified return request - single interface for all return scenarios
+ * Enhanced with flat penalty support
  */
 export interface UnifiedReturnRequest {
   items: UnifiedReturnItem[]
   catatan?: string
   tglKembali?: string // ISO 8601 format
+
+  // New flat penalty system fields
+  applyFlatLatePenalty?: boolean // Whether to apply 20k flat late penalty
+  customLatePenalty?: number // Override default 20k penalty if needed
 }
 
 /**

@@ -1,0 +1,191 @@
+POST Product Create Response 201 created 
+{
+    "products": [
+        {
+            "id": "52d79b29-205c-4862-9064-c145e42d8ec9",
+            "code": "DT89",
+            "name": "Dress Elegant Blue",
+            "description": "Dress merah untuk acara formal",
+            "categoryId": "e07a1b65-4a36-458a-8ab0-45e8e95aac23",
+            "colorId": null,
+            "category": {
+                "id": "e07a1b65-4a36-458a-8ab0-45e8e95aac23",
+                "name": "Dress",
+                "color": "#FF5733",
+                "products": [],
+                "createdAt": "2025-09-22T22:35:46.170Z",
+                "updatedAt": "2025-09-22T22:35:46.170Z",
+                "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
+            },
+            "modalAwal": "150000",
+            "currentPrice": "50000",
+            "quantity": 5,
+            "rentedStock": 0,
+            "materialId": null,
+            "materialCost": null,
+            "materialQuantity": null,
+            "status": "AVAILABLE",
+            "imageUrl": "https://pmjxdencfgkbjuyjndbp.supabase.co/storage/v1/object/public/products/products/DT89/1758933741724.jpg",
+            "totalPendapatan": "0",
+            "sizes": [
+                {
+                    "id": "d70a9b13-ccd7-489b-8d20-7ec3e5bd1631",
+                    "productId": "52d79b29-205c-4862-9064-c145e42d8ec9",
+                    "ageCategory": "ADULT",
+                    "size": "M",
+                    "quantity": 3,
+                    "isActive": true,
+                    "createdAt": "2025-09-27T00:42:31.938Z",
+                    "updatedAt": "2025-09-27T00:42:31.938Z",
+                    "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek",
+                    "product": {}
+                },
+                {
+                    "id": "01c4a240-33fb-4cd0-97b1-e70c93e9dd7c",
+                    "productId": "52d79b29-205c-4862-9064-c145e42d8ec9",
+                    "ageCategory": "ADULT",
+                    "size": "L",
+                    "quantity": 2,
+                    "isActive": true,
+                    "createdAt": "2025-09-27T00:42:31.938Z",
+                    "updatedAt": "2025-09-27T00:42:31.938Z",
+                    "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek",
+                    "product": {}
+                }
+            ],
+            "isActive": true,
+            "createdAt": "2025-09-27T00:42:31.292Z",
+            "updatedAt": "2025-09-27T00:42:31.292Z",
+            "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
+        },
+        {
+            "id": "ff218ec8-08f0-4876-afd1-4eacc4d079ff",
+            "code": "DTYU",
+            "name": "Dress Elegant Red",
+            "description": "Dress merah untuk acara formal",
+            "categoryId": "e07a1b65-4a36-458a-8ab0-45e8e95aac23",
+            "colorId": "ea6d2946-2761-443c-be5d-426dea7880e4",
+            "category": {
+                "id": "e07a1b65-4a36-458a-8ab0-45e8e95aac23",
+                "name": "Dress",
+                "color": "#FF5733",
+                "products": [],
+                "createdAt": "2025-09-22T22:35:46.170Z",
+                "updatedAt": "2025-09-22T22:35:46.170Z",
+                "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
+            },
+            "color": {
+                "id": "ea6d2946-2761-443c-be5d-426dea7880e4",
+                "name": "Pink Dusty",
+                "hexCode": "#D4A5A5",
+                "description": "Warna pink lembut yang feminin",
+                "isActive": true,
+                "products": [],
+                "createdAt": "2025-09-22T22:36:03.436Z",
+                "updatedAt": "2025-09-22T22:36:03.436Z",
+                "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
+            },
+            "modalAwal": "150000",
+            "currentPrice": "50000",
+            "quantity": 5,
+            "rentedStock": 0,
+            "materialId": "e3df844d-f0f6-403f-ad74-f8b2cf3d275b",
+            "materialCost": "120000",
+            "materialQuantity": 3,
+            "material": {
+                "id": "e3df844d-f0f6-403f-ad74-f8b2cf3d275b",
+                "name": "Kain Katun",
+                "pricePerUnit": "40000",
+                "unit": "meter",
+                "products": [],
+                "createdAt": "2025-09-22T22:38:11.786Z",
+                "updatedAt": "2025-09-22T22:38:11.786Z",
+                "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
+            },
+            "status": "AVAILABLE",
+            "imageUrl": "products/image.png",
+            "totalPendapatan": "0",
+            "sizes": [
+                {
+                    "id": "d14e52e4-7b0c-4e7b-889a-cab215486436",
+                    "productId": "ff218ec8-08f0-4876-afd1-4eacc4d079ff",
+                    "ageCategory": "ADULT",
+                    "size": "M",
+                    "quantity": 3,
+                    "isActive": true,
+                    "createdAt": "2025-09-25T08:18:42.401Z",
+                    "updatedAt": "2025-09-25T08:18:42.401Z",
+                    "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek",
+                    "product": {}
+                },
+                {
+                    "id": "e629d0ff-3325-4c80-9677-d896b23b11c8",
+                    "productId": "ff218ec8-08f0-4876-afd1-4eacc4d079ff",
+                    "ageCategory": "ADULT",
+                    "size": "L",
+                    "quantity": 2,
+                    "isActive": true,
+                    "createdAt": "2025-09-25T08:18:42.401Z",
+                    "updatedAt": "2025-09-25T08:18:42.401Z",
+                    "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek",
+                    "product": {}
+                }
+            ],
+            "isActive": true,
+            "createdAt": "2025-09-25T08:18:42.105Z",
+            "updatedAt": "2025-09-25T08:18:42.105Z",
+            "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
+        },
+        {
+            "id": "019fd3f4-f830-4b8d-ba53-27d5645f269c",
+            "code": "OLL1",
+            "name": "Organza Lilac",
+            "description": null,
+            "categoryId": "912520ea-ad5a-4294-8057-e9084a871a05",
+            "colorId": null,
+            "category": {
+                "id": "912520ea-ad5a-4294-8057-e9084a871a05",
+                "name": "Organza",
+                "color": "#F59E0B",
+                "products": [],
+                "createdAt": "2025-09-25T02:14:05.912Z",
+                "updatedAt": "2025-09-25T02:14:05.912Z",
+                "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
+            },
+            "modalAwal": "800000",
+            "currentPrice": "75000",
+            "quantity": 3,
+            "rentedStock": 0,
+            "materialId": null,
+            "materialCost": null,
+            "materialQuantity": null,
+            "status": "AVAILABLE",
+            "imageUrl": "https://pmjxdencfgkbjuyjndbp.supabase.co/storage/v1/object/public/products/products/OLL1/1758767692345.jpg",
+            "totalPendapatan": "0",
+            "sizes": [
+                {
+                    "id": "9b81f4c3-4a8e-45d4-bba2-efbd6b651b9d",
+                    "productId": "019fd3f4-f830-4b8d-ba53-27d5645f269c",
+                    "ageCategory": "CHILD",
+                    "size": "S",
+                    "quantity": 3,
+                    "isActive": true,
+                    "createdAt": "2025-09-25T02:34:56.963Z",
+                    "updatedAt": "2025-09-25T02:34:56.963Z",
+                    "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek",
+                    "product": {}
+                }
+            ],
+            "isActive": true,
+            "createdAt": "2025-09-25T02:34:56.638Z",
+            "updatedAt": "2025-09-25T02:34:56.638Z",
+            "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
+        }
+    ],
+    "pagination": {
+        "page": 1,
+        "limit": 10,
+        "total": 3,
+        "totalPages": 1
+    }
+}

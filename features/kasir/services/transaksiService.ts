@@ -15,6 +15,7 @@ import { TransactionCodeGenerator } from '../lib/utils/codeGenerator'
 import { PriceCalculator } from '../lib/utils/server'
 import { createAvailabilityService, AvailabilityService } from './availabilityService'
 import { calculateAvailableStock } from '../lib/typeUtils'
+import type { TransactionStatus } from '../types'
 
 export interface TransaksiWithDetails extends Transaksi {
   penyewa: {
@@ -130,10 +131,83 @@ export interface TransaksiListResponse {
   }
   summary: {
     totalActive: number
+    totalDiambil: number
     totalSelesai: number
     totalTerlambat: number
     totalCancelled: number
   }
+}
+
+/**
+ * Calculate enhanced transaction status based on pickup status and business rules
+ * Moved from frontend statusUtils to backend for consistent status processing
+ * Priority: terlambat > cancelled > selesai > diambil > active
+ *
+ * @param baseStatus - Original status from database
+ * @param items - Transaction items array to check pickup status
+ * @param endDate - Optional end date to check for overdue status
+ * @param hasPickup - Optional server-provided pickup flag for performance
+ * @returns Enhanced status based on business logic
+ */
+function calculateEnhancedStatus(
+  baseStatus: TransactionStatus,
+  items: Array<{ jumlahDiambil: number; statusKembali?: string }> | undefined,
+  endDate?: string | Date,
+  hasPickup?: boolean,
+): TransactionStatus {
+  // Priority 1: Check if explicit overdue status (terlambat)
+  if (baseStatus === 'terlambat') {
+    return 'terlambat'
+  }
+
+  // Priority 2: Check if cancelled
+  if (baseStatus === 'cancelled') {
+    return 'cancelled'
+  }
+
+  // Priority 3: Check if explicit completed status (selesai)
+  if (baseStatus === 'selesai') {
+    return 'selesai'
+  }
+
+  // Priority 4: Check if all items have been returned (auto-complete logic)
+  // This runs BEFORE overdue check to prioritize completion over timing
+  if (baseStatus === 'active' || baseStatus === 'diambil' || baseStatus === 'dikembalikan') {
+    if (items && items.length > 0) {
+      const allItemsReturned = items.every((item) => {
+        // Check if this item has been fully returned using statusKembali
+        return item.statusKembali === 'lengkap'
+      })
+
+      if (allItemsReturned) {
+        return 'selesai'
+      }
+    }
+  }
+
+  // Priority 5: Check if current date is past end date (manual overdue check)
+  // This runs AFTER completion check to allow completed transactions to show as 'selesai'
+  if (endDate && (baseStatus === 'active' || baseStatus === 'diambil')) {
+    const now = new Date()
+    const dueDate = typeof endDate === 'string' ? new Date(endDate) : endDate
+    const isOverdue = now > dueDate
+
+    if (isOverdue && !isNaN(dueDate.getTime())) {
+      return 'terlambat'
+    }
+  }
+
+  // Priority 6: Check if any items have been picked up
+  if (baseStatus === 'active') {
+    // Use server flag if available, fallback to item parsing
+    const pickupDetected = hasPickup ?? (items?.some((item) => item.jumlahDiambil > 0) || false)
+
+    if (pickupDetected) {
+      return 'diambil'
+    }
+  }
+
+  return baseStatus
 }
 
 export class TransaksiService {
@@ -526,18 +600,14 @@ export class TransaksiService {
   }
 
   /**
-   * Get paginated list of transactions with filters
+   * Get paginated list of transactions with enhanced status calculation
+   * Applies status enhancement and filtering on enhanced status for accurate results
    */
   async getTransaksiList(params: TransaksiQueryParams): Promise<TransaksiListResponse> {
     const { page, limit, status, search, penyewaId, dateStart, dateEnd } = params
-    const skip = (page - 1) * limit
 
-    // Build where clause
+    // Build where clause for database filtering (exclude status for now - we'll filter by enhanced status)
     const whereClause: Record<string, unknown> = {}
-
-    if (status) {
-      whereClause.status = status
-    }
 
     if (penyewaId) {
       whereClause.penyewaId = penyewaId
@@ -557,11 +627,9 @@ export class TransaksiService {
       ]
     }
 
-    // Get data and summary in parallel
-    const [data, total, summary] = await Promise.all([
+    // Get all transactions (we'll filter by enhanced status in memory)
+    const [allTransactions, summary] = await Promise.all([
       this.prisma.transaksi.findMany({
-        skip,
-        take: limit,
         orderBy: { createdAt: 'desc' },
         where: Object.keys(whereClause).length > 0 ? whereClause : undefined,
         include: {
@@ -593,16 +661,36 @@ export class TransaksiService {
           },
         },
       }),
-      this.prisma.transaksi.count({
-        where: Object.keys(whereClause).length > 0 ? whereClause : undefined,
-      }),
       this.getTransaksiStats(),
     ])
 
+    // Apply enhanced status calculation and filtering
+    const enhancedTransactions = allTransactions.map((transaction) => {
+      const enhancedStatus = calculateEnhancedStatus(
+        transaction.status as TransactionStatus,
+        transaction.items,
+        transaction.tglSelesai?.toISOString(),
+      )
+
+      return {
+        ...transaction,
+        status: enhancedStatus,
+      }
+    })
+
+    // Filter by enhanced status if requested
+    const filteredTransactions = status
+      ? enhancedTransactions.filter((transaction) => transaction.status === status)
+      : enhancedTransactions
+
+    // Apply pagination to filtered results
+    const skip = (page - 1) * limit
+    const paginatedData = filteredTransactions.slice(skip, skip + limit)
+    const total = filteredTransactions.length
     const totalPages = Math.ceil(total / limit)
 
     return {
-      data: data as unknown as TransaksiWithDetails[],
+      data: paginatedData as unknown as TransaksiWithDetails[],
       pagination: {
         page,
         limit,
@@ -673,41 +761,63 @@ export class TransaksiService {
   }
 
   /**
-   * Get transaction statistics
+   * Get transaction statistics with enhanced status calculation
+   * Applies status enhancement logic to provide accurate counts for frontend
    */
   async getTransaksiStats(): Promise<{
     totalActive: number
+    totalDiambil: number
     totalSelesai: number
     totalTerlambat: number
     totalCancelled: number
   }> {
-    const stats = await this.prisma.transaksi.groupBy({
-      by: ['status'],
-      _count: {
+    // Fetch all transactions with basic data needed for status calculation
+    const transactions = await this.prisma.transaksi.findMany({
+      select: {
+        id: true,
+        kode: true,
         status: true,
+        tglSelesai: true,
+        items: {
+          select: {
+            jumlahDiambil: true,
+            statusKembali: true,
+          },
+        },
       },
     })
 
     const result = {
       totalActive: 0,
+      totalDiambil: 0,
       totalSelesai: 0,
       totalTerlambat: 0,
       totalCancelled: 0,
     }
 
-    stats.forEach((stat) => {
-      switch (stat.status) {
+    // Apply enhanced status calculation to each transaction
+    transactions.forEach((transaction) => {
+      const enhancedStatus = calculateEnhancedStatus(
+        transaction.status as TransactionStatus,
+        transaction.items,
+        transaction.tglSelesai?.toISOString(),
+      )
+
+      switch (enhancedStatus) {
         case 'active':
-          result.totalActive = stat._count.status
+          result.totalActive++
+          break
+        case 'diambil':
+          result.totalDiambil++
           break
         case 'selesai':
-          result.totalSelesai = stat._count.status
+          result.totalSelesai++
           break
         case 'terlambat':
-          result.totalTerlambat = stat._count.status
+          result.totalTerlambat++
           break
         case 'cancelled':
-          result.totalCancelled = stat._count.status
+          result.totalCancelled++
           break
       }
     })

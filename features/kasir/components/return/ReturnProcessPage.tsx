@@ -187,13 +187,17 @@ export function ReturnProcessPage({ onClose, initialTransactionId, kode }: Retur
         itemCount: transaction?.items?.length || 0,
       })
 
-      // Auto-calculate penalties when entering step 2 
+      // Auto-calculate penalties when entering step 2
       if (nextStep === 2) {
-        kasirLogger.penaltyCalc.info('handleNext', 'Auto-triggering penalty calculation for step 2', {
-          transactionId: transaction?.kode,
-          itemConditionsCount: Object.keys(itemConditions).length,
-        })
-        
+        kasirLogger.penaltyCalc.info(
+          'handleNext',
+          'Auto-triggering penalty calculation for step 2',
+          {
+            transactionId: transaction?.kode,
+            itemConditionsCount: Object.keys(itemConditions).length,
+          },
+        )
+
         try {
           await calculatePenalties()
         } catch (error) {
@@ -233,19 +237,23 @@ export function ReturnProcessPage({ onClose, initialTransactionId, kode }: Retur
   const handleItemConditionChange = useCallback(
     // eslint-disable-next-line
     (itemId: string, condition: any) => {
-      kasirLogger.returnProcess.debug('handleItemConditionChange', 'Item condition change requested - ENTRY', {
-        itemId,
-        conditionMode: condition?.mode,
-        conditionCount: condition?.conditions?.length || 0,
-        isValid: condition?.isValid,
-        totalQuantity: condition?.totalQuantity,
-        remainingQuantity: condition?.remainingQuantity,
-        hasValidationError: !!condition?.validationError,
-        transactionId: transaction?.kode,
-        hasCondition: !!condition,
-        conditionType: typeof condition,
-        hasSetItemConditionFunc: typeof setItemCondition === 'function',
-      })
+      kasirLogger.returnProcess.debug(
+        'handleItemConditionChange',
+        'Item condition change requested - ENTRY',
+        {
+          itemId,
+          conditionMode: condition?.mode,
+          conditionCount: condition?.conditions?.length || 0,
+          isValid: condition?.isValid,
+          totalQuantity: condition?.totalQuantity,
+          remainingQuantity: condition?.remainingQuantity,
+          hasValidationError: !!condition?.validationError,
+          transactionId: transaction?.kode,
+          hasCondition: !!condition,
+          conditionType: typeof condition,
+          hasSetItemConditionFunc: typeof setItemCondition === 'function',
+        },
+      )
 
       if (!condition) {
         kasirLogger.returnProcess.warn('handleItemConditionChange', 'Null condition received', {
@@ -271,10 +279,14 @@ export function ReturnProcessPage({ onClose, initialTransactionId, kode }: Retur
 
       setItemCondition(itemId, condition)
 
-      kasirLogger.returnProcess.debug('handleItemConditionChange', 'setItemCondition call completed', {
-        itemId,
-        transactionId: transaction?.kode,
-      })
+      kasirLogger.returnProcess.debug(
+        'handleItemConditionChange',
+        'setItemCondition call completed',
+        {
+          itemId,
+          transactionId: transaction?.kode,
+        },
+      )
     },
     [setItemCondition, transaction?.kode],
   )
@@ -352,66 +364,69 @@ export function ReturnProcessPage({ onClose, initialTransactionId, kode }: Retur
               </div>
 
               {/* Enhanced Step Indicator */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="flex items-center w-full">
                 {steps.map((step, index) => {
                   const isCompleted = step.id < currentStep
                   const isCurrent = step.id === currentStep
 
                   return (
-                    <div
-                      key={step.id}
-                      className={`relative flex flex-col items-center p-3 rounded-lg transition-all duration-200 ${
-                        isCompleted
-                          ? 'bg-green-50 border border-green-200'
-                          : isCurrent
-                            ? 'bg-gold-50 border border-gold-200 shadow-sm'
-                            : 'bg-neutral-50 border border-neutral-200'
-                      }`}
-                    >
-                      {/* Step Circle */}
+                    <React.Fragment key={step.id}>
+                      {/* Step Container */}
                       <div
-                        className={`
-                        w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold mb-2 transition-all duration-200
-                        ${
+                        className={`flex flex-col items-center p-3 rounded-lg transition-all duration-200 ${
                           isCompleted
-                            ? 'bg-green-500 text-white shadow-lg'
+                            ? 'bg-green-50 border border-green-200'
                             : isCurrent
-                              ? 'bg-gold-500 text-black shadow-lg scale-110'
-                              : 'bg-neutral-200 text-neutral-500'
-                        }
-                      `}
+                              ? 'bg-gold-50 border border-gold-200 shadow-sm'
+                              : 'bg-neutral-50 border border-neutral-200'
+                        }`}
                       >
-                        {isCompleted ? (
-                          <CheckCircle className="h-5 w-5" />
-                        ) : (
-                          <step.icon className="h-5 w-5" />
-                        )}
-                      </div>
-
-                      {/* Step Info */}
-                      <div className="text-center">
+                        {/* Step Circle */}
                         <div
-                          className={`text-xs font-medium mb-1 ${
-                            isCompleted || isCurrent ? 'text-neutral-900' : 'text-neutral-500'
-                          }`}
+                          className={`
+                          w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold mb-2 transition-all duration-200
+                          ${
+                            isCompleted
+                              ? 'bg-green-500 text-white shadow-lg'
+                              : isCurrent
+                                ? 'bg-gold-500 text-black shadow-lg scale-110'
+                                : 'bg-neutral-200 text-neutral-500'
+                          }
+                        `}
                         >
-                          {step.title}
+                          {isCompleted ? (
+                            <CheckCircle className="h-5 w-5" />
+                          ) : (
+                            <step.icon className="h-5 w-5" />
+                          )}
                         </div>
-                        <div className="text-xs text-neutral-500 leading-tight">
-                          {step.description}
+
+                        {/* Step Info */}
+                        <div className="text-center">
+                          <div
+                            className={`text-xs font-medium mb-1 ${
+                              isCompleted || isCurrent ? 'text-neutral-900' : 'text-neutral-500'
+                            }`}
+                          >
+                            {step.title}
+                          </div>
+                          <div className="text-xs text-neutral-500 leading-tight">
+                            {step.description}
+                          </div>
                         </div>
                       </div>
 
                       {/* Connection Line */}
                       {index < steps.length - 1 && (
-                        <div
-                          className={`
-                          hidden md:block absolute top-5 left-full w-full h-0.5 -translate-y-0.5 transition-colors duration-200
-                          ${isCompleted ? 'bg-green-300' : 'bg-neutral-200'}
-                        `}
-                        />
+                        <div className="flex-1 mx-4">
+                          <div
+                            className={`h-0.5 transition-colors duration-200 ${
+                              isCompleted ? 'bg-green-300' : 'bg-neutral-200'
+                            }`}
+                          />
+                        </div>
                       )}
-                    </div>
+                    </React.Fragment>
                   )
                 })}
               </div>
@@ -430,8 +445,8 @@ export function ReturnProcessPage({ onClose, initialTransactionId, kode }: Retur
         )}
 
         {/* Enhanced Step Content */}
-        <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm mb-8">
-          <CardHeader className="border-b border-neutral-100 bg-neutral-50/50">
+        <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm mb-6 gap-2">
+          <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 ">
             <CardTitle className="flex items-center gap-3 text-xl">
               {currentStepConfig?.icon && (
                 <div className={`p-2 rounded-lg ${currentStepConfig.color}`}>
@@ -442,7 +457,7 @@ export function ReturnProcessPage({ onClose, initialTransactionId, kode }: Retur
             </CardTitle>
           </CardHeader>
 
-          <CardContent className="p-6 md:p-8">
+          <CardContent className="px-2 md:px-4">
             {isLoadingTransaction && (
               <div className="flex items-center justify-center py-12">
                 <div className="flex items-center gap-3 text-gray-600">

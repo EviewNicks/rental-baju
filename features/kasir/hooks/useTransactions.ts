@@ -53,28 +53,34 @@ export function useTransactions(options: UseTransactionsOptions = {}) {
   // Transform API data to match component expectations
   const transactions = useMemo(() => {
     // API returns TransaksiListResponse structure
-    if (!transactionData?.data) return []
-    
-    return transactionData.data.map((transaction) => ({
-      id: transaction.id,
-      transactionCode: transaction.kode,
-      customerName: transaction.penyewa.nama,
-      customerPhone: transaction.penyewa.telepon,
-      customerAddress: transaction.penyewa.alamat,
-      // Use the actual items array with product names from API
-      items: transaction.items?.map((item) => item.produk?.name || 'Produk tidak diketahui') || ['Tidak ada item'],
-      totalAmount: transaction.totalHarga,
-      amountPaid: transaction.jumlahBayar,
-      remainingAmount: transaction.sisaBayar,
-      status: transaction.status,
-      startDate: transaction.tglMulai,
-      endDate: transaction.tglSelesai || undefined,
-      returnDate: transaction.tglKembali || undefined,
-      paymentMethod: transaction.metodeBayar,
-      notes: transaction.catatan || '',
-      createdAt: transaction.createdAt,
-      updatedAt: transaction.updatedAt,
-    }))
+    if (!transactionData?.data) {
+      return []
+    }
+
+    return transactionData.data.map((transaction) => {
+      const itemsData = transaction.items || []
+
+      return {
+        id: transaction.id,
+        transactionCode: transaction.kode,
+        customerName: transaction.penyewa.nama,
+        customerPhone: transaction.penyewa.telepon,
+        customerAddress: transaction.penyewa.alamat,
+        // Use the actual items array with product names from API
+        items: itemsData?.map((item) => item.produk?.name || 'Produk tidak diketahui') || ['Tidak ada item'],
+        totalAmount: transaction.totalHarga,
+        amountPaid: transaction.jumlahBayar,
+        remainingAmount: transaction.sisaBayar,
+        status: transaction.status, // Backend now provides enhanced status directly
+        startDate: transaction.tglMulai,
+        endDate: transaction.tglSelesai || undefined,
+        returnDate: transaction.tglKembali || undefined,
+        paymentMethod: transaction.metodeBayar,
+        notes: transaction.catatan || '',
+        createdAt: transaction.createdAt,
+        updatedAt: transaction.updatedAt,
+      }
+    })
   }, [transactionData])
 
   // Calculate transaction counts from summary
@@ -83,18 +89,23 @@ export function useTransactions(options: UseTransactionsOptions = {}) {
     if (!transactionData?.summary) {
       return {
         active: 0,
+        diambil: 0,
         completed: 0,
         overdue: 0,
+        cancelled: 0,
         total: 0,
       }
     }
 
     const { summary } = transactionData
+
     return {
       active: summary?.totalActive || 0,
+      diambil: summary?.totalDiambil || 0,
       completed: summary?.totalSelesai || 0,
       overdue: summary?.totalTerlambat || 0,
-      total: (summary?.totalActive || 0) + (summary?.totalSelesai || 0) + (summary?.totalTerlambat || 0) + (summary?.totalCancelled || 0),
+      cancelled: summary?.totalCancelled || 0,
+      total: (summary?.totalActive || 0) + (summary?.totalDiambil || 0) + (summary?.totalSelesai || 0) + (summary?.totalTerlambat || 0) + (summary?.totalCancelled || 0),
     }
   }, [transactionData])
 

@@ -1,16 +1,12 @@
 'use client'
 
 import { Edit, Trash2, Package, Search } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { useDebounce } from '@/features/manage-product/hooks/useDebounce'
 import type { Material } from '@/features/manage-product/types/material'
-import { logger } from '@/services/logger'
-
-// Component-specific logger for material list
-const listLogger = logger.child('MaterialList')
 
 interface MaterialListProps {
   materials: Material[]
@@ -25,91 +21,33 @@ export function MaterialList({ materials, onEdit, onDelete, loading }: MaterialL
   // Debounce search term to improve performance
   const debouncedSearchTerm = useDebounce(searchTerm, 300)
 
-  // Log component mount and data changes
-  useEffect(() => {
-    const safeMaterialsLength = Array.isArray(materials) ? materials.length : 0
-    listLogger.debug('componentMount', 'MaterialList component mounted', {
-      materialsCount: safeMaterialsLength,
-      loading
-    })
-  }, [materials, loading])
+  // Debug logging removed
 
-  useEffect(() => {
-    const safeMaterials = Array.isArray(materials) ? materials : []
-    if (safeMaterials.length > 0) {
-      listLogger.info('materialsLoaded', 'Materials data loaded successfully', {
-        materialsCount: safeMaterials.length,
-        materialNames: safeMaterials.slice(0, 5).map(m => m?.name || 'Unknown') // Log first 5 for debugging
-      })
-    }
-  }, [materials])
-
-  // Filter materials by debounced search term with performance logging
+  // Filter materials by debounced search term
   const filteredMaterials = (() => {
-    const timer = logger.startTimer('MaterialList', 'filterMaterials', 'material_filtering')
-    
     // Defensive programming: handle undefined/null materials array
     const safeMaterials = Array.isArray(materials) ? materials : []
-    
-    const filtered = safeMaterials.filter(material =>
+
+    return safeMaterials.filter(material =>
       material?.name?.toLowerCase()?.includes(debouncedSearchTerm.toLowerCase()) || false
     )
-    
-    const duration = timer.end()
-    
-    // Log search performance and results
-    if (debouncedSearchTerm) {
-      listLogger.info('filterMaterials', 'Search filtering completed', {
-        searchTerm: debouncedSearchTerm,
-        totalMaterials: safeMaterials.length,
-        filteredCount: filtered.length,
-        duration: `${duration}ms`,
-        filterEfficiency: safeMaterials.length > 0 ? `${((filtered.length / safeMaterials.length) * 100).toFixed(1)}%` : '0%'
-      })
-    }
-    
-    return filtered
   })()
 
-  // Handle search term changes with logging
+  // Handle search term changes
   const handleSearchChange = (value: string) => {
     setSearchTerm(value)
-    
-    if (value.length === 0) {
-      listLogger.debug('handleSearchChange', 'Search cleared', {
-        previousLength: searchTerm.length
-      })
-    } else if (value.length === 1) {
-      const safeMaterialsLength = Array.isArray(materials) ? materials.length : 0
-      listLogger.debug('handleSearchChange', 'User started searching', {
-        materialsCount: safeMaterialsLength
-      })
-    }
   }
 
-  // Handle user interactions with logging
+  // Handle user interactions
   const handleEdit = (material: Material) => {
-    listLogger.info('handleEdit', 'User initiated material edit', {
-      materialId: material.id,
-      materialName: material.name,
-      fromSearch: debouncedSearchTerm.length > 0,
-      searchTerm: debouncedSearchTerm || null
-    })
     onEdit(material)
   }
 
   const handleDelete = (material: Material) => {
-    listLogger.info('handleDelete', 'User initiated material deletion', {
-      materialId: material.id,
-      materialName: material.name,
-      fromSearch: debouncedSearchTerm.length > 0,
-      searchTerm: debouncedSearchTerm || null
-    })
     onDelete(material)
   }
 
   if (loading) {
-    listLogger.debug('renderSkeleton', 'Rendering loading skeleton state')
     return <MaterialListSkeleton />
   }
 
@@ -129,16 +67,7 @@ export function MaterialList({ materials, onEdit, onDelete, loading }: MaterialL
       </div>
 
       {filteredMaterials.length === 0 ? (
-        (() => {
-          const safeMaterialsLength = Array.isArray(materials) ? materials.length : 0
-          listLogger.info('renderEmptyState', 'Rendering empty state', {
-            hasSearch: debouncedSearchTerm.length > 0,
-            searchTerm: debouncedSearchTerm,
-            totalMaterials: safeMaterialsLength,
-            isFiltered: debouncedSearchTerm.length > 0
-          })
-          return <EmptyState hasSearch={debouncedSearchTerm.length > 0} />
-        })()
+        <EmptyState hasSearch={debouncedSearchTerm.length > 0} />
       ) : (
         <div className="space-y-3">
           {filteredMaterials.map((material) => (

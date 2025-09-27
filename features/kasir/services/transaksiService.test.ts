@@ -454,23 +454,52 @@ describe('TransaksiService', () => {
   })
 
   describe('getTransaksiStats', () => {
-    it('should return transaction statistics', async () => {
-      const mockStats = [
-        { status: 'active', _count: { status: 5 } },
-        { status: 'selesai', _count: { status: 10 } },
-        { status: 'terlambat', _count: { status: 2 } },
-        { status: 'cancelled', _count: { status: 1 } }
+    it('should return transaction statistics with enhanced status calculation', async () => {
+      // Use future dates to avoid overdue detection in tests
+      const futureDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days from now
+
+      // Mock transactions with different statuses that will be enhanced
+      const mockTransactions = [
+        { id: '1', status: 'active', tglSelesai: null, items: [] }, // stays active (no end date)
+        { id: '2', status: 'active', tglSelesai: futureDate, items: [] }, // stays active (no pickup, not overdue)
+        { id: '3', status: 'active', tglSelesai: futureDate, items: [{ jumlahDiambil: 1 }] }, // becomes diambil (has pickup)
+        { id: '4', status: 'active', tglSelesai: futureDate, items: [{ jumlahDiambil: 2 }] }, // becomes diambil (has pickup)
+        { id: '5', status: 'active', tglSelesai: futureDate, items: [{ jumlahDiambil: 1 }] }, // becomes diambil (has pickup)
+        { id: '6', status: 'selesai', tglSelesai: null, items: [] }, // stays selesai
+        { id: '7', status: 'terlambat', tglSelesai: null, items: [] }, // stays terlambat
+        { id: '8', status: 'cancelled', tglSelesai: null, items: [] }, // stays cancelled
       ]
 
-      mockPrisma.transaksi.groupBy.mockResolvedValue(mockStats as never)
+      mockPrisma.transaksi.findMany.mockResolvedValue(mockTransactions as never)
 
       const result = await transaksiService.getTransaksiStats()
 
+      // Expected enhanced status counts:
+      // 2 active (no pickup, not overdue)
+      // 3 diambil (active with pickup detected)
+      // 1 selesai (unchanged)
+      // 1 terlambat (unchanged)
+      // 1 cancelled (unchanged)
       expect(result).toEqual({
-        totalActive: 5,
-        totalSelesai: 10,
-        totalTerlambat: 2,
+        totalActive: 2,
+        totalDiambil: 3,
+        totalSelesai: 1,
+        totalTerlambat: 1,
         totalCancelled: 1
+      })
+
+      // Verify the correct query structure
+      expect(mockPrisma.transaksi.findMany).toHaveBeenCalledWith({
+        select: {
+          id: true,
+          status: true,
+          tglSelesai: true,
+          items: {
+            select: {
+              jumlahDiambil: true,
+            }
+          }
+        }
       })
     })
   })

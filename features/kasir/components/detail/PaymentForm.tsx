@@ -1,6 +1,7 @@
 'use client'
 
 import { useForm } from 'react-hook-form'
+import { useEffect, useRef } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Button } from '@/components/ui/button'
@@ -13,9 +14,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Textarea } from '@/components/ui/textarea'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Loader2, AlertTriangle } from 'lucide-react'
+import { Loader2, AlertTriangle, Info } from 'lucide-react'
 import { usePaymentMethods } from '../../hooks/usePaymentProcessing'
 import { formatCurrency } from '../../lib/utils/client'
 
@@ -77,6 +77,25 @@ export function PaymentForm({
 
   const selectedMethod = form.watch('metode')
   const selectedMethodInfo = paymentMethods.find((m) => m.value === selectedMethod)
+  const referensiInputRef = useRef<HTMLInputElement>(null)
+
+  // Reset referensi field when switching to tunai method
+  useEffect(() => {
+    if (selectedMethod === 'tunai') {
+      form.setValue('referensi', '', { shouldValidate: true })
+      form.clearErrors('referensi')
+    }
+  }, [selectedMethod, form])
+
+  // Focus management and screen reader announcements
+  useEffect(() => {
+    if (selectedMethodInfo?.requiresReference && referensiInputRef.current) {
+      // Focus on referensi field when it becomes required
+      setTimeout(() => {
+        referensiInputRef.current?.focus()
+      }, 300) // Wait for transition to complete
+    }
+  }, [selectedMethodInfo?.requiresReference])
 
   const handleSubmit = (data: PaymentFormData) => {
     // Additional validation for amount
@@ -91,7 +110,7 @@ export function PaymentForm({
   }
 
   return (
-    <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+    <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
       {/* Payment Amount */}
       <div className="space-y-2">
         <Label htmlFor="jumlah">Jumlah Pembayaran</Label>
@@ -132,16 +151,25 @@ export function PaymentForm({
         <Label htmlFor="metode">Metode Pembayaran</Label>
         <Select
           value={selectedMethod}
-          onValueChange={(value) =>
+          onValueChange={(value) => {
             form.setValue('metode', value as 'tunai' | 'transfer' | 'kartu')
-          }
+            // Clear referensi when switching to tunai
+            if (value === 'tunai') {
+              form.setValue('referensi', '')
+              form.clearErrors('referensi')
+            }
+          }}
         >
-          <SelectTrigger>
+          <SelectTrigger aria-label="Pilih metode pembayaran">
             <SelectValue placeholder="Pilih metode pembayaran" />
           </SelectTrigger>
           <SelectContent>
             {paymentMethods.map((method) => (
-              <SelectItem key={method.value} value={method.value}>
+              <SelectItem
+                key={method.value}
+                value={method.value}
+                aria-label={`${method.label}${method.requiresReference ? ', memerlukan nomor referensi' : ''}`}
+              >
                 <div className="flex items-center justify-between w-full">
                   <span>{method.label}</span>
                   {method.requiresReference && (
@@ -163,43 +191,37 @@ export function PaymentForm({
       </div>
 
       {/* Reference Number (conditional) */}
-      {selectedMethodInfo?.requiresReference && (
-        <div className="space-y-2">
-          <Label htmlFor="referensi">
-            Nomor Referensi
-            <span className="text-red-500 ml-1">*</span>
-          </Label>
-          <Input
-            id="referensi"
-            placeholder={
-              selectedMethod === 'transfer'
-                ? 'Nomor referensi transfer bank'
-                : 'Nomor referensi QRIS/Kartu'
-            }
-            {...form.register('referensi')}
-          />
-          {form.formState.errors.referensi && (
-            <p className="text-sm text-red-600">{form.formState.errors.referensi.message}</p>
-          )}
-          <p className="text-sm text-gray-600">
-            {selectedMethod === 'transfer'
-              ? 'Masukkan nomor referensi dari slip transfer bank'
-              : 'Masukkan nomor referensi dari QRIS atau struk kartu'}
-          </p>
-        </div>
-      )}
-
-      {/* Notes */}
-      <div className="space-y-2">
-        <Label htmlFor="catatan">Catatan (Opsional)</Label>
-        <Textarea
-          id="catatan"
-          placeholder="Catatan tambahan untuk pembayaran ini..."
-          rows={3}
-          {...form.register('catatan')}
-        />
-        {form.formState.errors.catatan && (
-          <p className="text-sm text-red-600">{form.formState.errors.catatan.message}</p>
+      <div
+        className={`transition-all duration-300 ${selectedMethodInfo?.requiresReference ? 'opacity-100 max-h-32' : 'opacity-0 max-h-0 overflow-hidden'}`}
+      >
+        {selectedMethodInfo?.requiresReference && (
+          <div className="space-y-2">
+            <Label htmlFor="referensi">
+              Nomor Referensi
+              <span className="text-red-500 ml-1">*</span>
+            </Label>
+            <Input
+              id="referensi"
+              placeholder={
+                selectedMethod === 'transfer'
+                  ? 'Nomor referensi transfer bank'
+                  : 'Nomor referensi QRIS/Kartu'
+              }
+              {...form.register('referensi')}
+              className="transition-all duration-200"
+            />
+            {form.formState.errors.referensi && (
+              <p className="text-sm text-red-600 animate-fade-in">
+                {form.formState.errors.referensi.message}
+              </p>
+            )}
+            <p className="text-sm text-gray-600 flex items-center gap-1">
+              <Info className="h-3 w-3" />
+              {selectedMethod === 'transfer'
+                ? 'Masukkan nomor referensi dari slip transfer bank'
+                : 'Masukkan nomor referensi dari QRIS atau struk kartu'}
+            </p>
+          </div>
         )}
       </div>
 
@@ -214,7 +236,7 @@ export function PaymentForm({
       )}
 
       {/* Action Buttons */}
-      <div className="flex gap-3 pt-4">
+      <div className="flex gap-3">
         <Button
           type="button"
           variant="outline"
@@ -227,7 +249,14 @@ export function PaymentForm({
         <Button
           type="submit"
           disabled={isProcessing || !form.formState.isValid || form.getValues('jumlah') <= 0}
-          className="flex-1"
+          className="flex-1 transition-all duration-200"
+          title={
+            !form.formState.isValid
+              ? 'Periksa kembali form pembayaran'
+              : form.getValues('jumlah') <= 0
+                ? 'Masukkan jumlah pembayaran yang valid'
+                : undefined
+          }
         >
           {isProcessing ? (
             <>

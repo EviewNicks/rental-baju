@@ -35,8 +35,6 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     return NextResponse.json(product, { status: 200 })
   } catch (error) {
-    console.error('GET /api/products/[id] error:', error)
-
     if (error instanceof NotFoundError) {
       return NextResponse.json(
         { error: { message: error.message, code: 'NOT_FOUND' } },
@@ -173,8 +171,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         if (currentProduct.imageUrl) {
           try {
             oldImagePath = fileUploadService.extractPathFromUrl(currentProduct.imageUrl)
-          } catch (error) {
-            console.warn('Failed to extract old image path:', error)
+          } catch {
+            // Failed to extract old image path
           }
         }
 
@@ -185,8 +183,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
           oldImagePath,
         )
         updateData.imageUrl = uploadResult?.url
-      } catch (uploadError) {
-        console.error('Image upload error:', uploadError)
+      } catch {
+        // Image upload failed
         return NextResponse.json(
           { error: { message: 'Failed to upload image', code: 'UPLOAD_ERROR' } },
           { status: 400 },
@@ -199,8 +197,6 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     return NextResponse.json(product, { status: 200 })
   } catch (error) {
-    console.error('PUT /api/products/[id] error:', error)
-
     if (error instanceof NotFoundError) {
       return NextResponse.json(
         { error: { message: error.message, code: 'NOT_FOUND' } },
@@ -262,8 +258,6 @@ export async function DELETE(
       { status: 200 },
     )
   } catch (error) {
-    console.error('DELETE /api/products/[id] error:', error)
-
     if (error instanceof NotFoundError) {
       return NextResponse.json(
         { error: { message: error.message, code: 'NOT_FOUND' } },

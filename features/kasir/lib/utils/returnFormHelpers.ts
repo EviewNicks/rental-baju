@@ -36,10 +36,11 @@ export function getReturnableItems(transaction: TransaksiDetail): TransaksiItemR
 
 /**
  * Check if a transaction can be returned
+ * FIXED: Allow returns for both 'active' and 'terlambat' status
  */
 export function canReturnTransaction(transaction: TransaksiDetail): boolean {
   return (
-    transaction.status === 'active' && 
+    (transaction.status === 'active' || transaction.status === 'terlambat' || transaction.status === 'diambil') &&
     getReturnableItems(transaction).length > 0
   )
 }
@@ -48,178 +49,158 @@ export function canReturnTransaction(transaction: TransaksiDetail): boolean {
  * Calculate late days for penalty
  */
 export function calculateLateDays(expectedReturnDate: string | Date): number {
-  const today = new Date()
-  const expected = new Date(expectedReturnDate)
+  const returnDate = typeof expectedReturnDate === 'string' 
+    ? new Date(expectedReturnDate) 
+    : expectedReturnDate
   
-  const diffTime = today.getTime() - expected.getTime()
+  const today = new Date()
+  const diffTime = today.getTime() - returnDate.getTime()
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
   
-  return Math.max(0, diffDays)
+  return Math.max(0, diffDays) // Only positive values (late days)
 }
 
 /**
- * Get penalty rates based on condition
+ * Calculate penalty amount based on item price and late days
  */
-export const PENALTY_RATES = {
-  DAILY_LATE: 5000, // Rp 5,000 per day
-  CONDITION: {
-    baik: 0,
-    cukup: 5000, // 1x daily rate
-    buruk: 20000, // 4x daily rate
-    hilang: 150000 // Default, will use modalAwal if available
-  }
-} as const
-
-/**
- * Calculate condition penalty for an item
- */
-export function calculateConditionPenalty(
-  kondisiAkhir: string,
-  quantity: number,
-  modalAwal?: number
-): number {
-  const normalized = kondisiAkhir.toLowerCase()
-  
-  if (isLostItemCondition(kondisiAkhir)) {
-    // Use modalAwal if available, otherwise default
-    return modalAwal || PENALTY_RATES.CONDITION.hilang
-  }
-  
-  if (normalized.includes('buruk')) {
-    return PENALTY_RATES.CONDITION.buruk * quantity
-  }
-  
-  if (normalized.includes('cukup')) {
-    return PENALTY_RATES.CONDITION.cukup * quantity
-  }
-  
-  return PENALTY_RATES.CONDITION.baik * quantity
-}
-
-/**
- * Calculate late penalty for an item
- */
-export function calculateLatePenalty(
+export function calculatePenaltyAmount(
+  hargaSewa: number,
   lateDays: number,
-  quantity: number
+  penaltyPercentage: number = 10 // Default 10%
 ): number {
-  return lateDays * PENALTY_RATES.DAILY_LATE * quantity
+  if (lateDays <= 0) return 0
+  
+  const dailyPenalty = hargaSewa * (penaltyPercentage / 100)
+  return dailyPenalty * lateDays
 }
 
 /**
- * Validate item condition for return
+ * Calculate total penalty for multiple items
  */
-export interface ItemConditionValidation {
-  isValid: boolean
-  error?: string
+export function calculateTotalPenalty(
+  items: Array<{
+    hargaSewa: number
+    jumlahKembali: number
+    lateDays: number
+  }>,
+  penaltyPercentage: number = 10
+): number {
+  return items.reduce((total, item) => {
+    const itemPenalty = calculatePenaltyAmount(item.hargaSewa, item.lateDays, penaltyPercentage)
+    return total + (itemPenalty * item.jumlahKembali)
+  }, 0)
 }
 
-export function validateItemCondition(
-  itemId: string,
-  kondisiAkhir: string,
-  jumlahKembali: number,
-  maxQuantity: number
-): ItemConditionValidation {
-  // Check if condition is provided
-  if (!kondisiAkhir || kondisiAkhir.trim() === '') {
-    return {
-      isValid: false,
-      error: 'Kondisi barang harus dipilih'
-    }
-  }
-
-  // Check for lost items
+/**
+ * Calculate deposit deduction based on item condition
+ */
+export function calculateDepositDeduction(kondisiAkhir: string, modalAwal: number): number {
+  // Lost items: full deduction
   if (isLostItemCondition(kondisiAkhir)) {
-    if (jumlahKembali !== 0) {
-      return {
-        isValid: false,
-        error: 'Barang hilang harus memiliki jumlah kembali = 0'
-      }
-    }
-  } else {
-    // For normal items
-    if (jumlahKembali < 1) {
-      return {
-        isValid: false,
-        error: 'Jumlah kembali minimal 1 untuk barang yang dikembalikan'
-      }
+    return modalAwal
+  }
+  
+  const condition = kondisiAkhir.toLowerCase()
+  
+  // Good condition: no deduction
+  if (condition.includes('baik')) {
+    return 0
+  }
+  
+  // Fair condition: partial deduction
+  if (condition.includes('cukup')) {
+    return modalAwal * 0.3 // 30% deduction
+  }
+  
+  // Bad condition: major deduction
+  if (condition.includes('buruk')) {
+    return modalAwal * 0.7 // 70% deduction
+  }
+  
+  return 0 // Default: no deduction
+}
+
+/**
+ * Create return form data for an item
+ */
+export function createReturnFormItem(
+  item: TransaksiItemResponse,
+  jumlahKembali: number,
+  kondisiAkhir: string,
+  expectedReturnDate: string | Date
+) {
+  const lateDays = calculateLateDays(expectedReturnDate)
+  const penaltyAmount = calculatePenaltyAmount(item.hargaSewa, lateDays)
+  const depositDeduction = calculateDepositDeduction(kondisiAkhir, item.produk.modalAwal || 0)
+  
+  return {
+    transaksiItemId: item.id,
+    jumlahKembali,
+    kondisiAkhir,
+    penaltyAmount: penaltyAmount * jumlahKembali,
+    modalAwalUsed: depositDeduction * jumlahKembali,
+    lateDays,
+    isLost: isLostItemCondition(kondisiAkhir)
+  }
+}
+
+/**
+ * Validate return form data
+ */
+export function validateReturnForm(items: Array<{
+  transaksiItemId: string
+  jumlahKembali: number
+  jumlahDiambil: number
+  kondisiAkhir: string
+}>): { isValid: boolean; errors: string[] } {
+  const errors: string[] = []
+  
+  items.forEach((item, index) => {
+    if (item.jumlahKembali <= 0) {
+      errors.push(`Item ${index + 1}: Jumlah kembali harus lebih dari 0`)
     }
     
-    if (jumlahKembali > maxQuantity) {
-      return {
-        isValid: false,
-        error: `Jumlah kembali tidak bisa lebih dari ${maxQuantity}`
-      }
+    if (item.jumlahKembali > item.jumlahDiambil) {
+      errors.push(`Item ${index + 1}: Jumlah kembali tidak boleh lebih dari jumlah diambil`)
     }
+    
+    if (!item.kondisiAkhir) {
+      errors.push(`Item ${index + 1}: Kondisi akhir harus dipilih`)
+    }
+  })
+  
+  return {
+    isValid: errors.length === 0,
+    errors
   }
-
-  return { isValid: true }
-}
-
-/**
- * Get condition color for UI styling
- */
-export function getConditionColor(condition: string): string {
-  const normalized = condition.toLowerCase()
-  
-  if (normalized.includes('hilang')) return 'text-red-600 bg-red-50'
-  if (normalized.includes('buruk')) return 'text-orange-600 bg-orange-50'
-  if (normalized.includes('cukup')) return 'text-yellow-600 bg-yellow-50'
-  if (normalized.includes('baik')) return 'text-green-600 bg-green-50'
-  
-  return 'text-gray-600 bg-gray-50'
 }
 
 /**
  * Format currency for display
  */
 export function formatCurrency(amount: number): string {
-  return `Rp ${amount.toLocaleString('id-ID')}`
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(amount)
 }
 
 /**
  * Format date for display
  */
-export function formatDate(dateString: string | Date): string {
-  const date = new Date(dateString)
-  return date.toLocaleDateString('id-ID', {
-    weekday: 'long',
+export function formatDate(date: string | Date): string {
+  const d = typeof date === 'string' ? new Date(date) : date
+  return new Intl.DateTimeFormat('id-ID', {
     year: 'numeric',
     month: 'long',
     day: 'numeric'
-  })
+  }).format(d)
 }
 
 /**
- * Generate return request payload
- */
-export interface ReturnRequestPayload {
-  items: Array<{
-    itemId: string
-    kondisiAkhir: string
-    jumlahKembali: number
-  }>
-  catatan?: string
-  tglKembali: string
-}
-
-export function generateReturnRequestPayload(
-  itemConditions: Record<string, { kondisiAkhir: string; jumlahKembali: number }>,
-  notes?: string
-): ReturnRequestPayload {
-  return {
-    items: Object.entries(itemConditions).map(([itemId, condition]) => ({
-      itemId,
-      kondisiAkhir: condition.kondisiAkhir,
-      jumlahKembali: condition.jumlahKembali
-    })),
-    catatan: notes?.trim() || undefined,
-    tglKembali: new Date().toISOString()
-  }
-}
-
-/**
- * Calculate transaction return eligibility
+ * Check transaction return eligibility with detailed reasons
  */
 export interface ReturnEligibility {
   canReturn: boolean
@@ -228,26 +209,63 @@ export interface ReturnEligibility {
 }
 
 export function checkReturnEligibility(transaction: TransaksiDetail): ReturnEligibility {
-  if (transaction.status !== 'active') {
+  // FIXED: Allow returns for 'active', 'terlambat', and 'diambil' status
+  if (transaction.status !== 'active' && transaction.status !== 'terlambat' && transaction.status !== 'diambil') {
     return {
       canReturn: false,
-      reason: 'Status transaksi bukan active',
+      reason: 'Status transaksi bukan active, terlambat, atau diambil',
       returnableItemsCount: 0
     }
   }
-
+  
   const returnableItems = getReturnableItems(transaction)
   
   if (returnableItems.length === 0) {
     return {
       canReturn: false,
-      reason: 'Tidak ada barang yang dapat dikembalikan',
+      reason: 'Tidak ada item yang dapat dikembalikan',
       returnableItemsCount: 0
     }
   }
-
+  
   return {
     canReturn: true,
     returnableItemsCount: returnableItems.length
+  }
+}
+
+/**
+ * Calculate summary for return operation
+ */
+export interface ReturnSummary {
+  totalItemsReturned: number
+  totalPenalty: number
+  totalDepositDeduction: number
+  netRefund: number
+  hasLostItems: boolean
+}
+
+export function calculateReturnSummary(
+  items: Array<{
+    jumlahKembali: number
+    penaltyAmount: number
+    modalAwalUsed: number
+    kondisiAkhir: string
+  }>
+): ReturnSummary {
+  const totalItemsReturned = items.reduce((sum, item) => sum + item.jumlahKembali, 0)
+  const totalPenalty = items.reduce((sum, item) => sum + item.penaltyAmount, 0)
+  const totalDepositDeduction = items.reduce((sum, item) => sum + item.modalAwalUsed, 0)
+  const hasLostItems = items.some(item => isLostItemCondition(item.kondisiAkhir))
+  
+  // Net refund = initial deposit - penalty - deductions
+  const netRefund = Math.max(0, totalDepositDeduction - totalPenalty)
+  
+  return {
+    totalItemsReturned,
+    totalPenalty,
+    totalDepositDeduction,
+    netRefund,
+    hasLostItems
   }
 }

@@ -80,5 +80,16 @@ export interface PenaltyActivityData {
   timestamp: string  // ISO 8601 format
 }
 
+// RPK-48: Pickup activity logging types with note support
+export interface PickupActivityData {
+  items: Array<{
+    itemId: string
+    jumlahDiambil: number
+  }>
+  processedBy: string
+  timestamp: string
+  catatan?: string  // Optional pickup note
+}
+
 // Enhanced ActivityAction type including new return activities
 export type ActivityAction = 'created' | 'paid' | 'picked_up' | 'returned' | 'overdue' | 'reminder_sent' | 'penalty_added' | 'return_completed'

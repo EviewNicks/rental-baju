@@ -7,11 +7,7 @@ import { Package } from 'lucide-react'
 import { useMaterials } from '@/features/manage-product/hooks/useMaterials'
 import type { Material } from '@/features/manage-product/types/material'
 import { MaterialCostDisplay } from './MaterialCostDisplay'
-import { logger } from '@/services/logger'
-import { useEffect, useMemo } from 'react'
-
-// Component-specific logger for material selector
-const selectorLogger = logger.child('MaterialSelector')
+import { useMemo } from 'react'
 
 // Constants for select values
 const NO_MATERIAL_VALUE = 'none'
@@ -33,15 +29,10 @@ export function MaterialSelector({
   disabled = false,
   className = '',
 }: MaterialSelectorProps) {
-  const { data: materialsData, isLoading, error } = useMaterials({ limit: 100 })
+  const { data: materialsData, isLoading } = useMaterials({ limit: 100 })
   const materials = useMemo(() => materialsData?.materials || [], [materialsData?.materials])
   
-  // Log only critical errors
-  useEffect(() => {
-    if (error) {
-      selectorLogger.error('materialsLoadError', 'Failed to load materials for selector', error)
-    }
-  }, [error])
+  // Error handling managed by React Query
   
   const selectedMaterial = materials.find((m: Material) => m.id === selectedMaterialId)
   
@@ -59,7 +50,8 @@ export function MaterialSelector({
 
   const handleQuantityChange = (value: string) => {
     const quantity = parseFloat(value)
-    const validQuantity = isNaN(quantity) || quantity <= 0 ? undefined : quantity
+    // Allow 0 as valid quantity, only treat NaN or negative as invalid
+    const validQuantity = isNaN(quantity) || quantity < 0 ? 0 : quantity
     onQuantityChange(validQuantity)
   }
 
@@ -107,8 +99,19 @@ export function MaterialSelector({
             type="number"
             min="0"
             step="0.1"
-            value={materialQuantity || ''}
-            onChange={(e) => handleQuantityChange(e.target.value)}
+            value={materialQuantity === 0 ? '' : materialQuantity || ''}
+            onChange={(e) => {
+              // Real-time leading zero removal
+              const sanitized = e.target.value.replace(/^0+(?=\d)/, '')
+              
+              // Handle empty input - store as 0 internally but display empty
+              if (sanitized === '' || sanitized === '0') {
+                handleQuantityChange('0')
+                return
+              }
+              
+              handleQuantityChange(sanitized)
+            }}
             placeholder={`Jumlah dalam ${selectedMaterial.unit}`}
             disabled={disabled}
           />

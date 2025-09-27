@@ -19,9 +19,9 @@ export default function Footer() {
     <footer data-testid="footer" className="bg-neutral-900 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Main Footer Content */}
-        <div className="py-16 grid md:grid-cols-4 gap-8">
-          {/* Brand Section */}
-          <div className="space-y-6" data-testid="footer-brand">
+        <div className="py-16 grid md:grid-cols-5 gap-8 lg:gap-12">
+          {/* Brand Section - 60% width */}
+          <div className="md:col-span-3 space-y-6" data-testid="footer-brand">
             <div className="flex items-center space-x-2" data-testid="footer-logo">
               <div className="w-10 h-10 bg-gradient-to-br from-gold-500 to-gold-600 rounded-lg flex items-center justify-center">
                 <Shirt className="w-6 h-6 text-white" />
@@ -83,93 +83,9 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Quick Links */}
-          <div data-testid="footer-quick-links">
-            <h3 className="font-bold text-lg mb-6">Menu Cepat</h3>
-            <div className="space-y-3">
-              <Link
-                href="#categories"
-                className="block text-neutral-300 hover:text-gold-500 transition-colors duration-200 hover:translate-x-1"
-                data-testid="footer-link-categories"
-              >
-                Kategori Pakaian
-              </Link>
-              <Link
-                href="#featured"
-                className="block text-neutral-300 hover:text-gold-500 transition-colors duration-200 hover:translate-x-1"
-                data-testid="footer-link-featured"
-              >
-                Koleksi Terpopuler
-              </Link>
-              <Link
-                href="#store-info"
-                className="block text-neutral-300 hover:text-gold-500 transition-colors duration-200 hover:translate-x-1"
-                data-testid="footer-link-store-info"
-              >
-                Info Toko
-              </Link>
-              <Link
-                href="#contact"
-                className="block text-neutral-300 hover:text-gold-500 transition-colors duration-200 hover:translate-x-1"
-                data-testid="footer-link-contact"
-              >
-                Hubungi Kami
-              </Link>
-              <Link
-                href="#"
-                className="block text-neutral-300 hover:text-gold-500 transition-colors duration-200 hover:translate-x-1"
-                data-testid="footer-link-ordering"
-              >
-                Cara Pemesanan
-              </Link>
-            </div>
-          </div>
-
-          {/* Categories */}
-          <div data-testid="footer-categories">
-            <h3 className="font-bold text-lg mb-6">Kategori</h3>
-            <div className="space-y-3">
-              <Link
-                href="#"
-                className="block text-neutral-300 hover:text-gold-500 transition-colors duration-200 hover:translate-x-1"
-                data-testid="footer-category-party"
-              >
-                Pakaian Pesta
-              </Link>
-              <Link
-                href="#"
-                className="block text-neutral-300 hover:text-gold-500 transition-colors duration-200 hover:translate-x-1"
-                data-testid="footer-category-casual"
-              >
-                Pakaian Casual
-              </Link>
-              <Link
-                href="#"
-                className="block text-neutral-300 hover:text-gold-500 transition-colors duration-200 hover:translate-x-1"
-                data-testid="footer-category-traditional"
-              >
-                Pakaian Tradisional
-              </Link>
-              <Link
-                href="#"
-                className="block text-neutral-300 hover:text-gold-500 transition-colors duration-200 hover:translate-x-1"
-                data-testid="footer-category-accessories"
-              >
-                Aksesoris
-              </Link>
-              <Link
-                href="#"
-                className="block text-neutral-300 hover:text-gold-500 transition-colors duration-200 hover:translate-x-1"
-                data-testid="footer-category-shoes-bags"
-              >
-                Sepatu & Tas
-              </Link>
-            </div>
-          </div>
-
-          {/* Contact Info */}
-          <div data-testid="footer-contact">
-            <h3 className="font-bold text-lg mb-6">Kontak & Lokasi</h3>
+          {/* Contact Info - 40% width */}
+          <div className="md:col-span-2 md:pl-8" data-testid="footer-contact">
+            <h3 className="font-bold text-xl mb-6 text-gold-500">Kontak & Lokasi</h3>
             <div className="space-y-4">
               <div className="flex items-start space-x-3" data-testid="contact-address">
                 <MapPin className="w-5 h-5 text-gold-500 mt-0.5 flex-shrink-0" />
@@ -201,15 +117,15 @@ export default function Footer() {
             </div>
 
             {/* Quick Contact Buttons */}
-            <div data-testid="footer-contact-buttons" className="mt-6 space-y-2">
+            <div data-testid="footer-contact-buttons" className="mt-8 grid gap-3">
               <button
-                className="w-full bg-gold-500 hover:bg-gold-600 text-neutral-900 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200 hover:scale-105"
+                className="w-full bg-gold-500 hover:bg-gold-600 text-neutral-900 py-3 px-6 rounded-lg text-sm font-medium transition-all duration-200 hover:scale-105 shadow-lg shadow-gold-500/25"
                 data-testid="footer-whatsapp-btn"
               >
                 Chat WhatsApp
               </button>
               <button
-                className="w-full border border-neutral-700 text-neutral-300 hover:bg-gold-100 hover:text-gold-700 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200"
+                className="w-full border border-neutral-700 text-neutral-300 hover:bg-gold-100 hover:text-gold-700 py-3 px-6 rounded-lg text-sm font-medium transition-all duration-200 hover:border-gold-500"
                 data-testid="footer-maps-btn"
               >
                 Lihat Maps

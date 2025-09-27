@@ -13,11 +13,6 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
-import { logger } from '@/services/logger'
-import { useEffect } from 'react'
-
-// Component-specific logger for form field debugging
-const fieldLogger = logger.child('FormField')
 
 interface BaseFieldProps {
   name: string
@@ -72,32 +67,7 @@ export function FormField(props: FormFieldProps) {
 
   const fieldClassName = cn(hasError && 'border-red-500', hasSuccess && 'border-green-500')
 
-  // Enhanced debug logging for Select components to trace Select.Item errors
-  useEffect(() => {
-    if (props.type === 'select') {
-      const selectProps = props as SelectFieldProps
-      fieldLogger.debug('selectFieldDebug', `Select field ${name} props analysis`, {
-        fieldName: name,
-        value: selectProps.value,
-        valueType: typeof selectProps.value,
-        valueLength: selectProps.value?.length,
-        isEmpty: selectProps.value === '',
-        isUndefined: selectProps.value === undefined,
-        isNull: selectProps.value === null,
-        optionsCount: selectProps.options?.length || 0,
-        optionsDetails: selectProps.options?.map(opt => ({
-          value: opt.value,
-          valueType: typeof opt.value,
-          valueLength: opt.value?.length,
-          isEmpty: opt.value === '',
-          label: opt.label
-        })) || [],
-        hasEmptyOptionsValues: selectProps.options?.some(opt => opt.value === '') || false,
-        finalSelectValue: selectProps.value && selectProps.value.trim() !== '' ? selectProps.value : undefined,
-        willCauseError: selectProps.value === '' || selectProps.options?.some(opt => opt.value === '') || false
-      })
-    }
-  }, [props, name])
+  // Debug logging removed
 
   return (
     <div className="space-y-2" data-testid={testId}>
@@ -138,9 +108,32 @@ export function FormField(props: FormFieldProps) {
           <Input
             id={name}
             type="number"
-            value={props.value}
-            onChange={(e) => props.onChange(Number(e.target.value))}
-            onBlur={(e) => props.onBlur(Number(e.target.value))}
+            value={props.value === 0 ? '' : props.value}
+            onChange={(e) => {
+              // Real-time leading zero removal
+              const sanitized = e.target.value.replace(/^0+(?=\d)/, '')
+              
+              // Handle empty input - store as 0 internally but display empty
+              if (sanitized === '' || sanitized === '0') {
+                props.onChange(0)
+                return
+              }
+              
+              const numValue = Number(sanitized)
+              props.onChange(numValue)
+            }}
+            onBlur={(e) => {
+              // Same logic on blur for consistency
+              const sanitized = e.target.value.replace(/^0+(?=\d)/, '')
+              
+              if (sanitized === '' || sanitized === '0') {
+                props.onBlur(0)
+                return
+              }
+              
+              const numValue = Number(sanitized)
+              props.onBlur(numValue)
+            }}
             placeholder={props.placeholder}
             min={props.min}
             max={props.max}
@@ -191,29 +184,13 @@ export function FormField(props: FormFieldProps) {
                   option.value.trim() !== '' &&
                   option.value !== ' '
                 
-                if (!isValid) {
-                  fieldLogger.warn('invalidOptionFiltered', `Invalid option filtered out in ${name}`, {
-                    option,
-                    fieldName: name,
-                    reason: !option ? 'null_option' : 
-                           option.value === null ? 'null_value' :
-                           option.value === undefined ? 'undefined_value' :
-                           typeof option.value !== 'string' ? 'non_string_value' :
-                           option.value.trim() === '' ? 'empty_string' :
-                           option.value === ' ' ? 'whitespace_only' : 'unknown'
-                  })
-                }
+                // Invalid option filtered - debug logging removed
                 
                 return isValid
               })
               .map((option) => {
                 // Additional safety check before rendering SelectItem
                 if (!option.value || option.value.trim() === '') {
-                  fieldLogger.error('selectItemRenderError', `Attempting to render SelectItem with invalid value in ${name}`, {
-                    option,
-                    fieldName: name,
-                    value: option.value
-                  })
                   return null
                 }
                 

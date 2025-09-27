@@ -39,8 +39,6 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(result, { status: 200 })
   } catch (error) {
-    console.error('GET /api/materials error:', error)
-
     if (error instanceof Error) {
       return NextResponse.json(
         { error: { message: error.message, code: 'INTERNAL_ERROR' } },
@@ -122,8 +120,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(material, { status: 201 })
   } catch (error) {
-    console.error('POST /api/materials error:', error)
-
     // Handle known errors
     if (error instanceof ConflictError) {
       return NextResponse.json(

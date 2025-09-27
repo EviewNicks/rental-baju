@@ -14,6 +14,7 @@ export interface PickupItemRequest {
 
 export interface PickupRequest {
   items: PickupItemRequest[]
+  catatan?: string // Optional pickup note (RPK-48)
 }
 
 export interface PickupResponse {

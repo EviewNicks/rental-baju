@@ -5,17 +5,7 @@ import { queryKeys } from '@/lib/react-query'
 import { kasirApi } from '../api'
 import type { ProductAvailabilityQueryParams } from '../types'
 
-// Cache metrics for monitoring
-const logCacheMetrics = (queryKey: string, isStale: boolean) => {
-  if (typeof window !== 'undefined') {
-    console.info('[useProduk] Cache metrics', {
-      queryKey,
-      isStale,
-      timestamp: new Date().toISOString(),
-      cacheStrategy: 'optimized-30s',
-    })
-  }
-}
+// Cache metrics for monitoring - cleaned up debug logging
 
 // Hook for fetching available products
 export function useAvailableProducts(params: ProductAvailabilityQueryParams = {}) {
@@ -32,8 +22,7 @@ export function useAvailableProducts(params: ProductAvailabilityQueryParams = {}
     queryFn: async () => {
       const result = await kasirApi.produk.getAvailable(queryParams)
 
-      // Log cache metrics for monitoring
-      logCacheMetrics(JSON.stringify(queryKey), false)
+      // Cache metrics monitoring removed
 
       return result
     },

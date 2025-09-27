@@ -33,7 +33,8 @@ export class PickupService {
    */
   async validatePickupRequest(
     transactionId: string, 
-    items: PickupItemRequest[]
+    items: PickupItemRequest[],
+    catatan?: string
   ): Promise<PickupValidationResult> {
     try {
       // 1. Check if transaction exists and get current state
@@ -65,7 +66,7 @@ export class PickupService {
       }
 
       // 3. Run comprehensive validation using business rules
-      const validationResult = PickupValidator.validatePickupRequest(context, items)
+      const validationResult = PickupValidator.validatePickupRequest(context, items, catatan)
 
       // 4. Transform to service interface format
       return {
@@ -76,8 +77,7 @@ export class PickupService {
           : undefined
       }
 
-    } catch (error) {
-      console.error('Error validating pickup request:', error)
+    } catch {
       return {
         valid: false,
         errors: ['Terjadi kesalahan saat validasi pickup']
@@ -90,11 +90,12 @@ export class PickupService {
    */
   async processPickup(
     transactionId: string,
-    items: PickupItemRequest[]
+    items: PickupItemRequest[],
+    catatan?: string
   ): Promise<PickupProcessResult> {
     try {
       // 1. Validate the pickup request first
-      const validation = await this.validatePickupRequest(transactionId, items)
+      const validation = await this.validatePickupRequest(transactionId, items, catatan)
       
       if (!validation.valid) {
         return {
@@ -119,21 +120,26 @@ export class PickupService {
           })
         }
 
-        // Create activity log
+        // Create activity log with optional note (RPK-48)
         const itemsDescription = items.map(item => `${item.jumlahDiambil} item`).join(', ')
+        const activityData = {
+          items: items.map(item => ({
+            itemId: item.id,
+            jumlahDiambil: item.jumlahDiambil
+          })),
+          processedBy: this.userId,
+          timestamp: new Date().toISOString(),
+          ...(catatan && { catatan })
+        }
+
         await tx.aktivitasTransaksi.create({
           data: {
             transaksiId: transactionId,
             tipe: 'diambil',
-            deskripsi: `Pickup dilakukan: ${itemsDescription}`,
-            data: {
-              items: items.map(item => ({
-                itemId: item.id,
-                jumlahDiambil: item.jumlahDiambil
-              })),
-              processedBy: this.userId,
-              timestamp: new Date().toISOString()
-            },
+            deskripsi: catatan 
+              ? `Pickup dilakukan: ${itemsDescription} - ${catatan}` 
+              : `Pickup dilakukan: ${itemsDescription}`,
+            data: activityData,
             createdBy: this.userId
           }
         })
@@ -184,14 +190,8 @@ export class PickupService {
         message
       }
 
-    } catch (error) {
-      console.error('Error processing pickup:', error)
-      return {
-        success: false,
-        transaction: {} as TransaksiWithDetails,
-        message: 'Gagal memproses pickup',
-        error: error instanceof Error ? error.message : 'Unknown error'
-      }
+    } catch {
+      throw new Error('Gagal memproses pickup')
     }
   }
 
@@ -248,8 +248,7 @@ export class PickupService {
       // Note: Transaction status remains 'active' as pickup doesn't change transaction lifecycle
       // Only return affects transaction status (active -> selesai)
 
-    } catch (error) {
-      console.error('Error updating transaction pickup status:', error)
+    } catch {
       // Don't throw here as this is a secondary operation
     }
   }
@@ -315,8 +314,7 @@ export class PickupService {
         items
       }
 
-    } catch (error) {
-      console.error('Error getting pickup summary:', error)
+    } catch {
       return null
     }
   }
