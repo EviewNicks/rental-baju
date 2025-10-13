@@ -10,8 +10,8 @@ export const productBaseSchema = z.object({
   code: z
     .string()
     .min(1, 'Kode produk wajib diisi')
-    .max(4, 'Kode maksimal 4 karakter')
-    .regex(/^[A-Z0-9]{4}$/, 'Kode harus 4 digit alfanumerik uppercase'),
+    .max(5, 'Kode maksimal 5 karakter')
+    .regex(/^[A-Z0-9]{4,5}$/, 'Kode harus 4-5 digit alfanumerik uppercase'),
   name: z.string().min(1, 'Nama produk wajib diisi').max(100, 'Nama maksimal 100 karakter'),
   description: z.string().max(500, 'Deskripsi maksimal 500 karakter').optional(),
   modalAwal: z

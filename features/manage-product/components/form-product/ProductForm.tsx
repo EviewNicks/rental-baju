@@ -267,11 +267,11 @@ export function ProductForm({
                 }
                 onBlur={(value) => onBlur('code', value)}
                 placeholder="PRD1"
-                maxLength={4}
+                maxLength={5}
                 error={errors.code}
                 touched={touched.code}
                 required
-                helpText="Masukkan 4 digit kode alfanumerik (contoh: PRD1, DRES2)"
+                helpText="Masukkan 4-5 digit kode alfanumerik (contoh: PRD1, OLL01, DRES2)"
                 data-testid="product-code-field"
               />
 
