@@ -21,7 +21,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "uv run .claude/hooks/use_bun.py"
+            "command": "python .claude/hooks/use_bun.py"
           }
         ]
       }
@@ -32,11 +32,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "uv run .claude/hooks/windows_notification.py build_complete"
+            "command": "python .claude/hooks/windows_notification.py build_complete"
           },
           {
             "type": "command",
-            "command": "uv run .claude/hooks/ts_lint.py"
+            "command": "python .claude/hooks/ts_lint.py"
           }
         ]
       }
@@ -47,11 +47,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "uv run .claude/hooks/play_audio.py ready"
+            "command": "python .claude/hooks/play_audio.py ready"
           },
           {
             "type": "command",
-            "command": "uv run .claude/hooks/play_audio.py error_fixed"
+            "command": "python .claude/hooks/play_audio.py error_fixed"
           }
         ]
       }
@@ -62,11 +62,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "uv run .claude/hooks/play_audio.py "
+            "command": "python .claude/hooks/play_audio.py "
           },
           {
             "type": "command",
-            "command": "uv run .claude/hooks/windows_notification.py awaiting_instructions"
+            "command": "python .claude/hooks/windows_notification.py awaiting_instructions"
           }
         ]
       }
