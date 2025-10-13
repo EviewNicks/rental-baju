@@ -51,8 +51,8 @@ export const imageFileSchema = z
   .refine((file) => {
     if (!file) return true // Allow undefined/null
     if (!(file instanceof File)) return false
-    return ['image/jpeg', 'image/png', 'image/webp'].includes(file.type)
-  }, 'Format file harus JPG, PNG, atau WebP')
+    return ['image/jpeg', 'image/png', 'image/webp', 'image/heic'].includes(file.type)
+  }, 'Format file harus JPG, PNG, WebP, atau HEIC')
 
 // ============== PRODUCT SCHEMAS ==============
 

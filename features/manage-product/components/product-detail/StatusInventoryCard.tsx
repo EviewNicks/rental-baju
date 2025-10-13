@@ -36,28 +36,28 @@ export function StatusInventoryCard({ product, className }: StatusInventoryCardP
           bg: 'bg-green-50',
           border: 'border-l-green-400',
           icon: CheckCircle,
-          iconColor: 'text-green-600'
+          iconColor: 'text-green-600',
         }
       case 'RENTED':
         return {
           bg: 'bg-blue-50',
-          border: 'border-l-blue-400', 
+          border: 'border-l-blue-400',
           icon: Package,
-          iconColor: 'text-blue-600'
+          iconColor: 'text-blue-600',
         }
       case 'MAINTENANCE':
         return {
           bg: 'bg-yellow-50',
           border: 'border-l-yellow-400',
           icon: AlertTriangle,
-          iconColor: 'text-yellow-600'
+          iconColor: 'text-yellow-600',
         }
       default:
         return {
           bg: 'bg-gray-50',
           border: 'border-l-gray-400',
           icon: XCircle,
-          iconColor: 'text-gray-600'
+          iconColor: 'text-gray-600',
         }
     }
   }
@@ -79,13 +79,10 @@ export function StatusInventoryCard({ product, className }: StatusInventoryCardP
   const statusText = getStatusText(product.status)
   const StatusIcon = statusConfig.icon
 
-  // Calculate availability based on actual stock data
-  const rentedQuantity = Math.max(0, Math.min(product.rentedStock || 0, product.quantity))
-  const availableQuantity = Math.max(0, product.quantity - rentedQuantity)
-  const maintenanceQuantity = 0 // Not tracked in current data model
-
   return (
-    <Card className={`h-fit hover:shadow-xl transition-all duration-300 border-l-4 ${statusConfig.border} ${className}`}>
+    <Card
+      className={`h-fit hover:shadow-xl transition-all duration-300 border-l-4 ${statusConfig.border} ${className}`}
+    >
       <CardHeader className="pb-4">
         <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
           <BarChart3 className="w-5 h-5 text-gray-600" />
@@ -95,7 +92,9 @@ export function StatusInventoryCard({ product, className }: StatusInventoryCardP
       <CardContent className="space-y-6">
         {/* Current Status */}
         <InfoField label="Status Produk">
-          <div className={`p-4 ${statusConfig.bg} rounded-lg border ${statusConfig.border.replace('border-l-', 'border-')}`}>
+          <div
+            className={`p-4 ${statusConfig.bg} rounded-lg border ${statusConfig.border.replace('border-l-', 'border-')}`}
+          >
             <div className="flex items-center gap-3">
               <StatusIcon className={`w-5 h-5 ${statusConfig.iconColor}`} />
               <div>
@@ -104,9 +103,7 @@ export function StatusInventoryCard({ product, className }: StatusInventoryCardP
                     {statusText.label}
                   </Badge>
                 </div>
-                <p className={`text-sm mt-1 ${statusConfig.iconColor}`}>
-                  {statusText.desc}
-                </p>
+                <p className={`text-sm mt-1 ${statusConfig.iconColor}`}>{statusText.desc}</p>
               </div>
             </div>
           </div>
@@ -124,36 +121,6 @@ export function StatusInventoryCard({ product, className }: StatusInventoryCardP
             </div>
           </div>
         </InfoField>
-
-        {/* Detailed Inventory Breakdown */}
-        <div className="pt-4 border-t border-gray-200">
-          <h4 className="text-sm font-medium text-gray-700 mb-3">Rincian Ketersediaan</h4>
-          <div className="grid grid-cols-1 gap-3">
-            <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
-              <div className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-green-600" />
-                <span className="text-sm font-medium text-green-700">Tersedia</span>
-              </div>
-              <span className="text-lg font-bold text-green-600">{availableQuantity}</span>
-            </div>
-
-            <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
-              <div className="flex items-center gap-2">
-                <Package className="w-4 h-4 text-blue-600" />
-                <span className="text-sm font-medium text-blue-700">Disewa</span>
-              </div>
-              <span className="text-lg font-bold text-blue-600">{rentedQuantity}</span>
-            </div>
-
-            <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg border border-yellow-200">
-              <div className="flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 text-yellow-600" />
-                <span className="text-sm font-medium text-yellow-700">Perawatan</span>
-              </div>
-              <span className="text-lg font-bold text-yellow-600">{maintenanceQuantity}</span>
-            </div>
-          </div>
-        </div>
       </CardContent>
     </Card>
   )

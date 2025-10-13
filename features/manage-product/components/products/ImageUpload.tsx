@@ -42,7 +42,7 @@ export function ImageUpload({ value, onChange, onFileChange, className }: ImageU
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
-      'image/*': ['.jpeg', '.jpg', '.png', '.webp'],
+      'image/*': ['.jpeg', '.jpg', '.png', '.webp', '.heic'],
     },
     maxSize: 5 * 1024 * 1024, // 5MB
     multiple: false,
@@ -61,7 +61,7 @@ export function ImageUpload({ value, onChange, onFileChange, className }: ImageU
       <div className="space-y-2">
         <label className="text-sm font-medium text-gray-700">Gambar Produk</label>
         <p className="text-xs text-gray-500">
-          Upload gambar produk (JPG, PNG, WebP). Maksimal 5MB.
+          Upload gambar produk (JPG, PNG, WebP, HEIC). Maksimal 5MB.
         </p>
       </div>
 
@@ -127,7 +127,7 @@ export function ImageUpload({ value, onChange, onFileChange, className }: ImageU
                   ? 'Lepaskan gambar di sini'
                   : 'Drag & drop gambar di sini atau klik untuk memilih'}
               </p>
-              <p className="text-xs text-gray-500 mt-1">Format: JPG, PNG, WebP • Maksimal: 5MB</p>
+              <p className="text-xs text-gray-500 mt-1">Format: JPG, PNG, WebP, HEIC • Maksimal: 5MB</p>
             </div>
           </div>
         </div>

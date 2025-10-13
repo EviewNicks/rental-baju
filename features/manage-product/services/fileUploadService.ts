@@ -258,7 +258,8 @@ export class FileUploadService {
       'jpg': 'image/jpeg',
       'jpeg': 'image/jpeg',
       'png': 'image/png',
-      'webp': 'image/webp'
+      'webp': 'image/webp',
+      'heic': 'image/heic'
     }
     return mimeTypes[extension.toLowerCase()] || 'image/jpeg'
   }

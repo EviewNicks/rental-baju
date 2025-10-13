@@ -1,12 +1,15 @@
 /**
- * Import Organza Products Script
+ * Import Products Script
  *
- * Imports Baju Bodo (Organza) products from JSON into database
+ * Imports products from JSON files into database
+ * Supports multiple product types: Organza, Renda Premium
  * Uses ProductService for consistent validation and business logic
  *
  * Usage:
- * - Dry run: DRY_RUN=true tsx scripts/import-organza-products.ts
- * - Actual import: tsx scripts/import-organza-products.ts
+ * - Dry run: DRY_RUN=true PRODUCT_TYPE=organza tsx scripts/import-organza-products.ts
+ * - Dry run: DRY_RUN=true PRODUCT_TYPE=renda-premium tsx scripts/import-organza-products.ts
+ * - Actual import: PRODUCT_TYPE=organza tsx scripts/import-organza-products.ts
+ * - Actual import: PRODUCT_TYPE=renda-premium tsx scripts/import-organza-products.ts
  */
 
 import { prisma } from '../lib/prisma'
@@ -18,7 +21,7 @@ import * as path from 'path'
 const isDryRun = process.env.DRY_RUN === 'true'
 const DEFAULT_USER_ID = process.env.IMPORT_USER_ID || 'system_import'
 
-interface OrganzaProduct {
+interface ProductData {
   code: string
   name: string
   description: string
@@ -54,7 +57,7 @@ async function validateCategory(categoryId: string): Promise<boolean> {
   return !!category
 }
 
-async function checkDuplicates(products: OrganzaProduct[]): Promise<string[]> {
+async function checkDuplicates(products: ProductData[]): Promise<string[]> {
   const codes = products.map(p => p.code)
   const existingProducts = await prisma.product.findMany({
     where: {
@@ -67,13 +70,14 @@ async function checkDuplicates(products: OrganzaProduct[]): Promise<string[]> {
 }
 
 async function uploadImageToSupabase(
-  product: OrganzaProduct,
-  userId: string
+  product: ProductData,
+  userId: string,
+  productType: string
 ): Promise<string> {
   try {
     // Extract expected filename from imageUrl
     const expectedFilename = path.basename(product.imageUrl)
-    const baseDir = path.join(__dirname, '../public/products/organza')
+    const baseDir = path.join(__dirname, `../public/products/${productType}`)
 
     // Try multiple filename variations (handle mismatches like OLL01 vs OLL1)
     const codeWithoutZero = product.code.replace(/0(\d)$/, '$1') // OLL01 -> OLL1
@@ -131,6 +135,8 @@ async function uploadImageToSupabase(
 }
 
 async function importProducts(): Promise<ImportResult> {
+  const productType = process.env.PRODUCT_TYPE || 'organza'
+
   const result: ImportResult = {
     success: true,
     total: 0,
@@ -141,9 +147,15 @@ async function importProducts(): Promise<ImportResult> {
   }
 
   try {
-    console.log('🚀 Starting Organza Products Import...')
+    console.log(`🚀 Starting ${productType} Products Import...`)
     console.log(`📋 Mode: ${isDryRun ? 'DRY RUN (No database changes)' : 'LIVE IMPORT'}`)
     console.log('')
+
+    // Validate product type
+    const validProductTypes = ['organza', 'renda-premium']
+    if (!validProductTypes.includes(productType)) {
+      throw new Error(`Invalid PRODUCT_TYPE: ${productType}. Valid types: ${validProductTypes.join(', ')}`)
+    }
 
     // Validate Supabase environment variables
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -160,13 +172,14 @@ async function importProducts(): Promise<ImportResult> {
       console.log('')
     }
 
-    const jsonPath = path.join(__dirname, '../prisma/organza-products.json')
+    const jsonFileName = productType === 'organza' ? 'organza-products.json' : 'renda-premium-products.json'
+    const jsonPath = path.join(__dirname, `../prisma/${jsonFileName}`)
 
     if (!fs.existsSync(jsonPath)) {
       throw new Error(`JSON file not found at: ${jsonPath}`)
     }
 
-    const products: OrganzaProduct[] = JSON.parse(fs.readFileSync(jsonPath, 'utf-8'))
+    const products: ProductData[] = JSON.parse(fs.readFileSync(jsonPath, 'utf-8'))
     result.total = products.length
 
     console.log(`📦 Found ${products.length} products to import`)
@@ -236,7 +249,7 @@ async function importProducts(): Promise<ImportResult> {
         let finalImageUrl = product.imageUrl
         if (!isDryRun && hasSupabaseConfig) {
           console.log(`   📸 Uploading image...`)
-          finalImageUrl = await uploadImageToSupabase(product, DEFAULT_USER_ID)
+          finalImageUrl = await uploadImageToSupabase(product, DEFAULT_USER_ID, productType)
         }
 
         await productService.createProduct({
