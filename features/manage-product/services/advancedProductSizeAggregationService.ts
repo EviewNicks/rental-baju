@@ -386,18 +386,9 @@ export class AdvancedProductSizeAggregationService {
 
     // Add rental tracking if requested
     if (includeRentalTracking) {
-      queryOptions.include = {
-        _count: {
-          select: {
-            // This would be the actual rental items relationship
-            // rentalItems: {
-            //   where: {
-            //     rental: { status: 'ACTIVE' }
-            //   }
-            // }
-          },
-        },
-      }
+      // Note: _count include removed as ProductSize model doesn't have relationships to count
+      // Rental tracking is handled via calculateRentedQuantity method using product.rentedStock
+      // No additional includes needed for basic size aggregation
     }
 
     const productSizes = await this.prisma.productSize.findMany(queryOptions)

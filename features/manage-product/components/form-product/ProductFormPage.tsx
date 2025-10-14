@@ -16,8 +16,11 @@ import { useCategories } from '@/features/manage-product/hooks/useCategories'
 import { useCreateProduct, useUpdateProduct } from '@/features/manage-product/hooks/useProducts'
 import type {
   ClientProduct,
+  ClientProductSize,
   AggregatedSizeView,
   SimplifiedSizeEntry,
+  AgeCategory,
+  SizeEnum,
 } from '@/features/manage-product/types'
 
 // Image format validation constants
@@ -70,6 +73,16 @@ const transformSimplifiedSizesToBackendFormat = (
   })
 
   return jsonString
+}
+
+// Transform existing product sizes to simplified sizes format (EDIT MODE)
+const transformProductSizesToSimplifiedFormat = (productSizes: ClientProductSize[]): SimplifiedSizeEntry[] => {
+  return productSizes.map((size) => ({
+    id: size.id,
+    size: size.size as SizeEnum,
+    ageCategory: size.ageCategory as AgeCategory,
+    quantity: size.quantity,
+  }))
 }
 
 // Legacy function to transform aggregated sizes to backend format (BACKWARD COMPATIBILITY)
@@ -245,7 +258,9 @@ export function ProductFormPage({
 
     // Simplified Size Management (enforced - all products require sizes)
     hasSizes: true, // Always true in advanced-only architecture
-    simplifiedSizes: [], // Initialize empty array for new simplified system
+    simplifiedSizes: mode === 'edit' && product?.sizes
+      ? transformProductSizesToSimplifiedFormat(product.sizes)
+      : [], // Load existing sizes in edit mode, empty for new products
     aggregatedSizes: undefined, // Keep for backward compatibility
   })
 

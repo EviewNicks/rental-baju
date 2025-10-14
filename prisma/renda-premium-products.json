@@ -21,7 +21,7 @@
     "currentPrice": 450000,
     "quantity": 1,
     "categoryId": "bddcd8e5-7873-4a12-8649-600cc8da4b1e",
-    "imageUrl": "/products/renda-premium/RPP3.HEIC",
+    "imageUrl": "/products/renda-premium/RPP3.jpg",
     "sizes": [{ "ageCategory": "ADULT", "size": "M", "quantity": 1 }]
   },
   {
@@ -32,7 +32,7 @@
     "currentPrice": 450000,
     "quantity": 4,
     "categoryId": "bddcd8e5-7873-4a12-8649-600cc8da4b1e",
-    "imageUrl": "/products/renda-premium/RPP5.HEIC",
+    "imageUrl": "/products/renda-premium/RPP5.jpg",
     "sizes": [
       { "ageCategory": "ADULT", "size": "M", "quantity": 1 },
       { "ageCategory": "ADULT", "size": "L", "quantity": 2 },
@@ -47,7 +47,7 @@
     "currentPrice": 450000,
     "quantity": 2,
     "categoryId": "bddcd8e5-7873-4a12-8649-600cc8da4b1e",
-    "imageUrl": "/products/renda-premium/RPS7.HEIC",
+    "imageUrl": "/products/renda-premium/RPS7.jpg",
     "sizes": [
       { "ageCategory": "ADULT", "size": "S", "quantity": 1 },
       { "ageCategory": "ADULT", "size": "M", "quantity": 1 }
@@ -61,7 +61,7 @@
     "currentPrice": 500000,
     "quantity": 3,
     "categoryId": "bddcd8e5-7873-4a12-8649-600cc8da4b1e",
-    "imageUrl": "/products/renda-premium/RPH2.HEIC",
+    "imageUrl": "/products/renda-premium/RPH2.jpg",
     "sizes": [
       { "ageCategory": "ADULT", "size": "M", "quantity": 1 },
       { "ageCategory": "ADULT", "size": "L", "quantity": 1 },
@@ -76,7 +76,7 @@
     "currentPrice": 450000,
     "quantity": 3,
     "categoryId": "bddcd8e5-7873-4a12-8649-600cc8da4b1e",
-    "imageUrl": "/products/renda-premium/IMG0740.HEIC",
+    "imageUrl": "/products/renda-premium/IMG0740.jpg",
     "sizes": [
       { "ageCategory": "ADULT", "size": "L", "quantity": 2 },
       { "ageCategory": "ADULT", "size": "XL", "quantity": 1 }
@@ -90,7 +90,7 @@
     "currentPrice": 450000,
     "quantity": 1,
     "categoryId": "bddcd8e5-7873-4a12-8649-600cc8da4b1e",
-    "imageUrl": "/products/renda-premium/RPB6.HEIC",
+    "imageUrl": "/products/renda-premium/RPB6.jpg",
     "sizes": [{ "ageCategory": "ADULT", "size": "M", "quantity": 1 }]
   },
   {
@@ -115,7 +115,7 @@
     "currentPrice": 350000,
     "quantity": 6,
     "categoryId": "bddcd8e5-7873-4a12-8649-600cc8da4b1e",
-    "imageUrl": "/products/renda-premium/RPP9.HEIC",
+    "imageUrl": "/products/renda-premium/RPP9.jpg",
     "sizes": [
       { "ageCategory": "ADULT", "size": "M", "quantity": 4 },
       { "ageCategory": "ADULT", "size": "L", "quantity": 1 },
@@ -161,7 +161,7 @@
     "currentPrice": 350000,
     "quantity": 6,
     "categoryId": "bddcd8e5-7873-4a12-8649-600cc8da4b1e",
-    "imageUrl": "/products/renda-premium/RPK15.HEIC",
+    "imageUrl": "/products/renda-premium/RPK15.jpg",
     "sizes": [
       { "ageCategory": "ADULT", "size": "M", "quantity": 3 },
       { "ageCategory": "ADULT", "size": "L", "quantity": 2 },
@@ -176,7 +176,7 @@
     "currentPrice": 350000,
     "quantity": 3,
     "categoryId": "bddcd8e5-7873-4a12-8649-600cc8da4b1e",
-    "imageUrl": "/products/renda-premium/RPT10.HEIC",
+    "imageUrl": "/products/renda-premium/RPT10.jpg",
     "sizes": [
       { "ageCategory": "ADULT", "size": "M", "quantity": 1 },
       { "ageCategory": "ADULT", "size": "L", "quantity": 1 },
@@ -238,7 +238,7 @@
     "currentPrice": 250000,
     "quantity": 2,
     "categoryId": "bddcd8e5-7873-4a12-8649-600cc8da4b1e",
-    "imageUrl": "/products/renda-premium/RPK17.HEIC",
+    "imageUrl": "/products/renda-premium/RPK17.jpg",
     "sizes": [
       { "ageCategory": "ADULT", "size": "S", "quantity": 1 },
       { "ageCategory": "ADULT", "size": "M", "quantity": 1 }
@@ -252,7 +252,7 @@
     "currentPrice": 200000,
     "quantity": 8,
     "categoryId": "bddcd8e5-7873-4a12-8649-600cc8da4b1e",
-    "imageUrl": "/products/renda-premium/RPM19.HEIC",
+    "imageUrl": "/products/renda-premium/RPM19.jpg",
     "sizes": [
       { "ageCategory": "ADULT", "size": "S", "quantity": 5 },
       { "ageCategory": "ADULT", "size": "M", "quantity": 2 },
@@ -283,7 +283,7 @@
     "currentPrice": 350000,
     "quantity": 5,
     "categoryId": "bddcd8e5-7873-4a12-8649-600cc8da4b1e",
-    "imageUrl": "/products/renda-premium/RPA22.HEIC",
+    "imageUrl": "/products/renda-premium/RPA22.jpg",
     "sizes": [
       { "ageCategory": "ADULT", "size": "S", "quantity": 1 },
       { "ageCategory": "ADULT", "size": "M", "quantity": 2 },
@@ -299,7 +299,7 @@
     "currentPrice": 200000,
     "quantity": 4,
     "categoryId": "bddcd8e5-7873-4a12-8649-600cc8da4b1e",
-    "imageUrl": "/products/renda-premium/RPH18.HEIC",
+    "imageUrl": "/products/renda-premium/RPH18.jpg",
     "sizes": [{ "ageCategory": "ADULT", "size": "M", "quantity": 4 }]
   },
   {
@@ -325,7 +325,7 @@
     "currentPrice": 400000,
     "quantity": 7,
     "categoryId": "bddcd8e5-7873-4a12-8649-600cc8da4b1e",
-    "imageUrl": "/products/renda-premium/RPN21.HEIC",
+    "imageUrl": "/products/renda-premium/RPN21.jpg",
     "sizes": [
       { "ageCategory": "ADULT", "size": "S", "quantity": 1 },
       { "ageCategory": "ADULT", "size": "M", "quantity": 1 },
@@ -342,7 +342,7 @@
     "currentPrice": 350000,
     "quantity": 7,
     "categoryId": "bddcd8e5-7873-4a12-8649-600cc8da4b1e",
-    "imageUrl": "/products/renda-premium/RPT23.HEIC",
+    "imageUrl": "/products/renda-premium/RPT23.jpg",
     "sizes": [
       { "ageCategory": "ADULT", "size": "S", "quantity": 1 },
       { "ageCategory": "ADULT", "size": "M", "quantity": 1 },
