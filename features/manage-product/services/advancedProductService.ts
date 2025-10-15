@@ -111,10 +111,7 @@ export class AdvancedProductService {
     // Validate related entities
     await this.validateCategoryExists(validatedData.categoryId)
 
-    if (validatedData.colorId) {
-      await this.validateColorExists(validatedData.colorId)
-    }
-
+  
     let materialCost: Decimal | undefined
     if (validatedData.materialId) {
       materialCost = await this.validateAndCalculateMaterialCost(
@@ -138,7 +135,6 @@ export class AdvancedProductService {
           categoryId: validatedData.categoryId,
           // NO size field for advanced products
           size: null,
-          colorId: validatedData.colorId,
           materialId: validatedData.materialId || undefined,
           materialCost: materialCost || undefined,
           materialQuantity: validatedData.materialQuantity || undefined,
@@ -227,10 +223,7 @@ export class AdvancedProductService {
       await this.validateCategoryExists(validatedData.categoryId)
     }
 
-    if (validatedData.colorId && validatedData.colorId !== existingProduct.colorId) {
-      await this.validateColorExists(validatedData.colorId)
-    }
-
+  
     let materialCost: Decimal | undefined
     if (validatedData.materialId && validatedData.materialId !== existingProduct.materialId) {
       materialCost = await this.validateAndCalculateMaterialCost(
@@ -251,7 +244,6 @@ export class AdvancedProductService {
       if (validatedData.description !== undefined)
         updateData.description = validatedData.description
       if (validatedData.categoryId !== undefined) updateData.categoryId = validatedData.categoryId
-      if (validatedData.colorId !== undefined) updateData.colorId = validatedData.colorId
       if (validatedData.materialId !== undefined) updateData.materialId = validatedData.materialId
       if (validatedData.materialQuantity !== undefined)
         updateData.materialQuantity = validatedData.materialQuantity
@@ -325,7 +317,6 @@ export class AdvancedProductService {
       },
       include: {
         category: true,
-        color: true,
         material: true,
         sizes: {
           where: { isActive: true },
@@ -363,7 +354,7 @@ export class AdvancedProductService {
   async getProductsAdvanced(query: Record<string, unknown>): Promise<AdvancedProductListResponse> {
     // Validate and parse query parameters
     const validatedQuery = advancedProductQuerySchema.parse(query)
-    const { page, limit, search, categoryId, status, isActive, colorId } = validatedQuery
+    const { page, limit, search, categoryId, status, isActive } = validatedQuery
 
     // Build where clause
     const where: Record<string, unknown> = {
@@ -384,14 +375,7 @@ export class AdvancedProductService {
       where.status = status
     }
 
-    if (colorId) {
-      if (Array.isArray(colorId)) {
-        where.colorId = { in: colorId }
-      } else {
-        where.colorId = colorId
-      }
-    }
-
+  
     if (search) {
       where.OR = [
         { name: { contains: search, mode: 'insensitive' } },
@@ -410,7 +394,6 @@ export class AdvancedProductService {
         where,
         include: {
           category: true,
-          color: true,
           material: true,
           sizes: {
             where: { isActive: true },
@@ -504,7 +487,6 @@ export class AdvancedProductService {
         product: {
           include: {
             category: true,
-            color: true,
             material: true,
           },
         },
@@ -769,19 +751,7 @@ export class AdvancedProductService {
     }
   }
 
-  /**
-   * Validate color exists
-   */
-  private async validateColorExists(colorId: string): Promise<void> {
-    const colorExists = await this.prisma.color.findUnique({
-      where: { id: colorId },
-    })
-
-    if (!colorExists) {
-      throw new NotFoundError(`Warna dengan ID ${colorId} tidak ditemukan`)
-    }
-  }
-
+  
   /**
    * Validate material and calculate cost
    */
@@ -865,7 +835,6 @@ export class AdvancedProductService {
       name: prismaProduct.name as string,
       description: prismaProduct.description as string,
       categoryId: prismaProduct.categoryId as string,
-      colorId: prismaProduct.colorId as string | undefined,
       materialId: prismaProduct.materialId as string | undefined,
       materialQuantity: prismaProduct.materialQuantity as number | undefined,
       currentPrice: Number(prismaProduct.currentPrice as Decimal),
@@ -902,22 +871,6 @@ export class AdvancedProductService {
             products: [], // Avoid circular reference
           }
         : ({} as AdvancedCategory),
-
-      color: prismaProduct.color
-        ? {
-            id: (prismaProduct.color as Record<string, unknown>).id as string,
-            name: (prismaProduct.color as Record<string, unknown>).name as string,
-            hexCode: (prismaProduct.color as Record<string, unknown>).hexCode as string | undefined,
-            description: (prismaProduct.color as Record<string, unknown>).description as
-              | string
-              | undefined,
-            isActive: (prismaProduct.color as Record<string, unknown>).isActive as boolean,
-            createdAt: (prismaProduct.color as Record<string, unknown>).createdAt as Date,
-            updatedAt: (prismaProduct.color as Record<string, unknown>).updatedAt as Date,
-            createdBy: (prismaProduct.color as Record<string, unknown>).createdBy as string,
-            products: [], // Avoid circular reference
-          }
-        : undefined,
 
       material: prismaProduct.material
         ? {

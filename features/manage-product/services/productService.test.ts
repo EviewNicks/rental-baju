@@ -46,9 +46,6 @@ const mockPrisma = {
   category: {
     findUnique: jest.fn(),
   },
-  color: {
-    findUnique: jest.fn(),
-  },
   material: {
     findUnique: jest.fn(),
   },
@@ -133,7 +130,6 @@ describe('ProductService', () => {
           rentedStock: 0,
           categoryId: 'cat-123',
           size: undefined,
-          colorId: undefined,
           materialId: undefined,
           materialCost: undefined,
           materialQuantity: undefined,
@@ -144,7 +140,6 @@ describe('ProductService', () => {
         },
         include: {
           category: true,
-          color: true,
           material: true,
         },
       })
@@ -268,7 +263,6 @@ describe('ProductService', () => {
           rentedStock: 0,
           categoryId: 'cat-123',
           size: undefined,
-          colorId: undefined,
           materialId: 'material-123',
           materialCost: new Decimal(100000), // 50000 * 2 = 100000
           materialQuantity: 2,
@@ -279,7 +273,6 @@ describe('ProductService', () => {
         },
         include: {
           category: true,
-          color: true,
           material: true,
         },
       })

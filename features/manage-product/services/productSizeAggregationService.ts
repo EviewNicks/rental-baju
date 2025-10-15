@@ -314,7 +314,6 @@ export class ProductSizeAggregationService {
         product: {
           include: {
             category: true,
-            color: true,
             material: true,
           },
         },
@@ -340,11 +339,7 @@ export class ProductSizeAggregationService {
           ...size.product.category,
           products: [], // Required by Category type but not needed in this context
         },
-        color: size.product.color ? {
-          ...size.product.color,
-          products: [], // Required by Color type but not needed in this context
-        } : undefined,
-        material: size.product.material ? {
+          material: size.product.material ? {
           ...size.product.material,
           products: [], // Required by Material type but not needed in this context
         } : undefined,

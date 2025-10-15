@@ -223,7 +223,6 @@ export class CategoryService {
               isActive: product.isActive as boolean,
               sizes: (product.sizes as ProductSize[]) || [], // Add sizes property for backward compatibility
               size: product.size as string | undefined, // Legacy size field
-              colorId: product.colorId as string | undefined, // Color ID field
               materialId: product.materialId as string | undefined, // Material ID field
               materialQuantity: product.materialQuantity as number | undefined, // Material quantity field
               createdAt: product.createdAt as Date,

@@ -155,11 +155,9 @@ export const productAvailabilityQuerySchema = z.object({
   categoryId: z.string().uuid().optional(),
   available: z.coerce.boolean().default(true),
   size: z.union([z.string(), z.array(z.string())]).optional(),
-  colorId: z.union([z.string(), z.array(z.string())]).optional()
-}).transform((data) => ({
+  }).transform((data) => ({
   ...data,
   size: Array.isArray(data.size) ? data.size : data.size ? [data.size] : undefined,
-  colorId: Array.isArray(data.colorId) ? data.colorId : data.colorId ? [data.colorId] : undefined
 }))
 
 // Transaction Code Generation Schema

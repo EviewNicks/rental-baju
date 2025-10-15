@@ -38,14 +38,12 @@ export async function GET(request: NextRequest) {
       categoryId: searchParams.get('categoryId') || undefined,
       available: searchParams.get('available') !== 'false', // default true
       size: searchParams.getAll('size').length > 0 ? searchParams.getAll('size') : undefined,
-      colorId:
-        searchParams.getAll('colorId').length > 0 ? searchParams.getAll('colorId') : undefined,
     }
 
     // Validate query parameters
     const validatedQuery = productAvailabilityQuerySchema.parse(queryParams)
 
-    const { page, limit, search, categoryId, available, size, colorId } = validatedQuery
+    const { page, limit, search, categoryId, available, size } = validatedQuery
     const skip = (page - 1) * limit
 
     // Build where clause
@@ -79,11 +77,7 @@ export async function GET(request: NextRequest) {
       whereClause.size = { in: size }
     }
 
-    // Filter by color
-    if (colorId && colorId.length > 0) {
-      whereClause.colorId = { in: colorId }
-    }
-
+  
     // Get products with related data
     const [products, allProducts] = await Promise.all([
       prisma.product.findMany({
@@ -99,14 +93,7 @@ export async function GET(request: NextRequest) {
               color: true,
             },
           },
-          color: {
-            select: {
-              id: true,
-              name: true,
-              hexCode: true,
-            },
           },
-        },
       }),
       // Get all products matching base criteria for accurate count calculation
       prisma.product.findMany({
@@ -142,13 +129,6 @@ export async function GET(request: NextRequest) {
             color: product.category.color,
           },
           size: product.size,
-          color: product.color
-            ? {
-                id: product.color.id,
-                name: product.color.name,
-                hexCode: product.color.hexCode,
-              }
-            : null,
           status: product.status,
           createdAt: product.createdAt.toISOString(),
           updatedAt: product.updatedAt.toISOString(),

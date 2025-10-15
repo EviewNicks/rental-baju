@@ -95,8 +95,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
           imageUrl: item.produk.imageUrl,
           // Add missing product fields
           size: item.produk.size || null,
-          color: item.produk.color?.name || null,
-          category: item.produk.category?.name || null
+              category: item.produk.category?.name || null
         },
         jumlah: item.jumlah,
         jumlahDiambil: item.jumlahDiambil,
@@ -305,8 +304,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
           imageUrl: item.produk.imageUrl,
           // Add missing product fields
           size: item.produk.size || null,
-          color: item.produk.color?.name || null,
-          category: item.produk.category?.name || null
+              category: item.produk.category?.name || null
         },
         jumlah: item.jumlah,
         jumlahDiambil: item.jumlahDiambil,

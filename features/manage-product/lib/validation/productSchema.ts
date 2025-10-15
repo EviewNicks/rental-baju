@@ -26,8 +26,7 @@ export const productBaseSchema = z.object({
   rentedStock: z.number().int().min(0, 'Stok tersewa minimal 0').optional().default(0),
   categoryId: z.string().uuid('ID kategori tidak valid'),
   size: z.string().max(10, 'Ukuran maksimal 10 karakter').optional(),
-  colorId: z.string().uuid('ID warna tidak valid').optional(),
-  // Material Management fields - RPK-45 (optional untuk backward compatibility)
+    // Material Management fields - RPK-45 (optional untuk backward compatibility)
   materialId: z.string().uuid('ID material tidak valid').optional(),
   materialQuantity: z
     .number()
@@ -90,21 +89,6 @@ export const categorySchema = z.object({
 
 export const updateCategorySchema = categorySchema.partial()
 
-// ============== COLOR SCHEMAS ==============
-
-export const colorSchema = z.object({
-  name: z
-    .string()
-    .min(1, 'Nama warna wajib diisi')
-    .max(50, 'Nama warna maksimal 50 karakter'),
-  hexCode: z
-    .string()
-    .regex(/^#[0-9A-F]{6}$/i, 'Kode hex warna harus dalam format #RRGGBB')
-    .optional(),
-  description: z.string().max(255, 'Deskripsi maksimal 255 karakter').optional(),
-})
-
-export const updateColorSchema = colorSchema.partial()
 
 // ============== SIZE MANAGEMENT SCHEMAS ==============
 
@@ -199,8 +183,7 @@ export const productQuerySchema = z.object({
   status: z.enum(['AVAILABLE', 'RENTED', 'MAINTENANCE']).optional(),
   isActive: z.coerce.boolean().optional(),
   size: z.union([z.string(), z.array(z.string())]).optional(),
-  colorId: z.union([z.string(), z.array(z.string())]).optional(),
-})
+  })
 
 /**
  * Skema validasi parameter route untuk produk
@@ -228,23 +211,6 @@ export const categoryParamsSchema = z.object({
   id: z.string().uuid('ID kategori tidak valid'),
 })
 
-/**
- * Skema validasi query parameter untuk endpoint warna
- * Memastikan tipe dan batasan parameter yang diterima
- */
-export const colorQuerySchema = z.object({
-  search: z.string().optional(),
-  isActive: z.coerce.boolean().optional().default(true),
-  includeProducts: z.coerce.boolean().optional().default(false),
-})
-
-/**
- * Skema validasi parameter route untuk warna
- * Memastikan ID warna valid
- */
-export const colorParamsSchema = z.object({
-  id: z.string().uuid('ID warna tidak valid'),
-})
 
 // ============== ADVANCED-ONLY ALIASES ==============
 
