@@ -143,7 +143,7 @@ interface ProductFormPageProps {
 // Simple validation helper functions
 const validateProductCode = (code: string): string | null => {
   if (!code.trim()) return 'Kode produk wajib diisi'
-  if (!/^[A-Z0-9]{4}$/.test(code)) return 'Kode harus 4 digit alfanumerik uppercase'
+  if (!/^[A-Za-z0-9]{3,10}$/.test(code)) return 'Kode harus 3-10 digit alfanumerik'
   return null
 }
 

@@ -266,12 +266,12 @@ export function ProductForm({
                   onInputChange('code', typeof value === 'string' ? value.toUpperCase() : value)
                 }
                 onBlur={(value) => onBlur('code', value)}
-                placeholder="PRD1"
-                maxLength={5}
+                placeholder="PRD001"
+                maxLength={10}
                 error={errors.code}
                 touched={touched.code}
                 required
-                helpText="Masukkan 4-5 digit kode alfanumerik (contoh: PRD1, OLL01, DRES2)"
+                helpText="Masukkan 3-10 digit kode alfanumerik (contoh: PRD001, DRESS001, JKT2025)"
                 data-testid="product-code-field"
               />
 
