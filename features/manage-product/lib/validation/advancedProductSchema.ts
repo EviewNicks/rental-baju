@@ -73,8 +73,7 @@ export const advancedProductBaseSchema = z.object({
     .positive('Harga sewa harus positif')
     .max(999999999, 'Harga sewa maksimal 999,999,999'),
   categoryId: z.string().uuid('ID kategori tidak valid'),
-  colorId: z.string().uuid('ID warna tidak valid').optional(),
-  materialId: z.string().uuid('ID material tidak valid').optional(),
+    materialId: z.string().uuid('ID material tidak valid').optional(),
   materialQuantity: z
     .number()
     .int('Jumlah material harus berupa bilangan bulat')
@@ -168,13 +167,7 @@ export const advancedProductQuerySchema = z.object({
   categoryId: z.string().uuid('ID kategori tidak valid').optional(),
   status: advancedProductStatusSchema.optional(),
   isActive: z.coerce.boolean().optional().default(true),
-  colorId: z
-    .union([
-      z.string().uuid('ID warna tidak valid'),
-      z.array(z.string().uuid('ID warna tidak valid')),
-    ])
-    .optional(),
-  // Advanced filtering options
+    // Advanced filtering options
   ageCategory: advancedAgeCategorySchema.optional(),
   size: advancedSizeEnumSchema.optional(),
   hasMultipleAgeCategories: z.coerce.boolean().optional(),

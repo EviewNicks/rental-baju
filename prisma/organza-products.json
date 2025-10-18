@@ -1,0 +1,223 @@
+[
+  {
+    "code": "OLL01",
+    "name": "Organza Lilac",
+    "description": "",
+    "modalAwal": 75000,
+    "currentPrice": 75000,
+    "quantity": 3,
+    "categoryId": "912520ea-ad5a-4294-8057-e9084a871a05",
+    "imageUrl": "/products/organza/OLL01.jpg",
+    "sizes": [
+      { "ageCategory": "CHILD", "size": "S", "quantity": 3 }
+    ]
+  },
+  {
+    "code": "OPS02",
+    "name": "Organza Peach",
+    "description": "",
+    "modalAwal": 75000,
+    "currentPrice": 75000,
+    "quantity": 18,
+    "categoryId": "912520ea-ad5a-4294-8057-e9084a871a05",
+    "imageUrl": "/products/organza/OPS02.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "M", "quantity": 6 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 6 },
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "XXL", "quantity": 1 },
+      { "ageCategory": "CHILD", "size": "M", "quantity": 1 }
+    ]
+  },
+  {
+    "code": "OLM03",
+    "name": "Organza Lime",
+    "description": "",
+    "modalAwal": 75000,
+    "currentPrice": 75000,
+    "quantity": 13,
+    "categoryId": "912520ea-ad5a-4294-8057-e9084a871a05",
+    "imageUrl": "/products/organza/OLM03.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "S", "quantity": 1 },
+      { "ageCategory": "ADULT", "size": "M", "quantity": 3 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "XXL", "quantity": 3 }
+    ]
+  },
+  {
+    "code": "OHS04",
+    "name": "Organza Sage",
+    "description": "",
+    "modalAwal": 75000,
+    "currentPrice": 75000,
+    "quantity": 13,
+    "categoryId": "912520ea-ad5a-4294-8057-e9084a871a05",
+    "imageUrl": "/products/organza/OHS04.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "M", "quantity": 3 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 3 },
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 5 },
+      { "ageCategory": "CHILD", "size": "L", "quantity": 2 }
+    ]
+  },
+  {
+    "code": "OTR05",
+    "name": "Organza Terracota",
+    "description": "",
+    "modalAwal": 75000,
+    "currentPrice": 75000,
+    "quantity": 12,
+    "categoryId": "912520ea-ad5a-4294-8057-e9084a871a05",
+    "imageUrl": "/products/organza/OTR05.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "M", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 4 }
+    ]
+  },
+  {
+    "code": "OHD06",
+    "name": "Organza Datu",
+    "description": "",
+    "modalAwal": 75000,
+    "currentPrice": 75000,
+    "quantity": 16,
+    "categoryId": "912520ea-ad5a-4294-8057-e9084a871a05",
+    "imageUrl": "/products/organza/OHD06.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "M", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 6 },
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "XXL", "quantity": 1 },
+      { "ageCategory": "CHILD", "size": "M", "quantity": 1 }
+    ]
+  },
+  {
+    "code": "OMR07",
+    "name": "Organza Marun",
+    "description": "",
+    "modalAwal": 75000,
+    "currentPrice": 75000,
+    "quantity": 15,
+    "categoryId": "912520ea-ad5a-4294-8057-e9084a871a05",
+    "imageUrl": "/products/organza/OMR07.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "M", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "XXL", "quantity": 1 },
+      { "ageCategory": "CHILD", "size": "M", "quantity": 2 }
+    ]
+  },
+  {
+    "code": "OHD08",
+    "name": "Organza Datu B",
+    "description": "",
+    "modalAwal": 75000,
+    "currentPrice": 75000,
+    "quantity": 13,
+    "categoryId": "912520ea-ad5a-4294-8057-e9084a871a05",
+    "imageUrl": "/products/organza/OHD08.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "M", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "XXL", "quantity": 1 }
+    ]
+  },
+  {
+    "code": "OTK09",
+    "name": "Organza Tourqish",
+    "description": "",
+    "modalAwal": 75000,
+    "currentPrice": 75000,
+    "quantity": 14,
+    "categoryId": "912520ea-ad5a-4294-8057-e9084a871a05",
+    "imageUrl": "/products/organza/OTK09.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "M", "quantity": 1 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 3 },
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 3 },
+      { "ageCategory": "ADULT", "size": "XXL", "quantity": 5 }
+    ]
+  },
+  {
+    "code": "OPT10",
+    "name": "Organza Putih",
+    "description": "",
+    "modalAwal": 75000,
+    "currentPrice": 75000,
+    "quantity": 15,
+    "categoryId": "912520ea-ad5a-4294-8057-e9084a871a05",
+    "imageUrl": "/products/organza/OPT10.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "M", "quantity": 3 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 5 },
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "XXL", "quantity": 1 }
+    ]
+  },
+  {
+    "code": "OTS01",
+    "name": "Organza Bunga Silver",
+    "description": "",
+    "modalAwal": 75000,
+    "currentPrice": 75000,
+    "quantity": 4,
+    "categoryId": "912520ea-ad5a-4294-8057-e9084a871a05",
+    "imageUrl": "/products/organza/OTS01.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "M", "quantity": 1 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 1 }
+    ]
+  },
+  {
+    "code": "OTO02",
+    "name": "Organza Bunga Orange",
+    "description": "",
+    "modalAwal": 75000,
+    "currentPrice": 75000,
+    "quantity": 2,
+    "categoryId": "912520ea-ad5a-4294-8057-e9084a871a05",
+    "imageUrl": "/products/organza/OTO02.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "M", "quantity": 2 }
+    ]
+  },
+  {
+    "code": "OTP03",
+    "name": "Organza Bunga Pink",
+    "description": "",
+    "modalAwal": 75000,
+    "currentPrice": 75000,
+    "quantity": 3,
+    "categoryId": "912520ea-ad5a-4294-8057-e9084a871a05",
+    "imageUrl": "/products/organza/OTP03.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "S", "quantity": 1 },
+      { "ageCategory": "ADULT", "size": "M", "quantity": 2 }
+    ]
+  },
+  {
+    "code": "OTC04",
+    "name": "Organza Bunga Cream",
+    "description": "",
+    "modalAwal": 75000,
+    "currentPrice": 75000,
+    "quantity": 3,
+    "categoryId": "912520ea-ad5a-4294-8057-e9084a871a05",
+    "imageUrl": "/products/organza/OTC04.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "M", "quantity": 1 }
+    ]
+  }
+]

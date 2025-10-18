@@ -1,0 +1,15 @@
+Kode ;Nama;Harga;Jumlah (Dewasa);Jumlah (Anak)
+OLL 01;Organza Lilac; Rp75.000 ;;S:3
+OPS 02 ;Organza Peach; Rp75.000 ; M:6, L: 6, XL:4, XXL: 1 ;M:1
+OLM 03;Organza Lime; Rp75.000 ; S:1, M:3, L:4, XL2, XXL:3 ;
+OHS 04;Organza Sage; Rp75.000 ; M:3, L:3, XL:5 ;L:2
+OTR 05;Organza Terracota; Rp75.000 ; M:4, L:4, XL:4 ;
+OHD 06;Organza Datu; Rp75.000 ; S:2, M:4, L:6, XL:2, XXL:1 ;Kecil: 1
+OMR 07;Organza Marun; Rp75.000 ; S:2, M:4, L:4, XL:2, XXL:1 ;M:2
+OHD 08;Organza Datu; Rp75.000 ; S:2, M:4, L:4, XL:2, XXL:1 ;
+OTK 09;Organza Tourqish; Rp75.000 ; S:2, M:1, L:3, XL:3, XXL:5, XXX:1 ;
+OPT 10;Organza Putih; Rp75.000 ; S:2, M:3, L:5, XL:4, XXL:1 ;
+OTS 01;Organza Bunga Silver; Rp75.000 ; S:2, M:1, L:1 ;
+OTO 02;Organza Bunga Orange; Rp75.000 ; M:2 ;
+OTP 03;Organza Bunga Pink; Rp75.000 ; S:1, M:2 ;
+OTC 04;Organza Bunga Cream; Rp75.000 ; S:2, M:1 ;

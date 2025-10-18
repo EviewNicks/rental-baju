@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useMemo } from 'react'
+import React from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -17,11 +17,8 @@ import { ProductImageSection } from './ProductImageSection'
 import { ProductInfoSection } from './ProductInfoSection'
 import { ProductActionButtons } from './ProductActionButton'
 import { ProductHistoryCard } from './ProductHistoryCard'
-import { PricingCard } from './PricingCard'
-import { StatusInventoryCard } from './StatusInventoryCard'
+import { SizeDetailCard } from '@/features/homepage/components/SizeDetailCard'
 import { useProduct, useDeleteProduct } from '@/features/manage-product/hooks/useProducts'
-import { useProductHistory } from '../../hooks/useProductHistory'
-import { computeFinancialSummary } from '../../lib/utils/financialSummary'
 import { showSuccess, showError } from '@/lib/notifications'
 import type { Product } from '@/features/manage-product/types'
 
@@ -40,20 +37,6 @@ export function ProductDetailPage({
 
   // Use real API data through hooks
   const { data: product, isLoading, error: productError, refetch } = useProduct(productId)
-
-  // Fetch product history data for financial summary
-  const { data: historyData, isLoading: historyLoading } = useProductHistory(productId, {
-    page: 1,
-    limit: 10,
-    sortBy: 'date',
-    sortOrder: 'desc',
-  })
-
-  // Compute financial data for PricingCard
-  const financialData = useMemo(() => 
-    computeFinancialSummary(historyData?.data, historyLoading), 
-    [historyData?.data, historyLoading]
-  )
 
   const deleteProductMutation = useDeleteProduct()
 
@@ -162,7 +145,7 @@ export function ProductDetailPage({
           {/* Left: Product Image + Action Buttons Container */}
           <div className="space-y-6">
             <ProductImageSection imageUrl={product.imageUrl} productName={product.name} />
-            
+
             {/* Action Buttons - Tablet & Desktop: Below Image, Mobile: Will be shown below */}
             <div className="hidden lg:block">
               <ProductActionButtons
@@ -175,15 +158,22 @@ export function ProductDetailPage({
           </div>
 
           {/* Right: Enhanced Basic Info (from ProductInfoSection) */}
-          <div>
+          <div className="space-y-6">
             <ProductInfoSection product={product} />
           </div>
         </div>
 
-        {/* Bottom Section: Supporting Cards - Status & Inventory, Pricing, System Info */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          <StatusInventoryCard product={product} />
-          <PricingCard product={product} financialData={financialData} />
+        {/* Bottom Section: Supporting Cards - Status & Inventory, System Info */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          {/* Size Detail Card - Admin Context */}
+          <SizeDetailCard
+            sizes={product.sizes}
+            title="Detail Ukuran & Stok"
+            showStats={true}
+            showProgress={true}
+            context="admin"
+            editable={true}
+          />
           <ProductHistoryCard product={product} />
         </div>
 
@@ -253,7 +243,7 @@ function ProductDetailSkeleton() {
               </div>
               <div className="h-20 bg-gray-200 rounded"></div>
             </div>
-            
+
             {/* Supporting Info Skeleton - 3 columns */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
               <div className="bg-white rounded-lg border p-6 space-y-4">

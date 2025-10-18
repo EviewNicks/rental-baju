@@ -34,11 +34,7 @@ export interface TransaksiWithDetails extends Transaksi {
       modalAwal: Decimal // Added for penalty calculation
       imageUrl?: string | null
       size?: string | null
-      color?: {
-        id: string
-        name: string
-      } | null
-      category?: {
+        category?: {
         id: string
         name: string
       } | null
@@ -470,13 +466,7 @@ export class TransaksiService {
                 modalAwal: true, // Added for penalty calculation
                 imageUrl: true,
                 size: true,
-                color: {
-                  select: {
-                    id: true,
-                    name: true,
-                  },
-                },
-                category: {
+                    category: {
                   select: {
                     id: true,
                     name: true,
@@ -547,13 +537,7 @@ export class TransaksiService {
                 modalAwal: true, // Added for penalty calculation
                 imageUrl: true,
                 size: true,
-                color: {
-                  select: {
-                    id: true,
-                    name: true,
-                  },
-                },
-                category: {
+                    category: {
                   select: {
                     id: true,
                     name: true,

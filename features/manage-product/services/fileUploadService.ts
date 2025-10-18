@@ -35,6 +35,65 @@ export class FileUploadService {
   }
 
   /**
+   * Upload product image to cloud storage (server-side, skip Zod validation)
+   * Use this for Node.js environments where File polyfill may not pass instanceof checks
+   */
+  async uploadProductImageFromBuffer(
+    fileBuffer: Buffer | Uint8Array,
+    filename: string,
+    productCode: string,
+  ): Promise<UploadResult | null> {
+    if (!fileBuffer || fileBuffer.length === 0) {
+      return null
+    }
+
+    // Generate unique file path
+    const extension = this.getFileExtension(filename)
+    const imagePath = this.generateImagePath(productCode, extension)
+
+    // Upload with retry logic
+    let lastError: Error | null = null
+
+    for (let attempt = 1; attempt <= this.maxRetries; attempt++) {
+      try {
+        const { data, error } = await supabase.storage
+          .from(this.bucket)
+          .upload(imagePath, fileBuffer, {
+            cacheControl: '3600',
+            upsert: true,
+            contentType: this.getMimeType(extension)
+          })
+
+        if (error) {
+          lastError = new Error(error.message)
+          if (attempt < this.maxRetries) {
+            await this.delay(attempt * 1000)
+            continue
+          }
+        } else if (data) {
+          const { data: urlData } = supabase.storage.from(this.bucket).getPublicUrl(imagePath)
+          return {
+            url: urlData.publicUrl,
+            path: imagePath,
+          }
+        }
+      } catch (error) {
+        lastError = error as Error
+        if (attempt < this.maxRetries) {
+          await this.delay(attempt * 1000)
+          continue
+        }
+      }
+    }
+
+    if (lastError) {
+      throw new Error(`Gagal mengupload gambar: ${lastError.message}`)
+    }
+
+    throw new Error('Upload failed for unknown reason')
+  }
+
+  /**
    * Upload product image to cloud storage
    */
   async uploadProductImage(
@@ -189,6 +248,20 @@ export class FileUploadService {
   private getFileExtension(filename: string): string {
     const parts = filename.split('.')
     return parts[parts.length - 1].toLowerCase()
+  }
+
+  /**
+   * Get MIME type from file extension
+   */
+  private getMimeType(extension: string): string {
+    const mimeTypes: Record<string, string> = {
+      'jpg': 'image/jpeg',
+      'jpeg': 'image/jpeg',
+      'png': 'image/png',
+      'webp': 'image/webp',
+      'heic': 'image/heic'
+    }
+    return mimeTypes[extension.toLowerCase()] || 'image/jpeg'
   }
 
   /**

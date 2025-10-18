@@ -1,17 +1,15 @@
 'use client'
-import { Hash, Package, Tag, Box, DollarSign, CreditCard, FileText, Palette } from 'lucide-react'
+import { Hash, Package, Tag, Box, DollarSign, CreditCard, FileText } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { FormField } from '@/features/manage-product/components/form-product/FormField'
 import { FormSection } from '@/features/manage-product/components/form-product/FormSection'
 import { ImageUpload } from '@/features/manage-product/components/products/ImageUpload'
 import { MaterialSelector } from '@/features/manage-product/components/material/MaterialSelector'
 import { InlineSizeManagement } from '@/features/manage-product/components/form-product/InlineSizeManagement'
-import { useColors } from '@/features/manage-product/hooks/useCategories'
 import { useAggregatedSizes } from '@/features/manage-product/hooks/useAggregatedSizes'
 import { getProductSizeMode } from '@/features/manage-product/lib/utils/sizeManagementUtils'
 import type {
   ClientCategory,
-  ClientColor,
   ClientProduct,
   AggregatedSizeView,
   SimplifiedSizeEntry,
@@ -26,7 +24,6 @@ interface ProductFormData {
   code: string
   name: string
   categoryId: string
-  colorId?: string
   materialId?: string
   materialQuantity?: number
   quantity: number
@@ -134,27 +131,7 @@ export function ProductForm({
     }
   }, [sizeMode, isLoadingAggregatedSizes, aggregatedSizesError, aggregatedSizes])
 
-  // Fetch colors data
-  const {
-    data: colorsData,
-    isLoading: isLoadingColors,
-    error: colorsError,
-  } = useColors({ isActive: true })
-  const colors = colorsData?.colors || []
-
-  // Log colors data loading state
-  useEffect(() => {
-    if (isLoadingColors) {
-      formLogger.debug('colorsLoading', 'Loading colors data for product form')
-    } else if (colorsError) {
-      formLogger.error('colorsLoadError', 'Failed to load colors for product form', colorsError)
-    } else if (colors.length > 0) {
-      formLogger.info('colorsLoaded', 'Colors loaded successfully for product form', {
-        colorsCount: colors.length,
-      })
-    }
-  }, [isLoadingColors, colorsError, colors.length])
-
+  
   // Log material integration state changes
   useEffect(() => {
     if (formData.materialId) {
@@ -242,13 +219,7 @@ export function ProductForm({
     color: category.color,
   }))
 
-  // Transform colors for select options
-  const colorOptions = colors.map((color: ClientColor) => ({
-    value: color.id,
-    label: color.name,
-    color: color.hexCode,
-  }))
-
+  
   return (
     <Card className="shadow-md" data-testid="product-form-container">
       <CardContent className="p-6 md:p-8">
@@ -266,12 +237,12 @@ export function ProductForm({
                   onInputChange('code', typeof value === 'string' ? value.toUpperCase() : value)
                 }
                 onBlur={(value) => onBlur('code', value)}
-                placeholder="PRD1"
-                maxLength={4}
+                placeholder="PRD001"
+                maxLength={10}
                 error={errors.code}
                 touched={touched.code}
                 required
-                helpText="Masukkan 4 digit kode alfanumerik (contoh: PRD1, DRES2)"
+                helpText="Masukkan 3-10 digit kode alfanumerik (contoh: PRD001, DRESS001, JKT2025)"
                 data-testid="product-code-field"
               />
 
@@ -332,30 +303,6 @@ export function ProductForm({
                   </p>
                 )}
               </div>
-
-              <FormField
-                type="select"
-                name="colorId"
-                label="Warna"
-                icon={Palette}
-                value={formData.colorId || ''}
-                onChange={(value) => onInputChange('colorId', value)}
-                options={colorOptions}
-                placeholder={
-                  isLoadingColors
-                    ? 'Memuat warna...'
-                    : colorsError
-                      ? 'Error memuat warna'
-                      : 'Pilih warna (opsional)'
-                }
-                error={errors.colorId}
-                touched={touched.colorId}
-                disabled={isLoadingColors || !!colorsError}
-                helpText={
-                  colorsError ? 'Gagal memuat data warna' : 'Pilih warna produk jika berlaku'
-                }
-                data-testid="product-color-field"
-              />
             </div>
           </FormSection>
 

@@ -1,4 +1,11 @@
 {
+  "env": {
+    "ANTHROPIC_BASE_URL": "https://api.z.ai/api/anthropic",
+    "ANTHROPIC_AUTH_TOKEN": "128af5d62b6b4e8a9353999e6863cc06.CCmi86k9JXyLrPtj",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "glm-4.5-air",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "glm-4.6",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "glm-4.5-air"
+  },
   "permissions": {
     "deny": [
       "Read(.env)",
@@ -21,7 +28,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "uv run .claude/hooks/use_bun.py"
+            "command": "python .claude/hooks/use_bun.py"
           }
         ]
       }
@@ -32,11 +39,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "uv run .claude/hooks/windows_notification.py build_complete"
+            "command": "python .claude/hooks/windows_notification.py build_complete"
           },
           {
             "type": "command",
-            "command": "uv run .claude/hooks/ts_lint.py"
+            "command": "python .claude/hooks/ts_lint.py"
           }
         ]
       }
@@ -47,11 +54,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "uv run .claude/hooks/play_audio.py ready"
+            "command": "python .claude/hooks/play_audio.py ready"
           },
           {
             "type": "command",
-            "command": "uv run .claude/hooks/play_audio.py error_fixed"
+            "command": "python .claude/hooks/play_audio.py error_fixed"
           }
         ]
       }
@@ -62,11 +69,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "uv run .claude/hooks/play_audio.py "
+            "command": "python .claude/hooks/play_audio.py "
           },
           {
             "type": "command",
-            "command": "uv run .claude/hooks/windows_notification.py awaiting_instructions"
+            "command": "python .claude/hooks/windows_notification.py awaiting_instructions"
           }
         ]
       }

@@ -16,8 +16,11 @@ import { useCategories } from '@/features/manage-product/hooks/useCategories'
 import { useCreateProduct, useUpdateProduct } from '@/features/manage-product/hooks/useProducts'
 import type {
   ClientProduct,
+  ClientProductSize,
   AggregatedSizeView,
   SimplifiedSizeEntry,
+  AgeCategory,
+  SizeEnum,
 } from '@/features/manage-product/types'
 
 // Image format validation constants
@@ -28,7 +31,6 @@ interface ProductFormData {
   code: string
   name: string
   categoryId: string
-  colorId?: string | undefined
   materialId?: string | undefined
   materialQuantity?: number | undefined
   quantity: number
@@ -72,6 +74,16 @@ const transformSimplifiedSizesToBackendFormat = (
   return jsonString
 }
 
+// Transform existing product sizes to simplified sizes format (EDIT MODE)
+const transformProductSizesToSimplifiedFormat = (productSizes: ClientProductSize[]): SimplifiedSizeEntry[] => {
+  return productSizes.map((size) => ({
+    id: size.id,
+    size: size.size as SizeEnum,
+    ageCategory: size.ageCategory as AgeCategory,
+    quantity: size.quantity,
+  }))
+}
+
 // Legacy function to transform aggregated sizes to backend format (BACKWARD COMPATIBILITY)
 const transformSizesToBackendFormat = (aggregatedSizes: AggregatedSizeView[]): string => {
   const sizes = aggregatedSizes.flatMap((aggSize) =>
@@ -95,7 +107,6 @@ interface CreateProductRequest {
   quantity: number
   categoryId: string
   sizes: string // JSON string format required by backend
-  colorId?: string
   materialId?: string
   materialQuantity?: number
   image?: File
@@ -110,7 +121,6 @@ interface UpdateProductRequest {
   quantity: number
   categoryId: string
   sizes: string // JSON string format required by backend
-  colorId?: string
   materialId?: string
   materialQuantity?: number
   image?: File
@@ -130,7 +140,7 @@ interface ProductFormPageProps {
 // Simple validation helper functions
 const validateProductCode = (code: string): string | null => {
   if (!code.trim()) return 'Kode produk wajib diisi'
-  if (!/^[A-Z0-9]{4}$/.test(code)) return 'Kode harus 4 digit alfanumerik uppercase'
+  if (!/^[A-Za-z0-9]{3,10}$/.test(code)) return 'Kode harus 3-10 digit alfanumerik'
   return null
 }
 
@@ -233,7 +243,6 @@ export function ProductFormPage({
     name: product?.name || '',
     categoryId: product?.categoryId || '',
     // Fix: Initialize optional fields with undefined instead of empty strings to prevent Select.Item errors
-    colorId: product?.colorId || undefined,
     materialId: product?.materialId || undefined,
     materialQuantity: product?.materialQuantity || undefined,
     quantity: product?.quantity || 1,
@@ -245,7 +254,9 @@ export function ProductFormPage({
 
     // Simplified Size Management (enforced - all products require sizes)
     hasSizes: true, // Always true in advanced-only architecture
-    simplifiedSizes: [], // Initialize empty array for new simplified system
+    simplifiedSizes: mode === 'edit' && product?.sizes
+      ? transformProductSizesToSimplifiedFormat(product.sizes)
+      : [], // Load existing sizes in edit mode, empty for new products
     aggregatedSizes: undefined, // Keep for backward compatibility
   })
 
@@ -298,14 +309,6 @@ export function ProductFormPage({
         break
       case 'categoryId':
         error = validateCategoryId(typeof value === 'string' ? value : '') || ''
-        break
-      case 'size':
-        // Size is optional, no validation needed
-        error = ''
-        break
-      case 'colorId':
-        // ColorId is optional, no validation needed
-        error = ''
         break
       case 'materialId':
         // MaterialId is optional, no validation needed
@@ -423,7 +426,6 @@ export function ProductFormPage({
         name: true,
         categoryId: true,
         sizes: true, // Replace legacy size with sizes validation
-        colorId: true,
         materialId: true,
         materialQuantity: true,
         modalAwal: true,
@@ -453,7 +455,6 @@ export function ProductFormPage({
           quantity: formData.quantity,
           categoryId: formData.categoryId,
           sizes: sizesData, // Use transformed sizes array
-          colorId: formData.colorId || undefined,
           materialId: formData.materialId || undefined,
           materialQuantity: formData.materialQuantity || undefined,
           image: formData.image || undefined,
@@ -499,7 +500,6 @@ export function ProductFormPage({
           quantity: formData.quantity,
           categoryId: formData.categoryId,
           sizes: sizesData, // Use transformed sizes array
-          colorId: formData.colorId || undefined,
           materialId: formData.materialId || undefined,
           materialQuantity: formData.materialQuantity || undefined,
           image: formData.image || undefined,

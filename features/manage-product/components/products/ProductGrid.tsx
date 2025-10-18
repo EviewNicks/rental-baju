@@ -61,16 +61,7 @@ export function ProductGrid({ products, onProductClick }: ProductGridProps) {
                     }
                   </Badge>
                 )}
-                {product.color && (
-                  <Badge variant="outline" className="flex items-center gap-1">
-                    <div 
-                      className="w-2 h-2 rounded-full" 
-                      style={{ backgroundColor: product.color.hexCode || '#gray' }}
-                    />
-                    <span className="text-xs">{product.color.name}</span>
-                  </Badge>
-                )}
-              </div>
+                </div>
               <div className="space-y-1 text-xs text-gray-600">
                 <div className="flex justify-between">
                   <span>Harga Sewa:</span>

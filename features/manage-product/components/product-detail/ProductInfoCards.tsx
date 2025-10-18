@@ -4,7 +4,8 @@ import type React from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { getStatusBadge, getCategoryBadge } from '@/features/manage-product/lib/utils/product'
+import { TrendingUp, Wallet } from 'lucide-react'
+import { getStatusBadge, getCategoryBadge, formatCurrency } from '@/features/manage-product/lib/utils/product'
 import type { Product } from '@/features/manage-product/types'
 
 interface InfoFieldProps {
@@ -106,6 +107,9 @@ interface EnhancedBasicInfoCardProps {
 }
 
 export function EnhancedBasicInfoCard({ product }: EnhancedBasicInfoCardProps) {
+  const modalAwal = Number(product.modalAwal)
+  const hargaSewa = Number(product.currentPrice)
+
   return (
     <Card className="h-fit hover:shadow-xl transition-all duration-300">
       <CardHeader className="pb-6">
@@ -115,26 +119,9 @@ export function EnhancedBasicInfoCard({ product }: EnhancedBasicInfoCardProps) {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Product Name + Color (if exists) */}
+        {/* Product Name */}
         <div className="space-y-3">
           <h2 className="text-3xl font-bold text-gray-900 leading-tight">{product.name}</h2>
-          {product.color && (
-            <div className="flex flex-wrap items-center gap-3 p-4 bg-gray-50 rounded-lg">
-              <div className="flex items-center gap-2">
-                <div
-                  className="w-6 h-6 rounded-full border-2 border-gray-300 shadow-sm"
-                  style={{ backgroundColor: product.color.hexCode || '#gray' }}
-                  title={`Kode Warna: ${product.color.hexCode}`}
-                />
-                <span className="text-lg font-medium text-gray-700">{product.color.name}</span>
-              </div>
-              {product.color.hexCode && (
-                <code className="text-sm bg-white px-3 py-1 rounded border border-gray-200 font-mono">
-                  {product.color.hexCode}
-                </code>
-              )}
-            </div>
-          )}
         </div>
 
         {/* Product Code */}
@@ -191,6 +178,39 @@ export function EnhancedBasicInfoCard({ product }: EnhancedBasicInfoCardProps) {
             <div className="text-center p-3 bg-yellow-50 rounded-lg border border-yellow-200">
               <p className="text-sm text-yellow-600 font-medium">Stok</p>
               <p className="text-lg font-bold ">{product.quantity} pcs</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Pricing Information */}
+        <div className="space-y-4">
+          <div className="text-lg font-semibold text-gray-900">Informasi Harga</div>
+
+          {/* Modal Awal */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-500">Modal Awal</label>
+              <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <div className="flex items-center gap-3">
+                  <Wallet className="w-5 h-5 text-gray-600" />
+                  <div>
+                    <p className="text-2xl font-bold text-gray-900">{formatCurrency(modalAwal)}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Harga Sewa */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-500">Harga Sewa</label>
+              <div className="p-4 bg-gradient-to-r from-yellow-50 to-yellow-100 rounded-lg border border-yellow-200">
+                <div className="flex items-center gap-3">
+                  <TrendingUp className="w-5 h-5 text-yellow-600" />
+                  <div>
+                    <p className="text-3xl font-bold text-yellow-700">{formatCurrency(hargaSewa)}</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

@@ -98,11 +98,6 @@ export function Navbar() {
                     Masuk
                   </Button>
                 </Link>
-                <Link href="/sign-up" data-testid="desktop-sign-up-link">
-                  <Button className="bg-gold-500 hover:bg-gold-600 text-neutral-900 rounded-lg transition-all duration-200 hover:scale-105 hover:shadow-lg">
-                    Daftar Gratis
-                  </Button>
-                </Link>
               </>
             ) : (
               <>

@@ -12,7 +12,7 @@ interface ProductInfoSectionProps {
 export function ProductInfoSection({ product, className }: ProductInfoSectionProps) {
   return (
     <div className={className}>
-      {/* Enhanced Basic Info Only - Supporting cards moved to ProductDetailPage */}
+      {/* Enhanced Basic Info - Now includes all product information including pricing */}
       <EnhancedBasicInfoCard product={product} />
     </div>
   )

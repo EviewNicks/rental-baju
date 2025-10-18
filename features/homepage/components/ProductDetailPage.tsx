@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Heart, ShoppingBag, Clock, Package, Loader2, AlertCircle, Home } from 'lucide-react'
+import { ArrowLeft, Heart, ShoppingBag, Clock, Loader2, AlertCircle, Home } from 'lucide-react'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -19,6 +19,7 @@ import { useTransformedProductDetail } from '../hooks/usePublicProducts'
 import { formatCurrency, getStatusBadge } from '@/features/manage-product/lib/utils/product'
 import { lightenColor, getContrastTextColor } from '@/features/manage-product/lib/utils/color'
 import { getValidImageUrl } from '@/features/manage-product/lib/utils/imageValidate'
+import { SizeDetailCard } from './SizeDetailCard'
 
 interface PublicProductDetailPageProps {
   productId: string
@@ -193,41 +194,13 @@ export function PublicProductDetailPage({ productId }: PublicProductDetailPagePr
               </CardContent>
             </Card>
 
-            {/* Size Availability */}
-            <Card>
-              <CardContent className="p-6">
-                <h3 className="text-lg font-semibold text-neutral-900 mb-4">
-                  <Package className="w-5 h-5 inline mr-2" />
-                  Ketersediaan Ukuran
-                </h3>
-                {product.availabilityInfo.isInStock ? (
-                  <div className="space-y-3">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      {product.availabilityInfo.availableSizes.map((size, index) => (
-                        <div
-                          key={index}
-                          className="flex justify-between items-center p-3 bg-neutral-50 rounded-lg"
-                        >
-                          <span className="font-medium">
-                            {size.size} ({size.ageCategory})
-                          </span>
-                          <Badge variant="secondary">
-                            {size.quantity} tersedia
-                          </Badge>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="text-sm text-neutral-600">
-                      Total stok: {product.availabilityInfo.totalStock} item
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-center py-4">
-                    <p className="text-neutral-500">Saat ini tidak tersedia dalam stok</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            {/* Size Availability - Enhanced */}
+            <SizeDetailCard
+              sizes={product.sizes}
+              title="Detail Ketersediaan Ukuran"
+              showStats={true}
+              showProgress={true}
+            />
 
             {/* Call to Action */}
             <Card>

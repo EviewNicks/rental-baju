@@ -13,7 +13,6 @@ export interface BaseProduct {
   name: string
   description?: string
   categoryId: string
-  colorId?: string
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   modalAwal: any // Prisma Decimal (server-side only)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -44,16 +43,6 @@ export interface BaseCategory {
   createdBy: string
 }
 
-export interface BaseColor {
-  id: string
-  name: string
-  hexCode?: string
-  description?: string
-  isActive: boolean
-  createdAt: Date
-  updatedAt: Date
-  createdBy: string
-}
 
 // Client-side types (frontend-safe with regular numbers)
 export interface ClientProduct {
@@ -62,7 +51,6 @@ export interface ClientProduct {
   name: string
   description?: string
   categoryId: string
-  colorId?: string
   modalAwal: number
   currentPrice: number
   quantity: number
@@ -79,7 +67,6 @@ export interface ClientProduct {
   updatedAt: Date | string
   createdBy: string
   category: ClientCategory
-  color?: ClientColor
   material?: ClientMaterial
   sizes: ClientProductSize[]
 }
@@ -94,17 +81,6 @@ export interface ClientCategory {
   products: ClientProduct[]
 }
 
-export interface ClientColor {
-  id: string
-  name: string
-  hexCode?: string
-  description?: string
-  isActive: boolean
-  createdAt: Date | string
-  updatedAt: Date | string
-  createdBy: string
-  products: ClientProduct[]
-}
 
 // Material Management - RPK-45
 export interface BaseMaterial {
@@ -168,7 +144,6 @@ export interface ProductSize extends BaseProductSize {
 // Full types with relationships
 export interface Product extends BaseProduct {
   category: Category
-  color?: Color
   material?: Material
   sizes: ProductSize[]
 }
@@ -177,9 +152,6 @@ export interface Category extends BaseCategory {
   products: Product[]
 }
 
-export interface Color extends BaseColor {
-  products: Product[]
-}
 
 // Client-side category type for frontend usage
 export interface CategoryWithClientProducts extends BaseCategory {
@@ -237,7 +209,6 @@ export interface CreateProductRequest {
   quantity: number
   categoryId: string
   sizes: string // JSON string format required by backend - Advanced-only architecture
-  colorId?: string
   // Material Management fields - RPK-45
   materialId?: string
   materialQuantity?: number
@@ -253,7 +224,6 @@ export interface UpdateProductRequest {
   quantity?: number
   categoryId?: string
   sizes: string // JSON string format required by backend - Advanced-only architecture
-  colorId?: string
   // Material Management fields - RPK-45
   materialId?: string
   materialQuantity?: number
@@ -285,22 +255,6 @@ export interface UpdateCategoryRequest {
   color?: string
 }
 
-/**
- * Color Management Types
- */
-
-export interface CreateColorRequest {
-  name: string
-  hexCode?: string
-  description?: string
-}
-
-export interface UpdateColorRequest {
-  name?: string
-  hexCode?: string
-  description?: string
-  isActive?: boolean
-}
 
 /**
  * Category Management Types
@@ -319,7 +273,6 @@ export interface ProductFormData {
   code: string
   name: string
   categoryId: string
-  colorId?: string
   quantity: number
   modalAwal: number // ✅ Ubah dari Decimal ke number
   currentPrice: number // ✅ Renamed from hargaSewa to match database schema

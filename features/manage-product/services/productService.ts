@@ -67,7 +67,7 @@ export class ProductService {
   async getProducts(query: Record<string, unknown>): Promise<ProductListResponse> {
     // Validate and parse query parameters
     const validatedQuery = productQuerySchema.parse(query)
-    const { page, limit, search, categoryId, status, isActive, size, colorId } = validatedQuery
+    const { page, limit, search, categoryId, status, isActive, size } = validatedQuery
 
     // Build where clause
     const where: Record<string, unknown> = {
@@ -91,14 +91,6 @@ export class ProductService {
       }
     }
 
-    // Handle colorId filtering (support multiple values)
-    if (colorId) {
-      if (Array.isArray(colorId)) {
-        where.colorId = { in: colorId }
-      } else {
-        where.colorId = colorId
-      }
-    }
 
     if (search) {
       where.OR = [
@@ -118,8 +110,7 @@ export class ProductService {
         where,
         include: {
           category: true,
-          color: true, // Include color relation
-          material: true, // Include material relation - RPK-45
+            material: true, // Include material relation - RPK-45
           sizes: {
             where: { isActive: true },
             orderBy: [{ ageCategory: 'asc' }, { size: 'asc' }],
@@ -170,7 +161,6 @@ export class ProductService {
       },
       include: {
         category: true,
-        color: true, // Include color relation
         material: true, // Include material relation - RPK-45
         sizes: {
           where: { isActive: true },
@@ -262,7 +252,6 @@ export class ProductService {
       },
       include: {
         category: true,
-        color: true, // Include color relation
         material: true, // Include material relation - RPK-45
       },
     })
@@ -295,10 +284,7 @@ export class ProductService {
     // Validate category existence
     await this.validateCategoryExists(validatedData.categoryId)
 
-    // Validate color and material if provided
-    if (validatedData.colorId) {
-      await this.validateColorExists(validatedData.colorId)
-    }
+    // Validate material if provided
 
     let materialCost: Decimal | undefined
     if (validatedData.materialId) {
@@ -322,7 +308,6 @@ export class ProductService {
           rentedStock: 0,
           categoryId: validatedData.categoryId,
           size: validatedData.size,
-          colorId: validatedData.colorId,
           materialId: validatedData.materialId || undefined,
           materialCost: materialCost || undefined,
           materialQuantity: validatedData.materialQuantity || undefined,
@@ -383,9 +368,6 @@ export class ProductService {
       await this.validateCategoryExists(validatedData.categoryId)
     }
 
-    if (validatedData.colorId && validatedData.colorId !== existingProduct.colorId) {
-      await this.validateColorExists(validatedData.colorId)
-    }
 
     let materialCost: Decimal | undefined
     if (validatedData.materialId && validatedData.materialId !== existingProduct.materialId) {
@@ -409,7 +391,6 @@ export class ProductService {
       if (validatedData.quantity !== undefined) updateData.quantity = validatedData.quantity
       if (validatedData.categoryId !== undefined) updateData.categoryId = validatedData.categoryId
       if (validatedData.size !== undefined) updateData.size = validatedData.size
-      if (validatedData.colorId !== undefined) updateData.colorId = validatedData.colorId
       if (validatedData.rentedStock !== undefined)
         updateData.rentedStock = validatedData.rentedStock
       if (validatedData.materialId !== undefined) updateData.materialId = validatedData.materialId
@@ -483,7 +464,6 @@ export class ProductService {
         product: {
           include: {
             category: true,
-            color: true,
             material: true,
           },
         },
@@ -1170,18 +1150,6 @@ export class ProductService {
     }
   }
 
-  /**
-   * Helper method to validate color exists
-   */
-  private async validateColorExists(colorId: string): Promise<void> {
-    const colorExists = await this.prisma.color.findUnique({
-      where: { id: colorId },
-    })
-
-    if (!colorExists) {
-      throw new NotFoundError(`Warna dengan ID ${colorId} tidak ditemukan`)
-    }
-  }
 
   /**
    * Helper method to validate material and calculate cost
@@ -1253,7 +1221,6 @@ export class ProductService {
       description: prismaProduct.description as string,
       categoryId: prismaProduct.categoryId as string,
       // Note: Legacy size property no longer exists in Product interface
-      colorId: prismaProduct.colorId as string | undefined,
       category: prismaProduct.category
         ? {
             id: (prismaProduct.category as Record<string, unknown>).id as string,
@@ -1265,21 +1232,6 @@ export class ProductService {
             createdBy: (prismaProduct.category as Record<string, unknown>).createdBy as string,
           }
         : ({} as Category),
-      color: prismaProduct.color
-        ? {
-            id: (prismaProduct.color as Record<string, unknown>).id as string,
-            name: (prismaProduct.color as Record<string, unknown>).name as string,
-            hexCode: (prismaProduct.color as Record<string, unknown>).hexCode as string | undefined,
-            description: (prismaProduct.color as Record<string, unknown>).description as
-              | string
-              | undefined,
-            isActive: (prismaProduct.color as Record<string, unknown>).isActive as boolean,
-            products: [], // Avoid circular reference in conversion
-            createdAt: (prismaProduct.color as Record<string, unknown>).createdAt as Date,
-            updatedAt: (prismaProduct.color as Record<string, unknown>).updatedAt as Date,
-            createdBy: (prismaProduct.color as Record<string, unknown>).createdBy as string,
-          }
-        : undefined,
       modalAwal: prismaProduct.modalAwal as Decimal,
       currentPrice: prismaProduct.currentPrice as Decimal, // ✅ Fixed: return currentPrice instead of hargaSewa
       quantity: prismaProduct.quantity as number,

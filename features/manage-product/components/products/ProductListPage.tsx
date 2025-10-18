@@ -9,6 +9,7 @@ import { ProductGrid } from './ProductGrid'
 import { EmptyState } from './EmptyState'
 import { ManageProductErrorBoundary } from '../shared/ManageProductErrorBoundary'
 import { SearchFilterErrorBoundary } from '../shared/SearchFilterErrorBoundary'
+import { PaginationControls } from '../product-detail/PaginationControls'
 import { useProducts } from '../../hooks/useProducts'
 import { useDeleteProduct } from '../../hooks/useProducts'
 import type { ClientProduct, CategoryFilterValue, StatusFilterValue, ViewMode } from '../../types'
@@ -18,7 +19,6 @@ interface ProductFilters {
   categoryId?: CategoryFilterValue
   status?: StatusFilterValue
   size?: string | string[]
-  colorId?: string | string[]
 }
 
 export function ProductListPage() {
@@ -26,6 +26,7 @@ export function ProductListPage() {
 
   // Local UI state
   const [viewMode, setViewMode] = useState<ViewMode>('table')
+  const [currentPage, setCurrentPage] = useState(1)
   const [filters, setFilters] = useState<ProductFilters>({
     search: '',
     categoryId: '',
@@ -35,7 +36,10 @@ export function ProductListPage() {
   const [productToDelete, setProductToDelete] = useState<ClientProduct | null>(null)
 
   // Data fetching
-  const { data: productsData, isLoading, error } = useProducts(filters)
+  const { data: productsData, isLoading, error } = useProducts({
+    ...filters,
+    page: currentPage
+  })
   const deleteProductMutation = useDeleteProduct()
 
   const products = productsData?.products || []
@@ -57,26 +61,28 @@ export function ProductListPage() {
 
   // Filter handlers
   const handleSearch = (search: string) => {
+    setCurrentPage(1) // Reset to first page when searching
     setFilters((prev) => ({ ...prev, search }))
   }
 
   const handleCategoryFilter = (categoryId: CategoryFilterValue) => {
+    setCurrentPage(1) // Reset to first page when changing category
     setFilters((prev) => ({ ...prev, categoryId }))
   }
 
   const handleStatusFilter = (status: StatusFilterValue) => {
+    setCurrentPage(1) // Reset to first page when changing status
     setFilters((prev) => ({ ...prev, status }))
   }
 
   const handleSizeFilter = (size: string | undefined) => {
+    setCurrentPage(1) // Reset to first page when changing size filter
     setFilters((prev) => ({ ...prev, size }))
   }
 
-  const handleColorFilter = (colorId: string | undefined) => {
-    setFilters((prev) => ({ ...prev, colorId }))
-  }
-
+  
   const resetFilters = () => {
+    setCurrentPage(1) // Reset to first page when resetting filters
     setFilters({
       search: '',
       categoryId: '',
@@ -154,8 +160,6 @@ export function ProductListPage() {
             onStatusChange={handleStatusFilter}
             selectedSize={Array.isArray(filters.size) ? filters.size.join(',') : filters.size}
             onSizeChange={handleSizeFilter}
-            selectedColor={Array.isArray(filters.colorId) ? filters.colorId.join(',') : filters.colorId}
-            onColorChange={handleColorFilter}
             viewMode={viewMode}
             onViewModeChange={setViewMode}
             isLoading={isLoading}
@@ -192,12 +196,14 @@ export function ProductListPage() {
 
             {/* Pagination */}
             {pagination.totalPages > 1 && (
-              <div className="flex justify-center mt-8">
-                <div className="text-sm text-gray-700">
-                  Halaman {pagination.page} dari {pagination.totalPages} ({pagination.total} total
-                  produk)
-                </div>
-              </div>
+              <PaginationControls
+                currentPage={pagination.page}
+                totalPages={pagination.totalPages}
+                onPageChange={setCurrentPage}
+                isLoading={isLoading}
+                data-testid="product-pagination-controls"
+                className="mt-8"
+              />
             )}
           </>
         )}
