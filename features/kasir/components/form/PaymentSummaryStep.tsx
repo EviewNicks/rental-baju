@@ -140,41 +140,55 @@ export function PaymentSummaryStep({
         {/* Products List */}
         <div className="space-y-4">
           <div className="text-sm font-medium text-gray-700">Produk yang Disewa</div>
-          {formData.products.map((item) => (
-            <div
-              key={item.product.id}
-              className="flex items-center justify-between py-4 border-b border-gray-200 last:border-b-0"
-            >
-              <div className="flex items-center gap-4">
-                <Image
-                  src={
-                    item.product.image?.startsWith('/') || item.product.image?.startsWith('http')
-                      ? item.product.image || '/placeholder.svg'
-                      : `/${item.product.image || 'placeholder.svg'}`
-                  }
-                  alt={item.product.name}
-                  width={200}
-                  height={200}
-                  className="w-16 h-16 object-cover rounded-lg"
-                />
-                <div className="flex-1">
-                  <div className="font-semibold text-gray-900">{item.product.name}</div>
+          {formData.products.map((item) => {
+            const selectedSize = item.productSizeId
+              ? item.product.sizes?.find((s) => s.id === item.productSizeId)
+              : null
+
+            return (
+              <div
+                key={`${item.product.id}-${item.productSizeId || 'default'}`}
+                className="flex items-center justify-between py-4 border-b border-gray-200 last:border-b-0"
+              >
+                <div className="flex items-center gap-4">
+                  <Image
+                    src={
+                      item.product.image?.startsWith('/') || item.product.image?.startsWith('http')
+                        ? item.product.image || '/placeholder.svg'
+                        : `/${item.product.image || 'placeholder.svg'}`
+                    }
+                    alt={item.product.name}
+                    width={200}
+                    height={200}
+                    className="w-16 h-16 object-cover rounded-lg"
+                  />
+                  <div className="flex-1">
+                    <div className="font-semibold text-gray-900">{item.product.name}</div>
+                    <div className="text-sm text-gray-600">
+                      {selectedSize ? (
+                        <>
+                          {selectedSize.ageCategory} • {selectedSize.size} •{' '}
+                        </>
+                      ) : (
+                        <>
+                          {item.product.size} • {item.product.color} •{' '}
+                        </>
+                      )}
+                      {formatCurrency(item.product.pricePerDay)}/hari
+                    </div>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="font-semibold text-gray-900">
+                    {formatCurrency(item.product.pricePerDay * item.quantity * duration)}
+                  </div>
                   <div className="text-sm text-gray-600">
-                    {item.product.size} • {item.product.color} •{' '}
-                    {formatCurrency(item.product.pricePerDay)}/hari
+                    {item.quantity}x × {duration} hari
                   </div>
                 </div>
               </div>
-              <div className="text-right">
-                <div className="font-semibold text-gray-900">
-                  {formatCurrency(item.product.pricePerDay * item.quantity * duration)}
-                </div>
-                <div className="text-sm text-gray-600">
-                  {item.quantity}x × {duration} hari
-                </div>
-              </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </div>
 
@@ -421,16 +435,23 @@ export function PaymentSummaryStep({
 
           {/* Item Details */}
           <div className="space-y-2">
-            {formData.products.map((item) => (
-              <div key={item.product.id} className="flex justify-between text-sm">
-                <span className="text-gray-600">
-                  {item.product.name} × {item.quantity} × {duration} hari
-                </span>
-                <span className="font-medium">
-                  {formatCurrency(item.product.pricePerDay * item.quantity * duration)}
-                </span>
-              </div>
-            ))}
+            {formData.products.map((item) => {
+              const selectedSize = item.productSizeId
+                ? item.product.sizes?.find((s) => s.id === item.productSizeId)
+                : null
+
+              return (
+                <div key={`${item.product.id}-${item.productSizeId || 'default'}`} className="flex justify-between text-sm">
+                  <span className="text-gray-600">
+                    {item.product.name}
+                    {selectedSize && ` (${selectedSize.ageCategory} - ${selectedSize.size})`} × {item.quantity} × {duration} hari
+                  </span>
+                  <span className="font-medium">
+                    {formatCurrency(item.product.pricePerDay * item.quantity * duration)}
+                  </span>
+                </div>
+              )
+            })}
           </div>
 
           <div className="border-t border-yellow-300 pt-3">

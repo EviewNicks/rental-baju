@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
     } else {
       // Legacy format - use backward compatibility
       const validatedData = createTransaksiLegacySchema.parse(body) as unknown
-      transaksi = await transaksiService.createTransaksi(validatedData as CreateTransaksiLegacyRequest)
+      transaksi = await transaksiService.createTransaksi(validatedData as CreateTransaksiRequest)
     }
 
     // Get the created transaction with full details for response

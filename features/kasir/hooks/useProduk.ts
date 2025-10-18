@@ -9,9 +9,11 @@ import type { ProductAvailabilityQueryParams } from '../types'
 
 // Hook for fetching available products
 export function useAvailableProducts(params: ProductAvailabilityQueryParams = {}) {
-  // Default to showing only available products
+  // Default to showing only available products with pagination
   const queryParams = {
     available: true,
+    page: 1,
+    limit: 12,
     ...params,
   }
 

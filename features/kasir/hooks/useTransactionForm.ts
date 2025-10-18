@@ -187,12 +187,26 @@ export function useTransactionForm() {
       // Transform form data to API format
       const createRequest: CreateTransaksiRequest = {
         penyewaId: formData.customer?.id || '',
-        items: formData.products.map((product) => ({
-          produkId: product.product.id,
-          jumlah: product.quantity,
-          durasi: globalDuration,
-          kondisiAwal: 'baik', // Default condition
-        })),
+        items: formData.products.map((product) => {
+          // Base item data
+          const baseItem = {
+            produkId: product.product.id,
+            jumlah: product.quantity,
+            durasi: globalDuration,
+            kondisiAwal: 'baik',
+          }
+
+          // Add productSizeId if available (size-aware format)
+          if (product.productSizeId) {
+            return {
+              ...baseItem,
+              productSizeId: product.productSizeId,
+            }
+          }
+
+          // Return legacy format if no size selected
+          return baseItem
+        }),
         tglMulai: convertDateToISODateTime(formData.pickupDate),
         tglSelesai: formData.returnDate ? convertDateToISODateTime(formData.returnDate) : undefined,
         metodeBayar:

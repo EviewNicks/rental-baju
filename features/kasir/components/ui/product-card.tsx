@@ -4,14 +4,15 @@ import { useState } from 'react'
 import { Plus, Minus, ShoppingCart } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import type { Product } from '../../types'
+import type { Product, ProductSize } from '../../types'
 import { formatCurrency } from '../../lib/utils/client'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
+import { SizeSelector } from './size-selector'
 
 interface ProductCardProps {
   product: Product
-  onAddToCart: (product: Product, quantity: number) => void
+  onAddToCart: (product: Product, quantity: number, productSizeId?: string) => void
   selectedQuantity?: number
   className?: string
 }
@@ -23,18 +24,43 @@ export function ProductCard({
   className,
 }: ProductCardProps) {
   const [quantity, setQuantity] = useState(selectedQuantity)
+  const [selectedSize, setSelectedSize] = useState<ProductSize | null>(null)
+
+  // Check if product has size-aware inventory
+  const hasSizes = (product.sizes?.length ?? 0) > 0
 
   // Quantity-aware availability checking
   const isQuantityAvailable = (requestedQuantity: number) => {
+    if (hasSizes && selectedSize) {
+      return selectedSize.availableQuantity >= requestedQuantity
+    }
     return (product.availableQuantity ?? 0) >= requestedQuantity
   }
 
-  const isOutOfStock = (product.availableQuantity ?? 0) === 0
-  const isLowStock = (product.availableQuantity ?? 0) > 0 && (product.availableQuantity ?? 0) <= 2
+  const isOutOfStock = hasSizes
+    ? (product.sizes?.every((size) => size.availableQuantity === 0) ?? true)
+    : (product.availableQuantity ?? 0) === 0
+
+  const isLowStock =
+    !isOutOfStock &&
+    (hasSizes
+      ? selectedSize
+        ? selectedSize.availableQuantity > 0 && selectedSize.availableQuantity <= 2
+        : false
+      : (product.availableQuantity ?? 0) > 0 && (product.availableQuantity ?? 0) <= 2)
+
+  const handleSizeSelect = (sizeId: string, size: ProductSize) => {
+    setSelectedSize(size)
+    setQuantity(0)
+  }
 
   const handleAddToCart = () => {
     if (quantity > 0 && isQuantityAvailable(quantity)) {
-      onAddToCart(product, quantity)
+      if (hasSizes && selectedSize) {
+        onAddToCart(product, quantity, selectedSize.id)
+      } else {
+        onAddToCart(product, quantity)
+      }
     }
   }
 
@@ -116,43 +142,70 @@ export function ProductCard({
           <div className="text-sm font-semibold text-gray-900">
             {formatCurrency(product.pricePerDay)}/hari
           </div>
-          <div className="text-xs text-gray-500">Tersedia: {product.availableQuantity ?? 0}</div>
+          <div className="text-xs text-gray-500">
+            Tersedia: {hasSizes && selectedSize ? selectedSize.availableQuantity : product.availableQuantity ?? 0}
+          </div>
         </div>
+
+        {/* Size Selection - RPK-51 */}
+        {hasSizes && product.sizes && (
+          <div className="space-y-2">
+            <h4 className="text-sm font-medium text-gray-700">Pilih Ukuran:</h4>
+            <SizeSelector
+              sizes={product.sizes}
+              selectedSizeId={selectedSize?.id}
+              onSizeSelect={handleSizeSelect}
+              disabled={isOutOfStock}
+            />
+          </div>
+        )}
 
         {/* Quantity Controls */}
         {!isOutOfStock && (
           <div className="space-y-2">
-            <div className="flex items-center justify-center gap-3">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={decrementQuantity}
-                disabled={quantity === 0}
-                className="h-8 w-8 p-0 bg-transparent"
-              >
-                <Minus className="h-3 w-3" />
-              </Button>
-              <span className="text-sm font-medium w-8 text-center">{quantity}</span>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={incrementQuantity}
-                disabled={!isQuantityAvailable(quantity + 1)}
-                className="h-8 w-8 p-0 bg-transparent"
-              >
-                <Plus className="h-3 w-3" />
-              </Button>
-            </div>
+            {/* Show size selection prompt if product has sizes but none selected */}
+            {hasSizes && !selectedSize && (
+              <div className="text-sm text-center text-gray-500 italic py-2">
+                Pilih ukuran terlebih dahulu
+              </div>
+            )}
 
-            <Button
-              onClick={handleAddToCart}
-              disabled={quantity === 0 || !isQuantityAvailable(quantity)}
-              className="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 text-sm"
-              size="sm"
-            >
-              <ShoppingCart className="h-3 w-3 mr-2" />
-              {quantity === 0 ? 'Tambah ke Keranjang' : `Tambah ${quantity} ke Keranjang`}
-            </Button>
+            {/* Show quantity controls only if no sizes OR size is selected */}
+            {(!hasSizes || selectedSize) && (
+              <>
+                <div className="flex items-center justify-center gap-3">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={decrementQuantity}
+                    disabled={quantity === 0}
+                    className="h-8 w-8 p-0 bg-transparent"
+                  >
+                    <Minus className="h-3 w-3" />
+                  </Button>
+                  <span className="text-sm font-medium w-8 text-center">{quantity}</span>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={incrementQuantity}
+                    disabled={!isQuantityAvailable(quantity + 1)}
+                    className="h-8 w-8 p-0 bg-transparent"
+                  >
+                    <Plus className="h-3 w-3" />
+                  </Button>
+                </div>
+
+                <Button
+                  onClick={handleAddToCart}
+                  disabled={quantity === 0 || !isQuantityAvailable(quantity) || (hasSizes && !selectedSize)}
+                  className="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 text-sm"
+                  size="sm"
+                >
+                  <ShoppingCart className="h-3 w-3 mr-2" />
+                  {quantity === 0 ? 'Tambah ke Keranjang' : `Tambah ${quantity} ke Keranjang`}
+                </Button>
+              </>
+            )}
           </div>
         )}
 

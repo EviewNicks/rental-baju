@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo, useEffect } from 'react'
-import { Search, Filter, ShoppingCart, Plus, Minus, X, Package, Loader2 } from 'lucide-react'
+import { Search, Filter, ShoppingCart, Plus, Minus, X, Package, Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -14,7 +14,7 @@ import Image from 'next/image'
 
 interface ProductSelectionStepProps {
   selectedProducts: ProductSelection[]
-  onAddProduct: (product: Product, quantity: number) => void
+  onAddProduct: (product: Product, quantity: number, productSizeId?: string) => void
   onRemoveProduct: (productId: string) => void
   onUpdateQuantity: (productId: string, quantity: number) => void
   onNext: () => void
@@ -39,10 +39,14 @@ export function ProductSelectionStep({
   const [showCart, setShowCart] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(12)
+
   // Debug logging for props
   useEffect(() => {}, [selectedProducts, canProceed])
 
-  // Fetch products from API
+  // Fetch products from API with pagination
   const {
     data: productsResponse,
     isLoading,
@@ -51,6 +55,8 @@ export function ProductSelectionStep({
   } = useAvailableProducts({
     search: searchQuery,
     available: true,
+    page: currentPage,
+    limit: pageSize,
   })
 
   // Debug API loading state
@@ -74,6 +80,10 @@ export function ProductSelectionStep({
         available: true, // Availability is now handled in ProductCard with quantity-aware logic
         description: apiProduct.description,
         availableQuantity: apiProduct.availableQuantity,
+
+        // RPK-51: Map size-aware fields from API response
+        sizes: apiProduct.sizes || [],
+        supportsSizeSelection: (apiProduct.sizes?.length ?? 0) > 0,
       }),
     )
 
@@ -142,16 +152,20 @@ export function ProductSelectionStep({
     }, 0)
   }
 
-  const handleAddProduct = (product: Product, quantity: number) => {
-    // Check if product is already in cart
-    const existingProduct = selectedProducts.find((item) => item.product.id === product.id)
+  const handleAddProduct = (product: Product, quantity: number, productSizeId?: string) => {
+    // Check if product is already in cart (consider productSizeId for size-aware products)
+    const existingProduct = selectedProducts.find(
+      (item) =>
+        item.product.id === product.id &&
+        (productSizeId ? item.productSizeId === productSizeId : !item.productSizeId)
+    )
 
     if (existingProduct) {
       // Update quantity if product already exists
       onUpdateQuantity(product.id, existingProduct.quantity + quantity)
     } else {
-      // Add new product
-      onAddProduct(product, quantity)
+      // Add new product (with optional productSizeId)
+      onAddProduct(product, quantity, productSizeId)
     }
   }
 
@@ -162,6 +176,20 @@ export function ProductSelectionStep({
       onUpdateQuantity(productId, newQuantity)
     }
   }
+
+  // Pagination handlers
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage)
+  }
+
+  const handlePageSizeChange = (newSize: number) => {
+    setPageSize(newSize)
+    setCurrentPage(1) // Reset to first page when changing page size
+  }
+
+  const totalPages = productsResponse?.pagination?.totalPages || 1
+  const totalItems = productsResponse?.pagination?.total || 0
+  const currentPageItems = productsResponse?.data?.length || 0
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-6" data-testid="product-selection-layout">
@@ -270,17 +298,30 @@ export function ProductSelectionStep({
             data-testid="products-grid-header"
           >
             <h2 className="text-lg font-semibold text-gray-900" data-testid="products-count-header">
-              Produk Tersedia ({isLoading ? '...' : filteredProducts.length})
+              Produk Tersedia ({isLoading ? '...' : `${currentPageItems} dari ${totalItems}`})
             </h2>
-            <Button
-              variant="outline"
-              onClick={() => setShowCart(!showCart)}
-              className="lg:hidden"
-              data-testid="mobile-cart-toggle-button"
-            >
-              <ShoppingCart className="h-4 w-4 mr-2" />
-              Keranjang ({getTotalItems()})
-            </Button>
+            <div className="flex items-center gap-2">
+              {/* Page Size Selector */}
+              <select
+                value={pageSize}
+                onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+                className="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                data-testid="page-size-selector"
+              >
+                <option value={12}>12 per halaman</option>
+                <option value={24}>24 per halaman</option>
+                <option value={48}>48 per halaman</option>
+              </select>
+              <Button
+                variant="outline"
+                onClick={() => setShowCart(!showCart)}
+                className="lg:hidden"
+                data-testid="mobile-cart-toggle-button"
+              >
+                <ShoppingCart className="h-4 w-4 mr-2" />
+                Keranjang ({getTotalItems()})
+              </Button>
+            </div>
           </div>
 
           {/* Loading State */}
@@ -342,6 +383,73 @@ export function ProductSelectionStep({
                 </div>
               )}
             </>
+          )}
+
+          {/* Pagination Controls */}
+          {!isLoading && !error && totalPages > 1 && (
+            <div className="mt-6 flex items-center justify-between" data-testid="pagination-controls">
+              <div className="text-sm text-gray-600">
+                Halaman {currentPage} dari {totalPages} ({totalItems} total produk)
+              </div>
+
+              <div className="flex items-center gap-2">
+                {/* Previous Button */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage <= 1}
+                  data-testid="pagination-prev-button"
+                >
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  Previous
+                </Button>
+
+                {/* Page Numbers */}
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    let pageNum
+                    if (totalPages <= 5) {
+                      pageNum = i + 1
+                    } else if (currentPage <= 3) {
+                      pageNum = i + 1
+                    } else if (currentPage >= totalPages - 2) {
+                      pageNum = totalPages - 4 + i
+                    } else {
+                      pageNum = currentPage - 2 + i
+                    }
+
+                    return (
+                      <Button
+                        key={pageNum}
+                        variant={currentPage === pageNum ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => handlePageChange(pageNum)}
+                        className={cn(
+                          "w-8 h-8 p-0",
+                          currentPage === pageNum && "bg-yellow-400 text-gray-900 hover:bg-yellow-500"
+                        )}
+                        data-testid={`pagination-page-${pageNum}`}
+                      >
+                        {pageNum}
+                      </Button>
+                    )
+                  })}
+                </div>
+
+                {/* Next Button */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage >= totalPages}
+                  data-testid="pagination-next-button"
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              </div>
+            </div>
           )}
         </div>
       </div>
