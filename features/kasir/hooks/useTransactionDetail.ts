@@ -299,6 +299,8 @@ async function transformApiToUI(apiData: TransaksiResponse): Promise<Transaction
         },
         // CRITICAL FIX: Add missing return status fields
         statusKembali: item.statusKembali,
+        // RPK-51: Add kondisiAwal for AgeSizes parsing
+        kondisiAwal: item.kondisiAwal,
         // Handle optional return fields that may not exist in TypeScript interface
         ...('totalReturnPenalty' in item && item.totalReturnPenalty !== undefined ? {
           totalReturnPenalty: item.totalReturnPenalty as number

@@ -4,12 +4,14 @@ import {
   Shirt,
   CheckCircle,
   Package,
+  Users,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { formatCurrency } from '../../lib/utils/client'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
 import React from 'react'
+import { parseKondisiAwal, formatSizeWithAge, getAgeCategoryLabel, extractSizeInfo } from '../../lib/utils/kondisiAwalParser'
 
 interface ProductDetailCardProps {
   item: {
@@ -39,6 +41,8 @@ interface ProductDetailCardProps {
       createdAt?: string
       createdBy?: string
     }>
+    // RPK-51: kondisiAwal field for AgeSizes parsing
+    kondisiAwal?: string
   }
   // Optional explicit pickup information - if not provided, will calculate from item.jumlahDiambil
   pickupInfo?: {
@@ -53,6 +57,10 @@ interface ProductDetailCardProps {
 
 
 export function ProductDetailCard({ item, pickupInfo }: ProductDetailCardProps) {
+  // Parse size information from kondisiAwal (RPK-51 AgeSizes system)
+  const sizeInfo = extractSizeInfo(item)
+  const parsedKondisiAwal = parseKondisiAwal(item.kondisiAwal)
+
   // Calculate pickup status - use explicit pickupInfo or derive from item data
   const actualJumlahDiambil = pickupInfo?.jumlahDiambil ?? item.jumlahDiambil ?? 0
   const actualRemainingQuantity =
@@ -126,19 +134,37 @@ export function ProductDetailCard({ item, pickupInfo }: ProductDetailCardProps) 
                 {item.product.category}
               </Badge>
             )}
-            {item.product.size && (
+
+            {/* Size Badge - Use parsed size info from kondisiAwal (RPK-51) */}
+            {sizeInfo.hasSizeInfo && (
               <Badge
                 variant="outline"
                 className={cn(
                   'text-xs font-medium border-green-200 bg-green-50 text-green-700 hover:bg-green-100',
                   'transition-colors duration-200',
                 )}
-                aria-label={`Ukuran: ${item.product.size}`}
+                aria-label={`Ukuran: ${formatSizeWithAge(sizeInfo.size, sizeInfo.ageCategory)}`}
               >
                 <Shirt className="h-3 w-3 mr-1.5" aria-hidden="true" />
-                {item.product.size}
+                {formatSizeWithAge(sizeInfo.size, sizeInfo.ageCategory)}
               </Badge>
             )}
+
+            {/* Age Category Badge - Show separately if available */}
+            {!parsedKondisiAwal.isLegacyFormat && sizeInfo.ageCategory !== 'Tidak diketahui' && (
+              <Badge
+                variant="outline"
+                className={cn(
+                  'text-xs font-medium border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100',
+                  'transition-colors duration-200',
+                )}
+                aria-label={`Kategori Usia: ${sizeInfo.ageCategory}`}
+              >
+                <Users className="h-3 w-3 mr-1.5" aria-hidden="true" />
+                {sizeInfo.ageCategory}
+              </Badge>
+            )}
+
             {item.product.color && (
               <Badge
                 variant="outline"
@@ -152,7 +178,8 @@ export function ProductDetailCard({ item, pickupInfo }: ProductDetailCardProps) 
                 {item.product.color}
               </Badge>
             )}
-            {!item.product.category && !item.product.size && !item.product.color && (
+
+            {!item.product.category && !sizeInfo.hasSizeInfo && !item.product.color && (
               <Badge
                 variant="outline"
                 className="text-xs text-gray-500 border-gray-200 bg-gray-50"
