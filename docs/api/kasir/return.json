@@ -1,0 +1,1089 @@
+{
+  "info": {
+    "name": "Kasir API Tests - RPK-26 + TSK-23 + TSK-24 + RPK-44 + RPK-51",
+    "description": "Comprehensive Postman test collection for Kasir (Cashier) API endpoints including customer management, transaction processing, payment handling, product availability, enhanced multi-condition return processing (pengembalian baju), and RPK-51 size-aware transaction system with ProductSize support. Now includes TSK-24 multi-condition return system tests, RPK-44 return activity logging validation, and RPK-51 size-aware inventory management.",
+    "version": "1.4.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{clerkToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "clerkToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testPenyewaId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testTransaksiId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testTransaksiKode",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testPembayaranId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testProdukId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testTransaksiItemId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testItemId1",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testItemId2",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testProductSizeId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testAgeCategory",
+      "value": "ADULT",
+      "type": "string"
+    },
+    {
+      "key": "testSize",
+      "value": "M",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "07. Return Service (Pengembalian Baju)",
+      "item": [
+        {
+          "name": "Process Return - Success",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Return processed successfully', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('success', true);",
+                  "    pm.expect(responseJson).to.have.property('message');",
+                  "    pm.expect(responseJson.data).to.have.property('transaksiId');",
+                  "    pm.expect(responseJson.data).to.have.property('totalPenalty');",
+                  "});",
+                  "",
+                  "pm.test('Penalty calculation is accurate', function () {",
+                  "    const data = pm.response.json().data;",
+                  "    pm.expect(data).to.have.property('penaltyBreakdown');",
+                  "    pm.expect(data.totalPenalty).to.be.a('number');",
+                  "    pm.expect(data.totalPenalty).to.be.at.least(0);",
+                  "});",
+                  "",
+                  "pm.test('Transaction status updated to dikembalikan', function () {",
+                  "    const transaction = pm.response.json().data.updatedTransaction;",
+                  "    pm.expect(transaction).to.have.property('status', 'dikembalikan');",
+                  "    pm.expect(transaction).to.have.property('tglKembali');",
+                  "});",
+                  "",
+                  "pm.test('Items have condition records', function () {",
+                  "    const items = pm.response.json().data.processedItems;",
+                  "    pm.expect(items).to.be.an('array');",
+                  "    items.forEach(item => {",
+                  "        pm.expect(item).to.have.property('kondisiAkhir');",
+                  "        pm.expect(item).to.have.property('statusKembali', 'lengkap');",
+                  "    });",
+                  "});",
+                  "",
+                  "pm.test('Return activity created - RPK-44', function () {",
+                  "    const transactionCode = pm.globals.get('testTransaksiKode');",
+                  "    ",
+                  "    pm.sendRequest({",
+                  "        url: `${pm.globals.get('baseUrl')}/api/kasir/transaksi/${transactionCode}`,",
+                  "        method: 'GET',",
+                  "        header: {",
+                  "            'Authorization': `Bearer ${pm.globals.get('clerkToken')}`",
+                  "        }",
+                  "    }, function (err, response) {",
+                  "        if (err) {",
+                  "            pm.expect.fail('Failed to fetch transaction details for activity validation');",
+                  "            return;",
+                  "        }",
+                  "        ",
+                  "        pm.expect(response.code, 'Transaction detail request should succeed').to.equal(200);",
+                  "        ",
+                  "        const transaction = response.json().data;",
+                  "        pm.expect(transaction).to.have.property('aktivitas');",
+                  "        ",
+                  "        // Verify return activity exists",
+                  "        const returnActivity = transaction.aktivitas.find(a => a.tipe === 'dikembalikan');",
+                  "        pm.expect(returnActivity, 'Return activity should exist').to.exist;",
+                  "        ",
+                  "        // Verify activity data structure",
+                  "        pm.expect(returnActivity.data, 'Activity data should exist').to.exist;",
+                  "        pm.expect(returnActivity.data.conditions, 'Activity should have conditions').to.be.an('array');",
+                  "        pm.expect(returnActivity.data.totalPenalty, 'Activity should have totalPenalty').to.be.a('number');",
+                  "        pm.expect(returnActivity.data.itemsAffected, 'Activity should have itemsAffected').to.be.an('array');",
+                  "        pm.expect(returnActivity.data.processingMode, 'Activity should have processingMode').to.equal('unified');",
+                  "        pm.expect(returnActivity.data.timestamp, 'Activity should have timestamp').to.exist;",
+                  "        pm.expect(new Date(returnActivity.data.timestamp), 'Timestamp should be valid ISO date').to.be.instanceOf(Date);",
+                  "        ",
+                  "        // Verify condition data structure",
+                  "        returnActivity.data.conditions.forEach(condition => {",
+                  "            pm.expect(condition).to.have.property('itemId');",
+                  "            pm.expect(condition).to.have.property('kondisiAkhir');",
+                  "            pm.expect(condition).to.have.property('jumlahKembali');",
+                  "            pm.expect(condition).to.have.property('penaltyAmount');",
+                  "            pm.expect(condition).to.have.property('produkName');",
+                  "        });",
+                  "    });",
+                  "});",
+                  "",
+                  "pm.test('Response headers are correct', function () {",
+                  "    pm.expect(pm.response.headers.get('content-type')).to.include('application/json');",
+                  "    pm.expect(pm.response.headers.get('x-request-id')).to.exist;",
+                  "    pm.expect(pm.response.headers.get('x-processing-time')).to.exist;",
+                  "    pm.expect(pm.response.headers.get('cache-control')).to.include('no-cache');",
+                  "});",
+                  "",
+                  "pm.test('Security headers are present', function () {",
+                  "    pm.expect(pm.response.headers.get('x-content-type-options')).to.equal('nosniff');",
+                  "    pm.expect(pm.response.headers.get('x-frame-options')).to.equal('DENY');",
+                  "    pm.expect(pm.response.headers.get('x-xss-protection')).to.include('1; mode=block');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{clerkToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"itemId\": \"{{testTransaksiItemId}}\",\n      \"kondisiAkhir\": \"Baik - tidak ada kerusakan\",\n      \"jumlahKembali\": 1\n    }\n  ],\n  \"catatan\": \"Barang dikembalikan dalam kondisi baik\",\n  \"tglKembali\": \"2025-08-04T10:00:00.000Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/kasir/transaksi/{{testTransaksiKode}}/pengembalian",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kasir", "transaksi", "{{testTransaksiKode}}", "pengembalian"]
+            },
+            "description": "Process return for a transaction with items in good condition. Tests the complete return workflow including penalty calculation."
+          }
+        },
+        {
+          "name": "Process Return - Late Return with Penalty",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Late penalty applied correctly', function () {",
+                  "    const data = pm.response.json().data;",
+                  "    pm.expect(data.totalPenalty).to.be.above(0);",
+                  "    pm.expect(data.penaltyBreakdown).to.have.property('totalLateDays');",
+                  "    pm.expect(data.penaltyBreakdown.totalLateDays).to.be.above(0);",
+                  "});",
+                  "",
+                  "pm.test('Penalty breakdown details present', function () {",
+                  "    const breakdown = pm.response.json().data.penaltyBreakdown;",
+                  "    pm.expect(breakdown).to.have.property('summary');",
+                  "    pm.expect(breakdown).to.have.property('itemDetails');",
+                  "    pm.expect(breakdown.itemDetails).to.be.an('array');",
+                  "});",
+                  "",
+                  "pm.test('Penalty activity created - RPK-44', function () {",
+                  "    const data = pm.response.json().data;",
+                  "    const transactionCode = pm.globals.get('testTransaksiKode');",
+                  "    ",
+                  "    // Only test penalty activity if penalty was applied",
+                  "    if (data.totalPenalty > 0) {",
+                  "        pm.sendRequest({",
+                  "            url: `${pm.globals.get('baseUrl')}/api/kasir/transaksi/${transactionCode}`,",
+                  "            method: 'GET',",
+                  "            header: {",
+                  "                'Authorization': `Bearer ${pm.globals.get('clerkToken')}`",
+                  "            }",
+                  "        }, function (err, response) {",
+                  "            if (err) {",
+                  "                pm.expect.fail('Failed to fetch transaction details for penalty activity validation');",
+                  "                return;",
+                  "            }",
+                  "            ",
+                  "            pm.expect(response.code, 'Transaction detail request should succeed').to.equal(200);",
+                  "            ",
+                  "            const transaction = response.json().data;",
+                  "            ",
+                  "            // Verify penalty activity exists",
+                  "            const penaltyActivity = transaction.aktivitas.find(a => a.tipe === 'penalty_added');",
+                  "            pm.expect(penaltyActivity, 'Penalty activity should exist when penalty > 0').to.exist;",
+                  "            ",
+                  "            // Verify penalty activity data structure",
+                  "            pm.expect(penaltyActivity.data.totalPenalty, 'Penalty activity should match response penalty').to.equal(data.totalPenalty);",
+                  "            pm.expect(penaltyActivity.data.penaltyBreakdown, 'Penalty activity should have breakdown').to.be.an('array');",
+                  "            pm.expect(penaltyActivity.data.calculationMethod, 'Penalty activity should have calculation method').to.exist;",
+                  "            pm.expect(penaltyActivity.data.timestamp, 'Penalty activity should have timestamp').to.exist;",
+                  "            pm.expect(new Date(penaltyActivity.data.timestamp), 'Penalty timestamp should be valid ISO date').to.be.instanceOf(Date);",
+                  "            ",
+                  "            // Verify penalty breakdown structure",
+                  "            penaltyActivity.data.penaltyBreakdown.forEach(breakdown => {",
+                  "                pm.expect(breakdown).to.have.property('itemId');",
+                  "                pm.expect(breakdown).to.have.property('produkName');",
+                  "                pm.expect(breakdown).to.have.property('penaltyAmount');",
+                  "                pm.expect(breakdown).to.have.property('conditions');",
+                  "                pm.expect(breakdown.conditions).to.be.an('array');",
+                  "            });",
+                  "        });",
+                  "    }",
+                  "});",
+                  "",
+                  "pm.test('Response headers are valid', function () {",
+                  "    pm.expect(pm.response.headers.get('content-type')).to.include('application/json');",
+                  "    pm.expect(pm.response.headers.get('x-request-id')).to.exist;",
+                  "    pm.expect(pm.response.headers.get('x-processing-time')).to.match(/^\\d+ms$/);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{clerkToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"itemId\": \"{{testTransaksiItemId}}\",\n      \"kondisiAkhir\": \"Baik - tidak ada kerusakan\",\n      \"jumlahKembali\": 1\n    }\n  ],\n  \"catatan\": \"Dikembalikan terlambat 5 hari\",\n  \"tglKembali\": \"2025-08-09T10:00:00.000Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/kasir/transaksi/{{testTransaksiKode}}/pengembalian",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kasir", "transaksi", "{{testTransaksiKode}}", "pengembalian"]
+            },
+            "description": "Test late return scenario with penalty calculation. Should apply Rp 5,000 per day late fee."
+          }
+        },
+        {
+          "name": "Process Return - Damaged Items",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Damage penalty applied', function () {",
+                  "    const data = pm.response.json().data;",
+                  "    pm.expect(data.totalPenalty).to.be.above(0);",
+                  "    pm.expect(data.penaltyBreakdown.summary).to.have.property('damagedItems');",
+                  "    pm.expect(data.penaltyBreakdown.summary.damagedItems).to.be.above(0);",
+                  "});",
+                  "",
+                  "pm.test('Item condition recorded correctly', function () {",
+                  "    const items = pm.response.json().data.processedItems;",
+                  "    const damagedItem = items.find(item => item.kondisiAkhir.includes('kerusakan'));",
+                  "    pm.expect(damagedItem).to.exist;",
+                  "});",
+                  "",
+                  "pm.test('Damaged items activity validation - RPK-44', function () {",
+                  "    const data = pm.response.json().data;",
+                  "    const transactionCode = pm.globals.get('testTransaksiKode');",
+                  "    ",
+                  "    pm.sendRequest({",
+                  "        url: `${pm.globals.get('baseUrl')}/api/kasir/transaksi/${transactionCode}`,",
+                  "        method: 'GET',",
+                  "        header: {",
+                  "            'Authorization': `Bearer ${pm.globals.get('clerkToken')}`",
+                  "        }",
+                  "    }, function (err, response) {",
+                  "        if (err) {",
+                  "            pm.expect.fail('Failed to fetch transaction for damaged items activity validation');",
+                  "            return;",
+                  "        }",
+                  "        ",
+                  "        pm.expect(response.code).to.equal(200);",
+                  "        const transaction = response.json().data;",
+                  "        ",
+                  "        // Verify return activity for damaged items",
+                  "        const returnActivity = transaction.aktivitas.find(a => a.tipe === 'dikembalikan');",
+                  "        pm.expect(returnActivity, 'Return activity should exist for damaged items').to.exist;",
+                  "        ",
+                  "        // Verify damaged condition is captured",
+                  "        const hasDamagedCondition = returnActivity.data.conditions.some(c => ",
+                  "            c.kondisiAkhir.includes('kerusakan') || c.kondisiAkhir.includes('rusak')",
+                  "        );",
+                  "        pm.expect(hasDamagedCondition, 'Should capture damaged condition in activity').to.be.true;",
+                  "        ",
+                  "        // Verify penalty activity exists (damage should incur penalty)",
+                  "        if (data.totalPenalty > 0) {",
+                  "            const penaltyActivity = transaction.aktivitas.find(a => a.tipe === 'penalty_added');",
+                  "            pm.expect(penaltyActivity, 'Penalty activity should exist for damaged items').to.exist;",
+                  "            pm.expect(penaltyActivity.data.totalPenalty).to.equal(data.totalPenalty);",
+                  "        }",
+                  "    });",
+                  "});",
+                  "",
+                  "pm.test('Response headers are properly set', function () {",
+                  "    pm.expect(pm.response.headers.get('content-type')).to.include('application/json');",
+                  "    pm.expect(pm.response.headers.get('x-request-id')).to.exist;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{clerkToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"itemId\": \"{{testTransaksiItemId}}\",\n      \"kondisiAkhir\": \"Cukup - ada kerusakan kecil\",\n      \"jumlahKembali\": 1\n    }\n  ],\n  \"catatan\": \"Ada kerusakan kecil pada kancing baju\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/kasir/transaksi/{{testTransaksiKode}}/pengembalian",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kasir", "transaksi", "{{testTransaksiKode}}", "pengembalian"]
+            },
+            "description": "Test return with damaged items. Should apply condition-based penalty."
+          }
+        },
+        {
+          "name": "Process Return - Lost Items with modalAwal",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Lost item penalty uses modalAwal', function () {",
+                  "    const data = pm.response.json().data;",
+                  "    pm.expect(data.totalPenalty).to.be.above(0);",
+                  "    pm.expect(data.penaltyBreakdown.summary).to.have.property('lostItems');",
+                  "    pm.expect(data.penaltyBreakdown.summary.lostItems).to.be.above(0);",
+                  "});",
+                  "",
+                  "pm.test('Penalty calculation reflects modalAwal integration', function () {",
+                  "    const breakdown = pm.response.json().data.penaltyBreakdown;",
+                  "    const lostItemDetails = breakdown.itemDetails.find(item => ",
+                  "        item.reason.includes('hilang') || item.reason.includes('tidak dikembalikan')",
+                  "    );",
+                  "    if (lostItemDetails) {",
+                  "        pm.expect(lostItemDetails.penalty).to.be.above(150000); // Should be more than flat 150K",
+                  "    }",
+                  "});",
+                  "",
+                  "pm.test('API headers are compliant', function () {",
+                  "    pm.expect(pm.response.headers.get('content-type')).to.include('application/json');",
+                  "    pm.expect(pm.response.headers.get('x-request-id')).to.exist;",
+                  "    pm.expect(pm.response.headers.get('x-processing-time')).to.exist;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{clerkToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"itemId\": \"{{testTransaksiItemId}}\",\n      \"kondisiAkhir\": \"Hilang/tidak dikembalikan\",\n      \"jumlahKembali\": 0\n    }\n  ],\n  \"catatan\": \"Barang hilang, tidak dapat dikembalikan\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/kasir/transaksi/{{testTransaksiKode}}/pengembalian",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kasir", "transaksi", "{{testTransaksiKode}}", "pengembalian"]
+            },
+            "description": "Test return with lost items. Should apply modalAwal-based penalty (enhanced feature)."
+          }
+        },
+        {
+          "name": "Process Return - Transaction Not Found",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 404', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test('Transaction not found error', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('success', false);",
+                  "    pm.expect(responseJson.error).to.have.property('code', 'NOT_FOUND');",
+                  "    pm.expect(responseJson.error.message).to.include('tidak ditemukan');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{clerkToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"itemId\": \"00000000-0000-0000-0000-000000000001\",\n      \"kondisiAkhir\": \"Baik - tidak ada kerusakan\",\n      \"jumlahKembali\": 1\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/kasir/transaksi/TXN-20990101-999/pengembalian",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kasir", "transaksi", "TXN-20990101-999", "pengembalian"]
+            },
+            "description": "Test return with non-existent transaction code"
+          }
+        },
+        {
+          "name": "Process Return - Validation Error",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Validation error response', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('success', false);",
+                  "    pm.expect(responseJson.error).to.have.property('code', 'VALIDATION_ERROR');",
+                  "    pm.expect(responseJson.error).to.have.property('details');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{clerkToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"itemId\": \"invalid-uuid\",\n      \"kondisiAkhir\": \"A\",\n      \"jumlahKembali\": -1\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/kasir/transaksi/{{testTransaksiKode}}/pengembalian",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kasir", "transaksi", "{{testTransaksiKode}}", "pengembalian"]
+            },
+            "description": "Test return validation with invalid data - invalid UUID, short condition, negative quantity"
+          }
+        },
+        {
+          "name": "Process Return - Not Eligible",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Return not eligible error', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('success', false);",
+                  "    pm.expect(responseJson.error).to.have.property('code', 'RETURN_NOT_ELIGIBLE');",
+                  "    pm.expect(responseJson.error).to.have.property('details');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{clerkToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"itemId\": \"{{testTransaksiItemId}}\",\n      \"kondisiAkhir\": \"Baik - tidak ada kerusakan\",\n      \"jumlahKembali\": 1\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/kasir/transaksi/TXN-COMPLETED-001/pengembalian",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kasir", "transaksi", "TXN-COMPLETED-001", "pengembalian"]
+            },
+            "description": "Test return eligibility validation with already completed transaction"
+          }
+        },
+        {
+          "name": "Process Return - Unauthorized",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 401', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "pm.test('Unauthorized error response', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('success', false);",
+                  "    pm.expect(responseJson.error).to.have.property('code', 'UNAUTHORIZED');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"itemId\": \"{{testTransaksiItemId}}\",\n      \"kondisiAkhir\": \"Baik - tidak ada kerusakan\",\n      \"jumlahKembali\": 1\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/kasir/transaksi/{{testTransaksiKode}}/pengembalian",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kasir", "transaksi", "{{testTransaksiKode}}", "pengembalian"]
+            },
+            "description": "Test return endpoint without authentication token"
+          }
+        },
+        {
+          "name": "TSK-24: Multi-Condition Return - Mixed Good + Damaged",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Unified processing successful', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('success', true);",
+                  "    pm.expect(responseJson.data).to.have.property('processingMode', 'unified');",
+                  "});",
+                  "",
+                  "pm.test('Unified architecture fields present', function () {",
+                  "    const data = pm.response.json().data;",
+                  "    pm.expect(data).to.have.property('format');",
+                  "    pm.expect(data).to.have.property('totalConditions');",
+                  "    pm.expect(data.totalConditions).to.be.above(1);",
+                  "});",
+                  "",
+                  "pm.test('Items processed with unified structure', function () {",
+                  "    const items = pm.response.json().data.processedItems;",
+                  "    pm.expect(items).to.be.an('array');",
+                  "    pm.expect(items.length).to.be.above(0);",
+                  "    items.forEach(item => {",
+                  "        pm.expect(item).to.have.property('itemId');",
+                  "        pm.expect(item).to.have.property('penalty');",
+                  "    });",
+                  "});",
+                  "",
+                  "pm.test('Penalty calculation correct for mixed conditions', function () {",
+                  "    const data = pm.response.json().data;",
+                  "    pm.expect(data.totalPenalty).to.be.a('number');",
+                  "    pm.expect(data.totalPenalty).to.be.above(0);",
+                  "});",
+                  "",
+                  "pm.test('Multi-condition return activity created - RPK-44', function () {",
+                  "    const transactionCode = pm.globals.get('testTransaksiKode');",
+                  "    ",
+                  "    pm.sendRequest({",
+                  "        url: `${pm.globals.get('baseUrl')}/api/kasir/transaksi/${transactionCode}`,",
+                  "        method: 'GET',",
+                  "        header: {",
+                  "            'Authorization': `Bearer ${pm.globals.get('clerkToken')}`",
+                  "        }",
+                  "    }, function (err, response) {",
+                  "        if (err) {",
+                  "            pm.expect.fail('Failed to fetch transaction for multi-condition activity validation');",
+                  "            return;",
+                  "        }",
+                  "        ",
+                  "        pm.expect(response.code, 'Multi-condition transaction detail request should succeed').to.equal(200);",
+                  "        ",
+                  "        const transaction = response.json().data;",
+                  "        const returnActivity = transaction.aktivitas.find(a => a.tipe === 'dikembalikan');",
+                  "        ",
+                  "        pm.expect(returnActivity, 'Multi-condition return activity should exist').to.exist;",
+                  "        pm.expect(returnActivity.data.totalConditions, 'Multi-condition should have totalConditions > 1').to.be.above(1);",
+                  "        pm.expect(returnActivity.data.conditions.length, 'Should have multiple conditions').to.be.above(1);",
+                  "        ",
+                  "        // Verify mixed condition processing is captured",
+                  "        const hasGoodCondition = returnActivity.data.conditions.some(c => c.kondisiAkhir.includes('Baik'));",
+                  "        const hasDamagedCondition = returnActivity.data.conditions.some(c => c.kondisiAkhir.includes('Rusak'));",
+                  "        pm.expect(hasGoodCondition || hasDamagedCondition, 'Should have different condition types').to.be.true;",
+                  "    });",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{clerkToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"itemId\": \"{{testTransaksiItemId}}\",\n      \"conditions\": [\n        {\n          \"kondisiAkhir\": \"Baik - dikembalikan tepat waktu\",\n          \"jumlahKembali\": 2\n        },\n        {\n          \"kondisiAkhir\": \"Rusak ringan - bisa diperbaiki\",\n          \"jumlahKembali\": 1,\n          \"modalAwal\": 50000\n        }\n      ]\n    }\n  ],\n  \"catatan\": \"TSK-24: Mixed condition test - sebagian baik, sebagian rusak\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/kasir/transaksi/{{testTransaksiKode}}/pengembalian",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kasir", "transaksi", "{{testTransaksiKode}}", "pengembalian"]
+            },
+            "description": "TSK-24: Test multi-condition return with mixed good and damaged items. Tests new granular condition tracking."
+          }
+        },
+        {
+          "name": "TSK-24: Multi-Condition Return - Complex Scenario (Good + Damaged + Lost)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Complex unified processing successful', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('success', true);",
+                  "    pm.expect(responseJson.data).to.have.property('processingMode', 'unified');",
+                  "});",
+                  "",
+                  "pm.test('All three condition types processed', function () {",
+                  "    const data = pm.response.json().data;",
+                  "    pm.expect(data.totalConditions).to.equal(3);",
+                  "    pm.expect(data).to.have.property('format');",
+                  "});",
+                  "",
+                  "pm.test('Lost item penalty calculated correctly', function () {",
+                  "    const data = pm.response.json().data;",
+                  "    pm.expect(data.totalPenalty).to.be.above(100000);",
+                  "});",
+                  "",
+                  "pm.test('Complex scenario processed correctly', function () {",
+                  "    const items = pm.response.json().data.processedItems;",
+                  "    pm.expect(items).to.be.an('array');",
+                  "    pm.expect(items.length).to.be.above(0);",
+                  "    items.forEach(item => {",
+                  "        pm.expect(item).to.have.property('itemId');",
+                  "        pm.expect(item).to.have.property('penalty');",
+                  "        pm.expect(item).to.have.property('statusKembali');",
+                  "    });",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{clerkToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"itemId\": \"{{testTransaksiItemId}}\",\n      \"conditions\": [\n        {\n          \"kondisiAkhir\": \"Baik - dikembalikan tepat waktu\",\n          \"jumlahKembali\": 1\n        },\n        {\n          \"kondisiAkhir\": \"Rusak berat - tidak bisa diperbaiki\",\n          \"jumlahKembali\": 1,\n          \"modalAwal\": 150000\n        },\n        {\n          \"kondisiAkhir\": \"Hilang/tidak dikembalikan\",\n          \"jumlahKembali\": 0,\n          \"modalAwal\": 150000\n        }\n      ]\n    }\n  ],\n  \"catatan\": \"TSK-24: Complex scenario - 1 baik, 1 rusak berat, 1 hilang\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/kasir/transaksi/{{testTransaksiKode}}/pengembalian",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kasir", "transaksi", "{{testTransaksiKode}}", "pengembalian"]
+            },
+            "description": "TSK-24: Test complex multi-condition scenario with good, damaged, and lost items. Tests maximum penalty calculation logic."
+          }
+        },
+        {
+          "name": "TSK-24: Multi-Condition Validation Error - Invalid Lost Item",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Multi-condition validation error response', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('success', false);",
+                  "    pm.expect(responseJson.error).to.have.property('code', 'LOST_ITEM_VALIDATION_ERROR');",
+                  "});",
+                  "",
+                  "pm.test('Enhanced error message with suggestions', function () {",
+                  "    const error = pm.response.json().error;",
+                  "    pm.expect(error).to.have.property('details');",
+                  "    const detail = error.details[0];",
+                  "    pm.expect(detail).to.have.property('suggestions');",
+                  "    pm.expect(detail.suggestions).to.be.an('array');",
+                  "    pm.expect(detail.message).to.include('Multi-condition validation failed');",
+                  "});",
+                  "",
+                  "pm.test('Field path correctly identified', function () {",
+                  "    const error = pm.response.json().error;",
+                  "    const detail = error.details[0];",
+                  "    pm.expect(detail.field).to.include('conditions');",
+                  "    pm.expect(detail.field).to.include('jumlahKembali');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{clerkToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"itemId\": \"{{testTransaksiItemId}}\",\n      \"conditions\": [\n        {\n          \"kondisiAkhir\": \"Hilang/tidak dikembalikan\",\n          \"jumlahKembali\": 1\n        }\n      ]\n    }\n  ],\n  \"catatan\": \"TSK-24: Invalid test - lost item should have jumlahKembali = 0\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/kasir/transaksi/{{testTransaksiKode}}/pengembalian",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kasir", "transaksi", "{{testTransaksiKode}}", "pengembalian"]
+            },
+            "description": "TSK-24: Test validation error for invalid lost item condition (jumlahKembali > 0 for lost item). Tests enhanced error handling."
+          }
+        },
+        {
+          "name": "TSK-24: Mixed Mode Processing - Single and Multi-Condition Items",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Unified processing handles mixed input formats', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('success', true);",
+                  "    pm.expect(responseJson.data).to.have.property('processingMode', 'unified');",
+                  "});",
+                  "",
+                  "pm.test('All items processed with unified structure', function () {",
+                  "    const items = pm.response.json().data.processedItems;",
+                  "    pm.expect(items).to.be.an('array');",
+                  "    pm.expect(items.length).to.be.at.least(2);",
+                  "    ",
+                  "    items.forEach(item => {",
+                  "        pm.expect(item).to.have.property('itemId');",
+                  "        pm.expect(item).to.have.property('penalty');",
+                  "        pm.expect(item).to.have.property('statusKembali');",
+                  "    });",
+                  "});",
+                  "",
+                  "pm.test('Unified architecture features present', function () {",
+                  "    const data = pm.response.json().data;",
+                  "    pm.expect(data).to.have.property('processingMode', 'unified');",
+                  "    pm.expect(data).to.have.property('format');",
+                  "    pm.expect(data).to.have.property('totalConditions');",
+                  "    pm.expect(data.totalPenalty).to.be.a('number');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{clerkToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"itemId\": \"{{testItemId1}}\",\n      \"kondisiAkhir\": \"Baik - dikembalikan tepat waktu\",\n      \"jumlahKembali\": 1\n    },\n    {\n      \"itemId\": \"{{testItemId2}}\",\n      \"conditions\": [\n        {\n          \"kondisiAkhir\": \"Baik - dikembalikan tepat waktu\",\n          \"jumlahKembali\": 2\n        },\n        {\n          \"kondisiAkhir\": \"Rusak ringan - bisa diperbaiki\",\n          \"jumlahKembali\": 1,\n          \"modalAwal\": 50000\n        }\n      ]\n    }\n  ],\n  \"catatan\": \"TSK-24: Mixed mode test - combination of single and multi-condition items\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/kasir/transaksi/{{testTransaksiKode}}/pengembalian",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kasir", "transaksi", "{{testTransaksiKode}}", "pengembalian"]
+            },
+            "description": "TSK-24: Test mixed mode processing with both single-condition and multi-condition items in same request. Tests intelligent routing."
+          }
+        },
+        {
+          "name": "TSK-24: Backward Compatibility - Legacy Single Condition",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Legacy format processed by unified architecture', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('success', true);",
+                  "    pm.expect(responseJson.data).to.have.property('processingMode', 'unified');",
+                  "});",
+                  "",
+                  "pm.test('Backward compatibility maintained', function () {",
+                  "    const data = pm.response.json().data;",
+                  "    pm.expect(data).to.have.property('transaksiId');",
+                  "    pm.expect(data).to.have.property('totalPenalty');",
+                  "    pm.expect(data).to.have.property('processedItems');",
+                  "    pm.expect(data).to.have.property('format', 'legacy');",
+                  "});",
+                  "",
+                  "pm.test('Unified architecture fields present', function () {",
+                  "    const data = pm.response.json().data;",
+                  "    pm.expect(data).to.have.property('totalConditions');",
+                  "    pm.expect(data.totalConditions).to.equal(1);",
+                  "    ",
+                  "    const items = data.processedItems;",
+                  "    items.forEach(item => {",
+                  "        pm.expect(item).to.have.property('itemId');",
+                  "        pm.expect(item).to.have.property('penalty');",
+                  "        pm.expect(item).to.have.property('statusKembali');",
+                  "    });",
+                  "});",
+                  "",
+                  "pm.test('Performance within acceptable range', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(300);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{clerkToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"itemId\": \"{{testTransaksiItemId}}\",\n      \"kondisiAkhir\": \"Baik - dikembalikan tepat waktu\",\n      \"jumlahKembali\": 1\n    }\n  ],\n  \"catatan\": \"TSK-24: Backward compatibility test - legacy single condition format\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/kasir/transaksi/{{testTransaksiKode}}/pengembalian",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kasir", "transaksi", "{{testTransaksiKode}}", "pengembalian"]
+            },
+            "description": "TSK-24: Test backward compatibility - ensure existing single-condition format still works unchanged."
+          }
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Global pre-request script",
+          "// Set base URL if not already set",
+          "if (!pm.collectionVariables.get('baseUrl')) {",
+          "    pm.collectionVariables.set('baseUrl', 'http://localhost:3000');",
+          "}",
+          "",
+          "// Check if Clerk token is set",
+          "const clerkToken = pm.collectionVariables.get('clerkToken');",
+          "if (!clerkToken && pm.request.headers.get('Authorization')) {",
+          "    console.warn('Warning: Clerk token not set. Please set the clerkToken collection variable.');",
+          "}"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Global test script with enhanced header validation",
+          "pm.test('Response is JSON with proper headers', function () {",
+          "    pm.response.to.have.header('content-type');",
+          "    const contentType = pm.response.headers.get('content-type');",
+          "    if (contentType) {",
+          "        pm.expect(contentType).to.include('application/json');",
+          "        // Ensure charset is specified for proper encoding",
+          "        if (pm.response.code === 200) {",
+          "            pm.expect(contentType).to.include('charset=utf-8');",
+          "        }",
+          "    }",
+          "});",
+          "",
+          "// Enhanced header validation for successful responses",
+          "if (pm.response.code >= 200 && pm.response.code < 300) {",
+          "    pm.test('Security headers are present', function () {",
+          "        // Check for security headers on successful responses",
+          "        pm.expect(pm.response.headers.get('x-content-type-options')).to.equal('nosniff');",
+          "        pm.expect(pm.response.headers.get('x-frame-options')).to.equal('DENY');",
+          "    });",
+          "",
+          "    pm.test('Performance headers exist', function () {",
+          "        // Ensure performance monitoring headers are present",
+          "        pm.expect(pm.response.headers.get('x-request-id')).to.exist;",
+          "        if (pm.response.headers.get('x-processing-time')) {",
+          "            pm.expect(pm.response.headers.get('x-processing-time')).to.match(/^\\d+ms$/);",
+          "        }",
+          "    });",
+          "}",
+          "",
+          "// Log response time for monitoring",
+          "const responseTime = pm.response.responseTime;",
+          "if (responseTime > 2000) {",
+          "    console.warn(`Slow response detected: ${responseTime}ms for ${pm.request.url}`);",
+          "}",
+          "",
+          "// Check for common error patterns",
+          "if (pm.response.code >= 400) {",
+          "    const response = pm.response.json();",
+          "    console.log(`Error Response: ${JSON.stringify(response, null, 2)}`);",
+          "}"
+        ]
+      }
+    }
+  ]
+}

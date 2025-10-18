@@ -94,7 +94,10 @@ export async function GET(request: NextRequest) {
           },
           sizes: {
             where: { isActive: true },
-            orderBy: { ageCategory: 'asc', size: 'asc' },
+            orderBy: [
+              { ageCategory: 'asc' },
+              { size: 'asc' }
+            ],
           },
         },
       }),

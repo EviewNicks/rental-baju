@@ -1,0 +1,708 @@
+{
+  "info": {
+    "name": "Transaksi Kasir API Tests ",
+    "description": "Comprehensive Postman test collection for Kasir (Cashier) API endpoints including customer management, transaction processing, payment handling, product availability, enhanced multi-condition return processing (pengembalian baju), and RPK-51 size-aware transaction system with ProductSize support. Now includes TSK-24 multi-condition return system tests, RPK-44 return activity logging validation, and RPK-51 size-aware inventory management.",
+    "version": "1.4.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{clerkToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "testPenyewaId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testTransaksiId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testTransaksiKode",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testPembayaranId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testProdukId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testTransaksiItemId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testItemId1",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testItemId2",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testProductSizeId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testAgeCategory",
+      "value": "ADULT",
+      "type": "string"
+    },
+    {
+      "key": "testSize",
+      "value": "M",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "04. Transaction Management",
+      "item": [
+        {
+          "name": "Create Size-Aware Transaction (RPK-51)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Size-aware transaction created successfully', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('success', true);",
+                  "    pm.expect(responseJson.data).to.have.property('id');",
+                  "    pm.expect(responseJson.data).to.have.property('kode');",
+                  "    pm.expect(responseJson.data).to.have.property('status', 'active');",
+                  "    pm.expect(responseJson.data).to.have.property('totalHarga');",
+                  "    ",
+                  "    // Store transaction details for other tests",
+                  "    pm.collectionVariables.set('testTransaksiId', responseJson.data.id);",
+                  "    pm.collectionVariables.set('testTransaksiKode', responseJson.data.kode);",
+                  "});",
+                  "",
+                  "pm.test('Transaction has size-aware structure', function () {",
+                  "    const data = pm.response.json().data;",
+                  "    pm.expect(data).to.have.property('penyewa');",
+                  "    pm.expect(data).to.have.property('items');",
+                  "    pm.expect(data.items).to.be.an('array');",
+                  "    ",
+                  "    if (data.items.length > 0) {",
+                  "        const firstItem = data.items[0];",
+                  "        pm.expect(firstItem).to.have.property('produk');",
+                  "        pm.expect(firstItem).to.have.property('jumlah');",
+                  "        pm.expect(firstItem).to.have.property('hargaSewa');",
+                  "        pm.expect(firstItem).to.have.property('subtotal');",
+                  "        pm.expect(firstItem).to.have.property('kondisiAwal');",
+                  "        ",
+                  "        // Size-aware item should have product size information",
+                  "        pm.expect(firstItem.produk).to.have.property('id');",
+                  "        pm.expect(firstItem.produk).to.have.property('name');",
+                  "        pm.expect(firstItem.produk).to.have.property('code');",
+                  "    }",
+                  "});",
+                  "",
+                  "pm.test('Transaction amount calculations are correct', function () {",
+                  "    const data = pm.response.json().data;",
+                  "    const expectedSubtotal = data.items.reduce((sum, item) => sum + item.subtotal, 0);",
+                  "    pm.expect(data.totalHarga).to.equal(expectedSubtotal);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"penyewaId\": \"{{testPenyewaId}}\",\n  \"items\": [\n    {\n      \"produkId\": \"{{testProdukId}}\",\n      \"productSizeId\": \"{{testProductSizeId}}\",\n      \"jumlah\": 1,\n      \"durasi\": 2,\n      \"kondisiAwal\": \"Baik, ukuran sesuai pesanan\"\n    }\n  ],\n  \"tglMulai\": \"2025-07-26T00:00:00.000Z\",\n  \"tglSelesai\": \"2025-07-28T00:00:00.000Z\",\n  \"metodeBayar\": \"tunai\",\n  \"catatan\": \"Size-aware transaction test RPK-51\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/kasir/transaksi",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kasir", "transaksi"]
+            },
+            "description": "RPK-51: Test size-aware transaction creation with productSizeId field to validate automatic format detection and size-specific inventory management."
+          }
+        },
+        {
+          "name": "Test Automatic Format Detection (RPK-51)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Format detection works correctly', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('success', true);",
+                  "    pm.expect(responseJson.data).to.have.property('id');",
+                  "    pm.expect(responseJson.data).to.have.property('kode');",
+                  "    ",
+                  "    // This proves automatic format detection works",
+                  "    // because the request has productSizeId (size-aware format)",
+                  "    const requestBody = JSON.parse(pm.request.body.raw);",
+                  "    const hasProductSizeId = requestBody.items.some(item => item.productSizeId);",
+                  "    pm.expect(hasProductSizeId).to.be.true;",
+                  "});",
+                  "",
+                  "pm.test('Size-aware item processing', function () {",
+                  "    const data = pm.response.json().data;",
+                  "    if (data.items && data.items.length > 0) {",
+                  "        // Size-aware transactions should process items correctly",
+                  "        data.items.forEach(item => {",
+                  "            pm.expect(item).to.have.property('jumlah');",
+                  "            pm.expect(item).to.have.property('subtotal');",
+                  "            pm.expect(item.jumlah).to.be.a('number');",
+                  "            pm.expect(item.subtotal).to.be.a('number');",
+                  "        });",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"penyewaId\": \"{{testPenyewaId}}\",\n  \"items\": [\n    {\n      \"produkId\": \"{{testProdukId}}\",\n      \"productSizeId\": \"{{testProductSizeId}}\",\n      \"jumlah\": 1,\n      \"durasi\": 1,\n      \"kondisiAwal\": \"Test automatic detection\"\n    }\n  ],\n  \"tglMulai\": \"2025-07-26T00:00:00.000Z\",\n  \"tglSelesai\": \"2025-07-27T00:00:00.000Z\",\n  \"metodeBayar\": \"transfer\",\n  \"catatan\": \"Test automatic format detection - should route to size-aware processor\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/kasir/transaksi",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kasir", "transaksi"]
+            },
+            "description": "RPK-51: Test automatic format detection by sending request with productSizeId to validate smart routing between legacy and size-aware processors."
+          }
+        },
+        {
+          "name": "Create Transaction - Invalid Product Size (RPK-51)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 404', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test('Product size not found error', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('success', false);",
+                  "    pm.expect(responseJson.error).to.have.property('message');",
+                  "    pm.expect(responseJson.error.message).to.include('tidak ditemukan');",
+                  "});",
+                  "",
+                  "pm.test('Error code is correct', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson.error).to.have.property('code', 'NOT_FOUND');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"penyewaId\": \"{{testPenyewaId}}\",\n  \"items\": [\n    {\n      \"produkId\": \"{{testProdukId}}\",\n      \"productSizeId\": \"00000000-0000-0000-0000-000000000000\",\n      \"jumlah\": 1,\n      \"durasi\": 1,\n      \"kondisiAwal\": \"Test invalid size\"\n    }\n  ],\n  \"tglMulai\": \"2025-07-26T00:00:00.000Z\",\n  \"tglSelesai\": \"2025-07-27T00:00:00.000Z\",\n  \"metodeBayar\": \"tunai\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/kasir/transaksi",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kasir", "transaksi"]
+            },
+            "description": "RPK-51: Test error handling when productSizeId does not exist in database to validate size-aware validation."
+          }
+        },
+        {
+          "name": "Create Transaction - Insufficient Size Stock (RPK-51)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 409', function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "",
+                  "pm.test('Insufficient stock error', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('success', false);",
+                  "    pm.expect(responseJson.error).to.have.property('message');",
+                  "    pm.expect(responseJson.error.message).to.include('tidak mencukupi');",
+                  "});",
+                  "",
+                  "pm.test('Error code is correct', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson.error).to.have.property('code', 'AVAILABILITY_ERROR');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"penyewaId\": \"{{testPenyewaId}}\",\n  \"items\": [\n    {\n      \"produkId\": \"{{testProdukId}}\",\n      \"productSizeId\": \"{{testProductSizeId}}\",\n      \"jumlah\": 999,\n      \"durasi\": 1,\n      \"kondisiAwal\": \"Test insufficient stock\"\n    }\n  ],\n  \"tglMulai\": \"2025-07-26T00:00:00.000Z\",\n  \"tglSelesai\": \"2025-07-27T00:00:00.000Z\",\n  \"metodeBayar\": \"tunai\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/kasir/transaksi",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kasir", "transaksi"]
+            },
+            "description": "RPK-51: Test size-specific stock validation to ensure size-aware inventory management prevents overbooking."
+          }
+        },
+        {
+          "name": "Test Legacy Format Still Works (RPK-51)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Legacy format still works (backward compatibility)', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('success', true);",
+                  "    pm.expect(responseJson.data).to.have.property('id');",
+                  "    pm.expect(responseJson.data).to.have.property('kode');",
+                  "    ",
+                  "    // This proves backward compatibility works",
+                  "    // because the request has no productSizeId (legacy format)",
+                  "    const requestBody = JSON.parse(pm.request.body.raw);",
+                  "    const hasProductSizeId = requestBody.items.some(item => item.productSizeId);",
+                  "    pm.expect(hasProductSizeId).to.be.false;",
+                  "});",
+                  "",
+                  "pm.test('Legacy transaction structure is maintained', function () {",
+                  "    const data = pm.response.json().data;",
+                  "    pm.expect(data).to.have.property('penyewa');",
+                  "    pm.expect(data).to.have.property('items');",
+                  "    ",
+                  "    if (data.items.length > 0) {",
+                  "        const firstItem = data.items[0];",
+                  "        pm.expect(firstItem).to.have.property('produk');",
+                  "        pm.expect(firstItem).to.have.property('jumlah');",
+                  "        pm.expect(firstItem).to.have.property('hargaSewa');",
+                  "        pm.expect(firstItem).to.have.property('subtotal');",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"penyewaId\": \"{{testPenyewaId}}\",\n  \"items\": [\n    {\n      \"produkId\": \"{{testProdukId}}\",\n      \"jumlah\": 1,\n      \"durasi\": 1,\n      \"kondisiAwal\": \"Legacy format test - no productSizeId\"\n    }\n  ],\n  \"tglMulai\": \"2025-07-26T00:00:00.000Z\",\n  \"tglSelesai\": \"2025-07-27T00:00:00.000Z\",\n  \"metodeBayar\": \"tunai\",\n  \"catatan\": \"Backward compatibility test - should route to legacy processor\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/kasir/transaksi",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kasir", "transaksi"]
+            },
+            "description": "RPK-51: Test backward compatibility by sending legacy format (without productSizeId) to ensure existing functionality remains unchanged."
+          }
+        },
+        {
+          "name": "Create Transaction - Customer Not Found",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 404', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test('Customer not found error', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('success', false);",
+                  "    pm.expect(responseJson.error.message).to.include('tidak ditemukan');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"penyewaId\": \"00000000-0000-0000-0000-000000000000\",\n  \"items\": [\n    {\n      \"produkId\": \"{{testProdukId}}\",\n      \"jumlah\": 1,\n      \"durasi\": 1\n    }\n  ],\n  \"tglMulai\": \"2025-07-26T00:00:00.000Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/kasir/transaksi",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kasir", "transaksi"]
+            }
+          }
+        },
+        {
+          "name": "Get Transaction List",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Transaction list structure is correct', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('success', true);",
+                  "    pm.expect(responseJson.data).to.have.property('data');",
+                  "    pm.expect(responseJson.data).to.have.property('pagination');",
+                  "    pm.expect(responseJson.data).to.have.property('summary');",
+                  "});",
+                  "",
+                  "pm.test('Transactions have required fields', function () {",
+                  "    const transactions = pm.response.json().data.data;",
+                  "    if (transactions.length > 0) {",
+                  "        const firstTransaction = transactions[0];",
+                  "        pm.expect(firstTransaction).to.have.property('kode');",
+                  "        pm.expect(firstTransaction).to.have.property('status');",
+                  "        pm.expect(firstTransaction).to.have.property('penyewa');",
+                  "        pm.expect(firstTransaction).to.have.property('itemCount');",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/kasir/transaksi?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kasir", "transaksi"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Filter Transactions by Status",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Transactions are filtered by status', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    const transactions = responseJson.data.data;",
+                  "    transactions.forEach(transaction => {",
+                  "        pm.expect(transaction.status).to.equal('active');",
+                  "    });",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/kasir/transaksi?status=active",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kasir", "transaksi"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "active"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search Transactions",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Search functionality works', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('success', true);",
+                  "    // Search results should contain the search term",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/kasir/transaksi?search={{testTransaksiKode}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kasir", "transaksi"],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "{{testTransaksiKode}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Transaction by Code",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Transaction details are complete', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('success', true);",
+                  "    pm.expect(responseJson.data).to.have.property('kode', pm.collectionVariables.get('testTransaksiKode'));",
+                  "    pm.expect(responseJson.data).to.have.property('items');",
+                  "    pm.expect(responseJson.data).to.have.property('pembayaran');",
+                  "    pm.expect(responseJson.data).to.have.property('aktivitas');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/kasir/transaksi/{{testTransaksiKode}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kasir", "transaksi", "{{testTransaksiKode}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Transaction Status",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Transaction status updated successfully', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('success', true);",
+                  "    pm.expect(responseJson.data).to.have.property('status', 'selesai');",
+                  "    pm.expect(responseJson.data).to.have.property('tglKembali');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"selesai\",\n  \"tglKembali\": \"2025-07-29T10:00:00.000Z\",\n  \"catatan\": \"Transaksi selesai, barang dikembalikan dalam kondisi baik\",\n  \"items\": [\n    {\n      \"id\": \"item-id-from-previous-response\",\n      \"kondisiAkhir\": \"Baik, tidak ada kerusakan\",\n      \"statusKembali\": \"lengkap\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/kasir/transaksi/{{testTransaksiKode}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kasir", "transaksi", "{{testTransaksiKode}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Transaction by Code - Not Found",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 404', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test('Transaction not found error', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('success', false);",
+                  "    pm.expect(responseJson.error).to.have.property('code', 'NOT_FOUND');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/kasir/transaksi/TXN-20250101-999",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kasir", "transaksi", "TXN-20250101-999"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Global pre-request script",
+          "// Set base URL if not already set",
+          "if (!pm.collectionVariables.get('baseUrl')) {",
+          "    pm.collectionVariables.set('baseUrl', 'http://localhost:3000');",
+          "}",
+          "",
+          "// Check if Clerk token is set",
+          "const clerkToken = pm.collectionVariables.get('clerkToken');",
+          "if (!clerkToken && pm.request.headers.get('Authorization')) {",
+          "    console.warn('Warning: Clerk token not set. Please set the clerkToken collection variable.');",
+          "}"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Global test script with enhanced header validation",
+          "pm.test('Response is JSON with proper headers', function () {",
+          "    pm.response.to.have.header('content-type');",
+          "    const contentType = pm.response.headers.get('content-type');",
+          "    if (contentType) {",
+          "        pm.expect(contentType).to.include('application/json');",
+          "        // Ensure charset is specified for proper encoding",
+          "        if (pm.response.code === 200) {",
+          "            pm.expect(contentType).to.include('charset=utf-8');",
+          "        }",
+          "    }",
+          "});",
+          "",
+          "// Enhanced header validation for successful responses",
+          "if (pm.response.code >= 200 && pm.response.code < 300) {",
+          "    pm.test('Security headers are present', function () {",
+          "        // Check for security headers on successful responses",
+          "        pm.expect(pm.response.headers.get('x-content-type-options')).to.equal('nosniff');",
+          "        pm.expect(pm.response.headers.get('x-frame-options')).to.equal('DENY');",
+          "    });",
+          "",
+          "    pm.test('Performance headers exist', function () {",
+          "        // Ensure performance monitoring headers are present",
+          "        pm.expect(pm.response.headers.get('x-request-id')).to.exist;",
+          "        if (pm.response.headers.get('x-processing-time')) {",
+          "            pm.expect(pm.response.headers.get('x-processing-time')).to.match(/^\\d+ms$/);",
+          "        }",
+          "    });",
+          "}",
+          "",
+          "// Log response time for monitoring",
+          "const responseTime = pm.response.responseTime;",
+          "if (responseTime > 2000) {",
+          "    console.warn(`Slow response detected: ${responseTime}ms for ${pm.request.url}`);",
+          "}",
+          "",
+          "// Check for common error patterns",
+          "if (pm.response.code >= 400) {",
+          "    const response = pm.response.json();",
+          "    console.log(`Error Response: ${JSON.stringify(response, null, 2)}`);",
+          "}"
+        ]
+      }
+    }
+  ]
+}

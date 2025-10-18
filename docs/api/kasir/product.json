@@ -1,0 +1,431 @@
+{
+  "info": {
+    "name": "Product Kasir API Tests",
+    "description": "Comprehensive Postman test collection for Kasir (Cashier) API endpoints including customer management, transaction processing, payment handling, product availability, enhanced multi-condition return processing (pengembalian baju), and RPK-51 size-aware transaction system with ProductSize support. Now includes TSK-24 multi-condition return system tests, RPK-44 return activity logging validation, and RPK-51 size-aware inventory management.",
+    "version": "1.4.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{clerkToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "testPenyewaId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testTransaksiId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testTransaksiKode",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testPembayaranId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testProdukId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testTransaksiItemId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testItemId1",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testItemId2",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testProductSizeId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testAgeCategory",
+      "value": "ADULT",
+      "type": "string"
+    },
+    {
+      "key": "testSize",
+      "value": "M",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "03. Product Availability",
+      "item": [
+        {
+          "name": "Get Available Products with Size Information (RPK-51)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{clerkToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/kasir/produk/available",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kasir", "produk", "available"]
+            },
+            "description": "RPK-51: Test size-aware product availability API with ProductSize[] response structure including age categories and size-specific inventory information."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has size-aware structure', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('success', true);",
+                  "    pm.expect(responseJson).to.have.property('data');",
+                  "    pm.expect(responseJson.data).to.have.property('data');",
+                  "    pm.expect(responseJson.data).to.have.property('pagination');",
+                  "});",
+                  "",
+                  "pm.test('Products have size information', function () {",
+                  "    const products = pm.response.json().data.data;",
+                  "    if (products.length > 0) {",
+                  "        const firstProduct = products[0];",
+                  "        pm.expect(firstProduct).to.have.property('sizes');",
+                  "        pm.expect(firstProduct.sizes).to.be.an('array');",
+                  "        ",
+                  "        if (firstProduct.sizes.length > 0) {",
+                  "            const firstSize = firstProduct.sizes[0];",
+                  "            pm.expect(firstSize).to.have.property('id');",
+                  "            pm.expect(firstSize).to.have.property('ageCategory');",
+                  "            pm.expect(firstSize).to.have.property('size');",
+                  "            pm.expect(firstSize).to.have.property('quantity');",
+                  "            pm.expect(firstSize).to.have.property('availableQuantity');",
+                  "            ",
+                  "            // Test valid age categories",
+                  "            pm.expect(['ADULT', 'CHILD', 'UNIVERSAL']).to.include(firstSize.ageCategory);",
+                  "            ",
+                  "            // Test valid sizes",
+                  "            pm.expect(['XS', 'S', 'M', 'L', 'XL', 'XXL']).to.include(firstSize.size);",
+                  "        }",
+                  "    }",
+                  "});",
+                  "",
+                  "pm.test('Size quantity calculations are correct', function () {",
+                  "    const products = pm.response.json().data.data;",
+                  "    products.forEach(product => {",
+                  "        if (product.sizes && product.sizes.length > 0) {",
+                  "            const totalAvailable = product.sizes.reduce((sum, size) => sum + size.availableQuantity, 0);",
+                  "            pm.expect(product.availableQuantity).to.equal(totalAvailable);",
+                  "            ",
+                  "            product.sizes.forEach(size => {",
+                  "                pm.expect(size.quantity).to.be.at.least(size.availableQuantity);",
+                  "            });",
+                  "        }",
+                  "    });",
+                  "});",
+                  "",
+                  "// Store product size ID for subsequent tests",
+                  "if (pm.response.json().data.data.length > 0) {",
+                  "    const products = pm.response.json().data.data;",
+                  "    for (let product of products) {",
+                  "        if (product.sizes && product.sizes.length > 0) {",
+                  "            pm.collectionVariables.set('testProductSizeId', product.sizes[0].id);",
+                  "            pm.collectionVariables.set('testAgeCategory', product.sizes[0].ageCategory);",
+                  "            pm.collectionVariables.set('testSize', product.sizes[0].size);",
+                  "            break;",
+                  "        }",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Filter Products by Size Parameters (RPK-51)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{clerkToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/kasir/produk/available?size=M&size=L",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kasir", "produk", "available"],
+              "query": [
+                {
+                  "key": "size",
+                  "value": "M"
+                },
+                {
+                  "key": "size",
+                  "value": "L"
+                }
+              ]
+            },
+            "description": "RPK-51: Test size-based product filtering with multiple size parameters to validate size-aware inventory management."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Products are filtered by size', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('success', true);",
+                  "    const products = responseJson.data.data;",
+                  "    ",
+                  "    if (products.length > 0) {",
+                  "        products.forEach(product => {",
+                  "            if (product.sizes && product.sizes.length > 0) {",
+                  "                const hasRequestedSize = product.sizes.some(size => size.size === 'M' || size.size === 'L');",
+                  "                pm.expect(hasRequestedSize).to.be.true;",
+                  "            }",
+                  "        });",
+                  "    }",
+                  "});",
+                  "",
+                  "pm.test('Filtered products maintain size structure', function () {",
+                  "    const products = pm.response.json().data.data;",
+                  "    products.forEach(product => {",
+                  "        pm.expect(product).to.have.property('sizes');",
+                  "        pm.expect(product.sizes).to.be.an('array');",
+                  "    });",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Filter Products by Age Category (RPK-51)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{clerkToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/kasir/produk/available?search={{testAgeCategory}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kasir", "produk", "available"],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "{{testAgeCategory}}"
+                }
+              ]
+            },
+            "description": "RPK-51: Test age category filtering functionality to validate size-aware product search capabilities."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response structure is maintained', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('success', true);",
+                  "    pm.expect(responseJson.data).to.have.property('data');",
+                  "    pm.expect(responseJson.data).to.have.property('pagination');",
+                  "});",
+                  "",
+                  "pm.test('Search by age category works', function () {",
+                  "    const products = pm.response.json().data.data;",
+                  "    const searchTerm = pm.collectionVariables.get('testAgeCategory');",
+                  "    ",
+                  "    if (products.length > 0 && searchTerm) {",
+                  "        // Products should have age category in their sizes or other searchable fields",
+                  "        const hasAgeCategory = products.some(product => {",
+                  "            if (product.sizes && product.sizes.length > 0) {",
+                  "                return product.sizes.some(size => size.ageCategory === searchTerm);",
+                  "            }",
+                  "            return product.name && product.name.toLowerCase().includes(searchTerm.toLowerCase());",
+                  "        });",
+                  "        ",
+                  "        pm.expect(hasAgeCategory).to.be.true;",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Test Unavailable Products Filter (RPK-51)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{clerkToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/kasir/produk/available?available=false",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kasir", "produk", "available"],
+              "query": [
+                {
+                  "key": "available",
+                  "value": "false"
+                }
+              ]
+            },
+            "description": "RPK-51: Test unavailable products filter to ensure size-aware inventory management properly handles out-of-stock scenarios."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response structure is correct', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('success', true);",
+                  "    pm.expect(responseJson.data).to.have.property('data');",
+                  "    pm.expect(responseJson.data).to.have.property('pagination');",
+                  "});",
+                  "",
+                  "pm.test('Unavailable products have zero or negative available quantity', function () {",
+                  "    const products = pm.response.json().data.data;",
+                  "    ",
+                  "    if (products.length > 0) {",
+                  "        products.forEach(product => {",
+                  "            pm.expect(product.availableQuantity).to.be.at.most(0);",
+                  "            ",
+                  "            if (product.sizes && product.sizes.length > 0) {",
+                  "                const totalAvailable = product.sizes.reduce((sum, size) => sum + size.availableQuantity, 0);",
+                  "                pm.expect(totalAvailable).to.be.at.most(0);",
+                  "            }",
+                  "        });",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Global pre-request script",
+          "// Set base URL if not already set",
+          "if (!pm.collectionVariables.get('baseUrl')) {",
+          "    pm.collectionVariables.set('baseUrl', 'http://localhost:3000');",
+          "}",
+          "",
+          "// Check if Clerk token is set",
+          "const clerkToken = pm.collectionVariables.get('clerkToken');",
+          "if (!clerkToken && pm.request.headers.get('Authorization')) {",
+          "    console.warn('Warning: Clerk token not set. Please set the clerkToken collection variable.');",
+          "}"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Global test script with enhanced header validation",
+          "pm.test('Response is JSON with proper headers', function () {",
+          "    pm.response.to.have.header('content-type');",
+          "    const contentType = pm.response.headers.get('content-type');",
+          "    if (contentType) {",
+          "        pm.expect(contentType).to.include('application/json');",
+          "        // Ensure charset is specified for proper encoding",
+          "        if (pm.response.code === 200) {",
+          "            pm.expect(contentType).to.include('charset=utf-8');",
+          "        }",
+          "    }",
+          "});",
+          "",
+          "// Enhanced header validation for successful responses",
+          "if (pm.response.code >= 200 && pm.response.code < 300) {",
+          "    pm.test('Security headers are present', function () {",
+          "        // Check for security headers on successful responses",
+          "        pm.expect(pm.response.headers.get('x-content-type-options')).to.equal('nosniff');",
+          "        pm.expect(pm.response.headers.get('x-frame-options')).to.equal('DENY');",
+          "    });",
+          "",
+          "    pm.test('Performance headers exist', function () {",
+          "        // Ensure performance monitoring headers are present",
+          "        pm.expect(pm.response.headers.get('x-request-id')).to.exist;",
+          "        if (pm.response.headers.get('x-processing-time')) {",
+          "            pm.expect(pm.response.headers.get('x-processing-time')).to.match(/^\\d+ms$/);",
+          "        }",
+          "    });",
+          "}",
+          "",
+          "// Log response time for monitoring",
+          "const responseTime = pm.response.responseTime;",
+          "if (responseTime > 2000) {",
+          "    console.warn(`Slow response detected: ${responseTime}ms for ${pm.request.url}`);",
+          "}",
+          "",
+          "// Check for common error patterns",
+          "if (pm.response.code >= 400) {",
+          "    const response = pm.response.json();",
+          "    console.log(`Error Response: ${JSON.stringify(response, null, 2)}`);",
+          "}"
+        ]
+      }
+    }
+  ]
+}

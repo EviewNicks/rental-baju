@@ -1,6 +1,6 @@
 {
   "info": {
-    "name": "Kasir API Tests - RPK-26 + TSK-23 + TSK-24 + RPK-44 + RPK-51",
+    "name": "Customer Kasir API Tests ",
     "description": "Comprehensive Postman test collection for Kasir (Cashier) API endpoints including customer management, transaction processing, payment handling, product availability, enhanced multi-condition return processing (pengembalian baju), and RPK-51 size-aware transaction system with ProductSize support. Now includes TSK-24 multi-condition return system tests, RPK-44 return activity logging validation, and RPK-51 size-aware inventory management.",
     "version": "1.4.0",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
@@ -84,76 +84,65 @@
   ],
   "item": [
     {
-      "name": "08. Error Handling & Edge Cases",
+      "name": "02. Customer Management (Penyewa)",
       "item": [
         {
-          "name": "Unauthorized Request",
+          "name": "Create New Customer",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status code is 401', function () {",
-                  "    pm.response.to.have.status(401);",
+                  "pm.test('Status code is 201', function () {",
+                  "    pm.response.to.have.status(201);",
                   "});",
                   "",
-                  "pm.test('Unauthorized error response', function () {",
+                  "pm.test('Customer created successfully', function () {",
                   "    const responseJson = pm.response.json();",
-                  "    pm.expect(responseJson).to.have.property('success', false);",
-                  "    pm.expect(responseJson.error).to.have.property('code', 'UNAUTHORIZED');",
+                  "    pm.expect(responseJson).to.have.property('success', true);",
+                  "    pm.expect(responseJson.data).to.have.property('id');",
+                  "    pm.expect(responseJson.data).to.have.property('nama', 'John Doe Test');",
+                  "    pm.expect(responseJson.data).to.have.property('telepon', '081234567890');",
+                  "    ",
+                  "    // Store customer ID for later tests",
+                  "    pm.collectionVariables.set('testPenyewaId', responseJson.data.id);",
+                  "});",
+                  "",
+                  "pm.test('Response contains all customer fields', function () {",
+                  "    const data = pm.response.json().data;",
+                  "    pm.expect(data).to.have.property('nama');",
+                  "    pm.expect(data).to.have.property('telepon');",
+                  "    pm.expect(data).to.have.property('alamat');",
+                  "    pm.expect(data).to.have.property('email');",
+                  "    pm.expect(data).to.have.property('createdAt');",
+                  "    pm.expect(data).to.have.property('updatedAt');",
                   "});"
                 ]
               }
             }
           ],
           "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/kasir/dashboard",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "kasir", "dashboard"]
-            }
-          }
-        },
-        {
-          "name": "Invalid UUID Format",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 400', function () {",
-                  "    pm.response.to.have.status(400);",
-                  "});",
-                  "",
-                  "pm.test('Invalid UUID error response', function () {",
-                  "    const responseJson = pm.response.json();",
-                  "    pm.expect(responseJson).to.have.property('success', false);",
-                  "    pm.expect(responseJson.error.message).to.include('UUID');",
-                  "});"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
+            "method": "POST",
             "header": [
               {
-                "key": "Authorization",
-                "value": "Bearer {{clerkToken}}",
-                "type": "text"
+                "key": "Content-Type",
+                "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nama\": \"John Doe Test\",\n  \"telepon\": \"081234567890\",\n  \"alamat\": \"Jl. Testing No. 123, Jakarta Selatan\",\n  \"email\": \"john.test@example.com\",\n  \"nik\": \"1234567890123456\",\n  \"catatan\": \"Test customer for API testing\"\n}"
+            },
             "url": {
-              "raw": "{{baseUrl}}/api/kasir/penyewa/invalid-uuid",
+              "raw": "{{baseUrl}}/api/kasir/penyewa",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "kasir", "penyewa", "invalid-uuid"]
-            }
+              "path": ["api", "kasir", "penyewa"]
+            },
+            "description": "Create a new customer with complete information"
           }
         },
         {
-          "name": "Invalid Transaction Code Format",
+          "name": "Create Customer - Validation Error",
           "event": [
             {
               "listen": "test",
@@ -163,46 +152,59 @@
                   "    pm.response.to.have.status(400);",
                   "});",
                   "",
-                  "pm.test('Invalid transaction code error', function () {",
-                  "    const responseJson = pm.response.json();",
-                  "    pm.expect(responseJson).to.have.property('success', false);",
-                  "    pm.expect(responseJson.error.message).to.include('format');",
-                  "});"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{clerkToken}}",
-                "type": "text"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/kasir/transaksi/INVALID-CODE",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "kasir", "transaksi", "INVALID-CODE"]
-            }
-          }
-        },
-        {
-          "name": "Invalid Query Parameters",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 400', function () {",
-                  "    pm.response.to.have.status(400);",
-                  "});",
-                  "",
-                  "pm.test('Validation error for query parameters', function () {",
+                  "pm.test('Validation error response', function () {",
                   "    const responseJson = pm.response.json();",
                   "    pm.expect(responseJson).to.have.property('success', false);",
                   "    pm.expect(responseJson.error).to.have.property('code', 'VALIDATION_ERROR');",
+                  "    pm.expect(responseJson.error).to.have.property('details');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nama\": \"A\",\n  \"telepon\": \"invalid-phone\",\n  \"alamat\": \"Short\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/kasir/penyewa",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kasir", "penyewa"]
+            }
+          }
+        },
+        {
+          "name": "Get Customer List",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Customer list structure is correct', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('success', true);",
+                  "    pm.expect(responseJson.data).to.have.property('data');",
+                  "    pm.expect(responseJson.data).to.have.property('pagination');",
+                  "    pm.expect(responseJson.data.pagination).to.have.property('page');",
+                  "    pm.expect(responseJson.data.pagination).to.have.property('total');",
+                  "});",
+                  "",
+                  "pm.test('Pagination is working', function () {",
+                  "    const pagination = pm.response.json().data.pagination;",
+                  "    pm.expect(pagination.page).to.equal(1);",
+                  "    pm.expect(pagination.limit).to.equal(10);",
                   "});"
                 ]
               }
@@ -210,130 +212,45 @@
           ],
           "request": {
             "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{clerkToken}}",
-                "type": "text"
-              }
-            ],
             "url": {
-              "raw": "{{baseUrl}}/api/kasir/penyewa?page=-1&limit=999999",
+              "raw": "{{baseUrl}}/api/kasir/penyewa?page=1&limit=10",
               "host": ["{{baseUrl}}"],
               "path": ["api", "kasir", "penyewa"],
               "query": [
                 {
                   "key": "page",
-                  "value": "-1"
+                  "value": "1"
                 },
                 {
                   "key": "limit",
-                  "value": "999999"
+                  "value": "10"
                 }
               ]
             }
           }
         },
         {
-          "name": "Rate Limiting Test",
+          "name": "Search Customers",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status code is 200 or 429', function () {",
-                  "    // 200 if within rate limit, 429 if exceeded",
-                  "    pm.expect([200, 429]).to.include(pm.response.code);",
-                  "});",
-                  "",
-                  "if (pm.response.code === 429) {",
-                  "    pm.test('Rate limit exceeded response', function () {",
-                  "        const responseJson = pm.response.json();",
-                  "        pm.expect(responseJson).to.have.property('success', false);",
-                  "        pm.expect(responseJson.error.message).to.include('rate limit');",
-                  "    });",
-                  "}"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{clerkToken}}",
-                "type": "text"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/kasir/dashboard",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "kasir", "dashboard"]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "09. Performance & Load Tests",
-      "item": [
-        {
-          "name": "Dashboard Load Test",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Response time is acceptable', function () {",
-                  "    pm.expect(pm.response.responseTime).to.be.below(3000);",
-                  "});",
-                  "",
                   "pm.test('Status code is 200', function () {",
                   "    pm.response.to.have.status(200);",
                   "});",
                   "",
-                  "pm.test('Response size is reasonable', function () {",
-                  "    pm.expect(pm.response.responseSize).to.be.below(100000); // 100KB",
-                  "});"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{clerkToken}}",
-                "type": "text"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/kasir/dashboard",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "kasir", "dashboard"]
-            }
-          }
-        },
-        {
-          "name": "Large Dataset Query",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Response time for large dataset is acceptable', function () {",
-                  "    pm.expect(pm.response.responseTime).to.be.below(5000);",
-                  "});",
-                  "",
-                  "pm.test('Status code is 200', function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "pm.test('Pagination limits are respected', function () {",
+                  "pm.test('Search results are filtered', function () {",
                   "    const responseJson = pm.response.json();",
-                  "    pm.expect(responseJson.data.data.length).to.be.at.most(100);",
+                  "    pm.expect(responseJson).to.have.property('success', true);",
+                  "    // If there are results, they should contain the search term",
+                  "    if (responseJson.data.data.length > 0) {",
+                  "        const firstResult = responseJson.data.data[0];",
+                  "        const searchTerm = 'john';",
+                  "        const hasSearchTerm = firstResult.nama.toLowerCase().includes(searchTerm) ||",
+                  "                            firstResult.telepon.includes(searchTerm);",
+                  "        pm.expect(hasSearchTerm).to.be.true;",
+                  "    }",
                   "});"
                 ]
               }
@@ -341,23 +258,115 @@
           ],
           "request": {
             "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{clerkToken}}",
-                "type": "text"
-              }
-            ],
             "url": {
-              "raw": "{{baseUrl}}/api/kasir/transaksi?limit=100",
+              "raw": "{{baseUrl}}/api/kasir/penyewa?search=john",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "kasir", "transaksi"],
+              "path": ["api", "kasir", "penyewa"],
               "query": [
                 {
-                  "key": "limit",
-                  "value": "100"
+                  "key": "search",
+                  "value": "john"
                 }
               ]
+            }
+          }
+        },
+        {
+          "name": "Get Customer by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Customer details are complete', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('success', true);",
+                  "    pm.expect(responseJson.data).to.have.property('id', pm.collectionVariables.get('testPenyewaId'));",
+                  "    pm.expect(responseJson.data).to.have.property('recentTransactions');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/kasir/penyewa/{{testPenyewaId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kasir", "penyewa", "{{testPenyewaId}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Customer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Customer updated successfully', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('success', true);",
+                  "    pm.expect(responseJson.data).to.have.property('nama', 'John Doe Updated');",
+                  "    pm.expect(responseJson.data).to.have.property('alamat').that.includes('Updated Address');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nama\": \"John Doe Updated\",\n  \"alamat\": \"Jl. Updated Address No. 456, Jakarta Pusat\",\n  \"catatan\": \"Updated customer information\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/kasir/penyewa/{{testPenyewaId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kasir", "penyewa", "{{testPenyewaId}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Customer by ID - Not Found",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 404', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test('Not found error response', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('success', false);",
+                  "    pm.expect(responseJson.error).to.have.property('code', 'NOT_FOUND');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/kasir/penyewa/00000000-0000-0000-0000-000000000000",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kasir", "penyewa", "00000000-0000-0000-0000-000000000000"]
             }
           }
         }
