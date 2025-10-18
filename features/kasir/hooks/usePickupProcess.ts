@@ -198,25 +198,57 @@ export function usePickupValidation() {
 }
 
 /**
+ * Extract specific error message from backend response
+ */
+function extractSpecificErrorMessage(message: string): string | null {
+  // Extract specific error details from backend message
+  if (message.includes('Database connection error')) {
+    return 'Database sedang sibuk. Silakan coba lagi beberapa saat.'
+  }
+  if (message.includes('Data conflict detected')) {
+    return 'Item mungkin telah diambil oleh proses lain. Silakan refresh dan coba lagi.'
+  }
+  if (message.includes('tidak memiliki izin')) {
+    return 'Anda tidak memiliki izin untuk melakukan pickup pada transaksi ini.'
+  }
+  if (message.includes('Item transaksi tidak ditemukan')) {
+    return 'Item tidak ditemukan. Transaksi mungkin telah diubah. Silakan refresh halaman.'
+  }
+  if (message.includes('constraint') || message.includes('unique')) {
+    return 'Terjadi konflik data. Silakan refresh dan coba lagi.'
+  }
+
+  return null // Return original message if no specific handling
+}
+
+/**
  * Error handling utility for pickup operations
  */
 export function getPickupErrorMessage(error: unknown): string {
   if (error instanceof KasirApiError) {
     switch (error.code) {
       case 'TRANSACTION_NOT_FOUND':
-        return 'Transaksi tidak ditemukan'
+        return 'Transaksi tidak ditemukan. Pastikan kode transaksi benar.'
       case 'VALIDATION_ERROR':
-        return 'Data pickup tidak valid'
+        return 'Data pickup tidak valid. Periksa kembali item yang dipilih.'
       case 'PICKUP_PROCESSING_FAILED':
-        return 'Gagal memproses pickup. Silakan coba lagi.'
+        return extractSpecificErrorMessage(error.message) || 'Gagal memproses pickup. Silakan coba lagi.'
       case 'NETWORK_ERROR':
         return 'Koneksi bermasalah. Silakan cek koneksi internet Anda.'
+      case 'CONNECTION_ERROR':
+        return 'Database sedang sibuk. Silakan coba lagi beberapa saat.'
+      case 'BUSINESS_ERROR':
+        return extractSpecificErrorMessage(error.message) || 'Operasi tidak diizinkan. Hubungi administrator.'
       default:
-        return error.message || 'Terjadi kesalahan saat memproses pickup'
+        return extractSpecificErrorMessage(error.message) || 'Terjadi kesalahan saat memproses pickup'
     }
   }
 
   if (error instanceof Error) {
+    const specificMessage = extractSpecificErrorMessage(error.message)
+    if (specificMessage) {
+      return specificMessage
+    }
     return error.message
   }
 

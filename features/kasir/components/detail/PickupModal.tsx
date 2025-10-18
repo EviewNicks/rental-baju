@@ -35,6 +35,46 @@ interface PickupItemState extends PickupItemRequest {
   maxPickup: number
 }
 
+// Helper functions for error handling
+function getErrorType(error: unknown): 'recoverable' | 'fatal' | 'permission' {
+  const errorMessage = error instanceof Error ? error.message : String(error)
+
+  if (errorMessage.includes('connection') || errorMessage.includes('timeout') ||
+      errorMessage.includes('conflict') || errorMessage.includes('Database sedang sibuk')) {
+    return 'recoverable'
+  }
+
+  if (errorMessage.includes('izin') || errorMessage.includes('permission') ||
+      errorMessage.includes('unauthorized')) {
+    return 'permission'
+  }
+
+  return 'fatal'
+}
+
+function getErrorHelpTip(error: unknown): string {
+  const errorMessage = error instanceof Error ? error.message : String(error)
+  const errorType = getErrorType(error)
+
+  switch (errorType) {
+    case 'recoverable':
+      if (errorMessage.includes('connection') || errorMessage.includes('Database')) {
+        return 'Pastikan koneksi internet stabil dan coba lagi dalam beberapa saat.'
+      }
+      if (errorMessage.includes('conflict')) {
+        return 'Refresh halaman untuk mendapatkan data terbaru sebelum mencoba lagi.'
+      }
+      return 'Masalah ini sementara, silakan coba lagi.'
+
+    case 'permission':
+      return 'Hubungi administrator jika Anda认为自己应该 memiliki akses.'
+
+    case 'fatal':
+    default:
+      return 'Jika masalah berlanjut, hubungi tim IT dengan mencatat kode transaksi dan waktu kejadian.'
+  }
+}
+
 export function PickupModal({ isOpen, onClose, transaction }: PickupModalProps) {
   const [pickupItems, setPickupItems] = useState<PickupItemState[]>([])
   const [showSuccess, setShowSuccess] = useState(false)
@@ -335,15 +375,53 @@ export function PickupModal({ isOpen, onClose, transaction }: PickupModalProps) 
             </div>
           </div>
 
-          {/* Error Display */}
+          {/* Enhanced Error Display */}
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4 flex items-start gap-2">
-              <AlertCircle className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
-              <div className="text-sm text-red-700">
-                <div className="font-medium mb-1">Terjadi Kesalahan</div>
-                <div>{getPickupErrorMessage(error)}</div>
-                <div className="mt-2 text-xs text-red-600">
-                  Silakan coba lagi atau hubungi administrator jika masalah berlanjut.
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0" />
+                <div className="flex-1">
+                  <div className="font-semibold text-red-900 mb-2">Terjadi Kesalahan</div>
+                  <div className="text-sm text-red-800 mb-3">
+                    {getPickupErrorMessage(error)}
+                  </div>
+
+                  {/* Error-specific actions */}
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => reset()}
+                      className="text-red-700 border-red-300 hover:bg-red-100"
+                    >
+                      <Package className="h-3 w-3 mr-1" />
+                      Coba Lagi
+                    </Button>
+
+                    {getErrorType(error) === 'recoverable' && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => window.location.reload()}
+                        className="text-orange-700 border-orange-300 hover:bg-orange-100"
+                      >
+                        Refresh Halaman
+                      </Button>
+                    )}
+
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => setShowConfirmation(false)}
+                      className="text-gray-600 hover:bg-gray-100"
+                    >
+                      Batal
+                    </Button>
+                  </div>
+
+                  <div className="mt-3 text-xs text-red-600">
+                    <strong>Tip:</strong> {getErrorHelpTip(error)}
+                  </div>
                 </div>
               </div>
             </div>

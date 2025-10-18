@@ -77,10 +77,33 @@ export class PickupService {
           : undefined
       }
 
-    } catch {
+    } catch (error) {
+      // Log validation error with context for debugging
+      console.error('Pickup validation failed:', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        transactionId,
+        itemCount: items.length,
+        userId: this.userId,
+        timestamp: new Date().toISOString()
+      })
+
+      // Return specific error message based on error type
+      let errorMessage = 'Terjadi kesalahan saat validasi pickup'
+
+      if (error instanceof Error) {
+        // Check for common database errors
+        if (error.message.includes('connection') || error.message.includes('timeout')) {
+          errorMessage = 'Database connection error saat validasi pickup'
+        } else if (error.message.includes('not found')) {
+          errorMessage = 'Transaksi tidak ditemukan'
+        } else {
+          errorMessage = `Validasi error: ${error.message}`
+        }
+      }
+
       return {
         valid: false,
-        errors: ['Terjadi kesalahan saat validasi pickup']
+        errors: [errorMessage]
       }
     }
   }
@@ -190,8 +213,62 @@ export class PickupService {
         message
       }
 
-    } catch {
-      throw new Error('Gagal memproses pickup')
+    } catch (error) {
+      // Create comprehensive error context for debugging
+      const errorContext = {
+        transactionId,
+        items: items.map(item => ({
+          id: item.id,
+          jumlahDiambil: item.jumlahDiambil
+        })),
+        userId: this.userId,
+        timestamp: new Date().toISOString(),
+        error: error instanceof Error ? {
+          message: error.message,
+          stack: error.stack,
+          name: error.name
+        } : {
+          message: 'Unknown error',
+          type: typeof error
+        }
+      }
+
+      // Log detailed error information
+      console.error('Pickup processing failed:', errorContext)
+
+      // Determine error type and create appropriate error message
+      let errorMessage = 'Gagal memproses pickup'
+
+      if (error instanceof Error) {
+        // Database connection errors
+        if (error.message.includes('connection') || error.message.includes('timeout')) {
+          errorMessage = 'Database connection error. Silakan coba lagi beberapa saat.'
+        }
+        // Constraint violations
+        else if (error.message.includes('constraint') || error.message.includes('unique')) {
+          errorMessage = 'Data conflict detected. Item mungkin telah diambil oleh proses lain.'
+        }
+        // Transaction errors
+        else if (error.message.includes('transaction') || error.message.includes('rollback')) {
+          errorMessage = 'Transaksi gagal diproses. Silakan coba lagi.'
+        }
+        // Permission/validation errors
+        else if (error.message.includes('permission') || error.message.includes('unauthorized')) {
+          errorMessage = 'Anda tidak memiliki izin untuk melakukan pickup pada transaksi ini.'
+        }
+        // Item not found errors
+        else if (error.message.includes('not found') || error.message.includes('tidak ditemukan')) {
+          errorMessage = 'Item transaksi tidak ditemukan. Transaksi mungkin telah diubah.'
+        }
+        // Generic error with specific message
+        else {
+          errorMessage = `Gagal memproses pickup: ${error.message}`
+        }
+      } else {
+        errorMessage = 'Gagal memproses pickup karena kesalahan sistem yang tidak diketahui.'
+      }
+
+      throw new Error(errorMessage)
     }
   }
 
@@ -248,8 +325,15 @@ export class PickupService {
       // Note: Transaction status remains 'active' as pickup doesn't change transaction lifecycle
       // Only return affects transaction status (active -> selesai)
 
-    } catch {
-      // Don't throw here as this is a secondary operation
+    } catch (error) {
+      // Log error for monitoring but don't throw as this is secondary operation
+      console.error('Failed to update transaction pickup status:', {
+        transactionId,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        userId: this.userId,
+        timestamp: new Date().toISOString()
+      })
+      // This is a non-critical operation, so we don't throw to avoid affecting main pickup flow
     }
   }
 
@@ -314,7 +398,14 @@ export class PickupService {
         items
       }
 
-    } catch {
+    } catch (error) {
+      // Log error for debugging but return null as expected by interface
+      console.error('Failed to get pickup summary:', {
+        transactionId,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        userId: this.userId,
+        timestamp: new Date().toISOString()
+      })
       return null
     }
   }

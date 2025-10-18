@@ -18,7 +18,18 @@ export async function PATCH(
   try {
     // 1. Await params to comply with Next.js 15
     const { kode } = await params
-    
+
+    // Generate correlation ID for request tracking
+    const correlationId = `pickup-${kode}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+
+    // Log request start for monitoring
+    console.log(`[${correlationId}] Pickup request started:`, {
+      transactionCode: kode,
+      clientIP: request.headers.get('x-forwarded-for') || 'unknown',
+      userAgent: request.headers.get('user-agent') || 'unknown',
+      timestamp: new Date().toISOString()
+    })
+
     // 2. Rate limiting check
     const clientIP = request.headers.get('x-forwarded-for') || 'unknown'
     const rateLimitResult = await withRateLimit(`transaksi-pickup-${clientIP}`, 50, 60000)
@@ -154,7 +165,15 @@ export async function PATCH(
       }))
     }
 
-    // 9. Return success response
+    // 9. Log success and return response
+    console.log(`[${correlationId}] Pickup completed successfully:`, {
+      transactionCode: kode,
+      totalItems: items.reduce((sum, item) => sum + item.jumlahDiambil, 0),
+      userId: user.id,
+      processingTime: Date.now() - parseInt(correlationId.split('-')[2]),
+      timestamp: new Date().toISOString()
+    })
+
     return NextResponse.json({
       success: true,
       message: result.message,
@@ -165,7 +184,22 @@ export async function PATCH(
 
   } catch (error) {
     const { kode } = await params
-    console.error(`PATCH /api/kasir/transaksi/${kode}/ambil error:`, error)
+    const correlationId = `pickup-${kode}-${Date.now()}`
+
+    // Enhanced error logging with context
+    console.error(`[${correlationId}] Pickup processing failed:`, {
+      transactionCode: kode,
+      error: error instanceof Error ? {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      } : {
+        message: 'Unknown error',
+        type: typeof error
+      },
+      timestamp: new Date().toISOString(),
+      clientIP: request.headers.get('x-forwarded-for') || 'unknown'
+    })
 
     // Handle not found errors
     if (error instanceof Error && error.message.includes('tidak ditemukan')) {
