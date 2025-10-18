@@ -1,6 +1,6 @@
 'use client'
 
-import { Search, Filter, Table, Grid3X3, Ruler, Palette } from 'lucide-react'
+import { Search, Filter, Table, Grid3X3, Ruler } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
 import {
@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/select'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { STATUSES } from '@/features/manage-product/lib/constants'
-import { useCategories, useColors } from '@/features/manage-product/hooks/useCategories'
+import { useCategories } from '@/features/manage-product/hooks/useCategories'
 import type { ViewMode, CategoryFilterValue, StatusFilterValue } from '@/features/manage-product/types'
 
 interface SearchFilterBarProps {
@@ -24,8 +24,6 @@ interface SearchFilterBarProps {
   onStatusChange: (value: StatusFilterValue) => void
   selectedSize?: string | undefined
   onSizeChange: (value: string | undefined) => void
-  selectedColor?: string | undefined
-  onColorChange: (value: string | undefined) => void
   viewMode: ViewMode
   onViewModeChange: (value: ViewMode) => void
   isLoading?: boolean
@@ -40,8 +38,6 @@ export function SearchFilterBar({
   onStatusChange,
   selectedSize,
   onSizeChange,
-  selectedColor,
-  onColorChange,
   viewMode,
   onViewModeChange,
   isLoading = false,
@@ -49,10 +45,6 @@ export function SearchFilterBar({
   // Fetch categories from API
   const { data: categoriesData, isLoading: isLoadingCategories } = useCategories()
   const categories = categoriesData?.categories || []
-
-  // Fetch colors from API
-  const { data: colorsData, isLoading: isLoadingColors } = useColors({ isActive: true })
-  const colors = colorsData?.colors || []
 
   // Create category options with "Semua" option
   const categoryOptions = [
@@ -69,12 +61,6 @@ export function SearchFilterBar({
     { value: 'L', label: 'L' },
     { value: 'XL', label: 'XL' },
     { value: 'XXL', label: 'XXL' },
-  ]
-
-  // Color options with "Semua" option
-  const colorOptions = [
-    { id: 'all', name: 'Semua', hexCode: undefined },
-    ...colors
   ]
   return (
     <Card className="mb-6 shadow-md border-0 bg-card" data-testid="search-filter-bar">
@@ -161,41 +147,7 @@ export function SearchFilterBar({
               </Select>
             </div>
 
-            <div className="flex items-center gap-2" data-testid="color-filter-section">
-              <Palette className="w-4 h-4 text-muted-foreground" />
-              <Select 
-                value={selectedColor || 'all'} 
-                onValueChange={(value) => onColorChange(value === 'all' ? undefined : value)}
-                disabled={isLoading || isLoadingColors}
-                data-testid="color-filter"
-              >
-                <SelectTrigger className="w-32" data-testid="color-filter-trigger">
-                  <SelectValue placeholder="Warna" />
-                </SelectTrigger>
-                <SelectContent data-testid="color-filter-content">
-                  {isLoadingColors ? (
-                    <SelectItem value="loading" disabled data-testid="color-loading-item">
-                      Loading...
-                    </SelectItem>
-                  ) : (
-                    colorOptions.map((color) => (
-                      <SelectItem key={color.id} value={color.id} data-testid={`color-option-${color.id}`}>
-                        <div className="flex items-center gap-2">
-                          {color.hexCode && (
-                            <div 
-                              className="w-3 h-3 rounded-full border border-gray-300" 
-                              style={{ backgroundColor: color.hexCode }}
-                            />
-                          )}
-                          <span>{color.name}</span>
-                        </div>
-                      </SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
-            </div>
-
+  
             <ToggleGroup
               type="single"
               value={viewMode}

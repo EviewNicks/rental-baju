@@ -25,7 +25,6 @@ export function toClientProduct(product: any, skipCategory = false): ClientProdu
     totalPendapatan: toSafeNumber(product.totalPendapatan),
     isActive: product.isActive ?? true,
     sizes: product.sizes || [], // Add sizes property for backward compatibility
-    colorId: product.colorId || undefined, // Color ID field
     materialId: product.materialId || undefined, // Material ID field
     materialQuantity: product.materialQuantity || undefined, // Material quantity field
     createdAt: product.createdAt ? new Date(product.createdAt) : new Date(),

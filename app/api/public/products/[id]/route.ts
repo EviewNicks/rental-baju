@@ -21,10 +21,6 @@ interface PublicProduct {
     name: string
     color: string
   }
-  color?: {
-    name: string
-    hexCode?: string
-  }
   currentPrice: number // Harga sewa per hari
   modalAwal: number    // Nilai barang
   imageUrl?: string
@@ -51,10 +47,6 @@ function convertToPublicProduct(product: Product): PublicProduct {
       name: product.category.name,
       color: product.category.color,
     },
-    color: product.color ? {
-      name: product.color.name,
-      hexCode: product.color.hexCode,
-    } : undefined,
     currentPrice: Number(product.currentPrice), // Convert Decimal to number
     modalAwal: Number(product.modalAwal), // Convert Decimal to number
     imageUrl: product.imageUrl,

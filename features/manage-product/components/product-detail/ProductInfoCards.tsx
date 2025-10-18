@@ -119,26 +119,9 @@ export function EnhancedBasicInfoCard({ product }: EnhancedBasicInfoCardProps) {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Product Name + Color (if exists) */}
+        {/* Product Name */}
         <div className="space-y-3">
           <h2 className="text-3xl font-bold text-gray-900 leading-tight">{product.name}</h2>
-          {product.color && (
-            <div className="flex flex-wrap items-center gap-3 p-4 bg-gray-50 rounded-lg">
-              <div className="flex items-center gap-2">
-                <div
-                  className="w-6 h-6 rounded-full border-2 border-gray-300 shadow-sm"
-                  style={{ backgroundColor: product.color.hexCode || '#gray' }}
-                  title={`Kode Warna: ${product.color.hexCode}`}
-                />
-                <span className="text-lg font-medium text-gray-700">{product.color.name}</span>
-              </div>
-              {product.color.hexCode && (
-                <code className="text-sm bg-white px-3 py-1 rounded border border-gray-200 font-mono">
-                  {product.color.hexCode}
-                </code>
-              )}
-            </div>
-          )}
         </div>
 
         {/* Product Code */}

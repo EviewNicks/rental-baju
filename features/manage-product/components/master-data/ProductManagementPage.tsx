@@ -3,7 +3,6 @@
 import { TabNavigation, useTabNavigation, type TabValue } from './TabNavigation'
 import { MaterialManagement } from '../material/MaterialManagement'
 import { CategoryManagement } from '../category/CategoryManagement'
-import { ColorManagement } from '../color/ColorManagement'
 import { PageNavigation } from '../shared/PageNavigation'
 import { logger } from '@/services/logger'
 import { useEffect } from 'react'
@@ -53,7 +52,7 @@ export function ProductManagementPage() {
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Kelola Data Master Produk</h1>
         <p className="text-sm text-gray-600 mt-1">
-          Atur material, kategori, dan warna produk untuk organisasi inventaris yang lebih baik
+          Atur material dan kategori produk untuk organisasi inventaris yang lebih baik
         </p>
       </div>
 
@@ -71,12 +70,6 @@ export function ProductManagementPage() {
         {activeTab === 'category' && (
           <div className="space-y-6">
             <CategoryManagement />
-          </div>
-        )}
-        
-        {activeTab === 'color' && (
-          <div className="space-y-6">
-            <ColorManagement />
           </div>
         )}
       </div>

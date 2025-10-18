@@ -19,7 +19,6 @@ interface ProductFilters {
   categoryId?: CategoryFilterValue
   status?: StatusFilterValue
   size?: string | string[]
-  colorId?: string | string[]
 }
 
 export function ProductListPage() {
@@ -81,11 +80,7 @@ export function ProductListPage() {
     setFilters((prev) => ({ ...prev, size }))
   }
 
-  const handleColorFilter = (colorId: string | undefined) => {
-    setCurrentPage(1) // Reset to first page when changing color filter
-    setFilters((prev) => ({ ...prev, colorId }))
-  }
-
+  
   const resetFilters = () => {
     setCurrentPage(1) // Reset to first page when resetting filters
     setFilters({
@@ -165,8 +160,6 @@ export function ProductListPage() {
             onStatusChange={handleStatusFilter}
             selectedSize={Array.isArray(filters.size) ? filters.size.join(',') : filters.size}
             onSizeChange={handleSizeFilter}
-            selectedColor={Array.isArray(filters.colorId) ? filters.colorId.join(',') : filters.colorId}
-            onColorChange={handleColorFilter}
             viewMode={viewMode}
             onViewModeChange={setViewMode}
             isLoading={isLoading}

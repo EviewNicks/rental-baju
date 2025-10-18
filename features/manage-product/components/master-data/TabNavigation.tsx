@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from 'react'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Package, Tag, Palette } from 'lucide-react'
+import { Package, Tag } from 'lucide-react'
 import { logger } from '@/services/logger'
 
 // Component-specific logger for tab navigation
 const navLogger = logger.child('TabNavigation')
 
-export type TabValue = 'material' | 'category' | 'color'
+export type TabValue = 'material' | 'category'
 
 interface TabNavigationProps {
   activeTab: TabValue
@@ -18,7 +18,7 @@ interface TabNavigationProps {
 export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
   return (
     <Tabs value={activeTab} onValueChange={(value) => onTabChange(value as TabValue)} className="w-full">
-      <TabsList className="grid w-full grid-cols-3">
+      <TabsList className="grid w-full grid-cols-2">
         <TabsTrigger value="material" className="flex items-center gap-2">
           <Package className="w-4 h-4" />
           Kelola Material
@@ -26,10 +26,6 @@ export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
         <TabsTrigger value="category" className="flex items-center gap-2">
           <Tag className="w-4 h-4" />
           Kelola Kategori
-        </TabsTrigger>
-        <TabsTrigger value="color" className="flex items-center gap-2">
-          <Palette className="w-4 h-4" />
-          Kelola Warna
         </TabsTrigger>
       </TabsList>
     </Tabs>
@@ -43,14 +39,14 @@ export function useTabNavigation() {
   useEffect(() => {
     // Read hash on mount
     const hash = window.location.hash.slice(1) as TabValue
-    const validTabs = ['material', 'category', 'color']
-    
+    const validTabs = ['material', 'category']
+
     navLogger.debug('hashRouting', 'Initializing tab from URL hash', {
       currentHash: hash,
       isValidTab: validTabs.includes(hash),
       defaultTab: 'material'
     })
-    
+
     if (validTabs.includes(hash)) {
       setActiveTab(hash)
       navLogger.info('hashRouting', 'Tab initialized from URL hash', {

@@ -118,11 +118,11 @@ function parseSizeData(sizeStr: string, ageCategory: 'ADULT' | 'CHILD'): SizeEnt
   }
 
   // Convert map to SizeEntry array
-  for (const [size, quantity] of sizeMap.entries()) {
+  for (const [sizeEntry, quantity] of sizeMap.entries()) {
     sizes.push({
       ageCategory,
-      size: normalizedSize as SizeEntry['size'],
-      quantity
+      size: sizeEntry as SizeEntry['size'],
+      quantity,
     })
   }
 
@@ -134,12 +134,12 @@ function parseSizeData(sizeStr: string, ageCategory: 'ADULT' | 'CHILD'): SizeEnt
  */
 function normalizeSize(size: string): string | null {
   const sizeMap: Record<string, string> = {
-    'XS': 'XS',
-    'S': 'S',
-    'M': 'M',
-    'L': 'L',
-    'XL': 'XL',
-    'XXL': 'XXL'
+    XS: 'XS',
+    S: 'S',
+    M: 'M',
+    L: 'L',
+    XL: 'XL',
+    XXL: 'XXL',
   }
 
   return sizeMap[size.toUpperCase()] || null
@@ -148,13 +148,13 @@ function normalizeSize(size: string): string | null {
 /**
  * Parse CSV line with semicolon delimiter
  */
-function parseCSVLine(line: string, lineNumber: number): CSVRow | null {
+function parseCSVLine(line: string): CSVRow | null {
   // Skip empty lines and header
   if (!line.trim() || line.includes('KODE;NAMA')) {
     return null
   }
 
-  const parts = line.split(';').map(part => part.trim())
+  const parts = line.split(';').map((part) => part.trim())
 
   if (parts.length < 4) {
     throw new Error(`Invalid CSV format: expected at least 4 columns, got ${parts.length}`)
@@ -170,14 +170,14 @@ function parseCSVLine(line: string, lineNumber: number): CSVRow | null {
     nama: parts[1],
     harga: parts[2],
     jumlahDewasa: parts[3],
-    jumlahAnak: parts[4] || ''
+    jumlahAnak: parts[4] || '',
   }
 }
 
 /**
  * Transform CSV row to product JSON
  */
-function transformRow(row: CSVRow, rowNumber: number): RendaProduct | null {
+function transformRow(row: CSVRow): RendaProduct | null {
   try {
     const code = normalizeCode(row.kode)
     const name = row.nama.trim()
@@ -204,13 +204,14 @@ function transformRow(row: CSVRow, rowNumber: number): RendaProduct | null {
       quantity: totalQuantity,
       categoryId: RENDA_PREMIUM_CATEGORY_ID,
       imageUrl: `/products/renda-premium/${code}.jpg`,
-      sizes: allSizes
+      sizes: allSizes,
     }
 
     return product
-
   } catch (error) {
-    throw new Error(`Row transformation failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    throw new Error(
+      `Row transformation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    )
   }
 }
 
@@ -224,7 +225,7 @@ async function transformCSV(): Promise<TransformationResult> {
     transformedProducts: 0,
     skippedRows: 0,
     errors: [],
-    warnings: []
+    warnings: [],
   }
 
   try {
@@ -239,7 +240,7 @@ async function transformCSV(): Promise<TransformationResult> {
     }
 
     const csvContent = fs.readFileSync(CSV_PATH, 'utf-8')
-    const lines = csvContent.split('\n').filter(line => line.trim())
+    const lines = csvContent.split('\n').filter((line) => line.trim())
 
     result.totalRows = lines.length - 1 // Subtract header row
     const products: RendaProduct[] = []
@@ -253,26 +254,27 @@ async function transformCSV(): Promise<TransformationResult> {
       const line = lines[i]
 
       try {
-        const csvRow = parseCSVLine(line, lineNumber)
+        const csvRow = parseCSVLine(line)
 
         if (!csvRow) {
           continue // Skip header or empty lines
         }
 
-        const product = transformRow(csvRow, lineNumber)
+        const product = transformRow(csvRow)
 
         if (product) {
           products.push(product)
           result.transformedProducts++
-          console.log(`✅ [${lineNumber}] ${csvRow.kode} → ${product.code}: ${product.name} (${product.quantity} items)`)
+          console.log(
+            `✅ [${lineNumber}] ${csvRow.kode} → ${product.code}: ${product.name} (${product.quantity} items)`,
+          )
         }
-
       } catch (error) {
         const errorMsg = error instanceof Error ? error.message : 'Unknown error'
         result.errors.push({
           rowNumber: lineNumber,
           kode: `Line ${lineNumber}`,
-          error: errorMsg
+          error: errorMsg,
         })
         console.log(`❌ [${lineNumber}] Error: ${errorMsg}`)
         result.skippedRows++
@@ -289,7 +291,7 @@ async function transformCSV(): Promise<TransformationResult> {
     if (result.errors.length > 0) {
       console.log('')
       console.log('❌ Errors encountered:')
-      result.errors.forEach(err => {
+      result.errors.forEach((err) => {
         console.log(`   Row ${err.rowNumber}: ${err.error}`)
       })
     }
@@ -312,10 +314,12 @@ async function transformCSV(): Promise<TransformationResult> {
     }
 
     result.success = result.errors.length === 0 || products.length > 0
-
   } catch (error) {
     console.error('')
-    console.error('❌ Transformation failed:', error instanceof Error ? error.message : 'Unknown error')
+    console.error(
+      '❌ Transformation failed:',
+      error instanceof Error ? error.message : 'Unknown error',
+    )
     result.success = false
   }
 
@@ -345,7 +349,6 @@ async function main() {
     }
 
     process.exit(0)
-
   } catch (error) {
     console.error('')
     console.error('❌ Fatal error:', error)
@@ -357,4 +360,4 @@ if (require.main === module) {
   main()
 }
 
-export { transformCSV, RendaProduct }
+export { transformCSV }

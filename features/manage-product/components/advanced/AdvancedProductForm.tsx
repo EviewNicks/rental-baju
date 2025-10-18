@@ -6,7 +6,6 @@ import {
   DollarSign,
   CreditCard,
   FileText,
-  Palette,
   AlertTriangle,
   Box,
 } from 'lucide-react'
@@ -17,10 +16,8 @@ import { FormSection } from '@/features/manage-product/components/form-product/F
 import { ImageUpload } from '@/features/manage-product/components/products/ImageUpload'
 import { MaterialSelector } from '@/features/manage-product/components/material/MaterialSelector'
 import { AdvancedSizeManagementSection } from './size-management/AdvancedSizeManagementSection'
-import { useColors } from '@/features/manage-product/hooks/useCategories'
 import type {
   ClientCategory,
-  ClientColor,
 } from '@/features/manage-product/types'
 import type {
   AdvancedProduct,
@@ -43,7 +40,6 @@ interface AdvancedProductFormData {
   code: string
   name: string
   categoryId: string
-  colorId?: string
   materialId?: string
   materialQuantity?: number
   modalAwal: number
@@ -96,11 +92,7 @@ export function AdvancedProductForm({
 }: AdvancedProductFormProps) {
   const productId = product?.id
 
-  // Fetch colors data for form dropdown
-  const {
-    data: colors = [],
-  } = useColors()
-
+  
   // Log component mount and initialization
   useEffect(() => {
     formLogger.info('useEffect', 'AdvancedProductForm mounted', {
@@ -184,40 +176,22 @@ export function AdvancedProductForm({
           rows={3}
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <FormField
-            label="Kategori"
-            name="categoryId"
-            type="select"
-            value={formData.categoryId}
-            onChange={(value) => onInputChange('categoryId', value)}
-            error={errors?.categoryId}
-            touched={touched?.categoryId}
-            placeholder="Pilih kategori"
-            icon={Box}
-            required
-            options={categories.map(category => ({
-              value: category.id,
-              label: category.name,
-            }))}
-          />
-
-          <FormField
-            label="Warna"
-            name="colorId"
-            type="select"
-            value={formData.colorId || ''}
-            onChange={(value) => onInputChange('colorId', value)}
-            error={errors?.colorId}
-            touched={touched?.colorId}
-            placeholder="Pilih warna (opsional)"
-            icon={Palette}
-            options={colors.map((color: ClientColor) => ({
-              value: color.id,
-              label: color.name,
-            }))}
-          />
-        </div>
+        <FormField
+          label="Kategori"
+          name="categoryId"
+          type="select"
+          value={formData.categoryId}
+          onChange={(value) => onInputChange('categoryId', value)}
+          error={errors?.categoryId}
+          touched={touched?.categoryId}
+          placeholder="Pilih kategori"
+          icon={Box}
+          required
+          options={categories.map(category => ({
+            value: category.id,
+            label: category.name,
+          }))}
+        />
       </FormSection>
 
       {/* Financial Information */}
