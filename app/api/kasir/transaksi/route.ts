@@ -14,7 +14,10 @@ import { prisma } from '@/lib/prisma'
 import { TransaksiService } from '@/features/kasir/services/transaksiService'
 import {
   createTransaksiSchema,
-  transaksiQuerySchema
+  createTransaksiLegacySchema,
+  transaksiQuerySchema,
+  type CreateTransaksiRequest,
+  type CreateTransaksiLegacyRequest
 } from '@/features/kasir/lib/validation/kasirSchema'
 import { ZodError } from 'zod'
 import { createSuccessResponse } from '@/features/kasir/types'
@@ -36,14 +39,23 @@ export async function POST(request: NextRequest) {
     // Parse request body
     const body = await request.json()
 
-    // Validate request data
-    const validatedData = createTransaksiSchema.parse(body)
+    // Check if request uses size-aware format (has productSizeId)
+    const isSizeAwareRequest = body.items?.some((item: { productSizeId?: string }) => item.productSizeId)
 
     // Initialize transaksi service
     const transaksiService = new TransaksiService(prisma, userId)
 
-    // Create transaksi
-    const transaksi = await transaksiService.createTransaksi(validatedData)
+    // Create transaksi with appropriate method based on request format
+    let transaksi
+    if (isSizeAwareRequest) {
+      // Size-aware format
+      const validatedData = createTransaksiSchema.parse(body) as unknown
+      transaksi = await transaksiService.createTransaksiSizeAware(validatedData as CreateTransaksiRequest)
+    } else {
+      // Legacy format - use backward compatibility
+      const validatedData = createTransaksiLegacySchema.parse(body) as unknown
+      transaksi = await transaksiService.createTransaksi(validatedData as CreateTransaksiLegacyRequest)
+    }
 
     // Get the created transaction with full details for response
     const fullTransaksi = await transaksiService.getTransaksiById(transaksi.id)

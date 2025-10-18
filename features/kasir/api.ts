@@ -191,7 +191,7 @@ class CircuitBreaker {
   private failureCount = 0
   private lastFailureTime = 0
   private state: 'CLOSED' | 'OPEN' | 'HALF_OPEN' = 'CLOSED'
-  
+
   constructor(
     private failureThreshold = 3,
     private recoveryTimeout = 30000, // 30 seconds
@@ -200,7 +200,10 @@ class CircuitBreaker {
   async execute<T>(operation: () => Promise<T>): Promise<T> {
     if (this.state === 'OPEN') {
       if (Date.now() - this.lastFailureTime < this.recoveryTimeout) {
-        throw new KasirApiError('CIRCUIT_BREAKER_OPEN', 'Service temporarily unavailable. Please try again later.')
+        throw new KasirApiError(
+          'CIRCUIT_BREAKER_OPEN',
+          'Service temporarily unavailable. Please try again later.',
+        )
       }
       this.state = 'HALF_OPEN'
     }
@@ -223,7 +226,7 @@ class CircuitBreaker {
   private onFailure() {
     this.failureCount++
     this.lastFailureTime = Date.now()
-    
+
     if (this.failureCount >= this.failureThreshold) {
       this.state = 'OPEN'
     }
@@ -239,46 +242,52 @@ const returnCircuitBreaker = new CircuitBreaker(3, 30000)
 
 // Enhanced fetch wrapper with circuit breaker and retry logic
 async function apiRequestWithRetry<T>(
-  endpoint: string, 
+  endpoint: string,
   options: RequestInit = {},
-  retryOptions = { maxRetries: 2, baseDelay: 1000 }
+  retryOptions = { maxRetries: 2, baseDelay: 1000 },
 ): Promise<T> {
   return returnCircuitBreaker.execute(async () => {
     let lastError: Error | null = null
-    
+
     for (let attempt = 0; attempt <= retryOptions.maxRetries; attempt++) {
       try {
         return await apiRequest<T>(endpoint, options)
       } catch (error) {
         lastError = error instanceof Error ? error : new Error(String(error))
-        
+
         // Don't retry on validation errors or client errors (4xx)
         if (error instanceof KasirApiError) {
-          if (error.code === 'VALIDATION_ERROR' || 
-              error.code === 'UNIFIED_CONDITION_VALIDATION_ERROR' ||
-              error.code === 'UNIFIED_QUANTITY_VALIDATION_ERROR') {
+          if (
+            error.code === 'VALIDATION_ERROR' ||
+            error.code === 'UNIFIED_CONDITION_VALIDATION_ERROR' ||
+            error.code === 'UNIFIED_QUANTITY_VALIDATION_ERROR'
+          ) {
             throw error // Don't retry validation errors
           }
         }
-        
+
         // Don't retry on final attempt
         if (attempt === retryOptions.maxRetries) {
           break
         }
-        
+
         // Exponential backoff with jitter
         const delay = retryOptions.baseDelay * Math.pow(2, attempt) + Math.random() * 1000
-        kasirLogger.apiCalls.warn('apiRequestWithRetry', `Attempt ${attempt + 1} failed, retrying in ${delay}ms`, {
-          endpoint,
-          error: lastError.message,
-          attempt: attempt + 1,
-          maxRetries: retryOptions.maxRetries,
-        })
-        
-        await new Promise(resolve => setTimeout(resolve, delay))
+        kasirLogger.apiCalls.warn(
+          'apiRequestWithRetry',
+          `Attempt ${attempt + 1} failed, retrying in ${delay}ms`,
+          {
+            endpoint,
+            error: lastError.message,
+            attempt: attempt + 1,
+            maxRetries: retryOptions.maxRetries,
+          },
+        )
+
+        await new Promise((resolve) => setTimeout(resolve, delay))
       }
     }
-    
+
     // This should never happen as we have a lastError from the loop
     throw lastError || new Error('Unknown error occurred during retry attempts')
   })
@@ -521,18 +530,22 @@ export class KasirApi {
         message: string
         errors?: string[]
         warnings?: string[]
-      }>(`/transaksi/${transactionId}/pengembalian`, {
-        method: 'PUT',
-        body: JSON.stringify(returnData),
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Multi-Condition': 'true', // Signal for enhanced processing
-          'X-Retry-Safe': 'true', // Indicate this operation is safe to retry
+      }>(
+        `/transaksi/${transactionId}/pengembalian`,
+        {
+          method: 'PUT',
+          body: JSON.stringify(returnData),
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Multi-Condition': 'true', // Signal for enhanced processing
+            'X-Retry-Safe': 'true', // Indicate this operation is safe to retry
+          },
         },
-      }, {
-        maxRetries: 2,
-        baseDelay: 1000,
-      })
+        {
+          maxRetries: 2,
+          baseDelay: 1000,
+        },
+      )
 
       kasirLogger.apiCalls.info('processEnhancedReturn', 'Enhanced return API call completed', {
         success: result.success,

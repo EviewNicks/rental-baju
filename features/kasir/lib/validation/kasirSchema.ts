@@ -66,8 +66,17 @@ export const penyewaQuerySchema = z.object({
   search: z.string().optional()
 })
 
-// Transaksi (Transaction) Validation Schemas
+// Transaksi (Transaction) Validation Schemas - Size-Aware
 export const createTransaksiItemSchema = z.object({
+  produkId: z.string().uuid('ID produk tidak valid'),
+  productSizeId: z.string().uuid('ID ukuran produk tidak valid'), // NEW: Size-specific field
+  jumlah: z.number().int().min(1, 'Jumlah minimal 1').max(100, 'Jumlah maksimal 100'),
+  durasi: z.number().int().min(1, 'Durasi minimal 1 hari').max(365, 'Durasi maksimal 365 hari'),
+  kondisiAwal: z.string().max(500, 'Kondisi awal maksimal 500 karakter').optional()
+})
+
+// Legacy schema for backward compatibility
+export const createTransaksiItemLegacySchema = z.object({
   produkId: z.string().uuid('ID produk tidak valid'),
   jumlah: z.number().int().min(1, 'Jumlah minimal 1').max(100, 'Jumlah maksimal 100'),
   durasi: z.number().int().min(1, 'Durasi minimal 1 hari').max(365, 'Durasi maksimal 365 hari'),
@@ -78,6 +87,40 @@ export const createTransaksiSchema = z.object({
   penyewaId: z.string().uuid('ID penyewa tidak valid'),
   items: z
     .array(createTransaksiItemSchema)
+    .min(1, 'Minimal harus ada 1 item')
+    .max(50, 'Maksimal 50 item per transaksi'),
+  tglMulai: z
+    .string()
+    .datetime('Format tanggal mulai tidak valid (ISO 8601)')
+    .refine((date) => {
+      const inputDate = new Date(date)
+      const today = new Date()
+      today.setHours(0, 0, 0, 0) // Reset to start of day
+      return inputDate >= today
+    }, {
+      message: 'Tanggal mulai tidak boleh di masa lalu'
+    }),
+  tglSelesai: z
+    .string()
+    .datetime('Format tanggal selesai tidak valid (ISO 8601)')
+    .optional(),
+  metodeBayar: z.enum(['tunai', 'transfer', 'kartu']).default('tunai'),
+  catatan: z.string().max(1000, 'Catatan maksimal 1000 karakter').optional()
+}).refine((data) => {
+  if (data.tglSelesai) {
+    return new Date(data.tglSelesai) > new Date(data.tglMulai)
+  }
+  return true
+}, {
+  message: 'Tanggal selesai harus setelah tanggal mulai',
+  path: ['tglSelesai']
+})
+
+// Legacy schema for backward compatibility
+export const createTransaksiLegacySchema = z.object({
+  penyewaId: z.string().uuid('ID penyewa tidak valid'),
+  items: z
+    .array(createTransaksiItemLegacySchema)
     .min(1, 'Minimal harus ada 1 item')
     .max(50, 'Maksimal 50 item per transaksi'),
   tglMulai: z
@@ -189,6 +232,7 @@ export type UpdatePenyewaRequest = z.infer<typeof updatePenyewaSchema>
 export type PenyewaQueryParams = z.infer<typeof penyewaQuerySchema>
 
 export type CreateTransaksiRequest = z.infer<typeof createTransaksiSchema>
+export type CreateTransaksiLegacyRequest = z.infer<typeof createTransaksiLegacySchema>
 export type UpdateTransaksiRequest = z.infer<typeof updateTransaksiSchema>
 export type TransaksiQueryParams = z.infer<typeof transaksiQuerySchema>
 
