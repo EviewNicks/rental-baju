@@ -351,30 +351,40 @@ export const logger: Logger = {
   },
 }
 
-// Initialize file logging for server-side only
+// Simple file logging - no dynamic imports, no magic
 if (isServer && !isEdgeRuntime) {
   try {
-    // Use dynamic import for server-side file logging
-    // This will only execute on server-side Node.js environment
-    let fileLoggerModule
-    try {
-      // Try importing the TypeScript file directly in development
-      fileLoggerModule = eval('require')('./logger-file.server.ts')
-    } catch {
-      try {
-        // Try importing the compiled JavaScript file in production
-        fileLoggerModule = eval('require')('./logger-file.server.js')
-      } catch {
-        // Fallback to the default import without extension
-        fileLoggerModule = eval('require')('./logger-file.server')
-      }
-    }
+    // Direct require - simple and predictable
+    const fs = require('fs')
+    const path = require('path')
+
     logger._saveToFile = (level: string, message: string) => {
-      if (fileLoggerModule && fileLoggerModule.fileLogger) {
-        fileLoggerModule.fileLogger.saveToFile(level, message)
+      try {
+        const logDir = path.join(process.cwd(), 'services', 'logger-detailed')
+
+        // Create directory if needed
+        if (!fs.existsSync(logDir)) {
+          fs.mkdirSync(logDir, { recursive: true })
+        }
+
+        // Simple daily log file
+        const today = new Date().toISOString().split('T')[0]
+        const logFile = path.join(logDir, `app-${today}.log`)
+
+        // Write message
+        fs.appendFileSync(logFile, message + '\n')
+
+        // Also write to error.log for errors
+        if (level === 'error') {
+          const errorFile = path.join(logDir, 'error.log')
+          fs.appendFileSync(errorFile, message + '\n')
+        }
+      } catch (fileError) {
+        // Silent fail - don't crash the app
+        console.error('File logging error:', fileError)
       }
     }
-  } catch (err) {
-    console.error('Failed to initialize file logging:', err)
+  } catch (initError) {
+    console.error('Logger init failed:', initError)
   }
 }

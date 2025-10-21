@@ -1,10 +1,11 @@
 /**
- * Unified Return Validation Schema - TSK-24 Phase 1
+ * Unified Return Validation Schema - TSK-24 Phase 1 + RPK-51 Size-Aware
  * Single validation schema that handles all return scenarios through unified architecture
- * Replaces dual-mode validation with simplified, consistent approach
+ * Enhanced with size-aware validation support for product size aggregation
  */
 
 import { z } from 'zod'
+import { parseKondisiAwal } from '../utils/kondisiAwalParser'
 
 // Utility functions for unified return validation
 export const isLostItemCondition = (kondisiAkhir: string): boolean => {
@@ -331,6 +332,83 @@ const getValidationSuggestions = (issue: z.ZodIssue): string[] => {
   }
 
   return suggestions
+}
+
+// RPK-51: Size-aware validation utilities
+export const validateSizeAvailability = (
+  transactionItems: Array<{
+    id: string
+    kondisiAwal?: string | null
+    produk: {
+      id: string
+      name: string
+    }
+  }>
+): Array<{ itemId: string; field: string; message: string; code: string }> => {
+  const errors: Array<{ itemId: string; field: string; message: string; code: string }> = []
+
+  for (const item of transactionItems) {
+    if (!item.kondisiAwal) continue
+
+    const parsed = parseKondisiAwal(item.kondisiAwal)
+
+    // Skip validation for legacy format items
+    if (parsed.isLegacyFormat) {
+      continue
+    }
+
+    // Validate size information exists for size-aware items
+    if (!parsed.productSizeId) {
+      errors.push({
+        itemId: item.id,
+        field: `items[${item.id}].productSizeId`,
+        message: `Informasi ukuran tidak lengkap untuk produk ${item.produk.name}`,
+        code: 'SIZE_INFO_MISSING',
+      })
+    }
+  }
+
+  return errors
+}
+
+// Enhanced error message generator for size-related validation errors
+export const getSizeValidationErrorMessage = (
+  error: { field: string; message: string; code: string }
+): { message: string; suggestions: string[] } => {
+  switch (error.code) {
+    case 'SIZE_NOT_AVAILABLE':
+      return {
+        message: `Validasi ukuran gagal: ${error.message}`,
+        suggestions: [
+          'Periksa kembali ukuran yang tersedia untuk produk ini',
+          'Pastikan ukuran yang dipilih tersedia dalam inventaris',
+          'Gunakan ukuran yang sesuai dengan produk yang disewa',
+        ]
+      }
+    case 'SIZE_INFO_MISSING':
+      return {
+        message: `Informasi ukuran tidak valid: ${error.message}`,
+        suggestions: [
+          'Refresh halaman dan coba kembali',
+          'Pastikan data transaksi memiliki informasi ukuran yang lengkap',
+          'Hubungi admin jika masalah berlanjut',
+        ]
+      }
+    case 'SIZE_VALIDATION_ERROR':
+      return {
+        message: `Gagal memvalidasi ukuran: ${error.message}`,
+        suggestions: [
+          'Coba lagi beberapa saat',
+          'Periksa koneksi internet Anda',
+          'Hubungi admin jika masalah berlanjut',
+        ]
+      }
+    default:
+      return {
+        message: error.message,
+        suggestions: ['Periksa kembali data yang dimasukkan'],
+      }
+  }
 }
 
 // Export main validation schema for API usage
