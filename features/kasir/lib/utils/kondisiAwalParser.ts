@@ -21,7 +21,7 @@ export function parseKondisiAwal(kondisiAwal?: string | null): ParsedKondisiAwal
   // Default return for empty/null values
   if (!kondisiAwal) {
     return {
-      isLegacyFormat: true
+      isLegacyFormat: true,
     }
   }
 
@@ -33,16 +33,16 @@ export function parseKondisiAwal(kondisiAwal?: string | null): ParsedKondisiAwal
     return {
       productSizeId: parts[0],
       size: parts[1] || undefined,
-      ageCategory: parts[2] as 'ADULT' | 'CHILD' | 'TODDLER' || undefined,
+      ageCategory: (parts[2] as 'ADULT' | 'CHILD' | 'TODDLER') || undefined,
       condition: parts.slice(3).join('|') || undefined, // Join remaining parts for condition
-      isLegacyFormat: false
+      isLegacyFormat: false,
     }
   }
 
   // Legacy format: plain text condition
   return {
     condition: kondisiAwal,
-    isLegacyFormat: true
+    isLegacyFormat: true,
   }
 }
 
@@ -64,10 +64,14 @@ export function formatSizeWithAge(size?: string, ageCategory?: string): string {
  */
 export function getAgeCategoryLabel(ageCategory?: string): string {
   switch (ageCategory) {
-    case 'ADULT': return 'Dewasa'
-    case 'CHILD': return 'Anak-anak'
-    case 'TODDLER': return 'Balita'
-    default: return ageCategory || 'Tidak diketahui'
+    case 'ADULT':
+      return 'Dewasa'
+    case 'CHILD':
+      return 'Anak-anak'
+    case 'TODDLER':
+      return 'Balita'
+    default:
+      return ageCategory || 'Tidak diketahui'
   }
 }
 
@@ -82,6 +86,7 @@ function isValidUUID(str: string): boolean {
 /**
  * Extract product size information for display
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function extractSizeInfo(item: any): {
   size: string
   ageCategory: string
@@ -96,6 +101,6 @@ export function extractSizeInfo(item: any): {
   return {
     size: size || 'Ukuran tidak tersedia',
     ageCategory: getAgeCategoryLabel(ageCategory),
-    hasSizeInfo: !!(size || ageCategory)
+    hasSizeInfo: !!(size || ageCategory),
   }
 }

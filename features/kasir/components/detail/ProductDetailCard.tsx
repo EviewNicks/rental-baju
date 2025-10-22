@@ -1,17 +1,14 @@
-import {
-  Tag,
-  Palette,
-  Shirt,
-  CheckCircle,
-  Package,
-  Users,
-} from 'lucide-react'
+import { Tag, Palette, Shirt, CheckCircle, Package, Users } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { formatCurrency } from '../../lib/utils/client'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
 import React from 'react'
-import { parseKondisiAwal, formatSizeWithAge, getAgeCategoryLabel, extractSizeInfo } from '../../lib/utils/kondisiAwalParser'
+import {
+  parseKondisiAwal,
+  formatSizeWithAge,
+  extractSizeInfo,
+} from '../../lib/utils/kondisiAwalParser'
 
 interface ProductDetailCardProps {
   item: {
@@ -51,11 +48,6 @@ interface ProductDetailCardProps {
   }
 }
 
-
-
-
-
-
 export function ProductDetailCard({ item, pickupInfo }: ProductDetailCardProps) {
   // Parse size information from kondisiAwal (RPK-51 AgeSizes system)
   const sizeInfo = extractSizeInfo(item)
@@ -76,20 +68,16 @@ export function ProductDetailCard({ item, pickupInfo }: ProductDetailCardProps) 
   // Return data detection - simplified logic focusing on actual return status
   // Display return section when item has been returned (lengkap or sebagian) with condition data
   const hasReturnData = Boolean(
-    item.statusKembali &&
-      item.statusKembali !== 'belum' &&
-      item.conditionBreakdown?.length
+    item.statusKembali && item.statusKembali !== 'belum' && item.conditionBreakdown?.length,
   )
 
   // Enhanced penalty detection with stricter validation
   const hasPenalty = Boolean(
     item.totalReturnPenalty &&
-    typeof item.totalReturnPenalty === 'number' &&
-    item.totalReturnPenalty > 0 &&
-    !isNaN(item.totalReturnPenalty)
+      typeof item.totalReturnPenalty === 'number' &&
+      item.totalReturnPenalty > 0 &&
+      !isNaN(item.totalReturnPenalty),
   )
-
-
 
   return (
     <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-6 shadow-lg shadow-gray-900/5 transition-all duration-200">
@@ -191,26 +179,21 @@ export function ProductDetailCard({ item, pickupInfo }: ProductDetailCardProps) 
             )}
           </div>
 
-
           {/* Return Status Section - Simple display mirroring pickup style */}
           {hasReturnData && (
-            <div
-              className="p-3 rounded-lg border bg-green-50 border-green-200"
-            >
+            <div className="p-3 rounded-lg border bg-green-50 border-green-200">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-4 w-4 text-green-600" />
-                  <span className="text-sm font-medium text-green-900">
-                    Status Pengembalian
-                  </span>
+                  <span className="text-sm font-medium text-green-900">Status Pengembalian</span>
                 </div>
                 <div className="text-sm text-green-700">
                   <span className="font-semibold">
-                    {item.statusKembali === 'lengkap' 
-                      ? 'Dikembalikan Lengkap' 
-                      : item.statusKembali === 'sebagian' 
-                      ? 'Dikembalikan Sebagian'
-                      : 'Dikembalikan'}
+                    {item.statusKembali === 'lengkap'
+                      ? 'Dikembalikan Lengkap'
+                      : item.statusKembali === 'sebagian'
+                        ? 'Dikembalikan Sebagian'
+                        : 'Dikembalikan'}
                   </span>
                 </div>
               </div>
@@ -218,9 +201,7 @@ export function ProductDetailCard({ item, pickupInfo }: ProductDetailCardProps) 
               {hasPenalty && (
                 <div className="mt-2 p-2 bg-red-50 border border-red-100 rounded-md">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-medium text-red-800">
-                      Denda Pengembalian
-                    </span>
+                    <span className="text-xs font-medium text-red-800">Denda Pengembalian</span>
                     <span className="text-sm font-bold text-red-700">
                       {formatCurrency(item.totalReturnPenalty!)}
                     </span>

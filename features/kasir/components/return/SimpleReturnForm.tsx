@@ -37,7 +37,6 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Textarea } from '@/components/ui/textarea'
 import { ArrowLeft, CheckCircle, AlertCircle, Calculator, Package } from 'lucide-react'
 import { UnifiedConditionForm } from './UnifiedConditionForm'
-import type { TransaksiDetail } from '../../types'
 import type { EnhancedItemCondition } from '../../types'
 import { ConditionCategory } from '../../types'
 import { kasirApi } from '../../api'
@@ -363,6 +362,7 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
         transactionId: kode,
       })
     } catch (error) {
+      console.error(error)
       // Error handling in mutation callback
     } finally {
       setFormState((prev) => ({ ...prev, isProcessing: false }))
