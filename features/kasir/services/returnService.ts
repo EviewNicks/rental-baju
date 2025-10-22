@@ -792,8 +792,7 @@ export class UnifiedReturnService {
               kondisiAkhir:
                 item.conditions.length === 1 ? item.conditions[0].kondisiAkhir : 'multi-condition',
               statusKembali: 'lengkap',
-              conditionBreakdown,
-              productName: transactionItem.produk?.name || 'Unknown Product'
+              conditionBreakdown
             })
 
             logger.debug('UnifiedReturnService', 'processUnifiedReturn', 'Item added to processedItems', {
