@@ -1,0 +1,882 @@
+{
+  "info": {
+    "name": "Pengembalian Kasir API Tests ",
+    "description": "Comprehensive Postman test collection for Kasir (Cashier) API endpoints including customer management, transaction processing, payment handling, product availability, enhanced multi-condition return processing (pengembalian baju), and RPK-51 size-aware transaction system with ProductSize support. Now includes TSK-24 multi-condition return system tests, RPK-44 return activity logging validation, RPK-51 size-aware inventory management, and size-aware return processing validation.",
+    "version": "1.5.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{clerkToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "clerkToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testPenyewaId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testTransaksiId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testTransaksiKode",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testPembayaranId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testProdukId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testTransaksiItemId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testItemId1",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testItemId2",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testProductSizeId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testAgeCategory",
+      "value": "ADULT",
+      "type": "string"
+    },
+    {
+      "key": "testSize",
+      "value": "M",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "07. Return Service (Pengembalian Baju)",
+      "item": [
+        {
+          "name": "RPK-51: Size-Aware Return - Success with Valid Size",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Size-aware return processed successfully', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('success', true);",
+                  "    pm.expect(responseJson.data).to.have.property('processingMode', 'unified');",
+                  "});",
+                  "",
+                  "pm.test('Size validation passed for valid size', function () {",
+                  "    const data = pm.response.json().data;",
+                  "    pm.expect(data).to.have.property('transaksiId');",
+                  "    pm.expect(data).to.have.property('totalPenalty');",
+                  "    pm.expect(data.processedItems).to.be.an('array');",
+                  "    ",
+                  "    // Verify no size validation errors",
+                  "    pm.expect(data.totalPenalty).to.be.a('number');",
+                  "    pm.expect(data.processedItems.length).to.be.above(0);",
+                  "});",
+                  "",
+                  "pm.test('Response includes size-aware processing metadata', function () {",
+                  "    const data = pm.response.json().data;",
+                  "    pm.expect(data).to.have.property('format');",
+                  "    pm.expect(data).to.have.property('totalConditions');",
+                  "    pm.expect(data.processingMode).to.equal('unified');",
+                  "});",
+                  "",
+                  "pm.test('Headers indicate size-aware processing', function () {",
+                  "    pm.expect(pm.response.headers.get('content-type')).to.include('application/json');",
+                  "    pm.expect(pm.response.headers.get('x-request-id')).to.exist;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{clerkToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"itemId\": \"e5285341-6ddf-4bd2-bd42-d283dc4746c0\",\n      \"kondisiAkhir\": \"Baik - ukuran M dikembalikan dengan baik\",\n      \"jumlahKembali\": 1\n    }\n  ],\n  \"catatan\": \"RPK-51: Size-aware return test - ukuran M valid\",\n  \"tglKembali\": \"2025-11-03T10:00:00.000Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/kasir/transaksi/TXN-20251018-002/pengembalian",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kasir", "transaksi", "TXN-20251018-002", "pengembalian"]
+            },
+            "description": "RPK-51: Test size-aware return with transaction that has size information (TXN-20251018-002). Should validate size M exists for the product."
+          }
+        },
+        {
+          "name": "RPK-51: Size Validation Error - Invalid Size ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Size validation error response', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('success', false);",
+                  "    // Note: This test now expects VALIDATION_ERROR instead of SIZE_VALIDATION_ERROR",
+                  "    // due to our enhanced error handling in route.ts",
+                  "    pm.expect(responseJson.error).to.have.property('code', 'VALIDATION_ERROR');",
+                  "    pm.expect(responseJson.error.message).to.include('tidak tersedia untuk produk');",
+                  "});",
+                  "",
+                  "pm.test('Enhanced size error message with detailed validation', function () {",
+                  "    const error = pm.response.json().error;",
+                  "    // Check for validationErrors array (new format)",
+                  "    if (error.validationErrors) {",
+                  "        pm.expect(error.validationErrors).to.be.an('array');",
+                  "        const sizeError = error.validationErrors.find(e => e.code === 'SIZE_NOT_AVAILABLE');",
+                  "        pm.expect(sizeError, 'Should have SIZE_NOT_AVAILABLE error').to.exist;",
+                  "        pm.expect(sizeError.message).to.include('tidak tersedia untuk produk');",
+                  "    } else {",
+                  "        // Fallback for suggestions if still using old format",
+                  "        pm.expect(error).to.have.property('suggestions');",
+                  "        pm.expect(error.suggestions).to.be.an('array');",
+                  "        const hasSizeSuggestion = error.suggestions.some(s => ",
+                  "            s.includes('ukuran') || s.includes('tersedia') || s.includes('inventaris')",
+                  "        );",
+                  "        pm.expect(hasSizeSuggestion, 'Should have size-specific suggestions').to.be.true;",
+                  "    }",
+                  "});",
+                  "",
+                  "pm.test('Size error details properly structured', function () {",
+                  "    const error = pm.response.json().error;",
+                  "    pm.expect(error).to.have.property('message');",
+                  "    pm.expect(error.message).to.include('tidak tersedia untuk produk');",
+                  "    pm.expect(error.code).to.equal('VALIDATION_ERROR'); // Updated to new format",
+                  "    ",
+                  "    // Additional validation for new error structure",
+                  "    if (error.validationErrors) {",
+                  "        pm.expect(error.validationErrors.length).to.be.above(0);",
+                  "        const sizeError = error.validationErrors.find(e => e.code === 'SIZE_NOT_AVAILABLE');",
+                  "        pm.expect(sizeError, 'Should contain SIZE_NOT_AVAILABLE validation error').to.exist;",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{clerkToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"itemId\": \"e5285341-6ddf-4bd2-bd42-d283dc4746c0\",\n      \"kondisiAkhir\": \"Baik - ukuran tidak valid dikembalikan\",\n      \"jumlahKembali\": 1\n    }\n  ],\n  \"catatan\": \"RPK-51: Size validation error test - invalid size ID\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/kasir/transaksi/TXN-20251018-002/pengembalian",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kasir", "transaksi", "TXN-20251018-002", "pengembalian"]
+            },
+            "description": "RPK-51: Test size validation error when productSizeId doesn't exist. Should return SIZE_VALIDATION_ERROR with helpful suggestions."
+          }
+        },
+        {
+          "name": "RPK-51: Size-Aware Multi-Condition Return",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Size-aware multi-condition processing successful', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('success', true);",
+                  "    pm.expect(responseJson.data).to.have.property('processingMode', 'unified');",
+                  "});",
+                  "",
+                  "pm.test('Multiple conditions processed with size validation', function () {",
+                  "    const data = pm.response.json().data;",
+                  "    pm.expect(data.totalConditions).to.be.above(1);",
+                  "    pm.expect(data).to.have.property('format', 'unified');",
+                  "    pm.expect(data.processedItems).to.be.an('array');",
+                  "    ",
+                  "    // Verify all conditions were processed",
+                  "    data.processedItems.forEach(item => {",
+                  "        pm.expect(item).to.have.property('itemId');",
+                  "        pm.expect(item).to.have.property('penalty');",
+                  "        pm.expect(item).to.have.property('statusKembali', 'lengkap');",
+                  "    });",
+                  "});",
+                  "",
+                  "pm.test('Size validation passed for all conditions', function () {",
+                  "    const data = pm.response.json().data;",
+                  "    // Should not have size validation errors",
+                  "    pm.expect(data.totalPenalty).to.be.a('number');",
+                  "    pm.expect(data.processedItems.length).to.be.above(0);",
+                  "    ",
+                  "    // Verify unified architecture features",
+                  "    pm.expect(data).to.have.property('totalConditions');",
+                  "    pm.expect(data.totalConditions).to.be.above(1);",
+                  "});",
+                  "",
+                  "pm.test('Performance headers present for size-aware processing', function () {",
+                  "    pm.expect(pm.response.headers.get('x-request-id')).to.exist;",
+                  "    pm.expect(pm.response.headers.get('content-type')).to.include('application/json');",
+                  "    pm.expect(pm.response.headers.get('x-performance-optimized')).to.equal('true');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{clerkToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"itemId\": \"77c26fa6-ff79-4111-a6bb-7b34a16900fa\",\n      \"conditions\": [\n        {\n          \"kondisiAkhir\": \"Baik - ukuran M dikembalikan tepat waktu\",\n          \"jumlahKembali\": 1\n        },\n        {\n          \"kondisiAkhir\": \"Rusak ringan - ukuran M ada kerusakan kecil\",\n          \"jumlahKembali\": 1,\n          \"modalAwal\": 50000\n        }\n      ]\n    }\n  ],\n  \"catatan\": \"RPK-51: Size-aware multi-condition test - ukuran M dengan berbagai kondisi\",\n  \"tglKembali\": \"2025-11-03T10:00:00.000Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/kasir/transaksi/TXN-20251018-002/pengembalian",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kasir", "transaksi", "TXN-20251018-002", "pengembalian"]
+            },
+            "description": "RPK-51: Test size-aware multi-condition return with valid size M. Should validate size exists and process multiple conditions correctly."
+          }
+        },
+        {
+          "name": "RPK-51: Legacy Format Compatibility with Size-Aware Transaction",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Legacy format works with size-aware transaction', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('success', true);",
+                  "    pm.expect(responseJson.data).to.have.property('processingMode', 'unified');",
+                  "});",
+                  "",
+                  "pm.test('Backward compatibility maintained for size-aware transactions', function () {",
+                  "    const data = pm.response.json().data;",
+                  "    pm.expect(data).to.have.property('format', 'legacy');",
+                  "    pm.expect(data).to.have.property('totalConditions');",
+                  "    pm.expect(data.totalConditions).to.equal(1);",
+                  "    pm.expect(data).to.have.property('transaksiId');",
+                  "});",
+                  "",
+                  "pm.test('Size validation works with legacy format', function () {",
+                  "    const data = pm.response.json().data;",
+                  "    pm.expect(data.totalPenalty).to.be.a('number');",
+                  "    pm.expect(data.processedItems).to.be.an('array');",
+                  "    pm.expect(data.processedItems.length).to.be.above(0);",
+                  "    ",
+                  "    // Verify items processed correctly",
+                  "    data.processedItems.forEach(item => {",
+                  "        pm.expect(item).to.have.property('itemId');",
+                  "        pm.expect(item).to.have.property('penalty');",
+                  "        pm.expect(item).to.have.property('statusKembali');",
+                  "    });",
+                  "});",
+                  "",
+                  "pm.test('Migration metadata present for legacy format', function () {",
+                  "    const data = pm.response.json().data;",
+                  "    pm.expect(data).to.have.property('format', 'legacy');",
+                  "    pm.expect(data.processingMode).to.equal('unified');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{clerkToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"itemId\": \"77c26fa6-ff79-4111-a6bb-7b34a16900fa\",\n      \"kondisiAkhir\": \"Baik - ukuran M dikembalikan dengan baik\",\n      \"jumlahKembali\": 1\n    }\n  ],\n  \"catatan\": \"RPK-51: Legacy format compatibility test dengan size-aware transaction\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/kasir/transaksi/TXN-20251018-002/pengembalian",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kasir", "transaksi", "TXN-20251018-002", "pengembalian"]
+            },
+            "description": "RPK-51: Test legacy format return request with size-aware transaction. Should maintain backward compatibility while validating size information."
+          }
+        },
+        {
+          "name": "Enhanced Validation Error - Multiple Issues",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400 for validation errors', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Validation error response structure', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('success', false);",
+                  "    pm.expect(responseJson.error).to.have.property('code', 'VALIDATION_ERROR');",
+                  "    pm.expect(responseJson.error).to.have.property('message');",
+                  "    pm.expect(responseJson.error).to.have.property('validationErrors');",
+                  "});",
+                  "",
+                  "pm.test('Validation errors array properly structured', function () {",
+                  "    const error = pm.response.json().error;",
+                  "    pm.expect(error.validationErrors).to.be.an('array');",
+                  "    pm.expect(error.validationErrors.length).to.be.above(0);",
+                  "    ",
+                  "    // Verify each validation error has required fields",
+                  "    error.validationErrors.forEach(validationError => {",
+                  "        pm.expect(validationError).to.have.property('field');",
+                  "        pm.expect(validationError).to.have.property('message');",
+                  "        pm.expect(validationError).to.have.property('code');",
+                  "    });",
+                  "});",
+                  "",
+                  "pm.test('Enhanced error message contains specific validation details', function () {",
+                  "    const error = pm.response.json().error;",
+                  "    pm.expect(error.message).to.include('Validasi item gagal');",
+                  "    pm.expect(error.message.length).to.be.above(10); // Detailed error message",
+                  "    ",
+                  "    // Should contain multiple error messages if multiple validation issues",
+                  "    if (error.validationErrors.length > 1) {",
+                  "        pm.expect(error.message).to.include(','); // Multiple errors joined by comma",
+                  "    }",
+                  "});",
+                  "",
+                  "pm.test('Current status information included in error response', function () {",
+                  "    const error = pm.response.json().error;",
+                  "    pm.expect(error).to.have.property('currentStatus');",
+                  "    pm.expect(error.currentStatus).to.be.a('string');",
+                  "});",
+                  "",
+                  "pm.test('Processing time included for debugging', function () {",
+                  "    const error = pm.response.json().error;",
+                  "    pm.expect(error).to.have.property('processingTime');",
+                  "    pm.expect(error.processingTime).to.be.a('number');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{clerkToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"itemId\": \"e5285341-6ddf-4bd2-bd42-d283dc4746c0\",\n      \"kondisiAkhir\": \"\",  // Empty condition - should fail validation\n      \"jumlahKembali\": 1\n    },\n    {\n      \"itemId\": \"77c26fa6-ff79-4111-a6bb-7b34a16900fa\",\n      \"kondisiAkhir\": \"Baik - ukuran M dikembalikan dengan baik\",\n      \"jumlahKembali\": 999  // Excessive quantity - should fail validation\n    }\n  ],\n  \"catatan\": \"Enhanced validation error test - multiple validation issues\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/kasir/transaksi/TXN-20251018-002/pengembalian",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kasir", "transaksi", "TXN-20251018-002", "pengembalian"]
+            },
+            "description": "Test enhanced validation error handling with multiple validation issues (empty condition and excessive quantity). Should return 400 with detailed validation errors array."
+          }
+        },
+        {
+          "name": "Legacy Format - Validation Error Handling",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400 for legacy format validation errors', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Legacy format validation error response structure', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('success', false);",
+                  "    pm.expect(responseJson.error).to.have.property('code', 'VALIDATION_ERROR');",
+                  "    pm.expect(responseJson.error).to.have.property('message');",
+                  "    pm.expect(responseJson.error).to.have.property('validationErrors');",
+                  "});",
+                  "",
+                  "pm.test('Legacy format errors properly categorized', function () {",
+                  "    const error = pm.response.json().error;",
+                  "    pm.expect(error.validationErrors).to.be.an('array');",
+                  "    pm.expect(error.validationErrors.length).to.be.above(0);",
+                  "    ",
+                  "    // Check for condition validation errors in legacy format",
+                  "    const conditionError = error.validationErrors.find(e => e.code === 'MISSING_CONDITION');",
+                  "    const quantityError = error.validationErrors.find(e => e.code === 'RETURNED_ITEM_INVALID_QUANTITY');",
+                  "    const itemError = error.validationErrors.find(e => e.code === 'ITEM_NOT_FOUND');",
+                  "    ",
+                  "    // At least one of these should exist based on the test data",
+                  "    pm.expect(conditionError || quantityError || itemError, 'Should have validation errors').to.exist;",
+                  "});",
+                  "",
+                  "pm.test('Error message includes legacy format details', function () {",
+                  "    const error = pm.response.json().error;",
+                  "    pm.expect(error.message).to.include('Validasi item gagal');",
+                  "    pm.expect(error.message.length).to.be.above(20); // Detailed message",
+                  "    ",
+                  "    // Should mention specific validation issues",
+                  "    pm.expect(error.message).to.match(/(minimal 5 karakter|jumlah kembali lebih dari 0|tidak ditemukan)/);",
+                  "});",
+                  "",
+                  "pm.test('Processing metadata included for debugging', function () {",
+                  "    const error = pm.response.json().error;",
+                  "    pm.expect(error).to.have.property('currentStatus');",
+                  "    pm.expect(error).to.have.property('processingTime');",
+                  "    pm.expect(error.processingTime).to.be.a('number');",
+                  "});",
+                  "",
+                  "pm.test('Validation errors contain field references for legacy format', function () {",
+                  "    const error = pm.response.json().error;",
+                  "    error.validationErrors.forEach(validationError => {",
+                  "        pm.expect(validationError).to.have.property('field');",
+                  "        // Field should reference item structure",
+                  "        pm.expect(validationError.field).to.include('items[');",
+                  "        pm.expect(validationError.field).to.include(']');",
+                  "    });",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{clerkToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"itemId\": \"invalid-item-id\",  // Invalid item ID\n      \"kondisiAkhir\": \"xx\",  // Too short condition (< 5 chars)\n      \"jumlahKembali\": 0     // Invalid quantity for returned item\n    }\n  ],\n  \"catatan\": \"Legacy format validation error test - multiple issues\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/kasir/transaksi/TXN-20251018-002/pengembalian",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kasir", "transaksi", "TXN-20251018-002", "pengembalian"]
+            },
+            "description": "Test legacy format validation error handling with multiple issues (invalid item ID, short condition, invalid quantity). Should return 400 with detailed validation errors while maintaining backward compatibility."
+          }
+        },
+        {
+          "name": "Condition Validation Error - Missing Description",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400 for missing condition description', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Missing condition validation error response', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('success', false);",
+                  "    pm.expect(responseJson.error).to.have.property('code', 'VALIDATION_ERROR');",
+                  "    pm.expect(responseJson.error).to.have.property('validationErrors');",
+                  "});",
+                  "",
+                  "pm.test('MISSING_CONDITION error properly identified', function () {",
+                  "    const error = pm.response.json().error;",
+                  "    const conditionError = error.validationErrors.find(e => e.code === 'MISSING_CONDITION');",
+                  "    pm.expect(conditionError, 'Should have MISSING_CONDITION error').to.exist;",
+                  "    pm.expect(conditionError.message).to.include('minimal 5 karakter');",
+                  "    pm.expect(conditionError.field).to.include('conditions');",
+                  "});",
+                  "",
+                  "pm.test('Error message descriptive for missing condition', function () {",
+                  "    const error = pm.response.json().error;",
+                  "    pm.expect(error.message).to.include('Validasi item gagal');",
+                  "    pm.expect(error.message).to.include('minimal 5 karakter');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{clerkToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"itemId\": \"e5285341-6ddf-4bd2-bd42-d283dc4746c0\",\n      \"conditions\": [\n        {\n          \"kondisiAkhir\": \"\",  // Empty condition\n          \"jumlahKembali\": 1\n        }\n      ]\n    }\n  ],\n  \"catatan\": \"Condition validation error test - missing description\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/kasir/transaksi/TXN-20251018-002/pengembalian",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kasir", "transaksi", "TXN-20251018-002", "pengembalian"]
+            },
+            "description": "Test condition validation error for missing/empty description. Should return 400 with MISSING_CONDITION error."
+          }
+        },
+        {
+          "name": "Quantity Validation Error - Excess Return",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400 for excess quantity', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Excess quantity validation error response', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('success', false);",
+                  "    pm.expect(responseJson.error).to.have.property('code', 'VALIDATION_ERROR');",
+                  "    pm.expect(responseJson.error).to.have.property('validationErrors');",
+                  "});",
+                  "",
+                  "pm.test('EXCESS_TOTAL_QUANTITY error properly identified', function () {",
+                  "    const error = pm.response.json().error;",
+                  "    const quantityError = error.validationErrors.find(e => e.code === 'EXCESS_TOTAL_QUANTITY');",
+                  "    pm.expect(quantityError, 'Should have EXCESS_TOTAL_QUANTITY error').to.exist;",
+                  "    pm.expect(quantityError.message).to.include('melebihi jumlah yang diambil');",
+                  "    pm.expect(quantityError.message).to.include('Total jumlah kembali');",
+                  "});",
+                  "",
+                  "pm.test('Error message includes specific quantity details', function () {",
+                  "    const error = pm.response.json().error;",
+                  "    pm.expect(error.message).to.include('melebihi jumlah yang diambil');",
+                  "    // Should mention the actual numbers for clarity",
+                  "    pm.expect(error.message).to.match(/\\d+/); // Should contain numbers",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{clerkToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"itemId\": \"e5285341-6ddf-4bd2-bd42-d283dc4746c0\",\n      \"kondisiAkhir\": \"Baik - dikembalikan dengan baik\",\n      \"jumlahKembali\": 10  // Excessive quantity (>1 diambil)\n    }\n  ],\n  \"catatan\": \"Quantity validation error test - excess return quantity\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/kasir/transaksi/TXN-20251018-002/pengembalian",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kasir", "transaksi", "TXN-20251018-002", "pengembalian"]
+            },
+            "description": "Test quantity validation error for returning more items than taken. Should return 400 with EXCESS_TOTAL_QUANTITY error."
+          }
+        },
+        {
+          "name": "Item Not Found Error - Invalid Item ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400 for invalid item ID', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Item not found validation error response', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('success', false);",
+                  "    pm.expect(responseJson.error).to.have.property('code', 'VALIDATION_ERROR');",
+                  "    pm.expect(responseJson.error).to.have.property('validationErrors');",
+                  "});",
+                  "",
+                  "pm.test('ITEM_NOT_FOUND error properly identified', function () {",
+                  "    const error = pm.response.json().error;",
+                  "    const itemError = error.validationErrors.find(e => e.code === 'ITEM_NOT_FOUND');",
+                  "    pm.expect(itemError, 'Should have ITEM_NOT_FOUND error').to.exist;",
+                  "    pm.expect(itemError.message).to.include('tidak ditemukan dalam transaksi');",
+                  "    pm.expect(itemError.field).to.include('itemId');",
+                  "});",
+                  "",
+                  "pm.test('Error message includes invalid item ID reference', function () {",
+                  "    const error = pm.response.json().error;",
+                  "    pm.expect(error.message).to.include('tidak ditemukan dalam transaksi');",
+                  "    // Should mention the invalid ID for debugging",
+                  "    pm.expect(error.message).to.match(/non-existent-item/);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{clerkToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"itemId\": \"non-existent-item-id\",  // Invalid item ID\n      \"kondisiAkhir\": \"Baik - dikembalikan dengan baik\",\n      \"jumlahKembali\": 1\n    }\n  ],\n  \"catatan\": \"Item not found validation error test - invalid item ID\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/kasir/transaksi/TXN-20251018-002/pengembalian",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kasir", "transaksi", "TXN-20251018-002", "pengembalian"]
+            },
+            "description": "Test item not found validation error for invalid item ID. Should return 400 with ITEM_NOT_FOUND error."
+          }
+        },
+        {
+          "name": "TSK-24: Backward Compatibility - Legacy Single Condition",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Legacy format processed by unified architecture', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('success', true);",
+                  "    pm.expect(responseJson.data).to.have.property('processingMode', 'unified');",
+                  "});",
+                  "",
+                  "pm.test('Backward compatibility maintained', function () {",
+                  "    const data = pm.response.json().data;",
+                  "    pm.expect(data).to.have.property('transaksiId');",
+                  "    pm.expect(data).to.have.property('totalPenalty');",
+                  "    pm.expect(data).to.have.property('processedItems');",
+                  "    pm.expect(data).to.have.property('format', 'legacy');",
+                  "});",
+                  "",
+                  "pm.test('Unified architecture fields present', function () {",
+                  "    const data = pm.response.json().data;",
+                  "    pm.expect(data).to.have.property('totalConditions');",
+                  "    pm.expect(data.totalConditions).to.equal(1);",
+                  "    ",
+                  "    const items = data.processedItems;",
+                  "    items.forEach(item => {",
+                  "        pm.expect(item).to.have.property('itemId');",
+                  "        pm.expect(item).to.have.property('penalty');",
+                  "        pm.expect(item).to.have.property('statusKembali');",
+                  "    });",
+                  "});",
+                  "",
+                  "pm.test('Performance within acceptable range', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(300);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{clerkToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"itemId\": \"{{testTransaksiItemId}}\",\n      \"kondisiAkhir\": \"Baik - dikembalikan tepat waktu\",\n      \"jumlahKembali\": 1\n    }\n  ],\n  \"catatan\": \"TSK-24: Backward compatibility test - legacy single condition format\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/kasir/transaksi/{{testTransaksiKode}}/pengembalian",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kasir", "transaksi", "{{testTransaksiKode}}", "pengembalian"]
+            },
+            "description": "TSK-24: Test backward compatibility - ensure existing single-condition format still works unchanged."
+          }
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Global pre-request script",
+          "// Set base URL if not already set",
+          "if (!pm.collectionVariables.get('baseUrl')) {",
+          "    pm.collectionVariables.set('baseUrl', 'http://localhost:3000');",
+          "}",
+          "",
+          "// Check if Clerk token is set",
+          "const clerkToken = pm.collectionVariables.get('clerkToken');",
+          "if (!clerkToken && pm.request.headers.get('Authorization')) {",
+          "    console.warn('Warning: Clerk token not set. Please set the clerkToken collection variable.');",
+          "}"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Global test script with enhanced header validation",
+          "pm.test('Response is JSON with proper headers', function () {",
+          "    pm.response.to.have.header('content-type');",
+          "    const contentType = pm.response.headers.get('content-type');",
+          "    if (contentType) {",
+          "        pm.expect(contentType).to.include('application/json');",
+          "        // Ensure charset is specified for proper encoding",
+          "        if (pm.response.code === 200) {",
+          "            pm.expect(contentType).to.include('charset=utf-8');",
+          "        }",
+          "    }",
+          "});",
+          "",
+          "// Enhanced header validation for successful responses",
+          "if (pm.response.code >= 200 && pm.response.code < 300) {",
+          "    pm.test('Security headers are present', function () {",
+          "        // Check for security headers on successful responses",
+          "        pm.expect(pm.response.headers.get('x-content-type-options')).to.equal('nosniff');",
+          "        pm.expect(pm.response.headers.get('x-frame-options')).to.equal('DENY');",
+          "    });",
+          "",
+          "    pm.test('Performance headers exist', function () {",
+          "        // Ensure performance monitoring headers are present",
+          "        pm.expect(pm.response.headers.get('x-request-id')).to.exist;",
+          "        if (pm.response.headers.get('x-processing-time')) {",
+          "            pm.expect(pm.response.headers.get('x-processing-time')).to.match(/^\\d+ms$/);",
+          "        }",
+          "    });",
+          "}",
+          "",
+          "// Log response time for monitoring",
+          "const responseTime = pm.response.responseTime;",
+          "if (responseTime > 2000) {",
+          "    console.warn(`Slow response detected: ${responseTime}ms for ${pm.request.url}`);",
+          "}",
+          "",
+          "// Check for common error patterns",
+          "if (pm.response.code >= 400) {",
+          "    const response = pm.response.json();",
+          "    console.log(`Error Response: ${JSON.stringify(response, null, 2)}`);",
+          "}"
+        ]
+      }
+    }
+  ]
+}

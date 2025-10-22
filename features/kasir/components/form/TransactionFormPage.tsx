@@ -62,11 +62,16 @@ export function TransactionFormPage() {
     router.push('/dashboard')
   }
 
-  const handleAddProduct = (product: ProductSelection['product'], quantity: number) => {
-    const productSelection = {
+  const handleAddProduct = (
+    product: ProductSelection['product'],
+    quantity: number,
+    productSizeId?: string
+  ) => {
+    const productSelection: ProductSelection = {
       product,
       quantity,
-      duration: globalDuration, // Use global duration
+      duration: globalDuration,
+      ...(productSizeId && { productSizeId }),
     }
 
     try {
@@ -81,6 +86,7 @@ export function TransactionFormPage() {
       // 🔍 LOG: Product addition failure
       console.error('Failed to add product', {
         productId: product.id,
+        productSizeId,
         error: error instanceof Error ? error.message : 'Unknown error',
         timestamp: new Date().toISOString(),
       })
@@ -132,7 +138,21 @@ export function TransactionFormPage() {
 
       // Show error message based on the type of error
       if (createError) {
-        setErrorMessage(createError.message || 'Terjadi kesalahan saat membuat transaksi')
+        let userFriendlyMessage = createError.message || 'Terjadi kesalahan saat membuat transaksi'
+
+        // RPK-51: Map size-specific error codes to user-friendly messages
+        if (createError.code === 'NOT_FOUND' && createError.message?.includes('tidak ditemukan')) {
+          userFriendlyMessage =
+            'Ukuran produk yang dipilih tidak tersedia. Silakan pilih ukuran lain atau refresh halaman.'
+        } else if (
+          createError.code === 'AVAILABILITY_ERROR' &&
+          createError.message?.includes('tidak mencukupi')
+        ) {
+          userFriendlyMessage =
+            'Stok untuk ukuran yang dipilih tidak mencukupi. Silakan kurangi jumlah atau pilih ukuran lain.'
+        }
+
+        setErrorMessage(userFriendlyMessage)
       } else {
         setErrorMessage('Terjadi kesalahan tidak terduga. Silakan coba lagi.')
       }

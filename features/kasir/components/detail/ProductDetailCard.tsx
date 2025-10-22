@@ -1,15 +1,14 @@
-import {
-  Tag,
-  Palette,
-  Shirt,
-  CheckCircle,
-  Package,
-} from 'lucide-react'
+import { Tag, Palette, Shirt, CheckCircle, Package, Users } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { formatCurrency } from '../../lib/utils/client'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
 import React from 'react'
+import {
+  parseKondisiAwal,
+  formatSizeWithAge,
+  extractSizeInfo,
+} from '../../lib/utils/kondisiAwalParser'
 
 interface ProductDetailCardProps {
   item: {
@@ -39,6 +38,8 @@ interface ProductDetailCardProps {
       createdAt?: string
       createdBy?: string
     }>
+    // RPK-51: kondisiAwal field for AgeSizes parsing
+    kondisiAwal?: string
   }
   // Optional explicit pickup information - if not provided, will calculate from item.jumlahDiambil
   pickupInfo?: {
@@ -47,12 +48,11 @@ interface ProductDetailCardProps {
   }
 }
 
-
-
-
-
-
 export function ProductDetailCard({ item, pickupInfo }: ProductDetailCardProps) {
+  // Parse size information from kondisiAwal (RPK-51 AgeSizes system)
+  const sizeInfo = extractSizeInfo(item)
+  const parsedKondisiAwal = parseKondisiAwal(item.kondisiAwal)
+
   // Calculate pickup status - use explicit pickupInfo or derive from item data
   const actualJumlahDiambil = pickupInfo?.jumlahDiambil ?? item.jumlahDiambil ?? 0
   const actualRemainingQuantity =
@@ -68,20 +68,16 @@ export function ProductDetailCard({ item, pickupInfo }: ProductDetailCardProps) 
   // Return data detection - simplified logic focusing on actual return status
   // Display return section when item has been returned (lengkap or sebagian) with condition data
   const hasReturnData = Boolean(
-    item.statusKembali &&
-      item.statusKembali !== 'belum' &&
-      item.conditionBreakdown?.length
+    item.statusKembali && item.statusKembali !== 'belum' && item.conditionBreakdown?.length,
   )
 
   // Enhanced penalty detection with stricter validation
   const hasPenalty = Boolean(
     item.totalReturnPenalty &&
-    typeof item.totalReturnPenalty === 'number' &&
-    item.totalReturnPenalty > 0 &&
-    !isNaN(item.totalReturnPenalty)
+      typeof item.totalReturnPenalty === 'number' &&
+      item.totalReturnPenalty > 0 &&
+      !isNaN(item.totalReturnPenalty),
   )
-
-
 
   return (
     <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-6 shadow-lg shadow-gray-900/5 transition-all duration-200">
@@ -126,19 +122,37 @@ export function ProductDetailCard({ item, pickupInfo }: ProductDetailCardProps) 
                 {item.product.category}
               </Badge>
             )}
-            {item.product.size && (
+
+            {/* Size Badge - Use parsed size info from kondisiAwal (RPK-51) */}
+            {sizeInfo.hasSizeInfo && (
               <Badge
                 variant="outline"
                 className={cn(
                   'text-xs font-medium border-green-200 bg-green-50 text-green-700 hover:bg-green-100',
                   'transition-colors duration-200',
                 )}
-                aria-label={`Ukuran: ${item.product.size}`}
+                aria-label={`Ukuran: ${formatSizeWithAge(sizeInfo.size, sizeInfo.ageCategory)}`}
               >
                 <Shirt className="h-3 w-3 mr-1.5" aria-hidden="true" />
-                {item.product.size}
+                {formatSizeWithAge(sizeInfo.size, sizeInfo.ageCategory)}
               </Badge>
             )}
+
+            {/* Age Category Badge - Show separately if available */}
+            {!parsedKondisiAwal.isLegacyFormat && sizeInfo.ageCategory !== 'Tidak diketahui' && (
+              <Badge
+                variant="outline"
+                className={cn(
+                  'text-xs font-medium border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100',
+                  'transition-colors duration-200',
+                )}
+                aria-label={`Kategori Usia: ${sizeInfo.ageCategory}`}
+              >
+                <Users className="h-3 w-3 mr-1.5" aria-hidden="true" />
+                {sizeInfo.ageCategory}
+              </Badge>
+            )}
+
             {item.product.color && (
               <Badge
                 variant="outline"
@@ -152,7 +166,8 @@ export function ProductDetailCard({ item, pickupInfo }: ProductDetailCardProps) 
                 {item.product.color}
               </Badge>
             )}
-            {!item.product.category && !item.product.size && !item.product.color && (
+
+            {!item.product.category && !sizeInfo.hasSizeInfo && !item.product.color && (
               <Badge
                 variant="outline"
                 className="text-xs text-gray-500 border-gray-200 bg-gray-50"
@@ -164,26 +179,21 @@ export function ProductDetailCard({ item, pickupInfo }: ProductDetailCardProps) 
             )}
           </div>
 
-
           {/* Return Status Section - Simple display mirroring pickup style */}
           {hasReturnData && (
-            <div
-              className="p-3 rounded-lg border bg-green-50 border-green-200"
-            >
+            <div className="p-3 rounded-lg border bg-green-50 border-green-200">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-4 w-4 text-green-600" />
-                  <span className="text-sm font-medium text-green-900">
-                    Status Pengembalian
-                  </span>
+                  <span className="text-sm font-medium text-green-900">Status Pengembalian</span>
                 </div>
                 <div className="text-sm text-green-700">
                   <span className="font-semibold">
-                    {item.statusKembali === 'lengkap' 
-                      ? 'Dikembalikan Lengkap' 
-                      : item.statusKembali === 'sebagian' 
-                      ? 'Dikembalikan Sebagian'
-                      : 'Dikembalikan'}
+                    {item.statusKembali === 'lengkap'
+                      ? 'Dikembalikan Lengkap'
+                      : item.statusKembali === 'sebagian'
+                        ? 'Dikembalikan Sebagian'
+                        : 'Dikembalikan'}
                   </span>
                 </div>
               </div>
@@ -191,9 +201,7 @@ export function ProductDetailCard({ item, pickupInfo }: ProductDetailCardProps) 
               {hasPenalty && (
                 <div className="mt-2 p-2 bg-red-50 border border-red-100 rounded-md">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-medium text-red-800">
-                      Denda Pengembalian
-                    </span>
+                    <span className="text-xs font-medium text-red-800">Denda Pengembalian</span>
                     <span className="text-sm font-bold text-red-700">
                       {formatCurrency(item.totalReturnPenalty!)}
                     </span>

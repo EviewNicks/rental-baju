@@ -12,7 +12,6 @@ import { prisma } from '@/lib/prisma'
 import { productAvailabilityQuerySchema } from '@/features/kasir/lib/validation/kasirSchema'
 import { ZodError } from 'zod'
 import { requirePermission, withRateLimit } from '@/lib/auth-middleware'
-import { calculateAvailableStock } from '@/features/kasir/lib/typeUtils'
 
 export async function GET(request: NextRequest) {
   try {
@@ -78,7 +77,7 @@ export async function GET(request: NextRequest) {
     }
 
   
-    // Get products with related data
+    // Get products with related data including ProductSize information
     const [products, allProducts] = await Promise.all([
       prisma.product.findMany({
         skip,
@@ -93,15 +92,25 @@ export async function GET(request: NextRequest) {
               color: true,
             },
           },
+          sizes: {
+            where: { isActive: true },
+            orderBy: [
+              { ageCategory: 'asc' },
+              { size: 'asc' }
+            ],
           },
+        },
       }),
       // Get all products matching base criteria for accurate count calculation
       prisma.product.findMany({
         where: whereClause,
-        select: {
-          id: true,
-          quantity: true,
-          rentedStock: true,
+        include: {
+          sizes: {
+            where: { isActive: true },
+            select: {
+              quantity: true,
+            },
+          },
         },
       }),
     ])
@@ -111,24 +120,33 @@ export async function GET(request: NextRequest) {
 
     const formattedProducts = products
       .map((product) => {
+        // Calculate total available quantity across all sizes
+        const totalAvailable = product.sizes.reduce((sum, size) => sum + size.quantity, 0)
+
         return {
           id: product.id,
           code: product.code,
           name: product.name,
           description: product.description,
           currentPrice: Number(product.currentPrice),
-          // UPDATED: Enhanced inventory information with new fields
-          totalInventory: product.quantity, // Total stock (immutable during rentals)
-          quantity: product.quantity, // Keep for backward compatibility
-          availableQuantity: calculateAvailableStock(product.quantity, product.rentedStock), // Calculated available stock
-          rentedQuantity: product.rentedStock, // Currently rented out
+          // ENHANCED: Size-based inventory information
+          totalInventory: product.quantity, // Legacy field for backward compatibility
+          availableQuantity: totalAvailable, // Total across all active sizes
+          rentedQuantity: product.rentedStock, // Legacy field
+          // NEW: Size-specific information
+          sizes: product.sizes.map(size => ({
+            id: size.id,
+            ageCategory: size.ageCategory,
+            size: size.size,
+            quantity: size.quantity,
+            availableQuantity: size.quantity, // All sizes are available at ProductSize level
+          })),
           imageUrl: product.imageUrl,
           category: {
             id: product.category.id,
             name: product.category.name,
             color: product.category.color,
           },
-          size: product.size,
           status: product.status,
           createdAt: product.createdAt.toISOString(),
           updatedAt: product.updatedAt.toISOString(),
@@ -138,8 +156,12 @@ export async function GET(request: NextRequest) {
       .filter((product) => !available || product.availableQuantity > 0)
 
     // Calculate accurate total count by filtering allProducts with same logic
-    const filteredAllProducts = available 
-      ? allProducts.filter((product) => calculateAvailableStock(product.quantity, product.rentedStock) > 0)
+    const filteredAllProducts = available
+      ? allProducts.filter((product) => {
+          // Calculate total available across all active sizes
+          const totalAvailable = product.sizes?.reduce((sum, size) => sum + size.quantity, 0) || 0
+          return totalAvailable > 0
+        })
       : allProducts
     
     const total = filteredAllProducts.length

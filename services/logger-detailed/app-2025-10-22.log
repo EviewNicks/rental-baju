@@ -1,0 +1,1911 @@
+2025-10-22T00:58:42.158Z [INFO] [UnifiedReturnService][calculatePenaltyPreview] Starting penalty preview calculation
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "itemCount": 2,
+  "hasManualPricing": false,
+  "performance": {
+    "timestamp": 1761094722158,
+    "memory": {
+      "rss": 434720768,
+      "heapTotal": 212901888,
+      "heapUsed": 200123976,
+      "external": 4346735,
+      "arrayBuffers": 355135
+    }
+  }
+}
+2025-10-22T00:58:44.485Z [INFO] [UnifiedReturnService][calculatePenaltyPreview] Penalty preview calculated successfully
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "totalPenalty": 0,
+  "lateDays": 0,
+  "itemCount": 2,
+  "processingTime": 2328,
+  "performance": {
+    "timestamp": 1761094724485,
+    "memory": {
+      "rss": 439193600,
+      "heapTotal": 212901888,
+      "heapUsed": 200377072,
+      "external": 4346735,
+      "arrayBuffers": 355135
+    }
+  }
+}
+2025-10-22T01:00:30.422Z [INFO] [UnifiedReturnService][calculatePenaltyPreview] Starting penalty preview calculation
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "itemCount": 2,
+  "hasManualPricing": false,
+  "performance": {
+    "timestamp": 1761094830422,
+    "memory": {
+      "rss": 459870208,
+      "heapTotal": 226795520,
+      "heapUsed": 210829776,
+      "external": 4951992,
+      "arrayBuffers": 963776
+    }
+  }
+}
+2025-10-22T01:00:32.811Z [INFO] [UnifiedReturnService][calculatePenaltyPreview] Penalty preview calculated successfully
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "totalPenalty": 0,
+  "lateDays": 0,
+  "itemCount": 2,
+  "processingTime": 2390,
+  "performance": {
+    "timestamp": 1761094832811,
+    "memory": {
+      "rss": 459870208,
+      "heapTotal": 226795520,
+      "heapUsed": 211068536,
+      "external": 4952049,
+      "arrayBuffers": 963833
+    }
+  }
+}
+2025-10-22T01:01:10.997Z [INFO] [UnifiedReturnService][calculatePenaltyPreview] Starting penalty preview calculation
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "itemCount": 2,
+  "hasManualPricing": false,
+  "performance": {
+    "timestamp": 1761094870997,
+    "memory": {
+      "rss": 480301056,
+      "heapTotal": 212279296,
+      "heapUsed": 206840496,
+      "external": 4940224,
+      "arrayBuffers": 952008
+    }
+  }
+}
+2025-10-22T01:01:13.324Z [INFO] [UnifiedReturnService][calculatePenaltyPreview] Penalty preview calculated successfully
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "totalPenalty": 0,
+  "lateDays": 0,
+  "itemCount": 2,
+  "processingTime": 2327,
+  "performance": {
+    "timestamp": 1761094873324,
+    "memory": {
+      "rss": 480407552,
+      "heapTotal": 212279296,
+      "heapUsed": 206416496,
+      "external": 4935270,
+      "arrayBuffers": 947054
+    }
+  }
+}
+2025-10-22T01:02:00.017Z [INFO] [UnifiedReturnService][calculatePenaltyPreview] Starting penalty preview calculation
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "itemCount": 2,
+  "hasManualPricing": false,
+  "performance": {
+    "timestamp": 1761094920017,
+    "memory": {
+      "rss": 561233920,
+      "heapTotal": 295788544,
+      "heapUsed": 265538896,
+      "external": 4901782,
+      "arrayBuffers": 913546
+    }
+  }
+}
+2025-10-22T01:02:02.295Z [INFO] [UnifiedReturnService][calculatePenaltyPreview] Penalty preview calculated successfully
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "totalPenalty": 0,
+  "lateDays": 0,
+  "itemCount": 2,
+  "processingTime": 2278,
+  "performance": {
+    "timestamp": 1761094922295,
+    "memory": {
+      "rss": 561254400,
+      "heapTotal": 295788544,
+      "heapUsed": 265807968,
+      "external": 4901839,
+      "arrayBuffers": 913603
+    }
+  }
+}
+2025-10-22T01:06:41.378Z [INFO] [UnifiedReturnService][calculatePenaltyPreview] Starting penalty preview calculation
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "itemCount": 2,
+  "hasManualPricing": false,
+  "performance": {
+    "timestamp": 1761095201378,
+    "memory": {
+      "rss": 441090048,
+      "heapTotal": 260042752,
+      "heapUsed": 238203328,
+      "external": 4857385,
+      "arrayBuffers": 869169
+    }
+  }
+}
+2025-10-22T01:06:43.721Z [INFO] [UnifiedReturnService][calculatePenaltyPreview] Penalty preview calculated successfully
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "totalPenalty": 0,
+  "lateDays": 0,
+  "itemCount": 2,
+  "processingTime": 2343,
+  "performance": {
+    "timestamp": 1761095203721,
+    "memory": {
+      "rss": 441118720,
+      "heapTotal": 260042752,
+      "heapUsed": 238485456,
+      "external": 4857442,
+      "arrayBuffers": 869226
+    }
+  }
+}
+2025-10-22T01:06:54.863Z [INFO] [UnifiedReturnService][calculatePenaltyPreview] Starting penalty preview calculation
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "itemCount": 2,
+  "hasManualPricing": false,
+  "performance": {
+    "timestamp": 1761095214863,
+    "memory": {
+      "rss": 447549440,
+      "heapTotal": 265023488,
+      "heapUsed": 247809912,
+      "external": 5442324,
+      "arrayBuffers": 1454108
+    }
+  }
+}
+2025-10-22T01:06:57.251Z [INFO] [UnifiedReturnService][calculatePenaltyPreview] Penalty preview calculated successfully
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "totalPenalty": 0,
+  "lateDays": 0,
+  "itemCount": 2,
+  "processingTime": 2388,
+  "performance": {
+    "timestamp": 1761095217251,
+    "memory": {
+      "rss": 447578112,
+      "heapTotal": 265023488,
+      "heapUsed": 248061712,
+      "external": 5442381,
+      "arrayBuffers": 1454165
+    }
+  }
+}
+2025-10-22T01:07:08.409Z [INFO] [UnifiedReturnService][calculatePenaltyPreview] Starting penalty preview calculation
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "itemCount": 2,
+  "hasManualPricing": false,
+  "performance": {
+    "timestamp": 1761095228408,
+    "memory": {
+      "rss": 448720896,
+      "heapTotal": 254275584,
+      "heapUsed": 245642616,
+      "external": 5497183,
+      "arrayBuffers": 1508967
+    }
+  }
+}
+2025-10-22T01:07:10.926Z [INFO] [UnifiedReturnService][calculatePenaltyPreview] Starting penalty preview calculation
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "itemCount": 2,
+  "hasManualPricing": false,
+  "performance": {
+    "timestamp": 1761095230926,
+    "memory": {
+      "rss": 448929792,
+      "heapTotal": 254275584,
+      "heapUsed": 245908536,
+      "external": 5497240,
+      "arrayBuffers": 1509024
+    }
+  }
+}
+2025-10-22T01:07:11.026Z [INFO] [UnifiedReturnService][calculatePenaltyPreview] Penalty preview calculated successfully
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "totalPenalty": 5000,
+  "lateDays": 0,
+  "itemCount": 2,
+  "processingTime": 2618,
+  "performance": {
+    "timestamp": 1761095231026,
+    "memory": {
+      "rss": 448962560,
+      "heapTotal": 254537728,
+      "heapUsed": 244702160,
+      "external": 5492099,
+      "arrayBuffers": 1503883
+    }
+  }
+}
+2025-10-22T01:07:13.100Z [INFO] [UnifiedReturnService][calculatePenaltyPreview] Starting penalty preview calculation
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "itemCount": 2,
+  "hasManualPricing": false,
+  "performance": {
+    "timestamp": 1761095233100,
+    "memory": {
+      "rss": 448995328,
+      "heapTotal": 254537728,
+      "heapUsed": 245798520,
+      "external": 5536847,
+      "arrayBuffers": 1548631
+    }
+  }
+}
+2025-10-22T01:07:13.295Z [INFO] [UnifiedReturnService][calculatePenaltyPreview] Penalty preview calculated successfully
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "totalPenalty": 5000,
+  "lateDays": 0,
+  "itemCount": 2,
+  "processingTime": 2370,
+  "performance": {
+    "timestamp": 1761095233295,
+    "memory": {
+      "rss": 448999424,
+      "heapTotal": 254537728,
+      "heapUsed": 245940592,
+      "external": 5536904,
+      "arrayBuffers": 1548688
+    }
+  }
+}
+2025-10-22T01:07:18.447Z [INFO] [UnifiedReturnService][calculatePenaltyPreview] Penalty preview calculated successfully
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "totalPenalty": 5000,
+  "lateDays": 0,
+  "itemCount": 2,
+  "processingTime": 5347,
+  "performance": {
+    "timestamp": 1761095238447,
+    "memory": {
+      "rss": 448630784,
+      "heapTotal": 260567040,
+      "heapUsed": 248151192,
+      "external": 5691064,
+      "arrayBuffers": 1702848
+    }
+  }
+}
+2025-10-22T01:07:18.963Z [INFO] [UnifiedReturnService][calculatePenaltyPreview] Starting penalty preview calculation
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "itemCount": 2,
+  "hasManualPricing": false,
+  "performance": {
+    "timestamp": 1761095238963,
+    "memory": {
+      "rss": 449191936,
+      "heapTotal": 260829184,
+      "heapUsed": 247120176,
+      "external": 5681625,
+      "arrayBuffers": 1693409
+    }
+  }
+}
+2025-10-22T01:07:19.419Z [INFO] [UnifiedReturnService][calculatePenaltyPreview] Starting penalty preview calculation
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "itemCount": 2,
+  "hasManualPricing": false,
+  "performance": {
+    "timestamp": 1761095239419,
+    "memory": {
+      "rss": 449253376,
+      "heapTotal": 260829184,
+      "heapUsed": 247781040,
+      "external": 5703036,
+      "arrayBuffers": 1714820
+    }
+  }
+}
+2025-10-22T01:07:21.343Z [INFO] [UnifiedReturnService][calculatePenaltyPreview] Penalty preview calculated successfully
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "totalPenalty": 20000,
+  "lateDays": 0,
+  "itemCount": 2,
+  "processingTime": 2379,
+  "performance": {
+    "timestamp": 1761095241343,
+    "memory": {
+      "rss": 457437184,
+      "heapTotal": 271314944,
+      "heapUsed": 238575432,
+      "external": 8261295,
+      "arrayBuffers": 4273079
+    }
+  }
+}
+2025-10-22T01:07:21.791Z [INFO] [UnifiedReturnService][calculatePenaltyPreview] Penalty preview calculated successfully
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "totalPenalty": 20000,
+  "lateDays": 0,
+  "itemCount": 2,
+  "processingTime": 2372,
+  "performance": {
+    "timestamp": 1761095241791,
+    "memory": {
+      "rss": 457449472,
+      "heapTotal": 271314944,
+      "heapUsed": 239552240,
+      "external": 8305990,
+      "arrayBuffers": 4317774
+    }
+  }
+}
+2025-10-22T01:07:23.897Z [INFO] [UnifiedReturnService][calculatePenaltyPreview] Starting penalty preview calculation
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "itemCount": 2,
+  "hasManualPricing": false,
+  "performance": {
+    "timestamp": 1761095243897,
+    "memory": {
+      "rss": 457457664,
+      "heapTotal": 271314944,
+      "heapUsed": 240554816,
+      "external": 8342550,
+      "arrayBuffers": 4354334
+    }
+  }
+}
+2025-10-22T01:07:28.673Z [INFO] [UnifiedReturnService][calculatePenaltyPreview] Penalty preview calculated successfully
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "totalPenalty": 20000,
+  "lateDays": 0,
+  "itemCount": 2,
+  "processingTime": 4776,
+  "performance": {
+    "timestamp": 1761095248673,
+    "memory": {
+      "rss": 456339456,
+      "heapTotal": 271314944,
+      "heapUsed": 240879304,
+      "external": 8342607,
+      "arrayBuffers": 4354391
+    }
+  }
+}
+2025-10-22T01:19:41.299Z [INFO] [UnifiedReturnService][calculatePenaltyPreview] Starting penalty preview calculation
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "itemCount": 2,
+  "hasManualPricing": false,
+  "performance": {
+    "timestamp": 1761095981297,
+    "memory": {
+      "rss": 353259520,
+      "heapTotal": 297979904,
+      "heapUsed": 249950064,
+      "external": 4553867,
+      "arrayBuffers": 565651
+    }
+  }
+}
+2025-10-22T01:19:43.696Z [INFO] [UnifiedReturnService][calculatePenaltyPreview] Penalty preview calculated successfully
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "totalPenalty": 0,
+  "lateDays": 0,
+  "itemCount": 2,
+  "processingTime": 2401,
+  "performance": {
+    "timestamp": 1761095983696,
+    "memory": {
+      "rss": 353243136,
+      "heapTotal": 297979904,
+      "heapUsed": 250233736,
+      "external": 4553924,
+      "arrayBuffers": 565708
+    }
+  }
+}
+2025-10-22T01:19:47.112Z [INFO] [UnifiedReturnService][calculatePenaltyPreview] Starting penalty preview calculation
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "itemCount": 2,
+  "hasManualPricing": false,
+  "performance": {
+    "timestamp": 1761095987112,
+    "memory": {
+      "rss": 330702848,
+      "heapTotal": 254988288,
+      "heapUsed": 247069768,
+      "external": 4450705,
+      "arrayBuffers": 462489
+    }
+  }
+}
+2025-10-22T01:19:49.555Z [INFO] [UnifiedReturnService][calculatePenaltyPreview] Penalty preview calculated successfully
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "totalPenalty": 5000,
+  "lateDays": 0,
+  "itemCount": 2,
+  "processingTime": 2443,
+  "performance": {
+    "timestamp": 1761095989555,
+    "memory": {
+      "rss": 330960896,
+      "heapTotal": 254988288,
+      "heapUsed": 247333584,
+      "external": 4450762,
+      "arrayBuffers": 462546
+    }
+  }
+}
+2025-10-22T01:19:52.998Z [INFO] [UnifiedReturnService][calculatePenaltyPreview] Starting penalty preview calculation
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "itemCount": 2,
+  "hasManualPricing": false,
+  "performance": {
+    "timestamp": 1761095992998,
+    "memory": {
+      "rss": 335986688,
+      "heapTotal": 258658304,
+      "heapUsed": 247927168,
+      "external": 4487219,
+      "arrayBuffers": 499003
+    }
+  }
+}
+2025-10-22T01:19:55.338Z [INFO] [UnifiedReturnService][calculatePenaltyPreview] Penalty preview calculated successfully
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "totalPenalty": 10000,
+  "lateDays": 0,
+  "itemCount": 2,
+  "processingTime": 2340,
+  "performance": {
+    "timestamp": 1761095995338,
+    "memory": {
+      "rss": 335986688,
+      "heapTotal": 258658304,
+      "heapUsed": 248176840,
+      "external": 4487276,
+      "arrayBuffers": 499060
+    }
+  }
+}
+2025-10-22T01:21:20.454Z [INFO] [UnifiedReturnService][calculatePenaltyPreview] Starting penalty preview calculation
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "itemCount": 2,
+  "hasManualPricing": false,
+  "performance": {
+    "timestamp": 1761096080454,
+    "memory": {
+      "rss": 367497216,
+      "heapTotal": 259862528,
+      "heapUsed": 249430352,
+      "external": 4527350,
+      "arrayBuffers": 539134
+    }
+  }
+}
+2025-10-22T01:21:23.137Z [INFO] [UnifiedReturnService][calculatePenaltyPreview] Penalty preview calculated successfully
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "totalPenalty": 10000,
+  "lateDays": 0,
+  "itemCount": 2,
+  "processingTime": 2683,
+  "performance": {
+    "timestamp": 1761096083137,
+    "memory": {
+      "rss": 362803200,
+      "heapTotal": 259862528,
+      "heapUsed": 249676808,
+      "external": 4527407,
+      "arrayBuffers": 539191
+    }
+  }
+}
+2025-10-22T01:21:28.707Z [INFO] [UnifiedReturnService][calculatePenaltyPreview] Starting penalty preview calculation
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "itemCount": 2,
+  "hasManualPricing": false,
+  "performance": {
+    "timestamp": 1761096088707,
+    "memory": {
+      "rss": 365121536,
+      "heapTotal": 260911104,
+      "heapUsed": 250837608,
+      "external": 4597427,
+      "arrayBuffers": 609211
+    }
+  }
+}
+2025-10-22T01:21:31.196Z [INFO] [UnifiedReturnService][calculatePenaltyPreview] Penalty preview calculated successfully
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "totalPenalty": 10000,
+  "lateDays": 0,
+  "itemCount": 2,
+  "processingTime": 2489,
+  "performance": {
+    "timestamp": 1761096091196,
+    "memory": {
+      "rss": 365129728,
+      "heapTotal": 260911104,
+      "heapUsed": 251231744,
+      "external": 4597498,
+      "arrayBuffers": 609282
+    }
+  }
+}
+2025-10-22T01:21:31.829Z [INFO] [UnifiedReturnService][calculatePenaltyPreview] Starting penalty preview calculation
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "itemCount": 2,
+  "hasManualPricing": false,
+  "performance": {
+    "timestamp": 1761096091829,
+    "memory": {
+      "rss": 365129728,
+      "heapTotal": 260911104,
+      "heapUsed": 251655736,
+      "external": 4598707,
+      "arrayBuffers": 610491
+    }
+  }
+}
+2025-10-22T01:21:34.128Z [INFO] [UnifiedReturnService][calculatePenaltyPreview] Penalty preview calculated successfully
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "totalPenalty": 10000,
+  "lateDays": 0,
+  "itemCount": 2,
+  "processingTime": 2299,
+  "performance": {
+    "timestamp": 1761096094128,
+    "memory": {
+      "rss": 365268992,
+      "heapTotal": 260911104,
+      "heapUsed": 250492088,
+      "external": 4595498,
+      "arrayBuffers": 607282
+    }
+  }
+}
+2025-10-22T01:22:06.589Z [INFO] [UnifiedReturnService][calculatePenaltyPreview] Starting penalty preview calculation
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "itemCount": 2,
+  "hasManualPricing": false,
+  "performance": {
+    "timestamp": 1761096126589,
+    "memory": {
+      "rss": 365338624,
+      "heapTotal": 262221824,
+      "heapUsed": 251189456,
+      "external": 4635379,
+      "arrayBuffers": 643648
+    }
+  }
+}
+2025-10-22T01:22:08.963Z [INFO] [UnifiedReturnService][calculatePenaltyPreview] Penalty preview calculated successfully
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "totalPenalty": 20000,
+  "lateDays": 0,
+  "itemCount": 2,
+  "processingTime": 2374,
+  "performance": {
+    "timestamp": 1761096128963,
+    "memory": {
+      "rss": 367259648,
+      "heapTotal": 267202560,
+      "heapUsed": 254267280,
+      "external": 4697309,
+      "arrayBuffers": 709093
+    }
+  }
+}
+2025-10-22T01:22:10.462Z [INFO] [UnifiedReturnService][calculatePenaltyPreview] Starting penalty preview calculation
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "itemCount": 2,
+  "hasManualPricing": false,
+  "performance": {
+    "timestamp": 1761096130462,
+    "memory": {
+      "rss": 367726592,
+      "heapTotal": 267202560,
+      "heapUsed": 254821048,
+      "external": 4698532,
+      "arrayBuffers": 710316
+    }
+  }
+}
+2025-10-22T01:22:12.383Z [INFO] [UnifiedReturnService][calculatePenaltyPreview] Starting penalty preview calculation
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "itemCount": 2,
+  "hasManualPricing": false,
+  "performance": {
+    "timestamp": 1761096132383,
+    "memory": {
+      "rss": 367980544,
+      "heapTotal": 267202560,
+      "heapUsed": 255108784,
+      "external": 4698589,
+      "arrayBuffers": 710373
+    }
+  }
+}
+2025-10-22T01:22:12.795Z [INFO] [UnifiedReturnService][calculatePenaltyPreview] Penalty preview calculated successfully
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "totalPenalty": 20000,
+  "lateDays": 0,
+  "itemCount": 2,
+  "processingTime": 2333,
+  "performance": {
+    "timestamp": 1761096132795,
+    "memory": {
+      "rss": 368197632,
+      "heapTotal": 267202560,
+      "heapUsed": 255249784,
+      "external": 4698646,
+      "arrayBuffers": 710430
+    }
+  }
+}
+2025-10-22T01:22:14.811Z [INFO] [UnifiedReturnService][calculatePenaltyPreview] Penalty preview calculated successfully
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "totalPenalty": 20000,
+  "lateDays": 0,
+  "itemCount": 2,
+  "processingTime": 2429,
+  "performance": {
+    "timestamp": 1761096134811,
+    "memory": {
+      "rss": 367972352,
+      "heapTotal": 260124672,
+      "heapUsed": 252800112,
+      "external": 4722517,
+      "arrayBuffers": 705136
+    }
+  }
+}
+2025-10-22T01:22:40.113Z [INFO] [UnifiedReturnService][calculatePenaltyPreview] Starting penalty preview calculation
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "itemCount": 2,
+  "hasManualPricing": false,
+  "performance": {
+    "timestamp": 1761096160113,
+    "memory": {
+      "rss": 445444096,
+      "heapTotal": 335560704,
+      "heapUsed": 296057496,
+      "external": 4925303,
+      "arrayBuffers": 937087
+    }
+  }
+}
+2025-10-22T01:22:42.404Z [INFO] [UnifiedReturnService][calculatePenaltyPreview] Penalty preview calculated successfully
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "totalPenalty": 0,
+  "lateDays": 0,
+  "itemCount": 2,
+  "processingTime": 2291,
+  "performance": {
+    "timestamp": 1761096162404,
+    "memory": {
+      "rss": 445468672,
+      "heapTotal": 335560704,
+      "heapUsed": 296419656,
+      "external": 4925360,
+      "arrayBuffers": 937144
+    }
+  }
+}
+2025-10-22T01:22:47.932Z [INFO] [UnifiedReturnService][calculatePenaltyPreview] Starting penalty preview calculation
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "itemCount": 2,
+  "hasManualPricing": false,
+  "performance": {
+    "timestamp": 1761096167932,
+    "memory": {
+      "rss": 447012864,
+      "heapTotal": 336347136,
+      "heapUsed": 300376672,
+      "external": 4995986,
+      "arrayBuffers": 1007770
+    }
+  }
+}
+2025-10-22T01:22:48.460Z [INFO] [UnifiedReturnService][calculatePenaltyPreview] Starting penalty preview calculation
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "itemCount": 2,
+  "hasManualPricing": false,
+  "performance": {
+    "timestamp": 1761096168460,
+    "memory": {
+      "rss": 447016960,
+      "heapTotal": 336347136,
+      "heapUsed": 300596304,
+      "external": 4996043,
+      "arrayBuffers": 1007827
+    }
+  }
+}
+2025-10-22T01:22:50.685Z [INFO] [UnifiedReturnService][calculatePenaltyPreview] Penalty preview calculated successfully
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "totalPenalty": 5000,
+  "lateDays": 0,
+  "itemCount": 2,
+  "processingTime": 2753,
+  "performance": {
+    "timestamp": 1761096170685,
+    "memory": {
+      "rss": 447016960,
+      "heapTotal": 336347136,
+      "heapUsed": 301099856,
+      "external": 4996100,
+      "arrayBuffers": 1007884
+    }
+  }
+}
+2025-10-22T01:22:51.077Z [INFO] [UnifiedReturnService][calculatePenaltyPreview] Penalty preview calculated successfully
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "totalPenalty": 5000,
+  "lateDays": 0,
+  "itemCount": 2,
+  "processingTime": 2617,
+  "performance": {
+    "timestamp": 1761096171077,
+    "memory": {
+      "rss": 447664128,
+      "heapTotal": 336609280,
+      "heapUsed": 302991864,
+      "external": 5026744,
+      "arrayBuffers": 1038528
+    }
+  }
+}
+2025-10-22T01:22:53.977Z [INFO] [UnifiedReturnService][calculatePenaltyPreview] Starting penalty preview calculation
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "itemCount": 2,
+  "hasManualPricing": false,
+  "performance": {
+    "timestamp": 1761096173977,
+    "memory": {
+      "rss": 447705088,
+      "heapTotal": 336609280,
+      "heapUsed": 304341968,
+      "external": 5050478,
+      "arrayBuffers": 1062262
+    }
+  }
+}
+2025-10-22T01:22:56.321Z [INFO] [UnifiedReturnService][calculatePenaltyPreview] Penalty preview calculated successfully
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "totalPenalty": 55000,
+  "lateDays": 0,
+  "itemCount": 2,
+  "processingTime": 2344,
+  "performance": {
+    "timestamp": 1761096176321,
+    "memory": {
+      "rss": 445640704,
+      "heapTotal": 336609280,
+      "heapUsed": 304714040,
+      "external": 5050535,
+      "arrayBuffers": 1062319
+    }
+  }
+}
+2025-10-22T01:23:28.433Z [INFO] [UnifiedReturnService][calculatePenaltyPreview] Starting penalty preview calculation
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "itemCount": 2,
+  "hasManualPricing": false,
+  "performance": {
+    "timestamp": 1761096208433,
+    "memory": {
+      "rss": 446795776,
+      "heapTotal": 306200576,
+      "heapUsed": 298067640,
+      "external": 5025507,
+      "arrayBuffers": 1037291
+    }
+  }
+}
+2025-10-22T01:23:30.752Z [INFO] [UnifiedReturnService][calculatePenaltyPreview] Penalty preview calculated successfully
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "totalPenalty": 10000,
+  "lateDays": 0,
+  "itemCount": 2,
+  "processingTime": 2319,
+  "performance": {
+    "timestamp": 1761096210752,
+    "memory": {
+      "rss": 446795776,
+      "heapTotal": 308297728,
+      "heapUsed": 297718008,
+      "external": 5023511,
+      "arrayBuffers": 1035295
+    }
+  }
+}
+2025-10-22T02:36:39.684Z [DEBUG] [UnifiedReturnService][validateUnifiedReturn] Starting validation
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "transactionStatus": "active",
+  "transactionItemCount": 2,
+  "returnItemCount": 2,
+  "returnItemIds": [
+    "e5285341-6ddf-4bd2-bd42-d283dc4746c0",
+    "77c26fa6-ff79-4111-a6bb-7b34a16900fa"
+  ],
+  "performance": {
+    "timestamp": 1761100599684,
+    "memory": {
+      "rss": 332259328,
+      "heapTotal": 321048576,
+      "heapUsed": 305565408,
+      "external": 4693995,
+      "arrayBuffers": 705779
+    }
+  }
+}
+2025-10-22T02:36:39.704Z [DEBUG] [UnifiedReturnService][validateUnifiedReturn] Transaction items available
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "transactionItems": [
+    {
+      "id": "e5285341-6ddf-4bd2-bd42-d283dc4746c0",
+      "productId": "67d31de1-f7a6-4e78-af34-6b2786017bb7",
+      "produkName": "Baju Pesta Kini",
+      "jumlahDiambil": 1,
+      "statusKembali": "belum",
+      "kondisiAwal": "85a7a3b8-4e13-45bf-b413-ff24ffdf1af9|M|ADULT|baik"
+    },
+    {
+      "id": "77c26fa6-ff79-4111-a6bb-7b34a16900fa",
+      "productId": "52d79b29-205c-4862-9064-c145e42d8ec9",
+      "produkName": "Dress Elegant Blue",
+      "jumlahDiambil": 1,
+      "statusKembali": "belum",
+      "kondisiAwal": "5069695b-b1c9-427b-ad47-e7a9c3a95bc7|M|ADULT|baik"
+    }
+  ],
+  "performance": {
+    "timestamp": 1761100599704,
+    "memory": {
+      "rss": 332337152,
+      "heapTotal": 321048576,
+      "heapUsed": 305577752,
+      "external": 4693995,
+      "arrayBuffers": 705779
+    }
+  }
+}
+2025-10-22T02:36:39.715Z [DEBUG] [UnifiedReturnService][validateUnifiedReturn] Processing return item
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "returnItemId": "e5285341-6ddf-4bd2-bd42-d283dc4746c0",
+  "returnItemConditions": [
+    {
+      "kondisiAkhir": "Kotor",
+      "jumlahKembali": 1
+    }
+  ],
+  "performance": {
+    "timestamp": 1761100599714,
+    "memory": {
+      "rss": 332394496,
+      "heapTotal": 321048576,
+      "heapUsed": 305586120,
+      "external": 4693995,
+      "arrayBuffers": 705779
+    }
+  }
+}
+2025-10-22T02:36:39.725Z [DEBUG] [UnifiedReturnService][validateUnifiedReturn] Item matching result
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "returnItemId": "e5285341-6ddf-4bd2-bd42-d283dc4746c0",
+  "found": true,
+  "transactionItemId": "e5285341-6ddf-4bd2-bd42-d283dc4746c0",
+  "performance": {
+    "timestamp": 1761100599724,
+    "memory": {
+      "rss": 332394496,
+      "heapTotal": 321048576,
+      "heapUsed": 305593608,
+      "external": 4693995,
+      "arrayBuffers": 705779
+    }
+  }
+}
+2025-10-22T02:36:40.538Z [DEBUG] [UnifiedReturnService][validateUnifiedReturn] Processing return item
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "returnItemId": "77c26fa6-ff79-4111-a6bb-7b34a16900fa",
+  "returnItemConditions": [
+    {
+      "kondisiAkhir": "Kotor",
+      "jumlahKembali": 1
+    }
+  ],
+  "performance": {
+    "timestamp": 1761100600538,
+    "memory": {
+      "rss": 332648448,
+      "heapTotal": 321048576,
+      "heapUsed": 305769768,
+      "external": 4694052,
+      "arrayBuffers": 705836
+    }
+  }
+}
+2025-10-22T02:36:40.541Z [DEBUG] [UnifiedReturnService][validateUnifiedReturn] Item matching result
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "returnItemId": "77c26fa6-ff79-4111-a6bb-7b34a16900fa",
+  "found": true,
+  "transactionItemId": "77c26fa6-ff79-4111-a6bb-7b34a16900fa",
+  "performance": {
+    "timestamp": 1761100600541,
+    "memory": {
+      "rss": 332648448,
+      "heapTotal": 321048576,
+      "heapUsed": 305779088,
+      "external": 4694052,
+      "arrayBuffers": 705836
+    }
+  }
+}
+2025-10-22T02:36:41.219Z [WARN] [UnifiedReturnService][validateUnifiedReturn] Return validation failed
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "errorCount": 2,
+  "itemsValidated": 2,
+  "validationErrors": [
+    {
+      "field": "items[e5285341-6ddf-4bd2-bd42-d283dc4746c0].productSizeId",
+      "message": "Size M (ADULT) tidak tersedia untuk produk Baju Pesta Kini. Periksa ukuran yang tersedia di inventaris.",
+      "code": "SIZE_NOT_AVAILABLE"
+    },
+    {
+      "field": "items[77c26fa6-ff79-4111-a6bb-7b34a16900fa].productSizeId",
+      "message": "Size M (ADULT) tidak tersedia untuk produk Dress Elegant Blue. Periksa ukuran yang tersedia di inventaris.",
+      "code": "SIZE_NOT_AVAILABLE"
+    }
+  ],
+  "summary": {
+    "hasSizeErrors": true,
+    "hasConditionErrors": false,
+    "hasQuantityErrors": false,
+    "hasItemErrors": false
+  },
+  "performance": {
+    "timestamp": 1761100601219,
+    "memory": {
+      "rss": 332697600,
+      "heapTotal": 321048576,
+      "heapUsed": 305930104,
+      "external": 4694109,
+      "arrayBuffers": 705893
+    }
+  }
+}
+2025-10-22T02:36:48.705Z [DEBUG] [UnifiedReturnService][validateUnifiedReturn] Starting validation
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "transactionStatus": "active",
+  "transactionItemCount": 2,
+  "returnItemCount": 2,
+  "returnItemIds": [
+    "e5285341-6ddf-4bd2-bd42-d283dc4746c0",
+    "77c26fa6-ff79-4111-a6bb-7b34a16900fa"
+  ],
+  "performance": {
+    "timestamp": 1761100608705,
+    "memory": {
+      "rss": 339767296,
+      "heapTotal": 317640704,
+      "heapUsed": 305956000,
+      "external": 4758683,
+      "arrayBuffers": 766936
+    }
+  }
+}
+2025-10-22T02:36:48.710Z [DEBUG] [UnifiedReturnService][validateUnifiedReturn] Transaction items available
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "transactionItems": [
+    {
+      "id": "e5285341-6ddf-4bd2-bd42-d283dc4746c0",
+      "productId": "67d31de1-f7a6-4e78-af34-6b2786017bb7",
+      "produkName": "Baju Pesta Kini",
+      "jumlahDiambil": 1,
+      "statusKembali": "belum",
+      "kondisiAwal": "85a7a3b8-4e13-45bf-b413-ff24ffdf1af9|M|ADULT|baik"
+    },
+    {
+      "id": "77c26fa6-ff79-4111-a6bb-7b34a16900fa",
+      "productId": "52d79b29-205c-4862-9064-c145e42d8ec9",
+      "produkName": "Dress Elegant Blue",
+      "jumlahDiambil": 1,
+      "statusKembali": "belum",
+      "kondisiAwal": "5069695b-b1c9-427b-ad47-e7a9c3a95bc7|M|ADULT|baik"
+    }
+  ],
+  "performance": {
+    "timestamp": 1761100608710,
+    "memory": {
+      "rss": 339767296,
+      "heapTotal": 317640704,
+      "heapUsed": 305965688,
+      "external": 4758683,
+      "arrayBuffers": 766936
+    }
+  }
+}
+2025-10-22T02:36:48.715Z [DEBUG] [UnifiedReturnService][validateUnifiedReturn] Processing return item
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "returnItemId": "e5285341-6ddf-4bd2-bd42-d283dc4746c0",
+  "returnItemConditions": [
+    {
+      "kondisiAkhir": "Kotor",
+      "jumlahKembali": 1
+    }
+  ],
+  "performance": {
+    "timestamp": 1761100608715,
+    "memory": {
+      "rss": 339767296,
+      "heapTotal": 317640704,
+      "heapUsed": 305973328,
+      "external": 4758683,
+      "arrayBuffers": 766936
+    }
+  }
+}
+2025-10-22T02:36:48.719Z [DEBUG] [UnifiedReturnService][validateUnifiedReturn] Item matching result
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "returnItemId": "e5285341-6ddf-4bd2-bd42-d283dc4746c0",
+  "found": true,
+  "transactionItemId": "e5285341-6ddf-4bd2-bd42-d283dc4746c0",
+  "performance": {
+    "timestamp": 1761100608719,
+    "memory": {
+      "rss": 339767296,
+      "heapTotal": 317640704,
+      "heapUsed": 305979760,
+      "external": 4758683,
+      "arrayBuffers": 766936
+    }
+  }
+}
+2025-10-22T02:36:49.395Z [DEBUG] [UnifiedReturnService][validateUnifiedReturn] Processing return item
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "returnItemId": "77c26fa6-ff79-4111-a6bb-7b34a16900fa",
+  "returnItemConditions": [
+    {
+      "kondisiAkhir": "Kotor",
+      "jumlahKembali": 1
+    }
+  ],
+  "performance": {
+    "timestamp": 1761100609395,
+    "memory": {
+      "rss": 339779584,
+      "heapTotal": 317640704,
+      "heapUsed": 306124720,
+      "external": 4755209,
+      "arrayBuffers": 766993
+    }
+  }
+}
+2025-10-22T02:36:49.396Z [DEBUG] [UnifiedReturnService][validateUnifiedReturn] Item matching result
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "returnItemId": "77c26fa6-ff79-4111-a6bb-7b34a16900fa",
+  "found": true,
+  "transactionItemId": "77c26fa6-ff79-4111-a6bb-7b34a16900fa",
+  "performance": {
+    "timestamp": 1761100609396,
+    "memory": {
+      "rss": 339779584,
+      "heapTotal": 317640704,
+      "heapUsed": 306134040,
+      "external": 4755209,
+      "arrayBuffers": 766993
+    }
+  }
+}
+2025-10-22T02:36:50.190Z [WARN] [UnifiedReturnService][validateUnifiedReturn] Return validation failed
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "errorCount": 2,
+  "itemsValidated": 2,
+  "validationErrors": [
+    {
+      "field": "items[e5285341-6ddf-4bd2-bd42-d283dc4746c0].productSizeId",
+      "message": "Size M (ADULT) tidak tersedia untuk produk Baju Pesta Kini. Periksa ukuran yang tersedia di inventaris.",
+      "code": "SIZE_NOT_AVAILABLE"
+    },
+    {
+      "field": "items[77c26fa6-ff79-4111-a6bb-7b34a16900fa].productSizeId",
+      "message": "Size M (ADULT) tidak tersedia untuk produk Dress Elegant Blue. Periksa ukuran yang tersedia di inventaris.",
+      "code": "SIZE_NOT_AVAILABLE"
+    }
+  ],
+  "summary": {
+    "hasSizeErrors": true,
+    "hasConditionErrors": false,
+    "hasQuantityErrors": false,
+    "hasItemErrors": false
+  },
+  "performance": {
+    "timestamp": 1761100610190,
+    "memory": {
+      "rss": 339783680,
+      "heapTotal": 317640704,
+      "heapUsed": 306279376,
+      "external": 4755266,
+      "arrayBuffers": 767050
+    }
+  }
+}
+2025-10-22T02:36:58.724Z [DEBUG] [UnifiedReturnService][validateUnifiedReturn] Starting validation
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "transactionStatus": "active",
+  "transactionItemCount": 2,
+  "returnItemCount": 2,
+  "returnItemIds": [
+    "e5285341-6ddf-4bd2-bd42-d283dc4746c0",
+    "77c26fa6-ff79-4111-a6bb-7b34a16900fa"
+  ],
+  "performance": {
+    "timestamp": 1761100618724,
+    "memory": {
+      "rss": 340328448,
+      "heapTotal": 318951424,
+      "heapUsed": 307329264,
+      "external": 4820435,
+      "arrayBuffers": 828045
+    }
+  }
+}
+2025-10-22T02:36:58.726Z [DEBUG] [UnifiedReturnService][validateUnifiedReturn] Transaction items available
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "transactionItems": [
+    {
+      "id": "e5285341-6ddf-4bd2-bd42-d283dc4746c0",
+      "productId": "67d31de1-f7a6-4e78-af34-6b2786017bb7",
+      "produkName": "Baju Pesta Kini",
+      "jumlahDiambil": 1,
+      "statusKembali": "belum",
+      "kondisiAwal": "85a7a3b8-4e13-45bf-b413-ff24ffdf1af9|M|ADULT|baik"
+    },
+    {
+      "id": "77c26fa6-ff79-4111-a6bb-7b34a16900fa",
+      "productId": "52d79b29-205c-4862-9064-c145e42d8ec9",
+      "produkName": "Dress Elegant Blue",
+      "jumlahDiambil": 1,
+      "statusKembali": "belum",
+      "kondisiAwal": "5069695b-b1c9-427b-ad47-e7a9c3a95bc7|M|ADULT|baik"
+    }
+  ],
+  "performance": {
+    "timestamp": 1761100618726,
+    "memory": {
+      "rss": 340328448,
+      "heapTotal": 318951424,
+      "heapUsed": 307339328,
+      "external": 4820435,
+      "arrayBuffers": 828045
+    }
+  }
+}
+2025-10-22T02:36:58.728Z [DEBUG] [UnifiedReturnService][validateUnifiedReturn] Processing return item
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "returnItemId": "e5285341-6ddf-4bd2-bd42-d283dc4746c0",
+  "returnItemConditions": [
+    {
+      "kondisiAkhir": "Kotor",
+      "jumlahKembali": 1
+    }
+  ],
+  "performance": {
+    "timestamp": 1761100618728,
+    "memory": {
+      "rss": 340328448,
+      "heapTotal": 318951424,
+      "heapUsed": 307346968,
+      "external": 4820435,
+      "arrayBuffers": 828045
+    }
+  }
+}
+2025-10-22T02:36:58.730Z [DEBUG] [UnifiedReturnService][validateUnifiedReturn] Item matching result
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "returnItemId": "e5285341-6ddf-4bd2-bd42-d283dc4746c0",
+  "found": true,
+  "transactionItemId": "e5285341-6ddf-4bd2-bd42-d283dc4746c0",
+  "performance": {
+    "timestamp": 1761100618730,
+    "memory": {
+      "rss": 340328448,
+      "heapTotal": 318951424,
+      "heapUsed": 307353136,
+      "external": 4820435,
+      "arrayBuffers": 828045
+    }
+  }
+}
+2025-10-22T02:36:59.405Z [DEBUG] [UnifiedReturnService][validateUnifiedReturn] Processing return item
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "returnItemId": "77c26fa6-ff79-4111-a6bb-7b34a16900fa",
+  "returnItemConditions": [
+    {
+      "kondisiAkhir": "Kotor",
+      "jumlahKembali": 1
+    }
+  ],
+  "performance": {
+    "timestamp": 1761100619405,
+    "memory": {
+      "rss": 340332544,
+      "heapTotal": 318951424,
+      "heapUsed": 307498096,
+      "external": 4816318,
+      "arrayBuffers": 828102
+    }
+  }
+}
+2025-10-22T02:36:59.410Z [DEBUG] [UnifiedReturnService][validateUnifiedReturn] Item matching result
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "returnItemId": "77c26fa6-ff79-4111-a6bb-7b34a16900fa",
+  "found": true,
+  "transactionItemId": "77c26fa6-ff79-4111-a6bb-7b34a16900fa",
+  "performance": {
+    "timestamp": 1761100619410,
+    "memory": {
+      "rss": 340332544,
+      "heapTotal": 318951424,
+      "heapUsed": 307507512,
+      "external": 4816318,
+      "arrayBuffers": 828102
+    }
+  }
+}
+2025-10-22T02:37:00.076Z [WARN] [UnifiedReturnService][validateUnifiedReturn] Return validation failed
+{
+  "transactionId": "9a73328a-9c5e-46ff-a46e-2edbd841d44d",
+  "errorCount": 2,
+  "itemsValidated": 2,
+  "validationErrors": [
+    {
+      "field": "items[e5285341-6ddf-4bd2-bd42-d283dc4746c0].productSizeId",
+      "message": "Size M (ADULT) tidak tersedia untuk produk Baju Pesta Kini. Periksa ukuran yang tersedia di inventaris.",
+      "code": "SIZE_NOT_AVAILABLE"
+    },
+    {
+      "field": "items[77c26fa6-ff79-4111-a6bb-7b34a16900fa].productSizeId",
+      "message": "Size M (ADULT) tidak tersedia untuk produk Dress Elegant Blue. Periksa ukuran yang tersedia di inventaris.",
+      "code": "SIZE_NOT_AVAILABLE"
+    }
+  ],
+  "summary": {
+    "hasSizeErrors": true,
+    "hasConditionErrors": false,
+    "hasQuantityErrors": false,
+    "hasItemErrors": false
+  },
+  "performance": {
+    "timestamp": 1761100620076,
+    "memory": {
+      "rss": 340340736,
+      "heapTotal": 318951424,
+      "heapUsed": 307653696,
+      "external": 4816375,
+      "arrayBuffers": 828159
+    }
+  }
+}
+2025-10-22T02:57:28.330Z [DEBUG] [UnifiedReturnService][validateUnifiedReturn] Starting validation
+{
+  "transactionId": "69dd24c3-c896-4142-815e-9165d53a035f",
+  "transactionStatus": "active",
+  "transactionItemCount": 2,
+  "returnItemCount": 2,
+  "returnItemIds": [
+    "2caac982-fd6b-4ad2-975b-f268d8a63703",
+    "e9abc447-6c96-4e38-813b-76baea2be217"
+  ],
+  "performance": {
+    "timestamp": 1761101848330,
+    "memory": {
+      "rss": 635920384,
+      "heapTotal": 371544064,
+      "heapUsed": 354462320,
+      "external": 5821057,
+      "arrayBuffers": 1832834
+    }
+  }
+}
+2025-10-22T02:57:28.343Z [DEBUG] [UnifiedReturnService][validateUnifiedReturn] Transaction items available
+{
+  "transactionId": "69dd24c3-c896-4142-815e-9165d53a035f",
+  "transactionItems": [
+    {
+      "id": "2caac982-fd6b-4ad2-975b-f268d8a63703",
+      "productId": "63956225-c6fc-4872-9a4b-cb17eca3cc74",
+      "produkName": "Dress Elegant Dark",
+      "jumlahDiambil": 1,
+      "statusKembali": "belum",
+      "kondisiAwal": "8f0c853a-b4b3-4e00-a14c-f9cfde806908|L|ADULT|baik"
+    },
+    {
+      "id": "e9abc447-6c96-4e38-813b-76baea2be217",
+      "productId": "ad20e72f-e9c3-4361-8e12-2ad602d5d651",
+      "produkName": "GAUN PREMIUM KUNING",
+      "jumlahDiambil": 1,
+      "statusKembali": "belum",
+      "kondisiAwal": "44c1f2bd-0afe-4101-9349-4ce1f8c59a04|XL|ADULT|baik"
+    }
+  ],
+  "performance": {
+    "timestamp": 1761101848342,
+    "memory": {
+      "rss": 635924480,
+      "heapTotal": 371544064,
+      "heapUsed": 354475784,
+      "external": 5821057,
+      "arrayBuffers": 1832834
+    }
+  }
+}
+2025-10-22T02:57:28.353Z [DEBUG] [UnifiedReturnService][validateUnifiedReturn] Processing return item
+{
+  "transactionId": "69dd24c3-c896-4142-815e-9165d53a035f",
+  "returnItemId": "2caac982-fd6b-4ad2-975b-f268d8a63703",
+  "returnItemConditions": [
+    {
+      "kondisiAkhir": "Kotor",
+      "jumlahKembali": 1
+    }
+  ],
+  "performance": {
+    "timestamp": 1761101848353,
+    "memory": {
+      "rss": 635924480,
+      "heapTotal": 371544064,
+      "heapUsed": 354484192,
+      "external": 5821057,
+      "arrayBuffers": 1832834
+    }
+  }
+}
+2025-10-22T02:57:28.361Z [DEBUG] [UnifiedReturnService][validateUnifiedReturn] Item matching result
+{
+  "transactionId": "69dd24c3-c896-4142-815e-9165d53a035f",
+  "returnItemId": "2caac982-fd6b-4ad2-975b-f268d8a63703",
+  "found": true,
+  "transactionItemId": "2caac982-fd6b-4ad2-975b-f268d8a63703",
+  "performance": {
+    "timestamp": 1761101848361,
+    "memory": {
+      "rss": 635928576,
+      "heapTotal": 371544064,
+      "heapUsed": 354491384,
+      "external": 5821057,
+      "arrayBuffers": 1832834
+    }
+  }
+}
+2025-10-22T02:57:29.960Z [DEBUG] [UnifiedReturnService][validateUnifiedReturn] Size validation passed
+{
+  "transactionId": "69dd24c3-c896-4142-815e-9165d53a035f",
+  "itemId": "2caac982-fd6b-4ad2-975b-f268d8a63703",
+  "productSizeId": "8f0c853a-b4b3-4e00-a14c-f9cfde806908",
+  "size": "L",
+  "ageCategory": "ADULT",
+  "productName": "Dress Elegant Dark",
+  "format": "size-aware",
+  "performance": {
+    "timestamp": 1761101849960,
+    "memory": {
+      "rss": 635981824,
+      "heapTotal": 371544064,
+      "heapUsed": 354649032,
+      "external": 5821107,
+      "arrayBuffers": 1832891
+    }
+  }
+}
+2025-10-22T02:57:29.964Z [DEBUG] [UnifiedReturnService][validateUnifiedReturn] Processing return item
+{
+  "transactionId": "69dd24c3-c896-4142-815e-9165d53a035f",
+  "returnItemId": "e9abc447-6c96-4e38-813b-76baea2be217",
+  "returnItemConditions": [
+    {
+      "kondisiAkhir": "Rusak Ringan",
+      "jumlahKembali": 1
+    }
+  ],
+  "performance": {
+    "timestamp": 1761101849964,
+    "memory": {
+      "rss": 635990016,
+      "heapTotal": 371544064,
+      "heapUsed": 354659240,
+      "external": 5821107,
+      "arrayBuffers": 1832891
+    }
+  }
+}
+2025-10-22T02:57:29.965Z [DEBUG] [UnifiedReturnService][validateUnifiedReturn] Item matching result
+{
+  "transactionId": "69dd24c3-c896-4142-815e-9165d53a035f",
+  "returnItemId": "e9abc447-6c96-4e38-813b-76baea2be217",
+  "found": true,
+  "transactionItemId": "e9abc447-6c96-4e38-813b-76baea2be217",
+  "performance": {
+    "timestamp": 1761101849965,
+    "memory": {
+      "rss": 635990016,
+      "heapTotal": 371544064,
+      "heapUsed": 354665488,
+      "external": 5821107,
+      "arrayBuffers": 1832891
+    }
+  }
+}
+2025-10-22T02:57:31.293Z [DEBUG] [UnifiedReturnService][validateUnifiedReturn] Size validation passed
+{
+  "transactionId": "69dd24c3-c896-4142-815e-9165d53a035f",
+  "itemId": "e9abc447-6c96-4e38-813b-76baea2be217",
+  "productSizeId": "44c1f2bd-0afe-4101-9349-4ce1f8c59a04",
+  "size": "XL",
+  "ageCategory": "ADULT",
+  "productName": "GAUN PREMIUM KUNING",
+  "format": "size-aware",
+  "performance": {
+    "timestamp": 1761101851293,
+    "memory": {
+      "rss": 635990016,
+      "heapTotal": 371544064,
+      "heapUsed": 354814432,
+      "external": 5821164,
+      "arrayBuffers": 1832948
+    }
+  }
+}
+2025-10-22T02:57:31.295Z [DEBUG] [UnifiedReturnService][validateUnifiedReturn] Return validation successful
+{
+  "transactionId": "69dd24c3-c896-4142-815e-9165d53a035f",
+  "itemsValidated": 2,
+  "transactionStatus": "active",
+  "performance": {
+    "timestamp": 1761101851295,
+    "memory": {
+      "rss": 635990016,
+      "heapTotal": 371544064,
+      "heapUsed": 354825080,
+      "external": 5821164,
+      "arrayBuffers": 1832948
+    }
+  }
+}
+2025-10-22T02:57:31.678Z [DEBUG] [UnifiedReturnService][processUnifiedReturn] Starting database transaction
+{
+  "transactionId": "69dd24c3-c896-4142-815e-9165d53a035f",
+  "itemCount": 2,
+  "totalConditions": 2,
+  "performance": {
+    "timestamp": 1761101851678,
+    "memory": {
+      "rss": 636035072,
+      "heapTotal": 371544064,
+      "heapUsed": 354987128,
+      "external": 5821221,
+      "arrayBuffers": 1833005
+    }
+  }
+}
+2025-10-22T02:57:32.627Z [DEBUG] [UnifiedReturnService][processUnifiedReturn] Main transaction updated
+{
+  "transactionId": "69dd24c3-c896-4142-815e-9165d53a035f",
+  "newStatus": "dikembalikan",
+  "transactionUpdateId": "69dd24c3-c896-4142-815e-9165d53a035f",
+  "performance": {
+    "timestamp": 1761101852626,
+    "memory": {
+      "rss": 636039168,
+      "heapTotal": 371544064,
+      "heapUsed": 355176744,
+      "external": 5821278,
+      "arrayBuffers": 1833062
+    }
+  }
+}
+2025-10-22T02:57:32.636Z [DEBUG] [UnifiedReturnService][processUnifiedReturn] Starting item processing
+{
+  "transactionId": "69dd24c3-c896-4142-815e-9165d53a035f",
+  "itemsToProcess": [
+    {
+      "itemId": "2caac982-fd6b-4ad2-975b-f268d8a63703",
+      "conditionCount": 1,
+      "conditions": [
+        {
+          "kondisiAkhir": "Kotor",
+          "jumlahKembali": 1
+        }
+      ]
+    },
+    {
+      "itemId": "e9abc447-6c96-4e38-813b-76baea2be217",
+      "conditionCount": 1,
+      "conditions": [
+        {
+          "kondisiAkhir": "Rusak Ringan",
+          "jumlahKembali": 1
+        }
+      ]
+    }
+  ],
+  "performance": {
+    "timestamp": 1761101852635,
+    "memory": {
+      "rss": 636039168,
+      "heapTotal": 371544064,
+      "heapUsed": 355187336,
+      "external": 5821278,
+      "arrayBuffers": 1833062
+    }
+  }
+}
+2025-10-22T02:57:32.647Z [DEBUG] [UnifiedReturnService][processUnifiedReturn] Processing item
+{
+  "transactionId": "69dd24c3-c896-4142-815e-9165d53a035f",
+  "itemId": "2caac982-fd6b-4ad2-975b-f268d8a63703",
+  "conditionCount": 1,
+  "performance": {
+    "timestamp": 1761101852647,
+    "memory": {
+      "rss": 636039168,
+      "heapTotal": 371544064,
+      "heapUsed": 355195112,
+      "external": 5821278,
+      "arrayBuffers": 1833062
+    }
+  }
+}
+2025-10-22T02:57:32.937Z [DEBUG] [UnifiedReturnService][processUnifiedReturn] Found transaction item for processing
+{
+  "transactionId": "69dd24c3-c896-4142-815e-9165d53a035f",
+  "itemId": "2caac982-fd6b-4ad2-975b-f268d8a63703",
+  "found": true,
+  "transactionItemId": "2caac982-fd6b-4ad2-975b-f268d8a63703",
+  "productId": "63956225-c6fc-4872-9a4b-cb17eca3cc74",
+  "performance": {
+    "timestamp": 1761101852937,
+    "memory": {
+      "rss": 636059648,
+      "heapTotal": 371544064,
+      "heapUsed": 354581760,
+      "external": 5821221,
+      "arrayBuffers": 1833005
+    }
+  }
+}
+2025-10-22T02:57:32.939Z [DEBUG] [UnifiedReturnService][processUnifiedReturn] Updating TransaksiItem status
+{
+  "transactionId": "69dd24c3-c896-4142-815e-9165d53a035f",
+  "itemId": "2caac982-fd6b-4ad2-975b-f268d8a63703",
+  "currentStatus": "belum",
+  "newStatus": "lengkap",
+  "totalReturnPenalty": 5000,
+  "performance": {
+    "timestamp": 1761101852939,
+    "memory": {
+      "rss": 636059648,
+      "heapTotal": 371544064,
+      "heapUsed": 354592192,
+      "external": 5821221,
+      "arrayBuffers": 1833005
+    }
+  }
+}
+2025-10-22T02:57:33.599Z [DEBUG] [UnifiedReturnService][processUnifiedReturn] TransaksiItem status updated successfully
+{
+  "transactionId": "69dd24c3-c896-4142-815e-9165d53a035f",
+  "itemId": "2caac982-fd6b-4ad2-975b-f268d8a63703",
+  "newStatus": "lengkap",
+  "performance": {
+    "timestamp": 1761101853599,
+    "memory": {
+      "rss": 636059648,
+      "heapTotal": 371544064,
+      "heapUsed": 354769376,
+      "external": 5821278,
+      "arrayBuffers": 1833062
+    }
+  }
+}
+2025-10-22T02:57:33.612Z [DEBUG] [UnifiedReturnService][processUnifiedReturn] Updating product stock
+{
+  "transactionId": "69dd24c3-c896-4142-815e-9165d53a035f",
+  "itemId": "2caac982-fd6b-4ad2-975b-f268d8a63703",
+  "produkId": "63956225-c6fc-4872-9a4b-cb17eca3cc74",
+  "totalReturned": 1,
+  "productName": "Dress Elegant Dark",
+  "performance": {
+    "timestamp": 1761101853612,
+    "memory": {
+      "rss": 636059648,
+      "heapTotal": 371544064,
+      "heapUsed": 354779736,
+      "external": 5821278,
+      "arrayBuffers": 1833062
+    }
+  }
+}
+2025-10-22T02:57:33.894Z [DEBUG] [UnifiedReturnService][processUnifiedReturn] Item added to processedItems
+{
+  "transactionId": "69dd24c3-c896-4142-815e-9165d53a035f",
+  "itemId": "2caac982-fd6b-4ad2-975b-f268d8a63703",
+  "currentProcessedItemsCount": 1,
+  "itemTotalPenalty": 5000,
+  "statusKembali": "lengkap",
+  "performance": {
+    "timestamp": 1761101853893,
+    "memory": {
+      "rss": 636096512,
+      "heapTotal": 371544064,
+      "heapUsed": 354970576,
+      "external": 5821335,
+      "arrayBuffers": 1833119
+    }
+  }
+}
+2025-10-22T02:57:33.899Z [DEBUG] [UnifiedReturnService][processUnifiedReturn] Processing item
+{
+  "transactionId": "69dd24c3-c896-4142-815e-9165d53a035f",
+  "itemId": "e9abc447-6c96-4e38-813b-76baea2be217",
+  "conditionCount": 1,
+  "performance": {
+    "timestamp": 1761101853899,
+    "memory": {
+      "rss": 636096512,
+      "heapTotal": 371544064,
+      "heapUsed": 354980240,
+      "external": 5821335,
+      "arrayBuffers": 1833119
+    }
+  }
+}
+2025-10-22T02:57:34.162Z [DEBUG] [UnifiedReturnService][processUnifiedReturn] Found transaction item for processing
+{
+  "transactionId": "69dd24c3-c896-4142-815e-9165d53a035f",
+  "itemId": "e9abc447-6c96-4e38-813b-76baea2be217",
+  "found": true,
+  "transactionItemId": "e9abc447-6c96-4e38-813b-76baea2be217",
+  "productId": "ad20e72f-e9c3-4361-8e12-2ad602d5d651",
+  "performance": {
+    "timestamp": 1761101854162,
+    "memory": {
+      "rss": 636096512,
+      "heapTotal": 371544064,
+      "heapUsed": 355145472,
+      "external": 5821392,
+      "arrayBuffers": 1833176
+    }
+  }
+}
+2025-10-22T02:57:34.169Z [DEBUG] [UnifiedReturnService][processUnifiedReturn] Updating TransaksiItem status
+{
+  "transactionId": "69dd24c3-c896-4142-815e-9165d53a035f",
+  "itemId": "e9abc447-6c96-4e38-813b-76baea2be217",
+  "currentStatus": "belum",
+  "newStatus": "lengkap",
+  "totalReturnPenalty": 15000,
+  "performance": {
+    "timestamp": 1761101854169,
+    "memory": {
+      "rss": 636096512,
+      "heapTotal": 371544064,
+      "heapUsed": 355154840,
+      "external": 5821392,
+      "arrayBuffers": 1833176
+    }
+  }
+}
+2025-10-22T02:57:34.443Z [DEBUG] [UnifiedReturnService][processUnifiedReturn] TransaksiItem status updated successfully
+{
+  "transactionId": "69dd24c3-c896-4142-815e-9165d53a035f",
+  "itemId": "e9abc447-6c96-4e38-813b-76baea2be217",
+  "newStatus": "lengkap",
+  "performance": {
+    "timestamp": 1761101854443,
+    "memory": {
+      "rss": 636141568,
+      "heapTotal": 371544064,
+      "heapUsed": 354619296,
+      "external": 5821221,
+      "arrayBuffers": 1833005
+    }
+  }
+}
+2025-10-22T02:57:34.447Z [DEBUG] [UnifiedReturnService][processUnifiedReturn] Updating product stock
+{
+  "transactionId": "69dd24c3-c896-4142-815e-9165d53a035f",
+  "itemId": "e9abc447-6c96-4e38-813b-76baea2be217",
+  "produkId": "ad20e72f-e9c3-4361-8e12-2ad602d5d651",
+  "totalReturned": 1,
+  "productName": "GAUN PREMIUM KUNING",
+  "performance": {
+    "timestamp": 1761101854446,
+    "memory": {
+      "rss": 636141568,
+      "heapTotal": 371544064,
+      "heapUsed": 354628384,
+      "external": 5821221,
+      "arrayBuffers": 1833005
+    }
+  }
+}
+2025-10-22T02:57:35.040Z [DEBUG] [UnifiedReturnService][processUnifiedReturn] Item added to processedItems
+{
+  "transactionId": "69dd24c3-c896-4142-815e-9165d53a035f",
+  "itemId": "e9abc447-6c96-4e38-813b-76baea2be217",
+  "currentProcessedItemsCount": 2,
+  "itemTotalPenalty": 15000,
+  "statusKembali": "lengkap",
+  "performance": {
+    "timestamp": 1761101855040,
+    "memory": {
+      "rss": 636141568,
+      "heapTotal": 371544064,
+      "heapUsed": 354798304,
+      "external": 5821278,
+      "arrayBuffers": 1833062
+    }
+  }
+}
+2025-10-22T02:57:35.042Z [DEBUG] [UnifiedReturnService][processUnifiedReturn] Database transaction completed
+{
+  "transactionId": "69dd24c3-c896-4142-815e-9165d53a035f",
+  "processedItemsCount": 2,
+  "totalPenalty": 20000,
+  "itemsProcessed": [
+    {
+      "itemId": "2caac982-fd6b-4ad2-975b-f268d8a63703",
+      "penalty": 5000
+    },
+    {
+      "itemId": "e9abc447-6c96-4e38-813b-76baea2be217",
+      "penalty": 15000
+    }
+  ],
+  "performance": {
+    "timestamp": 1761101855041,
+    "memory": {
+      "rss": 636141568,
+      "heapTotal": 371544064,
+      "heapUsed": 354808952,
+      "external": 5821278,
+      "arrayBuffers": 1833062
+    }
+  }
+}
+2025-10-22T02:57:36.159Z [DEBUG] [UnifiedReturnService][createReturnActivity] Activity created successfully
+{
+  "transactionId": "69dd24c3-c896-4142-815e-9165d53a035f",
+  "activityType": "dikembalikan",
+  "description": "Item returned: 2 items processed",
+  "performance": {
+    "timestamp": 1761101856159,
+    "memory": {
+      "rss": 636125184,
+      "heapTotal": 371544064,
+      "heapUsed": 355033568,
+      "external": 5821335,
+      "arrayBuffers": 1833119
+    }
+  }
+}
+2025-10-22T02:57:37.522Z [DEBUG] [UnifiedReturnService][createReturnActivity] Activity created successfully
+{
+  "transactionId": "69dd24c3-c896-4142-815e-9165d53a035f",
+  "activityType": "penalty_added",
+  "description": "Penalty applied: Rp 20.000 for condition damages",
+  "performance": {
+    "timestamp": 1761101857522,
+    "memory": {
+      "rss": 636129280,
+      "heapTotal": 371544064,
+      "heapUsed": 355203472,
+      "external": 5821392,
+      "arrayBuffers": 1833176
+    }
+  }
+}
+2025-10-22T02:57:37.525Z [INFO] [UnifiedReturnService][processUnifiedReturn] Unified return processing completed successfully
+{
+  "transactionId": "69dd24c3-c896-4142-815e-9165d53a035f",
+  "totalPenalty": 20000,
+  "itemsProcessed": 2,
+  "conditionsProcessed": 2,
+  "processingTime": 17325,
+  "activitiesCreated": 2,
+  "performance": {
+    "timestamp": 1761101857525,
+    "memory": {
+      "rss": 636129280,
+      "heapTotal": 371544064,
+      "heapUsed": 355214472,
+      "external": 5821392,
+      "arrayBuffers": 1833176
+    }
+  }
+}

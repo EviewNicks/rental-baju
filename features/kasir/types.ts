@@ -114,6 +114,19 @@ export interface ProductWithStock extends ProductCore {
   // Note: availableStock calculated as (quantity - rentedStock) using calculateAvailableStock() utility
 }
 
+// ProductSize interface for size-aware inventory (RPK-51)
+export interface ProductSize {
+  id: string
+  productId: string
+  ageCategory: 'ADULT' | 'TEEN' | 'CHILD'
+  size: string // 'S', 'M', 'L', 'XL', etc.
+  quantity: number
+  availableQuantity: number  // Size-specific available stock
+  rentedStock: number
+  createdAt: string
+  updatedAt: string
+}
+
 // Legacy Product interface for backward compatibility
 // @deprecated Use ProductWithCategory + ProductWithPricing + ProductWithStock
 export interface Product {
@@ -127,12 +140,20 @@ export interface Product {
   available: boolean
   description?: string
   availableQuantity?: number
+
+  // Size-aware fields (RPK-51) - Optional for backward compatibility
+  sizes?: ProductSize[]  // Available sizes for this product
+  supportsSizeSelection?: boolean  // Flag to show size selector in UI
 }
 
 export interface ProductSelection {
   product: Product
   quantity: number
   duration: number
+
+  // Size-aware fields (RPK-51) - Optional for backward compatibility
+  productSizeId?: string  // Selected size ID for API request
+  selectedSize?: ProductSize  // Full size info for UI display
 }
 
 export interface ProductFilters {
@@ -341,14 +362,45 @@ export interface PenyewaListResponse {
 }
 
 // Transaksi (Transaction) API Types
+
+// Size-aware transaction item format (RPK-51)
+export interface CreateTransaksiItemSizeAware {
+  produkId: string
+  productSizeId: string  // Size-specific ID for inventory management
+  jumlah: number
+  durasi: number // dalam hari
+  kondisiAwal?: string
+}
+
+// Legacy transaction item format (backward compatibility)
+export interface CreateTransaksiItemLegacy {
+  produkId: string
+  jumlah: number
+  durasi: number // dalam hari
+  kondisiAwal?: string
+}
+
+// Type guard to detect size-aware items
+export function isSizeAwareItem(
+  item: CreateTransaksiItemSizeAware | CreateTransaksiItemLegacy
+): item is CreateTransaksiItemSizeAware {
+  return 'productSizeId' in item && item.productSizeId !== undefined
+}
+
+// Main transaction request interface supporting dual-format
 export interface CreateTransaksiRequest {
   penyewaId: string
-  items: Array<{
-    produkId: string
-    jumlah: number
-    durasi: number // dalam hari
-    kondisiAwal?: string
-  }>
+  items: Array<CreateTransaksiItemSizeAware | CreateTransaksiItemLegacy>
+  tglMulai: string // ISO date string
+  tglSelesai?: string // ISO date string
+  metodeBayar?: PaymentMethod
+  catatan?: string
+}
+
+// Legacy transaction request interface (backward compatibility)
+export interface CreateTransaksiLegacyRequest {
+  penyewaId: string
+  items: CreateTransaksiItemLegacy[]
   tglMulai: string // ISO date string
   tglSelesai?: string // ISO date string
   metodeBayar?: PaymentMethod
@@ -465,6 +517,10 @@ export interface ProductAvailabilityResponse extends ProductWithCategory, Produc
   quantity: number
   // availableQuantity is calculated field - will be removed in Phase 3
   availableQuantity: number // @deprecated Use availableStock calculation
+
+  // RPK-51: Size-aware inventory support
+  sizes?: ProductSize[] // Optional for backward compatibility
+  supportsSizeSelection?: boolean // Computed based on sizes.length > 0
 }
 
 export interface ProductAvailabilityListResponse {

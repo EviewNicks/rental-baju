@@ -1,13 +1,15 @@
-import { ReturnProcessPage } from '@/features/kasir/components/return/ReturnProcessPage'
+import { SimpleReturnForm } from '@/features/kasir/components/return/SimpleReturnForm'
 
-interface TransactionReturnPageProps {
+interface TransactionReturnSimplePageProps {
   params: Promise<{
     kode: string
   }>
 }
 
-export default async function TransactionReturnPage({ params }: TransactionReturnPageProps) {
+export default async function TransactionReturnSimplePage({
+  params,
+}: TransactionReturnSimplePageProps) {
   const { kode } = await params
 
-  return <ReturnProcessPage kode={kode} />
+  return <SimpleReturnForm kode={kode} />
 }

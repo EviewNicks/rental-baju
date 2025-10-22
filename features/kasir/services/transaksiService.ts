@@ -340,6 +340,204 @@ export class TransaksiService {
   }
 
   /**
+   * Create new transaction with size-aware stock management
+   * NEW: Support for size-based inventory tracking
+   */
+  async createTransaksiSizeAware(data: CreateTransaksiRequest): Promise<Transaksi> {
+    // 1. Validate penyewa exists
+    const penyewa = await this.prisma.penyewa.findUnique({
+      where: { id: data.penyewaId },
+    })
+
+    if (!penyewa) {
+      throw new Error('Penyewa tidak ditemukan')
+    }
+
+    // 2. Validate size availability for all items
+    const productSizeIds = data.items.map((item) => item.productSizeId)
+    const productSizes = await this.prisma.productSize.findMany({
+      where: {
+        id: { in: productSizeIds },
+        isActive: true,
+      },
+      include: {
+        product: {
+          select: {
+            id: true,
+            name: true,
+            currentPrice: true,
+            isActive: true,
+            status: true,
+          },
+        },
+      },
+    })
+
+    if (productSizes.length !== productSizeIds.length) {
+      const foundIds = productSizes.map((ps) => ps.id)
+      const missingIds = productSizeIds.filter((id) => !foundIds.includes(id))
+      throw new Error(`Ukuran produk dengan ID ${missingIds[0]} tidak tersedia`)
+    }
+
+    // 3. Validate each item size availability
+    for (const item of data.items) {
+      const productSize = productSizes.find((ps) => ps.id === item.productSizeId)
+      if (!productSize) {
+        throw new Error(`Ukuran produk tidak ditemukan`)
+      }
+
+      if (productSize.quantity < item.jumlah) {
+        throw new Error(
+          `Size ${productSize.size} (${productSize.ageCategory}) untuk ${productSize.product.name} tidak mencukupi. Tersedia: ${productSize.quantity}, Diminta: ${item.jumlah}`
+        )
+      }
+
+      // Validate product is active and available
+      if (!productSize.product.isActive || productSize.product.status !== 'AVAILABLE') {
+        throw new Error(`Produk ${productSize.product.name} sedang tidak tersedia`)
+      }
+    }
+
+    // 4. Calculate prices using size-specific data
+    const itemsWithPrices = data.items.map((item) => {
+      const productSize = productSizes.find((ps) => ps.id === item.productSizeId)!
+      return {
+        produkId: item.produkId,
+        productSizeId: item.productSizeId,
+        jumlah: item.jumlah,
+        durasi: item.durasi,
+        hargaSewa: productSize.product.currentPrice,
+      }
+    })
+
+    const priceCalculation = PriceCalculator.calculateTransactionTotal(itemsWithPrices)
+
+    // 5. Generate transaction code
+    const kode = await this.codeGenerator.generateTransactionCode()
+
+    // 6. Create transaction with items in a database transaction
+    const transaksi = await this.prisma.$transaction(async (tx) => {
+      // Create main transaction
+      const createdTransaksi = await tx.transaksi.create({
+        data: {
+          kode,
+          penyewaId: data.penyewaId,
+          status: 'active',
+          totalHarga: priceCalculation.totalHarga,
+          jumlahBayar: new Decimal(0),
+          sisaBayar: priceCalculation.totalHarga,
+          tglMulai: new Date(data.tglMulai),
+          tglSelesai: data.tglSelesai ? new Date(data.tglSelesai) : null,
+          metodeBayar: data.metodeBayar || 'tunai',
+          catatan: data.catatan || null,
+          createdBy: this.userId,
+        },
+      })
+
+      // Create transaction items with size reference
+      const itemsData = data.items.map((item, index) => {
+        const calculation = priceCalculation.itemCalculations[index]
+        const productSize = productSizes.find((ps) => ps.id === item.productSizeId)!
+        return {
+          transaksiId: createdTransaksi.id,
+          produkId: item.produkId,
+          // Note: We would need to add productSizeId to TransaksiItem model in schema
+          // For now, we'll store size info in kondisiAwal as temporary solution
+          jumlah: item.jumlah,
+          hargaSewa: calculation.hargaSewa,
+          durasi: item.durasi,
+          subtotal: calculation.subtotal,
+          kondisiAwal: `${item.productSizeId}|${productSize.size}|${productSize.ageCategory}|${item.kondisiAwal || ''}`,
+        }
+      })
+
+      await tx.transaksiItem.createMany({
+        data: itemsData,
+      })
+
+      // Update product size quantities - NEW SIZE-AWARE LOGIC
+      await this.updateProductSizeQuantities(tx, data.items)
+
+      // Create activity log
+      await tx.aktivitasTransaksi.create({
+        data: {
+          transaksiId: createdTransaksi.id,
+          tipe: 'dibuat',
+          deskripsi: `Transaksi ${kode} dibuat dengan size-aware tracking`,
+          data: {
+            items: data.items.length,
+            totalHarga: priceCalculation.totalHarga.toString(),
+            sizeAware: true,
+          },
+          createdBy: this.userId,
+        },
+      })
+
+      return createdTransaksi
+    })
+
+    return transaksi
+  }
+
+  /**
+   * Update product size quantities when items are rented
+   * NEW: Size-specific stock management
+   * @private
+   */
+  private async updateProductSizeQuantities(
+    //eslint-disable-next-line @typescript-eslint/no-explicit-any
+    tx: any, // Prisma transaction type
+    items: CreateTransaksiRequest['items'],
+  ): Promise<void> {
+    for (const item of items) {
+      // Get current product size state for validation
+      const currentProductSize = await tx.productSize.findUnique({
+        where: { id: item.productSizeId },
+        select: {
+          id: true,
+          quantity: true,
+          product: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      })
+
+      if (!currentProductSize) {
+        const error = `ProductSize ${item.productSizeId} not found during stock update`
+        throw new Error(error)
+      }
+
+      // Double-check availability (race condition protection)
+      if (currentProductSize.quantity < item.jumlah) {
+        const error = `Insufficient stock for product size. Available: ${currentProductSize.quantity}, Requested: ${item.jumlah}`
+        throw new Error(error)
+      }
+
+      // Update ProductSize quantity
+      const updateResult = await tx.productSize.updateMany({
+        where: {
+          id: item.productSizeId,
+          quantity: { gte: item.jumlah }, // Ensure sufficient stock
+        },
+        data: {
+          quantity: {
+            decrement: item.jumlah, // Reduce available quantity
+          },
+        },
+      })
+
+      // Verify the update was successful
+      if (updateResult.count === 0) {
+        const error = `Failed to update quantity for product size. The size may have been modified by another transaction.`
+        throw new Error(error)
+      }
+    }
+  }
+
+  /**
    * Get transaction by ID with minimal data for return validation
    * Ultra-lean query to reduce validation time by ~70%
    */

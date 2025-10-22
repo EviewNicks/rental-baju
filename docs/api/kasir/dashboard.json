@@ -1,0 +1,257 @@
+{
+  "info": {
+    "name": "Dashboard Kasir API Tests ",
+    "description": "Comprehensive Postman test collection for Kasir (Cashier) API endpoints including customer management, transaction processing, payment handling, product availability, enhanced multi-condition return processing (pengembalian baju), and RPK-51 size-aware transaction system with ProductSize support. Now includes TSK-24 multi-condition return system tests, RPK-44 return activity logging validation, and RPK-51 size-aware inventory management.",
+    "version": "1.4.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{clerkToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "testPenyewaId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testTransaksiId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testTransaksiKode",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testPembayaranId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testProdukId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testTransaksiItemId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testItemId1",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testItemId2",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testProductSizeId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testAgeCategory",
+      "value": "ADULT",
+      "type": "string"
+    },
+    {
+      "key": "testSize",
+      "value": "M",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "01. Dashboard",
+      "item": [
+        {
+          "name": "Get Dashboard Summary",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has required structure', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('success', true);",
+                  "    pm.expect(responseJson).to.have.property('data');",
+                  "    pm.expect(responseJson.data).to.have.property('transactions');",
+                  "    pm.expect(responseJson.data).to.have.property('customers');",
+                  "    pm.expect(responseJson.data).to.have.property('payments');",
+                  "    pm.expect(responseJson.data).to.have.property('inventory');",
+                  "    pm.expect(responseJson.data).to.have.property('alerts');",
+                  "});",
+                  "",
+                  "pm.test('Transaction stats are present', function () {",
+                  "    const transactions = pm.response.json().data.transactions;",
+                  "    pm.expect(transactions).to.have.property('total');",
+                  "    pm.expect(transactions).to.have.property('active');",
+                  "    pm.expect(transactions).to.have.property('completed');",
+                  "    pm.expect(transactions).to.have.property('completionRate');",
+                  "});",
+                  "",
+                  "pm.test('Response time is acceptable', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(3000);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{clerkToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/kasir/dashboard",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kasir", "dashboard"]
+            },
+            "description": "Get comprehensive dashboard summary including transaction stats, customer metrics, payment overview, and inventory alerts"
+          }
+        },
+        {
+          "name": "Get Dashboard Summary with Date Range",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Date range is reflected in response', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson.data.dateRange).to.have.property('start');",
+                  "    pm.expect(responseJson.data.dateRange).to.have.property('end');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{clerkToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/kasir/dashboard?startDate=2025-07-01&endDate=2025-07-31",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kasir", "dashboard"],
+              "query": [
+                {
+                  "key": "startDate",
+                  "value": "2025-07-01"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2025-07-31"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Global pre-request script",
+          "// Set base URL if not already set",
+          "if (!pm.collectionVariables.get('baseUrl')) {",
+          "    pm.collectionVariables.set('baseUrl', 'http://localhost:3000');",
+          "}",
+          "",
+          "// Check if Clerk token is set",
+          "const clerkToken = pm.collectionVariables.get('clerkToken');",
+          "if (!clerkToken && pm.request.headers.get('Authorization')) {",
+          "    console.warn('Warning: Clerk token not set. Please set the clerkToken collection variable.');",
+          "}"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Global test script with enhanced header validation",
+          "pm.test('Response is JSON with proper headers', function () {",
+          "    pm.response.to.have.header('content-type');",
+          "    const contentType = pm.response.headers.get('content-type');",
+          "    if (contentType) {",
+          "        pm.expect(contentType).to.include('application/json');",
+          "        // Ensure charset is specified for proper encoding",
+          "        if (pm.response.code === 200) {",
+          "            pm.expect(contentType).to.include('charset=utf-8');",
+          "        }",
+          "    }",
+          "});",
+          "",
+          "// Enhanced header validation for successful responses",
+          "if (pm.response.code >= 200 && pm.response.code < 300) {",
+          "    pm.test('Security headers are present', function () {",
+          "        // Check for security headers on successful responses",
+          "        pm.expect(pm.response.headers.get('x-content-type-options')).to.equal('nosniff');",
+          "        pm.expect(pm.response.headers.get('x-frame-options')).to.equal('DENY');",
+          "    });",
+          "",
+          "    pm.test('Performance headers exist', function () {",
+          "        // Ensure performance monitoring headers are present",
+          "        pm.expect(pm.response.headers.get('x-request-id')).to.exist;",
+          "        if (pm.response.headers.get('x-processing-time')) {",
+          "            pm.expect(pm.response.headers.get('x-processing-time')).to.match(/^\\d+ms$/);",
+          "        }",
+          "    });",
+          "}",
+          "",
+          "// Log response time for monitoring",
+          "const responseTime = pm.response.responseTime;",
+          "if (responseTime > 2000) {",
+          "    console.warn(`Slow response detected: ${responseTime}ms for ${pm.request.url}`);",
+          "}",
+          "",
+          "// Check for common error patterns",
+          "if (pm.response.code >= 400) {",
+          "    const response = pm.response.json();",
+          "    console.log(`Error Response: ${JSON.stringify(response, null, 2)}`);",
+          "}"
+        ]
+      }
+    }
+  ]
+}

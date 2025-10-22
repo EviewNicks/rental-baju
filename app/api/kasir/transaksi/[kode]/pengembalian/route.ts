@@ -194,6 +194,23 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         )
       }
 
+      // Return 400 Bad Request for validation errors (CRITICAL FIX)
+      if (statusCode === 'VALIDATION_ERROR' && result.details) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              message: result.details.message,
+              code: 'VALIDATION_ERROR',
+              currentStatus: result.details.currentStatus,
+              processingTime: result.details.processingTime,
+              validationErrors: result.details.validationErrors,
+            },
+          },
+          { status: 400 },
+        )
+      }
+
       // Return 400 Bad Request for other invalid statuses
       if (statusCode === 'INVALID_STATUS' && result.details) {
         return NextResponse.json(
@@ -323,6 +340,22 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
           ]
         }
 
+        // RPK-51: Enhanced handling for size validation errors
+        else if (
+          fieldPath.includes('productSizeId') ||
+          fieldPath.includes('size') ||
+          err.message.includes('Size dengan ID') ||
+          err.message.includes('tidak ditemukan untuk produk ini')
+        ) {
+          enhancedMessage = `Size validation failed: ${err.message}`
+          suggestions = [
+            'Periksa kembali ukuran yang tersedia untuk produk ini',
+            'Pastikan ukuran yang dipilih tersedia dalam inventaris',
+            'Gunakan ukuran yang sesuai dengan produk yang disewa',
+            'Refresh halaman dan coba kembali jika masalah berlanjut',
+          ]
+        }
+
         return {
           field: fieldPath,
           message: enhancedMessage,
@@ -338,11 +371,25 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       const hasDateError = error.issues.some((issue) => issue.path.includes('tglKembali'))
       const hasConditionError = error.issues.some((issue) => issue.path.includes('conditions'))
       const hasQuantityError = error.issues.some((issue) => issue.path.includes('jumlahKembali'))
+      const hasSizeError = error.issues.some((issue) =>
+        issue.path.includes('productSizeId') ||
+        issue.path.includes('size') ||
+        issue.message.includes('Size dengan ID') ||
+        issue.message.includes('tidak ditemukan untuk produk ini')
+      )
 
       let enhancedMessage = 'Data pengembalian tidak valid dalam unified architecture'
       let generalHints: string[] = []
 
-      if (hasConditionError) {
+      if (hasSizeError) {
+        enhancedMessage = 'Validasi ukuran produk gagal. Periksa ketersediaan ukuran untuk produk ini.'
+        generalHints = [
+          'Pastikan ukuran yang dipilih tersedia dalam inventaris',
+          'Gunakan ukuran yang sesuai dengan produk yang disewa',
+          'Periksa kembali informasi ukuran pada transaksi awal',
+          'Refresh halaman dan coba kembali jika masalah berlanjut',
+        ]
+      } else if (hasConditionError) {
         enhancedMessage = 'Validasi kondisi pengembalian gagal. Periksa format unified conditions.'
         generalHints = [
           'Gunakan array conditions untuk setiap item, bahkan untuk kasus sederhana',
@@ -373,11 +420,13 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
           success: false,
           error: {
             message: enhancedMessage,
-            code: hasConditionError
-              ? 'UNIFIED_CONDITION_VALIDATION_ERROR'
-              : hasQuantityError
-                ? 'UNIFIED_QUANTITY_VALIDATION_ERROR'
-                : 'UNIFIED_VALIDATION_ERROR',
+            code: hasSizeError
+              ? 'SIZE_VALIDATION_ERROR'
+              : hasConditionError
+                ? 'UNIFIED_CONDITION_VALIDATION_ERROR'
+                : hasQuantityError
+                  ? 'UNIFIED_QUANTITY_VALIDATION_ERROR'
+                  : 'UNIFIED_VALIDATION_ERROR',
             details: validationDetails,
             hints: generalHints,
             architecture: 'unified',
@@ -426,6 +475,31 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
             error: {
               message: error.message,
               code: 'RETURN_PROCESSING_ERROR',
+            },
+          },
+          { status: 400 },
+        )
+      }
+
+      // RPK-51: Size validation errors
+      if (
+        error.message.includes('Size dengan ID') ||
+        error.message.includes('tidak ditemukan untuk produk ini') ||
+        error.message.includes('Informasi ukuran tidak lengkap') ||
+        error.message.includes('Gagal memvalidasi ukuran')
+      ) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              message: error.message,
+              code: 'SIZE_VALIDATION_ERROR',
+              suggestions: [
+                'Periksa kembali ukuran yang tersedia untuk produk ini',
+                'Pastikan ukuran yang dipilih tersedia dalam inventaris',
+                'Gunakan ukuran yang sesuai dengan produk yang disewa',
+                'Refresh halaman dan coba kembali jika masalah berlanjut',
+              ],
             },
           },
           { status: 400 },

@@ -1,9 +1,9 @@
 /**
  * API Route: Kasir Transaksi Management - RPK-26
- * 
+ *
  * POST /api/kasir/transaksi - Create new transaction with auto code generation
  * GET /api/kasir/transaksi - Get paginated list of transactions with filters
- * 
+ *
  * Authentication: Clerk (admin/kasir roles only)
  * Following existing patterns from manage-product feature
  */
@@ -14,7 +14,9 @@ import { prisma } from '@/lib/prisma'
 import { TransaksiService } from '@/features/kasir/services/transaksiService'
 import {
   createTransaksiSchema,
-  transaksiQuerySchema
+  createTransaksiLegacySchema,
+  transaksiQuerySchema,
+  type CreateTransaksiRequest,
 } from '@/features/kasir/lib/validation/kasirSchema'
 import { ZodError } from 'zod'
 import { createSuccessResponse } from '@/features/kasir/types'
@@ -25,25 +27,38 @@ export async function POST(request: NextRequest) {
     const { userId } = await auth()
     if (!userId) {
       return NextResponse.json(
-        { 
+        {
           success: false,
-          error: { message: 'Unauthorized', code: 'UNAUTHORIZED' }
+          error: { message: 'Unauthorized', code: 'UNAUTHORIZED' },
         },
-        { status: 401 }
+        { status: 401 },
       )
     }
 
     // Parse request body
     const body = await request.json()
 
-    // Validate request data
-    const validatedData = createTransaksiSchema.parse(body)
+    // Check if request uses size-aware format (has productSizeId)
+    const isSizeAwareRequest = body.items?.some(
+      (item: { productSizeId?: string }) => item.productSizeId,
+    )
 
     // Initialize transaksi service
     const transaksiService = new TransaksiService(prisma, userId)
 
-    // Create transaksi
-    const transaksi = await transaksiService.createTransaksi(validatedData)
+    // Create transaksi with appropriate method based on request format
+    let transaksi
+    if (isSizeAwareRequest) {
+      // Size-aware format
+      const validatedData = createTransaksiSchema.parse(body) as unknown
+      transaksi = await transaksiService.createTransaksiSizeAware(
+        validatedData as CreateTransaksiRequest,
+      )
+    } else {
+      // Legacy format - use backward compatibility
+      const validatedData = createTransaksiLegacySchema.parse(body) as unknown
+      transaksi = await transaksiService.createTransaksi(validatedData as CreateTransaksiRequest)
+    }
 
     // Get the created transaction with full details for response
     const fullTransaksi = await transaksiService.getTransaksiById(transaksi.id)
@@ -56,7 +71,7 @@ export async function POST(request: NextRequest) {
         id: fullTransaksi.penyewa.id,
         nama: fullTransaksi.penyewa.nama,
         telepon: fullTransaksi.penyewa.telepon,
-        alamat: fullTransaksi.penyewa.alamat
+        alamat: fullTransaksi.penyewa.alamat,
       },
       status: fullTransaksi.status,
       totalHarga: Number(fullTransaksi.totalHarga),
@@ -70,13 +85,13 @@ export async function POST(request: NextRequest) {
       createdBy: fullTransaksi.createdBy,
       createdAt: fullTransaksi.createdAt.toISOString(),
       updatedAt: fullTransaksi.updatedAt.toISOString(),
-      items: fullTransaksi.items.map(item => ({
+      items: fullTransaksi.items.map((item) => ({
         id: item.id,
         produk: {
           id: item.produk.id,
           code: item.produk.code,
           name: item.produk.name,
-          imageUrl: item.produk.imageUrl
+          imageUrl: item.produk.imageUrl,
         },
         jumlah: item.jumlah,
         hargaSewa: Number(item.hargaSewa),
@@ -84,31 +99,31 @@ export async function POST(request: NextRequest) {
         subtotal: Number(item.subtotal),
         kondisiAwal: item.kondisiAwal,
         kondisiAkhir: item.kondisiAkhir,
-        statusKembali: item.statusKembali
+        statusKembali: item.statusKembali,
       })),
-      pembayaran: fullTransaksi.pembayaran.map(payment => ({
+      pembayaran: fullTransaksi.pembayaran.map((payment) => ({
         id: payment.id,
         jumlah: Number(payment.jumlah),
         metode: payment.metode,
         referensi: payment.referensi,
         catatan: payment.catatan,
         createdBy: payment.createdBy,
-        createdAt: payment.createdAt.toISOString()
+        createdAt: payment.createdAt.toISOString(),
       })),
-      aktivitas: fullTransaksi.aktivitas.map(activity => ({
+      aktivitas: fullTransaksi.aktivitas.map((activity) => ({
         id: activity.id,
         tipe: activity.tipe,
         deskripsi: activity.deskripsi,
         data: activity.data,
         createdBy: activity.createdBy,
-        createdAt: activity.createdAt.toISOString()
-      }))
+        createdAt: activity.createdAt.toISOString(),
+      })),
     }
 
     const { response, status } = createSuccessResponse(
       formattedData,
       `Transaksi ${transaksi.kode} berhasil dibuat`,
-      201
+      201,
     )
     return NextResponse.json(response, { status })
   } catch (error) {
@@ -122,11 +137,11 @@ export async function POST(request: NextRequest) {
             code: 'VALIDATION_ERROR',
             details: error.issues.map((err) => ({
               field: err.path.join('.'),
-              message: err.message
-            }))
-          }
+              message: err.message,
+            })),
+          },
         },
-        { status: 400 }
+        { status: 400 },
       )
     }
 
@@ -139,25 +154,24 @@ export async function POST(request: NextRequest) {
             success: false,
             error: {
               message: error.message,
-              code: 'NOT_FOUND'
-            }
+              code: 'NOT_FOUND',
+            },
           },
-          { status: 404 }
+          { status: 404 },
         )
       }
 
       // Product availability errors
-      if (error.message.includes('tidak tersedia') || 
-          error.message.includes('tidak mencukupi')) {
+      if (error.message.includes('tidak tersedia') || error.message.includes('tidak mencukupi')) {
         return NextResponse.json(
           {
             success: false,
             error: {
               message: error.message,
-              code: 'AVAILABILITY_ERROR'
-            }
+              code: 'AVAILABILITY_ERROR',
+            },
           },
-          { status: 409 }
+          { status: 409 },
         )
       }
 
@@ -167,25 +181,30 @@ export async function POST(request: NextRequest) {
           success: false,
           error: {
             message: error.message,
-            code: 'BUSINESS_ERROR'
-          }
+            code: 'BUSINESS_ERROR',
+          },
         },
-        { status: 400 }
+        { status: 400 },
       )
     }
 
     // Handle database connection errors
-    if (error && typeof error === 'object' && 'message' in error && 
-        typeof error.message === 'string' && error.message.includes('connection pool')) {
+    if (
+      error &&
+      typeof error === 'object' &&
+      'message' in error &&
+      typeof error.message === 'string' &&
+      error.message.includes('connection pool')
+    ) {
       return NextResponse.json(
         {
           success: false,
           error: {
             message: 'Database connection timeout. Please try again.',
-            code: 'CONNECTION_ERROR'
-          }
+            code: 'CONNECTION_ERROR',
+          },
         },
-        { status: 503 }
+        { status: 503 },
       )
     }
 
@@ -195,10 +214,10 @@ export async function POST(request: NextRequest) {
         success: false,
         error: {
           message: 'Internal server error',
-          code: 'INTERNAL_ERROR'
-        }
+          code: 'INTERNAL_ERROR',
+        },
       },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }
@@ -211,12 +230,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: { message: 'Unauthorized', code: 'UNAUTHORIZED' }
+          error: { message: 'Unauthorized', code: 'UNAUTHORIZED' },
         },
-        { status: 401 }
+        { status: 401 },
       )
     }
-
 
     // Parse query parameters
     const { searchParams } = new URL(request.url)
@@ -227,9 +245,8 @@ export async function GET(request: NextRequest) {
       search: searchParams.get('search') || undefined,
       penyewaId: searchParams.get('penyewaId') || undefined,
       dateStart: searchParams.get('dateStart') || undefined,
-      dateEnd: searchParams.get('dateEnd') || undefined
+      dateEnd: searchParams.get('dateEnd') || undefined,
     }
-
 
     // Validate query parameters
     const validatedQuery = transaksiQuerySchema.parse(queryParams)
@@ -240,13 +257,11 @@ export async function GET(request: NextRequest) {
     // Get transaksi list
     const result = await transaksiService.getTransaksiList(validatedQuery)
 
-
     // Format response data with pickup detection
     const formattedData = {
-      data: result.data.map(transaksi => {
+      data: result.data.map((transaksi) => {
         // Calculate pickup status server-side for performance
-        const hasPickup = transaksi.items.some(item => (item.jumlahDiambil || 0) > 0)
-
+        const hasPickup = transaksi.items.some((item) => (item.jumlahDiambil || 0) > 0)
 
         return {
           id: transaksi.id,
@@ -255,7 +270,7 @@ export async function GET(request: NextRequest) {
             id: transaksi.penyewa.id,
             nama: transaksi.penyewa.nama,
             telepon: transaksi.penyewa.telepon,
-            alamat: transaksi.penyewa.alamat
+            alamat: transaksi.penyewa.alamat,
           },
           status: transaksi.status,
           totalHarga: Number(transaksi.totalHarga),
@@ -271,32 +286,32 @@ export async function GET(request: NextRequest) {
           updatedAt: transaksi.updatedAt.toISOString(),
           itemCount: transaksi.items.length,
           hasPickup, // NEW: Server-calculated pickup flag for status calculation
-          items: transaksi.items.map(item => ({
+          items: transaksi.items.map((item) => ({
             id: item.id, // Include item ID for future operations
             produk: {
               id: item.produk.id,
-              name: item.produk.name
+              name: item.produk.name,
             },
             jumlah: item.jumlah,
-            jumlahDiambil: item.jumlahDiambil || 0 // NEW: Include pickup data for status calculation
+            jumlahDiambil: item.jumlahDiambil || 0, // NEW: Include pickup data for status calculation
           })),
-          recentPayment: transaksi.pembayaran[0] ? {
-            jumlah: Number(transaksi.pembayaran[0].jumlah),
-            metode: transaksi.pembayaran[0].metode,
-            createdAt: transaksi.pembayaran[0].createdAt.toISOString()
-          } : null
+          recentPayment: transaksi.pembayaran[0]
+            ? {
+                jumlah: Number(transaksi.pembayaran[0].jumlah),
+                metode: transaksi.pembayaran[0].metode,
+                createdAt: transaksi.pembayaran[0].createdAt.toISOString(),
+              }
+            : null,
         }
       }),
       pagination: result.pagination,
-      summary: result.summary
+      summary: result.summary,
     }
-
 
     const { response, status } = createSuccessResponse(
       formattedData,
-      'Data transaksi berhasil diambil'
+      'Data transaksi berhasil diambil',
     )
-
 
     return NextResponse.json(response, { status })
   } catch (error) {
@@ -310,26 +325,31 @@ export async function GET(request: NextRequest) {
             code: 'VALIDATION_ERROR',
             details: error.issues.map((err) => ({
               field: err.path.join('.'),
-              message: err.message
-            }))
-          }
+              message: err.message,
+            })),
+          },
         },
-        { status: 400 }
+        { status: 400 },
       )
     }
 
     // Handle database connection errors
-    if (error && typeof error === 'object' && 'message' in error &&
-        typeof error.message === 'string' && error.message.includes('connection pool')) {
+    if (
+      error &&
+      typeof error === 'object' &&
+      'message' in error &&
+      typeof error.message === 'string' &&
+      error.message.includes('connection pool')
+    ) {
       return NextResponse.json(
         {
           success: false,
           error: {
             message: 'Database connection timeout. Please try again.',
-            code: 'CONNECTION_ERROR'
-          }
+            code: 'CONNECTION_ERROR',
+          },
         },
-        { status: 503 }
+        { status: 503 },
       )
     }
 
@@ -339,10 +359,10 @@ export async function GET(request: NextRequest) {
         success: false,
         error: {
           message: 'Internal server error',
-          code: 'INTERNAL_ERROR'
-        }
+          code: 'INTERNAL_ERROR',
+        },
       },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }
