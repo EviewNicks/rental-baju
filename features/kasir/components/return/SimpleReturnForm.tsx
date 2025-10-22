@@ -76,7 +76,7 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
     catatan: '',
     isProcessing: false,
     error: null,
-    penaltyPreview: null
+    penaltyPreview: null,
   })
 
   // Load transaction data
@@ -91,7 +91,7 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
   useEffect(() => {
     if (transaction && transaction.items && Object.keys(formState.itemConditions).length === 0) {
       const returnableItems = transaction.items.filter(
-        (item) => item.jumlahDiambil > 0 && item.statusKembali !== 'lengkap'
+        (item) => item.jumlahDiambil > 0 && item.statusKembali !== 'lengkap',
       )
 
       const initialConditions: Record<string, EnhancedItemCondition> = {}
@@ -100,29 +100,35 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
         initialConditions[item.id] = {
           itemId: item.id,
           mode: 'single',
-          conditions: [{
-            kondisiAkhir: 'Baik',
-            jumlahKembali: item.jumlahDiambil,
-            conditionCategory: ConditionCategory.BAIK,
-            useManualPricing: false,
-            manualPrice: 0
-          }],
+          conditions: [
+            {
+              kondisiAkhir: 'Baik',
+              jumlahKembali: item.jumlahDiambil,
+              conditionCategory: ConditionCategory.BAIK,
+              useManualPricing: false,
+              manualPrice: 0,
+            },
+          ],
           isValid: true,
           totalQuantity: item.jumlahDiambil,
           remainingQuantity: 0,
         }
       })
 
-      setFormState(prev => ({
+      setFormState((prev) => ({
         ...prev,
-        itemConditions: initialConditions
+        itemConditions: initialConditions,
       }))
 
-      kasirLogger.returnProcess.info('SimpleReturnForm', 'Transaction loaded and conditions initialized', {
-        transactionId: transaction.kode,
-        returnableItemCount: returnableItems.length,
-        totalConditions: Object.keys(initialConditions).length
-      })
+      kasirLogger.returnProcess.info(
+        'SimpleReturnForm',
+        'Transaction loaded and conditions initialized',
+        {
+          transactionId: transaction.kode,
+          returnableItemCount: returnableItems.length,
+          totalConditions: Object.keys(initialConditions).length,
+        },
+      )
     }
   }, [transaction, formState.itemConditions.length])
 
@@ -139,11 +145,11 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
 
     // Validate all items have conditions
     const allItemsValid = Object.values(formState.itemConditions).every(
-      condition => condition.isValid && condition.conditions.length > 0
+      (condition) => condition.isValid && condition.conditions.length > 0,
     )
 
     if (!allItemsValid) {
-      setFormState(prev => ({ ...prev, penaltyPreview: null }))
+      setFormState((prev) => ({ ...prev, penaltyPreview: null }))
       return
     }
 
@@ -156,13 +162,13 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
         let itemPenalty = 0
 
         // Get item name from transaction data
-        const item = transaction.items?.find(i => i.id === itemId)
+        const item = transaction.items?.find((i) => i.id === itemId)
         const itemName = item?.produk?.name || 'Unknown Product'
 
         // Calculate penalty for each condition within this item
-        condition.conditions.forEach(c => {
+        condition.conditions.forEach((c) => {
           // Use same logic as ConditionPricingForm (line 227-232)
-          const effectivePrice = c.conditionCategory === 'BAIK' ? 0 : (c.manualPrice || 0)
+          const effectivePrice = c.conditionCategory === 'BAIK' ? 0 : c.manualPrice || 0
           itemPenalty += effectivePrice * c.jumlahKembali
         })
 
@@ -170,38 +176,45 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
         itemBreakdown.push({
           itemId,
           itemName,
-          penalty: itemPenalty
+          penalty: itemPenalty,
         })
       })
 
       // Late return calculation
       const now = new Date()
-      const dueDate = transaction.tglJatuhTempo ? new Date(transaction.tglJatuhTempo) : null
+      const dueDate = transaction.tglSelesai ? new Date(transaction.tglSelesai) : null
       const isLateReturn = dueDate ? now > dueDate : false
-      const lateDays = isLateReturn && dueDate ? Math.ceil((now.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24)) : 0
+      const lateDays =
+        isLateReturn && dueDate
+          ? Math.ceil((now.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24))
+          : 0
 
       const preview: PenaltyPreview = {
         totalPenalty,
         isLateReturn,
         lateDays,
-        itemBreakdown
+        itemBreakdown,
       }
 
-      setFormState(prev => ({ ...prev, penaltyPreview: preview }))
+      setFormState((prev) => ({ ...prev, penaltyPreview: preview }))
 
       kasirLogger.penaltyCalc.info('SimpleReturnForm', 'Frontend penalty preview calculated', {
         transactionId: kode,
         totalPenalty: preview.totalPenalty,
         itemCount: preview.itemBreakdown.length,
         isLateReturn: preview.isLateReturn,
-        lateDays: preview.lateDays
+        lateDays: preview.lateDays,
       })
     } catch (error) {
-      kasirLogger.penaltyCalc.error('SimpleReturnForm', 'Failed to calculate frontend penalty preview', {
-        transactionId: kode,
-        error: error instanceof Error ? error.message : 'Unknown error'
-      })
-      setFormState(prev => ({ ...prev, penaltyPreview: null }))
+      kasirLogger.penaltyCalc.error(
+        'SimpleReturnForm',
+        'Failed to calculate frontend penalty preview',
+        {
+          transactionId: kode,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        },
+      )
+      setFormState((prev) => ({ ...prev, penaltyPreview: null }))
     }
   }, [transaction, formState.itemConditions, kode])
 
@@ -211,49 +224,53 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
   }, [calculatePenaltyPreview])
 
   // Handle item condition changes
-  const handleItemConditionChange = useCallback((itemId: string, condition: EnhancedItemCondition) => {
-    setFormState(prev => ({
-      ...prev,
-      itemConditions: {
-        ...prev.itemConditions,
-        [itemId]: condition
-      },
-      error: null // Clear error when user makes changes
-    }))
+  const handleItemConditionChange = useCallback(
+    (itemId: string, condition: EnhancedItemCondition) => {
+      setFormState((prev) => ({
+        ...prev,
+        itemConditions: {
+          ...prev.itemConditions,
+          [itemId]: condition,
+        },
+        error: null, // Clear error when user makes changes
+      }))
 
-    kasirLogger.returnProcess.debug('SimpleReturnForm', 'Item condition updated', {
-      transactionId: kode,
-      itemId,
-      isValid: condition.isValid,
-      conditionCount: condition.conditions.length
-    })
-  }, [kode])
+      kasirLogger.returnProcess.debug('SimpleReturnForm', 'Item condition updated', {
+        transactionId: kode,
+        itemId,
+        isValid: condition.isValid,
+        conditionCount: condition.conditions.length,
+      })
+    },
+    [kode],
+  )
 
   // Validate form before submission
   const validateForm = useCallback((): boolean => {
     if (!transaction) {
-      setFormState(prev => ({ ...prev, error: 'Transaksi tidak ditemukan' }))
+      setFormState((prev) => ({ ...prev, error: 'Transaksi tidak ditemukan' }))
       return false
     }
 
-    const returnableItems = transaction.items?.filter(
-      (item) => item.jumlahDiambil > 0 && item.statusKembali !== 'lengkap'
-    ) || []
+    const returnableItems =
+      transaction.items?.filter(
+        (item) => item.jumlahDiambil > 0 && item.statusKembali !== 'lengkap',
+      ) || []
 
     if (returnableItems.length === 0) {
-      setFormState(prev => ({ ...prev, error: 'Tidak ada barang yang perlu dikembalikan' }))
+      setFormState((prev) => ({ ...prev, error: 'Tidak ada barang yang perlu dikembalikan' }))
       return false
     }
 
     // Check all returnable items have conditions
     const missingConditions = returnableItems.filter(
-      item => !formState.itemConditions[item.id] || !formState.itemConditions[item.id].isValid
+      (item) => !formState.itemConditions[item.id] || !formState.itemConditions[item.id].isValid,
     )
 
     if (missingConditions.length > 0) {
-      setFormState(prev => ({
+      setFormState((prev) => ({
         ...prev,
-        error: `Kondisi belum lengkap untuk ${missingConditions.length} item`
+        error: `Kondisi belum lengkap untuk ${missingConditions.length} item`,
       }))
       return false
     }
@@ -263,6 +280,7 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
 
   // Process return mutation
   const processReturnMutation = useMutation({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mutationFn: async (returnData: any) => {
       const timer = kasirLogger.performance.startTimer('processReturn', 'Simple return processing')
 
@@ -279,7 +297,7 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
       kasirLogger.returnProcess.info('SimpleReturnForm', 'Return processed successfully', {
         transactionId: kode,
         totalPenalty: result.totalPenalty,
-        itemsProcessed: result.itemsProcessed
+        itemsProcessed: result.itemsProcessed,
       })
 
       toast.success('Pengembalian berhasil diproses!')
@@ -292,16 +310,17 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
       }
     },
     onError: (error) => {
-      const errorMessage = error instanceof Error ? error.message : 'Terjadi kesalahan saat memproses pengembalian'
+      const errorMessage =
+        error instanceof Error ? error.message : 'Terjadi kesalahan saat memproses pengembalian'
 
       kasirLogger.returnProcess.error('SimpleReturnForm', 'Return processing failed', {
         transactionId: kode,
-        errorMessage
+        errorMessage,
       })
 
-      setFormState(prev => ({ ...prev, error: errorMessage }))
+      setFormState((prev) => ({ ...prev, error: errorMessage }))
       toast.error(errorMessage)
-    }
+    },
   })
 
   // Handle form submission
@@ -314,39 +333,39 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
       return // Prevent double submission
     }
 
-    setFormState(prev => ({ ...prev, isProcessing: true, error: null }))
+    setFormState((prev) => ({ ...prev, isProcessing: true, error: null }))
 
     try {
       // Convert to API request format (unified)
       const apiRequest = {
         items: Object.entries(formState.itemConditions).map(([itemId, condition]) => ({
           itemId,
-          conditions: condition.conditions.map(c => ({
+          conditions: condition.conditions.map((c) => ({
             kondisiAkhir: c.kondisiAkhir,
             jumlahKembali: c.jumlahKembali,
             conditionCategory: c.conditionCategory,
             useManualPricing: c.useManualPricing,
-            manualPrice: c.manualPrice
-          }))
+            manualPrice: c.manualPrice,
+          })),
         })),
         catatan: formState.catatan || undefined,
-        tglKembali: new Date().toISOString()
+        tglKembali: new Date().toISOString(),
       }
 
       kasirLogger.returnProcess.info('SimpleReturnForm', 'Submitting return request', {
         transactionId: kode,
         itemCount: apiRequest.items.length,
-        hasNotes: !!formState.catatan
+        hasNotes: !!formState.catatan,
       })
 
       await processReturnMutation.mutateAsync({
         ...apiRequest,
-        transactionId: kode
+        transactionId: kode,
       })
-    } catch () {
+    } catch (error) {
       // Error handling in mutation callback
     } finally {
-      setFormState(prev => ({ ...prev, isProcessing: false }))
+      setFormState((prev) => ({ ...prev, isProcessing: false }))
     }
   }, [validateForm, formState, processReturnMutation, kode, onClose, router])
 
@@ -360,15 +379,15 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
   }, [onClose, router])
 
   // Get returnable items
-  const returnableItems = transaction?.items?.filter(
-    (item) => item.jumlahDiambil > 0 && item.statusKembali !== 'lengkap'
-  ) || []
+  const returnableItems =
+    transaction?.items?.filter(
+      (item) => item.jumlahDiambil > 0 && item.statusKembali !== 'lengkap',
+    ) || []
 
   // Check if form is valid for submission
-  const isFormValid = returnableItems.length > 0 &&
-    returnableItems.every(item =>
-      formState.itemConditions[item.id]?.isValid
-    )
+  const isFormValid =
+    returnableItems.length > 0 &&
+    returnableItems.every((item) => formState.itemConditions[item.id]?.isValid)
 
   if (isLoadingTransaction) {
     return (
@@ -411,12 +430,8 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
             </Button>
 
             <div className="flex-1">
-              <h1 className="text-2xl font-bold text-neutral-900">
-                Form Pengembalian Barang
-              </h1>
-              <p className="text-sm text-neutral-600">
-                Transaksi: {transaction.kode}
-              </p>
+              <h1 className="text-2xl font-bold text-neutral-900">Form Pengembalian Barang</h1>
+              <p className="text-sm text-neutral-600">Transaksi: {transaction.kode}</p>
             </div>
 
             <Badge variant="outline" className="border-blue-200 text-blue-800 bg-blue-50">
@@ -429,9 +444,7 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
         {formState.error && (
           <Alert className="mb-6 border-red-200 bg-red-50">
             <AlertCircle className="h-4 w-4 text-red-600" />
-            <AlertDescription className="text-red-800">
-              {formState.error}
-            </AlertDescription>
+            <AlertDescription className="text-red-800">{formState.error}</AlertDescription>
           </Alert>
         )}
 
@@ -540,7 +553,7 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
             <Textarea
               placeholder="Tambahkan catatan pengembalian..."
               value={formState.catatan}
-              onChange={(e) => setFormState(prev => ({ ...prev, catatan: e.target.value }))}
+              onChange={(e) => setFormState((prev) => ({ ...prev, catatan: e.target.value }))}
               disabled={formState.isProcessing}
               rows={3}
             />

@@ -1,0 +1,52 @@
+[Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 227ms
+:3001/api/kasir/transaksi/TXN-20251021-002/pengembalian/calculate:1  Failed to load resource: the server responded with a status of 404 (Not Found)Understand this error
+hook.js:608 2025-10-21T14:54:59.576Z [ERROR] [kasir:penalty-calc][calculateEnhancedPenalties] [KASIR] Enhanced penalty calculation failed{  "name": "KasirApiError",  "message": "Terjadi kesalahan tidak terduga",  "stack": "KasirApiError: Terjadi kesalahan tidak terduga\n    at apiRequest (http://localhost:3001/_next/static/chunks/_c33f0f24._.js:627:15)\n    at async KasirApi.calculateEnhancedPenalties (http://localhost:3001/_next/static/chunks/_c33f0f24._.js:780:28)\n    at async SimpleReturnForm.useCallback[calculatePenaltyPreview] (http://localhost:3001/_next/static/chunks/_f6c9f6c4._.js:3332:39)",  "performance": {    "timestamp": 1761058499576,    "memory": null  }}
+overrideMethod @ hook.js:608Understand this error
+hook.js:608 2025-10-21T14:54:59.577Z [ERROR] [kasir:penalty-calc][SimpleReturnForm] [KASIR] Failed to calculate penalty preview{  "transactionId": "TXN-20251021-002",  "error": "Terjadi kesalahan tidak terduga",  "performance": {    "timestamp": 1761058499577,    "memory": null  }}
+overrideMethod @ hook.js:608Understand this error
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 107ms
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 327ms
+clerk-telemetry.com/v1/event:1  Failed to load resource: net::ERR_CONNECTION_TIMED_OUTUnderstand this error
+clerk-telemetry.com/v1/event:1  Failed to load resource: net::ERR_CONNECTION_TIMED_OUTUnderstand this error
+clerk-telemetry.com/v1/event:1  Failed to load resource: net::ERR_CONNECTION_TIMED_OUTUnderstand this error
+logger.ts:196 2025-10-21T14:55:24.421Z [INFO] [kasir:api-calls][calculateEnhancedPenalties] [KASIR] Starting enhanced penalty calculation{  "transactionId": "TXN-20251021-002",  "itemCount": 2,  "totalConditions": 2,  "hasMultiConditions": false,  "performance": {    "timestamp": 1761058524421,    "memory": null  }}
+:3001/api/kasir/transaksi/TXN-20251021-002/pengembalian/calculate:1  Failed to load resource: the server responded with a status of 404 (Not Found)Understand this error
+logger.ts:254 2025-10-21T14:55:24.876Z [ERROR] [kasir:penalty-calc][calculateEnhancedPenalties] [KASIR] Enhanced penalty calculation failed{  "name": "KasirApiError",  "message": "Terjadi kesalahan tidak terduga",  "stack": "KasirApiError: Terjadi kesalahan tidak terduga\n    at apiRequest (http://localhost:3001/_next/static/chunks/_c33f0f24._.js:627:15)\n    at async KasirApi.calculateEnhancedPenalties (http://localhost:3001/_next/static/chunks/_c33f0f24._.js:780:28)\n    at async SimpleReturnForm.useCallback[calculatePenaltyPreview] (http://localhost:3001/_next/static/chunks/_f6c9f6c4._.js:3332:39)",  "performance": {    "timestamp": 1761058524876,    "memory": null  }}
+overrideMethod @ hook.js:608
+error @ intercept-console-error.ts:44
+error @ logger.ts:254
+error @ logger.ts:112
+error @ logger.ts:155
+calculateEnhancedPenalties @ api.ts:713Understand this error
+logger.ts:254 2025-10-21T14:55:24.880Z [ERROR] [kasir:penalty-calc][SimpleReturnForm] [KASIR] Failed to calculate penalty preview{  "transactionId": "TXN-20251021-002",  "error": "Terjadi kesalahan tidak terduga",  "performance": {    "timestamp": 1761058524880,    "memory": null  }}
+overrideMethod @ hook.js:608
+error @ intercept-console-error.ts:44
+error @ logger.ts:254
+error @ logger.ts:112
+error @ logger.ts:155
+SimpleReturnForm.useCallback[calculatePenaltyPreview] @ SimpleReturnForm.tsx:152Understand this error
+logger.ts:196 2025-10-21T14:55:55.931Z [INFO] [kasir:return-process][SimpleReturnForm] [KASIR] Submitting return request{  "transactionId": "TXN-20251021-002",  "itemCount": 2,  "hasNotes": true,  "performance": {    "timestamp": 1761058555931,    "memory": null  }}
+logger.ts:196 2025-10-21T14:55:55.963Z [INFO] [kasir:api-calls][processEnhancedReturn] [KASIR] Starting enhanced return API call{  "transactionId": "TXN-20251021-002",  "itemCount": 2,  "totalConditions": 2,  "hasMultiConditions": false,  "hasNotes": true,  "performance": {    "timestamp": 1761058555963,    "memory": null  }}
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 1116ms
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 138ms
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 1665ms
+logger.ts:196 2025-10-21T14:56:12.371Z [INFO] [kasir:api-calls][processEnhancedReturn] [KASIR] Enhanced return API call completed{  "processingMode": "unified",  "totalPenalty": 5000,  "hasErrors": false,  "hasWarnings": false,  "performance": {    "timestamp": 1761058572371,    "memory": null  }}
+logger.ts:196 2025-10-21T14:56:12.371Z [INFO] [kasir:performance][processEnhancedReturn] Enhanced return API call completed{  "performance": {    "label": "[KASIR] Enhanced return API call",    "duration": "16408ms"  }}
+logger.ts:196 2025-10-21T14:56:12.371Z [INFO] [kasir:performance][processReturn] Simple return processing completed{  "performance": {    "label": "[KASIR] Simple return processing",    "duration": "16408ms"  }}
+logger.ts:196 2025-10-21T14:56:12.372Z [INFO] [kasir:return-process][SimpleReturnForm] [KASIR] Return processed successfully{  "transactionId": "TXN-20251021-002",  "totalPenalty": 5000,  "performance": {    "timestamp": 1761058572372,    "memory": null  }}
+useTransactionDetail.ts:218 🔄 Transform Data Debug: Object
+logger.ts:196 2025-10-21T14:56:12.673Z [INFO] [statusUtils][calculateEnhancedStatus] Pickup detected, changing to diambil{  "result": "diambil",  "source": "server-flag",  "performance": {    "timestamp": 1761058572673,    "memory": null  }}
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 219ms
+useTransactionDetail.ts:218 🔄 Transform Data Debug: Object
+logger.ts:196 2025-10-21T14:56:26.393Z [INFO] [statusUtils][calculateEnhancedStatus] All items returned, marking as selesai (HIGHEST PRIORITY){  "result": "selesai",  "baseStatus": "dikembalikan",  "totalItems": 2,  "returnStatuses": [    "lengkap",    "lengkap"  ],  "businessRule": "completion-overrides-all-status",  "performance": {    "timestamp": 1761058586393,    "memory": null  }}
+useTransactionDetail.ts:218 🔄 Transform Data Debug: Object
+logger.ts:196 2025-10-21T14:56:31.392Z [INFO] [statusUtils][calculateEnhancedStatus] All items returned, marking as selesai (HIGHEST PRIORITY){  "result": "selesai",  "baseStatus": "dikembalikan",  "totalItems": 2,  "returnStatuses": [    "lengkap",    "lengkap"  ],  "businessRule": "completion-overrides-all-status",  "performance": {    "timestamp": 1761058591392,    "memory": null  }}
+useTransactionDetail.ts:218 🔄 Transform Data Debug: Object
+logger.ts:196 2025-10-21T14:56:36.448Z [INFO] [statusUtils][calculateEnhancedStatus] All items returned, marking as selesai (HIGHEST PRIORITY){  "result": "selesai",  "baseStatus": "dikembalikan",  "totalItems": 2,  "returnStatuses": [    "lengkap",    "lengkap"  ],  "businessRule": "completion-overrides-all-status",  "performance": {    "timestamp": 1761058596448,    "memory": null  }}

@@ -1,180 +1,78 @@
- GET /api/kasir/produk/available?available=true 500 in 14096ms
- │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 616ms (cache skip)
- │ │ Cache skipped reason: (auto no cache)
-D:\.work\rental-software\node_modules\@prisma\client\runtime\library.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: TypeError [ERR_INVALID_ARG_TYPE]: The "payload" argument must be of type object. Received null
-GET /api/kasir/produk/available error: Error [PrismaClientValidationError]: 
-Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].product.findMany()` invocation in
-D:\.work\rental-software\.next\server\chunks\[root-of-the-server]__aa04c409._.js:932:143
+Error: [31m2025-10-22T01:01:13.331Z [ERROR] [kasir:penalty-calc][calculateEnhancedPenalties] [KASIR] Enhanced penalty calculation failed
+{
+  "name": "TypeError",
+  "message": "Cannot read properties of undefined (reading 'processingMode')",
+  "stack": "TypeError: Cannot read properties of undefined (reading 'processingMode')\n    at KasirApi.calculateEnhancedPenalties (http://localhost:3000/_next/static/chunks/_f6c9f6c4._.js:3063:60)\n    at async SimpleReturnForm.useCallback[calculatePenaltyPreview] (http://localhost:3000/_next/static/chunks/_f6c9f6c4._.js?id=%255Bproject%255D%252Ffeatures%252Fkasir%252Fcomponents%252Freturn%252FSimpleReturnForm.tsx+%255Bapp-client%255D+%2528ecmascript%2529:159:39)",
+  "performance": {
+    "timestamp": 1761094873331,
+    "memory": null
+  }
+}[0m
+    at createConsoleError (http://localhost:3000/_next/static/chunks/node_modules_next_dist_445d8acf._.js:1484:71)
+    at handleConsoleError (http://localhost:3000/_next/static/chunks/node_modules_next_dist_445d8acf._.js:2090:54)
+    at console.error (http://localhost:3000/_next/static/chunks/node_modules_next_dist_445d8acf._.js:2243:57)
+    at Object.error (http://localhost:3000/_next/static/chunks/_f6c9f6c4._.js:715:17)
+    at Object.error (http://localhost:3000/_next/static/chunks/_f6c9f6c4._.js:870:137)
+    at Object.error (http://localhost:3000/_next/static/chunks/_f6c9f6c4._.js:908:60)
+    at KasirApi.calculateEnhancedPenalties (http://localhost:3000/_next/static/chunks/_f6c9f6c4._.js:3070:174)
+    at async SimpleReturnForm.useCallback[calculatePenaltyPreview] (http://localhost:3000/_next/static/chunks/_f6c9f6c4._.js?id=%255Bproject%255D%252Ffeatures%252Fkasir%252Fcomponents%252Freturn%252FSimpleReturnForm.tsx+%255Bapp-client%255D+%2528ecmascript%2529:159:39)
 
-  929 }
-  930 // Get products with related data including ProductSize information      
-  931 const [products, allProducts] = await Promise.all([
-→ 932     __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].product.findMany({        
-            skip: 0,
-            take: 10,
-            where: {
-              isActive: true,
-              status: "AVAILABLE"
-            },
-            orderBy: [
-              {
-                name: "asc"
-              },
-              {
-                createdAt: "desc"
-              }
-            ],
-            include: {
-              category: {
-                select: {
-                  id: true,
-                  name: true,
-                  color: true
-                }
-              },
-              sizes: {
-                where: {
-                  isActive: true
-                },
-                orderBy: {
-                  ageCategory: "asc",
-                  size: "asc"
-                }
-                ~~~~~~~~~~~~~~~~~~~~
-              }
-            }
-          })
 
-Argument `orderBy`: Invalid value provided. Expected ProductSizeOrderByWithRelationInput[], provided Object.
-    at <unknown> (app\api\kasir\produk\available\route.ts:82:21)
-    at async GET (app\api\kasir\produk\available\route.ts:81:36)
-  80 |     // Get products with related data including ProductSize information 
-  81 |     const [products, allProducts] = await Promise.all([
-> 82 |       prisma.product.findMany({
-     |                     ^
-  83 |         skip,
-  84 |         take: limit,
-  85 |         where: whereClause, {
-  clientVersion: '6.13.0'
-}
- GET /api/kasir/produk/available?available=true 500 in 3781ms
- │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 841ms (cache skip)
- │ │ Cache skipped reason: (auto no cache)
-D:\.work\rental-software\node_modules\@prisma\client\runtime\library.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: TypeError [ERR_INVALID_ARG_TYPE]: The "payload" argument must be of type object. Received null
-GET /api/kasir/produk/available error: Error [PrismaClientValidationError]: 
-Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].product.findMany()` invocation in
-D:\.work\rental-software\.next\server\chunks\[root-of-the-server]__aa04c409._.js:932:143
-
-  929 }
-  930 // Get products with related data including ProductSize information      
-  931 const [products, allProducts] = await Promise.all([
-→ 932     __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].product.findMany({        
-            skip: 0,
-            take: 10,
-            where: {
-              isActive: true,
-              status: "AVAILABLE"
-            },
-            orderBy: [
-              {
-                name: "asc"
-              },
-              {
-                createdAt: "desc"
-              }
-            ],
-            include: {
-              category: {
-                select: {
-                  id: true,
-                  name: true,
-                  color: true
-                }
-              },
-              sizes: {
-                where: {
-                  isActive: true
-                },
-                orderBy: {
-                  ageCategory: "asc",
-                  size: "asc"
-                }
-                ~~~~~~~~~~~~~~~~~~~~
-              }
-            }
-          })
-
-Argument `orderBy`: Invalid value provided. Expected ProductSizeOrderByWithRelationInput[], provided Object.
-    at <unknown> (app\api\kasir\produk\available\route.ts:82:21)
-    at async GET (app\api\kasir\produk\available\route.ts:81:36)
-  80 |     // Get products with related data including ProductSize information 
-  81 |     const [products, allProducts] = await Promise.all([
-> 82 |       prisma.product.findMany({
-     |                     ^
-  83 |         skip,
-  84 |         take: limit,
-  85 |         where: whereClause, {
-  clientVersion: '6.13.0'
-}
- GET /api/kasir/produk/available?available=true 500 in 4851ms
- │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 706ms (cache skip)
- │ │ Cache skipped reason: (auto no cache)
-D:\.work\rental-software\node_modules\@prisma\client\runtime\library.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: TypeError [ERR_INVALID_ARG_TYPE]: The "payload" argument must be of type object. Received null
-GET /api/kasir/produk/available error: Error [PrismaClientValidationError]: 
-Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].product.findMany()` invocation in
-D:\.work\rental-software\.next\server\chunks\[root-of-the-server]__aa04c409._.js:932:143
-
-  929 }
-  930 // Get products with related data including ProductSize information      
-  931 const [products, allProducts] = await Promise.all([
-→ 932     __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].product.findMany({        
-            skip: 0,
-            take: 10,
-            where: {
-              isActive: true,
-              status: "AVAILABLE"
-            },
-            orderBy: [
-              {
-                name: "asc"
-              },
-              {
-                createdAt: "desc"
-              }
-            ],
-            include: {
-              category: {
-                select: {
-                  id: true,
-                  name: true,
-                  color: true
-                }
-              },
-              sizes: {
-                where: {
-                  isActive: true
-                },
-                orderBy: {
-                  ageCategory: "asc",
-                  size: "asc"
-                }
-                ~~~~~~~~~~~~~~~~~~~~
-              }
-            }
-          })
-
-Argument `orderBy`: Invalid value provided. Expected ProductSizeOrderByWithRelationInput[], provided Object.
-    at <unknown> (app\api\kasir\produk\available\route.ts:82:21)
-    at async GET (app\api\kasir\produk\available\route.ts:81:36)
-  80 |     // Get products with related data including ProductSize information 
-  81 |     const [products, allProducts] = await Promise.all([
-> 82 |       prisma.product.findMany({
-     |                     ^
-  83 |         skip,
-  84 |         take: limit,
-  85 |         where: whereClause, {
-  clientVersion: '6.13.0'
-}
- GET /api/kasir/produk/available?available=true 500 in 7525ms
- │ GET https://api.clerk.com/v1/users/user_2zqMR8BytXixaDKNlvkF8Hm7pOp 200 in 3409ms (cache skip)
- │ │ Cache skipped reason: (auto no cache)
+2025-10-22T01:06:51.110Z [INFO] [kasir:return-process][SimpleReturnForm] [KASIR] Transaction loaded and conditions initialized{  "transactionId": "TXN-20251018-002",  "returnableItemCount": 2,  "totalConditions": 2,  "performance": {    "timestamp": 1761095211110,    "memory": null  }}
+logger.ts:196 2025-10-22T01:06:51.636Z [INFO] [kasir:api-calls][calculateEnhancedPenalties] [KASIR] Starting enhanced penalty calculation{  "transactionId": "TXN-20251018-002",  "itemCount": 2,  "totalConditions": 2,  "hasMultiConditions": false,  "performance": {    "timestamp": 1761095211636,    "memory": null  }}
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 133ms
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 104ms
+hook.js:608 2025-10-22T01:06:57.259Z [ERROR] [kasir:penalty-calc][calculateEnhancedPenalties] [KASIR] Enhanced penalty calculation failed{  "name": "TypeError",  "message": "Cannot read properties of undefined (reading 'processingMode')",  "stack": "TypeError: Cannot read properties of undefined (reading 'processingMode')\n    at KasirApi.calculateEnhancedPenalties (http://localhost:3000/_next/static/chunks/_f6c9f6c4._.js:3063:60)\n    at async SimpleReturnForm.useCallback[calculatePenaltyPreview] (http://localhost:3000/_next/static/chunks/_f6c9f6c4._.js:3337:39)",  "performance": {    "timestamp": 1761095217259,    "memory": null  }}
+overrideMethod @ hook.js:608Understand this error
+hook.js:608 2025-10-22T01:06:57.260Z [ERROR] [kasir:penalty-calc][SimpleReturnForm] [KASIR] Failed to calculate penalty preview{  "transactionId": "TXN-20251018-002",  "error": "Cannot read properties of undefined (reading 'processingMode')",  "performance": {    "timestamp": 1761095217260,    "memory": null  }}
+overrideMethod @ hook.js:608Understand this error
+logger.ts:196 2025-10-22T01:07:05.223Z [INFO] [kasir:api-calls][calculateEnhancedPenalties] [KASIR] Starting enhanced penalty calculation{  "transactionId": "TXN-20251018-002",  "itemCount": 2,  "totalConditions": 2,  "hasMultiConditions": false,  "performance": {    "timestamp": 1761095225223,    "memory": null  }}
+logger.ts:196 2025-10-22T01:07:06.126Z [INFO] [kasir:api-calls][calculateEnhancedPenalties] [KASIR] Starting enhanced penalty calculation{  "transactionId": "TXN-20251018-002",  "itemCount": 2,  "totalConditions": 2,  "hasMultiConditions": false,  "performance": {    "timestamp": 1761095226126,    "memory": null  }}
+logger.ts:196 2025-10-22T01:07:06.789Z [INFO] [kasir:api-calls][calculateEnhancedPenalties] [KASIR] Starting enhanced penalty calculation{  "transactionId": "TXN-20251018-002",  "itemCount": 2,  "totalConditions": 2,  "hasMultiConditions": false,  "performance": {    "timestamp": 1761095226789,    "memory": null  }}
+hook.js:608 2025-10-22T01:07:11.052Z [ERROR] [kasir:penalty-calc][calculateEnhancedPenalties] [KASIR] Enhanced penalty calculation failed{  "name": "TypeError",  "message": "Cannot read properties of undefined (reading 'processingMode')",  "stack": "TypeError: Cannot read properties of undefined (reading 'processingMode')\n    at KasirApi.calculateEnhancedPenalties (http://localhost:3000/_next/static/chunks/_f6c9f6c4._.js:3063:60)\n    at async SimpleReturnForm.useCallback[calculatePenaltyPreview] (http://localhost:3000/_next/static/chunks/_f6c9f6c4._.js:3337:39)",  "performance": {    "timestamp": 1761095231052,    "memory": null  }}
+overrideMethod @ hook.js:608Understand this error
+hook.js:608 2025-10-22T01:07:11.056Z [ERROR] [kasir:penalty-calc][SimpleReturnForm] [KASIR] Failed to calculate penalty preview{  "transactionId": "TXN-20251018-002",  "error": "Cannot read properties of undefined (reading 'processingMode')",  "performance": {    "timestamp": 1761095231056,    "memory": null  }}
+overrideMethod @ hook.js:608Understand this error
+hook.js:608 2025-10-22T01:07:13.310Z [ERROR] [kasir:penalty-calc][calculateEnhancedPenalties] [KASIR] Enhanced penalty calculation failed{  "name": "TypeError",  "message": "Cannot read properties of undefined (reading 'processingMode')",  "stack": "TypeError: Cannot read properties of undefined (reading 'processingMode')\n    at KasirApi.calculateEnhancedPenalties (http://localhost:3000/_next/static/chunks/_f6c9f6c4._.js:3063:60)\n    at async SimpleReturnForm.useCallback[calculatePenaltyPreview] (http://localhost:3000/_next/static/chunks/_f6c9f6c4._.js:3337:39)",  "performance": {    "timestamp": 1761095233310,    "memory": null  }}
+overrideMethod @ hook.js:608Understand this error
+hook.js:608 2025-10-22T01:07:13.313Z [ERROR] [kasir:penalty-calc][SimpleReturnForm] [KASIR] Failed to calculate penalty preview{  "transactionId": "TXN-20251018-002",  "error": "Cannot read properties of undefined (reading 'processingMode')",  "performance": {    "timestamp": 1761095233313,    "memory": null  }}
+overrideMethod @ hook.js:608Understand this error
+logger.ts:196 2025-10-22T01:07:15.771Z [INFO] [kasir:api-calls][calculateEnhancedPenalties] [KASIR] Starting enhanced penalty calculation{  "transactionId": "TXN-20251018-002",  "itemCount": 2,  "totalConditions": 2,  "hasMultiConditions": false,  "performance": {    "timestamp": 1761095235771,    "memory": null  }}
+logger.ts:196 2025-10-22T01:07:16.395Z [INFO] [kasir:api-calls][calculateEnhancedPenalties] [KASIR] Starting enhanced penalty calculation{  "transactionId": "TXN-20251018-002",  "itemCount": 2,  "totalConditions": 2,  "hasMultiConditions": false,  "performance": {    "timestamp": 1761095236395,    "memory": null  }}
+logger.ts:196 2025-10-22T01:07:18.368Z [INFO] [kasir:api-calls][calculateEnhancedPenalties] [KASIR] Starting enhanced penalty calculation{  "transactionId": "TXN-20251018-002",  "itemCount": 2,  "totalConditions": 2,  "hasMultiConditions": false,  "performance": {    "timestamp": 1761095238368,    "memory": null  }}
+hook.js:608 2025-10-22T01:07:18.457Z [ERROR] [kasir:penalty-calc][calculateEnhancedPenalties] [KASIR] Enhanced penalty calculation failed{  "name": "TypeError",  "message": "Cannot read properties of undefined (reading 'processingMode')",  "stack": "TypeError: Cannot read properties of undefined (reading 'processingMode')\n    at KasirApi.calculateEnhancedPenalties (http://localhost:3000/_next/static/chunks/_f6c9f6c4._.js:3063:60)\n    at async SimpleReturnForm.useCallback[calculatePenaltyPreview] (http://localhost:3000/_next/static/chunks/_f6c9f6c4._.js:3337:39)",  "performance": {    "timestamp": 1761095238457,    "memory": null  }}
+overrideMethod @ hook.js:608Understand this error
+hook.js:608 2025-10-22T01:07:18.458Z [ERROR] [kasir:penalty-calc][SimpleReturnForm] [KASIR] Failed to calculate penalty preview{  "transactionId": "TXN-20251018-002",  "error": "Cannot read properties of undefined (reading 'processingMode')",  "performance": {    "timestamp": 1761095238458,    "memory": null  }}
+overrideMethod @ hook.js:608Understand this error
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 272ms
+logger.ts:254 2025-10-22T01:07:21.351Z [ERROR] [kasir:penalty-calc][calculateEnhancedPenalties] [KASIR] Enhanced penalty calculation failed{  "name": "TypeError",  "message": "Cannot read properties of undefined (reading 'processingMode')",  "stack": "TypeError: Cannot read properties of undefined (reading 'processingMode')\n    at KasirApi.calculateEnhancedPenalties (http://localhost:3000/_next/static/chunks/_f6c9f6c4._.js:3063:60)\n    at async SimpleReturnForm.useCallback[calculatePenaltyPreview] (http://localhost:3000/_next/static/chunks/_f6c9f6c4._.js:3337:39)",  "performance": {    "timestamp": 1761095241351,    "memory": null  }}
+overrideMethod @ hook.js:608
+error @ intercept-console-error.ts:44
+error @ logger.ts:254
+error @ logger.ts:112
+error @ logger.ts:155
+calculateEnhancedPenalties @ api.ts:713Understand this error
+logger.ts:254 2025-10-22T01:07:21.352Z [ERROR] [kasir:penalty-calc][SimpleReturnForm] [KASIR] Failed to calculate penalty preview{  "transactionId": "TXN-20251018-002",  "error": "Cannot read properties of undefined (reading 'processingMode')",  "performance": {    "timestamp": 1761095241352,    "memory": null  }}
+overrideMethod @ hook.js:608
+error @ intercept-console-error.ts:44
+error @ logger.ts:254
+error @ logger.ts:112
+error @ logger.ts:155
+SimpleReturnForm.useCallback[calculatePenaltyPreview] @ SimpleReturnForm.tsx:156Understand this error
+logger.ts:254 2025-10-22T01:07:21.824Z [ERROR] [kasir:penalty-calc][calculateEnhancedPenalties] [KASIR] Enhanced penalty calculation failed{  "name": "TypeError",  "message": "Cannot read properties of undefined (reading 'processingMode')",  "stack": "TypeError: Cannot read properties of undefined (reading 'processingMode')\n    at KasirApi.calculateEnhancedPenalties (http://localhost:3000/_next/static/chunks/_f6c9f6c4._.js:3063:60)\n    at async SimpleReturnForm.useCallback[calculatePenaltyPreview] (http://localhost:3000/_next/static/chunks/_f6c9f6c4._.js:3337:39)",  "performance": {    "timestamp": 1761095241824,    "memory": null  }}
+overrideMethod @ hook.js:608
+error @ intercept-console-error.ts:44
+error @ logger.ts:254
+error @ logger.ts:112
+error @ logger.ts:155
+calculateEnhancedPenalties @ api.ts:713Understand this error
+logger.ts:254 2025-10-22T01:07:21.828Z [ERROR] [kasir:penalty-calc][SimpleReturnForm] [KASIR] Failed to calculate penalty preview{  "transactionId": "TXN-20251018-002",  "error": "Cannot read properties of undefined (reading 'processingMode')",  "performance": {    "timestamp": 1761095241828,    "memory": null  }}
+overrideMethod @ hook.js:608
+error @ intercept-console-error.ts:44
+error @ logger.ts:254
+error @ logger.ts:112
+error @ logger.ts:155
+SimpleReturnForm.useCallback[calculatePenaltyPreview] @ SimpleReturnForm.tsx:156Understand this error
