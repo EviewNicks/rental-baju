@@ -78,6 +78,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     if (body.name !== undefined) updateData.name = body.name
     if (body.color !== undefined) updateData.color = body.color
+    if (body.type !== undefined) updateData.type = body.type
 
     // Validate with schema if there's data to update
     if (Object.keys(updateData).length > 0) {

@@ -38,6 +38,7 @@ export interface BaseCategory {
   id: string
   name: string
   color: string
+  type: CategoryType
   createdAt: Date
   updatedAt: Date
   createdBy: string
@@ -75,6 +76,7 @@ export interface ClientCategory {
   id: string
   name: string
   color: string
+  type: CategoryType
   createdAt: Date | string
   updatedAt: Date | string
   createdBy: string
@@ -172,6 +174,9 @@ export type ProductStatus = 'AVAILABLE' | 'RENTED' | 'MAINTENANCE'
 export type AgeCategory = 'ADULT' | 'CHILD' | 'UNIVERSAL'
 export type SizeEnum = 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL'
 
+// Category Types for Dynamic Form System
+export type CategoryType = 'clothing' | 'accessories_age_based' | 'accessories_universal'
+
 // Filter types untuk UI components
 export type CategoryFilterValue = string | undefined
 export type StatusFilterValue = ProductStatus | undefined | 'Semua' | ''
@@ -248,11 +253,13 @@ export interface ProductListResponse {
 export interface CreateCategoryRequest {
   name: string
   color: string
+  type?: CategoryType
 }
 
 export interface UpdateCategoryRequest {
   name?: string
   color?: string
+  type?: CategoryType
 }
 
 
@@ -263,6 +270,7 @@ export interface UpdateCategoryRequest {
 export interface CategoryFormData {
   name: string
   color: string
+  type?: CategoryType
 }
 
 export type CategoryModalMode = 'add' | 'edit' | 'view'

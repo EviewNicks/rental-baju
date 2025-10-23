@@ -69,15 +69,7 @@ export async function POST(request: NextRequest) {
     // Parse request body
     const body = await request.json()
 
-    // Validate required fields
-    if (!body.name || !body.color) {
-      return NextResponse.json(
-        { error: { message: 'Name and color are required', code: 'VALIDATION_ERROR' } },
-        { status: 400 },
-      )
-    }
-
-    // Validate with schema
+    // Validate with schema (includes required fields validation)
     const validatedData = categorySchema.parse(body)
 
     // Initialize service

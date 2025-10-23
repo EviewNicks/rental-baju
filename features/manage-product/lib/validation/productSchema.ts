@@ -85,6 +85,11 @@ export const categorySchema = z.object({
     .min(1, 'Nama kategori wajib diisi')
     .max(50, 'Nama kategori maksimal 50 karakter'),
   color: z.string().regex(/^#[0-9A-F]{6}$/i, 'Warna harus dalam format hex (#RRGGBB)'),
+  type: z.enum(['clothing', 'accessories_age_based', 'accessories_universal'], {
+    errorMap: (issue, ctx) => ({
+      message: 'Tipe kategori harus salah satu dari: clothing, accessories_age_based, accessories_universal',
+    }),
+  }).optional(),
 })
 
 export const updateCategorySchema = categorySchema.partial()

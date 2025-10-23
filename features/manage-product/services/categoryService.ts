@@ -52,6 +52,7 @@ export class CategoryService {
       data: {
         name: validatedData.name,
         color: validatedData.color,
+        type: validatedData.type || 'clothing', // Default to 'clothing' if not provided
         createdBy: this.userId,
       },
     })
@@ -204,6 +205,7 @@ export class CategoryService {
       id: prismaCategory.id as string,
       name: prismaCategory.name as string,
       color: prismaCategory.color as string,
+      type: prismaCategory.type as CategoryType,
       products: prismaCategory.products
         ? (prismaCategory.products as Record<string, unknown>[]).map(
             (product: Record<string, unknown>) => ({
