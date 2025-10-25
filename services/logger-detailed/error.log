@@ -1,78 +1,202 @@
-Error: [31m2025-10-22T01:01:13.331Z [ERROR] [kasir:penalty-calc][calculateEnhancedPenalties] [KASIR] Enhanced penalty calculation failed
-{
-  "name": "TypeError",
-  "message": "Cannot read properties of undefined (reading 'processingMode')",
-  "stack": "TypeError: Cannot read properties of undefined (reading 'processingMode')\n    at KasirApi.calculateEnhancedPenalties (http://localhost:3000/_next/static/chunks/_f6c9f6c4._.js:3063:60)\n    at async SimpleReturnForm.useCallback[calculatePenaltyPreview] (http://localhost:3000/_next/static/chunks/_f6c9f6c4._.js?id=%255Bproject%255D%252Ffeatures%252Fkasir%252Fcomponents%252Freturn%252FSimpleReturnForm.tsx+%255Bapp-client%255D+%2528ecmascript%2529:159:39)",
-  "performance": {
-    "timestamp": 1761094873331,
-    "memory": null
-  }
-}[0m
-    at createConsoleError (http://localhost:3000/_next/static/chunks/node_modules_next_dist_445d8acf._.js:1484:71)
-    at handleConsoleError (http://localhost:3000/_next/static/chunks/node_modules_next_dist_445d8acf._.js:2090:54)
-    at console.error (http://localhost:3000/_next/static/chunks/node_modules_next_dist_445d8acf._.js:2243:57)
-    at Object.error (http://localhost:3000/_next/static/chunks/_f6c9f6c4._.js:715:17)
-    at Object.error (http://localhost:3000/_next/static/chunks/_f6c9f6c4._.js:870:137)
-    at Object.error (http://localhost:3000/_next/static/chunks/_f6c9f6c4._.js:908:60)
-    at KasirApi.calculateEnhancedPenalties (http://localhost:3000/_next/static/chunks/_f6c9f6c4._.js:3070:174)
-    at async SimpleReturnForm.useCallback[calculatePenaltyPreview] (http://localhost:3000/_next/static/chunks/_f6c9f6c4._.js?id=%255Bproject%255D%252Ffeatures%252Fkasir%252Fcomponents%252Freturn%252FSimpleReturnForm.tsx+%255Bapp-client%255D+%2528ecmascript%2529:159:39)
+
+D:\.work\rental-software\features\manage-product\components\form-product\DynamicFormField.tsx
+  12:10  error  'FormField' is defined but never used        @typescript-eslint/no-unused-vars
+  17:10  error  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  18:21  error  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  19:19  error  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  32:3   error  'formDescription' is defined but never used  @typescript-eslint/no-unused-vars
+  37:35  error  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  42:33  error  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+
+D:\.work\rental-software\features\manage-product\components\form-product\ProductForm.tsx
+   91:58  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  194:43  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  239:79  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  261:51  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  457:62  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  465:49  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\.work\rental-software\features\manage-product\lib\strategies\AccessoriesAgeBasedStrategy.ts
+   11:3   error  'FormFieldConfig' is defined but never used  @typescript-eslint/no-unused-vars
+  112:38  error  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+
+D:\.work\rental-software\features\manage-product\lib\strategies\AccessoriesUniversalStrategy.ts
+  11:3   error  'FormFieldConfig' is defined but never used  @typescript-eslint/no-unused-vars
+  81:38  error  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+
+D:\.work\rental-software\features\manage-product\lib\strategies\CategoryFormStrategy.ts
+  27:18  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  60:52  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  70:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  86:18  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\.work\rental-software\features\manage-product\lib\strategies\ClothingStrategy.ts
+   11:3   error  'FormFieldConfig' is defined but never used  @typescript-eslint/no-unused-vars
+   89:30  error  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  127:38  error  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  128:36  error  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+
+D:\.work\rental-software\features\manage-product\lib\strategies\StrategyFactory.ts
+   93:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  208:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  215:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  269:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\.work\rental-software\features\manage-product\lib\strategies\StrategyIntegration.ts
+   20:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  151:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  153:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  155:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  163:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  185:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  187:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  191:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+✖ 37 problems (37 errors, 0 warnings)
+
+error Command failed with exit code 1.
+info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.
+PS D:\.work\rental-software> 
 
 
-2025-10-22T01:06:51.110Z [INFO] [kasir:return-process][SimpleReturnForm] [KASIR] Transaction loaded and conditions initialized{  "transactionId": "TXN-20251018-002",  "returnableItemCount": 2,  "totalConditions": 2,  "performance": {    "timestamp": 1761095211110,    "memory": null  }}
-logger.ts:196 2025-10-22T01:06:51.636Z [INFO] [kasir:api-calls][calculateEnhancedPenalties] [KASIR] Starting enhanced penalty calculation{  "transactionId": "TXN-20251018-002",  "itemCount": 2,  "totalConditions": 2,  "hasMultiConditions": false,  "performance": {    "timestamp": 1761095211636,    "memory": null  }}
-turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
-report-hmr-latency.ts:26 [Fast Refresh] done in 133ms
-turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
-report-hmr-latency.ts:26 [Fast Refresh] done in 104ms
-hook.js:608 2025-10-22T01:06:57.259Z [ERROR] [kasir:penalty-calc][calculateEnhancedPenalties] [KASIR] Enhanced penalty calculation failed{  "name": "TypeError",  "message": "Cannot read properties of undefined (reading 'processingMode')",  "stack": "TypeError: Cannot read properties of undefined (reading 'processingMode')\n    at KasirApi.calculateEnhancedPenalties (http://localhost:3000/_next/static/chunks/_f6c9f6c4._.js:3063:60)\n    at async SimpleReturnForm.useCallback[calculatePenaltyPreview] (http://localhost:3000/_next/static/chunks/_f6c9f6c4._.js:3337:39)",  "performance": {    "timestamp": 1761095217259,    "memory": null  }}
-overrideMethod @ hook.js:608Understand this error
-hook.js:608 2025-10-22T01:06:57.260Z [ERROR] [kasir:penalty-calc][SimpleReturnForm] [KASIR] Failed to calculate penalty preview{  "transactionId": "TXN-20251018-002",  "error": "Cannot read properties of undefined (reading 'processingMode')",  "performance": {    "timestamp": 1761095217260,    "memory": null  }}
-overrideMethod @ hook.js:608Understand this error
-logger.ts:196 2025-10-22T01:07:05.223Z [INFO] [kasir:api-calls][calculateEnhancedPenalties] [KASIR] Starting enhanced penalty calculation{  "transactionId": "TXN-20251018-002",  "itemCount": 2,  "totalConditions": 2,  "hasMultiConditions": false,  "performance": {    "timestamp": 1761095225223,    "memory": null  }}
-logger.ts:196 2025-10-22T01:07:06.126Z [INFO] [kasir:api-calls][calculateEnhancedPenalties] [KASIR] Starting enhanced penalty calculation{  "transactionId": "TXN-20251018-002",  "itemCount": 2,  "totalConditions": 2,  "hasMultiConditions": false,  "performance": {    "timestamp": 1761095226126,    "memory": null  }}
-logger.ts:196 2025-10-22T01:07:06.789Z [INFO] [kasir:api-calls][calculateEnhancedPenalties] [KASIR] Starting enhanced penalty calculation{  "transactionId": "TXN-20251018-002",  "itemCount": 2,  "totalConditions": 2,  "hasMultiConditions": false,  "performance": {    "timestamp": 1761095226789,    "memory": null  }}
-hook.js:608 2025-10-22T01:07:11.052Z [ERROR] [kasir:penalty-calc][calculateEnhancedPenalties] [KASIR] Enhanced penalty calculation failed{  "name": "TypeError",  "message": "Cannot read properties of undefined (reading 'processingMode')",  "stack": "TypeError: Cannot read properties of undefined (reading 'processingMode')\n    at KasirApi.calculateEnhancedPenalties (http://localhost:3000/_next/static/chunks/_f6c9f6c4._.js:3063:60)\n    at async SimpleReturnForm.useCallback[calculatePenaltyPreview] (http://localhost:3000/_next/static/chunks/_f6c9f6c4._.js:3337:39)",  "performance": {    "timestamp": 1761095231052,    "memory": null  }}
-overrideMethod @ hook.js:608Understand this error
-hook.js:608 2025-10-22T01:07:11.056Z [ERROR] [kasir:penalty-calc][SimpleReturnForm] [KASIR] Failed to calculate penalty preview{  "transactionId": "TXN-20251018-002",  "error": "Cannot read properties of undefined (reading 'processingMode')",  "performance": {    "timestamp": 1761095231056,    "memory": null  }}
-overrideMethod @ hook.js:608Understand this error
-hook.js:608 2025-10-22T01:07:13.310Z [ERROR] [kasir:penalty-calc][calculateEnhancedPenalties] [KASIR] Enhanced penalty calculation failed{  "name": "TypeError",  "message": "Cannot read properties of undefined (reading 'processingMode')",  "stack": "TypeError: Cannot read properties of undefined (reading 'processingMode')\n    at KasirApi.calculateEnhancedPenalties (http://localhost:3000/_next/static/chunks/_f6c9f6c4._.js:3063:60)\n    at async SimpleReturnForm.useCallback[calculatePenaltyPreview] (http://localhost:3000/_next/static/chunks/_f6c9f6c4._.js:3337:39)",  "performance": {    "timestamp": 1761095233310,    "memory": null  }}
-overrideMethod @ hook.js:608Understand this error
-hook.js:608 2025-10-22T01:07:13.313Z [ERROR] [kasir:penalty-calc][SimpleReturnForm] [KASIR] Failed to calculate penalty preview{  "transactionId": "TXN-20251018-002",  "error": "Cannot read properties of undefined (reading 'processingMode')",  "performance": {    "timestamp": 1761095233313,    "memory": null  }}
-overrideMethod @ hook.js:608Understand this error
-logger.ts:196 2025-10-22T01:07:15.771Z [INFO] [kasir:api-calls][calculateEnhancedPenalties] [KASIR] Starting enhanced penalty calculation{  "transactionId": "TXN-20251018-002",  "itemCount": 2,  "totalConditions": 2,  "hasMultiConditions": false,  "performance": {    "timestamp": 1761095235771,    "memory": null  }}
-logger.ts:196 2025-10-22T01:07:16.395Z [INFO] [kasir:api-calls][calculateEnhancedPenalties] [KASIR] Starting enhanced penalty calculation{  "transactionId": "TXN-20251018-002",  "itemCount": 2,  "totalConditions": 2,  "hasMultiConditions": false,  "performance": {    "timestamp": 1761095236395,    "memory": null  }}
-logger.ts:196 2025-10-22T01:07:18.368Z [INFO] [kasir:api-calls][calculateEnhancedPenalties] [KASIR] Starting enhanced penalty calculation{  "transactionId": "TXN-20251018-002",  "itemCount": 2,  "totalConditions": 2,  "hasMultiConditions": false,  "performance": {    "timestamp": 1761095238368,    "memory": null  }}
-hook.js:608 2025-10-22T01:07:18.457Z [ERROR] [kasir:penalty-calc][calculateEnhancedPenalties] [KASIR] Enhanced penalty calculation failed{  "name": "TypeError",  "message": "Cannot read properties of undefined (reading 'processingMode')",  "stack": "TypeError: Cannot read properties of undefined (reading 'processingMode')\n    at KasirApi.calculateEnhancedPenalties (http://localhost:3000/_next/static/chunks/_f6c9f6c4._.js:3063:60)\n    at async SimpleReturnForm.useCallback[calculatePenaltyPreview] (http://localhost:3000/_next/static/chunks/_f6c9f6c4._.js:3337:39)",  "performance": {    "timestamp": 1761095238457,    "memory": null  }}
-overrideMethod @ hook.js:608Understand this error
-hook.js:608 2025-10-22T01:07:18.458Z [ERROR] [kasir:penalty-calc][SimpleReturnForm] [KASIR] Failed to calculate penalty preview{  "transactionId": "TXN-20251018-002",  "error": "Cannot read properties of undefined (reading 'processingMode')",  "performance": {    "timestamp": 1761095238458,    "memory": null  }}
-overrideMethod @ hook.js:608Understand this error
-turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
-report-hmr-latency.ts:26 [Fast Refresh] done in 272ms
-logger.ts:254 2025-10-22T01:07:21.351Z [ERROR] [kasir:penalty-calc][calculateEnhancedPenalties] [KASIR] Enhanced penalty calculation failed{  "name": "TypeError",  "message": "Cannot read properties of undefined (reading 'processingMode')",  "stack": "TypeError: Cannot read properties of undefined (reading 'processingMode')\n    at KasirApi.calculateEnhancedPenalties (http://localhost:3000/_next/static/chunks/_f6c9f6c4._.js:3063:60)\n    at async SimpleReturnForm.useCallback[calculatePenaltyPreview] (http://localhost:3000/_next/static/chunks/_f6c9f6c4._.js:3337:39)",  "performance": {    "timestamp": 1761095241351,    "memory": null  }}
-overrideMethod @ hook.js:608
-error @ intercept-console-error.ts:44
-error @ logger.ts:254
-error @ logger.ts:112
-error @ logger.ts:155
-calculateEnhancedPenalties @ api.ts:713Understand this error
-logger.ts:254 2025-10-22T01:07:21.352Z [ERROR] [kasir:penalty-calc][SimpleReturnForm] [KASIR] Failed to calculate penalty preview{  "transactionId": "TXN-20251018-002",  "error": "Cannot read properties of undefined (reading 'processingMode')",  "performance": {    "timestamp": 1761095241352,    "memory": null  }}
-overrideMethod @ hook.js:608
-error @ intercept-console-error.ts:44
-error @ logger.ts:254
-error @ logger.ts:112
-error @ logger.ts:155
-SimpleReturnForm.useCallback[calculatePenaltyPreview] @ SimpleReturnForm.tsx:156Understand this error
-logger.ts:254 2025-10-22T01:07:21.824Z [ERROR] [kasir:penalty-calc][calculateEnhancedPenalties] [KASIR] Enhanced penalty calculation failed{  "name": "TypeError",  "message": "Cannot read properties of undefined (reading 'processingMode')",  "stack": "TypeError: Cannot read properties of undefined (reading 'processingMode')\n    at KasirApi.calculateEnhancedPenalties (http://localhost:3000/_next/static/chunks/_f6c9f6c4._.js:3063:60)\n    at async SimpleReturnForm.useCallback[calculatePenaltyPreview] (http://localhost:3000/_next/static/chunks/_f6c9f6c4._.js:3337:39)",  "performance": {    "timestamp": 1761095241824,    "memory": null  }}
-overrideMethod @ hook.js:608
-error @ intercept-console-error.ts:44
-error @ logger.ts:254
-error @ logger.ts:112
-error @ logger.ts:155
-calculateEnhancedPenalties @ api.ts:713Understand this error
-logger.ts:254 2025-10-22T01:07:21.828Z [ERROR] [kasir:penalty-calc][SimpleReturnForm] [KASIR] Failed to calculate penalty preview{  "transactionId": "TXN-20251018-002",  "error": "Cannot read properties of undefined (reading 'processingMode')",  "performance": {    "timestamp": 1761095241828,    "memory": null  }}
-overrideMethod @ hook.js:608
-error @ intercept-console-error.ts:44
-error @ logger.ts:254
-error @ logger.ts:112
-error @ logger.ts:155
-SimpleReturnForm.useCallback[calculatePenaltyPreview] @ SimpleReturnForm.tsx:156Understand this error
+PS D:\.work\rental-software> yarn type-check
+yarn run v1.22.22
+$ tsc --noEmit --skipLibCheck
+features/manage-product/components/form-product/ProductForm.tsx:188:9 - error TS2353: Object literal may only specify known properties, and 'categoryId' does not exist in type 'CategoryFormData'.
+
+188         categoryId,
+            ~~~~~~~~~~
+
+features/manage-product/components/form-product/ProductForm.tsx:222:76 - error TS2554: Expected 2-3 arguments, but got 4.
+
+222       formLogger.error('strategy', 'Failed to initialize strategy', error, {
+                                                                               ~
+223         categoryId,
+    ~~~~~~~~~~~~~~~~~~~
+224         categoryType: category.type
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+225       })
+    ~~~~~~~
+
+features/manage-product/components/form-product/ProductForm.tsx:265:78 - error TS2554: Expected 2-3 arguments, but got 4.
+
+265         formLogger.error('strategy', 'Failed to transform form data', error, {
+                                                                                 ~
+266           fieldName,
+    ~~~~~~~~~~~~~~~~~~~~
+... 
+268           strategy: currentStrategy.type
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+269         })
+    ~~~~~~~~~
+
+features/manage-product/components/form-product/ProductForm.tsx:461:19 - error TS2322: Type '{ children: Element; key: number; title: any; description: any; "data-testid": string; }' is not assignable to type 'IntrinsicAttributes & FormSectionProps'.
+  Property 'description' does not exist on type 'IntrinsicAttributes & FormSectionProps'.
+
+461                   description={section.description}
+                      ~~~~~~~~~~~
+
+features/manage-product/components/form-product/ProductForm.tsx:469:32 - error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type 'CategoryFormData'.
+
+469                         value={categoryFormData[field.name] || field.defaultValue || ''}
+                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+features/manage-product/lib/strategies/AccessoriesAgeBasedStrategy.ts:13:3 - error TS2459: Module '"./CategoryFormStrategy"' declares 'CreateProductSizeRequest' locally, but it is not exported.
+
+13   CreateProductSizeRequest,
+     ~~~~~~~~~~~~~~~~~~~~~~~~
+
+  features/manage-product/lib/strategies/CategoryFormStrategy.ts:9:15
+    9 import type { CreateProductSizeRequest, CategoryType } from '../../types'
+                    ~~~~~~~~~~~~~~~~~~~~~~~~
+    'CreateProductSizeRequest' is declared here.
+
+features/manage-product/lib/strategies/AccessoriesUniversalStrategy.ts:13:3 - error TS2459: Module '"./CategoryFormStrategy"' declares 'CreateProductSizeRequest' locally, but it is not exported.
+
+13   CreateProductSizeRequest,
+     ~~~~~~~~~~~~~~~~~~~~~~~~
+
+  features/manage-product/lib/strategies/CategoryFormStrategy.ts:9:15
+    9 import type { CreateProductSizeRequest, CategoryType } from '../../types'
+                    ~~~~~~~~~~~~~~~~~~~~~~~~
+    'CreateProductSizeRequest' is declared here.
+
+features/manage-product/lib/strategies/ClothingStrategy.ts:13:3 - error TS2459: Module '"./CategoryFormStrategy"' declares 'CreateProductSizeRequest' locally, but it is not exported.
+
+13   CreateProductSizeRequest,
+     ~~~~~~~~~~~~~~~~~~~~~~~~
+
+  features/manage-product/lib/strategies/CategoryFormStrategy.ts:9:15
+    9 import type { CreateProductSizeRequest, CategoryType } from '../../types'
+                    ~~~~~~~~~~~~~~~~~~~~~~~~
+    'CreateProductSizeRequest' is declared here.
+
+features/manage-product/lib/strategies/ClothingStrategy.ts:114:18 - error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ sizes: string[]; }'.
+  No index signature with a parameter of type 'string' was found on type '{ sizes: string[]; }'.
+
+114           return data[quantityKey] > 0
+                     ~~~~~~~~~~~~~~~~~
+
+features/manage-product/lib/strategies/StrategyFactory.ts:10:3 - error TS2459: Module '"./CategoryFormStrategy"' declares 'CategoryType' locally, but it is not exported.
+
+10   CategoryType,
+     ~~~~~~~~~~~~
+
+  features/manage-product/lib/strategies/CategoryFormStrategy.ts:9:41
+    9 import type { CreateProductSizeRequest, CategoryType } from '../../types'
+                                              ~~~~~~~~~~~~
+    'CategoryType' is declared here.
+
+features/manage-product/lib/strategies/StrategyFactory.ts:50:21 - error TS1361: 'InvalidCategoryTypeError' cannot be used as a value because it was imported using 'import type'.
+
+50           throw new InvalidCategoryTypeError(categoryType)
+                       ~~~~~~~~~~~~~~~~~~~~~~~~
+
+  features/manage-product/lib/strategies/StrategyFactory.ts:13:3
+    13   InvalidCategoryTypeError,
+         ~~~~~~~~~~~~~~~~~~~~~~~~
+    'InvalidCategoryTypeError' was imported here.
+
+features/manage-product/lib/strategies/StrategyFactory.ts:70:28 - error TS1361: 'StrategyError' cannot be used as a value because it was imported using 'import type'.
+
+70       if (error instanceof StrategyError) {
+                              ~~~~~~~~~~~~~
+
+  features/manage-product/lib/strategies/StrategyFactory.ts:14:3
+    14   StrategyError
+         ~~~~~~~~~~~~~
+    'StrategyError' was imported here.
+
+features/manage-product/lib/strategies/StrategyFactory.ts:75:17 - error TS1361: 'StrategyError' cannot be used as a value because it was imported using 'import type'.
+
+75       throw new StrategyError(
+                   ~~~~~~~~~~~~~
+
+  features/manage-product/lib/strategies/StrategyFactory.ts:14:3
+    14   StrategyError
+         ~~~~~~~~~~~~~
+    'StrategyError' was imported here.
+
+features/manage-product/lib/strategies/StrategyIntegration.ts:31:37 - error TS2339: Property 'errors' does not exist on type 'ZodError<unknown>'.
+
+31         errors.push(...result.error.errors.map(err => `${err.path.join('.')}: ${err.message}`))
+                                       ~~~~~~
+
+features/manage-product/lib/strategies/StrategyIntegration.ts:31:48 - error TS7006: Parameter 'err' implicitly has an 'any' type.       
+
+31         errors.push(...result.error.errors.map(err => `${err.path.join('.')}: ${err.message}`))
+                                                  ~~~
+
+
+Found 15 errors in 6 files.
+
+Errors  Files
+     5  features/manage-product/components/form-product/ProductForm.tsx:188
+     1  features/manage-product/lib/strategies/AccessoriesAgeBasedStrategy.ts:13
+     1  features/manage-product/lib/strategies/AccessoriesUniversalStrategy.ts:13
+     2  features/manage-product/lib/strategies/ClothingStrategy.ts:13
+     4  features/manage-product/lib/strategies/StrategyFactory.ts:10
+     2  features/manage-product/lib/strategies/StrategyIntegration.ts:31
+error Command failed with exit code 2.
+info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.
+PS D:\.work\rental-software> 
