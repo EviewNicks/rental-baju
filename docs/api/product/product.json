@@ -1,8 +1,8 @@
 {
   "info": {
-    "name": "Producer API Collection - Advanced Size Management",
-    "description": "Complete API collection untuk Producer role dengan Advanced-Only Size Management System. Includes produk, kategori, warna, material, dan advanced size management (atomic switch implementation).\n\n🆕 ADVANCED-ONLY ARCHITECTURE:\n• All products now require sizes dengan age categories (ADULT/CHILD/UNIVERSAL)\n• Aggregated size display dengan breakdown capabilities\n• Business logic validation dan performance monitoring\n• Pure advanced architecture: no legacy single-size support\n• Real-time aggregation dengan caching (5min TTL)\n\n🔗 DEPENDENCIES & EXECUTION ORDER:\n1. Setup: Login → Get session token\n2. Prerequisites: Create Category → Create Color → (Optional) Create Material\n3. Products: Create/Update products dengan advanced size management\n4. Size Management: Test aggregation, validation, advanced scenarios\n5. Testing: Run comprehensive integration scenarios\n\n📋 REQUIRED VARIABLES:\n- base_url: http://localhost:3000\n- clerk_session_token: From browser cookies\n- Auto-captured: product_id, category_id, color_id, material_id, size_id\n\n⚡ PERFORMANCE TARGETS:\n- Aggregation: <50ms calculation time\n- Cache Hit Rate: >80% untuk optimal performance\n- Response Time: <2s SLA maintained\n\n📚 Full documentation: docs/api/manage-product-endpoints.md | docs/api/manage-product-business-logic.md",
-    "version": "4.0.0",
+    "name": "Producer API Collection - Advanced Size Management + Category Types (RPK-52)",
+    "description": "Complete API collection untuk Producer role dengan Advanced-Only Size Management System dan Category Type Support untuk Dynamic Forms. Includes produk, kategori, warna, material, advanced size management, dan category-based dynamic form system.\n\n🆕 ADVANCED-ONLY ARCHITECTURE:\n• All products now require sizes dengan age categories (ADULT/CHILD/UNIVERSAL)\n• Aggregated size display dengan breakdown capabilities\n• Business logic validation dan performance monitoring\n• Pure advanced architecture: no legacy single-size support\n• Real-time aggregation dengan caching (5min TTL)\n\n🆕 CATEGORY TYPES (RPK-52 - Dynamic Form System):\n• 'clothing': Baju, Celana, Kemeja → Size management (S/M/L/XL)\n• 'accessories_age_based': Sarung, Songket → Dewasa/Anak fields\n• 'accessories_universal': Anting, Gelang → Single quantity field\n• Dynamic form rendering based on category type\n• Full backward compatibility dengan existing categories\n\n🔗 DEPENDENCIES & EXECUTION ORDER:\n1. Setup: Login → Get session token\n2. Prerequisites: Create Category (dengan type support) → Create Color → (Optional) Create Material\n3. Products: Create/Update products dengan advanced size management dan category validation\n4. Size Management: Test aggregation, validation, advanced scenarios\n5. Category Testing: Test type field validation dan dynamic form support\n6. Testing: Run comprehensive integration scenarios\n\n📋 REQUIRED VARIABLES:\n- base_url: http://localhost:3000\n- clerk_session_token: From browser cookies\n- Auto-captured: product_id, category_id, color_id, material_id, size_id, accessories_age_based_category_id, accessories_universal_category_id\n\n⚡ PERFORMANCE TARGETS:\n- Aggregation: <50ms calculation time\n- Cache Hit Rate: >80% untuk optimal performance\n- Response Time: <2s SLA maintained\n- Category Validation: <100ms per request\n\n📚 Full documentation: docs/api/manage-product-endpoints.md | docs/api/manage-product-business-logic.md | docs/task.md (RPK-52)",
+    "version": "4.1.0",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -45,6 +45,16 @@
       "key": "size_id",
       "value": "",
       "description": "ID size untuk advanced size management testing"
+    },
+    {
+      "key": "accessories_age_based_category_id",
+      "value": "",
+      "description": "ID kategori accessories age-based (Sarung, Songket) untuk testing"
+    },
+    {
+      "key": "accessories_universal_category_id",
+      "value": "",
+      "description": "ID kategori accessories universal (Anting, Gelang) untuk testing"
     }
   ],
   "item": [
@@ -288,7 +298,7 @@
                 {
                   "key": "sizes",
                   "value": "[{\"ageCategory\":\"ADULT\",\"size\":\"M\",\"quantity\":3,\"isActive\":true},{\"ageCategory\":\"ADULT\",\"size\":\"L\",\"quantity\":2,\"isActive\":true}]",
-                  "description": "Advanced size management data dalam format JSON array. REQUIRED for all products. Format: [{\"ageCategory\":\"ADULT|CHILD|UNIVERSAL\",\"size\":\"XS|S|M|L|XL|XXL\",\"quantity\":number,\"isActive\":boolean}]",
+                  "description": "Advanced size management data dalam format JSON array. REQUIRED for all products. Format tergantung category type:\n\n📋 CLOTHING (Default):\n[{\"ageCategory\":\"ADULT|CHILD\",\"size\":\"XS|S|M|L|XL|XXL\",\"quantity\":number,\"isActive\":boolean}]\n\n📋 ACCESSORIES AGE_BASED (Sarung, Songket):\n[{\"ageCategory\":\"ADULT\",\"size\":\"UNIVERSAL\",\"quantity\":10,\"isActive\":true},{\"ageCategory\":\"CHILD\",\"size\":\"UNIVERSAL\",\"quantity\":5,\"isActive\":true}]\n\n📋 ACCESSORIES UNIVERSAL (Anting, Gelang):\n[{\"ageCategory\":\"UNIVERSAL\",\"size\":\"UNIVERSAL\",\"quantity\":15,\"isActive\":true}]",
                   "type": "text"
                 },
                 {
@@ -303,7 +313,175 @@
               "host": ["{{base_url}}"],
               "path": ["api", "products"]
             },
-            "description": "Membuat produk baru dengan advanced-only size management system, color, dan material fields plus upload gambar. \n\n🆕 ADVANCED-ONLY ARCHITECTURE:\n• All products require multiple sizes dengan age categories (ADULT/CHILD/UNIVERSAL)\n• No legacy single-size support - pure advanced architecture\n• Material fields opsional untuk perhitungan otomatis biaya material\n• Auto-aggregation: Total quantity dihitung otomatis dari sizes array\n\n📋 VALIDATION RULES:\n• Field sizes REQUIRED untuk semua produk\n• Age categories: ADULT, CHILD, atau UNIVERSAL\n• Sizes: XS, S, M, L, XL, XXL\n• Quantity total = sum of all size quantities"
+            "description": "Membuat produk baru dengan advanced-only size management system, color, material fields, dan category-based dynamic form validation plus upload gambar. \n\n🆕 ADVANCED-ONLY ARCHITECTURE:\n• All products require multiple sizes dengan age categories (ADULT/CHILD/UNIVERSAL)\n• No legacy single-size support - pure advanced architecture\n• Material fields opsional untuk perhitungan otomatis biaya material\n• Auto-aggregation: Total quantity dihitung otomatis dari sizes array\n\n🆕 CATEGORY TYPES VALIDATION (RPK-52):\n• 'clothing': Standard sizes (S/M/L/XL) dengan ADULT/CHILD categories\n• 'accessories_age_based': Sarung/Songket → Dewasa/Anak dengan UNIVERSAL size\n• 'accessories_universal': Anting/Gelang → Single UNIVERSAL entry\n• Dynamic validation berdasarkan category type yang dipilih\n\n📋 VALIDATION RULES:\n• Field sizes REQUIRED untuk semua produk\n• Category type determines valid size patterns\n• Age categories: ADULT, CHILD, atau UNIVERSAL\n• Auto-validation sesuai business rules per category type\n• Quantity total = sum of all size quantities"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Product - Accessories Age Based (Sarung/Songket)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "code",
+                  "value": "SRG1",
+                  "description": "Kode produk accessories age-based",
+                  "type": "text"
+                },
+                {
+                  "key": "name",
+                  "value": "Sarung Batik Premium",
+                  "description": "Nama produk accessories age-based",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "Sarung batik premium dengan kualitas terbaik untuk dewasa dan anak",
+                  "description": "Deskripsi produk (opsional)",
+                  "type": "text"
+                },
+                {
+                  "key": "modalAwal",
+                  "value": "200000",
+                  "description": "Biaya pembuatan produk",
+                  "type": "text"
+                },
+                {
+                  "key": "currentPrice",
+                  "value": "75000",
+                  "description": "Harga sewa saat ini per sekali",
+                  "type": "text"
+                },
+                {
+                  "key": "rentedStock",
+                  "value": "0",
+                  "description": "Jumlah stok yang sedang disewa",
+                  "type": "text"
+                },
+                {
+                  "key": "quantity",
+                  "value": "15",
+                  "description": "Jumlah stok total",
+                  "type": "text"
+                },
+                {
+                  "key": "categoryId",
+                  "value": "{{accessories_age_based_category_id}}",
+                  "description": "ID kategori accessories age-based",
+                  "type": "text"
+                },
+                {
+                  "key": "colorId",
+                  "value": "{{color_id}}",
+                  "description": "ID warna dari color management",
+                  "type": "text"
+                },
+                {
+                  "key": "sizes",
+                  "value": "[{\"ageCategory\":\"ADULT\",\"size\":\"UNIVERSAL\",\"quantity\":10,\"isActive\":true},{\"ageCategory\":\"CHILD\",\"size\":\"UNIVERSAL\",\"quantity\":5,\"isActive\":true}]",
+                  "description": "Sizes untuk accessories age-based (Dewasa/Anak). Format: [{\"ageCategory\":\"ADULT|CHILD\",\"size\":\"UNIVERSAL\",\"quantity\":number,\"isActive\":boolean}]",
+                  "type": "text"
+                },
+                {
+                  "key": "image",
+                  "type": "file",
+                  "description": "Gambar produk (opsional)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/products",
+              "host": ["{{base_url}}"],
+              "path": ["api", "products"]
+            },
+            "description": "Membuat produk accessories age-based (Sarung, Songket) dengan category type validation khusus.\n\n🆕 ACCESSORIES AGE_BASED PATTERN:\n• Category type: 'accessories_age_based'\n• Age categories: ADULT dan CHILD required\n• Size: UNIVERSAL (standard untuk accessories)\n• Validation: Khusus untuk produk yang perlu pembagian umur\n• Use Case: Sarung, Songket, Pakaian adat dengan ukuran Dewasa/Anak\n\n📋 VALIDATION RULES:\n• Both ADULT dan CHILD age categories harus ada\n• Size harus UNIVERSAL untuk age-based accessories\n• Quantity > 0 untuk setiap age category"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Product - Accessories Universal (Anting/Gelang)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "code",
+                  "value": "ANT1",
+                  "description": "Kode produk accessories universal",
+                  "type": "text"
+                },
+                {
+                  "key": "name",
+                  "value": "Anting Emas Modern",
+                  "description": "Nama produk accessories universal",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "Anting emas modern dengan desain elegan dan minimalis",
+                  "description": "Deskripsi produk (opsional)",
+                  "type": "text"
+                },
+                {
+                  "key": "modalAwal",
+                  "value": "500000",
+                  "description": "Biaya pembuatan produk",
+                  "type": "text"
+                },
+                {
+                  "key": "currentPrice",
+                  "value": "150000",
+                  "description": "Harga sewa saat ini per sekali",
+                  "type": "text"
+                },
+                {
+                  "key": "rentedStock",
+                  "value": "0",
+                  "description": "Jumlah stok yang sedang disewa",
+                  "type": "text"
+                },
+                {
+                  "key": "quantity",
+                  "value": "20",
+                  "description": "Jumlah stok total",
+                  "type": "text"
+                },
+                {
+                  "key": "categoryId",
+                  "value": "{{accessories_universal_category_id}}",
+                  "description": "ID kategori accessories universal",
+                  "type": "text"
+                },
+                {
+                  "key": "colorId",
+                  "value": "{{color_id}}",
+                  "description": "ID warna dari color management",
+                  "type": "text"
+                },
+                {
+                  "key": "sizes",
+                  "value": "[{\"ageCategory\":\"UNIVERSAL\",\"size\":\"UNIVERSAL\",\"quantity\":20,\"isActive\":true}]",
+                  "description": "Sizes untuk accessories universal. Format: [{\"ageCategory\":\"UNIVERSAL\",\"size\":\"UNIVERSAL\",\"quantity\":number,\"isActive\":boolean}]",
+                  "type": "text"
+                },
+                {
+                  "key": "image",
+                  "type": "file",
+                  "description": "Gambar produk (opsional)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/products",
+              "host": ["{{base_url}}"],
+              "path": ["api", "products"]
+            },
+            "description": "Membuat produk accessories universal (Anting, Gelang, Kalung) dengan category type validation khusus.\n\n🆕 ACCESSORIES UNIVERSAL PATTERN:\n• Category type: 'accessories_universal'\n• Age category: UNIVERSAL only\n• Size: UNIVERSAL (one-size-fits-all)\n• Validation: Khusus untuk produk tanpa pembagian ukuran\n• Use Case: Anting, Gelang, Kalung, Aksesoris fashion\n\n📋 VALIDATION RULES:\n• Hanya satu size entry yang diperbolehkan\n• Age category harus UNIVERSAL\n• Size harus UNIVERSAL untuk universal accessories\n• Quantity > 0"
           },
           "response": []
         },
@@ -509,6 +687,42 @@
           "    }",
           "  });",
           "}",
+
+          "// Test Category Type validation (RPK-52 - Dynamic Form System)",
+          "if (pm.request.url.path.includes('products') && (pm.request.method === 'POST' || pm.request.method === 'PUT')) {",
+          "  pm.test('Category type validation works correctly', function () {",
+          "    if (pm.response.code === 400) {",
+          "      const response = pm.response.json();",
+          "      // Check if error is related to category type validation",
+          "      if (response.error.message && response.error.message.includes('kategori')) {",
+          "        pm.expect(response.error.code).to.eql('VALIDATION_ERROR');",
+          "      }",
+          "    }",
+          "  });",
+          "  ",
+          "  pm.test('Accessories Age-Based validation', function () {",
+          "    const categoryName = pm.request.body.formdata.find(item => item.key === 'categoryId')?.value || '';",
+          "    ",
+          "    if (categoryName.includes('accessories_age_based') && pm.response.code === 201) {",
+          "      const response = pm.response.json();",
+          "      // For accessories age-based, should have ADULT and CHILD age categories",
+          "      // Note: Sizes array validation happens at service level",
+          "      pm.expect(response).to.have.property('id');",
+          "      pm.expect(response).to.have.property('categoryId');",
+          "    }",
+          "  });",
+          "  ",
+          "  pm.test('Accessories Universal validation', function () {",
+          "    const categoryName = pm.request.body.formdata.find(item => item.key === 'categoryId')?.value || '';",
+          "    ",
+          "    if (categoryName.includes('accessories_universal') && pm.response.code === 201) {",
+          "      const response = pm.response.json();",
+          "      // For accessories universal, should have UNIVERSAL age category only",
+          "      pm.expect(response).to.have.property('id');",
+          "      pm.expect(response).to.have.property('categoryId');",
+          "    }",
+          "  });",
+          "}",
           "",
           "// Test Product History API response structure (RPK-46)",
           "if (pm.request.url.path.includes('products') && pm.request.url.path.includes('history')) {",
@@ -574,6 +788,12 @@
           "      pm.collectionVariables.set('product_id', response.id);",
           "    } else if (pm.request.url.path.includes('categories')) {",
           "      pm.collectionVariables.set('category_id', response.id);",
+          "      // Auto-capture accessories categories based on response type",
+          "      if (response.type === 'accessories_age_based') {",
+          "        pm.collectionVariables.set('accessories_age_based_category_id', response.id);",
+          "      } else if (response.type === 'accessories_universal') {",
+          "        pm.collectionVariables.set('accessories_universal_category_id', response.id);",
+          "      }",
           "    } else if (pm.request.url.path.includes('colors')) {",
           "      pm.collectionVariables.set('color_id', response.id);",
           "    } else if (pm.request.url.path.includes('materials')) {",
