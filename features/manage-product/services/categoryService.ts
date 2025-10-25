@@ -18,6 +18,7 @@ import type {
   UpdateCategoryRequest,
   ProductStatus,
   ProductSize,
+  CategoryType,
 } from '../types'
 
 export class CategoryService {

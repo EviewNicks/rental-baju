@@ -4,6 +4,7 @@
  */
 
 import { PrismaClient } from '@prisma/client'
+import { SizeEnum } from '../types'
 import {
   createProductSchema,
   updateProductSchema,
@@ -25,7 +26,6 @@ import type {
   ProductSize,
   SizeValidationResult,
   AgeCategory,
-  SizeEnum,
   ClientProduct,
   EnhancedClientProduct,
   ProductSizeAggregation,
@@ -34,6 +34,7 @@ import type {
   CategoryBreakdown,
   BusinessLogicValidationResult,
   BusinessCapabilitiesReport,
+  CategoryType,
 } from '../types'
 import { Decimal } from '@prisma/client/runtime/library'
 import {
@@ -281,11 +282,20 @@ export class ProductService {
       throw new ConflictError(`Kode produk ${validatedData.code} sudah digunakan`)
     }
 
-    // Validate category existence
-    await this.validateCategoryExists(validatedData.categoryId)
+    // Get category with type information
+    const category = await this.getCategoryWithTypes(validatedData.categoryId)
+
+    // Validate sizes based on category type
+    if (validatedData.sizes && validatedData.sizes.length > 0) {
+      await this.validateSizesForCategoryType(validatedData.sizes, category.type)
+    }
+
+    // Process sizes based on category type
+    const processedSizes = validatedData.sizes
+      ? this.processSizesByCategoryType(validatedData.sizes, category.type)
+      : []
 
     // Validate material if provided
-
     let materialCost: Decimal | undefined
     if (validatedData.materialId) {
       materialCost = await this.validateAndCalculateMaterialCost(
@@ -319,9 +329,9 @@ export class ProductService {
       })
 
       // Create sizes - REQUIRED for all products in advanced-only architecture
-      if (validatedData.sizes && validatedData.sizes.length > 0) {
+      if (processedSizes && processedSizes.length > 0) {
         await tx.productSize.createMany({
-          data: validatedData.sizes.map((size) => ({
+          data: processedSizes.map((size) => ({
             productId: product.id,
             ageCategory: size.ageCategory,
             size: size.size,
@@ -364,10 +374,28 @@ export class ProductService {
     }
 
     // Validate related entities if being updated
+    let category: Category | undefined
     if (validatedData.categoryId && validatedData.categoryId !== existingProduct.categoryId) {
-      await this.validateCategoryExists(validatedData.categoryId)
+      category = await this.getCategoryWithTypes(validatedData.categoryId)
+    } else {
+      // Get existing category for size validation
+      category = await this.getCategoryWithTypes(existingProduct.categoryId)
     }
 
+
+    // Validate and process sizes if being updated
+    let processedSizes: CreateProductSizeRequest[] | undefined
+    if (validatedData.sizes !== undefined) {
+      if (validatedData.sizes.length > 0) {
+        // Validate sizes based on category type
+        await this.validateSizesForCategoryType(validatedData.sizes, category!.type)
+        // Process sizes based on category type
+        processedSizes = this.processSizesByCategoryType(validatedData.sizes, category!.type)
+      } else {
+        // Empty array means remove all sizes
+        processedSizes = []
+      }
+    }
 
     let materialCost: Decimal | undefined
     if (validatedData.materialId && validatedData.materialId !== existingProduct.materialId) {
@@ -415,16 +443,16 @@ export class ProductService {
       })
 
       // Handle sizes update - advanced-only architecture
-      if (validatedData.sizes !== undefined) {
-        if (validatedData.sizes.length > 0) {
-          // Delete existing sizes
-          await tx.productSize.deleteMany({
-            where: { productId: validatedId },
-          })
+      if (processedSizes !== undefined) {
+        // Delete existing sizes
+        await tx.productSize.deleteMany({
+          where: { productId: validatedId },
+        })
 
-          // Create new sizes
+        // Create new sizes if not empty
+        if (processedSizes.length > 0) {
           await tx.productSize.createMany({
-            data: validatedData.sizes.map((size) => ({
+            data: processedSizes.map((size) => ({
               productId: validatedId,
               ageCategory: size.ageCategory,
               size: size.size,
@@ -432,11 +460,6 @@ export class ProductService {
               isActive: size.isActive ?? true,
               createdBy: this.userId,
             })),
-          })
-        } else {
-          // Remove all sizes if empty array provided
-          await tx.productSize.deleteMany({
-            where: { productId: validatedId },
           })
         }
       }
@@ -1138,18 +1161,211 @@ export class ProductService {
   }
 
   /**
-   * Helper method to validate category exists
+   * Helper method to get category with type information
+   * Enhanced version of validateCategoryExists() that returns category object
    */
-  private async validateCategoryExists(categoryId: string): Promise<void> {
-    const categoryExists = await this.prisma.category.findUnique({
+  private async getCategoryWithTypes(categoryId: string): Promise<Category> {
+    const category = await this.prisma.category.findUnique({
       where: { id: categoryId },
     })
 
-    if (!categoryExists) {
+    if (!category) {
       throw new NotFoundError(`Category dengan ID ${categoryId} tidak ditemukan`)
+    }
+
+    return this.convertPrismaCategoryToCategory(category)
+  }
+
+  /**
+   * Convert Prisma category result to application Category type
+   * Duplicated from CategoryService for internal use
+   */
+  private convertPrismaCategoryToCategory(prismaCategory: Record<string, unknown>): Category {
+    return {
+      id: prismaCategory.id as string,
+      name: prismaCategory.name as string,
+      color: prismaCategory.color as string,
+      type: prismaCategory.type as CategoryType,
+      products: [], // Avoid circular reference - empty array for ProductService use
+      createdAt: prismaCategory.createdAt as Date,
+      updatedAt: prismaCategory.updatedAt as Date,
+      createdBy: prismaCategory.createdBy as string,
     }
   }
 
+  /**
+   * Validate sizes based on category type requirements
+   */
+  private async validateSizesForCategoryType(
+    sizes: CreateProductSizeRequest[],
+    categoryType: CategoryType
+  ): Promise<void> {
+    if (!sizes || sizes.length === 0) {
+      throw new Error('Minimal satu ukuran harus ditambahkan')
+    }
+
+    switch (categoryType) {
+      case 'accessories_age_based':
+        this.validateAgeBasedSizes(sizes)
+        break
+      case 'accessories_universal':
+        this.validateUniversalSizes(sizes)
+        break
+      case 'clothing':
+        this.validateClothingSizes(sizes)
+        break
+      default:
+        // Fallback to clothing validation for unknown types
+        this.validateClothingSizes(sizes)
+        break
+    }
+  }
+
+  /**
+   * Validate accessories with age-based sizing (Dewasa/Anak)
+   * Expected pattern: ADULT/CHILD age categories with quantities
+   */
+  private validateAgeBasedSizes(sizes: CreateProductSizeRequest[]): void {
+    const ageCategories = new Set(sizes.map(s => s.ageCategory))
+
+    // Check for required age categories
+    if (ageCategories.size === 0) {
+      throw new Error('Aksesoris age-based harus memiliki kategori umur (Dewasa/Anak)')
+    }
+
+    // Validate each size entry
+    for (const size of sizes) {
+      if (size.quantity <= 0) {
+        throw new Error(`Kuantitas untuk ${size.ageCategory} harus lebih dari 0`)
+      }
+
+      // For age-based accessories, size should be UNIVERSAL or standard sizes
+      if (size.size && !['XS', 'S', 'M', 'L', 'XL', 'XXL'].includes(size.size)) {
+        // Allow custom sizes but log warning
+        console.warn(`Custom size "${size.size}" detected for age-based accessories`)
+      }
+    }
+  }
+
+  /**
+   * Validate accessories with universal sizing
+   * Expected pattern: Single quantity or UNIVERSAL age category
+   */
+  private validateUniversalSizes(sizes: CreateProductSizeRequest[]): void {
+    if (sizes.length > 1) {
+      throw new Error('Aksesoris universal seharusnya hanya memiliki satu jenis ukuran')
+    }
+
+    const size = sizes[0]
+
+    // Universal accessories should use UNIVERSAL age category
+    if (size.ageCategory !== 'UNIVERSAL') {
+      throw new Error('Aksesoris universal harus menggunakan kategori umur UNIVERSAL')
+    }
+
+    if (size.quantity <= 0) {
+      throw new Error('Kuantitas aksesoris universal harus lebih dari 0')
+    }
+  }
+
+  /**
+   * Validate clothing with standard sizing
+   * Expected pattern: Multiple sizes (S, M, L, XL, etc.) with ADULT age category
+   */
+  private validateClothingSizes(sizes: CreateProductSizeRequest[]): void {
+    const validSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
+
+    for (const size of sizes) {
+      // Validate size enum
+      if (!validSizes.includes(size.size)) {
+        throw new Error(`Ukuran "${size.size}" tidak valid. Gunakan: ${validSizes.join(', ')}`)
+      }
+
+      // Validate age category (should be ADULT for clothing, but allow CHILD for kids clothing)
+      if (!['ADULT', 'CHILD'].includes(size.ageCategory)) {
+        throw new Error(`Kategori umur "${size.ageCategory}" tidak valid untuk pakaian`)
+      }
+
+      // Validate quantity
+      if (size.quantity <= 0) {
+        throw new Error(`Kuantitas untuk ukuran ${size.size} harus lebih dari 0`)
+      }
+    }
+
+    // Check for duplicate sizes within same age category
+    const combinations = sizes.map(s => `${s.ageCategory}-${s.size}`)
+    const uniqueCombinations = new Set(combinations)
+    if (combinations.length !== uniqueCombinations.size) {
+      throw new Error('Tidak boleh ada ukuran duplikat dalam kategori umur yang sama')
+    }
+  }
+
+  /**
+   * Process sizes based on category type requirements
+   * Transforms and optimizes size data for storage
+   */
+  private processSizesByCategoryType(
+    sizes: CreateProductSizeRequest[],
+    categoryType: CategoryType
+  ): CreateProductSizeRequest[] {
+    switch (categoryType) {
+      case 'accessories_age_based':
+        return this.processAgeBasedSizes(sizes)
+      case 'accessories_universal':
+        return this.processUniversalSizes(sizes)
+      case 'clothing':
+        return this.processClothingSizes(sizes)
+      default:
+        // Fallback to standard processing for unknown types
+        return this.processClothingSizes(sizes)
+    }
+  }
+
+  /**
+   * Process age-based accessories sizes
+   * Optimizes for ADULT/CHILD categories
+   */
+  private processAgeBasedSizes(sizes: CreateProductSizeRequest[]): CreateProductSizeRequest[] {
+    return sizes.map(size => ({
+      ...size,
+      // Ensure size is standardized for age-based accessories
+      size: (size.size as SizeEnum) || ('UNIVERSAL' as const),
+      isActive: size.isActive ?? true,
+    }))
+  }
+
+  /**
+   * Process universal accessories sizes
+   * Ensures single UNIVERSAL entry
+   */
+  private processUniversalSizes(sizes: CreateProductSizeRequest[]): CreateProductSizeRequest[] {
+    if (sizes.length === 0) {
+      throw new Error('Universal accessories must have at least one size entry')
+    }
+
+    // If multiple sizes provided, sum them into one UNIVERSAL entry
+    const totalQuantity = sizes.reduce((sum, size) => sum + size.quantity, 0)
+
+    return [{
+      ageCategory: 'UNIVERSAL' as const,
+      size: 'UNIVERSAL' as const,
+      quantity: totalQuantity,
+      isActive: true,
+    }]
+  }
+
+  /**
+   * Process clothing sizes
+   * Maintains standard size structure
+   */
+  private processClothingSizes(sizes: CreateProductSizeRequest[]): CreateProductSizeRequest[] {
+    return sizes.map(size => ({
+      ...size,
+      isActive: size.isActive ?? true,
+      // Ensure size is uppercase for consistency
+      size: size.size.toUpperCase() as SizeEnum,
+    }))
+  }
 
   /**
    * Helper method to validate material and calculate cost
@@ -1226,6 +1442,7 @@ export class ProductService {
             id: (prismaProduct.category as Record<string, unknown>).id as string,
             name: (prismaProduct.category as Record<string, unknown>).name as string,
             color: (prismaProduct.category as Record<string, unknown>).color as string,
+            type: (prismaProduct.category as Record<string, unknown>).type as CategoryType,
             products: [], // Avoid circular reference in conversion
             createdAt: (prismaProduct.category as Record<string, unknown>).createdAt as Date,
             updatedAt: (prismaProduct.category as Record<string, unknown>).updatedAt as Date,

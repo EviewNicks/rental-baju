@@ -59,28 +59,79 @@
   }
   ```
 - **Acceptance**:
-  - [ ] POST supports type field
-  - [ ] Zod validation for enum values
-  - [ ] Backward compatibility maintained
+  - [✓] POST supports type field
+  - [✓] Zod validation for enum values
+  - [✓] Backward compatibility maintained
 
 ### **Task 2.2: Update Categories API Response**
 - **File**: `app/api/categories/route.ts`
 - **Action**: Include type field di GET response
 - **Changes**: Return category objects dengan type property
 - **Acceptance**:
-  - [ ] GET /api/categories includes type field
-  - [ ] Existing categories show correct type
-  - [ ] Consistent API response format
+  - [✓] GET /api/categories includes type field
+  - [✓] Existing categories show correct type
+  - [✓] Consistent API response format
 
 ### **Task 2.3: Validate Products API Compatibility**
 - **File**: `app/api/products/route.ts`
 - **Action**: Verify existing API supports dynamic forms
 - **Analysis**:
-  - [ ] Sizes JSON parsing working 
-  - [ ] ProductSize creation supported 
-  - [ ] Advanced validation functional 
-  - [ ] No breaking changes needed 
-- **Result**: API ALREADY SUPPORTED - no changes required
+  - [✓] Sizes JSON parsing working 
+  - [✓] ProductSize creation supported 
+  - [✓] Advanced validation functional 
+  - [✓] No breaking changes needed 
+
+
+### **Task 2.4: ProductService Category Type Integration - COMPLETED ✅**
+- **File**`features/manage-product/services/productService.ts`
+- **Action**: Enhance ProductService dengan category type awareness
+- **Changes**:
+  ```typescript
+  // ENHANCED: Get category dengan type information
+  const category = await this.getCategoryWithTypes(validatedData.categoryId)
+
+  // NEW: Category type-specific validation
+  await this.validateSizesForCategoryType(validatedData.sizes, category.type)
+
+  // NEW: Category type-specific business logic
+  const processedSizes = this.processSizesByCategoryType(sizes, category.type)
+  ```
+- **Acceptance**:
+  - [✓] ProductService dapat category type info
+  - [✓] Category type-specific validation implemented
+  - [✓] Size processing logic per category type
+  - [✓] Backward compatibility maintained
+
+### **Task 2.5: Category-Specific Size Validation - COMPLETED ✅**
+- **File**: `features/manage-product/lib/validation/productSchema.ts`
+- **Action**: Add category type-specific size validation schemas
+- **Changes**:
+  ```typescript
+  // NEW: Category type size validators
+  accessoriesAgeBasedSizeSchema // Dewasa/Anak fields
+  accessoriesUniversalSizeSchema // Single Jumlah field
+  clothingSizeSchema // S/M/L/XL fields
+  createCategoryAwareSizeSchema() // Dynamic schema factory
+  ```
+- **Acceptance**:
+  - [✓] accessories_age_based: Dewasa/Anak validation
+  - [✓] accessories_universal: Single quantity validation
+  - [✓] clothing: Size validation (S,M,L,XL,XXL)
+  - [✓] CSV pattern mapping support
+
+### **Task 2.6: Size Processing Logic Implementation - COMPLETED ✅**
+- **File**: `features/manage-product/services/productService.ts`
+- **Action**: Implement size transformation logic per category type
+- **CSV Pattern Support**:
+  - `sarung.csv` → accessories_age_based (Dewasa/Anak columns)
+  - `anting.csv` → accessories_universal (Single Jumlah column)
+  - `organze.csv` → clothing (Size columns)
+- **Acceptance**:
+  - [✓] CSV data pattern mapping
+  - [✓] Size transformation per category type
+  - [✓] Bulk import with category type detection
+  - [✓] Error handling for invalid patterns
+- **Result**: IMPLEMENTATION COMPLETED - Full category type support
 
 ---
 

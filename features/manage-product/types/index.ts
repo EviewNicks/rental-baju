@@ -172,7 +172,7 @@ export interface PrismaCategory extends BaseCategory {
 export type ViewMode = 'table' | 'card' | 'grid'
 export type ProductStatus = 'AVAILABLE' | 'RENTED' | 'MAINTENANCE'
 export type AgeCategory = 'ADULT' | 'CHILD' | 'UNIVERSAL'
-export type SizeEnum = 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL'
+export type SizeEnum = 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL' | 'UNIVERSAL'
 
 // Category Types for Dynamic Form System
 export type CategoryType = 'clothing' | 'accessories_age_based' | 'accessories_universal'

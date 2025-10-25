@@ -274,4 +274,5 @@ enum SizeEnum {
   L
   XL
   XXL
+  UNIVERSAL
 }

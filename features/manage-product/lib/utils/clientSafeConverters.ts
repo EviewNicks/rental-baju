@@ -52,6 +52,7 @@ export function toClientCategory(category: any): ClientCategory {
     id: category.id || '',
     name: category.name || '',
     color: category.color || '#000000',
+    type: category.type || 'clothing', // Default to 'clothing' for backward compatibility
     createdAt: category.createdAt ? new Date(category.createdAt) : new Date(),
     updatedAt: category.updatedAt ? new Date(category.updatedAt) : new Date(),
     createdBy: category.createdBy || '',

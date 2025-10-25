@@ -129,7 +129,7 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
         },
       )
     }
-  }, [transaction, formState.itemConditions.length])
+  }, [transaction, formState.itemConditions])
 
   // Calculate penalty preview in real-time (frontend-only calculation)
   //
@@ -367,7 +367,7 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
     } finally {
       setFormState((prev) => ({ ...prev, isProcessing: false }))
     }
-  }, [validateForm, formState, processReturnMutation, kode, onClose, router])
+  }, [validateForm, formState, processReturnMutation, kode])
 
   // Handle close/back navigation
   const handleClose = useCallback(() => {
