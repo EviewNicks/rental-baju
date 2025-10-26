@@ -195,16 +195,26 @@ export const productAvailabilityQuerySchema = z.object({
   page: z.coerce.number().min(1).default(1),
   limit: z.coerce.number().min(1).max(100).default(10),
   search: z.string().optional(),
-  categoryId: z.string().uuid().optional(),
+  categoryId: z.string().uuid('ID kategori tidak valid').optional(),
   available: z.coerce.boolean().default(true),
   size: z.union([z.string(), z.array(z.string())]).optional(),
   // Enhanced filters for kasir workflow
-  status: z.enum(['AVAILABLE', 'RENTED']).optional(), // Product status filter
-  sortBy: z.enum(['name', 'price', 'createdAt', 'quantity']).default('name'), // Sorting options
+  status: z.enum(['AVAILABLE', 'RENTED', 'MAINTENANCE']).optional(), // Product status filter
+  sortBy: z.enum(['name', 'currentPrice', 'createdAt', 'quantity']).default('name'), // Fixed: Use correct database field names
   sortOrder: z.enum(['asc', 'desc']).default('asc'), // Sort direction
-  minPrice: z.coerce.number().min(0).optional(), // Price range minimum
-  maxPrice: z.coerce.number().min(0).optional(), // Price range maximum
-  }).transform((data) => ({
+  minPrice: z.coerce.number().min(0, 'Harga minimal tidak boleh negatif').optional(), // Price range minimum with validation
+  maxPrice: z.coerce.number().min(0, 'Harga maksimal tidak boleh negatif').optional(), // Price range maximum with validation
+}).refine((data) => {
+  // Custom validation: minPrice tidak boleh lebih besar dari maxPrice
+  if (data.minPrice && data.maxPrice && data.minPrice > data.maxPrice) {
+    throw new z.ZodError([{
+      code: z.ZodIssueCode.custom,
+      path: ['minPrice'],
+      message: 'Harga minimal tidak boleh lebih besar dari harga maksimal'
+    }])
+  }
+  return true
+}).transform((data) => ({
   ...data,
   size: Array.isArray(data.size) ? data.size : data.size ? [data.size] : undefined,
 }))

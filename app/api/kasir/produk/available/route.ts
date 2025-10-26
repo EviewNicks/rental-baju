@@ -11,6 +11,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { productAvailabilityQuerySchema } from '@/features/kasir/lib/validation/kasirSchema'
 import { ZodError } from 'zod'
+import { Prisma } from '@prisma/client'
 import { requirePermission, withRateLimit } from '@/lib/auth-middleware'
 
 export async function GET(request: NextRequest) {
@@ -30,19 +31,12 @@ export async function GET(request: NextRequest) {
 
     // Parse query parameters with enhanced filters for kasir workflow
     const { searchParams } = new URL(request.url)
+    const rawQueryParams = Object.fromEntries(searchParams.entries())
+
+    // Handle multiple values for array parameters properly
     const queryParams = {
-      page: searchParams.get('page') || '1',
-      limit: searchParams.get('limit') || '10',
-      search: searchParams.get('search') || undefined,
-      categoryId: searchParams.get('categoryId') || undefined,
-      available: searchParams.get('available') !== 'false', // default true
-      size: searchParams.getAll('size').length > 0 ? searchParams.getAll('size') : undefined,
-      // Enhanced filters for kasir workflow
-      status: searchParams.get('status') as 'AVAILABLE' | 'RENTED' | undefined,
-      sortBy: searchParams.get('sortBy') || 'name',
-      sortOrder: searchParams.get('sortOrder') as 'asc' | 'desc' || 'asc',
-      minPrice: searchParams.get('minPrice') ? Number(searchParams.get('minPrice')) : undefined,
-      maxPrice: searchParams.get('maxPrice') ? Number(searchParams.get('maxPrice')) : undefined,
+      ...rawQueryParams,
+      size: searchParams.getAll('size'), // Properly handle array parameters
     }
 
     // Validate query parameters
@@ -51,7 +45,26 @@ export async function GET(request: NextRequest) {
     const { page, limit, search, categoryId, available, size, status, sortBy, sortOrder, minPrice, maxPrice } = validatedQuery
     const skip = (page - 1) * limit
 
-    // Build where clause
+    // Dynamic validation for sortBy field to prevent Prisma errors
+    const validSortFields = ['name', 'currentPrice', 'createdAt', 'quantity']
+    if (!validSortFields.includes(sortBy)) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            message: 'Field sorting tidak valid',
+            code: 'INVALID_SORT_FIELD',
+            details: {
+              received: sortBy,
+              validOptions: validSortFields
+            }
+          }
+        },
+        { status: 400 }
+      )
+    }
+
+    // Build optimized where clause with indexed fields first
     const whereClause: Record<string, unknown> = {
       isActive: true,
     }
@@ -82,8 +95,17 @@ export async function GET(request: NextRequest) {
       whereClause.size = { in: size }
     }
 
-    // Enhanced filters for kasir workflow
-    // Price range filter
+    // Enhanced filters for kasir workflow - optimized for performance
+    // Use indexed fields first for better query performance
+    if (categoryId) {
+      whereClause.categoryId = categoryId // ✅ Indexed field
+    }
+
+    if (status) {
+      whereClause.status = status // ✅ Indexed field
+    }
+
+    // Price range filter with proper indexing
     const priceFilter: Record<string, unknown> = {}
     if (minPrice !== undefined) {
       priceFilter.gte = minPrice
@@ -92,12 +114,7 @@ export async function GET(request: NextRequest) {
       priceFilter.lte = maxPrice
     }
     if (Object.keys(priceFilter).length > 0) {
-      whereClause.currentPrice = priceFilter
-    }
-
-    // Status override for explicit status filter
-    if (status) {
-      whereClause.status = status
+      whereClause.currentPrice = priceFilter // ✅ Indexed field
     }
 
   
@@ -217,7 +234,13 @@ export async function GET(request: NextRequest) {
       { status: 200 },
     )
   } catch (error) {
-    console.error('GET /api/kasir/produk/available error:', error)
+    // Enhanced error categorization with proper logging
+    console.error('GET /api/kasir/produk/available error:', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      timestamp: new Date().toISOString(),
+      type: error?.constructor?.name
+    })
 
     // Handle validation errors
     if (error instanceof ZodError) {
@@ -230,43 +253,155 @@ export async function GET(request: NextRequest) {
             details: error.issues.map((err) => ({
               field: err.path.join('.'),
               message: err.message,
-            })),
-          },
+              code: err.code
+            }))
+          }
         },
-        { status: 400 },
+        { status: 400 }
       )
     }
 
-    // Handle database connection errors
+    // Handle Prisma-specific errors
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      const errorMap: Record<string, string> = {
+        P2002: 'Data sudah ada dalam sistem',
+        P2025: 'Data tidak ditemukan',
+        P2003: 'Referensi data tidak valid',
+        P2021: 'Tabel tidak ditemukan',
+        P2022: 'Kolom tidak ditemukan',
+        P2000: 'Value too large for column',
+        P2001: 'Record does not exist'
+      }
+
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            message: errorMap[error.code] || 'Error database tidak diketahui',
+            code: 'DATABASE_ERROR',
+            details: {
+              databaseCode: error.code,
+              target: error.meta?.target,
+              meta: error.meta
+            }
+          }
+        },
+        { status: 400 }
+      )
+    }
+
+    // Handle connection timeout and network errors specifically
     if (
       error &&
       typeof error === 'object' &&
       'message' in error &&
       typeof error.message === 'string' &&
-      error.message.includes('connection pool')
+      (error.message.includes('connection pool') ||
+       error.message.includes('timeout') ||
+       error.message.includes('ECONNREFUSED') ||
+       error.message.includes('ENOTFOUND'))
     ) {
       return NextResponse.json(
         {
           success: false,
           error: {
-            message: 'Database connection timeout. Please try again.',
+            message: 'Database connection timeout. Silakan coba lagi.',
             code: 'CONNECTION_ERROR',
-          },
+            retryAfter: 5 // seconds
+          }
         },
-        { status: 503 },
+        { status: 503 }
       )
     }
 
-    // Generic server error
+    // Handle memory/overload errors
+    if (error instanceof Error &&
+        (error.message.includes('out of memory') ||
+         error.message.includes('Maximum call stack') ||
+         error.message.includes('heap out of memory'))) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            message: 'Server kelebihan beban. Silakan coba dengan parameter yang lebih spesifik.',
+            code: 'OVERLOAD_ERROR'
+          }
+        },
+        { status: 503 }
+      )
+    }
+
+    // Handle validation errors from Prisma
+    if (error instanceof Prisma.PrismaClientValidationError) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            message: 'Format query tidak valid untuk database',
+            code: 'QUERY_VALIDATION_ERROR',
+            details: {
+              message: error.message
+            }
+          }
+        },
+        { status: 400 }
+      )
+    }
+
+    // Handle initialization errors
+    if (error instanceof Prisma.PrismaClientInitializationError) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            message: 'Database initialization error. Silakan hubungi administrator.',
+            code: 'DATABASE_INIT_ERROR',
+            details: {
+              errorCode: error.errorCode,
+              message: error.message
+            }
+          }
+        },
+        { status: 503 }
+      )
+    }
+
+    // Handle transaction errors
+    if (error instanceof Prisma.PrismaClientRustPanicError) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            message: 'Database transaction error. Silakan coba lagi.',
+            code: 'TRANSACTION_ERROR'
+          }
+        },
+        { status: 503 }
+      )
+    }
+
+    // Generic fallback with enhanced logging for debugging
+    const requestId = crypto.randomUUID()
+    console.error('Unhandled error in GET /api/kasir/produk/available:', {
+      requestId,
+      error: error instanceof Error ? {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      } : error,
+      timestamp: new Date().toISOString()
+    })
+
     return NextResponse.json(
       {
         success: false,
         error: {
           message: 'Internal server error',
           code: 'INTERNAL_ERROR',
-        },
+          requestId // For debugging and support
+        }
       },
-      { status: 500 },
+      { status: 500 }
     )
   }
 }

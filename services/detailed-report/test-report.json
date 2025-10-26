@@ -1,15 +1,2274 @@
 {
-  "testReport": {
-    "status": "merged",
-    "description": "Combined test report from merge resolution",
-    "timestamp": "2025-09-04T00:00:00Z",
-    "mergeResolution": "Both branch contents combined",
-    "tests": [],
-    "summary": {
-      "total": 0,
-      "passed": 0,
-      "failed": 0,
-      "skipped": 0
+  "numTotalTests": 197,
+  "numPassedTests": 0,
+  "numFailedTests": 0,
+  "numPendingTests": 197,
+  "startTime": "2025-10-26T15:43:10.460Z",
+  "endTime": "2025-10-26T15:43:17.196Z",
+  "testResults": [
+    {
+      "testFilePath": "D:\\.work\\rental-software\\features\\kasir\\lib\\utils\\penaltyCalculator.test.ts",
+      "testFileResults": [
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "calculateLatePenalty"
+          ],
+          "fullName": "PenaltyCalculator calculateLatePenalty should calculate no penalty for on-time return",
+          "status": "pending",
+          "title": "should calculate no penalty for on-time return",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "calculateLatePenalty"
+          ],
+          "fullName": "PenaltyCalculator calculateLatePenalty should calculate penalty for late return with default rate",
+          "status": "pending",
+          "title": "should calculate penalty for late return with default rate",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "calculateLatePenalty"
+          ],
+          "fullName": "PenaltyCalculator calculateLatePenalty should cap penalty at maximum days (365)",
+          "status": "pending",
+          "title": "should cap penalty at maximum days (365)",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "calculateLatePenalty"
+          ],
+          "fullName": "PenaltyCalculator calculateLatePenalty should handle fractional days by rounding up",
+          "status": "pending",
+          "title": "should handle fractional days by rounding up",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "calculateConditionPenalty",
+            "Frontend Integration - Current Condition Values"
+          ],
+          "fullName": "PenaltyCalculator calculateConditionPenalty Frontend Integration - Current Condition Values should handle \"baik\" condition correctly (CRITICAL FIX)",
+          "status": "pending",
+          "title": "should handle \"baik\" condition correctly (CRITICAL FIX)",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "calculateConditionPenalty",
+            "Frontend Integration - Current Condition Values"
+          ],
+          "fullName": "PenaltyCalculator calculateConditionPenalty Frontend Integration - Current Condition Values should handle \"kotor\" condition correctly",
+          "status": "pending",
+          "title": "should handle \"kotor\" condition correctly",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "calculateConditionPenalty",
+            "Frontend Integration - Current Condition Values"
+          ],
+          "fullName": "PenaltyCalculator calculateConditionPenalty Frontend Integration - Current Condition Values should handle \"rusak ringan\" condition correctly",
+          "status": "pending",
+          "title": "should handle \"rusak ringan\" condition correctly",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "calculateConditionPenalty",
+            "Frontend Integration - Current Condition Values"
+          ],
+          "fullName": "PenaltyCalculator calculateConditionPenalty Frontend Integration - Current Condition Values should handle \"rusak berat\" condition correctly",
+          "status": "pending",
+          "title": "should handle \"rusak berat\" condition correctly",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "calculateConditionPenalty",
+            "Frontend Integration - Current Condition Values"
+          ],
+          "fullName": "PenaltyCalculator calculateConditionPenalty Frontend Integration - Current Condition Values should handle \"hilang\" condition correctly (already working)",
+          "status": "pending",
+          "title": "should handle \"hilang\" condition correctly (already working)",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "calculateConditionPenalty",
+            "Legacy conditions - backward compatibility"
+          ],
+          "fullName": "PenaltyCalculator calculateConditionPenalty Legacy conditions - backward compatibility should return zero penalty for perfect condition",
+          "status": "pending",
+          "title": "should return zero penalty for perfect condition",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "calculateConditionPenalty",
+            "minor damage conditions"
+          ],
+          "fullName": "PenaltyCalculator calculateConditionPenalty minor damage conditions should apply 1x daily rate for light dirt",
+          "status": "pending",
+          "title": "should apply 1x daily rate for light dirt",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "calculateConditionPenalty",
+            "minor damage conditions"
+          ],
+          "fullName": "PenaltyCalculator calculateConditionPenalty minor damage conditions should apply 1x daily rate for light stains",
+          "status": "pending",
+          "title": "should apply 1x daily rate for light stains",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "calculateConditionPenalty",
+            "moderate damage conditions"
+          ],
+          "fullName": "PenaltyCalculator calculateConditionPenalty moderate damage conditions should apply 2x daily rate for small damage",
+          "status": "pending",
+          "title": "should apply 2x daily rate for small damage",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "calculateConditionPenalty",
+            "moderate damage conditions"
+          ],
+          "fullName": "PenaltyCalculator calculateConditionPenalty moderate damage conditions should apply 2x daily rate for heavy stains",
+          "status": "pending",
+          "title": "should apply 2x daily rate for heavy stains",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "calculateConditionPenalty",
+            "severe damage conditions"
+          ],
+          "fullName": "PenaltyCalculator calculateConditionPenalty severe damage conditions should apply 4x daily rate for major damage",
+          "status": "pending",
+          "title": "should apply 4x daily rate for major damage",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "calculateConditionPenalty",
+            "lost item conditions - modalAwal integration"
+          ],
+          "fullName": "PenaltyCalculator calculateConditionPenalty lost item conditions - modalAwal integration should use modalAwal when provided for lost items",
+          "status": "pending",
+          "title": "should use modalAwal when provided for lost items",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "calculateConditionPenalty",
+            "lost item conditions - modalAwal integration"
+          ],
+          "fullName": "PenaltyCalculator calculateConditionPenalty lost item conditions - modalAwal integration should use modalAwal for different lost conditions",
+          "status": "pending",
+          "title": "should use modalAwal for different lost conditions",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "calculateConditionPenalty",
+            "lost item conditions - modalAwal integration"
+          ],
+          "fullName": "PenaltyCalculator calculateConditionPenalty lost item conditions - modalAwal integration should fallback to old calculation when modalAwal not provided",
+          "status": "pending",
+          "title": "should fallback to old calculation when modalAwal not provided",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "calculateConditionPenalty",
+            "lost item conditions - modalAwal integration"
+          ],
+          "fullName": "PenaltyCalculator calculateConditionPenalty lost item conditions - modalAwal integration should handle zero modalAwal gracefully",
+          "status": "pending",
+          "title": "should handle zero modalAwal gracefully",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "calculateConditionPenalty",
+            "unrecognized conditions"
+          ],
+          "fullName": "PenaltyCalculator calculateConditionPenalty unrecognized conditions should apply default moderate penalty for unknown conditions",
+          "status": "pending",
+          "title": "should apply default moderate penalty for unknown conditions",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "calculateItemPenalty"
+          ],
+          "fullName": "PenaltyCalculator calculateItemPenalty should calculate penalty for on-time return with good condition",
+          "status": "pending",
+          "title": "should calculate penalty for on-time return with good condition",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "calculateItemPenalty"
+          ],
+          "fullName": "PenaltyCalculator calculateItemPenalty should calculate penalty for late return with good condition",
+          "status": "pending",
+          "title": "should calculate penalty for late return with good condition",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "calculateItemPenalty"
+          ],
+          "fullName": "PenaltyCalculator calculateItemPenalty should calculate penalty for lost item with modalAwal",
+          "status": "pending",
+          "title": "should calculate penalty for lost item with modalAwal",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "calculateItemPenalty"
+          ],
+          "fullName": "PenaltyCalculator calculateItemPenalty should calculate combined penalty for late + damaged item",
+          "status": "pending",
+          "title": "should calculate combined penalty for late + damaged item",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "calculateItemPenalty"
+          ],
+          "fullName": "PenaltyCalculator calculateItemPenalty should multiply penalty by quantity",
+          "status": "pending",
+          "title": "should multiply penalty by quantity",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "calculateItemPenalty"
+          ],
+          "fullName": "PenaltyCalculator calculateItemPenalty should prioritize lost over damaged in reason code",
+          "status": "pending",
+          "title": "should prioritize lost over damaged in reason code",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "calculateTransactionPenalties"
+          ],
+          "fullName": "PenaltyCalculator calculateTransactionPenalties should calculate penalties for multiple items",
+          "status": "pending",
+          "title": "should calculate penalties for multiple items",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "calculateTransactionPenalties"
+          ],
+          "fullName": "PenaltyCalculator calculateTransactionPenalties should provide correct summary statistics",
+          "status": "pending",
+          "title": "should provide correct summary statistics",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "calculateTransactionPenalties"
+          ],
+          "fullName": "PenaltyCalculator calculateTransactionPenalties should handle empty items array",
+          "status": "pending",
+          "title": "should handle empty items array",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "utility methods",
+            "formatPenaltyAmount"
+          ],
+          "fullName": "PenaltyCalculator utility methods formatPenaltyAmount should format penalty amount to Indonesian Rupiah",
+          "status": "pending",
+          "title": "should format penalty amount to Indonesian Rupiah",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "utility methods",
+            "generatePenaltyDescription"
+          ],
+          "fullName": "PenaltyCalculator utility methods generatePenaltyDescription should generate description for zero penalty",
+          "status": "pending",
+          "title": "should generate description for zero penalty",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "utility methods",
+            "generatePenaltyDescription"
+          ],
+          "fullName": "PenaltyCalculator utility methods generatePenaltyDescription should generate description with formatted amount",
+          "status": "pending",
+          "title": "should generate description with formatted amount",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "utility methods",
+            "Date Field Validation - TSK-24 Bug Fix",
+            "Correct date field usage (tglSelesai vs tglKembali)"
+          ],
+          "fullName": "PenaltyCalculator utility methods Date Field Validation - TSK-24 Bug Fix Correct date field usage (tglSelesai vs tglKembali) should calculate realistic penalty using correct expected return date",
+          "status": "pending",
+          "title": "should calculate realistic penalty using correct expected return date",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "utility methods",
+            "Date Field Validation - TSK-24 Bug Fix",
+            "Correct date field usage (tglSelesai vs tglKembali)"
+          ],
+          "fullName": "PenaltyCalculator utility methods Date Field Validation - TSK-24 Bug Fix Correct date field usage (tglSelesai vs tglKembali) should NOT produce massive penalty from wrong date field",
+          "status": "pending",
+          "title": "should NOT produce massive penalty from wrong date field",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "utility methods",
+            "Date Field Validation - TSK-24 Bug Fix",
+            "Correct date field usage (tglSelesai vs tglKembali)"
+          ],
+          "fullName": "PenaltyCalculator utility methods Date Field Validation - TSK-24 Bug Fix Correct date field usage (tglSelesai vs tglKembali) should handle realistic late return scenarios correctly",
+          "status": "pending",
+          "title": "should handle realistic late return scenarios correctly",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "utility methods",
+            "Date Field Validation - TSK-24 Bug Fix",
+            "Multi-condition penalty with correct date usage"
+          ],
+          "fullName": "PenaltyCalculator utility methods Date Field Validation - TSK-24 Bug Fix Multi-condition penalty with correct date usage should calculate realistic multi-condition penalty using tglSelesai",
+          "status": "pending",
+          "title": "should calculate realistic multi-condition penalty using tglSelesai",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "utility methods",
+            "Date Field Validation - TSK-24 Bug Fix",
+            "Step 1 to Step 2 Integration - TSK-24 Critical Fix"
+          ],
+          "fullName": "PenaltyCalculator utility methods Date Field Validation - TSK-24 Bug Fix Step 1 to Step 2 Integration - TSK-24 Critical Fix should match ConditionRow penalty preview for \"baik\" condition",
+          "status": "pending",
+          "title": "should match ConditionRow penalty preview for \"baik\" condition",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "utility methods",
+            "Date Field Validation - TSK-24 Bug Fix",
+            "Step 1 to Step 2 Integration - TSK-24 Critical Fix"
+          ],
+          "fullName": "PenaltyCalculator utility methods Date Field Validation - TSK-24 Bug Fix Step 1 to Step 2 Integration - TSK-24 Critical Fix should match ConditionRow penalty preview for all conditions",
+          "status": "pending",
+          "title": "should match ConditionRow penalty preview for all conditions",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "utility methods",
+            "Date Field Validation - TSK-24 Bug Fix",
+            "Step 1 to Step 2 Integration - TSK-24 Critical Fix"
+          ],
+          "fullName": "PenaltyCalculator utility methods Date Field Validation - TSK-24 Bug Fix Step 1 to Step 2 Integration - TSK-24 Critical Fix should calculate realistic penalties for complete item",
+          "status": "pending",
+          "title": "should calculate realistic penalties for complete item",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "utility methods",
+            "Date Field Validation - TSK-24 Bug Fix",
+            "Date validation edge cases"
+          ],
+          "fullName": "PenaltyCalculator utility methods Date Field Validation - TSK-24 Bug Fix Date validation edge cases should handle invalid date strings gracefully",
+          "status": "pending",
+          "title": "should handle invalid date strings gracefully",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "utility methods",
+            "Date Field Validation - TSK-24 Bug Fix",
+            "Date validation edge cases"
+          ],
+          "fullName": "PenaltyCalculator utility methods Date Field Validation - TSK-24 Bug Fix Date validation edge cases should validate return date is not too far in past",
+          "status": "pending",
+          "title": "should validate return date is not too far in past",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "utility methods",
+            "validatePenaltyInputs"
+          ],
+          "fullName": "PenaltyCalculator utility methods validatePenaltyInputs should validate correct inputs",
+          "status": "pending",
+          "title": "should validate correct inputs",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "utility methods",
+            "validatePenaltyInputs"
+          ],
+          "fullName": "PenaltyCalculator utility methods validatePenaltyInputs should detect invalid dates",
+          "status": "pending",
+          "title": "should detect invalid dates",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "utility methods",
+            "validatePenaltyInputs"
+          ],
+          "fullName": "PenaltyCalculator utility methods validatePenaltyInputs should detect empty condition",
+          "status": "pending",
+          "title": "should detect empty condition",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "utility methods",
+            "validatePenaltyInputs"
+          ],
+          "fullName": "PenaltyCalculator utility methods validatePenaltyInputs should detect invalid quantity",
+          "status": "pending",
+          "title": "should detect invalid quantity",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "utility methods",
+            "validatePenaltyInputs"
+          ],
+          "fullName": "PenaltyCalculator utility methods validatePenaltyInputs should detect very old return dates",
+          "status": "pending",
+          "title": "should detect very old return dates",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "utility methods",
+            "validatePenaltyInputs"
+          ],
+          "fullName": "PenaltyCalculator utility methods validatePenaltyInputs should accumulate multiple errors",
+          "status": "pending",
+          "title": "should accumulate multiple errors",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "utility methods",
+            "getBusinessRules"
+          ],
+          "fullName": "PenaltyCalculator utility methods getBusinessRules should return current business rules configuration",
+          "status": "pending",
+          "title": "should return current business rules configuration",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "edge cases and boundary conditions"
+          ],
+          "fullName": "PenaltyCalculator edge cases and boundary conditions should handle very large modalAwal values",
+          "status": "pending",
+          "title": "should handle very large modalAwal values",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "edge cases and boundary conditions"
+          ],
+          "fullName": "PenaltyCalculator edge cases and boundary conditions should handle leap year date calculations",
+          "status": "pending",
+          "title": "should handle leap year date calculations",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "edge cases and boundary conditions"
+          ],
+          "fullName": "PenaltyCalculator edge cases and boundary conditions should handle timezone differences correctly",
+          "status": "pending",
+          "title": "should handle timezone differences correctly",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenaltyCalculator",
+            "edge cases and boundary conditions"
+          ],
+          "fullName": "PenaltyCalculator edge cases and boundary conditions should handle case-insensitive condition matching",
+          "status": "pending",
+          "title": "should handle case-insensitive condition matching",
+          "failureMessages": [],
+          "duration": null
+        }
+      ],
+      "failureMessage": null
+    },
+    {
+      "testFilePath": "D:\\.work\\rental-software\\features\\kasir\\lib\\utils\\codeGenerator.test.ts",
+      "testFileResults": [
+        {
+          "ancestorTitles": [
+            "TransactionCodeGenerator Enhanced Features",
+            "UUID Validation"
+          ],
+          "fullName": "TransactionCodeGenerator Enhanced Features UUID Validation should validate correct UUID v4 format",
+          "status": "pending",
+          "title": "should validate correct UUID v4 format",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "TransactionCodeGenerator Enhanced Features",
+            "UUID Validation"
+          ],
+          "fullName": "TransactionCodeGenerator Enhanced Features UUID Validation should reject invalid UUID formats",
+          "status": "pending",
+          "title": "should reject invalid UUID formats",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "TransactionCodeGenerator Enhanced Features",
+            "Parameter Type Detection"
+          ],
+          "fullName": "TransactionCodeGenerator Enhanced Features Parameter Type Detection should correctly detect UUID parameters",
+          "status": "pending",
+          "title": "should correctly detect UUID parameters",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "TransactionCodeGenerator Enhanced Features",
+            "Parameter Type Detection"
+          ],
+          "fullName": "TransactionCodeGenerator Enhanced Features Parameter Type Detection should correctly detect transaction code parameters",
+          "status": "pending",
+          "title": "should correctly detect transaction code parameters",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "TransactionCodeGenerator Enhanced Features",
+            "Parameter Type Detection"
+          ],
+          "fullName": "TransactionCodeGenerator Enhanced Features Parameter Type Detection should correctly detect invalid parameters",
+          "status": "pending",
+          "title": "should correctly detect invalid parameters",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "TransactionCodeGenerator Enhanced Features",
+            "Existing Transaction Code Functionality"
+          ],
+          "fullName": "TransactionCodeGenerator Enhanced Features Existing Transaction Code Functionality should still validate transaction codes correctly",
+          "status": "pending",
+          "title": "should still validate transaction codes correctly",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "TransactionCodeGenerator Enhanced Features",
+            "Existing Transaction Code Functionality"
+          ],
+          "fullName": "TransactionCodeGenerator Enhanced Features Existing Transaction Code Functionality should reject invalid transaction codes",
+          "status": "pending",
+          "title": "should reject invalid transaction codes",
+          "failureMessages": [],
+          "duration": null
+        }
+      ],
+      "failureMessage": null
+    },
+    {
+      "testFilePath": "D:\\.work\\rental-software\\features\\kasir\\services\\transaksiService.test.ts",
+      "testFileResults": [
+        {
+          "ancestorTitles": [
+            "TransaksiService",
+            "createTransaksi"
+          ],
+          "fullName": "TransaksiService createTransaksi should create transaksi successfully with auto-generated code",
+          "status": "pending",
+          "title": "should create transaksi successfully with auto-generated code",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService",
+            "createTransaksi"
+          ],
+          "fullName": "TransaksiService createTransaksi should throw error if penyewa not found",
+          "status": "pending",
+          "title": "should throw error if penyewa not found",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService",
+            "createTransaksi"
+          ],
+          "fullName": "TransaksiService createTransaksi should throw error if product not available",
+          "status": "pending",
+          "title": "should throw error if product not available",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService",
+            "createTransaksi"
+          ],
+          "fullName": "TransaksiService createTransaksi should throw error if insufficient product quantity",
+          "status": "pending",
+          "title": "should throw error if insufficient product quantity",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService",
+            "getTransaksiById"
+          ],
+          "fullName": "TransaksiService getTransaksiById should return transaksi by ID",
+          "status": "pending",
+          "title": "should return transaksi by ID",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService",
+            "getTransaksiById"
+          ],
+          "fullName": "TransaksiService getTransaksiById should throw error if transaksi not found",
+          "status": "pending",
+          "title": "should throw error if transaksi not found",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService",
+            "getTransaksiByCode"
+          ],
+          "fullName": "TransaksiService getTransaksiByCode should return transaksi by code",
+          "status": "pending",
+          "title": "should return transaksi by code",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService",
+            "getTransaksiList"
+          ],
+          "fullName": "TransaksiService getTransaksiList should return paginated transaksi list",
+          "status": "pending",
+          "title": "should return paginated transaksi list",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService",
+            "getTransaksiList"
+          ],
+          "fullName": "TransaksiService getTransaksiList should filter by status",
+          "status": "pending",
+          "title": "should filter by status",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService",
+            "getTransaksiList"
+          ],
+          "fullName": "TransaksiService getTransaksiList should search by code or penyewa name",
+          "status": "pending",
+          "title": "should search by code or penyewa name",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService",
+            "updateTransaksiStatus"
+          ],
+          "fullName": "TransaksiService updateTransaksiStatus should update transaksi status successfully",
+          "status": "pending",
+          "title": "should update transaksi status successfully",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService",
+            "updateTransaksiStatus"
+          ],
+          "fullName": "TransaksiService updateTransaksiStatus should throw error if transaksi not found",
+          "status": "pending",
+          "title": "should throw error if transaksi not found",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService",
+            "updateTransaksiStatus"
+          ],
+          "fullName": "TransaksiService updateTransaksiStatus should validate status transitions",
+          "status": "pending",
+          "title": "should validate status transitions",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService",
+            "getTransaksiStats"
+          ],
+          "fullName": "TransaksiService getTransaksiStats should return transaction statistics with enhanced status calculation",
+          "status": "pending",
+          "title": "should return transaction statistics with enhanced status calculation",
+          "failureMessages": [],
+          "duration": null
+        }
+      ],
+      "failureMessage": null
+    },
+    {
+      "testFilePath": "D:\\.work\\rental-software\\features\\kasir\\lib\\validation\\pickupValidation.test.ts",
+      "testFileResults": [
+        {
+          "ancestorTitles": [
+            "PickupBusinessRules",
+            "validateTransactionStatus"
+          ],
+          "fullName": "PickupBusinessRules validateTransactionStatus should validate active transaction status",
+          "status": "pending",
+          "title": "should validate active transaction status",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PickupBusinessRules",
+            "validateTransactionStatus"
+          ],
+          "fullName": "PickupBusinessRules validateTransactionStatus should reject non-active transaction status",
+          "status": "pending",
+          "title": "should reject non-active transaction status",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PickupBusinessRules",
+            "validatePickupQuantity"
+          ],
+          "fullName": "PickupBusinessRules validatePickupQuantity should reject zero or negative quantity",
+          "status": "pending",
+          "title": "should reject zero or negative quantity",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PickupBusinessRules",
+            "validatePickupQuantity"
+          ],
+          "fullName": "PickupBusinessRules validatePickupQuantity should reject quantity exceeding available",
+          "status": "pending",
+          "title": "should reject quantity exceeding available",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PickupBusinessRules",
+            "validatePickupQuantity"
+          ],
+          "fullName": "PickupBusinessRules validatePickupQuantity should warn for partial pickup",
+          "status": "pending",
+          "title": "should warn for partial pickup",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PickupBusinessRules",
+            "validateItemNotFullyPickedUp"
+          ],
+          "fullName": "PickupBusinessRules validateItemNotFullyPickedUp should allow pickup for available items",
+          "status": "pending",
+          "title": "should allow pickup for available items",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PickupBusinessRules",
+            "validateItemNotFullyPickedUp"
+          ],
+          "fullName": "PickupBusinessRules validateItemNotFullyPickedUp should reject pickup for fully picked up items",
+          "status": "pending",
+          "title": "should reject pickup for fully picked up items",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PickupBusinessRules",
+            "validatePickupBatchLimits"
+          ],
+          "fullName": "PickupBusinessRules validatePickupBatchLimits should validate normal batch size",
+          "status": "pending",
+          "title": "should validate normal batch size",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PickupBusinessRules",
+            "validatePickupBatchLimits"
+          ],
+          "fullName": "PickupBusinessRules validatePickupBatchLimits should warn for large batches",
+          "status": "pending",
+          "title": "should warn for large batches",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PickupBusinessRules",
+            "validatePickupBatchLimits"
+          ],
+          "fullName": "PickupBusinessRules validatePickupBatchLimits should reject batches exceeding item limit",
+          "status": "pending",
+          "title": "should reject batches exceeding item limit",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PickupBusinessRules",
+            "validatePickupBatchLimits"
+          ],
+          "fullName": "PickupBusinessRules validatePickupBatchLimits should reject batches exceeding quantity limit",
+          "status": "pending",
+          "title": "should reject batches exceeding quantity limit",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PickupBusinessRules",
+            "validateNoDuplicateItems"
+          ],
+          "fullName": "PickupBusinessRules validateNoDuplicateItems should validate unique items",
+          "status": "pending",
+          "title": "should validate unique items",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PickupBusinessRules",
+            "validateNoDuplicateItems"
+          ],
+          "fullName": "PickupBusinessRules validateNoDuplicateItems should reject duplicate items",
+          "status": "pending",
+          "title": "should reject duplicate items",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PickupBusinessRules",
+            "validateBusinessHours"
+          ],
+          "fullName": "PickupBusinessRules validateBusinessHours should validate normal business hours",
+          "status": "pending",
+          "title": "should validate normal business hours",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PickupBusinessRules",
+            "validateBusinessHours"
+          ],
+          "fullName": "PickupBusinessRules validateBusinessHours should warn for weekend pickup",
+          "status": "pending",
+          "title": "should warn for weekend pickup",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PickupBusinessRules",
+            "validateBusinessHours"
+          ],
+          "fullName": "PickupBusinessRules validateBusinessHours should warn for outside business hours",
+          "status": "pending",
+          "title": "should warn for outside business hours",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PickupBusinessRules",
+            "validateConcurrentPickup"
+          ],
+          "fullName": "PickupBusinessRules validateConcurrentPickup should validate when no concurrent pickup detected",
+          "status": "pending",
+          "title": "should validate when no concurrent pickup detected",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PickupBusinessRules",
+            "validateConcurrentPickup"
+          ],
+          "fullName": "PickupBusinessRules validateConcurrentPickup should detect potential concurrent pickup",
+          "status": "pending",
+          "title": "should detect potential concurrent pickup",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PickupValidator",
+            "validatePickupRequest"
+          ],
+          "fullName": "PickupValidator validatePickupRequest should perform comprehensive validation and return valid result",
+          "status": "pending",
+          "title": "should perform comprehensive validation and return valid result",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PickupValidator",
+            "validatePickupRequest"
+          ],
+          "fullName": "PickupValidator validatePickupRequest should detect multiple validation errors",
+          "status": "pending",
+          "title": "should detect multiple validation errors",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PickupValidator",
+            "validatePickupRequest"
+          ],
+          "fullName": "PickupValidator validatePickupRequest should categorize validation results correctly",
+          "status": "pending",
+          "title": "should categorize validation results correctly",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PickupValidator",
+            "generateValidationReport"
+          ],
+          "fullName": "PickupValidator generateValidationReport should generate comprehensive validation report",
+          "status": "pending",
+          "title": "should generate comprehensive validation report",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PickupValidator",
+            "generateValidationReport"
+          ],
+          "fullName": "PickupValidator generateValidationReport should generate valid status report",
+          "status": "pending",
+          "title": "should generate valid status report",
+          "failureMessages": [],
+          "duration": null
+        }
+      ],
+      "failureMessage": null
+    },
+    {
+      "testFilePath": "D:\\.work\\rental-software\\features\\kasir\\lib\\utils\\statusUtils.test.ts",
+      "testFileResults": [
+        {
+          "ancestorTitles": [
+            "Status Utils Functions",
+            "calculateEnhancedStatus",
+            "Priority 1: Overdue Status (terlambat)"
+          ],
+          "fullName": "Status Utils Functions calculateEnhancedStatus Priority 1: Overdue Status (terlambat) should return terlambat when base status is terlambat",
+          "status": "pending",
+          "title": "should return terlambat when base status is terlambat",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "Status Utils Functions",
+            "calculateEnhancedStatus",
+            "Priority 1: Overdue Status (terlambat)"
+          ],
+          "fullName": "Status Utils Functions calculateEnhancedStatus Priority 1: Overdue Status (terlambat) should return terlambat when past end date and status is active",
+          "status": "pending",
+          "title": "should return terlambat when past end date and status is active",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "Status Utils Functions",
+            "calculateEnhancedStatus",
+            "Priority 1: Overdue Status (terlambat)"
+          ],
+          "fullName": "Status Utils Functions calculateEnhancedStatus Priority 1: Overdue Status (terlambat) should not return terlambat when end date is in future",
+          "status": "pending",
+          "title": "should not return terlambat when end date is in future",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "Status Utils Functions",
+            "calculateEnhancedStatus",
+            "Priority 2: Cancelled Status"
+          ],
+          "fullName": "Status Utils Functions calculateEnhancedStatus Priority 2: Cancelled Status should return cancelled when base status is cancelled",
+          "status": "pending",
+          "title": "should return cancelled when base status is cancelled",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "Status Utils Functions",
+            "calculateEnhancedStatus",
+            "Priority 3: Completed Status (selesai)"
+          ],
+          "fullName": "Status Utils Functions calculateEnhancedStatus Priority 3: Completed Status (selesai) should return selesai when base status is selesai",
+          "status": "pending",
+          "title": "should return selesai when base status is selesai",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "Status Utils Functions",
+            "calculateEnhancedStatus",
+            "Priority 4: Pickup Detection (diambil)"
+          ],
+          "fullName": "Status Utils Functions calculateEnhancedStatus Priority 4: Pickup Detection (diambil) should return diambil when hasPickup flag is true",
+          "status": "pending",
+          "title": "should return diambil when hasPickup flag is true",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "Status Utils Functions",
+            "calculateEnhancedStatus",
+            "Priority 4: Pickup Detection (diambil)"
+          ],
+          "fullName": "Status Utils Functions calculateEnhancedStatus Priority 4: Pickup Detection (diambil) should return diambil when items have jumlahDiambil > 0",
+          "status": "pending",
+          "title": "should return diambil when items have jumlahDiambil > 0",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "Status Utils Functions",
+            "calculateEnhancedStatus",
+            "Priority 4: Pickup Detection (diambil)"
+          ],
+          "fullName": "Status Utils Functions calculateEnhancedStatus Priority 4: Pickup Detection (diambil) should return active when no pickup detected",
+          "status": "pending",
+          "title": "should return active when no pickup detected",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "Status Utils Functions",
+            "calculateEnhancedStatus",
+            "Priority 4: Pickup Detection (diambil)"
+          ],
+          "fullName": "Status Utils Functions calculateEnhancedStatus Priority 4: Pickup Detection (diambil) should prefer hasPickup flag over item parsing when provided",
+          "status": "pending",
+          "title": "should prefer hasPickup flag over item parsing when provided",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "Status Utils Functions",
+            "calculateEnhancedStatus",
+            "Fallback to Base Status"
+          ],
+          "fullName": "Status Utils Functions calculateEnhancedStatus Fallback to Base Status should return base status when no special conditions apply",
+          "status": "pending",
+          "title": "should return base status when no special conditions apply",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "Status Utils Functions",
+            "calculateEnhancedStatus",
+            "Fallback to Base Status"
+          ],
+          "fullName": "Status Utils Functions calculateEnhancedStatus Fallback to Base Status should return base status when status is not active",
+          "status": "pending",
+          "title": "should return base status when status is not active",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "Status Utils Functions",
+            "calculateEnhancedStatus",
+            "Edge Cases"
+          ],
+          "fullName": "Status Utils Functions calculateEnhancedStatus Edge Cases should handle undefined items gracefully",
+          "status": "pending",
+          "title": "should handle undefined items gracefully",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "Status Utils Functions",
+            "calculateEnhancedStatus",
+            "Edge Cases"
+          ],
+          "fullName": "Status Utils Functions calculateEnhancedStatus Edge Cases should handle empty items array",
+          "status": "pending",
+          "title": "should handle empty items array",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "Status Utils Functions",
+            "calculateEnhancedStatus",
+            "Edge Cases"
+          ],
+          "fullName": "Status Utils Functions calculateEnhancedStatus Edge Cases should handle invalid end date",
+          "status": "pending",
+          "title": "should handle invalid end date",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "Status Utils Functions",
+            "hasValidItemData"
+          ],
+          "fullName": "Status Utils Functions hasValidItemData should return true for valid items array with jumlahDiambil",
+          "status": "pending",
+          "title": "should return true for valid items array with jumlahDiambil",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "Status Utils Functions",
+            "hasValidItemData"
+          ],
+          "fullName": "Status Utils Functions hasValidItemData should return false for non-array input",
+          "status": "pending",
+          "title": "should return false for non-array input",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "Status Utils Functions",
+            "hasValidItemData"
+          ],
+          "fullName": "Status Utils Functions hasValidItemData should return false for empty array",
+          "status": "pending",
+          "title": "should return false for empty array",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "Status Utils Functions",
+            "hasValidItemData"
+          ],
+          "fullName": "Status Utils Functions hasValidItemData should return false for items missing jumlahDiambil",
+          "status": "pending",
+          "title": "should return false for items missing jumlahDiambil",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "Status Utils Functions",
+            "hasValidItemData"
+          ],
+          "fullName": "Status Utils Functions hasValidItemData should return false for items with non-numeric jumlahDiambil",
+          "status": "pending",
+          "title": "should return false for items with non-numeric jumlahDiambil",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "Status Utils Functions",
+            "hasValidItemData"
+          ],
+          "fullName": "Status Utils Functions hasValidItemData should return false for null/undefined items in array",
+          "status": "pending",
+          "title": "should return false for null/undefined items in array",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "Status Utils Functions",
+            "hasPickupItems"
+          ],
+          "fullName": "Status Utils Functions hasPickupItems should return true when at least one item has jumlahDiambil > 0",
+          "status": "pending",
+          "title": "should return true when at least one item has jumlahDiambil > 0",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "Status Utils Functions",
+            "hasPickupItems"
+          ],
+          "fullName": "Status Utils Functions hasPickupItems should return false when all items have jumlahDiambil = 0",
+          "status": "pending",
+          "title": "should return false when all items have jumlahDiambil = 0",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "Status Utils Functions",
+            "hasPickupItems"
+          ],
+          "fullName": "Status Utils Functions hasPickupItems should return false for empty items array",
+          "status": "pending",
+          "title": "should return false for empty items array",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "Status Utils Functions",
+            "isOverdue"
+          ],
+          "fullName": "Status Utils Functions isOverdue should return true when current date is past end date",
+          "status": "pending",
+          "title": "should return true when current date is past end date",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "Status Utils Functions",
+            "isOverdue"
+          ],
+          "fullName": "Status Utils Functions isOverdue should return false when current date is before end date",
+          "status": "pending",
+          "title": "should return false when current date is before end date",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "Status Utils Functions",
+            "isOverdue"
+          ],
+          "fullName": "Status Utils Functions isOverdue should return false when end date is undefined",
+          "status": "pending",
+          "title": "should return false when end date is undefined",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "Status Utils Functions",
+            "isOverdue"
+          ],
+          "fullName": "Status Utils Functions isOverdue should return false when end date is empty string",
+          "status": "pending",
+          "title": "should return false when end date is empty string",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "Status Utils Functions",
+            "isOverdue"
+          ],
+          "fullName": "Status Utils Functions isOverdue should handle invalid date strings gracefully",
+          "status": "pending",
+          "title": "should handle invalid date strings gracefully",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "Status Utils Functions",
+            "isOverdue"
+          ],
+          "fullName": "Status Utils Functions isOverdue should handle edge case of exact current time",
+          "status": "pending",
+          "title": "should handle edge case of exact current time",
+          "failureMessages": [],
+          "duration": null
+        }
+      ],
+      "failureMessage": null
+    },
+    {
+      "testFilePath": "D:\\.work\\rental-software\\features\\kasir\\services\\availabilityService.test.ts",
+      "testFileResults": [
+        {
+          "ancestorTitles": [
+            "AvailabilityService",
+            "getProductAvailability"
+          ],
+          "fullName": "AvailabilityService getProductAvailability should calculate availability for product with no active rentals",
+          "status": "pending",
+          "title": "should calculate availability for product with no active rentals",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "AvailabilityService",
+            "getProductAvailability"
+          ],
+          "fullName": "AvailabilityService getProductAvailability should calculate availability considering active rentals",
+          "status": "pending",
+          "title": "should calculate availability considering active rentals",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "AvailabilityService",
+            "getProductAvailability"
+          ],
+          "fullName": "AvailabilityService getProductAvailability should exclude fully returned items from rental calculation",
+          "status": "pending",
+          "title": "should exclude fully returned items from rental calculation",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "AvailabilityService",
+            "getProductAvailability"
+          ],
+          "fullName": "AvailabilityService getProductAvailability should handle ongoing rentals with no end date",
+          "status": "pending",
+          "title": "should handle ongoing rentals with no end date",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "AvailabilityService",
+            "getProductAvailability"
+          ],
+          "fullName": "AvailabilityService getProductAvailability should throw error if product not found",
+          "status": "pending",
+          "title": "should throw error if product not found",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "AvailabilityService",
+            "getProductAvailability"
+          ],
+          "fullName": "AvailabilityService getProductAvailability should ensure available quantity never goes below zero",
+          "status": "pending",
+          "title": "should ensure available quantity never goes below zero",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "AvailabilityService",
+            "getMultipleProductAvailability"
+          ],
+          "fullName": "AvailabilityService getMultipleProductAvailability should get availability for multiple products",
+          "status": "pending",
+          "title": "should get availability for multiple products",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "AvailabilityService",
+            "checkRentalAvailability"
+          ],
+          "fullName": "AvailabilityService checkRentalAvailability should return available=true when all items are available",
+          "status": "pending",
+          "title": "should return available=true when all items are available",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "AvailabilityService",
+            "checkRentalAvailability"
+          ],
+          "fullName": "AvailabilityService checkRentalAvailability should return conflicts when items are not available",
+          "status": "pending",
+          "title": "should return conflicts when items are not available",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "AvailabilityService",
+            "getCategoryAvailability"
+          ],
+          "fullName": "AvailabilityService getCategoryAvailability should get availability for all products in a category",
+          "status": "pending",
+          "title": "should get availability for all products in a category",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "AvailabilityService",
+            "reserveProducts"
+          ],
+          "fullName": "AvailabilityService reserveProducts should reserve products when available",
+          "status": "pending",
+          "title": "should reserve products when available",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "AvailabilityService",
+            "reserveProducts"
+          ],
+          "fullName": "AvailabilityService reserveProducts should throw error when products not available for reservation",
+          "status": "pending",
+          "title": "should throw error when products not available for reservation",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "AvailabilityService",
+            "getAvailabilitySummary"
+          ],
+          "fullName": "AvailabilityService getAvailabilitySummary should return availability summary for dashboard",
+          "status": "pending",
+          "title": "should return availability summary for dashboard",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "AvailabilityService",
+            "getLowStockProducts"
+          ],
+          "fullName": "AvailabilityService getLowStockProducts should return products with low availability",
+          "status": "pending",
+          "title": "should return products with low availability",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "AvailabilityService",
+            "getLowStockProducts"
+          ],
+          "fullName": "AvailabilityService getLowStockProducts should sort low stock products by availability ascending",
+          "status": "pending",
+          "title": "should sort low stock products by availability ascending",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "AvailabilityService",
+            "validateTransactionItems"
+          ],
+          "fullName": "AvailabilityService validateTransactionItems should validate all items successfully",
+          "status": "pending",
+          "title": "should validate all items successfully",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "AvailabilityService",
+            "validateTransactionItems"
+          ],
+          "fullName": "AvailabilityService validateTransactionItems should return error for nonexistent product",
+          "status": "pending",
+          "title": "should return error for nonexistent product",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "AvailabilityService",
+            "validateTransactionItems"
+          ],
+          "fullName": "AvailabilityService validateTransactionItems should return error for inactive product",
+          "status": "pending",
+          "title": "should return error for inactive product",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "AvailabilityService",
+            "validateTransactionItems"
+          ],
+          "fullName": "AvailabilityService validateTransactionItems should return errors for insufficient quantity",
+          "status": "pending",
+          "title": "should return errors for insufficient quantity",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "AvailabilityService",
+            "validateTransactionItems"
+          ],
+          "fullName": "AvailabilityService validateTransactionItems should return warnings for low stock after rental",
+          "status": "pending",
+          "title": "should return warnings for low stock after rental",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "AvailabilityService",
+            "validateTransactionItems"
+          ],
+          "fullName": "AvailabilityService validateTransactionItems should handle errors gracefully during validation",
+          "status": "pending",
+          "title": "should handle errors gracefully during validation",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "createAvailabilityService factory"
+          ],
+          "fullName": "createAvailabilityService factory should create availability service instance",
+          "status": "pending",
+          "title": "should create availability service instance",
+          "failureMessages": [],
+          "duration": null
+        }
+      ],
+      "failureMessage": null
+    },
+    {
+      "testFilePath": "D:\\.work\\rental-software\\features\\kasir\\services\\penyewaService.test.ts",
+      "testFileResults": [
+        {
+          "ancestorTitles": [
+            "PenyewaService",
+            "createPenyewa"
+          ],
+          "fullName": "PenyewaService createPenyewa should create penyewa successfully",
+          "status": "pending",
+          "title": "should create penyewa successfully",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenyewaService",
+            "createPenyewa"
+          ],
+          "fullName": "PenyewaService createPenyewa should throw error if phone number already exists",
+          "status": "pending",
+          "title": "should throw error if phone number already exists",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenyewaService",
+            "createPenyewa"
+          ],
+          "fullName": "PenyewaService createPenyewa should handle database errors",
+          "status": "pending",
+          "title": "should handle database errors",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenyewaService",
+            "getPenyewaById"
+          ],
+          "fullName": "PenyewaService getPenyewaById should return penyewa by ID",
+          "status": "pending",
+          "title": "should return penyewa by ID",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenyewaService",
+            "getPenyewaById"
+          ],
+          "fullName": "PenyewaService getPenyewaById should throw error if penyewa not found",
+          "status": "pending",
+          "title": "should throw error if penyewa not found",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenyewaService",
+            "getPenyewaList"
+          ],
+          "fullName": "PenyewaService getPenyewaList should return paginated penyewa list",
+          "status": "pending",
+          "title": "should return paginated penyewa list",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenyewaService",
+            "getPenyewaList"
+          ],
+          "fullName": "PenyewaService getPenyewaList should search penyewa by name or phone",
+          "status": "pending",
+          "title": "should search penyewa by name or phone",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenyewaService",
+            "getPenyewaList"
+          ],
+          "fullName": "PenyewaService getPenyewaList should handle empty results",
+          "status": "pending",
+          "title": "should handle empty results",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenyewaService",
+            "updatePenyewa"
+          ],
+          "fullName": "PenyewaService updatePenyewa should update penyewa successfully",
+          "status": "pending",
+          "title": "should update penyewa successfully",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenyewaService",
+            "updatePenyewa"
+          ],
+          "fullName": "PenyewaService updatePenyewa should throw error if penyewa not found",
+          "status": "pending",
+          "title": "should throw error if penyewa not found",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenyewaService",
+            "updatePenyewa"
+          ],
+          "fullName": "PenyewaService updatePenyewa should validate phone uniqueness when updating phone",
+          "status": "pending",
+          "title": "should validate phone uniqueness when updating phone",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenyewaService",
+            "findPenyewaByPhone"
+          ],
+          "fullName": "PenyewaService findPenyewaByPhone should find penyewa by phone number",
+          "status": "pending",
+          "title": "should find penyewa by phone number",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PenyewaService",
+            "findPenyewaByPhone"
+          ],
+          "fullName": "PenyewaService findPenyewaByPhone should return null if penyewa not found",
+          "status": "pending",
+          "title": "should return null if penyewa not found",
+          "failureMessages": [],
+          "duration": null
+        }
+      ],
+      "failureMessage": null
+    },
+    {
+      "testFilePath": "D:\\.work\\rental-software\\features\\kasir\\services\\pembayaranService.test.ts",
+      "testFileResults": [
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "createPembayaran"
+          ],
+          "fullName": "PembayaranService createPembayaran should create payment successfully",
+          "status": "pending",
+          "title": "should create payment successfully",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "createPembayaran"
+          ],
+          "fullName": "PembayaranService createPembayaran should throw error if transaction not found",
+          "status": "pending",
+          "title": "should throw error if transaction not found",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "createPembayaran"
+          ],
+          "fullName": "PembayaranService createPembayaran should throw error if transaction is cancelled",
+          "status": "pending",
+          "title": "should throw error if transaction is cancelled",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "createPembayaran"
+          ],
+          "fullName": "PembayaranService createPembayaran should throw error if transaction is completed",
+          "status": "pending",
+          "title": "should throw error if transaction is completed",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "createPembayaran"
+          ],
+          "fullName": "PembayaranService createPembayaran should throw error if payment amount is invalid",
+          "status": "pending",
+          "title": "should throw error if payment amount is invalid",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "createPembayaran"
+          ],
+          "fullName": "PembayaranService createPembayaran should handle overpayment validation",
+          "status": "pending",
+          "title": "should handle overpayment validation",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "getTransactionPayments"
+          ],
+          "fullName": "PembayaranService getTransactionPayments should return payments for a transaction",
+          "status": "pending",
+          "title": "should return payments for a transaction",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "getPembayaranById"
+          ],
+          "fullName": "PembayaranService getPembayaranById should return payment by ID",
+          "status": "pending",
+          "title": "should return payment by ID",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "getPembayaranById"
+          ],
+          "fullName": "PembayaranService getPembayaranById should throw error if payment not found",
+          "status": "pending",
+          "title": "should throw error if payment not found",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "getPaymentSummary"
+          ],
+          "fullName": "PembayaranService getPaymentSummary should return payment summary for transaction",
+          "status": "pending",
+          "title": "should return payment summary for transaction",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "getPaymentSummary"
+          ],
+          "fullName": "PembayaranService getPaymentSummary should throw error if transaction not found for summary",
+          "status": "pending",
+          "title": "should throw error if transaction not found for summary",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "getPaymentSummary"
+          ],
+          "fullName": "PembayaranService getPaymentSummary should handle transaction with no payments",
+          "status": "pending",
+          "title": "should handle transaction with no payments",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "getPaymentList"
+          ],
+          "fullName": "PembayaranService getPaymentList should return paginated payment list",
+          "status": "pending",
+          "title": "should return paginated payment list",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "getPaymentList"
+          ],
+          "fullName": "PembayaranService getPaymentList should filter payments by transaction ID",
+          "status": "pending",
+          "title": "should filter payments by transaction ID",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "getPaymentList"
+          ],
+          "fullName": "PembayaranService getPaymentList should filter payments by method",
+          "status": "pending",
+          "title": "should filter payments by method",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "getPaymentList"
+          ],
+          "fullName": "PembayaranService getPaymentList should filter payments by date range",
+          "status": "pending",
+          "title": "should filter payments by date range",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "cancelPayment"
+          ],
+          "fullName": "PembayaranService cancelPayment should cancel payment successfully",
+          "status": "pending",
+          "title": "should cancel payment successfully",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "cancelPayment"
+          ],
+          "fullName": "PembayaranService cancelPayment should throw error if payment not found for cancellation",
+          "status": "pending",
+          "title": "should throw error if payment not found for cancellation",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "cancelPayment"
+          ],
+          "fullName": "PembayaranService cancelPayment should throw error if transaction is already cancelled",
+          "status": "pending",
+          "title": "should throw error if transaction is already cancelled",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "getPaymentStats"
+          ],
+          "fullName": "PembayaranService getPaymentStats should return payment statistics",
+          "status": "pending",
+          "title": "should return payment statistics",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "getPaymentStats"
+          ],
+          "fullName": "PembayaranService getPaymentStats should filter statistics by date range",
+          "status": "pending",
+          "title": "should filter statistics by date range",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "getPaymentStats"
+          ],
+          "fullName": "PembayaranService getPaymentStats should handle empty payment data",
+          "status": "pending",
+          "title": "should handle empty payment data",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "PembayaranService",
+            "getPaymentStats"
+          ],
+          "fullName": "PembayaranService getPaymentStats should aggregate payments by method correctly",
+          "status": "pending",
+          "title": "should aggregate payments by method correctly",
+          "failureMessages": [],
+          "duration": null
+        }
+      ],
+      "failureMessage": null
+    },
+    {
+      "testFilePath": "D:\\.work\\rental-software\\features\\kasir\\components\\detail\\__tests__\\ProductDetailCard.test.tsx",
+      "testFileResults": [
+        {
+          "ancestorTitles": [
+            "ProductDetailCard"
+          ],
+          "fullName": "ProductDetailCard should render product information correctly",
+          "status": "pending",
+          "title": "should render product information correctly",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "ProductDetailCard"
+          ],
+          "fullName": "ProductDetailCard should not display return information when no return data exists",
+          "status": "pending",
+          "title": "should not display return information when no return data exists",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "ProductDetailCard"
+          ],
+          "fullName": "ProductDetailCard should display return status badge when return data exists",
+          "status": "pending",
+          "title": "should display return status badge when return data exists",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "ProductDetailCard"
+          ],
+          "fullName": "ProductDetailCard should show condition breakdown for multi-condition returns",
+          "status": "pending",
+          "title": "should show condition breakdown for multi-condition returns",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "ProductDetailCard"
+          ],
+          "fullName": "ProductDetailCard should display penalty information correctly",
+          "status": "pending",
+          "title": "should display penalty information correctly",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "ProductDetailCard"
+          ],
+          "fullName": "ProductDetailCard should handle single condition return correctly",
+          "status": "pending",
+          "title": "should handle single condition return correctly",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "ProductDetailCard"
+          ],
+          "fullName": "ProductDetailCard should show mobile toggle button on small screens",
+          "status": "pending",
+          "title": "should show mobile toggle button on small screens",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "ProductDetailCard"
+          ],
+          "fullName": "ProductDetailCard should toggle return details visibility on mobile",
+          "status": "pending",
+          "title": "should toggle return details visibility on mobile",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "ProductDetailCard"
+          ],
+          "fullName": "ProductDetailCard should handle missing return data gracefully",
+          "status": "pending",
+          "title": "should handle missing return data gracefully",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "ProductDetailCard"
+          ],
+          "fullName": "ProductDetailCard should handle zero penalty amounts correctly",
+          "status": "pending",
+          "title": "should handle zero penalty amounts correctly",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "ProductDetailCard"
+          ],
+          "fullName": "ProductDetailCard should display pickup status when available",
+          "status": "pending",
+          "title": "should display pickup status when available",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "ProductDetailCard"
+          ],
+          "fullName": "ProductDetailCard should render condition labels correctly",
+          "status": "pending",
+          "title": "should render condition labels correctly",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "ProductDetailCard"
+          ],
+          "fullName": "ProductDetailCard should have proper accessibility attributes",
+          "status": "pending",
+          "title": "should have proper accessibility attributes",
+          "failureMessages": [],
+          "duration": null
+        },
+        {
+          "ancestorTitles": [
+            "ReturnStatusBadge"
+          ],
+          "fullName": "ReturnStatusBadge should render different status variants correctly",
+          "status": "pending",
+          "title": "should render different status variants correctly",
+          "failureMessages": [],
+          "duration": null
+        }
+      ],
+      "failureMessage": null
     }
-  }
+  ]
 }

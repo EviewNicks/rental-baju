@@ -5,6 +5,7 @@
  */
 
 import { TransaksiWithDetails } from '../services/transaksiService'
+import { ConditionCategory } from '../types'
 
 // =============================================================================
 // UNIFIED RETURN TYPES (NEW ARCHITECTURE)
@@ -21,7 +22,7 @@ export interface UnifiedCondition {
   penaltyAmount?: number // Calculated penalty for this condition (output only)
 
   // New manual pricing fields
-  conditionCategory: import('../types').ConditionCategory
+  conditionCategory: ConditionCategory
   manualPrice?: number
   useManualPricing: boolean
 }
@@ -248,19 +249,19 @@ export interface UnifiedMigrationMetadata {
 export interface IUnifiedReturnService {
   processUnifiedReturn(
     transaksiId: string,
-    request: UnifiedReturnRequest
+    request: UnifiedReturnRequest,
   ): Promise<UnifiedReturnProcessingResult>
-  
+
   processLegacyReturn(
     transaksiId: string,
-    legacyRequest: LegacyReturnRequest
+    legacyRequest: LegacyReturnRequest,
   ): Promise<UnifiedReturnProcessingResult>
-  
+
   validateUnifiedReturn(
     transaksiId: string,
-    request: UnifiedReturnRequest
+    request: UnifiedReturnRequest,
   ): Promise<UnifiedValidationResult>
-  
+
   getReturnTransactionByCode(transactionCode: string): Promise<TransaksiWithDetails>
 }
 

@@ -15,7 +15,7 @@ import { PenaltyCalculator, PenaltyCalculationResult } from '../lib/utils/penalt
 import { TransaksiService, TransaksiWithDetails, TransaksiForValidation } from './transaksiService'
 import { createAuditService, AuditService } from './auditService'
 import { ConditionCategory } from '../types'
-import { logger } from '../../../services/logger'
+// import { logger } from '../../../services/logger'
 import { parseKondisiAwal } from '../lib/utils/kondisiAwalParser'
 
 // Unified return request interface - treats all returns as multi-condition
@@ -97,7 +97,7 @@ export class UnifiedReturnService {
       tipe: string
       deskripsi: string
       data: Prisma.InputJsonValue
-    }
+    },
   ): Promise<void> {
     try {
       await this.prisma.aktivitasTransaksi.create({
@@ -106,23 +106,12 @@ export class UnifiedReturnService {
           tipe: activityData.tipe,
           deskripsi: activityData.deskripsi,
           data: activityData.data,
-          createdBy: this.userId
-        }
+          createdBy: this.userId,
+        },
       })
-
-      logger.debug(
-        'UnifiedReturnService',
-        'createReturnActivity',
-        'Activity created successfully',
-        {
-          transactionId: transaksiId,
-          activityType: activityData.tipe,
-          description: activityData.deskripsi,
-        }
-      )
     } catch (error) {
       // Log activity creation failure but don't break main return flow
-      logger.error(
+      console.error(
         'UnifiedReturnService',
         'createReturnActivity',
         'Failed to create return activity',
@@ -130,8 +119,8 @@ export class UnifiedReturnService {
           transactionId: transaksiId,
           activityType: activityData.tipe,
           error: error instanceof Error ? error.message : 'Unknown error',
-          userId: this.userId
-        }
+          userId: this.userId,
+        },
       )
       // Don't throw - activity creation failure shouldn't break return processing
     }
@@ -174,16 +163,12 @@ export class UnifiedReturnService {
       // Get transaction for validation
       const transaction = await this.transaksiService.getTransaksiForValidation(transaksiId)
 
-      logger.debug('UnifiedReturnService', 'validateUnifiedReturn', 'Starting validation', {
-        transactionId: transaksiId,
-        transactionStatus: transaction.status,
-        transactionItemCount: transaction.items.length,
-        returnItemCount: request.items.length,
-        returnItemIds: request.items.map(item => item.itemId)
-      })
-
       // Check transaction status eligibility - allow active, overdue, and picked up transactions
-      if (transaction.status !== 'active' && transaction.status !== 'terlambat' && transaction.status !== 'diambil') {
+      if (
+        transaction.status !== 'active' &&
+        transaction.status !== 'terlambat' &&
+        transaction.status !== 'diambil'
+      ) {
         return {
           isValid: false,
           error: `Transaksi dengan status '${transaction.status}' tidak dapat diproses pengembaliannya. Hanya transaksi dengan status 'active', 'terlambat', atau 'diambil' yang dapat diproses.`,
@@ -204,36 +189,10 @@ export class UnifiedReturnService {
         }
       }
 
-      // Log transaction items for debugging
-      logger.debug('UnifiedReturnService', 'validateUnifiedReturn', 'Transaction items available', {
-        transactionId: transaksiId,
-        transactionItems: transaction.items.map(item => ({
-          id: item.id,
-          productId: item.produkId,
-          produkName: item.produk.name,
-          jumlahDiambil: item.jumlahDiambil,
-          statusKembali: item.statusKembali,
-          kondisiAwal: item.kondisiAwal
-        }))
-      })
-
       // Validate each return item with unified validation
       const errors: ReturnValidationError[] = []
       for (const returnItem of request.items) {
-        logger.debug('UnifiedReturnService', 'validateUnifiedReturn', 'Processing return item', {
-          transactionId: transaksiId,
-          returnItemId: returnItem.itemId,
-          returnItemConditions: returnItem.conditions
-        })
-
         const transactionItem = transaction.items.find((item) => item.id === returnItem.itemId)
-
-        logger.debug('UnifiedReturnService', 'validateUnifiedReturn', 'Item matching result', {
-          transactionId: transaksiId,
-          returnItemId: returnItem.itemId,
-          found: !!transactionItem,
-          transactionItemId: transactionItem?.id || 'NOT_FOUND'
-        })
 
         if (!transactionItem) {
           errors.push({
@@ -250,13 +209,18 @@ export class UnifiedReturnService {
         // Legacy format compatibility check
         if (parsedKondisiAwal.isLegacyFormat) {
           // For legacy format, skip size validation and log for debugging
-          logger.debug('UnifiedReturnService', 'validateUnifiedReturn', 'Legacy format detected, skipping size validation', {
-            transactionId: transaksiId,
-            itemId: returnItem.itemId,
-            kondisiAwal: transactionItem.kondisiAwal,
-            parsedSize: parsedKondisiAwal.size,
-            productName: transactionItem.produk.name
-          })
+          console.debug(
+            'UnifiedReturnService',
+            'validateUnifiedReturn',
+            'Legacy format detected, skipping size validation',
+            {
+              transactionId: transaksiId,
+              itemId: returnItem.itemId,
+              kondisiAwal: transactionItem.kondisiAwal,
+              parsedSize: parsedKondisiAwal.size,
+              productName: transactionItem.produk.name,
+            },
+          )
 
           // Legacy format passes through size validation automatically
           // This maintains backward compatibility for existing return requests
@@ -268,7 +232,7 @@ export class UnifiedReturnService {
                 id: parsedKondisiAwal.productSizeId,
                 productId: transactionItem.produkId,
               },
-              select: { id: true, size: true, ageCategory: true }
+              select: { id: true, size: true, ageCategory: true },
             })
 
             if (!sizeExists) {
@@ -280,23 +244,19 @@ export class UnifiedReturnService {
               })
               continue
             }
-
-            logger.debug('UnifiedReturnService', 'validateUnifiedReturn', 'Size validation passed', {
-              transactionId: transaksiId,
-              itemId: returnItem.itemId,
-              productSizeId: parsedKondisiAwal.productSizeId,
-              size: parsedKondisiAwal.size,
-              ageCategory: parsedKondisiAwal.ageCategory,
-              productName: transactionItem.produk.name,
-              format: 'size-aware'
-            })
           } catch (sizeError) {
-            logger.error('UnifiedReturnService', 'validateUnifiedReturn', 'Size validation database error', {
-              transactionId: transaksiId,
-              itemId: returnItem.itemId,
-              productSizeId: parsedKondisiAwal.productSizeId,
-              error: sizeError instanceof Error ? sizeError.message : 'Unknown size validation error'
-            })
+            console.error(
+              'UnifiedReturnService',
+              'validateUnifiedReturn',
+              'Size validation database error',
+              {
+                transactionId: transaksiId,
+                itemId: returnItem.itemId,
+                productSizeId: parsedKondisiAwal.productSizeId,
+                error:
+                  sizeError instanceof Error ? sizeError.message : 'Unknown size validation error',
+              },
+            )
 
             errors.push({
               field: `items[${returnItem.itemId}].productSizeId`,
@@ -307,13 +267,18 @@ export class UnifiedReturnService {
           }
         } else {
           // Fallback for unexpected format
-          logger.warn('UnifiedReturnService', 'validateUnifiedReturn', 'Unexpected size format detected', {
-            transactionId: transaksiId,
-            itemId: returnItem.itemId,
-            kondisiAwal: transactionItem.kondisiAwal,
-            parsedFormat: parsedKondisiAwal,
-            productName: transactionItem.produk.name
-          })
+          console.warn(
+            'UnifiedReturnService',
+            'validateUnifiedReturn',
+            'Unexpected size format detected',
+            {
+              transactionId: transaksiId,
+              itemId: returnItem.itemId,
+              kondisiAwal: transactionItem.kondisiAwal,
+              parsedFormat: parsedKondisiAwal,
+              productName: transactionItem.produk.name,
+            },
+          )
 
           // Allow processing but log for investigation
           // This prevents breaking existing functionality
@@ -369,21 +334,26 @@ export class UnifiedReturnService {
 
       if (errors.length > 0) {
         // Enhanced error logging with specific details
-        logger.warn('UnifiedReturnService', 'validateUnifiedReturn', 'Return validation failed', {
+        console.warn('UnifiedReturnService', 'validateUnifiedReturn', 'Return validation failed', {
           transactionId: transaksiId,
           errorCount: errors.length,
           itemsValidated: request.items.length,
-          validationErrors: errors.map(error => ({
+          validationErrors: errors.map((error) => ({
             field: error.field,
             message: error.message,
-            code: error.code
+            code: error.code,
           })),
           summary: {
-            hasSizeErrors: errors.some(e => e.code === 'SIZE_NOT_AVAILABLE' || e.code === 'SIZE_VALIDATION_ERROR'),
-            hasConditionErrors: errors.some(e => e.code === 'MISSING_CONDITION'),
-            hasQuantityErrors: errors.some(e => e.code === 'EXCESS_TOTAL_QUANTITY' || e.code === 'RETURNED_ITEM_INVALID_QUANTITY'),
-            hasItemErrors: errors.some(e => e.code === 'ITEM_NOT_FOUND')
-          }
+            hasSizeErrors: errors.some(
+              (e) => e.code === 'SIZE_NOT_AVAILABLE' || e.code === 'SIZE_VALIDATION_ERROR',
+            ),
+            hasConditionErrors: errors.some((e) => e.code === 'MISSING_CONDITION'),
+            hasQuantityErrors: errors.some(
+              (e) =>
+                e.code === 'EXCESS_TOTAL_QUANTITY' || e.code === 'RETURNED_ITEM_INVALID_QUANTITY',
+            ),
+            hasItemErrors: errors.some((e) => e.code === 'ITEM_NOT_FOUND'),
+          },
         })
 
         return {
@@ -393,23 +363,12 @@ export class UnifiedReturnService {
         }
       }
 
-      logger.debug(
-        'UnifiedReturnService',
-        'validateUnifiedReturn',
-        'Return validation successful',
-        {
-          transactionId: transaksiId,
-          itemsValidated: request.items.length,
-          transactionStatus: transaction.status,
-        },
-      )
-
       return {
         isValid: true,
         transaction: { transaction },
       }
     } catch (error) {
-      logger.error('UnifiedReturnService', 'validateUnifiedReturn', 'Return validation error', {
+      console.error('UnifiedReturnService', 'validateUnifiedReturn', 'Return validation error', {
         transactionId: transaksiId,
         error: error instanceof Error ? error.message : 'Unknown error',
         itemsAttempted: request.items.length,
@@ -436,10 +395,10 @@ export class UnifiedReturnService {
       const transaction = await this.transaksiService.getTransaksiForPenaltyCalculation(transaksiId)
 
       // Check if request has new manual pricing fields
-      const hasManualPricing = request.items.some(item =>
-        item.conditions.some(condition =>
-          'conditionCategory' in condition && 'manualPrice' in condition
-        )
+      const hasManualPricing = request.items.some((item) =>
+        item.conditions.some(
+          (condition) => 'conditionCategory' in condition && 'manualPrice' in condition,
+        ),
       )
 
       if (hasManualPricing) {
@@ -468,15 +427,15 @@ export class UnifiedReturnService {
           itemsForEnhancedCalculation,
           {
             applyFlatLatePenalty: request.applyFlatLatePenalty !== false,
-            customLatePenalty: request.customLatePenalty
-          }
+            customLatePenalty: request.customLatePenalty,
+          },
         )
 
         // Convert to standard PenaltyCalculationResult format for backward compatibility
         return {
           totalPenalty: enhancedResult.totalPenalty,
           totalLateDays: enhancedResult.itemPenalties.reduce((sum, p) => sum + p.lateDays, 0),
-          itemPenalties: enhancedResult.itemPenalties.map(penalty => ({
+          itemPenalties: enhancedResult.itemPenalties.map((penalty) => ({
             itemId: penalty.itemId,
             productName: penalty.productName,
             expectedReturnDate: transaction.tglSelesai || new Date(),
@@ -486,14 +445,14 @@ export class UnifiedReturnService {
             modalAwal: undefined,
             totalPenalty: penalty.totalPenalty,
             reasonCode: penalty.isLate ? 'late' : 'on_time',
-            description: penalty.description
+            description: penalty.description,
           })),
           summary: {
             onTimeItems: enhancedResult.summary.onTimeItems,
             lateItems: enhancedResult.summary.lateItems,
             damagedItems: enhancedResult.summary.manuallyPricedItems,
-            lostItems: 0 // Will be counted in manual pricing
-          }
+            lostItems: 0, // Will be counted in manual pricing
+          },
         }
       } else {
         // Fallback to existing penalty calculation for backward compatibility
@@ -519,7 +478,7 @@ export class UnifiedReturnService {
         return penaltyResult
       }
     } catch (error) {
-      logger.error(
+      console.error(
         'UnifiedReturnService',
         'calculateUnifiedReturnPenalties',
         'Penalty calculation failed',
@@ -569,7 +528,11 @@ export class UnifiedReturnService {
         }
       }
 
-      if (transactionForValidation.status !== 'active' && transactionForValidation.status !== 'terlambat' && transactionForValidation.status !== 'diambil') {
+      if (
+        transactionForValidation.status !== 'active' &&
+        transactionForValidation.status !== 'terlambat' &&
+        transactionForValidation.status !== 'diambil'
+      ) {
         return {
           success: false,
           transactionId: transaksiId,
@@ -616,219 +579,176 @@ export class UnifiedReturnService {
       const result = await this.prisma.$transaction(
         async (tx) => {
           try {
-          logger.debug('UnifiedReturnService', 'processUnifiedReturn', 'Starting database transaction', {
-            transactionId: transaksiId,
-            itemCount: request.items.length,
-            totalConditions: request.items.reduce((sum, item) => sum + item.conditions.length, 0)
-          })
+            const processedItems: UnifiedReturnProcessingResult['processedItems'] = []
 
-          // Update main transaction with flat penalty info
-          const isLateReturn = new Date() > new Date(transactionForValidation.tglSelesai || new Date())
-          const transactionUpdate = await tx.transaksi.update({
-            where: { id: transaksiId },
-            data: {
-              status: 'dikembalikan',
-              tglKembali: returnDate,
-              isLateReturn,
-              flatLatePenalty: isLateReturn ? 20000 : 0,
-              sisaBayar: {
-                increment: new Decimal(penaltyCalculation.totalPenalty),
-              },
-            },
-          })
+            // Process each item with its conditions
+            for (const item of request.items) {
+              let itemTotalPenalty = 0
+              const conditionBreakdown: Array<{
+                kondisiAkhir: string
+                jumlahKembali: number
+                penaltyAmount: number
+              }> = []
 
-          logger.debug('UnifiedReturnService', 'processUnifiedReturn', 'Main transaction updated', {
-            transactionId: transaksiId,
-            newStatus: 'dikembalikan',
-            transactionUpdateId: transactionUpdate.id
-          })
+              // Create TransaksiItemReturn records for each condition
+              for (const condition of item.conditions) {
+                // Calculate individual condition penalty
+                const conditionPenalty =
+                  penaltyCalculation.itemPenalties.find((p) => p.itemId.startsWith(item.itemId))
+                    ?.totalPenalty || 0
 
-          const processedItems: UnifiedReturnProcessingResult['processedItems'] = []
+                // Check if condition has manual pricing fields
+                const hasManualPricing =
+                  'conditionCategory' in condition && 'manualPrice' in condition
 
-          logger.debug('UnifiedReturnService', 'processUnifiedReturn', 'Starting item processing', {
-            transactionId: transaksiId,
-            itemsToProcess: request.items.map(item => ({
-              itemId: item.itemId,
-              conditionCount: item.conditions.length,
-              conditions: item.conditions
-            }))
-          })
+                // Create return condition record with enhanced fields
+                await tx.transaksiItemReturn.create({
+                  data: {
+                    transaksiItemId: item.itemId,
+                    kondisiAkhir: condition.kondisiAkhir,
+                    conditionCategory: hasManualPricing ? condition.conditionCategory : 'BAIK',
+                    jumlahKembali: condition.jumlahKembali,
+                    penaltyAmount: conditionPenalty,
+                    manualPrice: hasManualPricing ? new Decimal(condition.manualPrice || 0) : null,
+                    useManualPricing: hasManualPricing
+                      ? condition.useManualPricing || false
+                      : false,
+                    modalAwalUsed: condition.modalAwal ? new Decimal(condition.modalAwal) : null,
+                    penaltyCalculation: {
+                      expectedReturnDate: returnDate,
+                      actualReturnDate: returnDate,
+                      calculationMethod: hasManualPricing
+                        ? condition.useManualPricing
+                          ? 'manual_pricing'
+                          : 'flat_late'
+                        : isLostItemCondition(condition.kondisiAkhir)
+                          ? 'modal_awal'
+                          : 'late_fee',
+                      description: hasManualPricing
+                        ? `Enhanced processing: ${condition.conditionCategory} - ${condition.kondisiAkhir} (${condition.jumlahKembali} unit)`
+                        : `Unified processing: ${condition.kondisiAkhir} (${condition.jumlahKembali} unit)`,
+                    },
+                    createdBy: this.userId,
+                  },
+                })
 
-          // Process each item with its conditions
-          for (const item of request.items) {
-            logger.debug('UnifiedReturnService', 'processUnifiedReturn', 'Processing item', {
-              transactionId: transaksiId,
-              itemId: item.itemId,
-              conditionCount: item.conditions.length
-            })
-            let itemTotalPenalty = 0
-            const conditionBreakdown: Array<{
-              kondisiAkhir: string
-              jumlahKembali: number
-              penaltyAmount: number
-            }> = []
-
-            // Create TransaksiItemReturn records for each condition
-            for (const condition of item.conditions) {
-              // Calculate individual condition penalty
-              const conditionPenalty =
-                penaltyCalculation.itemPenalties.find((p) => p.itemId.startsWith(item.itemId))
-                  ?.totalPenalty || 0
-
-              // Check if condition has manual pricing fields
-              const hasManualPricing = 'conditionCategory' in condition && 'manualPrice' in condition
-
-              // Create return condition record with enhanced fields
-              await tx.transaksiItemReturn.create({
-                data: {
-                  transaksiItemId: item.itemId,
+                itemTotalPenalty += conditionPenalty
+                conditionBreakdown.push({
                   kondisiAkhir: condition.kondisiAkhir,
-                  conditionCategory: hasManualPricing ? condition.conditionCategory : 'BAIK',
                   jumlahKembali: condition.jumlahKembali,
                   penaltyAmount: conditionPenalty,
-                  manualPrice: hasManualPricing ? new Decimal(condition.manualPrice || 0) : null,
-                  useManualPricing: hasManualPricing ? condition.useManualPricing || false : false,
-                  modalAwalUsed: condition.modalAwal ? new Decimal(condition.modalAwal) : null,
-                  penaltyCalculation: {
-                    expectedReturnDate: returnDate,
-                    actualReturnDate: returnDate,
-                    calculationMethod: hasManualPricing
-                      ? (condition.useManualPricing ? 'manual_pricing' : 'flat_late')
-                      : (isLostItemCondition(condition.kondisiAkhir) ? 'modal_awal' : 'late_fee'),
-                    description: hasManualPricing
-                      ? `Enhanced processing: ${condition.conditionCategory} - ${condition.kondisiAkhir} (${condition.jumlahKembali} unit)`
-                      : `Unified processing: ${condition.kondisiAkhir} (${condition.jumlahKembali} unit)`,
+                })
+              }
+
+              // CRITICAL FIX: Use the same transaction data that was used for validation
+              // This ensures data consistency between validation and processing
+              const transactionItem = transactionForValidation.items.find(
+                (ti) => ti.id === item.itemId,
+              )
+
+              // Enhanced validation for transaction item
+              if (!transactionItem) {
+                console.error(
+                  'UnifiedReturnService',
+                  'processUnifiedReturn',
+                  'Transaction item not found during processing',
+                  {
+                    transactionId: transaksiId,
+                    itemId: item.itemId,
+                    availableTransactionItemIds: transactionForValidation.items.map((ti) => ti.id),
                   },
-                  createdBy: this.userId,
+                )
+                throw new Error(
+                  `Transaction item with ID ${item.itemId} not found in validation data. This indicates a validation consistency issue.`,
+                )
+              }
+
+              if (!transactionItem.produkId) {
+                console.error(
+                  'UnifiedReturnService',
+                  'processUnifiedReturn',
+                  'Transaction item has invalid productId',
+                  {
+                    transactionId: transaksiId,
+                    itemId: item.itemId,
+                    transactionItem: transactionItem,
+                  },
+                )
+                throw new Error(
+                  `Transaction item ${item.itemId} has invalid productId. Data corruption detected.`,
+                )
+              }
+
+              await tx.transaksiItem.update({
+                where: { id: item.itemId },
+                data: {
+                  statusKembali: 'lengkap',
+                  totalReturnPenalty: itemTotalPenalty,
+                  conditionCount: item.conditions.length, // Track complexity
                 },
               })
 
-              itemTotalPenalty += conditionPenalty
-              conditionBreakdown.push({
-                kondisiAkhir: condition.kondisiAkhir,
-                jumlahKembali: condition.jumlahKembali,
-                penaltyAmount: conditionPenalty,
+              // Update product stock (sum all returned quantities)
+              const totalReturned = item.conditions.reduce((sum, c) => sum + c.jumlahKembali, 0)
+
+              // FIX: Use new stock system - decrement rentedStock instead of increment quantity
+              // quantity remains unchanged (total inventory), rentedStock tracks rented items
+              await tx.product.update({
+                where: { id: transactionItem.produkId },
+                data: {
+                  rentedStock: { decrement: totalReturned },
+                },
+              })
+
+              console.info('📦 Stock updated on return', {
+                productId: transactionItem.produkId,
+                quantityReturned: totalReturned,
+                action: 'decrement_rentedStock',
+              })
+
+              processedItems.push({
+                itemId: item.itemId,
+                penalty: itemTotalPenalty,
+                kondisiAkhir:
+                  item.conditions.length === 1
+                    ? item.conditions[0].kondisiAkhir
+                    : 'multi-condition',
+                statusKembali: 'lengkap',
+                conditionBreakdown,
               })
             }
 
-            // CRITICAL FIX: Use the same transaction data that was used for validation
-            // This ensures data consistency between validation and processing
-            const transactionItem = transactionForValidation.items.find(
-              (ti) => ti.id === item.itemId,
+            return {
+              success: true,
+              transactionId: transaksiId,
+              returnedAt: returnDate,
+              penalty: penaltyCalculation.totalPenalty,
+              processedItems,
+              processingMode: 'unified' as const,
+            }
+          } catch (transactionError) {
+            console.error(
+              'UnifiedReturnService',
+              'processUnifiedReturn',
+              'Database transaction failed',
+              {
+                transactionId: transaksiId,
+                error:
+                  transactionError instanceof Error
+                    ? transactionError.message
+                    : 'Unknown transaction error',
+                stack: transactionError instanceof Error ? transactionError.stack : undefined,
+                itemCount: request.items.length,
+                totalConditions: request.items.reduce(
+                  (sum, item) => sum + item.conditions.length,
+                  0,
+                ),
+              },
             )
 
-            logger.debug('UnifiedReturnService', 'processUnifiedReturn', 'Found transaction item for processing', {
-              transactionId: transaksiId,
-              itemId: item.itemId,
-              found: !!transactionItem,
-              transactionItemId: transactionItem?.id || 'NOT_FOUND',
-              productId: transactionItem?.produkId || 'NO_PRODUCT_ID'
-            })
-
-            // Enhanced validation for transaction item
-            if (!transactionItem) {
-              logger.error('UnifiedReturnService', 'processUnifiedReturn', 'Transaction item not found during processing', {
-                transactionId: transaksiId,
-                itemId: item.itemId,
-                availableTransactionItemIds: transactionForValidation.items.map(ti => ti.id)
-              })
-              throw new Error(`Transaction item with ID ${item.itemId} not found in validation data. This indicates a validation consistency issue.`)
-            }
-
-            if (!transactionItem.produkId) {
-              logger.error('UnifiedReturnService', 'processUnifiedReturn', 'Transaction item has invalid productId', {
-                transactionId: transaksiId,
-                itemId: item.itemId,
-                transactionItem: transactionItem
-              })
-              throw new Error(`Transaction item ${item.itemId} has invalid productId. Data corruption detected.`)
-            }
-
-            // Update TransaksiItem with unified data
-            logger.debug('UnifiedReturnService', 'processUnifiedReturn', 'Updating TransaksiItem status', {
-              transactionId: transaksiId,
-              itemId: item.itemId,
-              currentStatus: transactionItem.statusKembali,
-              newStatus: 'lengkap',
-              totalReturnPenalty: itemTotalPenalty
-            })
-
-            await tx.transaksiItem.update({
-              where: { id: item.itemId },
-              data: {
-                statusKembali: 'lengkap',
-                totalReturnPenalty: itemTotalPenalty,
-                conditionCount: item.conditions.length, // Track complexity
-              },
-            })
-
-            logger.debug('UnifiedReturnService', 'processUnifiedReturn', 'TransaksiItem status updated successfully', {
-              transactionId: transaksiId,
-              itemId: item.itemId,
-              newStatus: 'lengkap'
-            })
-
-            // Update product stock (sum all returned quantities)
-            const totalReturned = item.conditions.reduce((sum, c) => sum + c.jumlahKembali, 0)
-
-            logger.debug('UnifiedReturnService', 'processUnifiedReturn', 'Updating product stock', {
-              transactionId: transaksiId,
-              itemId: item.itemId,
-              produkId: transactionItem.produkId,
-              totalReturned,
-              productName: transactionItem.produk?.name || 'Unknown'
-            })
-
-            await tx.product.update({
-              where: { id: transactionItem.produkId },
-              data: {
-                quantity: { increment: totalReturned },
-              },
-            })
-
-            processedItems.push({
-              itemId: item.itemId,
-              penalty: itemTotalPenalty,
-              kondisiAkhir:
-                item.conditions.length === 1 ? item.conditions[0].kondisiAkhir : 'multi-condition',
-              statusKembali: 'lengkap',
-              conditionBreakdown
-            })
-
-            logger.debug('UnifiedReturnService', 'processUnifiedReturn', 'Item added to processedItems', {
-              transactionId: transaksiId,
-              itemId: item.itemId,
-              currentProcessedItemsCount: processedItems.length,
-              itemTotalPenalty,
-              statusKembali: 'lengkap'
-            })
-          }
-
-          logger.debug('UnifiedReturnService', 'processUnifiedReturn', 'Database transaction completed', {
-            transactionId: transaksiId,
-            processedItemsCount: processedItems.length,
-            totalPenalty: penaltyCalculation.totalPenalty,
-            itemsProcessed: processedItems.map(item => ({ itemId: item.itemId, penalty: item.penalty }))
-          })
-
-          return {
-            success: true,
-            transactionId: transaksiId,
-            returnedAt: returnDate,
-            penalty: penaltyCalculation.totalPenalty,
-            processedItems,
-            processingMode: 'unified' as const,
-          }
-          } catch (transactionError) {
-            logger.error('UnifiedReturnService', 'processUnifiedReturn', 'Database transaction failed', {
-              transactionId: transaksiId,
-              error: transactionError instanceof Error ? transactionError.message : 'Unknown transaction error',
-              stack: transactionError instanceof Error ? transactionError.stack : undefined,
-              itemCount: request.items.length,
-              totalConditions: request.items.reduce((sum, item) => sum + item.conditions.length, 0)
-            })
-
-            throw new Error(`Database transaction failed: ${transactionError instanceof Error ? transactionError.message : 'Unknown error'}`)
+            throw new Error(
+              `Database transaction failed: ${transactionError instanceof Error ? transactionError.message : 'Unknown error'}`,
+            )
           }
         },
         { timeout: 15000 }, // Increased timeout for complex operations
@@ -839,21 +759,26 @@ export class UnifiedReturnService {
         tipe: 'dikembalikan',
         deskripsi: `Item returned: ${result.processedItems.length} items processed`,
         data: {
-          conditions: result.processedItems.map(item => ({
+          conditions: result.processedItems.map((item) => ({
             itemId: item.itemId,
             kondisiAkhir: item.kondisiAkhir,
-            jumlahKembali: item.conditionBreakdown?.reduce((sum, c) => sum + c.jumlahKembali, 0) || 1,
+            jumlahKembali:
+              item.conditionBreakdown?.reduce((sum, c) => sum + c.jumlahKembali, 0) || 1,
             penaltyAmount: item.penalty,
-            produkName: validation.transaction!.transaction.items.find(ti => ti.id === item.itemId)?.produk?.name || 'Unknown'
+            produkName:
+              validation.transaction!.transaction.items.find((ti) => ti.id === item.itemId)?.produk
+                ?.name || 'Unknown',
           })),
           totalPenalty: penaltyCalculation.totalPenalty,
-          itemsAffected: result.processedItems.map(item => 
-            validation.transaction!.transaction.items.find(ti => ti.id === item.itemId)?.produk?.name || 'Unknown'
+          itemsAffected: result.processedItems.map(
+            (item) =>
+              validation.transaction!.transaction.items.find((ti) => ti.id === item.itemId)?.produk
+                ?.name || 'Unknown',
           ),
           processingMode: result.processingMode,
           totalConditions: request.items.reduce((sum, item) => sum + item.conditions.length, 0),
-          timestamp: new Date().toISOString()
-        }
+          timestamp: new Date().toISOString(),
+        },
       })
 
       // Create penalty-specific activity if penalties exist
@@ -864,39 +789,28 @@ export class UnifiedReturnService {
           data: {
             totalPenalty: penaltyCalculation.totalPenalty,
             penaltyBreakdown: result.processedItems
-              .filter(item => item.penalty > 0)
-              .map(item => ({
+              .filter((item) => item.penalty > 0)
+              .map((item) => ({
                 itemId: item.itemId,
-                produkName: validation.transaction!.transaction.items.find(ti => ti.id === item.itemId)?.produk?.name || 'Unknown',
+                produkName:
+                  validation.transaction!.transaction.items.find((ti) => ti.id === item.itemId)
+                    ?.produk?.name || 'Unknown',
                 penaltyAmount: item.penalty,
-                conditions: item.conditionBreakdown?.map(c => ({
-                  kondisiAkhir: c.kondisiAkhir,
-                  penaltyAmount: c.penaltyAmount
-                })) || []
+                conditions:
+                  item.conditionBreakdown?.map((c) => ({
+                    kondisiAkhir: c.kondisiAkhir,
+                    penaltyAmount: c.penaltyAmount,
+                  })) || [],
               })),
             calculationMethod: 'condition-based',
-            timestamp: new Date().toISOString()
-          }
+            timestamp: new Date().toISOString(),
+          },
         })
       }
 
-      logger.info(
-        'UnifiedReturnService',
-        'processUnifiedReturn',
-        'Unified return processing completed successfully',
-        {
-          transactionId: transaksiId,
-          totalPenalty: penaltyCalculation.totalPenalty,
-          itemsProcessed: request.items.length,
-          conditionsProcessed: request.items.reduce((sum, item) => sum + item.conditions.length, 0),
-          processingTime: Date.now() - startTime,
-          activitiesCreated: penaltyCalculation.totalPenalty > 0 ? 2 : 1
-        },
-      )
-
       return result
     } catch (error) {
-      logger.error(
+      console.error(
         'UnifiedReturnService',
         'processUnifiedReturn',
         'Unified return processing failed',
@@ -925,21 +839,6 @@ export class UnifiedReturnService {
     // Convert legacy format to unified format
     const unifiedRequest = this.convertLegacyRequest(legacyRequest)
 
-    // Log legacy compatibility usage for monitoring
-    logger.info(
-      'UnifiedReturnService',
-      'processLegacyReturn',
-      'Processing legacy return request through unified interface',
-      {
-        transactionId: transaksiId,
-        legacyItemCount: legacyRequest.items.length,
-        convertedConditionCount: unifiedRequest.items.reduce(
-          (sum, item) => sum + item.conditions.length,
-          0,
-        ),
-      },
-    )
-
     // Process through unified interface
     return await this.processUnifiedReturn(transaksiId, unifiedRequest)
   }
@@ -951,7 +850,7 @@ export class UnifiedReturnService {
     try {
       return await this.transaksiService.getTransaksiByCode(transactionCode)
     } catch (error) {
-      logger.error(
+      console.error(
         'UnifiedReturnService',
         'getReturnTransactionByCode',
         'Failed to fetch transaction',

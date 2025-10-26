@@ -6,6 +6,7 @@
 
 import { z } from 'zod'
 import { parseKondisiAwal } from '../utils/kondisiAwalParser'
+import { ConditionCategory } from '../../types'
 
 // Utility functions for unified return validation
 export const isLostItemCondition = (kondisiAkhir: string): boolean => {
@@ -51,6 +52,19 @@ export const unifiedConditionSchema = z
       .min(0, 'Jumlah kembali tidak boleh negatif')
       .max(999, 'Jumlah kembali maksimal 999'),
     modalAwal: z.number().positive('Modal awal harus bernilai positif').optional(), // Optional, will use product modalAwal if not provided
+
+    // ✅ ADDED: Manual pricing fields (RPK-PENALTY-001 fix)
+    conditionCategory: z
+      .enum([
+        ConditionCategory.BAIK,
+        ConditionCategory.KOTOR,
+        ConditionCategory.RUSAK_RINGAN,
+        ConditionCategory.RUSAK_BERAT,
+        ConditionCategory.HILANG,
+      ])
+      .optional(),
+    manualPrice: z.number().min(0, 'Manual price tidak boleh negatif').optional(),
+    useManualPricing: z.boolean().optional(),
   })
   .refine(
     (data) => {
@@ -343,7 +357,7 @@ export const validateSizeAvailability = (
       id: string
       name: string
     }
-  }>
+  }>,
 ): Array<{ itemId: string; field: string; message: string; code: string }> => {
   const errors: Array<{ itemId: string; field: string; message: string; code: string }> = []
 
@@ -372,9 +386,11 @@ export const validateSizeAvailability = (
 }
 
 // Enhanced error message generator for size-related validation errors
-export const getSizeValidationErrorMessage = (
-  error: { field: string; message: string; code: string }
-): { message: string; suggestions: string[] } => {
+export const getSizeValidationErrorMessage = (error: {
+  field: string
+  message: string
+  code: string
+}): { message: string; suggestions: string[] } => {
   switch (error.code) {
     case 'SIZE_NOT_AVAILABLE':
       return {
@@ -383,7 +399,7 @@ export const getSizeValidationErrorMessage = (
           'Periksa kembali ukuran yang tersedia untuk produk ini',
           'Pastikan ukuran yang dipilih tersedia dalam inventaris',
           'Gunakan ukuran yang sesuai dengan produk yang disewa',
-        ]
+        ],
       }
     case 'SIZE_INFO_MISSING':
       return {
@@ -392,7 +408,7 @@ export const getSizeValidationErrorMessage = (
           'Refresh halaman dan coba kembali',
           'Pastikan data transaksi memiliki informasi ukuran yang lengkap',
           'Hubungi admin jika masalah berlanjut',
-        ]
+        ],
       }
     case 'SIZE_VALIDATION_ERROR':
       return {
@@ -401,7 +417,7 @@ export const getSizeValidationErrorMessage = (
           'Coba lagi beberapa saat',
           'Periksa koneksi internet Anda',
           'Hubungi admin jika masalah berlanjut',
-        ]
+        ],
       }
     default:
       return {

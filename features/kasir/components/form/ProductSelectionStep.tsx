@@ -48,9 +48,15 @@ export function ProductSelectionStep({
     maxPrice: undefined,
   })
   const [showCart, setShowCart] = useState(false)
-  // Pagination state
+  // Pagination state - FIXED: Use pageSize from filters state for consistency
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(12)
+
+  // Dynamic page size calculation based on current data
+  const availablePageSizes = [12, 24, 48]
+  const getOptimalPageSize = (totalItems: number) => {
+    return availablePageSizes.find(size => size >= totalItems) || 12
+  }
 
   // Debug logging for props
   useEffect(() => {}, [selectedProducts, canProceed])
@@ -146,9 +152,18 @@ export function ProductSelectionStep({
     setCurrentPage(newPage)
   }
 
+
+  // Enhanced page size handler with dynamic optimization
   const handlePageSizeChange = (newSize: number) => {
     setPageSize(newSize)
-    setCurrentPage(1) // Reset to first page when changing page size
+
+    // Calculate optimal page size based on current data
+    const optimalPageSize = getOptimalPageSize(totalItems)
+
+    // Only change page size if it's different from current optimal
+    if (newSize !== optimalPageSize) {
+      setCurrentPage(1) // Reset to first page for consistency
+    }
   }
 
   const totalPages = productsResponse?.pagination?.totalPages || 1
@@ -188,9 +203,25 @@ export function ProductSelectionStep({
                 className="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
                 data-testid="page-size-selector"
               >
-                <option value={12}>12 per halaman</option>
-                <option value={24}>24 per halaman</option>
-                <option value={48}>48 per halaman</option>
+                {availablePageSizes.map((size) => (
+                  <option
+                    key={size}
+                    value={size}
+                    disabled={size > totalItems}
+                  >
+                    {size} {size > totalItems ? `${size} (tidak cukup data)` : `${size} per halaman`}
+                  </option>
+                ))}
+                {/* Show all option for cases where totalItems exceeds largest size */}
+                {totalItems > Math.max(...availablePageSizes) && (
+                  <option
+                    key="show-all"
+                    value={Math.max(...availablePageSizes)}
+                    disabled={false}
+                  >
+                    Show All ({totalItems} items)
+                  </option>
+                )}
               </select>
               <Button
                 variant="outline"

@@ -131,9 +131,10 @@ export class PickupService {
 
       // 2. Process pickup in atomic transaction
       const result = await this.prisma.$transaction(async (tx) => {
-        // Update each item's pickup quantity AND increment Product.rentedStock
+        // Update each item's pickup quantity
+        // NOTE: rentedStock is already incremented during transaction creation
+        // So we don't need to increment it again during pickup
         for (const pickupItem of items) {
-          // Update transaction item pickup count
           await tx.transaksiItem.update({
             where: { id: pickupItem.id },
             data: {
@@ -141,34 +142,6 @@ export class PickupService {
                 increment: pickupItem.jumlahDiambil
               }
             }
-          })
-
-          // FIX: Increment Product.rentedStock when items are picked up
-          // Get the transaction item to know which product
-          const transaksiItem = await tx.transaksiItem.findUnique({
-            where: { id: pickupItem.id },
-            select: { produkId: true }
-          })
-
-          if (!transaksiItem) {
-            throw new Error(`Transaction item ${pickupItem.id} not found`)
-          }
-
-          // Increment Product.rentedStock to track rented inventory
-          await tx.product.update({
-            where: { id: transaksiItem.produkId },
-            data: {
-              rentedStock: {
-                increment: pickupItem.jumlahDiambil
-              }
-            }
-          })
-
-          console.info('📦 Stock updated on pickup', {
-            pickupItemId: pickupItem.id,
-            productId: transaksiItem.produkId,
-            quantityPickedUp: pickupItem.jumlahDiambil,
-            action: 'increment_rentedStock'
           })
         }
 
