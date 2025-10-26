@@ -13,6 +13,7 @@ import {
   CheckCircle as CheckIcon,
   Info,
   RotateCcw,
+  XCircle,
 } from 'lucide-react'
 
 // Transaction Status Configuration
@@ -63,6 +64,7 @@ export const actionIcons = {
   overdue: AlertTriangle,
   reminder_sent: MessageCircle,
   penalty_added: AlertTriangle,
+  cancelled: XCircle,
 }
 
 export const actionColors = {
@@ -73,6 +75,7 @@ export const actionColors = {
   overdue: 'text-red-600 bg-red-100',
   reminder_sent: 'text-yellow-600 bg-yellow-100',
   penalty_added: 'text-red-600 bg-red-100',
+  cancelled: 'text-gray-600 bg-gray-100',
 }
 
 // Notification Styles Configuration

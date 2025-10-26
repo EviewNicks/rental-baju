@@ -921,19 +921,48 @@ export class TransaksiService {
           await this.restoreProductQuantities(tx, id, 'returned')
         }
 
-        // Create activity log
-        await tx.aktivitasTransaksi.create({
-          data: {
-            transaksiId: id,
-            tipe: this.getActivityTypeFromStatus(data.status),
-            deskripsi: `Status transaksi diubah menjadi ${data.status}`,
+        // Create activity log with enhanced data for cancellation
+        if (data.status === 'cancelled') {
+          // Get items count for detailed logging
+          const itemsCount = await tx.transaksiItem.count({
+            where: { transaksiId: id }
+          })
+
+          await tx.aktivitasTransaksi.create({
             data: {
-              previousStatus: existingTransaksi.status,
-              newStatus: data.status,
+              transaksiId: id,
+              tipe: 'dibatalkan',
+              deskripsi: `Transaksi dibatalkan: ${data.catatan || 'Tanpa alasan'}`,
+              data: {
+                previousStatus: existingTransaksi.status,
+                newStatus: 'cancelled',
+                reason: data.catatan || null,
+                totalAmount: existingTransaksi.totalHarga.toString(),
+                amountPaid: existingTransaksi.jumlahBayar.toString(),
+                remainingAmount: existingTransaksi.sisaBayar.toString(),
+                itemsCount: itemsCount,
+                stockRestored: true,
+                cancelledAt: new Date().toISOString(),
+                needsRefund: existingTransaksi.jumlahBayar.gt(0)
+              },
+              createdBy: this.userId,
             },
-            createdBy: this.userId,
-          },
-        })
+          })
+        } else {
+          // Regular status change logging
+          await tx.aktivitasTransaksi.create({
+            data: {
+              transaksiId: id,
+              tipe: this.getActivityTypeFromStatus(data.status),
+              deskripsi: `Status transaksi diubah menjadi ${data.status}`,
+              data: {
+                previousStatus: existingTransaksi.status,
+                newStatus: data.status,
+              },
+              createdBy: this.userId,
+            },
+          })
+        }
       }
 
       return updated
