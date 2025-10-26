@@ -1,0 +1,57 @@
+[
+  {
+    "code": "BBT01",
+    "name": "Bando Bunga Titik",
+    "description": "Bando bunga motif titik elegan - Universal size",
+    "modalAwal": 50000,
+    "currentPrice": 50000,
+    "quantity": 1,
+    "categoryId": "97b38cbf-1522-480a-ad9f-39bb4884b8a8",
+    "imageUrl": "/products/accesories.png",
+    "sizes": [{ "ageCategory": "UNIVERSAL", "size": "UNIVERSAL", "quantity": 1 }]
+  },
+  {
+    "code": "BBL01",
+    "name": "Bando Bunga Lengkung",
+    "description": "Bando bunga desain lengkung - Universal size",
+    "modalAwal": 50000,
+    "currentPrice": 50000,
+    "quantity": 1,
+    "categoryId": "97b38cbf-1522-480a-ad9f-39bb4884b8a8",
+    "imageUrl": "/products/accesories.png",
+    "sizes": [{ "ageCategory": "UNIVERSAL", "size": "UNIVERSAL", "quantity": 1 }]
+  },
+  {
+    "code": "BBA01",
+    "name": "Bando Bunga Anting",
+    "description": "Bando bunga dengan aksen anting - Universal size",
+    "modalAwal": 50000,
+    "currentPrice": 50000,
+    "quantity": 1,
+    "categoryId": "97b38cbf-1522-480a-ad9f-39bb4884b8a8",
+    "imageUrl": "/products/accesories.png",
+    "sizes": [{ "ageCategory": "UNIVERSAL", "size": "UNIVERSAL", "quantity": 1 }]
+  },
+  {
+    "code": "BBB01",
+    "name": "Bando Bunga Besar",
+    "description": "Bando bunga ukuran besar - Universal size",
+    "modalAwal": 50000,
+    "currentPrice": 50000,
+    "quantity": 1,
+    "categoryId": "97b38cbf-1522-480a-ad9f-39bb4884b8a8",
+    "imageUrl": "/products/accesories.png",
+    "sizes": [{ "ageCategory": "UNIVERSAL", "size": "UNIVERSAL", "quantity": 1 }]
+  },
+  {
+    "code": "BBE01",
+    "name": "Bando Bunga Emas",
+    "description": "Bando bunga warna emas mewah - Universal size",
+    "modalAwal": 150000,
+    "currentPrice": 150000,
+    "quantity": 1,
+    "categoryId": "97b38cbf-1522-480a-ad9f-39bb4884b8a8",
+    "imageUrl": "/products/accesories.png",
+    "sizes": [{ "ageCategory": "UNIVERSAL", "size": "UNIVERSAL", "quantity": 1 }]
+  }
+]

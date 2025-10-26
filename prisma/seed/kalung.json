@@ -1,0 +1,24 @@
+[
+  {
+    "code": "KMP01",
+    "name": "Kalung Mutiara Putih",
+    "description": "Kalung mutiara putih elegan - Universal size",
+    "modalAwal": 30000,
+    "currentPrice": 30000,
+    "quantity": 2,
+    "categoryId": "66b2c4c3-44bb-4165-9d0f-27bff4ab9e74",
+    "imageUrl": "/products/accesories.png",
+    "sizes": [{ "ageCategory": "UNIVERSAL", "size": "UNIVERSAL", "quantity": 2 }]
+  },
+  {
+    "code": "KMM01",
+    "name": "Kalung Mutiara Merah",
+    "description": "Kalung mutiara merah menarik - Universal size",
+    "modalAwal": 30000,
+    "currentPrice": 30000,
+    "quantity": 2,
+    "categoryId": "66b2c4c3-44bb-4165-9d0f-27bff4ab9e74",
+    "imageUrl": "/products/accesories.png",
+    "sizes": [{ "ageCategory": "UNIVERSAL", "size": "UNIVERSAL", "quantity": 2 }]
+  }
+]

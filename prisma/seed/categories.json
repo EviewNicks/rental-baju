@@ -99,7 +99,7 @@
     {
       "name": "sarung",
       "color": "#EA580C",
-      "type": "accessories_universal",
+      "type": "accessories_age_based",
       "createdAt": "2025-10-25T10:00:00.000Z",
       "updatedAt": "2025-10-25T10:00:00.000Z",
       "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
