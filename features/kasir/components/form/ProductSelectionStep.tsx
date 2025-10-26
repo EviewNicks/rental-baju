@@ -2,8 +2,6 @@
 
 import { useState, useMemo, useEffect } from 'react'
 import {
-  Search,
-  Filter,
   ShoppingCart,
   Plus,
   Minus,
@@ -13,11 +11,11 @@ import {
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react'
-import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ProductCard } from '../ui/product-card'
-import type { Product, ProductFilters, ProductSelection } from '../../types'
+import { KasirFilterBar } from '../ui/KasirFilterBar'
+import type { Product, ProductSelection, KasirFilters } from '../../types'
 import { useAvailableProducts } from '../../hooks/useProduk'
 import { formatCurrency } from '../../lib/utils/client'
 import { cn } from '@/lib/utils'
@@ -40,15 +38,16 @@ export function ProductSelectionStep({
   onNext,
   canProceed,
 }: ProductSelectionStepProps) {
-  const [filters, setFilters] = useState<ProductFilters>({
-    category: 'semua',
-    size: 'semua',
+  const [filters, setFilters] = useState<KasirFilters>({
     search: '',
-    available: true,
+    categoryId: '',
+    status: '',
+    sortBy: 'name',
+    sortOrder: 'asc',
+    minPrice: undefined,
+    maxPrice: undefined,
   })
   const [showCart, setShowCart] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
-
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(12)
@@ -56,29 +55,32 @@ export function ProductSelectionStep({
   // Debug logging for props
   useEffect(() => {}, [selectedProducts, canProceed])
 
-  // Fetch products from API with pagination
+  // Fetch products from API with enhanced filters
   const {
     data: productsResponse,
     isLoading,
     error,
     refetch,
   } = useAvailableProducts({
-    search: searchQuery,
-    available: true,
+    search: filters.search,
+    categoryId: filters.categoryId,
+    status: filters.status as 'AVAILABLE' | 'RENTED' | undefined,
+    sortBy: filters.sortBy,
+    sortOrder: filters.sortOrder,
+    minPrice: filters.minPrice,
+    maxPrice: filters.maxPrice,
+    available: true, // Default to available for kasir workflow
     page: currentPage,
     limit: pageSize,
   })
 
-  // Debug API loading state
-  useEffect(() => {}, [isLoading, error, productsResponse, searchQuery])
-
-  // Extract products and transform API data to match component interface
-  const apiProducts = useMemo(() => {
+  // Transform API data to match component interface
+  const products = useMemo(() => {
     if (!productsResponse?.data) {
       return []
     }
 
-    const transformedProducts = productsResponse.data.map(
+    return productsResponse.data.map(
       (apiProduct): Product => ({
         id: apiProduct.id,
         name: apiProduct.name,
@@ -97,51 +99,7 @@ export function ProductSelectionStep({
         supportsSizeSelection: (apiProduct.sizes?.length ?? 0) > 0,
       }),
     )
-
-    return transformedProducts
   }, [productsResponse])
-
-  // Extract unique categories, sizes, and colors from API data
-  const categories = useMemo(() => {
-    const uniqueCategories = [...new Set(apiProducts.map((p) => p.category))]
-    return ['semua', ...uniqueCategories]
-  }, [apiProducts])
-
-  const sizes = useMemo(() => {
-    const uniqueSizes = [...new Set(apiProducts.map((p) => p.size).filter(Boolean))]
-    return ['semua', ...uniqueSizes]
-  }, [apiProducts])
-
-  // Handle search with debouncing
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      setSearchQuery(filters.search || '')
-    }, 300)
-
-    return () => clearTimeout(timeoutId)
-  }, [filters.search])
-
-  const filteredProducts = useMemo(() => {
-    return apiProducts.filter((product) => {
-      if (
-        filters.category &&
-        filters.category !== 'semua' &&
-        product.category !== filters.category
-      ) {
-        return false
-      }
-      if (filters.size && filters.size !== 'semua' && product.size !== filters.size) {
-        return false
-      }
-      if (filters.color && filters.color !== 'semua' && product.color !== filters.color) {
-        return false
-      }
-      if (filters.available && !product.available) {
-        return false
-      }
-      return true
-    })
-  }, [apiProducts, filters])
 
   const getSelectedQuantity = (productId: string) => {
     const selected = selectedProducts.find((item) => item.product.id === productId)
@@ -201,76 +159,13 @@ export function ProductSelectionStep({
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-6" data-testid="product-selection-layout">
       {/* Main Content */}
       <div className="lg:col-span-3 space-y-6" data-testid="product-selection-main-content">
-        {/* Filters */}
-        <div
-          className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-6 space-y-4"
-          data-testid="product-filters-section"
-        >
-          <div className="flex items-center gap-2 text-lg font-semibold text-gray-900">
-            <Filter className="h-5 w-5" />
-            Filter Produk
-          </div>
-
-          {/* Search */}
-          <div className="relative" data-testid="product-search-container">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-            <Input
-              placeholder="Cari produk..."
-              value={filters.search || ''}
-              onChange={(e) => setFilters((prev) => ({ ...prev, search: e.target.value }))}
-              className="pl-10"
-              data-testid="product-search-input"
-            />
-          </div>
-
-          {/* Filter Buttons */}
-          <div className="space-y-4" data-testid="product-filter-buttons">
-            <div data-testid="category-filter-section">
-              <div className="text-sm font-medium text-gray-700 mb-2">Kategori</div>
-              <div className="flex flex-wrap gap-2" data-testid="category-filter-buttons">
-                {categories.map((category) => (
-                  <Button
-                    key={category}
-                    size="sm"
-                    variant={filters.category === category ? 'default' : 'outline'}
-                    onClick={() => setFilters((prev) => ({ ...prev, category }))}
-                    className={cn(
-                      'text-xs capitalize',
-                      filters.category === category &&
-                        'bg-yellow-400 text-gray-900 hover:bg-yellow-500',
-                    )}
-                    data-testid={`category-filter-${category}`}
-                  >
-                    {category}
-                  </Button>
-                ))}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div data-testid="size-filter-section">
-                <div className="text-sm font-medium text-gray-700 mb-2">Ukuran</div>
-                <div className="flex flex-wrap gap-2" data-testid="size-filter-buttons">
-                  {sizes.map((size) => (
-                    <Button
-                      key={size}
-                      size="sm"
-                      variant={filters.size === size ? 'default' : 'outline'}
-                      onClick={() => setFilters((prev) => ({ ...prev, size }))}
-                      className={cn(
-                        'text-xs',
-                        filters.size === size && 'bg-yellow-400 text-gray-900 hover:bg-yellow-500',
-                      )}
-                      data-testid={`size-filter-${size}`}
-                    >
-                      {size}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        {/* Enhanced Filters for Kasir Workflow */}
+        <KasirFilterBar
+          filters={filters}
+          onFiltersChange={setFilters}
+          isLoading={isLoading}
+          productCount={totalItems}
+        />
 
         {/* Products Grid */}
         <div
@@ -341,12 +236,12 @@ export function ProductSelectionStep({
           {/* Products Content */}
           {!isLoading && !error && (
             <>
-              {filteredProducts.length > 0 ? (
+              {products.length > 0 ? (
                 <div
                   className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4"
                   data-testid="products-grid"
                 >
-                  {filteredProducts.map((product) => (
+                  {products.map((product) => (
                     <div key={product.id} data-testid={`product-card-${product.id}`}>
                       <ProductCard
                         product={product}

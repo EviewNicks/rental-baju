@@ -22,7 +22,6 @@ export function toClientProduct(product: any, skipCategory = false): ClientProdu
     rentedStock: product.rentedStock || 0,
     status: product.status || 'AVAILABLE',
     imageUrl: product.imageUrl || '',
-    totalPendapatan: toSafeNumber(product.totalPendapatan),
     isActive: product.isActive ?? true,
     sizes: product.sizes || [], // Add sizes property for backward compatibility
     materialId: product.materialId || undefined, // Material ID field

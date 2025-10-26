@@ -71,7 +71,7 @@ export function ProductListPage() {
     if (!isLoading && currentPage > pagination.totalPages && pagination.totalPages > 0) {
       updateQueryParams({ page: '1' })
     }
-  }, [currentPage, pagination.totalPages, isLoading])
+  }, [currentPage, pagination.totalPages, isLoading, updateQueryParams])
 
   // Navigation handlers
   const handleAddProduct = () => {

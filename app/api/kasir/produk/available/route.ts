@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
       return authResult.error
     }
 
-    // Parse query parameters
+    // Parse query parameters with enhanced filters for kasir workflow
     const { searchParams } = new URL(request.url)
     const queryParams = {
       page: searchParams.get('page') || '1',
@@ -37,12 +37,18 @@ export async function GET(request: NextRequest) {
       categoryId: searchParams.get('categoryId') || undefined,
       available: searchParams.get('available') !== 'false', // default true
       size: searchParams.getAll('size').length > 0 ? searchParams.getAll('size') : undefined,
+      // Enhanced filters for kasir workflow
+      status: searchParams.get('status') as 'AVAILABLE' | 'RENTED' | undefined,
+      sortBy: searchParams.get('sortBy') || 'name',
+      sortOrder: searchParams.get('sortOrder') as 'asc' | 'desc' || 'asc',
+      minPrice: searchParams.get('minPrice') ? Number(searchParams.get('minPrice')) : undefined,
+      maxPrice: searchParams.get('maxPrice') ? Number(searchParams.get('maxPrice')) : undefined,
     }
 
     // Validate query parameters
     const validatedQuery = productAvailabilityQuerySchema.parse(queryParams)
 
-    const { page, limit, search, categoryId, available, size } = validatedQuery
+    const { page, limit, search, categoryId, available, size, status, sortBy, sortOrder, minPrice, maxPrice } = validatedQuery
     const skip = (page - 1) * limit
 
     // Build where clause
@@ -76,6 +82,24 @@ export async function GET(request: NextRequest) {
       whereClause.size = { in: size }
     }
 
+    // Enhanced filters for kasir workflow
+    // Price range filter
+    const priceFilter: Record<string, unknown> = {}
+    if (minPrice !== undefined) {
+      priceFilter.gte = minPrice
+    }
+    if (maxPrice !== undefined) {
+      priceFilter.lte = maxPrice
+    }
+    if (Object.keys(priceFilter).length > 0) {
+      whereClause.currentPrice = priceFilter
+    }
+
+    // Status override for explicit status filter
+    if (status) {
+      whereClause.status = status
+    }
+
   
     // Get products with related data including ProductSize information
     const [products, allProducts] = await Promise.all([
@@ -83,7 +107,12 @@ export async function GET(request: NextRequest) {
         skip,
         take: limit,
         where: whereClause,
-        orderBy: [{ name: 'asc' }, { createdAt: 'desc' }],
+        // Enhanced sorting for kasir workflow
+        orderBy: [
+          { [sortBy]: sortOrder },
+          { name: 'asc' }, // Secondary sort for consistency
+          { createdAt: 'desc' }
+        ],
         include: {
           category: {
             select: {

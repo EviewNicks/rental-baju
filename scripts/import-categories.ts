@@ -14,7 +14,6 @@ import * as fs from 'fs'
 import * as path from 'path'
 
 const isDryRun = process.env.DRY_RUN === 'true'
-const DEFAULT_USER_ID = process.env.IMPORT_USER_ID || 'system_import'
 
 interface CategoryData {
   id: string
@@ -45,14 +44,14 @@ async function validateCategoryType(type: string): Promise<boolean> {
 }
 
 async function checkDuplicateNames(categories: CategoryData[]): Promise<string[]> {
-  const names = categories.map(c => c.name.toLowerCase())
+  const names = categories.map((c) => c.name.toLowerCase())
   const existingCategories = await prisma.category.findMany({
     where: {
       name: { in: names },
     },
     select: { name: true },
   })
-  return existingCategories.map(c => c.name.toLowerCase())
+  return existingCategories.map((c) => c.name.toLowerCase())
 }
 
 async function importCategories(): Promise<ImportResult> {
@@ -62,7 +61,7 @@ async function importCategories(): Promise<ImportResult> {
     imported: 0,
     skipped: 0,
     failed: 0,
-    errors: []
+    errors: [],
   }
 
   try {
@@ -99,7 +98,9 @@ async function importCategories(): Promise<ImportResult> {
     for (const category of categories) {
       const isValidType = await validateCategoryType(category.type)
       if (!isValidType) {
-        throw new Error(`Invalid category type "${category.type}" for category "${category.name}". Valid types: clothing, accessories_age_based, accessories_universal`)
+        throw new Error(
+          `Invalid category type "${category.type}" for category "${category.name}". Valid types: clothing, accessories_age_based, accessories_universal`,
+        )
       }
     }
     console.log('✅ All category types are valid')
@@ -155,6 +156,7 @@ async function importCategories(): Promise<ImportResult> {
               id: category.id,
               name: category.name,
               color: category.color,
+              //eslint-disable-next-line @typescript-eslint/no-explicit-any
               type: category.type as any, // Cast to any to avoid type issues
               createdAt: new Date(category.createdAt),
               updatedAt: new Date(category.updatedAt),
@@ -165,7 +167,6 @@ async function importCategories(): Promise<ImportResult> {
 
         console.log(`   ✅ Success`)
         result.imported++
-
       } catch (error) {
         console.log(`   ❌ Failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
         result.failed++
@@ -179,7 +180,6 @@ async function importCategories(): Promise<ImportResult> {
 
     console.log('')
     console.log('✅ IMPORT COMPLETE')
-
   } catch (error) {
     console.error('')
     console.error('❌ IMPORT FAILED')
@@ -221,7 +221,6 @@ async function main() {
     }
 
     process.exit(0)
-
   } catch (error) {
     console.error('')
     console.error('❌ Fatal error:', error)

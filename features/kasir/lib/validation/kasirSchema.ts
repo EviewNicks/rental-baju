@@ -190,7 +190,7 @@ export const createPembayaranSchema = z.object({
   catatan: z.string().max(500, 'Catatan maksimal 500 karakter').optional()
 })
 
-// Product Availability Query Schema
+// Product Availability Query Schema - Enhanced for Kasir Workflow
 export const productAvailabilityQuerySchema = z.object({
   page: z.coerce.number().min(1).default(1),
   limit: z.coerce.number().min(1).max(100).default(10),
@@ -198,6 +198,12 @@ export const productAvailabilityQuerySchema = z.object({
   categoryId: z.string().uuid().optional(),
   available: z.coerce.boolean().default(true),
   size: z.union([z.string(), z.array(z.string())]).optional(),
+  // Enhanced filters for kasir workflow
+  status: z.enum(['AVAILABLE', 'RENTED']).optional(), // Product status filter
+  sortBy: z.enum(['name', 'price', 'createdAt', 'quantity']).default('name'), // Sorting options
+  sortOrder: z.enum(['asc', 'desc']).default('asc'), // Sort direction
+  minPrice: z.coerce.number().min(0).optional(), // Price range minimum
+  maxPrice: z.coerce.number().min(0).optional(), // Price range maximum
   }).transform((data) => ({
   ...data,
   size: Array.isArray(data.size) ? data.size : data.size ? [data.size] : undefined,

@@ -166,6 +166,21 @@ export interface ProductFilters {
   available?: boolean
 }
 
+// Enhanced filters for kasir workflow - RPK-52 Optimization
+export interface KasirFilters {
+  search?: string
+  categoryId?: string
+  status?: 'AVAILABLE' | 'RENTED' | ''
+  sortBy?: 'name' | 'price' | 'quantity' | 'createdAt'
+  sortOrder?: 'asc' | 'desc'
+  minPrice?: number
+  maxPrice?: number
+  // Additional properties for pagination and size filtering
+  page?: number
+  limit?: number
+  size?: string[]
+}
+
 // ==========================================
 // TRANSACTION TYPES - BASE INTERFACES
 // ==========================================
