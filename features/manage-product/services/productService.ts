@@ -1273,7 +1273,7 @@ export class ProductService {
    * Expected pattern: Multiple sizes (S, M, L, XL, etc.) with ADULT age category
    */
   private validateClothingSizes(sizes: CreateProductSizeRequest[]): void {
-    const validSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
+    const validSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'UNIVERSAL']
 
     for (const size of sizes) {
       // Validate size enum

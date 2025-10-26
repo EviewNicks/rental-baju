@@ -36,13 +36,17 @@ async function main() {
 
         console.log(`✅ Created/Updated: ${category.name}`)
       } catch (error) {
-        console.error(`❌ Error seeding category ${category.name}:`, error.message)
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+        console.error(`❌ Error seeding category ${category.name}:`, errorMessage)
+        console.error('   Full error:', error)
       }
     }
 
     console.log('✅ All categories seeded successfully!')
   } catch (error) {
-    console.error('❌ Error reading categories file:', error.message)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    console.error('❌ Error reading categories file:', errorMessage)
+    console.error('   Full error:', error)
     process.exit(1)
   }
 }

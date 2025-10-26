@@ -1,7 +1,7 @@
 {
     "categories": [
         {
-            "id": "c5d6e7f8-0b1c-2d3e-4f5a-6b7c-8d9e-0f2a3b4c5d6",
+            "id": "dfd0eae4-3824-4c7c-a98f-e848d8427dec",
             "name": "anting",
             "color": "#9333EA",
             "type": "accessories_universal",
@@ -11,17 +11,7 @@
             "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
         },
         {
-            "id": "a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d",
-            "name": "renda",
-            "color": "#3B82F6",
-            "type": "clothing",
-            "products": [],
-            "createdAt": "2025-10-25T10:00:00.000Z",
-            "updatedAt": "2025-10-25T10:00:00.000Z",
-            "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
-        },
-        {
-            "id": "e1f2a3b4-5c6d-7e8f-0b1c-2d3e-4f5a6b7c8d9",
+            "id": "97b38cbf-1522-480a-ad9f-39bb4884b8a8",
             "name": "bando-besar",
             "color": "#F59E0B",
             "type": "accessories_universal",
@@ -31,7 +21,7 @@
             "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
         },
         {
-            "id": "f2a3b4c5-6d7e-8f0b-1c2d-3e4f-5a6b7c8d9e0",
+            "id": "14b73ba0-2827-4d64-8f65-48b26eec04cd",
             "name": "bando-kecil",
             "color": "#F97316",
             "type": "accessories_universal",
@@ -41,7 +31,7 @@
             "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
         },
         {
-            "id": "e07a1b65-4a36-458a-8ab0-45e8e95aac23",
+            "id": "d2be3801-6f42-4071-9c91-3a75220b0c58",
             "name": "Dress",
             "color": "#FF5733",
             "type": "clothing",
@@ -51,7 +41,7 @@
             "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
         },
         {
-            "id": "b2c3d4e5-6f7a-8b9c-0d1e-2f3a4b5c6d7e",
+            "id": "43b642f2-31ee-4c5f-a0dc-b9cd50a253d3",
             "name": "gamis-anak",
             "color": "#10B981",
             "type": "clothing",
@@ -61,7 +51,7 @@
             "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
         },
         {
-            "id": "d4e5f6a7-8b9c-0d1e-2f3a-4b5c6d7e8f0a",
+            "id": "87b90fc8-23fd-42fd-bab4-cb832f3b58fe",
             "name": "gamis-dewasa",
             "color": "#1E40AF",
             "type": "clothing",
@@ -71,7 +61,7 @@
             "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
         },
         {
-            "id": "c3d4e5f6-7a8b-9c0d-1e2f-3a4b5c6d7e8f",
+            "id": "7e447c17-6fdf-4208-83b9-60a5d5295b17",
             "name": "gamis-tanggung",
             "color": "#059669",
             "type": "clothing",
@@ -81,7 +71,7 @@
             "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
         },
         {
-            "id": "a3b4c5d6-7e8f-0b1c-2d3e-4f5a-6b7c8d9e0f1",
+            "id": "03975bb2-a00b-4146-9bd9-cb13a4b197f0",
             "name": "gelang",
             "color": "#CA8A04",
             "type": "accessories_universal",
@@ -91,7 +81,7 @@
             "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
         },
         {
-            "id": "e5f6a7b8-9c0d-1e2f-3a4b-5c6d7e8f0b1c",
+            "id": "67195c78-1536-4783-946d-650b8a0c597b",
             "name": "jas-jaguar",
             "color": "#1F2937",
             "type": "clothing",
@@ -101,7 +91,7 @@
             "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
         },
         {
-            "id": "f6a7b8c9-0d1e-2f3a-4b5c-6d7e-8f0b1c2d3e",
+            "id": "3f6feeab-74f3-4283-b488-1e62670b1b0c",
             "name": "jas-polos",
             "color": "#374151",
             "type": "clothing",
@@ -111,7 +101,7 @@
             "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
         },
         {
-            "id": "a7b8c9d0-1e2f-3a4b-5c6d-7e8f-0b1c2d3e4f5",
+            "id": "47675618-9f4f-40c6-849f-3fbb7f7a5f71",
             "name": "jas-premium",
             "color": "#6B7280",
             "type": "clothing",
@@ -121,7 +111,7 @@
             "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
         },
         {
-            "id": "b8c9d0e1-2f3a-4b5c-6d7e-8f0b-1c2d3e4f5a6",
+            "id": "06b9d46f-aeab-4d17-b30f-ed8bdc6bd487",
             "name": "jas-renda",
             "color": "#7C3AED",
             "type": "clothing",
@@ -131,7 +121,7 @@
             "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
         },
         {
-            "id": "b4c5d6e7-8f0b-1c2d-3e4f-5a6b-7c8d9e0f2a3",
+            "id": "66b2c4c3-44bb-4165-9d0f-27bff4ab9e74",
             "name": "kalung",
             "color": "#16A34A",
             "type": "accessories_universal",
@@ -141,7 +131,7 @@
             "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
         },
         {
-            "id": "8cecfa58-acfb-40a4-bc9c-d9cc91cec621",
+            "id": "bfa52936-c4c0-4cfe-9af7-286ec19e0f24",
             "name": "organic",
             "color": "#EC4899",
             "type": "clothing",
@@ -161,6 +151,16 @@
             "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
         },
         {
+            "id": "a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d",
+            "name": "renda",
+            "color": "#3B82F6",
+            "type": "clothing",
+            "products": [],
+            "createdAt": "2025-10-25T10:00:00.000Z",
+            "updatedAt": "2025-10-25T10:00:00.000Z",
+            "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
+        },
+        {
             "id": "bddcd8e5-7873-4a12-8649-600cc8da4b1e",
             "name": "renda-premium",
             "color": "#FFD700",
@@ -171,7 +171,7 @@
             "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
         },
         {
-            "id": "c9d0e1f2-3a4b-5c6d-7e8f-0b1c-2d3e4f5a6b7",
+            "id": "0a3f2436-46bf-47d2-967c-7559fb76d729",
             "name": "sarung",
             "color": "#EA580C",
             "type": "accessories_universal",
@@ -181,7 +181,7 @@
             "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
         },
         {
-            "id": "d0e1f2a3-4b5c-6d7e-8f0b-1c2d-3e4f5a6b7c8",
+            "id": "31acbe2e-526f-46ce-8f93-ad7415c2a37d",
             "name": "songket",
             "color": "#DC2626",
             "type": "accessories_age_based",

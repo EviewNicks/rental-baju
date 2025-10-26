@@ -1,0 +1,86 @@
+[
+  {
+    "code": "JRC01",
+    "name": "Jas Renda Coklat",
+    "description": "Jas Renda warna coklat elegan dengan detail renda",
+    "modalAwal": 100000,
+    "currentPrice": 100000,
+    "quantity": 15,
+    "categoryId": "06b9d46f-aeab-4d17-b30f-ed8bdc6bd487",
+    "imageUrl": "/products/jas-renda/JRC01.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "M", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "XXL", "quantity": 2 },
+      { "ageCategory": "CHILD", "size": "M", "quantity": 1 },
+      { "ageCategory": "CHILD", "size": "L", "quantity": 1 }
+    ]
+  },
+  {
+    "code": "JRS04",
+    "name": "Jas Renda Sage",
+    "description": "Jas Renda warna sage modern dengan motif renda",
+    "modalAwal": 100000,
+    "currentPrice": 100000,
+    "quantity": 7,
+    "categoryId": "06b9d46f-aeab-4d17-b30f-ed8bdc6bd487",
+    "imageUrl": "/products/jas-renda/JRS04.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "M", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "XXL", "quantity": 1 },
+      { "ageCategory": "CHILD", "size": "S", "quantity": 1 },
+      { "ageCategory": "CHILD", "size": "M", "quantity": 1 },
+      { "ageCategory": "CHILD", "size": "L", "quantity": 1 },
+      { "ageCategory": "CHILD", "size": "XL", "quantity": 1 }
+    ]
+  },
+  {
+    "code": "JRP02",
+    "name": "Jas Renda Putih",
+    "description": "Jas Renda warna putih bersih dengan detail renda premium",
+    "modalAwal": 100000,
+    "currentPrice": 100000,
+    "quantity": 9,
+    "categoryId": "06b9d46f-aeab-4d17-b30f-ed8bdc6bd487",
+    "imageUrl": "/products/jas-renda/JRP02.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "S", "quantity": 1 },
+      { "ageCategory": "ADULT", "size": "M", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 3 },
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 1 },
+      { "ageCategory": "ADULT", "size": "XXL", "quantity": 1 }
+    ]
+  },
+  {
+    "code": "JRB05",
+    "name": "Jas Renda Biru",
+    "description": "Jas Renda warna biru menarik dengan pattern renda",
+    "modalAwal": 100000,
+    "currentPrice": 100000,
+    "quantity": 8,
+    "categoryId": "06b9d46f-aeab-4d17-b30f-ed8bdc6bd487",
+    "imageUrl": "/products/jas-renda/JRB05.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "S", "quantity": 1 },
+      { "ageCategory": "ADULT", "size": "M", "quantity": 3 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 3 },
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 1 }
+    ]
+  },
+  {
+    "code": "JRS03",
+    "name": "Jas Renda Silver",
+    "description": "Jas Renda warna silver mewah dengan aksen renda",
+    "modalAwal": 100000,
+    "currentPrice": 100000,
+    "quantity": 2,
+    "categoryId": "06b9d46f-aeab-4d17-b30f-ed8bdc6bd487",
+    "imageUrl": "/products/jas-renda/JRS03.jpg",
+    "sizes": [{ "ageCategory": "ADULT", "size": "XXL", "quantity": 2 }]
+  }
+]

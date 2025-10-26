@@ -1,0 +1,90 @@
+[
+  {
+    "code": "JPH01",
+    "name": "Jaguar Premium Hitam",
+    "description": "Jaguar Premium warna hitam elegan - All size",
+    "modalAwal": 250000,
+    "currentPrice": 250000,
+    "quantity": 2,
+    "categoryId": "47675618-9f4f-40c6-849f-3fbb7f7a5f71",
+    "imageUrl": "/products/jas-premium/JPH01.jpg",
+    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 2 }]
+  },
+  {
+    "code": "JPS03",
+    "name": "Jaguar Premium Silver",
+    "description": "Jaguar Premium warna silver mewah",
+    "modalAwal": 250000,
+    "currentPrice": 250000,
+    "quantity": 1,
+    "categoryId": "47675618-9f4f-40c6-849f-3fbb7f7a5f71",
+    "imageUrl": "/products/jas-premium/JPS03.jpg",
+    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 1 }]
+  },
+  {
+    "code": "JPB05",
+    "name": "Jaguar Premium Biru",
+    "description": "Jaguar Premium warna biru profesional",
+    "modalAwal": 250000,
+    "currentPrice": 250000,
+    "quantity": 1,
+    "categoryId": "47675618-9f4f-40c6-849f-3fbb7f7a5f71",
+    "imageUrl": "/products/jas-premium/JPB05.jpg",
+    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 1 }]
+  },
+  {
+    "code": "JJP02",
+    "name": "Jaguar Premium Pink",
+    "description": "Jaguar Premium warna pink menarik",
+    "modalAwal": 250000,
+    "currentPrice": 250000,
+    "quantity": 1,
+    "categoryId": "47675618-9f4f-40c6-849f-3fbb7f7a5f71",
+    "imageUrl": "/products/jas-premium/JJP02.jpg",
+    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 1 }]
+  },
+  {
+    "code": "JPM04",
+    "name": "Jaguar Premium Maroon",
+    "description": "Jaguar Premium warna maroon sophisticated",
+    "modalAwal": 250000,
+    "currentPrice": 250000,
+    "quantity": 2,
+    "categoryId": "47675618-9f4f-40c6-849f-3fbb7f7a5f71",
+    "imageUrl": "/products/jas-premium/JPM04.jpg",
+    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 2 }]
+  },
+  {
+    "code": "JPO01",
+    "name": "Jaguar Premium Olive",
+    "description": "Jaguar Premium warna olive klasik",
+    "modalAwal": 250000,
+    "currentPrice": 250000,
+    "quantity": 2,
+    "categoryId": "47675618-9f4f-40c6-849f-3fbb7f7a5f71",
+    "imageUrl": "/products/jas-premium/JPO01.jpg",
+    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 2 }]
+  },
+  {
+    "code": "JPO02",
+    "name": "Jaguar Premium Olive Tekstur",
+    "description": "Jaguar Premium warna olive dengan tekstur",
+    "modalAwal": 250000,
+    "currentPrice": 250000,
+    "quantity": 2,
+    "categoryId": "47675618-9f4f-40c6-849f-3fbb7f7a5f71",
+    "imageUrl": "/products/jas-premium/JPO02.jpg",
+    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 2 }]
+  },
+  {
+    "code": "JPD05",
+    "name": "Jaguar Premium Datuk",
+    "description": "Jaguar Premium warna datuk eksklusif",
+    "modalAwal": 250000,
+    "currentPrice": 250000,
+    "quantity": 1,
+    "categoryId": "47675618-9f4f-40c6-849f-3fbb7f7a5f71",
+    "imageUrl": "/products/jas-premium/JPD05.jpg",
+    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 1 }]
+  }
+]

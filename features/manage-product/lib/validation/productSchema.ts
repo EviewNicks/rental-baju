@@ -232,8 +232,8 @@ export const clothingSizeSchema = z.array(
     ageCategory: z.enum(['ADULT', 'CHILD'], {
       message: 'Pakaian harus menggunakan kategori ADULT atau CHILD',
     }),
-    size: z.enum(['XS', 'S', 'M', 'L', 'XL', 'XXL'], {
-      message: 'Ukuran pakaian harus salah satu dari: XS, S, M, L, XL, XXL',
+    size: z.enum(['XS', 'S', 'M', 'L', 'XL', 'XXL', 'UNIVERSAL'], {
+      message: 'Ukuran pakaian harus salah satu dari: XS, S, M, L, XL, XXL, UNIVERSAL',
     }),
   })
 ).refine(

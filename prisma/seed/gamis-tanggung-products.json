@@ -1,0 +1,24 @@
+[
+  {
+    "code": "GAT01",
+    "name": "Gamis Tanggung Abu",
+    "description": "Gamis tanggung dewasa warna abu elegan dan modern",
+    "modalAwal": 100000,
+    "currentPrice": 100000,
+    "quantity": 1,
+    "categoryId": "7e447c17-6fdf-4208-83b9-60a5d5295b17",
+    "imageUrl": "/products/gamis-tanggung/GAT01.jpg",
+    "sizes": [{ "ageCategory": "ADULT", "size": "M", "quantity": 1 }]
+  },
+  {
+    "code": "GTL02",
+    "name": "Gamis Tanggung Lilac",
+    "description": "Gamis tanggung dewasa cream lembut dan modis",
+    "modalAwal": 100000,
+    "currentPrice": 100000,
+    "quantity": 1,
+    "categoryId": "7e447c17-6fdf-4208-83b9-60a5d5295b17",
+    "imageUrl": "/products/gamis-tanggung/GAC02.jpg",
+    "sizes": [{ "ageCategory": "ADULT", "size": "M", "quantity": 1 }]
+  }
+]

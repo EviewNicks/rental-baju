@@ -26,8 +26,8 @@
     "test:e2e:debug": "cross-env NODE_ENV=test  playwright test __tests__/playwright/auth/sign-in.spec.ts --debug",
     "test:e2e:report": "playwright show-report services/playwright-report",
     "env:validate": "tsx -e \"const { validateEnvSafe } = require('./lib/env-validation.ts'); const result = validateEnvSafe(); if (!result.success) { console.error(result.error); process.exit(1); } console.log('✅ Environment validation passed');\"",
-    "import:product": "cross-env PRODUCT_TYPE=jas-jaguar tsx scripts/import-products.ts",
-    "import:product:dry": "cross-env DRY_RUN=true PRODUCT_TYPE=jas-jaguar tsx scripts/import-products.ts",
+    "import:product": "cross-env PRODUCT_TYPE=jas-renda tsx scripts/import-products.ts",
+    "import:product:dry": "cross-env DRY_RUN=true PRODUCT_TYPE=jas-renda tsx scripts/import-products.ts",
     "import:categories": "cross-env DRY_RUN=false tsx scripts/import-categories.ts",
     "import:categories:dry": "cross-env DRY_RUN=true tsx scripts/import-categories.ts",
     "postinstall": "prisma generate"
