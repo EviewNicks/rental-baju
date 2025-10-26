@@ -90,6 +90,7 @@ export async function GET(request: NextRequest) {
               id: true,
               name: true,
               color: true,
+              type: true,
             },
           },
           sizes: {
@@ -146,6 +147,7 @@ export async function GET(request: NextRequest) {
             id: product.category.id,
             name: product.category.name,
             color: product.category.color,
+            type: product.category.type,
           },
           status: product.status,
           createdAt: product.createdAt.toISOString(),

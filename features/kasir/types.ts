@@ -92,6 +92,7 @@ export interface ProductWithCategory extends ProductCore {
     id: string
     name: string
     color?: string
+    type?: 'clothing' | 'accessories_age_based' | 'accessories_universal'  // RPK-52: Category type for dynamic forms
   }
   size?: string
   color?: {
@@ -133,6 +134,7 @@ export interface Product {
   id: string
   name: string
   category: string
+  categoryType?: 'clothing' | 'accessories_age_based' | 'accessories_universal'  // RPK-52: Category type for dynamic forms
   size: string
   color: string
   pricePerDay: number

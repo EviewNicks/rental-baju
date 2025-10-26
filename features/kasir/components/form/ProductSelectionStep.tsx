@@ -1,7 +1,18 @@
 'use client'
 
 import { useState, useMemo, useEffect } from 'react'
-import { Search, Filter, ShoppingCart, Plus, Minus, X, Package, Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
+import {
+  Search,
+  Filter,
+  ShoppingCart,
+  Plus,
+  Minus,
+  X,
+  Package,
+  Loader2,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -73,6 +84,7 @@ export function ProductSelectionStep({
         id: apiProduct.id,
         name: apiProduct.name,
         category: apiProduct.category.name.toLowerCase(),
+        categoryType: apiProduct.category.type,
         size: apiProduct.size || 'Unknown',
         color: apiProduct.color?.name || 'Unknown',
         pricePerDay: apiProduct.currentPrice,
@@ -157,7 +169,7 @@ export function ProductSelectionStep({
     const existingProduct = selectedProducts.find(
       (item) =>
         item.product.id === product.id &&
-        (productSizeId ? item.productSizeId === productSizeId : !item.productSizeId)
+        (productSizeId ? item.productSizeId === productSizeId : !item.productSizeId),
     )
 
     if (existingProduct) {
@@ -303,6 +315,7 @@ export function ProductSelectionStep({
             <div className="flex items-center gap-2">
               {/* Page Size Selector */}
               <select
+                title="sizes"
                 value={pageSize}
                 onChange={(e) => handlePageSizeChange(Number(e.target.value))}
                 className="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
@@ -387,7 +400,10 @@ export function ProductSelectionStep({
 
           {/* Pagination Controls */}
           {!isLoading && !error && totalPages > 1 && (
-            <div className="mt-6 flex items-center justify-between" data-testid="pagination-controls">
+            <div
+              className="mt-6 flex items-center justify-between"
+              data-testid="pagination-controls"
+            >
               <div className="text-sm text-gray-600">
                 Halaman {currentPage} dari {totalPages} ({totalItems} total produk)
               </div>
@@ -422,12 +438,13 @@ export function ProductSelectionStep({
                     return (
                       <Button
                         key={pageNum}
-                        variant={currentPage === pageNum ? "default" : "outline"}
+                        variant={currentPage === pageNum ? 'default' : 'outline'}
                         size="sm"
                         onClick={() => handlePageChange(pageNum)}
                         className={cn(
-                          "w-8 h-8 p-0",
-                          currentPage === pageNum && "bg-yellow-400 text-gray-900 hover:bg-yellow-500"
+                          'w-8 h-8 p-0',
+                          currentPage === pageNum &&
+                            'bg-yellow-400 text-gray-900 hover:bg-yellow-500',
                         )}
                         data-testid={`pagination-page-${pageNum}`}
                       >

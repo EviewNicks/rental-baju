@@ -1,50 +1,193 @@
-POST Create Category 
-
-Request URL 
-
-{
-  "name": "Sarung Batik",
-  "color": "#8B4513",
-  "type": "accessories_age_based"
-}
-
-Response Body 
-
-{
-    "id": "cdf3e042-1801-4902-a9cb-1b8d26719e35",
-    "name": "Sarung Batik",
-    "color": "#8B4513",
-    "type": "accessories_age_based",
-    "products": [],
-    "createdAt": "2025-10-23T15:13:58.159Z",
-    "updatedAt": "2025-10-23T15:13:58.159Z",
-    "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
-}
-
-GET Categiry 
-
-response 
-
 {
     "categories": [
         {
-            "id": "cdf3e042-1801-4902-a9cb-1b8d26719e35",
-            "name": "Sarung Batik",
-            "color": "#8B4513",
-            "type": "accessories_age_based",
+            "id": "c5d6e7f8-0b1c-2d3e-4f5a-6b7c-8d9e-0f2a3b4c5d6",
+            "name": "anting",
+            "color": "#9333EA",
+            "type": "accessories_universal",
             "products": [],
-            "createdAt": "2025-10-23T15:13:58.159Z",
-            "updatedAt": "2025-10-23T15:13:58.159Z",
+            "createdAt": "2025-10-25T10:00:00.000Z",
+            "updatedAt": "2025-10-25T10:00:00.000Z",
             "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
         },
         {
-            "id": "dcffa45f-b12d-4f2a-9356-9e6f20216f72",
+            "id": "a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d",
+            "name": "renda",
+            "color": "#3B82F6",
+            "type": "clothing",
+            "products": [],
+            "createdAt": "2025-10-25T10:00:00.000Z",
+            "updatedAt": "2025-10-25T10:00:00.000Z",
+            "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
+        },
+        {
+            "id": "e1f2a3b4-5c6d-7e8f-0b1c-2d3e-4f5a6b7c8d9",
+            "name": "bando-besar",
+            "color": "#F59E0B",
+            "type": "accessories_universal",
+            "products": [],
+            "createdAt": "2025-10-25T10:00:00.000Z",
+            "updatedAt": "2025-10-25T10:00:00.000Z",
+            "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
+        },
+        {
+            "id": "f2a3b4c5-6d7e-8f0b-1c2d-3e4f-5a6b7c8d9e0",
+            "name": "bando-kecil",
+            "color": "#F97316",
+            "type": "accessories_universal",
+            "products": [],
+            "createdAt": "2025-10-25T10:00:00.000Z",
+            "updatedAt": "2025-10-25T10:00:00.000Z",
+            "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
+        },
+        {
+            "id": "e07a1b65-4a36-458a-8ab0-45e8e95aac23",
+            "name": "Dress",
+            "color": "#FF5733",
+            "type": "clothing",
+            "products": [],
+            "createdAt": "2025-09-22T22:35:46.170Z",
+            "updatedAt": "2025-09-22T22:35:46.170Z",
+            "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
+        },
+        {
+            "id": "b2c3d4e5-6f7a-8b9c-0d1e-2f3a4b5c6d7e",
+            "name": "gamis-anak",
+            "color": "#10B981",
+            "type": "clothing",
+            "products": [],
+            "createdAt": "2025-10-25T10:00:00.000Z",
+            "updatedAt": "2025-10-25T10:00:00.000Z",
+            "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
+        },
+        {
+            "id": "d4e5f6a7-8b9c-0d1e-2f3a-4b5c6d7e8f0a",
+            "name": "gamis-dewasa",
+            "color": "#1E40AF",
+            "type": "clothing",
+            "products": [],
+            "createdAt": "2025-10-25T10:00:00.000Z",
+            "updatedAt": "2025-10-25T10:00:00.000Z",
+            "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
+        },
+        {
+            "id": "c3d4e5f6-7a8b-9c0d-1e2f-3a4b5c6d7e8f",
+            "name": "gamis-tanggung",
+            "color": "#059669",
+            "type": "clothing",
+            "products": [],
+            "createdAt": "2025-10-25T10:00:00.000Z",
+            "updatedAt": "2025-10-25T10:00:00.000Z",
+            "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
+        },
+        {
+            "id": "a3b4c5d6-7e8f-0b1c-2d3e-4f5a-6b7c8d9e0f1",
+            "name": "gelang",
+            "color": "#CA8A04",
+            "type": "accessories_universal",
+            "products": [],
+            "createdAt": "2025-10-25T10:00:00.000Z",
+            "updatedAt": "2025-10-25T10:00:00.000Z",
+            "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
+        },
+        {
+            "id": "e5f6a7b8-9c0d-1e2f-3a4b-5c6d7e8f0b1c",
+            "name": "jas-jaguar",
+            "color": "#1F2937",
+            "type": "clothing",
+            "products": [],
+            "createdAt": "2025-10-25T10:00:00.000Z",
+            "updatedAt": "2025-10-25T10:00:00.000Z",
+            "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
+        },
+        {
+            "id": "f6a7b8c9-0d1e-2f3a-4b5c-6d7e-8f0b1c2d3e",
+            "name": "jas-polos",
+            "color": "#374151",
+            "type": "clothing",
+            "products": [],
+            "createdAt": "2025-10-25T10:00:00.000Z",
+            "updatedAt": "2025-10-25T10:00:00.000Z",
+            "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
+        },
+        {
+            "id": "a7b8c9d0-1e2f-3a4b-5c6d-7e8f-0b1c2d3e4f5",
+            "name": "jas-premium",
+            "color": "#6B7280",
+            "type": "clothing",
+            "products": [],
+            "createdAt": "2025-10-25T10:00:00.000Z",
+            "updatedAt": "2025-10-25T10:00:00.000Z",
+            "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
+        },
+        {
+            "id": "b8c9d0e1-2f3a-4b5c-6d7e-8f0b-1c2d3e4f5a6",
+            "name": "jas-renda",
+            "color": "#7C3AED",
+            "type": "clothing",
+            "products": [],
+            "createdAt": "2025-10-25T10:00:00.000Z",
+            "updatedAt": "2025-10-25T10:00:00.000Z",
+            "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
+        },
+        {
+            "id": "b4c5d6e7-8f0b-1c2d-3e4f-5a6b-7c8d9e0f2a3",
+            "name": "kalung",
+            "color": "#16A34A",
+            "type": "accessories_universal",
+            "products": [],
+            "createdAt": "2025-10-25T10:00:00.000Z",
+            "updatedAt": "2025-10-25T10:00:00.000Z",
+            "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
+        },
+        {
+            "id": "8cecfa58-acfb-40a4-bc9c-d9cc91cec621",
+            "name": "organic",
+            "color": "#EC4899",
+            "type": "clothing",
+            "products": [],
+            "createdAt": "2025-09-25T13:11:13.130Z",
+            "updatedAt": "2025-09-25T13:11:13.130Z",
+            "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
+        },
+        {
+            "id": "912520ea-ad5a-4294-8057-e9084a871a05",
+            "name": "Organza",
+            "color": "#F59E0B",
+            "type": "clothing",
+            "products": [],
+            "createdAt": "2025-09-25T02:14:05.912Z",
+            "updatedAt": "2025-09-25T02:14:05.912Z",
+            "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
+        },
+        {
+            "id": "bddcd8e5-7873-4a12-8649-600cc8da4b1e",
+            "name": "renda-premium",
+            "color": "#FFD700",
+            "type": "clothing",
+            "products": [],
+            "createdAt": "2025-10-13T06:37:49.487Z",
+            "updatedAt": "2025-10-13T06:37:49.487Z",
+            "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
+        },
+        {
+            "id": "c9d0e1f2-3a4b-5c6d-7e8f-0b1c-2d3e4f5a6b7",
+            "name": "sarung",
+            "color": "#EA580C",
+            "type": "accessories_universal",
+            "products": [],
+            "createdAt": "2025-10-25T10:00:00.000Z",
+            "updatedAt": "2025-10-25T10:00:00.000Z",
+            "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
+        },
+        {
+            "id": "d0e1f2a3-4b5c-6d7e-8f0b-1c2d-3e4f5a6b7c8",
             "name": "songket",
-            "color": "#ff0000",
+            "color": "#DC2626",
             "type": "accessories_age_based",
             "products": [],
-            "createdAt": "2025-10-23T15:34:46.643Z",
-            "updatedAt": "2025-10-23T15:34:46.643Z",
+            "createdAt": "2025-10-25T10:00:00.000Z",
+            "updatedAt": "2025-10-25T10:00:00.000Z",
             "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
         }
     ]
