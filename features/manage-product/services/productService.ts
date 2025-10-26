@@ -116,12 +116,8 @@ export class ProductService {
             where: { isActive: true },
             orderBy: [{ ageCategory: 'asc' }, { size: 'asc' }],
           }, // Include product sizes
-          // Include transaction items for total revenue calculation
-          transaksiItems: {
-            select: {
-              subtotal: true, // Only select subtotal field for performance
-            },
-          },
+          // transaksiItems include REMOVED - causing TimeoutError
+          // Performance optimization: Don't load transaction history in product listing
         },
         orderBy: {
           createdAt: 'desc',
@@ -167,12 +163,8 @@ export class ProductService {
           where: { isActive: true },
           orderBy: [{ ageCategory: 'asc' }, { size: 'asc' }],
         }, // Include product sizes
-        // Include transaction items for total revenue calculation
-        transaksiItems: {
-          select: {
-            subtotal: true, // Only select subtotal field for performance
-          },
-        },
+        // transaksiItems include REMOVED - causing TimeoutError
+        // Performance optimization: Don't load transaction history in product listing
       },
     })
 
@@ -1408,23 +1400,10 @@ export class ProductService {
   }
 
   /**
-   * Calculate total revenue from transaction items
-   * Aggregates subtotal from all related transaction items
+   * Calculate total revenue from transaction items - REMOVED
+   * Performance optimization: moved to separate endpoint
+   * Use dedicated revenue calculation endpoint for detail views
    */
-  private calculateTotalRevenue(prismaProduct: Record<string, unknown>): Decimal {
-    const transaksiItems = prismaProduct.transaksiItems as Array<{ subtotal: Decimal | number }>
-
-    if (!transaksiItems?.length) {
-      return new Decimal(0)
-    }
-
-    const total = transaksiItems.reduce((sum, item) => {
-      const itemRevenue = Number(item.subtotal) || 0
-      return sum + itemRevenue
-    }, 0)
-
-    return new Decimal(total)
-  }
 
   /**
    * Convert Prisma product result to application Product type
@@ -1473,7 +1452,8 @@ export class ProductService {
         : undefined,
       status: prismaProduct.status as ProductStatus,
       imageUrl: prismaProduct.imageUrl as string | undefined,
-      totalPendapatan: this.calculateTotalRevenue(prismaProduct),
+      // totalPendapatan removed - performance optimization
+      // Revenue calculation moved to separate endpoint for detail view
       sizes:
         (prismaProduct.sizes as Array<Record<string, unknown>>)?.map((size) => ({
           id: size.id as string,

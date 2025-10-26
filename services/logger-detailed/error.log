@@ -1,63 +1,40 @@
-PS D:\.work\rental-software> yarn import:product
-yarn run v1.22.22
-$ cross-env PRODUCT_TYPE=gelang tsx scripts/import-products.ts
-🚀 Starting gelang Products Import...
-📋 Mode: LIVE IMPORT
+Error: Image with src "/products/accesories.png
+" cannot end with a space or control character. Use src.trimEnd() to remove it or encodeURIComponent(src) to keep it.
+    at getImgProps (http://localhost:3000/_next/static/chunks/node_modules_ecb7f0ee._.js:6866:49)
+    at http://localhost:3000/_next/static/chunks/node_modules_ecb7f0ee._.js:9489:82
+    at Object.react_stack_bottom_frame (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc06._.js:13014:24)
+    at renderWithHooks (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc06._.js:4064:24)
+    at updateForwardRef (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc06._.js:5315:21)
+    at beginWork (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc06._.js:6097:24)
+    at runWithFiberInDEV (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc06._.js:890:74)
+    at performUnitOfWork (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc06._.js:8236:97)
+    at workLoopSync (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc06._.js:8128:40)
+    at renderRootSync (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc06._.js:8111:13)
+    at performWorkOnRoot (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc06._.js:7870:56)
+    at performSyncWorkOnRoot (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc06._.js:8828:9)
+    at flushSyncWorkAcrossRoots_impl (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc06._.js:8747:316)
+    at processRootScheduleInMicrotask (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc06._.js:8767:106)
+    at http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc06._.js:8839:158
 
-✅ Supabase configuration detected - images will be uploaded
 
-📦 Found 5 products to import
+    Error Details (Development Only):
+Image with src "/products/accesories.png " cannot end with a space or control character. Use src.trimEnd() to remove it or encodeURIComponent(src) to keep it.
 
-🔍 Validating category: 67195c78-1536-4783-946d-650b8a0c597b
-(node:11104) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
-(Use `node --trace-deprecation ...` to show where the warning was created)
-✅ Category validation passed
-
-🔍 Checking for duplicate product codes...
-✅ No duplicate codes found
-
-💾 Starting database import...
-
-📝 [1/5] Importing GP01 - Gelang Panjang
-   📸 Uploading image...
-   ⚠️  Image not found for GP01, using default image
-   ❌ Failed: Kategori umur "UNIVERSAL" tidak valid untuk pakaian
-📝 [2/5] Importing GTB01 - Gelang Timbul Bulat
-   📸 Uploading image...
-   ⚠️  Image not found for GTB01, using default image
-   ❌ Failed: Kategori umur "UNIVERSAL" tidak valid untuk pakaian
-📝 [3/5] Importing GK01 - Gelang Kecil
-   📸 Uploading image...
-   ⚠️  Image not found for GK01, using default image
-   ❌ Failed: Kategori umur "UNIVERSAL" tidak valid untuk pakaian
-📝 [4/5] Importing GBB01 - Gelang Bunga Besar
-   📸 Uploading image...
-   ⚠️  Image not found for GBB01, using default image
-   ❌ Failed: Kategori umur "UNIVERSAL" tidak valid untuk pakaian
-📝 [5/5] Importing GMP01 - Gelang Mutiara Putih
-   📸 Uploading image...
-   ⚠️  Image not found for GMP01, using default image
-   ❌ Failed: Kategori umur "UNIVERSAL" tidak valid untuk pakaian
-
-✅ IMPORT COMPLETE
-
-==================================================
-📊 IMPORT SUMMARY
-==================================================
-Status: ✅ SUCCESS
-Total products: 5
-Imported: 0
-Skipped: 0
-Failed: 5
-
-❌ Errors:
-   1. GP01 (Gelang Panjang): Kategori umur "UNIVERSAL" tidak valid untuk pakaian
-   2. GTB01 (Gelang Timbul Bulat): Kategori umur "UNIVERSAL" tidak valid untuk pakaian
-   3. GK01 (Gelang Kecil): Kategori umur "UNIVERSAL" tidak valid untuk pakaian
-   4. GBB01 (Gelang Bunga Besar): Kategori umur "UNIVERSAL" tidak valid untuk pakaian
-   5. GMP01 (Gelang Mutiara Putih): Kategori umur "UNIVERSAL" tidak valid untuk pakaian
-==================================================
-
-error Command failed with exit code 1.
-info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.
-PS D:\.work\rental-software> 
+Stack Trace
+Error: Image with src "/products/accesories.png
+" cannot end with a space or control character. Use src.trimEnd() to remove it or encodeURIComponent(src) to keep it.
+    at getImgProps (http://localhost:3000/_next/static/chunks/node_modules_ecb7f0ee._.js:6866:49)
+    at http://localhost:3000/_next/static/chunks/node_modules_ecb7f0ee._.js:9489:82
+    at Object.react_stack_bottom_frame (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc06._.js:13014:24)
+    at renderWithHooks (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc06._.js:4064:24)
+    at updateForwardRef (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc06._.js:5315:21)
+    at beginWork (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc06._.js:6097:24)
+    at runWithFiberInDEV (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc06._.js:890:74)
+    at performUnitOfWork (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc06._.js:8236:97)
+    at workLoopSync (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc06._.js:8128:40)
+    at renderRootSync (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc06._.js:8111:13)
+    at performWorkOnRoot (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc06._.js:7870:56)
+    at performSyncWorkOnRoot (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc06._.js:8828:9)
+    at flushSyncWorkAcrossRoots_impl (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc06._.js:8747:316)
+    at processRootScheduleInMicrotask (http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc06._.js:8767:106)
+    at http://localhost:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc06._.js:8839:158

@@ -46,23 +46,51 @@ export function ProductTable({
           <Table className="shadow-sm border-0" data-testid="product-table">
             <TableHeader>
               <TableRow className="bg-gray-50" data-testid="product-table-header">
-                <TableHead className="w-16 text-center" data-testid="header-no">No</TableHead>
-                <TableHead className="w-20 text-center" data-testid="header-image">Gambar</TableHead>
-                <TableHead className="w-24" data-testid="header-code">Kode</TableHead>
-                <TableHead className="min-w-48" data-testid="header-name">Nama Produk</TableHead>
-                <TableHead className="w-32 text-center" data-testid="header-category">Kategori</TableHead>
-                <TableHead className="w-24 text-center" data-testid="header-size">Ukuran</TableHead>
-                <TableHead className="w-32 text-right" data-testid="header-modal">Modal Awal</TableHead>
-                <TableHead className="w-32 text-right" data-testid="header-price">Harga Sewa</TableHead>
-                <TableHead className="w-32 text-center" data-testid="header-status">Status</TableHead>
-                <TableHead className="w-36 text-right" data-testid="header-revenue">Total Pendapatan</TableHead>
-                <TableHead className="w-32 text-center" data-testid="header-actions">Aksi</TableHead>
+                <TableHead className="w-16 text-center" data-testid="header-no">
+                  No
+                </TableHead>
+                <TableHead className="w-20 text-center" data-testid="header-image">
+                  Gambar
+                </TableHead>
+                <TableHead className="w-24" data-testid="header-code">
+                  Kode
+                </TableHead>
+                <TableHead className="min-w-48" data-testid="header-name">
+                  Nama Produk
+                </TableHead>
+                <TableHead className="w-32 text-center" data-testid="header-category">
+                  Kategori
+                </TableHead>
+                <TableHead className="w-24 text-center" data-testid="header-size">
+                  Ukuran
+                </TableHead>
+                <TableHead className="w-32 text-right" data-testid="header-modal">
+                  Modal Awal
+                </TableHead>
+                <TableHead className="w-32 text-right" data-testid="header-price">
+                  Harga Sewa
+                </TableHead>
+                <TableHead className="w-32 text-center" data-testid="header-status">
+                  Status
+                </TableHead>
+                <TableHead className="w-36 text-center" data-testid="header-revenue">
+                  Aksi
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody data-testid="product-table-body">
               {products.map((product, index) => (
-                <TableRow key={product.id} className="hover:bg-gray-50" data-testid={`product-row-${product.code}`}>
-                  <TableCell className="text-center font-medium" data-testid={`product-${product.code}-number`}>{index + 1}</TableCell>
+                <TableRow
+                  key={product.id}
+                  className="hover:bg-gray-50"
+                  data-testid={`product-row-${product.code}`}
+                >
+                  <TableCell
+                    className="text-center font-medium"
+                    data-testid={`product-${product.code}-number`}
+                  >
+                    {index + 1}
+                  </TableCell>
                   <TableCell className="text-center" data-testid={`product-${product.code}-image`}>
                     <div className="w-12 h-12 mx-auto rounded-lg overflow-hidden bg-gray-100">
                       <Image
@@ -75,9 +103,19 @@ export function ProductTable({
                       />
                     </div>
                   </TableCell>
-                  <TableCell className="font-mono text-sm" data-testid={`product-${product.code}-code`}>{product.code}</TableCell>
-                  <TableCell className="font-medium" data-testid={`product-${product.code}-name`}>{product.name}</TableCell>
-                  <TableCell className="text-center" data-testid={`product-${product.code}-category`}>
+                  <TableCell
+                    className="font-mono text-sm"
+                    data-testid={`product-${product.code}-code`}
+                  >
+                    {product.code}
+                  </TableCell>
+                  <TableCell className="font-medium" data-testid={`product-${product.code}-name`}>
+                    {product.name}
+                  </TableCell>
+                  <TableCell
+                    className="text-center"
+                    data-testid={`product-${product.code}-category`}
+                  >
                     <Badge
                       variant="outline"
                       style={{
@@ -93,11 +131,14 @@ export function ProductTable({
                   </TableCell>
                   <TableCell className="text-center" data-testid={`product-${product.code}-size`}>
                     {product.sizes && product.sizes.length > 0 ? (
-                      <Badge variant="outline" className="font-mono text-xs" data-testid={`product-${product.code}-size-badge`}>
+                      <Badge
+                        variant="outline"
+                        className="font-mono text-xs"
+                        data-testid={`product-${product.code}-size-badge`}
+                      >
                         {product.sizes.length === 1
                           ? `${product.sizes[0].size} (${product.sizes[0].ageCategory})`
-                          : `${product.sizes.length} ukuran`
-                        }
+                          : `${product.sizes.length} ukuran`}
                       </Badge>
                     ) : (
                       <span className="text-gray-400">-</span>
@@ -110,26 +151,43 @@ export function ProductTable({
                     {formatCurrency(Number(product.currentPrice))}
                   </TableCell>
                   <TableCell className="text-center" data-testid={`product-${product.code}-status`}>
-                    <Badge variant="outline" className={getStatusBadge(product.status)} data-testid={`product-${product.code}-status-badge`}>
+                    <Badge
+                      variant="outline"
+                      className={getStatusBadge(product.status)}
+                      data-testid={`product-${product.code}-status-badge`}
+                    >
                       {product.status}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-right font-medium text-green-600" data-testid={`product-${product.code}-revenue`}>
-                    {formatCurrency(Number(product.totalPendapatan || 0))}
-                  </TableCell>
-                  <TableCell className="text-center" data-testid={`product-${product.code}-actions`}>
+                  <TableCell
+                    className="text-center"
+                    data-testid={`product-${product.code}-actions`}
+                  >
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" data-testid={`product-${product.code}-actions-trigger`}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          data-testid={`product-${product.code}-actions-trigger`}
+                        >
                           ⋯
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" data-testid={`product-${product.code}-actions-menu`}>
-                        <DropdownMenuItem onClick={() => onViewProduct(product)} data-testid={`product-${product.code}-view-action`}>
+                      <DropdownMenuContent
+                        align="end"
+                        data-testid={`product-${product.code}-actions-menu`}
+                      >
+                        <DropdownMenuItem
+                          onClick={() => onViewProduct(product)}
+                          data-testid={`product-${product.code}-view-action`}
+                        >
                           <Eye className="w-4 h-4 mr-2" />
                           Lihat
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => onEditProduct(product)} data-testid={`product-${product.code}-edit-action`}>
+                        <DropdownMenuItem
+                          onClick={() => onEditProduct(product)}
+                          data-testid={`product-${product.code}-edit-action`}
+                        >
                           <Edit className="w-4 h-4 mr-2" />
                           Edit
                         </DropdownMenuItem>

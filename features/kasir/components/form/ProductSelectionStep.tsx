@@ -43,7 +43,6 @@ export function ProductSelectionStep({
   const [filters, setFilters] = useState<ProductFilters>({
     category: 'semua',
     size: 'semua',
-    color: 'semua',
     search: '',
     available: true,
   })
@@ -111,11 +110,6 @@ export function ProductSelectionStep({
   const sizes = useMemo(() => {
     const uniqueSizes = [...new Set(apiProducts.map((p) => p.size).filter(Boolean))]
     return ['semua', ...uniqueSizes]
-  }, [apiProducts])
-
-  const colors = useMemo(() => {
-    const uniqueColors = [...new Set(apiProducts.map((p) => p.color).filter(Boolean))]
-    return ['semua', ...uniqueColors]
   }, [apiProducts])
 
   // Handle search with debouncing
@@ -270,28 +264,6 @@ export function ProductSelectionStep({
                       data-testid={`size-filter-${size}`}
                     >
                       {size}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-
-              <div data-testid="color-filter-section">
-                <div className="text-sm font-medium text-gray-700 mb-2">Warna</div>
-                <div className="flex flex-wrap gap-2" data-testid="color-filter-buttons">
-                  {colors.map((color) => (
-                    <Button
-                      key={color}
-                      size="sm"
-                      variant={filters.color === color ? 'default' : 'outline'}
-                      onClick={() => setFilters((prev) => ({ ...prev, color }))}
-                      className={cn(
-                        'text-xs',
-                        filters.color === color &&
-                          'bg-yellow-400 text-gray-900 hover:bg-yellow-500',
-                      )}
-                      data-testid={`color-filter-${color}`}
-                    >
-                      {color}
                     </Button>
                   ))}
                 </div>

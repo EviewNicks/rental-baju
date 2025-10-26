@@ -26,8 +26,8 @@ export interface BaseProduct {
   materialQuantity?: number
   status: ProductStatus
   imageUrl?: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  totalPendapatan: any // Calculated field from transaction history (not stored in DB)
+  // totalPendapatan removed - performance optimization
+  // Revenue calculation moved to separate endpoint
   isActive: boolean
   createdAt: Date
   updatedAt: Date
@@ -62,7 +62,7 @@ export interface ClientProduct {
   materialQuantity?: number
   status: ProductStatus
   imageUrl?: string
-  totalPendapatan: number // Calculated field from transaction history
+  // totalPendapatan removed - performance optimization
   isActive: boolean
   createdAt: Date | string
   updatedAt: Date | string

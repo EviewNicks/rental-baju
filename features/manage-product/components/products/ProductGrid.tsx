@@ -67,12 +67,7 @@ export function ProductGrid({ products, onProductClick }: ProductGridProps) {
                   <span>Harga Sewa:</span>
                   <span className="font-medium">{formatCurrency(Number(product.currentPrice))}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span>Pendapatan:</span>
-                  <span className="font-medium text-green-600">
-                    {formatCurrency(Number(product.totalPendapatan || 0))}
-                  </span>
-                </div>
+                {/* Revenue display removed for performance - use detail view */}
               </div>
             </div>
           </CardContent>
