@@ -8,7 +8,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { UnifiedReturnService } from '@/features/kasir/services/returnService'
+import { UnifiedReturnService } from '@/features/kasir/services/returnService.backup'
 import {
   unifiedReturnRequestSchema,
   convertLegacyToUnified,
@@ -138,6 +138,26 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       // Additional business rules validation
       const businessValidation = validateUnifiedReturnRequest(validatedData)
       if (!businessValidation.isValid) {
+        // Enhanced logging for debugging multi-condition validation issues
+        console.log('Business Validation Failed:', {
+          transactionId: kode,
+          validationErrors: businessValidation.errors,
+          requestDataSummary: {
+            itemCount: validatedData.items?.length || 0,
+            totalConditions: validatedData.items?.reduce((sum, item) => sum + (item.conditions?.length || 0), 0) || 0,
+            hasMultiConditions: validatedData.items?.some(item => item.conditions?.length > 1) || false,
+            requestPreview: validatedData.items?.map(item => ({
+              itemId: item.itemId,
+              conditionCount: item.conditions?.length || 0,
+              conditions: item.conditions?.map(c => ({
+                category: c.conditionCategory,
+                manualPrice: c.manualPrice,
+                useManualPricing: c.useManualPricing
+              }))
+            }))
+          }
+        })
+
         const zodError = new ZodError(
           businessValidation.errors.map((err) => ({
             code: 'custom',
@@ -147,6 +167,65 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
             received: undefined,
           })),
         )
+        throw zodError
+      }
+
+      // Enhanced BAIK category validation - prevent manual pricing for BAIK conditions
+      const validateBaikConditions = (request: UnifiedReturnRequest): Array<{
+        field: string
+        message: string
+        code: string
+      }> => {
+        const errors: Array<{ field: string; message: string; code: string }> = []
+
+        request.items.forEach((item, itemIndex) => {
+          item.conditions.forEach((condition, conditionIndex) => {
+            // More robust validation with proper null checks and type conversion
+            const isBaikCategory = condition.conditionCategory === 'BAIK'
+            const manualPrice = Number(condition.manualPrice) || 0
+            const useManualPricing = Boolean(condition.useManualPricing)
+
+            if (isBaikCategory) {
+              // BAIK category should always have manualPrice = 0 and useManualPricing = false
+              if (manualPrice > 0) {
+                errors.push({
+                  field: `items[${itemIndex}].conditions[${conditionIndex}].manualPrice`,
+                  message: 'Kondisi BAIK tidak boleh memiliki manual pricing (harus 0)',
+                  code: 'BAIK_MANUAL_PRICING_INVALID'
+                })
+              }
+
+              if (useManualPricing === true) {
+                errors.push({
+                  field: `items[${itemIndex}].conditions[${conditionIndex}].useManualPricing`,
+                  message: 'Kondisi BAIK tidak boleh menggunakan manual pricing',
+                  code: 'BAIK_MANUAL_PRICING_USAGE_INVALID'
+                })
+              }
+            }
+          })
+        })
+
+        return errors
+      }
+
+      const baikValidationErrors = validateBaikConditions(validatedData)
+
+      // Debug logging for troubleshooting
+      if (baikValidationErrors.length > 0) {
+        console.log('BAIK Validation Errors:', {
+          transactionId: kode,
+          errors: baikValidationErrors,
+          requestData: JSON.stringify(validatedData, null, 2)
+        })
+
+        const zodError = new ZodError(baikValidationErrors.map(err => ({
+          code: 'custom' as const,
+          path: err.field.split('.'),
+          message: err.message,
+          fatal: false as const,
+          received: undefined,
+        })))
         throw zodError
       }
 

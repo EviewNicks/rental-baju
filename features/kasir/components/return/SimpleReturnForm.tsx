@@ -309,12 +309,25 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
       }
     },
     onError: (error) => {
-      const errorMessage =
+      let errorMessage =
         error instanceof Error ? error.message : 'Terjadi kesalahan saat memproses pengembalian'
+
+      // Enhanced error handling for validation issues
+      if (errorMessage.includes('Validasi kondisi pengembalian gagal')) {
+        errorMessage = 'Format data kondisi tidak valid. Mohon periksa kembali kondisi barang yang dikembalikan.'
+
+        // Debug logging for troubleshooting
+        kasirLogger.returnProcess.warn('SimpleReturnForm', 'Validation error detected', {
+          transactionId: kode,
+          originalError: error.message,
+          formState: JSON.stringify(formState, null, 2)
+        })
+      }
 
       kasirLogger.returnProcess.error('SimpleReturnForm', 'Return processing failed', {
         transactionId: kode,
         errorMessage,
+        errorDetails: error instanceof Error ? error.stack : 'Unknown error'
       })
 
       setFormState((prev) => ({ ...prev, error: errorMessage }))

@@ -341,142 +341,168 @@ export class TransaksiService {
 
   /**
    * Create new transaction with size-aware stock management
-   * NEW: Support for size-based inventory tracking
+   * NEW: Support for size-based inventory tracking with optimized transaction pattern
+   *
+   * PHASE 2 OPTIMIZATION: Pre-validation pattern to prevent transaction timeouts
+   * Step 1: Validate stock availability OUTSIDE transaction
+   * Step 2: Create transaction with minimal operations INSIDE transaction
+   * Step 3: Update stock quantities with retry logic AFTER transaction
    */
   async createTransaksiSizeAware(data: CreateTransaksiRequest): Promise<Transaksi> {
-    // 1. Validate penyewa exists
-    const penyewa = await this.prisma.penyewa.findUnique({
-      where: { id: data.penyewaId },
-    })
+    const startTime = Date.now()
+    console.log('🚀 [TRANSACTION] Starting Phase 2 optimized transaction creation...')
 
-    if (!penyewa) {
-      throw new Error('Penyewa tidak ditemukan')
-    }
+    let priceCalculation: ReturnType<typeof PriceCalculator.calculateTransactionTotal> | null = null
 
-    // 2. Validate size availability for all items
-    const productSizeIds = data.items.map((item) => item.productSizeId)
-    const productSizes = await this.prisma.productSize.findMany({
-      where: {
-        id: { in: productSizeIds },
-        isActive: true,
-      },
-      include: {
-        product: {
-          select: {
-            id: true,
-            name: true,
-            currentPrice: true,
-            isActive: true,
-            status: true,
-          },
+    try {
+      // STEP 1: Validate customer exists (fast operation)
+      console.log('👤 [STEP-1] Validating customer...')
+      const penyewa = await this.prisma.penyewa.findUnique({
+        where: { id: data.penyewaId },
+      })
+
+      if (!penyewa) {
+        throw new Error('Penyewa tidak ditemukan')
+      }
+
+      // STEP 2: Pre-validate stock availability OUTSIDE transaction
+      console.log('📦 [STEP-2] Pre-validating stock availability...')
+      await this.validateStockAvailability(data.items)
+
+      // STEP 3: Get product data for pricing (can reuse from validation)
+      console.log('💰 [STEP-3] Preparing pricing data...')
+      const productSizeIds = data.items.map((item) => item.productSizeId)
+      const uniqueSizeIds = [...new Set(productSizeIds)]
+
+      const productSizes = await this.prisma.productSize.findMany({
+        where: {
+          id: { in: uniqueSizeIds },
+          isActive: true,
         },
-      },
-    })
-
-    if (productSizes.length !== productSizeIds.length) {
-      const foundIds = productSizes.map((ps) => ps.id)
-      const missingIds = productSizeIds.filter((id) => !foundIds.includes(id))
-      throw new Error(`Ukuran produk dengan ID ${missingIds[0]} tidak tersedia`)
-    }
-
-    // 3. Validate each item size availability
-    for (const item of data.items) {
-      const productSize = productSizes.find((ps) => ps.id === item.productSizeId)
-      if (!productSize) {
-        throw new Error(`Ukuran produk tidak ditemukan`)
-      }
-
-      if (productSize.quantity < item.jumlah) {
-        throw new Error(
-          `Size ${productSize.size} (${productSize.ageCategory}) untuk ${productSize.product.name} tidak mencukupi. Tersedia: ${productSize.quantity}, Diminta: ${item.jumlah}`
-        )
-      }
-
-      // Validate product is active and available
-      if (!productSize.product.isActive || productSize.product.status !== 'AVAILABLE') {
-        throw new Error(`Produk ${productSize.product.name} sedang tidak tersedia`)
-      }
-    }
-
-    // 4. Calculate prices using size-specific data
-    const itemsWithPrices = data.items.map((item) => {
-      const productSize = productSizes.find((ps) => ps.id === item.productSizeId)!
-      return {
-        produkId: item.produkId,
-        productSizeId: item.productSizeId,
-        jumlah: item.jumlah,
-        durasi: item.durasi,
-        hargaSewa: productSize.product.currentPrice,
-      }
-    })
-
-    const priceCalculation = PriceCalculator.calculateTransactionTotal(itemsWithPrices)
-
-    // 5. Generate transaction code
-    const kode = await this.codeGenerator.generateTransactionCode()
-
-    // 6. Create transaction with items in a database transaction
-    const transaksi = await this.prisma.$transaction(async (tx) => {
-      // Create main transaction
-      const createdTransaksi = await tx.transaksi.create({
-        data: {
-          kode,
-          penyewaId: data.penyewaId,
-          status: 'active',
-          totalHarga: priceCalculation.totalHarga,
-          jumlahBayar: new Decimal(0),
-          sisaBayar: priceCalculation.totalHarga,
-          tglMulai: new Date(data.tglMulai),
-          tglSelesai: data.tglSelesai ? new Date(data.tglSelesai) : null,
-          metodeBayar: data.metodeBayar || 'tunai',
-          catatan: data.catatan || null,
-          createdBy: this.userId,
+        include: {
+          product: {
+            select: {
+              id: true,
+              name: true,
+              currentPrice: true,
+            },
+          },
         },
       })
 
-      // Create transaction items with size reference
-      const itemsData = data.items.map((item, index) => {
-        const calculation = priceCalculation.itemCalculations[index]
+      // Calculate prices using size-specific data
+      const itemsWithPrices = data.items.map((item) => {
         const productSize = productSizes.find((ps) => ps.id === item.productSizeId)!
         return {
-          transaksiId: createdTransaksi.id,
           produkId: item.produkId,
-          // Note: We would need to add productSizeId to TransaksiItem model in schema
-          // For now, we'll store size info in kondisiAwal as temporary solution
+          productSizeId: item.productSizeId,
           jumlah: item.jumlah,
-          hargaSewa: calculation.hargaSewa,
           durasi: item.durasi,
-          subtotal: calculation.subtotal,
-          kondisiAwal: `${item.productSizeId}|${productSize.size}|${productSize.ageCategory}|${item.kondisiAwal || ''}`,
+          hargaSewa: productSize.product.currentPrice,
         }
       })
 
-      await tx.transaksiItem.createMany({
-        data: itemsData,
-      })
+      priceCalculation = PriceCalculator.calculateTransactionTotal(itemsWithPrices)
 
-      // Update product size quantities - NEW SIZE-AWARE LOGIC
-      await this.updateProductSizeQuantities(tx, data.items)
+      if (!priceCalculation) {
+        throw new Error('Failed to calculate transaction pricing')
+      }
 
-      // Create activity log
-      await tx.aktivitasTransaksi.create({
-        data: {
-          transaksiId: createdTransaksi.id,
-          tipe: 'dibuat',
-          deskripsi: `Transaksi ${kode} dibuat dengan size-aware tracking`,
+      // Generate transaction code
+      const kode = await this.codeGenerator.generateTransactionCode()
+
+      // STEP 4: Create transaction with MINIMAL operations INSIDE transaction
+      console.log('🔄 [STEP-4] Creating transaction record (optimized)...')
+      const transactionStartTime = Date.now()
+
+      const transaksi = await this.prisma.$transaction(async (tx) => {
+        // Create main transaction (1 operation)
+        const createdTransaksi = await tx.transaksi.create({
           data: {
-            items: data.items.length,
-            totalHarga: priceCalculation.totalHarga.toString(),
-            sizeAware: true,
+            kode,
+            penyewaId: data.penyewaId,
+            status: 'active',
+            totalHarga: priceCalculation!.totalHarga,
+            jumlahBayar: new Decimal(0),
+            sisaBayar: priceCalculation!.totalHarga,
+            tglMulai: new Date(data.tglMulai),
+            tglSelesai: data.tglSelesai ? new Date(data.tglSelesai) : null,
+            metodeBayar: data.metodeBayar || 'tunai',
+            catatan: data.catatan || null,
+            createdBy: this.userId,
           },
-          createdBy: this.userId,
-        },
+        })
+
+        // Create transaction items (1 operation - bulk insert)
+        const itemsData = data.items.map((item, index) => {
+          const calculation = priceCalculation!.itemCalculations[index]
+          const productSize = productSizes.find((ps) => ps.id === item.productSizeId)!
+          return {
+            transaksiId: createdTransaksi.id,
+            produkId: item.produkId,
+            jumlah: item.jumlah,
+            hargaSewa: calculation.hargaSewa,
+            durasi: item.durasi,
+            subtotal: calculation.subtotal,
+            kondisiAwal: `${item.productSizeId}|${productSize.size}|${productSize.ageCategory}|${item.kondisiAwal || ''}`,
+          }
+        })
+
+        await tx.transaksiItem.createMany({
+          data: itemsData,
+        })
+
+        // Create activity log (1 operation)
+        await tx.aktivitasTransaksi.create({
+          data: {
+            transaksiId: createdTransaksi.id,
+            tipe: 'dibuat',
+            deskripsi: `Transaksi ${kode} dibuat dengan optimized size-aware tracking`,
+            data: {
+              items: data.items.length,
+              totalHarga: priceCalculation!.totalHarga.toString(),
+              sizeAware: true,
+              optimized: true,
+              transactionDuration: Date.now() - transactionStartTime,
+            },
+            createdBy: this.userId,
+          },
+        })
+
+        return createdTransaksi
+      }, {
+        timeout: 30000 // 30 seconds timeout for safety
       })
 
-      return createdTransaksi
-    })
+      const transactionDuration = Date.now() - transactionStartTime
+      console.log(`✅ [STEP-4] Transaction created in ${transactionDuration}ms`)
 
-    return transaksi
+      // STEP 5: Update stock quantities with retry logic AFTER transaction
+      console.log('📦 [STEP-5] Updating stock quantities...')
+      await this.updateStockWithRetry(data.items)
+
+      const totalDuration = Date.now() - startTime
+      console.log(`✅ [TRANSACTION] Phase 2 optimization completed in ${totalDuration}ms`)
+      console.log(`📊 [PERFORMANCE] Transaction: ${transactionDuration}ms, Stock Update: ${totalDuration - transactionDuration}ms`)
+
+      return transaksi
+
+    } catch (error) {
+      const totalDuration = Date.now() - startTime
+      console.error(`❌ [TRANSACTION] Failed after ${totalDuration}ms:`, error)
+
+      // Enhanced error logging for debugging
+      if (error instanceof Error) {
+        console.error('🚨 [ERROR] Details:', {
+          message: error.message,
+          itemCount: data.items.length,
+          penyewaId: data.penyewaId,
+          totalAmount: priceCalculation?.totalHarga?.toString() || 'unknown',
+        })
+      }
+
+      throw error
+    }
   }
 
   /**
@@ -535,6 +561,169 @@ export class TransaksiService {
         throw new Error(error)
       }
     }
+  }
+
+  /**
+   * Validate stock availability for all items BEFORE transaction
+   * NEW: Pre-validation pattern to prevent transaction timeouts
+   * @private
+   */
+  private async validateStockAvailability(
+    items: CreateTransaksiRequest['items'],
+  ): Promise<void> {
+    console.log('🔍 [PRE-VALIDATION] Starting stock availability check...')
+
+    const productSizeIds = items.map((item) => item.productSizeId)
+    const uniqueSizeIds = [...new Set(productSizeIds)] // Remove duplicates
+
+    // Single query to get all required product sizes
+    const productSizes = await this.prisma.productSize.findMany({
+      where: {
+        id: { in: uniqueSizeIds },
+        isActive: true,
+      },
+      include: {
+        product: {
+          select: {
+            id: true,
+            name: true,
+            currentPrice: true,
+            isActive: true,
+            status: true,
+          },
+        },
+      },
+    })
+
+    // Check if all requested sizes exist
+    if (productSizes.length !== uniqueSizeIds.length) {
+      const foundIds = productSizes.map((ps) => ps.id)
+      const missingIds = uniqueSizeIds.filter((id) => !foundIds.includes(id))
+      throw new Error(`Ukuran produk dengan ID ${missingIds[0]} tidak tersedia`)
+    }
+
+    // Validate each item has sufficient stock
+    for (const item of items) {
+      const productSize = productSizes.find((ps) => ps.id === item.productSizeId)
+
+      if (!productSize) {
+        throw new Error(`Ukuran produk tidak ditemukan untuk item ${item.productSizeId}`)
+      }
+
+      // Validate product is active and available
+      if (!productSize.product.isActive || productSize.product.status !== 'AVAILABLE') {
+        throw new Error(`Produk ${productSize.product.name} sedang tidak tersedia`)
+      }
+
+      // Validate stock availability
+      if (productSize.quantity < item.jumlah) {
+        throw new Error(
+          `Size ${productSize.size} (${productSize.ageCategory}) untuk ${productSize.product.name} tidak mencukupi. Tersedia: ${productSize.quantity}, Diminta: ${item.jumlah}`
+        )
+      }
+    }
+
+    console.log('✅ [PRE-VALIDATION] Stock availability check passed')
+  }
+
+  /**
+   * Update stock quantities with retry logic AFTER transaction
+   * NEW: Compensation pattern for stock updates outside transaction
+   * @private
+   */
+  private async updateStockWithRetry(
+    items: CreateTransaksiRequest['items'],
+    maxRetries: number = 3,
+  ): Promise<void> {
+    console.log('🔄 [STOCK-UPDATE] Starting stock update with retry logic...')
+
+    // Group by productSizeId to optimize updates
+    const stockUpdates = items.reduce((acc, item) => {
+      acc[item.productSizeId] = (acc[item.productSizeId] || 0) + item.jumlah
+      return acc
+    }, {} as Record<string, number>)
+
+    for (const [productSizeId, totalQuantity] of Object.entries(stockUpdates)) {
+      let attempt = 0
+      let lastError: Error | null = null
+
+      while (attempt < maxRetries) {
+        try {
+          attempt++
+          console.log(`🔄 [STOCK-UPDATE] Attempt ${attempt}/${maxRetries} for ProductSize ${productSizeId}`)
+
+          // Get current stock state
+          const currentProductSize = await this.prisma.productSize.findUnique({
+            where: { id: productSizeId },
+            select: {
+              id: true,
+              quantity: true,
+              product: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+          })
+
+          if (!currentProductSize) {
+            throw new Error(`ProductSize ${productSizeId} not found during stock update`)
+          }
+
+          // Double-check availability (race condition protection)
+          if (currentProductSize.quantity < totalQuantity) {
+            throw new Error(
+              `Insufficient stock during update. Available: ${currentProductSize.quantity}, Requested: ${totalQuantity}`
+            )
+          }
+
+          // Update stock with atomic operation
+          const updateResult = await this.prisma.productSize.updateMany({
+            where: {
+              id: productSizeId,
+              quantity: { gte: totalQuantity }, // Ensure sufficient stock
+            },
+            data: {
+              quantity: {
+                decrement: totalQuantity,
+              },
+            },
+          })
+
+          // Verify the update was successful
+          if (updateResult.count === 0) {
+            throw new Error(
+              `Failed to update quantity. The size may have been modified by another transaction.`
+            )
+          }
+
+          console.log(`✅ [STOCK-UPDATE] Successfully updated ${totalQuantity} units for ProductSize ${productSizeId}`)
+          break // Success, exit retry loop
+
+        } catch (error) {
+          lastError = error as Error
+          console.error(`❌ [STOCK-UPDATE] Attempt ${attempt} failed:`, lastError.message)
+
+          if (attempt < maxRetries) {
+            // Exponential backoff: 100ms, 400ms, 1600ms
+            const delay = Math.pow(4, attempt - 1) * 100
+            console.log(`⏳ [STOCK-UPDATE] Retrying in ${delay}ms...`)
+            await new Promise(resolve => setTimeout(resolve, delay))
+          }
+        }
+      }
+
+      if (attempt === maxRetries && lastError) {
+        // All retries exhausted - this is a critical failure
+        console.error(`🚨 [STOCK-UPDATE] All retries failed for ProductSize ${productSizeId}`)
+        throw new Error(
+          `Failed to update stock after ${maxRetries} attempts. Last error: ${lastError.message}`
+        )
+      }
+    }
+
+    console.log('✅ [STOCK-UPDATE] All stock updates completed successfully')
   }
 
   /**
