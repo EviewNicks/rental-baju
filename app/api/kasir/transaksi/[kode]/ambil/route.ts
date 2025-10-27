@@ -86,7 +86,7 @@ export async function PATCH(
     }
 
     // 6. Process pickup using PickupService
-    const pickupService = createPickupService(prisma, user.id)
+    const pickupService = createPickupService(prisma, user.id, transaksiService)
     const result = await pickupService.processPickup(transaction.id, items, catatan)
 
     if (!result.success) {

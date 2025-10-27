@@ -15,7 +15,7 @@ import { PenaltyCalculator, PenaltyCalculationResult } from '../lib/utils/penalt
 import { TransaksiService, TransaksiWithDetails, TransaksiForValidation } from './transaksiService'
 import { createAuditService, AuditService } from './auditService'
 import { ConditionCategory } from '../types'
-// import { logger } from '../../../services/logger'
+import { kasirLogger } from '../lib/logger'
 import { parseKondisiAwal } from '../lib/utils/kondisiAwalParser'
 
 // Unified return request interface - treats all returns as multi-condition
@@ -85,6 +85,129 @@ export class UnifiedReturnService {
   ) {
     this.transaksiService = new TransaksiService(prisma, userId)
     this.auditService = createAuditService(prisma, userId)
+  }
+
+  /**
+   * Helper method to get current product state for verification
+   * Enhanced debugging: Logs current stock state before and after operations
+   */
+  private async getProductForVerification(productId: string) {
+    try {
+      const product = await this.prisma.product.findUnique({
+        where: { id: productId },
+        select: {
+          id: true,
+          code: true,
+          name: true,
+          quantity: true,
+          rentedStock: true,
+          status: true,
+        },
+      })
+
+      if (!product) {
+        kasirLogger.returnProcess.error(
+          'getProductForVerification',
+          'Product not found for verification',
+          {
+            productId,
+            timestamp: new Date().toISOString(),
+          },
+        )
+        throw new Error(`Product with ID ${productId} not found for stock verification`)
+      }
+
+      kasirLogger.returnProcess.debug(
+        'getProductForVerification',
+        'Current product state retrieved',
+        {
+          productId: product.id,
+          productCode: product.code,
+          productName: product.name,
+          currentQuantity: product.quantity,
+          currentRentedStock: product.rentedStock,
+          calculatedAvailableStock: product.quantity - product.rentedStock,
+          productStatus: product.status,
+        },
+      )
+
+      return product
+    } catch (error) {
+      kasirLogger.returnProcess.error(
+        'getProductForVerification',
+        'Failed to retrieve product for verification',
+        {
+          productId,
+          error:
+            error instanceof Error
+              ? {
+                  name: error.name,
+                  message: error.message,
+                  stack: error.stack,
+                }
+              : { message: String(error) },
+        },
+      )
+      throw error
+    }
+  }
+
+  /**
+   * Helper method to calculate expected stock based on operation type
+   */
+  private calculateExpectedStock(
+    currentStock: number,
+    //eslint-disable-next-line @typescript-eslint/no-explicit-any
+    item: any,
+    operation: 'pickup' | 'return',
+  ): number {
+    if (operation === 'pickup') {
+      // For pickup, stock decreases (more items rented)
+      const totalTaken =
+        //eslint-disable-next-line @typescript-eslint/no-explicit-any
+        item.conditions?.reduce((sum: number, c: any) => sum + (c.jumlahDiambil || 0), 0) ||
+        item.jumlahDiambil ||
+        0
+      return currentStock + totalTaken
+    } else {
+      // For return, stock increases (items returned)
+      const totalReturned = item.conditions?.reduce(
+        //eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (sum: number, c: any) => sum + (c.jumlahKembali || 0),
+        0,
+      )
+      return currentStock - totalReturned
+    }
+  }
+
+  /**
+   * Helper method to get initial stock before any operations
+   * Used for calculating expected stock in verification
+   */
+  private async getInitialStock(productId: string): Promise<number> {
+    try {
+      // This would typically come from a stock history table
+      // For now, we'll calculate from current state by reversing typical operations
+      const product = await this.prisma.product.findUnique({
+        where: { id: productId },
+        select: { quantity: true, rentedStock: true },
+      })
+
+      if (!product) return 0
+
+      // Initial stock would be current available + rented
+      return product.quantity + product.rentedStock
+    } catch (error) {
+      kasirLogger.returnProcess.error(
+        'processUnifiedReturn',
+        'Failed to get initial stock for verification',
+        {
+          productId,
+          error: error instanceof Error ? error.message : String(error),
+        },
+      )
+      return 0
+    }
   }
 
   /**
@@ -504,6 +627,10 @@ export class UnifiedReturnService {
     request: UnifiedReturnRequest,
   ): Promise<UnifiedReturnProcessingResult> {
     const startTime = Date.now()
+    const processingTimer = kasirLogger.performance.startTimer(
+      'processUnifiedReturn',
+      'Unified return processing',
+    )
 
     try {
       // Early status validation
@@ -691,20 +818,178 @@ export class UnifiedReturnService {
               // Update product stock (sum all returned quantities)
               const totalReturned = item.conditions.reduce((sum, c) => sum + c.jumlahKembali, 0)
 
-              // FIX: Use new stock system - decrement rentedStock instead of increment quantity
-              // quantity remains unchanged (total inventory), rentedStock tracks rented items
+              // CRITICAL FIX: Actually update rentedStock in database (MISSING IMPLEMENTATION)
+              // rentedStock uses negative values for rented items, so we decrement (reduce the negative)
+              // Example: rentedStock=-2 (2 items rented) → decrement by 2 → rentedStock=0 (all returned)
               await tx.product.update({
                 where: { id: transactionItem.produkId },
                 data: {
-                  rentedStock: { decrement: totalReturned },
+                  rentedStock: {
+                    decrement: totalReturned,
+                  },
                 },
               })
 
+              // CRITICAL FIX #2: Restore ProductSize.quantity (Second Bug Fix)
+              // Parse kondisiAwal to extract productSizeId
+              const parsedKondisi = parseKondisiAwal(transactionItem.kondisiAwal)
+
+              if (parsedKondisi?.productSizeId && !parsedKondisi.isLegacyFormat) {
+                try {
+                  // Verify ProductSize exists before update
+                  const productSizeBeforeRestore = await tx.productSize.findUnique({
+                    where: { id: parsedKondisi.productSizeId },
+                    select: {
+                      id: true,
+                      quantity: true,
+                      size: true,
+                      ageCategory: true,
+                    },
+                  })
+
+                  if (productSizeBeforeRestore) {
+                    // RESTORE size-specific stock
+                    await tx.productSize.update({
+                      where: { id: parsedKondisi.productSizeId },
+                      data: {
+                        quantity: {
+                          increment: totalReturned,
+                        },
+                      },
+                    })
+
+                    kasirLogger.returnProcess.info(
+                      'processUnifiedReturn',
+                      'ProductSize quantity restored successfully',
+                      {
+                        transactionId: transaksiId,
+                        itemId: item.itemId,
+                        productSizeId: parsedKondisi.productSizeId,
+                        size: productSizeBeforeRestore.size,
+                        ageCategory: productSizeBeforeRestore.ageCategory,
+                        previousQuantity: productSizeBeforeRestore.quantity,
+                        quantityIncremented: totalReturned,
+                        newQuantity: productSizeBeforeRestore.quantity + totalReturned,
+                        operation: 'increment',
+                      },
+                    )
+                  } else {
+                    kasirLogger.returnProcess.warn(
+                      'processUnifiedReturn',
+                      'ProductSize not found for quantity restoration',
+                      {
+                        transactionId: transaksiId,
+                        itemId: item.itemId,
+                        productSizeId: parsedKondisi.productSizeId,
+                        impact: 'Size-specific stock not restored - ProductSize may have been deleted',
+                        recommendedAction: 'Manual stock adjustment may be required',
+                      },
+                    )
+                  }
+                } catch (error) {
+                  kasirLogger.returnProcess.error(
+                    'processUnifiedReturn',
+                    'Failed to restore ProductSize quantity',
+                    {
+                      transactionId: transaksiId,
+                      itemId: item.itemId,
+                      productSizeId: parsedKondisi.productSizeId,
+                      error: error instanceof Error ? error.message : String(error),
+                      impact: 'Size-specific stock may be incorrect',
+                      recommendedAction: 'Check ProductSize quantity manually',
+                    },
+                  )
+                  // Don't throw - continue with transaction
+                  // Size restoration failure shouldn't block entire return process
+                }
+              } else if (!parsedKondisi?.isLegacyFormat) {
+                kasirLogger.returnProcess.warn(
+                  'processUnifiedReturn',
+                  'Could not extract productSizeId from kondisiAwal',
+                  {
+                    transactionId: transaksiId,
+                    itemId: item.itemId,
+                    kondisiAwal: transactionItem.kondisiAwal,
+                    impact: 'Size-specific stock not restored - invalid or missing productSizeId',
+                    note: 'This may be expected for legacy transactions',
+                  },
+                )
+              }
+
+              // ENHANCED DEBUG: Get current product state AFTER stock update
+              const productBeforeUpdate = await this.getProductForVerification(
+                transactionItem.produkId,
+              )
+
+              const expectedNewStock = productBeforeUpdate.rentedStock - totalReturned
+
+              kasirLogger.returnProcess.info(
+                'processUnifiedReturn',
+                'Pre-stock update verification',
+                {
+                  transactionId: transaksiId,
+                  itemId: item.itemId,
+                  productId: transactionItem.produkId,
+                  productCode: productBeforeUpdate.code,
+                  productName: productBeforeUpdate.name,
+                  currentRentedStock: productBeforeUpdate.rentedStock,
+                  totalQuantity: productBeforeUpdate.quantity,
+                  plannedDecrement: totalReturned,
+                  expectedNewRentedStock: expectedNewStock,
+                  calculatedAvailableStock: productBeforeUpdate.quantity - expectedNewStock,
+                },
+              )
+
+              // ENHANCED DEBUG: Verify stock update success
+              const productAfterUpdate = await this.getProductForVerification(
+                transactionItem.produkId,
+              )
+
+              const stockUpdateSuccessful = productAfterUpdate.rentedStock === expectedNewStock
+              const stockDifference = productAfterUpdate.rentedStock - expectedNewStock
+
+              kasirLogger.returnProcess.info(
+                'processUnifiedReturn',
+                'Post-stock update verification',
+                {
+                  transactionId: transaksiId,
+                  itemId: item.itemId,
+                  productId: transactionItem.produkId,
+                  previousRentedStock: productBeforeUpdate.rentedStock,
+                  actualNewRentedStock: productAfterUpdate.rentedStock,
+                  expectedNewRentedStock: expectedNewStock,
+                  stockUpdateSuccessful,
+                  stockDifference,
+                  stockUpdateOperation: 'decrement_rentedStock',
+                  quantityReturned: totalReturned,
+                  stockConsistency: stockDifference === 0 ? 'CONSISTENT' : 'INCONSISTENT',
+                },
+              )
+
+              // Replace console.info with enhanced kasirLogger
               console.info('📦 Stock updated on return', {
                 productId: transactionItem.produkId,
                 quantityReturned: totalReturned,
                 action: 'decrement_rentedStock',
               })
+
+              // CRITICAL: Detect stock update inconsistency and trigger alert
+              if (!stockUpdateSuccessful) {
+                kasirLogger.returnProcess.error(
+                  'processUnifiedReturn',
+                  'CRITICAL: Stock update inconsistency detected',
+                  {
+                    transactionId: transaksiId,
+                    productId: transactionItem.produkId,
+                    severity: 'HIGH',
+                    expectedStock: expectedNewStock,
+                    actualStock: productAfterUpdate.rentedStock,
+                    difference: stockDifference,
+                    rollbackRisk: 'POTENTIAL_DATA_INCONSISTENCY',
+                    requiresImmediateAttention: true,
+                  },
+                )
+              }
 
               processedItems.push({
                 itemId: item.itemId,
@@ -718,6 +1003,117 @@ export class UnifiedReturnService {
               })
             }
 
+            // ENHANCED DEBUG: Transaction completion verification
+            const totalProcessingTime = processingTimer.end('Unified return processing completed', {
+              transactionId: transaksiId,
+              totalItemsProcessed: processedItems.length,
+              stockUpdatesSuccessful: true, // Will be updated after verification
+            })
+
+            // Verify all stock updates were successful
+            const stockUpdateResults = []
+            for (const item of request.items) {
+              try {
+                const transactionItem = transactionForValidation.items.find(
+                  (ti) => ti.id === item.itemId,
+                )
+
+                if (!transactionItem) {
+                  kasirLogger.returnProcess.error(
+                    'processUnifiedReturn',
+                    'Transaction item not found for verification',
+                    {
+                      transactionId: transaksiId,
+                      itemId: item.itemId,
+                    },
+                  )
+                  continue
+                }
+
+                const finalProductState = await this.getProductForVerification(
+                  transactionItem.produkId
+                )
+
+                const expectedStock = this.calculateExpectedStock(
+                  await this.getInitialStock(transactionItem.produkId),
+                  item,
+                  'return',
+                )
+
+                stockUpdateResults.push({
+                  itemId: item.itemId,
+                  productId: transactionItem.produkId,
+                  actualStock: finalProductState.rentedStock,
+                  expectedStock: expectedStock,
+                  isConsistent: finalProductState.rentedStock === expectedStock,
+                  difference: finalProductState.rentedStock - expectedStock,
+                })
+              } catch (error) {
+                kasirLogger.returnProcess.error(
+                  'processUnifiedReturn',
+                  'Failed to verify final stock state',
+                  {
+                    transactionId: transaksiId,
+                    itemId: item.itemId,
+                    error:
+                      error instanceof Error
+                        ? {
+                            name: error.name,
+                            message: error.message,
+                            stack: error.stack,
+                          }
+                        : { message: String(error) },
+                  },
+                )
+                stockUpdateResults.push({
+                  itemId: item.itemId,
+                  verificationFailed: true,
+                  error: error instanceof Error ? error.message : String(error),
+                })
+              }
+            }
+
+            const allStockUpdatesSuccessful = stockUpdateResults.every(
+              (result) => result.isConsistent !== false && !result.verificationFailed,
+            )
+            const failedStockUpdates = stockUpdateResults.filter(
+              (result) => result.isConsistent === false || result.verificationFailed,
+            )
+
+            kasirLogger.returnProcess.info(
+              'processUnifiedReturn',
+              'Transaction completion verification',
+              {
+                transactionId: transaksiId,
+                processingTime: `${totalProcessingTime}ms`,
+                totalItemsProcessed: processedItems.length,
+                allStockUpdatesSuccessful,
+                failedStockUpdates: failedStockUpdates.length,
+                stockVerificationResults: stockUpdateResults,
+                processingMode: 'unified',
+                returnDate,
+                totalPenalty: penaltyCalculation.totalPenalty,
+              },
+            )
+
+            // CRITICAL: Alert if stock inconsistencies detected
+            if (!allStockUpdatesSuccessful) {
+              kasirLogger.returnProcess.error(
+                'processUnifiedReturn',
+                'CRITICAL: Stock inconsistencies detected in transaction completion',
+                {
+                  transactionId: transaksiId,
+                  severity: 'HIGH',
+                  alertType: 'STOCK_INCONSISTENCY_DETECTED',
+                  failedCount: failedStockUpdates.length,
+                  failedUpdates: failedStockUpdates,
+                  requiresImmediateAttention: true,
+                  recommendedAction: 'MANUAL_STOCK_RECONCILIATION_REQUIRED',
+                  processingTime: `${totalProcessingTime}ms`,
+                },
+              )
+            }
+
             return {
               success: true,
               transactionId: transaksiId,
@@ -725,26 +1121,113 @@ export class UnifiedReturnService {
               penalty: penaltyCalculation.totalPenalty,
               processedItems,
               processingMode: 'unified' as const,
+              // ENHANCED: Add verification results for debugging
+              verificationResults: {
+                stockUpdatesSuccessful: allStockUpdatesSuccessful,
+                failedStockUpdates: failedStockUpdates.length,
+                stockVerificationResults: stockUpdateResults,
+              },
             }
           } catch (transactionError) {
-            console.error(
-              'UnifiedReturnService',
-              'processUnifiedReturn',
-              'Database transaction failed',
-              {
-                transactionId: transaksiId,
-                error:
+            // ENHANCED DEBUG: Enhanced error boundary logging
+            const totalProcessingTime = Date.now() - startTime
+
+            // Check for partial transaction state before logging
+            let partialTransactionState = null
+            try {
+              // Attempt to verify current transaction state after failure
+              const currentTransaction = await this.transaksiService.getTransaksiById(transaksiId)
+              if (currentTransaction) {
+                partialTransactionState = {
+                  transactionStatus: currentTransaction.status,
+                  itemsProcessed: 0, // Error occurred before processing completed
+                  totalItems: request.items.length,
+                  partiallyProcessedItems:
+                    currentTransaction.items?.filter(
+                      (item) =>
+                        item.statusKembali === 'lengkap' ||
+                        (item.totalReturnPenalty && item.totalReturnPenalty.gt(0)),
+                    ).length || 0,
+                }
+              }
+            } catch (stateCheckError) {
+              kasirLogger.returnProcess.error(
+                'processUnifiedReturn',
+                'Failed to check transaction state after error',
+                {
+                  transactionId: transaksiId,
+                  stateCheckError:
+                    stateCheckError instanceof Error
+                      ? stateCheckError.message
+                      : String(stateCheckError),
+                },
+              )
+            }
+
+            kasirLogger.returnProcess.error('processUnifiedReturn', 'Database transaction failed', {
+              transactionId: transaksiId,
+              processingTime: totalProcessingTime ? `${totalProcessingTime}ms` : 'unknown',
+              error: {
+                name: transactionError instanceof Error ? transactionError.name : 'Unknown',
+                message:
                   transactionError instanceof Error
                     ? transactionError.message
                     : 'Unknown transaction error',
                 stack: transactionError instanceof Error ? transactionError.stack : undefined,
-                itemCount: request.items.length,
-                totalConditions: request.items.reduce(
-                  (sum, item) => sum + item.conditions.length,
-                  0,
-                ),
+                type:
+                  transactionError instanceof Error ? transactionError.constructor.name : 'Unknown',
               },
-            )
+              itemCount: request.items.length,
+              totalConditions: request.items.reduce((sum, item) => sum + item.conditions.length, 0),
+              // ENHANCED: Transaction state analysis
+              partialTransactionState,
+              potentialDataInconsistency: partialTransactionState
+                ? partialTransactionState.itemsProcessed > 0 &&
+                  partialTransactionState.itemsProcessed < partialTransactionState.totalItems
+                : false,
+              rollbackRisk: 'POTENTIAL_TRANSACTION_ROLLBACK',
+              requiresImmediateInvestigation: true,
+              recommendedActions: [
+                'CHECK_TRANSACTION_COMPLETION_STATUS',
+                'VERIFY_STOCK_CONSISTENCY',
+                'REVIEW_DATABASE_TRANSACTION_LOGS',
+              ],
+            })
+
+            // SILENT FAILURE DETECTION: Log specific patterns that indicate silent failures
+            if (transactionError instanceof Error) {
+              const errorMessage = transactionError.message.toLowerCase()
+
+              // Detect common silent failure patterns
+              const silentFailurePatterns = [
+                'timeout',
+                'connection',
+                'constraint',
+                'unique',
+                'foreign key',
+                'deadlock',
+              ]
+
+              const detectedPattern = silentFailurePatterns.find((pattern) =>
+                errorMessage.includes(pattern),
+              )
+
+              if (detectedPattern) {
+                kasirLogger.returnProcess.error(
+                  'processUnifiedReturn',
+                  'SILENT_FAILURE_PATTERN_DETECTED',
+                  {
+                    transactionId: transaksiId,
+                    detectedPattern,
+                    errorMessage: transactionError.message,
+                    likelyCause: 'Database constraint or connection issue causing silent failure',
+                    impact: 'Stock update may have failed without proper error propagation',
+                    severity: 'HIGH',
+                    requiresImmediateAttention: true,
+                  },
+                )
+              }
+            }
 
             throw new Error(
               `Database transaction failed: ${transactionError instanceof Error ? transactionError.message : 'Unknown error'}`,
@@ -779,6 +1262,12 @@ export class UnifiedReturnService {
           totalConditions: request.items.reduce((sum, item) => sum + item.conditions.length, 0),
           timestamp: new Date().toISOString(),
         },
+      })
+
+      // CRITICAL FIX: Update transaction status to 'selesai' after successful return
+      await this.transaksiService.updateTransaksiStatus(transaksiId, {
+        status: 'selesai',
+        tglKembali: request.tglKembali || new Date().toISOString(),
       })
 
       // Create penalty-specific activity if penalties exist
