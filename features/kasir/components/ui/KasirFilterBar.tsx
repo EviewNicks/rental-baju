@@ -33,10 +33,7 @@ export function KasirFilterBar({
   const categories = categoriesData?.categories || []
 
   // Create category options with "Semua" option
-  const categoryOptions = [
-    { id: 'all', name: 'Semua Kategori' },
-    ...categories
-  ]
+  const categoryOptions = [{ id: 'all', name: 'Semua Kategori' }, ...categories]
 
   // Status options for kasir workflow
   const statusOptions = [
@@ -72,29 +69,41 @@ export function KasirFilterBar({
     })
   }
 
-  const hasActiveFilters = filters.search ||
-    filters.categoryId ||
-    filters.status ||
-    filters.minPrice ||
-    filters.maxPrice
+  const hasActiveFilters =
+    filters.search || filters.categoryId || filters.status || filters.minPrice || filters.maxPrice
 
   return (
     <Card className="mb-6 shadow-md border-0 bg-card" data-testid="kasir-filter-bar">
       <CardContent className="px-6 py-4">
-        <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+        <div className="flex flex-col lg:flex-col gap-4 items-start lg:items-center justify-between">
           {/* Search Section */}
-          <div className="flex-1 max-w-md" data-testid="search-section">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-              <Input
-                placeholder="Cari produk untuk kasir..."
-                value={filters.search || ''}
-                onChange={(e) => handleFilterChange('search', e.target.value)}
-                className="pl-10 border-border focus:ring-2 focus:ring-ring/20"
-                disabled={isLoading}
-                data-testid="kasir-search-input"
-              />
+          <div className="flex flex-row justify-between w-full ">
+            <div className="flex-1 max-w-lg" data-testid="search-section">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                <Input
+                  placeholder="Cari produk untuk kasir..."
+                  value={filters.search || ''}
+                  onChange={(e) => handleFilterChange('search', e.target.value)}
+                  className="pl-10 border-border focus:ring-2 focus:ring-ring/20"
+                  disabled={isLoading}
+                  data-testid="kasir-search-input"
+                />
+              </div>
             </div>
+            {/* Reset Button */}
+            {hasActiveFilters && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={resetFilters}
+                disabled={isLoading}
+                className="text-sm"
+                data-testid="reset-filters-button"
+              >
+                Reset Filter
+              </Button>
+            )}
           </div>
 
           {/* Filter Controls */}
@@ -104,7 +113,9 @@ export function KasirFilterBar({
               <Filter className="w-4 h-4 text-muted-foreground" />
               <Select
                 value={filters.categoryId || 'all'}
-                onValueChange={(value) => handleFilterChange('categoryId', value === 'all' ? '' : value)}
+                onValueChange={(value) =>
+                  handleFilterChange('categoryId', value === 'all' ? '' : value)
+                }
                 disabled={isLoading || isLoadingCategories}
                 data-testid="kasir-category-filter"
               >
@@ -118,7 +129,11 @@ export function KasirFilterBar({
                     </SelectItem>
                   ) : (
                     categoryOptions.map((category) => (
-                      <SelectItem key={category.id} value={category.id} data-testid={`category-option-${category.id}`}>
+                      <SelectItem
+                        key={category.id}
+                        value={category.id}
+                        data-testid={`category-option-${category.id}`}
+                      >
                         <div className="flex items-center justify-between w-full">
                           <span>{category.name}</span>
                           {category.id !== 'all' && (
@@ -146,7 +161,11 @@ export function KasirFilterBar({
               </SelectTrigger>
               <SelectContent data-testid="status-filter-content">
                 {statusOptions.map((status) => (
-                  <SelectItem key={status.value} value={status.value} data-testid={`status-option-${status.value}`}>
+                  <SelectItem
+                    key={status.value}
+                    value={status.value}
+                    data-testid={`status-option-${status.value}`}
+                  >
                     {status.label}
                   </SelectItem>
                 ))}
@@ -167,7 +186,11 @@ export function KasirFilterBar({
                 </SelectTrigger>
                 <SelectContent data-testid="sort-filter-content">
                   {sortOptions.map((sort) => (
-                    <SelectItem key={sort.value} value={sort.value} data-testid={`sort-option-${sort.value}`}>
+                    <SelectItem
+                      key={sort.value}
+                      value={sort.value}
+                      data-testid={`sort-option-${sort.value}`}
+                    >
                       {sort.label}
                     </SelectItem>
                   ))}
@@ -178,7 +201,9 @@ export function KasirFilterBar({
               <Button
                 variant={filters.sortOrder === 'desc' ? 'default' : 'outline'}
                 size="sm"
-                onClick={() => handleFilterChange('sortOrder', filters.sortOrder === 'asc' ? 'desc' : 'asc')}
+                onClick={() =>
+                  handleFilterChange('sortOrder', filters.sortOrder === 'asc' ? 'desc' : 'asc')
+                }
                 disabled={isLoading}
                 className="px-3"
                 data-testid="sort-order-toggle"
@@ -195,7 +220,12 @@ export function KasirFilterBar({
                   type="number"
                   placeholder="Min"
                   value={filters.minPrice || ''}
-                  onChange={(e) => handleFilterChange('minPrice', e.target.value ? Number(e.target.value) : undefined)}
+                  onChange={(e) =>
+                    handleFilterChange(
+                      'minPrice',
+                      e.target.value ? Number(e.target.value) : undefined,
+                    )
+                  }
                   className="w-24"
                   min="0"
                   disabled={isLoading}
@@ -206,7 +236,12 @@ export function KasirFilterBar({
                   type="number"
                   placeholder="Max"
                   value={filters.maxPrice || ''}
-                  onChange={(e) => handleFilterChange('maxPrice', e.target.value ? Number(e.target.value) : undefined)}
+                  onChange={(e) =>
+                    handleFilterChange(
+                      'maxPrice',
+                      e.target.value ? Number(e.target.value) : undefined,
+                    )
+                  }
                   className="w-24"
                   min="0"
                   disabled={isLoading}
@@ -215,20 +250,6 @@ export function KasirFilterBar({
               </div>
             </div>
           </div>
-
-          {/* Reset Button */}
-          {hasActiveFilters && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={resetFilters}
-              disabled={isLoading}
-              className="text-sm"
-              data-testid="reset-filters-button"
-            >
-              Reset Filter
-            </Button>
-          )}
         </div>
       </CardContent>
     </Card>

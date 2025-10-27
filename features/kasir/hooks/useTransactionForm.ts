@@ -9,6 +9,7 @@ import { useCreatePembayaran } from './usePembayaran'
 import { KasirApi } from '../api'
 import { useMutation } from '@tanstack/react-query'
 import type { CreatePembayaranRequest } from '../types'
+import { TransactionLogger } from '../lib/logger/transactionLogger'
 // import { toast } from '@/hooks/use-toast' // TODO: Add toast implementation when available
 
 const initialFormData: TransactionFormData = {
@@ -231,6 +232,9 @@ export function useTransactionForm() {
           })
         }
       }
+
+      // 🔍 LOG: Log final API payload before submission
+      TransactionLogger.logApiPayload(createRequest)
 
       // Create transaction via API
       const createdTransaction = await createTransaksiMutation.mutateAsync(createRequest)
