@@ -14,13 +14,16 @@ interface TransactionLogConfig {
 
 class TransactionLogger {
   private static config: TransactionLogConfig = {
-    enabled: process.env.NODE_ENV === 'development' || process.env.NEXT_PUBLIC_DEBUG_TRANSACTION === 'true',
-    logLevel: 'both'
+    enabled:
+      process.env.NODE_ENV === 'development' ||
+      process.env.NEXT_PUBLIC_DEBUG_TRANSACTION === 'true',
+    logLevel: 'both',
   }
 
   /**
    * Log form data perspective (user-friendly format from TransactionFormPage)
    */
+  //eslint-disable-next-line @typescript-eslint/no-explicit-any
   static logFormData(data: any): void {
     if (!this.config.enabled || !['form-data', 'both'].includes(this.config.logLevel)) {
       return
@@ -29,7 +32,7 @@ class TransactionLogger {
     this.prettyPrintJson(data, '📋 TRANSACTION FORM DATA', {
       description: 'Data collected from user input form before API transformation',
       timestamp: new Date().toISOString(),
-      source: 'TransactionFormPage.handleSubmitTransaction'
+      source: 'TransactionFormPage.handleSubmitTransaction',
     })
   }
 
@@ -46,13 +49,14 @@ class TransactionLogger {
       timestamp: new Date().toISOString(),
       source: 'useTransactionForm.submitTransaction',
       endpoint: 'POST /api/kasir/transaksi',
-      format: payload.items.some(item => 'productSizeId' in item) ? 'size-aware' : 'legacy'
+      format: payload.items.some((item) => 'productSizeId' in item) ? 'size-aware' : 'legacy',
     })
   }
 
   /**
    * Pretty print JSON data with consistent formatting
    */
+  //eslint-disable-next-line @typescript-eslint/no-explicit-any
   private static prettyPrintJson(data: any, title: string, metadata?: Record<string, any>): void {
     console.group(`%c${title}`, 'color: #3B82F6; font-weight: bold; font-size: 14px;')
 
@@ -65,11 +69,15 @@ class TransactionLogger {
     }
 
     console.groupCollapsed('%c📄 Data Payload', 'color: #6B7280; font-weight: bold;')
-    console.log('%c' + JSON.stringify(data, null, 2), 'color: #1F2937; font-family: monospace; font-size: 12px;')
+    console.log(
+      '%c' + JSON.stringify(data, null, 2),
+      'color: #1F2937; font-family: monospace; font-size: 12px;',
+    )
     console.groupEnd()
 
     if (data.items && Array.isArray(data.items)) {
       console.groupCollapsed('%c📦 Items Summary', 'color: #6B7280; font-weight: bold;')
+      //eslint-disable-next-line @typescript-eslint/no-explicit-any
       data.items.forEach((item: any, index: number) => {
         const itemSummary = {
           index: index + 1,
@@ -77,7 +85,7 @@ class TransactionLogger {
           quantity: item.jumlah || item.quantity,
           duration: item.durasi,
           sizeInfo: item.productSizeId ? `Size: ${item.productSizeId}` : 'No size specified',
-          price: item.hargaSewa || item.product?.pricePerDay
+          price: item.hargaSewa || item.product?.pricePerDay,
         }
         console.log(`%cItem ${index + 1}:`, 'color: #7C3AED; font-weight: bold;', itemSummary)
       })
@@ -98,10 +106,18 @@ class TransactionLogger {
     if (data.totalAmount || data.items) {
       console.groupCollapsed('%c💰 Pricing Summary', 'color: #6B7280; font-weight: bold;')
       if (data.totalAmount) {
-        console.log('%cTotal Amount:', 'color: #059669; font-weight: bold;', `Rp ${data.totalAmount.toLocaleString('id-ID')}`)
+        console.log(
+          '%cTotal Amount:',
+          'color: #059669; font-weight: bold;',
+          `Rp ${data.totalAmount.toLocaleString('id-ID')}`,
+        )
       }
       if (data.items && Array.isArray(data.items)) {
-        const itemCount = data.items.reduce((sum: number, item: any) => sum + (item.jumlah || item.quantity || 0), 0)
+        const itemCount = data.items.reduce(
+          //eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (sum: number, item: any) => sum + (item.jumlah || item.quantity || 0),
+          0,
+        )
         console.log('%cTotal Items:', 'color: #059669; font-weight: bold;', itemCount)
       }
       console.groupEnd()

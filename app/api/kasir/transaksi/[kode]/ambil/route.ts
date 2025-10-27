@@ -103,10 +103,11 @@ export async function PATCH(
       )
     }
 
-    // 7. Update transaction pickup status
-    await pickupService.updateTransactionPickupStatus(transaction.id)
+    // 7. Status update is now handled within processPickup() transaction
+    // to avoid nested transaction issues and ensure atomicity
+    // await pickupService.updateTransactionPickupStatus(transaction.id) // REMOVED - causes nested transaction error
 
-    // 8. Transform response to match API contract
+    // 7. Transform response to match API contract
     const transformedTransaction = {
       id: result.transaction.id,
       kode: result.transaction.kode,

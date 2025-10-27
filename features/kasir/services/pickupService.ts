@@ -174,6 +174,68 @@ export class PickupService {
           },
         })
 
+        // Calculate pickup completion statistics within the transaction
+        const allTransactionItems = await tx.transaksiItem.findMany({
+          where: { transaksiId: transactionId },
+          select: { jumlah: true, jumlahDiambil: true },
+        })
+
+        const pickupStats = allTransactionItems.reduce(
+          (stats, item) => {
+            const isFullyPickedUp = item.jumlahDiambil >= item.jumlah
+            return {
+              totalItems: stats.totalItems + 1,
+              fullyPickedUp: stats.fullyPickedUp + (isFullyPickedUp ? 1 : 0),
+              notPickedUp: stats.notPickedUp + (item.jumlahDiambil === 0 ? 1 : 0),
+            }
+          },
+          { totalItems: 0, fullyPickedUp: 0, notPickedUp: 0 }
+        )
+
+        // Log pickup status for monitoring
+        await tx.aktivitasTransaksi.create({
+          data: {
+            transaksiId: transactionId,
+            tipe: 'status_pickup',
+            deskripsi: `Status pickup: ${pickupStats.fullyPickedUp} lengkap, ${pickupStats.notPickedUp} belum`,
+            data: {
+              pickupStats: {
+                ...pickupStats,
+                partiallyPickedUp: pickupStats.totalItems - pickupStats.fullyPickedUp - pickupStats.notPickedUp,
+              },
+              calculatedBy: this.userId,
+              timestamp: new Date().toISOString(),
+            },
+            createdBy: this.userId,
+          },
+        })
+
+        // Update transaction status to 'diambil' if all items are fully picked up
+        if (pickupStats.fullyPickedUp === pickupStats.totalItems && pickupStats.notPickedUp === 0) {
+          await tx.transaksi.update({
+            where: { id: transactionId },
+            data: { status: 'diambil' },
+          })
+
+          // Create status change activity log
+          await tx.aktivitasTransaksi.create({
+            data: {
+              transaksiId: transactionId,
+              tipe: 'status_changed',
+              deskripsi: 'Status transaksi diubah menjadi diambil',
+              data: {
+                previousStatus: 'active',
+                newStatus: 'diambil',
+                pickupStats,
+                autoUpdated: true,
+                reason: 'All items fully picked up',
+                timestamp: new Date().toISOString(),
+              },
+              createdBy: this.userId,
+            },
+          })
+        }
+
         // Get updated transaction with all details
         const updatedTransaction = await tx.transaksi.findUnique({
           where: { id: transactionId },
@@ -282,10 +344,18 @@ export class PickupService {
   }
 
   /**
-   * Update transaction pickup status based on current item states
-   * This is called after pickup to determine if transaction needs status updates
+   * @deprecated This method is no longer used. Status update is now handled
+   * within processPickup() transaction to avoid nested transaction issues.
+   * Keeping for backward compatibility but logs deprecation warning.
    */
   async updateTransactionPickupStatus(transactionId: string): Promise<void> {
+    // Log deprecation warning
+    console.warn('[DEPRECATED] updateTransactionPickupStatus called. This method is deprecated.', {
+      transactionId,
+      userId: this.userId,
+      timestamp: new Date().toISOString(),
+      reason: 'Status update moved to processPickup() transaction to avoid nested transactions'
+    })
     try {
       const transaction = await this.prisma.transaksi.findUnique({
         where: { id: transactionId },
