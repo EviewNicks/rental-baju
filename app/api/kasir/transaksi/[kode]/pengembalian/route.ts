@@ -8,7 +8,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { UnifiedReturnService } from '@/features/kasir/services/returnService.backup'
+import { UnifiedReturnService } from '@/features/kasir/services/returnService'
 import {
   unifiedReturnRequestSchema,
   convertLegacyToUnified,
@@ -51,7 +51,6 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
   const timeoutId = setTimeout(() => timeoutController.abort(), 30000) // 30 second timeout
 
   try {
-
     // Rate limiting check with timing
     const rateLimitResult = await withRateLimit(`return-${clientIP}`, 10, 60000)
 
@@ -144,18 +143,21 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
           validationErrors: businessValidation.errors,
           requestDataSummary: {
             itemCount: validatedData.items?.length || 0,
-            totalConditions: validatedData.items?.reduce((sum, item) => sum + (item.conditions?.length || 0), 0) || 0,
-            hasMultiConditions: validatedData.items?.some(item => item.conditions?.length > 1) || false,
-            requestPreview: validatedData.items?.map(item => ({
+            totalConditions:
+              validatedData.items?.reduce((sum, item) => sum + (item.conditions?.length || 0), 0) ||
+              0,
+            hasMultiConditions:
+              validatedData.items?.some((item) => item.conditions?.length > 1) || false,
+            requestPreview: validatedData.items?.map((item) => ({
               itemId: item.itemId,
               conditionCount: item.conditions?.length || 0,
-              conditions: item.conditions?.map(c => ({
+              conditions: item.conditions?.map((c) => ({
                 category: c.conditionCategory,
                 manualPrice: c.manualPrice,
-                useManualPricing: c.useManualPricing
-              }))
-            }))
-          }
+                useManualPricing: c.useManualPricing,
+              })),
+            })),
+          },
         })
 
         const zodError = new ZodError(
@@ -171,7 +173,9 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       }
 
       // Enhanced BAIK category validation - prevent manual pricing for BAIK conditions
-      const validateBaikConditions = (request: UnifiedReturnRequest): Array<{
+      const validateBaikConditions = (
+        request: UnifiedReturnRequest,
+      ): Array<{
         field: string
         message: string
         code: string
@@ -191,7 +195,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
                 errors.push({
                   field: `items[${itemIndex}].conditions[${conditionIndex}].manualPrice`,
                   message: 'Kondisi BAIK tidak boleh memiliki manual pricing (harus 0)',
-                  code: 'BAIK_MANUAL_PRICING_INVALID'
+                  code: 'BAIK_MANUAL_PRICING_INVALID',
                 })
               }
 
@@ -199,7 +203,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
                 errors.push({
                   field: `items[${itemIndex}].conditions[${conditionIndex}].useManualPricing`,
                   message: 'Kondisi BAIK tidak boleh menggunakan manual pricing',
-                  code: 'BAIK_MANUAL_PRICING_USAGE_INVALID'
+                  code: 'BAIK_MANUAL_PRICING_USAGE_INVALID',
                 })
               }
             }
@@ -216,19 +220,20 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         console.log('BAIK Validation Errors:', {
           transactionId: kode,
           errors: baikValidationErrors,
-          requestData: JSON.stringify(validatedData, null, 2)
+          requestData: JSON.stringify(validatedData, null, 2),
         })
 
-        const zodError = new ZodError(baikValidationErrors.map(err => ({
-          code: 'custom' as const,
-          path: err.field.split('.'),
-          message: err.message,
-          fatal: false as const,
-          received: undefined,
-        })))
+        const zodError = new ZodError(
+          baikValidationErrors.map((err) => ({
+            code: 'custom' as const,
+            path: err.field.split('.'),
+            message: err.message,
+            fatal: false as const,
+            received: undefined,
+          })),
+        )
         throw zodError
       }
-
     } catch (validationError) {
       if (validationError instanceof ZodError) {
         throw validationError // Re-throw to be handled by main catch block
@@ -250,7 +255,6 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
     // TSK-24 Phase 1: Use unified processing for all scenarios
     const result = await unifiedReturnService.processUnifiedReturn(transaksiId, validatedData)
-
 
     // Handle structured error responses from service (CRITICAL FIX - proper HTTP codes)
     if (!result.success) {
@@ -338,7 +342,6 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         processingTimestamp: new Date().toISOString(),
       }
     }
-
 
     // Optimized response with compression and performance headers
     const response = NextResponse.json(
@@ -450,18 +453,20 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       const hasDateError = error.issues.some((issue) => issue.path.includes('tglKembali'))
       const hasConditionError = error.issues.some((issue) => issue.path.includes('conditions'))
       const hasQuantityError = error.issues.some((issue) => issue.path.includes('jumlahKembali'))
-      const hasSizeError = error.issues.some((issue) =>
-        issue.path.includes('productSizeId') ||
-        issue.path.includes('size') ||
-        issue.message.includes('Size dengan ID') ||
-        issue.message.includes('tidak ditemukan untuk produk ini')
+      const hasSizeError = error.issues.some(
+        (issue) =>
+          issue.path.includes('productSizeId') ||
+          issue.path.includes('size') ||
+          issue.message.includes('Size dengan ID') ||
+          issue.message.includes('tidak ditemukan untuk produk ini'),
       )
 
       let enhancedMessage = 'Data pengembalian tidak valid dalam unified architecture'
       let generalHints: string[] = []
 
       if (hasSizeError) {
-        enhancedMessage = 'Validasi ukuran produk gagal. Periksa ketersediaan ukuran untuk produk ini.'
+        enhancedMessage =
+          'Validasi ukuran produk gagal. Periksa ketersediaan ukuran untuk produk ini.'
         generalHints = [
           'Pastikan ukuran yang dipilih tersedia dalam inventaris',
           'Gunakan ukuran yang sesuai dengan produk yang disewa',

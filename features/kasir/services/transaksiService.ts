@@ -452,17 +452,24 @@ export class TransaksiService {
           data: itemsData,
         })
 
+        // Update product quantities for both systems to maintain consistency
+        // FIX: Added to ensure both rentedStock (legacy) and ProductSize.quantity (size-aware) are updated
+        await Promise.all([
+          this.updateProductSizeQuantities(tx, data.items),  // Update ProductSize.quantity
+          this.updateProductQuantities(tx, data.items)      // Update Product.rentedStock
+        ])
+
         // Create activity log (1 operation)
         await tx.aktivitasTransaksi.create({
           data: {
             transaksiId: createdTransaksi.id,
             tipe: 'dibuat',
-            deskripsi: `Transaksi ${kode} dibuat dengan optimized size-aware tracking`,
+            deskripsi: `Transaksi ${kode} dibuat dengan dual inventory system consistency`,
             data: {
               items: data.items.length,
               totalHarga: priceCalculation!.totalHarga.toString(),
               sizeAware: true,
-              optimized: true,
+              dualSystemUpdate: true,
               transactionDuration: Date.now() - transactionStartTime,
             },
             createdBy: this.userId,
@@ -475,15 +482,11 @@ export class TransaksiService {
       })
 
       const transactionDuration = Date.now() - transactionStartTime
-      console.log(`✅ [STEP-4] Transaction created in ${transactionDuration}ms`)
-
-      // STEP 5: Update stock quantities with retry logic AFTER transaction
-      console.log('📦 [STEP-5] Updating stock quantities...')
-      await this.updateStockWithRetry(data.items)
+      console.log(`✅ [STEP-4] Transaction created with dual inventory updates in ${transactionDuration}ms`)
 
       const totalDuration = Date.now() - startTime
-      console.log(`✅ [TRANSACTION] Phase 2 optimization completed in ${totalDuration}ms`)
-      console.log(`📊 [PERFORMANCE] Transaction: ${transactionDuration}ms, Stock Update: ${totalDuration - transactionDuration}ms`)
+      console.log(`✅ [TRANSACTION] Dual system transaction completed in ${totalDuration}ms`)
+      console.log(`📊 [PERFORMANCE] Transaction includes both size-aware and legacy stock updates`)
 
       return transaksi
 
@@ -1230,7 +1233,8 @@ export class TransaksiService {
    */
   private validateStatusTransition(currentStatus: string, newStatus: string): void {
     const validTransitions: Record<string, string[]> = {
-      active: ['selesai', 'terlambat', 'cancelled'],
+      active: ['selesai', 'terlambat', 'cancelled', 'diambil'],
+      diambil: ['selesai', 'cancelled'],
       terlambat: ['selesai', 'cancelled'],
       // 'selesai' and 'cancelled' are final states
       selesai: [],
