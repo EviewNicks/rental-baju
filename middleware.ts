@@ -25,13 +25,6 @@ import { NextResponse } from 'next/server'
  */
 
 // Define protected routes using Clerk's createRouteMatcher
-const isProtectedRoute = createRouteMatcher([
-  '/owner(.*)',
-  '/producer(.*)',
-  '/dashboard(.*)',
-  '/settings(.*)',
-  '/profile(.*)',
-])
 
 // Define public routes (excluding root path for redirect behavior)
 const isPublicRoute = createRouteMatcher([
@@ -54,10 +47,11 @@ const isKasirRoute = createRouteMatcher(['/dashboard(.*)'])
 // Menggunakan multiple fallback sources untuk memastikan role terdeteksi dengan benar
 const extractUserRole = (sessionClaims: any) => {
   // Prioritize: metadata.role → sessionClaims.role → publicMetadata.role → fallback
-  const role = sessionClaims?.metadata?.role ||
-               sessionClaims?.role ||
-               sessionClaims?.publicMetadata?.role ||
-               'user'
+  const role =
+    sessionClaims?.metadata?.role ||
+    sessionClaims?.role ||
+    sessionClaims?.publicMetadata?.role ||
+    'user'
 
   // Debug logging untuk troubleshooting
   console.log('🔐 Role Extraction Debug:', {
@@ -65,7 +59,7 @@ const extractUserRole = (sessionClaims: any) => {
     'sessionClaims.role': sessionClaims?.role,
     'publicMetadata.role': sessionClaims?.publicMetadata?.role,
     'final.role': role,
-    'sessionClaims': sessionClaims
+    sessionClaims: sessionClaims,
   })
 
   return role

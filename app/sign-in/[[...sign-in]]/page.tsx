@@ -2,11 +2,9 @@
 
 import React from 'react'
 import { SignIn } from '@clerk/nextjs'
-import { useAuth } from '@clerk/nextjs'
 import { useSearchParams } from 'next/navigation'
 
 export default function SignInPage() {
-  const { isLoaded, userId } = useAuth()
   const searchParams = useSearchParams()
 
   // Get redirect URL dari query params atau fallback ke role-based default
