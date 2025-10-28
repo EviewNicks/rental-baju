@@ -6,7 +6,7 @@
 
 import { PrismaClient } from '@prisma/client'
 import { PickupItemRequest } from '../lib/validation/kasirSchema'
-import { TransaksiWithDetails } from './transaksiService'
+import { TransaksiWithDetails, TransaksiService } from './transaksiService'
 import { PickupValidator, ValidationContext } from '../lib/validation/pickupValidation'
 
 export interface PickupValidationResult {
@@ -23,18 +23,23 @@ export interface PickupProcessResult {
 }
 
 export class PickupService {
+  private transaksiService: TransaksiService
+
   constructor(
     private prisma: PrismaClient,
-    private userId: string
-  ) {}
+    private userId: string,
+    transaksiService: TransaksiService,
+  ) {
+    this.transaksiService = transaksiService
+  }
 
   /**
    * Validate pickup request against comprehensive business rules
    */
   async validatePickupRequest(
-    transactionId: string, 
+    transactionId: string,
     items: PickupItemRequest[],
-    catatan?: string
+    catatan?: string,
   ): Promise<PickupValidationResult> {
     try {
       // 1. Check if transaction exists and get current state
@@ -44,17 +49,17 @@ export class PickupService {
           items: {
             include: {
               produk: {
-                select: { id: true, name: true, code: true }
-              }
-            }
-          }
-        }
+                select: { id: true, name: true, code: true },
+              },
+            },
+          },
+        },
       })
 
       if (!transaction) {
         return {
           valid: false,
-          errors: ['Transaksi tidak ditemukan']
+          errors: ['Transaksi tidak ditemukan'],
         }
       }
 
@@ -62,7 +67,7 @@ export class PickupService {
       const context: ValidationContext = {
         transactionStatus: transaction.status,
         transactionCode: transaction.kode,
-        items: transaction.items
+        items: transaction.items,
       }
 
       // 3. Run comprehensive validation using business rules
@@ -71,12 +76,12 @@ export class PickupService {
       // 4. Transform to service interface format
       return {
         valid: validationResult.valid,
-        errors: validationResult.errors.map(e => e.message),
-        warnings: validationResult.warnings.length > 0 
-          ? validationResult.warnings.map(w => w.message)
-          : undefined
+        errors: validationResult.errors.map((e) => e.message),
+        warnings:
+          validationResult.warnings.length > 0
+            ? validationResult.warnings.map((w) => w.message)
+            : undefined,
       }
-
     } catch (error) {
       // Log validation error with context for debugging
       console.error('Pickup validation failed:', {
@@ -84,7 +89,7 @@ export class PickupService {
         transactionId,
         itemCount: items.length,
         userId: this.userId,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       })
 
       // Return specific error message based on error type
@@ -103,7 +108,7 @@ export class PickupService {
 
       return {
         valid: false,
-        errors: [errorMessage]
+        errors: [errorMessage],
       }
     }
   }
@@ -114,58 +119,122 @@ export class PickupService {
   async processPickup(
     transactionId: string,
     items: PickupItemRequest[],
-    catatan?: string
+    catatan?: string,
   ): Promise<PickupProcessResult> {
     try {
       // 1. Validate the pickup request first
       const validation = await this.validatePickupRequest(transactionId, items, catatan)
-      
+
       if (!validation.valid) {
         return {
           success: false,
           transaction: {} as TransaksiWithDetails,
           message: 'Validasi pickup gagal',
-          error: validation.errors.join(', ')
+          error: validation.errors.join(', '),
         }
       }
 
       // 2. Process pickup in atomic transaction
       const result = await this.prisma.$transaction(async (tx) => {
         // Update each item's pickup quantity
+        // NOTE: rentedStock is already incremented during transaction creation
+        // So we don't need to increment it again during pickup
         for (const pickupItem of items) {
           await tx.transaksiItem.update({
             where: { id: pickupItem.id },
             data: {
               jumlahDiambil: {
-                increment: pickupItem.jumlahDiambil
-              }
-            }
+                increment: pickupItem.jumlahDiambil,
+              },
+            },
           })
         }
 
         // Create activity log with optional note (RPK-48)
-        const itemsDescription = items.map(item => `${item.jumlahDiambil} item`).join(', ')
+        const itemsDescription = items.map((item) => `${item.jumlahDiambil} item`).join(', ')
         const activityData = {
-          items: items.map(item => ({
+          items: items.map((item) => ({
             itemId: item.id,
-            jumlahDiambil: item.jumlahDiambil
+            jumlahDiambil: item.jumlahDiambil,
           })),
           processedBy: this.userId,
           timestamp: new Date().toISOString(),
-          ...(catatan && { catatan })
+          ...(catatan && { catatan }),
         }
 
         await tx.aktivitasTransaksi.create({
           data: {
             transaksiId: transactionId,
             tipe: 'diambil',
-            deskripsi: catatan 
-              ? `Pickup dilakukan: ${itemsDescription} - ${catatan}` 
+            deskripsi: catatan
+              ? `Pickup dilakukan: ${itemsDescription} - ${catatan}`
               : `Pickup dilakukan: ${itemsDescription}`,
             data: activityData,
-            createdBy: this.userId
-          }
+            createdBy: this.userId,
+          },
         })
+
+        // Calculate pickup completion statistics within the transaction
+        const allTransactionItems = await tx.transaksiItem.findMany({
+          where: { transaksiId: transactionId },
+          select: { jumlah: true, jumlahDiambil: true },
+        })
+
+        const pickupStats = allTransactionItems.reduce(
+          (stats, item) => {
+            const isFullyPickedUp = item.jumlahDiambil >= item.jumlah
+            return {
+              totalItems: stats.totalItems + 1,
+              fullyPickedUp: stats.fullyPickedUp + (isFullyPickedUp ? 1 : 0),
+              notPickedUp: stats.notPickedUp + (item.jumlahDiambil === 0 ? 1 : 0),
+            }
+          },
+          { totalItems: 0, fullyPickedUp: 0, notPickedUp: 0 }
+        )
+
+        // Log pickup status for monitoring
+        await tx.aktivitasTransaksi.create({
+          data: {
+            transaksiId: transactionId,
+            tipe: 'status_pickup',
+            deskripsi: `Status pickup: ${pickupStats.fullyPickedUp} lengkap, ${pickupStats.notPickedUp} belum`,
+            data: {
+              pickupStats: {
+                ...pickupStats,
+                partiallyPickedUp: pickupStats.totalItems - pickupStats.fullyPickedUp - pickupStats.notPickedUp,
+              },
+              calculatedBy: this.userId,
+              timestamp: new Date().toISOString(),
+            },
+            createdBy: this.userId,
+          },
+        })
+
+        // Update transaction status to 'diambil' if all items are fully picked up
+        if (pickupStats.fullyPickedUp === pickupStats.totalItems && pickupStats.notPickedUp === 0) {
+          await tx.transaksi.update({
+            where: { id: transactionId },
+            data: { status: 'diambil' },
+          })
+
+          // Create status change activity log
+          await tx.aktivitasTransaksi.create({
+            data: {
+              transaksiId: transactionId,
+              tipe: 'status_changed',
+              deskripsi: 'Status transaksi diubah menjadi diambil',
+              data: {
+                previousStatus: 'active',
+                newStatus: 'diambil',
+                pickupStats,
+                autoUpdated: true,
+                reason: 'All items fully picked up',
+                timestamp: new Date().toISOString(),
+              },
+              createdBy: this.userId,
+            },
+          })
+        }
 
         // Get updated transaction with all details
         const updatedTransaction = await tx.transaksi.findUnique({
@@ -176,8 +245,8 @@ export class PickupService {
                 id: true,
                 nama: true,
                 telepon: true,
-                alamat: true
-              }
+                alamat: true,
+              },
             },
             items: {
               include: {
@@ -186,18 +255,18 @@ export class PickupService {
                     id: true,
                     code: true,
                     name: true,
-                    imageUrl: true
-                  }
-                }
-              }
+                    imageUrl: true,
+                  },
+                },
+              },
             },
             pembayaran: {
-              orderBy: { createdAt: 'desc' }
+              orderBy: { createdAt: 'desc' },
             },
             aktivitas: {
-              orderBy: { createdAt: 'desc' }
-            }
-          }
+              orderBy: { createdAt: 'desc' },
+            },
+          },
         })
 
         return updatedTransaction as unknown as TransaksiWithDetails
@@ -210,27 +279,29 @@ export class PickupService {
       return {
         success: true,
         transaction: result,
-        message
+        message,
       }
-
     } catch (error) {
       // Create comprehensive error context for debugging
       const errorContext = {
         transactionId,
-        items: items.map(item => ({
+        items: items.map((item) => ({
           id: item.id,
-          jumlahDiambil: item.jumlahDiambil
+          jumlahDiambil: item.jumlahDiambil,
         })),
         userId: this.userId,
         timestamp: new Date().toISOString(),
-        error: error instanceof Error ? {
-          message: error.message,
-          stack: error.stack,
-          name: error.name
-        } : {
-          message: 'Unknown error',
-          type: typeof error
-        }
+        error:
+          error instanceof Error
+            ? {
+                message: error.message,
+                stack: error.stack,
+                name: error.name,
+              }
+            : {
+                message: 'Unknown error',
+                type: typeof error,
+              },
       }
 
       // Log detailed error information
@@ -273,16 +344,24 @@ export class PickupService {
   }
 
   /**
-   * Update transaction pickup status based on current item states
-   * This is called after pickup to determine if transaction needs status updates
+   * @deprecated This method is no longer used. Status update is now handled
+   * within processPickup() transaction to avoid nested transaction issues.
+   * Keeping for backward compatibility but logs deprecation warning.
    */
   async updateTransactionPickupStatus(transactionId: string): Promise<void> {
+    // Log deprecation warning
+    console.warn('[DEPRECATED] updateTransactionPickupStatus called. This method is deprecated.', {
+      transactionId,
+      userId: this.userId,
+      timestamp: new Date().toISOString(),
+      reason: 'Status update moved to processPickup() transaction to avoid nested transactions'
+    })
     try {
       const transaction = await this.prisma.transaksi.findUnique({
         where: { id: transactionId },
         include: {
-          items: true
-        }
+          items: true,
+        },
       })
 
       if (!transaction) {
@@ -290,22 +369,25 @@ export class PickupService {
       }
 
       // Calculate pickup completion statistics
-      const pickupStats = transaction.items.reduce((stats, item) => {
-        const isFullyPickedUp = item.jumlahDiambil >= item.jumlah
-        const isPartiallyPickedUp = item.jumlahDiambil > 0 && item.jumlahDiambil < item.jumlah
-        
-        return {
-          totalItems: stats.totalItems + 1,
-          fullyPickedUp: stats.fullyPickedUp + (isFullyPickedUp ? 1 : 0),
-          partiallyPickedUp: stats.partiallyPickedUp + (isPartiallyPickedUp ? 1 : 0),
-          notPickedUp: stats.notPickedUp + (item.jumlahDiambil === 0 ? 1 : 0)
-        }
-      }, {
-        totalItems: 0,
-        fullyPickedUp: 0,
-        partiallyPickedUp: 0,
-        notPickedUp: 0
-      })
+      const pickupStats = transaction.items.reduce(
+        (stats, item) => {
+          const isFullyPickedUp = item.jumlahDiambil >= item.jumlah
+          const isPartiallyPickedUp = item.jumlahDiambil > 0 && item.jumlahDiambil < item.jumlah
+
+          return {
+            totalItems: stats.totalItems + 1,
+            fullyPickedUp: stats.fullyPickedUp + (isFullyPickedUp ? 1 : 0),
+            partiallyPickedUp: stats.partiallyPickedUp + (isPartiallyPickedUp ? 1 : 0),
+            notPickedUp: stats.notPickedUp + (item.jumlahDiambil === 0 ? 1 : 0),
+          }
+        },
+        {
+          totalItems: 0,
+          fullyPickedUp: 0,
+          partiallyPickedUp: 0,
+          notPickedUp: 0,
+        },
+      )
 
       // Log pickup status for monitoring
       await this.prisma.aktivitasTransaksi.create({
@@ -316,22 +398,23 @@ export class PickupService {
           data: {
             pickupStats,
             calculatedBy: this.userId,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
           },
-          createdBy: this.userId
-        }
+          createdBy: this.userId,
+        },
       })
 
-      // Note: Transaction status remains 'active' as pickup doesn't change transaction lifecycle
-      // Only return affects transaction status (active -> selesai)
-
+      // Update transaction status to 'diambil' if all items are fully picked up
+      if (pickupStats.fullyPickedUp === pickupStats.totalItems && pickupStats.notPickedUp === 0) {
+        await this.transaksiService.updateTransaksiStatus(transactionId, { status: 'diambil' })
+      }
     } catch (error) {
       // Log error for monitoring but don't throw as this is secondary operation
       console.error('Failed to update transaction pickup status:', {
         transactionId,
         error: error instanceof Error ? error.message : 'Unknown error',
         userId: this.userId,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       })
       // This is a non-critical operation, so we don't throw to avoid affecting main pickup flow
     }
@@ -363,31 +446,32 @@ export class PickupService {
           items: {
             include: {
               produk: {
-                select: { id: true, name: true, code: true }
-              }
-            }
-          }
-        }
+                select: { id: true, name: true, code: true },
+              },
+            },
+          },
+        },
       })
 
       if (!transaction) {
         return null
       }
 
-      const items = transaction.items.map(item => ({
+      const items = transaction.items.map((item) => ({
         id: item.id,
         productName: item.produk.name,
         productCode: item.produk.code,
         totalQuantity: item.jumlah,
         pickedUpQuantity: item.jumlahDiambil,
         remainingQuantity: item.jumlah - item.jumlahDiambil,
-        isFullyPickedUp: item.jumlahDiambil >= item.jumlah
+        isFullyPickedUp: item.jumlahDiambil >= item.jumlah,
       }))
 
       const totalQuantity = transaction.items.reduce((sum, item) => sum + item.jumlah, 0)
       const pickedUpQuantity = transaction.items.reduce((sum, item) => sum + item.jumlahDiambil, 0)
       const remainingQuantity = totalQuantity - pickedUpQuantity
-      const pickupPercentage = totalQuantity > 0 ? Math.round((pickedUpQuantity / totalQuantity) * 100) : 0
+      const pickupPercentage =
+        totalQuantity > 0 ? Math.round((pickedUpQuantity / totalQuantity) * 100) : 0
 
       return {
         totalItems: transaction.items.length,
@@ -395,16 +479,15 @@ export class PickupService {
         pickedUpQuantity,
         remainingQuantity,
         pickupPercentage,
-        items
+        items,
       }
-
     } catch (error) {
       // Log error for debugging but return null as expected by interface
       console.error('Failed to get pickup summary:', {
         transactionId,
         error: error instanceof Error ? error.message : 'Unknown error',
         userId: this.userId,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       })
       return null
     }
@@ -414,6 +497,10 @@ export class PickupService {
 /**
  * Factory function to create PickupService instance
  */
-export const createPickupService = (prisma: PrismaClient, userId: string): PickupService => {
-  return new PickupService(prisma, userId)
+export const createPickupService = (
+  prisma: PrismaClient,
+  userId: string,
+  transaksiService: TransaksiService
+): PickupService => {
+  return new PickupService(prisma, userId, transaksiService)
 }

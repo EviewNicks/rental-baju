@@ -1,0 +1,158 @@
+[
+  {
+    "code": "JLA01",
+    "name": "Jas Polos Abu",
+    "description": "Jas Polos warna abu-abu elegan",
+    "modalAwal": 100000,
+    "currentPrice": 100000,
+    "quantity": 9,
+    "categoryId": "3f6feeab-74f3-4283-b488-1e62670b1b0c",
+    "imageUrl": "/products/jas-polos/JLA01.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "S", "quantity": 1 },
+      { "ageCategory": "ADULT", "size": "M", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 3 },
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 1 }
+    ]
+  },
+  {
+    "code": "JLK03",
+    "name": "Jas Polos Krem",
+    "description": "Jas Polos warna krem klasik",
+    "modalAwal": 100000,
+    "currentPrice": 100000,
+    "quantity": 11,
+    "categoryId": "3f6feeab-74f3-4283-b488-1e62670b1b0c",
+    "imageUrl": "/products/jas-polos/JLK03.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "M", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 2 },
+      { "ageCategory": "CHILD", "size": "M", "quantity": 1 }
+    ]
+  },
+  {
+    "code": "JLT05",
+    "name": "Jas Polos Taro",
+    "description": "Jas Polos warna taro modern",
+    "modalAwal": 100000,
+    "currentPrice": 100000,
+    "quantity": 4,
+    "categoryId": "3f6feeab-74f3-4283-b488-1e62670b1b0c",
+    "imageUrl": "/products/jas-polos/JLT05.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "M", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 2 }
+    ]
+  },
+  {
+    "code": "JLH07",
+    "name": "Jas Polos Hitam",
+    "description": "Jas Polos warna hitam timeless",
+    "modalAwal": 100000,
+    "currentPrice": 100000,
+    "quantity": 10,
+    "categoryId": "3f6feeab-74f3-4283-b488-1e62670b1b0c",
+    "imageUrl": "/products/jas-polos/JLH07.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "S", "quantity": 1 },
+      { "ageCategory": "ADULT", "size": "M", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 3 },
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 1 },
+      { "ageCategory": "CHILD", "size": "M", "quantity": 1 },
+      { "ageCategory": "CHILD", "size": "L", "quantity": 1 }
+    ]
+  },
+  {
+    "code": "JLP02",
+    "name": "Jas Polos Pink",
+    "description": "Jas Polos warna pink cerah",
+    "modalAwal": 100000,
+    "currentPrice": 100000,
+    "quantity": 9,
+    "categoryId": "3f6feeab-74f3-4283-b488-1e62670b1b0c",
+    "imageUrl": "/products/jas-polos/JLP02.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "S", "quantity": 1 },
+      { "ageCategory": "ADULT", "size": "M", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 4 }
+    ]
+  },
+  {
+    "code": "JLM04",
+    "name": "Jas Polos Maroon",
+    "description": "Jas Polos warna maroon sophisticated",
+    "modalAwal": 100000,
+    "currentPrice": 100000,
+    "quantity": 12,
+    "categoryId": "3f6feeab-74f3-4283-b488-1e62670b1b0c",
+    "imageUrl": "/products/jas-polos/JLM04.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "S", "quantity": 1 },
+      { "ageCategory": "ADULT", "size": "M", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "XXL", "quantity": 1 },
+      { "ageCategory": "CHILD", "size": "M", "quantity": 1 },
+      { "ageCategory": "CHILD", "size": "L", "quantity": 1 }
+    ]
+  },
+  {
+    "code": "JLL06",
+    "name": "Jas Polos Lime",
+    "description": "Jas Polos warna lime fresh",
+    "modalAwal": 100000,
+    "currentPrice": 100000,
+    "quantity": 13,
+    "categoryId": "3f6feeab-74f3-4283-b488-1e62670b1b0c",
+    "imageUrl": "/products/jas-polos/JLL06.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "M", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 2 },
+      { "ageCategory": "CHILD", "size": "L", "quantity": 1 }
+    ]
+  },
+  {
+    "code": "JLB08",
+    "name": "Jas Polos Biru Denim",
+    "description": "Jas Polos warna biru denim stylish",
+    "modalAwal": 125000,
+    "currentPrice": 125000,
+    "quantity": 13,
+    "categoryId": "3f6feeab-74f3-4283-b488-1e62670b1b0c",
+    "imageUrl": "/products/jas-polos/JLB08.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "M", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "XXL", "quantity": 1 },
+      { "ageCategory": "CHILD", "size": "S", "quantity": 2 },
+      { "ageCategory": "CHILD", "size": "M", "quantity": 2 },
+      { "ageCategory": "CHILD", "size": "L", "quantity": 2 }
+    ]
+  },
+  {
+    "code": "JLD09",
+    "name": "Jas Polos Datuk",
+    "description": "Jas Polos warna datuk eksklusif",
+    "modalAwal": 125000,
+    "currentPrice": 125000,
+    "quantity": 16,
+    "categoryId": "3f6feeab-74f3-4283-b488-1e62670b1b0c",
+    "imageUrl": "/products/jas-polos/JLD09.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "M", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "XXL", "quantity": 2 },
+      { "ageCategory": "CHILD", "size": "S", "quantity": 2 },
+      { "ageCategory": "CHILD", "size": "M", "quantity": 2 },
+      { "ageCategory": "CHILD", "size": "L", "quantity": 3 }
+    ]
+  }
+]

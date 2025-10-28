@@ -14,6 +14,7 @@ import { PaymentSummaryStep } from './PaymentSummaryStep'
 import { getStepValidationMessage } from '../../lib/constants/stepValidationMessages'
 import type { ProductSelection } from '../../types'
 import { transactionFormSteps } from '../../lib/constants/workflowConfig'
+import { TransactionLogger } from '../../lib/logger/transactionLogger'
 
 export function TransactionFormPage() {
   const router = useRouter()
@@ -67,11 +68,18 @@ export function TransactionFormPage() {
     quantity: number,
     productSizeId?: string
   ) => {
+    // 🔧 FIX: Resolve selectedSize from product.sizes array using productSizeId
+    let selectedSize: ProductSelection['selectedSize'] | undefined
+    if (productSizeId && product.sizes && product.sizes.length > 0) {
+      selectedSize = product.sizes.find(size => size.id === productSizeId)
+    }
+
     const productSelection: ProductSelection = {
       product,
       quantity,
       duration: globalDuration,
       ...(productSizeId && { productSizeId }),
+      ...(selectedSize && { selectedSize }), // 🔧 CRITICAL: Add selectedSize field
     }
 
     try {
@@ -115,6 +123,9 @@ export function TransactionFormPage() {
       globalDuration,
       step: currentStep,
     }
+
+    // 🔍 LOG: Log form data before API submission
+    TransactionLogger.logFormData(transactionData)
 
     const success = await submitTransaction()
 

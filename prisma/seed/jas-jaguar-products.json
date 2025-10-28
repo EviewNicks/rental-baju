@@ -1,0 +1,118 @@
+[
+  {
+    "code": "JJH01",
+    "name": "Jas Jaguar Hitam",
+    "description": "Jas Jaguar warna hitam elegan",
+    "modalAwal": 150000,
+    "currentPrice": 150000,
+    "quantity": 12,
+    "categoryId": "67195c78-1536-4783-946d-650b8a0c597b",
+    "imageUrl": "/products/jas-jaguar/JJH01.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "S", "quantity": 1 },
+      { "ageCategory": "ADULT", "size": "M", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "XXL", "quantity": 1 },
+      { "ageCategory": "CHILD", "size": "M", "quantity": 1 },
+      { "ageCategory": "CHILD", "size": "L", "quantity": 1 }
+    ]
+  },
+  {
+    "code": "JJK03",
+    "name": "Jas Jaguar Krem",
+    "description": "Jas Jaguar warna krem klasik",
+    "modalAwal": 150000,
+    "currentPrice": 150000,
+    "quantity": 9,
+    "categoryId": "67195c78-1536-4783-946d-650b8a0c597b",
+    "imageUrl": "/products/jas-jaguar/JJK03.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "M", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "XXL", "quantity": 1 },
+      { "ageCategory": "CHILD", "size": "M", "quantity": 1 }
+    ]
+  },
+  {
+    "code": "JJP03",
+    "name": "Jas Jaguar Peach",
+    "description": "Jas Jaguar warna peach lembut",
+    "modalAwal": 150000,
+    "currentPrice": 150000,
+    "quantity": 13,
+    "categoryId": "67195c78-1536-4783-946d-650b8a0c597b",
+    "imageUrl": "/products/jas-jaguar/JJP03.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "M", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "XXL", "quantity": 1 },
+      { "ageCategory": "CHILD", "size": "S", "quantity": 1 },
+      { "ageCategory": "CHILD", "size": "L", "quantity": 1 },
+      { "ageCategory": "CHILD", "size": "M", "quantity": 1 },
+      { "ageCategory": "CHILD", "size": "XL", "quantity": 1 }
+    ]
+  },
+  {
+    "code": "JJT02",
+    "name": "Jas Jaguar Turkis",
+    "description": "Jas Jaguar warna turkis menarik",
+    "modalAwal": 150000,
+    "currentPrice": 150000,
+    "quantity": 11,
+    "categoryId": "67195c78-1536-4783-946d-650b8a0c597b",
+    "imageUrl": "/products/jas-jaguar/JJT02.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "M", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "XXL", "quantity": 1 },
+      { "ageCategory": "CHILD", "size": "M", "quantity": 1 },
+      { "ageCategory": "CHILD", "size": "L", "quantity": 1 },
+      { "ageCategory": "CHILD", "size": "XL", "quantity": 1 }
+    ]
+  },
+  {
+    "code": "JJD04",
+    "name": "Jas Jaguar Datuk",
+    "description": "Jas Jaguar warna datuk eksklusif",
+    "modalAwal": 150000,
+    "currentPrice": 150000,
+    "quantity": 8,
+    "categoryId": "67195c78-1536-4783-946d-650b8a0c597b",
+    "imageUrl": "/products/jas-jaguar/JJD04.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "M", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 2 },
+      { "ageCategory": "CHILD", "size": "M", "quantity": 1 },
+      { "ageCategory": "CHILD", "size": "L", "quantity": 1 }
+    ]
+  },
+  {
+    "code": "JJA01",
+    "name": "Jas Jaguar Abu",
+    "description": "Jas Jaguar warna abu-abu modern",
+    "modalAwal": 150000,
+    "currentPrice": 150000,
+    "quantity": 12,
+    "categoryId": "67195c78-1536-4783-946d-650b8a0c597b",
+    "imageUrl": "/products/jas-jaguar/JJA01.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "M", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "XXL", "quantity": 1 },
+      { "ageCategory": "CHILD", "size": "S", "quantity": 2 },
+      { "ageCategory": "CHILD", "size": "M", "quantity": 2 },
+      { "ageCategory": "CHILD", "size": "L", "quantity": 2 }
+    ]
+  }
+]

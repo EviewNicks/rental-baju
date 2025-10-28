@@ -513,7 +513,14 @@ export class PembayaranService {
     }
 
     const payments = await this.prisma.pembayaran.findMany({
-      where: whereClause,
+      where: {
+        ...whereClause,
+        transaksi: {
+          status: {
+            notIn: ['cancelled']
+          }
+        }
+      },
       select: {
         jumlah: true,
         metode: true

@@ -1,0 +1,403 @@
+[
+  {
+    "code": "RUT01",
+    "name": "Renda Ungu Taro",
+    "description": "",
+    "modalAwal": 100000,
+    "currentPrice": 100000,
+    "quantity": 8,
+    "categoryId": "a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d",
+    "imageUrl": "/products/renda/RUT01.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "S", "quantity": 1 },
+      { "ageCategory": "ADULT", "size": "M", "quantity": 1 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 2 }
+    ]
+  },
+  {
+    "code": "RPS02",
+    "name": "Renda Pink Salem",
+    "description": "",
+    "modalAwal": 100000,
+    "currentPrice": 100000,
+    "quantity": 12,
+    "categoryId": "a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d",
+    "imageUrl": "/products/renda/RPS02.JPG",
+    "sizes": [
+      { "ageCategory": "CHILD", "size": "S", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "S", "quantity": 1 },
+      { "ageCategory": "ADULT", "size": "M", "quantity": 6 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 3 },
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 2 }
+    ]
+  },
+  {
+    "code": "RCM03",
+    "name": "Renda Coklat Mocca",
+    "description": "",
+    "modalAwal": 100000,
+    "currentPrice": 100000,
+    "quantity": 7,
+    "categoryId": "a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d",
+    "imageUrl": "/products/renda/RCM03.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
+      { "ageCategory": "CHILD", "size": "S", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "M", "quantity": 1 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 3 },
+      { "ageCategory": "ADULT", "size": "XXL", "quantity": 1 }
+    ]
+  },
+  {
+    "code": "RBM04",
+    "name": "Renda Biru Muda",
+    "description": "",
+    "modalAwal": 100000,
+    "currentPrice": 100000,
+    "quantity": 6,
+    "categoryId": "a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d",
+    "imageUrl": "/products/renda/RBM04.png",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "M", "quantity": 3 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 3 }
+    ]
+  },
+  {
+    "code": "RTR05",
+    "name": "Renda Taro",
+    "description": "",
+    "modalAwal": 100000,
+    "currentPrice": 100000,
+    "quantity": 14,
+    "categoryId": "a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d",
+    "imageUrl": "/products/renda/RTR05.jpg",
+    "sizes": [
+      { "ageCategory": "CHILD", "size": "S", "quantity": 1 },
+      { "ageCategory": "ADULT", "size": "S", "quantity": 1 },
+      { "ageCategory": "ADULT", "size": "M", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 1 },
+      { "ageCategory": "CHILD", "size": "M", "quantity": 10 }
+    ]
+  },
+  {
+    "code": "RLM06",
+    "name": "Renda Lime",
+    "description": "",
+    "modalAwal": 125000,
+    "currentPrice": 125000,
+    "quantity": 2,
+    "categoryId": "a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d",
+    "imageUrl": "/products/renda/RLM06.jpg",
+    "sizes": [{ "ageCategory": "ADULT", "size": "M", "quantity": 2 }]
+  },
+  {
+    "code": "RBG07",
+    "name": "Renda Burgundy",
+    "description": "",
+    "modalAwal": 125000,
+    "currentPrice": 125000,
+    "quantity": 13,
+    "categoryId": "a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d",
+    "imageUrl": "/products/renda/RBG07.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "S", "quantity": 1 },
+      { "ageCategory": "ADULT", "size": "M", "quantity": 1 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 10 },
+      { "ageCategory": "ADULT", "size": "XXL", "quantity": 2 },
+      { "ageCategory": "CHILD", "size": "M", "quantity": 2 }
+    ]
+  },
+  {
+    "code": "RBL01",
+    "name": "Renda Burung Lilac",
+    "description": "",
+    "modalAwal": 125000,
+    "currentPrice": 125000,
+    "quantity": 8,
+    "categoryId": "a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d",
+    "imageUrl": "/products/renda/RBL01.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "S", "quantity": 1 },
+      { "ageCategory": "ADULT", "size": "M", "quantity": 5 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 2 }
+    ]
+  },
+  {
+    "code": "RBF02",
+    "name": "Renda Burung Fanta",
+    "description": "",
+    "modalAwal": 125000,
+    "currentPrice": 125000,
+    "quantity": 8,
+    "categoryId": "a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d",
+    "imageUrl": "/products/renda/RBF02.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "S", "quantity": 1 },
+      { "ageCategory": "ADULT", "size": "M", "quantity": 3 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 4 }
+    ]
+  },
+  {
+    "code": "RBB03",
+    "name": "Renda Burung Biru",
+    "description": "",
+    "modalAwal": 125000,
+    "currentPrice": 125000,
+    "quantity": 10,
+    "categoryId": "a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d",
+    "imageUrl": "/products/renda/RBB03.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "M", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "S", "quantity": 3 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 3 },
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 2 }
+    ]
+  },
+  {
+    "code": "RBK04",
+    "name": "Renda Burung Kuning",
+    "description": "",
+    "modalAwal": 100000,
+    "currentPrice": 100000,
+    "quantity": 6,
+    "categoryId": "a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d",
+    "imageUrl": "/products/renda/RBK04.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "S", "quantity": 1 },
+      { "ageCategory": "ADULT", "size": "M", "quantity": 1 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 1 }
+    ]
+  },
+  {
+    "code": "ROH01",
+    "name": "Renda Organza Hitam",
+    "description": "",
+    "modalAwal": 150000,
+    "currentPrice": 150000,
+    "quantity": 6,
+    "categoryId": "a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d",
+    "imageUrl": "/products/renda/ROH01.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "S", "quantity": 3 },
+      { "ageCategory": "ADULT", "size": "M", "quantity": 1 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 2 }
+    ]
+  },
+  {
+    "code": "RTM02",
+    "name": "Renda Tile Marun",
+    "description": "",
+    "modalAwal": 150000,
+    "currentPrice": 150000,
+    "quantity": 6,
+    "categoryId": "a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d",
+    "imageUrl": "/products/renda/RTM02.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "M", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 2 },
+      { "ageCategory": "CHILD", "size": "L", "quantity": 2 }
+    ]
+  },
+  {
+    "code": "RHS03",
+    "name": "Renda Hijau Sage",
+    "description": "",
+    "modalAwal": 150000,
+    "currentPrice": 150000,
+    "quantity": 13,
+    "categoryId": "a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d",
+    "imageUrl": "/products/renda/RHS03.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "M", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "XXL", "quantity": 1 }
+    ]
+  },
+  {
+    "code": "RTR04",
+    "name": "Renda Terracota Mocca",
+    "description": "",
+    "modalAwal": 150000,
+    "currentPrice": 150000,
+    "quantity": 1,
+    "categoryId": "a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d",
+    "imageUrl": "/products/renda/RTR04.png",
+    "sizes": [{ "ageCategory": "ADULT", "size": "XS", "quantity": 1 }]
+  },
+  {
+    "code": "RUD05",
+    "name": "Renda Ungu Darwin",
+    "description": "",
+    "modalAwal": 150000,
+    "currentPrice": 150000,
+    "quantity": 14,
+    "categoryId": "a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d",
+    "imageUrl": "/products/renda/RUD05.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "M", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 5 },
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "XXL", "quantity": 1 }
+    ]
+  },
+  {
+    "code": "RCK06",
+    "name": "Renda Coklat",
+    "description": "",
+    "modalAwal": 150000,
+    "currentPrice": 150000,
+    "quantity": 14,
+    "categoryId": "a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d",
+    "imageUrl": "/products/renda/RCK06.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "M", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 5 },
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "XXL", "quantity": 1 }
+    ]
+  },
+  {
+    "code": "RBB07",
+    "name": "Renda Burgundy Bunga",
+    "description": "",
+    "modalAwal": 150000,
+    "currentPrice": 150000,
+    "quantity": 10,
+    "categoryId": "a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d",
+    "imageUrl": "/products/renda/RBB07.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "M", "quantity": 5 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 3 },
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 2 }
+    ]
+  },
+  {
+    "code": "RKR01",
+    "name": "Renda Ceppa Krem",
+    "description": "",
+    "modalAwal": 180000,
+    "currentPrice": 180000,
+    "quantity": 13,
+    "categoryId": "a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d",
+    "imageUrl": "/products/renda/RKR01.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "M", "quantity": 5 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "XXL", "quantity": 2 }
+    ]
+  },
+  {
+    "code": "RMR02",
+    "name": "Renda Ceppa Marun",
+    "description": "",
+    "modalAwal": 180000,
+    "currentPrice": 180000,
+    "quantity": 13,
+    "categoryId": "a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d",
+    "imageUrl": "/products/renda/RMR02.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
+      { "ageCategory": "CHILD", "size": "S", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "M", "quantity": 3 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 5 },
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "XXL", "quantity": 1 }
+    ]
+  },
+  {
+    "code": "RMG03",
+    "name": "Renda Magenta",
+    "description": "",
+    "modalAwal": 180000,
+    "currentPrice": 180000,
+    "quantity": 0,
+    "categoryId": "a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d",
+    "imageUrl": "/products/renda/RMG03.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "M", "quantity": 3 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 5 }
+    ]
+  },
+  {
+    "code": "RMD04",
+    "name": "Renda Mocca Doping",
+    "description": "",
+    "modalAwal": 180000,
+    "currentPrice": 180000,
+    "quantity": 4,
+    "categoryId": "a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d",
+    "imageUrl": "/products/renda/RMD04.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "S", "quantity": 1 },
+      { "ageCategory": "CHILD", "size": "S", "quantity": 1 },
+      { "ageCategory": "ADULT", "size": "XXL", "quantity": 1 },
+      { "ageCategory": "ADULT", "size": "XS", "quantity": 1 }
+    ]
+  },
+  {
+    "code": "RUT05",
+    "name": "Renda Ungu Terong",
+    "description": "",
+    "modalAwal": 180000,
+    "currentPrice": 180000,
+    "quantity": 2,
+    "categoryId": "a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d",
+    "imageUrl": "/products/renda/RUT05.png",
+    "sizes": [{ "ageCategory": "ADULT", "size": "M", "quantity": 2 }]
+  },
+  {
+    "code": "TMG06",
+    "name": "Tokko Magenta",
+    "description": "",
+    "modalAwal": 180000,
+    "currentPrice": 180000,
+    "quantity": 15,
+    "categoryId": "a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d",
+    "imageUrl": "/products/renda/TMG06.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "L", "quantity": 9 },
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 6 }
+    ]
+  },
+  {
+    "code": "TKR07",
+    "name": "Tokko Krem",
+    "description": "",
+    "modalAwal": 180000,
+    "currentPrice": 180000,
+    "quantity": 18,
+    "categoryId": "a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d",
+    "imageUrl": "/products/renda/TKR07.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "L", "quantity": 11 },
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 5 }
+    ]
+  },
+  {
+    "code": "TKR08",
+    "name": "Baju Biru Wardah",
+    "description": "",
+    "modalAwal": 180000,
+    "currentPrice": 180000,
+    "quantity": 9,
+    "categoryId": "a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d",
+    "imageUrl": "/products/renda/TKR08.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "M", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "XXL", "quantity": 1 }
+    ]
+  }
+]

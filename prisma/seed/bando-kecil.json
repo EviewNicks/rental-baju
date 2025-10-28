@@ -1,0 +1,57 @@
+[
+  {
+    "code": "BKP01",
+    "name": "Bando Kecil Putih",
+    "description": "Bando kecil warna putih bersih - Universal size",
+    "modalAwal": 20000,
+    "currentPrice": 20000,
+    "quantity": 2,
+    "categoryId": "14b73ba0-2827-4d64-8f65-48b26eec04cd",
+    "imageUrl": "/products/accesories.png",
+    "sizes": [{ "ageCategory": "UNIVERSAL", "size": "UNIVERSAL", "quantity": 2 }]
+  },
+  {
+    "code": "BKG02",
+    "name": "Bando Kecil Gantungan",
+    "description": "Bando kecil model gantungan - Universal size",
+    "modalAwal": 50000,
+    "currentPrice": 50000,
+    "quantity": 4,
+    "categoryId": "14b73ba0-2827-4d64-8f65-48b26eec04cd",
+    "imageUrl": "/products/accesories.png",
+    "sizes": [{ "ageCategory": "UNIVERSAL", "size": "UNIVERSAL", "quantity": 4 }]
+  },
+  {
+    "code": "BKM01",
+    "name": "Bando Kecil Merah",
+    "description": "Bando kecil warna merah menarik - Universal size",
+    "modalAwal": 20000,
+    "currentPrice": 20000,
+    "quantity": 2,
+    "categoryId": "14b73ba0-2827-4d64-8f65-48b26eec04cd",
+    "imageUrl": "/products/accesories.png",
+    "sizes": [{ "ageCategory": "UNIVERSAL", "size": "UNIVERSAL", "quantity": 2 }]
+  },
+  {
+    "code": "BKP02",
+    "name": "Bando Kecil Putih Premium",
+    "description": "Bando kecil putih kualitas premium - Universal size",
+    "modalAwal": 50000,
+    "currentPrice": 50000,
+    "quantity": 2,
+    "categoryId": "14b73ba0-2827-4d64-8f65-48b26eec04cd",
+    "imageUrl": "/products/accesories.png",
+    "sizes": [{ "ageCategory": "UNIVERSAL", "size": "UNIVERSAL", "quantity": 2 }]
+  },
+  {
+    "code": "BKP08",
+    "name": "Bando Kecil 8",
+    "description": "Bando kecil model 8 - Universal size",
+    "modalAwal": 50000,
+    "currentPrice": 50000,
+    "quantity": 2,
+    "categoryId": "14b73ba0-2827-4d64-8f65-48b26eec04cd",
+    "imageUrl": "/products/accesories.png",
+    "sizes": [{ "ageCategory": "UNIVERSAL", "size": "UNIVERSAL", "quantity": 2 }]
+  }
+]

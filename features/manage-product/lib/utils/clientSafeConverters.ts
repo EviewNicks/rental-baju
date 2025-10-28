@@ -22,7 +22,6 @@ export function toClientProduct(product: any, skipCategory = false): ClientProdu
     rentedStock: product.rentedStock || 0,
     status: product.status || 'AVAILABLE',
     imageUrl: product.imageUrl || '',
-    totalPendapatan: toSafeNumber(product.totalPendapatan),
     isActive: product.isActive ?? true,
     sizes: product.sizes || [], // Add sizes property for backward compatibility
     materialId: product.materialId || undefined, // Material ID field
@@ -52,6 +51,7 @@ export function toClientCategory(category: any): ClientCategory {
     id: category.id || '',
     name: category.name || '',
     color: category.color || '#000000',
+    type: category.type || 'clothing', // Default to 'clothing' for backward compatibility
     createdAt: category.createdAt ? new Date(category.createdAt) : new Date(),
     updatedAt: category.updatedAt ? new Date(category.updatedAt) : new Date(),
     createdBy: category.createdBy || '',

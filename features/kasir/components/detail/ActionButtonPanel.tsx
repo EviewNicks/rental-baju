@@ -3,10 +3,11 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useQueryClient } from '@tanstack/react-query'
-import { CheckCircle, DollarSign, RefreshCw, AlertTriangle, Package, RotateCcw } from 'lucide-react'
+import { CheckCircle, DollarSign, RefreshCw, AlertTriangle, Package, RotateCcw, XCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { PaymentModal } from './PaymentModal'
 import { PickupModal } from './PickupModal'
+import { CancelModal } from './CancelModal'
 import type { TransactionDetail } from '../../types'
 import { isPickupAvailable, calculateTransactionPickupStatus } from '../../lib/utils/client'
 import { queryKeys } from '@/lib/react-query'
@@ -20,6 +21,7 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
   const [isProcessing, setIsProcessing] = useState<string | null>(null)
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false)
   const [isPickupModalOpen, setIsPickupModalOpen] = useState(false)
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false)
   const router = useRouter()
   const queryClient = useQueryClient()
 
@@ -99,6 +101,9 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
   const needsPayment =
     transaction.amountPaid < transaction.totalAmount ||
     (transaction.penalties && transaction.penalties.some((p) => p.status === 'pending'))
+  const canCancel =
+    (transaction.status === 'active' || transaction.status === 'terlambat') &&
+    transaction.products?.every((p) => (p.jumlahDiambil || 0) === 0)
 
   // COMPREHENSIVE LOGGING for debugging button visibility
   componentLogger.debug('render', 'Button visibility calculation', {
@@ -106,6 +111,7 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
     status: transaction.status,
     canReturn,
     canPickup,
+    canCancel,
     needsPayment,
     productsCount: transaction.products?.length || 0,
     productsWithPickup: transaction.products?.map(p => ({
@@ -168,6 +174,18 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
             Proses Pembayaran
           </Button>
         )}
+
+        {/* Cancel Transaction */}
+        {canCancel && (
+          <Button
+            onClick={() => setIsCancelModalOpen(true)}
+            variant="outline"
+            className="w-full border-red-400 text-red-600 hover:bg-red-50"
+          >
+            <XCircle className="h-4 w-4 mr-2" />
+            Batalkan Transaksi
+          </Button>
+        )}
       </div>
 
       {/* Status Info */}
@@ -225,6 +243,28 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
           })
 
           componentLogger.debug('onClose', 'Query invalidation triggered', {
+            transactionCode: transaction.transactionCode,
+            queryKey: queryKeys.kasir.transaksi.detail(transaction.transactionCode)
+          })
+        }}
+        transaction={transaction}
+      />
+
+      {/* Cancel Modal */}
+      <CancelModal
+        isOpen={isCancelModalOpen}
+        onClose={() => {
+          componentLogger.info('onClose', 'Cancel modal closing - triggering data refresh')
+
+          setIsCancelModalOpen(false)
+          setIsProcessing(null)
+
+          // Force refresh transaction data after cancellation
+          queryClient.invalidateQueries({
+            queryKey: queryKeys.kasir.transaksi.detail(transaction.transactionCode),
+          })
+
+          componentLogger.debug('onClose', 'Query invalidation triggered for cancel', {
             transactionCode: transaction.transactionCode,
             queryKey: queryKeys.kasir.transaksi.detail(transaction.transactionCode)
           })

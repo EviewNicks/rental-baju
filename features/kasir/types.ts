@@ -92,6 +92,7 @@ export interface ProductWithCategory extends ProductCore {
     id: string
     name: string
     color?: string
+    type?: 'clothing' | 'accessories_age_based' | 'accessories_universal'  // RPK-52: Category type for dynamic forms
   }
   size?: string
   color?: {
@@ -133,6 +134,7 @@ export interface Product {
   id: string
   name: string
   category: string
+  categoryType?: 'clothing' | 'accessories_age_based' | 'accessories_universal'  // RPK-52: Category type for dynamic forms
   size: string
   color: string
   pricePerDay: number
@@ -162,6 +164,21 @@ export interface ProductFilters {
   color?: string
   search?: string
   available?: boolean
+}
+
+// Enhanced filters for kasir workflow - RPK-52 Optimization
+export interface KasirFilters {
+  search?: string
+  categoryId?: string
+  status?: 'AVAILABLE' | 'RENTED' | ''
+  sortBy?: 'name' | 'price' | 'quantity' | 'createdAt'
+  sortOrder?: 'asc' | 'desc'
+  minPrice?: number
+  maxPrice?: number
+  // Additional properties for pagination and size filtering
+  page?: number
+  limit?: number
+  size?: string[]
 }
 
 // ==========================================

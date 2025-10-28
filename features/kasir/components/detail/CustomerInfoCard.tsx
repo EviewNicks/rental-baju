@@ -20,7 +20,7 @@ export function CustomerInfoCard({ customer, 'data-testid': dataTestId }: Custom
         Informasi Penyewa
       </h2>
 
-      <div className="flex items-start gap-4">
+      <div className="flex items-start gap-8">
         <div className="w-16 h-16 bg-yellow-400 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
           {customer.foto ? (
             <Image
@@ -38,10 +38,6 @@ export function CustomerInfoCard({ customer, 'data-testid': dataTestId }: Custom
         <div className="flex-1 space-y-4">
           <div>
             <h3 className="text-xl font-semibold text-gray-900">{customer.name}</h3>
-            <p className="text-sm text-gray-600">
-              {customer.recentTransactions?.length || customer.totalTransactions || 0} transaksi
-              sebelumnya
-            </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

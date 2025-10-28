@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, useCallback } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { ProductHeader } from './ProductHeader'
 import { SearchFilterBar } from './SearchFilterBar'
 import { ProductTable } from './ProductTable'
@@ -12,6 +12,7 @@ import { SearchFilterErrorBoundary } from '../shared/SearchFilterErrorBoundary'
 import { PaginationControls } from '../product-detail/PaginationControls'
 import { useProducts } from '../../hooks/useProducts'
 import { useDeleteProduct } from '../../hooks/useProducts'
+import { useDebounce } from '../../hooks/useDebounce'
 import type { ClientProduct, CategoryFilterValue, StatusFilterValue, ViewMode } from '../../types'
 
 interface ProductFilters {
@@ -23,28 +24,74 @@ interface ProductFilters {
 
 export function ProductListPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
 
-  // Local UI state
+  // URL-based state (persistent across navigation & refresh)
+  const currentPage = Math.max(1, Number(searchParams.get('page')) || 1)
+  const filters: ProductFilters = {
+    search: searchParams.get('search') || '',
+    categoryId: (searchParams.get('category') || '') as CategoryFilterValue,
+    status: (searchParams.get('status') || '') as StatusFilterValue,
+    size: searchParams.get('size') || undefined,
+  }
+
+  // Local UI state (non-persistent)
   const [viewMode, setViewMode] = useState<ViewMode>('table')
-  const [currentPage, setCurrentPage] = useState(1)
-  const [filters, setFilters] = useState<ProductFilters>({
-    search: '',
-    categoryId: '',
-    status: '',
-  })
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [productToDelete, setProductToDelete] = useState<ClientProduct | null>(null)
+  const [localSearchTerm, setLocalSearchTerm] = useState(filters.search || '')
+
+  // Debounced search term to reduce API calls
+  const debouncedSearchTerm = useDebounce(localSearchTerm, 300)
+
+  // Track if debounced search is pending (for visual feedback)
+  const isSearchPending = localSearchTerm !== debouncedSearchTerm && localSearchTerm !== filters.search
+
+  // Helper function untuk update URL params
+  const updateQueryParams = useCallback((newParams: Record<string, string | undefined>) => {
+    const params = new URLSearchParams(searchParams.toString())
+
+    Object.entries(newParams).forEach(([key, value]) => {
+      if (value === undefined || value === '') {
+        params.delete(key)
+      } else {
+        params.set(key, value)
+      }
+    })
+
+    router.push(`/producer/manage-product?${params.toString()}`)
+  }, [searchParams, router])
 
   // Data fetching
   const { data: productsData, isLoading, error } = useProducts({
     ...filters,
-    page: currentPage
+    page: currentPage,
+    limit: 20
   })
   const deleteProductMutation = useDeleteProduct()
 
   const products = productsData?.products || []
   const pagination = productsData?.pagination || { page: 1, totalPages: 1, total: 0 }
   const isEmpty = !isLoading && products.length === 0
+
+  // Sync local search term with URL parameters
+  useEffect(() => {
+    setLocalSearchTerm(filters.search || '')
+  }, [filters.search])
+
+  // Update URL with debounced search term
+  useEffect(() => {
+    if (debouncedSearchTerm !== filters.search) {
+      updateQueryParams({ search: debouncedSearchTerm, page: '1' })
+    }
+  }, [debouncedSearchTerm, filters.search, updateQueryParams])
+
+  // Edge case: Handle out of range page number
+  useEffect(() => {
+    if (!isLoading && currentPage > pagination.totalPages && pagination.totalPages > 0) {
+      updateQueryParams({ page: '1' })
+    }
+  }, [currentPage, pagination.totalPages, isLoading, updateQueryParams])
 
   // Navigation handlers
   const handleAddProduct = () => {
@@ -61,33 +108,30 @@ export function ProductListPage() {
 
   // Filter handlers
   const handleSearch = (search: string) => {
-    setCurrentPage(1) // Reset to first page when searching
-    setFilters((prev) => ({ ...prev, search }))
+    setLocalSearchTerm(search)
+  }
+
+  const handleSearchSubmit = (search: string) => {
+    setLocalSearchTerm(search)
+    // Immediate search when user presses Enter
+    updateQueryParams({ search, page: '1' })
   }
 
   const handleCategoryFilter = (categoryId: CategoryFilterValue) => {
-    setCurrentPage(1) // Reset to first page when changing category
-    setFilters((prev) => ({ ...prev, categoryId }))
+    updateQueryParams({ category: categoryId, page: '1' })
   }
 
   const handleStatusFilter = (status: StatusFilterValue) => {
-    setCurrentPage(1) // Reset to first page when changing status
-    setFilters((prev) => ({ ...prev, status }))
+    updateQueryParams({ status, page: '1' })
   }
 
   const handleSizeFilter = (size: string | undefined) => {
-    setCurrentPage(1) // Reset to first page when changing size filter
-    setFilters((prev) => ({ ...prev, size }))
+    updateQueryParams({ size, page: '1' })
   }
 
-  
+
   const resetFilters = () => {
-    setCurrentPage(1) // Reset to first page when resetting filters
-    setFilters({
-      search: '',
-      categoryId: '',
-      status: '',
-    })
+    router.push('/producer/manage-product')
   }
 
   // Delete handlers
@@ -152,8 +196,9 @@ export function ProductListPage() {
           }}
         >
           <SearchFilterBar
-            searchTerm={filters.search || ''}
+            searchTerm={localSearchTerm}
             onSearchChange={handleSearch}
+            onSearchSubmit={handleSearchSubmit}
             selectedCategory={filters.categoryId}
             onCategoryChange={handleCategoryFilter}
             selectedStatus={filters.status}
@@ -163,6 +208,7 @@ export function ProductListPage() {
             viewMode={viewMode}
             onViewModeChange={setViewMode}
             isLoading={isLoading}
+            isSearchPending={isSearchPending}
           />
         </SearchFilterErrorBoundary>
 
@@ -199,7 +245,7 @@ export function ProductListPage() {
               <PaginationControls
                 currentPage={pagination.page}
                 totalPages={pagination.totalPages}
-                onPageChange={setCurrentPage}
+                onPageChange={(page) => updateQueryParams({ page: page.toString() })}
                 isLoading={isLoading}
                 data-testid="product-pagination-controls"
                 className="mt-8"

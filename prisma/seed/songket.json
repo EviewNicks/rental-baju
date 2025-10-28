@@ -1,0 +1,63 @@
+[
+  {
+    "code": "TH01",
+    "name": "Songket Coklat Muda",
+    "description": "Songket coklat muda - Universal size",
+    "modalAwal": 30000,
+    "currentPrice": 30000,
+    "quantity": 18,
+    "categoryId": "d25ddd0e-5fe1-4dd0-ba18-26b918421798",
+    "imageUrl": "/products/accesories.png",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 12 },
+      { "ageCategory": "CHILD", "size": "UNIVERSAL", "quantity": 6 }
+    ]
+  },
+  {
+    "code": "TM03",
+    "name": "Songket Hijau Mint",
+    "description": "Songket hijau mint segar - Universal size",
+    "modalAwal": 30000,
+    "currentPrice": 30000,
+    "quantity": 2,
+    "categoryId": "d25ddd0e-5fe1-4dd0-ba18-26b918421798",
+    "imageUrl": "/products/accesories.png",
+    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 2 }]
+  },
+  {
+    "code": "TB06",
+    "name": "Songket Denim",
+    "description": "Songket denim modern - Universal size",
+    "modalAwal": 30000,
+    "currentPrice": 30000,
+    "quantity": 12,
+    "categoryId": "d25ddd0e-5fe1-4dd0-ba18-26b918421798",
+    "imageUrl": "/products/accesories.png",
+    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 12 }]
+  },
+  {
+    "code": "RK01",
+    "name": "Songket Rok Krem",
+    "description": "Songket rok krem klasik - Universal size",
+    "modalAwal": 30000,
+    "currentPrice": 30000,
+    "quantity": 1,
+    "categoryId": "d25ddd0e-5fe1-4dd0-ba18-26b918421798",
+    "imageUrl": "/products/accesories.png",
+    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 1 }]
+  },
+  {
+    "code": "TC02",
+    "name": "Songket Hijau Sage",
+    "description": "Songket hijau sage earthy - Universal size",
+    "modalAwal": 30000,
+    "currentPrice": 30000,
+    "quantity": 14,
+    "categoryId": "d25ddd0e-5fe1-4dd0-ba18-26b918421798",
+    "imageUrl": "/products/accesories.png",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 10 },
+      { "ageCategory": "CHILD", "size": "UNIVERSAL", "quantity": 4 }
+    ]
+  }
+]

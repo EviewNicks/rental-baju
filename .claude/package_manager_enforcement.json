@@ -94,5 +94,11 @@
     "blocked_command": "cd \"D:/.work/rental-software\" && npm run type-check",
     "suggested_command": "cd \"D:/.work/rental-software\" && yarn type-check",
     "reason": "Gunakan 'yarn' sebagai pengganti 'npm run' untuk workflow utama."
+  },
+  {
+    "session_id": "b2fea344-e6ac-4966-b17b-dc90e7a7332d",
+    "blocked_command": "cd \"D:\\.work\\rental-software\" && npm run db:seed:categories",
+    "suggested_command": "cd \"D:\\.work\\rental-software\" && yarn db:seed:categories",
+    "reason": "Gunakan 'yarn' sebagai pengganti 'npm run' untuk workflow utama."
   }
 ]

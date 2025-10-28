@@ -74,16 +74,26 @@ export function UnifiedConditionForm({
       0,
     )
     const remaining = currentCondition.totalQuantity - totalReturned
-    const hasValidConditions = currentCondition.conditions.every(
-      (c) =>
+    const hasValidConditions = currentCondition.conditions.every((c) => {
+      const basicValidation =
         c.kondisiAkhir &&
         c.kondisiAkhir.length >= 4 &&
         c.kondisiAkhir.length <= 500 &&
         c.jumlahKembali !== undefined &&
         c.jumlahKembali > 0 &&
-        c.conditionCategory &&
-        (!c.useManualPricing || (c.manualPrice !== undefined && c.manualPrice >= 0)),
-    )
+        c.conditionCategory
+
+      // Enhanced validation for BAIK category
+      if (c.conditionCategory === 'BAIK') {
+        return basicValidation && !c.useManualPricing && (!c.manualPrice || c.manualPrice === 0)
+      }
+
+      // Standard validation for non-BAIK categories
+      return (
+        basicValidation &&
+        (!c.useManualPricing || (c.manualPrice !== undefined && c.manualPrice >= 0))
+      )
+    })
 
     let error: string | undefined
     const warnings: string[] = []
@@ -93,17 +103,26 @@ export function UnifiedConditionForm({
     } else if (totalReturned === 0) {
       error = 'Minimal harus mengembalikan 1 unit atau tandai sebagai hilang'
     } else if (!hasValidConditions) {
-      // Check specific validation issues
-      const invalidConditions = currentCondition.conditions.filter(
-        (c) =>
-          !c.kondisiAkhir ||
-          c.kondisiAkhir.length < 4 ||
-          c.kondisiAkhir.length > 500 ||
-          !c.jumlahKembali ||
-          c.jumlahKembali <= 0 ||
-          !c.conditionCategory ||
-          (c.useManualPricing && (c.manualPrice === undefined || c.manualPrice < 0)),
-      )
+      // Check specific validation issues with enhanced BAIK category validation
+      const invalidConditions = currentCondition.conditions.filter((c) => {
+        const basicValidation =
+          c.kondisiAkhir &&
+          c.kondisiAkhir.length >= 4 &&
+          c.kondisiAkhir.length <= 500 &&
+          c.jumlahKembali !== undefined &&
+          c.jumlahKembali > 0 &&
+          c.conditionCategory
+
+        if (!basicValidation) return true
+
+        // BAIK category specific validation
+        if (c.conditionCategory === 'BAIK') {
+          return c.useManualPricing || (c.manualPrice && c.manualPrice > 0)
+        }
+
+        // Non-BAIK category validation
+        return c.useManualPricing && (c.manualPrice === undefined || c.manualPrice < 0)
+      })
 
       if (invalidConditions.length > 0) {
         const firstInvalid = invalidConditions[0]
@@ -115,6 +134,10 @@ export function UnifiedConditionForm({
           error = 'Kondisi maksimal 500 karakter'
         } else if (!firstInvalid.jumlahKembali || firstInvalid.jumlahKembali <= 0) {
           error = 'Jumlah kembali harus lebih dari 0'
+        } else if (firstInvalid.conditionCategory === 'BAIK' && firstInvalid.useManualPricing) {
+          error = 'Kondisi BAIK tidak boleh menggunakan manual pricing'
+        } else if (firstInvalid.conditionCategory === 'BAIK') {
+          error = 'Kondisi BAIK tidak boleh memiliki manual price (harus 0)'
         } else if (
           firstInvalid.useManualPricing &&
           (firstInvalid.manualPrice === undefined || firstInvalid.manualPrice < 0)

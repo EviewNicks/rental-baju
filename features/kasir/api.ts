@@ -202,7 +202,7 @@ class CircuitBreaker {
       if (Date.now() - this.lastFailureTime < this.recoveryTimeout) {
         throw new KasirApiError(
           'CIRCUIT_BREAKER_OPEN',
-          'Service temporarily unavailable. Please try again later.',
+          `Service temporarily unavailable due to repeated failures. Please try again in ${Math.ceil((this.recoveryTimeout - (Date.now() - this.lastFailureTime)) / 1000)} seconds.`,
         )
       }
       this.state = 'HALF_OPEN'
@@ -237,8 +237,8 @@ class CircuitBreaker {
   }
 }
 
-// Global circuit breaker for return operations
-const returnCircuitBreaker = new CircuitBreaker(3, 30000)
+// Circuit breaker instances for different endpoints
+const returnCircuitBreaker = new CircuitBreaker(5, 10000) // 5 failures, 10 seconds timeout
 
 // Enhanced fetch wrapper with circuit breaker and retry logic
 async function apiRequestWithRetry<T>(

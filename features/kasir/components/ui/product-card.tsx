@@ -126,7 +126,7 @@ export function ProductCard({
           <p className="text-xs text-gray-600 mt-1">{product.description}</p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <Badge variant="outline" className="text-xs">
             {product.size}
           </Badge>
@@ -136,6 +136,25 @@ export function ProductCard({
           <Badge variant="outline" className="text-xs capitalize">
             {product.category}
           </Badge>
+          {/* RPK-52: Category Type Badge */}
+          {product.categoryType && (
+            <Badge
+              variant="secondary"
+              className={`text-xs ${
+                product.categoryType === 'clothing'
+                  ? 'bg-blue-100 text-blue-800'
+                  : product.categoryType === 'accessories_age_based'
+                    ? 'bg-purple-100 text-purple-800'
+                    : 'bg-green-100 text-green-800'
+              }`}
+            >
+              {product.categoryType === 'clothing'
+                ? 'Pakaian'
+                : product.categoryType === 'accessories_age_based'
+                  ? 'Aksesoris Umur'
+                  : 'Aksesoris Universal'}
+            </Badge>
+          )}
         </div>
 
         <div className="flex items-center justify-between">
@@ -147,10 +166,16 @@ export function ProductCard({
           </div>
         </div>
 
-        {/* Size Selection - RPK-51 */}
+        {/* Size Selection - RPK-51 & RPK-52 (Category Type Aware) */}
         {hasSizes && product.sizes && (
           <div className="space-y-2">
-            <h4 className="text-sm font-medium text-gray-700">Pilih Ukuran:</h4>
+            <h4 className="text-sm font-medium text-gray-700">
+              {product.categoryType === 'accessories_age_based'
+                ? 'Pilih Kategori Umur:'
+                : product.categoryType === 'accessories_universal'
+                  ? 'Jumlah:'
+                  : 'Pilih Ukuran:'}
+            </h4>
             <SizeSelector
               sizes={product.sizes}
               selectedSizeId={selectedSize?.id}
@@ -163,10 +188,14 @@ export function ProductCard({
         {/* Quantity Controls */}
         {!isOutOfStock && (
           <div className="space-y-2">
-            {/* Show size selection prompt if product has sizes but none selected */}
+            {/* Show size selection prompt if product has sizes but none selected - RPK-52 (Category Type Aware) */}
             {hasSizes && !selectedSize && (
               <div className="text-sm text-center text-gray-500 italic py-2">
-                Pilih ukuran terlebih dahulu
+                {product.categoryType === 'accessories_age_based'
+                  ? 'Pilih kategori umur terlebih dahulu'
+                  : product.categoryType === 'accessories_universal'
+                    ? 'Pilih jumlah terlebih dahulu'
+                    : 'Pilih ukuran terlebih dahulu'}
               </div>
             )}
 

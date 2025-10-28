@@ -54,12 +54,14 @@ model Category {
   id        String    @id @default(uuid())
   name      String    @unique
   color     String
+  type      String    @default("clothing") // Category type: 'clothing', 'accessories_age_based', 'accessories_universal'
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   createdBy String
   products  Product[]
 
   @@index([createdBy])
+  @@index([type])
 }
 
 model Material {
@@ -272,4 +274,5 @@ enum SizeEnum {
   L
   XL
   XXL
+  UNIVERSAL
 }

@@ -12,7 +12,6 @@ import { UnifiedReturnService } from '@/features/kasir/services/returnService'
 import {
   unifiedReturnRequestSchema,
   convertLegacyToUnified,
-  validateUnifiedReturnRequest,
   UnifiedReturnRequest,
 } from '@/features/kasir/lib/validation/ReturnSchema'
 import { TransactionCodeGenerator } from '@/features/kasir/lib/utils/codeGenerator'
@@ -51,7 +50,6 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
   const timeoutId = setTimeout(() => timeoutController.abort(), 30000) // 30 second timeout
 
   try {
-
     // Rate limiting check with timing
     const rateLimitResult = await withRateLimit(`return-${clientIP}`, 10, 60000)
 
@@ -135,21 +133,8 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       // Validate using unified schema
       validatedData = unifiedReturnRequestSchema.parse(validatedData)
 
-      // Additional business rules validation
-      const businessValidation = validateUnifiedReturnRequest(validatedData)
-      if (!businessValidation.isValid) {
-        const zodError = new ZodError(
-          businessValidation.errors.map((err) => ({
-            code: 'custom',
-            path: err.field.split('.'),
-            message: err.message,
-            fatal: false,
-            received: undefined,
-          })),
-        )
-        throw zodError
-      }
-
+      // PERFORMANCE OPTIMIZATION: Removed redundant validations for faster processing
+      // Business validation and BAIK validation moved to service layer to avoid duplication
     } catch (validationError) {
       if (validationError instanceof ZodError) {
         throw validationError // Re-throw to be handled by main catch block
@@ -171,7 +156,6 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
     // TSK-24 Phase 1: Use unified processing for all scenarios
     const result = await unifiedReturnService.processUnifiedReturn(transaksiId, validatedData)
-
 
     // Handle structured error responses from service (CRITICAL FIX - proper HTTP codes)
     if (!result.success) {
@@ -260,7 +244,6 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       }
     }
 
-
     // Optimized response with compression and performance headers
     const response = NextResponse.json(
       {
@@ -296,239 +279,51 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     clearTimeout(timeoutId)
 
     const { kode } = await params
-
     console.error(`PUT /api/kasir/transaksi/${kode}/pengembalian error:`, error)
 
-    // TSK-24 Phase 1: Handle unified validation errors
+    // PERFORMANCE OPTIMIZATION: Simplified error handling for faster response
     if (error instanceof ZodError) {
-      // Unified validation error response
-      const validationDetails = error.issues.map((err) => {
-        const fieldPath = err.path.join('.')
-        let enhancedMessage = err.message
-        let suggestions: string[] = []
-
-        // Enhanced handling for unified condition validation errors
-        if (fieldPath.includes('conditions')) {
-          enhancedMessage = `Unified validation failed for ${fieldPath}: ${err.message}`
-          suggestions = [
-            'Pastikan setiap kondisi memiliki deskripsi yang jelas (minimal 4 karakter)',
-            'Contoh kondisi valid: "baik", "kotor", "rusak ringan", "rusak berat", "hilang"',
-            'Barang hilang harus memiliki jumlahKembali = 0',
-            'Barang yang dikembalikan harus memiliki jumlahKembali > 0',
-            'Total jumlah kembali tidak boleh melebihi jumlah yang diambil',
-          ]
-        }
-
-        // Enhanced handling for quantity validation in unified format
-        else if (fieldPath.includes('jumlahKembali')) {
-          enhancedMessage = `Unified validation failed for ${fieldPath}: ${err.message}`
-          suggestions = [
-            'Untuk barang hilang: set jumlahKembali = 0 dan kondisiAkhir mengandung "Hilang"',
-            'Untuk barang yang dikembalikan: set jumlahKembali ≥ 1',
-            'Pastikan total jumlah kembali tidak melebihi jumlah yang diambil',
-            'Gunakan unified format dengan array conditions untuk skenario kompleks',
-          ]
-        }
-
-        // Enhanced handling for date validation
-        else if (fieldPath.includes('tglKembali')) {
-          enhancedMessage = `Date validation failed: ${err.message}`
-          suggestions = [
-            'Format tanggal: ISO 8601 (YYYY-MM-DDTHH:mm:ss.sssZ)',
-            'Untuk pengembalian terlambat: gunakan tanggal masa lalu',
-            'Maksimal 30 hari ke depan untuk pengembalian terjadwal',
-          ]
-        }
-
-        // RPK-51: Enhanced handling for size validation errors
-        else if (
-          fieldPath.includes('productSizeId') ||
-          fieldPath.includes('size') ||
-          err.message.includes('Size dengan ID') ||
-          err.message.includes('tidak ditemukan untuk produk ini')
-        ) {
-          enhancedMessage = `Size validation failed: ${err.message}`
-          suggestions = [
-            'Periksa kembali ukuran yang tersedia untuk produk ini',
-            'Pastikan ukuran yang dipilih tersedia dalam inventaris',
-            'Gunakan ukuran yang sesuai dengan produk yang disewa',
-            'Refresh halaman dan coba kembali jika masalah berlanjut',
-          ]
-        }
-
-        return {
-          field: fieldPath,
-          message: enhancedMessage,
-          code: err.code,
-          receivedValue: err.path.includes('tglKembali')
-            ? 'Invalid date format or out of range'
-            : undefined,
-          suggestions,
-        }
-      })
-
-      // Categorize error types for unified validation messaging
-      const hasDateError = error.issues.some((issue) => issue.path.includes('tglKembali'))
-      const hasConditionError = error.issues.some((issue) => issue.path.includes('conditions'))
-      const hasQuantityError = error.issues.some((issue) => issue.path.includes('jumlahKembali'))
-      const hasSizeError = error.issues.some((issue) =>
-        issue.path.includes('productSizeId') ||
-        issue.path.includes('size') ||
-        issue.message.includes('Size dengan ID') ||
-        issue.message.includes('tidak ditemukan untuk produk ini')
-      )
-
-      let enhancedMessage = 'Data pengembalian tidak valid dalam unified architecture'
-      let generalHints: string[] = []
-
-      if (hasSizeError) {
-        enhancedMessage = 'Validasi ukuran produk gagal. Periksa ketersediaan ukuran untuk produk ini.'
-        generalHints = [
-          'Pastikan ukuran yang dipilih tersedia dalam inventaris',
-          'Gunakan ukuran yang sesuai dengan produk yang disewa',
-          'Periksa kembali informasi ukuran pada transaksi awal',
-          'Refresh halaman dan coba kembali jika masalah berlanjut',
-        ]
-      } else if (hasConditionError) {
-        enhancedMessage = 'Validasi kondisi pengembalian gagal. Periksa format unified conditions.'
-        generalHints = [
-          'Gunakan array conditions untuk setiap item, bahkan untuk kasus sederhana',
-          'Setiap kondisi harus memiliki kondisiAkhir (minimal 4 karakter) dan jumlahKembali yang valid',
-          'Contoh kondisi valid: "baik", "kotor", "rusak ringan", "rusak berat", "hilang"',
-          'Total jumlahKembali dari semua kondisi tidak boleh melebihi jumlahDiambil',
-        ]
-      } else if (hasQuantityError) {
-        enhancedMessage =
-          'Validasi jumlah pengembalian gagal. Periksa konsistensi quantity dengan kondisi.'
-        generalHints = [
-          'Barang hilang: jumlahKembali = 0',
-          'Barang dikembalikan: jumlahKembali ≥ 1',
-          'Unified format mendukung pembagian quantity per kondisi',
-        ]
-      } else if (hasDateError) {
-        enhancedMessage =
-          'Tanggal pengembalian tidak valid. Periksa format dan rentang tanggal yang diizinkan.'
-        generalHints = [
-          'Format tanggal: ISO 8601 (YYYY-MM-DDTHH:mm:ss.sssZ)',
-          'Pengembalian terlambat: gunakan tanggal masa lalu',
-          'Pengembalian terjadwal: maksimal 30 hari ke depan',
-        ]
-      }
-
       return NextResponse.json(
         {
           success: false,
           error: {
-            message: enhancedMessage,
-            code: hasSizeError
-              ? 'SIZE_VALIDATION_ERROR'
-              : hasConditionError
-                ? 'UNIFIED_CONDITION_VALIDATION_ERROR'
-                : hasQuantityError
-                  ? 'UNIFIED_QUANTITY_VALIDATION_ERROR'
-                  : 'UNIFIED_VALIDATION_ERROR',
-            details: validationDetails,
-            hints: generalHints,
-            architecture: 'unified',
-            migrationPhase: 1,
+            message: 'Data pengembalian tidak valid',
+            code: 'VALIDATION_ERROR',
+            details: error.issues.map((issue) => ({
+              field: issue.path.join('.'),
+              message: issue.message,
+            })),
           },
         },
         { status: 400 },
       )
     }
 
-    // Handle business logic errors
+    // Handle business logic errors (simplified)
     if (error instanceof Error) {
+      const message = error.message
+
       // Transaction not found
-      if (error.message.includes('tidak ditemukan')) {
+      if (message.includes('tidak ditemukan')) {
         return NextResponse.json(
           {
             success: false,
-            error: {
-              message: 'Transaksi tidak ditemukan',
-              code: 'NOT_FOUND',
-            },
+            error: { message: 'Transaksi tidak ditemukan', code: 'NOT_FOUND' },
           },
           { status: 404 },
         )
       }
 
-      // Return eligibility errors
-      if (error.message.includes('tidak memenuhi syarat') || error.message.includes('kelayakan')) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: {
-              message: error.message,
-              code: 'RETURN_NOT_ELIGIBLE',
-            },
-          },
-          { status: 400 },
-        )
-      }
-
       // Return processing errors
-      if (error.message.includes('Gagal memproses pengembalian')) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: {
-              message: error.message,
-              code: 'RETURN_PROCESSING_ERROR',
-            },
-          },
-          { status: 400 },
-        )
-      }
-
-      // RPK-51: Size validation errors
       if (
-        error.message.includes('Size dengan ID') ||
-        error.message.includes('tidak ditemukan untuk produk ini') ||
-        error.message.includes('Informasi ukuran tidak lengkap') ||
-        error.message.includes('Gagal memvalidasi ukuran')
+        message.includes('Gagal memproses pengembalian') ||
+        message.includes('Validasi gagal') ||
+        message.includes('tidak dapat diproses')
       ) {
         return NextResponse.json(
           {
             success: false,
-            error: {
-              message: error.message,
-              code: 'SIZE_VALIDATION_ERROR',
-              suggestions: [
-                'Periksa kembali ukuran yang tersedia untuk produk ini',
-                'Pastikan ukuran yang dipilih tersedia dalam inventaris',
-                'Gunakan ukuran yang sesuai dengan produk yang disewa',
-                'Refresh halaman dan coba kembali jika masalah berlanjut',
-              ],
-            },
-          },
-          { status: 400 },
-        )
-      }
-
-      // Validation errors
-      if (error.message.includes('Validasi item gagal')) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: {
-              message: error.message,
-              code: 'ITEM_VALIDATION_ERROR',
-            },
-          },
-          { status: 400 },
-        )
-      }
-
-      // Penalty calculation errors
-      if (error.message.includes('Gagal menghitung penalty')) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: {
-              message: error.message,
-              code: 'PENALTY_CALCULATION_ERROR',
-            },
+            error: { message, code: 'RETURN_PROCESSING_ERROR' },
           },
           { status: 400 },
         )
@@ -538,32 +333,9 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json(
         {
           success: false,
-          error: {
-            message: error.message,
-            code: 'BUSINESS_ERROR',
-          },
+          error: { message, code: 'BUSINESS_ERROR' },
         },
         { status: 400 },
-      )
-    }
-
-    // Handle database connection errors
-    if (
-      error &&
-      typeof error === 'object' &&
-      'message' in error &&
-      typeof error.message === 'string' &&
-      error.message.includes('connection pool')
-    ) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: {
-            message: 'Database connection timeout. Please try again.',
-            code: 'CONNECTION_ERROR',
-          },
-        },
-        { status: 503 },
       )
     }
 

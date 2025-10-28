@@ -18,6 +18,7 @@ import type { ViewMode, CategoryFilterValue, StatusFilterValue } from '@/feature
 interface SearchFilterBarProps {
   searchTerm: string
   onSearchChange: (value: string) => void
+  onSearchSubmit?: (value: string) => void
   selectedCategory: CategoryFilterValue
   onCategoryChange: (value: CategoryFilterValue) => void
   selectedStatus: StatusFilterValue
@@ -27,11 +28,13 @@ interface SearchFilterBarProps {
   viewMode: ViewMode
   onViewModeChange: (value: ViewMode) => void
   isLoading?: boolean
+  isSearchPending?: boolean
 }
 
 export function SearchFilterBar({
   searchTerm,
   onSearchChange,
+  onSearchSubmit,
   selectedCategory,
   onCategoryChange,
   selectedStatus,
@@ -41,6 +44,7 @@ export function SearchFilterBar({
   viewMode,
   onViewModeChange,
   isLoading = false,
+  isSearchPending = false,
 }: SearchFilterBarProps) {
   // Fetch categories from API
   const { data: categoriesData, isLoading: isLoadingCategories } = useCategories()
@@ -62,6 +66,13 @@ export function SearchFilterBar({
     { value: 'XL', label: 'XL' },
     { value: 'XXL', label: 'XXL' },
   ]
+
+  // Handle keyboard events for search input
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && onSearchSubmit) {
+      onSearchSubmit(searchTerm)
+    }
+  }
   return (
     <Card className="mb-6 shadow-md border-0 bg-card" data-testid="search-filter-bar">
       <CardContent className="px-6 py-2">
@@ -73,11 +84,22 @@ export function SearchFilterBar({
                 placeholder="Cari produk berdasarkan nama atau kode..."
                 value={searchTerm}
                 onChange={(e) => onSearchChange(e.target.value)}
-                className="pl-10 border-border focus:ring-2 focus:ring-ring/20"
+                onKeyDown={handleSearchKeyDown}
+                className={`pl-10 border-border focus:ring-2 focus:ring-ring/20 ${isSearchPending ? 'pr-10' : ''}`}
                 disabled={isLoading}
                 data-testid="search-input"
               />
+              {isSearchPending && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2" data-testid="search-pending-indicator">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary opacity-50"></div>
+                </div>
+              )}
             </div>
+            {isSearchPending && (
+              <p className="text-xs text-muted-foreground mt-1" data-testid="search-pending-text">
+                Mencari...
+              </p>
+            )}
           </div>
 
           <div className="flex flex-wrap gap-3 items-center" data-testid="filter-controls">

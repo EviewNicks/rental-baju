@@ -26,7 +26,7 @@ export const productBaseSchema = z.object({
   rentedStock: z.number().int().min(0, 'Stok tersewa minimal 0').optional().default(0),
   categoryId: z.string().uuid('ID kategori tidak valid'),
   size: z.string().max(10, 'Ukuran maksimal 10 karakter').optional(),
-    // Material Management fields - RPK-45 (optional untuk backward compatibility)
+  // Material Management fields - RPK-45 (optional untuk backward compatibility)
   materialId: z.string().uuid('ID material tidak valid').optional(),
   materialQuantity: z
     .number()
@@ -85,10 +85,14 @@ export const categorySchema = z.object({
     .min(1, 'Nama kategori wajib diisi')
     .max(50, 'Nama kategori maksimal 50 karakter'),
   color: z.string().regex(/^#[0-9A-F]{6}$/i, 'Warna harus dalam format hex (#RRGGBB)'),
+  type: z
+    .enum(['clothing', 'accessories_age_based', 'accessories_universal'], {
+      message: 'Tipe kategori harus salah satu dari: clothing, accessories_age_based, accessories_universal',
+    })
+    .optional(),
 })
 
 export const updateCategorySchema = categorySchema.partial()
-
 
 // ============== SIZE MANAGEMENT SCHEMAS ==============
 
@@ -102,8 +106,8 @@ export const ageCategorySchema = z.enum(['ADULT', 'CHILD', 'UNIVERSAL'], {
 /**
  * Schema untuk enum SizeEnum
  */
-export const sizeEnumSchema = z.enum(['XS', 'S', 'M', 'L', 'XL', 'XXL'], {
-  message: 'Ukuran harus XS, S, M, L, XL, atau XXL',
+export const sizeEnumSchema = z.enum(['XS', 'S', 'M', 'L', 'XL', 'XXL', 'UNIVERSAL'], {
+  message: 'Ukuran harus XS, S, M, L, XL, XXL, atau UNIVERSAL',
 })
 
 /**
@@ -169,6 +173,97 @@ export const updateProductWithSizesSchema = productBaseSchema.partial().extend({
   sizes: z.array(updateProductSizeSchema).optional(),
 })
 
+// ============== CATEGORY-SPECIFIC SIZE SCHEMAS ==============
+
+/**
+ * Schema untuk accessories age-based sizes (Dewasa/Anak)
+ * Digunakan untuk produk seperti Sarung, Songket yang memerlukan pembagian umur
+ */
+export const accessoriesAgeBasedSizeSchema = z.array(
+  productSizeSchema.extend({
+    ageCategory: z.enum(['ADULT', 'CHILD'], {
+      message: 'Aksesoris age-based harus menggunakan kategori ADULT atau CHILD',
+    }),
+    size: z.enum(['UNIVERSAL', 'XS', 'S', 'M', 'L', 'XL', 'XXL']).optional().default('UNIVERSAL'),
+  })
+).refine(
+  (sizes) => {
+    // Minimal satu age category harus ada
+    const ageCategories = new Set(sizes.map(s => s.ageCategory))
+    return ageCategories.size > 0
+  },
+  {
+    message: 'Minimal satu kategori umur (Dewasa/Anak) harus ditambahkan',
+  }
+).refine(
+  (sizes) => {
+    // Tidak boleh duplikat age category yang sama
+    const ageCategories = sizes.map(s => s.ageCategory)
+    const uniqueCategories = new Set(ageCategories)
+    return ageCategories.length === uniqueCategories.size
+  },
+  {
+    message: 'Tidak boleh ada duplikat kategori umur yang sama',
+  }
+)
+
+/**
+ * Schema untuk accessories universal sizes
+ * Digunakan untuk produk seperti Anting, Gelang yang hanya perlu satu kuantitas
+ */
+export const accessoriesUniversalSizeSchema = z.array(
+  productSizeSchema.extend({
+    ageCategory: z.literal('UNIVERSAL'),
+    size: z.literal('UNIVERSAL'),
+  })
+).refine(
+  (sizes) => sizes.length === 1,
+  {
+    message: 'Aksesoris universal seharusnya hanya memiliki satu entri ukuran',
+  }
+)
+
+/**
+ * Schema untuk clothing sizes (S/M/L/XL)
+ * Digunakan untuk produk pakaian standar dengan ukuran S, M, L, XL, dll
+ */
+export const clothingSizeSchema = z.array(
+  productSizeSchema.extend({
+    ageCategory: z.enum(['ADULT', 'CHILD'], {
+      message: 'Pakaian harus menggunakan kategori ADULT atau CHILD',
+    }),
+    size: z.enum(['XS', 'S', 'M', 'L', 'XL', 'XXL', 'UNIVERSAL'], {
+      message: 'Ukuran pakaian harus salah satu dari: XS, S, M, L, XL, XXL, UNIVERSAL',
+    }),
+  })
+).refine(
+  (sizes) => {
+    // Tidak boleh duplikat kombinasi age category dan size
+    const combinations = sizes.map(s => `${s.ageCategory}-${s.size}`)
+    const uniqueCombinations = new Set(combinations)
+    return combinations.length === uniqueCombinations.size
+  },
+  {
+    message: 'Tidak boleh ada ukuran duplikat dalam kategori umur yang sama',
+  }
+)
+
+/**
+ * Enhanced size array validation dengan category type context
+ * Schema dinamis yang berubah berdasarkan category type
+ */
+export const createCategoryAwareSizeSchema = (categoryType: 'clothing' | 'accessories_age_based' | 'accessories_universal') => {
+  switch (categoryType) {
+    case 'accessories_age_based':
+      return accessoriesAgeBasedSizeSchema
+    case 'accessories_universal':
+      return accessoriesUniversalSizeSchema
+    case 'clothing':
+    default:
+      return clothingSizeSchema
+  }
+}
+
 // ============== QUERY & PARAMS SCHEMAS ==============
 
 /**
@@ -183,7 +278,7 @@ export const productQuerySchema = z.object({
   status: z.enum(['AVAILABLE', 'RENTED', 'MAINTENANCE']).optional(),
   isActive: z.coerce.boolean().optional(),
   size: z.union([z.string(), z.array(z.string())]).optional(),
-  })
+})
 
 /**
  * Skema validasi parameter route untuk produk
@@ -210,7 +305,6 @@ export const categoryQuerySchema = z.object({
 export const categoryParamsSchema = z.object({
   id: z.string().uuid('ID kategori tidak valid'),
 })
-
 
 // ============== ADVANCED-ONLY ALIASES ==============
 

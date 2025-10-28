@@ -1,0 +1,27 @@
+Kode ;Nama;Harga;Jumlah (Dewasa);Jumlah (Anak)
+RUT01;Renda Ungu Taro; Rp100.000 ; S:1, M:1, L:4, XL:2 ;
+RPS02;Renda Pink Salem; Rp100.000 ; S:1, M:6, L:3, XL:2 ;
+RCM03;Renda Coklat Mocca; Rp100.000 ; S:2, M:1, L:3, XXL:1 ;S:2
+RBM04;Renda Biru Muda; Rp100.000 ; M:3, L:3 ;
+RTR05;Renda Taro; Rp100.000 ; S:10, M:3, XL:1 ;S:1, M:2
+RLM06;Renda Lime; Rp125.000 ;;M:2
+RBG07;Renda Burgundy; Rp125.000 ; S:1, M:1, L:10, XXL:2(-1) ;M:2
+RBL01;Renda Burung Lilac; Rp125.000 ; S:1, M:5, L:2 ;
+RBF02;Renda Burung Fanta; Rp125.000 ; S:1, M:3, L:4,  ;
+RBB03;Renda Burung Biru; Rp125.000 ; S:3, M:5, XL:2 ;M:2
+RBK04;Renda Burung Kuning; Rp100.000 ; S:3, M:1, L:2, XL:1 ;
+ROH01;Renda Organza Hitam; Rp150.000 ; S:3, M:1, L:2 ;
+RTM02;Renda Tile Marun; Rp150.000 ; S:2, M:2, L:2,  ;LD 72
+RHS03;Renda Hijau Sage; Rp150.000 ; S:2, M:4, L:4, XL:2, XXL:1 ;L:2
+RTR04;Renda Terracota Mocca; Rp150.000 ;;Xs:1, S:1, M:1
+RUD05;Renda Ungu Darwin; Rp150.000 ; S:2, M:4, L:5, XL:2, XXL:1 ;
+RCK06;Renda Coklat; Rp150.000 ; S:2, M:4, L:5, XL:2, XXL:1 ;
+RBB07;Renda Burgundy Bunga; Rp150.000 ; S:2, M:5, L:3, XL:2 ;
+RKR01;Renda Ceppa Krem; Rp180.000 ; S:2, M:5, L:4, XL:2, XXL:2 ;
+RMR02;Renda Ceppa Marun; Rp180.000 ; S:2, M:3, L:5, XL:2, XXL:1 ;S:2
+RMG03;Renda Magenta; Rp180.000 ;;
+RMD04;Renda Mocca Doping; Rp180.000 ; S:2, M:4, L:2, XXL:1 ;Xs:1, S:1
+RUT05;Renda Ungu Terong; Rp180.000 ; M:2 ;
+TMG06;Tokko Magenta; Rp180.000 ; L:9, XL:6 ;
+TKR07;Tokko Krem; Rp180.000 ; L:11, XL:5 ;
+TKR08;Baju Biru Wardah; Rp180.000 ; S:2, M:4, L:4, XL:2, XXL:1 ;

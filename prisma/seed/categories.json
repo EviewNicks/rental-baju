@@ -1,0 +1,156 @@
+{
+  "categories": [
+    {
+      "name": "Dress",
+      "color": "#FF5733",
+      "type": "clothing",
+      "createdAt": "2025-09-22T22:35:46.170Z",
+      "updatedAt": "2025-09-22T22:35:46.170Z",
+      "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
+    },
+    {
+      "name": "organic",
+      "color": "#EC4899",
+      "type": "clothing",
+      "createdAt": "2025-09-25T13:11:13.130Z",
+      "updatedAt": "2025-09-25T13:11:13.130Z",
+      "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
+    },
+    {
+      "name": "Organza",
+      "color": "#F59E0B",
+      "type": "clothing",
+      "createdAt": "2025-09-25T02:14:05.912Z",
+      "updatedAt": "2025-09-25T02:14:05.912Z",
+      "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
+    },
+    {
+      "name": "renda-premium",
+      "color": "#FFD700",
+      "type": "clothing",
+      "createdAt": "2025-10-13T06:37:49.487Z",
+      "updatedAt": "2025-10-13T06:37:49.487Z",
+      "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
+    },
+    {
+      "name": "renda",
+      "color": "#3B82F6",
+      "type": "clothing",
+      "createdAt": "2025-10-25T10:00:00.000Z",
+      "updatedAt": "2025-10-25T10:00:00.000Z",
+      "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
+    },
+    {
+      "name": "gamis-anak",
+      "color": "#10B981",
+      "type": "clothing",
+      "createdAt": "2025-10-25T10:00:00.000Z",
+      "updatedAt": "2025-10-25T10:00:00.000Z",
+      "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
+    },
+    {
+      "name": "gamis-tanggung",
+      "color": "#059669",
+      "type": "clothing",
+      "createdAt": "2025-10-25T10:00:00.000Z",
+      "updatedAt": "2025-10-25T10:00:00.000Z",
+      "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
+    },
+    {
+      "name": "gamis-dewasa",
+      "color": "#1E40AF",
+      "type": "clothing",
+      "createdAt": "2025-10-25T10:00:00.000Z",
+      "updatedAt": "2025-10-25T10:00:00.000Z",
+      "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
+    },
+    {
+      "name": "jas-jaguar",
+      "color": "#1F2937",
+      "type": "clothing",
+      "createdAt": "2025-10-25T10:00:00.000Z",
+      "updatedAt": "2025-10-25T10:00:00.000Z",
+      "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
+    },
+    {
+      "name": "jas-polos",
+      "color": "#374151",
+      "type": "clothing",
+      "createdAt": "2025-10-25T10:00:00.000Z",
+      "updatedAt": "2025-10-25T10:00:00.000Z",
+      "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
+    },
+    {
+      "name": "jas-premium",
+      "color": "#6B7280",
+      "type": "clothing",
+      "createdAt": "2025-10-25T10:00:00.000Z",
+      "updatedAt": "2025-10-25T10:00:00.000Z",
+      "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
+    },
+    {
+      "name": "jas-renda",
+      "color": "#7C3AED",
+      "type": "clothing",
+      "createdAt": "2025-10-25T10:00:00.000Z",
+      "updatedAt": "2025-10-25T10:00:00.000Z",
+      "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
+    },
+    {
+      "name": "sarung",
+      "color": "#EA580C",
+      "type": "accessories_age_based",
+      "createdAt": "2025-10-25T10:00:00.000Z",
+      "updatedAt": "2025-10-25T10:00:00.000Z",
+      "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
+    },
+    {
+      "name": "songket",
+      "color": "#DC2626",
+      "type": "accessories_age_based",
+      "createdAt": "2025-10-25T10:00:00.000Z",
+      "updatedAt": "2025-10-25T10:00:00.000Z",
+      "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
+    },
+    {
+      "name": "bando-besar",
+      "color": "#F59E0B",
+      "type": "accessories_universal",
+      "createdAt": "2025-10-25T10:00:00.000Z",
+      "updatedAt": "2025-10-25T10:00:00.000Z",
+      "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
+    },
+    {
+      "name": "bando-kecil",
+      "color": "#F97316",
+      "type": "accessories_universal",
+      "createdAt": "2025-10-25T10:00:00.000Z",
+      "updatedAt": "2025-10-25T10:00:00.000Z",
+      "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
+    },
+    {
+      "name": "gelang",
+      "color": "#CA8A04",
+      "type": "accessories_universal",
+      "createdAt": "2025-10-25T10:00:00.000Z",
+      "updatedAt": "2025-10-25T10:00:00.000Z",
+      "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
+    },
+    {
+      "name": "kalung",
+      "color": "#16A34A",
+      "type": "accessories_universal",
+      "createdAt": "2025-10-25T10:00:00.000Z",
+      "updatedAt": "2025-10-25T10:00:00.000Z",
+      "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
+    },
+    {
+      "name": "anting",
+      "color": "#9333EA",
+      "type": "accessories_universal",
+      "createdAt": "2025-10-25T10:00:00.000Z",
+      "updatedAt": "2025-10-25T10:00:00.000Z",
+      "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
+    }
+  ]
+}

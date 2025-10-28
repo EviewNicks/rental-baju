@@ -1,0 +1,46 @@
+[
+  {
+    "code": "GAA01",
+    "name": "Gamis Anak Abu",
+    "description": "Gamis anak warna abu sederhana dan nyaman",
+    "modalAwal": 50000,
+    "currentPrice": 50000,
+    "quantity": 1,
+    "categoryId": "43b642f2-31ee-4c5f-a0dc-b9cd50a253d3",
+    "imageUrl": "/products/gamis-anak/GAA01.jpg",
+    "sizes": [{ "ageCategory": "CHILD", "size": "XS", "quantity": 1 }]
+  },
+  {
+    "code": "GAC02",
+    "name": "Gamis Anak Cream",
+    "description": "Gamis anak warna cream lembut dan lucu",
+    "modalAwal": 75000,
+    "currentPrice": 75000,
+    "quantity": 1,
+    "categoryId": "43b642f2-31ee-4c5f-a0dc-b9cd50a253d3",
+    "imageUrl": "/products/gamis-anak/GAC02.jpg",
+    "sizes": [{ "ageCategory": "CHILD", "size": "XS", "quantity": 1 }]
+  },
+  {
+    "code": "GAS03",
+    "name": "Gamis Anak Sage",
+    "description": "Gamis anak warna sage modern dan trendi",
+    "modalAwal": 50000,
+    "currentPrice": 50000,
+    "quantity": 1,
+    "categoryId": "43b642f2-31ee-4c5f-a0dc-b9cd50a253d3",
+    "imageUrl": "/products/gamis-anak/GAS03.jpg",
+    "sizes": [{ "ageCategory": "CHILD", "size": "XS", "quantity": 1 }]
+  },
+  {
+    "code": "GAB04",
+    "name": "Gamis Anak Biru",
+    "description": "Gamis anak warna biru cerah dan ceria",
+    "modalAwal": 50000,
+    "currentPrice": 50000,
+    "quantity": 1,
+    "categoryId": "43b642f2-31ee-4c5f-a0dc-b9cd50a253d3",
+    "imageUrl": "/products/gamis-anak/GAB04.jpg",
+    "sizes": [{ "ageCategory": "CHILD", "size": "XS", "quantity": 1 }]
+  }
+]

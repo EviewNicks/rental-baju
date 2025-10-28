@@ -1,0 +1,35 @@
+[
+  {
+    "code": "AMM01",
+    "name": "Anting Mutiara Merah",
+    "description": "Anting mutiara merah elegan - Universal size",
+    "modalAwal": 30000,
+    "currentPrice": 30000,
+    "quantity": 2,
+    "categoryId": "dfd0eae4-3824-4c7c-a98f-e848d8427dec",
+    "imageUrl": "/products/accesories.png",
+    "sizes": [{ "ageCategory": "UNIVERSAL", "size": "UNIVERSAL", "quantity": 2 }]
+  },
+  {
+    "code": "AMP01",
+    "name": "Anting Mutiara Putih",
+    "description": "Anting mutiara putih bersih - Universal size",
+    "modalAwal": 30000,
+    "currentPrice": 30000,
+    "quantity": 2,
+    "categoryId": "dfd0eae4-3824-4c7c-a98f-e848d8427dec",
+    "imageUrl": "/products/accesories.png",
+    "sizes": [{ "ageCategory": "UNIVERSAL", "size": "UNIVERSAL", "quantity": 2 }]
+  },
+  {
+    "code": "AMP02",
+    "name": "Anting Mutiara Pelangi",
+    "description": "Anting mutiara pelangi warna-warni - Universal size",
+    "modalAwal": 30000,
+    "currentPrice": 30000,
+    "quantity": 1,
+    "categoryId": "dfd0eae4-3824-4c7c-a98f-e848d8427dec",
+    "imageUrl": "/products/accesories.png",
+    "sizes": [{ "ageCategory": "UNIVERSAL", "size": "UNIVERSAL", "quantity": 1 }]
+  }
+]

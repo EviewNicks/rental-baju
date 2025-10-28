@@ -190,15 +190,31 @@ export const createPembayaranSchema = z.object({
   catatan: z.string().max(500, 'Catatan maksimal 500 karakter').optional()
 })
 
-// Product Availability Query Schema
+// Product Availability Query Schema - Enhanced for Kasir Workflow
 export const productAvailabilityQuerySchema = z.object({
   page: z.coerce.number().min(1).default(1),
   limit: z.coerce.number().min(1).max(100).default(10),
   search: z.string().optional(),
-  categoryId: z.string().uuid().optional(),
+  categoryId: z.string().uuid('ID kategori tidak valid').optional(),
   available: z.coerce.boolean().default(true),
   size: z.union([z.string(), z.array(z.string())]).optional(),
-  }).transform((data) => ({
+  // Enhanced filters for kasir workflow
+  status: z.enum(['AVAILABLE', 'RENTED', 'MAINTENANCE']).optional(), // Product status filter
+  sortBy: z.enum(['name', 'currentPrice', 'createdAt', 'quantity']).default('name'), // Fixed: Use correct database field names
+  sortOrder: z.enum(['asc', 'desc']).default('asc'), // Sort direction
+  minPrice: z.coerce.number().min(0, 'Harga minimal tidak boleh negatif').optional(), // Price range minimum with validation
+  maxPrice: z.coerce.number().min(0, 'Harga maksimal tidak boleh negatif').optional(), // Price range maximum with validation
+}).refine((data) => {
+  // Custom validation: minPrice tidak boleh lebih besar dari maxPrice
+  if (data.minPrice && data.maxPrice && data.minPrice > data.maxPrice) {
+    throw new z.ZodError([{
+      code: z.ZodIssueCode.custom,
+      path: ['minPrice'],
+      message: 'Harga minimal tidak boleh lebih besar dari harga maksimal'
+    }])
+  }
+  return true
+}).transform((data) => ({
   ...data,
   size: Array.isArray(data.size) ? data.size : data.size ? [data.size] : undefined,
 }))

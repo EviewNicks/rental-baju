@@ -20,6 +20,7 @@ import * as path from 'path'
 
 const isDryRun = process.env.DRY_RUN === 'true'
 const DEFAULT_USER_ID = process.env.IMPORT_USER_ID || 'system_import'
+const DEFAULT_PRODUCT_IMAGE = '/products/image.png'
 
 interface ProductData {
   code: string
@@ -31,8 +32,8 @@ interface ProductData {
   categoryId: string
   imageUrl: string
   sizes: Array<{
-    ageCategory: 'ADULT' | 'CHILD'
-    size: 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL'
+    ageCategory: 'ADULT' | 'CHILD' | 'UNIVERSAL'
+    size: 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL' | 'UNIVERSAL'
     quantity: number
   }>
 }
@@ -50,29 +51,81 @@ interface ImportResult {
   }>
 }
 
+/**
+ * Normalize CSV size values to SizeEnum
+ * Maps "All size" → "UNIVERSAL"
+ */
+function normalizeSize(csvSize: string): 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL' | 'UNIVERSAL' {
+  const sizeMap: Record<string, 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL' | 'UNIVERSAL'> = {
+    'All size': 'UNIVERSAL',
+    'all size': 'UNIVERSAL',
+    'ALL SIZE': 'UNIVERSAL',
+    'Universal': 'UNIVERSAL',
+    'UNIVERSAL': 'UNIVERSAL',
+    'XS': 'XS',
+    'S': 'S',
+    'M': 'M',
+    'L': 'L',
+    'XL': 'XL',
+    'XXL': 'XXL',
+  }
+
+  const normalized = sizeMap[csvSize]
+  if (!normalized) {
+    throw new Error(
+      `Invalid size value: "${csvSize}". Supported: ${Object.keys(sizeMap).join(', ')}`,
+    )
+  }
+
+  return normalized
+}
+
+/**
+ * Normalize age category values
+ * Maps "DEWASA" → "ADULT", "ANAK" → "CHILD"
+ */
+function normalizeAgeCategory(csvCategory: string): 'ADULT' | 'CHILD' | 'UNIVERSAL' {
+  const categoryMap: Record<string, 'ADULT' | 'CHILD' | 'UNIVERSAL'> = {
+    DEWASA: 'ADULT',
+    ADULT: 'ADULT',
+    ANAK: 'CHILD',
+    CHILD: 'CHILD',
+    UNIVERSAL: 'UNIVERSAL',
+  }
+
+  const normalized = categoryMap[csvCategory.toUpperCase()]
+  if (!normalized) {
+    throw new Error(
+      `Invalid age category: "${csvCategory}". Supported: DEWASA, ANAK, UNIVERSAL`,
+    )
+  }
+
+  return normalized
+}
+
 async function validateCategory(categoryId: string): Promise<boolean> {
   const category = await prisma.category.findUnique({
-    where: { id: categoryId }
+    where: { id: categoryId },
   })
   return !!category
 }
 
 async function checkDuplicates(products: ProductData[]): Promise<string[]> {
-  const codes = products.map(p => p.code)
+  const codes = products.map((p) => p.code)
   const existingProducts = await prisma.product.findMany({
     where: {
       code: { in: codes },
-      isActive: true
+      isActive: true,
     },
-    select: { code: true }
+    select: { code: true },
   })
-  return existingProducts.map(p => p.code)
+  return existingProducts.map((p) => p.code)
 }
 
 async function uploadImageToSupabase(
   product: ProductData,
   userId: string,
-  productType: string
+  productType: string,
 ): Promise<string> {
   try {
     // Extract expected filename from imageUrl
@@ -88,7 +141,7 @@ async function uploadImageToSupabase(
       `${codeWithoutZero}.jpg`,
       `${codeWithoutZero}.JPG`,
       expectedFilename.toLowerCase(),
-      expectedFilename.toUpperCase()
+      expectedFilename.toUpperCase(),
     ]
 
     let imagePath: string | null = null
@@ -100,10 +153,10 @@ async function uploadImageToSupabase(
       }
     }
 
-    // If image not found, return direct path as fallback
+    // If image not found, return default image as fallback
     if (!imagePath) {
-      console.warn(`   ⚠️  Image not found for ${product.code}, using direct path`)
-      return product.imageUrl
+      console.warn(`   ⚠️  Image not found for ${product.code}, using default image`)
+      return DEFAULT_PRODUCT_IMAGE
     }
 
     // Read file as buffer
@@ -115,7 +168,7 @@ async function uploadImageToSupabase(
     const uploadResult = await fileUploadService.uploadProductImageFromBuffer(
       buffer,
       filename,
-      product.code
+      product.code,
     )
 
     if (uploadResult?.url) {
@@ -124,13 +177,14 @@ async function uploadImageToSupabase(
     }
 
     // Fallback if upload returns null
-    console.warn(`   ⚠️  Upload returned null for ${product.code}, using direct path`)
-    return product.imageUrl
-
+    console.warn(`   ⚠️  Upload returned null for ${product.code}, using default image`)
+    return DEFAULT_PRODUCT_IMAGE
   } catch (error) {
-    console.error(`   ❌ Upload failed for ${product.code}: ${error instanceof Error ? error.message : 'Unknown error'}`)
-    console.log(`   💡 Using direct path as fallback`)
-    return product.imageUrl
+    console.error(
+      `   ❌ Upload failed for ${product.code}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    )
+    console.log(`   💡 Using default image as fallback`)
+    return DEFAULT_PRODUCT_IMAGE
   }
 }
 
@@ -143,7 +197,7 @@ async function importProducts(): Promise<ImportResult> {
     imported: 0,
     skipped: 0,
     failed: 0,
-    errors: []
+    errors: [],
   }
 
   try {
@@ -152,9 +206,11 @@ async function importProducts(): Promise<ImportResult> {
     console.log('')
 
     // Validate product type
-    const validProductTypes = ['organza', 'renda-premium']
+    const validProductTypes = ['organza', 'renda-premium', 'renda', 'jas-jaguar', 'jas-polos', 'jas-premium', 'jas-renda', 'gamis-anak', 'gamis-dewasa', 'gamis-tanggung', 'gamis-dewasa', 'anting', 'bando-besar', 'bando-kecil', 'gelang', 'kalung', 'sarung', 'songket']
     if (!validProductTypes.includes(productType)) {
-      throw new Error(`Invalid PRODUCT_TYPE: ${productType}. Valid types: ${validProductTypes.join(', ')}`)
+      throw new Error(
+        `Invalid PRODUCT_TYPE: ${productType}. Valid types: ${validProductTypes.join(', ')}`,
+      )
     }
 
     // Validate Supabase environment variables
@@ -165,15 +221,54 @@ async function importProducts(): Promise<ImportResult> {
     if (!hasSupabaseConfig && !isDryRun) {
       console.warn('⚠️  Supabase credentials not configured')
       console.warn('   Images will use direct file paths as fallback')
-      console.warn('   Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to enable uploads')
+      console.warn(
+        '   Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to enable uploads',
+      )
       console.log('')
     } else if (hasSupabaseConfig && !isDryRun) {
       console.log('✅ Supabase configuration detected - images will be uploaded')
       console.log('')
     }
 
-    const jsonFileName = productType === 'organza' ? 'organza-products.json' : 'renda-premium-products.json'
-    const jsonPath = path.join(__dirname, `../prisma/${jsonFileName}`)
+    const jsonFileName =
+      productType === 'organza'
+        ? 'organza-products.json'
+        : productType === 'renda-premium'
+          ? 'renda-premium-products.json'
+          : productType === 'renda'
+            ? 'renda-products.json'
+            : productType === 'jas-jaguar'
+              ? 'jas-jaguar-products.json'
+              : productType === 'jas-polos'
+                ? 'jas-polos-products.json'
+                : productType === 'jas-premium'
+                  ? 'jas-premium-products.json'
+                  : productType === 'jas-renda'
+                    ? 'jas-renda-products.json'
+                    : productType === 'gamis-anak'
+                      ? 'gamis-anak-products.json'
+                      : productType === 'gamis-dewasa'
+                        ? 'gamis-dewasa-products.json'
+                        : productType === 'gamis-tanggung'
+                          ? 'gamis-tanggung-products.json'
+                          : productType === 'gamis-dewasa'
+                            ? 'gamis-dewasa-products.json'
+                            : productType === 'anting'
+                              ? 'anting.json'
+                              : productType === 'bando-besar'
+                                ? 'bando-besar.json'
+                                : productType === 'bando-kecil'
+                                  ? 'bando-kecil.json'
+                                  : productType === 'gelang'
+                                    ? 'gelang.json'
+                                    : productType === 'kalung'
+                                      ? 'kalung.json'
+                                      : productType === 'sarung'
+                                        ? 'sarung.json'
+                                        : productType === 'songket'
+                                          ? 'songket.json'
+                                          : 'unknown-products.json'
+    const jsonPath = path.join(__dirname, `../prisma/seed/${jsonFileName}`)
 
     if (!fs.existsSync(jsonPath)) {
       throw new Error(`JSON file not found at: ${jsonPath}`)
@@ -261,26 +356,24 @@ async function importProducts(): Promise<ImportResult> {
           quantity: product.quantity,
           categoryId: product.categoryId,
           imageUrl: finalImageUrl,
-          sizes: product.sizes
+          sizes: product.sizes,
         })
 
         console.log(`   ✅ Success (${product.sizes.length} sizes created)`)
         result.imported++
-
       } catch (error) {
         console.log(`   ❌ Failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
         result.failed++
         result.errors.push({
           code: product.code,
           name: product.name,
-          error: error instanceof Error ? error.message : 'Unknown error'
+          error: error instanceof Error ? error.message : 'Unknown error',
         })
       }
     }
 
     console.log('')
     console.log('✅ IMPORT COMPLETE')
-
   } catch (error) {
     console.error('')
     console.error('❌ IMPORT FAILED')
@@ -297,9 +390,9 @@ async function main() {
     const result = await importProducts()
 
     console.log('')
-    console.log('=' .repeat(50))
+    console.log('='.repeat(50))
     console.log('📊 IMPORT SUMMARY')
-    console.log('=' .repeat(50))
+    console.log('='.repeat(50))
     console.log(`Status: ${result.success ? '✅ SUCCESS' : '❌ FAILED'}`)
     console.log(`Total products: ${result.total}`)
     console.log(`Imported: ${result.imported}`)
@@ -314,7 +407,7 @@ async function main() {
       })
     }
 
-    console.log('=' .repeat(50))
+    console.log('='.repeat(50))
     console.log('')
 
     if (!result.success || result.failed > 0) {
@@ -322,7 +415,6 @@ async function main() {
     }
 
     process.exit(0)
-
   } catch (error) {
     console.error('')
     console.error('❌ Fatal error:', error)
@@ -336,4 +428,4 @@ if (require.main === module) {
   main()
 }
 
-export { importProducts }
+export { importProducts, normalizeSize, normalizeAgeCategory }

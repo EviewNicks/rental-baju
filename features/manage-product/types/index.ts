@@ -26,8 +26,8 @@ export interface BaseProduct {
   materialQuantity?: number
   status: ProductStatus
   imageUrl?: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  totalPendapatan: any // Calculated field from transaction history (not stored in DB)
+  // totalPendapatan removed - performance optimization
+  // Revenue calculation moved to separate endpoint
   isActive: boolean
   createdAt: Date
   updatedAt: Date
@@ -38,6 +38,7 @@ export interface BaseCategory {
   id: string
   name: string
   color: string
+  type: CategoryType
   createdAt: Date
   updatedAt: Date
   createdBy: string
@@ -61,7 +62,7 @@ export interface ClientProduct {
   materialQuantity?: number
   status: ProductStatus
   imageUrl?: string
-  totalPendapatan: number // Calculated field from transaction history
+  // totalPendapatan removed - performance optimization
   isActive: boolean
   createdAt: Date | string
   updatedAt: Date | string
@@ -75,6 +76,7 @@ export interface ClientCategory {
   id: string
   name: string
   color: string
+  type: CategoryType
   createdAt: Date | string
   updatedAt: Date | string
   createdBy: string
@@ -170,7 +172,10 @@ export interface PrismaCategory extends BaseCategory {
 export type ViewMode = 'table' | 'card' | 'grid'
 export type ProductStatus = 'AVAILABLE' | 'RENTED' | 'MAINTENANCE'
 export type AgeCategory = 'ADULT' | 'CHILD' | 'UNIVERSAL'
-export type SizeEnum = 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL'
+export type SizeEnum = 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL' | 'UNIVERSAL'
+
+// Category Types for Dynamic Form System
+export type CategoryType = 'clothing' | 'accessories_age_based' | 'accessories_universal'
 
 // Filter types untuk UI components
 export type CategoryFilterValue = string | undefined
@@ -248,11 +253,13 @@ export interface ProductListResponse {
 export interface CreateCategoryRequest {
   name: string
   color: string
+  type?: CategoryType
 }
 
 export interface UpdateCategoryRequest {
   name?: string
   color?: string
+  type?: CategoryType
 }
 
 
@@ -263,6 +270,7 @@ export interface UpdateCategoryRequest {
 export interface CategoryFormData {
   name: string
   color: string
+  type?: CategoryType
 }
 
 export type CategoryModalMode = 'add' | 'edit' | 'view'
