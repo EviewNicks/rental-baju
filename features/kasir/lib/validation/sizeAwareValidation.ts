@@ -38,7 +38,9 @@ export function validateProductSelection(selection: ProductSelection): {
     }
 
     if (selection.selectedSize && selection.selectedSize.id !== selection.productSizeId) {
-      errors.push(`selectedSize.id (${selection.selectedSize.id}) does not match productSizeId (${selection.productSizeId})`)
+      errors.push(
+        `selectedSize.id (${selection.selectedSize.id}) does not match productSizeId (${selection.productSizeId})`,
+      )
     }
   }
 
@@ -98,6 +100,7 @@ export function validateProductSelection(selection: ProductSelection): {
 /**
  * Validates API response structure for size-aware products
  */
+//eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function validateProductApiResponse(apiProduct: any): {
   isValid: boolean
   errors: string[]
@@ -190,22 +193,29 @@ export function validateProductApiResponse(apiProduct: any): {
  */
 export function resolveSelectedSize(
   product: Product,
-  productSizeId?: string
+  productSizeId?: string,
 ): ProductSize | undefined {
   if (!productSizeId) {
     return undefined
   }
 
   if (!product.sizes || product.sizes.length === 0) {
-    console.warn(`[resolveSelectedSize] Product ${product.id} has no sizes array, but productSizeId provided: ${productSizeId}`)
+    console.warn(
+      `[resolveSelectedSize] Product ${product.id} has no sizes array, but productSizeId provided: ${productSizeId}`,
+    )
     return undefined
   }
 
-  const selectedSize = product.sizes.find(size => size.id === productSizeId)
+  const selectedSize = product.sizes.find((size) => size.id === productSizeId)
 
   if (!selectedSize) {
-    console.warn(`[resolveSelectedSize] Size with ID ${productSizeId} not found in product ${product.id}`)
-    console.warn(`[resolveSelectedSize] Available sizes:`, product.sizes.map(s => ({ id: s.id, size: s.size })))
+    console.warn(
+      `[resolveSelectedSize] Size with ID ${productSizeId} not found in product ${product.id}`,
+    )
+    console.warn(
+      `[resolveSelectedSize] Available sizes:`,
+      product.sizes.map((s) => ({ id: s.id, size: s.size })),
+    )
     return undefined
   }
 
@@ -219,7 +229,7 @@ export function createProductSelection(
   product: Product,
   quantity: number,
   duration: number,
-  productSizeId?: string
+  productSizeId?: string,
 ): {
   selection: ProductSelection | null
   errors: string[]
@@ -256,7 +266,12 @@ export function createProductSelection(
     warnings.push('productSizeId provided for product that does not support size selection')
   }
 
-  if (!productSizeId && product.supportsSizeSelection && product.sizes && product.sizes.length > 0) {
+  if (
+    !productSizeId &&
+    product.supportsSizeSelection &&
+    product.sizes &&
+    product.sizes.length > 0
+  ) {
     warnings.push('Size-aware product selected without specifying size')
   }
 
@@ -296,7 +311,7 @@ export function generateReactKey(productId: string, productSizeId?: string): str
  * Validates that React keys are unique within an array of items
  */
 export function validateUniqueKeys<T extends { product: { id: string }; productSizeId?: string }>(
-  items: T[]
+  items: T[],
 ): {
   isValid: boolean
   duplicateKeys: string[]
@@ -333,7 +348,7 @@ export function validateUniqueKeys<T extends { product: { id: string }; productS
  */
 export function logValidationIssues(
   context: string,
-  validation: { isValid: boolean; errors: string[]; warnings: string[] }
+  validation: { isValid: boolean; errors: string[]; warnings: string[] },
 ): void {
   if (process.env.NODE_ENV === 'development') {
     if (validation.errors.length > 0) {
@@ -349,24 +364,31 @@ export function logValidationIssues(
 /**
  * Type guards for runtime type checking
  */
+
+//eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function isProductSelection(obj: any): obj is ProductSelection {
-  return obj &&
-         typeof obj === 'object' &&
-         typeof obj.product === 'object' &&
-         typeof obj.quantity === 'number' &&
-         typeof obj.duration === 'number' &&
-         obj.product !== null
+  return (
+    obj &&
+    typeof obj === 'object' &&
+    typeof obj.product === 'object' &&
+    typeof obj.quantity === 'number' &&
+    typeof obj.duration === 'number' &&
+    obj.product !== null
+  )
 }
 
 export function isSizeAwareProduct(product: Product): boolean {
   return !!(product.sizes && product.sizes.length > 0 && product.supportsSizeSelection)
 }
 
+//eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function isValidProductSize(obj: any): obj is ProductSize {
-  return obj &&
-         typeof obj === 'object' &&
-         typeof obj.id === 'string' &&
-         typeof obj.ageCategory === 'string' &&
-         typeof obj.size === 'string' &&
-         typeof obj.quantity === 'number'
+  return (
+    obj &&
+    typeof obj === 'object' &&
+    typeof obj.id === 'string' &&
+    typeof obj.ageCategory === 'string' &&
+    typeof obj.size === 'string' &&
+    typeof obj.quantity === 'number'
+  )
 }

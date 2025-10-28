@@ -74,27 +74,26 @@ export function UnifiedConditionForm({
       0,
     )
     const remaining = currentCondition.totalQuantity - totalReturned
-    const hasValidConditions = currentCondition.conditions.every(
-      (c) => {
-        const basicValidation = c.kondisiAkhir &&
-          c.kondisiAkhir.length >= 4 &&
-          c.kondisiAkhir.length <= 500 &&
-          c.jumlahKembali !== undefined &&
-          c.jumlahKembali > 0 &&
-          c.conditionCategory
+    const hasValidConditions = currentCondition.conditions.every((c) => {
+      const basicValidation =
+        c.kondisiAkhir &&
+        c.kondisiAkhir.length >= 4 &&
+        c.kondisiAkhir.length <= 500 &&
+        c.jumlahKembali !== undefined &&
+        c.jumlahKembali > 0 &&
+        c.conditionCategory
 
-        // Enhanced validation for BAIK category
-        if (c.conditionCategory === 'BAIK') {
-          return basicValidation &&
-                 !c.useManualPricing &&
-                 (!c.manualPrice || c.manualPrice === 0)
-        }
-
-        // Standard validation for non-BAIK categories
-        return basicValidation &&
-               (!c.useManualPricing || (c.manualPrice !== undefined && c.manualPrice >= 0))
+      // Enhanced validation for BAIK category
+      if (c.conditionCategory === 'BAIK') {
+        return basicValidation && !c.useManualPricing && (!c.manualPrice || c.manualPrice === 0)
       }
-    )
+
+      // Standard validation for non-BAIK categories
+      return (
+        basicValidation &&
+        (!c.useManualPricing || (c.manualPrice !== undefined && c.manualPrice >= 0))
+      )
+    })
 
     let error: string | undefined
     const warnings: string[] = []
@@ -106,7 +105,8 @@ export function UnifiedConditionForm({
     } else if (!hasValidConditions) {
       // Check specific validation issues with enhanced BAIK category validation
       const invalidConditions = currentCondition.conditions.filter((c) => {
-        const basicValidation = c.kondisiAkhir &&
+        const basicValidation =
+          c.kondisiAkhir &&
           c.kondisiAkhir.length >= 4 &&
           c.kondisiAkhir.length <= 500 &&
           c.jumlahKembali !== undefined &&
@@ -136,7 +136,7 @@ export function UnifiedConditionForm({
           error = 'Jumlah kembali harus lebih dari 0'
         } else if (firstInvalid.conditionCategory === 'BAIK' && firstInvalid.useManualPricing) {
           error = 'Kondisi BAIK tidak boleh menggunakan manual pricing'
-        } else if (firstInvalid.conditionCategory === 'BAIK' && firstInvalid.manualPrice > 0) {
+        } else if (firstInvalid.conditionCategory === 'BAIK') {
           error = 'Kondisi BAIK tidak boleh memiliki manual price (harus 0)'
         } else if (
           firstInvalid.useManualPricing &&
