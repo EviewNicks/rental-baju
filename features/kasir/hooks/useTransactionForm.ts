@@ -33,7 +33,7 @@ export function useTransactionForm() {
   const [currentStep, setCurrentStep] = useState<TransactionStep>(1)
   const [formData, setFormData] = useState<TransactionFormData>(initialFormData)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [globalDuration, setGlobalDuration] = useState(3) // Global duration state
+  const [globalDuration, setGlobalDuration] = useState(1) // Global duration state
   const [isDataRestored, setIsDataRestored] = useState(false) // Track if data was restored from storage
 
   // Real API integration
@@ -85,23 +85,48 @@ export function useTransactionForm() {
   }, [])
 
   const addProduct = useCallback((product: ProductSelection) => {
+    setFormData((prev) => {
+      // Check if product with same size already exists
+      const existingIndex = prev.products.findIndex(
+        (p) =>
+          p.product.id === product.product.id &&
+          (product.productSizeId ? p.productSizeId === product.productSizeId : !p.productSizeId)
+      )
+
+      if (existingIndex >= 0) {
+        // Update quantity of existing size-specific item
+        const updated = [...prev.products]
+        updated[existingIndex] = {
+          ...updated[existingIndex],
+          quantity: updated[existingIndex].quantity + product.quantity
+        }
+        return { ...prev, products: updated }
+      }
+
+      // Add new item
+      return { ...prev, products: [...prev.products, product] }
+    })
+  }, [])
+
+  const removeProduct = useCallback((productId: string, productSizeId?: string) => {
     setFormData((prev) => ({
       ...prev,
-      products: [...prev.products, product],
+      products: prev.products.filter((p) =>
+        !(p.product.id === productId &&
+          (productSizeId ? p.productSizeId === productSizeId : !p.productSizeId))
+      ),
     }))
   }, [])
 
-  const removeProduct = useCallback((productId: string) => {
+  const updateProductQuantity = useCallback((productId: string, quantity: number, productSizeId?: string) => {
     setFormData((prev) => ({
       ...prev,
-      products: prev.products.filter((p) => p.product.id !== productId),
-    }))
-  }, [])
-
-  const updateProductQuantity = useCallback((productId: string, quantity: number) => {
-    setFormData((prev) => ({
-      ...prev,
-      products: prev.products.map((p) => (p.product.id === productId ? { ...p, quantity } : p)),
+      products: prev.products.map((p) =>
+        (p.product.id === productId &&
+          (productSizeId ? p.productSizeId === productSizeId : !p.productSizeId))
+          ? { ...p, quantity }
+          : p
+      ),
     }))
   }, [])
 
@@ -299,7 +324,7 @@ export function useTransactionForm() {
       // Reset form after successful submission
       setFormData(initialFormData)
       setCurrentStep(1)
-      setGlobalDuration(3) // Reset duration to default
+      setGlobalDuration(1) // Reset duration to default
       clearFormData()
 
       return true
@@ -374,7 +399,7 @@ export function useTransactionForm() {
   const resetForm = useCallback(() => {
     setFormData(initialFormData)
     setCurrentStep(1)
-    setGlobalDuration(3) // Reset duration to default
+    setGlobalDuration(1) // Reset duration to default
     clearFormData()
   }, [clearFormData])
 

@@ -68,11 +68,18 @@ export function TransactionFormPage() {
     quantity: number,
     productSizeId?: string
   ) => {
+    // 🔧 FIX: Resolve selectedSize from product.sizes array using productSizeId
+    let selectedSize: ProductSelection['selectedSize'] | undefined
+    if (productSizeId && product.sizes && product.sizes.length > 0) {
+      selectedSize = product.sizes.find(size => size.id === productSizeId)
+    }
+
     const productSelection: ProductSelection = {
       product,
       quantity,
       duration: globalDuration,
       ...(productSizeId && { productSizeId }),
+      ...(selectedSize && { selectedSize }), // 🔧 CRITICAL: Add selectedSize field
     }
 
     try {

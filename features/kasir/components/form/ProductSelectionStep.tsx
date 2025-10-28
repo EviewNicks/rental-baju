@@ -18,14 +18,15 @@ import { KasirFilterBar } from '../ui/KasirFilterBar'
 import type { Product, ProductSelection, KasirFilters } from '../../types'
 import { useAvailableProducts } from '../../hooks/useProduk'
 import { formatCurrency } from '../../lib/utils/client'
+import { generateCartItemKey } from '../../lib/utils/keyGeneration'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
 
 interface ProductSelectionStepProps {
   selectedProducts: ProductSelection[]
   onAddProduct: (product: Product, quantity: number, productSizeId?: string) => void
-  onRemoveProduct: (productId: string) => void
-  onUpdateQuantity: (productId: string, quantity: number) => void
+  onRemoveProduct: (productId: string, productSizeId?: string) => void
+  onUpdateQuantity: (productId: string, quantity: number, productSizeId?: string) => void
   onNext: () => void
   canProceed: boolean
 }
@@ -55,7 +56,7 @@ export function ProductSelectionStep({
   // Dynamic page size calculation based on current data
   const availablePageSizes = [12, 24, 48]
   const getOptimalPageSize = (totalItems: number) => {
-    return availablePageSizes.find(size => size >= totalItems) || 12
+    return availablePageSizes.find((size) => size >= totalItems) || 12
   }
 
   // Debug logging for props
@@ -86,14 +87,31 @@ export function ProductSelectionStep({
       return []
     }
 
-    return productsResponse.data.map(
-      (apiProduct): Product => ({
+    return productsResponse.data.map((apiProduct): Product => {
+      // 🔧 CRITICAL FIX: Enhanced size fallback logic for cart display
+      // Priority: 1) API size/color fields → 2) First size from sizes array → 3) "Unknown"
+      let size = apiProduct.size || 'Unknown'
+      const color = apiProduct.color?.name || 'Unknown'
+
+      // If product has sizes array but no legacy size/color, use first size as fallback
+      if (
+        (!apiProduct.size || !apiProduct.color) &&
+        apiProduct.sizes &&
+        apiProduct.sizes.length > 0
+      ) {
+        const firstSize = apiProduct.sizes[0]
+        if (!apiProduct.size && firstSize.size) {
+          size = firstSize.size
+        }
+      }
+
+      return {
         id: apiProduct.id,
         name: apiProduct.name,
         category: apiProduct.category.name.toLowerCase(),
         categoryType: apiProduct.category.type,
-        size: apiProduct.size || 'Unknown',
-        color: apiProduct.color?.name || 'Unknown',
+        size, // Enhanced with fallback logic
+        color, // Enhanced with fallback logic
         pricePerDay: apiProduct.currentPrice,
         image: apiProduct.imageUrl || '/placeholder.svg',
         available: true, // Availability is now handled in ProductCard with quantity-aware logic
@@ -103,12 +121,16 @@ export function ProductSelectionStep({
         // RPK-51: Map size-aware fields from API response
         sizes: apiProduct.sizes || [],
         supportsSizeSelection: (apiProduct.sizes?.length ?? 0) > 0,
-      }),
-    )
+      }
+    })
   }, [productsResponse])
 
-  const getSelectedQuantity = (productId: string) => {
-    const selected = selectedProducts.find((item) => item.product.id === productId)
+  const getSelectedQuantity = (productId: string, productSizeId?: string) => {
+    const selected = selectedProducts.find(
+      (item) =>
+        item.product.id === productId &&
+        (productSizeId ? item.productSizeId === productSizeId : !item.productSizeId),
+    )
     return selected?.quantity || 0
   }
 
@@ -123,27 +145,28 @@ export function ProductSelectionStep({
   }
 
   const handleAddProduct = (product: Product, quantity: number, productSizeId?: string) => {
-    // Check if product is already in cart (consider productSizeId for size-aware products)
-    const existingProduct = selectedProducts.find(
+    // Enhanced duplicate detection: Check if product with same size is already in cart
+    const existingProductIndex = selectedProducts.findIndex(
       (item) =>
         item.product.id === product.id &&
         (productSizeId ? item.productSizeId === productSizeId : !item.productSizeId),
     )
 
-    if (existingProduct) {
-      // Update quantity if product already exists
-      onUpdateQuantity(product.id, existingProduct.quantity + quantity)
+    if (existingProductIndex >= 0) {
+      // Update quantity of existing size-specific item
+      const existingProduct = selectedProducts[existingProductIndex]
+      onUpdateQuantity(product.id, existingProduct.quantity + quantity, productSizeId)
     } else {
       // Add new product (with optional productSizeId)
       onAddProduct(product, quantity, productSizeId)
     }
   }
 
-  const handleUpdateQuantity = (productId: string, newQuantity: number) => {
+  const handleUpdateQuantity = (productId: string, newQuantity: number, productSizeId?: string) => {
     if (newQuantity <= 0) {
-      onRemoveProduct(productId)
+      onRemoveProduct(productId, productSizeId)
     } else {
-      onUpdateQuantity(productId, newQuantity)
+      onUpdateQuantity(productId, newQuantity, productSizeId)
     }
   }
 
@@ -151,7 +174,6 @@ export function ProductSelectionStep({
   const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage)
   }
-
 
   // Enhanced page size handler with dynamic optimization
   const handlePageSizeChange = (newSize: number) => {
@@ -204,21 +226,14 @@ export function ProductSelectionStep({
                 data-testid="page-size-selector"
               >
                 {availablePageSizes.map((size) => (
-                  <option
-                    key={size}
-                    value={size}
-                    disabled={size > totalItems}
-                  >
-                    {size} {size > totalItems ? `${size} (tidak cukup data)` : `${size} per halaman`}
+                  <option key={size} value={size} disabled={size > totalItems}>
+                    {size}{' '}
+                    {size > totalItems ? `${size} (tidak cukup data)` : `${size} per halaman`}
                   </option>
                 ))}
                 {/* Show all option for cases where totalItems exceeds largest size */}
                 {totalItems > Math.max(...availablePageSizes) && (
-                  <option
-                    key="show-all"
-                    value={Math.max(...availablePageSizes)}
-                    disabled={false}
-                  >
+                  <option key="show-all" value={Math.max(...availablePageSizes)} disabled={false}>
                     Show All ({totalItems} items)
                   </option>
                 )}
@@ -273,7 +288,10 @@ export function ProductSelectionStep({
                   data-testid="products-grid"
                 >
                   {products.map((product) => (
-                    <div key={product.id} data-testid={`product-card-${product.id}`}>
+                    <div
+                      key={`${product.id}-product-card`}
+                      data-testid={`product-card-${product.id}`}
+                    >
                       <ProductCard
                         product={product}
                         onAddToCart={handleAddProduct}
@@ -401,9 +419,9 @@ export function ProductSelectionStep({
               <div className="space-y-3 max-h-64 overflow-y-auto" data-testid="cart-items-list">
                 {selectedProducts.map((item) => (
                   <div
-                    key={item.product.id}
+                    key={generateCartItemKey(item.product.id, item.productSizeId)}
                     className="bg-gray-50 rounded-lg p-3"
-                    data-testid={`cart-item-${item.product.id}`}
+                    data-testid={`cart-item-${item.product.id}-${item.productSizeId || 'no-size'}`}
                   >
                     <div className="flex items-start gap-3">
                       <Image
@@ -423,7 +441,18 @@ export function ProductSelectionStep({
                           {item.product.name}
                         </h4>
                         <p className="text-xs text-gray-600">
-                          {item.product.size} • {item.product.color}
+                          {item.product.size} •{' '}
+                          {item.productSizeId && item.selectedSize && (
+                            <span className="ml-1 font-medium text-yellow-700">
+                              • Size: {item.selectedSize.size} ({item.selectedSize.ageCategory})
+                            </span>
+                          )}
+                          {/* Fallback: Show size info if selectedSize is missing but productSizeId exists */}
+                          {item.productSizeId && !item.selectedSize && item.product.sizes && (
+                            <span className="ml-1 font-medium text-orange-600">
+                              • Size Variant Selected
+                            </span>
+                          )}
                         </p>
                         <p className="text-xs text-gray-600">
                           {formatCurrency(item.product.pricePerDay)}/hari
@@ -437,33 +466,45 @@ export function ProductSelectionStep({
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => handleUpdateQuantity(item.product.id, item.quantity - 1)}
+                            onClick={() =>
+                              handleUpdateQuantity(
+                                item.product.id,
+                                item.quantity - 1,
+                                item.productSizeId,
+                              )
+                            }
                             className="h-6 w-6 p-0"
-                            data-testid={`cart-item-decrease-${item.product.id}`}
+                            data-testid={`cart-item-decrease-${item.product.id}-${item.productSizeId || 'no-size'}`}
                           >
                             <Minus className="h-3 w-3" />
                           </Button>
                           <span
                             className="text-sm font-medium w-8 text-center"
-                            data-testid={`cart-item-quantity-${item.product.id}`}
+                            data-testid={`cart-item-quantity-${item.product.id}-${item.productSizeId || 'no-size'}`}
                           >
                             {item.quantity}
                           </span>
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => handleUpdateQuantity(item.product.id, item.quantity + 1)}
+                            onClick={() =>
+                              handleUpdateQuantity(
+                                item.product.id,
+                                item.quantity + 1,
+                                item.productSizeId,
+                              )
+                            }
                             className="h-6 w-6 p-0"
-                            data-testid={`cart-item-increase-${item.product.id}`}
+                            data-testid={`cart-item-increase-${item.product.id}-${item.productSizeId || 'no-size'}`}
                           >
                             <Plus className="h-3 w-3" />
                           </Button>
                           <Button
                             size="sm"
                             variant="ghost"
-                            onClick={() => onRemoveProduct(item.product.id)}
+                            onClick={() => onRemoveProduct(item.product.id, item.productSizeId)}
                             className="h-6 w-6 p-0 text-red-500 hover:text-red-700 ml-auto"
-                            data-testid={`cart-item-remove-${item.product.id}`}
+                            data-testid={`cart-item-remove-${item.product.id}-${item.productSizeId || 'no-size'}`}
                           >
                             <X className="h-3 w-3" />
                           </Button>
@@ -482,7 +523,7 @@ export function ProductSelectionStep({
                 </div>
                 <div className="flex justify-between text-sm" data-testid="cart-duration">
                   <span className="text-gray-600">Durasi:</span>
-                  <span className="font-medium">3 hari</span>
+                  <span className="font-medium">1 hari</span>
                 </div>
                 <div
                   className="flex justify-between text-base font-semibold text-gray-900 border-t border-gray-200 pt-2"

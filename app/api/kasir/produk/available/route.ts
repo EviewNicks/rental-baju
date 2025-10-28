@@ -170,6 +170,23 @@ export async function GET(request: NextRequest) {
         // Calculate total available quantity across all sizes
         const totalAvailable = product.sizes.reduce((sum, size) => sum + size.quantity, 0)
 
+        // 🔧 CRITICAL FIX: Enhanced legacy field mapping for cart display
+        // Priority: 1) Product legacy fields → 2) First size from sizes array → 3) "Unknown"
+        let legacySize = product.size || 'Unknown'
+        let legacyColor = { name: 'Unknown' } // Default color structure
+
+        // If product has no legacy size but has sizes array, use first size as fallback
+        if (!product.size && product.sizes && product.sizes.length > 0) {
+          const firstSize = product.sizes[0]
+          legacySize = firstSize.size
+        }
+
+        // For color, we don't have product-level color anymore, so we'll use a structured default
+        // The frontend will use category color for UI display
+        if (!legacyColor) {
+          legacyColor = { name: 'Unknown' }
+        }
+
         return {
           id: product.id,
           code: product.code,
@@ -180,6 +197,9 @@ export async function GET(request: NextRequest) {
           totalInventory: product.quantity, // Legacy field for backward compatibility
           availableQuantity: totalAvailable, // Total across all active sizes
           rentedQuantity: product.rentedStock, // Legacy field
+          // 🔧 CRITICAL FIX: Add legacy size and color fields for frontend fallback
+          size: legacySize,
+          color: legacyColor,
           // NEW: Size-specific information
           sizes: product.sizes.map(size => ({
             id: size.id,
@@ -187,6 +207,8 @@ export async function GET(request: NextRequest) {
             size: size.size,
             quantity: size.quantity,
             availableQuantity: size.quantity, // All sizes are available at ProductSize level
+            // Add color field to sizes for selectedSize mapping
+            color: `${size.ageCategory} - ${size.size}`, // Generated color description
           })),
           imageUrl: product.imageUrl,
           category: {
