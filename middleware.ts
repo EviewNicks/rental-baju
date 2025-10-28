@@ -1,4 +1,5 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
+import { NextResponse } from 'next/server'
 
 /**
  * Enhanced Clerk Middleware dengan Role-Based Authorization
@@ -8,6 +9,9 @@ import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
  *
  * Role diambil dari custom session claim "role" yang dikonfigurasi di Clerk Dashboard.
  *
+ * Fitur baru: Root path (/) redirect ke sign-in untuk unauthenticated users
+ * dan role-based dashboard redirect untuk authenticated users.
+ *
  * Referensi:
  * - https://clerk.com/docs/references/nextjs/clerk-middleware
  * - https://clerk.com/docs/guides/basic-rbac
@@ -16,7 +20,8 @@ import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
  * App Structure:
  * - /owner/* = Owner area (hanya owner)
  * - /producer/* = Producer area (owner & producer)
- * - /kasir/* = Kasir area (owner, producer, kasir)
+ * - /dashboard/* = Kasir area (owner, producer, kasir)
+ * - / = Redirect ke sign-in atau role dashboard
  */
 
 // Define protected routes using Clerk's createRouteMatcher
@@ -28,6 +33,16 @@ const isProtectedRoute = createRouteMatcher([
   '/profile(.*)',
 ])
 
+// Define public routes (excluding root path for redirect behavior)
+const isPublicRoute = createRouteMatcher([
+  '/sign-in(.*)',
+  '/sign-up(.*)',
+  '/api/webhooks(.*)',
+  '/about(.*)',
+  '/contact(.*)',
+  '/unauthorized',
+])
+
 // Define owner-only routes
 const isOwnerRoute = createRouteMatcher(['/owner(.*)'])
 // Define producer routes (owner & producer)
@@ -35,14 +50,73 @@ const isProducerRoute = createRouteMatcher(['/producer(.*)'])
 // Define kasir routes (owner, producer, kasir) - menggunakan /dashboard
 const isKasirRoute = createRouteMatcher(['/dashboard(.*)'])
 
+// Helper function untuk robust role extraction dari Clerk session claims
+// Menggunakan multiple fallback sources untuk memastikan role terdeteksi dengan benar
+const extractUserRole = (sessionClaims: any) => {
+  // Prioritize: metadata.role → sessionClaims.role → publicMetadata.role → fallback
+  const role = sessionClaims?.metadata?.role ||
+               sessionClaims?.role ||
+               sessionClaims?.publicMetadata?.role ||
+               'user'
+
+  // Debug logging untuk troubleshooting
+  console.log('🔐 Role Extraction Debug:', {
+    'metadata.role': sessionClaims?.metadata?.role,
+    'sessionClaims.role': sessionClaims?.role,
+    'publicMetadata.role': sessionClaims?.publicMetadata?.role,
+    'final.role': role,
+    'sessionClaims': sessionClaims
+  })
+
+  return role
+}
+
+// Role dashboard mapping function (sama dengan useRoleNavigation)
+const getRoleDashboardUrl = (role: string) => {
+  switch (role) {
+    case 'owner':
+      return '/owner'
+    case 'producer':
+      return '/producer/manage-product'
+    case 'admin':
+    case 'kasir':
+      return '/dashboard'
+    default:
+      return '/unauthorized'
+  }
+}
+
 export default clerkMiddleware(
   async (auth, req) => {
-    if (isProtectedRoute(req)) {
-      await auth.protect()
+    // Handle root path specifically - ini fitur baru untuk role-based redirect
+    if (req.nextUrl.pathname === '/') {
+      const { userId, sessionClaims } = await auth()
+
+      if (!userId) {
+        // User belum login → redirect ke sign-in dengan return URL
+        const signInUrl = new URL('/sign-in', req.url)
+        signInUrl.searchParams.set('redirect_url', '/')
+        return NextResponse.redirect(signInUrl)
+      }
+
+      // User sudah login → redirect ke role dashboard
+      const role = extractUserRole(sessionClaims)
+      const dashboardUrl = getRoleDashboardUrl(role)
+      console.log('🔄 Root Redirect:', { userId, role, dashboardUrl })
+      return NextResponse.redirect(new URL(dashboardUrl, req.url))
     }
 
+    // Standard route protection for other paths
+    if (isPublicRoute(req)) {
+      return NextResponse.next()
+    }
+
+    // Protect all other routes
+    await auth.protect()
+
+    // Role-based route validation
     const { sessionClaims } = await auth()
-    const userRole = sessionClaims?.role as string
+    const userRole = extractUserRole(sessionClaims)
 
     // Owner-only routes
     if (isOwnerRoute(req)) {
@@ -67,6 +141,8 @@ export default clerkMiddleware(
         return Response.redirect(url)
       }
     }
+
+    return NextResponse.next()
   },
   {
     debug: false,

@@ -2,8 +2,30 @@
 
 import React from 'react'
 import { SignIn } from '@clerk/nextjs'
+import { useAuth } from '@clerk/nextjs'
+import { useSearchParams } from 'next/navigation'
 
 export default function SignInPage() {
+  const { isLoaded, userId } = useAuth()
+  const searchParams = useSearchParams()
+
+  // Get redirect URL dari query params atau fallback ke role-based default
+  const getRedirectUrl = () => {
+    // Check untuk explicit redirect_url dari middleware atau direct link
+    const redirectUrl = searchParams?.get('redirect_url')
+    if (redirectUrl && redirectUrl !== '/') {
+      return redirectUrl
+    }
+
+    // Untuk root access, biarkan middleware handle redirect setelah sign-in
+    if (redirectUrl === '/') {
+      return '/dashboard' // Temporary fallback, akan di-override middleware
+    }
+
+    // Default fallback untuk direct sign-in access
+    return '/dashboard'
+  }
+
   return (
     <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-secondary/5 to-accent-mint/5 relative overflow-hidden">
       {/* Background patterns */}
@@ -47,6 +69,7 @@ export default function SignInPage() {
           signUpUrl="/sign-up"
           routing="path"
           path="/sign-in"
+          redirectUrl={getRedirectUrl()}
         />
       </div>
     </main>

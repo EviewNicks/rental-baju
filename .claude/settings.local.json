@@ -103,7 +103,8 @@
       "mcp__atlassian__createJiraIssue",
       "Bash(dir:*)",
       "Bash(npx tsx:*)",
-      "Bash(yarn lint:fix:*)"
+      "Bash(yarn lint:fix:*)",
+      "WebFetch(domain:clerk.com)"
     ],
     "deny": []
   },
