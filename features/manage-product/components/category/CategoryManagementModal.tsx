@@ -58,6 +58,7 @@ export function CategoryManagementModal({ isOpen, onClose }: CategoryManagementM
         await createCategoryMutation.mutateAsync({
           name: formData.name,
           color: formData.color,
+          type: formData.type,
         })
         showSuccess('Kategori berhasil ditambahkan', `Kategori ${formData.name} telah dibuat`)
       } else if (mode === 'edit' && selectedCategory) {
@@ -66,6 +67,7 @@ export function CategoryManagementModal({ isOpen, onClose }: CategoryManagementM
           data: {
             name: formData.name,
             color: formData.color,
+            type: formData.type,
           },
         })
         showSuccess(

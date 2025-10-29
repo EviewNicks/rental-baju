@@ -45,6 +45,7 @@ const isKasirRoute = createRouteMatcher(['/dashboard(.*)'])
 
 // Helper function untuk robust role extraction dari Clerk session claims
 // Menggunakan multiple fallback sources untuk memastikan role terdeteksi dengan benar
+//eslint-disable-next-line @typescript-eslint/no-explicit-any
 const extractUserRole = (sessionClaims: any) => {
   // Prioritize: metadata.role → sessionClaims.role → publicMetadata.role → fallback
   const role =
@@ -52,15 +53,6 @@ const extractUserRole = (sessionClaims: any) => {
     sessionClaims?.role ||
     sessionClaims?.publicMetadata?.role ||
     'user'
-
-  // Debug logging untuk troubleshooting
-  console.log('🔐 Role Extraction Debug:', {
-    'metadata.role': sessionClaims?.metadata?.role,
-    'sessionClaims.role': sessionClaims?.role,
-    'publicMetadata.role': sessionClaims?.publicMetadata?.role,
-    'final.role': role,
-    sessionClaims: sessionClaims,
-  })
 
   return role
 }

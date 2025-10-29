@@ -1,10 +1,11 @@
 'use client'
 
-import { Edit, Trash2, Tag } from 'lucide-react'
+import { Edit, Trash2, Tag, Shirt, Package } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import type { ClientCategory } from '@/features/manage-product/types'
 import { getContrastTextColor, lightenColor } from '@/features/manage-product/lib/utils/color'
+import { getCategoryTypeLabel, getCategoryTypeIcon } from './CategoryTypeSelector'
 
 interface CategoryListProps {
   categories: ClientCategory[]
@@ -32,17 +33,41 @@ export function CategoryList({ categories, onEdit, onDelete, loading }: Category
             className="flex items-center justify-between p-4 bg-white rounded-lg border border-gray-200 hover:shadow-lg hover:border-yellow-200 transition-all duration-200"
           >
             <div className="flex items-center space-x-4">
-              <Badge
-                variant="outline"
-                style={{
-                  backgroundColor: lightenColor(category.color, 85),
-                  color: getContrastTextColor(lightenColor(category.color, 85)),
-                  borderColor: category.color,
-                }}
-                className="font-medium rounded-full"
-              >
-                {category.name}
-              </Badge>
+              <div className="flex items-center space-x-2">
+                <Badge
+                  variant="outline"
+                  style={{
+                    backgroundColor: lightenColor(category.color, 85),
+                    color: getContrastTextColor(lightenColor(category.color, 85)),
+                    borderColor: category.color,
+                  }}
+                  className="font-medium rounded-full"
+                >
+                  {category.name}
+                </Badge>
+
+                {/* Type Badge */}
+                <div className="flex items-center space-x-1">
+                  {(() => {
+                    const TypeIcon = getCategoryTypeIcon(category.type)
+                    const typeColors = {
+                      clothing: 'bg-blue-50 text-blue-700 border-blue-200',
+                      accessories_age_based: 'bg-green-50 text-green-700 border-green-200',
+                      accessories_universal: 'bg-purple-50 text-purple-700 border-purple-200'
+                    }
+
+                    return (
+                      <Badge
+                        variant="outline"
+                        className={typeColors[category.type] || 'bg-gray-50 text-gray-700 border-gray-200'}
+                      >
+                        <TypeIcon className="w-3 h-3 mr-1" />
+                        {getCategoryTypeLabel(category.type)}
+                      </Badge>
+                    )
+                  })()}
+                </div>
+              </div>
               <div className="flex items-center space-x-2">
                 {category.products && category.products.length > 0 && (
                   <div className="flex items-center space-x-1">

@@ -148,7 +148,7 @@ export const categoryApi = {
   },
 
   // Create new category
-  createCategory: async (data: { name: string; description?: string; color?: string }) => {
+  createCategory: async (data: { name: string; description?: string; color?: string; type?: string }) => {
     const response = await fetch(`${API_BASE_URL}/categories`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -158,7 +158,7 @@ export const categoryApi = {
   },
 
   // Update existing category
-  updateCategory: async (id: string, data: { name?: string; description?: string; color?: string }) => {
+  updateCategory: async (id: string, data: { name?: string; description?: string; color?: string; type?: string }) => {
     const response = await fetch(`${API_BASE_URL}/categories/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },

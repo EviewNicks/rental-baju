@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ColorPicker } from './ColorPicker'
 import { CategoryBadgePreview } from './CategoryBadgePreview'
+import { CategoryTypeSelector } from './CategoryTypeSelector'
 import type { ClientCategory, CategoryFormData, CategoryModalMode } from '@/features/manage-product/types'
 import { cn } from '@/lib/utils'
 
@@ -41,6 +42,13 @@ const validateCategoryColor = (color: string): string | null => {
   return null
 }
 
+const validateCategoryType = (type?: string): string | null => {
+  if (!type) return 'Tipe kategori wajib dipilih'
+  const validTypes = ['clothing', 'accessories_age_based', 'accessories_universal']
+  if (!validTypes.includes(type)) return 'Tipe kategori tidak valid'
+  return null
+}
+
 export function CategoryForm({
   mode,
   category,
@@ -52,6 +60,7 @@ export function CategoryForm({
   const [formData, setFormData] = useState<CategoryFormData>({
     name: category?.name || '',
     color: category?.color || '#FFD700',
+    type: category?.type || 'clothing',
   })
 
   // Simple error state management
@@ -69,6 +78,9 @@ export function CategoryForm({
     const colorError = validateCategoryColor(formData.color)
     if (colorError) newErrors.color = colorError
 
+    const typeError = validateCategoryType(formData.type)
+    if (typeError) newErrors.type = typeError
+
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -76,13 +88,15 @@ export function CategoryForm({
   const validateSingleField = (name: string, value: string): void => {
     const editingId = mode === 'edit' ? category?.id : undefined
     let error = ''
-    
+
     if (name === 'name') {
       error = validateCategoryName(value, existingCategories, editingId) || ''
     } else if (name === 'color') {
       error = validateCategoryColor(value) || ''
+    } else if (name === 'type') {
+      error = validateCategoryType(value) || ''
     }
-    
+
     setErrors(prev => ({ ...prev, [name]: error }))
   }
 
@@ -91,6 +105,7 @@ export function CategoryForm({
       setFormData({
         name: category.name,
         color: category.color,
+        type: category.type || 'clothing',
       })
     }
   }, [category, mode])
@@ -112,7 +127,7 @@ export function CategoryForm({
     e.preventDefault()
 
     if (!validateForm()) {
-      setTouched({ name: true, color: true })
+      setTouched({ name: true, color: true, type: true })
       return
     }
 
@@ -136,6 +151,13 @@ export function CategoryForm({
         </h3>
 
         <div className="space-y-4">
+          {/* Type Selection */}
+          <CategoryTypeSelector
+            value={formData.type}
+            onChange={(type) => handleInputChange('type', type)}
+            disabled={isLoading}
+          />
+
           {/* Name Field */}
           <div className="space-y-2">
             <Label htmlFor="name" className="flex items-center gap-2">
