@@ -14,14 +14,11 @@ import {
 import { ProductForm } from '@/features/manage-product/components/form-product/ProductForm'
 import { useCategories } from '@/features/manage-product/hooks/useCategories'
 import { useCreateProduct, useUpdateProduct } from '@/features/manage-product/hooks/useProducts'
-import { useProductFormStrategy } from '@/features/manage-product/hooks/useProductFormStrategy'
+import { ProductSizeTransformer } from '@/features/manage-product/utils/ProductSizeTransformer'
 import type {
   ClientProduct,
-  ClientProductSize,
   AggregatedSizeView,
   SimplifiedSizeEntry,
-  AgeCategory,
-  SizeEnum,
   CreateProductSizeRequest,
 } from '@/features/manage-product/types'
 import type { CategoryFormData } from '@/features/manage-product/lib/strategies/CategoryFormStrategy'
@@ -47,48 +44,6 @@ interface ProductFormData {
   hasSizes: boolean // Always true in advanced-only architecture
   simplifiedSizes?: SimplifiedSizeEntry[]
   aggregatedSizes?: AggregatedSizeView[] // Keep for backward compatibility
-}
-
-// Utility function to transform simplified sizes to backend format (NEW SYSTEM)
-const transformSimplifiedSizesToBackendFormat = (
-  simplifiedSizes: SimplifiedSizeEntry[],
-): string => {
-  const sizes = simplifiedSizes.map((sizeEntry) => ({
-    ageCategory: sizeEntry.ageCategory, // Already using standardized enum values
-    size: sizeEntry.size,
-    quantity: sizeEntry.quantity,
-    isActive: true,
-    // Note: 'id' field is intentionally excluded - only used for frontend state management
-  }))
-
-  const jsonString = JSON.stringify(sizes)
-
-  return jsonString
-}
-
-// Transform existing product sizes to simplified sizes format (EDIT MODE)
-const transformProductSizesToSimplifiedFormat = (
-  productSizes: ClientProductSize[],
-): SimplifiedSizeEntry[] => {
-  return productSizes.map((size) => ({
-    id: size.id,
-    size: size.size as SizeEnum,
-    ageCategory: size.ageCategory as AgeCategory,
-    quantity: size.quantity,
-  }))
-}
-
-// Function to transform aggregated sizes to backend format
-const transformSizesToBackendFormat = (aggregatedSizes: AggregatedSizeView[]): string => {
-  const sizes = aggregatedSizes.flatMap((aggSize) =>
-    Object.entries(aggSize.breakdown).map(([ageCategory, quantity]) => ({
-      ageCategory: ageCategory === 'dewasa' ? 'ADULT' : ageCategory === 'anak' ? 'CHILD' : 'ADULT', // Updated mapping
-      size: aggSize.size,
-      quantity: quantity,
-      isActive: true,
-    })),
-  )
-  return JSON.stringify(sizes)
 }
 
 // Request interfaces for API calls
@@ -197,17 +152,6 @@ export function ProductFormPage({
 
   const categories = categoriesData?.categories ?? []
 
-  // Strategy management using custom hook
-  const {
-    currentStrategy,
-    selectedCategory,
-    strategyLoading,
-    strategyError,
-    initializeStrategy,
-    transformFormDataToSizes,
-    getStrategyDefaultValues,
-  } = useProductFormStrategy({ categories, product })
-
   const [formData, setFormData] = useState<ProductFormData>({
     code: product?.code || '',
     name: product?.name || '',
@@ -226,7 +170,7 @@ export function ProductFormPage({
     hasSizes: true, // Always true in advanced-only architecture
     simplifiedSizes:
       mode === 'edit' && product?.sizes
-        ? transformProductSizesToSimplifiedFormat(product.sizes)
+        ? ProductSizeTransformer.transformProductSizesToSimplifiedFormat(product.sizes)
         : [], // Load existing sizes in edit mode, empty for new products
     aggregatedSizes: undefined, // Keep for backward compatibility
   })
@@ -365,14 +309,12 @@ export function ProductFormPage({
     setFormData((prev) => ({
       ...prev,
       simplifiedSizes: sizes,
-      // Auto-calculate total quantity from sizes
-      quantity: sizes.reduce((sum, size) => sum + size.quantity, 0),
+      // Auto-calculate total quantity from sizes using ProductSizeTransformer
+      quantity: ProductSizeTransformer.calculateTotalQuantity(sizes, 'simplified'),
     }))
 
-    // Clear any existing sizes validation error
-    if (errors.sizes) {
-      setErrors((prev) => ({ ...prev, sizes: '' }))
-    }
+    // Clear any existing sizes validation error using ProductSizeTransformer
+    ProductSizeTransformer.clearSizeErrors(setErrors)
   }
 
   // Handler for aggregated sizes change
@@ -380,30 +322,24 @@ export function ProductFormPage({
     setFormData((prev) => ({
       ...prev,
       aggregatedSizes: sizes,
-      // Auto-calculate total quantity from sizes
-      quantity: sizes.reduce((sum, size) => sum + size.totalQuantity, 0),
+      // Auto-calculate total quantity from sizes using ProductSizeTransformer
+      quantity: ProductSizeTransformer.calculateTotalQuantity(sizes, 'aggregated'),
     }))
 
-    // Clear any existing sizes validation error
-    if (errors.sizes) {
-      setErrors((prev) => ({ ...prev, sizes: '' }))
-    }
+    // Clear any existing sizes validation error using ProductSizeTransformer
+    ProductSizeTransformer.clearSizeErrors(setErrors)
   }
 
   // Strategy handlers for dynamic form integration
   const handleStrategySizesChange = (sizes: CreateProductSizeRequest[]) => {
     setStrategySizes(sizes)
 
-    // Auto-calculate total quantity from strategy sizes
-    if (sizes.length > 0) {
-      const totalQuantity = sizes.reduce((sum, size) => sum + size.quantity, 0)
-      setFormData((prev) => ({ ...prev, quantity: totalQuantity }))
-    }
+    // Auto-calculate total quantity from strategy sizes using ProductSizeTransformer
+    const totalQuantity = ProductSizeTransformer.calculateTotalQuantity(sizes, 'strategy')
+    setFormData((prev) => ({ ...prev, quantity: totalQuantity }))
 
-    // Clear any existing sizes validation error
-    if (errors.sizes) {
-      setErrors((prev) => ({ ...prev, sizes: '' }))
-    }
+    // Clear any existing sizes validation error using ProductSizeTransformer
+    ProductSizeTransformer.clearSizeErrors(setErrors)
   }
 
   const handleCategoryFormDataChange = (data: CategoryFormData) => {
@@ -435,19 +371,12 @@ export function ProductFormPage({
       return
     }
 
-    // Transform sizes to backend format with strategy data priority
-    let sizesData: string
-
-    if (strategySizes.length > 0) {
-      // Priority 1: Strategy data (dynamic form data)
-      sizesData = JSON.stringify(strategySizes)
-    } else if (formData.simplifiedSizes && formData.simplifiedSizes.length > 0) {
-      // Priority 2: Simplified sizes (legacy system)
-      sizesData = transformSimplifiedSizesToBackendFormat(formData.simplifiedSizes)
-    } else {
-      // Priority 3: Aggregated sizes (legacy fallback)
-      sizesData = transformSizesToBackendFormat(formData.aggregatedSizes || [])
-    }
+    // Transform sizes to backend format with strategy data priority using ProductSizeTransformer
+    const { data: sizesData } = ProductSizeTransformer.transformToBackendFormat(
+      strategySizes,
+      formData.simplifiedSizes || [],
+      formData.aggregatedSizes || [],
+    )
 
     try {
       if (mode === 'add') {
