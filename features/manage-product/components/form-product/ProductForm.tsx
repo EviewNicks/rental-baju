@@ -7,10 +7,14 @@ import { DynamicFormField } from '@/features/manage-product/components/form-prod
 import { ImageUpload } from '@/features/manage-product/components/products/ImageUpload'
 import { MaterialSelector } from '@/features/manage-product/components/material/MaterialSelector'
 import { InlineSizeManagement } from '@/features/manage-product/components/form-product/InlineSizeManagement'
+import { SizeManagementPlaceholder } from '@/features/manage-product/components/form-product/SizeManagementPlaceholder'
 import { useAggregatedSizes } from '@/features/manage-product/hooks/useAggregatedSizes'
 import { getProductSizeMode } from '@/features/manage-product/lib/utils/sizeManagementUtils'
 import { FormStrategyFactory } from '@/features/manage-product/lib/strategies/StrategyFactory'
-import type { CategoryFormStrategy, CategoryFormData as CategoryFormData } from '@/features/manage-product/lib/strategies/CategoryFormStrategy'
+import type {
+  CategoryFormStrategy,
+  CategoryFormData as CategoryFormData,
+} from '@/features/manage-product/lib/strategies/CategoryFormStrategy'
 import type {
   ClientCategory,
   ClientProduct,
@@ -68,6 +72,9 @@ interface ProductFormProps {
   // Dynamic Form Strategy handlers
   onCategoryFormDataChange?: (data: CategoryFormData) => void
   onStrategySizesChange?: (sizes: CreateProductSizeRequest[]) => void
+
+  // External category form data (single source of truth from parent)
+  categoryFormData?: CategoryFormData
 }
 
 export function ProductForm({
@@ -82,6 +89,7 @@ export function ProductForm({
   onSimplifiedSizesChange,
   onCategoryFormDataChange,
   onStrategySizesChange,
+  categoryFormData: externalCategoryFormData, // External state from parent
 }: ProductFormProps) {
   // Size mode detection and state management
   const sizeMode = product ? getProductSizeMode(product) : 'none'
@@ -89,8 +97,15 @@ export function ProductForm({
 
   // Dynamic Form Strategy state
   const [currentStrategy, setCurrentStrategy] = useState<CategoryFormStrategy | null>(null)
-  const [categoryFormData, setCategoryFormData] = useState<CategoryFormData>({ categoryId: '' })
+  const [internalCategoryFormData, setInternalCategoryFormData] = useState<CategoryFormData>({
+    categoryId: '',
+  })
   const [selectedCategory, setSelectedCategory] = useState<ClientCategory | null>(null)
+  const [strategyLoading, setStrategyLoading] = useState<boolean>(false)
+  const [strategyError, setStrategyError] = useState<Error | null>(null)
+
+  // Use external categoryFormData as primary source, fallback to internal for backward compatibility
+  const categoryFormData = externalCategoryFormData || internalCategoryFormData
 
   // Fetch aggregated sizes for existing products with advanced sizing
   const {
@@ -122,7 +137,6 @@ export function ProductForm({
       formLogger.info('sizeMode', 'Size mode detected for product', {
         productId: product.id,
         sizeMode,
-        hasLegacySize: false, // Legacy size field no longer exists
         hasAdvancedSizes: product.sizes?.length > 0,
         aggregatedSizesCount: aggregatedSizes.length,
       })
@@ -149,7 +163,6 @@ export function ProductForm({
     }
   }, [sizeMode, isLoadingAggregatedSizes, aggregatedSizesError, aggregatedSizes])
 
-  
   // Log material integration state changes
   useEffect(() => {
     if (formData.materialId) {
@@ -164,108 +177,161 @@ export function ProductForm({
   // ============== DYNAMIC FORM STRATEGY LOGIC ==============
 
   // Initialize strategy when category changes
-  const initializeStrategy = useCallback((categoryId: string) => {
-    const category = categories.find(cat => cat.id === categoryId)
-    if (!category) {
-      formLogger.warn('strategy', 'Category not found for strategy initialization', { categoryId })
-      return
-    }
-
-    try {
-      const strategy = FormStrategyFactory.createWithContext(category.type, {
-        categoryId: category.id,
-        categoryName: category.name,
-        isEditMode: !!product,
-        existingData: product?.sizes || []
-      })
-
-      setCurrentStrategy(strategy)
-      setSelectedCategory(category)
-
-      // Initialize form data for strategy
-      const defaultStrategyData = strategy.getDefaultValues()
-      const initialCategoryData: CategoryFormData = {
-        ...defaultStrategyData
-      }
-      // Override categoryId if provided
-      if (categoryId) {
-        initialCategoryData.categoryId = categoryId
+  const initializeStrategy = useCallback(
+    async (categoryId: string) => {
+      const category = categories.find((cat) => cat.id === categoryId)
+      if (!category) {
+        formLogger.warn('strategy', 'Category not found for strategy initialization', {
+          categoryId,
+        })
+        return
       }
 
-      // Load existing data if in edit mode
-      if (product && product.sizes && product.sizes.length > 0) {
-        const existingData = (strategy as CategoryFormStrategy & { transformFromProductSizes?: (sizes: unknown[]) => CategoryFormData }).transformFromProductSizes?.(product.sizes) || initialCategoryData
-        setCategoryFormData(existingData)
+      // Set loading state
+      setStrategyLoading(true)
+      setStrategyError(null)
 
-        // Notify parent component
-        if (onCategoryFormDataChange) {
-          onCategoryFormDataChange(existingData)
+      try {
+        // Simulate async strategy initialization (even if it's sync)
+        await new Promise((resolve) => setTimeout(resolve, 0))
+
+        const strategy = FormStrategyFactory.createWithContext(category.type, {
+          categoryId: category.id,
+          categoryName: category.name,
+          isEditMode: !!product,
+          existingData: product?.sizes || [],
+        })
+
+        setCurrentStrategy(strategy)
+        setSelectedCategory(category)
+
+        // Initialize form data for strategy
+        const defaultStrategyData = strategy.getDefaultValues()
+        const initialCategoryData: CategoryFormData = {
+          ...defaultStrategyData,
+        }
+        // Override categoryId if provided
+        if (categoryId) {
+          initialCategoryData.categoryId = categoryId
         }
 
-        // Transform and notify about sizes
-        const transformedSizes = strategy.transformToProductSizes(existingData)
-        if (onStrategySizesChange) {
-          onStrategySizesChange(transformedSizes)
-        }
-      } else {
-        setCategoryFormData(initialCategoryData)
+        // Load existing data if in edit mode
+        if (product && product.sizes && product.sizes.length > 0) {
+          const existingData =
+            (
+              strategy as CategoryFormStrategy & {
+                transformFromProductSizes?: (sizes: unknown[]) => CategoryFormData
+              }
+            ).transformFromProductSizes?.(product.sizes) || initialCategoryData
 
-        if (onCategoryFormDataChange) {
-          onCategoryFormDataChange(initialCategoryData)
+          // Notify parent component
+          if (onCategoryFormDataChange) {
+            onCategoryFormDataChange(existingData)
+          }
+
+          // Transform and notify about sizes
+          const transformedSizes = strategy.transformToProductSizes(existingData)
+          if (onStrategySizesChange) {
+            onStrategySizesChange(transformedSizes)
+          }
+        } else {
+          if (onCategoryFormDataChange) {
+            onCategoryFormDataChange(initialCategoryData)
+          }
         }
+
+        formLogger.info('strategy', 'Strategy initialized successfully', {
+          categoryType: category.type,
+          categoryName: category.name,
+          strategy: strategy.type,
+        })
+      } catch (error) {
+        const errorObj = error instanceof Error ? error : new Error(String(error))
+        setStrategyError(errorObj)
+        formLogger.error('strategy', 'Failed to initialize strategy', errorObj)
+      } finally {
+        setStrategyLoading(false)
       }
-
-      formLogger.info('strategy', 'Strategy initialized successfully', {
-        categoryType: category.type,
-        categoryName: category.name,
-        strategy: strategy.type
-      })
-
-    } catch (error) {
-      formLogger.error('strategy', 'Failed to initialize strategy', error instanceof Error ? error : new Error(String(error)))
-    }
-  }, [categories, product, onCategoryFormDataChange, onStrategySizesChange])
+    },
+    [categories, product, onCategoryFormDataChange, onStrategySizesChange],
+  )
 
   // Handle category change
-  const handleCategoryChange = useCallback((categoryId: string) => {
-    // Update form data via parent handler
-    onInputChange('categoryId', categoryId)
+  const handleCategoryChange = useCallback(
+    (categoryId: string) => {
+      // Update form data via parent handler
+      onInputChange('categoryId', categoryId)
 
-    // Initialize new strategy
-    initializeStrategy(categoryId)
-  }, [onInputChange, initializeStrategy])
+      // Initialize new strategy
+      initializeStrategy(categoryId)
+    },
+    [onInputChange, initializeStrategy],
+  )
 
   // Handle strategy form data changes
-  const handleCategoryFormDataChange = useCallback((fieldName: string, value: unknown) => {
-    const updatedData = {
-      ...categoryFormData,
-      [fieldName]: value
-    }
-
-    setCategoryFormData(updatedData)
-
-    // Notify parent component
-    if (onCategoryFormDataChange) {
-      onCategoryFormDataChange(updatedData)
-    }
-
-    // Transform to ProductSize and notify
-    if (currentStrategy) {
-      try {
-        const transformedSizes = currentStrategy.transformToProductSizes(updatedData)
-        if (onStrategySizesChange) {
-          onStrategySizesChange(transformedSizes)
-        }
-
-        // Update total quantity
-        const totalQuantity = (currentStrategy as CategoryFormStrategy & { calculateTotalQuantity?: (data: CategoryFormData) => number }).calculateTotalQuantity?.(updatedData) || 0
-        onInputChange('quantity', totalQuantity)
-
-      } catch (error) {
-        formLogger.error('strategy', 'Failed to transform form data', error instanceof Error ? error : new Error(String(error)))
+  const handleCategoryFormDataChange = useCallback(
+    (fieldName: string, value: unknown) => {
+      let updatedData = {
+        ...categoryFormData,
+        [fieldName]: value,
       }
-    }
-  }, [categoryFormData, currentStrategy, onCategoryFormDataChange, onStrategySizesChange, onInputChange])
+
+      // Special handling for size selection changes
+      if (fieldName === 'sizes' && Array.isArray(value)) {
+        const selectedSizes = value as string[]
+        const previousSizes = Array.isArray(categoryFormData.sizes) ? categoryFormData.sizes : []
+
+        // Clear quantity values for unchecked sizes
+        const uncheckedSizes = previousSizes.filter((size) => !selectedSizes.includes(size))
+        uncheckedSizes.forEach((uncheckedSize) => {
+          const quantityKey = `quantity_${uncheckedSize}`
+          updatedData = {
+            ...updatedData,
+            [quantityKey]: 0,
+          }
+        })
+      }
+
+      setInternalCategoryFormData(updatedData)
+
+      // Notify parent component
+      if (onCategoryFormDataChange) {
+        onCategoryFormDataChange(updatedData)
+      }
+
+      // Transform to ProductSize and notify
+      if (currentStrategy) {
+        try {
+          const transformedSizes = currentStrategy.transformToProductSizes(updatedData)
+          if (onStrategySizesChange) {
+            onStrategySizesChange(transformedSizes)
+          }
+
+          // Update total quantity
+          const totalQuantity =
+            (
+              currentStrategy as CategoryFormStrategy & {
+                calculateTotalQuantity?: (data: CategoryFormData) => number
+              }
+            ).calculateTotalQuantity?.(updatedData) || 0
+          onInputChange('quantity', totalQuantity)
+        } catch (error) {
+          formLogger.error(
+            'strategy',
+            'Failed to transform form data',
+            error instanceof Error ? error : new Error(String(error)),
+          )
+        }
+      }
+    },
+    [
+      categoryFormData, // Use computed categoryFormData to ensure latest value
+      currentStrategy,
+      onCategoryFormDataChange,
+      onStrategySizesChange,
+      onInputChange,
+    ],
+  )
 
   // Initialize strategy on component mount and when category changes
   useEffect(() => {
@@ -293,8 +359,7 @@ export function ProductForm({
     }
   }, [errors, formData.aggregatedSizes])
 
-  // Legacy size change function no longer needed - sizes are handled through advanced sizing system
-
+  
   // Handle material integration changes with logging
   const handleMaterialChange = (materialId: string | undefined) => {
     formLogger.info('handleMaterialChange', 'User changed material in product form', {
@@ -350,7 +415,6 @@ export function ProductForm({
     color: category.color,
   }))
 
-  
   return (
     <Card className="shadow-md" data-testid="product-form-container">
       <CardContent className="p-6 md:p-8">
@@ -417,6 +481,7 @@ export function ProductForm({
                   <span className="text-red-500">*</span>
                 </label>
                 <input
+                  aria-label="quantity"
                   type="number"
                   value={formData.quantity}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-500 cursor-not-allowed"
@@ -462,12 +527,17 @@ export function ProductForm({
                       <DynamicFormField
                         key={fieldIndex}
                         field={field}
-                        value={categoryFormData[field.name as keyof CategoryFormData] || field.defaultValue || ''}
+                        value={
+                          categoryFormData[field.name as keyof CategoryFormData] ||
+                          field.defaultValue ||
+                          ''
+                        }
                         onChange={(value) => handleCategoryFormDataChange(field.name, value)}
                         onBlur={(value) => onBlur(field.name, value)}
                         error={errors[field.name]}
                         touched={touched[field.name]}
                         formDescription={currentStrategy.getFormDescription()}
+                        formData={categoryFormData}
                       />
                     ))}
                   </div>
@@ -476,8 +546,44 @@ export function ProductForm({
             </>
           )}
 
-          {/* Fallback to InlineSizeManagement for backward compatibility */}
-          {!currentStrategy && (
+          {/* Size Management Section - Enhanced UX Flow */}
+          {!formData.categoryId ? (
+            // Show placeholder when no category selected
+            <SizeManagementPlaceholder data-testid="size-management-placeholder" />
+          ) : strategyLoading ? (
+            // Show loading state during strategy initialization
+            <FormSection title="Ukuran & Stok" data-testid="size-management-loading">
+              <div className="text-center py-8 px-4">
+                <div className="flex flex-col items-center space-y-3">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                  <p className="text-sm text-gray-500">Memuat opsi ukuran untuk kategori ini...</p>
+                </div>
+              </div>
+            </FormSection>
+          ) : strategyError ? (
+            // Show error state if strategy initialization failed
+            <FormSection title="Ukuran & Stok" data-testid="size-management-error">
+              <div className="text-center py-8 px-4">
+                <div className="flex flex-col items-center space-y-3">
+                  <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                    <Tag className="w-6 h-6 text-red-600" />
+                  </div>
+                  <div className="space-y-1">
+                    <h3 className="text-sm font-medium text-red-900">Gagal Memuat Opsi Ukuran</h3>
+                    <p className="text-xs text-red-500">{strategyError.message}</p>
+                    <button
+                      type="button"
+                      onClick={() => formData.categoryId && initializeStrategy(formData.categoryId)}
+                      className="text-xs text-blue-600 hover:text-blue-500 underline"
+                    >
+                      Coba Lagi
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </FormSection>
+          ) : currentStrategy && selectedCategory ? null : ( // Show dynamic strategy-based form fields (existing logic) // This will be handled by the existing dynamic strategy section above
+            // Fallback to InlineSizeManagement for backward compatibility (only when category is selected but no strategy)
             <FormSection title="Ukuran & Stok" data-testid="size-management-section">
               <InlineSizeManagement
                 sizes={formData.simplifiedSizes || []}

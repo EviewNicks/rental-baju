@@ -41,41 +41,45 @@ export class ClothingStrategy implements CategoryFormStrategy {
   /**
    * Form fields untuk pakaian
    * - Size selection dengan checkboxes untuk setiap ukuran
-   * - Quantity untuk setiap ukuran
+   * - Conditional quantity fields untuk ukuran yang dipilih
    */
   getFormFields(): FormSectionConfig[] {
+    // Combine checkbox selection with conditional quantity fields in single section
+    const checkboxField = {
+      name: 'sizes',
+      type: 'checkbox-group' as const,
+      label: 'Ukuran Tersedia',
+      required: true,
+      validation: z.array(z.string()).min(1, 'Pilih minimal satu ukuran'),
+      options: this.sizeOptions,
+      defaultValue: [],
+      helpText: 'Pilih semua ukuran yang tersedia untuk produk ini'
+    }
+
+    // Generate conditional quantity fields
+    const quantityFields = this.sizeOptions.map(size => ({
+      name: `quantity_${size.value}`,
+      type: 'number' as const,
+      label: `Jumlah ${size.label}`,
+      placeholder: '0',
+      required: false,
+      validation: z.number().min(0, 'Jumlah minimal 0').max(9999, 'Maksimal 9999'),
+      min: 0,
+      max: 9999,
+      defaultValue: 0,
+      helpText: `Stok untuk ukuran ${size.value}`,
+      condition: {
+        field: 'sizes',
+        operator: 'includes' as const,
+        value: size.value
+      }
+    }))
+
     return [
       {
         title: 'Ukuran & Stok',
         description: 'Pilih ukuran yang tersedia dan masukkan jumlah stok untuk setiap ukuran',
-        fields: [
-          {
-            name: 'sizes',
-            type: 'checkbox-group',
-            label: 'Ukuran Tersedia',
-            required: true,
-            validation: z.array(z.string()).min(1, 'Pilih minimal satu ukuran'),
-            options: this.sizeOptions,
-            defaultValue: [],
-            helpText: 'Pilih semua ukuran yang tersedia untuk produk ini'
-          }
-        ]
-      },
-      {
-        title: 'Jumlah Stok per Ukuran',
-        description: 'Masukkan jumlah stok untuk setiap ukuran yang dipilih',
-        fields: this.sizeOptions.map(size => ({
-          name: `quantity_${size.value}`,
-          type: 'number' as const,
-          label: `Jumlah ${size.label}`,
-          placeholder: '0',
-          required: false,
-          validation: z.number().min(0, 'Jumlah minimal 0').max(9999, 'Maksimal 9999'),
-          min: 0,
-          max: 9999,
-          defaultValue: 0,
-          helpText: `Stok untuk ukuran ${size.value}`
-        }))
+        fields: [checkboxField, ...quantityFields]
       }
     ]
   }

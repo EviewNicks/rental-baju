@@ -14,6 +14,7 @@ import {
 import { ProductForm } from '@/features/manage-product/components/form-product/ProductForm'
 import { useCategories } from '@/features/manage-product/hooks/useCategories'
 import { useCreateProduct, useUpdateProduct } from '@/features/manage-product/hooks/useProducts'
+import { useProductFormStrategy } from '@/features/manage-product/hooks/useProductFormStrategy'
 import type {
   ClientProduct,
   ClientProductSize,
@@ -21,7 +22,9 @@ import type {
   SimplifiedSizeEntry,
   AgeCategory,
   SizeEnum,
+  CreateProductSizeRequest,
 } from '@/features/manage-product/types'
+import type { CategoryFormData } from '@/features/manage-product/lib/strategies/CategoryFormStrategy'
 
 // Image format validation constants
 const SUPPORTED_IMAGE_FORMATS = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
@@ -50,11 +53,6 @@ interface ProductFormData {
 const transformSimplifiedSizesToBackendFormat = (
   simplifiedSizes: SimplifiedSizeEntry[],
 ): string => {
-  console.log('[DEBUG] transformSimplifiedSizesToBackendFormat input:', {
-    inputSizes: simplifiedSizes,
-    inputCount: simplifiedSizes.length,
-  })
-
   const sizes = simplifiedSizes.map((sizeEntry) => ({
     ageCategory: sizeEntry.ageCategory, // Already using standardized enum values
     size: sizeEntry.size,
@@ -65,17 +63,13 @@ const transformSimplifiedSizesToBackendFormat = (
 
   const jsonString = JSON.stringify(sizes)
 
-  console.log('[DEBUG] transformSimplifiedSizesToBackendFormat output:', {
-    transformedSizes: sizes,
-    jsonString: jsonString,
-    jsonLength: jsonString.length,
-  })
-
   return jsonString
 }
 
 // Transform existing product sizes to simplified sizes format (EDIT MODE)
-const transformProductSizesToSimplifiedFormat = (productSizes: ClientProductSize[]): SimplifiedSizeEntry[] => {
+const transformProductSizesToSimplifiedFormat = (
+  productSizes: ClientProductSize[],
+): SimplifiedSizeEntry[] => {
   return productSizes.map((size) => ({
     id: size.id,
     size: size.size as SizeEnum,
@@ -84,7 +78,7 @@ const transformProductSizesToSimplifiedFormat = (productSizes: ClientProductSize
   }))
 }
 
-// Legacy function to transform aggregated sizes to backend format (BACKWARD COMPATIBILITY)
+// Function to transform aggregated sizes to backend format
 const transformSizesToBackendFormat = (aggregatedSizes: AggregatedSizeView[]): string => {
   const sizes = aggregatedSizes.flatMap((aggSize) =>
     Object.entries(aggSize.breakdown).map(([ageCategory, quantity]) => ({
@@ -173,41 +167,6 @@ const validateDescription = (description: string): string | null => {
   return null
 }
 
-// Updated validation for simplified sizes system
-const validateSimplifiedSizes = (simplifiedSizes?: SimplifiedSizeEntry[]): string | null => {
-  if (!simplifiedSizes || simplifiedSizes.length === 0) {
-    return 'Produk harus memiliki setidaknya satu ukuran'
-  }
-
-  // Validate each size entry
-  for (const sizeEntry of simplifiedSizes) {
-    if (!sizeEntry.size || !['XS', 'S', 'M', 'L', 'XL', 'XXL'].includes(sizeEntry.size)) {
-      return `Ukuran tidak valid: ${sizeEntry.size}. Harus salah satu dari: XS, S, M, L, XL, XXL`
-    }
-
-    if (!sizeEntry.ageCategory || !['ADULT', 'CHILD'].includes(sizeEntry.ageCategory)) {
-      return `Kategori usia tidak valid: ${sizeEntry.ageCategory}. Harus ADULT atau CHILD`
-    }
-
-    if (sizeEntry.quantity <= 0) {
-      return `Kuantitas harus lebih dari 0 untuk ${sizeEntry.size} - ${sizeEntry.ageCategory}`
-    }
-
-    if (sizeEntry.quantity > 999) {
-      return `Kuantitas tidak boleh lebih dari 999 untuk ${sizeEntry.size} - ${sizeEntry.ageCategory}`
-    }
-  }
-
-  // Check for duplicates (same size + age category combination)
-  const combinations = simplifiedSizes.map((s) => `${s.size}-${s.ageCategory}`)
-  const uniqueCombinations = new Set(combinations)
-  if (combinations.length !== uniqueCombinations.size) {
-    return 'Terdapat kombinasi ukuran dan kategori usia yang duplikat'
-  }
-
-  return null
-}
-
 // Image format validation function
 const validateImageFormat = (file: File): string | null => {
   if (!SUPPORTED_IMAGE_FORMATS.includes(file.type.toLowerCase())) {
@@ -238,6 +197,17 @@ export function ProductFormPage({
 
   const categories = categoriesData?.categories ?? []
 
+  // Strategy management using custom hook
+  const {
+    currentStrategy,
+    selectedCategory,
+    strategyLoading,
+    strategyError,
+    initializeStrategy,
+    transformFormDataToSizes,
+    getStrategyDefaultValues,
+  } = useProductFormStrategy({ categories, product })
+
   const [formData, setFormData] = useState<ProductFormData>({
     code: product?.code || '',
     name: product?.name || '',
@@ -254,11 +224,16 @@ export function ProductFormPage({
 
     // Simplified Size Management (enforced - all products require sizes)
     hasSizes: true, // Always true in advanced-only architecture
-    simplifiedSizes: mode === 'edit' && product?.sizes
-      ? transformProductSizesToSimplifiedFormat(product.sizes)
-      : [], // Load existing sizes in edit mode, empty for new products
+    simplifiedSizes:
+      mode === 'edit' && product?.sizes
+        ? transformProductSizesToSimplifiedFormat(product.sizes)
+        : [], // Load existing sizes in edit mode, empty for new products
     aggregatedSizes: undefined, // Keep for backward compatibility
   })
+
+  // Strategy state management for dynamic form integration
+  const [strategySizes, setStrategySizes] = useState<CreateProductSizeRequest[]>([])
+  const [categoryFormData, setCategoryFormData] = useState<CategoryFormData>({ categoryId: '' })
 
   // Simple error state management
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -289,9 +264,25 @@ export function ProductFormPage({
     const descriptionError = validateDescription(formData.description)
     if (descriptionError) newErrors.description = descriptionError
 
-    // Validate sizes array (use simplified sizes system)
-    const sizesError = validateSimplifiedSizes(formData.simplifiedSizes)
-    if (sizesError) newErrors.sizes = sizesError
+    // Validate sizes array with strategy data priority
+    const sizesError = ''
+    let hasValidSizes = false
+
+    if (strategySizes.length > 0) {
+      // Priority 1: Strategy sizes
+      hasValidSizes = strategySizes.length > 0
+    } else if (formData.simplifiedSizes && formData.simplifiedSizes.length > 0) {
+      // Priority 2: Simplified sizes (legacy system)
+      hasValidSizes = !sizesError
+    } else if (formData.aggregatedSizes && formData.aggregatedSizes.length > 0) {
+      // Priority 3: Aggregated sizes (legacy fallback)
+      hasValidSizes = formData.aggregatedSizes.some((size) => size.totalQuantity > 0)
+    }
+
+    // Set sizes error if no valid sizes found
+    if (!hasValidSizes) {
+      newErrors.sizes = 'Produk harus memiliki setidaknya satu ukuran dengan jumlah yang valid'
+    }
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -371,19 +362,6 @@ export function ProductFormPage({
 
   // Handler for new simplified sizes system
   const handleSimplifiedSizesChange = (sizes: SimplifiedSizeEntry[]) => {
-    console.log('[DEBUG] handleSimplifiedSizesChange called with:', {
-      sizesCount: sizes.length,
-      sizes: sizes,
-      totalQuantity: sizes.reduce((sum, size) => sum + size.quantity, 0),
-      hasIds: sizes.some((s) => s.id),
-      sizeStructure: sizes.map((s) => ({
-        size: s.size,
-        ageCategory: s.ageCategory,
-        quantity: s.quantity,
-        id: s.id,
-      })),
-    })
-
     setFormData((prev) => ({
       ...prev,
       simplifiedSizes: sizes,
@@ -397,7 +375,7 @@ export function ProductFormPage({
     }
   }
 
-  // Legacy handler for backward compatibility
+  // Handler for aggregated sizes change
   const handleAggregatedSizesChange = (sizes: AggregatedSizeView[]) => {
     setFormData((prev) => ({
       ...prev,
@@ -410,6 +388,26 @@ export function ProductFormPage({
     if (errors.sizes) {
       setErrors((prev) => ({ ...prev, sizes: '' }))
     }
+  }
+
+  // Strategy handlers for dynamic form integration
+  const handleStrategySizesChange = (sizes: CreateProductSizeRequest[]) => {
+    setStrategySizes(sizes)
+
+    // Auto-calculate total quantity from strategy sizes
+    if (sizes.length > 0) {
+      const totalQuantity = sizes.reduce((sum, size) => sum + size.quantity, 0)
+      setFormData((prev) => ({ ...prev, quantity: totalQuantity }))
+    }
+
+    // Clear any existing sizes validation error
+    if (errors.sizes) {
+      setErrors((prev) => ({ ...prev, sizes: '' }))
+    }
+  }
+
+  const handleCategoryFormDataChange = (data: CategoryFormData) => {
+    setCategoryFormData(data)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -437,11 +435,19 @@ export function ProductFormPage({
       return
     }
 
-    // Transform sizes to backend format using new simplified system - moved outside try block to fix ReferenceError
-    const sizesData =
-      formData.simplifiedSizes && formData.simplifiedSizes.length > 0
-        ? transformSimplifiedSizesToBackendFormat(formData.simplifiedSizes)
-        : transformSizesToBackendFormat(formData.aggregatedSizes || []) // Fallback for backward compatibility
+    // Transform sizes to backend format with strategy data priority
+    let sizesData: string
+
+    if (strategySizes.length > 0) {
+      // Priority 1: Strategy data (dynamic form data)
+      sizesData = JSON.stringify(strategySizes)
+    } else if (formData.simplifiedSizes && formData.simplifiedSizes.length > 0) {
+      // Priority 2: Simplified sizes (legacy system)
+      sizesData = transformSimplifiedSizesToBackendFormat(formData.simplifiedSizes)
+    } else {
+      // Priority 3: Aggregated sizes (legacy fallback)
+      sizesData = transformSizesToBackendFormat(formData.aggregatedSizes || [])
+    }
 
     try {
       if (mode === 'add') {
@@ -460,15 +466,6 @@ export function ProductFormPage({
           image: formData.image || undefined,
           imageUrl: formData.imageUrl || undefined,
         }
-
-        console.log('[DEBUG] About to create product with data:', {
-          createData: createData,
-          sizesDataType: typeof sizesData,
-          sizesDataValue: sizesData,
-          originalSimplifiedSizes: formData.simplifiedSizes,
-          hasImage: !!formData.image,
-          imageName: formData.image?.name,
-        })
 
         // Convert to FormData for proper API handling
         const formDataToSend = new FormData()
@@ -737,6 +734,9 @@ export function ProductFormPage({
             onHasSizesChange={handleHasSizesChange}
             onAggregatedSizesChange={handleAggregatedSizesChange}
             onSimplifiedSizesChange={handleSimplifiedSizesChange}
+            onStrategySizesChange={handleStrategySizesChange}
+            onCategoryFormDataChange={handleCategoryFormDataChange}
+            categoryFormData={categoryFormData}
           />
 
           {/* Action Buttons */}

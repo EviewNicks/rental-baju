@@ -10,6 +10,8 @@
 import { useState } from 'react'
 import { Check, Plus, Minus } from 'lucide-react'
 import type { FormFieldConfig } from '../../lib/strategies/CategoryFormStrategy'
+import type { CategoryFormData } from '../../lib/strategies/CategoryFormStrategy'
+import { ConditionEvaluator } from '../../lib/strategies/ConditionEvaluator'
 
 interface DynamicFormFieldProps {
   field: FormFieldConfig
@@ -19,6 +21,7 @@ interface DynamicFormFieldProps {
   error?: string | null
   touched?: boolean
   formDescription?: string
+  formData?: CategoryFormData // Complete form data for condition evaluation
 }
 
 export function DynamicFormField({
@@ -27,9 +30,18 @@ export function DynamicFormField({
   onChange,
   onBlur,
   error,
-  touched
+  touched,
+  formData,
 }: DynamicFormFieldProps) {
   const [localValue, setLocalValue] = useState<unknown>(value || field.defaultValue || '')
+
+  // Check if field should be visible based on condition
+  const isVisible = formData ? ConditionEvaluator.isFieldVisible(field.condition, formData) : true // Default to visible if no formData provided
+
+  // Don't render if field is not visible
+  if (!isVisible) {
+    return null
+  }
 
   // Sync local value dengan props
   const handleChange = (newValue: unknown) => {
@@ -54,7 +66,9 @@ export function DynamicFormField({
             </label>
             <input
               type="number"
-              value={typeof localValue === 'string' || typeof localValue === 'number' ? localValue : ''}
+              value={
+                typeof localValue === 'string' || typeof localValue === 'number' ? localValue : ''
+              }
               onChange={(e) => handleChange(Number(e.target.value) || 0)}
               onBlur={(e) => handleBlur(Number(e.target.value) || 0)}
               placeholder={field.placeholder}
@@ -66,9 +80,7 @@ export function DynamicFormField({
               }`}
               data-testid={`field-${field.name}`}
             />
-            {field.helpText && (
-              <p className="text-xs text-gray-500">{field.helpText}</p>
-            )}
+            {field.helpText && <p className="text-xs text-gray-500">{field.helpText}</p>}
             {error && touched && (
               <p className="text-sm text-red-500 flex items-center gap-1">
                 <span>×</span>
@@ -86,7 +98,10 @@ export function DynamicFormField({
               {field.required && <span className="text-red-500">*</span>}
             </label>
             <select
-              value={typeof localValue === 'string' || typeof localValue === 'number' ? localValue : ''}
+              title="select"
+              value={
+                typeof localValue === 'string' || typeof localValue === 'number' ? localValue : ''
+              }
               onChange={(e) => handleChange(e.target.value)}
               onBlur={(e) => handleBlur(e.target.value)}
               className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
@@ -101,9 +116,7 @@ export function DynamicFormField({
                 </option>
               ))}
             </select>
-            {field.helpText && (
-              <p className="text-xs text-gray-500">{field.helpText}</p>
-            )}
+            {field.helpText && <p className="text-xs text-gray-500">{field.helpText}</p>}
             {error && touched && (
               <p className="text-sm text-red-500 flex items-center gap-1">
                 <span>×</span>
@@ -121,9 +134,7 @@ export function DynamicFormField({
               {field.required && <span className="text-red-500">*</span>}
             </label>
 
-            {field.helpText && (
-              <p className="text-xs text-gray-500 mb-2">{field.helpText}</p>
-            )}
+            {field.helpText && <p className="text-xs text-gray-500 mb-2">{field.helpText}</p>}
 
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {field.options?.map((option) => {
@@ -147,11 +158,11 @@ export function DynamicFormField({
                     }}
                     data-testid={`checkbox-${field.name}-${option.value}`}
                   >
-                    <div className={`w-4 h-4 border-2 rounded flex items-center justify-center ${
-                      isChecked
-                        ? 'border-blue-500 bg-blue-500'
-                        : 'border-gray-300'
-                    }`}>
+                    <div
+                      className={`w-4 h-4 border-2 rounded flex items-center justify-center ${
+                        isChecked ? 'border-blue-500 bg-blue-500' : 'border-gray-300'
+                      }`}
+                    >
                       {isChecked && <Check className="w-3 h-3 text-white" />}
                     </div>
                     <span className="text-sm font-medium">{option.label}</span>
@@ -178,7 +189,9 @@ export function DynamicFormField({
             </label>
             <input
               type="text"
-              value={typeof localValue === 'string' || typeof localValue === 'number' ? localValue : ''}
+              value={
+                typeof localValue === 'string' || typeof localValue === 'number' ? localValue : ''
+              }
               onChange={(e) => handleChange(e.target.value)}
               onBlur={(e) => handleBlur(e.target.value)}
               placeholder={field.placeholder}
@@ -187,9 +200,7 @@ export function DynamicFormField({
               }`}
               data-testid={`field-${field.name}`}
             />
-            {field.helpText && (
-              <p className="text-xs text-gray-500">{field.helpText}</p>
-            )}
+            {field.helpText && <p className="text-xs text-gray-500">{field.helpText}</p>}
             {error && touched && (
               <p className="text-sm text-red-500 flex items-center gap-1">
                 <span>×</span>
@@ -200,11 +211,7 @@ export function DynamicFormField({
         )
 
       default:
-        return (
-          <div className="text-red-500 text-sm">
-            Unknown field type: {field.type}
-          </div>
-        )
+        return <div className="text-red-500 text-sm">Unknown field type: {field.type}</div>
     }
   }
 
@@ -237,7 +244,7 @@ export function QuantityControl({
   label,
   helpText,
   error,
-  touched
+  touched,
 }: QuantityControlProps) {
   const increment = () => {
     const newValue = Math.min(max, value + 1)
@@ -251,12 +258,11 @@ export function QuantityControl({
 
   return (
     <div className="space-y-2">
-      <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-        {label}
-      </label>
+      <label className="flex items-center gap-2 text-sm font-medium text-gray-700">{label}</label>
 
       <div className="flex items-center space-x-2">
         <button
+          title="decrement"
           type="button"
           onClick={decrement}
           disabled={value <= min}
@@ -267,6 +273,7 @@ export function QuantityControl({
         </button>
 
         <input
+          title="number"
           type="number"
           value={value}
           onChange={(e) => onChange(Math.min(max, Math.max(min, Number(e.target.value) || 0)))}
@@ -279,6 +286,7 @@ export function QuantityControl({
         />
 
         <button
+          title="increment"
           type="button"
           onClick={increment}
           disabled={value >= max}
@@ -289,9 +297,7 @@ export function QuantityControl({
         </button>
       </div>
 
-      {helpText && (
-        <p className="text-xs text-gray-500">{helpText}</p>
-      )}
+      {helpText && <p className="text-xs text-gray-500">{helpText}</p>}
 
       {error && touched && (
         <p className="text-sm text-red-500 flex items-center gap-1">
