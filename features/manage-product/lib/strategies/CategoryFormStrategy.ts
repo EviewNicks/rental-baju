@@ -11,6 +11,15 @@ import type { CreateProductSizeRequest, CategoryType } from '../../types'
 // ============== FORM FIELD CONFIGURATION ==============
 
 /**
+ * Field condition untuk conditional rendering
+ */
+export interface FieldCondition {
+  field: string           // Field name to check against
+  operator: 'includes' | 'excludes' | 'equals' | 'not_equals'
+  value?: unknown        // Expected value
+}
+
+/**
  * Konfigurasi untuk individual form field
  */
 export interface FormFieldConfig {
@@ -26,6 +35,7 @@ export interface FormFieldConfig {
   step?: number
   defaultValue?: string | number | boolean | string[] | undefined
   helpText?: string
+  condition?: FieldCondition  // Conditional rendering logic
 }
 
 /**
