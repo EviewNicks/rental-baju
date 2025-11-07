@@ -14,7 +14,6 @@ import {
 import { TransactionCodeGenerator } from '../lib/utils/codeGenerator'
 import { PriceCalculator } from '../lib/utils/server'
 import { createAvailabilityService, AvailabilityService } from './availabilityService'
-import { calculateAvailableStock } from '../lib/typeUtils'
 import type { TransactionStatus } from '../types'
 
 export interface TransaksiWithDetails extends Transaksi {
@@ -218,126 +217,8 @@ export class TransaksiService {
     this.availabilityService = createAvailabilityService(prisma)
   }
 
-  /**
-   * Create new transaction with auto-generated code
-   */
-  async createTransaksi(data: CreateTransaksiRequest): Promise<Transaksi> {
-    // 1. Validate penyewa exists
-    const penyewa = await this.prisma.penyewa.findUnique({
-      where: { id: data.penyewaId },
-    })
-
-    if (!penyewa) {
-      throw new Error('Penyewa tidak ditemukan')
-    }
-
-    const availabilityCheck = await this.availabilityService.validateTransactionItems(
-      data.items.map((item) => ({
-        productId: item.produkId,
-        quantity: item.jumlah,
-      })),
-      new Date(data.tglMulai),
-    )
-
-    if (!availabilityCheck.valid) {
-      console.error('[TransaksiService] ❌ Availability validation failed', {
-        errors: availabilityCheck.errors,
-      })
-      throw new Error(availabilityCheck.errors[0])
-    }
-
-    // 3. Get product data for pricing
-    const productIds = data.items.map((item) => item.produkId)
-    const products = await this.prisma.product.findMany({
-      where: {
-        id: { in: productIds },
-        isActive: true,
-        status: 'AVAILABLE',
-      },
-    })
-
-    if (products.length !== productIds.length) {
-      const foundIds = products.map((p) => p.id)
-      const missingIds = productIds.filter((id) => !foundIds.includes(id))
-      throw new Error(`Produk dengan ID ${missingIds[0]} tidak tersedia`)
-    }
-
-    // 4. Calculate prices (fixed 4-day package)
-    const itemsWithPrices = data.items.map((item) => {
-      const product = products.find((p) => p.id === item.produkId)!
-      return {
-        produkId: item.produkId,
-        jumlah: item.jumlah,
-        durasi: 4, // Fixed 4-day package - ignore input duration
-        hargaSewa: product.currentPrice,
-      }
-    })
-
-    const priceCalculation = PriceCalculator.calculateTransactionTotal(itemsWithPrices)
-
-    // 5. Generate transaction code
-    const kode = await this.codeGenerator.generateTransactionCode()
-
-    // 6. Create transaction with items in a database transaction
-
-    const transaksi = await this.prisma.$transaction(async (tx) => {
-      // Create main transaction
-      const createdTransaksi = await tx.transaksi.create({
-        data: {
-          kode,
-          penyewaId: data.penyewaId,
-          status: 'active',
-          totalHarga: priceCalculation.totalHarga,
-          jumlahBayar: new Decimal(0),
-          sisaBayar: priceCalculation.totalHarga,
-          tglMulai: new Date(data.tglMulai),
-          tglSelesai: data.tglSelesai ? new Date(data.tglSelesai) : null,
-          metodeBayar: data.metodeBayar || 'tunai',
-          catatan: data.catatan || null,
-          createdBy: this.userId,
-        },
-      })
-
-      // Create transaction items
-      const itemsData = data.items.map((item, index) => {
-        const calculation = priceCalculation.itemCalculations[index]
-        return {
-          transaksiId: createdTransaksi.id,
-          produkId: item.produkId,
-          jumlah: item.jumlah,
-          hargaSewa: calculation.hargaSewa,
-          durasi: 4, // Fixed 4-day package
-          subtotal: calculation.subtotal,
-          kondisiAwal: item.kondisiAwal || null,
-        }
-      })
-
-      await tx.transaksiItem.createMany({
-        data: itemsData,
-      })
-
-      // Update product quantities - THIS IS THE FIX!
-      await this.updateProductQuantities(tx, data.items)
-
-      // Create activity log
-      await tx.aktivitasTransaksi.create({
-        data: {
-          transaksiId: createdTransaksi.id,
-          tipe: 'dibuat',
-          deskripsi: `Transaksi ${kode} dibuat`,
-          data: {
-            items: data.items.length,
-            totalHarga: priceCalculation.totalHarga.toString(),
-          },
-          createdBy: this.userId,
-        },
-      })
-
-      return createdTransaksi
-    })
-
-    return transaksi
-  }
+  // Legacy createTransaksi method removed - replaced by optimized createTransaksiSizeAware
+  // This improves performance by eliminating dual inventory system complexity
 
   /**
    * Create new transaction with size-aware stock management
@@ -452,24 +333,21 @@ export class TransaksiService {
           data: itemsData,
         })
 
-        // Update product quantities for both systems to maintain consistency
-        // FIX: Added to ensure both rentedStock (legacy) and ProductSize.quantity (size-aware) are updated
-        await Promise.all([
-          this.updateProductSizeQuantities(tx, data.items),  // Update ProductSize.quantity
-          this.updateProductQuantities(tx, data.items)      // Update Product.rentedStock
-        ])
+        // Update product quantities - OPTIMIZED: Single inventory system
+        // Use only ProductSize.quantity (size-aware system) for better performance
+        await this.updateProductSizeQuantities(tx, data.items)
 
         // Create activity log (1 operation)
         await tx.aktivitasTransaksi.create({
           data: {
             transaksiId: createdTransaksi.id,
             tipe: 'dibuat',
-            deskripsi: `Transaksi ${kode} dibuat dengan dual inventory system consistency`,
+            deskripsi: `Transaksi ${kode} dibuat dengan optimized inventory system`,
             data: {
               items: data.items.length,
               totalHarga: priceCalculation!.totalHarga.toString(),
               sizeAware: true,
-              dualSystemUpdate: true,
+              optimizedSystem: true,
               transactionDuration: Date.now() - transactionStartTime,
             },
             createdBy: this.userId,
@@ -482,11 +360,11 @@ export class TransaksiService {
       })
 
       const transactionDuration = Date.now() - transactionStartTime
-      console.log(`✅ [STEP-4] Transaction created with dual inventory updates in ${transactionDuration}ms`)
+      console.log(`✅ [STEP-4] Transaction created with optimized inventory system in ${transactionDuration}ms`)
 
       const totalDuration = Date.now() - startTime
-      console.log(`✅ [TRANSACTION] Dual system transaction completed in ${totalDuration}ms`)
-      console.log(`📊 [PERFORMANCE] Transaction includes both size-aware and legacy stock updates`)
+      console.log(`✅ [TRANSACTION] Optimized transaction completed in ${totalDuration}ms`)
+      console.log(`📊 [PERFORMANCE] Single inventory system for maximum performance`)
 
       return transaksi
 
@@ -1107,10 +985,43 @@ export class TransaksiService {
 
       // Handle stock restoration for cancelled or completed transactions
       if (data.status && data.status !== existingTransaksi.status) {
-        if (data.status === 'cancelled') {
-          await this.restoreProductQuantities(tx, id, 'cancelled')
-        } else if (data.status === 'selesai') {
-          await this.restoreProductQuantities(tx, id, 'returned')
+        if (data.status === 'cancelled' || data.status === 'selesai') {
+          // Get transaction items to restore stock
+          const transaksiItems = await tx.transaksiItem.findMany({
+            where: { transaksiId: id },
+            select: {
+              id: true,
+              kondisiAwal: true,
+              jumlah: true,
+              jumlahDiambil: true
+            }
+          })
+
+          // Restore ProductSize quantities for each item
+          await Promise.all(
+            transaksiItems.map(async (item) => {
+              const quantityToRestore = data.status === 'cancelled'
+                ? item.jumlah
+                : item.jumlah - (item.jumlahDiambil || 0)
+
+              if (quantityToRestore > 0 && item.kondisiAwal) {
+                // Parse productSizeId from kondisiAwal field format: "productSizeId|size|ageCategory|condition"
+                const kondisiParts = item.kondisiAwal.split('|')
+                const productSizeId = kondisiParts[0]
+
+                if (productSizeId) {
+                  await tx.productSize.update({
+                    where: { id: productSizeId },
+                    data: {
+                      quantity: {
+                        increment: quantityToRestore
+                      }
+                    }
+                  })
+                }
+              }
+            })
+          )
         }
 
         // Create activity log with enhanced data for cancellation
@@ -1248,118 +1159,8 @@ export class TransaksiService {
     }
   }
 
-  /**
-   * Update product quantities when items are rented
-   * @private
-   */
-  private async updateProductQuantities(
-    //eslint-disable-next-line @typescript-eslint/no-explicit-any
-    tx: any, // Prisma transaction type
-    items: CreateTransaksiRequest['items'],
-  ): Promise<void> {
-    for (const item of items) {
-      // Get current product state for validation (including new inventory fields)
-      const currentProduct = await tx.product.findUnique({
-        where: { id: item.produkId },
-        select: {
-          id: true,
-          quantity: true, // Total inventory (unchanged)
-          rentedStock: true, // Currently rented out
-          name: true,
-        },
-      })
-
-      if (!currentProduct) {
-        const error = `Product ${item.produkId} not found during stock update`
-
-        throw new Error(error)
-      }
-
-      // Double-check availability using calculated availableStock (race condition protection)
-      const availableStock = calculateAvailableStock(
-        currentProduct.quantity,
-        currentProduct.rentedStock,
-      )
-      if (availableStock < item.jumlah) {
-        const error = `Insufficient stock for product ${currentProduct.name}. Available: ${availableStock}, Requested: ${item.jumlah}`
-
-        throw new Error(error)
-      }
-
-      // UPDATED: Use rentedStock field only (availableStock calculated)
-      // quantity field remains unchanged (total inventory)
-      // Only update rentedStock, availableStock calculated as (quantity - rentedStock)
-      const updateResult = await tx.product.updateMany({
-        where: {
-          id: item.produkId,
-          rentedStock: { lte: currentProduct.quantity - item.jumlah }, // Ensure sufficient stock
-        },
-        data: {
-          rentedStock: {
-            increment: item.jumlah, // Increase rented stock
-          },
-          // quantity field stays the same (total inventory unchanged)
-          // availableStock now calculated as (quantity - rentedStock)
-        },
-      })
-
-      // Verify the update was successful
-      if (updateResult.count === 0) {
-        const error = `Failed to update quantity for product ${currentProduct.name}. Product may have been modified by another transaction.`
-
-        throw new Error(error)
-      }
-    }
-  }
-
-  /**
-   * Restore product quantities when items are returned or transaction is cancelled
-   * @private
-   */
-  private async restoreProductQuantities(
-    //eslint-disable-next-line @typescript-eslint/no-explicit-any
-    tx: any, // Prisma transaction type
-    transaksiId: string,
-    reason: 'cancelled' | 'returned' = 'returned',
-  ): Promise<void> {
-    // Get transaction items to restore
-    const transaksiItems = await tx.transaksiItem.findMany({
-      where: { transaksiId },
-      include: {
-        produk: {
-          select: {
-            id: true,
-            name: true,
-            quantity: true, // Total inventory (unchanged)
-            rentedStock: true, // Currently rented
-          },
-        },
-      },
-    })
-
-    for (const item of transaksiItems) {
-      const quantityToRestore =
-        reason === 'cancelled'
-          ? item.jumlah // Restore full quantity if cancelled
-          : item.jumlah - (item.jumlahDiambil || 0) // Only restore non-returned items
-
-      if (quantityToRestore > 0) {
-        // UPDATED: Restore inventory using rentedStock field only
-        // quantity field remains unchanged (total inventory)
-        // Only update rentedStock, availableStock calculated as (quantity - rentedStock)
-        await tx.product.update({
-          where: { id: item.produkId },
-          data: {
-            rentedStock: {
-              decrement: quantityToRestore, // Reduce rented stock
-            },
-            // quantity field stays the same (total inventory unchanged)
-          },
-        })
-      }
-    }
-  }
-
+  
+  
   /**
    * TSK-24: Transform transaction items to include multi-condition return data
    * Maintains backward compatibility while enhancing with condition breakdown
