@@ -23,9 +23,7 @@ import Image from 'next/image'
 interface PaymentSummaryStepProps {
   formData: TransactionFormData
   totalAmount: number
-  duration: number
   onUpdateFormData: (updates: Partial<TransactionFormData>) => void
-  onUpdateDuration: (duration: number) => void
   onSubmit: () => Promise<boolean>
   onPrev: () => void
   isSubmitting: boolean
@@ -34,9 +32,7 @@ interface PaymentSummaryStepProps {
 export function PaymentSummaryStep({
   formData,
   totalAmount,
-  duration,
   onUpdateFormData,
-  onUpdateDuration,
   onSubmit,
   onPrev,
   isSubmitting,
@@ -84,17 +80,17 @@ export function PaymentSummaryStep({
   )
 
   useEffect(() => {
-    // Auto-calculate return date based on pickup date and duration
+    // Auto-calculate return date based on pickup date (fixed 4-day package)
     if (formData.pickupDate) {
       const pickupDate = new Date(formData.pickupDate)
       const returnDate = new Date(pickupDate)
-      returnDate.setDate(returnDate.getDate() + duration)
+      returnDate.setDate(returnDate.getDate() + 4) // Fixed 4 days
 
       onUpdateFormData({
         returnDate: returnDate.toISOString().split('T')[0],
       })
     }
-  }, [formData.pickupDate, duration, onUpdateFormData])
+  }, [formData.pickupDate, onUpdateFormData])
 
   // Auto-calculate payment status when payment amount or total changes
   useEffect(() => {
@@ -174,16 +170,16 @@ export function PaymentSummaryStep({
                           {item.product.size} • {item.product.color} •{' '}
                         </>
                       )}
-                      {formatCurrency(item.product.pricePerDay)}/hari
+                      {formatCurrency(item.product.pricePerDay)}/4 hari
                     </div>
                   </div>
                 </div>
                 <div className="text-right">
                   <div className="font-semibold text-gray-900">
-                    {formatCurrency(item.product.pricePerDay * item.quantity * duration)}
+                    {formatCurrency(item.product.pricePerDay * item.quantity)}
                   </div>
                   <div className="text-sm text-gray-600">
-                    {item.quantity}x × {duration} hari
+                    {item.quantity}x × 4 hari
                   </div>
                 </div>
               </div>
@@ -202,38 +198,17 @@ export function PaymentSummaryStep({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Duration */}
           <div>
-            <Label htmlFor="duration" className="text-sm font-medium text-gray-700">
-              Durasi Sewa (Hari)
+            <Label className="text-sm font-medium text-gray-700">
+              Durasi Sewa
             </Label>
-            <div className="mt-2 space-y-3">
-              {/* Duration Presets */}
-              <div className="flex flex-wrap gap-2" data-testid="duration-preset-buttons">
-                {[1, 3, 7, 14].map((preset) => (
-                  <Button
-                    key={preset}
-                    type="button"
-                    variant={duration === preset ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => onUpdateDuration(preset)}
-                    className="text-xs"
-                    data-testid={`duration-preset-${preset}`}
-                  >
-                    {preset} hari
-                  </Button>
-                ))}
+            <div className="mt-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-blue-900">Paket 4 Hari</span>
+                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">Fixed</span>
               </div>
-              {/* Custom Duration Input */}
-              <Input
-                id="duration"
-                type="number"
-                min="1"
-                max="30"
-                value={duration}
-                onChange={(e) => onUpdateDuration(Number.parseInt(e.target.value) || 1)}
-                className="w-full"
-                placeholder="Atau masukkan durasi kustom"
-                data-testid="duration-input"
-              />
+              <p className="text-xs text-blue-700 mt-1">
+                Sewa untuk jangka waktu 4 hari dengan harga paket
+              </p>
             </div>
           </div>
 
@@ -444,10 +419,10 @@ export function PaymentSummaryStep({
                 <div key={`${item.product.id}-${item.productSizeId || 'default'}`} className="flex justify-between text-sm">
                   <span className="text-gray-600">
                     {item.product.name}
-                    {selectedSize && ` (${selectedSize.ageCategory} - ${selectedSize.size})`} × {item.quantity} × {duration} hari
+                    {selectedSize && ` (${selectedSize.ageCategory} - ${selectedSize.size})`} × {item.quantity} × 4 hari
                   </span>
                   <span className="font-medium">
-                    {formatCurrency(item.product.pricePerDay * item.quantity * duration)}
+                    {formatCurrency(item.product.pricePerDay * item.quantity)}
                   </span>
                 </div>
               )

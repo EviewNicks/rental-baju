@@ -28,13 +28,13 @@ export function TransactionFormPage() {
     currentStep,
     formData,
     isSubmitting,
-    globalDuration,
+    FIXED_DURATION,
     isDataRestored,
     addProduct,
     removeProduct,
     updateProductQuantity,
     setCustomer,
-    updateDuration,
+    // updateDuration removed - duration is now fixed
     calculateTotal,
     validateStep,
     nextStep,
@@ -77,9 +77,9 @@ export function TransactionFormPage() {
     const productSelection: ProductSelection = {
       product,
       quantity,
-      duration: globalDuration,
+      duration: FIXED_DURATION, // Always 4 days for fixed package
       ...(productSizeId && { productSizeId }),
-      ...(selectedSize && { selectedSize }), // 🔧 CRITICAL: Add selectedSize field
+      ...(selectedSize && { selectedSize }), // Add selectedSize field
     }
 
     try {
@@ -120,7 +120,6 @@ export function TransactionFormPage() {
           }
         : null,
       totalAmount: calculateTotal(),
-      globalDuration,
       step: currentStep,
     }
 
@@ -306,9 +305,7 @@ export function TransactionFormPage() {
               <PaymentSummaryStep
                 formData={formData}
                 totalAmount={calculateTotal()}
-                duration={globalDuration}
                 onUpdateFormData={updateFormData}
-                onUpdateDuration={updateDuration}
                 onSubmit={handleSubmitTransaction}
                 onPrev={prevStep}
                 isSubmitting={isSubmitting}

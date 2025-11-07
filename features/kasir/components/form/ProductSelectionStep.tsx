@@ -140,7 +140,8 @@ export function ProductSelectionStep({
 
   const getTotalPrice = () => {
     return selectedProducts.reduce((total, item) => {
-      return total + item.product.pricePerDay * item.quantity * item.duration
+      // Fixed 4-day package pricing - no duration multiplication
+      return total + item.product.pricePerDay * item.quantity
     }, 0)
   }
 
@@ -455,7 +456,7 @@ export function ProductSelectionStep({
                           )}
                         </p>
                         <p className="text-xs text-gray-600">
-                          {formatCurrency(item.product.pricePerDay)}/hari
+                          {formatCurrency(item.product.pricePerDay)}/4 hari
                         </p>
 
                         {/* Quantity Controls */}
@@ -523,7 +524,7 @@ export function ProductSelectionStep({
                 </div>
                 <div className="flex justify-between text-sm" data-testid="cart-duration">
                   <span className="text-gray-600">Durasi:</span>
-                  <span className="font-medium">1 hari</span>
+                  <span className="font-medium">4 hari</span>
                 </div>
                 <div
                   className="flex justify-between text-base font-semibold text-gray-900 border-t border-gray-200 pt-2"

@@ -33,7 +33,7 @@ export function useTransactionForm() {
   const [currentStep, setCurrentStep] = useState<TransactionStep>(1)
   const [formData, setFormData] = useState<TransactionFormData>(initialFormData)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [globalDuration, setGlobalDuration] = useState(1) // Global duration state
+  const FIXED_DURATION = 4 // Fixed 4-day package - no user selection
   const [isDataRestored, setIsDataRestored] = useState(false) // Track if data was restored from storage
 
   // Real API integration
@@ -134,15 +134,14 @@ export function useTransactionForm() {
     setFormData((prev) => ({ ...prev, customer }))
   }, [])
 
-  const updateDuration = useCallback((duration: number) => {
-    setGlobalDuration(duration)
-  }, [])
+  // updateDuration function removed - duration is now fixed at 4 days
 
   const calculateTotal = useCallback(() => {
     return formData.products.reduce((total, item) => {
-      return total + item.product.pricePerDay * item.quantity * globalDuration
+      // Fixed 4-day package pricing - no duration multiplication
+      return total + item.product.pricePerDay * item.quantity
     }, 0)
-  }, [formData.products, globalDuration])
+  }, [formData.products])
 
   const validateStep = useCallback(
     (step: TransactionStep): boolean => {
@@ -218,7 +217,7 @@ export function useTransactionForm() {
           const baseItem = {
             produkId: product.product.id,
             jumlah: product.quantity,
-            durasi: globalDuration,
+            durasi: FIXED_DURATION, // Always 4 days for fixed package
             kondisiAwal: 'baik',
           }
 
@@ -324,7 +323,7 @@ export function useTransactionForm() {
       // Reset form after successful submission
       setFormData(initialFormData)
       setCurrentStep(1)
-      setGlobalDuration(1) // Reset duration to default
+      // Duration reset removed - now fixed at 4 days
       clearFormData()
 
       return true
@@ -388,7 +387,6 @@ export function useTransactionForm() {
     }
   }, [
     formData,
-    globalDuration,
     validateStep,
     createTransaksiMutation,
     createPembayaranMutation,
@@ -399,7 +397,7 @@ export function useTransactionForm() {
   const resetForm = useCallback(() => {
     setFormData(initialFormData)
     setCurrentStep(1)
-    setGlobalDuration(1) // Reset duration to default
+    // Duration reset removed - now fixed at 4 days
     clearFormData()
   }, [clearFormData])
 
@@ -407,14 +405,14 @@ export function useTransactionForm() {
     currentStep,
     formData,
     isSubmitting: isSubmitting || createTransaksiMutation.isPending,
-    globalDuration,
-    isDataRestored, // New: indicates if data was restored from storage
+    FIXED_DURATION, // Constant: 4 days for all transactions
+    isDataRestored, // indicates if data was restored from storage
     updateFormData,
     addProduct,
     removeProduct,
     updateProductQuantity,
     setCustomer,
-    updateDuration,
+    // updateDuration removed - duration is now fixed
     calculateTotal,
     validateStep,
     nextStep,
@@ -422,7 +420,7 @@ export function useTransactionForm() {
     goToStep,
     submitTransaction,
     resetForm,
-    clearFormData, // New: allow manual clearing of stored data
+    clearFormData, // allow manual clearing of stored data
     // Additional state from API integration
     createError: createTransaksiMutation.error,
     isCreating: createTransaksiMutation.isPending,

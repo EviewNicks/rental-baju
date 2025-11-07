@@ -262,13 +262,13 @@ export class TransaksiService {
       throw new Error(`Produk dengan ID ${missingIds[0]} tidak tersedia`)
     }
 
-    // 4. Calculate prices
+    // 4. Calculate prices (fixed 4-day package)
     const itemsWithPrices = data.items.map((item) => {
       const product = products.find((p) => p.id === item.produkId)!
       return {
         produkId: item.produkId,
         jumlah: item.jumlah,
-        durasi: item.durasi,
+        durasi: 4, // Fixed 4-day package - ignore input duration
         hargaSewa: product.currentPrice,
       }
     })
@@ -306,7 +306,7 @@ export class TransaksiService {
           produkId: item.produkId,
           jumlah: item.jumlah,
           hargaSewa: calculation.hargaSewa,
-          durasi: item.durasi,
+          durasi: 4, // Fixed 4-day package
           subtotal: calculation.subtotal,
           kondisiAwal: item.kondisiAwal || null,
         }
@@ -397,7 +397,7 @@ export class TransaksiService {
           produkId: item.produkId,
           productSizeId: item.productSizeId,
           jumlah: item.jumlah,
-          durasi: item.durasi,
+          durasi: 4, // Fixed 4-day package
           hargaSewa: productSize.product.currentPrice,
         }
       })
@@ -442,7 +442,7 @@ export class TransaksiService {
             produkId: item.produkId,
             jumlah: item.jumlah,
             hargaSewa: calculation.hargaSewa,
-            durasi: item.durasi,
+            durasi: 4, // Fixed 4-day package
             subtotal: calculation.subtotal,
             kondisiAwal: `${item.productSizeId}|${productSize.size}|${productSize.ageCategory}|${item.kondisiAwal || ''}`,
           }

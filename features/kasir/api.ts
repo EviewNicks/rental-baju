@@ -719,6 +719,41 @@ export class KasirApi {
     }
   }
 
+  // Late fee calculation for 4-day package model
+  static async calculateLateFee(
+    transactionId: string,
+    returnDate: string,
+  ): Promise<{
+    daysLate: number
+    totalItems: number
+    lateFee: number
+    lateFeePerItem: number
+    calculationDetails: {
+      baseRentalDays: number
+      actualRentalDays: number
+      lateDays: number
+    }
+  }> {
+    return apiRequest<{
+      daysLate: number
+      totalItems: number
+      lateFee: number
+      lateFeePerItem: number
+      calculationDetails: {
+        baseRentalDays: number
+        actualRentalDays: number
+        lateDays: number
+      }
+    }>(`/transaksi/${transactionId}/late-fee`, {
+      method: 'POST',
+      body: JSON.stringify({
+        returnDate,
+        fixedDuration: 4, // 4-day package
+        lateFeePerItem: 20000, // Rp 20.000 per item per day
+      }),
+    })
+  }
+
   // Pickup operations (TSK-22 integration)
   static async processPickup(
     transactionId: string,
@@ -845,6 +880,12 @@ export const kasirApi = {
       tglKembali?: string
     },
   ) => KasirApi.calculateEnhancedPenalties(transactionId, returnData),
+
+  // Late fee calculation for 4-day package model
+  calculateLateFee: (
+    transactionId: string,
+    returnDate: string,
+  ) => KasirApi.calculateLateFee(transactionId, returnDate),
 
   // Transaction lookup by code (for return process)
   getTransactionByCode: (code: string) => KasirApi.getTransaksiByKode(code),

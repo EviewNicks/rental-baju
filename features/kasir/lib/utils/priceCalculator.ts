@@ -8,7 +8,7 @@ import { Decimal } from '@prisma/client/runtime/library'
 export interface TransactionItem {
   produkId: string
   jumlah: number
-  durasi: number
+  durasi: number // Fixed at 4 for all transactions
   hargaSewa: number | Decimal
 }
 
@@ -27,20 +27,20 @@ export interface PriceCalculationResult {
 export class PriceCalculator {
   /**
    * Calculate total price for transaction items
-   * Formula: subtotal = hargaSewa * jumlah * durasi
+   * New Formula: subtotal = hargaSewa * jumlah (fixed 4-day package)
    */
   static calculateTransactionTotal(items: TransactionItem[]): PriceCalculationResult {
     const itemCalculations = items.map((item) => {
       const hargaSewa = new Decimal(item.hargaSewa.toString())
       const jumlah = new Decimal(item.jumlah)
-      const durasi = new Decimal(item.durasi)
-      
-      const subtotal = hargaSewa.mul(jumlah).mul(durasi)
+
+      // Fixed 4-day package pricing - no duration multiplication
+      const subtotal = hargaSewa.mul(jumlah)
 
       return {
         produkId: item.produkId,
         jumlah: item.jumlah,
-        durasi: item.durasi,
+        durasi: 4, // Always 4 for fixed package
         hargaSewa,
         subtotal
       }
@@ -137,21 +137,34 @@ export class PriceCalculator {
   }
 
   /**
-   * Calculate late fee (if needed in the future)
-   * Currently not implemented as per task requirements
+   * Calculate late fee for returns after 4 days
+   * Fixed rate: Rp 20.000 per item per day after day 4
    */
   static calculateLateFee(
     daysLate: number,
-    totalHarga: number | Decimal,
-    lateFeePercentage: number = 0.1 // 10% per day
+    totalItems: number,
+    lateFeePerItem: number = 20000 // Rp 20.000 per item per day
   ): Decimal {
     if (daysLate <= 0) return new Decimal(0)
 
-    const total = new Decimal(totalHarga.toString())
-    const feePercentage = new Decimal(lateFeePercentage)
+    const items = new Decimal(totalItems)
     const days = new Decimal(daysLate)
+    const feePerItem = new Decimal(lateFeePerItem)
 
-    return total.mul(feePercentage).mul(days)
+    return items.mul(days).mul(feePerItem)
+  }
+
+  /**
+   * Calculate total late fee for transaction items
+   */
+  static calculateTransactionLateFee(
+    items: TransactionItem[],
+    daysLate: number
+  ): Decimal {
+    if (daysLate <= 0) return new Decimal(0)
+
+    const totalItems = items.reduce((total, item) => total + item.jumlah, 0)
+    return this.calculateLateFee(daysLate, totalItems)
   }
 
   /**
