@@ -217,6 +217,86 @@ export class TransaksiService {
     this.availabilityService = createAvailabilityService(prisma)
   }
 
+  /**
+   * Unified method to get transaction by ID or code
+   * Consolidates duplicate logic from getTransaksiById and getTransaksiByCode
+   * @param identifier - Transaction ID (UUID) or code
+   * @param type - Type of identifier ('id' or 'code')
+   * @returns Transaction with full details
+   */
+  async getTransaksiByIdentifier(
+    identifier: string,
+    type: 'id' | 'code' = 'code'
+  ): Promise<TransaksiWithDetails> {
+    const whereClause = type === 'id' ? { id: identifier } : { kode: identifier }
+
+    const transaksi = await this.prisma.transaksi.findUnique({
+      where: whereClause,
+      include: {
+        penyewa: {
+          select: {
+            id: true,
+            nama: true,
+            telepon: true,
+            alamat: true,
+          },
+        },
+        items: {
+          include: {
+            produk: {
+              select: {
+                id: true,
+                code: true,
+                name: true,
+                modalAwal: true, // Added for penalty calculation
+                imageUrl: true,
+                size: true,
+                category: {
+                  select: {
+                    id: true,
+                    name: true,
+                  },
+                },
+              },
+            },
+            // TSK-24: Include multi-condition return data
+            returnConditions: {
+              orderBy: { createdAt: 'asc' },
+              select: {
+                id: true,
+                kondisiAkhir: true,
+                jumlahKembali: true,
+                penaltyAmount: true,
+                modalAwalUsed: true,
+                createdAt: true,
+                createdBy: true,
+              },
+            },
+          },
+        },
+        pembayaran: {
+          orderBy: { createdAt: 'desc' },
+        },
+        aktivitas: {
+          orderBy: { createdAt: 'desc' },
+        },
+      },
+    })
+
+    if (!transaksi) {
+      throw new Error('Transaksi tidak ditemukan')
+    }
+
+    // TSK-24: Transform items with multi-condition return data
+    const enhancedTransaksi = {
+      ...transaksi,
+      //eslint-disable-next-line @typescript-eslint/no-explicit-any
+      items: this.transformItemsWithMultiCondition(transaksi.items as any),
+    }
+
+    return enhancedTransaksi as TransaksiWithDetails
+  }
+
   // Legacy createTransaksi method removed - replaced by optimized createTransaksiSizeAware
   // This improves performance by eliminating dual inventory system complexity
 
@@ -697,144 +777,18 @@ export class TransaksiService {
 
   /**
    * Get transaction by ID with full details
+   * Legacy wrapper for getTransaksiByIdentifier
    */
   async getTransaksiById(id: string): Promise<TransaksiWithDetails> {
-    const transaksi = await this.prisma.transaksi.findUnique({
-      where: { id },
-      include: {
-        penyewa: {
-          select: {
-            id: true,
-            nama: true,
-            telepon: true,
-            alamat: true,
-          },
-        },
-        items: {
-          include: {
-            produk: {
-              select: {
-                id: true,
-                code: true,
-                name: true,
-                modalAwal: true, // Added for penalty calculation
-                imageUrl: true,
-                size: true,
-                category: {
-                  select: {
-                    id: true,
-                    name: true,
-                  },
-                },
-              },
-            },
-            // TSK-24: Include multi-condition return data
-            returnConditions: {
-              orderBy: { createdAt: 'asc' },
-              select: {
-                id: true,
-                kondisiAkhir: true,
-                jumlahKembali: true,
-                penaltyAmount: true,
-                modalAwalUsed: true,
-                createdAt: true,
-                createdBy: true,
-              },
-            },
-          },
-        },
-        pembayaran: {
-          orderBy: { createdAt: 'desc' },
-        },
-        aktivitas: {
-          orderBy: { createdAt: 'desc' },
-        },
-      },
-    })
-
-    if (!transaksi) {
-      throw new Error('Transaksi tidak ditemukan')
-    }
-
-    // TSK-24: Transform items with multi-condition return data
-    const enhancedTransaksi = {
-      ...transaksi,
-      //eslint-disable-next-line @typescript-eslint/no-explicit-any
-      items: this.transformItemsWithMultiCondition(transaksi.items as any),
-    }
-
-    return enhancedTransaksi as TransaksiWithDetails
+    return this.getTransaksiByIdentifier(id, 'id')
   }
 
   /**
    * Get transaction by code
+   * Legacy wrapper for getTransaksiByIdentifier
    */
   async getTransaksiByCode(kode: string): Promise<TransaksiWithDetails> {
-    const transaksi = await this.prisma.transaksi.findUnique({
-      where: { kode },
-      include: {
-        penyewa: {
-          select: {
-            id: true,
-            nama: true,
-            telepon: true,
-            alamat: true,
-          },
-        },
-        items: {
-          include: {
-            produk: {
-              select: {
-                id: true,
-                code: true,
-                name: true,
-                modalAwal: true, // Added for penalty calculation
-                imageUrl: true,
-                size: true,
-                category: {
-                  select: {
-                    id: true,
-                    name: true,
-                  },
-                },
-              },
-            },
-            // TSK-24: Include multi-condition return data
-            returnConditions: {
-              orderBy: { createdAt: 'asc' },
-              select: {
-                id: true,
-                kondisiAkhir: true,
-                jumlahKembali: true,
-                penaltyAmount: true,
-                modalAwalUsed: true,
-                createdAt: true,
-                createdBy: true,
-              },
-            },
-          },
-        },
-        pembayaran: {
-          orderBy: { createdAt: 'desc' },
-        },
-        aktivitas: {
-          orderBy: { createdAt: 'desc' },
-        },
-      },
-    })
-
-    if (!transaksi) {
-      throw new Error('Transaksi tidak ditemukan')
-    }
-
-    // TSK-24: Transform items with multi-condition return data
-    const enhancedTransaksi = {
-      ...transaksi,
-      //eslint-disable-next-line @typescript-eslint/no-explicit-any
-      items: this.transformItemsWithMultiCondition(transaksi.items as any),
-    }
-
-    return enhancedTransaksi as TransaksiWithDetails
+    return this.getTransaksiByIdentifier(kode, 'code')
   }
 
   /**

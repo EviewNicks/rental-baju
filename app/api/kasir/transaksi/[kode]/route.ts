@@ -15,6 +15,7 @@ import { TransactionCodeGenerator } from '@/features/kasir/lib/utils/codeGenerat
 import { ZodError } from 'zod'
 import { requirePermission, withRateLimit } from '@/lib/auth-middleware'
 import { clerkClient } from '@clerk/nextjs/server'
+import { formatTransactionResponse } from '@/features/kasir/lib/utils/responseFormatter'
 
 // KasirInfo interface for type safety
 interface KasirInfo {
@@ -122,88 +123,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       ? await transaksiService.getTransaksiById(kode)
       : await transaksiService.getTransaksiByCode(kode)
 
-    // Format response data
-    const formattedData = {
-      id: transaksi.id,
-      kode: transaksi.kode,
-      penyewa: {
-        id: transaksi.penyewa.id,
-        nama: transaksi.penyewa.nama,
-        telepon: transaksi.penyewa.telepon,
-        alamat: transaksi.penyewa.alamat
-      },
-      status: transaksi.status,
-      totalHarga: Number(transaksi.totalHarga),
-      jumlahBayar: Number(transaksi.jumlahBayar),
-      sisaBayar: Number(transaksi.sisaBayar),
-      tglMulai: transaksi.tglMulai.toISOString(),
-      tglSelesai: transaksi.tglSelesai?.toISOString() || null,
-      tglKembali: transaksi.tglKembali?.toISOString() || null,
-      metodeBayar: transaksi.metodeBayar,
-      catatan: transaksi.catatan,
-      createdBy: transaksi.createdBy,
-      createdAt: transaksi.createdAt.toISOString(),
-      updatedAt: transaksi.updatedAt.toISOString(),
-      items: transaksi.items.map(item => ({
-        id: item.id,
-        produk: {
-          id: item.produk.id,
-          code: item.produk.code,
-          name: item.produk.name,
-          modalAwal: Number(item.produk.modalAwal),
-          imageUrl: item.produk.imageUrl,
-          // Add missing product fields
-          size: item.produk.size || null,
-              category: item.produk.category?.name || null
-        },
-        jumlah: item.jumlah,
-        jumlahDiambil: item.jumlahDiambil,
-        hargaSewa: Number(item.hargaSewa),
-        durasi: item.durasi,
-        subtotal: Number(item.subtotal),
-        kondisiAwal: item.kondisiAwal,
-        kondisiAkhir: item.kondisiAkhir,
-        statusKembali: item.statusKembali,
-        // TSK-24: Multi-condition return enhancements
-        ...(item.isMultiCondition && {
-          isMultiCondition: item.isMultiCondition
-        }),
-        ...(item.multiConditionSummary && {
-          multiConditionSummary: item.multiConditionSummary
-        }),
-        ...(item.totalReturnPenalty && {
-          totalReturnPenalty: Number(item.totalReturnPenalty)
-        }),
-        ...(item.returnConditions && item.returnConditions.length > 0 && {
-          conditionBreakdown: item.returnConditions.map(condition => ({
-            id: condition.id,
-            kondisiAkhir: condition.kondisiAkhir,
-            jumlahKembali: condition.jumlahKembali,
-            penaltyAmount: Number(condition.penaltyAmount),
-            modalAwalUsed: condition.modalAwalUsed ? Number(condition.modalAwalUsed) : null,
-            createdAt: condition.createdAt.toISOString(),
-            createdBy: condition.createdBy
-          }))
-        })
-      })),
-      pembayaran: transaksi.pembayaran.map(payment => ({
-        id: payment.id,
-        jumlah: Number(payment.jumlah),
-        metode: payment.metode,
-        referensi: payment.referensi,
-        catatan: payment.catatan,
-        createdBy: payment.createdBy,
-        createdAt: payment.createdAt.toISOString()
-      })),
-      aktivitas: transaksi.aktivitas.map(activity => ({
-        id: activity.id,
-        tipe: activity.tipe,
-        deskripsi: activity.deskripsi,
-        data: activity.data,
-        createdBy: activity.createdBy,
-        createdAt: activity.createdAt.toISOString()
-      }))
-    }
+    // Format response data using shared formatter (eliminates ~82 lines duplicate code)
+    const formattedData = formatTransactionResponse(transaksi)
 
     // Enrich transaction data with kasir information
     const enrichedData = await enrichTransactionWithKasirInfo(formattedData)
@@ -334,88 +255,8 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     // Get updated transaction with full details
     const fullTransaksi = await transaksiService.getTransaksiById(currentTransaksi.id)
 
-    // Format response data
-    const formattedData = {
-      id: fullTransaksi.id,
-      kode: fullTransaksi.kode,
-      penyewa: {
-        id: fullTransaksi.penyewa.id,
-        nama: fullTransaksi.penyewa.nama,
-        telepon: fullTransaksi.penyewa.telepon,
-        alamat: fullTransaksi.penyewa.alamat
-      },
-      status: fullTransaksi.status,
-      totalHarga: Number(fullTransaksi.totalHarga),
-      jumlahBayar: Number(fullTransaksi.jumlahBayar),
-      sisaBayar: Number(fullTransaksi.sisaBayar),
-      tglMulai: fullTransaksi.tglMulai.toISOString(),
-      tglSelesai: fullTransaksi.tglSelesai?.toISOString() || null,
-      tglKembali: fullTransaksi.tglKembali?.toISOString() || null,
-      metodeBayar: fullTransaksi.metodeBayar,
-      catatan: fullTransaksi.catatan,
-      createdBy: fullTransaksi.createdBy,
-      createdAt: fullTransaksi.createdAt.toISOString(),
-      updatedAt: fullTransaksi.updatedAt.toISOString(),
-      items: fullTransaksi.items.map(item => ({
-        id: item.id,
-        produk: {
-          id: item.produk.id,
-          code: item.produk.code,
-          name: item.produk.name,
-          modalAwal: Number(item.produk.modalAwal),
-          imageUrl: item.produk.imageUrl,
-          // Add missing product fields
-          size: item.produk.size || null,
-              category: item.produk.category?.name || null
-        },
-        jumlah: item.jumlah,
-        jumlahDiambil: item.jumlahDiambil,
-        hargaSewa: Number(item.hargaSewa),
-        durasi: item.durasi,
-        subtotal: Number(item.subtotal),
-        kondisiAwal: item.kondisiAwal,
-        kondisiAkhir: item.kondisiAkhir,
-        statusKembali: item.statusKembali,
-        // TSK-24: Multi-condition return enhancements
-        ...(item.isMultiCondition && {
-          isMultiCondition: item.isMultiCondition
-        }),
-        ...(item.multiConditionSummary && {
-          multiConditionSummary: item.multiConditionSummary
-        }),
-        ...(item.totalReturnPenalty && {
-          totalReturnPenalty: Number(item.totalReturnPenalty)
-        }),
-        ...(item.returnConditions && item.returnConditions.length > 0 && {
-          conditionBreakdown: item.returnConditions.map(condition => ({
-            id: condition.id,
-            kondisiAkhir: condition.kondisiAkhir,
-            jumlahKembali: condition.jumlahKembali,
-            penaltyAmount: Number(condition.penaltyAmount),
-            modalAwalUsed: condition.modalAwalUsed ? Number(condition.modalAwalUsed) : null,
-            createdAt: condition.createdAt.toISOString(),
-            createdBy: condition.createdBy
-          }))
-        })
-      })),
-      pembayaran: fullTransaksi.pembayaran.map(payment => ({
-        id: payment.id,
-        jumlah: Number(payment.jumlah),
-        metode: payment.metode,
-        referensi: payment.referensi,
-        catatan: payment.catatan,
-        createdBy: payment.createdBy,
-        createdAt: payment.createdAt.toISOString()
-      })),
-      aktivitas: fullTransaksi.aktivitas.map(activity => ({
-        id: activity.id,
-        tipe: activity.tipe,
-        deskripsi: activity.deskripsi,
-        data: activity.data,
-        createdBy: activity.createdBy,
-        createdAt: activity.createdAt.toISOString()
-      }))
-    }
+  // Format response data using shared formatter (eliminates ~82 lines duplicate code)
+    const formattedData = formatTransactionResponse(fullTransaksi)
 
     return NextResponse.json(
       {

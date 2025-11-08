@@ -12,6 +12,7 @@ import { ActivityTimeline } from './ActivityTimeline'
 import { ActionButtonsPanel } from './ActionButtonPanel'
 import { useTransactionDetail } from '../../hooks/useTransactionDetail'
 import { formatDate } from '../../lib/utils/client'
+import { detectTransactionError } from '../../lib/utils/errorDetector'
 
 interface TransactionDetailPageProps {
   transactionId: string
@@ -26,79 +27,8 @@ export function TransactionDetailPage({ transactionId }: TransactionDetailPagePr
   }
 
   if (error) {
-    // Enhanced error detection with proper type checking
-    const errorMessage =
-      error && typeof error === 'object' && 'message' in error
-        ? (error as { message: string }).message
-        : 'Unknown error'
-
-    const isNotFound =
-      errorMessage.includes('tidak ditemukan') || errorMessage.includes('Not Found')
-    const isNetworkError = errorMessage.includes('fetch') || errorMessage.includes('Network')
-    const isServerError =
-      errorMessage.includes('Internal Server Error') || errorMessage.includes('500')
-    const isPermissionError = errorMessage.includes('unauthorized') || errorMessage.includes('403')
-
-    const getErrorDetails = () => {
-      if (isNotFound) {
-        return {
-          title: 'Transaksi Tidak Ditemukan',
-          description: `Transaksi dengan kode ${transactionId} tidak dapat ditemukan.`,
-          suggestions: [
-            'Periksa kembali kode transaksi',
-            'Cari transaksi di daftar transaksi',
-            'Pastikan transaksi belum dihapus',
-          ],
-          canRetry: false,
-        }
-      } else if (isNetworkError) {
-        return {
-          title: 'Masalah Koneksi',
-          description: 'Koneksi internet bermasalah. Periksa koneksi dan coba lagi.',
-          suggestions: [
-            'Periksa koneksi internet',
-            'Coba refresh halaman',
-            'Tunggu beberapa saat lalu coba lagi',
-          ],
-          canRetry: true,
-        }
-      } else if (isServerError) {
-        return {
-          title: 'Server Bermasalah',
-          description: 'Terjadi gangguan pada server. Tim kami sedang menangani masalah ini.',
-          suggestions: [
-            'Tunggu beberapa menit lalu coba lagi',
-            'Hubungi support jika masalah berlanjut',
-            'Coba akses fitur lain terlebih dahulu',
-          ],
-          canRetry: true,
-        }
-      } else if (isPermissionError) {
-        return {
-          title: 'Akses Ditolak',
-          description: 'Anda tidak memiliki izin untuk mengakses transaksi ini.',
-          suggestions: [
-            'Login ulang dengan akun yang benar',
-            'Hubungi admin untuk mendapatkan akses',
-            'Periksa role dan permissions akun Anda',
-          ],
-          canRetry: false,
-        }
-      } else {
-        return {
-          title: 'Terjadi Kesalahan',
-          description: 'Gagal memuat detail transaksi. Silakan coba lagi.',
-          suggestions: [
-            'Refresh halaman',
-            'Coba lagi dalam beberapa saat',
-            'Hubungi support jika masalah berlanjut',
-          ],
-          canRetry: true,
-        }
-      }
-    }
-
-    const errorDetails = getErrorDetails()
+    // Use centralized error detection utility (eliminates ~70 lines duplicate code)
+    const errorDetails = detectTransactionError(error)
 
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
