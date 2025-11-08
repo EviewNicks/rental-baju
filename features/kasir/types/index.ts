@@ -93,3 +93,11 @@ export interface PickupActivityData {
 
 // Enhanced ActivityAction type including new return activities
 export type ActivityAction = 'created' | 'paid' | 'picked_up' | 'returned' | 'overdue' | 'reminder_sent' | 'penalty_added' | 'return_completed'
+
+// Kasir Information Interface for displaying cashier details in transaction
+export interface KasirInfo {
+  id: string
+  name: string
+  email: string
+  avatar?: string | null
+}

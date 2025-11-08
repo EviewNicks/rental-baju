@@ -12,7 +12,11 @@ import { ProductSizeAggregationService } from '@/features/manage-product/service
 import { FileUploadService } from '@/features/manage-product/services/fileUploadService'
 import { prisma } from '@/lib/prisma'
 import { createProductSchema } from '@/features/manage-product/lib/validation/productSchema'
-import { ConflictError } from '@/features/manage-product/lib/errors/AppError'
+import {
+  ConflictError,
+  ValidationError,
+  formatErrorResponse,
+} from '@/features/manage-product/lib/errors/AppError'
 import type { Product } from '@/features/manage-product/types'
 
 // Supported image formats for upload
@@ -39,7 +43,8 @@ export async function GET(request: NextRequest) {
       status: searchParams.get('status') || undefined,
       isActive: searchParams.get('isActive') !== 'false', // default true
       size: searchParams.getAll('size').length > 0 ? searchParams.getAll('size') : undefined,
-      colorId: searchParams.getAll('colorId').length > 0 ? searchParams.getAll('colorId') : undefined,
+      colorId:
+        searchParams.getAll('colorId').length > 0 ? searchParams.getAll('colorId') : undefined,
     }
 
     // Aggregation options
@@ -72,7 +77,7 @@ export async function GET(request: NextRequest) {
             console.warn(`Failed to get aggregation for product ${product.id}:`, error)
             return product
           }
-        })
+        }),
       )
 
       result.products = productsWithAggregation
@@ -137,8 +142,9 @@ export async function POST(request: NextRequest) {
     const materialQuantityStr = (formData.get('materialQuantity') as string) || undefined
     const image = formData.get('image') as File | null
 
-    // Validate image format if image is provided
+    // Validate image format and size if image is provided
     if (image && image.size > 0) {
+      // Check file format
       if (!SUPPORTED_IMAGE_FORMATS.includes(image.type.toLowerCase())) {
         return NextResponse.json(
           {
@@ -147,22 +153,45 @@ export async function POST(request: NextRequest) {
               code: 'IMAGE_FORMAT_ERROR',
               field: 'image',
               details: `Format ${image.type} tidak didukung. Gunakan JPG, PNG, atau WebP.`,
-              supportedFormats: SUPPORTED_IMAGE_FORMATS
+              supportedFormats: SUPPORTED_IMAGE_FORMATS,
             },
           },
           { status: 400 },
+        )
+      }
+
+      // Check file size (5MB limit)
+      const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
+      if (image.size > MAX_FILE_SIZE) {
+        return NextResponse.json(
+          {
+            error: {
+              message: 'Ukuran file terlalu besar',
+              code: 'IMAGE_SIZE_ERROR',
+              field: 'image',
+              details: `Ukuran file terlalu besar. Maksimal 5MB. File Anda: ${(image.size / 1024 / 1024).toFixed(2)}MB.`,
+              maxSize: MAX_FILE_SIZE,
+            },
+          },
+          { status: 413 },
         )
       }
     }
 
     // Size Management fields - REQUIRED for advanced-only architecture
     const sizesStr = formData.get('sizes') as string
-    let sizes: Array<{ ageCategory: string; size: string; quantity: number; isActive?: boolean }> = []
+    let sizes: Array<{ ageCategory: string; size: string; quantity: number; isActive?: boolean }> =
+      []
 
     // Parse sizes - REQUIRED since all products must have sizes
     if (!sizesStr) {
       return NextResponse.json(
-        { error: { message: 'Field sizes wajib diisi - semua produk harus memiliki ukuran', code: 'VALIDATION_ERROR' } },
+        {
+          error: {
+            message: 'Field sizes wajib diisi - semua produk harus memiliki ukuran',
+            code: 'VALIDATION_ERROR',
+          },
+        },
         { status: 400 },
       )
     }
@@ -257,7 +286,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate with advanced-only schema (all products require sizes)
-    const validatedData = createProductSchema.parse(createRequest)
+    let validatedData
+    try {
+      validatedData = createProductSchema.parse(createRequest)
+    } catch (validationError) {
+      //eslint-disable-next-line
+      const validationErr = ValidationError.fromZodError(validationError as any)
+      return NextResponse.json(formatErrorResponse(validationErr), { status: 400 })
+    }
 
     // Initialize services
     const productService = new ProductService(prisma, userId)
@@ -271,16 +307,18 @@ export async function POST(request: NextRequest) {
         imageUrl = uploadResult?.url
       } catch (uploadError) {
         // Image upload failed - provide specific error details
-        const errorMessage = uploadError instanceof Error ? uploadError.message : 'Unknown upload error'
+        const errorMessage =
+          uploadError instanceof Error ? uploadError.message : 'Unknown upload error'
         return NextResponse.json(
           {
             error: {
               message: 'Gagal mengunggah gambar',
               code: 'IMAGE_UPLOAD_ERROR',
               field: 'image',
-              details: errorMessage.includes('HEIC') || errorMessage.includes('heic')
-                ? 'Format HEIC tidak didukung. Gunakan JPG, PNG, atau WebP.'
-                : `Upload gagal: ${errorMessage}`,
+              details:
+                errorMessage.includes('HEIC') || errorMessage.includes('heic')
+                  ? 'Format HEIC tidak didukung. Gunakan JPG, PNG, atau WebP.'
+                  : `Upload gagal: ${errorMessage}`,
             },
           },
           { status: 400 },
@@ -303,49 +341,23 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(product, { status: 201 })
   } catch (error) {
-    if (error instanceof ConflictError) {
-      return NextResponse.json(
-        {
-          error: {
-            message: error.message,
-            code: 'CONFLICT',
-            field: 'code', // Assume product code conflicts are most common
-            details: 'Produk dengan kode ini sudah ada. Gunakan kode yang berbeda.',
-          },
-        },
-        { status: 409 },
-      )
-    }
+    // Generate request ID for debugging
+    const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 
-    if (error instanceof Error && error.message.includes('validation')) {
-      return NextResponse.json(
-        {
-          error: {
-            message: 'Data tidak valid',
-            code: 'VALIDATION_ERROR',
-            details: error.message,
-          },
-        },
-        { status: 400 },
-      )
+    // Handle known error types
+    if (error instanceof ConflictError) {
+      return NextResponse.json(formatErrorResponse(error, requestId), { status: 409 })
     }
 
     // Handle Prisma connection errors
     if (error instanceof Error && error.message.includes('connection pool')) {
       return NextResponse.json(
-        {
-          error: {
-            message: 'Database connection timeout. Please try again.',
-            code: 'CONNECTION_ERROR',
-          },
-        },
+        formatErrorResponse(new Error('Database connection timeout. Please try again.'), requestId),
         { status: 503 },
       )
     }
 
-    return NextResponse.json(
-      { error: { message: 'Internal server error', code: 'INTERNAL_ERROR' } },
-      { status: 500 },
-    )
+    // Handle unknown errors
+    return NextResponse.json(formatErrorResponse(error as Error, requestId), { status: 500 })
   }
 }

@@ -14,11 +14,70 @@ import { updateTransaksiSchema } from '@/features/kasir/lib/validation/kasirSche
 import { TransactionCodeGenerator } from '@/features/kasir/lib/utils/codeGenerator'
 import { ZodError } from 'zod'
 import { requirePermission, withRateLimit } from '@/lib/auth-middleware'
+import { clerkClient } from '@clerk/nextjs/server'
+
+// KasirInfo interface for type safety
+interface KasirInfo {
+  id: string
+  name: string
+  email: string
+  avatar?: string | null
+}
 
 interface RouteParams {
   params: Promise<{
     kode: string
   }>
+}
+
+/**
+ * Function to enrich transaction data with kasir information from Clerk
+ * Graceful fallback if Clerk API fails or user not found
+ */
+async function enrichTransactionWithKasirInfo(transactionData: any): Promise<any> {
+  try {
+    if (!transactionData.createdBy) {
+      // If no createdBy field, return transaction with kasir info as null
+      return {
+        ...transactionData,
+        kasir: null
+      }
+    }
+
+    const client = await clerkClient()
+    const user = await client.users.getUser(transactionData.createdBy)
+
+    // Extract user information with fallbacks
+    const firstName = user.firstName || ''
+    const lastName = user.lastName || ''
+    const fullName = `${firstName} ${lastName}`.trim() || user.emailAddresses[0]?.emailAddress || 'Unknown'
+    const email = user.emailAddresses[0]?.emailAddress || ''
+
+    const kasirInfo: KasirInfo = {
+      id: user.id,
+      name: fullName,
+      email: email,
+      avatar: user.imageUrl || null
+    }
+
+    return {
+      ...transactionData,
+      kasir: kasirInfo
+    }
+  } catch (error) {
+    console.warn('Failed to fetch kasir info from Clerk:', error)
+
+    // Graceful fallback - return basic kasir info with just the ID
+    return {
+      ...transactionData,
+      kasir: {
+        id: transactionData.createdBy || 'unknown',
+        name: 'Unknown Kasir',
+        email: '',
+        avatar: null
+      }
+    }
+  }
 }
 
 export async function GET(request: NextRequest, { params }: RouteParams) {
@@ -146,10 +205,13 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       }))
     }
 
+    // Enrich transaction data with kasir information
+    const enrichedData = await enrichTransactionWithKasirInfo(formattedData)
+
     return NextResponse.json(
       {
         success: true,
-        data: formattedData,
+        data: enrichedData,
         message: 'Detail transaksi berhasil diambil'
       },
       { status: 200 }

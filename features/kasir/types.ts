@@ -4,6 +4,9 @@
  * Following architecture guidelines from docs/rules/architecture.md
  */
 
+// Import KasirInfo interface from types index
+import type { KasirInfo } from './types/index'
+
 // ==========================================
 // CORE TYPES & ENUMS
 // ==========================================
@@ -250,6 +253,7 @@ export interface Transaction {
   notes?: string
   createdAt: string
   updatedAt: string
+  kasir?: KasirInfo // Optional kasir information for display
 }
 
 export interface TransactionFilters {

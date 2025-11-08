@@ -33,7 +33,7 @@ export interface TransaksiWithDetails extends Transaksi {
       modalAwal: Decimal // Added for penalty calculation
       imageUrl?: string | null
       size?: string | null
-        category?: {
+      category?: {
         id: string
         name: string
       } | null
@@ -230,14 +230,9 @@ export class TransaksiService {
    * Step 3: Update stock quantities with retry logic AFTER transaction
    */
   async createTransaksiSizeAware(data: CreateTransaksiRequest): Promise<Transaksi> {
-    const startTime = Date.now()
-    console.log('🚀 [TRANSACTION] Starting Phase 2 optimized transaction creation...')
-
     let priceCalculation: ReturnType<typeof PriceCalculator.calculateTransactionTotal> | null = null
 
     try {
-      // STEP 1: Validate customer exists (fast operation)
-      console.log('👤 [STEP-1] Validating customer...')
       const penyewa = await this.prisma.penyewa.findUnique({
         where: { id: data.penyewaId },
       })
@@ -247,11 +242,9 @@ export class TransaksiService {
       }
 
       // STEP 2: Pre-validate stock availability OUTSIDE transaction
-      console.log('📦 [STEP-2] Pre-validating stock availability...')
       await this.validateStockAvailability(data.items)
 
       // STEP 3: Get product data for pricing (can reuse from validation)
-      console.log('💰 [STEP-3] Preparing pricing data...')
       const productSizeIds = data.items.map((item) => item.productSizeId)
       const uniqueSizeIds = [...new Set(productSizeIds)]
 
@@ -293,85 +286,76 @@ export class TransaksiService {
       const kode = await this.codeGenerator.generateTransactionCode()
 
       // STEP 4: Create transaction with MINIMAL operations INSIDE transaction
-      console.log('🔄 [STEP-4] Creating transaction record (optimized)...')
       const transactionStartTime = Date.now()
 
-      const transaksi = await this.prisma.$transaction(async (tx) => {
-        // Create main transaction (1 operation)
-        const createdTransaksi = await tx.transaksi.create({
-          data: {
-            kode,
-            penyewaId: data.penyewaId,
-            status: 'active',
-            totalHarga: priceCalculation!.totalHarga,
-            jumlahBayar: new Decimal(0),
-            sisaBayar: priceCalculation!.totalHarga,
-            tglMulai: new Date(data.tglMulai),
-            tglSelesai: data.tglSelesai ? new Date(data.tglSelesai) : null,
-            metodeBayar: data.metodeBayar || 'tunai',
-            catatan: data.catatan || null,
-            createdBy: this.userId,
-          },
-        })
-
-        // Create transaction items (1 operation - bulk insert)
-        const itemsData = data.items.map((item, index) => {
-          const calculation = priceCalculation!.itemCalculations[index]
-          const productSize = productSizes.find((ps) => ps.id === item.productSizeId)!
-          return {
-            transaksiId: createdTransaksi.id,
-            produkId: item.produkId,
-            jumlah: item.jumlah,
-            hargaSewa: calculation.hargaSewa,
-            durasi: 4, // Fixed 4-day package
-            subtotal: calculation.subtotal,
-            kondisiAwal: `${item.productSizeId}|${productSize.size}|${productSize.ageCategory}|${item.kondisiAwal || ''}`,
-          }
-        })
-
-        await tx.transaksiItem.createMany({
-          data: itemsData,
-        })
-
-        // Update product quantities - OPTIMIZED: Single inventory system
-        // Use only ProductSize.quantity (size-aware system) for better performance
-        await this.updateProductSizeQuantities(tx, data.items)
-
-        // Create activity log (1 operation)
-        await tx.aktivitasTransaksi.create({
-          data: {
-            transaksiId: createdTransaksi.id,
-            tipe: 'dibuat',
-            deskripsi: `Transaksi ${kode} dibuat dengan optimized inventory system`,
+      const transaksi = await this.prisma.$transaction(
+        async (tx) => {
+          // Create main transaction (1 operation)
+          const createdTransaksi = await tx.transaksi.create({
             data: {
-              items: data.items.length,
-              totalHarga: priceCalculation!.totalHarga.toString(),
-              sizeAware: true,
-              optimizedSystem: true,
-              transactionDuration: Date.now() - transactionStartTime,
+              kode,
+              penyewaId: data.penyewaId,
+              status: 'active',
+              totalHarga: priceCalculation!.totalHarga,
+              jumlahBayar: new Decimal(0),
+              sisaBayar: priceCalculation!.totalHarga,
+              tglMulai: new Date(data.tglMulai),
+              tglSelesai: data.tglSelesai ? new Date(data.tglSelesai) : null,
+              metodeBayar: data.metodeBayar || 'tunai',
+              catatan: data.catatan || null,
+              createdBy: this.userId,
             },
-            createdBy: this.userId,
-          },
-        })
+          })
 
-        return createdTransaksi
-      }, {
-        timeout: 30000 // 30 seconds timeout for safety
-      })
+          // Create transaction items (1 operation - bulk insert)
+          const itemsData = data.items.map((item, index) => {
+            const calculation = priceCalculation!.itemCalculations[index]
+            const productSize = productSizes.find((ps) => ps.id === item.productSizeId)!
+            return {
+              transaksiId: createdTransaksi.id,
+              produkId: item.produkId,
+              jumlah: item.jumlah,
+              hargaSewa: calculation.hargaSewa,
+              durasi: 4, // Fixed 4-day package
+              subtotal: calculation.subtotal,
+              kondisiAwal: `${item.productSizeId}|${productSize.size}|${productSize.ageCategory}|${item.kondisiAwal || ''}`,
+            }
+          })
 
-      const transactionDuration = Date.now() - transactionStartTime
-      console.log(`✅ [STEP-4] Transaction created with optimized inventory system in ${transactionDuration}ms`)
+          await tx.transaksiItem.createMany({
+            data: itemsData,
+          })
 
-      const totalDuration = Date.now() - startTime
-      console.log(`✅ [TRANSACTION] Optimized transaction completed in ${totalDuration}ms`)
-      console.log(`📊 [PERFORMANCE] Single inventory system for maximum performance`)
+          // Update product quantities - OPTIMIZED: Single inventory system
+          // Use only ProductSize.quantity (size-aware system) for better performance
+          await this.updateProductSizeQuantities(tx, data.items)
+
+          // Create activity log (1 operation)
+          await tx.aktivitasTransaksi.create({
+            data: {
+              transaksiId: createdTransaksi.id,
+              tipe: 'dibuat',
+              deskripsi: `Transaksi ${kode} dibuat dengan optimized inventory system`,
+              data: {
+                items: data.items.length,
+                totalHarga: priceCalculation!.totalHarga.toString(),
+                sizeAware: true,
+                optimizedSystem: true,
+                transactionDuration: Date.now() - transactionStartTime,
+              },
+              createdBy: this.userId,
+            },
+          })
+
+          return createdTransaksi
+        },
+        {
+          timeout: 30000, // 30 seconds timeout for safety
+        },
+      )
 
       return transaksi
-
     } catch (error) {
-      const totalDuration = Date.now() - startTime
-      console.error(`❌ [TRANSACTION] Failed after ${totalDuration}ms:`, error)
-
       // Enhanced error logging for debugging
       if (error instanceof Error) {
         console.error('🚨 [ERROR] Details:', {
@@ -449,10 +433,7 @@ export class TransaksiService {
    * NEW: Pre-validation pattern to prevent transaction timeouts
    * @private
    */
-  private async validateStockAvailability(
-    items: CreateTransaksiRequest['items'],
-  ): Promise<void> {
-    console.log('🔍 [PRE-VALIDATION] Starting stock availability check...')
+  private async validateStockAvailability(items: CreateTransaksiRequest['items']): Promise<void> {
 
     const productSizeIds = items.map((item) => item.productSizeId)
     const uniqueSizeIds = [...new Set(productSizeIds)] // Remove duplicates
@@ -499,12 +480,11 @@ export class TransaksiService {
       // Validate stock availability
       if (productSize.quantity < item.jumlah) {
         throw new Error(
-          `Size ${productSize.size} (${productSize.ageCategory}) untuk ${productSize.product.name} tidak mencukupi. Tersedia: ${productSize.quantity}, Diminta: ${item.jumlah}`
+          `Size ${productSize.size} (${productSize.ageCategory}) untuk ${productSize.product.name} tidak mencukupi. Tersedia: ${productSize.quantity}, Diminta: ${item.jumlah}`,
         )
       }
     }
 
-    console.log('✅ [PRE-VALIDATION] Stock availability check passed')
   }
 
   /**
@@ -519,10 +499,13 @@ export class TransaksiService {
     console.log('🔄 [STOCK-UPDATE] Starting stock update with retry logic...')
 
     // Group by productSizeId to optimize updates
-    const stockUpdates = items.reduce((acc, item) => {
-      acc[item.productSizeId] = (acc[item.productSizeId] || 0) + item.jumlah
-      return acc
-    }, {} as Record<string, number>)
+    const stockUpdates = items.reduce(
+      (acc, item) => {
+        acc[item.productSizeId] = (acc[item.productSizeId] || 0) + item.jumlah
+        return acc
+      },
+      {} as Record<string, number>,
+    )
 
     for (const [productSizeId, totalQuantity] of Object.entries(stockUpdates)) {
       let attempt = 0
@@ -531,7 +514,9 @@ export class TransaksiService {
       while (attempt < maxRetries) {
         try {
           attempt++
-          console.log(`🔄 [STOCK-UPDATE] Attempt ${attempt}/${maxRetries} for ProductSize ${productSizeId}`)
+          console.log(
+            `🔄 [STOCK-UPDATE] Attempt ${attempt}/${maxRetries} for ProductSize ${productSizeId}`,
+          )
 
           // Get current stock state
           const currentProductSize = await this.prisma.productSize.findUnique({
@@ -555,7 +540,7 @@ export class TransaksiService {
           // Double-check availability (race condition protection)
           if (currentProductSize.quantity < totalQuantity) {
             throw new Error(
-              `Insufficient stock during update. Available: ${currentProductSize.quantity}, Requested: ${totalQuantity}`
+              `Insufficient stock during update. Available: ${currentProductSize.quantity}, Requested: ${totalQuantity}`,
             )
           }
 
@@ -575,13 +560,14 @@ export class TransaksiService {
           // Verify the update was successful
           if (updateResult.count === 0) {
             throw new Error(
-              `Failed to update quantity. The size may have been modified by another transaction.`
+              `Failed to update quantity. The size may have been modified by another transaction.`,
             )
           }
 
-          console.log(`✅ [STOCK-UPDATE] Successfully updated ${totalQuantity} units for ProductSize ${productSizeId}`)
+          console.log(
+            `✅ [STOCK-UPDATE] Successfully updated ${totalQuantity} units for ProductSize ${productSizeId}`,
+          )
           break // Success, exit retry loop
-
         } catch (error) {
           lastError = error as Error
           console.error(`❌ [STOCK-UPDATE] Attempt ${attempt} failed:`, lastError.message)
@@ -590,7 +576,7 @@ export class TransaksiService {
             // Exponential backoff: 100ms, 400ms, 1600ms
             const delay = Math.pow(4, attempt - 1) * 100
             console.log(`⏳ [STOCK-UPDATE] Retrying in ${delay}ms...`)
-            await new Promise(resolve => setTimeout(resolve, delay))
+            await new Promise((resolve) => setTimeout(resolve, delay))
           }
         }
       }
@@ -599,7 +585,7 @@ export class TransaksiService {
         // All retries exhausted - this is a critical failure
         console.error(`🚨 [STOCK-UPDATE] All retries failed for ProductSize ${productSizeId}`)
         throw new Error(
-          `Failed to update stock after ${maxRetries} attempts. Last error: ${lastError.message}`
+          `Failed to update stock after ${maxRetries} attempts. Last error: ${lastError.message}`,
         )
       }
     }
@@ -734,7 +720,7 @@ export class TransaksiService {
                 modalAwal: true, // Added for penalty calculation
                 imageUrl: true,
                 size: true,
-                    category: {
+                category: {
                   select: {
                     id: true,
                     name: true,
@@ -805,7 +791,7 @@ export class TransaksiService {
                 modalAwal: true, // Added for penalty calculation
                 imageUrl: true,
                 size: true,
-                    category: {
+                category: {
                   select: {
                     id: true,
                     name: true,
@@ -993,16 +979,15 @@ export class TransaksiService {
               id: true,
               kondisiAwal: true,
               jumlah: true,
-              jumlahDiambil: true
-            }
+              jumlahDiambil: true,
+            },
           })
 
           // Restore ProductSize quantities for each item
           await Promise.all(
             transaksiItems.map(async (item) => {
-              const quantityToRestore = data.status === 'cancelled'
-                ? item.jumlah
-                : item.jumlah - (item.jumlahDiambil || 0)
+              const quantityToRestore =
+                data.status === 'cancelled' ? item.jumlah : item.jumlah - (item.jumlahDiambil || 0)
 
               if (quantityToRestore > 0 && item.kondisiAwal) {
                 // Parse productSizeId from kondisiAwal field format: "productSizeId|size|ageCategory|condition"
@@ -1014,13 +999,13 @@ export class TransaksiService {
                     where: { id: productSizeId },
                     data: {
                       quantity: {
-                        increment: quantityToRestore
-                      }
-                    }
+                        increment: quantityToRestore,
+                      },
+                    },
                   })
                 }
               }
-            })
+            }),
           )
         }
 
@@ -1028,7 +1013,7 @@ export class TransaksiService {
         if (data.status === 'cancelled') {
           // Get items count for detailed logging
           const itemsCount = await tx.transaksiItem.count({
-            where: { transaksiId: id }
+            where: { transaksiId: id },
           })
 
           await tx.aktivitasTransaksi.create({
@@ -1046,7 +1031,7 @@ export class TransaksiService {
                 itemsCount: itemsCount,
                 stockRestored: true,
                 cancelledAt: new Date().toISOString(),
-                needsRefund: existingTransaksi.jumlahBayar.gt(0)
+                needsRefund: existingTransaksi.jumlahBayar.gt(0),
               },
               createdBy: this.userId,
             },
@@ -1159,8 +1144,6 @@ export class TransaksiService {
     }
   }
 
-  
-  
   /**
    * TSK-24: Transform transaction items to include multi-condition return data
    * Maintains backward compatibility while enhancing with condition breakdown

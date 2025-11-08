@@ -5,6 +5,7 @@ import { ArrowLeft, AlertTriangle, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { StatusBadge } from '@/features/kasir/components/ui/status-badge'
 import { CustomerInfoCard } from './CustomerInfoCard'
+import { KasirInfoCard } from './KasirInfoCard'
 import { ProductDetailCard } from './ProductDetailCard'
 import { PaymentSummaryCard } from './PaymentSummaryCard'
 import { ActivityTimeline } from './ActivityTimeline'
@@ -233,7 +234,8 @@ export function TransactionDetailPage({ transactionId }: TransactionDetailPagePr
               )}
             </div>
 
-            {/* Customer Info */}
+            {/* Customer and Kasir Info */}
+            <KasirInfoCard data-testid="kasir-info-card" kasir={transaction.kasir || null} />
             <CustomerInfoCard data-testid="customer-info-card" customer={transaction.customer} />
 
             {/* Products */}

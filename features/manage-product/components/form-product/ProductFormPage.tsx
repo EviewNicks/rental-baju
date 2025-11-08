@@ -546,10 +546,8 @@ export function ProductFormPage({
                   {createProductMutation.error && (
                     <p>
                       {(() => {
-                        // Check if error has structured response (new enhanced format)
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        const errorData = (createProductMutation.error as any)?.response?.data
-                          ?.error
+                        // Check if error has structured response (new enhanced format from API client)
+                        const errorData = (createProductMutation.error as Error & { cause?: { response?: { error?: { code: string; message?: string; details?: string; validationErrors?: Array<{ field: string; message: string }> } } } })?.cause?.response?.error
 
                         if (errorData?.code) {
                           switch (errorData.code) {
@@ -557,6 +555,11 @@ export function ProductFormPage({
                               return (
                                 errorData.details ||
                                 'Format gambar tidak didukung. Gunakan JPG, PNG, atau WebP.'
+                              )
+                            case 'IMAGE_SIZE_ERROR':
+                              return (
+                                errorData.details ||
+                                'Ukuran file terlalu besar. Maksimal 5MB.'
                               )
                             case 'IMAGE_UPLOAD_ERROR':
                               return (
@@ -568,9 +571,23 @@ export function ProductFormPage({
                                 'Kode produk sudah digunakan. Silakan gunakan kode yang berbeda.'
                               )
                             case 'VALIDATION_ERROR':
-                              return (
-                                errorData.details || 'Data tidak valid. Silakan periksa kembali.'
-                              )
+                              // Handle field-level validation errors
+                              if (errorData.validationErrors && Array.isArray(errorData.validationErrors)) {
+                                // Update form field errors individually
+                                const fieldErrors: Record<string, string> = {}
+                                const fieldTouched: Record<string, boolean> = {}
+
+                                errorData.validationErrors.forEach((fieldError: { field: string; message: string }) => {
+                                  fieldErrors[fieldError.field] = fieldError.message
+                                  fieldTouched[fieldError.field] = true
+                                })
+
+                                setErrors(prev => ({ ...prev, ...fieldErrors }))
+                                setTouched(prev => ({ ...prev, ...fieldTouched }))
+
+                                return `Ada ${errorData.validationErrors.length} field yang perlu diperbaiki.`
+                              }
+                              return errorData.details || 'Data tidak valid. Silakan periksa kembali.'
                             default:
                               return errorData.message || createProductMutation.error.message
                           }
@@ -593,10 +610,8 @@ export function ProductFormPage({
                   {updateProductMutation.error && (
                     <p>
                       {(() => {
-                        // Check if error has structured response (new enhanced format)
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        const errorData = (updateProductMutation.error as any)?.response?.data
-                          ?.error
+                        // Check if error has structured response (new enhanced format from API client)
+                        const errorData = (updateProductMutation.error as Error & { cause?: { response?: { error?: { code: string; message?: string; details?: string; validationErrors?: Array<{ field: string; message: string }> } } } })?.cause?.response?.error
 
                         if (errorData?.code) {
                           switch (errorData.code) {
@@ -604,6 +619,11 @@ export function ProductFormPage({
                               return (
                                 errorData.details ||
                                 'Format gambar tidak didukung. Gunakan JPG, PNG, atau WebP.'
+                              )
+                            case 'IMAGE_SIZE_ERROR':
+                              return (
+                                errorData.details ||
+                                'Ukuran file terlalu besar. Maksimal 5MB.'
                               )
                             case 'IMAGE_UPLOAD_ERROR':
                               return (
@@ -615,9 +635,23 @@ export function ProductFormPage({
                                 'Kode produk sudah digunakan. Silakan gunakan kode yang berbeda.'
                               )
                             case 'VALIDATION_ERROR':
-                              return (
-                                errorData.details || 'Data tidak valid. Silakan periksa kembali.'
-                              )
+                              // Handle field-level validation errors
+                              if (errorData.validationErrors && Array.isArray(errorData.validationErrors)) {
+                                // Update form field errors individually
+                                const fieldErrors: Record<string, string> = {}
+                                const fieldTouched: Record<string, boolean> = {}
+
+                                errorData.validationErrors.forEach((fieldError: { field: string; message: string }) => {
+                                  fieldErrors[fieldError.field] = fieldError.message
+                                  fieldTouched[fieldError.field] = true
+                                })
+
+                                setErrors(prev => ({ ...prev, ...fieldErrors }))
+                                setTouched(prev => ({ ...prev, ...fieldTouched }))
+
+                                return `Ada ${errorData.validationErrors.length} field yang perlu diperbaiki.`
+                              }
+                              return errorData.details || 'Data tidak valid. Silakan periksa kembali.'
                             default:
                               return errorData.message || updateProductMutation.error.message
                           }
@@ -638,6 +672,32 @@ export function ProductFormPage({
                       onClick={() => {
                         createProductMutation.reset()
                         updateProductMutation.reset()
+                        // Clear image-related field errors when closing error banner
+                        setErrors(prev => {
+                          const updatedErrors: Record<string, string> = { ...prev }
+
+                          // Clear image and sizes errors
+                          delete updatedErrors.image
+                          delete updatedErrors.sizes
+
+                          // Clear validation errors from createProductMutation
+                          const createErrorData = (createProductMutation.error as Error & { cause?: { response?: { error?: { validationErrors?: Array<{ field: string }> } } } })?.cause?.response?.error
+                          if (createErrorData?.validationErrors && Array.isArray(createErrorData.validationErrors)) {
+                            createErrorData.validationErrors.forEach((err) => {
+                              if (err.field) delete updatedErrors[err.field]
+                            })
+                          }
+
+                          // Clear validation errors from updateProductMutation
+                          const updateErrorData = (updateProductMutation.error as Error & { cause?: { response?: { error?: { validationErrors?: Array<{ field: string }> } } } })?.cause?.response?.error
+                          if (updateErrorData?.validationErrors && Array.isArray(updateErrorData.validationErrors)) {
+                            updateErrorData.validationErrors.forEach((err) => {
+                              if (err.field) delete updatedErrors[err.field]
+                            })
+                          }
+
+                          return updatedErrors
+                        })
                       }}
                       className="text-sm text-red-600 hover:text-red-500 underline"
                     >

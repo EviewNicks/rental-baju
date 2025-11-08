@@ -341,6 +341,9 @@ async function transformApiToUI(apiData: TransaksiResponse): Promise<Transaction
 
     // Penalties - not available in current API, would need enhancement
     penalties: [],
+
+    // Kasir information from enriched API response
+    kasir: (apiData as any).kasir || null,
   }
 
   return transformed

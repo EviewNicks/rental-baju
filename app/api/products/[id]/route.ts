@@ -16,7 +16,7 @@ import { ProductSizeAggregationService } from '@/features/manage-product/service
 import { FileUploadService } from '@/features/manage-product/services/fileUploadService'
 import { prisma } from '@/lib/prisma'
 import { updateProductSchema } from '@/features/manage-product/lib/validation/productSchema'
-import { NotFoundError } from '@/features/manage-product/lib/errors/AppError'
+import { NotFoundError, ValidationError, formatErrorResponse } from '@/features/manage-product/lib/errors/AppError'
 import type { UpdateProductWithSizesRequest } from '@/features/manage-product/types'
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -139,6 +139,45 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const materialQuantity = materialQuantityStr ? parseInt(materialQuantityStr) : undefined
     const image = formData.get('image') as File | null
 
+    // Validate image format and size if new image is provided
+    if (image && image.size > 0) {
+      // Supported image formats
+      const SUPPORTED_IMAGE_FORMATS = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
+
+      // Check file format
+      if (!SUPPORTED_IMAGE_FORMATS.includes(image.type.toLowerCase())) {
+        return NextResponse.json(
+          {
+            error: {
+              message: 'Format gambar tidak didukung',
+              code: 'IMAGE_FORMAT_ERROR',
+              field: 'image',
+              details: `Format ${image.type} tidak didukung. Gunakan JPG, PNG, atau WebP.`,
+              supportedFormats: SUPPORTED_IMAGE_FORMATS
+            },
+          },
+          { status: 400 },
+        )
+      }
+
+      // Check file size (5MB limit)
+      const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
+      if (image.size > MAX_FILE_SIZE) {
+        return NextResponse.json(
+          {
+            error: {
+              message: 'Ukuran file terlalu besar',
+              code: 'IMAGE_SIZE_ERROR',
+              field: 'image',
+              details: `Ukuran file terlalu besar. Maksimal 5MB. File Anda: ${(image.size / 1024 / 1024).toFixed(2)}MB.`,
+              maxSize: MAX_FILE_SIZE
+            },
+          },
+          { status: 413 },
+        )
+      }
+    }
+
     // Size Management fields - Advanced only (no hasSizes flag)
     const sizesStr = formData.get('sizes') as string
     let sizes: Array<{ id?: string; ageCategory: string; size: string; quantity: number; isActive?: boolean }> = []
@@ -209,7 +248,13 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     // Validate with advanced schema if there's data to update
     if (Object.keys(updateData).length > 0) {
       // Always use advanced schema (all products have sizes in advanced-only mode)
-      updateProductSchema.parse(updateData)
+      try {
+        updateProductSchema.parse(updateData)
+      } catch (validationError) {
+        //eslint-disable-next-line
+        const validationErr = ValidationError.fromZodError(validationError as any)
+        return NextResponse.json(formatErrorResponse(validationErr), { status: 400 })
+      }
     }
 
     // Initialize services
@@ -253,37 +298,24 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     return NextResponse.json(product, { status: 200 })
   } catch (error) {
-    if (error instanceof NotFoundError) {
-      return NextResponse.json(
-        { error: { message: error.message, code: 'NOT_FOUND' } },
-        { status: 404 },
-      )
-    }
+    // Generate request ID for debugging
+    const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 
-    if (error instanceof Error && error.message.includes('validation')) {
-      return NextResponse.json(
-        { error: { message: error.message, code: 'VALIDATION_ERROR' } },
-        { status: 400 },
-      )
+    // Handle known error types
+    if (error instanceof NotFoundError) {
+      return NextResponse.json(formatErrorResponse(error, requestId), { status: 404 })
     }
 
     // Handle Prisma connection errors
     if (error instanceof Error && error.message.includes('connection pool')) {
       return NextResponse.json(
-        {
-          error: {
-            message: 'Database connection timeout. Please try again.',
-            code: 'CONNECTION_ERROR',
-          },
-        },
-        { status: 503 },
+        formatErrorResponse(new Error('Database connection timeout. Please try again.'), requestId),
+        { status: 503 }
       )
     }
 
-    return NextResponse.json(
-      { error: { message: 'Internal server error', code: 'INTERNAL_ERROR' } },
-      { status: 500 },
-    )
+    // Handle unknown errors
+    return NextResponse.json(formatErrorResponse(error as Error, requestId), { status: 500 })
   }
 }
 
@@ -314,36 +346,23 @@ export async function DELETE(
       { status: 200 },
     )
   } catch (error) {
-    if (error instanceof NotFoundError) {
-      return NextResponse.json(
-        { error: { message: error.message, code: 'NOT_FOUND' } },
-        { status: 404 },
-      )
-    }
+    // Generate request ID for debugging
+    const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 
-    if (error instanceof Error) {
-      return NextResponse.json(
-        { error: { message: error.message, code: 'INTERNAL_ERROR' } },
-        { status: 500 },
-      )
+    // Handle known error types
+    if (error instanceof NotFoundError) {
+      return NextResponse.json(formatErrorResponse(error, requestId), { status: 404 })
     }
 
     // Handle Prisma connection errors
     if (error instanceof Error && error.message.includes('connection pool')) {
       return NextResponse.json(
-        {
-          error: {
-            message: 'Database connection timeout. Please try again.',
-            code: 'CONNECTION_ERROR',
-          },
-        },
-        { status: 503 },
+        formatErrorResponse(new Error('Database connection timeout. Please try again.'), requestId),
+        { status: 503 }
       )
     }
 
-    return NextResponse.json(
-      { error: { message: 'Internal server error', code: 'INTERNAL_ERROR' } },
-      { status: 500 },
-    )
+    // Handle unknown errors
+    return NextResponse.json(formatErrorResponse(error as Error, requestId), { status: 500 })
   }
 }

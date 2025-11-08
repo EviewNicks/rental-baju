@@ -9,13 +9,24 @@ import type { AggregatedSizeView, AggregationQueryParams } from './types'
 // Base API configuration
 const API_BASE_URL = '/api'
 
-// Simple error handling helper
+// Enhanced error handling helper to preserve structured error responses
 const handleResponse = async (response: Response) => {
+  const data = await response.json().catch(() => ({ message: 'Unknown error' }))
+
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: 'Unknown error' }))
-    throw new Error(error.message || `HTTP ${response.status}`)
+    // Preserve full error structure from backend
+    const error = data.error || { message: 'Unknown error', code: 'INTERNAL_ERROR' }
+
+    // Create enhanced error with structured data
+    const enhancedError = new Error(error.message)
+    enhancedError.cause = {
+      response: data,
+      status: response.status,
+      error: error
+    }
+    throw enhancedError
   }
-  return response.json()
+  return data
 }
 
 // Helper untuk build query params
