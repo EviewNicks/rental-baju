@@ -35,6 +35,7 @@ interface RouteParams {
  * Function to enrich transaction data with kasir information from Clerk
  * Graceful fallback if Clerk API fails or user not found
  */
+//eslint-disable-next-line
 async function enrichTransactionWithKasirInfo(transactionData: any): Promise<any> {
   try {
     if (!transactionData.createdBy) {

@@ -174,7 +174,7 @@ export interface FormattedTransactionResponse {
  * @returns Formatted transaction data ready for API response
  */
 export function formatTransactionResponse(
-  transaksi: TransactionData
+  transaksi: TransactionData,
 ): FormattedTransactionResponse {
   return {
     id: transaksi.id,
@@ -183,20 +183,20 @@ export function formatTransactionResponse(
       id: transaksi.penyewa.id,
       nama: transaksi.penyewa.nama,
       telepon: transaksi.penyewa.telepon,
-      alamat: transaksi.penyewa.alamat
+      alamat: transaksi.penyewa.alamat,
     },
     status: transaksi.status,
     totalHarga: Number(transaksi.totalHarga),
     jumlahBayar: Number(transaksi.jumlahBayar),
     sisaBayar: Number(transaksi.sisaBayar),
-    tglMulai: transaksi.tglMulai.toISOString(),
-    tglSelesai: transaksi.tglSelesai?.toISOString() || null,
-    tglKembali: transaksi.tglKembali?.toISOString() || null,
+    tglMulai: transaksi.tglMulai.toString(),
+    tglSelesai: transaksi.tglSelesai?.toString() || null,
+    tglKembali: transaksi.tglKembali?.toString() || null,
     metodeBayar: transaksi.metodeBayar,
     catatan: transaksi.catatan,
     createdBy: transaksi.createdBy,
-    createdAt: transaksi.createdAt.toISOString(),
-    updatedAt: transaksi.updatedAt.toISOString(),
+    createdAt: transaksi.createdAt.toString(),
+    updatedAt: transaksi.updatedAt.toString(),
     items: transaksi.items.map((item: TransactionItem) => ({
       id: item.id,
       produk: {
@@ -206,7 +206,7 @@ export function formatTransactionResponse(
         modalAwal: Number(item.produk.modalAwal),
         imageUrl: item.produk.imageUrl,
         size: item.produk.size || null,
-        category: item.produk.category?.name || null
+        category: item.produk.category?.name || null,
       },
       jumlah: item.jumlah,
       jumlahDiambil: item.jumlahDiambil,
@@ -218,25 +218,26 @@ export function formatTransactionResponse(
       statusKembali: item.statusKembali,
       // TSK-24: Multi-condition return enhancements
       ...(item.isMultiCondition && {
-        isMultiCondition: item.isMultiCondition
+        isMultiCondition: item.isMultiCondition,
       }),
       ...(item.multiConditionSummary && {
-        multiConditionSummary: item.multiConditionSummary
+        multiConditionSummary: item.multiConditionSummary,
       }),
       ...(item.totalReturnPenalty && {
-        totalReturnPenalty: Number(item.totalReturnPenalty)
+        totalReturnPenalty: Number(item.totalReturnPenalty),
       }),
-      ...(item.returnConditions && item.returnConditions.length > 0 && {
-        conditionBreakdown: item.returnConditions.map((condition) => ({
-          id: condition.id,
-          kondisiAkhir: condition.kondisiAkhir,
-          jumlahKembali: condition.jumlahKembali,
-          penaltyAmount: Number(condition.penaltyAmount),
-          modalAwalUsed: condition.modalAwalUsed ? Number(condition.modalAwalUsed) : null,
-          createdAt: condition.createdAt,
-          createdBy: condition.createdBy
-        }))
-      })
+      ...(item.returnConditions &&
+        item.returnConditions.length > 0 && {
+          conditionBreakdown: item.returnConditions.map((condition) => ({
+            id: condition.id,
+            kondisiAkhir: condition.kondisiAkhir,
+            jumlahKembali: condition.jumlahKembali,
+            penaltyAmount: Number(condition.penaltyAmount),
+            modalAwalUsed: condition.modalAwalUsed ? Number(condition.modalAwalUsed) : null,
+            createdAt: condition.createdAt,
+            createdBy: condition.createdBy,
+          })),
+        }),
     })),
     pembayaran: transaksi.pembayaran.map((payment: TransactionPayment) => ({
       id: payment.id,
@@ -245,7 +246,7 @@ export function formatTransactionResponse(
       referensi: payment.referensi,
       catatan: payment.catatan,
       createdBy: payment.createdBy,
-      createdAt: payment.createdAt
+      createdAt: payment.createdAt,
     })),
     aktivitas: transaksi.aktivitas.map((activity: TransactionActivity) => ({
       id: activity.id,
@@ -253,7 +254,7 @@ export function formatTransactionResponse(
       deskripsi: activity.deskripsi,
       data: activity.data,
       createdBy: activity.createdBy,
-      createdAt: activity.createdAt
-    }))
+      createdAt: activity.createdAt,
+    })),
   }
 }
