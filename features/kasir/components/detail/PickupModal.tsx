@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { CheckCircle, Package, AlertCircle, Minus, Plus } from 'lucide-react'
+import { CheckCircle, Package, AlertCircle, Minus, Plus, Loader2 } from 'lucide-react'
 import {
   usePickupProcess,
   usePickupValidation,
@@ -39,13 +39,20 @@ interface PickupItemState extends PickupItemRequest {
 function getErrorType(error: unknown): 'recoverable' | 'fatal' | 'permission' {
   const errorMessage = error instanceof Error ? error.message : String(error)
 
-  if (errorMessage.includes('connection') || errorMessage.includes('timeout') ||
-      errorMessage.includes('conflict') || errorMessage.includes('Database sedang sibuk')) {
+  if (
+    errorMessage.includes('connection') ||
+    errorMessage.includes('timeout') ||
+    errorMessage.includes('conflict') ||
+    errorMessage.includes('Database sedang sibuk')
+  ) {
     return 'recoverable'
   }
 
-  if (errorMessage.includes('izin') || errorMessage.includes('permission') ||
-      errorMessage.includes('unauthorized')) {
+  if (
+    errorMessage.includes('izin') ||
+    errorMessage.includes('permission') ||
+    errorMessage.includes('unauthorized')
+  ) {
     return 'permission'
   }
 
@@ -80,6 +87,7 @@ export function PickupModal({ isOpen, onClose, transaction }: PickupModalProps) 
   const [showSuccess, setShowSuccess] = useState(false)
   const [showConfirmation, setShowConfirmation] = useState(false)
   const [pickupNote, setPickupNote] = useState('')
+  const [isSyncingCache, setIsSyncingCache] = useState(false)
 
   const {
     mutate: processPickup,
@@ -91,6 +99,65 @@ export function PickupModal({ isOpen, onClose, transaction }: PickupModalProps) 
   } = usePickupProcess(transaction.transactionCode)
 
   const { validatePickupItems } = usePickupValidation()
+
+  // Define close handler before using it in useEffect
+  const handleClose = useCallback(() => {
+    // Don't close if still syncing cache
+    if (isSyncingCache) {
+      return
+    }
+
+    setShowSuccess(false)
+    setShowConfirmation(false)
+    setPickupItems([])
+    setPickupNote('') // Reset note when modal closes (RPK-48)
+    setIsSyncingCache(false)
+    reset()
+    onClose()
+  }, [isSyncingCache, reset, onClose])
+
+  const handleCloseAfterSync = useCallback(() => {
+    // Small delay for visual confirmation
+    setTimeout(() => {
+      handleClose()
+    }, 500)
+  }, [handleClose])
+
+  // Monitor cache synchronization state
+  useEffect(() => {
+    if (isSuccess && isSyncingCache) {
+      // Cache synchronization is in progress after successful API call
+      console.log('📡 PickupModal: Cache synchronization in progress')
+
+      // Set a timeout to handle potential cache sync issues
+      const timeout = setTimeout(() => {
+        if (isSyncingCache) {
+          console.warn('⚠️ PickupModal: Cache sync timeout, forcing modal close')
+          setIsSyncingCache(false)
+        }
+      }, 10000) // 10 second timeout
+
+      return () => clearTimeout(timeout)
+    }
+  }, [isSuccess, isSyncingCache])
+
+  // Handle successful pickup with cache sync completion
+  useEffect(() => {
+    if (isSuccess && !isPending && isSyncingCache) {
+      // API call successful, wait a bit for cache sync then close
+      const syncTimer = setTimeout(() => {
+        setIsSyncingCache(false)
+        setShowSuccess(true)
+
+        // Auto close after showing success
+        setTimeout(() => {
+          handleCloseAfterSync()
+        }, 1500)
+      }, 500) // Give time for cache sync to complete
+
+      return () => clearTimeout(syncTimer)
+    }
+  }, [isSuccess, isPending, isSyncingCache, handleCloseAfterSync])
 
   // Initialize pickup items from transaction data
   useEffect(() => {
@@ -191,6 +258,8 @@ export function PickupModal({ isOpen, onClose, transaction }: PickupModalProps) 
   const handleConfirmPickup = () => {
     const selectedItems = getSelectedItems()
 
+    setIsSyncingCache(true)
+
     processPickup({
       items: selectedItems.map((item) => ({
         id: item.id,
@@ -200,26 +269,41 @@ export function PickupModal({ isOpen, onClose, transaction }: PickupModalProps) 
     })
   }
 
-  const handleClose = () => {
-    setShowSuccess(false)
-    setShowConfirmation(false)
-    setPickupItems([])
-    setPickupNote('') // Reset note when modal closes (RPK-48)
-    reset()
-    onClose()
-  }
+  // Loading overlay component
+  const LoadingOverlay = () => (
+    <div className="absolute inset-0 bg-white/90 backdrop-blur-sm flex items-center justify-center z-50 rounded-lg">
+      <div className="flex flex-col items-center space-y-3">
+        <Loader2 className="h-8 w-8 text-blue-600 animate-spin" />
+        <p className="text-sm text-gray-600 font-medium">Memperbarui data...</p>
+        <p className="text-xs text-gray-500">Mohon tunggu sebentar</p>
+      </div>
+    </div>
+  )
 
   // Success state
   if (showSuccess || (isSuccess && data)) {
     return (
-      <Dialog open={isOpen} onOpenChange={handleClose}>
+      <Dialog open={isOpen} onOpenChange={isSyncingCache ? undefined : handleClose}>
         <DialogContent className="sm:max-w-md">
+          {/* Loading overlay during cache synchronization */}
+          {isSyncingCache && <LoadingOverlay />}
+
           <div className="text-center py-6">
             <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-gray-900 mb-2">Pickup Berhasil!</h3>
             <p className="text-sm text-gray-600 mb-4">
               {data?.message || `Berhasil memproses pickup ${getTotalSelectedQuantity()} item`}
             </p>
+
+            {/* Cache sync status indicator */}
+            {isSyncingCache && (
+              <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-center justify-center space-x-2 text-blue-700">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span className="text-sm font-medium">Menyinkronkan data...</span>
+                </div>
+              </div>
+            )}
             <div className="bg-green-50 border border-green-200 rounded-lg p-3">
               <div className="text-sm">
                 <div className="flex justify-between">
@@ -243,6 +327,25 @@ export function PickupModal({ isOpen, onClose, transaction }: PickupModalProps) 
                   </div>
                 )}
               </div>
+            </div>
+
+            {/* Close button with disabled state during sync */}
+            <div className="mt-6">
+              <Button
+                onClick={handleClose}
+                disabled={isSyncingCache}
+                className="w-full"
+                variant={isSyncingCache ? 'outline' : 'default'}
+              >
+                {isSyncingCache ? (
+                  <div className="flex items-center space-x-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Menyinkronkan Data...</span>
+                  </div>
+                ) : (
+                  'Tutup'
+                )}
+              </Button>
             </div>
           </div>
         </DialogContent>
@@ -336,8 +439,11 @@ export function PickupModal({ isOpen, onClose, transaction }: PickupModalProps) 
 
   // Main pickup selection state
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
+    <Dialog open={isOpen} onOpenChange={isPending || isSyncingCache ? undefined : handleClose}>
       <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
+        {/* Loading overlay during processing */}
+        {(isPending || isSyncingCache) && <LoadingOverlay />}
+
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Package className="h-5 w-5 text-blue-600" />
@@ -382,9 +488,7 @@ export function PickupModal({ isOpen, onClose, transaction }: PickupModalProps) 
                 <AlertCircle className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0" />
                 <div className="flex-1">
                   <div className="font-semibold text-red-900 mb-2">Terjadi Kesalahan</div>
-                  <div className="text-sm text-red-800 mb-3">
-                    {getPickupErrorMessage(error)}
-                  </div>
+                  <div className="text-sm text-red-800 mb-3">{getPickupErrorMessage(error)}</div>
 
                   {/* Error-specific actions */}
                   <div className="flex flex-wrap gap-2">

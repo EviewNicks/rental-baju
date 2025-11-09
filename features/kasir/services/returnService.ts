@@ -326,7 +326,16 @@ export class UnifiedReturnService {
         ),
       )
 
-      if (hasManualPricing) {
+      // Check if request has HILANG conditions - use standard path for proper modalAwal handling
+      const hasHilangConditions = request.items.some((item) =>
+        item.conditions.some((condition) =>
+          condition.conditionCategory === 'HILANG' ||
+          condition.kondisiAkhir.toLowerCase().includes('hilang')
+        )
+      )
+
+      // Use standard calculation for HILANG items, enhanced for others
+      if (hasManualPricing && !hasHilangConditions) {
         // Enhanced penalty calculation for manual pricing
         const itemsForEnhancedCalculation = request.items.flatMap((returnItem) => {
           const transactionItem = transaction.items.find((item) => item.id === returnItem.itemId)
@@ -343,7 +352,7 @@ export class UnifiedReturnService {
             manualPrice: condition.manualPrice || 0,
             quantity: condition.jumlahKembali,
             useManualPricing: condition.useManualPricing || false,
-            modalAwal: condition.modalAwal || Number(transactionItem.produk.modalAwal),
+            modalAwal: condition.modalAwal || condition.manualPrice || Number(transactionItem.produk.modalAwal),
           }))
         })
 
