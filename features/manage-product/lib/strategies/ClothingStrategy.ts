@@ -198,6 +198,7 @@ export class ClothingStrategy implements CategoryFormStrategy {
         if (quantity > 0) {
           sizes.push({
             ageCategory: 'ADULT',
+            //eslint-disable-next-line @typescript-eslint/no-explicit-any
             size: sizeValue as any, // Type assertion for valid size enum
             quantity,
             isActive: true

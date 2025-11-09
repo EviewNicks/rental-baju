@@ -8,6 +8,8 @@
  * Lines 125-206 (GET) and 337-418 (PUT)
  */
 
+import { Decimal } from '@prisma/client/runtime/library'
+
 // Internal interfaces for transaction data structure
 interface TransactionItem {
   id: string
@@ -15,53 +17,53 @@ interface TransactionItem {
     id: string
     code: string
     name: string
-    modalAwal: string | number
-    imageUrl: string | null
-    size: string | null
-    category: {
+    modalAwal: Decimal | string | number
+    imageUrl?: string | null | undefined
+    size?: string | null | undefined
+    category?: {
       id: string
       name: string
-    } | null
+    } | null | undefined
   }
   jumlah: number
   jumlahDiambil: number
-  hargaSewa: string | number
+  hargaSewa: Decimal | string | number
   durasi: number
-  subtotal: string | number
-  kondisiAwal: string | null
-  kondisiAkhir: string | null
+  subtotal: Decimal | string | number
+  kondisiAwal?: string | null
+  kondisiAkhir?: string | null
   statusKembali: string
   isMultiCondition?: boolean
   multiConditionSummary?: Record<string, unknown> | null
-  totalReturnPenalty?: string | number
+  totalReturnPenalty?: Decimal | string | number
   returnConditions?: Array<{
     id: string
     kondisiAkhir: string
     jumlahKembali: number
-    penaltyAmount: string | number
-    modalAwalUsed: string | number | null
-    createdAt: string
+    penaltyAmount: Decimal | string | number
+    modalAwalUsed?: Decimal | string | number | null
+    createdAt: string | Date
     createdBy: string
   }>
 }
 
 interface TransactionPayment {
   id: string
-  jumlah: string | number
+  jumlah: Decimal | string | number
   metode: string
-  referensi: string | null
-  catatan: string | null
+  referensi?: string | null | undefined
+  catatan?: string | null | undefined
   createdBy: string
-  createdAt: string
+  createdAt: string | Date
 }
 
 interface TransactionActivity {
   id: string
   tipe: string
   deskripsi: string
-  data: Record<string, unknown> | null
+  data?: Record<string, unknown> | null | undefined
   createdBy: string
-  createdAt: string
+  createdAt: string | Date
 }
 
 interface TransactionCustomer {
@@ -76,17 +78,17 @@ interface TransactionData {
   kode: string
   penyewa: TransactionCustomer
   status: string
-  totalHarga: string | number
-  jumlahBayar: string | number
-  sisaBayar: string | number
-  tglMulai: string
-  tglSelesai: string | null
-  tglKembali: string | null
+  totalHarga: Decimal | string | number
+  jumlahBayar: Decimal | string | number
+  sisaBayar: Decimal | string | number
+  tglMulai: string | Date
+  tglSelesai: string | Date | null
+  tglKembali: string | Date | null
   metodeBayar: string
   catatan: string | null
   createdBy: string
-  createdAt: string
-  updatedAt: string
+  createdAt: string | Date
+  updatedAt: string | Date
   items: TransactionItem[]
   pembayaran: TransactionPayment[]
   aktivitas: TransactionActivity[]
@@ -120,17 +122,17 @@ export interface FormattedTransactionResponse {
       code: string
       name: string
       modalAwal: number
-      imageUrl: string | null
-      size: string | null
-      category: string | null
+      imageUrl?: string | null
+      size?: string | null
+      category?: string | null
     }
     jumlah: number
     jumlahDiambil: number
     hargaSewa: number
     durasi: number
     subtotal: number
-    kondisiAwal: string | null
-    kondisiAkhir: string | null
+    kondisiAwal?: string | null
+    kondisiAkhir?: string | null
     statusKembali: string
     isMultiCondition?: boolean
     multiConditionSummary?: Record<string, unknown> | null
@@ -140,7 +142,7 @@ export interface FormattedTransactionResponse {
       kondisiAkhir: string
       jumlahKembali: number
       penaltyAmount: number
-      modalAwalUsed: number | null
+      modalAwalUsed?: number | null
       createdAt: string
       createdBy: string
     }>
@@ -149,8 +151,8 @@ export interface FormattedTransactionResponse {
     id: string
     jumlah: number
     metode: string
-    referensi: string | null
-    catatan: string | null
+    referensi?: string | null
+    catatan?: string | null
     createdBy: string
     createdAt: string
   }>
@@ -158,7 +160,7 @@ export interface FormattedTransactionResponse {
     id: string
     tipe: string
     deskripsi: string
-    data: Record<string, unknown> | null
+    data?: Record<string, unknown> | null
     createdBy: string
     createdAt: string
   }>
@@ -186,36 +188,68 @@ export function formatTransactionResponse(
       alamat: transaksi.penyewa.alamat,
     },
     status: transaksi.status,
-    totalHarga: Number(transaksi.totalHarga),
-    jumlahBayar: Number(transaksi.jumlahBayar),
-    sisaBayar: Number(transaksi.sisaBayar),
-    tglMulai: transaksi.tglMulai.toString(),
-    tglSelesai: transaksi.tglSelesai?.toString() || null,
-    tglKembali: transaksi.tglKembali?.toString() || null,
+
+    // Handle Decimal types with robust type checking
+    totalHarga: typeof transaksi.totalHarga === 'object'
+      ? Number(transaksi.totalHarga)
+      : Number(transaksi.totalHarga),
+    jumlahBayar: typeof transaksi.jumlahBayar === 'object'
+      ? Number(transaksi.jumlahBayar)
+      : Number(transaksi.jumlahBayar),
+    sisaBayar: typeof transaksi.sisaBayar === 'object'
+      ? Number(transaksi.sisaBayar)
+      : Number(transaksi.sisaBayar),
+
+    // Handle Date types with robust type checking
+    tglMulai: typeof transaksi.tglMulai === 'object'
+      ? transaksi.tglMulai.toISOString()
+      : transaksi.tglMulai,
+    tglSelesai: transaksi.tglSelesai
+      ? (typeof transaksi.tglSelesai === 'object'
+          ? transaksi.tglSelesai.toISOString()
+          : transaksi.tglSelesai)
+      : null,
+    tglKembali: transaksi.tglKembali
+      ? (typeof transaksi.tglKembali === 'object'
+          ? transaksi.tglKembali.toISOString()
+          : transaksi.tglKembali)
+      : null,
+
     metodeBayar: transaksi.metodeBayar,
     catatan: transaksi.catatan,
     createdBy: transaksi.createdBy,
-    createdAt: transaksi.createdAt.toString(),
-    updatedAt: transaksi.updatedAt.toString(),
+    createdAt: typeof transaksi.createdAt === 'object'
+      ? transaksi.createdAt.toISOString()
+      : transaksi.createdAt,
+    updatedAt: typeof transaksi.updatedAt === 'object'
+      ? transaksi.updatedAt.toISOString()
+      : transaksi.updatedAt,
     items: transaksi.items.map((item: TransactionItem) => ({
       id: item.id,
       produk: {
         id: item.produk.id,
         code: item.produk.code,
         name: item.produk.name,
-        modalAwal: Number(item.produk.modalAwal),
-        imageUrl: item.produk.imageUrl,
+        modalAwal: typeof item.produk.modalAwal === 'object'
+          ? Number(item.produk.modalAwal)
+          : Number(item.produk.modalAwal),
+        imageUrl: item.produk.imageUrl || null,
         size: item.produk.size || null,
         category: item.produk.category?.name || null,
       },
       jumlah: item.jumlah,
       jumlahDiambil: item.jumlahDiambil,
-      hargaSewa: Number(item.hargaSewa),
+      hargaSewa: typeof item.hargaSewa === 'object'
+        ? Number(item.hargaSewa)
+        : Number(item.hargaSewa),
       durasi: item.durasi,
-      subtotal: Number(item.subtotal),
+      subtotal: typeof item.subtotal === 'object'
+        ? Number(item.subtotal)
+        : Number(item.subtotal),
       kondisiAwal: item.kondisiAwal,
       kondisiAkhir: item.kondisiAkhir,
       statusKembali: item.statusKembali,
+
       // TSK-24: Multi-condition return enhancements
       ...(item.isMultiCondition && {
         isMultiCondition: item.isMultiCondition,
@@ -224,7 +258,9 @@ export function formatTransactionResponse(
         multiConditionSummary: item.multiConditionSummary,
       }),
       ...(item.totalReturnPenalty && {
-        totalReturnPenalty: Number(item.totalReturnPenalty),
+        totalReturnPenalty: typeof item.totalReturnPenalty === 'object'
+          ? Number(item.totalReturnPenalty)
+          : Number(item.totalReturnPenalty),
       }),
       ...(item.returnConditions &&
         item.returnConditions.length > 0 && {
@@ -232,21 +268,33 @@ export function formatTransactionResponse(
             id: condition.id,
             kondisiAkhir: condition.kondisiAkhir,
             jumlahKembali: condition.jumlahKembali,
-            penaltyAmount: Number(condition.penaltyAmount),
-            modalAwalUsed: condition.modalAwalUsed ? Number(condition.modalAwalUsed) : null,
-            createdAt: condition.createdAt,
+            penaltyAmount: typeof condition.penaltyAmount === 'object'
+              ? Number(condition.penaltyAmount)
+              : Number(condition.penaltyAmount),
+            modalAwalUsed: condition.modalAwalUsed
+              ? (typeof condition.modalAwalUsed === 'object'
+                  ? Number(condition.modalAwalUsed)
+                  : Number(condition.modalAwalUsed))
+              : null,
+            createdAt: typeof condition.createdAt === 'object'
+              ? condition.createdAt.toISOString()
+              : condition.createdAt,
             createdBy: condition.createdBy,
           })),
         }),
     })),
     pembayaran: transaksi.pembayaran.map((payment: TransactionPayment) => ({
       id: payment.id,
-      jumlah: Number(payment.jumlah),
+      jumlah: typeof payment.jumlah === 'object'
+        ? Number(payment.jumlah)
+        : Number(payment.jumlah),
       metode: payment.metode,
       referensi: payment.referensi,
       catatan: payment.catatan,
       createdBy: payment.createdBy,
-      createdAt: payment.createdAt,
+      createdAt: typeof payment.createdAt === 'object'
+        ? payment.createdAt.toISOString()
+        : payment.createdAt,
     })),
     aktivitas: transaksi.aktivitas.map((activity: TransactionActivity) => ({
       id: activity.id,
@@ -254,7 +302,9 @@ export function formatTransactionResponse(
       deskripsi: activity.deskripsi,
       data: activity.data,
       createdBy: activity.createdBy,
-      createdAt: activity.createdAt,
+      createdAt: typeof activity.createdAt === 'object'
+        ? activity.createdAt.toISOString()
+        : activity.createdAt,
     })),
   }
 }

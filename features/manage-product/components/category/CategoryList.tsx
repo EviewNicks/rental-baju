@@ -1,6 +1,6 @@
 'use client'
 
-import { Edit, Trash2, Tag, Shirt, Package } from 'lucide-react'
+import { Edit, Trash2, Tag } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import type { ClientCategory } from '@/features/manage-product/types'
@@ -53,13 +53,15 @@ export function CategoryList({ categories, onEdit, onDelete, loading }: Category
                     const typeColors = {
                       clothing: 'bg-blue-50 text-blue-700 border-blue-200',
                       accessories_age_based: 'bg-green-50 text-green-700 border-green-200',
-                      accessories_universal: 'bg-purple-50 text-purple-700 border-purple-200'
+                      accessories_universal: 'bg-purple-50 text-purple-700 border-purple-200',
                     }
 
                     return (
                       <Badge
                         variant="outline"
-                        className={typeColors[category.type] || 'bg-gray-50 text-gray-700 border-gray-200'}
+                        className={
+                          typeColors[category.type] || 'bg-gray-50 text-gray-700 border-gray-200'
+                        }
                       >
                         <TypeIcon className="w-3 h-3 mr-1" />
                         {getCategoryTypeLabel(category.type)}

@@ -193,6 +193,7 @@ export function ProductFormPage({
     if (mode === 'edit' && product && product.categoryId && categories.length > 0 && !isInitializedRef.current) {
       isInitializedRef.current = true
       try {
+        //eslint-disable-next-line @typescript-eslint/no-explicit-any
         const category = categories.find((cat: any) => cat.id === product.categoryId)
         if (category) {
           const strategy = FormStrategyFactory.createWithContext(category.type, {

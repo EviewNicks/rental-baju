@@ -343,6 +343,7 @@ async function transformApiToUI(apiData: TransaksiResponse): Promise<Transaction
     penalties: [],
 
     // Kasir information from enriched API response
+    //eslint-disable-next-line @typescript-eslint/no-explicit-any
     kasir: (apiData as any).kasir || null,
   }
 

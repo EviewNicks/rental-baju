@@ -11,6 +11,7 @@ import { FormStrategyFactory } from '../lib/strategies/StrategyFactory'
 
 export interface UseProductFormStrategyProps {
   categories: ClientCategory[]
+  //eslint-disable-next-line @typescript-eslint/no-explicit-any
   product?: any // ClientProduct
 }
 
