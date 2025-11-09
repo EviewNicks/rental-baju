@@ -281,7 +281,9 @@ export function ProductForm({
     if (formData.categoryId && !initializingRef.current) {
       initializeStrategy(formData.categoryId)
     }
-  }, [formData.categoryId]) // Remove initializeStrategy from dependency to prevent loop
+  }, [formData.categoryId]) // eslint-disable-line react-hooks/exhaustive-deps
+  // initializeStrategy intentionally omitted to prevent infinite re-initialization loop
+  // useRef pattern (initializingRef) prevents race conditions and ensures single execution
 
   // Sync form data with strategy in edit mode (with prevention)
   useEffect(() => {
@@ -301,7 +303,10 @@ export function ProductForm({
         }, 50)
       }
     }
-  }, [product?.id, currentStrategy?.type, categoryFormData.categoryId]) // Use specific properties instead of full objects
+  }, [product?.id, currentStrategy?.type, categoryFormData.categoryId]) // eslint-disable-line react-hooks/exhaustive-deps
+  // Selective dependencies for performance optimization and race condition prevention
+  // Using specific properties instead of full objects prevents unnecessary re-renders
+  // transformingRef prevents infinite transformation loops
 
   // Log form validation errors for debugging
   useEffect(() => {

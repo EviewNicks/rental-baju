@@ -96,7 +96,9 @@ export function useProductFormStrategy({ categories, product }: UseProductFormSt
         return { categoryId }
       }
     },
-    [categories, productSizes], // Use stable productSizes instead of product
+    [categories, productSizes], // eslint-disable-line react-hooks/exhaustive-deps
+  // productSizes is memoized dependency derived from product.sizes for performance
+  // Using stable memoized dependency prevents unnecessary callback recreations
   )
 
   // Transform form data to product sizes

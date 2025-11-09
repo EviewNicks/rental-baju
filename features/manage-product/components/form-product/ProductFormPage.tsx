@@ -223,7 +223,9 @@ export function ProductFormPage({
         setStrategySizes([])
       }
     }
-  }, [mode, product?.id, categories.length]) // Use specific dependencies to prevent re-runs
+  }, [mode, product?.id, categories.length]) // eslint-disable-line react-hooks/exhaustive-deps
+  // Selective dependencies for optimal performance - isInitializedRef prevents double initialization
+  // Using product?.id and categories.length instead of full objects prevents unnecessary re-renders
 
   // Simple validation function
   const validateForm = (): boolean => {
