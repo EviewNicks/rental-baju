@@ -1,379 +1,89 @@
-Transaksi Kode == Flow CReate Transaksi 200 ok 
-
 {
     "success": true,
     "data": {
-        "id": "99af95ca-0ce9-4f1d-9d80-91632f4906ee",
-        "kode": "TXN-20251027-003",
+        "id": "b25601b6-1a98-414f-a5f8-c89c4cddab78",
+        "kode": "TXN-20251108-006",
         "penyewa": {
-            "id": "1c657b45-6d76-4e48-82f9-a3692aeccb07",
-            "nama": "Ardi Ansyah",
-            "telepon": "089526293221",
-            "alamat": "jl.Andi tonro"
+            "id": "edd68eb5-ba79-4b78-851b-7125b6b455be",
+            "nama": "awal",
+            "telepon": "08123456789",
+            "alamat": "Indonesia Barru , jl.empang no.4"
         },
         "status": "active",
-        "totalHarga": 840000,
-        "jumlahBayar": 840000,
+        "totalHarga": 80000,
+        "jumlahBayar": 80000,
         "sisaBayar": 0,
-        "tglMulai": "2025-10-31T00:00:00.000Z",
-        "tglSelesai": "2025-11-01T00:00:00.000Z",
+        "tglMulai": "2025-11-14T00:00:00.000Z",
+        "tglSelesai": "2025-11-18T00:00:00.000Z",
         "tglKembali": null,
         "metodeBayar": "tunai",
         "catatan": null,
         "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
-        "createdAt": "2025-10-27T14:28:47.698Z",
-        "updatedAt": "2025-10-27T14:29:00.328Z",
+        "createdAt": "2025-11-08T06:51:19.888Z",
+        "updatedAt": "2025-11-08T06:51:26.431Z",
         "items": [
             {
-                "id": "09ab097e-4c4b-4650-9dfa-c1b62d6869e8",
+                "id": "b5ca729c-2497-481d-bd32-b68c0cbb7bf7",
                 "produk": {
-                    "id": "4d0beb2d-eab1-4d18-963c-818aaaf98472",
-                    "code": "JPM04",
-                    "name": "Jaguar Premium Maroon",
-                    "modalAwal": 250000,
-                    "imageUrl": "https://pmjxdencfgkbjuyjndbp.supabase.co/storage/v1/object/public/products/products/JPM04/1761466646360.jpg",
+                    "id": "0af739d8-76ac-42e0-a7a8-90f144295db8",
+                    "code": "PRD05",
+                    "name": "Baju abaru",
+                    "modalAwal": 80000,
+                    "imageUrl": "https://pmjxdencfgkbjuyjndbp.supabase.co/storage/v1/object/public/products/products/PRD05/1762086735609.jpg",
                     "size": null,
-                    "category": "jas-premium"
-                },
-                "jumlah": 2,
-                "jumlahDiambil": 0,
-                "hargaSewa": 250000,
-                "durasi": 1,
-                "subtotal": 500000,
-                "kondisiAwal": "5cccffdb-00f2-4958-9613-13848d084127|UNIVERSAL|ADULT|baik",
-                "statusKembali": "belum",
-                "totalReturnPenalty": 0
-            },
-            {
-                "id": "e4ceb776-3b69-4023-942a-8bec2868731c",
-                "produk": {
-                    "id": "119e1fc7-23f6-4a47-9df9-893596434385",
-                    "code": "JPB05",
-                    "name": "Jaguar Premium Biru",
-                    "modalAwal": 250000,
-                    "imageUrl": "https://pmjxdencfgkbjuyjndbp.supabase.co/storage/v1/object/public/products/products/JPB05/1761466629237.jpg",
-                    "size": null,
-                    "category": "jas-premium"
+                    "category": "baju Baru"
                 },
                 "jumlah": 1,
                 "jumlahDiambil": 0,
-                "hargaSewa": 250000,
-                "durasi": 1,
-                "subtotal": 250000,
-                "kondisiAwal": "b95d99b7-fb87-4413-92a7-6fa657e6d8a7|UNIVERSAL|ADULT|baik",
-                "statusKembali": "belum",
-                "totalReturnPenalty": 0
-            },
-            {
-                "id": "862b67fa-572d-4e38-9119-a47136be260f",
-                "produk": {
-                    "id": "da5cd0a9-5989-4771-873e-6749a73b1f59",
-                    "code": "BKM01",
-                    "name": "Bando Kecil Merah",
-                    "modalAwal": 20000,
-                    "imageUrl": "/products/accesories.png",
-                    "size": null,
-                    "category": "bando-kecil"
-                },
-                "jumlah": 2,
-                "jumlahDiambil": 0,
-                "hargaSewa": 20000,
-                "durasi": 1,
-                "subtotal": 40000,
-                "kondisiAwal": "0290dd8c-03e2-4b4d-b19d-47ce6ffb25d6|UNIVERSAL|UNIVERSAL|baik",
-                "statusKembali": "belum",
-                "totalReturnPenalty": 0
-            },
-            {
-                "id": "a978af6e-1816-4bff-a0de-fd20f3411094",
-                "produk": {
-                    "id": "9544fb28-65d7-45be-aeac-4e8657d1667a",
-                    "code": "GAB04",
-                    "name": "Gamis Anak Biru",
-                    "modalAwal": 50000,
-                    "imageUrl": "/products/image.png",
-                    "size": null,
-                    "category": "gamis-anak"
-                },
-                "jumlah": 1,
-                "jumlahDiambil": 0,
-                "hargaSewa": 50000,
-                "durasi": 1,
-                "subtotal": 50000,
-                "kondisiAwal": "d97e0605-6f7f-409c-9ede-2a34bc115a90|XS|CHILD|baik",
+                "hargaSewa": 80000,
+                "durasi": 4,
+                "subtotal": 80000,
+                "kondisiAwal": "34bb3419-9340-4ade-801a-0e5eb2982e33|XS|ADULT|baik",
                 "statusKembali": "belum",
                 "totalReturnPenalty": 0
             }
         ],
         "pembayaran": [
             {
-                "id": "4ce62d5c-4aea-46ab-bb4e-a1ad2e35eb95",
-                "jumlah": 840000,
+                "id": "5d9a7af5-8123-487a-aa92-316fefa65477",
+                "jumlah": 80000,
                 "metode": "tunai",
                 "referensi": null,
                 "catatan": "Pembayaran awal transaksi",
                 "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
-                "createdAt": "2025-10-27T14:29:00.055Z"
+                "createdAt": "2025-11-08T06:51:26.153Z"
             }
         ],
         "aktivitas": [
             {
-                "id": "31be66f2-9b90-4f3c-b788-a965fa9b0f6c",
+                "id": "f6852615-b382-4899-b2e6-eb961f323d68",
                 "tipe": "dibayar",
-                "deskripsi": "Pembayaran tunai sebesar Rp 840.000",
+                "deskripsi": "Pembayaran tunai sebesar Rp 80.000",
                 "data": {
-                    "amount": 840000,
+                    "amount": 80000,
                     "method": "tunai",
-                    "newTotal": "840000",
-                    "paymentId": "4ce62d5c-4aea-46ab-bb4e-a1ad2e35eb95",
+                    "newTotal": "80000",
+                    "paymentId": "5d9a7af5-8123-487a-aa92-316fefa65477",
                     "remaining": "0"
                 },
                 "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
-                "createdAt": "2025-10-27T14:29:00.614Z"
+                "createdAt": "2025-11-08T06:51:26.708Z"
             },
             {
-                "id": "1ae875fc-6260-48e1-bb30-92b0e4a1a23c",
+                "id": "80ec5187-55c7-4f05-81a3-f8c6d26d5d08",
                 "tipe": "dibuat",
-                "deskripsi": "Transaksi TXN-20251027-003 dibuat dengan optimized size-aware tracking",
+                "deskripsi": "Transaksi TXN-20251108-006 dibuat dengan optimized inventory system",
                 "data": {
-                    "items": 4,
-                    "optimized": true,
+                    "items": 1,
                     "sizeAware": true,
-                    "totalHarga": "840000",
-                    "transactionDuration": 907
+                    "totalHarga": "80000",
+                    "optimizedSystem": true,
+                    "transactionDuration": 1612
                 },
                 "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
-                "createdAt": "2025-10-27T14:28:48.334Z"
+                "createdAt": "2025-11-08T06:51:21.226Z"
             }
         ]
     },
     "message": "Detail transaksi berhasil diambil"
 }
-
-
-Transaksi Kode == Flow Pengambilan Flow  200 ok
-
- PATCH /api/kasir/transaksi/TXN-20251027-003/ambil 200 in 9198ms
- GET /api/kasir/transaksi/TXN-20251027-003 200 in 3013ms
-
- {
-    "success": true,
-    "data": {
-        "id": "99af95ca-0ce9-4f1d-9d80-91632f4906ee",
-        "kode": "TXN-20251027-003",
-        "penyewa": {
-            "id": "1c657b45-6d76-4e48-82f9-a3692aeccb07",
-            "nama": "Ardi Ansyah",
-            "telepon": "089526293221",
-            "alamat": "jl.Andi tonro"
-        },
-        "status": "diambil",
-        "totalHarga": 840000,
-        "jumlahBayar": 840000,
-        "sisaBayar": 0,
-        "tglMulai": "2025-10-31T00:00:00.000Z",
-        "tglSelesai": "2025-11-01T00:00:00.000Z",
-        "tglKembali": null,
-        "metodeBayar": "tunai",
-        "catatan": null,
-        "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
-        "createdAt": "2025-10-27T14:28:47.698Z",
-        "updatedAt": "2025-10-27T14:34:36.725Z",
-        "items": [
-            {
-                "id": "09ab097e-4c4b-4650-9dfa-c1b62d6869e8",
-                "produk": {
-                    "id": "4d0beb2d-eab1-4d18-963c-818aaaf98472",
-                    "code": "JPM04",
-                    "name": "Jaguar Premium Maroon",
-                    "modalAwal": 250000,
-                    "imageUrl": "https://pmjxdencfgkbjuyjndbp.supabase.co/storage/v1/object/public/products/products/JPM04/1761466646360.jpg",
-                    "size": null,
-                    "category": "jas-premium"
-                },
-                "jumlah": 2,
-                "jumlahDiambil": 2,
-                "hargaSewa": 250000,
-                "durasi": 1,
-                "subtotal": 500000,
-                "kondisiAwal": "5cccffdb-00f2-4958-9613-13848d084127|UNIVERSAL|ADULT|baik",
-                "statusKembali": "belum",
-                "totalReturnPenalty": 0
-            },
-            {
-                "id": "e4ceb776-3b69-4023-942a-8bec2868731c",
-                "produk": {
-                    "id": "119e1fc7-23f6-4a47-9df9-893596434385",
-                    "code": "JPB05",
-                    "name": "Jaguar Premium Biru",
-                    "modalAwal": 250000,
-                    "imageUrl": "https://pmjxdencfgkbjuyjndbp.supabase.co/storage/v1/object/public/products/products/JPB05/1761466629237.jpg",
-                    "size": null,
-                    "category": "jas-premium"
-                },
-                "jumlah": 1,
-                "jumlahDiambil": 1,
-                "hargaSewa": 250000,
-                "durasi": 1,
-                "subtotal": 250000,
-                "kondisiAwal": "b95d99b7-fb87-4413-92a7-6fa657e6d8a7|UNIVERSAL|ADULT|baik",
-                "statusKembali": "belum",
-                "totalReturnPenalty": 0
-            },
-            {
-                "id": "862b67fa-572d-4e38-9119-a47136be260f",
-                "produk": {
-                    "id": "da5cd0a9-5989-4771-873e-6749a73b1f59",
-                    "code": "BKM01",
-                    "name": "Bando Kecil Merah",
-                    "modalAwal": 20000,
-                    "imageUrl": "/products/accesories.png",
-                    "size": null,
-                    "category": "bando-kecil"
-                },
-                "jumlah": 2,
-                "jumlahDiambil": 2,
-                "hargaSewa": 20000,
-                "durasi": 1,
-                "subtotal": 40000,
-                "kondisiAwal": "0290dd8c-03e2-4b4d-b19d-47ce6ffb25d6|UNIVERSAL|UNIVERSAL|baik",
-                "statusKembali": "belum",
-                "totalReturnPenalty": 0
-            },
-            {
-                "id": "a978af6e-1816-4bff-a0de-fd20f3411094",
-                "produk": {
-                    "id": "9544fb28-65d7-45be-aeac-4e8657d1667a",
-                    "code": "GAB04",
-                    "name": "Gamis Anak Biru",
-                    "modalAwal": 50000,
-                    "imageUrl": "/products/image.png",
-                    "size": null,
-                    "category": "gamis-anak"
-                },
-                "jumlah": 1,
-                "jumlahDiambil": 1,
-                "hargaSewa": 50000,
-                "durasi": 1,
-                "subtotal": 50000,
-                "kondisiAwal": "d97e0605-6f7f-409c-9ede-2a34bc115a90|XS|CHILD|baik",
-                "statusKembali": "belum",
-                "totalReturnPenalty": 0
-            }
-        ],
-        "pembayaran": [
-            {
-                "id": "4ce62d5c-4aea-46ab-bb4e-a1ad2e35eb95",
-                "jumlah": 840000,
-                "metode": "tunai",
-                "referensi": null,
-                "catatan": "Pembayaran awal transaksi",
-                "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
-                "createdAt": "2025-10-27T14:29:00.055Z"
-            }
-        ],
-        "aktivitas": [
-            {
-                "id": "fcb6c202-b0a3-4068-9f94-a0ce2c0c144d",
-                "tipe": "status_changed",
-                "deskripsi": "Status transaksi diubah menjadi diambil",
-                "data": {
-                    "reason": "All items fully picked up",
-                    "newStatus": "diambil",
-                    "timestamp": "2025-10-27T14:34:36.969Z",
-                    "autoUpdated": true,
-                    "pickupStats": {
-                        "totalItems": 4,
-                        "notPickedUp": 0,
-                        "fullyPickedUp": 4
-                    },
-                    "previousStatus": "active"
-                },
-                "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
-                "createdAt": "2025-10-27T14:34:36.972Z"
-            },
-            {
-                "id": "bb77b801-62b2-4702-911f-a64a7830b8e4",
-                "tipe": "status_pickup",
-                "deskripsi": "Status pickup: 4 lengkap, 0 belum",
-                "data": {
-                    "timestamp": "2025-10-27T14:34:36.474Z",
-                    "pickupStats": {
-                        "totalItems": 4,
-                        "notPickedUp": 0,
-                        "fullyPickedUp": 4,
-                        "partiallyPickedUp": 0
-                    },
-                    "calculatedBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp"
-                },
-                "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
-                "createdAt": "2025-10-27T14:34:36.476Z"
-            },
-            {
-                "id": "8190ad9f-788a-42f7-ae52-b737e3da53cb",
-                "tipe": "diambil",
-                "deskripsi": "Pickup dilakukan: 2 item, 1 item, 2 item, 1 item",
-                "data": {
-                    "items": [
-                        {
-                            "itemId": "09ab097e-4c4b-4650-9dfa-c1b62d6869e8",
-                            "jumlahDiambil": 2
-                        },
-                        {
-                            "itemId": "e4ceb776-3b69-4023-942a-8bec2868731c",
-                            "jumlahDiambil": 1
-                        },
-                        {
-                            "itemId": "862b67fa-572d-4e38-9119-a47136be260f",
-                            "jumlahDiambil": 2
-                        },
-                        {
-                            "itemId": "a978af6e-1816-4bff-a0de-fd20f3411094",
-                            "jumlahDiambil": 1
-                        }
-                    ],
-                    "timestamp": "2025-10-27T14:34:35.958Z",
-                    "processedBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp"
-                },
-                "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
-                "createdAt": "2025-10-27T14:34:35.960Z"
-            },
-            {
-                "id": "31be66f2-9b90-4f3c-b788-a965fa9b0f6c",
-                "tipe": "dibayar",
-                "deskripsi": "Pembayaran tunai sebesar Rp 840.000",
-                "data": {
-                    "amount": 840000,
-                    "method": "tunai",
-                    "newTotal": "840000",
-                    "paymentId": "4ce62d5c-4aea-46ab-bb4e-a1ad2e35eb95",
-                    "remaining": "0"
-                },
-                "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
-                "createdAt": "2025-10-27T14:29:00.614Z"
-            },
-            {
-                "id": "1ae875fc-6260-48e1-bb30-92b0e4a1a23c",
-                "tipe": "dibuat",
-                "deskripsi": "Transaksi TXN-20251027-003 dibuat dengan optimized size-aware tracking",
-                "data": {
-                    "items": 4,
-                    "optimized": true,
-                    "sizeAware": true,
-                    "totalHarga": "840000",
-                    "transactionDuration": 907
-                },
-                "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
-                "createdAt": "2025-10-27T14:28:48.334Z"
-            }
-        ]
-    },
-    "message": "Detail transaksi berhasil diambil"
-}
-
-
-Transaksi Kode == Flow Pengambilan Flow  200 ok
-
- PATCH /api/kasir/transaksi/TXN-20251027-003/ambil 200 in 9198ms
- GET /api/kasir/transaksi/TXN-20251027-003 200 in 3013ms
-

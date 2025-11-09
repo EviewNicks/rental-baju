@@ -3,7 +3,7 @@
  * Centralizes strategy initialization and management for dynamic form rendering
  */
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef, useMemo } from 'react'
 import type { ClientCategory } from '../types'
 import type { CategoryFormStrategy, CategoryFormData } from '../lib/strategies/CategoryFormStrategy'
 import type { CreateProductSizeRequest } from '../types'
@@ -11,6 +11,7 @@ import { FormStrategyFactory } from '../lib/strategies/StrategyFactory'
 
 export interface UseProductFormStrategyProps {
   categories: ClientCategory[]
+  //eslint-disable-next-line @typescript-eslint/no-explicit-any
   product?: any // ClientProduct
 }
 
@@ -21,12 +22,23 @@ export function useProductFormStrategy({ categories, product }: UseProductFormSt
   const [strategyLoading, setStrategyLoading] = useState<boolean>(false)
   const [strategyError, setStrategyError] = useState<Error | null>(null)
 
+  // Prevent strategy re-initialization for same category
+  const currentCategoryIdRef = useRef<string | null>(null)
+
+  // Memoize product sizes to prevent unnecessary re-renders
+  const productSizes = useMemo(() => product?.sizes || [], [product?.sizes])
+
   // Initialize strategy when category changes
   const initializeStrategy = useCallback(
     async (categoryId: string) => {
+      // Skip if strategy already initialized for this category
+      if (currentCategoryIdRef.current === categoryId && currentStrategy) {
+        return currentStrategy
+      }
+
       const category = categories.find((cat) => cat.id === categoryId)
       if (!category) {
-        return
+        return null
       }
 
       // Set loading state
@@ -39,11 +51,12 @@ export function useProductFormStrategy({ categories, product }: UseProductFormSt
           categoryId: category.id,
           categoryName: category.name,
           isEditMode: !!product,
-          existingData: product?.sizes || [],
+          existingData: productSizes,
         })
 
         setCurrentStrategy(strategy)
         setSelectedCategory(category)
+        currentCategoryIdRef.current = categoryId
 
         return strategy
       } catch (error) {
@@ -54,7 +67,38 @@ export function useProductFormStrategy({ categories, product }: UseProductFormSt
         setStrategyLoading(false)
       }
     },
-    [categories, product],
+    [categories, product, productSizes, currentStrategy],
+  )
+
+  // Transform existing product sizes to form data (edit mode)
+  const transformExistingSizesToFormData = useCallback(
+    (categoryId: string): CategoryFormData => {
+      const category = categories.find((cat) => cat.id === categoryId)
+      if (!category || !product?.sizes) {
+        return { categoryId }
+      }
+
+      try {
+        const strategy = FormStrategyFactory.createWithContext(category.type, {
+          categoryId: category.id,
+          categoryName: category.name,
+          isEditMode: true,
+          existingData: product.sizes,
+        })
+
+        // Transform existing product sizes to form data
+        const formData = strategy.transformFromProductSizes(product.sizes)
+        formData.categoryId = categoryId
+
+        return formData
+      } catch (error) {
+        console.error('Failed to transform existing sizes to form data:', error)
+        return { categoryId }
+      }
+    },
+    [categories, productSizes], // eslint-disable-line react-hooks/exhaustive-deps
+  // productSizes is memoized dependency derived from product.sizes for performance
+  // Using stable memoized dependency prevents unnecessary callback recreations
   )
 
   // Transform form data to product sizes
@@ -111,11 +155,13 @@ export function useProductFormStrategy({ categories, product }: UseProductFormSt
     // Strategy actions
     initializeStrategy,
     transformFormDataToSizes,
+    transformExistingSizesToFormData,
     getStrategyDefaultValues,
     calculateTotalQuantity,
 
     // Computed states
     hasStrategy: !!currentStrategy,
     isStrategyReady: !strategyLoading && !strategyError && !!currentStrategy,
+    isEditMode: !!product,
   }
 }

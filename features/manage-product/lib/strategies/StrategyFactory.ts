@@ -101,6 +101,10 @@ export class FormStrategyFactory {
     // Log context information untuk debugging
     if (process.env.NODE_ENV === 'development') {
       console.log(`StrategyFactory: Created ${strategy.type} strategy for category "${context.categoryName || categoryType}" (${context.categoryId})`)
+
+      if (context.isEditMode && context.existingData) {
+        console.log(`StrategyFactory: Edit mode with ${context.existingData.length} existing size entries`)
+      }
     }
 
     return strategy

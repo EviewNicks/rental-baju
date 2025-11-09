@@ -82,9 +82,9 @@ export class AuditService {
           }
         })
       } else {
-        // For non-transaction entities, log to console for now
+        // For non-transaction entities, audit logging disabled for cleaner console output
         // In production, implement proper audit table
-        console.log('[AUDIT]', JSON.stringify(auditData, null, 2))
+        // console.log('[AUDIT]', JSON.stringify(auditData, null, 2))
       }
     } catch (error) {
       // Audit logging should never break the main operation

@@ -9,9 +9,7 @@ export class ProductSizeTransformer {
   /**
    * Transform simplified sizes to backend format (NEW SYSTEM)
    */
-  static transformSimplifiedSizesToBackendFormat(
-    simplifiedSizes: SimplifiedSizeEntry[],
-  ): string {
+  static transformSimplifiedSizesToBackendFormat(simplifiedSizes: SimplifiedSizeEntry[]): string {
     const sizes = simplifiedSizes.map((sizeEntry) => ({
       ageCategory: sizeEntry.ageCategory, // Already using standardized enum values
       size: sizeEntry.size,
@@ -27,6 +25,7 @@ export class ProductSizeTransformer {
    * Transform existing product sizes to simplified sizes format (EDIT MODE)
    */
   static transformProductSizesToSimplifiedFormat(
+    //eslint-disable-next-line @typescript-eslint/no-explicit-any
     productSizes: any[], // ClientProductSize[]
   ): SimplifiedSizeEntry[] {
     return productSizes.map((size) => ({
@@ -40,17 +39,11 @@ export class ProductSizeTransformer {
   /**
    * Transform aggregated sizes to backend format (LEGACY COMPATIBILITY)
    */
-  static transformSizesToBackendFormat(
-    aggregatedSizes: AggregatedSizeView[],
-  ): string {
+  static transformSizesToBackendFormat(aggregatedSizes: AggregatedSizeView[]): string {
     const sizes = aggregatedSizes.flatMap((aggSize) =>
       Object.entries(aggSize.breakdown).map(([ageCategory, quantity]) => ({
         ageCategory:
-          ageCategory === 'dewasa'
-            ? 'ADULT'
-            : ageCategory === 'anak'
-            ? 'CHILD'
-            : 'ADULT', // Updated mapping
+          ageCategory === 'dewasa' ? 'ADULT' : ageCategory === 'anak' ? 'CHILD' : 'ADULT', // Updated mapping
         size: aggSize.size,
         quantity: quantity,
         isActive: true,
@@ -63,30 +56,18 @@ export class ProductSizeTransformer {
    * Calculate total quantity from different size data types
    */
   static calculateTotalQuantity(
-    data:
-      | SimplifiedSizeEntry[]
-      | AggregatedSizeView[]
-      | CreateProductSizeRequest[],
+    data: SimplifiedSizeEntry[] | AggregatedSizeView[] | CreateProductSizeRequest[],
     dataType: 'simplified' | 'aggregated' | 'strategy' = 'simplified',
   ): number {
     if (!data || data.length === 0) return 0
 
     switch (dataType) {
       case 'simplified':
-        return (data as SimplifiedSizeEntry[]).reduce(
-          (sum, size) => sum + size.quantity,
-          0,
-        )
+        return (data as SimplifiedSizeEntry[]).reduce((sum, size) => sum + size.quantity, 0)
       case 'aggregated':
-        return (data as AggregatedSizeView[]).reduce(
-          (sum, size) => sum + size.totalQuantity,
-          0,
-        )
+        return (data as AggregatedSizeView[]).reduce((sum, size) => sum + size.totalQuantity, 0)
       case 'strategy':
-        return (data as CreateProductSizeRequest[]).reduce(
-          (sum, size) => sum + size.quantity,
-          0,
-        )
+        return (data as CreateProductSizeRequest[]).reduce((sum, size) => sum + size.quantity, 0)
       default:
         return 0
     }
@@ -120,10 +101,7 @@ export class ProductSizeTransformer {
 
     // Check simplified sizes (Priority 2)
     if (simplifiedSizes.length > 0) {
-      const totalQuantity = simplifiedSizes.reduce(
-        (sum, size) => sum + size.quantity,
-        0,
-      )
+      const totalQuantity = simplifiedSizes.reduce((sum, size) => sum + size.quantity, 0)
       if (totalQuantity === 0) {
         return 'Setidaknya satu ukuran harus memiliki jumlah yang valid'
       }
@@ -132,9 +110,7 @@ export class ProductSizeTransformer {
 
     // Check aggregated sizes (Priority 3)
     if (aggregatedSizes.length > 0) {
-      const hasValidSizes = aggregatedSizes.some(
-        (size) => size.totalQuantity > 0,
-      )
+      const hasValidSizes = aggregatedSizes.some((size) => size.totalQuantity > 0)
       if (!hasValidSizes) {
         return 'Setidaknya satu ukuran harus memiliki jumlah yang valid'
       }
@@ -161,17 +137,13 @@ export class ProductSizeTransformer {
     } else if (simplifiedSizes.length > 0) {
       // Priority 2: Simplified sizes (legacy system)
       return {
-        data: ProductSizeTransformer.transformSimplifiedSizesToBackendFormat(
-          simplifiedSizes,
-        ),
+        data: ProductSizeTransformer.transformSimplifiedSizesToBackendFormat(simplifiedSizes),
         source: 'simplified',
       }
     } else {
       // Priority 3: Aggregated sizes (legacy fallback)
       return {
-        data: ProductSizeTransformer.transformSizesToBackendFormat(
-          aggregatedSizes || [],
-        ),
+        data: ProductSizeTransformer.transformSizesToBackendFormat(aggregatedSizes || []),
         source: 'aggregated',
       }
     }

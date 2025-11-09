@@ -54,15 +54,6 @@ const extractUserRole = (sessionClaims: any) => {
     sessionClaims?.publicMetadata?.role ||
     'user'
 
-  // Debug logging untuk troubleshooting
-  console.log('🔐 Role Extraction Debug:', {
-    'metadata.role': sessionClaims?.metadata?.role,
-    'sessionClaims.role': sessionClaims?.role,
-    'publicMetadata.role': sessionClaims?.publicMetadata?.role,
-    'final.role': role,
-    sessionClaims: sessionClaims,
-  })
-
   return role
 }
 
@@ -97,7 +88,6 @@ export default clerkMiddleware(
       // User sudah login → redirect ke role dashboard
       const role = extractUserRole(sessionClaims)
       const dashboardUrl = getRoleDashboardUrl(role)
-      console.log('🔄 Root Redirect:', { userId, role, dashboardUrl })
       return NextResponse.redirect(new URL(dashboardUrl, req.url))
     }
 

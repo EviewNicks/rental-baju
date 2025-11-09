@@ -41,6 +41,7 @@ import type { EnhancedItemCondition } from '../../types'
 import { ConditionCategory } from '../../types'
 import { kasirApi } from '../../api'
 import { kasirLogger } from '../../lib/logger'
+import { PenaltyCalculator } from '../../lib/utils/penaltyCalculator'
 
 interface SimpleReturnFormProps {
   kode: string
@@ -51,6 +52,7 @@ interface PenaltyPreview {
   totalPenalty: number
   isLateReturn: boolean
   lateDays: number
+  flatLatePenalty: number // Add this for display purposes
   itemBreakdown: Array<{
     itemId: string
     itemName: string
@@ -179,19 +181,30 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
         })
       })
 
-      // Late return calculation
+      // Late return calculation - Updated to flat 20k penalty per item
       const now = new Date()
       const dueDate = transaction.tglSelesai ? new Date(transaction.tglSelesai) : null
-      const isLateReturn = dueDate ? now > dueDate : false
-      const lateDays =
-        isLateReturn && dueDate
-          ? Math.ceil((now.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24))
-          : 0
+
+      // Use PenaltyCalculator for flat 20k per item penalty
+      const latePenaltyResult = PenaltyCalculator.calculateFlatLatePenalty(
+        dueDate || new Date(),
+        now,
+      )
+      const isLateReturn = latePenaltyResult.isLate
+      const flatLatePenalty = latePenaltyResult.penalty // 20,000 per item
+      const lateDays = latePenaltyResult.lateDays
+
+      // Add flat late penalty to total (20k per returnable item)
+      if (isLateReturn) {
+        const returnableItemsCount = Object.keys(formState.itemConditions).length
+        totalPenalty += flatLatePenalty * returnableItemsCount
+      }
 
       const preview: PenaltyPreview = {
         totalPenalty,
         isLateReturn,
         lateDays,
+        flatLatePenalty, // Add this for display
         itemBreakdown,
       }
 
@@ -314,20 +327,21 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
 
       // Enhanced error handling for validation issues
       if (errorMessage.includes('Validasi kondisi pengembalian gagal')) {
-        errorMessage = 'Format data kondisi tidak valid. Mohon periksa kembali kondisi barang yang dikembalikan.'
+        errorMessage =
+          'Format data kondisi tidak valid. Mohon periksa kembali kondisi barang yang dikembalikan.'
 
         // Debug logging for troubleshooting
         kasirLogger.returnProcess.warn('SimpleReturnForm', 'Validation error detected', {
           transactionId: kode,
           originalError: error.message,
-          formState: JSON.stringify(formState, null, 2)
+          formState: JSON.stringify(formState, null, 2),
         })
       }
 
       kasirLogger.returnProcess.error('SimpleReturnForm', 'Return processing failed', {
         transactionId: kode,
         errorMessage,
-        errorDetails: error instanceof Error ? error.stack : 'Unknown error'
+        errorDetails: error instanceof Error ? error.stack : 'Unknown error',
       })
 
       setFormState((prev) => ({ ...prev, error: errorMessage }))

@@ -122,6 +122,26 @@ export class AccessoriesUniversalStrategy implements CategoryFormStrategy {
   }
 
   /**
+   * Get initial sizes dari form data untuk edit mode initialization
+   */
+  getInitialSizes(formData: CategoryFormData): CreateProductSizeRequest[] {
+    const jumlahTotal = this.ensureNumber(formData.jumlahTotal)
+
+    if (jumlahTotal <= 0) {
+      return []
+    }
+
+    return [
+      {
+        ageCategory: 'UNIVERSAL',
+        size: 'UNIVERSAL',
+        quantity: jumlahTotal,
+        isActive: true
+      }
+    ]
+  }
+
+  /**
    * Calculate total quantity dari form data
    */
   calculateTotalQuantity(formData: CategoryFormData): number {

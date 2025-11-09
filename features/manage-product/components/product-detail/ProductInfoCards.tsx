@@ -5,7 +5,12 @@ import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { TrendingUp, Wallet } from 'lucide-react'
-import { getStatusBadge, getCategoryBadge, formatCurrency } from '@/features/manage-product/lib/utils/product'
+import {
+  getStatusBadge,
+  getCategoryBadge,
+  formatCurrency,
+} from '@/features/manage-product/lib/utils/product'
+import { MaterialCostDisplay } from '@/features/manage-product/components/material/MaterialCostDisplay'
 import type { Product } from '@/features/manage-product/types'
 
 interface InfoFieldProps {
@@ -207,13 +212,27 @@ export function EnhancedBasicInfoCard({ product }: EnhancedBasicInfoCardProps) {
                 <div className="flex items-center gap-3">
                   <TrendingUp className="w-5 h-5 text-yellow-600" />
                   <div>
-                    <p className="text-3xl font-bold text-yellow-700">{formatCurrency(hargaSewa)}</p>
+                    <p className="text-3xl font-bold text-yellow-700">
+                      {formatCurrency(hargaSewa)}
+                    </p>
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
+
+        {/* Material Information */}
+        {product.material && (
+          <div className="space-y-4">
+            <div className="text-lg font-semibold text-gray-900">Informasi Material</div>
+            <MaterialCostDisplay
+              selectedMaterial={product.material}
+              materialQuantity={product.materialQuantity || 0}
+              materialCost={product.materialCost || 0}
+            />
+          </div>
+        )}
 
         {/* Description */}
         {product.description && (

@@ -14,7 +14,6 @@ import {
 import { TransactionCodeGenerator } from '../lib/utils/codeGenerator'
 import { PriceCalculator } from '../lib/utils/server'
 import { createAvailabilityService, AvailabilityService } from './availabilityService'
-import { calculateAvailableStock } from '../lib/typeUtils'
 import type { TransactionStatus } from '../types'
 
 export interface TransaksiWithDetails extends Transaksi {
@@ -34,7 +33,7 @@ export interface TransaksiWithDetails extends Transaksi {
       modalAwal: Decimal // Added for penalty calculation
       imageUrl?: string | null
       size?: string | null
-        category?: {
+      category?: {
         id: string
         name: string
       } | null
@@ -219,125 +218,87 @@ export class TransaksiService {
   }
 
   /**
-   * Create new transaction with auto-generated code
+   * Unified method to get transaction by ID or code
+   * Consolidates duplicate logic from getTransaksiById and getTransaksiByCode
+   * @param identifier - Transaction ID (UUID) or code
+   * @param type - Type of identifier ('id' or 'code')
+   * @returns Transaction with full details
    */
-  async createTransaksi(data: CreateTransaksiRequest): Promise<Transaksi> {
-    // 1. Validate penyewa exists
-    const penyewa = await this.prisma.penyewa.findUnique({
-      where: { id: data.penyewaId },
-    })
+  async getTransaksiByIdentifier(
+    identifier: string,
+    type: 'id' | 'code' = 'code'
+  ): Promise<TransaksiWithDetails> {
+    const whereClause = type === 'id' ? { id: identifier } : { kode: identifier }
 
-    if (!penyewa) {
-      throw new Error('Penyewa tidak ditemukan')
-    }
-
-    const availabilityCheck = await this.availabilityService.validateTransactionItems(
-      data.items.map((item) => ({
-        productId: item.produkId,
-        quantity: item.jumlah,
-      })),
-      new Date(data.tglMulai),
-    )
-
-    if (!availabilityCheck.valid) {
-      console.error('[TransaksiService] ❌ Availability validation failed', {
-        errors: availabilityCheck.errors,
-      })
-      throw new Error(availabilityCheck.errors[0])
-    }
-
-    // 3. Get product data for pricing
-    const productIds = data.items.map((item) => item.produkId)
-    const products = await this.prisma.product.findMany({
-      where: {
-        id: { in: productIds },
-        isActive: true,
-        status: 'AVAILABLE',
+    const transaksi = await this.prisma.transaksi.findUnique({
+      where: whereClause,
+      include: {
+        penyewa: {
+          select: {
+            id: true,
+            nama: true,
+            telepon: true,
+            alamat: true,
+          },
+        },
+        items: {
+          include: {
+            produk: {
+              select: {
+                id: true,
+                code: true,
+                name: true,
+                modalAwal: true, // Added for penalty calculation
+                imageUrl: true,
+                size: true,
+                category: {
+                  select: {
+                    id: true,
+                    name: true,
+                  },
+                },
+              },
+            },
+            // TSK-24: Include multi-condition return data
+            returnConditions: {
+              orderBy: { createdAt: 'asc' },
+              select: {
+                id: true,
+                kondisiAkhir: true,
+                jumlahKembali: true,
+                penaltyAmount: true,
+                modalAwalUsed: true,
+                createdAt: true,
+                createdBy: true,
+              },
+            },
+          },
+        },
+        pembayaran: {
+          orderBy: { createdAt: 'desc' },
+        },
+        aktivitas: {
+          orderBy: { createdAt: 'desc' },
+        },
       },
     })
 
-    if (products.length !== productIds.length) {
-      const foundIds = products.map((p) => p.id)
-      const missingIds = productIds.filter((id) => !foundIds.includes(id))
-      throw new Error(`Produk dengan ID ${missingIds[0]} tidak tersedia`)
+    if (!transaksi) {
+      throw new Error('Transaksi tidak ditemukan')
     }
 
-    // 4. Calculate prices
-    const itemsWithPrices = data.items.map((item) => {
-      const product = products.find((p) => p.id === item.produkId)!
-      return {
-        produkId: item.produkId,
-        jumlah: item.jumlah,
-        durasi: item.durasi,
-        hargaSewa: product.currentPrice,
-      }
-    })
+    // TSK-24: Transform items with multi-condition return data
+    const enhancedTransaksi = {
+      ...transaksi,
+      //eslint-disable-next-line @typescript-eslint/no-explicit-any
+      items: this.transformItemsWithMultiCondition(transaksi.items as any),
+    }
 
-    const priceCalculation = PriceCalculator.calculateTransactionTotal(itemsWithPrices)
-
-    // 5. Generate transaction code
-    const kode = await this.codeGenerator.generateTransactionCode()
-
-    // 6. Create transaction with items in a database transaction
-
-    const transaksi = await this.prisma.$transaction(async (tx) => {
-      // Create main transaction
-      const createdTransaksi = await tx.transaksi.create({
-        data: {
-          kode,
-          penyewaId: data.penyewaId,
-          status: 'active',
-          totalHarga: priceCalculation.totalHarga,
-          jumlahBayar: new Decimal(0),
-          sisaBayar: priceCalculation.totalHarga,
-          tglMulai: new Date(data.tglMulai),
-          tglSelesai: data.tglSelesai ? new Date(data.tglSelesai) : null,
-          metodeBayar: data.metodeBayar || 'tunai',
-          catatan: data.catatan || null,
-          createdBy: this.userId,
-        },
-      })
-
-      // Create transaction items
-      const itemsData = data.items.map((item, index) => {
-        const calculation = priceCalculation.itemCalculations[index]
-        return {
-          transaksiId: createdTransaksi.id,
-          produkId: item.produkId,
-          jumlah: item.jumlah,
-          hargaSewa: calculation.hargaSewa,
-          durasi: item.durasi,
-          subtotal: calculation.subtotal,
-          kondisiAwal: item.kondisiAwal || null,
-        }
-      })
-
-      await tx.transaksiItem.createMany({
-        data: itemsData,
-      })
-
-      // Update product quantities - THIS IS THE FIX!
-      await this.updateProductQuantities(tx, data.items)
-
-      // Create activity log
-      await tx.aktivitasTransaksi.create({
-        data: {
-          transaksiId: createdTransaksi.id,
-          tipe: 'dibuat',
-          deskripsi: `Transaksi ${kode} dibuat`,
-          data: {
-            items: data.items.length,
-            totalHarga: priceCalculation.totalHarga.toString(),
-          },
-          createdBy: this.userId,
-        },
-      })
-
-      return createdTransaksi
-    })
-
-    return transaksi
+    return enhancedTransaksi as TransaksiWithDetails
   }
+
+  // Legacy createTransaksi method removed - replaced by optimized createTransaksiSizeAware
+  // This improves performance by eliminating dual inventory system complexity
 
   /**
    * Create new transaction with size-aware stock management
@@ -349,14 +310,9 @@ export class TransaksiService {
    * Step 3: Update stock quantities with retry logic AFTER transaction
    */
   async createTransaksiSizeAware(data: CreateTransaksiRequest): Promise<Transaksi> {
-    const startTime = Date.now()
-    console.log('🚀 [TRANSACTION] Starting Phase 2 optimized transaction creation...')
-
     let priceCalculation: ReturnType<typeof PriceCalculator.calculateTransactionTotal> | null = null
 
     try {
-      // STEP 1: Validate customer exists (fast operation)
-      console.log('👤 [STEP-1] Validating customer...')
       const penyewa = await this.prisma.penyewa.findUnique({
         where: { id: data.penyewaId },
       })
@@ -366,11 +322,9 @@ export class TransaksiService {
       }
 
       // STEP 2: Pre-validate stock availability OUTSIDE transaction
-      console.log('📦 [STEP-2] Pre-validating stock availability...')
       await this.validateStockAvailability(data.items)
 
       // STEP 3: Get product data for pricing (can reuse from validation)
-      console.log('💰 [STEP-3] Preparing pricing data...')
       const productSizeIds = data.items.map((item) => item.productSizeId)
       const uniqueSizeIds = [...new Set(productSizeIds)]
 
@@ -397,7 +351,7 @@ export class TransaksiService {
           produkId: item.produkId,
           productSizeId: item.productSizeId,
           jumlah: item.jumlah,
-          durasi: item.durasi,
+          durasi: 4, // Fixed 4-day package
           hargaSewa: productSize.product.currentPrice,
         }
       })
@@ -412,88 +366,76 @@ export class TransaksiService {
       const kode = await this.codeGenerator.generateTransactionCode()
 
       // STEP 4: Create transaction with MINIMAL operations INSIDE transaction
-      console.log('🔄 [STEP-4] Creating transaction record (optimized)...')
       const transactionStartTime = Date.now()
 
-      const transaksi = await this.prisma.$transaction(async (tx) => {
-        // Create main transaction (1 operation)
-        const createdTransaksi = await tx.transaksi.create({
-          data: {
-            kode,
-            penyewaId: data.penyewaId,
-            status: 'active',
-            totalHarga: priceCalculation!.totalHarga,
-            jumlahBayar: new Decimal(0),
-            sisaBayar: priceCalculation!.totalHarga,
-            tglMulai: new Date(data.tglMulai),
-            tglSelesai: data.tglSelesai ? new Date(data.tglSelesai) : null,
-            metodeBayar: data.metodeBayar || 'tunai',
-            catatan: data.catatan || null,
-            createdBy: this.userId,
-          },
-        })
-
-        // Create transaction items (1 operation - bulk insert)
-        const itemsData = data.items.map((item, index) => {
-          const calculation = priceCalculation!.itemCalculations[index]
-          const productSize = productSizes.find((ps) => ps.id === item.productSizeId)!
-          return {
-            transaksiId: createdTransaksi.id,
-            produkId: item.produkId,
-            jumlah: item.jumlah,
-            hargaSewa: calculation.hargaSewa,
-            durasi: item.durasi,
-            subtotal: calculation.subtotal,
-            kondisiAwal: `${item.productSizeId}|${productSize.size}|${productSize.ageCategory}|${item.kondisiAwal || ''}`,
-          }
-        })
-
-        await tx.transaksiItem.createMany({
-          data: itemsData,
-        })
-
-        // Update product quantities for both systems to maintain consistency
-        // FIX: Added to ensure both rentedStock (legacy) and ProductSize.quantity (size-aware) are updated
-        await Promise.all([
-          this.updateProductSizeQuantities(tx, data.items),  // Update ProductSize.quantity
-          this.updateProductQuantities(tx, data.items)      // Update Product.rentedStock
-        ])
-
-        // Create activity log (1 operation)
-        await tx.aktivitasTransaksi.create({
-          data: {
-            transaksiId: createdTransaksi.id,
-            tipe: 'dibuat',
-            deskripsi: `Transaksi ${kode} dibuat dengan dual inventory system consistency`,
+      const transaksi = await this.prisma.$transaction(
+        async (tx) => {
+          // Create main transaction (1 operation)
+          const createdTransaksi = await tx.transaksi.create({
             data: {
-              items: data.items.length,
-              totalHarga: priceCalculation!.totalHarga.toString(),
-              sizeAware: true,
-              dualSystemUpdate: true,
-              transactionDuration: Date.now() - transactionStartTime,
+              kode,
+              penyewaId: data.penyewaId,
+              status: 'active',
+              totalHarga: priceCalculation!.totalHarga,
+              jumlahBayar: new Decimal(0),
+              sisaBayar: priceCalculation!.totalHarga,
+              tglMulai: new Date(data.tglMulai),
+              tglSelesai: data.tglSelesai ? new Date(data.tglSelesai) : null,
+              metodeBayar: data.metodeBayar || 'tunai',
+              catatan: data.catatan || null,
+              createdBy: this.userId,
             },
-            createdBy: this.userId,
-          },
-        })
+          })
 
-        return createdTransaksi
-      }, {
-        timeout: 30000 // 30 seconds timeout for safety
-      })
+          // Create transaction items (1 operation - bulk insert)
+          const itemsData = data.items.map((item, index) => {
+            const calculation = priceCalculation!.itemCalculations[index]
+            const productSize = productSizes.find((ps) => ps.id === item.productSizeId)!
+            return {
+              transaksiId: createdTransaksi.id,
+              produkId: item.produkId,
+              jumlah: item.jumlah,
+              hargaSewa: calculation.hargaSewa,
+              durasi: 4, // Fixed 4-day package
+              subtotal: calculation.subtotal,
+              kondisiAwal: `${item.productSizeId}|${productSize.size}|${productSize.ageCategory}|${item.kondisiAwal || ''}`,
+            }
+          })
 
-      const transactionDuration = Date.now() - transactionStartTime
-      console.log(`✅ [STEP-4] Transaction created with dual inventory updates in ${transactionDuration}ms`)
+          await tx.transaksiItem.createMany({
+            data: itemsData,
+          })
 
-      const totalDuration = Date.now() - startTime
-      console.log(`✅ [TRANSACTION] Dual system transaction completed in ${totalDuration}ms`)
-      console.log(`📊 [PERFORMANCE] Transaction includes both size-aware and legacy stock updates`)
+          // Update product quantities - OPTIMIZED: Single inventory system
+          // Use only ProductSize.quantity (size-aware system) for better performance
+          await this.updateProductSizeQuantities(tx, data.items)
+
+          // Create activity log (1 operation)
+          await tx.aktivitasTransaksi.create({
+            data: {
+              transaksiId: createdTransaksi.id,
+              tipe: 'dibuat',
+              deskripsi: `Transaksi ${kode} dibuat dengan optimized inventory system`,
+              data: {
+                items: data.items.length,
+                totalHarga: priceCalculation!.totalHarga.toString(),
+                sizeAware: true,
+                optimizedSystem: true,
+                transactionDuration: Date.now() - transactionStartTime,
+              },
+              createdBy: this.userId,
+            },
+          })
+
+          return createdTransaksi
+        },
+        {
+          timeout: 30000, // 30 seconds timeout for safety
+        },
+      )
 
       return transaksi
-
     } catch (error) {
-      const totalDuration = Date.now() - startTime
-      console.error(`❌ [TRANSACTION] Failed after ${totalDuration}ms:`, error)
-
       // Enhanced error logging for debugging
       if (error instanceof Error) {
         console.error('🚨 [ERROR] Details:', {
@@ -571,10 +513,7 @@ export class TransaksiService {
    * NEW: Pre-validation pattern to prevent transaction timeouts
    * @private
    */
-  private async validateStockAvailability(
-    items: CreateTransaksiRequest['items'],
-  ): Promise<void> {
-    console.log('🔍 [PRE-VALIDATION] Starting stock availability check...')
+  private async validateStockAvailability(items: CreateTransaksiRequest['items']): Promise<void> {
 
     const productSizeIds = items.map((item) => item.productSizeId)
     const uniqueSizeIds = [...new Set(productSizeIds)] // Remove duplicates
@@ -621,12 +560,11 @@ export class TransaksiService {
       // Validate stock availability
       if (productSize.quantity < item.jumlah) {
         throw new Error(
-          `Size ${productSize.size} (${productSize.ageCategory}) untuk ${productSize.product.name} tidak mencukupi. Tersedia: ${productSize.quantity}, Diminta: ${item.jumlah}`
+          `Size ${productSize.size} (${productSize.ageCategory}) untuk ${productSize.product.name} tidak mencukupi. Tersedia: ${productSize.quantity}, Diminta: ${item.jumlah}`,
         )
       }
     }
 
-    console.log('✅ [PRE-VALIDATION] Stock availability check passed')
   }
 
   /**
@@ -641,10 +579,13 @@ export class TransaksiService {
     console.log('🔄 [STOCK-UPDATE] Starting stock update with retry logic...')
 
     // Group by productSizeId to optimize updates
-    const stockUpdates = items.reduce((acc, item) => {
-      acc[item.productSizeId] = (acc[item.productSizeId] || 0) + item.jumlah
-      return acc
-    }, {} as Record<string, number>)
+    const stockUpdates = items.reduce(
+      (acc, item) => {
+        acc[item.productSizeId] = (acc[item.productSizeId] || 0) + item.jumlah
+        return acc
+      },
+      {} as Record<string, number>,
+    )
 
     for (const [productSizeId, totalQuantity] of Object.entries(stockUpdates)) {
       let attempt = 0
@@ -653,7 +594,9 @@ export class TransaksiService {
       while (attempt < maxRetries) {
         try {
           attempt++
-          console.log(`🔄 [STOCK-UPDATE] Attempt ${attempt}/${maxRetries} for ProductSize ${productSizeId}`)
+          console.log(
+            `🔄 [STOCK-UPDATE] Attempt ${attempt}/${maxRetries} for ProductSize ${productSizeId}`,
+          )
 
           // Get current stock state
           const currentProductSize = await this.prisma.productSize.findUnique({
@@ -677,7 +620,7 @@ export class TransaksiService {
           // Double-check availability (race condition protection)
           if (currentProductSize.quantity < totalQuantity) {
             throw new Error(
-              `Insufficient stock during update. Available: ${currentProductSize.quantity}, Requested: ${totalQuantity}`
+              `Insufficient stock during update. Available: ${currentProductSize.quantity}, Requested: ${totalQuantity}`,
             )
           }
 
@@ -697,13 +640,14 @@ export class TransaksiService {
           // Verify the update was successful
           if (updateResult.count === 0) {
             throw new Error(
-              `Failed to update quantity. The size may have been modified by another transaction.`
+              `Failed to update quantity. The size may have been modified by another transaction.`,
             )
           }
 
-          console.log(`✅ [STOCK-UPDATE] Successfully updated ${totalQuantity} units for ProductSize ${productSizeId}`)
+          console.log(
+            `✅ [STOCK-UPDATE] Successfully updated ${totalQuantity} units for ProductSize ${productSizeId}`,
+          )
           break // Success, exit retry loop
-
         } catch (error) {
           lastError = error as Error
           console.error(`❌ [STOCK-UPDATE] Attempt ${attempt} failed:`, lastError.message)
@@ -712,7 +656,7 @@ export class TransaksiService {
             // Exponential backoff: 100ms, 400ms, 1600ms
             const delay = Math.pow(4, attempt - 1) * 100
             console.log(`⏳ [STOCK-UPDATE] Retrying in ${delay}ms...`)
-            await new Promise(resolve => setTimeout(resolve, delay))
+            await new Promise((resolve) => setTimeout(resolve, delay))
           }
         }
       }
@@ -721,7 +665,7 @@ export class TransaksiService {
         // All retries exhausted - this is a critical failure
         console.error(`🚨 [STOCK-UPDATE] All retries failed for ProductSize ${productSizeId}`)
         throw new Error(
-          `Failed to update stock after ${maxRetries} attempts. Last error: ${lastError.message}`
+          `Failed to update stock after ${maxRetries} attempts. Last error: ${lastError.message}`,
         )
       }
     }
@@ -833,144 +777,18 @@ export class TransaksiService {
 
   /**
    * Get transaction by ID with full details
+   * Legacy wrapper for getTransaksiByIdentifier
    */
   async getTransaksiById(id: string): Promise<TransaksiWithDetails> {
-    const transaksi = await this.prisma.transaksi.findUnique({
-      where: { id },
-      include: {
-        penyewa: {
-          select: {
-            id: true,
-            nama: true,
-            telepon: true,
-            alamat: true,
-          },
-        },
-        items: {
-          include: {
-            produk: {
-              select: {
-                id: true,
-                code: true,
-                name: true,
-                modalAwal: true, // Added for penalty calculation
-                imageUrl: true,
-                size: true,
-                    category: {
-                  select: {
-                    id: true,
-                    name: true,
-                  },
-                },
-              },
-            },
-            // TSK-24: Include multi-condition return data
-            returnConditions: {
-              orderBy: { createdAt: 'asc' },
-              select: {
-                id: true,
-                kondisiAkhir: true,
-                jumlahKembali: true,
-                penaltyAmount: true,
-                modalAwalUsed: true,
-                createdAt: true,
-                createdBy: true,
-              },
-            },
-          },
-        },
-        pembayaran: {
-          orderBy: { createdAt: 'desc' },
-        },
-        aktivitas: {
-          orderBy: { createdAt: 'desc' },
-        },
-      },
-    })
-
-    if (!transaksi) {
-      throw new Error('Transaksi tidak ditemukan')
-    }
-
-    // TSK-24: Transform items with multi-condition return data
-    const enhancedTransaksi = {
-      ...transaksi,
-      //eslint-disable-next-line @typescript-eslint/no-explicit-any
-      items: this.transformItemsWithMultiCondition(transaksi.items as any),
-    }
-
-    return enhancedTransaksi as TransaksiWithDetails
+    return this.getTransaksiByIdentifier(id, 'id')
   }
 
   /**
    * Get transaction by code
+   * Legacy wrapper for getTransaksiByIdentifier
    */
   async getTransaksiByCode(kode: string): Promise<TransaksiWithDetails> {
-    const transaksi = await this.prisma.transaksi.findUnique({
-      where: { kode },
-      include: {
-        penyewa: {
-          select: {
-            id: true,
-            nama: true,
-            telepon: true,
-            alamat: true,
-          },
-        },
-        items: {
-          include: {
-            produk: {
-              select: {
-                id: true,
-                code: true,
-                name: true,
-                modalAwal: true, // Added for penalty calculation
-                imageUrl: true,
-                size: true,
-                    category: {
-                  select: {
-                    id: true,
-                    name: true,
-                  },
-                },
-              },
-            },
-            // TSK-24: Include multi-condition return data
-            returnConditions: {
-              orderBy: { createdAt: 'asc' },
-              select: {
-                id: true,
-                kondisiAkhir: true,
-                jumlahKembali: true,
-                penaltyAmount: true,
-                modalAwalUsed: true,
-                createdAt: true,
-                createdBy: true,
-              },
-            },
-          },
-        },
-        pembayaran: {
-          orderBy: { createdAt: 'desc' },
-        },
-        aktivitas: {
-          orderBy: { createdAt: 'desc' },
-        },
-      },
-    })
-
-    if (!transaksi) {
-      throw new Error('Transaksi tidak ditemukan')
-    }
-
-    // TSK-24: Transform items with multi-condition return data
-    const enhancedTransaksi = {
-      ...transaksi,
-      //eslint-disable-next-line @typescript-eslint/no-explicit-any
-      items: this.transformItemsWithMultiCondition(transaksi.items as any),
-    }
-
-    return enhancedTransaksi as TransaksiWithDetails
+    return this.getTransaksiByIdentifier(kode, 'code')
   }
 
   /**
@@ -1107,17 +925,49 @@ export class TransaksiService {
 
       // Handle stock restoration for cancelled or completed transactions
       if (data.status && data.status !== existingTransaksi.status) {
-        if (data.status === 'cancelled') {
-          await this.restoreProductQuantities(tx, id, 'cancelled')
-        } else if (data.status === 'selesai') {
-          await this.restoreProductQuantities(tx, id, 'returned')
+        if (data.status === 'cancelled' || data.status === 'selesai') {
+          // Get transaction items to restore stock
+          const transaksiItems = await tx.transaksiItem.findMany({
+            where: { transaksiId: id },
+            select: {
+              id: true,
+              kondisiAwal: true,
+              jumlah: true,
+              jumlahDiambil: true,
+            },
+          })
+
+          // Restore ProductSize quantities for each item
+          await Promise.all(
+            transaksiItems.map(async (item) => {
+              const quantityToRestore =
+                data.status === 'cancelled' ? item.jumlah : item.jumlah - (item.jumlahDiambil || 0)
+
+              if (quantityToRestore > 0 && item.kondisiAwal) {
+                // Parse productSizeId from kondisiAwal field format: "productSizeId|size|ageCategory|condition"
+                const kondisiParts = item.kondisiAwal.split('|')
+                const productSizeId = kondisiParts[0]
+
+                if (productSizeId) {
+                  await tx.productSize.update({
+                    where: { id: productSizeId },
+                    data: {
+                      quantity: {
+                        increment: quantityToRestore,
+                      },
+                    },
+                  })
+                }
+              }
+            }),
+          )
         }
 
         // Create activity log with enhanced data for cancellation
         if (data.status === 'cancelled') {
           // Get items count for detailed logging
           const itemsCount = await tx.transaksiItem.count({
-            where: { transaksiId: id }
+            where: { transaksiId: id },
           })
 
           await tx.aktivitasTransaksi.create({
@@ -1135,7 +985,7 @@ export class TransaksiService {
                 itemsCount: itemsCount,
                 stockRestored: true,
                 cancelledAt: new Date().toISOString(),
-                needsRefund: existingTransaksi.jumlahBayar.gt(0)
+                needsRefund: existingTransaksi.jumlahBayar.gt(0),
               },
               createdBy: this.userId,
             },
@@ -1245,118 +1095,6 @@ export class TransaksiService {
 
     if (!allowedTransitions.includes(newStatus)) {
       throw new Error(`Tidak dapat mengubah status dari ${currentStatus} ke ${newStatus}`)
-    }
-  }
-
-  /**
-   * Update product quantities when items are rented
-   * @private
-   */
-  private async updateProductQuantities(
-    //eslint-disable-next-line @typescript-eslint/no-explicit-any
-    tx: any, // Prisma transaction type
-    items: CreateTransaksiRequest['items'],
-  ): Promise<void> {
-    for (const item of items) {
-      // Get current product state for validation (including new inventory fields)
-      const currentProduct = await tx.product.findUnique({
-        where: { id: item.produkId },
-        select: {
-          id: true,
-          quantity: true, // Total inventory (unchanged)
-          rentedStock: true, // Currently rented out
-          name: true,
-        },
-      })
-
-      if (!currentProduct) {
-        const error = `Product ${item.produkId} not found during stock update`
-
-        throw new Error(error)
-      }
-
-      // Double-check availability using calculated availableStock (race condition protection)
-      const availableStock = calculateAvailableStock(
-        currentProduct.quantity,
-        currentProduct.rentedStock,
-      )
-      if (availableStock < item.jumlah) {
-        const error = `Insufficient stock for product ${currentProduct.name}. Available: ${availableStock}, Requested: ${item.jumlah}`
-
-        throw new Error(error)
-      }
-
-      // UPDATED: Use rentedStock field only (availableStock calculated)
-      // quantity field remains unchanged (total inventory)
-      // Only update rentedStock, availableStock calculated as (quantity - rentedStock)
-      const updateResult = await tx.product.updateMany({
-        where: {
-          id: item.produkId,
-          rentedStock: { lte: currentProduct.quantity - item.jumlah }, // Ensure sufficient stock
-        },
-        data: {
-          rentedStock: {
-            increment: item.jumlah, // Increase rented stock
-          },
-          // quantity field stays the same (total inventory unchanged)
-          // availableStock now calculated as (quantity - rentedStock)
-        },
-      })
-
-      // Verify the update was successful
-      if (updateResult.count === 0) {
-        const error = `Failed to update quantity for product ${currentProduct.name}. Product may have been modified by another transaction.`
-
-        throw new Error(error)
-      }
-    }
-  }
-
-  /**
-   * Restore product quantities when items are returned or transaction is cancelled
-   * @private
-   */
-  private async restoreProductQuantities(
-    //eslint-disable-next-line @typescript-eslint/no-explicit-any
-    tx: any, // Prisma transaction type
-    transaksiId: string,
-    reason: 'cancelled' | 'returned' = 'returned',
-  ): Promise<void> {
-    // Get transaction items to restore
-    const transaksiItems = await tx.transaksiItem.findMany({
-      where: { transaksiId },
-      include: {
-        produk: {
-          select: {
-            id: true,
-            name: true,
-            quantity: true, // Total inventory (unchanged)
-            rentedStock: true, // Currently rented
-          },
-        },
-      },
-    })
-
-    for (const item of transaksiItems) {
-      const quantityToRestore =
-        reason === 'cancelled'
-          ? item.jumlah // Restore full quantity if cancelled
-          : item.jumlah - (item.jumlahDiambil || 0) // Only restore non-returned items
-
-      if (quantityToRestore > 0) {
-        // UPDATED: Restore inventory using rentedStock field only
-        // quantity field remains unchanged (total inventory)
-        // Only update rentedStock, availableStock calculated as (quantity - rentedStock)
-        await tx.product.update({
-          where: { id: item.produkId },
-          data: {
-            rentedStock: {
-              decrement: quantityToRestore, // Reduce rented stock
-            },
-            // quantity field stays the same (total inventory unchanged)
-          },
-        })
-      }
     }
   }
 

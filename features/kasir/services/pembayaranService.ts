@@ -121,7 +121,7 @@ export class PembayaranService {
       })
 
       // Create activity log
-      const aktivitas = await tx.aktivitasTransaksi.create({
+      await tx.aktivitasTransaksi.create({
         data: {
           transaksiId: transaksi.id, // Use the found transaction's ID
           tipe: 'dibayar',
@@ -138,15 +138,7 @@ export class PembayaranService {
         }
       })
 
-      // 🔥 FIX: Verify activity was created within transaction
-      const activityVerification = await tx.aktivitasTransaksi.findUnique({
-        where: { id: aktivitas.id }
-      })
       
-      if (!activityVerification) {
-        throw new Error(`Critical error: Activity ${aktivitas.id} creation verification failed`)
-      }
-
       // Get payment with transaction details for response
       const paymentWithDetails = await tx.pembayaran.findUnique({
         where: { id: pembayaran.id },
@@ -168,67 +160,25 @@ export class PembayaranService {
       })
 
       return paymentWithDetails!
-    }, {
-      // 🔥 FIX: Increase transaction timeout and set isolation level for consistency
-      timeout: 30000, // 30 seconds timeout
-      isolationLevel: 'ReadCommitted' // Ensure read-after-write consistency
     })
 
-    // 🔥 FIX: Post-transaction consistency verification
-    // Small delay to ensure database consistency across replicas/connections
-    await new Promise(resolve => setTimeout(resolve, 100))
-    
-    // Verify the activity exists after transaction commit
-    let retryCount = 0
-    const maxRetries = 3
-    let activityExists = false
-    
-    while (!activityExists && retryCount < maxRetries) {
-      try {
-        const activityCheck = await this.prisma.aktivitasTransaksi.findFirst({
-          where: {
-            transaksiId: transaksi.id,
-            tipe: 'dibayar',
-            createdBy: this.userId
-          },
-          orderBy: { createdAt: 'desc' }
-        })
-        
-        if (activityCheck) {
-          activityExists = true
-        } else {
-          retryCount++
-          if (retryCount < maxRetries) {
-            await new Promise(resolve => setTimeout(resolve, 200 * retryCount)) // Exponential backoff
-          }
+    // Log audit trail asynchronously for better performance
+    setImmediate(() => {
+      this.auditService.logPembayaranActivity(
+        'create',
+        result.id,
+        undefined,
+        result,
+        {
+          operation: 'payment_creation',
+          transactionCode: result.transaksi.kode,
+          amount: data.jumlah,
+          method: data.metode
         }
-      } catch (error) {
-        retryCount++
-        console.error(`[PAYMENT_VERIFY] Activity verification error (${retryCount}/${maxRetries}):`, error)
-        if (retryCount < maxRetries) {
-          await new Promise(resolve => setTimeout(resolve, 200 * retryCount))
-        }
-      }
-    }
-    
-    if (!activityExists) {
-      console.error(`[PAYMENT_VERIFY] Critical: Activity verification failed after ${maxRetries} retries for ${transaksi.kode}`)
-      // Don't fail the entire payment, but log for debugging
-    }
-
-    // Log audit trail
-    await this.auditService.logPembayaranActivity(
-      'create',
-      result.id,
-      undefined,
-      result,
-      {
-        operation: 'payment_creation',
-        transactionCode: result.transaksi.kode,
-        amount: data.jumlah,
-        method: data.metode
-      }
-    )
+      ).catch(error => {
+        console.error('[AUDIT_ASYNC] Failed to log payment activity:', error)
+      })
+    })
 
     return result as PembayaranWithDetails
   }
@@ -480,19 +430,23 @@ export class PembayaranService {
       })
     })
 
-    // Log audit trail
-    await this.auditService.logPembayaranActivity(
-      'delete',
-      id,
-      payment,
-      undefined,
-      {
-        operation: 'payment_cancellation',
-        reason,
-        transactionCode: payment.transaksi.kode,
-        amount: payment.jumlah.toString()
-      }
-    )
+    // Log audit trail asynchronously for better performance
+    setImmediate(() => {
+      this.auditService.logPembayaranActivity(
+        'delete',
+        id,
+        payment,
+        undefined,
+        {
+          operation: 'payment_cancellation',
+          reason,
+          transactionCode: payment.transaksi.kode,
+          amount: payment.jumlah.toString()
+        }
+      ).catch(error => {
+        console.error('[AUDIT_ASYNC] Failed to log payment cancellation activity:', error)
+      })
+    })
   }
 
   /**
