@@ -75,6 +75,19 @@ export function UnifiedConditionForm({
     )
     const remaining = currentCondition.totalQuantity - totalReturned
     const hasValidConditions = currentCondition.conditions.every((c) => {
+      // Special validation for HILANG category
+      if (c.conditionCategory === 'HILANG') {
+        return (
+          c.kondisiAkhir &&
+          c.kondisiAkhir.length >= 4 &&
+          c.kondisiAkhir.length <= 500 &&
+          c.jumlahKembali === 0 &&
+          c.useManualPricing &&
+          c.manualPrice !== undefined &&
+          c.manualPrice >= 0
+        )
+      }
+
       const basicValidation =
         c.kondisiAkhir &&
         c.kondisiAkhir.length >= 4 &&
@@ -101,7 +114,11 @@ export function UnifiedConditionForm({
     if (totalReturned > currentCondition.totalQuantity) {
       error = `Total ${totalReturned} melebihi maksimal ${currentCondition.totalQuantity} unit`
     } else if (totalReturned === 0) {
-      error = 'Minimal harus mengembalikan 1 unit atau tandai sebagai hilang'
+      // Check if all conditions are HILANG (valid case for totalReturned = 0)
+      const allHilang = currentCondition.conditions.every(c => c.conditionCategory === 'HILANG')
+      if (!allHilang) {
+        error = 'Minimal harus mengembalikan 1 unit atau tandai sebagai hilang'
+      }
     } else if (!hasValidConditions) {
       // Check specific validation issues with enhanced BAIK category validation
       const invalidConditions = currentCondition.conditions.filter((c) => {
@@ -198,6 +215,9 @@ export function UnifiedConditionForm({
     const firstCondition = currentCondition.conditions[0]
     if (!firstCondition?.kondisiAkhir || !firstCondition?.jumlahKembali) return false // Invalid first condition
 
+    // Don't show suggestion for HILANG condition - it should be complete by itself
+    if (firstCondition.conditionCategory === 'HILANG') return false
+
     const shouldShow =
       validation.remaining > 0 && validation.remaining < currentCondition.totalQuantity
 
@@ -210,6 +230,7 @@ export function UnifiedConditionForm({
       totalQuantity: currentCondition.totalQuantity,
       shouldShow,
       firstConditionValid: !!(firstCondition?.kondisiAkhir && firstCondition?.jumlahKembali),
+      firstConditionCategory: firstCondition?.conditionCategory,
     })
 
     return shouldShow
@@ -487,7 +508,7 @@ export function UnifiedConditionForm({
           ))}
 
           {/* Add Condition Button - Progressive Disclosure */}
-          {!disabled && !isLoading && validation.remaining > 0 && (
+          {!disabled && !isLoading && validation.remaining > 0 && shouldShowSuggestion && (
             <div className="flex justify-center pt-4">
               <Button
                 variant="outline"

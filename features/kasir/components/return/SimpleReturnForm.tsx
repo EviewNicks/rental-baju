@@ -170,7 +170,13 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
         condition.conditions.forEach((c) => {
           // Use same logic as ConditionPricingForm (line 227-232)
           const effectivePrice = c.conditionCategory === 'BAIK' ? 0 : c.manualPrice || 0
-          itemPenalty += effectivePrice * c.jumlahKembali
+
+          // Special handling for HILANG condition - use totalQuantity instead of jumlahKembali (which is 0)
+          const quantityForPenalty = c.conditionCategory === 'HILANG'
+            ? condition.totalQuantity
+            : c.jumlahKembali
+
+          itemPenalty += effectivePrice * quantityForPenalty
         })
 
         totalPenalty += itemPenalty
