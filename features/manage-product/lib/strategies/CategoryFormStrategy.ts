@@ -83,6 +83,18 @@ export interface CategoryFormStrategy {
    * Form description/help text untuk user guidance
    */
   getFormDescription(): string
+
+  /**
+   * Transform existing ProductSize data ke CategoryFormData untuk edit mode
+   * Method ini digunakan untuk populate form fields dengan existing product data
+   */
+  transformFromProductSizes(sizes: CreateProductSizeRequest[]): CategoryFormData
+
+  /**
+   * Get initial sizes dari form data untuk edit mode initialization
+   * Method ini meng-transform CategoryFormData ke CreateProductSizeRequest format
+   */
+  getInitialSizes(formData: CategoryFormData): CreateProductSizeRequest[]
 }
 
 // ============== HELPER TYPES ==============

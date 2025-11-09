@@ -19,7 +19,7 @@ import type {
   CreateProductSizeRequest,
 } from '@/features/manage-product/types'
 import { logger } from '@/services/logger'
-import { useEffect, useCallback } from 'react'
+import { useEffect, useCallback, useRef } from 'react'
 import { createMaterialHandlers } from '../../utils/MaterialHandlers'
 import { useProductFormStrategy } from '../../hooks/useProductFormStrategy'
 
@@ -116,7 +116,7 @@ export function ProductForm({
     isLoading: isLoadingAggregatedSizes,
     error: aggregatedSizesError,
   } = useAggregatedSizes(productId, {
-    enabled: !!productId && sizeMode === 'advanced',
+    enabled: !!productId, // Always enabled in edit mode to load size data
     includeBreakdown: true,
   })
 
@@ -179,21 +179,40 @@ export function ProductForm({
 
   // ============== DYNAMIC FORM STRATEGY LOGIC ==============
 
+  // Prevent infinite re-initialization
+  const initializingRef = useRef<boolean>(false)
+
   // Handle category change
   const handleCategoryChange = useCallback(
     (categoryId: string) => {
       // Update form data via parent handler
       onInputChange('categoryId', categoryId)
 
-      // Initialize new strategy
-      initializeStrategy(categoryId)
+      // Initialize new strategy only if not already initializing
+      if (!initializingRef.current) {
+        initializingRef.current = true
+        initializeStrategy(categoryId).finally(() => {
+          // Reset flag after initialization completes
+          setTimeout(() => {
+            initializingRef.current = false
+          }, 100)
+        })
+      }
     },
     [onInputChange, initializeStrategy],
   )
 
+  // Track transformation to prevent infinite loops
+  const transformingRef = useRef<boolean>(false)
+
   // Handle strategy form data changes
   const handleCategoryFormDataChange = useCallback(
     (fieldName: string, value: unknown) => {
+      // Skip transformation if already in progress
+      if (transformingRef.current) {
+        return
+      }
+
       let updatedData = {
         ...categoryFormData,
         [fieldName]: value,
@@ -222,6 +241,7 @@ export function ProductForm({
 
       // Transform to ProductSize and notify using hook methods
       if (currentStrategy && fieldName !== 'categoryId') {
+        transformingRef.current = true
         try {
           const transformedSizes = transformFormDataToSizes(updatedData)
           if (onStrategySizesChange) {
@@ -237,6 +257,11 @@ export function ProductForm({
             'Failed to transform form data',
             error instanceof Error ? error : new Error(String(error)),
           )
+        } finally {
+          // Reset transformation flag after completion
+          setTimeout(() => {
+            transformingRef.current = false
+          }, 50)
         }
       }
     },
@@ -251,12 +276,32 @@ export function ProductForm({
     ],
   )
 
-  // Initialize strategy on component mount and when category changes
+  // Initialize strategy on component mount and when category changes (with prevention)
   useEffect(() => {
-    if (formData.categoryId) {
+    if (formData.categoryId && !initializingRef.current) {
       initializeStrategy(formData.categoryId)
     }
-  }, [formData.categoryId, initializeStrategy])
+  }, [formData.categoryId]) // Remove initializeStrategy from dependency to prevent loop
+
+  // Sync form data with strategy in edit mode (with prevention)
+  useEffect(() => {
+    if (product && currentStrategy && categoryFormData.categoryId && !transformingRef.current) {
+      // In edit mode, ensure strategy sizes are synchronized with form data
+      transformingRef.current = true
+      try {
+        const transformedSizes = currentStrategy.transformToProductSizes(categoryFormData)
+        if (onStrategySizesChange) {
+          onStrategySizesChange(transformedSizes)
+        }
+      } catch (error) {
+        formLogger.error('strategySync', 'Failed to sync form data with strategy', error instanceof Error ? error : new Error(String(error)))
+      } finally {
+        setTimeout(() => {
+          transformingRef.current = false
+        }, 50)
+      }
+    }
+  }, [product?.id, currentStrategy?.type, categoryFormData.categoryId]) // Use specific properties instead of full objects
 
   // Log form validation errors for debugging
   useEffect(() => {

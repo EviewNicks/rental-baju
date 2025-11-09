@@ -154,6 +154,35 @@ export class AccessoriesAgeBasedStrategy implements CategoryFormStrategy {
   }
 
   /**
+   * Get initial sizes dari form data untuk edit mode initialization
+   */
+  getInitialSizes(formData: CategoryFormData): CreateProductSizeRequest[] {
+    const sizes: CreateProductSizeRequest[] = []
+    const jumlahDewasa = this.ensureNumber(formData.jumlahDewasa)
+    const jumlahAnak = this.ensureNumber(formData.jumlahAnak)
+
+    if (jumlahDewasa > 0) {
+      sizes.push({
+        ageCategory: 'ADULT',
+        size: 'UNIVERSAL',
+        quantity: jumlahDewasa,
+        isActive: true
+      })
+    }
+
+    if (jumlahAnak > 0) {
+      sizes.push({
+        ageCategory: 'CHILD',
+        size: 'UNIVERSAL',
+        quantity: jumlahAnak,
+        isActive: true
+      })
+    }
+
+    return sizes
+  }
+
+  /**
    * Calculate total quantity dari form data
    */
   calculateTotalQuantity(formData: CategoryFormData): number {

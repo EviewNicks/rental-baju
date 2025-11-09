@@ -184,6 +184,32 @@ export class ClothingStrategy implements CategoryFormStrategy {
   }
 
   /**
+   * Get initial sizes dari form data untuk edit mode initialization
+   */
+  getInitialSizes(formData: CategoryFormData): CreateProductSizeRequest[] {
+    const sizes: CreateProductSizeRequest[] = []
+    const selectedSizes = formData.sizes || []
+
+    if (Array.isArray(selectedSizes)) {
+      selectedSizes.forEach((sizeValue: string) => {
+        const quantityKey = `quantity_${sizeValue}`
+        const quantity = this.ensureNumber(formData[quantityKey])
+
+        if (quantity > 0) {
+          sizes.push({
+            ageCategory: 'ADULT',
+            size: sizeValue as any, // Type assertion for valid size enum
+            quantity,
+            isActive: true
+          })
+        }
+      })
+    }
+
+    return sizes
+  }
+
+  /**
    * Calculate total quantity dari form data
    */
   calculateTotalQuantity(formData: CategoryFormData): number {

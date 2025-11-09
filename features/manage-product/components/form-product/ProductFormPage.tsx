@@ -1,7 +1,7 @@
 'use client'
 
 import type React from 'react'
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, Save, Check, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -22,6 +22,7 @@ import type {
   CreateProductSizeRequest,
 } from '@/features/manage-product/types'
 import type { CategoryFormData } from '@/features/manage-product/lib/strategies/CategoryFormStrategy'
+import { FormStrategyFactory } from '@/features/manage-product/lib/strategies/StrategyFactory'
 
 // Image format validation constants
 const SUPPORTED_IMAGE_FORMATS = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
@@ -183,6 +184,45 @@ export function ProductFormPage({
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [touched, setTouched] = useState<Record<string, boolean>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // Prevent re-initialization flag
+  const isInitializedRef = useRef<boolean>(false)
+
+  // Initialize category form data from existing product in edit mode
+  useEffect(() => {
+    if (mode === 'edit' && product && product.categoryId && categories.length > 0 && !isInitializedRef.current) {
+      isInitializedRef.current = true
+      try {
+        const category = categories.find((cat: any) => cat.id === product.categoryId)
+        if (category) {
+          const strategy = FormStrategyFactory.createWithContext(category.type, {
+            categoryId: category.id,
+            categoryName: category.name,
+            isEditMode: true,
+            existingData: product.sizes || [],
+          })
+
+          // Transform existing product sizes to form data
+          const formData = strategy.transformFromProductSizes(product.sizes || [])
+          formData.categoryId = product.categoryId
+
+          setCategoryFormData(formData)
+
+          // Initialize strategy sizes
+          const transformedSizes = strategy.getInitialSizes(formData)
+          setStrategySizes(transformedSizes)
+
+          console.log('Edit mode: Initialized category form data:', formData)
+          console.log('Edit mode: Initialized strategy sizes:', transformedSizes)
+        }
+      } catch (error) {
+        console.error('Failed to initialize edit form data:', error)
+        // Fallback to empty form data
+        setCategoryFormData({ categoryId: product.categoryId })
+        setStrategySizes([])
+      }
+    }
+  }, [mode, product?.id, categories.length]) // Use specific dependencies to prevent re-runs
 
   // Simple validation function
   const validateForm = (): boolean => {
