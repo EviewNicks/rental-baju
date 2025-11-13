@@ -78,6 +78,14 @@ export function ConditionPricingForm({
   remainingQuantity = 0,
   productModalAwal = 0,
 }: ConditionPricingFormProps) {
+  // Get condition metadata for UI styling
+  const conditionMeta = useMemo(() => {
+    return (
+      CONDITION_CATEGORIES.find((cat) => cat.value === condition.conditionCategory) ||
+      CONDITION_CATEGORIES[0]
+    )
+  }, [condition.conditionCategory])
+
   // Validation state
   const validation = useMemo(() => {
     const errors: string[] = []
@@ -93,13 +101,8 @@ export function ConditionPricingForm({
       errors.push('Deskripsi kondisi maksimal 500 karakter')
     }
 
-    // Special validation for lost items (HILANG category)
-    const isLostCondition = condition.conditionCategory === 'HILANG'
-
-    if (!isLostCondition && (!condition.jumlahKembali || condition.jumlahKembali <= 0)) {
+    if (!condition.jumlahKembali || condition.jumlahKembali <= 0) {
       errors.push('Jumlah harus lebih dari 0')
-    } else if (isLostCondition && condition.jumlahKembali !== 0) {
-      errors.push('Barang hilang harus memiliki jumlah kembali = 0')
     } else if (condition.jumlahKembali > maxQuantity) {
       errors.push(`Jumlah tidak boleh lebih dari ${maxQuantity}`)
     }
@@ -111,17 +114,12 @@ export function ConditionPricingForm({
       }
     }
 
-    // Smart warnings - simplified for HILANG category
+    // Smart warnings
     if (condition.conditionCategory === 'HILANG' && condition.jumlahKembali > 1) {
       warnings.push('Item hilang biasanya dicatat per unit untuk tracking yang lebih baik')
     }
 
-    // Only show remaining quantity warning for non-HILANG categories
-    if (
-      condition.conditionCategory !== 'HILANG' &&
-      condition.conditionCategory === 'BAIK' &&
-      remainingQuantity > 0
-    ) {
+    if (condition.conditionCategory === 'BAIK' && remainingQuantity > 0) {
       warnings.push(`Masih ada ${remainingQuantity} unit yang belum dialokasikan`)
     }
 
@@ -158,30 +156,17 @@ export function ConditionPricingForm({
         useManualPricing: value !== 'BAIK', // Auto-set based on category
       }
 
-      // Auto-correct quantity for HILANG category
-      if (value === 'HILANG') {
-        newCondition.jumlahKembali = 0 // Auto-set to 0 for lost items
-        newCondition.useManualPricing = true // Force manual pricing for lost items
-        // Auto-populate penalty with modalAwal for lost items
-        if (productModalAwal > 0) {
-          newCondition.manualPrice = productModalAwal
-          newCondition.modalAwal = productModalAwal // CRITICAL: Ensure modalAwal field is populated for backend
-        }
+      // Set price based on simplified logic
+      if (value === 'BAIK') {
+        newCondition.manualPrice = 0 // Fixed for BAIK category
       } else {
-        // Restore reasonable default when switching away from HILANG
-        if (condition.conditionCategory === 'HILANG' && condition.jumlahKembali === 0) {
-          newCondition.jumlahKembali = 1 // Reset to reasonable default
-        }
-        newCondition.useManualPricing = value !== 'BAIK'
-        // Clear manual price for non-HILANG categories if not set
-        if (!condition.manualPrice || condition.manualPrice === productModalAwal) {
-          newCondition.manualPrice = value === 'BAIK' ? 0 : undefined
-        }
+        // For other categories, keep existing price or clear it to force manual input
+        newCondition.manualPrice = condition.manualPrice || undefined
       }
 
       onChange(newCondition)
     },
-    [condition, onChange, productModalAwal],
+    [condition, onChange],
   )
 
   // Handle description change
@@ -213,6 +198,7 @@ export function ConditionPricingForm({
     [condition, onChange],
   )
 
+
   // Handle manual price change
   const handleManualPriceChange = useCallback(
     (value: string) => {
@@ -236,6 +222,14 @@ export function ConditionPricingForm({
     })
     onRemove?.()
   }, [onRemove, condition])
+
+  // Calculate effective price - simplified logic
+  const effectivePrice = useMemo(() => {
+    if (condition.conditionCategory === 'BAIK') {
+      return 0 // Fixed price for BAIK category
+    }
+    return condition.manualPrice || 0 // Manual input for other categories
+  }, [condition.conditionCategory, condition.manualPrice])
 
   return (
     <div className="space-y-4">
@@ -306,29 +300,17 @@ export function ConditionPricingForm({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
           {/* Quantity Input */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">
-              Jumlah
-              {condition.conditionCategory === 'HILANG' && (
-                <span className="text-gray-500 font-normal"> (Otomatis 0 untuk hilang)</span>
-              )}
-            </label>
+            <label className="text-sm font-medium text-gray-700">Jumlah</label>
             <Input
               type="number"
               min="1"
               max={maxQuantity}
               value={condition.jumlahKembali || ''}
               onChange={(e) => handleQuantityChange(e.target.value)}
-              disabled={disabled || condition.conditionCategory === 'HILANG'}
-              className={`text-center ${
-                condition.conditionCategory === 'HILANG' ? 'bg-gray-100 cursor-not-allowed' : ''
-              }`}
-              placeholder={condition.conditionCategory === 'HILANG' ? '0' : '0'}
+              disabled={disabled}
+              className="text-center"
+              placeholder="0"
             />
-            {condition.conditionCategory === 'HILANG' && (
-              <p className="text-xs text-gray-500 mt-1">
-                💡 Barang hilang otomatis memiliki jumlah kembali = 0
-              </p>
-            )}
           </div>
 
           {/* Spacer for consistent layout */}
@@ -338,7 +320,9 @@ export function ConditionPricingForm({
 
           {/* Price Input */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">Harga Penalty (IDR)</label>
+            <label className="text-sm font-medium text-gray-700">
+              Harga Penalty (IDR)
+            </label>
             <div className="relative">
               <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
@@ -348,34 +332,21 @@ export function ConditionPricingForm({
                 onChange={(e) => handleManualPriceChange(e.target.value)}
                 disabled={disabled || condition.conditionCategory === 'BAIK'}
                 className="pl-10"
-                placeholder={
-                  condition.conditionCategory === 'BAIK' ? '0' : 'Masukkan harga penalty'
-                }
+                placeholder={condition.conditionCategory === 'BAIK' ? '0' : 'Masukkan harga penalty'}
               />
             </div>
             {condition.conditionCategory === 'BAIK' && (
-              <div className="text-xs text-green-600">✓ Kondisi baik - tidak ada penalty</div>
+              <div className="text-xs text-green-600">
+                ✓ Kondisi baik - tidak ada penalty
+              </div>
             )}
             {condition.conditionCategory === 'HILANG' && (
-              <div className="text-xs text-green-600">
-                ✓ Otomatis: Rp {productModalAwal.toLocaleString('id-ID')} (sesuai modal awal)
+              <div className="text-xs text-gray-500">
+                Disarankan: modal awal produk (Rp {productModalAwal.toLocaleString('id-ID')})
               </div>
             )}
           </div>
         </div>
-
-        {/* Lost Item Help Text */}
-        {condition.conditionCategory === 'HILANG' && (
-          <div className="mt-2 p-2 bg-blue-50 rounded-md border border-blue-200">
-            <div className="flex items-center gap-2 text-sm text-blue-700">
-              <AlertTriangle className="h-4 w-4" />
-              <span>
-                <strong>Barang Hilang:</strong> Item tidak dikembalikan, jumlah kembali otomatis =
-                0, penalty otomatis = Rp {productModalAwal.toLocaleString('id-ID')}
-              </span>
-            </div>
-          </div>
-        )}
 
         {/* Remove Button */}
         {canRemove && (
@@ -422,6 +393,31 @@ export function ConditionPricingForm({
             </ul>
           </AlertDescription>
         </Alert>
+      )}
+
+      {/* Pricing Summary */}
+      {validation.isValid && condition.conditionCategory && (
+        <div className="flex items-center justify-between text-sm p-3 bg-gray-50 rounded-lg">
+          <div className="flex items-center gap-3">
+            <Badge variant="outline" className={conditionMeta.color}>
+              {condition.jumlahKembali}x {conditionMeta.label}
+            </Badge>
+            {condition.conditionCategory === 'HILANG' && (
+              <span className="text-gray-600">
+                Modal: Rp {productModalAwal.toLocaleString('id-ID')}
+              </span>
+            )}
+          </div>
+
+          <div className="text-right">
+            <div className="font-medium text-gray-900">
+              Total: Rp {(effectivePrice * condition.jumlahKembali).toLocaleString('id-ID')}
+            </div>
+            <div className="text-xs text-gray-500">
+              @ Rp {effectivePrice.toLocaleString('id-ID')} per unit
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )
