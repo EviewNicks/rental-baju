@@ -1,89 +1,106 @@
 {
-    "success": true,
-    "data": {
-        "id": "b25601b6-1a98-414f-a5f8-c89c4cddab78",
-        "kode": "TXN-20251108-006",
-        "penyewa": {
-            "id": "edd68eb5-ba79-4b78-851b-7125b6b455be",
-            "nama": "awal",
-            "telepon": "08123456789",
-            "alamat": "Indonesia Barru , jl.empang no.4"
+    "id": "57c09725-1c0e-44bf-949f-9d67fa74f979",
+    "code": "PRD01",
+    "name": "Dress Pesta Merah 679",
+    "description": null,
+    "categoryId": "60e62bdd-cd50-4517-bae9-252afdf34323",
+    "category": {
+        "id": "60e62bdd-cd50-4517-bae9-252afdf34323",
+        "name": "percobaan ",
+        "color": "#EF4444",
+        "type": "clothing",
+        "products": [],
+        "createdAt": "2025-11-15T06:36:44.680Z",
+        "updatedAt": "2025-11-15T06:36:44.680Z",
+        "createdBy": "user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH"
+    },
+    "modalAwal": "800000",
+    "currentPrice": "30000",
+    "quantity": 19,
+    "rentedStock": 0,
+    "materialId": null,
+    "materialCost": null,
+    "materialQuantity": null,
+    "status": "AVAILABLE",
+    "imageUrl": "https://pmjxdencfgkbjuyjndbp.supabase.co/storage/v1/object/public/products/products/PRD01/1763188770641.jpg",
+    "sizes": [
+        {
+            "id": "9ac64b67-5386-4d8d-9b76-5cc6870f5bda",
+            "productId": "57c09725-1c0e-44bf-949f-9d67fa74f979",
+            "ageCategory": "ADULT",
+            "size": "XS",
+            "quantity": 7,
+            "isActive": true,
+            "createdAt": "2025-11-15T06:39:36.545Z",
+            "updatedAt": "2025-11-15T06:39:36.545Z",
+            "createdBy": "user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH",
+            "product": {}
         },
-        "status": "active",
-        "totalHarga": 80000,
-        "jumlahBayar": 80000,
-        "sisaBayar": 0,
-        "tglMulai": "2025-11-14T00:00:00.000Z",
-        "tglSelesai": "2025-11-18T00:00:00.000Z",
-        "tglKembali": null,
-        "metodeBayar": "tunai",
-        "catatan": null,
-        "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
-        "createdAt": "2025-11-08T06:51:19.888Z",
-        "updatedAt": "2025-11-08T06:51:26.431Z",
-        "items": [
+        {
+            "id": "b088d653-66d2-46a7-bfa4-388a9fe21891",
+            "productId": "57c09725-1c0e-44bf-949f-9d67fa74f979",
+            "ageCategory": "ADULT",
+            "size": "XL",
+            "quantity": 8,
+            "isActive": true,
+            "createdAt": "2025-11-15T06:39:36.545Z",
+            "updatedAt": "2025-11-15T06:39:36.545Z",
+            "createdBy": "user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH",
+            "product": {}
+        },
+        {
+            "id": "ae6636ac-546a-476d-9b10-60374d805116",
+            "productId": "57c09725-1c0e-44bf-949f-9d67fa74f979",
+            "ageCategory": "ADULT",
+            "size": "XXL",
+            "quantity": 4,
+            "isActive": true,
+            "createdAt": "2025-11-15T06:39:36.545Z",
+            "updatedAt": "2025-11-15T06:39:36.545Z",
+            "createdBy": "user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH",
+            "product": {}
+        }
+    ],
+    "isActive": true,
+    "createdAt": "2025-11-15T06:39:35.863Z",
+    "updatedAt": "2025-11-15T06:39:35.863Z",
+    "createdBy": "user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH",
+    "aggregation": {
+        "productId": "57c09725-1c0e-44bf-949f-9d67fa74f979",
+        "totalQuantity": 19,
+        "aggregatedSizes": [
             {
-                "id": "b5ca729c-2497-481d-bd32-b68c0cbb7bf7",
-                "produk": {
-                    "id": "0af739d8-76ac-42e0-a7a8-90f144295db8",
-                    "code": "PRD05",
-                    "name": "Baju abaru",
-                    "modalAwal": 80000,
-                    "imageUrl": "https://pmjxdencfgkbjuyjndbp.supabase.co/storage/v1/object/public/products/products/PRD05/1762086735609.jpg",
-                    "size": null,
-                    "category": "baju Baru"
+                "size": "XS",
+                "totalQuantity": 7,
+                "breakdown": {
+                    "adult": 7
                 },
-                "jumlah": 1,
-                "jumlahDiambil": 0,
-                "hargaSewa": 80000,
-                "durasi": 4,
-                "subtotal": 80000,
-                "kondisiAwal": "34bb3419-9340-4ade-801a-0e5eb2982e33|XS|ADULT|baik",
-                "statusKembali": "belum",
-                "totalReturnPenalty": 0
-            }
-        ],
-        "pembayaran": [
-            {
-                "id": "5d9a7af5-8123-487a-aa92-316fefa65477",
-                "jumlah": 80000,
-                "metode": "tunai",
-                "referensi": null,
-                "catatan": "Pembayaran awal transaksi",
-                "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
-                "createdAt": "2025-11-08T06:51:26.153Z"
-            }
-        ],
-        "aktivitas": [
-            {
-                "id": "f6852615-b382-4899-b2e6-eb961f323d68",
-                "tipe": "dibayar",
-                "deskripsi": "Pembayaran tunai sebesar Rp 80.000",
-                "data": {
-                    "amount": 80000,
-                    "method": "tunai",
-                    "newTotal": "80000",
-                    "paymentId": "5d9a7af5-8123-487a-aa92-316fefa65477",
-                    "remaining": "0"
-                },
-                "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
-                "createdAt": "2025-11-08T06:51:26.708Z"
+                "hasMultipleCategories": false
             },
             {
-                "id": "80ec5187-55c7-4f05-81a3-f8c6d26d5d08",
-                "tipe": "dibuat",
-                "deskripsi": "Transaksi TXN-20251108-006 dibuat dengan optimized inventory system",
-                "data": {
-                    "items": 1,
-                    "sizeAware": true,
-                    "totalHarga": "80000",
-                    "optimizedSystem": true,
-                    "transactionDuration": 1612
+                "size": "XL",
+                "totalQuantity": 8,
+                "breakdown": {
+                    "adult": 8
                 },
-                "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
-                "createdAt": "2025-11-08T06:51:21.226Z"
+                "hasMultipleCategories": false
+            },
+            {
+                "size": "XXL",
+                "totalQuantity": 4,
+                "breakdown": {
+                    "adult": 4
+                },
+                "hasMultipleCategories": false
             }
-        ]
-    },
-    "message": "Detail transaksi berhasil diambil"
+        ],
+        "hasAdvancedSizing": true,
+        "categoryBreakdown": {
+            "adult": 19,
+            "child": 0,
+            "universal": 0,
+            "total": 19
+        },
+        "lastCalculated": "2025-11-15T06:41:55.138Z"
+    }
 }
