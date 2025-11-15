@@ -1,342 +1,383 @@
-# =� **Task Plan: Category Type Enhancement & Dynamic Form Implementation**
 
-## =� **EPIC: Dynamic Product Form System**
+# =🚀 **EPIC: Kasir Management System**
 
-**Objective**: Implement category-based dynamic form system untuk produk accessories dengan field input berbeda dari clothing biasa.
+**Objective**: Implement kasir selection feature dalam transaksi flow untuk tracking kasir yang melayani transaksi.
 
-**Timeline**: 2-3 weeks
+**Timeline**: 1-2 weeks
 **Priority**: HIGH
 **Team**: Frontend + Backend coordination
 
 ---
 
-## <� **STORY 1: Database Schema Enhancement**
+## <🎯 **STORY 1: Database Schema Enhancement**
 
-### **Task 1.1: Add Category Type Column - COMPLETED ✅**
+### **Task 1.1: Create Kasir Table - TODO**
 
 - **File**: `prisma/schema.prisma`
-- **Action**: Added `type String? @default("clothing")` ke Category model
-- **Result**: Category.type field successfully added
-- **Acceptance**:
-  - [✓] Column added successfully
-  - [✓] Default value: 'clothing'
-  - [✓] Existing categories preserve current data
+- **Action**: Add Kasir model dengan basic fields
+- **Schema**:
+  ```prisma
+  model Kasir {
+    id        String   @id @default(cuid())
+    nama      String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    createdBy String?
 
-### **Task 1.2: Update Existing Categories - COMPLETED ✅**
-
-- **File**: Manual database migration via `db execute`
-- **Action**: Updated existing categories dengan appropriate type
-- **Categories Updated**:
-  - 'Sarung', 'Songket' → 'accessories_age_based'
-  - 'Anting', 'Bando', 'Gelang', 'Kalung' → 'accessories_universal'
-  - Other categories → 'clothing' (default)
-- **Method**: Used `prisma db execute --file` manual migration
-- **Acceptance**:
-  - [✓] Sarung & Songket → accessories_age_based
-  - [✓] Anting, Bando, Gelang, Kalung → accessories_universal
-  - [✓] Other categories → clothing (default)
-
-### **Task 1.3: Generate Prisma Client - COMPLETED ✅**
-
-- **Action**: Generated Prisma client dengan new schema
-- **Command**: `npx prisma generate`
-- **Result**: Prisma Client v6.13.0 generated in 123ms
-- **Acceptance**:
-  - [✓] New types include Category.type field
-  - [✓] No TypeScript errors
-  - [✓] Prisma client updated
-
----
-
-## <� **STORY 2: API Layer Enhancement**
-
-### **Task 2.1: Update Categories API Validation**
-
-- **File**: `app/api/categories/route.ts`
-- **Action**: Add type field support ke validation schema
-- **Changes**:
-  ```typescript
-  interface CreateCategoryRequest {
-    name: string
-    color: string
-    type?: 'clothing' | 'accessories_age_based' | 'accessories_universal'
+    // Relations
+    transaksi Transaksi[]
   }
   ```
 - **Acceptance**:
-  - [✓] POST supports type field
-  - [✓] Zod validation for enum values
-  - [✓] Backward compatibility maintained
+  - [ ] Kasir table created successfully
+  - [ ] Migration generated without errors
+  - [ ] TypeScript types updated
 
-### **Task 2.2: Update Categories API Response**
+### **Task 1.2: Update Transaksi Table - TODO**
 
-- **File**: `app/api/categories/route.ts`
-- **Action**: Include type field di GET response
-- **Changes**: Return category objects dengan type property
-- **Acceptance**:
-  - [✓] GET /api/categories includes type field
-  - [✓] Existing categories show correct type
-  - [✓] Consistent API response format
-
-### **Task 2.3: Validate Products API Compatibility**
-
-- **File**: `app/api/products/route.ts`
-- **Action**: Verify existing API supports dynamic forms
-- **Analysis**:
-  - [✓] Sizes JSON parsing working 
-  - [✓] ProductSize creation supported 
-  - [✓] Advanced validation functional 
-  - [✓] No breaking changes needed 
-
-### **Task 2.4: ProductService Category Type Integration - COMPLETED ✅**
-
-- **File**`features/manage-product/services/productService.ts`
-- **Action**: Enhance ProductService dengan category type awareness
-- **Changes**:
-
-  ```typescript
-  // ENHANCED: Get category dengan type information
-  const category = await this.getCategoryWithTypes(validatedData.categoryId)
-
-  // NEW: Category type-specific validation
-  await this.validateSizesForCategoryType(validatedData.sizes, category.type)
-
-  // NEW: Category type-specific business logic
-  const processedSizes = this.processSizesByCategoryType(sizes, category.type)
-  ```
-
-- **Acceptance**:
-  - [✓] ProductService dapat category type info
-  - [✓] Category type-specific validation implemented
-  - [✓] Size processing logic per category type
-  - [✓] Backward compatibility maintained
-
-### **Task 2.5: Category-Specific Size Validation - COMPLETED ✅**
-
-- **File**: `features/manage-product/lib/validation/productSchema.ts`
-- **Action**: Add category type-specific size validation schemas
-- **Changes**:
-  ```typescript
-  // NEW: Category type size validators
-  accessoriesAgeBasedSizeSchema // Dewasa/Anak fields
-  accessoriesUniversalSizeSchema // Single Jumlah field
-  clothingSizeSchema // S/M/L/XL fields
-  createCategoryAwareSizeSchema() // Dynamic schema factory
-  ```
-- **Acceptance**:
-  - [✓] accessories_age_based: Dewasa/Anak validation
-  - [✓] accessories_universal: Single quantity validation
-  - [✓] clothing: Size validation (S,M,L,XL,XXL)
-  - [✓] CSV pattern mapping support
-
-### **Task 2.6: Size Processing Logic Implementation - COMPLETED ✅**
-
-- **File**: `features/manage-product/services/productService.ts`
-- **Action**: Implement size transformation logic per category type
-- **CSV Pattern Support**:
-  - `sarung.csv` → accessories_age_based (Dewasa/Anak columns)
-  - `anting.csv` → accessories_universal (Single Jumlah column)
-  - `organze.csv` → clothing (Size columns)
-- **Acceptance**:
-  - [✓] CSV data pattern mapping
-  - [✓] Size transformation per category type
-  - [✓] Bulk import with category type detection
-  - [✓] Error handling for invalid patterns
-- **Result**: IMPLEMENTATION COMPLETED - Full category type support
-
----
-
-## <� **STORY 3: Dynamic Form Strategy Pattern**
-
-### **Task 3.1: Create Category Form Strategy Interface**
-
-- **File**: `features/manage-product/lib/strategies/categoryFormStrategy.ts`
-- **Action**: Define strategy pattern untuk dynamic forms
-- **Interface**:
-  ```typescript
-  interface CategoryFormStrategy {
-    type: CategoryType
-    getFormFields(): FormFieldConfig[]
-    transformToProductSizes(formData: FormData): CreateProductSizeRequest[]
-    getValidationSchema(): ZodSchema
+- **File**: `prisma/schema.prisma`
+- **Action**: Add kasirId field ke Transaksi model
+- **Schema**:
+  ```prisma
+  model Transaksi {
+    // ... existing fields
+    kasirId String?
+    kasir   Kasir? @relation(fields: [kasirId], references: [id])
   }
   ```
 - **Acceptance**:
-  - [✓] TypeScript interface defined
-  - [✓] Form field configuration structure
-  - [✓] Data transformation methods
-  - [✓] Validation schema integration
+  - [ ] kasirId field added successfully
+  - [ ] Foreign key relationship established
+  - [ ] Migration compatible dengan existing data
 
-### **Task 3.2: Implement Category Strategy Classes**
+### **Task 1.3: Run Database Migration - TODO**
 
-- **File**: `features/manage-product/lib/strategies/strategies.ts`
-- **Classes**:
-  - `AccessoriesAgeBasedStrategy` (Sarung, Songket)
-  - `AccessoriesUniversalStrategy` (Anting, Gelang, Kalung)
-  - `ClothingStrategy` (Baju, Celana)
-- **Acceptance**:
-  - [✓] All 3 strategies implemented
-  - [✓] Form field definitions correct
-  - [✓] Data transformation working
-  - [✓] Validation schemas defined
-
-### **Task 3.3: Create Strategy Factory**
-
-- **File**: `features/manage-product/lib/strategies/strategyFactory.ts`
-- **Action**: Factory untuk strategy selection
-- **Implementation**:
-  ```typescript
-  class FormStrategyFactory {
-    static create(categoryType: string): CategoryFormStrategy {
-      switch (categoryType) {
-        case 'accessories_age_based':
-          return new AccessoriesAgeBasedStrategy()
-        case 'accessories_universal':
-          return new AccessoriesUniversalStrategy()
-        default:
-          return new ClothingStrategy()
-      }
-    }
-  }
+- **Action**: Execute migration untuk schema changes
+- **Commands**:
+  ```bash
+  npx prisma migrate dev --name add-kasir-table
+  npx prisma generate
   ```
 - **Acceptance**:
-  - [✓] Factory pattern implemented
-  - [✓] Correct strategy selection
-  - [✓] Fallback to default strategy
-  - [✓] Error handling for invalid types
+  - [ ] Migration executed successfully
+  - [ ] Prisma client updated
+  - [ ] Database schema verified
 
 ---
 
-## <� **STORY 4: Dynamic Form Components**
+## <🔧 **STORY 2: API Layer Implementation**
 
-### **Task 4.1: Create Category-Specific Field Components**
+### **Task 2.1: Create Kasir API Route - TODO**
+
+- **File**: `app/api/kasir/kasir/route.ts`
+- **Action**: Create CRUD API untuk kasir management
+- **Endpoints**:
+  - POST /api/kasir/kasir - Create new kasir
+  - GET /api/kasir/kasir - Get paginated kasir list
+  - GET /api/kasir/kasir/[id] - Get kasir by ID
+- **Pattern**: Following exact pattern of penyewa route.ts
+- **Acceptance**:
+  - [ ] POST endpoint working dengan validation
+  - [ ] GET endpoint dengan pagination
+  - [ ] Error handling implemented
+  - [ ] Rate limiting applied
+
+### **Task 2.2: Implement KasirService - TODO**
+
+- **File**: `features/kasir/services/kasirService.ts`
+- **Action**: Create service layer untuk kasir operations
+- **Methods**:
+  - `createKasir(data: CreateKasirRequest): Promise<Kasir>`
+  - `getKasirList(params: KasirQueryParams): Promise<KasirListResponse>`
+  - `getKasirById(id: string): Promise<Kasir>`
+- **Pattern**: Following PenyewaService implementation
+- **Acceptance**:
+  - [ ] Service methods implemented
+  - [ ] Database operations working
+  - [ ] Error handling completed
+  - [ ] Input validation
+
+### **Task 2.3: Update Validation Schema - TODO**
+
+- **File**: `features/kasir/lib/validation/kasirSchema.ts`
+- **Action**: Add kasir validation schemas
+- **Schemas**:
+  ```typescript
+  const createKasirSchema = z.object({
+    nama: z.string().min(1, 'Nama kasir harus diisi').max(255)
+  })
+
+  const kasirQuerySchema = z.object({
+    page: z.string().transform(Number),
+    limit: z.string().transform(Number),
+    search: z.string().optional()
+  })
+  ```
+- **Acceptance**:
+  - [ ] Create kasir schema validated
+  - [ ] Query parameter schema working
+  - [ ] Error messages in Indonesian
+
+### **Task 2.4: Update Kasir Types - TODO**
+
+- **File**: `features/kasir/types/index.ts`
+- **Action**: Add kasir-related TypeScript types
+- **Types**:
+  ```typescript
+  export interface CreateKasirRequest {
+    nama: string
+  }
+
+  export interface Kasir {
+    id: string
+    nama: string
+    createdAt: Date
+    updatedAt: Date
+    createdBy?: string
+  }
+  ```
+- **Acceptance**:
+  - [ ] All kasir types defined
+  - [ ] Consistent dengan existing type patterns
+  - [ ] Full type safety
+
+---
+
+## <🎨 **STORY 3: UI Components Implementation**
+
+### **Task 3.1: Create CashierSelectionStep Component - TODO**
+
+- **File**: `features/kasir/components/form/CashierSelectionStep.tsx`
+- **Action**: Create component untuk kasir selection
+- **Features**:
+  - Search/filter kasir list
+  - Select kasir dari dropdown
+  - Validation untuk required field
+  - Integration dengan form workflow
+- **Pattern**: Following CustomerBiodataStep pattern
+- **Acceptance**:
+  - [ ] Component renders correctly
+  - [ ] Search functionality working
+  - [ ] Kasir selection functional
+  - [ ] Form validation integrated
+
+### **Task 3.2: Create useKasir Hook - TODO**
+
+- **File**: `features/kasir/hooks/useKasir.ts`
+- **Action**: Create custom hook untuk kasir operations
+- **Features**:
+  - Fetch kasir list dengan pagination
+  - Create new kasir
+  - Search kasir by name
+  - Error handling
+- **Pattern**: Following usePenyewa hook pattern
+- **Acceptance**:
+  - [ ] Hook provides kasir list
+  - [ ] Create kasir functionality
+  - [ ] Search capabilities
+  - [ ] Loading states
+
+### **Task 3.3: Update TransactionFormPage - TODO**
+
+- **File**: `features/kasir/components/form/TransactionFormPage.tsx`
+- **Action**: Integrate CashierSelectionStep ke form workflow
+- **Changes**:
+  - Add CashierSelectionStep import
+  - Update form steps dari 3 ke 4
+  - Add cashier state management
+  - Add new step rendering logic
+- **Acceptance**:
+  - [ ] CashierSelectionStep integrated
+  - [ ] Form workflow updated ke 4 steps
+  - [ ] Navigation between steps working
+  - [ ] State management correct
+
+### **Task 3.4: Update useTransactionForm Hook - TODO**
+
+- **File**: `features/kasir/hooks/useTransactionForm.ts`
+- **Action**: Add kasir management ke form state
+- **Changes**:
+  - Add cashier state
+  - Add setCashier method
+  - Update validation logic
+  - Update submission payload
+- **Acceptance**:
+  - [ ] Cashier state managed
+  - [ ] Form validation includes cashier
+  - [ ] Submission payload includes kasirId
+  - [ ] Backward compatibility maintained
+
+---
+
+## <⚙️ **STORY 4: Transaction Flow Integration**
+
+### **Task 4.1: Update Transaction Workflow Config - TODO**
+
+- **File**: `features/kasir/lib/constants/workflowConfig.ts`
+- **Action**: Update workflow steps config
+- **Changes**:
+  ```typescript
+  export const transactionFormSteps = [
+    { id: 1, title: 'Pilih Produk' },
+    { id: 2, title: 'Pilih Kasir' },     // NEW
+    { id: 3, title: 'Data Penyewa' },   // Renumbered
+    { id: 4, title: 'Ringkasan' }       // Renumbered
+  ]
+  ```
+- **Acceptance**:
+  - [ ] 4 steps configured correctly
+  - [ ] Step order logical
+  - [ ] All step validations updated
+
+### **Task 4.2: Update TransaksiService - TODO**
+
+- **File**: `features/kasir/services/transaksiService.ts`
+- **Action**: Add kasirId ke transaction creation
+- **Changes**:
+  - Update createTransaksiSizeAware method
+  - Add kasirId parameter
+  - Validate kasir existence
+  - Include kasir in activity logging
+- **Acceptance**:
+  - [ ] kasirId included dalam transaction creation
+  - [ ] Kasir validation implemented
+  - [ ] Activity logging includes cashier info
+  - [ ] Error handling for invalid kasir
+
+### **Task 4.3: Update API Validation - TODO**
+
+- **File**: `app/api/kasir/transaksi/route.ts`
+- **Action**: Update transaction creation schema
+- **Changes**:
+  ```typescript
+  const createTransaksiSchema = z.object({
+    // ... existing fields
+    kasirId: z.string().min(1, 'Kasir harus dipilih')
+  })
+  ```
+- **Acceptance**:
+  - [ ] kasirId field validated
+  - [ ] Required field validation
+  - [ ] Error message in Indonesian
+
+---
+
+## <✅ **STORY 5: Testing & Integration**
+
+### **Task 5.1: Unit Testing - TODO**
 
 - **Files**:
-  - `features/manage-product/components/dynamic-form/AccessoriesAgeBasedFields.tsx`
-  - `features/manage-product/components/dynamic-form/AccessoriesUniversalFields.tsx`
-  - `features/manage-product/components/dynamic-form/ClothingFields.tsx`
+  - `features/kasir/services/kasirService.test.ts`
+  - `features/kasir/hooks/useKasir.test.ts`
+  - `features/kasir/components/form/CashierSelectionStep.test.tsx`
+- **Action**: Create comprehensive unit tests
+- **Coverage**: Minimum 80%
 - **Acceptance**:
-  - [✓] Age-based fields: Jumlah Dewasa + Jumlah Anak
-  - [✓] Universal fields: Jumlah Total
-  - [✓] Clothing fields: Size management (S/M/L/XL)
-  - [✓] Consistent styling dengan existing forms
+  - [ ] Service layer tests
+  - [ ] Hook functionality tests
+  - [ ] Component rendering tests
+  - [ ] Coverage requirements met
 
-### **Task 4.2: Update ProductForm Component**
+### **Task 5.2: Integration Testing - TODO**
 
-- **File**: `features/manage-product/components/form-product/ProductForm.tsx`
-- **Action**: Integrate dynamic field rendering
-- **Changes**:
-  - Add category type detection
-  - Implement strategy selection
-  - Dynamic field rendering based on strategy
-  - Form data transformation before API submission
-- **Acceptance**:
-  - [✓] Category selection triggers form change
-  - [✓] Correct fields displayed per category type
-  - [✓] Form validation working per strategy
-  - [✓] Data transformation to ProductSize format
-
-### **Task 4.3: Integrate dengan Existing Form Structure**
-
-- **Action**: Ensure compatibility dengan existing ProductFormPage
-- **Files**: `ProductFormPage.tsx`, related components
-- **Acceptance**:
-  - [✓] No breaking changes to existing workflows
-  - [✓] Backward compatibility dengan existing products
-  - [✓] Consistent navigation and breadcrumbs
-  - [✓] Error handling preserved
-
----
-
-## <� **STORY 5: Integration & Testing**
-
-### **Task 5.1: Database Migration Testing**
-
-- **Action**: Execute database changes safely
-- **Steps**:
-  - [✓] Create database backup
-  - [✓] Execute ALTER TABLE statement
-  - [✓] Run UPDATE statements for existing categories
-  - [✓] Verify data integrity
-  - [✓] Test database connections
-
-### **Task 5.2: API Integration Testing**
-
-- **Action**: Test complete API flow
-- **Tests**:
-  - [ ] GET /api/categories returns type field
-  - [ ] POST /api/categories supports type parameter
-  - [ ] POST /api/products accepts dynamic sizes JSON
-  - [ ] Product creation successful untuk semua category types
-
-### **Task 5.3: Form Integration Testing**
-
-- **Action**: End-to-end form testing
+- **Files**: `__tests__/integration/kasir/`
+- **Action**: Test complete cashier flow
 - **Scenarios**:
-  - [ ] Create Sarung produk dengan Dewasa/Anak fields
-  - [ ] Create Anting produk dengan single Jumlah field
-  - [ ] Create Baju produk dengan size management
-  - [ ] Form validation dan error handling
-  - [ ] Image upload integration
+  - Create kasir → Select in transaction → Complete transaction
+  - Invalid kasir handling
+  - Concurrent transaction scenarios
+- **Acceptance**:
+  - [ ] End-to-end cashier flow working
+  - [ ] Error scenarios handled
+  - [ ] Database integrity maintained
 
-### **Task 5.4: User Acceptance Testing**
+### **Task 5.3: E2E Testing - TODO**
 
-- **Action**: Real-world usage testing
-- **Test Cases**:
-  - [ ] Complete product creation flow untuk semua category types
-  - [ ] Form performance dan responsiveness
-  - [ ] Error message clarity dan helpfulness
-  - [ ] Mobile responsiveness testing
-  - [ ] Accessibility compliance
+- **Files**: `__tests__/playwright/kasir/`
+- **Action**: User journey testing
+- **Scenarios**:
+  - Complete transaction dengan cashier selection
+  - Form validation scenarios
+  - Mobile responsiveness
+- **Acceptance**:
+  - [ ] User journey smooth
+  - [ ] Mobile friendly
+  - [ ] Accessibility compliant
 
 ---
 
-## =' **CRITICAL PATH ANALYSIS**
+## <📊 **STORY 6: Performance & Security**
+
+### **Task 6.1: Performance Optimization - TODO**
+
+- **Action**: Optimize kasir loading and caching
+- **Optimizations**:
+  - Implement caching untuk kasir list
+  - Optimize database queries
+  - Lazy loading untuk large kasir lists
+- **Acceptance**:
+  - [ ] Kasir list loads < 500ms
+  - [ ] Caching implemented
+  - [ ] Memory usage optimized
+
+### **Task 6.2: Security Enhancement - TODO**
+
+- **Action**: Add security measures
+- **Security**:
+  - Rate limiting untuk kasir creation
+  - Input sanitization
+  - Permission validation
+- **Acceptance**:
+  - [ ] Rate limiting active
+  - [ ] All inputs sanitized
+  - [ ] Proper authorization checks
+
+---
+
+## <🎯 **CRITICAL PATH ANALYSIS**
 
 ### **Week 1: Foundation**
 
-- **Day 1-2**: Database schema update + API enhancement
-- **Day 3-5**: Strategy pattern implementation
+- **Day 1-2**: Database schema (STORY 1)
+- **Day 3-4**: API layer implementation (STORY 2)
+- **Day 5**: Basic UI components (STORY 3.1-3.2)
 
-### **Week 2: Development**
+### **Week 2: Integration**
 
-- **Day 1-3**: Dynamic form component development
-- **Day 4-5**: Component integration + basic testing
-
-### **Week 3: Testing & Refinement**
-
-- **Day 1-2**: Comprehensive integration testing
-- **Day 3**: User acceptance testing
-- **Day 4-5**: Bug fixes + refinements
+- **Day 1-2**: Form integration (STORY 3.3-3.4 + STORY 4)
+- **Day 3**: Testing setup and basic tests (STORY 5.1)
+- **Day 4-5**: Integration testing and bug fixes (STORY 5.2 + optimization)
 
 ---
 
-## =� **SUCCESS METRICS**
+## <✅ **SUCCESS METRICS**
 
 ### **Functional Requirements**
 
-- [ ] Form dynamically adjusts fields based on selected category type
-- [ ] Data correctly transforms ke ProductSize format
-- [ ] All category types supported (clothing, accessories_age_based, accessories_universal)
-- [ ] Backward compatibility maintained dengan existing products
-- [ ] No data migration required untuk existing products
+- [ ] Users can select kasir dalam transaksi flow
+- [ ] Kasir management CRUD operations working
+- [ ] Form validation includes cashier selection
+- [ ] Transaction includes kasir information
+- [ ] 4-step workflow implemented smoothly
 
 ### **Performance Requirements**
 
-- [ ] Form render time < 200ms
-- [ ] Zero breaking changes kepada existing API
+- [ ] Kasir list loads < 500ms
+- [ ] Form renders < 200ms
+- [ ] Zero breaking changes kepada existing features
 - [ ] Full TypeScript type safety
-- [ ] Consistent UI/UX dengan existing design system
 
-### **Business Requirements**
+### **User Experience Requirements**
 
-- [ ] User can create all accessories types dengan appropriate fields
-- [ ] Data entry time reduced oleh 40% untuk accessories
-- [ ] Zero training required untuk existing users
-- [ ] Support untuk future category types
+- [ ] Intuitive cashier selection interface
+- [ ] Search functionality for kasir
+- [ ] Clear error messages
+- [ ] Mobile responsive design
+- [ ] Accessibility compliance
 
 ---
 
-## � **RISK ASSESSMENT**
+## <⚠️ **RISK ASSESSMENT**
 
 ### **High Priority Risks**
 
@@ -345,66 +386,74 @@
    - **Owner**: Backend Developer
 
 2. **Form Complexity Impact**
-   - **Mitigation**: Incremental development + user testing
+   - **Mitigation**: Progressive enhancement + user testing
    - **Owner**: Frontend Developer
 
 ### **Medium Priority Risks**
 
 1. **Performance Impact**
-   - **Mitigation**: Memoization + efficient rendering
-   - **Owner**: Frontend Developer
+   - **Mitigation**: Caching + query optimization
+   - **Owner**: Backend Developer
 
-2. **User Adoption Resistance**
-   - **Mitigation**: Gradual rollout + user training
-   - **Owner**: Product Manager
+2. **User Adoption**
+   - **Mitigation**: Intuitive UI + minimal training required
+   - **Owner**: UX Designer
 
 ---
 
-## =� **TASK STATUS TRACKING**
+## <📋 **TASK STATUS TRACKING**
 
 ### **Progress Board**
 
 ```
-EPIC: Dynamic Product Form System [ACTIVE]
+EPIC: Kasir Management System [PLANNED]
 
-   STORY 1: Database Schema Enhancement [TODO]
-      Task 1.1: Add Category Type Column [TODO]
-      Task 1.2: Update Existing Categories [TODO]
-      Task 1.3: Generate Prisma Client [TODO]
+├── STORY 1: Database Schema Enhancement [TODO]
+│   ├── Task 1.1: Create Kasir Table [TODO]
+│   ├── Task 1.2: Update Transaksi Table [TODO]
+│   └── Task 1.3: Run Database Migration [TODO]
 
-   STORY 2: API Layer Enhancement [TODO]
-      Task 2.1: Update Categories API Validation [TODO]
-      Task 2.2: Update Categories API Response [TODO]
-      Task 2.3: Validate Products API Compatibility [DONE]
+├── STORY 2: API Layer Implementation [TODO]
+│   ├── Task 2.1: Create Kasir API Route [TODO]
+│   ├── Task 2.2: Implement KasirService [TODO]
+│   ├── Task 2.3: Update Validation Schema [TODO]
+│   └── Task 2.4: Update Kasir Types [TODO]
 
-   STORY 3: Dynamic Form Strategy Pattern [TODO]
-      Task 3.1: Create Category Form Strategy Interface [TODO]
-      Task 3.2: Implement Category Strategy Classes [TODO]
-      Task 3.3: Create Strategy Factory [TODO]
+├── STORY 3: UI Components Implementation [TODO]
+│   ├── Task 3.1: Create CashierSelectionStep Component [TODO]
+│   ├── Task 3.2: Create useKasir Hook [TODO]
+│   ├── Task 3.3: Update TransactionFormPage [TODO]
+│   └── Task 3.4: Update useTransactionForm Hook [TODO]
 
-   STORY 4: Dynamic Form Components [TODO]
-      Task 4.1: Create Category-Specific Field Components [TODO]
-      Task 4.2: Update ProductForm Component [TODO]
-      Task 4.3: Integrate dengan Existing Form Structure [TODO]
+├── STORY 4: Transaction Flow Integration [TODO]
+│   ├── Task 4.1: Update Transaction Workflow Config [TODO]
+│   ├── Task 4.2: Update TransaksiService [TODO]
+│   └── Task 4.3: Update API Validation [TODO]
 
-   STORY 5: Integration & Testing [TODO]
-       Task 5.1: Database Migration Testing [TODO]
-       Task 5.2: API Integration Testing [TODO]
-       Task 5.3: Form Integration Testing [TODO]
-       Task 5.4: User Acceptance Testing [TODO]
+├── STORY 5: Testing & Integration [TODO]
+│   ├── Task 5.1: Unit Testing [TODO]
+│   ├── Task 5.2: Integration Testing [TODO]
+│   └── Task 5.3: E2E Testing [TODO]
+
+└── STORY 6: Performance & Security [TODO]
+    ├── Task 6.1: Performance Optimization [TODO]
+    └── Task 6.2: Security Enhancement [TODO]
 ```
 
 ---
 
-## =� **READY TO START**
+## <🚀 **READY TO START**
 
-**First Task**: Task 1.1 - Add Category Type Column
-**Prerequisites**: Database backup, access to production-like environment
+**First Task**: Task 1.1 - Create Kasir Table
+**Prerequisites**: Database backup, access to development environment
 **Dependencies**: None (blocking all subsequent tasks)
+**Estimated Timeline**: 2 weeks total
 
 ---
 
+**EPIC: Dynamic Product Form System [ACTIVE]**
+
 **Created**: 2025-10-22
-**Last Updated**: 2025-10-22
+**Last Updated**: 2025-11-15
 **Status**: READY FOR EXECUTION
-**Next Review**: After Task 1.1 completion
+**Next Review**: After Kasir EPIC Story 1 completion

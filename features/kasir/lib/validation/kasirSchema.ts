@@ -66,6 +66,25 @@ export const penyewaQuerySchema = z.object({
   search: z.string().optional()
 })
 
+// Kasir (Cashier) Validation Schemas
+export const createKasirSchema = z.object({
+  nama: z
+    .string()
+    .min(2, 'Nama kasir minimal 2 karakter')
+    .max(100, 'Nama kasir maksimal 100 karakter')
+    .regex(/^[a-zA-Z\s.,'-]+$/, 'Nama kasir hanya boleh mengandung huruf dan tanda baca'),
+  isActive: z.boolean().optional().default(true)
+})
+
+export const updateKasirSchema = createKasirSchema.partial()
+
+export const kasirQuerySchema = z.object({
+  page: z.coerce.number().min(1).default(1),
+  limit: z.coerce.number().min(1).max(100).default(10),
+  search: z.string().optional(),
+  isActive: z.coerce.boolean().optional()
+})
+
 // Transaksi (Transaction) Validation Schemas - Size-Aware
 export const createTransaksiItemSchema = z.object({
   produkId: z.string().uuid('ID produk tidak valid'),
@@ -85,6 +104,7 @@ export const createTransaksiItemLegacySchema = z.object({
 
 export const createTransaksiSchema = z.object({
   penyewaId: z.string().uuid('ID penyewa tidak valid'),
+  kasirId: z.string().uuid('ID kasir tidak valid').optional().or(z.literal('')),
   items: z
     .array(createTransaksiItemSchema)
     .min(1, 'Minimal harus ada 1 item')

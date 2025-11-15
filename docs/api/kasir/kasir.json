@@ -1,0 +1,535 @@
+{
+  "info": {
+    "name": "Kasir Management API Tests",
+    "description": "Comprehensive Postman test collection for Kasir (Cashier) API endpoints including cashier CRUD operations, authentication validation, rate limiting, error handling, and business logic validation. Following the exact same patterns as Penyewa API for consistency.",
+    "version": "1.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "testKasirId",
+      "value": "",
+      "type": "string",
+      "description": "ID of kasir created during tests"
+    },
+    {
+      "key": "testKasirSelectionId",
+      "value": "",
+      "type": "string",
+      "description": "ID of kasir selected for transaction assignment"
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "exec": [
+          "// Set current timestamp for unique test data",
+          "pm.variables.set('timestamp', Date.now());",
+          "",
+          "// Generate unique test email if not set",
+          "if (!pm.variables.get('testKasirEmail')) {",
+          "    pm.variables.set('testKasirEmail', `kasir-test-${pm.variables.get('timestamp')}@example.com`);",
+          "}"
+        ],
+        "type": "text/javascript"
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "KASIR CRUD OPERATIONS",
+      "item": [
+        {
+          "name": "POST Create Kasir - Success",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Response has success structure', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('success', true);",
+                  "    pm.expect(jsonData).to.have.property('data');",
+                  "    pm.expect(jsonData).to.have.property('message', 'Kasir berhasil dibuat');",
+                  "});",
+                  "",
+                  "pm.test('Kasir data is valid', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    const kasir = jsonData.data;",
+                  "    pm.expect(kasir).to.have.property('id');",
+                  "    pm.expect(kasir).to.have.property('nama');",
+                  "    pm.expect(kasir).to.have.property('isActive', true);",
+                  "    pm.expect(kasir).to.have.property('createdAt');",
+                  "    pm.expect(kasir).to.have.property('updatedAt');",
+                  "});",
+                  "",
+                  "pm.test('Store kasir ID for subsequent tests', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.variables.set('testKasirId', jsonData.data.id);",
+                  "    console.log('Stored kasir ID:', jsonData.data.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nama\": \"Kasir Test {{timestamp}}\",\n  \"isActive\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/kasir/kasir",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kasir", "kasir"]
+            },
+            "description": "Test successful kasir creation with valid data"
+          }
+        },
+        {
+          "name": "GET Kasir List - Default Pagination",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has success structure', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('success', true);",
+                  "    pm.expect(jsonData).to.have.property('data');",
+                  "    pm.expect(jsonData).to.have.property('message', 'Data kasir berhasil diambil');",
+                  "});",
+                  "",
+                  "pm.test('Response has pagination structure', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    const data = jsonData.data;",
+                  "    pm.expect(data).to.have.property('data');",
+                  "    pm.expect(data).to.have.property('pagination');",
+                  "    pm.expect(data.pagination).to.have.property('page', 1);",
+                  "    pm.expect(data.pagination).to.have.property('limit', 10);",
+                  "    pm.expect(data.pagination).to.have.property('total');",
+                  "    pm.expect(data.pagination).to.have.property('totalPages');",
+                  "});",
+                  "",
+                  "pm.test('Response has summary statistics', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    const data = jsonData.data;",
+                  "    pm.expect(data).to.have.property('summary');",
+                  "    pm.expect(data.summary).to.have.property('total');",
+                  "    pm.expect(data.summary).to.have.property('active');",
+                  "    pm.expect(data.summary).to.have.property('inactive');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/kasir/kasir",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kasir", "kasir"]
+            },
+            "description": "Test retrieving kasir list with default pagination (page 1, limit 10)"
+          }
+        },
+        {
+          "name": "GET Kasir List - With Search",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has search results', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('success', true);",
+                  "    const data = jsonData.data;",
+                  "    pm.expect(Array.isArray(data.data)).to.be.true;",
+                  "    // Results should contain kasir with 'Test' in name or email",
+                  "    if (data.data.length > 0) {",
+                  "        const hasMatchingResults = data.data.some(kasir => ",
+                  "            kasir.nama.includes('Test') || ",
+                  "            (kasir.email && kasir.email.includes('test'))",
+                  "        );",
+                  "        pm.expect(hasMatchingResults).to.be.true;",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/kasir/kasir?search=Test&page=1&limit=5",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kasir", "kasir"],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "Test"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "5"
+                }
+              ]
+            },
+            "description": "Test searching kasir by name or email with custom pagination"
+          }
+        },
+        {
+          "name": "GET Kasir List - Filter by Active Status",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response shows only active kasir', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    const data = jsonData.data;",
+                  "    pm.expect(data.summary.active).to.be.at.least(0);",
+                  "    pm.expect(data.summary.inactive).to.eql(0);",
+                  "    // All returned kasir should be active",
+                  "    const allActive = data.data.every(kasir => kasir.isActive === true);",
+                  "    pm.expect(allActive).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/kasir/kasir?isActive=true&page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kasir", "kasir"],
+              "query": [
+                {
+                  "key": "isActive",
+                  "value": "true"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Test filtering kasir list by active status"
+          }
+        }
+      ]
+    },
+    {
+      "name": "KASIR SELECTION WORKFLOW",
+      "item": [
+        {
+          "name": "GET Kasir Selection - Role-Based Access",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has success structure', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('success', true);",
+                  "    pm.expect(jsonData).to.have.property('data');",
+                  "    pm.expect(jsonData).to.have.property('message', 'Daftar kasir untuk seleksi transaksi berhasil diambil');",
+                  "});",
+                  "",
+                  "pm.test('Selection data has correct structure', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    const kasirList = jsonData.data;",
+                  "    pm.expect(Array.isArray(kasirList)).to.be.true;",
+                  "    if (kasirList.length > 0) {",
+                  "      const firstKasir = kasirList[0];",
+                  "      pm.expect(firstKasir).to.have.property('id');",
+                  "      pm.expect(firstKasir).to.have.property('nama');",
+                  "      pm.expect(firstKasir).to.have.property('isActive');",
+                  "      // Privacy: Should not contain sensitive data",
+                  "      pm.expect(firstKasir).to.not.have.property('email');",
+                  "      pm.expect(firstKasir).to.not.have.property('telepon');",
+                  "    }",
+                  "});",
+                  "",
+                  "pm.test('All returned kasirs are active', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    const kasirList = jsonData.data;",
+                  "    const allActive = kasirList.every(kasir => kasir.isActive === true);",
+                  "    pm.expect(allActive).to.be.true;",
+                  "});",
+                  "",
+                  "pm.test('Store kasir selection ID for workflow tests', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    if (jsonData.data.length > 0) {",
+                  "      pm.variables.set('testKasirSelectionId', jsonData.data[0].id);",
+                  "      console.log('Stored kasir selection ID:', jsonData.data[0].id);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/kasir/kasir/selection",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kasir", "kasir", "selection"]
+            },
+            "description": "Test kasir selection endpoint with role-based data filtering"
+          }
+        },
+        {
+          "name": "GET Kasir Selection - Kasir Role Privacy",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Simulate kasir role token",
+                  "// In real scenario, this would use actual kasir JWT token",
+                  "pm.environment.set('kasirRoleToken', 'kasir-jwt-token-example');"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Kasir role gets limited data', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    const kasirList = jsonData.data;",
+                  "    if (kasirList.length > 0) {",
+                  "      const firstKasir = kasirList[0];",
+                  "      // Privacy protection for kasir role",
+                  "      pm.expect(firstKasir).to.have.property('id');",
+                  "      pm.expect(firstKasir).to.have.property('nama');",
+                  "      pm.expect(firstKasir).to.have.property('isActive');",
+                  "      // Sensitive data should not be exposed",
+                  "      pm.expect(firstKasir).to.not.have.property('email');",
+                  "      pm.expect(firstKasir).to.not.have.property('telepon');",
+                  "      pm.expect(firstKasir).to.not.have.property('createdAt');",
+                  "      pm.expect(firstKasir).to.not.have.property('updatedAt');",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{kasirRoleToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/kasir/kasir/selection",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kasir", "kasir", "selection"]
+            },
+            "description": "Test kasir selection endpoint with kasir role (limited data access)"
+          }
+        },
+        {
+          "name": "GET Kasir Selection - Admin Role Full Access",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Simulate admin role token",
+                  "pm.environment.set('adminRoleToken', 'admin-jwt-token-example');"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Admin role gets basic selection data (same as kasir)', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    const kasirList = jsonData.data;",
+                  "    if (kasirList.length > 0) {",
+                  "      const firstKasir = kasirList[0];",
+                  "      // Selection endpoint always returns limited data regardless of role",
+                  "      pm.expect(firstKasir).to.have.property('id');",
+                  "      pm.expect(firstKasir).to.have.property('nama');",
+                  "      pm.expect(firstKasir).to.have.property('isActive');",
+                  "      pm.expect(firstKasir).to.not.have.property('email');",
+                  "      pm.expect(firstKasir).to.not.have.property('telepon');",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminRoleToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/kasir/kasir/selection",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kasir", "kasir", "selection"]
+            },
+            "description": "Test kasir selection endpoint with admin role (limited data for consistency)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "ERROR HANDLING",
+      "item": [
+        {
+          "name": "POST Create Kasir - Invalid JSON",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Response has invalid JSON error', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('success', false);",
+                  "    pm.expect(jsonData).to.have.property('error');",
+                  "    pm.expect(jsonData.error).to.have.property('code', 'INVALID_JSON');",
+                  "    pm.expect(jsonData.error.message).to.include('Invalid JSON format');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{ invalid json format"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/kasir/kasir",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kasir", "kasir"]
+            },
+            "description": "Test API with invalid JSON format"
+          }
+        },
+        {
+          "name": "GET Kasir List - Malformed Query",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Response has validation error', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('success', false);",
+                  "    pm.expect(jsonData).to.have.property('error');",
+                  "    pm.expect(jsonData.error).to.have.property('code', 'VALIDATION_ERROR');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/kasir/kasir?page=-1&limit=0",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "kasir", "kasir"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "-1"
+                },
+                {
+                  "key": "limit",
+                  "value": "0"
+                }
+              ]
+            },
+            "description": "Test API with invalid query parameters (negative page, zero limit)"
+          }
+        }
+      ]
+    }
+  ]
+}

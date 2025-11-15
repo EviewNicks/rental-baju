@@ -144,11 +144,11 @@ export interface RolePermissions {
  * Higher roles inherit permissions from lower roles in the hierarchy
  */
 export const ROLE_HIERARCHY: Record<string, string[]> = {
-  owner: ['owner', 'producer', 'admin', 'kasir'],    // Owner has all permissions
-  producer: ['producer', 'admin', 'kasir'],          // Producer has admin + kasir permissions
-  admin: ['admin', 'kasir'],                         // Admin has kasir permissions (legacy)
-  kasir: ['kasir'],                                  // Kasir has only kasir permissions
-  user: ['user']                                     // User has limited permissions
+  owner: ['owner', 'producer', 'admin', 'kasir'], // Owner has all permissions
+  producer: ['producer', 'admin', 'kasir'], // Producer has admin + kasir permissions
+  admin: ['admin', 'kasir'], // Admin has kasir permissions (legacy)
+  kasir: ['kasir'], // Kasir has only kasir permissions
+  user: ['user'], // User has limited permissions
 }
 
 export const KASIR_PERMISSIONS: RolePermissions = {
@@ -170,9 +170,13 @@ export const KASIR_PERMISSIONS: RolePermissions = {
     { resource: 'produk', action: 'read' },
     { resource: 'produk', action: 'update' },
     { resource: 'produk', action: 'delete' },
+    { resource: 'kasir', action: 'create' },
+    { resource: 'kasir', action: 'read' },
+    { resource: 'kasir', action: 'update' },
+    { resource: 'kasir', action: 'delete' },
     { resource: 'audit', action: 'read' },
     { resource: 'dashboard', action: 'read' },
-    { resource: 'reports', action: 'read' }
+    { resource: 'reports', action: 'read' },
   ],
   producer: [
     // Producer has product management + kasir operational access
@@ -188,7 +192,8 @@ export const KASIR_PERMISSIONS: RolePermissions = {
     { resource: 'produk', action: 'read' },
     { resource: 'produk', action: 'update' },
     { resource: 'produk', action: 'delete' },
-    { resource: 'dashboard', action: 'read' }
+    { resource: 'kasir', action: 'read' },
+    { resource: 'dashboard', action: 'read' },
   ],
   admin: [
     // Admin has full access
@@ -203,10 +208,13 @@ export const KASIR_PERMISSIONS: RolePermissions = {
     { resource: 'pembayaran', action: 'create' },
     { resource: 'pembayaran', action: 'read' },
     { resource: 'produk', action: 'read' },
-    { resource: 'audit', action: 'read' }
+    { resource: 'kasir', action: 'create' },
+    { resource: 'kasir', action: 'read' },
+    { resource: 'kasir', action: 'update' },
+    { resource: 'audit', action: 'read' },
   ],
   kasir: [
-    // Kasir has operational access
+    // Kasir has operational access (limited read for selection workflow)
     { resource: 'penyewa', action: 'create' },
     { resource: 'penyewa', action: 'read' },
     { resource: 'penyewa', action: 'update' },
@@ -215,12 +223,13 @@ export const KASIR_PERMISSIONS: RolePermissions = {
     { resource: 'transaksi', action: 'update' },
     { resource: 'pembayaran', action: 'create' },
     { resource: 'pembayaran', action: 'read' },
-    { resource: 'produk', action: 'read' }
+    { resource: 'kasir', action: 'read' }, // For selection workflow
+    { resource: 'produk', action: 'read' },
   ],
   user: [
     // Regular users have limited access (not applicable for kasir endpoints)
-    { resource: 'penyewa', action: 'read' }
-  ]
+    { resource: 'penyewa', action: 'read' },
+  ],
 }
 
 /**
@@ -229,19 +238,19 @@ export const KASIR_PERMISSIONS: RolePermissions = {
 export function hasPermission(
   userRole: string,
   resource: string,
-  action: 'create' | 'read' | 'update' | 'delete'
+  action: 'create' | 'read' | 'update' | 'delete',
 ): boolean {
   // Get all roles this user inherits from (including their own role)
   const inheritedRoles = ROLE_HIERARCHY[userRole] || []
-  
+
   // Check if any of the inherited roles has the required permission
   for (const role of inheritedRoles) {
     const rolePermissions = KASIR_PERMISSIONS[role as keyof RolePermissions] || []
-    if (rolePermissions.some(p => p.resource === resource && p.action === action)) {
+    if (rolePermissions.some((p) => p.resource === resource && p.action === action)) {
       return true
     }
   }
-  
+
   return false // Fail-safe default: no permission found
 }
 
@@ -274,7 +283,7 @@ export function isKasirRole(userRole: string): boolean {
  */
 export async function requirePermission(
   resource: string,
-  action: 'create' | 'read' | 'update' | 'delete'
+  action: 'create' | 'read' | 'update' | 'delete',
 ) {
   const authResult = await requireAuth()
   if (authResult.error) {
@@ -288,10 +297,10 @@ export async function requirePermission(
         {
           success: false,
           error: `Access denied. Insufficient permissions for ${action} on ${resource}`,
-          code: 'INSUFFICIENT_PERMISSIONS'
+          code: 'INSUFFICIENT_PERMISSIONS',
         },
-        { status: 403 }
-      )
+        { status: 403 },
+      ),
     }
   }
 
@@ -307,31 +316,31 @@ const rateLimitStore = new Map<string, { count: number; resetTime: number }>()
 export function checkRateLimit(
   identifier: string,
   maxRequests: number = 100,
-  windowMs: number = 60000
+  windowMs: number = 60000,
 ): { allowed: boolean; remainingRequests: number; resetTime: number } {
   const now = Date.now()
   const key = identifier
-  
+
   let record = rateLimitStore.get(key)
-  
+
   if (!record || now > record.resetTime) {
     record = { count: 0, resetTime: now + windowMs }
     rateLimitStore.set(key, record)
   }
-  
+
   if (record.count >= maxRequests) {
     return {
       allowed: false,
       remainingRequests: 0,
-      resetTime: record.resetTime
+      resetTime: record.resetTime,
     }
   }
-  
+
   record.count++
   return {
     allowed: true,
     remainingRequests: maxRequests - record.count,
-    resetTime: record.resetTime
+    resetTime: record.resetTime,
   }
 }
 
@@ -341,10 +350,10 @@ export function checkRateLimit(
 export async function withRateLimit(
   identifier: string,
   maxRequests: number = 100,
-  windowMs: number = 60000
+  windowMs: number = 60000,
 ) {
   const rateLimit = checkRateLimit(identifier, maxRequests, windowMs)
-  
+
   if (!rateLimit.allowed) {
     return {
       error: NextResponse.json(
@@ -352,26 +361,26 @@ export async function withRateLimit(
           success: false,
           error: 'Rate limit exceeded',
           code: 'RATE_LIMIT_EXCEEDED',
-          retryAfter: Math.ceil((rateLimit.resetTime - Date.now()) / 1000)
+          retryAfter: Math.ceil((rateLimit.resetTime - Date.now()) / 1000),
         },
-        { 
+        {
           status: 429,
           headers: {
             'Retry-After': Math.ceil((rateLimit.resetTime - Date.now()) / 1000).toString(),
             'X-RateLimit-Limit': maxRequests.toString(),
             'X-RateLimit-Remaining': '0',
-            'X-RateLimit-Reset': rateLimit.resetTime.toString()
-          }
-        }
-      )
+            'X-RateLimit-Reset': rateLimit.resetTime.toString(),
+          },
+        },
+      ),
     }
   }
-  
+
   return {
     rateLimitHeaders: {
       'X-RateLimit-Limit': maxRequests.toString(),
       'X-RateLimit-Remaining': rateLimit.remainingRequests.toString(),
-      'X-RateLimit-Reset': rateLimit.resetTime.toString()
-    }
+      'X-RateLimit-Reset': rateLimit.resetTime.toString(),
+    },
   }
 }

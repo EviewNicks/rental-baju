@@ -4,8 +4,7 @@
  * Following architecture guidelines from docs/rules/architecture.md
  */
 
-// Import KasirInfo interface from types index
-import type { KasirInfo } from './types/index'
+// Kasir types are now consolidated in this file
 
 // ==========================================
 // CORE TYPES & ENUMS
@@ -66,6 +65,56 @@ export interface Customer {
   createdAt: string
   totalTransactions?: number
   recentTransactions?: RecentTransaction[]
+}
+
+// ==========================================
+// KASIR (CASHIER) TYPES
+// ==========================================
+
+export interface Kasir {
+  id: string
+  nama: string
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
+  createdBy?: string
+}
+
+export interface KasirFormData {
+  nama: string
+  isActive?: boolean
+}
+
+export interface KasirListResponse {
+  data: Kasir[]
+  pagination: {
+    page: number
+    limit: number
+    total: number
+    totalPages: number
+  }
+  summary: {
+    total: number
+    active: number
+    inactive: number
+  }
+}
+
+export interface CreateKasirRequest {
+  nama: string
+  isActive?: boolean
+}
+
+export interface UpdateKasirRequest {
+  nama?: string
+  isActive?: boolean
+}
+
+export interface KasirQueryParams {
+  page: number
+  limit: number
+  search?: string
+  isActive?: boolean
 }
 
 export interface CustomerFormData {
@@ -209,6 +258,11 @@ export interface TransaksiWithCustomer extends TransaksiCore {
     nama: string
     telepon: string
     alamat: string
+  }
+  kasir?: {
+    id: string
+    nama: string
+    isActive: boolean
   }
 }
 
