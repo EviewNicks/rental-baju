@@ -320,6 +320,64 @@ export class KasirService {
   }
 
   /**
+   * Get kasir by ID for individual operations
+   */
+  async getKasirById(id: string): Promise<Kasir | null> {
+    return await this.prisma.kasir.findUnique({
+      where: { id }
+    })
+  }
+
+  /**
+   * Validate if kasir has active transactions (business rule protection)
+   */
+  async validateNoActiveTransactions(kasirId: string): Promise<void> {
+    const activeTransactionCount = await this.prisma.transaksi.count({
+      where: {
+        kasirId,
+        status: { in: ['active', 'diambil'] }
+      }
+    })
+
+    if (activeTransactionCount > 0) {
+      throw new Error(
+        `Tidak dapat menonaktifkan kasir. Masih ada ${activeTransactionCount} transaksi aktif.`
+      )
+    }
+  }
+
+  /**
+   * Delete kasir (hard delete with protection)
+   */
+  async deleteKasir(id: string): Promise<void> {
+    // Validate kasir exists
+    const kasir = await this.getKasirById(id)
+    if (!kasir) {
+      throw new Error('Kasir tidak ditemukan')
+    }
+
+    // Validate no active transactions
+    await this.validateNoActiveTransactions(id)
+
+    // Delete related data (audit logs will be preserved)
+    await this.prisma.kasir.delete({
+      where: { id }
+    })
+
+    // Log audit trail before deletion
+    await this.auditService.logKasirActivity(
+      'delete',
+      id,
+      kasir,
+      null,
+      {
+        operation: 'cashier_deletion',
+        reason: 'Permanent deletion of kasir record'
+      }
+    )
+  }
+
+  /**
    * Get kasir list for selection with role-based data filtering
    * - Full data for admin/producer/owner
    * - Limited data for kasir role (privacy protection)

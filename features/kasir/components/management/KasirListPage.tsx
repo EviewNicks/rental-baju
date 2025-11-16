@@ -28,8 +28,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Plus, Search, MoreHorizontal, Edit, Trash2 } from 'lucide-react'
+import { Plus, Search, MoreHorizontal, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { useKasirManagement } from '../../hooks/useKasirManagement'
+import { KasirStatusToggle } from './KasirStatusToggle'
 
 interface KasirFilters {
   search?: string
@@ -67,13 +69,15 @@ export function KasirListPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [kasirToDelete, setKasirToDelete] = useState<Kasir | null>(null)
 
-  // Mock data for development - replace with real API call
-  const kasirData: KasirListResponse = {
-    data: [],
-    pagination: { page: 1, limit: 20, total: 0, totalPages: 0 },
-    summary: { total: 0, active: 0, inactive: 0 }
-  }
-  const isLoading = false
+  // Use real API with React Query
+  const {
+    kasirs,
+    kasirsPaginated,
+    availableKasirs,
+    isLoadingKasirs,
+    isDeleting,
+    deleteKasir,
+  } = useKasirManagement()
 
   const handleSearch = (term: string) => {
     setSearchTerm(term)
@@ -91,35 +95,43 @@ export function KasirListPage() {
     }))
   }
 
-  const handleEdit = (kasir: Kasir) => {
-    router.push(`/owner/manage-kasir/edit/${kasir.id}`)
-  }
-
+  
   const handleDelete = (kasir: Kasir) => {
     setKasirToDelete(kasir)
     setDeleteDialogOpen(true)
   }
 
+  // Calculate summary statistics from API data
+  const summaryStats = {
+    total: kasirs?.length || 0,
+    active: kasirs?.filter(k => k.isActive).length || 0,
+    inactive: kasirs?.filter(k => !k.isActive).length || 0
+  }
+
+  // Filter kasirs based on search and status filters
+  const filteredKasirs = kasirs?.filter(kasir => {
+    const matchesSearch = !filters.search ||
+      kasir.nama.toLowerCase().includes(filters.search.toLowerCase())
+    const matchesStatus = !filters.status ||
+      (filters.status === 'active' ? kasir.isActive : !kasir.isActive)
+    return matchesSearch && matchesStatus
+  }) || []
+
+  
   const confirmDelete = async () => {
     if (!kasirToDelete) return
 
     try {
-      // API call to delete kasir
-      // await kasirApi.deleteKasir(kasirToDelete.id)
+      // Use deleteKasir from useKasirManagement hook
+      deleteKasir(kasirToDelete.id)
       toast.success('Kasir berhasil dihapus')
       setDeleteDialogOpen(false)
       setKasirToDelete(null)
-      // Refresh data
-    } catch {
+    } catch (error) {
+      console.error('Error deleting kasir:', error)
       toast.error('Gagal menghapus kasir')
     }
   }
-
-  const getStatusBadge = (isActive: boolean) => (
-    <Badge variant={isActive ? 'default' : 'secondary'}>
-      {isActive ? 'Aktif' : 'Tidak Aktif'}
-    </Badge>
-  )
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -146,7 +158,7 @@ export function KasirListPage() {
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{kasirData.summary.total}</div>
+              <div className="text-2xl font-bold">{summaryStats.total}</div>
             </CardContent>
           </Card>
           <Card>
@@ -155,7 +167,7 @@ export function KasirListPage() {
               <UserCheck className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">{kasirData.summary.active}</div>
+              <div className="text-2xl font-bold text-green-600">{summaryStats.active}</div>
             </CardContent>
           </Card>
           <Card>
@@ -164,7 +176,7 @@ export function KasirListPage() {
               <UserX className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-gray-600">{kasirData.summary.inactive}</div>
+              <div className="text-2xl font-bold text-gray-600">{summaryStats.inactive}</div>
             </CardContent>
           </Card>
         </div>
@@ -215,7 +227,7 @@ export function KasirListPage() {
             <CardTitle>Daftar Kasir</CardTitle>
           </CardHeader>
           <CardContent>
-            {isLoading ? (
+            {isLoadingKasirs ? (
               <div className="space-y-4">
                 {Array.from({ length: 5 }).map((_, i) => (
                   <div key={i} className="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg">
@@ -239,17 +251,27 @@ export function KasirListPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {kasirData.data.length === 0 ? (
+                    {filteredKasirs.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={4} className="text-center py-8 text-gray-500">
                           Tidak ada data kasir ditemukan
                         </TableCell>
                       </TableRow>
                     ) : (
-                      kasirData.data.map((kasir) => (
+                      filteredKasirs.map((kasir) => (
                         <TableRow key={kasir.id}>
                           <TableCell className="font-medium">{kasir.nama}</TableCell>
-                          <TableCell>{getStatusBadge(kasir.isActive)}</TableCell>
+                          <TableCell>
+                            <KasirStatusToggle
+                              kasirId={kasir.id}
+                              kasirName={kasir.nama}
+                              isActive={kasir.isActive}
+                              onToggleComplete={() => {
+                                // Refresh data when toggle completes
+                                window.location.reload()
+                              }}
+                            />
+                          </TableCell>
                           <TableCell>
                             {new Date(kasir.createdAt).toLocaleDateString('id-ID')}
                           </TableCell>
@@ -261,10 +283,6 @@ export function KasirListPage() {
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => handleEdit(kasir)}>
-                                  <Edit className="mr-2 h-4 w-4" />
-                                  Edit
-                                </DropdownMenuItem>
                                 <DropdownMenuItem
                                   onClick={() => handleDelete(kasir)}
                                   className="text-red-600"
