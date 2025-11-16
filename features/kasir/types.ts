@@ -82,7 +82,7 @@ export interface Kasir {
 
 export interface KasirFormData {
   nama: string
-  isActive?: boolean
+  isActive: boolean
 }
 
 export interface KasirListResponse {
@@ -108,6 +108,15 @@ export interface CreateKasirRequest {
 export interface UpdateKasirRequest {
   nama?: string
   isActive?: boolean
+}
+
+export interface KasirResponse {
+  id: string
+  nama: string
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
+  createdBy?: string
 }
 
 export interface KasirQueryParams {
@@ -307,7 +316,20 @@ export interface Transaction {
   notes?: string
   createdAt: string
   updatedAt: string
-  kasir?: KasirInfo // Optional kasir information for display
+  kasir?: {
+    id: string
+    nama: string
+    isActive: boolean
+    createdAt: string
+    updatedAt: string
+    createdBy?: string
+  } // Optional kasir information for display
+}
+
+export interface KasirInfo {
+  id: string
+  nama: string
+  isActive: boolean
 }
 
 export interface TransactionFilters {

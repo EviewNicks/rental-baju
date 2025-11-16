@@ -143,9 +143,96 @@
 
 ---
 
-## <🎨 **STORY 3: UI Components Implementation**
+## <🎨 **STORY 3: Kasir Management UI Implementation**
 
-### **Task 3.1: Create CashierSelectionStep Component - TODO**
+### **Task 3.1: Update OwnerSidebar dengan Kasir Menu - TODO**
+
+- **File**: `components/layout/OwnerSidebar.tsx`
+- **Action**: Tambah "Manage Kasir" menu ke sidebar
+- **Changes**:
+  - Add new menu item with appropriate icon
+  - Link to `/owner/manage-kasir`
+  - Follow existing menu pattern and styling
+- **Pattern**: Consistent dengan existing "Manage Product" menu
+- **Acceptance**:
+  - [ ] Menu item added successfully
+  - [ ] Navigation works correctly
+  - [ ] Styling consistent with existing menus
+  - [ ] Icon appropriate for kasir management
+
+### **Task 3.2: Create Kasir Management Routes - TODO**
+
+- **Files**:
+  - `app/owner/manage-kasir/page.tsx` - List page
+  - `app/owner/manage-kasir/add/page.tsx` - Add new kasir
+  - `app/owner/manage-kasir/edit/[id]/page.tsx` - Edit kasir
+- **Action**: Create route structure untuk kasir management
+- **Pattern**: Following producer/manage-product route structure
+- **Acceptance**:
+  - [ ] All routes created successfully
+  - [ ] Route protection working (owner role only)
+  - [ ] Loading states implemented
+  - [ ] Error boundaries in place
+
+### **Task 3.3: Create KasirListPage Component - TODO**
+
+- **File**: `features/kasir/components/management/KasirListPage.tsx`
+- **Action**: Create comprehensive CRUD interface untuk kasir management
+- **Features**:
+  - Paginated kasir list dengan search
+  - Add/Edit/Delete operations
+  - Status toggle (active/inactive)
+  - Bulk actions (optional)
+  - Export functionality
+- **Pattern**: Following ProductListPage implementation
+- **Acceptance**:
+  - [ ] List renders with pagination
+  - [ ] Search functionality working
+  - [ ] CRUD operations functional
+  - [ ] Error handling implemented
+  - [ ] Loading states with skeleton
+
+### **Task 3.4: Create KasirForm Component - TODO**
+
+- **File**: `features/kasir/components/management/KasirForm.tsx`
+- **Action**: Create form untuk add/edit kasir
+- **Features**:
+  - Form validation dengan Indonesian messages
+  - File upload untuk profile photo (optional)
+  - Role-based field visibility
+  - Auto-save draft functionality
+  - Form reset on success
+- **Pattern**: Following ProductForm implementation
+- **Acceptance**:
+  - [ ] Form validation working
+  - [ ] Submit functionality operational
+  - [ ] Edit form loads existing data
+  - [ ] Success/error notifications
+  - [ ] Mobile responsive design
+
+### **Task 3.5: Create useKasirManagement Hook - TODO**
+
+- **File**: `features/kasir/hooks/useKasirManagement.ts`
+- **Action**: Create custom hook untuk kasir management operations
+- **Features**:
+  - CRUD operations dengan optimistic updates
+  - Pagination dan search state management
+  - Bulk operations support
+  - Caching untuk performance
+  - Error retry logic
+- **Pattern**: Following useProductManagement hook
+- **Acceptance**:
+  - [ ] All CRUD operations working
+  - [ ] Pagination state managed
+  - [ ] Search functionality integrated
+  - [ ] Optimistic updates implemented
+  - [ ] Error handling with retry
+
+---
+
+## <⚙️ **STORY 4: Transaction Flow Integration**
+
+### **Task 4.1: Create CashierSelectionStep Component - TODO**
 
 - **File**: `features/kasir/components/form/CashierSelectionStep.tsx`
 - **Action**: Create component untuk kasir selection
@@ -161,7 +248,7 @@
   - [ ] Kasir selection functional
   - [ ] Form validation integrated
 
-### **Task 3.2: Create useKasir Hook - TODO**
+### **Task 4.2: Create useKasir Hook - TODO**
 
 - **File**: `features/kasir/hooks/useKasir.ts`
 - **Action**: Create custom hook untuk kasir operations
@@ -177,7 +264,7 @@
   - [ ] Search capabilities
   - [ ] Loading states
 
-### **Task 3.3: Update TransactionFormPage - TODO**
+### **Task 4.3: Update TransactionFormPage - TODO**
 
 - **File**: `features/kasir/components/form/TransactionFormPage.tsx`
 - **Action**: Integrate CashierSelectionStep ke form workflow
@@ -192,7 +279,7 @@
   - [ ] Navigation between steps working
   - [ ] State management correct
 
-### **Task 3.4: Update useTransactionForm Hook - TODO**
+### **Task 4.4: Update useTransactionForm Hook - TODO**
 
 - **File**: `features/kasir/hooks/useTransactionForm.ts`
 - **Action**: Add kasir management ke form state
@@ -207,11 +294,7 @@
   - [ ] Submission payload includes kasirId
   - [ ] Backward compatibility maintained
 
----
-
-## <⚙️ **STORY 4: Transaction Flow Integration**
-
-### **Task 4.1: Update Transaction Workflow Config - TODO**
+### **Task 4.5: Update Transaction Workflow Config - TODO**
 
 - **File**: `features/kasir/lib/constants/workflowConfig.ts`
 - **Action**: Update workflow steps config
@@ -219,8 +302,8 @@
   ```typescript
   export const transactionFormSteps = [
     { id: 1, title: 'Pilih Produk' },
-    { id: 2, title: 'Pilih Kasir' },     // NEW
-    { id: 3, title: 'Data Penyewa' },   // Renumbered
+    { id: 2, title: 'Data Penyewa' },
+    { id: 3, title: 'Pilih Kasir' },     // NEW
     { id: 4, title: 'Ringkasan' }       // Renumbered
   ]
   ```
@@ -229,7 +312,7 @@
   - [ ] Step order logical
   - [ ] All step validations updated
 
-### **Task 4.2: Update TransaksiService - TODO**
+### **Task 4.6: Update TransaksiService - TODO**
 
 - **File**: `features/kasir/services/transaksiService.ts`
 - **Action**: Add kasirId ke transaction creation
@@ -244,7 +327,7 @@
   - [ ] Activity logging includes cashier info
   - [ ] Error handling for invalid kasir
 
-### **Task 4.3: Update API Validation - TODO**
+### **Task 4.7: Update API Validation - TODO**
 
 - **File**: `app/api/kasir/transaksi/route.ts`
 - **Action**: Update transaction creation schema
@@ -264,41 +347,59 @@
 
 ## <✅ **STORY 5: Testing & Integration**
 
-### **Task 5.1: Unit Testing - TODO**
+### **Task 5.1: Kasir Management Unit Testing - TODO**
 
 - **Files**:
   - `features/kasir/services/kasirService.test.ts`
-  - `features/kasir/hooks/useKasir.test.ts`
-  - `features/kasir/components/form/CashierSelectionStep.test.tsx`
-- **Action**: Create comprehensive unit tests
+  - `features/kasir/hooks/useKasirManagement.test.ts`
+  - `features/kasir/components/management/KasirListPage.test.tsx`
+  - `features/kasir/components/management/KasirForm.test.tsx`
+- **Action**: Create comprehensive unit tests untuk management UI
 - **Coverage**: Minimum 80%
 - **Acceptance**:
   - [ ] Service layer tests
   - [ ] Hook functionality tests
   - [ ] Component rendering tests
+  - [ ] Form validation tests
+
+### **Task 5.2: Transaction Flow Unit Testing - TODO**
+
+- **Files**:
+  - `features/kasir/hooks/useKasir.test.ts`
+  - `features/kasir/components/form/CashierSelectionStep.test.tsx`
+  - `features/kasir/hooks/useTransactionForm.test.ts`
+- **Action**: Create unit tests untuk transaction flow integration
+- **Coverage**: Minimum 80%
+- **Acceptance**:
+  - [ ] Kasir selection component tests
+  - [ ] Transaction form hook tests
+  - [ ] Integration workflow tests
   - [ ] Coverage requirements met
 
-### **Task 5.2: Integration Testing - TODO**
+### **Task 5.3: Integration Testing - TODO**
 
 - **Files**: `__tests__/integration/kasir/`
 - **Action**: Test complete cashier flow
 - **Scenarios**:
-  - Create kasir → Select in transaction → Complete transaction
+  - Create kasir → Manage kasir → Select in transaction → Complete transaction
   - Invalid kasir handling
   - Concurrent transaction scenarios
+  - Role-based access testing
 - **Acceptance**:
   - [ ] End-to-end cashier flow working
   - [ ] Error scenarios handled
   - [ ] Database integrity maintained
+  - [ ] Role permissions enforced
 
-### **Task 5.3: E2E Testing - TODO**
+### **Task 5.4: E2E Testing - TODO**
 
 - **Files**: `__tests__/playwright/kasir/`
 - **Action**: User journey testing
 - **Scenarios**:
-  - Complete transaction dengan cashier selection
-  - Form validation scenarios
+  - Owner: Create/manage kasir → View in dashboard
+  - Kasir: Login → Process transaction with cashier selection
   - Mobile responsiveness
+  - Accessibility compliance
 - **Acceptance**:
   - [ ] User journey smooth
   - [ ] Mobile friendly
@@ -315,6 +416,7 @@
   - Implement caching untuk kasir list
   - Optimize database queries
   - Lazy loading untuk large kasir lists
+  - Image optimization untuk kasir photos
 - **Acceptance**:
   - [ ] Kasir list loads < 500ms
   - [ ] Caching implemented
@@ -327,10 +429,12 @@
   - Rate limiting untuk kasir creation
   - Input sanitization
   - Permission validation
+  - Audit trail untuk kasir operations
 - **Acceptance**:
   - [ ] Rate limiting active
   - [ ] All inputs sanitized
   - [ ] Proper authorization checks
+  - [ ] Audit logging functional
 
 ---
 
@@ -338,15 +442,15 @@
 
 ### **Week 1: Foundation**
 
-- **Day 1-2**: Database schema (STORY 1)
-- **Day 3-4**: API layer implementation (STORY 2)
-- **Day 5**: Basic UI components (STORY 3.1-3.2)
+- **Day 1-2**: Database schema (STORY 1) ✅ **COMPLETED**
+- **Day 3-4**: API layer implementation (STORY 2) ✅ **COMPLETED**
+- **Day 5**: Kasir Management UI foundation (STORY 3.1-3.3) **NEW**
 
 ### **Week 2: Integration**
 
-- **Day 1-2**: Form integration (STORY 3.3-3.4 + STORY 4)
-- **Day 3**: Testing setup and basic tests (STORY 5.1)
-- **Day 4-5**: Integration testing and bug fixes (STORY 5.2 + optimization)
+- **Day 1-2**: Kasir Management completion + Transaction flow integration (STORY 3.4-3.5 + STORY 4)
+- **Day 3**: Testing setup and basic tests (STORY 5.1-5.2)
+- **Day 4-5**: Integration testing and bug fixes (STORY 5.3-5.4 + optimization)
 
 ---
 
@@ -354,6 +458,7 @@
 
 ### **Functional Requirements**
 
+- [ ] Users can manage kasir (CRUD) via owner dashboard
 - [ ] Users can select kasir dalam transaksi flow
 - [ ] Kasir management CRUD operations working
 - [ ] Form validation includes cashier selection
@@ -406,34 +511,43 @@
 ### **Progress Board**
 
 ```
-EPIC: Kasir Management System [PLANNED]
+EPIC: Kasir Management System [ACTIVE - STORY 4]
 
-├── STORY 1: Database Schema Enhancement [TODO]
-│   ├── Task 1.1: Create Kasir Table [TODO]
-│   ├── Task 1.2: Update Transaksi Table [TODO]
-│   └── Task 1.3: Run Database Migration [TODO]
+├── STORY 1: Database Schema Enhancement [COMPLETED ✅]
+│   ├── Task 1.1: Create Kasir Table [COMPLETED ✅]
+│   ├── Task 1.2: Update Transaksi Table [COMPLETED ✅]
+│   └── Task 1.3: Run Database Migration [PENDING ⏳]
 
-├── STORY 2: API Layer Implementation [TODO]
-│   ├── Task 2.1: Create Kasir API Route [TODO]
-│   ├── Task 2.2: Implement KasirService [TODO]
-│   ├── Task 2.3: Update Validation Schema [TODO]
-│   └── Task 2.4: Update Kasir Types [TODO]
+├── STORY 2: API Layer Implementation [COMPLETED ✅]
+│   ├── Task 2.1: Create Kasir API Route [COMPLETED ✅]
+│   ├── Task 2.2: Implement KasirService [COMPLETED ✅]
+│   ├── Task 2.3: Update Validation Schema [COMPLETED ✅]
+│   ├── Task 2.4: Update Kasir Types [COMPLETED ✅]
+│   ├── Task 2.5: Create API Documentation [COMPLETED ✅]
+│   ├── Task 2.6: Role-based Permissions [COMPLETED ✅]
+│   └── Task 2.7: Kasir Selection Workflow [COMPLETED ✅]
 
-├── STORY 3: UI Components Implementation [TODO]
-│   ├── Task 3.1: Create CashierSelectionStep Component [TODO]
-│   ├── Task 3.2: Create useKasir Hook [TODO]
-│   ├── Task 3.3: Update TransactionFormPage [TODO]
-│   └── Task 3.4: Update useTransactionForm Hook [TODO]
+├── STORY 3: Kasir Management UI Implementation [COMPLETED ✅]
+│   ├── Task 3.1: Update OwnerSidebar dengan Kasir Menu [COMPLETED ✅]
+│   ├── Task 3.2: Create Kasir Management Routes [COMPLETED ✅]
+│   ├── Task 3.3: Create KasirListPage Component [COMPLETED ✅]
+│   ├── Task 3.4: Create KasirForm Component [COMPLETED ✅]
+│   └── Task 3.5: Create useKasirManagement Hook [COMPLETED ✅]
 
 ├── STORY 4: Transaction Flow Integration [TODO]
-│   ├── Task 4.1: Update Transaction Workflow Config [TODO]
-│   ├── Task 4.2: Update TransaksiService [TODO]
-│   └── Task 4.3: Update API Validation [TODO]
+│   ├── Task 4.1: Create CashierSelectionStep Component [TODO]
+│   ├── Task 4.2: Create useKasir Hook [TODO]
+│   ├── Task 4.3: Update TransactionFormPage [TODO]
+│   ├── Task 4.4: Update useTransactionForm Hook [TODO]
+│   ├── Task 4.5: Update Transaction Workflow Config [TODO]
+│   ├── Task 4.6: Update TransaksiService [TODO]
+│   └── Task 4.7: Update API Validation [TODO]
 
 ├── STORY 5: Testing & Integration [TODO]
-│   ├── Task 5.1: Unit Testing [TODO]
-│   ├── Task 5.2: Integration Testing [TODO]
-│   └── Task 5.3: E2E Testing [TODO]
+│   ├── Task 5.1: Kasir Management Unit Testing [TODO]
+│   ├── Task 5.2: Transaction Flow Unit Testing [TODO]
+│   ├── Task 5.3: Integration Testing [TODO]
+│   └── Task 5.4: E2E Testing [TODO]
 
 └── STORY 6: Performance & Security [TODO]
     ├── Task 6.1: Performance Optimization [TODO]
@@ -444,10 +558,15 @@ EPIC: Kasir Management System [PLANNED]
 
 ## <🚀 **READY TO START**
 
-**First Task**: Task 1.1 - Create Kasir Table
-**Prerequisites**: Database backup, access to development environment
-**Dependencies**: None (blocking all subsequent tasks)
-**Estimated Timeline**: 2 weeks total
+**Current Task**: Task 3.1 - Update OwnerSidebar dengan Kasir Menu
+**Prerequisites**: Access to development environment, API testing complete
+**Dependencies**: Story 1 & 2 completed ✅
+**Estimated Timeline**: 2 weeks total (Week 2 beginning)
+
+**Next Immediate Tasks**:
+1. Task 3.1: Update OwnerSidebar dengan Kasir Menu
+2. Task 3.2: Create Kasir Management Routes
+3. Task 3.3: Create KasirListPage Component
 
 ---
 

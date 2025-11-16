@@ -97,7 +97,9 @@ export type ActivityAction = 'created' | 'paid' | 'picked_up' | 'returned' | 'ov
 // Kasir Information Interface for displaying cashier details in transaction
 export interface KasirInfo {
   id: string
-  name: string
-  email: string
-  avatar?: string | null
+  nama: string
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
+  createdBy?: string
 }

@@ -5,19 +5,17 @@
  */
 
 import { PrismaClient, Kasir } from '@prisma/client'
-import {
+import type {
   CreateKasirRequest,
   UpdateKasirRequest,
   KasirQueryParams
-} from '../lib/validation/kasirSchema'
+} from '../types'
 import { createAuditService, AuditService } from './auditService'
 
 export interface KasirWithTransactions extends Kasir {
   transaksi?: Array<{
     id: string
     kode: string
-    status: string
-    totalHarga: number
     createdAt: Date
   }>
 }
@@ -76,33 +74,6 @@ export class KasirService {
     return kasir
   }
 
-  /**
-   * Get kasir by ID with recent transactions
-   */
-  async getKasirById(id: string): Promise<KasirWithTransactions> {
-    const kasir = await this.prisma.kasir.findUnique({
-      where: { id },
-      include: {
-        transaksi: {
-          select: {
-            id: true,
-            kode: true,
-            status: true,
-            totalHarga: true,
-            createdAt: true
-          },
-          orderBy: { createdAt: 'desc' },
-          take: 5 // Get last 5 transactions
-        }
-      }
-    })
-
-    if (!kasir) {
-      throw new Error('Kasir tidak ditemukan')
-    }
-
-    return kasir
-  }
 
   /**
    * Get paginated list of kasir with optional search and filters
@@ -332,7 +303,11 @@ export class KasirService {
   /**
    * Get active kasir list for dropdown/selection (limited data based on user role)
    */
-  async getActiveKasir(): Promise<Kasir[]> {
+  async getActiveKasir(): Promise<Array<{
+    id: string
+    nama: string
+    isActive: boolean
+  }>> {
     return await this.prisma.kasir.findMany({
       where: { isActive: true },
       orderBy: { nama: 'asc' },

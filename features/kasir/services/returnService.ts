@@ -148,7 +148,14 @@ export class UnifiedReturnService {
         productIds.length > 0
           ? this.prisma.product.findMany({
               where: { id: { in: productIds } },
-              select: { id: true, name: true, rentedStock: true },
+              include: {
+                sizes: {
+                  select: {
+                    originalQuantity: true,
+                    rentedQuantity: true
+                  }
+                }
+              }
             })
           : Promise.resolve([]),
         productSizeIds.length > 0

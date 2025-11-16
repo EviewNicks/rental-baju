@@ -1,5 +1,4 @@
-import { User, Crown, Mail } from 'lucide-react'
-import Image from 'next/image'
+import { User, Crown, Calendar } from 'lucide-react'
 import type { KasirInfo } from '../../types/index'
 
 interface KasirInfoCardProps {
@@ -47,17 +46,7 @@ export function KasirInfoCard({ kasir, 'data-testid': dataTestId }: KasirInfoCar
       <div className="flex items-start gap-4">
         <div className="relative">
           <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
-            {kasir.avatar ? (
-              <Image
-                src={kasir.avatar}
-                alt={`Foto ${kasir.name}`}
-                width={64}
-                height={64}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <User className="h-8 w-8 text-blue-600" aria-hidden="true" />
-            )}
+            <User className="h-8 w-8 text-blue-600" aria-hidden="true" />
           </div>
           <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
             <Crown className="h-3 w-3 text-white" />
@@ -66,26 +55,30 @@ export function KasirInfoCard({ kasir, 'data-testid': dataTestId }: KasirInfoCar
 
         <div className="flex-1 space-y-3">
           <div>
-            <h3 className="text-xl font-semibold text-gray-900">{kasir.name}</h3>
+            <h3 className="text-xl font-semibold text-gray-900">{kasir.nama}</h3>
           </div>
 
           <div className="flex items-center gap-3 text-gray-600">
-            <Mail className="h-4 w-4" aria-hidden="true" />
-            <a
-              href={`mailto:${kasir.email}`}
-              className="hover:text-blue-600 transition-colors"
-              aria-label={`Email kasir: ${kasir.email}`}
-            >
-              {kasir.email}
-            </a>
+            <Calendar className="h-4 w-4" aria-hidden="true" />
+            <span>
+              Bergabung sejak {new Date(kasir.createdAt).toLocaleDateString('id-ID', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              })}
+            </span>
           </div>
 
           <div className="flex items-center gap-2 pt-2">
             <div className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
               Kasir
             </div>
-            <div className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
-              Active
+            <div className={`px-3 py-1 rounded-full text-sm font-medium ${
+              kasir.isActive
+                ? 'bg-green-100 text-green-800'
+                : 'bg-gray-100 text-gray-800'
+            }`}>
+              {kasir.isActive ? 'Aktif' : 'Tidak Aktif'}
             </div>
           </div>
         </div>
