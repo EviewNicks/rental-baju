@@ -50,11 +50,23 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       })
 
       try {
-        const aggregation = await aggregationService.getProductAggregation(product.id)
+        // ENHANCED: Use comprehensive inventory method with InventoryService integration
+        const comprehensiveInventory = await aggregationService.getComprehensiveInventory(product.id)
 
         return NextResponse.json({
           ...product,
-          aggregation,
+          // Legacy aggregation for backward compatibility
+          aggregation: {
+            productId: comprehensiveInventory.productId,
+            totalQuantity: comprehensiveInventory.totalQuantity,
+            aggregatedSizes: comprehensiveInventory.aggregatedSizes,
+            hasAdvancedSizing: comprehensiveInventory.hasAdvancedSizing,
+            categoryBreakdown: comprehensiveInventory.categoryBreakdown,
+            lastCalculated: comprehensiveInventory.lastCalculated,
+          },
+          // NEW: Comprehensive inventory data with Enhanced ProductSize fields
+          inventoryStatus: comprehensiveInventory.inventoryStatus,
+          sizeDetails: comprehensiveInventory.sizeDetails,
         }, { status: 200 })
       } catch (error) {
         // If aggregation fails, include product without aggregation data

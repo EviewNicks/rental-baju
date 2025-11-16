@@ -20,7 +20,6 @@ model Product {
   name             String
   description      String?
   modalAwal        Decimal         @db.Decimal(10, 2)
-  quantity         Int
   imageUrl         String?
   categoryId       String
   status           ProductStatus   @default(AVAILABLE)
@@ -29,7 +28,6 @@ model Product {
   updatedAt        DateTime        @updatedAt
   createdBy        String
   size             String?
-  rentedStock      Int             @default(0)
   currentPrice     Decimal         @db.Decimal(10, 2)
   materialCost     Decimal?        @db.Decimal(10, 2)
   materialId       String?
@@ -44,7 +42,6 @@ model Product {
   @@index([status])
   @@index([createdBy])
   @@index([size])
-  @@index([rentedStock])
   @@index([id, modalAwal], map: "idx_product_penalty_calc")
   @@index([materialId])
   @@index([materialCost], map: "idx_product_material_cost")
@@ -80,22 +77,28 @@ model Material {
 }
 
 model ProductSize {
-  id          String      @id @default(uuid())
-  productId   String
-  ageCategory AgeCategory
-  size        SizeEnum
-  quantity    Int
-  isActive    Boolean     @default(true)
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  createdBy   String
-  product     Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  id               String      @id @default(uuid())
+  productId        String
+  ageCategory      AgeCategory
+  size             SizeEnum
+  quantity         Int         // Legacy field - will be migrated to originalQuantity
+  originalQuantity Int         @default(0)  // Total stock owned
+  rentedQuantity   Int         @default(0)  // Currently rented
+  availableQuantity Int        @default(0)  // Available for rent
+  isActive         Boolean     @default(true)
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  createdBy        String
+  product          Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@unique([productId, ageCategory, size])
   @@index([productId])
   @@index([ageCategory])
   @@index([isActive])
   @@index([createdBy])
+  @@index([originalQuantity])
+  @@index([rentedQuantity])
+  @@index([availableQuantity])
   @@map("product_sizes")
 }
 

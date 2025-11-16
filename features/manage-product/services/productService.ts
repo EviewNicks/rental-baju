@@ -306,9 +306,9 @@ export class ProductService {
           description: validatedData.description,
           modalAwal: new Decimal(validatedData.modalAwal),
           currentPrice: new Decimal(validatedData.currentPrice),
-          quantity: validatedData.quantity,
-          rentedStock: 0,
+          // Legacy fields removed - now using Enhanced ProductSize schema
           categoryId: validatedData.categoryId,
+          // Note: size field kept for backward compatibility with legacy systems
           size: validatedData.size,
           materialId: validatedData.materialId || undefined,
           materialCost: materialCost || undefined,
@@ -408,11 +408,9 @@ export class ProductService {
       if (validatedData.name !== undefined) updateData.name = validatedData.name
       if (validatedData.description !== undefined)
         updateData.description = validatedData.description
-      if (validatedData.quantity !== undefined) updateData.quantity = validatedData.quantity
+      // Legacy quantity and rentedStock fields removed - using Enhanced ProductSize schema
       if (validatedData.categoryId !== undefined) updateData.categoryId = validatedData.categoryId
       if (validatedData.size !== undefined) updateData.size = validatedData.size
-      if (validatedData.rentedStock !== undefined)
-        updateData.rentedStock = validatedData.rentedStock
       if (validatedData.materialId !== undefined) updateData.materialId = validatedData.materialId
       if (validatedData.materialQuantity !== undefined)
         updateData.materialQuantity = validatedData.materialQuantity
@@ -1430,8 +1428,9 @@ export class ProductService {
         : ({} as Category),
       modalAwal: prismaProduct.modalAwal as Decimal,
       currentPrice: prismaProduct.currentPrice as Decimal, // ✅ Fixed: return currentPrice instead of hargaSewa
-      quantity: prismaProduct.quantity as number,
-      rentedStock: (prismaProduct.rentedStock as number) || 0, // ✅ Added rentedStock field
+      // Legacy inventory fields removed - now using Enhanced ProductSize schema
+      // quantity: prismaProduct.quantity as number, // ❌ REMOVED - legacy field
+      // rentedStock: (prismaProduct.rentedStock as number) || 0, // ❌ REMOVED - legacy field
       // Material Management fields - RPK-45
       materialId: prismaProduct.materialId as string | undefined,
       materialCost: prismaProduct.materialCost as Decimal | undefined,

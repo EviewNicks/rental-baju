@@ -11,6 +11,7 @@
  */
 
 import { PrismaClient } from '@prisma/client'
+import { inventoryService } from '@/features/kasir/services/inventoryService'
 import type {
   Product,
   ProductSize,
@@ -298,7 +299,7 @@ export class ProductSizeAggregationService {
   // ============== DATA ACCESS HELPERS ==============
 
   /**
-   * Fetch ProductSize records for a product
+   * Fetch ProductSize records for a product with Enhanced ProductSize fields
    */
   private async getProductSizes(productId: string): Promise<ProductSize[]> {
     const productSizes = await this.prisma.productSize.findMany({
@@ -325,7 +326,11 @@ export class ProductSizeAggregationService {
       productId: size.productId,
       ageCategory: size.ageCategory as AgeCategory,
       size: size.size as SizeEnum,
-      quantity: size.quantity,
+      // ENHANCED: Use Enhanced ProductSize fields
+      quantity: size.originalQuantity || 0, // Legacy field for backward compatibility
+      originalQuantity: size.originalQuantity || 0,
+      availableQuantity: size.availableQuantity || 0,
+      rentedQuantity: size.rentedQuantity || 0,
       isActive: size.isActive,
       createdAt: size.createdAt,
       updatedAt: size.updatedAt,
@@ -346,6 +351,73 @@ export class ProductSizeAggregationService {
         sizes: [],
       } as unknown as Product,
     }))
+  }
+
+  /**
+   * Get comprehensive inventory data for a product using InventoryService
+   * NEW METHOD: Integrates with Enhanced ProductSize schema
+   */
+  async getComprehensiveInventory(productId: string): Promise<ProductSizeAggregation & {
+    inventoryStatus: {
+      totalOriginal: number
+      totalAvailable: number
+      totalRented: number
+      utilizationRate: number
+      isHealthy: boolean
+    }
+    sizeDetails: Array<{
+      id: string
+      ageCategory: AgeCategory
+      size: SizeEnum
+      originalQuantity: number
+      availableQuantity: number
+      rentedQuantity: number
+      utilizationRate: number
+      isAvailable: boolean
+    }>
+  }> {
+    const startTime = Date.now()
+
+    // Get base aggregation
+    const baseAggregation = await this.getProductAggregation(productId)
+
+    // Get detailed inventory status using InventoryService
+    const productStockStatus = await inventoryService.getProductStockStatus(productId)
+
+    // Enhanced inventory analysis
+    const inventoryStatus = {
+      totalOriginal: productStockStatus.totalQuantity,
+      totalAvailable: productStockStatus.availableQuantity,
+      totalRented: productStockStatus.rentedQuantity,
+      utilizationRate: productStockStatus.totalQuantity > 0
+        ? (productStockStatus.rentedQuantity / productStockStatus.totalQuantity) * 100
+        : 0,
+      isHealthy: productStockStatus.availableQuantity > 0 || productStockStatus.totalQuantity === 0
+    }
+
+    // Enhanced size details with real-time data
+    const sizeDetails = productStockStatus.sizes.map(size => ({
+      id: size.id,
+      ageCategory: size.ageCategory as AgeCategory,
+      size: size.size as SizeEnum,
+      originalQuantity: size.originalQuantity,
+      availableQuantity: size.availableQuantity,
+      rentedQuantity: size.rentedQuantity,
+      utilizationRate: size.originalQuantity > 0
+        ? (size.rentedQuantity / size.originalQuantity) * 100
+        : 0,
+      isAvailable: size.isAvailable
+    }))
+
+    return {
+      ...baseAggregation,
+      // Override totalQuantity with Enhanced ProductSize data
+      totalQuantity: productStockStatus.totalQuantity,
+      inventoryStatus,
+      sizeDetails,
+      // Enhanced calculation time
+      lastCalculated: new Date(),
+    }
   }
 
   // ============== CACHE MANAGEMENT ==============

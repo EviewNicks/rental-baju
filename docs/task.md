@@ -29,9 +29,9 @@
   }
   ```
 - **Acceptance**:
-  - [ ] Kasir table created successfully
-  - [ ] Migration generated without errors
-  - [ ] TypeScript types updated
+  - [x] Kasir table created successfully
+  - [x] Migration generated without errors
+  - [x] TypeScript types updated
 
 ### **Task 1.2: Update Transaksi Table - TODO**
 
@@ -46,9 +46,9 @@
   }
   ```
 - **Acceptance**:
-  - [ ] kasirId field added successfully
-  - [ ] Foreign key relationship established
-  - [ ] Migration compatible dengan existing data
+  - [x] kasirId field added successfully
+  - [x] Foreign key relationship established
+  - [x] Migration compatible dengan existing data
 
 ### **Task 1.3: Run Database Migration - TODO**
 
@@ -59,9 +59,9 @@
   npx prisma generate
   ```
 - **Acceptance**:
-  - [ ] Migration executed successfully
-  - [ ] Prisma client updated
-  - [ ] Database schema verified
+  - [x] Migration executed successfully
+  - [x] Prisma client updated
+  - [x] Database schema verified
 
 ---
 
@@ -77,10 +77,10 @@
   - GET /api/kasir/kasir/[id] - Get kasir by ID
 - **Pattern**: Following exact pattern of penyewa route.ts
 - **Acceptance**:
-  - [ ] POST endpoint working dengan validation
-  - [ ] GET endpoint dengan pagination
-  - [ ] Error handling implemented
-  - [ ] Rate limiting applied
+  - [x] POST endpoint working dengan validation
+  - [x] GET endpoint dengan pagination
+  - [x] Error handling implemented
+  - [x] Rate limiting applied
 
 ### **Task 2.2: Implement KasirService - TODO**
 
@@ -92,10 +92,10 @@
   - `getKasirById(id: string): Promise<Kasir>`
 - **Pattern**: Following PenyewaService implementation
 - **Acceptance**:
-  - [ ] Service methods implemented
-  - [ ] Database operations working
-  - [ ] Error handling completed
-  - [ ] Input validation
+  - [x] Service methods implemented
+  - [x] Database operations working
+  - [x] Error handling completed
+  - [x] Input validation
 
 ### **Task 2.3: Update Validation Schema - TODO**
 
@@ -114,9 +114,9 @@
   })
   ```
 - **Acceptance**:
-  - [ ] Create kasir schema validated
-  - [ ] Query parameter schema working
-  - [ ] Error messages in Indonesian
+  - [x] Create kasir schema validated
+  - [x] Query parameter schema working
+  - [x] Error messages in Indonesian
 
 ### **Task 2.4: Update Kasir Types - TODO**
 
@@ -137,9 +137,9 @@
   }
   ```
 - **Acceptance**:
-  - [ ] All kasir types defined
-  - [ ] Consistent dengan existing type patterns
-  - [ ] Full type safety
+  - [x] All kasir types defined
+  - [x] Consistent dengan existing type patterns
+  - [x] Full type safety
 
 ---
 
@@ -155,10 +155,10 @@
   - Follow existing menu pattern and styling
 - **Pattern**: Consistent dengan existing "Manage Product" menu
 - **Acceptance**:
-  - [ ] Menu item added successfully
-  - [ ] Navigation works correctly
-  - [ ] Styling consistent with existing menus
-  - [ ] Icon appropriate for kasir management
+  - [x] Menu item added successfully
+  - [x] Navigation works correctly
+  - [x] Styling consistent with existing menus
+  - [x] Icon appropriate for kasir management
 
 ### **Task 3.2: Create Kasir Management Routes - TODO**
 
@@ -169,10 +169,10 @@
 - **Action**: Create route structure untuk kasir management
 - **Pattern**: Following producer/manage-product route structure
 - **Acceptance**:
-  - [ ] All routes created successfully
-  - [ ] Route protection working (owner role only)
-  - [ ] Loading states implemented
-  - [ ] Error boundaries in place
+  - [x] All routes created successfully
+  - [x] Route protection working (owner role only)
+  - [x] Loading states implemented
+  - [x] Error boundaries in place
 
 ### **Task 3.3: Create KasirListPage Component - TODO**
 
@@ -186,11 +186,11 @@
   - Export functionality
 - **Pattern**: Following ProductListPage implementation
 - **Acceptance**:
-  - [ ] List renders with pagination
-  - [ ] Search functionality working
-  - [ ] CRUD operations functional
-  - [ ] Error handling implemented
-  - [ ] Loading states with skeleton
+  - [x] List renders with pagination
+  - [x] Search functionality working
+  - [x] CRUD operations functional
+  - [x] Error handling implemented
+  - [x] Loading states with skeleton
 
 ### **Task 3.4: Create KasirForm Component - TODO**
 
@@ -204,11 +204,11 @@
   - Form reset on success
 - **Pattern**: Following ProductForm implementation
 - **Acceptance**:
-  - [ ] Form validation working
-  - [ ] Submit functionality operational
-  - [ ] Edit form loads existing data
-  - [ ] Success/error notifications
-  - [ ] Mobile responsive design
+  - [x] Form validation working
+  - [x] Submit functionality operational
+  - [x] Edit form loads existing data
+  - [x] Success/error notifications
+  - [x] Mobile responsive design
 
 ### **Task 3.5: Create useKasirManagement Hook - TODO**
 
@@ -222,11 +222,11 @@
   - Error retry logic
 - **Pattern**: Following useProductManagement hook
 - **Acceptance**:
-  - [ ] All CRUD operations working
-  - [ ] Pagination state managed
-  - [ ] Search functionality integrated
-  - [ ] Optimistic updates implemented
-  - [ ] Error handling with retry
+  - [x] All CRUD operations working
+  - [x] Pagination state managed
+  - [x] Search functionality integrated
+  - [x] Optimistic updates implemented
+  - [x] Error handling with retry
 
 ---
 

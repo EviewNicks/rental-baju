@@ -14,6 +14,7 @@ import {
 import { TransactionCodeGenerator } from '../lib/utils/codeGenerator'
 import { PriceCalculator } from '../lib/utils/server'
 import { createAvailabilityService, AvailabilityService } from './availabilityService'
+import { inventoryService } from './inventoryService'
 import type { TransactionStatus } from '../types'
 
 export interface TransaksiWithDetails extends Transaksi {
@@ -452,7 +453,7 @@ export class TransaksiService {
 
   /**
    * Update product size quantities when items are rented
-   * NEW: Size-specific stock management
+   * ENHANCED: Using InventoryService for single source of truth
    * @private
    */
   private async updateProductSizeQuantities(
@@ -461,56 +462,25 @@ export class TransaksiService {
     items: CreateTransaksiRequest['items'],
   ): Promise<void> {
     for (const item of items) {
-      // Get current product size state for validation
-      const currentProductSize = await tx.productSize.findUnique({
-        where: { id: item.productSizeId },
-        select: {
-          id: true,
-          quantity: true,
-          product: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
-        },
-      })
+      // Validate availability using InventoryService
+      const isAvailable = await inventoryService.checkAvailability(item.productSizeId, item.jumlah)
 
-      if (!currentProductSize) {
-        const error = `ProductSize ${item.productSizeId} not found during stock update`
-        throw new Error(error)
+      if (!isAvailable) {
+        // Get stock status for detailed error message
+        const stockStatus = await inventoryService.getStockStatus(item.productSizeId)
+        throw new Error(
+          `Insufficient stock for product size. Available: ${stockStatus.availableQuantity}, Requested: ${item.jumlah}`
+        )
       }
 
-      // Double-check availability (race condition protection)
-      if (currentProductSize.quantity < item.jumlah) {
-        const error = `Insufficient stock for product size. Available: ${currentProductSize.quantity}, Requested: ${item.jumlah}`
-        throw new Error(error)
-      }
-
-      // Update ProductSize quantity
-      const updateResult = await tx.productSize.updateMany({
-        where: {
-          id: item.productSizeId,
-          quantity: { gte: item.jumlah }, // Ensure sufficient stock
-        },
-        data: {
-          quantity: {
-            decrement: item.jumlah, // Reduce available quantity
-          },
-        },
-      })
-
-      // Verify the update was successful
-      if (updateResult.count === 0) {
-        const error = `Failed to update quantity for product size. The size may have been modified by another transaction.`
-        throw new Error(error)
-      }
+      // Update stock using InventoryService (atomic operation)
+      await inventoryService.updateStockOnCreate(item.productSizeId, item.jumlah)
     }
   }
 
   /**
    * Validate stock availability for all items BEFORE transaction
-   * NEW: Pre-validation pattern to prevent transaction timeouts
+   * ENHANCED: Using InventoryService for real-time stock validation
    * @private
    */
   private async validateStockAvailability(items: CreateTransaksiRequest['items']): Promise<void> {
@@ -518,7 +488,7 @@ export class TransaksiService {
     const productSizeIds = items.map((item) => item.productSizeId)
     const uniqueSizeIds = [...new Set(productSizeIds)] // Remove duplicates
 
-    // Single query to get all required product sizes
+    // Single query to get all required product sizes for product validation
     const productSizes = await this.prisma.productSize.findMany({
       where: {
         id: { in: uniqueSizeIds },
@@ -544,7 +514,7 @@ export class TransaksiService {
       throw new Error(`Ukuran produk dengan ID ${missingIds[0]} tidak tersedia`)
     }
 
-    // Validate each item has sufficient stock
+    // Validate each item using InventoryService for real-time stock checking
     for (const item of items) {
       const productSize = productSizes.find((ps) => ps.id === item.productSizeId)
 
@@ -557,10 +527,14 @@ export class TransaksiService {
         throw new Error(`Produk ${productSize.product.name} sedang tidak tersedia`)
       }
 
-      // Validate stock availability
-      if (productSize.quantity < item.jumlah) {
+      // Validate stock availability using InventoryService (real-time check)
+      const isAvailable = await inventoryService.checkAvailability(item.productSizeId, item.jumlah)
+
+      if (!isAvailable) {
+        // Get detailed stock status for error message
+        const stockStatus = await inventoryService.getStockStatus(item.productSizeId)
         throw new Error(
-          `Size ${productSize.size} (${productSize.ageCategory}) untuk ${productSize.product.name} tidak mencukupi. Tersedia: ${productSize.quantity}, Diminta: ${item.jumlah}`,
+          `Size ${productSize.size} (${productSize.ageCategory}) untuk ${productSize.product.name} tidak mencukupi. Tersedia: ${stockStatus.availableQuantity}, Diminta: ${item.jumlah}`,
         )
       }
     }
@@ -937,7 +911,7 @@ export class TransaksiService {
             },
           })
 
-          // Restore ProductSize quantities for each item
+          // Restore stock using InventoryService for consistency
           await Promise.all(
             transaksiItems.map(async (item) => {
               const quantityToRestore =
@@ -949,14 +923,8 @@ export class TransaksiService {
                 const productSizeId = kondisiParts[0]
 
                 if (productSizeId) {
-                  await tx.productSize.update({
-                    where: { id: productSizeId },
-                    data: {
-                      quantity: {
-                        increment: quantityToRestore,
-                      },
-                    },
-                  })
+                  // Use InventoryService for consistent stock management
+                  await inventoryService.updateStockOnReturn(productSizeId, quantityToRestore)
                 }
               }
             }),

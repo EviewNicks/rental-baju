@@ -24,6 +24,7 @@ import { createAuditService, AuditService } from './auditService'
 import { ConditionCategory } from '../types'
 import { kasirLogger } from '../lib/logger'
 import { parseKondisiAwal } from '../lib/utils/kondisiAwalParser'
+import { inventoryService } from './inventoryService'
 
 // Unified return request interface - treats all returns as multi-condition
 interface UnifiedReturnRequest {
@@ -665,7 +666,7 @@ export class UnifiedReturnService {
             })
           }
 
-          // PERFORMANCE: Execute batch operations in parallel
+          // PERFORMANCE: Execute batch operations in parallel (inside transaction)
           await Promise.all([
             // 1. Create all return records
             returnRecords.length > 0
@@ -692,26 +693,6 @@ export class UnifiedReturnService {
                     totalReturnPenalty: update.totalReturnPenalty,
                     conditionCount: update.conditionCount,
                   },
-                }),
-              ),
-            ),
-
-            // 3. Update product stocks in parallel
-            Promise.all(
-              Array.from(stockUpdates.entries()).map(([productId, quantity]) =>
-                tx.product.update({
-                  where: { id: productId },
-                  data: { rentedStock: { decrement: quantity } },
-                }),
-              ),
-            ),
-
-            // 4. Update product sizes in parallel
-            Promise.all(
-              Array.from(sizeUpdates.entries()).map(([sizeId, quantity]) =>
-                tx.productSize.update({
-                  where: { id: sizeId },
-                  data: { quantity: { increment: quantity } },
                 }),
               ),
             ),
@@ -742,6 +723,51 @@ export class UnifiedReturnService {
         },
         { timeout: 15000 }, // Reduced timeout due to optimization
       )
+
+      // ENHANCED: Update stock using InventoryService after transaction completion
+      // Process size updates outside transaction for consistency with new schema
+      if (sizeUpdates.size > 0) {
+        kasirLogger.returnProcess.info(
+          'processUnifiedReturn',
+          'Starting stock updates with InventoryService',
+          { sizeUpdateCount: sizeUpdates.size }
+        )
+
+        try {
+          await Promise.all(
+            Array.from(sizeUpdates.entries()).map(async ([sizeId, quantity]) => {
+              try {
+                await inventoryService.updateStockOnReturn(sizeId, quantity)
+                kasirLogger.returnProcess.debug(
+                  'processUnifiedReturn',
+                  'Stock updated successfully',
+                  { sizeId, quantity }
+                )
+              } catch (error) {
+                kasirLogger.returnProcess.error(
+                  'processUnifiedReturn',
+                  'Stock update failed',
+                  { sizeId, quantity, error: error instanceof Error ? error.message : 'Unknown error' }
+                )
+                throw new Error(`Stock update failed for size ${sizeId}: ${error instanceof Error ? error.message : 'Unknown error'}`)
+              }
+            }),
+          )
+
+          kasirLogger.returnProcess.info(
+            'processUnifiedReturn',
+            'All stock updates completed successfully',
+            { totalSizeUpdates: sizeUpdates.size }
+          )
+        } catch (stockError) {
+          kasirLogger.returnProcess.error(
+            'processUnifiedReturn',
+            'Critical stock update failure',
+            { error: stockError instanceof Error ? stockError.message : 'Unknown error' }
+          )
+          throw stockError
+        }
+      }
 
       const totalProcessingTime = Date.now() - startTime
       kasirLogger.returnProcess.info('processUnifiedReturn', 'Transaction completed successfully', {

@@ -167,8 +167,10 @@ export async function GET(request: NextRequest) {
 
     const formattedProducts = products
       .map((product) => {
-        // Calculate total available quantity across all sizes
-        const totalAvailable = product.sizes.reduce((sum, size) => sum + size.quantity, 0)
+        // Calculate total available quantity using Enhanced ProductSize fields
+        const totalAvailable = product.sizes.reduce((sum, size) => sum + (size.availableQuantity || 0), 0)
+        const totalRented = product.sizes.reduce((sum, size) => sum + (size.rentedQuantity || 0), 0)
+        const totalOriginal = product.sizes.reduce((sum, size) => sum + (size.originalQuantity || 0), 0)
 
         // 🔧 CRITICAL FIX: Enhanced legacy field mapping for cart display
         // Priority: 1) Product legacy fields → 2) First size from sizes array → 3) "Unknown"
@@ -193,10 +195,10 @@ export async function GET(request: NextRequest) {
           name: product.name,
           description: product.description,
           currentPrice: Number(product.currentPrice),
-          // ENHANCED: Size-based inventory information
-          totalInventory: product.quantity, // Legacy field for backward compatibility
-          availableQuantity: totalAvailable, // Total across all active sizes
-          rentedQuantity: product.rentedStock, // Legacy field
+          // ENHANCED: Size-based inventory information using Enhanced ProductSize schema
+          totalInventory: totalOriginal, // Total original stock from all sizes
+          availableQuantity: totalAvailable, // Total available stock across all sizes
+          rentedQuantity: totalRented, // Total rented stock across all sizes
           // 🔧 CRITICAL FIX: Add legacy size and color fields for frontend fallback
           size: legacySize,
           color: legacyColor,
