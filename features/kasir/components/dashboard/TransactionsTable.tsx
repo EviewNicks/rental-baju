@@ -1,7 +1,7 @@
 import type { Transaction } from '../../types'
 import { StatusBadge } from '../ui/status-badge'
 import { formatCurrency, formatDate, getDaysOverdue } from '../../lib/utils/client'
-import { Clock, Phone, Package, Eye } from 'lucide-react'
+import { Clock, Phone, Package, Eye, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import {
@@ -66,6 +66,12 @@ export function TransactionTable({ transactions, isLoading }: TransactionTablePr
               className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
             >
               Total
+            </TableHead>
+            <TableHead
+              scope="col"
+              className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+            >
+              Kasir
             </TableHead>
             <TableHead
               scope="col"
@@ -190,6 +196,34 @@ function TransactionRow({ transaction }: { transaction: Transaction }) {
         </div>
       </TableCell>
       <TableCell className="px-4 py-3">
+        {transaction.kasir ? (
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 bg-gray-100 rounded-full flex items-center justify-center">
+              <User className="h-3 w-3 text-gray-600" />
+            </div>
+            <div>
+              <div className="text-sm font-medium text-gray-900">
+                {transaction.kasir.nama}
+              </div>
+              <div className="text-xs text-gray-500">
+                {transaction.kasir.isActive ? (
+                  <span className="text-green-600">Aktif</span>
+                ) : (
+                  <span className="text-orange-600">Non-aktif</span>
+                )}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 text-gray-400">
+            <div className="w-6 h-6 bg-gray-50 rounded-full flex items-center justify-center">
+              <User className="h-3 w-3 text-gray-400" />
+            </div>
+            <span className="text-sm">-</span>
+          </div>
+        )}
+      </TableCell>
+      <TableCell className="px-4 py-3">
         <StatusBadge status={transaction.status} />
       </TableCell>
       <TableCell className="px-4 py-3 text-center">
@@ -229,6 +263,9 @@ function TransactionTableSkeleton() {
             </TableHead>
             <TableHead className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
               Total
+            </TableHead>
+            <TableHead className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+              Kasir
             </TableHead>
             <TableHead className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
               Status

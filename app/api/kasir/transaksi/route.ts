@@ -20,6 +20,7 @@ import {
 } from '@/features/kasir/lib/validation/kasirSchema'
 import { ZodError } from 'zod'
 import { createSuccessResponse } from '@/features/kasir/types'
+import { TransactionLogger } from '@/features/kasir/lib/logger/transactionLogger'
 
 export async function POST(request: NextRequest) {
   try {
@@ -50,14 +51,20 @@ export async function POST(request: NextRequest) {
     let transaksi
     if (isSizeAwareRequest) {
       // Size-aware format
-      const validatedData = createTransaksiSchema.parse(body) as unknown
-      transaksi = await transaksiService.createTransaksiSizeAware(
-        validatedData as CreateTransaksiRequest,
-      )
+      const validatedData = createTransaksiSchema.parse(body) as CreateTransaksiRequest
+
+      // 🔍 DEBUG: Log API payload for kasir tracking
+      TransactionLogger.logApiPayload(validatedData)
+
+      transaksi = await transaksiService.createTransaksiSizeAware(validatedData)
     } else {
       // Legacy format - use backward compatibility
-      const validatedData = createTransaksiLegacySchema.parse(body) as unknown
-      transaksi = await transaksiService.createTransaksiSizeAware(validatedData as CreateTransaksiRequest)
+      const validatedData = createTransaksiLegacySchema.parse(body) as CreateTransaksiRequest
+
+      // 🔍 DEBUG: Log API payload for kasir tracking (legacy)
+      TransactionLogger.logApiPayload(validatedData)
+
+      transaksi = await transaksiService.createTransaksiSizeAware(validatedData)
     }
 
     // Get the created transaction with full details for response
@@ -73,6 +80,11 @@ export async function POST(request: NextRequest) {
         telepon: fullTransaksi.penyewa.telepon,
         alamat: fullTransaksi.penyewa.alamat,
       },
+      kasir: fullTransaksi.kasir ? { // NEW: Include kasir information
+        id: fullTransaksi.kasir.id,
+        nama: fullTransaksi.kasir.nama,
+        isActive: fullTransaksi.kasir.isActive
+      } : null,
       status: fullTransaksi.status,
       totalHarga: Number(fullTransaksi.totalHarga),
       jumlahBayar: Number(fullTransaksi.jumlahBayar),
@@ -158,6 +170,20 @@ export async function POST(request: NextRequest) {
             },
           },
           { status: 404 },
+        )
+      }
+
+      // Kasir validation errors
+      if (error.message.includes('Kasir tidak ditemukan atau tidak aktif')) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              message: error.message,
+              code: 'KASIR_NOT_ACTIVE',
+            },
+          },
+          { status: 400 },
         )
       }
 
@@ -272,6 +298,11 @@ export async function GET(request: NextRequest) {
             telepon: transaksi.penyewa.telepon,
             alamat: transaksi.penyewa.alamat,
           },
+          kasir: transaksi.kasir ? { // NEW: Include kasir information
+            id: transaksi.kasir.id,
+            nama: transaksi.kasir.nama,
+            isActive: transaksi.kasir.isActive
+          } : null,
           status: transaksi.status,
           totalHarga: Number(transaksi.totalHarga),
           jumlahBayar: Number(transaksi.jumlahBayar),

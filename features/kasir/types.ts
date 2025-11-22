@@ -14,7 +14,7 @@ export type TransactionStatus = 'active' | 'diambil' | 'selesai' | 'terlambat' |
 export type PaymentMethod = 'tunai' | 'transfer' | 'kartu'
 export type ActivityType = 'dibuat' | 'dibayar' | 'diambil' | 'selesai' | 'terlambat' | 'dibatalkan'
 export type ReturnStatus = 'belum' | 'sebagian' | 'lengkap'
-export type TransactionStep = 1 | 2 | 3
+export type TransactionStep = 1 | 2 | 3 | 4
 
 // New condition categories enum for manual pricing system
 export enum ConditionCategory {
@@ -22,7 +22,7 @@ export enum ConditionCategory {
   KOTOR = 'KOTOR',
   RUSAK_RINGAN = 'RUSAK_RINGAN',
   RUSAK_BERAT = 'RUSAK_BERAT',
-  HILANG = 'HILANG'
+  HILANG = 'HILANG',
 }
 
 // Condition category labels for UI display
@@ -31,7 +31,7 @@ export const ConditionCategoryLabels: Record<ConditionCategory, string> = {
   [ConditionCategory.KOTOR]: 'Kotor',
   [ConditionCategory.RUSAK_RINGAN]: 'Rusak Ringan',
   [ConditionCategory.RUSAK_BERAT]: 'Rusak Berat',
-  [ConditionCategory.HILANG]: 'Hilang'
+  [ConditionCategory.HILANG]: 'Hilang',
 }
 
 // Penalty system types for new flat + manual pricing structure
@@ -153,7 +153,7 @@ export interface ProductWithCategory extends ProductCore {
     id: string
     name: string
     color?: string
-    type?: 'clothing' | 'accessories_age_based' | 'accessories_universal'  // RPK-52: Category type for dynamic forms
+    type?: 'clothing' | 'accessories_age_based' | 'accessories_universal' // RPK-52: Category type for dynamic forms
   }
   size?: string
   color?: {
@@ -183,7 +183,7 @@ export interface ProductSize {
   ageCategory: 'ADULT' | 'TEEN' | 'CHILD'
   size: string // 'S', 'M', 'L', 'XL', etc.
   quantity: number
-  availableQuantity: number  // Size-specific available stock
+  availableQuantity: number // Size-specific available stock
   rentedStock: number
   createdAt: string
   updatedAt: string
@@ -195,7 +195,7 @@ export interface Product {
   id: string
   name: string
   category: string
-  categoryType?: 'clothing' | 'accessories_age_based' | 'accessories_universal'  // RPK-52: Category type for dynamic forms
+  categoryType?: 'clothing' | 'accessories_age_based' | 'accessories_universal' // RPK-52: Category type for dynamic forms
   size: string
   color: string
   pricePerDay: number
@@ -205,8 +205,8 @@ export interface Product {
   availableQuantity?: number
 
   // Size-aware fields (RPK-51) - Optional for backward compatibility
-  sizes?: ProductSize[]  // Available sizes for this product
-  supportsSizeSelection?: boolean  // Flag to show size selector in UI
+  sizes?: ProductSize[] // Available sizes for this product
+  supportsSizeSelection?: boolean // Flag to show size selector in UI
 }
 
 export interface ProductSelection {
@@ -215,8 +215,8 @@ export interface ProductSelection {
   duration: number
 
   // Size-aware fields (RPK-51) - Optional for backward compatibility
-  productSizeId?: string  // Selected size ID for API request
-  selectedSize?: ProductSize  // Full size info for UI display
+  productSizeId?: string // Selected size ID for API request
+  selectedSize?: ProductSize // Full size info for UI display
 }
 
 export interface ProductFilters {
@@ -408,6 +408,15 @@ export interface TransactionFormData {
   paymentStatus: 'paid' | 'unpaid'
   notes?: string
   currentStep?: TransactionStep // For persistence
+  kasirSelection?: KasirSelectionData // Cashier selection data
+}
+
+// Cashier Selection Data for transaction form
+export interface KasirSelectionData {
+  kasirId: string | null
+  kasirInfo: KasirInfo | null
+  isAutoAssigned: boolean // true if auto-assigned to current user
+  assignmentReason?: string // reason for auto-assignment
 }
 
 // ==========================================
@@ -463,7 +472,7 @@ export interface PenyewaListResponse {
 // Size-aware transaction item format (RPK-51)
 export interface CreateTransaksiItemSizeAware {
   produkId: string
-  productSizeId: string  // Size-specific ID for inventory management
+  productSizeId: string // Size-specific ID for inventory management
   jumlah: number
   durasi: number // dalam hari
   kondisiAwal?: string
@@ -479,13 +488,14 @@ export interface CreateTransaksiItemLegacy {
 
 // Type guard to detect size-aware items
 export function isSizeAwareItem(
-  item: CreateTransaksiItemSizeAware | CreateTransaksiItemLegacy
+  item: CreateTransaksiItemSizeAware | CreateTransaksiItemLegacy,
 ): item is CreateTransaksiItemSizeAware {
   return 'productSizeId' in item && item.productSizeId !== undefined
 }
 
 // Main transaction request interface supporting dual-format
 export interface CreateTransaksiRequest {
+  kasirId?: string // Optional to match database schema (kasirId?)
   penyewaId: string
   items: Array<CreateTransaksiItemSizeAware | CreateTransaksiItemLegacy>
   tglMulai: string // ISO date string
@@ -734,7 +744,7 @@ export interface PickupResponse {
 }
 
 // ==========================================
-// INPUT SANITIZATION UTILITIES 
+// INPUT SANITIZATION UTILITIES
 // ==========================================
 
 /**
@@ -880,7 +890,7 @@ export function formatPenyewaList(
     email?: string | null
     createdAt: Date
     updatedAt: Date
-  }>
+  }>,
 ): PenyewaResponse[] {
   return penyewaList.map(formatPenyewaData)
 }
@@ -904,7 +914,7 @@ export function formatPenyewaListWithPagination(
     limit: number
     total: number
     totalPages: number
-  }
+  },
 ): PenyewaListResponse {
   return {
     data: penyewaList.map(formatPenyewaData),
@@ -919,7 +929,7 @@ export function formatPenyewaListWithPagination(
 export function createSuccessResponse<T = unknown>(
   data: T,
   message: string,
-  statusCode: number = 200
+  statusCode: number = 200,
 ): { response: { success: true; data: T; message: string }; status: number } {
   return {
     response: {
@@ -939,13 +949,16 @@ export function createErrorResponse(
   message: string,
   code: string,
   statusCode: number = 400,
-  details?: unknown
-): { response: { success: false; error: { message: string; code: string; details?: unknown } }; status: number } {
+  details?: unknown,
+): {
+  response: { success: false; error: { message: string; code: string; details?: unknown } }
+  status: number
+} {
   const errorResponse: { message: string; code: string; details?: unknown } = {
     message,
     code,
   }
-  
+
   if (details) {
     errorResponse.details = details
   }
@@ -978,11 +991,11 @@ export interface ConditionSplit {
 
 export interface MultiConditionReturnItem {
   itemId: string
-  
+
   // Single-condition mode (backward compatibility)
   kondisiAkhir?: string
   jumlahKembali?: number
-  
+
   // Multi-condition mode (enhanced)
   conditions?: ConditionSplit[]
 }
@@ -1097,12 +1110,12 @@ export interface EnhancedReturnProcessingResult {
       penaltyAmount: number
     }>
   }>
-  
+
   // Success case properties
   processingMode?: ProcessingMode
   multiConditionSummary?: Record<string, MultiConditionPenaltyResult>
-  
-  // Error case properties  
+
+  // Error case properties
   details?: {
     statusCode: 'ALREADY_RETURNED' | 'INVALID_STATUS' | 'VALIDATION_ERROR'
     message: string
@@ -1234,5 +1247,5 @@ export const PENALTY_RATES = {
   kotor: 5000,
   'rusak ringan': 15000,
   'rusak berat': 50000,
-  hilang: 'modal_awal'
+  hilang: 'modal_awal',
 } as const

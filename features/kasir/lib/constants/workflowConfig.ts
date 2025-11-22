@@ -9,7 +9,8 @@ import type { CustomerFormData } from '../../types'
 export const transactionFormSteps = [
   { id: 1, title: 'Pilih Produk', description: 'Pilih baju yang akan disewa' },
   { id: 2, title: 'Data Penyewa', description: 'Isi biodata penyewa' },
-  { id: 3, title: 'Pembayaran', description: 'Ringkasan & pembayaran' },
+  { id: 3, title: 'Pilih Kasir', description: 'Pilih kasir untuk transaksi' },
+  { id: 4, title: 'Pembayaran', description: 'Ringkasan & pembayaran' },
 ]
 
 // Field Mapping for API-to-Form Translation

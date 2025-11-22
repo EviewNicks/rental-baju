@@ -16,6 +16,7 @@ import { PriceCalculator } from '../lib/utils/server'
 import { createAvailabilityService, AvailabilityService } from './availabilityService'
 import { inventoryService } from './inventoryService'
 import type { TransactionStatus } from '../types'
+import { TransactionLogger } from '../lib/logger/transactionLogger'
 
 export interface TransaksiWithDetails extends Transaksi {
   penyewa: {
@@ -24,6 +25,12 @@ export interface TransaksiWithDetails extends Transaksi {
     telepon: string
     alamat: string
   }
+  kasir: {
+    // NEW: Include kasir information
+    id: string
+    nama: string
+    isActive: boolean
+  } | null
   items: Array<{
     id: string
     produkId: string
@@ -219,6 +226,47 @@ export class TransaksiService {
   }
 
   /**
+   * Validate kasir exists and is active
+   * NEW: Kasir validation for transaction assignment
+   * FIXED: Using logKasirDebug instead of logApiPayload for type safety
+   * @private
+   */
+  private async validateKasirExistsAndActive(kasirId: string): Promise<void> {
+    // 🔍 DEBUG: Log kasir validation attempt
+    TransactionLogger.logKasirDebug({
+      kasirId,
+      validation: 'kasir_active_check',
+      timestamp: new Date().toISOString(),
+      source: 'TransaksiService.validateKasirExistsAndActive',
+    })
+
+    const kasir = await this.prisma.kasir.findUnique({
+      where: { id: kasirId, isActive: true },
+    })
+
+    if (!kasir) {
+      // 🔍 DEBUG: Log kasir validation failure
+      TransactionLogger.logKasirDebug({
+        kasirId,
+        validation: 'kasir_validation_failed',
+        reason: 'not_found_or_inactive',
+        timestamp: new Date().toISOString(),
+        source: 'TransaksiService.validateKasirExistsAndActive',
+      })
+      throw new Error('Kasir tidak ditemukan atau tidak aktif')
+    }
+
+    // 🔍 DEBUG: Log kasir validation success
+    TransactionLogger.logKasirDebug({
+      kasirId,
+      kasirName: kasir.nama,
+      validation: 'kasir_validation_success',
+      timestamp: new Date().toISOString(),
+      source: 'TransaksiService.validateKasirExistsAndActive',
+    })
+  }
+
+  /**
    * Unified method to get transaction by ID or code
    * Consolidates duplicate logic from getTransaksiById and getTransaksiByCode
    * @param identifier - Transaction ID (UUID) or code
@@ -227,7 +275,7 @@ export class TransaksiService {
    */
   async getTransaksiByIdentifier(
     identifier: string,
-    type: 'id' | 'code' = 'code'
+    type: 'id' | 'code' = 'code',
   ): Promise<TransaksiWithDetails> {
     const whereClause = type === 'id' ? { id: identifier } : { kode: identifier }
 
@@ -240,6 +288,14 @@ export class TransaksiService {
             nama: true,
             telepon: true,
             alamat: true,
+          },
+        },
+        kasir: {
+          // NEW: Include kasir information
+          select: {
+            id: true,
+            nama: true,
+            isActive: true,
           },
         },
         items: {
@@ -322,6 +378,21 @@ export class TransaksiService {
         throw new Error('Penyewa tidak ditemukan')
       }
 
+      // NEW: Validate kasir if provided
+      if (data.kasirId) {
+        // 🔍 DEBUG: Log kasir validation start in transaction creation
+        TransactionLogger.logKasirDebug({
+          kasirId: data.kasirId,
+          transactionCode: 'pending_generation',
+          validation: 'kasir_validation_start',
+          step: 'pre_transaction_creation',
+          timestamp: new Date().toISOString(),
+          source: 'TransaksiService.createTransaksiSizeAware',
+        })
+
+        await this.validateKasirExistsAndActive(data.kasirId)
+      }
+
       // STEP 2: Pre-validate stock availability OUTSIDE transaction
       await this.validateStockAvailability(data.items)
 
@@ -376,6 +447,7 @@ export class TransaksiService {
             data: {
               kode,
               penyewaId: data.penyewaId,
+              kasirId: data.kasirId || null, // NEW: Include kasirId if provided
               status: 'active',
               totalHarga: priceCalculation!.totalHarga,
               jumlahBayar: new Decimal(0),
@@ -416,10 +488,11 @@ export class TransaksiService {
             data: {
               transaksiId: createdTransaksi.id,
               tipe: 'dibuat',
-              deskripsi: `Transaksi ${kode} dibuat dengan optimized inventory system`,
+              deskripsi: `Transaksi ${kode} dibuat${data.kasirId ? ' dengan kasir ter assign' : ''}`,
               data: {
                 items: data.items.length,
                 totalHarga: priceCalculation!.totalHarga.toString(),
+                kasirId: data.kasirId || null, // NEW: Include kasir assignment
                 sizeAware: true,
                 optimizedSystem: true,
                 transactionDuration: Date.now() - transactionStartTime,
@@ -434,6 +507,16 @@ export class TransaksiService {
           timeout: 30000, // 30 seconds timeout for safety
         },
       )
+
+      // 🔍 DEBUG: Log transaction creation success with kasir assignment
+      TransactionLogger.logKasirDebug({
+        transactionCode: transaksi.kode,
+        transactionId: transaksi.id,
+        kasirId: data.kasirId,
+        success: 'transaction_created_with_kasir',
+        timestamp: new Date().toISOString(),
+        source: 'TransaksiService.createTransaksiSizeAware',
+      })
 
       return transaksi
     } catch (error) {
@@ -469,7 +552,7 @@ export class TransaksiService {
         // Get stock status for detailed error message
         const stockStatus = await inventoryService.getStockStatus(item.productSizeId)
         throw new Error(
-          `Insufficient stock for product size. Available: ${stockStatus.availableQuantity}, Requested: ${item.jumlah}`
+          `Insufficient stock for product size. Available: ${stockStatus.availableQuantity}, Requested: ${item.jumlah}`,
         )
       }
 
@@ -484,7 +567,6 @@ export class TransaksiService {
    * @private
    */
   private async validateStockAvailability(items: CreateTransaksiRequest['items']): Promise<void> {
-
     const productSizeIds = items.map((item) => item.productSizeId)
     const uniqueSizeIds = [...new Set(productSizeIds)] // Remove duplicates
 
@@ -538,7 +620,6 @@ export class TransaksiService {
         )
       }
     }
-
   }
 
   /**
