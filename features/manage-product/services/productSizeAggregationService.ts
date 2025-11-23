@@ -34,19 +34,67 @@ interface CacheEntry<T> {
   expiryAt: Date
 }
 
+/**
+ * Enhanced cache entry with performance monitoring
+ */
+interface AdvancedCacheEntry<T> {
+  data: T
+  calculatedAt: Date
+  expiryAt: Date
+  accessCount: number
+  lastAccessed: Date
+  performance: PerformanceMetrics
+}
+
+/**
+ * Performance metrics for monitoring aggregation performance
+ */
+interface PerformanceMetrics {
+  calculationTimeMs: number
+  cacheHitRatio: number
+  memoryUsageMB: number
+  complexity: 'low' | 'medium' | 'high'
+}
+
+/**
+ * Enhanced aggregation configuration with advanced options
+ */
+interface AdvancedAggregationConfig {
+  enableCaching: boolean
+  cacheExpiryMinutes: number
+  includeBreakdown: boolean
+  includeRentalTracking: boolean
+  performanceThresholdMs: number
+  maxCacheSize: number
+}
+
 export class ProductSizeAggregationService {
   private cache = new Map<string, CacheEntry<unknown>>()
+  private advancedCache = new Map<string, AdvancedCacheEntry<unknown>>()
   private config: AggregationConfig
+  private advancedConfig: AdvancedAggregationConfig
+  private performanceHistory: PerformanceMetrics[] = []
 
   constructor(
     private readonly prisma: PrismaClient,
-    config?: Partial<AggregationConfig>
+    config?: Partial<AggregationConfig>,
+    advancedConfig?: Partial<AdvancedAggregationConfig>,
   ) {
     this.config = {
       enableCaching: true,
       cacheExpiryMinutes: 15,
       includeBreakdown: true,
       ...config,
+    }
+
+    this.advancedConfig = {
+      enableCaching: true,
+      cacheExpiryMinutes: 10,
+      includeBreakdown: true,
+      includeRentalTracking: true,
+      performanceThresholdMs: 50,
+      maxCacheSize: 1000,
+      ...advancedConfig,
     }
   }
 
@@ -58,7 +106,7 @@ export class ProductSizeAggregationService {
    */
   async getAggregatedSizes(
     productId: string,
-    includeBreakdown: boolean = true
+    includeBreakdown: boolean = true,
   ): Promise<AggregationServiceResponse<AggregatedSizeView[]>> {
     const startTime = Date.now()
     const cacheKey = `aggregated_sizes_${productId}_${includeBreakdown}`
@@ -123,10 +171,7 @@ export class ProductSizeAggregationService {
   /**
    * Get breakdown for a specific size across age categories
    */
-  async getSizeBreakdown(
-    productId: string,
-    size: SizeEnum
-  ): Promise<CategoryBreakdown> {
+  async getSizeBreakdown(productId: string, size: SizeEnum): Promise<CategoryBreakdown> {
     const cacheKey = `size_breakdown_${productId}_${size}`
 
     if (this.config.enableCaching) {
@@ -135,7 +180,7 @@ export class ProductSizeAggregationService {
     }
 
     const productSizes = await this.getProductSizes(productId)
-    const sizeSpecificData = productSizes.filter(ps => ps.size === size)
+    const sizeSpecificData = productSizes.filter((ps) => ps.size === size)
 
     const breakdown: CategoryBreakdown = {
       adult: 0,
@@ -144,7 +189,7 @@ export class ProductSizeAggregationService {
       total: 0,
     }
 
-    sizeSpecificData.forEach(ps => {
+    sizeSpecificData.forEach((ps) => {
       switch (ps.ageCategory) {
         case 'ADULT':
           breakdown.adult += ps.quantity
@@ -169,9 +214,7 @@ export class ProductSizeAggregationService {
   /**
    * Get complete aggregation data for a product
    */
-  async getProductAggregation(
-    productId: string
-  ): Promise<ProductSizeAggregation> {
+  async getProductAggregation(productId: string): Promise<ProductSizeAggregation> {
     const startTime = Date.now()
     const cacheKey = `product_aggregation_${productId}`
 
@@ -214,16 +257,19 @@ export class ProductSizeAggregationService {
    */
   private aggregateSizesBySize(
     productSizes: ProductSize[],
-    includeBreakdown: boolean
+    includeBreakdown: boolean,
   ): AggregatedSizeView[] {
-    const sizeMap = new Map<SizeEnum, {
-      totalQuantity: number
-      breakdown: { adult: number; child: number; universal: number }
-      categories: Set<AgeCategory>
-    }>()
+    const sizeMap = new Map<
+      SizeEnum,
+      {
+        totalQuantity: number
+        breakdown: { adult: number; child: number; universal: number }
+        categories: Set<AgeCategory>
+      }
+    >()
 
     // Group and sum by size
-    productSizes.forEach(ps => {
+    productSizes.forEach((ps) => {
       if (!sizeMap.has(ps.size)) {
         sizeMap.set(ps.size, {
           totalQuantity: 0,
@@ -251,20 +297,24 @@ export class ProductSizeAggregationService {
     })
 
     // Convert to AggregatedSizeView array
-    return Array.from(sizeMap.entries()).map(([size, data]) => ({
-      size,
-      totalQuantity: data.totalQuantity,
-      breakdown: includeBreakdown ? {
-        ...(data.breakdown.adult > 0 && { adult: data.breakdown.adult }),
-        ...(data.breakdown.child > 0 && { child: data.breakdown.child }),
-        ...(data.breakdown.universal > 0 && { universal: data.breakdown.universal }),
-      } : {},
-      hasMultipleCategories: data.categories.size > 1,
-    })).sort((a, b) => {
-      // Sort by size order: XS, S, M, L, XL, XXL
-      const sizeOrder = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
-      return sizeOrder.indexOf(a.size) - sizeOrder.indexOf(b.size)
-    })
+    return Array.from(sizeMap.entries())
+      .map(([size, data]) => ({
+        size,
+        totalQuantity: data.totalQuantity,
+        breakdown: includeBreakdown
+          ? {
+              ...(data.breakdown.adult > 0 && { adult: data.breakdown.adult }),
+              ...(data.breakdown.child > 0 && { child: data.breakdown.child }),
+              ...(data.breakdown.universal > 0 && { universal: data.breakdown.universal }),
+            }
+          : {},
+        hasMultipleCategories: data.categories.size > 1,
+      }))
+      .sort((a, b) => {
+        // Sort by size order: XS, S, M, L, XL, XXL
+        const sizeOrder = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
+        return sizeOrder.indexOf(a.size) - sizeOrder.indexOf(b.size)
+      })
   }
 
   /**
@@ -278,7 +328,7 @@ export class ProductSizeAggregationService {
       total: 0,
     }
 
-    productSizes.forEach(ps => {
+    productSizes.forEach((ps) => {
       switch (ps.ageCategory) {
         case 'ADULT':
           breakdown.adult += ps.quantity
@@ -307,10 +357,7 @@ export class ProductSizeAggregationService {
         productId,
         isActive: true,
       },
-      orderBy: [
-        { ageCategory: 'asc' },
-        { size: 'asc' },
-      ],
+      orderBy: [{ ageCategory: 'asc' }, { size: 'asc' }],
       include: {
         product: {
           include: {
@@ -344,10 +391,12 @@ export class ProductSizeAggregationService {
           ...size.product.category,
           products: [], // Required by Category type but not needed in this context
         },
-          material: size.product.material ? {
-          ...size.product.material,
-          products: [], // Required by Material type but not needed in this context
-        } : undefined,
+        material: size.product.material
+          ? {
+              ...size.product.material,
+              products: [], // Required by Material type but not needed in this context
+            }
+          : undefined,
         sizes: [],
       } as unknown as Product,
     }))
@@ -357,27 +406,27 @@ export class ProductSizeAggregationService {
    * Get comprehensive inventory data for a product using InventoryService
    * NEW METHOD: Integrates with Enhanced ProductSize schema
    */
-  async getComprehensiveInventory(productId: string): Promise<ProductSizeAggregation & {
-    inventoryStatus: {
-      totalOriginal: number
-      totalAvailable: number
-      totalRented: number
-      utilizationRate: number
-      isHealthy: boolean
+  async getComprehensiveInventory(productId: string): Promise<
+    ProductSizeAggregation & {
+      inventoryStatus: {
+        totalOriginal: number
+        totalAvailable: number
+        totalRented: number
+        utilizationRate: number
+        isHealthy: boolean
+      }
+      sizeDetails: Array<{
+        id: string
+        ageCategory: AgeCategory
+        size: SizeEnum
+        originalQuantity: number
+        availableQuantity: number
+        rentedQuantity: number
+        utilizationRate: number
+        isAvailable: boolean
+      }>
     }
-    sizeDetails: Array<{
-      id: string
-      ageCategory: AgeCategory
-      size: SizeEnum
-      originalQuantity: number
-      availableQuantity: number
-      rentedQuantity: number
-      utilizationRate: number
-      isAvailable: boolean
-    }>
-  }> {
-    const startTime = Date.now()
-
+  > {
     // Get base aggregation
     const baseAggregation = await this.getProductAggregation(productId)
 
@@ -389,24 +438,24 @@ export class ProductSizeAggregationService {
       totalOriginal: productStockStatus.totalQuantity,
       totalAvailable: productStockStatus.availableQuantity,
       totalRented: productStockStatus.rentedQuantity,
-      utilizationRate: productStockStatus.totalQuantity > 0
-        ? (productStockStatus.rentedQuantity / productStockStatus.totalQuantity) * 100
-        : 0,
-      isHealthy: productStockStatus.availableQuantity > 0 || productStockStatus.totalQuantity === 0
+      utilizationRate:
+        productStockStatus.totalQuantity > 0
+          ? (productStockStatus.rentedQuantity / productStockStatus.totalQuantity) * 100
+          : 0,
+      isHealthy: productStockStatus.availableQuantity > 0 || productStockStatus.totalQuantity === 0,
     }
 
     // Enhanced size details with real-time data
-    const sizeDetails = productStockStatus.sizes.map(size => ({
+    const sizeDetails = productStockStatus.sizes.map((size) => ({
       id: size.id,
       ageCategory: size.ageCategory as AgeCategory,
       size: size.size as SizeEnum,
       originalQuantity: size.originalQuantity,
       availableQuantity: size.availableQuantity,
       rentedQuantity: size.rentedQuantity,
-      utilizationRate: size.originalQuantity > 0
-        ? (size.rentedQuantity / size.originalQuantity) * 100
-        : 0,
-      isAvailable: size.isAvailable
+      utilizationRate:
+        size.originalQuantity > 0 ? (size.rentedQuantity / size.originalQuantity) * 100 : 0,
+      isAvailable: size.isAvailable,
     }))
 
     return {
@@ -455,11 +504,9 @@ export class ProductSizeAggregationService {
    * Clear cache for a specific product
    */
   public clearProductCache(productId: string): void {
-    const keysToDelete = Array.from(this.cache.keys()).filter(key =>
-      key.includes(productId)
-    )
+    const keysToDelete = Array.from(this.cache.keys()).filter((key) => key.includes(productId))
 
-    keysToDelete.forEach(key => this.cache.delete(key))
+    keysToDelete.forEach((key) => this.cache.delete(key))
   }
 
   /**
@@ -492,26 +539,31 @@ export class ProductSizeAggregationService {
 
     // Validate totals match
     if (detailedTotal !== aggregatedTotal) {
-      errors.push(`Total quantity mismatch: detailed=${detailedTotal}, aggregated=${aggregatedTotal}`)
+      errors.push(
+        `Total quantity mismatch: detailed=${detailedTotal}, aggregated=${aggregatedTotal}`,
+      )
     }
 
     // Validate size-by-size consistency
     for (const aggregatedSize of aggregatedData.data) {
-      const detailedForSize = productSizes.filter(ps => ps.size === aggregatedSize.size)
+      const detailedForSize = productSizes.filter((ps) => ps.size === aggregatedSize.size)
       const detailedSizeTotal = detailedForSize.reduce((sum, ps) => sum + ps.quantity, 0)
 
       if (detailedSizeTotal !== aggregatedSize.totalQuantity) {
         errors.push(
-          `Size ${aggregatedSize.size} mismatch: detailed=${detailedSizeTotal}, aggregated=${aggregatedSize.totalQuantity}`
+          `Size ${aggregatedSize.size} mismatch: detailed=${detailedSizeTotal}, aggregated=${aggregatedSize.totalQuantity}`,
         )
       }
 
       // Validate breakdown consistency
       if (aggregatedSize.breakdown) {
-        const breakdownTotal = Object.values(aggregatedSize.breakdown).reduce((sum, qty) => sum + (qty || 0), 0)
+        const breakdownTotal = Object.values(aggregatedSize.breakdown).reduce(
+          (sum, qty) => sum + (qty || 0),
+          0,
+        )
         if (breakdownTotal !== aggregatedSize.totalQuantity) {
           errors.push(
-            `Size ${aggregatedSize.size} breakdown inconsistent: breakdown=${breakdownTotal}, total=${aggregatedSize.totalQuantity}`
+            `Size ${aggregatedSize.size} breakdown inconsistent: breakdown=${breakdownTotal}, total=${aggregatedSize.totalQuantity}`,
           )
         }
       }
@@ -542,7 +594,7 @@ export class ProductSizeAggregationService {
     const businessCapabilities: string[] = []
 
     // Check age category tracking
-    const ageCategories = new Set(productSizes.map(ps => ps.ageCategory))
+    const ageCategories = new Set(productSizes.map((ps) => ps.ageCategory))
     const canTrackByAgeCategory = ageCategories.size > 0
 
     if (canTrackByAgeCategory) {
@@ -551,7 +603,7 @@ export class ProductSizeAggregationService {
     }
 
     // Check size-specific tracking
-    const sizes = new Set(productSizes.map(ps => ps.size))
+    const sizes = new Set(productSizes.map((ps) => ps.size))
     const canTrackBySpecificSize = sizes.size > 0
 
     if (canTrackBySpecificSize) {
@@ -566,14 +618,14 @@ export class ProductSizeAggregationService {
       universal: {} as { [size: string]: number },
     }
 
-    productSizes.forEach(ps => {
+    productSizes.forEach((ps) => {
       const categoryKey = ps.ageCategory.toLowerCase() as keyof typeof availableForRental
       availableForRental[categoryKey][ps.size] = ps.quantity
     })
 
     // Add business capabilities based on data structure
-    const hasAdult = productSizes.some(ps => ps.ageCategory === 'ADULT')
-    const hasChild = productSizes.some(ps => ps.ageCategory === 'CHILD')
+    const hasAdult = productSizes.some((ps) => ps.ageCategory === 'ADULT')
+    const hasChild = productSizes.some((ps) => ps.ageCategory === 'CHILD')
     if (hasAdult && hasChild) {
       businessCapabilities.push('Multi-generational rental support')
     }
@@ -610,8 +662,8 @@ export class ProductSizeAggregationService {
 
     // Calculate analytics breakdown
     const totalItems = productSizes.reduce((sum, ps) => sum + ps.quantity, 0)
-    const uniqueSizes = new Set(productSizes.map(ps => ps.size)).size
-    const ageCategories = new Set(productSizes.map(ps => ps.ageCategory)).size
+    const uniqueSizes = new Set(productSizes.map((ps) => ps.size)).size
+    const ageCategories = new Set(productSizes.map((ps) => ps.ageCategory)).size
     const complexityScore = uniqueSizes * ageCategories
 
     // Determine available metrics
@@ -643,7 +695,7 @@ export class ProductSizeAggregationService {
       businessInsights.push('Good size coverage for market demand')
     }
 
-    if (productSizes.some(ps => ps.quantity > 10)) {
+    if (productSizes.some((ps) => ps.quantity > 10)) {
       businessInsights.push('High-volume product suitable for events')
     }
 
@@ -685,12 +737,12 @@ export class ProductSizeAggregationService {
     }> = []
 
     const canRestockByCategory = productSizes.length > 0
-    const canTrackUtilization = productSizes.some(ps => ps.quantity > 0)
+    const canTrackUtilization = productSizes.some((ps) => ps.quantity > 0)
 
     // Generate restocking recommendations
     const avgQuantity = productSizes.reduce((sum, ps) => sum + ps.quantity, 0) / productSizes.length
 
-    productSizes.forEach(ps => {
+    productSizes.forEach((ps) => {
       let recommendedAction: 'increase' | 'decrease' | 'maintain' = 'maintain'
       let reason = 'Stock level is optimal'
 
@@ -715,8 +767,8 @@ export class ProductSizeAggregationService {
     })
 
     // Determine inventory health
-    const outOfStock = productSizes.filter(ps => ps.quantity === 0).length
-    const lowStock = productSizes.filter(ps => ps.quantity < avgQuantity * 0.5).length
+    const outOfStock = productSizes.filter((ps) => ps.quantity === 0).length
+    const lowStock = productSizes.filter((ps) => ps.quantity < avgQuantity * 0.5).length
     const totalSizes = productSizes.length
 
     let inventoryHealth: 'good' | 'needs_attention' | 'critical' = 'good'
@@ -736,15 +788,6 @@ export class ProductSizeAggregationService {
   }
 
   // ============== BUSINESS INTELLIGENCE HELPERS ==============
-
-  /**
-   * Check if product has multiple age categories for the same size
-   * Useful for business analytics
-   */
-  async hasMultiCategorySizes(productId: string): Promise<boolean> {
-    const aggregatedSizes = await this.getAggregatedSizes(productId, true)
-    return aggregatedSizes.data.some(size => size.hasMultipleCategories)
-  }
 
   /**
    * Get age category distribution for analytics

@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
 import { Package, CheckCircle, XCircle, AlertTriangle, BarChart3 } from 'lucide-react'
 import { getStatusBadge } from '@/features/manage-product/lib/utils/product'
+import { ProductSizeTransformer } from '@/features/manage-product/utils/ProductSizeTransformer'
 import type { Product } from '@/features/manage-product/types'
 
 interface InfoFieldProps {
@@ -115,7 +116,7 @@ export function StatusInventoryCard({ product, className }: StatusInventoryCardP
             <div className="flex items-center gap-3 mb-3">
               <Package className="w-5 h-5 text-gray-600" />
               <div>
-                <p className="text-2xl font-bold text-gray-900">{product.quantity}</p>
+                <p className="text-2xl font-bold text-gray-900">{ProductSizeTransformer.calculateTotalQuantity(product.sizes || [], 'simplified')}</p>
                 <p className="text-sm text-gray-500">Total unit</p>
               </div>
             </div>

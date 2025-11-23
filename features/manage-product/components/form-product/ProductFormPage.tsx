@@ -160,7 +160,7 @@ export function ProductFormPage({
     // Fix: Initialize optional fields with undefined instead of empty strings to prevent Select.Item errors
     materialId: product?.materialId || undefined,
     materialQuantity: product?.materialQuantity || undefined,
-    quantity: product?.quantity || 1,
+    quantity: product?.sizes ? ProductSizeTransformer.calculateTotalQuantity(product.sizes, 'simplified') : 1,
     modalAwal: product?.modalAwal ? Number(product.modalAwal) : 0,
     currentPrice: product?.currentPrice ? Number(product.currentPrice) : 0,
     description: product?.description || '',

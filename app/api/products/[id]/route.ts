@@ -139,10 +139,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const quantity = formData.get('quantity')
       ? parseInt(formData.get('quantity') as string)
       : undefined
-    const rentedStock = formData.get('rentedStock') // ✅ Added rentedStock parsing
-      ? parseInt(formData.get('rentedStock') as string)
-      : undefined
-    const categoryId = (formData.get('categoryId') as string) || undefined
+      const categoryId = (formData.get('categoryId') as string) || undefined
     const size = (formData.get('size') as string) || undefined
     const colorId = (formData.get('colorId') as string) || undefined
     // Material Management fields - RPK-45
@@ -192,7 +189,16 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     // Size Management fields - Advanced only (no hasSizes flag)
     const sizesStr = formData.get('sizes') as string
-    let sizes: Array<{ id?: string; ageCategory: string; size: string; quantity: number; isActive?: boolean }> = []
+    let sizes: Array<{
+      id?: string;
+      ageCategory: string;
+      size: string;
+      quantity: number;
+      originalQuantity?: number;
+      rentedQuantity?: number;
+      availableQuantity?: number;
+      isActive?: boolean
+    }> = []
 
     // Parse sizes if provided (for updates)
     if (sizesStr) {
@@ -221,15 +227,35 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     if (modalAwal !== undefined) updateData.modalAwal = modalAwal
     if (currentPrice !== undefined) updateData.currentPrice = currentPrice // ✅ Fixed: use currentPrice instead of hargaSewa
     if (quantity !== undefined) updateData.quantity = quantity
-    if (rentedStock !== undefined) updateData.rentedStock = rentedStock // ✅ Added rentedStock handling
-    if (categoryId !== undefined) updateData.categoryId = categoryId
+        if (categoryId !== undefined) updateData.categoryId = categoryId
     if (size !== undefined) updateData.size = size
     if (colorId !== undefined) updateData.colorId = colorId
     // Material Management fields - RPK-45
     if (materialId !== undefined) updateData.materialId = materialId
     if (materialQuantity !== undefined) updateData.materialQuantity = materialQuantity
-    // Size Management fields - Advanced only
-    if (sizes.length > 0) updateData.sizes = sizes
+    // Size Management fields - Advanced only with Enhanced ProductSize processing
+    if (sizes.length > 0) {
+      // Enhanced ProductSize field parsing and validation
+      const enhancedSizes = sizes.map(size => {
+        const originalQuantity = size.originalQuantity || size.quantity || 0
+        const rentedQuantity = size.rentedQuantity || 0
+        const availableQuantity = size.availableQuantity !== undefined
+          ? size.availableQuantity
+          : Math.max(0, originalQuantity - rentedQuantity)
+
+        return {
+          ...size,
+          originalQuantity,
+          rentedQuantity,
+          availableQuantity,
+          // Ensure consistency: available + rented should not exceed original
+          ...(availableQuantity + rentedQuantity > originalQuantity && {
+            availableQuantity: Math.max(0, originalQuantity - rentedQuantity)
+          })
+        }
+      })
+      updateData.sizes = enhancedSizes
+    }
 
     // Validate materialQuantity if provided
     if (materialQuantityStr && (isNaN(materialQuantity!) || materialQuantity! <= 0)) {

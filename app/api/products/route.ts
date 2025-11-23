@@ -133,7 +133,7 @@ export async function POST(request: NextRequest) {
     const modalAwalStr = formData.get('modalAwal') as string
     const currentPriceStr = formData.get('currentPrice') as string // ✅ Fixed: use currentPrice instead of hargaSewa
     const quantityStr = formData.get('quantity') as string
-    const rentedStockStr = (formData.get('rentedStock') as string) || '0' // ✅ Added rentedStock field parsing
+    // REMOVED: rentedStock field doesn't exist in Product model - using Enhanced ProductSize fields instead
     const categoryId = formData.get('categoryId') as string
     const size = (formData.get('size') as string) || undefined
     const colorId = (formData.get('colorId') as string) || undefined
@@ -180,8 +180,15 @@ export async function POST(request: NextRequest) {
 
     // Size Management fields - REQUIRED for advanced-only architecture
     const sizesStr = formData.get('sizes') as string
-    let sizes: Array<{ ageCategory: string; size: string; quantity: number; isActive?: boolean }> =
-      []
+    let sizes: Array<{
+      ageCategory: string;
+      size: string;
+      quantity: number; // Legacy field for backward compatibility
+      originalQuantity?: number;  // Enhanced field
+      rentedQuantity?: number;   // Enhanced field
+      availableQuantity?: number; // Enhanced field
+      isActive?: boolean
+    }> = []
 
     // Parse sizes - REQUIRED since all products must have sizes
     if (!sizesStr) {
@@ -204,6 +211,32 @@ export async function POST(request: NextRequest) {
           { status: 400 },
         )
       }
+
+      // Enhanced ProductSize field processing
+      const enhancedSizes = sizes.map(size => {
+        const originalQuantity = size.originalQuantity || size.quantity || 0
+        const rentedQuantity = size.rentedQuantity || 0
+        const availableQuantity = size.availableQuantity !== undefined
+          ? size.availableQuantity
+          : Math.max(0, originalQuantity - rentedQuantity)
+
+        // Ensure consistency: available + rented should not exceed original
+        const finalAvailableQuantity = availableQuantity + rentedQuantity > originalQuantity
+          ? Math.max(0, originalQuantity - rentedQuantity)
+          : availableQuantity
+
+        return {
+          ...size,
+          originalQuantity,
+          rentedQuantity,
+          availableQuantity: finalAvailableQuantity,
+          // Keep legacy quantity field for backward compatibility
+          quantity: originalQuantity
+        }
+      })
+
+      // Replace original sizes with enhanced sizes
+      sizes = enhancedSizes
     } catch {
       return NextResponse.json(
         { error: { message: 'Format data ukuran tidak valid', code: 'VALIDATION_ERROR' } },
@@ -215,7 +248,7 @@ export async function POST(request: NextRequest) {
     const modalAwal = parseFloat(modalAwalStr)
     const currentPrice = parseFloat(currentPriceStr) // ✅ Fixed: use currentPrice instead of hargaSewa
     const quantity = parseInt(quantityStr)
-    const rentedStock = parseInt(rentedStockStr) // ✅ Added rentedStock parsing
+    // REMOVED: rentedStock field parsing - doesn't exist in Product model
     // Material Management - RPK-45
     const materialQuantity = materialQuantityStr ? parseInt(materialQuantityStr) : undefined
 
@@ -227,11 +260,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (isNaN(modalAwal) || isNaN(currentPrice) || isNaN(quantity) || isNaN(rentedStock)) {
+    if (isNaN(modalAwal) || isNaN(currentPrice) || isNaN(quantity)) {
       return NextResponse.json(
         {
           error: {
-            message: 'Invalid number format for modalAwal, currentPrice, quantity, or rentedStock',
+            message: 'Invalid number format for modalAwal, currentPrice, or quantity',
             code: 'VALIDATION_ERROR',
           },
         },
@@ -273,7 +306,7 @@ export async function POST(request: NextRequest) {
       modalAwal,
       currentPrice, // ✅ Fixed: use currentPrice instead of hargaSewa
       quantity,
-      rentedStock, // ✅ Added rentedStock field
+      // REMOVED: rentedStock field - doesn't exist in Product model
       categoryId,
       size,
       colorId,

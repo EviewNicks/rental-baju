@@ -102,10 +102,12 @@ export function getTotalQuantity(product: Product | ClientProduct): number {
 
   switch (mode) {
     case 'advanced':
-      return product.sizes.reduce((total, size) => total + size.quantity, 0)
+      // Use Enhanced ProductSize fields - return original quantity (total stock)
+      return product.sizes.reduce((total, size) => total + (size.originalQuantity || size.quantity || 0), 0)
     case 'legacy':
     case 'none':
-      return product.quantity
+      // Legacy fallback - shouldn't happen with Enhanced schema but keeping for safety
+      return product.sizes.reduce((total, size) => total + (size.originalQuantity || size.quantity || 0), 0)
   }
 }
 
@@ -246,7 +248,10 @@ export function createDefaultSizes(
   return commonSizes.map((size) => ({
     ageCategory,
     size,
-    quantity: 1,
+    quantity: 1, // Legacy field
+    originalQuantity: 1, // Enhanced field
+    rentedQuantity: 0, // Enhanced field
+    availableQuantity: 1, // Enhanced field
     isActive: true,
   }))
 }

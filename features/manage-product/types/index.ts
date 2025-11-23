@@ -17,8 +17,7 @@ export interface BaseProduct {
   modalAwal: any // Prisma Decimal (server-side only)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   currentPrice: any // Prisma Decimal (server-side only)
-  quantity: number
-  rentedStock: number
+  // NOTE: quantity and rentedStock fields removed - now using Enhanced ProductSize fields
   // Material Management fields - RPK-45 (NULLABLE untuk backward compatibility)
   materialId?: string
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -54,8 +53,7 @@ export interface ClientProduct {
   categoryId: string
   modalAwal: number
   currentPrice: number
-  quantity: number
-  rentedStock: number
+  // NOTE: quantity and rentedStock fields removed - now using Enhanced ProductSize fields
   // Material Management fields - RPK-45 (client-safe numbers)
   materialId?: string
   materialCost?: number
@@ -119,7 +117,11 @@ export interface BaseProductSize {
   productId: string
   ageCategory: AgeCategory
   size: SizeEnum
-  quantity: number
+  quantity: number // Legacy field - keep for backward compatibility
+  // Enhanced ProductSize fields
+  originalQuantity: number
+  rentedQuantity: number
+  availableQuantity: number
   isActive: boolean
   createdAt: Date
   updatedAt: Date
@@ -131,7 +133,11 @@ export interface ClientProductSize {
   productId: string
   ageCategory: AgeCategory
   size: SizeEnum
-  quantity: number
+  quantity: number // Legacy field - keep for backward compatibility
+  // Enhanced ProductSize fields
+  originalQuantity: number
+  rentedQuantity: number
+  availableQuantity: number
   isActive: boolean
   createdAt: Date | string
   updatedAt: Date | string
@@ -298,7 +304,11 @@ export interface ProductFormData {
 export interface CreateProductSizeRequest {
   ageCategory: AgeCategory
   size: SizeEnum
-  quantity: number
+  quantity: number // Legacy field
+  // Enhanced ProductSize fields
+  originalQuantity?: number
+  rentedQuantity?: number
+  availableQuantity?: number
   isActive?: boolean
 }
 
@@ -306,7 +316,11 @@ export interface UpdateProductSizeRequest {
   id?: string
   ageCategory: AgeCategory
   size: SizeEnum
-  quantity: number
+  quantity: number // Legacy field
+  // Enhanced ProductSize fields
+  originalQuantity?: number
+  rentedQuantity?: number
+  availableQuantity?: number
   isActive?: boolean
 }
 
@@ -354,8 +368,12 @@ export interface AggregatedSizeView {
     adult?: number
     child?: number
     universal?: number
+    total?: number
   }
   hasMultipleCategories: boolean
+  rentedQuantity?: number
+  availableQuantity?: number
+  utilizationRate?: number
 }
 
 /**
@@ -431,6 +449,12 @@ export interface AggregationServiceResponse<T> {
     calculatedAt: Date
     fromCache: boolean
     calculationTimeMs: number
+    performance?: 'excellent' | 'good' | 'needs_attention' | 'critical'
+    cacheStats?: {
+      hitRatio: number
+      totalEntries: number
+      memoryUsage: string
+    }
   }
 }
 

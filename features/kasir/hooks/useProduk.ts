@@ -28,7 +28,7 @@ export function useAvailableProducts(params: ProductAvailabilityQueryParams = {}
 
       return result
     },
-    staleTime: 10 * 1000, // 30 seconds - reduced from 2 minutes for fresh inventory data
-    gcTime: 2 * 30 * 1000, // 2 minutes - reduced garbage collection time
+    staleTime: 30 * 1000, // 30 seconds - optimized for fresh inventory data
+    gcTime: 5 * 60 * 1000, // 5 minutes - extended cache time for better performance
   })
 }

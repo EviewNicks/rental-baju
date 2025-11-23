@@ -17,7 +17,7 @@
  */
 
 import { PrismaClient } from '@prisma/client'
-import { kasirLogger } from '../lib/logger'
+import type { SizeEnum } from '@/features/manage-product/types'
 
 export interface StockStatus {
   originalQuantity: number
@@ -82,20 +82,22 @@ export class InventoryService {
     }
 
     try {
-      kasirLogger.info('Updating stock on create', { sizeId, quantity })
+      console.info('Updating stock on create', { sizeId, quantity })
 
       await this.prisma.productSize.update({
         where: { id: sizeId },
         data: {
           rentedQuantity: { increment: quantity },
-          availableQuantity: { decrement: quantity }
-        }
+          availableQuantity: { decrement: quantity },
+        },
       })
 
-      kasirLogger.info('Stock updated on create successfully', { sizeId, quantity })
+      console.info('Stock updated on create successfully', { sizeId, quantity })
     } catch (error) {
-      kasirLogger.error('Failed to update stock on create', { sizeId, quantity, error })
-      throw new Error(`Failed to update stock on create: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      console.error('Failed to update stock on create', { sizeId, quantity, error })
+      throw new Error(
+        `Failed to update stock on create: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      )
     }
   }
 
@@ -113,20 +115,22 @@ export class InventoryService {
     }
 
     try {
-      kasirLogger.info('Updating stock on return', { sizeId, quantity })
+      console.info('Updating stock on return', { sizeId, quantity })
 
       await this.prisma.productSize.update({
         where: { id: sizeId },
         data: {
           rentedQuantity: { decrement: quantity },
-          availableQuantity: { increment: quantity }
-        }
+          availableQuantity: { increment: quantity },
+        },
       })
 
-      kasirLogger.info('Stock updated on return successfully', { sizeId, quantity })
+      console.info('Stock updated on return successfully', { sizeId, quantity })
     } catch (error) {
-      kasirLogger.error('Failed to update stock on return', { sizeId, quantity, error })
-      throw new Error(`Failed to update stock on return: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      console.error('Failed to update stock on return', { sizeId, quantity, error })
+      throw new Error(
+        `Failed to update stock on return: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      )
     }
   }
 
@@ -149,12 +153,12 @@ export class InventoryService {
         select: {
           availableQuantity: true,
           rentedQuantity: true,
-          originalQuantity: true
-        }
+          originalQuantity: true,
+        },
       })
 
       if (!productSize) {
-        kasirLogger.warn('ProductSize not found for availability check', { sizeId })
+        console.warn('ProductSize not found for availability check', { sizeId })
         return false
       }
 
@@ -162,16 +166,16 @@ export class InventoryService {
       const availableQuantity = Math.max(0, productSize.availableQuantity || 0)
       const isAvailable = availableQuantity >= requestedQty
 
-      kasirLogger.debug('Availability check result', {
+      console.debug('Availability check result', {
         sizeId,
         requestedQty,
         availableQuantity,
-        isAvailable
+        isAvailable,
       })
 
       return isAvailable
     } catch (error) {
-      kasirLogger.error('Failed to check availability', { sizeId, requestedQty, error })
+      console.error('Failed to check availability', { sizeId, requestedQty, error })
       // Return false on error to prevent overselling
       return false
     }
@@ -192,8 +196,8 @@ export class InventoryService {
         select: {
           originalQuantity: true,
           availableQuantity: true,
-          rentedQuantity: true
-        }
+          rentedQuantity: true,
+        },
       })
 
       if (!productSize) {
@@ -213,17 +217,17 @@ export class InventoryService {
         availableQuantity,
         rentedQuantity,
         isAvailable,
-        utilizationRate: Math.round(utilizationRate * 100) / 100 // Round to 2 decimal places
+        utilizationRate: Math.round(utilizationRate * 100) / 100, // Round to 2 decimal places
       }
 
-      kasirLogger.debug('Stock status retrieved', {
+      console.debug('Stock status retrieved', {
         sizeId,
-        status
+        status,
       })
 
       return status
     } catch (error) {
-      kasirLogger.error('Failed to get stock status', { sizeId, error })
+      console.error('Failed to get stock status', { sizeId, error })
 
       // Return default status on error to prevent system failure
       return {
@@ -231,7 +235,7 @@ export class InventoryService {
         availableQuantity: 0,
         rentedQuantity: 0,
         isAvailable: false,
-        utilizationRate: 0
+        utilizationRate: 0,
       }
     }
   }
@@ -247,29 +251,29 @@ export class InventoryService {
    */
   async checkAvailabilityByProductAndSize(
     productId: string,
-    size: string,
-    requestedQty: number
+    size: SizeEnum,
+    requestedQty: number,
   ): Promise<AvailabilityResult> {
     try {
       const productSize = await this.prisma.productSize.findFirst({
         where: {
           productId,
           size,
-          isActive: true
+          isActive: true,
         },
         select: {
           id: true,
           availableQuantity: true,
           rentedQuantity: true,
-          originalQuantity: true
-        }
+          originalQuantity: true,
+        },
       })
 
       if (!productSize) {
         return {
           productId,
           size,
-          available: false
+          available: false,
         }
       }
 
@@ -280,20 +284,20 @@ export class InventoryService {
         productId,
         size,
         available: isAvailable,
-        stockStatus
+        stockStatus,
       }
     } catch (error) {
-      kasirLogger.error('Failed to check availability by product and size', {
+      console.error('Failed to check availability by product and size', {
         productId,
         size,
         requestedQty,
-        error
+        error,
       })
 
       return {
         productId,
         size,
-        available: false
+        available: false,
       }
     }
   }
@@ -310,7 +314,7 @@ export class InventoryService {
       const productSizes = await this.prisma.productSize.findMany({
         where: {
           productId,
-          isActive: true
+          isActive: true,
         },
         select: {
           id: true,
@@ -318,15 +322,12 @@ export class InventoryService {
           size: true,
           originalQuantity: true,
           availableQuantity: true,
-          rentedQuantity: true
+          rentedQuantity: true,
         },
-        orderBy: [
-          { ageCategory: 'asc' },
-          { size: 'asc' }
-        ]
+        orderBy: [{ ageCategory: 'asc' }, { size: 'asc' }],
       })
 
-      const sizes = productSizes.map(size => {
+      const sizes = productSizes.map((size) => {
         const originalQuantity = Math.max(0, size.originalQuantity || 0)
         const availableQuantity = Math.max(0, size.availableQuantity || 0)
         const rentedQuantity = Math.max(0, size.rentedQuantity || 0)
@@ -339,7 +340,7 @@ export class InventoryService {
           originalQuantity,
           availableQuantity,
           rentedQuantity,
-          isAvailable
+          isAvailable,
         }
       })
 
@@ -352,20 +353,20 @@ export class InventoryService {
         totalQuantity,
         availableQuantity,
         rentedQuantity,
-        sizes
+        sizes,
       }
 
-      kasirLogger.debug('Product stock status retrieved', {
+      console.debug('Product stock status retrieved', {
         productId,
         totalSizes: sizes.length,
         totalQuantity,
         availableQuantity,
-        rentedQuantity
+        rentedQuantity,
       })
 
       return status
     } catch (error) {
-      kasirLogger.error('Failed to get product stock status', { productId, error })
+      console.error('Failed to get product stock status', { productId, error })
 
       // Return default status on error
       return {
@@ -373,7 +374,7 @@ export class InventoryService {
         totalQuantity: 0,
         availableQuantity: 0,
         rentedQuantity: 0,
-        sizes: []
+        sizes: [],
       }
     }
   }
@@ -392,8 +393,8 @@ export class InventoryService {
         select: {
           originalQuantity: true,
           availableQuantity: true,
-          rentedQuantity: true
-        }
+          rentedQuantity: true,
+        },
       })
 
       if (!productSize) {
@@ -410,28 +411,28 @@ export class InventoryService {
         isConsistent: difference === 0,
         originalQuantity,
         calculatedTotal,
-        difference
+        difference,
       }
 
       if (!validation.isConsistent) {
-        kasirLogger.warn('Inventory consistency issue detected', {
+        console.warn('Inventory consistency issue detected', {
           sizeId,
           originalQuantity,
           calculatedTotal,
-          difference
+          difference,
         })
       }
 
       return validation
     } catch (error) {
-      kasirLogger.error('Failed to validate consistency', { sizeId, error })
+      console.error('Failed to validate consistency', { sizeId, error })
 
       // Return inconsistent status on error
       return {
         isConsistent: false,
         originalQuantity: 0,
         calculatedTotal: 0,
-        difference: 0
+        difference: 0,
       }
     }
   }
@@ -444,22 +445,20 @@ export class InventoryService {
    * @returns Array of ConsistencyValidation results
    */
   async validateBatchConsistency(sizeIds: string[]): Promise<ConsistencyValidation[]> {
-    const results = await Promise.all(
-      sizeIds.map(sizeId => this.validateConsistency(sizeId))
-    )
+    const results = await Promise.all(sizeIds.map((sizeId) => this.validateConsistency(sizeId)))
 
-    const inconsistentCount = results.filter(r => !r.isConsistent).length
+    const inconsistentCount = results.filter((r) => !r.isConsistent).length
     if (inconsistentCount > 0) {
-      kasirLogger.warn('Batch consistency validation completed with issues', {
+      console.warn('Batch consistency validation completed with issues', {
         totalSizes: sizeIds.length,
         inconsistentCount,
         inconsistentSizeIds: results
-          .filter((r, index) => !r.isConsistent)
-          .map((_, index) => sizeIds[index])
+          .filter((r) => !r.isConsistent)
+          .map((_, index) => sizeIds[index]),
       })
     } else {
-      kasirLogger.info('Batch consistency validation completed successfully', {
-        totalSizes: sizeIds.length
+      console.info('Batch consistency validation completed successfully', {
+        totalSizes: sizeIds.length,
       })
     }
 

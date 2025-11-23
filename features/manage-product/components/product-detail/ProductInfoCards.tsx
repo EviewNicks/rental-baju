@@ -11,6 +11,7 @@ import {
   formatCurrency,
 } from '@/features/manage-product/lib/utils/product'
 import { MaterialCostDisplay } from '@/features/manage-product/components/material/MaterialCostDisplay'
+import { ProductSizeTransformer } from '@/features/manage-product/utils/ProductSizeTransformer'
 import type { Product } from '@/features/manage-product/types'
 
 interface InfoFieldProps {
@@ -182,7 +183,7 @@ export function EnhancedBasicInfoCard({ product }: EnhancedBasicInfoCardProps) {
             </div>
             <div className="text-center p-3 bg-yellow-50 rounded-lg border border-yellow-200">
               <p className="text-sm text-yellow-600 font-medium">Stok</p>
-              <p className="text-lg font-bold ">{product.quantity} pcs</p>
+              <p className="text-lg font-bold ">{ProductSizeTransformer.calculateTotalQuantity(product.sizes || [], 'simplified')} pcs</p>
             </div>
           </div>
         </div>

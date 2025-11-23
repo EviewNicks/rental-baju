@@ -56,12 +56,7 @@ export class ProductService {
     private readonly userId: string,
   ) {}
 
-  // Legacy createProduct method removed - advanced-only architecture
-  // All products now require sizes via createProduct() method
-
-  // Legacy updateProduct method removed - advanced-only architecture
-  // All products now require sizes via updateProduct() method
-
+  
   /**
    * Get products with pagination and filtering
    */
@@ -306,8 +301,7 @@ export class ProductService {
           description: validatedData.description,
           modalAwal: new Decimal(validatedData.modalAwal),
           currentPrice: new Decimal(validatedData.currentPrice),
-          // Legacy fields removed - now using Enhanced ProductSize schema
-          categoryId: validatedData.categoryId,
+                            categoryId: validatedData.categoryId,
           // Note: size field kept for backward compatibility with legacy systems
           size: validatedData.size,
           materialId: validatedData.materialId || undefined,
@@ -408,8 +402,7 @@ export class ProductService {
       if (validatedData.name !== undefined) updateData.name = validatedData.name
       if (validatedData.description !== undefined)
         updateData.description = validatedData.description
-      // Legacy quantity and rentedStock fields removed - using Enhanced ProductSize schema
-      if (validatedData.categoryId !== undefined) updateData.categoryId = validatedData.categoryId
+                if (validatedData.categoryId !== undefined) updateData.categoryId = validatedData.categoryId
       if (validatedData.size !== undefined) updateData.size = validatedData.size
       if (validatedData.materialId !== undefined) updateData.materialId = validatedData.materialId
       if (validatedData.materialQuantity !== undefined)
@@ -713,7 +706,11 @@ export class ProductService {
         productId: productId,
         ageCategory: size.ageCategory,
         size: size.size,
-        quantity: size.quantity,
+        quantity: size.quantity, // Legacy field
+        // Enhanced ProductSize fields
+        originalQuantity: size.originalQuantity || size.quantity || 0,
+        rentedQuantity: size.rentedQuantity || 0,
+        availableQuantity: size.availableQuantity || (size.originalQuantity || size.quantity || 0) - (size.rentedQuantity || 0),
         isActive: size.isActive ?? true,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -1388,7 +1385,11 @@ export class ProductService {
       productId: prismaSize.productId as string,
       ageCategory: prismaSize.ageCategory as AgeCategory,
       size: prismaSize.size as SizeEnum,
-      quantity: prismaSize.quantity as number,
+      quantity: prismaSize.quantity as number, // Legacy field
+      // Enhanced ProductSize fields
+      originalQuantity: (prismaSize.originalQuantity as number) || 0,
+      rentedQuantity: (prismaSize.rentedQuantity as number) || 0,
+      availableQuantity: (prismaSize.availableQuantity as number) || 0,
       isActive: prismaSize.isActive as boolean,
       createdAt: prismaSize.createdAt as Date,
       updatedAt: prismaSize.updatedAt as Date,
@@ -1428,10 +1429,7 @@ export class ProductService {
         : ({} as Category),
       modalAwal: prismaProduct.modalAwal as Decimal,
       currentPrice: prismaProduct.currentPrice as Decimal, // ✅ Fixed: return currentPrice instead of hargaSewa
-      // Legacy inventory fields removed - now using Enhanced ProductSize schema
-      // quantity: prismaProduct.quantity as number, // ❌ REMOVED - legacy field
-      // rentedStock: (prismaProduct.rentedStock as number) || 0, // ❌ REMOVED - legacy field
-      // Material Management fields - RPK-45
+            // Material Management fields - RPK-45
       materialId: prismaProduct.materialId as string | undefined,
       materialCost: prismaProduct.materialCost as Decimal | undefined,
       materialQuantity: prismaProduct.materialQuantity as number | undefined,
@@ -1459,7 +1457,11 @@ export class ProductService {
           productId: size.productId as string,
           ageCategory: size.ageCategory as AgeCategory,
           size: size.size as SizeEnum,
-          quantity: size.quantity as number,
+          quantity: size.quantity as number, // Legacy field - keep for backward compatibility
+          // Enhanced ProductSize fields
+          originalQuantity: (size.originalQuantity as number) || 0,
+          rentedQuantity: (size.rentedQuantity as number) || 0,
+          availableQuantity: (size.availableQuantity as number) || 0,
           isActive: size.isActive as boolean,
           createdAt: size.createdAt as Date,
           updatedAt: size.updatedAt as Date,

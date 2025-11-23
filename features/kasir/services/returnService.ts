@@ -153,10 +153,10 @@ export class UnifiedReturnService {
                 sizes: {
                   select: {
                     originalQuantity: true,
-                    rentedQuantity: true
-                  }
-                }
-              }
+                    rentedQuantity: true,
+                  },
+                },
+              },
             })
           : Promise.resolve([]),
         productSizeIds.length > 0
@@ -336,10 +336,11 @@ export class UnifiedReturnService {
 
       // Check if request has HILANG conditions - use standard path for proper modalAwal handling
       const hasHilangConditions = request.items.some((item) =>
-        item.conditions.some((condition) =>
-          condition.conditionCategory === 'HILANG' ||
-          condition.kondisiAkhir.toLowerCase().includes('hilang')
-        )
+        item.conditions.some(
+          (condition) =>
+            condition.conditionCategory === 'HILANG' ||
+            condition.kondisiAkhir.toLowerCase().includes('hilang'),
+        ),
       )
 
       // Use standard calculation for HILANG items, enhanced for others
@@ -360,7 +361,10 @@ export class UnifiedReturnService {
             manualPrice: condition.manualPrice || 0,
             quantity: condition.jumlahKembali,
             useManualPricing: condition.useManualPricing || false,
-            modalAwal: condition.modalAwal || condition.manualPrice || Number(transactionItem.produk.modalAwal),
+            modalAwal:
+              condition.modalAwal ||
+              condition.manualPrice ||
+              Number(transactionItem.produk.modalAwal),
           }))
         })
 
@@ -545,6 +549,14 @@ export class UnifiedReturnService {
       // PERFORMANCE OPTIMIZATION: Stock validation integrated into main validation
       // Removed redundant preValidateStockAvailability for faster processing
 
+      // PERFORMANCE OPTIMIZATION: Prepare collections before transaction
+      //eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const returnRecords: any[] = []
+      //eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const itemUpdates: any[] = []
+      const stockUpdates: Map<string, number> = new Map()
+      const sizeUpdates: Map<string, number> = new Map()
+
       // PERFORMANCE OPTIMIZATION: Batch operations in transaction
       const transactionStart = Date.now()
 
@@ -552,20 +564,14 @@ export class UnifiedReturnService {
         async (tx) => {
           const processedItems: UnifiedReturnProcessingResult['processedItems'] = []
 
-          // PERFORMANCE: Prepare all operations before executing
-          //eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const returnRecords: any[] = []
-          //eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const itemUpdates: any[] = []
-          const stockUpdates: Map<string, number> = new Map()
-          const sizeUpdates: Map<string, number> = new Map()
+          // PERFORMANCE: Collections already defined outside transaction
 
           // Helper function to calculate penalty distribution
           const calculateConditionPenalty = (
             //eslint-disable-next-line @typescript-eslint/no-explicit-any
             condition: any,
             basePenalty: number,
-              //eslint-disable-next-line @typescript-eslint/no-explicit-any
+            //eslint-disable-next-line @typescript-eslint/no-explicit-any
             allConditions: any[],
           ) => {
             if (condition.conditionCategory === 'BAIK') return 0
@@ -730,7 +736,7 @@ export class UnifiedReturnService {
         kasirLogger.returnProcess.info(
           'processUnifiedReturn',
           'Starting stock updates with InventoryService',
-          { sizeUpdateCount: sizeUpdates.size }
+          { sizeUpdateCount: sizeUpdates.size },
         )
 
         try {
@@ -741,15 +747,17 @@ export class UnifiedReturnService {
                 kasirLogger.returnProcess.debug(
                   'processUnifiedReturn',
                   'Stock updated successfully',
-                  { sizeId, quantity }
+                  { sizeId, quantity },
                 )
               } catch (error) {
-                kasirLogger.returnProcess.error(
-                  'processUnifiedReturn',
-                  'Stock update failed',
-                  { sizeId, quantity, error: error instanceof Error ? error.message : 'Unknown error' }
+                kasirLogger.returnProcess.error('processUnifiedReturn', 'Stock update failed', {
+                  sizeId,
+                  quantity,
+                  error: error instanceof Error ? error.message : 'Unknown error',
+                })
+                throw new Error(
+                  `Stock update failed for size ${sizeId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
                 )
-                throw new Error(`Stock update failed for size ${sizeId}: ${error instanceof Error ? error.message : 'Unknown error'}`)
               }
             }),
           )
@@ -757,14 +765,12 @@ export class UnifiedReturnService {
           kasirLogger.returnProcess.info(
             'processUnifiedReturn',
             'All stock updates completed successfully',
-            { totalSizeUpdates: sizeUpdates.size }
+            { totalSizeUpdates: sizeUpdates.size },
           )
         } catch (stockError) {
-          kasirLogger.returnProcess.error(
-            'processUnifiedReturn',
-            'Critical stock update failure',
-            { error: stockError instanceof Error ? stockError.message : 'Unknown error' }
-          )
+          kasirLogger.returnProcess.error('processUnifiedReturn', 'Critical stock update failure', {
+            error: stockError instanceof Error ? stockError.message : 'Unknown error',
+          })
           throw stockError
         }
       }
