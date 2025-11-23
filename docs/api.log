@@ -1,106 +1,76 @@
 {
-    "id": "57c09725-1c0e-44bf-949f-9d67fa74f979",
-    "code": "PRD01",
-    "name": "Dress Pesta Merah 679",
-    "description": null,
-    "categoryId": "60e62bdd-cd50-4517-bae9-252afdf34323",
-    "category": {
-        "id": "60e62bdd-cd50-4517-bae9-252afdf34323",
-        "name": "percobaan ",
-        "color": "#EF4444",
-        "type": "clothing",
-        "products": [],
-        "createdAt": "2025-11-15T06:36:44.680Z",
-        "updatedAt": "2025-11-15T06:36:44.680Z",
-        "createdBy": "user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH"
-    },
-    "modalAwal": "800000",
-    "currentPrice": "30000",
-    "quantity": 19,
-    "rentedStock": 0,
-    "materialId": null,
-    "materialCost": null,
-    "materialQuantity": null,
-    "status": "AVAILABLE",
-    "imageUrl": "https://pmjxdencfgkbjuyjndbp.supabase.co/storage/v1/object/public/products/products/PRD01/1763188770641.jpg",
-    "sizes": [
+    "products": [
         {
-            "id": "9ac64b67-5386-4d8d-9b76-5cc6870f5bda",
-            "productId": "57c09725-1c0e-44bf-949f-9d67fa74f979",
-            "ageCategory": "ADULT",
-            "size": "XS",
-            "quantity": 7,
+            "id": "eaabf7c5-024b-4c6c-89d7-6a7024a6bebc",
+            "code": "PRD1",
+            "name": "Dress Pesta Merah",
+            "description": null,
+            "categoryId": "60e62bdd-cd50-4517-bae9-252afdf34323",
+            "category": {
+                "id": "60e62bdd-cd50-4517-bae9-252afdf34323",
+                "name": "percobaan ",
+                "color": "#EF4444",
+                "type": "clothing",
+                "products": [],
+                "createdAt": "2025-11-15T06:36:44.680Z",
+                "updatedAt": "2025-11-15T06:36:44.680Z",
+                "createdBy": "user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH"
+            },
+            "modalAwal": "600000",
+            "currentPrice": "40000",
+            "materialId": null,
+            "materialCost": null,
+            "materialQuantity": null,
+            "status": "AVAILABLE",
+            "imageUrl": "https://pmjxdencfgkbjuyjndbp.supabase.co/storage/v1/object/public/products/products/PRD1/1763793329264.jpg",
+            "sizes": [
+                {
+                    "id": "8a2732a2-b702-4e24-a63c-fbafc6ee4ade",
+                    "productId": "eaabf7c5-024b-4c6c-89d7-6a7024a6bebc",
+                    "ageCategory": "ADULT",
+                    "size": "XS",
+                    "quantity": 6,
+                    "isActive": true,
+                    "createdAt": "2025-11-22T06:35:33.195Z",
+                    "updatedAt": "2025-11-22T06:35:33.195Z",
+                    "createdBy": "user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH",
+                    "product": {}
+                },
+                {
+                    "id": "2094c4a3-c6e4-4dd7-a180-1e2080074fe8",
+                    "productId": "eaabf7c5-024b-4c6c-89d7-6a7024a6bebc",
+                    "ageCategory": "ADULT",
+                    "size": "XL",
+                    "quantity": 7,
+                    "isActive": true,
+                    "createdAt": "2025-11-22T06:35:33.195Z",
+                    "updatedAt": "2025-11-22T06:35:33.195Z",
+                    "createdBy": "user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH",
+                    "product": {}
+                },
+                {
+                    "id": "c26083fb-4acd-4caf-9197-b46409f0090a",
+                    "productId": "eaabf7c5-024b-4c6c-89d7-6a7024a6bebc",
+                    "ageCategory": "ADULT",
+                    "size": "XXL",
+                    "quantity": 3,
+                    "isActive": true,
+                    "createdAt": "2025-11-22T06:35:33.195Z",
+                    "updatedAt": "2025-11-22T06:35:33.195Z",
+                    "createdBy": "user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH",
+                    "product": {}
+                }
+            ],
             "isActive": true,
-            "createdAt": "2025-11-15T06:39:36.545Z",
-            "updatedAt": "2025-11-15T06:39:36.545Z",
-            "createdBy": "user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH",
-            "product": {}
-        },
-        {
-            "id": "b088d653-66d2-46a7-bfa4-388a9fe21891",
-            "productId": "57c09725-1c0e-44bf-949f-9d67fa74f979",
-            "ageCategory": "ADULT",
-            "size": "XL",
-            "quantity": 8,
-            "isActive": true,
-            "createdAt": "2025-11-15T06:39:36.545Z",
-            "updatedAt": "2025-11-15T06:39:36.545Z",
-            "createdBy": "user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH",
-            "product": {}
-        },
-        {
-            "id": "ae6636ac-546a-476d-9b10-60374d805116",
-            "productId": "57c09725-1c0e-44bf-949f-9d67fa74f979",
-            "ageCategory": "ADULT",
-            "size": "XXL",
-            "quantity": 4,
-            "isActive": true,
-            "createdAt": "2025-11-15T06:39:36.545Z",
-            "updatedAt": "2025-11-15T06:39:36.545Z",
-            "createdBy": "user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH",
-            "product": {}
+            "createdAt": "2025-11-22T06:35:32.898Z",
+            "updatedAt": "2025-11-22T06:35:32.898Z",
+            "createdBy": "user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH"
         }
     ],
-    "isActive": true,
-    "createdAt": "2025-11-15T06:39:35.863Z",
-    "updatedAt": "2025-11-15T06:39:35.863Z",
-    "createdBy": "user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH",
-    "aggregation": {
-        "productId": "57c09725-1c0e-44bf-949f-9d67fa74f979",
-        "totalQuantity": 19,
-        "aggregatedSizes": [
-            {
-                "size": "XS",
-                "totalQuantity": 7,
-                "breakdown": {
-                    "adult": 7
-                },
-                "hasMultipleCategories": false
-            },
-            {
-                "size": "XL",
-                "totalQuantity": 8,
-                "breakdown": {
-                    "adult": 8
-                },
-                "hasMultipleCategories": false
-            },
-            {
-                "size": "XXL",
-                "totalQuantity": 4,
-                "breakdown": {
-                    "adult": 4
-                },
-                "hasMultipleCategories": false
-            }
-        ],
-        "hasAdvancedSizing": true,
-        "categoryBreakdown": {
-            "adult": 19,
-            "child": 0,
-            "universal": 0,
-            "total": 19
-        },
-        "lastCalculated": "2025-11-15T06:41:55.138Z"
+    "pagination": {
+        "page": 1,
+        "limit": 10,
+        "total": 1,
+        "totalPages": 1
     }
 }

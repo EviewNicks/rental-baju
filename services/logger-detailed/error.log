@@ -1,45 +1,22 @@
-StrategyFactory: Created accessories_universal strategy for category "bando-besar" (97b38cbf-1522-480a-ad9f-39bb4884b8a8)
-hook.js:608 2025-10-30T08:51:00.280Z [ERROR] [ProductForm][strategy] Failed to initialize strategy{  "name": "ReferenceError",  "message": "setCategoryFormData is not defined",  "stack": "ReferenceError: setCategoryFormData is not defined\n    at ProductForm.useCallback[initializeStrategy] (http://localhost:3000/_next/static/chunks/_453df8c6._.js:5189:21)",  "performance": {    "timestamp": 1761814260280,    "memory": null  }}
-overrideMethod @ hook.js:608Understand this error
-StrategyFactory.ts:103 StrategyFactory: Created accessories_universal strategy for category "bando-besar" (97b38cbf-1522-480a-ad9f-39bb4884b8a8)
-hook.js:608 2025-10-30T08:51:00.282Z [ERROR] [ProductForm][strategy] Failed to initialize strategy{  "name": "ReferenceError",  "message": "setCategoryFormData is not defined",  "stack": "ReferenceError: setCategoryFormData is not defined\n    at ProductForm.useCallback[initializeStrategy] (http://localhost:3000/_next/static/chunks/_453df8c6._.js:5189:21)",  "performance": {    "timestamp": 1761814260282,    "memory": null  }}
-overrideMethod @ hook.js:608Understand this error
-StrategyFactory.ts:103 StrategyFactory: Created accessories_universal strategy for category "bando-besar" (97b38cbf-1522-480a-ad9f-39bb4884b8a8)
-hook.js:608 2025-10-30T08:51:02.851Z [ERROR] [ProductForm][strategy] Failed to initialize strategy{  "name": "ReferenceError",  "message": "setCategoryFormData is not defined",  "stack": "ReferenceError: setCategoryFormData is not defined\n    at ProductForm.useCallback[initializeStrategy] (http://localhost:3000/_next/static/chunks/_453df8c6._.js:5189:21)",  "performance": {    "timestamp": 1761814262851,    "memory": null  }}
-overrideMethod @ hook.js:608Understand this error
-StrategyFactory.ts:103 StrategyFactory: Created clothing strategy for category "Anak Baru" (ef66cede-0d03-438b-817e-259fdb7fb781)
-hook.js:608 2025-10-30T08:51:03.689Z [ERROR] [ProductForm][strategy] Failed to initialize strategy{  "name": "ReferenceError",  "message": "setCategoryFormData is not defined",  "stack": "ReferenceError: setCategoryFormData is not defined\n    at ProductForm.useCallback[initializeStrategy] (http://localhost:3000/_next/static/chunks/_453df8c6._.js:5189:21)",  "performance": {    "timestamp": 1761814263689,    "memory": null  }}
-overrideMethod @ hook.js:608Understand this error
-StrategyFactory.ts:103 StrategyFactory: Created clothing strategy for category "Anak Baru" (ef66cede-0d03-438b-817e-259fdb7fb781)
-hook.js:608 2025-10-30T08:51:03.724Z [ERROR] [ProductForm][strategy] Failed to initialize strategy{  "name": "ReferenceError",  "message": "setCategoryFormData is not defined",  "stack": "ReferenceError: setCategoryFormData is not defined\n    at ProductForm.useCallback[initializeStrategy] (http://localhost:3000/_next/static/chunks/_453df8c6._.js:5189:21)",  "performance": {    "timestamp": 1761814263724,    "memory": null  }}
-overrideMethod @ hook.js:608Understand this error
-ProductFormPage.tsx:454 [DEBUG] handleCategoryFormDataChange called with: Object
-ProductFormPage.tsx:429 [DEBUG] handleStrategySizesChange called with: Object
-StrategyFactory.ts:103 StrategyFactory: Created clothing strategy for category "Anak Baru" (ef66cede-0d03-438b-817e-259fdb7fb781)
-hook.js:608 2025-10-30T08:51:04.669Z [ERROR] [ProductForm][strategy] Failed to initialize strategy{  "name": "ReferenceError",  "message": "setCategoryFormData is not defined",  "stack": "ReferenceError: setCategoryFormData is not defined\n    at ProductForm.useCallback[initializeStrategy] (http://localhost:3000/_next/static/chunks/_453df8c6._.js:5189:21)",  "performance": {    "timestamp": 1761814264669,    "memory": null  }}
-overrideMethod @ hook.js:608Understand this error
-ProductFormPage.tsx:454 [DEBUG] handleCategoryFormDataChange called with: Object
-ProductFormPage.tsx:429 [DEBUG] handleStrategySizesChange called with: Object
-StrategyFactory.ts:103 StrategyFactory: Created clothing strategy for category "Anak Baru" (ef66cede-0d03-438b-817e-259fdb7fb781)
-hook.js:608 2025-10-30T08:51:05.428Z [ERROR] [ProductForm][strategy] Failed to initialize strategy{  "name": "ReferenceError",  "message": "setCategoryFormData is not defined",  "stack": "ReferenceError: setCategoryFormData is not defined\n    at ProductForm.useCallback[initializeStrategy] (http://localhost:3000/_next/static/chunks/_453df8c6._.js:5189:21)",  "performance": {    "timestamp": 1761814265428,    "memory": null  }}
-overrideMethod @ hook.js:608Understand this error
-ProductFormPage.tsx:454 [DEBUG] handleCategoryFormDataChange called with: Object
-ProductFormPage.tsx:429 [DEBUG] handleStrategySizesChange called with: Object
-StrategyFactory.ts:103 StrategyFactory: Created clothing strategy for category "Anak Baru" (ef66cede-0d03-438b-817e-259fdb7fb781)
-hook.js:608 2025-10-30T08:51:07.296Z [ERROR] [ProductForm][strategy] Failed to initialize strategy{  "name": "ReferenceError",  "message": "setCategoryFormData is not defined",  "stack": "ReferenceError: setCategoryFormData is not defined\n    at ProductForm.useCallback[initializeStrategy] (http://localhost:3000/_next/static/chunks/_453df8c6._.js:5189:21)",  "performance": {    "timestamp": 1761814267296,    "memory": null  }}
-overrideMethod @ hook.js:608Understand this error
-StrategyFactory.ts:103 StrategyFactory: Created clothing strategy for category "Anak Baru" (ef66cede-0d03-438b-817e-259fdb7fb781)
-hook.js:608 2025-10-30T08:51:08.408Z [ERROR] [ProductForm][strategy] Failed to initialize strategy{  "name": "ReferenceError",  "message": "setCategoryFormData is not defined",  "stack": "ReferenceError: setCategoryFormData is not defined\n    at ProductForm.useCallback[initializeStrategy] (http://localhost:3000/_next/static/chunks/_453df8c6._.js:5189:21)",  "performance": {    "timestamp": 1761814268408,    "memory": null  }}
-overrideMethod @ hook.js:608Understand this error
-ProductFormPage.tsx:454 [DEBUG] handleCategoryFormDataChange called with: Object
-ProductFormPage.tsx:429 [DEBUG] handleStrategySizesChange called with: Object
-StrategyFactory.ts:103 StrategyFactory: Created clothing strategy for category "Anak Baru" (ef66cede-0d03-438b-817e-259fdb7fb781)
-hook.js:608 2025-10-30T08:51:09.036Z [ERROR] [ProductForm][strategy] Failed to initialize strategy{  "name": "ReferenceError",  "message": "setCategoryFormData is not defined",  "stack": "ReferenceError: setCategoryFormData is not defined\n    at ProductForm.useCallback[initializeStrategy] (http://localhost:3000/_next/static/chunks/_453df8c6._.js:5189:21)",  "performance": {    "timestamp": 1761814269036,    "memory": null  }}
-overrideMethod @ hook.js:608Understand this error
-StrategyFactory.ts:103 StrategyFactory: Created clothing strategy for category "Anak Baru" (ef66cede-0d03-438b-817e-259fdb7fb781)
-hook.js:608 2025-10-30T08:51:10.564Z [ERROR] [ProductForm][strategy] Failed to initialize strategy{  "name": "ReferenceError",  "message": "setCategoryFormData is not defined",  "stack": "ReferenceError: setCategoryFormData is not defined\n    at ProductForm.useCallback[initializeStrategy] (http://localhost:3000/_next/static/chunks/_453df8c6._.js:5189:21)",  "performance": {    "timestamp": 1761814270564,    "memory": null  }}
-overrideMethod @ hook.js:608Understand this error
-hook.js:608 2025-10-30T08:51:11.508Z [WARN] [ProductForm][formValidationErrors] Form validation errors detected{  "errorFields": [    "code"  ],  "errorCount": 1,  "hasMaterialErrors": false,  "formSection": {    "basicInfo": true,    "material": false,    "price": false  },  "performance": {    "timestamp": 1761814271508,    "memory": null  }}
-overrideMethod @ hook.js:608Understand this warning
-StrategyFactory.ts:103 StrategyFactory: Created clothing strategy for category "Anak Baru" (ef66cede-0d03-438b-817e-259fdb7fb781)
-hook.js:608 2025-10-30T08:51:11.570Z [ERROR] [ProductForm][strategy] Failed to initialize strategy{  "name": "ReferenceError",  "message": "setCategoryFormData is not defined",  "stack": "ReferenceError: setCategoryFormData is not defined\n    at ProductForm.useCallback[initializeStrategy] (http://localhost:3000/_next/static/chunks/_453df8c6._.js:5189:21)",  "performance": {    "timestamp": 1761814271570,    "memory": null  }}
+The right-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.ts(2363)
+const stockStatus: AvailabilityResult
+
+
+Conversion of type '{ rentedQuantity: number; availableQuantity: boolean; product: { id: string; code: string; name: string; }; id: string; isActive: boolean; createdAt: Date; updatedAt: Date; createdBy: string; ... 4 more ...; originalQuantity: number; }' to type 'ProductSize' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Types of property 'product' are incompatible.
+    Type '{ id: string; code: string; name: string; }' is missing the following properties from type 'Product': category, sizes, categoryId, modalAwal, and 6 more.ts(2352)
+(property) BaseProductSize.rentedQuantity: number
+
+existing.breakdown.total' is possibly 'undefined'.ts(18048)
+(property) AggregatedSizeView.breakdown: {
+    adult?: number | undefined;
+    child?: number | undefined;
+    universal?: number | undefined;
+    total?: number | undefined;
+}
+
+
+'existing.rentedQuantity' is possibly 'undefined'.
+
+'existing.rentedQuantity' is possibly 'undefined'.
+'existing.availableQuantity' is possibly 'undefined'.

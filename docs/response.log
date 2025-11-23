@@ -1,44 +1,19 @@
- GET /api/kasir/penyewa?limit=20 200 in 1541ms
-🔍 [PRE-VALIDATION] Starting stock availability check...
-✅ [PRE-VALIDATION] Stock availability check passed
- POST /api/kasir/transaksi 201 in 9015ms
- POST /api/kasir/pembayaran 201 in 3702ms
-[AUDIT] {
-  "entityType": "pembayaran",
-  "entityId": "5d9a7af5-8123-487a-aa92-316fefa65477",
-  "action": "create",
-  "newData": {
-    "id": "5d9a7af5-8123-487a-aa92-316fefa65477",
-    "transaksiId": "b25601b6-1a98-414f-a5f8-c89c4cddab78",
-    "jumlah": "80000",
-    "metode": "tunai",
-    "referensi": null,
-    "catatan": "Pembayaran awal transaksi",
-    "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
-    "createdAt": "2025-11-08T06:51:26.153Z",
-    "transaksi": {
-      "id": "b25601b6-1a98-414f-a5f8-c89c4cddab78",
-      "kode": "TXN-20251108-006",
-      "penyewa": {
-        "nama": "awal",
-        "telepon": "08123456789"
-      },
-      "totalHarga": "80000",
-      "jumlahBayar": "80000",
-      "sisaBayar": "0",
-      "status": "active"
-    }
-  },
-  "metadata": {
-    "operation": "payment_creation",
-    "transactionCode": "TXN-20251108-006",
-    "amount": 80000,
-    "method": "tunai"
-  },
-  "userId": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
-  "userRole": "kasir",
-  "timestamp": "2025-11-08T06:51:27.938Z"
-}
- GET /dashboard 200 in 605ms
- GET /api/kasir/transaksi?page=1&limit=100 200 in 3282ms
- GET /api/kasir/transaksi?page=1&limit=100 200 in 2292ms
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ ○ Compiling /producer/manage-product/add ...
+ ✓ Compiled /producer/manage-product/add in 2.4s
+ GET /producer/manage-product/add 200 in 2608ms
+ ✓ Compiled /api/materials in 453ms
+ GET /api/categories?isActive=true 200 in 1067ms
+ GET /api/materials?limit=100 200 in 1571ms
+ POST /api/products 201 in 6030ms
+ │ POST https://pmjxdencfgkbjuyjndbp.supabase.co/storage/v1/object/products/products/PRD1/1763793329264.jpg 200 in 1757ms (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
+ GET /producer/manage-product 200 in 181ms
+ GET /api/products?page=1&limit=20 200 in 1598ms
+ GET /producer/manage-product 200 in 990ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 572ms
+ GET /api/categories 200 in 1158ms
+ GET /api/products?page=1&limit=20 200 in 1808ms
+ GET /api/kasir/produk/available 200 in 3515ms
+ GET /api/products?search=&categoryId=&status= 200 in 1863ms
+ GET /api/kasir/produk/available 200 in 3121ms
