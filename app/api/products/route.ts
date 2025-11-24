@@ -212,31 +212,8 @@ export async function POST(request: NextRequest) {
         )
       }
 
-      // Enhanced ProductSize field processing
-      const enhancedSizes = sizes.map(size => {
-        const originalQuantity = size.originalQuantity || size.quantity || 0
-        const rentedQuantity = size.rentedQuantity || 0
-        const availableQuantity = size.availableQuantity !== undefined
-          ? size.availableQuantity
-          : Math.max(0, originalQuantity - rentedQuantity)
-
-        // Ensure consistency: available + rented should not exceed original
-        const finalAvailableQuantity = availableQuantity + rentedQuantity > originalQuantity
-          ? Math.max(0, originalQuantity - rentedQuantity)
-          : availableQuantity
-
-        return {
-          ...size,
-          originalQuantity,
-          rentedQuantity,
-          availableQuantity: finalAvailableQuantity,
-          // Keep legacy quantity field for backward compatibility
-          quantity: originalQuantity
-        }
-      })
-
-      // Replace original sizes with enhanced sizes
-      sizes = enhancedSizes
+      // Enhanced ProductSize fields will be processed in service layer
+      // Route layer only handles basic validation and passes raw data to service
     } catch {
       return NextResponse.json(
         { error: { message: 'Format data ukuran tidak valid', code: 'VALIDATION_ERROR' } },
@@ -304,16 +281,13 @@ export async function POST(request: NextRequest) {
       name,
       description,
       modalAwal,
-      currentPrice, // ✅ Fixed: use currentPrice instead of hargaSewa
+      currentPrice, 
       quantity,
-      // REMOVED: rentedStock field - doesn't exist in Product model
       categoryId,
       size,
       colorId,
-      // Material Management fields - RPK-45
       materialId,
       materialQuantity,
-      // Size Management fields - Advanced only
       sizes,
       image,
     }

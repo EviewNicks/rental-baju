@@ -233,28 +233,9 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     // Material Management fields - RPK-45
     if (materialId !== undefined) updateData.materialId = materialId
     if (materialQuantity !== undefined) updateData.materialQuantity = materialQuantity
-    // Size Management fields - Advanced only with Enhanced ProductSize processing
+    // Size Management fields - Enhanced ProductSize fields processed in service layer
     if (sizes.length > 0) {
-      // Enhanced ProductSize field parsing and validation
-      const enhancedSizes = sizes.map(size => {
-        const originalQuantity = size.originalQuantity || size.quantity || 0
-        const rentedQuantity = size.rentedQuantity || 0
-        const availableQuantity = size.availableQuantity !== undefined
-          ? size.availableQuantity
-          : Math.max(0, originalQuantity - rentedQuantity)
-
-        return {
-          ...size,
-          originalQuantity,
-          rentedQuantity,
-          availableQuantity,
-          // Ensure consistency: available + rented should not exceed original
-          ...(availableQuantity + rentedQuantity > originalQuantity && {
-            availableQuantity: Math.max(0, originalQuantity - rentedQuantity)
-          })
-        }
-      })
-      updateData.sizes = enhancedSizes
+      updateData.sizes = sizes  // Pass raw data to service layer
     }
 
     // Validate materialQuantity if provided

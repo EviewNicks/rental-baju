@@ -322,6 +322,10 @@ export class ProductService {
             ageCategory: size.ageCategory,
             size: size.size,
             quantity: size.quantity,
+            // Enhanced ProductSize fields
+            originalQuantity: size.originalQuantity || size.quantity,
+            availableQuantity: size.availableQuantity || size.quantity,
+            rentedQuantity: size.rentedQuantity || 0,
             isActive: size.isActive ?? true,
             createdBy: this.userId,
           })),
@@ -440,6 +444,10 @@ export class ProductService {
               ageCategory: size.ageCategory,
               size: size.size,
               quantity: size.quantity,
+              // Enhanced ProductSize fields
+              originalQuantity: size.originalQuantity || size.quantity,
+              availableQuantity: size.availableQuantity || size.quantity,
+              rentedQuantity: size.rentedQuantity || 0,
               isActive: size.isActive ?? true,
               createdBy: this.userId,
             })),
@@ -532,6 +540,10 @@ export class ProductService {
         ageCategory: size.ageCategory,
         size: size.size,
         quantity: size.quantity,
+        // Enhanced ProductSize fields
+        originalQuantity: size.originalQuantity ?? size.quantity,
+        availableQuantity: size.availableQuantity ?? size.quantity,
+        rentedQuantity: size.rentedQuantity ?? 0,
         isActive: size.isActive ?? true,
         createdBy: this.userId,
       })),
@@ -565,6 +577,10 @@ export class ProductService {
               ageCategory: size.ageCategory,
               size: size.size,
               quantity: size.quantity,
+              // Enhanced ProductSize fields
+              originalQuantity: size.originalQuantity ?? size.quantity,
+              availableQuantity: size.availableQuantity ?? size.quantity,
+              rentedQuantity: size.rentedQuantity ?? 0,
               isActive: size.isActive ?? true,
               updatedAt: new Date(),
             },
@@ -577,6 +593,10 @@ export class ProductService {
               ageCategory: size.ageCategory,
               size: size.size,
               quantity: size.quantity,
+              // Enhanced ProductSize fields
+              originalQuantity: size.originalQuantity ?? size.quantity,
+              availableQuantity: size.availableQuantity ?? size.quantity,
+              rentedQuantity: size.rentedQuantity ?? 0,
               isActive: size.isActive ?? true,
               createdBy: this.userId,
             },
@@ -1318,6 +1338,10 @@ export class ProductService {
       // Ensure size is standardized for age-based accessories
       size: (size.size as SizeEnum) || ('UNIVERSAL' as const),
       isActive: size.isActive ?? true,
+      // Enhanced ProductSize fields for new products
+      originalQuantity: size.quantity || 0,        // Fix: Set original quantity
+      availableQuantity: size.quantity || 0,       // Fix: Set initial available quantity
+      rentedQuantity: 0,                      // Fix: No rented items for new products
     }))
   }
 
@@ -1338,6 +1362,10 @@ export class ProductService {
       size: 'UNIVERSAL' as const,
       quantity: totalQuantity,
       isActive: true,
+      // Enhanced ProductSize fields for new products
+      originalQuantity: totalQuantity,           // Fix: Set original quantity
+      availableQuantity: totalQuantity,          // Fix: Set initial available quantity
+      rentedQuantity: 0,                     // Fix: No rented items for new products
     }]
   }
 
@@ -1348,6 +1376,10 @@ export class ProductService {
   private processClothingSizes(sizes: CreateProductSizeRequest[]): CreateProductSizeRequest[] {
     return sizes.map(size => ({
       ...size,
+      // Enhanced ProductSize fields for new products
+      originalQuantity: size.quantity || 0,        // Fix: Set original quantity
+      availableQuantity: size.quantity || 0,       // Fix: Set initial available quantity
+      rentedQuantity: 0,                      // Fix: No rented items for new products
       isActive: size.isActive ?? true,
       // Ensure size is uppercase for consistency
       size: size.size.toUpperCase() as SizeEnum,

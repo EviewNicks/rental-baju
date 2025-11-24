@@ -121,6 +121,10 @@ export const productSizeSchema = z.object({
     .int('Kuantitas harus berupa bilangan bulat')
     .min(1, 'Kuantitas minimal 1')
     .max(9999, 'Kuantitas maksimal 9999'),
+  // Enhanced ProductSize fields
+  originalQuantity: z.number().int().min(0).optional(),
+  rentedQuantity: z.number().int().min(0).default(0),
+  availableQuantity: z.number().int().min(0).optional(),
   isActive: z.boolean().default(true),
 })
 

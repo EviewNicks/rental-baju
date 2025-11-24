@@ -18,8 +18,6 @@ export function toClientProduct(product: any, skipCategory = false): ClientProdu
     categoryId: product.categoryId || '',
     modalAwal: toSafeNumber(product.modalAwal),
     currentPrice: toSafeNumber(product.currentPrice),
-    quantity: product.quantity || 0,
-    rentedStock: product.rentedStock || 0,
     status: product.status || 'AVAILABLE',
     imageUrl: product.imageUrl || '',
     isActive: product.isActive ?? true,

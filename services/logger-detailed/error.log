@@ -1,22 +1,75 @@
-The right-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.ts(2363)
-const stockStatus: AvailabilityResult
+[Fast Refresh] done in 260ms
+StrategyFactory.ts:103 StrategyFactory: Created clothing strategy for category "percobaan " (60e62bdd-cd50-4517-bae9-252afdf34323)
+installHook.js:1 Select is changing from uncontrolled to controlled. Components should not switch from controlled to uncontrolled (or vice versa). Decide between using a controlled or uncontrolled value for the lifetime of the component.
+overrideMethod @ installHook.js:1Understand this warning
+products:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)Understand this error
+products:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)Understand this error
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 144ms
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 350ms
+products:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)Understand this error
+installHook.js:1 [DEBUG] Error creating product: 
+ Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview
+overrideMethod @ installHook.js:1
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 3941ms
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 3606ms
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+installHook.js:1 Skipping auto-scroll behavior due to `position: sticky` or `position: fixed` on element: <div class=​"bg-white border-b border-neutral-200 sticky top-0 z-50 shadow-md w-full flex justify-center">​…​</div>​
+overrideMethod @ installHook.js:1
+installHook.js:1 Detected `scroll-behavior: smooth` on the `<html>` element. In a future version, Next.js will no longer automatically disable smooth scrolling during route transitions. To prepare for this change, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+overrideMethod @ installHook.js:1
+report-hmr-latency.ts:26 [Fast Refresh] done in 281ms
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 2457ms
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 3738ms
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 260ms
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 128ms
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 2958ms
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 304ms
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 3817ms
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 203ms
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 2585ms
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 299ms
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 173ms
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 2406ms
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 260ms
+StrategyFactory.ts:103 StrategyFactory: Created clothing strategy for category "percobaan " (60e62bdd-cd50-4517-bae9-252afdf34323)
+installHook.js:1 Select is changing from uncontrolled to controlled. Components should not switch from controlled to uncontrolled (or vice versa). Decide between using a controlled or uncontrolled value for the lifetime of the component.
+overrideMethod @ installHook.js:1
+products:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+products:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 144ms
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 350ms
+products:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+installHook.js:1 [DEBUG] Error creating product: {error: Error: 
+Invalid `tx.product.create()` invocation in
+D:\.work\rental-software\.next\server\chunks\[r…, errorMessage: '\nInvalid `tx.product.create()` invocation in\nD:\\.w…\nUnique constraint failed on the fields: (`code`)', formData: {…}, sizesData: '[{"ageCategory":"ADULT","size":"XS","quantity":6,"…"ADULT","size":"M","quantity":5,"isActive":true}]', transformedSizes: Array(0), …}error: Error: 
+Invalid `tx.product.create()` invocation in
+D:\.work\rental-software\.next\server\chunks\[root-of-the-server]__b3b19ef2._.js:1996:46
 
-
-Conversion of type '{ rentedQuantity: number; availableQuantity: boolean; product: { id: string; code: string; name: string; }; id: string; isActive: boolean; createdAt: Date; updatedAt: Date; createdBy: string; ... 4 more ...; originalQuantity: number; }' to type 'ProductSize' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
-  Types of property 'product' are incompatible.
-    Type '{ id: string; code: string; name: string; }' is missing the following properties from type 'Product': category, sizes, categoryId, modalAwal, and 6 more.ts(2352)
-(property) BaseProductSize.rentedQuantity: number
-
-existing.breakdown.total' is possibly 'undefined'.ts(18048)
-(property) AggregatedSizeView.breakdown: {
-    adult?: number | undefined;
-    child?: number | undefined;
-    universal?: number | undefined;
-    total?: number | undefined;
-}
-
-
-'existing.rentedQuantity' is possibly 'undefined'.
-
-'existing.rentedQuantity' is possibly 'undefined'.
-'existing.availableQuantity' is possibly 'undefined'.
+  1993 // Create product with sizes in transaction
+  1994 const result = await this.prisma.$transaction(async (tx)=>{
+  1995     // Create the product first
+→ 1996     const product = await tx.product.create(
+Unique constraint failed on the fields: (`code`)
+    at handleResponse (http://localhost:3000/_next/static/chunks/_6e3de7f8._.js:4059:31)errorMessage: "\nInvalid `tx.product.create()` invocation in\nD:\\.work\\rental-software\\.next\\server\\chunks\\[root-of-the-server]__b3b19ef2._.js:1996:46\n\n  1993 // Create product with sizes in transaction\n  1994 const result = await this.prisma.$transaction(async (tx)=>{\n  1995     // Create the product first\n→ 1996     const product = await tx.product.create(\nUnique constraint failed on the fields: (`code`)"formData: {code: 'PRD01', name: 'Dress Pesta Merah', categoryId: '60e62bdd-cd50-4517-bae9-252afdf34323', materialId: undefined, materialQuantity: undefined, …}mutationError: nullsizesData: "[{\"ageCategory\":\"ADULT\",\"size\":\"XS\",\"quantity\":6,\"isActive\":true},{\"ageCategory\":\"ADULT\",\"size\":\"XL\",\"quantity\":6,\"isActive\":true},{\"ageCategory\":\"ADULT\",\"size\":\"M\",\"quantity\":5,\"isActive\":true}]"transformedSizes: [][[Prototype]]: Objectconstructor: ƒ Object()hasOwnProperty: ƒ hasOwnProperty()isPrototypeOf: ƒ isPrototypeOf()propertyIsEnumerable: ƒ propertyIsEnumerable()toLocaleString: ƒ toLocaleString()toString: ƒ toString()valueOf: ƒ valueOf()__defineGetter__: ƒ __defineGetter__()__defineSetter__: ƒ __defineSetter__()__lookupGetter__: ƒ __lookupGetter__()__lookupSetter__: ƒ __lookupSetter__()__proto__: (...)get __proto__: ƒ __proto__()set __proto__: ƒ __proto__()
+overrideMethod @ installHook.js:1
+error @ intercept-console-error.ts:44
+handleSubmit @ ProductFormPage.tsx:502

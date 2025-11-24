@@ -1,76 +1,185 @@
 {
-    "products": [
+    "id": "ced41b82-beb9-40db-9526-69979922c17d",
+    "code": "PRD01",
+    "name": "Dress Pesta Merah",
+    "description": null,
+    "categoryId": "60e62bdd-cd50-4517-bae9-252afdf34323",
+    "category": {
+        "id": "60e62bdd-cd50-4517-bae9-252afdf34323",
+        "name": "percobaan ",
+        "color": "#EF4444",
+        "type": "clothing",
+        "products": [],
+        "createdAt": "2025-11-15T06:36:44.680Z",
+        "updatedAt": "2025-11-15T06:36:44.680Z",
+        "createdBy": "user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH"
+    },
+    "modalAwal": "600000",
+    "currentPrice": "40000",
+    "materialId": null,
+    "materialCost": null,
+    "materialQuantity": null,
+    "status": "AVAILABLE",
+    "imageUrl": "https://pmjxdencfgkbjuyjndbp.supabase.co/storage/v1/object/public/products/products/PRD01/1763965729147.jpg",
+    "sizes": [
         {
-            "id": "eaabf7c5-024b-4c6c-89d7-6a7024a6bebc",
-            "code": "PRD1",
-            "name": "Dress Pesta Merah",
-            "description": null,
-            "categoryId": "60e62bdd-cd50-4517-bae9-252afdf34323",
-            "category": {
-                "id": "60e62bdd-cd50-4517-bae9-252afdf34323",
-                "name": "percobaan ",
-                "color": "#EF4444",
-                "type": "clothing",
-                "products": [],
-                "createdAt": "2025-11-15T06:36:44.680Z",
-                "updatedAt": "2025-11-15T06:36:44.680Z",
-                "createdBy": "user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH"
-            },
-            "modalAwal": "600000",
-            "currentPrice": "40000",
-            "materialId": null,
-            "materialCost": null,
-            "materialQuantity": null,
-            "status": "AVAILABLE",
-            "imageUrl": "https://pmjxdencfgkbjuyjndbp.supabase.co/storage/v1/object/public/products/products/PRD1/1763793329264.jpg",
-            "sizes": [
-                {
-                    "id": "8a2732a2-b702-4e24-a63c-fbafc6ee4ade",
-                    "productId": "eaabf7c5-024b-4c6c-89d7-6a7024a6bebc",
-                    "ageCategory": "ADULT",
-                    "size": "XS",
-                    "quantity": 6,
-                    "isActive": true,
-                    "createdAt": "2025-11-22T06:35:33.195Z",
-                    "updatedAt": "2025-11-22T06:35:33.195Z",
-                    "createdBy": "user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH",
-                    "product": {}
-                },
-                {
-                    "id": "2094c4a3-c6e4-4dd7-a180-1e2080074fe8",
-                    "productId": "eaabf7c5-024b-4c6c-89d7-6a7024a6bebc",
-                    "ageCategory": "ADULT",
-                    "size": "XL",
-                    "quantity": 7,
-                    "isActive": true,
-                    "createdAt": "2025-11-22T06:35:33.195Z",
-                    "updatedAt": "2025-11-22T06:35:33.195Z",
-                    "createdBy": "user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH",
-                    "product": {}
-                },
-                {
-                    "id": "c26083fb-4acd-4caf-9197-b46409f0090a",
-                    "productId": "eaabf7c5-024b-4c6c-89d7-6a7024a6bebc",
-                    "ageCategory": "ADULT",
-                    "size": "XXL",
-                    "quantity": 3,
-                    "isActive": true,
-                    "createdAt": "2025-11-22T06:35:33.195Z",
-                    "updatedAt": "2025-11-22T06:35:33.195Z",
-                    "createdBy": "user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH",
-                    "product": {}
-                }
-            ],
+            "id": "4674967c-b23f-47b7-9264-3d9a4a48b79d",
+            "productId": "ced41b82-beb9-40db-9526-69979922c17d",
+            "ageCategory": "ADULT",
+            "size": "S",
+            "quantity": 6,
+            "originalQuantity": 6,
+            "rentedQuantity": 0,
+            "availableQuantity": 6,
             "isActive": true,
-            "createdAt": "2025-11-22T06:35:32.898Z",
-            "updatedAt": "2025-11-22T06:35:32.898Z",
-            "createdBy": "user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH"
+            "createdAt": "2025-11-24T06:28:53.978Z",
+            "updatedAt": "2025-11-24T06:28:53.978Z",
+            "createdBy": "user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH",
+            "product": {}
+        },
+        {
+            "id": "639d4954-0966-4983-ac61-672e911d7cfe",
+            "productId": "ced41b82-beb9-40db-9526-69979922c17d",
+            "ageCategory": "ADULT",
+            "size": "L",
+            "quantity": 4,
+            "originalQuantity": 4,
+            "rentedQuantity": 0,
+            "availableQuantity": 4,
+            "isActive": true,
+            "createdAt": "2025-11-24T06:28:53.978Z",
+            "updatedAt": "2025-11-24T06:28:53.978Z",
+            "createdBy": "user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH",
+            "product": {}
+        },
+        {
+            "id": "ad3557ae-fc20-4e4b-b489-a7abdfb22b5c",
+            "productId": "ced41b82-beb9-40db-9526-69979922c17d",
+            "ageCategory": "ADULT",
+            "size": "XL",
+            "quantity": 7,
+            "originalQuantity": 7,
+            "rentedQuantity": 2,
+            "availableQuantity": 5,
+            "isActive": true,
+            "createdAt": "2025-11-24T06:28:53.978Z",
+            "updatedAt": "2025-11-24T06:35:39.716Z",
+            "createdBy": "user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH",
+            "product": {}
+        },
+        {
+            "id": "e27362cf-3ee4-4df7-8dbf-a779237fdde1",
+            "productId": "ced41b82-beb9-40db-9526-69979922c17d",
+            "ageCategory": "ADULT",
+            "size": "XXL",
+            "quantity": 4,
+            "originalQuantity": 4,
+            "rentedQuantity": 2,
+            "availableQuantity": 2,
+            "isActive": true,
+            "createdAt": "2025-11-24T06:28:53.978Z",
+            "updatedAt": "2025-11-24T06:35:41.496Z",
+            "createdBy": "user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH",
+            "product": {}
         }
     ],
-    "pagination": {
-        "page": 1,
-        "limit": 10,
-        "total": 1,
-        "totalPages": 1
-    }
+    "isActive": true,
+    "createdAt": "2025-11-24T06:28:53.651Z",
+    "updatedAt": "2025-11-24T06:28:53.651Z",
+    "createdBy": "user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH",
+    "aggregation": {
+        "productId": "ced41b82-beb9-40db-9526-69979922c17d",
+        "totalQuantity": 21,
+        "aggregatedSizes": [
+            {
+                "size": "S",
+                "totalQuantity": 6,
+                "breakdown": {
+                    "adult": 6
+                },
+                "hasMultipleCategories": false
+            },
+            {
+                "size": "L",
+                "totalQuantity": 4,
+                "breakdown": {
+                    "adult": 4
+                },
+                "hasMultipleCategories": false
+            },
+            {
+                "size": "XL",
+                "totalQuantity": 7,
+                "breakdown": {
+                    "adult": 7
+                },
+                "hasMultipleCategories": false
+            },
+            {
+                "size": "XXL",
+                "totalQuantity": 4,
+                "breakdown": {
+                    "adult": 4
+                },
+                "hasMultipleCategories": false
+            }
+        ],
+        "hasAdvancedSizing": true,
+        "categoryBreakdown": {
+            "adult": 21,
+            "child": 0,
+            "universal": 0,
+            "total": 21
+        },
+        "lastCalculated": "2025-11-24T06:39:17.996Z"
+    },
+    "inventoryStatus": {
+        "totalOriginal": 21,
+        "totalAvailable": 17,
+        "totalRented": 4,
+        "utilizationRate": 19.047619047619047,
+        "isHealthy": true
+    },
+    "sizeDetails": [
+        {
+            "id": "4674967c-b23f-47b7-9264-3d9a4a48b79d",
+            "ageCategory": "ADULT",
+            "size": "S",
+            "originalQuantity": 6,
+            "availableQuantity": 6,
+            "rentedQuantity": 0,
+            "utilizationRate": 0,
+            "isAvailable": true
+        },
+        {
+            "id": "639d4954-0966-4983-ac61-672e911d7cfe",
+            "ageCategory": "ADULT",
+            "size": "L",
+            "originalQuantity": 4,
+            "availableQuantity": 4,
+            "rentedQuantity": 0,
+            "utilizationRate": 0,
+            "isAvailable": true
+        },
+        {
+            "id": "ad3557ae-fc20-4e4b-b489-a7abdfb22b5c",
+            "ageCategory": "ADULT",
+            "size": "XL",
+            "originalQuantity": 7,
+            "availableQuantity": 5,
+            "rentedQuantity": 2,
+            "utilizationRate": 28.57142857142857,
+            "isAvailable": true
+        },
+        {
+            "id": "e27362cf-3ee4-4df7-8dbf-a779237fdde1",
+            "ageCategory": "ADULT",
+            "size": "XXL",
+            "originalQuantity": 4,
+            "availableQuantity": 2,
+            "rentedQuantity": 2,
+            "utilizationRate": 50,
+            "isAvailable": true
+        }
+    ]
 }

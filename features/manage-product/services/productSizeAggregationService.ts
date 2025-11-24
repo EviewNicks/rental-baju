@@ -106,13 +106,27 @@ export class ProductSizeAggregationService {
    */
   async getAggregatedSizes(
     productId: string,
-    includeBreakdown: boolean = true,
+    optionsOrIncludeBreakdown: boolean | { includeBreakdown?: boolean; includeRentalTracking?: boolean; forceRefresh?: boolean } = true,
   ): Promise<AggregationServiceResponse<AggregatedSizeView[]>> {
+    // Handle both legacy boolean parameter and new options object
+    let includeBreakdown: boolean
+    let includeRentalTracking: boolean | undefined
+    let forceRefresh: boolean | undefined
+
+    if (typeof optionsOrIncludeBreakdown === 'boolean') {
+      // Legacy: backward compatibility
+      includeBreakdown = optionsOrIncludeBreakdown
+    } else {
+      // New: options object
+      includeBreakdown = optionsOrIncludeBreakdown.includeBreakdown ?? true
+      includeRentalTracking = optionsOrIncludeBreakdown.includeRentalTracking
+      forceRefresh = optionsOrIncludeBreakdown.forceRefresh
+    }
     const startTime = Date.now()
-    const cacheKey = `aggregated_sizes_${productId}_${includeBreakdown}`
+    const cacheKey = `aggregated_sizes_${productId}_${includeBreakdown}_${includeRentalTracking ?? false}_${forceRefresh ?? false}`
 
     // Check cache first
-    if (this.config.enableCaching) {
+    if (this.config.enableCaching && !forceRefresh) {
       const cached = this.getFromCache<AggregatedSizeView[]>(cacheKey)
       if (cached) {
         return {
@@ -132,8 +146,8 @@ export class ProductSizeAggregationService {
     // Transform to aggregated view
     const aggregatedSizes = this.aggregateSizesBySize(productSizes, includeBreakdown)
 
-    // Cache result
-    if (this.config.enableCaching) {
+    // Cache result (only if not force refresh)
+    if (this.config.enableCaching && !forceRefresh) {
       this.setCache(cacheKey, aggregatedSizes)
     }
 

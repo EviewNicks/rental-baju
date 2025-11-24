@@ -74,7 +74,7 @@ export async function GET(
     })
 
     // Get advanced aggregated sizes
-    const aggregationResponse = await aggregationService.getAdvancedAggregatedSizes(
+    const aggregationResponse = await aggregationService.getAggregatedSizes(
       validatedId,
       {
         includeBreakdown: queryParams.includeBreakdown,
