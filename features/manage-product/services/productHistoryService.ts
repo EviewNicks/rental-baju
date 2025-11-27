@@ -18,6 +18,10 @@ import type {
   PenaltyDetail,
   UserRole,
   RolePermissions,
+  SizeInfo,
+  ActivityMetadata,
+  ActivityInfo,
+  RawActivityData,
 } from '../types/productHistory'
 
 import { DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE, ROLE_PERMISSIONS } from '../types/productHistory'
@@ -144,82 +148,201 @@ export class ProductHistoryService {
   /**
    * Execute optimized database query using existing indexes
    * Leverages idx_transaksi_item_product_join and idx_product_penalty_calc
+   * ENHANCED: Now includes AktivitasTransaksi join and kondisiAwal field
    */
   private async executeHistoryQuery(
     query: ProductHistoryQuery,
   ): Promise<ProductHistoryRawResult[]> {
-    // Build ORDER BY clause based on sorting preference
-    const orderBy =
-      query.sorting.field === 'revenue'
-        ? [{ subtotal: query.sorting.direction as 'asc' | 'desc' }]
-        : [{ transaksi: { createdAt: query.sorting.direction as 'asc' | 'desc' } }]
+    try {
+      // Build ORDER BY clause based on sorting preference
+      const orderBy =
+        query.sorting.field === 'revenue'
+          ? [{ subtotal: query.sorting.direction as 'asc' | 'desc' }]
+          : [{ transaksi: { createdAt: query.sorting.direction as 'asc' | 'desc' } }]
 
-    const transaksiItems = await this.prisma.transaksiItem.findMany({
-      where: {
-        produkId: query.productId,
-        transaksi: {
-          status: {
-            not: 'cancelled',
-          },
-        },
-      },
-      include: {
-        transaksi: {
-          select: {
-            id: true,
-            kode: true,
-            status: true,
-            tglMulai: true,
-            tglSelesai: true,
-            createdAt: true,
-            penyewa: {
-              select: {
-                nama: true,
-                telepon: true,
-              },
+      const transaksiItems = await this.prisma.transaksiItem.findMany({
+        where: {
+          produkId: query.productId,
+          transaksi: {
+            status: {
+              not: 'cancelled',
             },
           },
         },
-        returnConditions: {
-          select: {
-            kondisiAkhir: true,
-            jumlahKembali: true,
-            penaltyAmount: true,
-            modalAwalUsed: true,
+        select: {
+          id: true,
+          jumlah: true,
+          subtotal: true,
+          durasi: true,
+          kondisiAwal: true, // NEW: Include for size parsing
+          transaksi: {
+            select: {
+              id: true,
+              kode: true,
+              status: true,
+              tglMulai: true,
+              tglSelesai: true,
+              createdAt: true,
+              penyewa: {
+                select: {
+                  nama: true,
+                  telepon: true,
+                },
+              },
+              // NEW: Include activities with ordering
+              aktivitas: {
+                select: {
+                  id: true,
+                  tipe: true,
+                  deskripsi: true,
+                  data: true,
+                  createdBy: true,
+                  createdAt: true,
+                },
+                orderBy: {
+                  createdAt: 'desc', // Newest activities first
+                },
+              },
+            },
+          },
+          returnConditions: {
+            select: {
+              kondisiAkhir: true,
+              jumlahKembali: true,
+              penaltyAmount: true,
+              modalAwalUsed: true,
+            },
           },
         },
-      },
-      orderBy,
-      skip: query.pagination.offset,
-      take: query.pagination.limit,
-    })
+        orderBy,
+        skip: query.pagination.offset,
+        take: query.pagination.limit,
+      })
 
-    // Transform Prisma results to raw result format
-    return transaksiItems.map(
-      (item): ProductHistoryRawResult => ({
-        id: item.id,
-        transactionCode: item.transaksi.kode,
-        transactionDate: item.transaksi.createdAt,
-        rentalStart: item.transaksi.tglMulai,
-        rentalEnd: item.transaksi.tglSelesai,
-        customerName: item.transaksi.penyewa.nama,
-        customerContact: item.transaksi.penyewa.telepon,
-        subtotal: item.subtotal.toNumber(), // Convert Decimal to number
-        duration: item.durasi,
-        status: item.transaksi.status,
-        itemQuantity: item.jumlah,
-        penalties: item.returnConditions.map((condition) => ({
-          kondisiAkhir: condition.kondisiAkhir,
-          jumlahKembali: condition.jumlahKembali,
-          penaltyAmount: condition.penaltyAmount.toNumber(), // Convert Decimal to number
-          modalAwalUsed: condition.modalAwalUsed?.toNumber(),
-        })),
-      }),
-    )
+      // Transform Prisma results to raw result format
+      return transaksiItems.map(
+        (item): ProductHistoryRawResult => ({
+          id: item.id,
+          transactionCode: item.transaksi.kode,
+          transactionDate: item.transaksi.createdAt,
+          rentalStart: item.transaksi.tglMulai,
+          rentalEnd: item.transaksi.tglSelesai,
+          customerName: item.transaksi.penyewa.nama,
+          customerContact: item.transaksi.penyewa.telepon,
+          subtotal: item.subtotal.toNumber(), // Convert Decimal to number
+          duration: item.durasi,
+          status: item.transaksi.status,
+          itemQuantity: item.jumlah,
+          penalties: item.returnConditions.map((condition) => ({
+            kondisiAkhir: condition.kondisiAkhir,
+            jumlahKembali: condition.jumlahKembali,
+            penaltyAmount: condition.penaltyAmount.toNumber(), // Convert Decimal to number
+            modalAwalUsed: condition.modalAwalUsed?.toNumber(),
+          })),
+          // NEW: Include kondisiAwal for size parsing
+          kondisiAwal: item.kondisiAwal,
+          // NEW: Include activities data
+          activities: item.transaksi.aktivitas.map((activity) => ({
+            id: activity.id,
+            tipe: activity.tipe,
+            deskripsi: activity.deskripsi,
+            data: activity.data as Record<string, unknown> | null,
+            createdBy: activity.createdBy,
+            createdAt: activity.createdAt,
+          })),
+        }),
+      )
+    } catch (error) {
+      console.error('[ProductHistoryService] Query execution error:', error)
+      
+      // Graceful fallback: Try query without activities if join fails
+      console.warn('[ProductHistoryService] Falling back to basic query without activities')
+      
+      try {
+        const orderBy =
+          query.sorting.field === 'revenue'
+            ? [{ subtotal: query.sorting.direction as 'asc' | 'desc' }]
+            : [{ transaksi: { createdAt: query.sorting.direction as 'asc' | 'desc' } }]
+
+        const transaksiItems = await this.prisma.transaksiItem.findMany({
+          where: {
+            produkId: query.productId,
+            transaksi: {
+              status: {
+                not: 'cancelled',
+              },
+            },
+          },
+          select: {
+            id: true,
+            jumlah: true,
+            subtotal: true,
+            durasi: true,
+            kondisiAwal: true,
+            transaksi: {
+              select: {
+                id: true,
+                kode: true,
+                status: true,
+                tglMulai: true,
+                tglSelesai: true,
+                createdAt: true,
+                penyewa: {
+                  select: {
+                    nama: true,
+                    telepon: true,
+                  },
+                },
+              },
+            },
+            returnConditions: {
+              select: {
+                kondisiAkhir: true,
+                jumlahKembali: true,
+                penaltyAmount: true,
+                modalAwalUsed: true,
+              },
+            },
+          },
+          orderBy,
+          skip: query.pagination.offset,
+          take: query.pagination.limit,
+        })
+
+        // Return basic data without activities
+        return transaksiItems.map(
+          (item): ProductHistoryRawResult => ({
+            id: item.id,
+            transactionCode: item.transaksi.kode,
+            transactionDate: item.transaksi.createdAt,
+            rentalStart: item.transaksi.tglMulai,
+            rentalEnd: item.transaksi.tglSelesai,
+            customerName: item.transaksi.penyewa.nama,
+            customerContact: item.transaksi.penyewa.telepon,
+            subtotal: item.subtotal.toNumber(),
+            duration: item.durasi,
+            status: item.transaksi.status,
+            itemQuantity: item.jumlah,
+            penalties: item.returnConditions.map((condition) => ({
+              kondisiAkhir: condition.kondisiAkhir,
+              jumlahKembali: condition.jumlahKembali,
+              penaltyAmount: condition.penaltyAmount.toNumber(),
+              modalAwalUsed: condition.modalAwalUsed?.toNumber(),
+            })),
+            kondisiAwal: item.kondisiAwal,
+            activities: [], // Empty activities array for graceful degradation
+          }),
+        )
+      } catch (fallbackError) {
+        console.error('[ProductHistoryService] Fallback query also failed:', fallbackError)
+        throw fallbackError
+      }
+    }
   }
 
   /**
    * Transform raw results with role-based data masking
+   * ENHANCED: Now includes activity transformation and size parsing
    */
   private async transformHistoryResults(
     rawResults: ProductHistoryRawResult[],
@@ -237,6 +360,25 @@ export class ProductHistoryService {
         permissions,
       )
 
+      // NEW: Transform activities with role-based filtering
+      let activities: ActivityInfo[] = []
+      if (raw.activities && raw.activities.length > 0) {
+        activities = raw.activities.map((activity) =>
+          this.transformActivityData(activity, userRole),
+        )
+      } else {
+        // Generate synthetic activity for legacy transactions
+        const syntheticActivity = this.generateSyntheticActivity(
+          raw.transactionCode,
+          raw.transactionDate,
+          'system', // Default creator for legacy data
+        )
+        activities = [syntheticActivity]
+      }
+
+      // NEW: Parse size information from kondisiAwal
+      const sizeInfo = this.parseSizeInfo(raw.kondisiAwal)
+
       return {
         id: raw.id,
         transactionCode: raw.transactionCode,
@@ -251,6 +393,9 @@ export class ProductHistoryService {
         status: raw.status,
         itemQuantity: raw.itemQuantity,
         duration: raw.duration,
+        // NEW: Include activities and size info (optional for backward compatibility)
+        activities: activities.length > 0 ? activities : undefined,
+        sizeInfo: sizeInfo || undefined,
       }
     })
   }
@@ -312,6 +457,210 @@ export class ProductHistoryService {
     const start = contact.substring(0, 3)
     const end = contact.substring(contact.length - 3)
     return `${start}****${end}`
+  }
+
+  /**
+   * Mask activity metadata based on role permissions
+   * Filters out customer-identifiable data for producer/kasir roles
+   * Preserves all metadata for owner role
+   * 
+   * @param data - Raw activity metadata from database
+   * @param userRole - User role for permission checking
+   * @returns Filtered metadata based on role
+   */
+  public maskActivityMetadata(
+    data: Record<string, unknown> | null | undefined,
+    userRole: UserRole,
+  ): ActivityMetadata {
+    try {
+      // Handle null/undefined metadata
+      if (!data || typeof data !== 'object') {
+        return {}
+      }
+
+      const permissions = ROLE_PERMISSIONS[userRole]
+
+      // Owner role: Return all metadata
+      if (permissions.canViewFullCustomerData) {
+        return data as ActivityMetadata
+      }
+
+      // Producer/Kasir roles: Filter sensitive customer data
+      const filtered: Record<string, unknown> = {}
+
+      // Allow common metadata fields
+      const allowedFields = [
+        'itemsCount',
+        'totalAmount',
+        'kasirId',
+        'kasirName',
+        'previousStatus',
+        'newStatus',
+        'reason',
+        'stockRestored',
+        'needsRefund',
+        'jumlahDiambil',
+        'jumlahKembali',
+        'penaltyAmount',
+        'kondisiAkhir',
+        'items', // Item count
+      ]
+
+      // Copy allowed fields
+      for (const field of allowedFields) {
+        if (field in data) {
+          filtered[field] = data[field]
+        }
+      }
+
+      // Filter out sensitive fields for producer/kasir
+      // These fields should only be visible to owner
+      const sensitiveFields = [
+        'customerName',
+        'customerContact',
+        'customerNIK',
+        'customerEmail',
+        'customerAddress',
+        'transactionDuration', // Performance metrics
+        'optimizedSystem',
+        'sizeAware',
+      ]
+
+      // Ensure sensitive fields are not included
+      for (const field of sensitiveFields) {
+        delete filtered[field]
+      }
+
+      return filtered as ActivityMetadata
+    } catch (error) {
+      console.error('[ProductHistoryService] Activity metadata filtering error:', error)
+      return {}
+    }
+  }
+
+  /**
+   * Get human-readable Indonesian label for activity type
+   * Maps database activity types to user-friendly labels
+   * 
+   * @param tipe - Activity type from database ('dibuat', 'dibatalkan', etc.)
+   * @returns Indonesian label for display
+   */
+  public getActivityTypeLabel(tipe: string): string {
+    const labelMap: Record<string, string> = {
+      dibuat: 'Transaksi Dibuat',
+      dibatalkan: 'Transaksi Dibatalkan',
+      dikembalikan: 'Barang Dikembalikan',
+      terlambat: 'Terlambat',
+      diperbarui: 'Status Diperbarui',
+      diambil: 'Barang Diambil',
+      pembayaran: 'Pembayaran Diterima',
+    }
+
+    return labelMap[tipe] || 'Aktivitas Lainnya'
+  }
+
+  /**
+   * Transform raw activity data to ActivityInfo with role-based filtering
+   * Applies metadata filtering and adds type labels
+   * 
+   * @param rawActivity - Raw activity data from database
+   * @param userRole - User role for permission checking
+   * @returns Transformed activity info
+   */
+  public transformActivityData(
+    rawActivity: RawActivityData,
+    userRole: UserRole,
+  ): ActivityInfo {
+    // Filter metadata based on role
+    const filteredMetadata = this.maskActivityMetadata(rawActivity.data, userRole)
+
+    return {
+      id: rawActivity.id,
+      type: rawActivity.tipe,
+      typeLabel: this.getActivityTypeLabel(rawActivity.tipe),
+      description: rawActivity.deskripsi,
+      createdAt: rawActivity.createdAt.toISOString(), // ISO 8601 format
+      createdBy: rawActivity.createdBy,
+      metadata: Object.keys(filteredMetadata).length > 0 ? filteredMetadata : undefined,
+    }
+  }
+
+  /**
+   * Generate synthetic activity for legacy transactions without activities
+   * Creates a basic "dibuat" activity from transaction data
+   * 
+   * @param transactionCode - Transaction code
+   * @param transactionDate - Transaction creation date
+   * @param createdBy - User who created the transaction
+   * @returns Synthetic activity info
+   */
+  public generateSyntheticActivity(
+    transactionCode: string,
+    transactionDate: Date,
+    createdBy: string,
+  ): ActivityInfo {
+    return {
+      id: `synthetic-${transactionCode}`,
+      type: 'dibuat',
+      typeLabel: this.getActivityTypeLabel('dibuat'),
+      description: `Transaksi ${transactionCode} dibuat`,
+      createdAt: transactionDate.toISOString(),
+      createdBy: createdBy,
+      metadata: undefined, // No metadata for synthetic activities
+    }
+  }
+
+  /**
+   * Parse size information from kondisiAwal field
+   * Format: "productSizeId|size|ageCategory|condition"
+   * Example: "clx123abc|M|ADULT|Baik"
+   * 
+   * @param kondisiAwal - Pipe-separated size information string
+   * @returns Parsed size info or null if invalid/missing
+   */
+  public parseSizeInfo(kondisiAwal: string | null | undefined): SizeInfo | null {
+    try {
+      // Handle null/undefined/empty input
+      if (!kondisiAwal || kondisiAwal.trim() === '') {
+        return null
+      }
+
+      // Split by pipe separator
+      const parts = kondisiAwal.split('|')
+      
+      // Validate minimum required parts (productSizeId, size, ageCategory)
+      if (parts.length < 3) {
+        console.warn(`[ProductHistoryService] Invalid kondisiAwal format (insufficient parts): ${kondisiAwal}`)
+        return null
+      }
+
+      const [productSizeId, size, ageCategory, condition] = parts
+
+      // Validate required fields are not empty
+      if (!productSizeId || !size || !ageCategory) {
+        console.warn(`[ProductHistoryService] Missing required size fields in kondisiAwal: ${kondisiAwal}`)
+        return null
+      }
+
+      // Validate productSizeId is UUID format (basic check)
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+      if (!uuidRegex.test(productSizeId.trim())) {
+        console.warn(`[ProductHistoryService] Invalid productSizeId format in kondisiAwal: ${productSizeId}`)
+        return null
+      }
+
+      // Return parsed size information
+      return {
+        productSizeId: productSizeId.trim(),
+        size: size.trim(),
+        ageCategory: ageCategory.trim(),
+        condition: condition ? condition.trim() : undefined,
+        displayText: `Size: ${size.trim()} (${ageCategory.trim()})`,
+      }
+    } catch (error) {
+      console.error('[ProductHistoryService] Size parsing error:', error, 'Input:', kondisiAwal)
+      return null
+    }
   }
 
   /**
