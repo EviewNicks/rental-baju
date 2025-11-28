@@ -2,6 +2,7 @@
  * TimelineItem Component - RPK-46 Product History
  * Individual timeline entry for product rental history
  * Follows ActivityTimeline.tsx visual patterns and structure
+ * ENHANCED: Now displays activity timeline and size information
  */
 
 'use client'
@@ -9,6 +10,7 @@
 import React from 'react'
 import { Calendar, User, TrendingUp, AlertCircle } from 'lucide-react'
 import { formatDate, formatCurrency } from '@/features/kasir/lib/utils/client'
+import { SizeDisplay } from './SizeDisplay'
 import type { ProductHistoryItem } from '../../types/productHistory'
 
 interface TimelineItemProps {
@@ -91,6 +93,13 @@ export function TimelineItem({
               {item.customerName} ({item.customerContact})
             </span>
           </div>
+
+          {/* NEW: Size Information */}
+          {item.sizeInfo && (
+            <div className="mt-2">
+              <SizeDisplay sizeInfo={item.sizeInfo} compact />
+            </div>
+          )}
 
           {/* Transaction Details */}
           <div className="mt-2 p-3 bg-gray-50 rounded-lg">
