@@ -155,28 +155,28 @@ This implementation plan focuses on integrating transaction activity timeline an
 - [x] 7. Checkpoint - Ensure all backend tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 8. Update frontend types for activity and size display
-  - [ ] 8.1 Add ActivityInfo and SizeInfo to frontend types
+- [x] 8. Update frontend types for activity and size display
+  - [x] 8.1 Add ActivityInfo and SizeInfo to frontend types
     - Import types from backend productHistory types
     - Create TimelineItemProps with enhanced ProductHistoryItem
     - Create ActivityBadgeProps for activity display component
     - Create SizeDisplayProps for size display component
     - _Requirements: 9.1, 9.2_
 
-  - [ ] 8.2 Update ProductHistoryCard component imports
+  - [x] 8.2 Update ProductHistoryCard component imports
     - Import new types
     - Update TimelineItem props interface
     - _Requirements: 9.1_
 
-- [ ] 9. Create ActivityBadge component for timeline
-  - [ ] 9.1 Implement ActivityBadge component
+- [x] 9. Create ActivityBadge component for timeline
+  - [x] 9.1 Implement ActivityBadge component
     - Display activity typeLabel with icon
     - Show activity description
     - Format timestamp in user-friendly format
     - Support compact mode for inline display
     - _Requirements: 9.1, 9.3, 9.4_
 
-  - [ ] 9.2 Add activity type icon mapping
+  - [x] 9.2 Add activity type icon mapping
     - 'dibuat' → Plus icon
     - 'dibatalkan' → X icon
     - 'dikembalikan' → CheckCircle icon
@@ -191,8 +191,8 @@ This implementation plan focuses on integrating transaction activity timeline an
     - Test compact mode styling
     - _Requirements: 9.1, 9.4_
 
-- [ ] 10. Create SizeDisplay component for timeline
-  - [ ] 10.1 Implement SizeDisplay component
+- [x] 10. Create SizeDisplay component for timeline
+  - [x] 10.1 Implement SizeDisplay component
     - Display size information using displayText
     - Show size badge with appropriate styling
     - Handle missing sizeInfo gracefully (hide component)
@@ -205,14 +205,14 @@ This implementation plan focuses on integrating transaction activity timeline an
     - Test compact mode styling
     - _Requirements: 9.2, 9.5_
 
-- [ ] 11. Update TimelineItem component to display activities and size
-  - [ ] 11.1 Enhance TimelineItem to show activity information
+- [x] 11. Update TimelineItem component to display activities and size
+  - [x] 11.1 Enhance TimelineItem to show activity information
     - Display most relevant activity using ActivityBadge
     - Show activity metadata in expandable section
     - Maintain existing transaction data display
     - _Requirements: 9.1, 9.3, 9.4_
 
-  - [ ] 11.2 Add size information display to TimelineItem
+  - [x] 11.2 Add size information display to TimelineItem
     - Display SizeDisplay component when sizeInfo is available
     - Position size info near item quantity
     - Handle missing size info gracefully
@@ -225,21 +225,21 @@ This implementation plan focuses on integrating transaction activity timeline an
     - Test handles missing size info gracefully
     - _Requirements: 9.1, 9.2, 9.5_
 
-- [ ] 12. Update ProductHistoryCard to handle new data structure
-  - [ ] 12.1 Update data mapping in ProductHistoryCard
+- [-] 12. Update ProductHistoryCard to handle new data structure
+  - [x] 12.1 Update data mapping in ProductHistoryCard
     - Pass activities to TimelineItem
     - Pass sizeInfo to TimelineItem
     - Maintain existing functionality
     - _Requirements: 9.1, 9.2_
 
-  - [ ]* 12.2 Write integration tests for ProductHistoryCard
+  - [ ] 12.2 Write integration tests for ProductHistoryCard
     - Test renders timeline with activities
     - Test renders timeline with size info
     - Test handles missing activities
     - Test handles missing size info
     - _Requirements: 9.1, 9.2, 9.5_
 
-- [ ] 13. Final Checkpoint - Ensure all tests pass
+- [x] 13. Final Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 14. Manual testing and validation
