@@ -708,4 +708,190 @@ export class ProductHistoryService {
       averageRentalDuration,
     }
   }
+
+  /**
+   * Get break-even status for a product
+   * RPK-MODAL: Product Break-Even Status Badge Feature
+   * 
+   * Calculates whether a product has recovered its initial capital investment (modalAwal)
+   * through accumulated rental revenue from non-cancelled transactions.
+   * 
+   * @param productId - Product ID to calculate break-even status for
+   * @returns Break-even status with revenue breakdown
+   * @throws NotFoundError if product doesn't exist
+   */
+  async getBreakEvenStatus(productId: string): Promise<{
+    modalAwal: number
+    totalRevenue: number
+    isBreakEven: boolean
+    progressPercentage: number
+    transactionCount: number
+    profit?: number
+  }> {
+    try {
+      // 1. Get product modalAwal
+      const product = await this.prisma.product.findUnique({
+        where: { id: productId },
+        select: { modalAwal: true },
+      })
+
+      if (!product) {
+        throw new NotFoundError(`Produk dengan ID ${productId} tidak ditemukan`)
+      }
+
+      // 2. Calculate total revenue (exclude cancelled transactions)
+      const revenueData = await this.prisma.transaksiItem.aggregate({
+        where: {
+          produkId: productId,
+          transaksi: {
+            status: { not: 'cancelled' },
+          },
+        },
+        _sum: {
+          subtotal: true,
+          totalReturnPenalty: true,
+        },
+        _count: {
+          id: true,
+        },
+      })
+
+      // 3. Calculate revenue breakdown
+      const baseRevenue = revenueData._sum.subtotal?.toNumber() || 0
+      const penalties = revenueData._sum.totalReturnPenalty?.toNumber() || 0
+      const totalRevenue = baseRevenue + penalties
+      const transactionCount = revenueData._count.id || 0
+
+      // 4. Calculate break-even status
+      const modalAwal = product.modalAwal.toNumber()
+      const isBreakEven = totalRevenue >= modalAwal
+      const progressPercentage = modalAwal > 0 ? (totalRevenue / modalAwal) * 100 : 0
+
+      // 5. Return break-even status
+      return {
+        modalAwal,
+        totalRevenue,
+        isBreakEven,
+        progressPercentage,
+        transactionCount,
+        profit: isBreakEven ? totalRevenue - modalAwal : undefined,
+      }
+    } catch (error) {
+      console.error('[ProductHistoryService] getBreakEvenStatus error:', error)
+
+      // Return safe fallback for non-NotFoundError cases
+      if (error instanceof NotFoundError) {
+        throw error
+      }
+
+      // Graceful fallback for database errors
+      return {
+        modalAwal: 0,
+        totalRevenue: 0,
+        isBreakEven: false,
+        progressPercentage: 0,
+        transactionCount: 0,
+      }
+    }
+  }
+
+  /**
+   * Get break-even status for multiple products in bulk
+   * RPK-MODAL: Product Break-Even Status Badge Feature
+   * 
+   * Optimized bulk query using groupBy aggregation for efficient retrieval
+   * of break-even status for multiple products simultaneously.
+   * 
+   * @param productIds - Array of product IDs to calculate break-even status for
+   * @returns Map of product ID to break-even status for O(1) lookup
+   */
+  async getBulkBreakEvenStatus(
+    productIds: string[],
+  ): Promise<Map<string, {
+    modalAwal: number
+    totalRevenue: number
+    isBreakEven: boolean
+    progressPercentage: number
+    transactionCount: number
+    profit?: number
+  }>> {
+    try {
+      // Handle empty input
+      if (!productIds || productIds.length === 0) {
+        return new Map()
+      }
+
+      // 1. Get all modalAwal values for products
+      const products = await this.prisma.product.findMany({
+        where: { 
+          id: { in: productIds },
+          isActive: true,
+        },
+        select: { 
+          id: true, 
+          modalAwal: true,
+        },
+      })
+
+      // 2. Aggregate revenue by product using groupBy for efficiency
+      const revenueByProduct = await this.prisma.transaksiItem.groupBy({
+        by: ['produkId'],
+        where: {
+          produkId: { in: productIds },
+          transaksi: { 
+            status: { not: 'cancelled' },
+          },
+        },
+        _sum: {
+          subtotal: true,
+          totalReturnPenalty: true,
+        },
+        _count: {
+          id: true,
+        },
+      })
+
+      // 3. Build result map for O(1) lookup
+      const resultMap = new Map<string, {
+        modalAwal: number
+        totalRevenue: number
+        isBreakEven: boolean
+        progressPercentage: number
+        transactionCount: number
+        profit?: number
+      }>()
+
+      // 4. Process each product and calculate break-even status
+      products.forEach((product) => {
+        const revenue = revenueByProduct.find((r) => r.produkId === product.id)
+        
+        // Calculate revenue breakdown
+        const baseRevenue = revenue?._sum.subtotal?.toNumber() || 0
+        const penalties = revenue?._sum.totalReturnPenalty?.toNumber() || 0
+        const totalRevenue = baseRevenue + penalties
+        const transactionCount = revenue?._count.id || 0
+
+        // Calculate break-even status
+        const modalAwal = product.modalAwal.toNumber()
+        const isBreakEven = totalRevenue >= modalAwal
+        const progressPercentage = modalAwal > 0 ? (totalRevenue / modalAwal) * 100 : 0
+
+        resultMap.set(product.id, {
+          modalAwal,
+          totalRevenue,
+          isBreakEven,
+          progressPercentage,
+          transactionCount,
+          profit: isBreakEven ? totalRevenue - modalAwal : undefined,
+        })
+      })
+
+      return resultMap
+    } catch (error) {
+      console.error('[ProductHistoryService] getBulkBreakEvenStatus error:', error)
+      
+      // Return empty map on error for graceful degradation
+      return new Map()
+    }
+  }
 }

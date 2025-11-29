@@ -4,11 +4,11 @@
 
 Desain ini menggabungkan arsitektur yang ada dengan enhancement yang diidentifikasi untuk Dana Kasir. Berdasarkan analisis kebutuhan, kita akan menambah historical data tracking, daily cash flow management, dan enhanced reporting capabilities.
 
-**Design Version**: 2.0 (Enhanced with Historical Data & Daily Management)
+**Design Version**: 3.0 (Keep it Simple - Minimal Viable Product)
 **Last Updated**: 2025-01-29
 **Architect**: Claude Code Assistant (with Sequential MCP Analysis)
-**Status**: Enhanced Design Ready for Implementation
-**Next Phase**: Enhanced Database Schema Implementation
+**Status**: Simple Design Ready for Implementation
+**Next Phase**: Minimal Database Schema Implementation
 
 ---
 

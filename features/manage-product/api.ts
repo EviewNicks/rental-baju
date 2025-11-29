@@ -55,6 +55,7 @@ export const productApi = {
     colorId?: string | string[]
     page?: number
     limit?: number
+    includeBreakEven?: boolean // RPK-MODAL
   }) => {
     const queryString = params ? buildQueryParams(params) : ''
     const url = `${API_BASE_URL}/products${queryString ? `?${queryString}` : ''}`
@@ -63,9 +64,14 @@ export const productApi = {
   },
 
   // Get single product by ID
-  getProductById: async (id: string, includeAggregation = true) => {
-    const queryString = includeAggregation ? '?includeAggregation=true' : ''
-    const response = await fetch(`${API_BASE_URL}/products/${id}${queryString}`)
+  getProductById: async (id: string, includeAggregation = true, includeBreakEven = false) => {
+    const params = new URLSearchParams()
+    if (includeAggregation) params.append('includeAggregation', 'true')
+    if (includeBreakEven) params.append('includeBreakEven', 'true') // RPK-MODAL
+    
+    const queryString = params.toString()
+    const url = `${API_BASE_URL}/products/${id}${queryString ? `?${queryString}` : ''}`
+    const response = await fetch(url)
     return handleResponse(response)
   },
 

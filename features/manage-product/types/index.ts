@@ -86,6 +86,8 @@ export interface ClientProduct {
   category: ClientCategory
   material?: ClientMaterial
   sizes: ClientProductSize[]
+  // RPK-MODAL: Break-even status (optional, only when includeBreakEven=true)
+  breakEvenStatus?: BreakEvenStatus
 }
 
 export interface ClientCategory {
@@ -172,6 +174,8 @@ export interface Product extends BaseProduct {
   category: Category
   material?: Material
   sizes: ProductSize[]
+  // RPK-MODAL: Break-even status (optional, only when includeBreakEven=true)
+  breakEvenStatus?: BreakEvenStatus
 }
 
 export interface Category extends BaseCategory {
@@ -200,6 +204,19 @@ export type SizeEnum = 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL' | 'UNIVERSAL'
 
 // Category Types for Dynamic Form System
 export type CategoryType = 'clothing' | 'accessories_age_based' | 'accessories_universal'
+
+/**
+ * Break-Even Status Types
+ * RPK-MODAL: Product Break-Even Status Badge Feature
+ */
+export interface BreakEvenStatus {
+  modalAwal: number
+  totalRevenue: number
+  isBreakEven: boolean
+  progressPercentage: number
+  transactionCount: number
+  profit?: number // Only if isBreakEven = true
+}
 
 // Filter types untuk UI components
 export type CategoryFilterValue = string | undefined

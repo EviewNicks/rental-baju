@@ -13,6 +13,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { ProductService } from '@/features/manage-product/services/productService'
 import { ProductSizeAggregationService } from '@/features/manage-product/services/productSizeAggregationService'
+import { ProductHistoryService } from '@/features/manage-product/services/productHistoryService'
 import { FileUploadService } from '@/features/manage-product/services/fileUploadService'
 import { prisma } from '@/lib/prisma'
 import { updateProductSchema } from '@/features/manage-product/lib/validation/productSchema'
@@ -22,7 +23,7 @@ import type { UpdateProductWithSizesRequest } from '@/features/manage-product/ty
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     // Authentication check
-    const { userId } = await auth()
+    const { userId, sessionClaims } = await auth()
     if (!userId) {
       return NextResponse.json(
         { error: { message: 'Unauthorized', code: 'UNAUTHORIZED' } },
@@ -32,16 +33,20 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     const { id } = await params
 
-    // Get query parameters for aggregation
+    // Get query parameters for aggregation and break-even
     const { searchParams } = new URL(request.url)
     const includeAggregation = searchParams.get('includeAggregation') === 'true'
     const includeBreakdown = searchParams.get('includeBreakdown') !== 'false' // default true
+    const includeBreakEven = searchParams.get('includeBreakEven') === 'true' // RPK-MODAL
 
     // Initialize service
     const productService = new ProductService(prisma, userId)
 
     // Get product by ID
     const product = await productService.getProductById(id)
+
+    // Prepare response object
+    let responseData: Record<string, unknown> = { ...product }
 
     // Add aggregation data if requested
     if (includeAggregation) {
@@ -53,8 +58,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         // ENHANCED: Use comprehensive inventory method with InventoryService integration
         const comprehensiveInventory = await aggregationService.getComprehensiveInventory(product.id)
 
-        return NextResponse.json({
-          ...product,
+        responseData = {
+          ...responseData,
           // Legacy aggregation for backward compatibility
           aggregation: {
             productId: comprehensiveInventory.productId,
@@ -67,15 +72,36 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
           // NEW: Comprehensive inventory data with Enhanced ProductSize fields
           inventoryStatus: comprehensiveInventory.inventoryStatus,
           sizeDetails: comprehensiveInventory.sizeDetails,
-        }, { status: 200 })
+        }
       } catch (error) {
-        // If aggregation fails, include product without aggregation data
+        // If aggregation fails, continue without aggregation data
         console.warn(`Failed to get aggregation for product ${product.id}:`, error)
-        return NextResponse.json(product, { status: 200 })
       }
     }
 
-    return NextResponse.json(product, { status: 200 })
+    // RPK-MODAL: Add break-even status if requested and authorized
+    if (includeBreakEven) {
+      // Check role permissions (Owner, Producer only)
+      const userRole = determineUserRole(sessionClaims)
+      const canViewBreakEven = ['owner', 'producer'].includes(userRole)
+
+      if (canViewBreakEven) {
+        try {
+          const historyService = new ProductHistoryService(prisma, userId)
+          const breakEvenStatus = await historyService.getBreakEvenStatus(id)
+
+          responseData = {
+            ...responseData,
+            breakEvenStatus,
+          }
+        } catch (error) {
+          // If break-even calculation fails, continue without break-even data
+          console.warn(`Failed to get break-even status for product ${product.id}:`, error)
+        }
+      }
+    }
+
+    return NextResponse.json(responseData, { status: 200 })
   } catch (error) {
     if (error instanceof NotFoundError) {
       return NextResponse.json(
@@ -383,5 +409,35 @@ export async function DELETE(
 
     // Handle unknown errors
     return NextResponse.json(formatErrorResponse(error as Error, requestId), { status: 500 })
+  }
+}
+
+/**
+ * Helper function to determine user role from Clerk session claims
+ * RPK-MODAL: Role-based access control for break-even status
+ * 
+ * @param sessionClaims - Clerk session claims object
+ * @returns User role (owner, producer, kasir)
+ */
+function determineUserRole(sessionClaims: Record<string, unknown> | null): 'owner' | 'producer' | 'kasir' {
+  // Default to producer role for safety (masked customer data)
+  if (!sessionClaims || typeof sessionClaims !== 'object') {
+    return 'producer'
+  }
+
+  // Extract role from custom session claims
+  // This should match the role structure from your Clerk configuration
+  const metadata = sessionClaims.metadata as Record<string, unknown> | undefined
+  const role = metadata?.role || sessionClaims.role || 'producer'
+
+  // Validate and normalize role
+  switch (String(role).toLowerCase()) {
+    case 'owner':
+      return 'owner'
+    case 'kasir':
+      return 'kasir'
+    case 'producer':
+    default:
+      return 'producer'
   }
 }

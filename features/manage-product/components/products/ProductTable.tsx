@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import type { Product } from '@/features/manage-product/types'
 import { getStatusBadge, formatCurrency } from '@/features/manage-product/lib/utils/product'
+import { BreakEvenBadge } from '../shared/BreakEvenBadge'
 import { lightenColor } from '../../lib/utils/color'
 import { getContrastTextColor } from '../../lib/utils/color'
 import { getValidImageUrl } from '../../lib/utils/imageValidate'
@@ -151,13 +152,26 @@ export function ProductTable({
                     {formatCurrency(Number(product.currentPrice))}
                   </TableCell>
                   <TableCell className="text-center" data-testid={`product-${product.code}-status`}>
-                    <Badge
-                      variant="outline"
-                      className={getStatusBadge(product.status)}
-                      data-testid={`product-${product.code}-status-badge`}
-                    >
-                      {product.status}
-                    </Badge>
+                    <div className="flex items-center justify-center gap-2">
+                      <Badge
+                        variant="outline"
+                        className={getStatusBadge(product.status)}
+                        data-testid={`product-${product.code}-status-badge`}
+                      >
+                        {product.status}
+                      </Badge>
+                      
+                      {/* RPK-MODAL: Break-Even Badge */}
+                      {product.breakEvenStatus?.isBreakEven && (
+                        <BreakEvenBadge
+                          modalAwal={product.breakEvenStatus.modalAwal}
+                          totalRevenue={product.breakEvenStatus.totalRevenue}
+                          transactionCount={product.breakEvenStatus.transactionCount}
+                          size="sm"
+                          showTooltip={true}
+                        />
+                      )}
+                    </div>
                   </TableCell>
                   <TableCell
                     className="text-center"

@@ -62,11 +62,12 @@ export function ProductListPage() {
     router.push(`/producer/manage-product?${params.toString()}`)
   }, [searchParams, router])
 
-  // Data fetching
+  // Data fetching - RPK-MODAL: Include break-even status
   const { data: productsData, isLoading, error } = useProducts({
     ...filters,
     page: currentPage,
-    limit: 20
+    limit: 20,
+    includeBreakEven: true, // RPK-MODAL: Fetch break-even data for badges
   })
   const deleteProductMutation = useDeleteProduct()
 

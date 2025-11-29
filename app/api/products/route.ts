@@ -9,6 +9,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { ProductService } from '@/features/manage-product/services/productService'
 import { ProductSizeAggregationService } from '@/features/manage-product/services/productSizeAggregationService'
+import { ProductHistoryService } from '@/features/manage-product/services/productHistoryService'
 import { FileUploadService } from '@/features/manage-product/services/fileUploadService'
 import { prisma } from '@/lib/prisma'
 import { createProductSchema } from '@/features/manage-product/lib/validation/productSchema'
@@ -25,7 +26,7 @@ const SUPPORTED_IMAGE_FORMATS = ['image/jpeg', 'image/jpg', 'image/png', 'image/
 export async function GET(request: NextRequest) {
   try {
     // Authentication check
-    const { userId } = await auth()
+    const { userId, sessionClaims } = await auth()
     if (!userId) {
       return NextResponse.json(
         { error: { message: 'Unauthorized', code: 'UNAUTHORIZED' } },
@@ -47,9 +48,10 @@ export async function GET(request: NextRequest) {
         searchParams.getAll('colorId').length > 0 ? searchParams.getAll('colorId') : undefined,
     }
 
-    // Aggregation options
+    // Aggregation and break-even options
     const includeAggregation = searchParams.get('includeAggregation') === 'true'
     const includeBreakdown = searchParams.get('includeBreakdown') !== 'false' // default true
+    const includeBreakEven = searchParams.get('includeBreakEven') === 'true' // RPK-MODAL
 
     // Initialize services
     const productService = new ProductService(prisma, userId)
@@ -81,6 +83,36 @@ export async function GET(request: NextRequest) {
       )
 
       result.products = productsWithAggregation
+    }
+
+    // RPK-MODAL: Add break-even status if requested and authorized
+    if (includeBreakEven && result.products.length > 0) {
+      // Check role permissions (Owner, Producer only)
+      const userRole = determineUserRole(sessionClaims)
+      const canViewBreakEven = ['owner', 'producer'].includes(userRole)
+
+      if (canViewBreakEven) {
+        try {
+          const historyService = new ProductHistoryService(prisma, userId)
+          
+          // Get all product IDs for bulk query
+          const productIds = result.products.map((p: Product) => p.id)
+          
+          // Fetch break-even status for all products in bulk
+          const breakEvenMap = await historyService.getBulkBreakEvenStatus(productIds)
+
+          // Map break-even status to each product
+          result.products = result.products.map((product: Product) => {
+            const breakEvenStatus = breakEvenMap.get(product.id)
+            return breakEvenStatus
+              ? { ...product, breakEvenStatus }
+              : product
+          })
+        } catch (error) {
+          // If break-even calculation fails, continue without break-even data
+          console.warn('Failed to get bulk break-even status:', error)
+        }
+      }
     }
 
     return NextResponse.json(result, { status: 200 })
@@ -366,5 +398,35 @@ export async function POST(request: NextRequest) {
 
     // Handle unknown errors
     return NextResponse.json(formatErrorResponse(error as Error, requestId), { status: 500 })
+  }
+}
+
+/**
+ * Helper function to determine user role from Clerk session claims
+ * RPK-MODAL: Role-based access control for break-even status
+ * 
+ * @param sessionClaims - Clerk session claims object
+ * @returns User role (owner, producer, kasir)
+ */
+function determineUserRole(sessionClaims: Record<string, unknown> | null): 'owner' | 'producer' | 'kasir' {
+  // Default to producer role for safety (masked customer data)
+  if (!sessionClaims || typeof sessionClaims !== 'object') {
+    return 'producer'
+  }
+
+  // Extract role from custom session claims
+  // This should match the role structure from your Clerk configuration
+  const metadata = sessionClaims.metadata as Record<string, unknown> | undefined
+  const role = metadata?.role || sessionClaims.role || 'producer'
+
+  // Validate and normalize role
+  switch (String(role).toLowerCase()) {
+    case 'owner':
+      return 'owner'
+    case 'kasir':
+      return 'kasir'
+    case 'producer':
+    default:
+      return 'producer'
   }
 }
