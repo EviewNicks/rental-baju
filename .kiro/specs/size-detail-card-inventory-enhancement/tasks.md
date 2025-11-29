@@ -1,10 +1,12 @@
-# Implementation Plan - Size Detail Card Inventory Enhancement
+# Implementation Plan - Admin Size Inventory Card Enhancement
 
 ## Overview
 
-Task plan untuk mengimplementasikan enhanced inventory display pada SizeDetailCard. Dibagi menjadi 2 phase utama: **Backend Verification** dan **Frontend Implementation**.
+Task plan untuk membuat **NEW component** `AdminSizeInventoryCard` untuk menggantikan `SizeDetailCard` di **Admin Product Detail Page** (`/producer/manage-product/[id]`).
 
-**Total Estimated Time**: 4-6 hours  
+**Scope**: Admin product management page only (bukan homepage)  
+**API**: `/api/products/[id]?includeAggregation=true` (sudah menyediakan `sizeDetails` & `inventoryStatus`)  
+**Total Estimated Time**: 3-4 hours  
 **Priority**: High  
 **Complexity**: Medium
 
@@ -14,32 +16,32 @@ Task plan untuk mengimplementasikan enhanced inventory display pada SizeDetailCa
 Memastikan API endpoint sudah menyediakan data yang benar dan lengkap untuk enhanced inventory display.
 
 **Estimated Time**: 30 minutes  
-**Status**: ✅ Expected to be complete (API already provides correct data)
+**Status**: ✅ COMPLETE (API already provides correct data)
 
 ---
 
-- [ ] 1. Verify API Response Structure
+- [x] 1. Verify API Response Structure
   - Validate `/api/public/products/[id]` endpoint response
   - Confirm `sizeDetails` array is present in response
   - Confirm `inventoryStatus` object is present in response
   - Test with real product data from database
   - _Requirements: 2.1, 2.2, 2.3_
 
-- [ ] 1.1 Test API with sample product
+- [x] 1.1 Test API with sample product
   - Use product ID from `docs/error.md` example
   - Verify response includes all enhanced fields
   - Check data accuracy (originalQuantity, rentedQuantity, availableQuantity)
   - Validate utilizationRate calculation
   - _Requirements: 2.1, 2.2_
 
-- [ ] 1.2 Validate data consistency
+- [x] 1.2 Validate data consistency
   - Verify equation: originalQuantity = rentedQuantity + availableQuantity
   - Check utilizationRate = (rentedQuantity / originalQuantity) * 100
   - Ensure isAvailable = availableQuantity > 0
   - Test with multiple products
   - _Requirements: 2.3_
 
-- [ ] 1.3 Document API response format
+- [x] 1.3 Document API response format
   - Update API documentation if needed
   - Add TypeScript interfaces for response
   - Document any edge cases found
@@ -61,27 +63,27 @@ Update hook transformation dan component untuk menggunakan enhanced inventory da
 **File**: `features/homepage/hooks/usePublicProducts.ts`  
 **Estimated Time**: 1 hour
 
-- [ ] 2. Update useTransformedProductDetail Hook
+- [x] 2. Update useTransformedProductDetail Hook
   - Map `sizeDetails` from API to `enhancedSizes`
   - Include `inventoryStatus` in transformed data
   - Add backward compatibility for legacy data
   - Update `availabilityInfo` to use enhanced fields
   - _Requirements: 2.1, 2.2, 2.3, 6.1, 6.2_
 
-- [ ] 2.1 Implement sizeDetails mapping
+- [x] 2.1 Implement sizeDetails mapping
   - Map all enhanced fields (originalQuantity, rentedQuantity, availableQuantity)
   - Include utilizationRate and isAvailable
   - Add fallback to legacy `sizes` array if `sizeDetails` not available
   - Ensure backward compatibility with quantity field
   - _Requirements: 2.1, 6.1, 6.2, 6.3_
 
-- [ ] 2.2 Add inventoryStatus to transformed data
+- [x] 2.2 Add inventoryStatus to transformed data
   - Include totalOriginal, totalAvailable, totalRented
   - Include utilizationRate and isHealthy
   - Handle case when inventoryStatus is undefined
   - _Requirements: 2.2, 6.4_
 
-- [ ] 2.3 Update availabilityInfo calculation
+- [x] 2.3 Update availabilityInfo calculation
   - Use inventoryStatus.totalAvailable if available
   - Fallback to calculating from sizes array
   - Add totalAvailable and totalRented fields

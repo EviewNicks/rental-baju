@@ -2,7 +2,11 @@
 
 ## Overview
 
-Enhancement untuk SizeDetailCard component agar menampilkan informasi inventory yang lengkap dan akurat dengan membedakan antara `originalQuantity`, `rentedQuantity`, dan `availableQuantity`. Design ini menggunakan data yang sudah tersedia dari API (`sizeDetails` dan `inventoryStatus`) dan mengimplementasikan display logic yang informatif dengan visual indicators.
+Enhancement untuk **Admin Product Detail Page** (`/producer/manage-product/[id]`) agar menampilkan informasi inventory yang lengkap dan akurat dengan membedakan antara `originalQuantity`, `rentedQuantity`, dan `availableQuantity`. 
+
+**Scope**: Buat component baru `AdminSizeInventoryCard` untuk menggantikan `SizeDetailCard` yang sekarang di `ProductDetailPage.tsx`.
+
+Design ini menggunakan data yang sudah tersedia dari API (`sizeDetails` dan `inventoryStatus`) dan mengimplementasikan display logic yang informatif dengan visual indicators.
 
 ## Architecture
 
@@ -10,14 +14,14 @@ Enhancement untuk SizeDetailCard component agar menampilkan informasi inventory 
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                     Frontend Layer                          │
+│                     Frontend Layer (ADMIN)                   │
 ├─────────────────────────────────────────────────────────────┤
 │                                                               │
-│  ProductDetailPage                                           │
+│  ProductDetailPage (/producer/manage-product/[id])          │
 │         ↓                                                     │
-│  useTransformedProductDetail (Hook)                          │
+│  useProduct(id) Hook (React Query)                           │
 │         ↓                                                     │
-│  SizeDetailCard (Component)                                  │
+│  AdminSizeInventoryCard (NEW Component)                      │
 │         ↓                                                     │
 │  Enhanced Display (UI)                                       │
 │                                                               │
@@ -29,7 +33,7 @@ Enhancement untuk SizeDetailCard component agar menampilkan informasi inventory 
 │                     Backend Layer                            │
 ├─────────────────────────────────────────────────────────────┤
 │                                                               │
-│  /api/public/products/[id]                                   │
+│  /api/products/[id]?includeAggregation=true                  │
 │         ↓                                                     │
 │  ProductService.getProductById()                             │
 │         ↓                                                     │
@@ -42,11 +46,11 @@ Enhancement untuk SizeDetailCard component agar menampilkan informasi inventory 
 
 ### Key Insight
 
-**Backend sudah CORRECT** ✅ - API endpoint `/api/public/products/[id]` sudah menyediakan:
+**Backend sudah CORRECT** ✅ - API endpoint `/api/products/[id]?includeAggregation=true` sudah menyediakan:
 - `sizeDetails` array dengan enhanced inventory fields
 - `inventoryStatus` object dengan overall statistics
 
-**Frontend perlu UPDATE** ❌ - Hook dan Component belum menggunakan data yang tersedia.
+**Frontend perlu NEW COMPONENT** ✅ - Buat `AdminSizeInventoryCard` baru untuk admin context.
 
 ## Components and Interfaces
 
@@ -96,7 +100,26 @@ interface APIProductResponse {
 }
 ```
 
-### 2. Hook Transformation (Needs Update)
+### 2. Hook Integration (Already Available)
+
+**File**: `features/manage-product/hooks/useProducts.ts`
+
+Hook `useProduct(id)` sudah tersedia dan menggunakan endpoint `/api/products/[id]?includeAggregation=true`.
+
+```typescript
+// Already available - no changes needed
+export function useProduct(id: string) {
+  return useQuery({
+    queryKey: ['products', id],
+    queryFn: () => productApi.getProduct(id),
+    enabled: !!id,
+  })
+}
+```
+
+API response sudah include `sizeDetails` dan `inventoryStatus` ketika `includeAggregation=true`.
+
+### 3. New Component Interface (To Be Created)
 
 ```typescript
 // features/homepage/hooks/usePublicProducts.ts

@@ -31,6 +31,24 @@ export interface BaseProduct {
   createdAt: Date
   updatedAt: Date
   createdBy: string
+  // Enhanced inventory data (optional - from aggregation service)
+  sizeDetails?: Array<{
+    id: string
+    ageCategory: 'ADULT' | 'CHILD' | 'UNIVERSAL'
+    size: string
+    originalQuantity: number
+    availableQuantity: number
+    rentedQuantity: number
+    utilizationRate: number
+    isAvailable: boolean
+  }>
+  inventoryStatus?: {
+    totalOriginal: number
+    totalAvailable: number
+    totalRented: number
+    utilizationRate: number
+    isHealthy: boolean
+  }
 }
 
 export interface BaseCategory {

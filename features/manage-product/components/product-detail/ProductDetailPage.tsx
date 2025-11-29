@@ -17,10 +17,10 @@ import { ProductImageSection } from './ProductImageSection'
 import { ProductInfoSection } from './ProductInfoSection'
 import { ProductActionButtons } from './ProductActionButton'
 import { ProductHistoryCard } from './ProductHistoryCard'
-import { SizeDetailCard } from '@/features/homepage/components/SizeDetailCard'
+import { AdminSizeInventoryCard } from './AdminSizeInventoryCard'
 import { useProduct, useDeleteProduct } from '@/features/manage-product/hooks/useProducts'
 import { showSuccess, showError } from '@/lib/notifications'
-import type { Product } from '@/features/manage-product/types'
+import type { Product, ProductSize } from '@/features/manage-product/types'
 
 interface ProductDetailPageProps {
   productId: string
@@ -165,14 +165,19 @@ export function ProductDetailPage({
 
         {/* Bottom Section: Supporting Cards - Status & Inventory, System Info */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          {/* Size Detail Card - Admin Context */}
-          <SizeDetailCard
-            sizes={product.sizes}
+          {/* Admin Size Inventory Card - Enhanced Inventory Display */}
+          <AdminSizeInventoryCard
+            sizeDetails={product.sizeDetails || []}
+            inventoryStatus={product.inventoryStatus || {
+              totalOriginal: product.sizes?.reduce((sum: number, size: ProductSize) => sum + (size.originalQuantity || size.quantity), 0) || 0,
+              totalAvailable: product.sizes?.reduce((sum: number, size: ProductSize) => sum + (size.availableQuantity || size.quantity), 0) || 0,
+              totalRented: product.sizes?.reduce((sum: number, size: ProductSize) => sum + (size.rentedQuantity || 0), 0) || 0,
+              utilizationRate: 0,
+              isHealthy: true
+            }}
             title="Detail Ukuran & Stok"
             showStats={true}
             showProgress={true}
-            context="admin"
-            editable={true}
           />
           <ProductHistoryCard product={product} />
         </div>

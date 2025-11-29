@@ -63,8 +63,9 @@ export const productApi = {
   },
 
   // Get single product by ID
-  getProductById: async (id: string) => {
-    const response = await fetch(`${API_BASE_URL}/products/${id}`)
+  getProductById: async (id: string, includeAggregation = true) => {
+    const queryString = includeAggregation ? '?includeAggregation=true' : ''
+    const response = await fetch(`${API_BASE_URL}/products/${id}${queryString}`)
     return handleResponse(response)
   },
 
