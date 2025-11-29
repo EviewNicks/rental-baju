@@ -14,72 +14,12 @@ import { updateTransaksiSchema } from '@/features/kasir/lib/validation/kasirSche
 import { TransactionCodeGenerator } from '@/features/kasir/lib/utils/codeGenerator'
 import { ZodError } from 'zod'
 import { requirePermission, withRateLimit } from '@/lib/auth-middleware'
-import { clerkClient } from '@clerk/nextjs/server'
 import { formatTransactionResponse } from '@/features/kasir/lib/utils/responseFormatter'
-
-// KasirInfo interface for type safety
-interface KasirInfo {
-  id: string
-  name: string
-  email: string
-  avatar?: string | null
-}
 
 interface RouteParams {
   params: Promise<{
     kode: string
   }>
-}
-
-/**
- * Function to enrich transaction data with kasir information from Clerk
- * Graceful fallback if Clerk API fails or user not found
- */
-//eslint-disable-next-line
-async function enrichTransactionWithKasirInfo(transactionData: any): Promise<any> {
-  try {
-    if (!transactionData.createdBy) {
-      // If no createdBy field, return transaction with kasir info as null
-      return {
-        ...transactionData,
-        kasir: null
-      }
-    }
-
-    const client = await clerkClient()
-    const user = await client.users.getUser(transactionData.createdBy)
-
-    // Extract user information with fallbacks
-    const firstName = user.firstName || ''
-    const lastName = user.lastName || ''
-    const fullName = `${firstName} ${lastName}`.trim() || user.emailAddresses[0]?.emailAddress || 'Unknown'
-    const email = user.emailAddresses[0]?.emailAddress || ''
-
-    const kasirInfo: KasirInfo = {
-      id: user.id,
-      name: fullName,
-      email: email,
-      avatar: user.imageUrl || null
-    }
-
-    return {
-      ...transactionData,
-      kasir: kasirInfo
-    }
-  } catch (error) {
-    console.warn('Failed to fetch kasir info from Clerk:', error)
-
-    // Graceful fallback - return basic kasir info with just the ID
-    return {
-      ...transactionData,
-      kasir: {
-        id: transactionData.createdBy || 'unknown',
-        name: 'Unknown Kasir',
-        email: '',
-        avatar: null
-      }
-    }
-  }
 }
 
 export async function GET(request: NextRequest, { params }: RouteParams) {
@@ -125,22 +65,29 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       : await transaksiService.getTransaksiByCode(kode)
 
     // Format response data using shared formatter (eliminates ~82 lines duplicate code)
+    // Kasir information is now included directly from database (no Clerk API call needed)
     const formattedData = formatTransactionResponse(transaksi)
-
-    // Enrich transaction data with kasir information
-    const enrichedData = await enrichTransactionWithKasirInfo(formattedData)
 
     return NextResponse.json(
       {
         success: true,
-        data: enrichedData,
+        data: formattedData,
         message: 'Detail transaksi berhasil diambil'
       },
       { status: 200 }
     )
   } catch (error) {
     const { kode } = await params
-    console.error(`GET /api/kasir/transaksi/${kode} error:`, error)
+    
+    // Comprehensive error logging with transaction context
+    console.error('Transaction retrieval error', {
+      level: 'error',
+      endpoint: 'GET /api/kasir/transaksi/[kode]',
+      transactionCode: kode,
+      error: error instanceof Error ? error.message : 'Unknown error',
+      timestamp: new Date().toISOString(),
+      // Note: No Clerk API fallback - kasir info comes from database only
+    })
 
     // Handle not found errors
     if (error instanceof Error && error.message.includes('tidak ditemukan')) {
@@ -156,7 +103,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       )
     }
 
-    // Handle database connection errors
+    // Handle database connection errors (no Clerk API fallback)
     if (error && typeof error === 'object' && 'message' in error && 
         typeof error.message === 'string' && error.message.includes('connection pool')) {
       return NextResponse.json(
@@ -171,7 +118,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       )
     }
 
-    // Generic server error
+    // Generic server error (graceful degradation - no external API fallback)
     return NextResponse.json(
       {
         success: false,

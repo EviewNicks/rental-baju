@@ -26,10 +26,12 @@ export interface TransaksiWithDetails extends Transaksi {
     alamat: string
   }
   kasir: {
-    // NEW: Include kasir information
+    // NEW: Include kasir information from database
     id: string
     nama: string
     isActive: boolean
+    createdAt: Date
+    updatedAt: Date
   } | null
   items: Array<{
     id: string
@@ -279,79 +281,128 @@ export class TransaksiService {
   ): Promise<TransaksiWithDetails> {
     const whereClause = type === 'id' ? { id: identifier } : { kode: identifier }
 
-    const transaksi = await this.prisma.transaksi.findUnique({
-      where: whereClause,
-      include: {
-        penyewa: {
-          select: {
-            id: true,
-            nama: true,
-            telepon: true,
-            alamat: true,
+    try {
+      const transaksi = await this.prisma.transaksi.findUnique({
+        where: whereClause,
+        include: {
+          penyewa: {
+            select: {
+              id: true,
+              nama: true,
+              telepon: true,
+              alamat: true,
+            },
           },
-        },
-        kasir: {
-          // NEW: Include kasir information
-          select: {
-            id: true,
-            nama: true,
-            isActive: true,
+          kasir: {
+            // NEW: Include kasir information from database (not Clerk)
+            select: {
+              id: true,
+              nama: true,
+              isActive: true,
+              createdAt: true,
+              updatedAt: true,
+            },
           },
-        },
-        items: {
-          include: {
-            produk: {
-              select: {
-                id: true,
-                code: true,
-                name: true,
-                modalAwal: true, // Added for penalty calculation
-                imageUrl: true,
-                size: true,
-                category: {
-                  select: {
-                    id: true,
-                    name: true,
+          items: {
+            include: {
+              produk: {
+                select: {
+                  id: true,
+                  code: true,
+                  name: true,
+                  modalAwal: true, // Added for penalty calculation
+                  imageUrl: true,
+                  size: true,
+                  category: {
+                    select: {
+                      id: true,
+                      name: true,
+                    },
                   },
                 },
               },
-            },
-            // TSK-24: Include multi-condition return data
-            returnConditions: {
-              orderBy: { createdAt: 'asc' },
-              select: {
-                id: true,
-                kondisiAkhir: true,
-                jumlahKembali: true,
-                penaltyAmount: true,
-                modalAwalUsed: true,
-                createdAt: true,
-                createdBy: true,
+              // TSK-24: Include multi-condition return data
+              returnConditions: {
+                orderBy: { createdAt: 'asc' },
+                select: {
+                  id: true,
+                  kondisiAkhir: true,
+                  jumlahKembali: true,
+                  penaltyAmount: true,
+                  modalAwalUsed: true,
+                  createdAt: true,
+                  createdBy: true,
+                },
               },
             },
           },
+          pembayaran: {
+            orderBy: { createdAt: 'desc' },
+          },
+          aktivitas: {
+            orderBy: { createdAt: 'desc' },
+          },
         },
-        pembayaran: {
-          orderBy: { createdAt: 'desc' },
-        },
-        aktivitas: {
-          orderBy: { createdAt: 'desc' },
-        },
-      },
-    })
+      })
 
-    if (!transaksi) {
-      throw new Error('Transaksi tidak ditemukan')
+      if (!transaksi) {
+        throw new Error('Transaksi tidak ditemukan')
+      }
+
+      // Handle kasir relation errors gracefully
+      // If kasir is referenced but not found, log warning and set to null
+      if (transaksi.kasirId && !transaksi.kasir) {
+        console.warn('Kasir information not found', {
+          level: 'warn',
+          message: 'Kasir information not found',
+          context: {
+            transactionCode: transaksi.kode,
+            transactionId: transaksi.id,
+            kasirId: transaksi.kasirId,
+            timestamp: new Date().toISOString(),
+            source: 'TransaksiService.getTransaksiByIdentifier',
+          },
+        })
+        // Set kasir to null for graceful degradation
+        transaksi.kasir = null
+      }
+
+      // TSK-24: Transform items with multi-condition return data
+      const enhancedTransaksi = {
+        ...transaksi,
+        //eslint-disable-next-line @typescript-eslint/no-explicit-any
+        items: this.transformItemsWithMultiCondition(transaksi.items as any),
+      }
+
+      return enhancedTransaksi as TransaksiWithDetails
+    } catch (error) {
+      // Handle database query failures with comprehensive error logging
+      if (error instanceof Error) {
+        // Log error with full context for debugging
+        console.error('Failed to retrieve transaction with kasir information', {
+          level: 'error',
+          message: error.message,
+          context: {
+            identifier,
+            identifierType: type,
+            timestamp: new Date().toISOString(),
+            source: 'TransaksiService.getTransaksiByIdentifier',
+            errorStack: error.stack,
+          },
+        })
+
+        // Re-throw the error if it's a "not found" error
+        if (error.message.includes('tidak ditemukan')) {
+          throw error
+        }
+
+        // For other database errors, throw with more context
+        throw new Error(`Failed to retrieve transaction: ${error.message}`)
+      }
+
+      // Handle unknown errors
+      throw new Error('Unknown error occurred while retrieving transaction')
     }
-
-    // TSK-24: Transform items with multi-condition return data
-    const enhancedTransaksi = {
-      ...transaksi,
-      //eslint-disable-next-line @typescript-eslint/no-explicit-any
-      items: this.transformItemsWithMultiCondition(transaksi.items as any),
-    }
-
-    return enhancedTransaksi as TransaksiWithDetails
   }
 
   // Legacy createTransaksi method removed - replaced by optimized createTransaksiSizeAware

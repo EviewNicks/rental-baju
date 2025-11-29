@@ -1,185 +1,116 @@
 {
-    "id": "3fa344e0-12b7-4cdf-99a7-53b65bb61097",
-    "code": "PRD01",
-    "name": "Dress Pesta Merah ",
-    "description": null,
-    "categoryId": "a2f0697d-21d6-4628-8e6d-a4538410405a",
-    "category": {
-        "id": "a2f0697d-21d6-4628-8e6d-a4538410405a",
-        "name": "organza",
-        "color": "#FFD700",
-        "type": "clothing",
-        "products": [],
-        "createdAt": "2025-11-26T12:05:34.795Z",
-        "updatedAt": "2025-11-26T12:05:34.795Z",
-        "createdBy": "user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH"
-    },
-    "modalAwal": "800000",
-    "currentPrice": "60000",
-    "materialId": null,
-    "materialCost": null,
-    "materialQuantity": null,
-    "status": "AVAILABLE",
-    "imageUrl": "https://pmjxdencfgkbjuyjndbp.supabase.co/storage/v1/object/public/products/products/PRD01/1764161669099.jpg",
-    "sizes": [
-        {
-            "id": "906e61bb-17b6-46e2-afd1-d7c301138ada",
-            "productId": "3fa344e0-12b7-4cdf-99a7-53b65bb61097",
-            "ageCategory": "ADULT",
-            "size": "M",
-            "quantity": 5,
-            "originalQuantity": 5,
-            "rentedQuantity": 0,
-            "availableQuantity": 5,
-            "isActive": true,
-            "createdAt": "2025-11-26T12:54:33.230Z",
-            "updatedAt": "2025-11-26T12:54:33.230Z",
-            "createdBy": "user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH",
-            "product": {}
+    "success": true,
+    "data": {
+        "id": "3c219f64-9ea0-4efe-b7f3-6e9f7d1839b8",
+        "kode": "TXN-20251126-001",
+        "penyewa": {
+            "id": "e102c9f8-3cc6-4dd1-b480-7b36f4bce025",
+            "nama": "Ardiansyah",
+            "telepon": "08123456789",
+            "alamat": "Indonesia jL. Andi tonro no.4"
         },
-        {
-            "id": "c6966e23-5b64-470c-a810-db90be5a440b",
-            "productId": "3fa344e0-12b7-4cdf-99a7-53b65bb61097",
-            "ageCategory": "ADULT",
-            "size": "L",
-            "quantity": 4,
-            "originalQuantity": 4,
-            "rentedQuantity": 0,
-            "availableQuantity": 4,
-            "isActive": true,
-            "createdAt": "2025-11-26T12:54:33.230Z",
-            "updatedAt": "2025-11-26T12:54:33.230Z",
-            "createdBy": "user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH",
-            "product": {}
-        },
-        {
-            "id": "d0b09c4c-29ac-4730-8157-bf11e39aa935",
-            "productId": "3fa344e0-12b7-4cdf-99a7-53b65bb61097",
-            "ageCategory": "ADULT",
-            "size": "XL",
-            "quantity": 6,
-            "originalQuantity": 6,
-            "rentedQuantity": 2,
-            "availableQuantity": 4,
-            "isActive": true,
-            "createdAt": "2025-11-26T12:54:33.230Z",
-            "updatedAt": "2025-11-26T12:58:35.405Z",
-            "createdBy": "user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH",
-            "product": {}
-        },
-        {
-            "id": "bb385d3f-d3c1-4e17-ae91-0f234760a740",
-            "productId": "3fa344e0-12b7-4cdf-99a7-53b65bb61097",
-            "ageCategory": "CHILD",
-            "size": "XS",
-            "quantity": 5,
-            "originalQuantity": 5,
-            "rentedQuantity": 2,
-            "availableQuantity": 3,
-            "isActive": true,
-            "createdAt": "2025-11-26T12:54:33.230Z",
-            "updatedAt": "2025-11-26T12:58:36.760Z",
-            "createdBy": "user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH",
-            "product": {}
-        }
-    ],
-    "isActive": true,
-    "createdAt": "2025-11-26T12:54:32.937Z",
-    "updatedAt": "2025-11-26T12:54:32.937Z",
-    "createdBy": "user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH",
-    "aggregation": {
-        "productId": "3fa344e0-12b7-4cdf-99a7-53b65bb61097",
-        "totalQuantity": 20,
-        "aggregatedSizes": [
+        "status": "active",
+        "totalHarga": 240000,
+        "jumlahBayar": 240000,
+        "sisaBayar": 0,
+        "tglMulai": "2025-11-27T00:00:00.000Z",
+        "tglSelesai": "2025-12-01T00:00:00.000Z",
+        "tglKembali": null,
+        "metodeBayar": "tunai",
+        "catatan": null,
+        "createdBy": "user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH",
+        "createdAt": "2025-11-26T12:58:34.224Z",
+        "updatedAt": "2025-11-26T12:58:43.751Z",
+        "items": [
             {
-                "size": "XS",
-                "totalQuantity": 5,
-                "breakdown": {
-                    "child": 5
+                "id": "e2e9100a-a7e2-4cb7-9de8-41677659948a",
+                "produk": {
+                    "id": "3fa344e0-12b7-4cdf-99a7-53b65bb61097",
+                    "code": "PRD01",
+                    "name": "Dress Pesta Merah ",
+                    "modalAwal": 800000,
+                    "imageUrl": "https://pmjxdencfgkbjuyjndbp.supabase.co/storage/v1/object/public/products/products/PRD01/1764161669099.jpg",
+                    "size": null,
+                    "category": "organza"
                 },
-                "hasMultipleCategories": false
+                "jumlah": 2,
+                "jumlahDiambil": 0,
+                "hargaSewa": 60000,
+                "durasi": 4,
+                "subtotal": 120000,
+                "kondisiAwal": "d0b09c4c-29ac-4730-8157-bf11e39aa935|XL|ADULT|baik",
+                "statusKembali": "belum",
+                "totalReturnPenalty": 0
             },
             {
-                "size": "M",
-                "totalQuantity": 5,
-                "breakdown": {
-                    "adult": 5
+                "id": "b8347f84-24bf-4fe2-8789-7f46a5491b59",
+                "produk": {
+                    "id": "3fa344e0-12b7-4cdf-99a7-53b65bb61097",
+                    "code": "PRD01",
+                    "name": "Dress Pesta Merah ",
+                    "modalAwal": 800000,
+                    "imageUrl": "https://pmjxdencfgkbjuyjndbp.supabase.co/storage/v1/object/public/products/products/PRD01/1764161669099.jpg",
+                    "size": null,
+                    "category": "organza"
                 },
-                "hasMultipleCategories": false
-            },
-            {
-                "size": "L",
-                "totalQuantity": 4,
-                "breakdown": {
-                    "adult": 4
-                },
-                "hasMultipleCategories": false
-            },
-            {
-                "size": "XL",
-                "totalQuantity": 6,
-                "breakdown": {
-                    "adult": 6
-                },
-                "hasMultipleCategories": false
+                "jumlah": 2,
+                "jumlahDiambil": 0,
+                "hargaSewa": 60000,
+                "durasi": 4,
+                "subtotal": 120000,
+                "kondisiAwal": "bb385d3f-d3c1-4e17-ae91-0f234760a740|XS|CHILD|baik",
+                "statusKembali": "belum",
+                "totalReturnPenalty": 0
             }
         ],
-        "hasAdvancedSizing": true,
-        "categoryBreakdown": {
-            "adult": 15,
-            "child": 5,
-            "universal": 0,
-            "total": 20
-        },
-        "lastCalculated": "2025-11-26T13:00:50.567Z"
-    },
-    "inventoryStatus": {
-        "totalOriginal": 20,
-        "totalAvailable": 16,
-        "totalRented": 4,
-        "utilizationRate": 20,
-        "isHealthy": true
-    },
-    "sizeDetails": [
-        {
-            "id": "906e61bb-17b6-46e2-afd1-d7c301138ada",
-            "ageCategory": "ADULT",
-            "size": "M",
-            "originalQuantity": 5,
-            "availableQuantity": 5,
-            "rentedQuantity": 0,
-            "utilizationRate": 0,
-            "isAvailable": true
-        },
-        {
-            "id": "c6966e23-5b64-470c-a810-db90be5a440b",
-            "ageCategory": "ADULT",
-            "size": "L",
-            "originalQuantity": 4,
-            "availableQuantity": 4,
-            "rentedQuantity": 0,
-            "utilizationRate": 0,
-            "isAvailable": true
-        },
-        {
-            "id": "d0b09c4c-29ac-4730-8157-bf11e39aa935",
-            "ageCategory": "ADULT",
-            "size": "XL",
-            "originalQuantity": 6,
-            "availableQuantity": 4,
-            "rentedQuantity": 2,
-            "utilizationRate": 33.33333333333333,
-            "isAvailable": true
-        },
-        {
-            "id": "bb385d3f-d3c1-4e17-ae91-0f234760a740",
-            "ageCategory": "CHILD",
-            "size": "XS",
-            "originalQuantity": 5,
-            "availableQuantity": 3,
-            "rentedQuantity": 2,
-            "utilizationRate": 40,
-            "isAvailable": true
+        "pembayaran": [
+            {
+                "id": "12411b2c-bf1d-467e-94ad-0f93aebbce20",
+                "jumlah": 240000,
+                "metode": "tunai",
+                "referensi": null,
+                "catatan": "Pembayaran awal transaksi",
+                "createdBy": "user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH",
+                "createdAt": "2025-11-26T12:58:43.484Z"
+            }
+        ],
+        "aktivitas": [
+            {
+                "id": "fea94e02-7350-44b3-a625-f3a1526f4adc",
+                "tipe": "dibayar",
+                "deskripsi": "Pembayaran tunai sebesar Rp 240.000",
+                "data": {
+                    "amount": 240000,
+                    "method": "tunai",
+                    "newTotal": "240000",
+                    "paymentId": "12411b2c-bf1d-467e-94ad-0f93aebbce20",
+                    "remaining": "0"
+                },
+                "createdBy": "user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH",
+                "createdAt": "2025-11-26T12:58:44.078Z"
+            },
+            {
+                "id": "d3693ea0-a945-4a12-8a28-9d840ae92e4e",
+                "tipe": "dibuat",
+                "deskripsi": "Transaksi TXN-20251126-001 dibuat dengan kasir ter assign",
+                "data": {
+                    "items": 2,
+                    "kasirId": "87b1808d-f6cc-4e55-8749-24903cccc3b4",
+                    "sizeAware": true,
+                    "totalHarga": "240000",
+                    "optimizedSystem": true,
+                    "transactionDuration": 3463
+                },
+                "createdBy": "user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH",
+                "createdAt": "2025-11-26T12:58:37.416Z"
+            }
+        ],
+        "kasir": {
+            "id": "user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH",
+            "name": "owner+clerk_test@example.com",
+            "email": "owner+clerk_test@example.com",
+            "avatar": "https://img.clerk.com/eyJ0eXBlIjoiZGVmYXVsdCIsImlpZCI6Imluc18yem5qSElTc1J4b1k2NDFkblVsWTZ5eklONUQiLCJyaWQiOiJ1c2VyXzJ6cU45a2R0WnNJRmNRY0g0SXdjMURydEtvSCJ9"
         }
-    ]
+    },
+    "message": "Detail transaksi berhasil diambil"
 }

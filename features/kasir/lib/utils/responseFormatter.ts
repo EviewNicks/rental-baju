@@ -73,10 +73,19 @@ interface TransactionCustomer {
   alamat: string
 }
 
+interface TransactionKasir {
+  id: string
+  nama: string
+  isActive: boolean
+  createdAt: string | Date
+  updatedAt: string | Date
+}
+
 interface TransactionData {
   id: string
   kode: string
   penyewa: TransactionCustomer
+  kasir: TransactionKasir | null
   status: string
   totalHarga: Decimal | string | number
   jumlahBayar: Decimal | string | number
@@ -103,6 +112,13 @@ export interface FormattedTransactionResponse {
     telepon: string
     alamat: string
   }
+  kasir: {
+    id: string
+    nama: string
+    isActive: boolean
+    createdAt: string
+    updatedAt: string
+  } | null
   status: string
   totalHarga: number
   jumlahBayar: number
@@ -187,6 +203,17 @@ export function formatTransactionResponse(
       telepon: transaksi.penyewa.telepon,
       alamat: transaksi.penyewa.alamat,
     },
+    kasir: transaksi.kasir ? {
+      id: transaksi.kasir.id,
+      nama: transaksi.kasir.nama,
+      isActive: transaksi.kasir.isActive,
+      createdAt: typeof transaksi.kasir.createdAt === 'object'
+        ? transaksi.kasir.createdAt.toISOString()
+        : transaksi.kasir.createdAt,
+      updatedAt: typeof transaksi.kasir.updatedAt === 'object'
+        ? transaksi.kasir.updatedAt.toISOString()
+        : transaksi.kasir.updatedAt,
+    } : null,
     status: transaksi.status,
 
     // Handle Decimal types with robust type checking

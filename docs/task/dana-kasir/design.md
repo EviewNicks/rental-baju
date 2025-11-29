@@ -1,6 +1,18 @@
-# Dana Kasir - System Architecture Design
+# Dana Kasir - Enhanced System Architecture Design
 
-## <� High-Level Architecture Overview
+## 🎯 Overview
+
+Desain ini menggabungkan arsitektur yang ada dengan enhancement yang diidentifikasi untuk Dana Kasir. Berdasarkan analisis kebutuhan, kita akan menambah historical data tracking, daily cash flow management, dan enhanced reporting capabilities.
+
+**Design Version**: 2.0 (Enhanced with Historical Data & Daily Management)
+**Last Updated**: 2025-01-29
+**Architect**: Claude Code Assistant (with Sequential MCP Analysis)
+**Status**: Enhanced Design Ready for Implementation
+**Next Phase**: Enhanced Database Schema Implementation
+
+---
+
+## 🏗️ High-Level Architecture Overview
 
 ### **Design Principles**
 1. **Consistency**: Mengikuti pola arsitektur yang sudah ada (3-tier architecture)
@@ -18,28 +30,29 @@ graph TB
         C --> D[Service Layer]
         D --> E[Prisma ORM]
         E --> F[PostgreSQL Database]
-
-        subgraph "Existing Features"
-            G[Transaksi Management] --> H[Product Inventory]
+        G[Transaksi Management] --> H[Product Inventory]
             H --> I[Customer Management]
             I --> J[Payment Processing]
     end
 
-    subgraph "Dana Kasir Feature"
+    subgraph "Dana Kasir Enhancement"
         K[Dana Kasir Dashboard] --> L[Pengeluaran Form]
         K --> M[Pengeluaran API]
-        K --> N[Dana Summary API]
-        M --> M
+        M --> N[Dana Summary API]
         N --> O[Pengeluaran Service]
         O --> P[PengeluaranKasir Model]
-        P --> E
-        L --> M
+        O --> E
+        N --> Q[Dana Kasir Harian Model]
+        Q --> E
+        K --> R[Histori API]
+        R --> S[Laporan Harian API]
+        S --> Q
     end
 
+    C[Owner Sidebar] --> K
     E --> P
-    Q[Clerk Authentication] --> C
-    Q --> K
-    R[Owner Sidebar] --> K
+    E --> Q
+    Q --> E
 
     style A fill:#e1f5fe
     style K fill:#3b82f6
@@ -47,40 +60,22 @@ graph TB
     style Q fill:#10b981
 ```
 
-## =� Component Architecture Design
+### **Enhanced Component Architecture Design**
 
-### **Layer Responsibility Matrix**
-
-| **Layer** | **Responsibility** | **Existing Pattern** | **Dana Kasir Extension** |
+#### **Layer Responsibility Matrix**
+| **Layer** | **Responsibility** | **Existing Pattern** | **Dana Kasir Enhancement** |
 |-----------|------------------|-------------------|------------------------|
-| **Presentation** | UI components, routing, state management | `TransactionsDashboard`, `OwnerSidebar` | `DanaKasirDashboard`, `PengeluaranForm` |
-| **Business Logic** | Service layer, validation, business rules | `TransaksiService`, inventory management | `PengeluaranService`, dana calculations |
-| **Data Access** | Database operations, ORM, transactions | Prisma models, migrations | `PengeluaranKasir` model, migration scripts |
+| **Presentation** | UI components, routing, state management | `TransactionsDashboard`, `OwnerSidebar` | `DanaKasirDashboard`, `PengeluaranForm`, `HistoricalView`, `DateNavigation` |
+| **Business Logic** | Service layer, validation, business rules | `TransaksiService`, inventory management | `PengeluaranService`, `DanaKasirService`, cash flow calculations |
+| **Data Access** | Database operations, ORM, transactions | Prisma models, migrations | `PengeluaranKasir`, `DanaKasirHarian`, enhanced migrations |
 
-### **Component Integration Strategy**
-```typescript
-// Interface Contracts untuk integrasi yang konsisten
-interface DanaKasirComponent {
-  // Reuse existing patterns
-  authentication: ClerkAuthMiddleware
-  responseFormatter: typeof createSuccessResponse
-  validation: ZodSchema
-  serviceLayer: BaseServicePattern
-}
+---
 
-// Integration dengan existing dashboard
-interface DashboardEnhancement {
-  existingTransactions: TransactionData[]
-  newPengeluaran: PengeluaranData[]
-  summaryCalculation: DanaSummary
-}
-```
+## 🔍 Enhanced Database Schema Design
 
-## =� Database Schema Design
-
-### **New Model: PengeluaranKasir**
+### **Enhanced Model: Dana Kasir System**
 ```sql
--- Tabel untuk pengeluaran kasir harian
+-- Enhanced table untuk pengeluaran kasir dengan historical tracking
 CREATE TABLE pengeluaran_kasir (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   kasir_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -88,6 +83,24 @@ CREATE TABLE pengeluaran_kasir (
   kategori VARCHAR(50) NOT NULL DEFAULT 'operasional',
   deskripsi TEXT,
   tanggal_pengeluaran DATE NOT NULL DEFAULT CURRENT_DATE,
+  jenis_transaksi VARCHAR(20) NOT NULL DEFAULT 'pengeluaran',
+  tanggal_transaksi DATE NOT NULL DEFAULT CURRENT_DATE,
+  referensi_transaksi UUID NULL,
+  status_harian VARCHAR(20) DEFAULT 'active',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Table untuk tracking dana kasir harian
+CREATE TABLE dana_kasir_harian (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  kasir_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  tanggal DATE NOT NULL,
+  total_pemasukan DECIMAL(12,2) DEFAULT 0,
+  total_pengeluaran DECIMAL(12,2) DEFAULT 0,
+  saldo_awal DECIMAL(12,2) DEFAULT 0,
+  saldo_akhir DECIMAL(12,2) DEFAULT 0,
+  status_harian VARCHAR(20) DEFAULT 'open',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -100,68 +113,71 @@ CREATE TYPE kategori_pengeluaran AS ENUM (
   'lainnya'
 );
 
--- Enhanced model definition
-ALTER TABLE pengeluaran_kasir
-ALTER COLUMN kategori TYPE kategori_pengeluaran;
+-- Enhanced indexes untuk optimal performance
+CREATE INDEX idx_pengeluaran_kasir_kasir_tanggal ON pengeluaran_kasir(kasir_id, tanggal_pengeluaran DESC);
+CREATE INDEX idx_pengeluaran_kasir_kategori ON pengeluaran_kasir(kategori);
+CREATE INDEX idx_pengeluaran_kasir_transaksi ON pengeluaran_kasir(kasir_id, jenis_transaksi, tanggal_pengeluaran DESC);
+CREATE INDEX idx_pengeluaran_kasir_created_at ON pengeluaran_kasir(created_at);
+
+-- Indexes untuk daily cash flow tracking
+CREATE INDEX idx_dana_kasir_harian_tanggal ON dana_kasir_harian(kasir_id, tanggal DESC);
+CREATE INDEX idx_dana_kasir_harian_status ON dana_kasir_harian(status_harian);
 ```
 
 ### **Database Integration Points**
 ```sql
--- Relasi dengan existing User model (Kasir)
+-- Relasi dengan existing User model (Kasir/Owner)
 ALTER TABLE pengeluaran_kasir
 ADD CONSTRAINT fk_pengeluaran_kasir_kasir
 FOREIGN KEY (kasir_id) REFERENCES users(id) ON DELETE CASCADE;
-
--- Indexes untuk optimasi query
-CREATE INDEX idx_pengeluaran_kasir_kasir_tanggal ON pengeluaran_kasir(kasir_id, tanggal_pengeluaran);
-CREATE INDEX idx_pengeluaran_kasir_kategori ON pengeluaran_kasir(kategori);
-CREATE INDEX idx_pengeluaran_kasir_created_at ON pengeluaran_kasir(created_at);
 ```
 
 ### **Migration Strategy**
 ```sql
--- Migration: 001_add_pengeluaran_kasir.sql
--- Backward compatible: Tidak mengubah existing tables
+-- Migration: 002_enhance_dana_kasir.sql
+-- Backward compatible: Extends existing tables
 -- Rollback: DROP TABLE jika perlu rollback
 -- Deployment: Run migration sebelum API deployment
 ```
 
-## = API Layer Specification
+---
 
-### **Route Structure & Endpoints**
+## 🚀 Enhanced API Layer Specification
+
+### **Enhanced Route Structure & Endpoints**
 ```typescript
-// API Routes untuk Dana Kasir Management
-// app/api/kasir/pengeluaran/route.ts
+// Enhanced API Routes untuk Dana Kasir Management
 interface PengeluaranAPI {
   'GET /api/kasir/pengeluaran': GetPengeluaranListResponse
+  'GET /api/kasir/pengeluaran?tanggal={date}': GetPengeluaranPerTanggalResponse
   'POST /api/kasir/pengeluaran': CreatePengeluaranResponse
   'PUT /api/kasir/pengeluaran/[id]': UpdatePengeluaranResponse
   'DELETE /api/kasir/pengeluaran/[id]': DeletePengeluaranResponse
-  'GET /api/kasir/dana-summary': DanaSummaryResponse
 }
 
-// app/api/kasir/dana-summary/route.ts
-interface DanaSummaryAPI {
-  'GET /api/kasir/dana-summary': {
-    pendapatan_hari_ini: number
-    pengeluaran_hari_ini: number
-    saldo_akhir: number
-    total_transaksi: number
-    ringkasan_pengeluaran: KategoriWise[]
-  }
+interface DanaKasirAPI {
+  'GET /api/kasir/dana-summary': DanaSummaryResponse
+  'GET /api/kasir/dana-summary?tanggal={date}': DanaSummaryPerTanggalResponse
+  'POST /api/kasir/penutupan-harian': PenutupanHarianResponse
+  'GET /api/kasir/histori': GetHistoriResponse
+  'GET /api/kasir/histori?tanggal={date}': GetHistoriTanggalResponse
+  'GET /api/kasir/histori?startDate={date}&endDate={date}': GetHistoriRangeResponse
+  'GET /api/kasir/laporan-harian': LaporanHarianResponse
+  'GET /api/kasir/laporan-harian?startDate={date}&endDate={date}': LaporanRangeResponse
 }
 ```
 
-### **Request/Response Contracts**
+### **Enhanced Request/Response Contracts**
 ```typescript
-// Request schemas dengan Zod validation
+// Enhanced Request schemas dengan Zod validation
 const createPengeluaranSchema = z.object({
   harga: z.number().positive("Harga harus positif"),
   kategori: z.enum(["operasional", "maintenance", "transport", "lainnya"]),
-  deskripsi: z.string().optional().max(500, "Deskripsi maksimal 500 karakter")
+  deskripsi: z.string().optional().max(500, "Deskripsi maksimal 500 karakter"),
+  tanggal_pengeluaran: z.string().optional().refine(validasiTanggal)
 })
 
-// Response format yang konsisten
+// Enhanced response format yang konsisten
 interface APIResponse<T> {
   success: boolean
   data?: T
@@ -172,63 +188,106 @@ interface APIResponse<T> {
   }
   pagination?: PaginationMeta
 }
-```
 
-### **Authentication & Authorization**
-```typescript
-// Menggunakan existing middleware patterns
-import { requirePermission } from '@/lib/auth-middleware'
+// Enhanced daily summary response
+interface DanaSummaryResponse {
+  pendapatan_hari_ini: number
+  pengeluaran_hari_ini: number
+  saldo_akhir: number
+  total_transaksi: number
+  ringkasan_pengeluaran: KategoriWise[]
+  status_harian: 'open' | 'closed'
+}
 
-// Role-based access control
-const permissionMatrix = {
-  // Kasir: CRUD untuk data miliknya, Read untuk semua
-  'kasir': {
-    'create': ['kasir', 'write'],
-    'read': ['kasir', 'read'],
-    'update': ['kasir', 'write'],
-    'delete': ['kasir', 'write']
-  },
-  // Owner: Read-only akses ke semua data kasir
-  'owner': {
-    'read': ['kasir', 'read'],
-    'summary': ['owner', 'read']
+// Historical data response
+interface GetHistoriTanggalResponse {
+  data: PengeluaranKasir[]
+  tanggal: string
+  pagination: PaginationMeta
+  summary: {
+    total_pemasukan: number
+    total_pengeluaran: number
+    saldo: number
   }
 }
 ```
 
-## <� UI/UX Component Design
-
-### **Dashboard Layout Enhancement**
+### **Enhanced Authentication & Authorization**
 ```typescript
-// Component structure untuk Dana Kasir Dashboard
-interface DanaKasirDashboardProps {
+// Menggunakan existing middleware patterns
+import { requirePermission } from '@/lib/auth-middleware'
+
+// Enhanced role-based access control
+const permissionMatrix = {
+  // Kasir: CRUD untuk data miliknya, Read untuk histori
+  'kasir': {
+    'create': ['kasir', 'write'],
+    'read': ['kasir', 'read'],
+    'update': ['kasir', 'write'],
+    'delete': ['kasir', 'write'],
+    'histori': ['kasir', 'read'],
+    'laporan': ['kasir', 'read']
+  },
+  // Owner: Read-only akses ke semua data kasir
+  'owner': {
+    'read': ['kasir', 'read'],
+    'summary': ['owner', 'read'],
+    'histori': ['kasir', 'read'],
+    'laporan': ['kasir', 'read']
+  }
+}
+```
+
+---
+
+## 🎨 Enhanced UI/UX Component Design
+
+### **Enhanced Dashboard Layout**
+```typescript
+// Component structure untuk Enhanced Dana Kasir Dashboard
+interface EnhancedDanaKasirDashboardProps {
   kasirId: string
   userRole: 'kasir' | 'owner'
+  initialView: 'current' | 'historical'
+  selectedDate?: string
 }
 
 // Layout yang konsisten dengan existing dashboard
-const DashboardLayout = {
+const EnhancedDashboardLayout = {
   header: 'Dana Kasir Management',
   sections: [
-    'summary_cards',      // Pendapatan vs Pengeluaran
-    'transaction_list',   // Daftar transaksi hari ini
-    'pengeluaran_form',  // Form input pengeluaran
-    'action_buttons'     // Tambah Transaksi button
+    'date_navigation',    // Date picker dan view toggle
+    'summary_cards',       // Enhanced summary cards
+    'pengeluaran_form',    // Enhanced form input
+    'transaction_list',     // Daftar transaksi hari ini
+    'historical_cards',    // Historical data cards
+    'action_buttons',      // Tambah Transaksi & Close Daily
+    'daily_reports'        // Daily reports with export
   ]
 }
 ```
 
-### **Form Component Design**
+### **Enhanced Form Component Design**
 ```typescript
-// Simple form dengan validasi real-time
-interface PengeluaranFormProps {
-  onSubmit: (data: PengeluaranData) => Promise<void>
-  initialData?: Partial<PengeluaranData>
+// Enhanced form dengan validasi real-time dan date picker
+interface EnhancedPengeluaranFormProps {
+  onSubmit: (data: EnhancedPengeluaranData) => Promise<void>
+  initialData?: Partial<EnhancedPengeluaranData>
   isLoading?: boolean
+  showDatePicker?: boolean
+  selectedDate?: string
+}
+
+// Enhanced form fields dengan validation
+interface EnhancedPengeluaranData {
+  harga: number
+  kategori: 'operasional' | 'maintenance' | 'transport' | 'lainnya'
+  deskripsi?: string
+  tanggal_pengeluaran?: string
 }
 
 // Menggunakan existing UI patterns
-const FormFields = {
+const EnhancedFormFields = {
   harga: {
     type: 'currency',
     validation: 'required|min:1000',
@@ -243,13 +302,17 @@ const FormFields = {
     type: 'textarea',
     validation: 'max:500',
     placeholder: 'Deskripsi pengeluaran...'
+  },
+  tanggal_pengeluaran: {
+    type: 'date',
+    validation: 'optional'
   }
 }
 ```
 
-### **Navigation Integration**
-```tsx
-// Update Owner Sidebar dengan menu Dana Kasir
+### **Enhanced Navigation Integration**
+```typescript
+// Update Owner Sidebar dengan enhanced Dana Kasir menu
 // components/layout/OwnerSidebar.tsx
 <Link href="/dana-kasir">
   <Button variant="ghost" className="w-full justify-start hover:bg-red-50 hover:text-red-700">
@@ -257,9 +320,21 @@ const FormFields = {
     Dana Kasir
   </Button>
 </Link>
+
+// Enhanced navigation dengan sub-menu
+const EnhancedDanaKasirNav = {
+  main: '/dana-kasir',
+  subItems: [
+    { label: 'Data Hari Ini', href: '/dana-kasir' },
+    { label: 'Histori Transaksi', href: '/dana-kasir/histori' },
+    { label: 'Laporan Harian', href: '/dana-kasir/laporan' }
+  ]
+}
 ```
 
-## = Security Architecture
+---
+
+## 🛡️ Enhanced Security Architecture
 
 ### **Authentication Flow**
 ```mermaid
@@ -278,51 +353,47 @@ sequenceDiagram
     API-->>User: Response dengan role-appropriate data
 ```
 
-### **Access Control Implementation**
+### **Enhanced Access Control Implementation**
 ```typescript
-// Data filtering berdasarkan role
+// Enhanced data filtering berdasarkan role
 interface DataFilter {
   kasirAccess: 'own' | 'all'
   ownerAccess: 'read-only' | 'full'
 }
 
-// Service layer filtering
+// Enhanced service layer filtering
 class PengeluaranService {
-  async getPengeluaran(kasirId: string, userRole: string) {
+  async getPengeluaran(kasirId: string, userRole: string, options?: QueryOptions) {
     const whereClause = userRole === 'kasir'
-      ? { kasir_id: kasirId }
+      ? { kasir_id: kasirId, ...options?.filter }
       : {} // Owner dapat lihat semua
 
     return this.prisma.pengeluaranKasir.findMany({
       where: whereClause,
-      orderBy: { created_at: 'desc' }
+      orderBy: { tanggal_pengeluaran: 'desc' },
+      ...options?.pagination
+    })
+  }
+
+  async getHistoricalData(kasirId: string, userRole: string, tanggal: string) {
+    const whereClause = userRole === 'kasir'
+      ? { kasir_id: kasirId, tanggal_pengeluaran: tanggal }
+      : { kasir_id: kasirId, tanggal_transaksi: tanggal }
+
+    return this.prisma.pengeluaranKasir.findMany({
+      where: whereClause,
+      orderBy: { tanggal_pengeluaran: 'desc' },
+      take: 50 // Pagination untuk histori
     })
   }
 }
 ```
 
-### **Input Validation & Sanitization**
-```typescript
-// Zod schemas untuk semua input validation
-const pengeluaranValidation = {
-  create: createPengeluaranSchema,
-  update: updatePengeluaranSchema,
-  query: queryPengeluaranSchema
-}
+---
 
-// Security measures
-const securityMeasures = {
-  inputSanitization: 'Zod auto-sanitization',
-  sqlInjectionPrevention: 'Prisma ORM parameterized queries',
-  rateLimiting: 'withRateLimit() middleware',
-  dataValidation: 'Server-side validation',
-  authMiddleware: 'Clerk.requireAuth()'
-}
-```
+## ⚡ Enhanced Performance Optimization
 
-## � Performance Optimization
-
-### **Database Performance Strategy**
+### **Enhanced Database Performance Strategy**
 ```sql
 -- Query optimization dengan proper indexing
 CREATE INDEX CONCURRENTLY idx_pengeluaran_kasir_performance ON pengeluaran_kasir(
@@ -332,16 +403,17 @@ CREATE INDEX CONCURRENTLY idx_pengeluaran_kasir_performance ON pengeluaran_kasir
 );
 
 -- Query patterns untuk optimal performance
--- Hari ini: WHERE tanggal_pengeluaran = CURRENT_DATE
+-- Hari ini: WHERE tanggal_pengeluaran = CURRENT_DATE AND kasir_id = ?
 -- Range: WHERE tanggal_pengeluaran BETWEEN ? AND ?
--- By kasir: WHERE kasir_id = ? AND created_at >= ?
+-- By kasir: WHERE kasir_id = ? AND tanggal_pengeluaran >= ?
+-- Historical: WHERE tanggal_pengeluaran <= ? ORDER BY tanggal_pengeluaran DESC LIMIT 50
 ```
 
-### **Caching Strategy**
+### **Enhanced Caching Strategy**
 ```typescript
 // React Query configuration untuk optimal caching
-const queryConfig = {
-  staleTime: 30 * 1000,        // 30 detik
+const enhancedQueryConfig = {
+  staleTime: 30 * 60 * 1000,        // 30 menit
   cacheTime: 5 * 60 * 1000,       // 5 menit
   refetchOnWindowFocus: true,
   refetchOnReconnect: true
@@ -349,86 +421,132 @@ const queryConfig = {
 
 // API response caching
 const cachingStrategy = {
-  danaSummary: '1 menit cache untuk heavy calculations',
-  pengeluaranList: '30 detik cache untuk list data',
-  transaksiIntegration: 'Real-time untuk transaksi baru'
+  danaSummary: '5 menit cache untuk heavy calculations',
+  pengeluaranList: '30 menit cache untuk list data',
+  historiData: '1 jam cache untuk historical data',
+  dailyReports: '15 menit cache untuk reports'
 }
 ```
 
-### **Monitoring & Metrics**
+### **Enhanced Monitoring & Metrics**
 ```typescript
 // Performance monitoring points
-interface PerformanceMetrics {
-  apiResponseTime: '< 2 detik untuk semua operasi',
-  databaseQueryTime: '< 100ms untuk typical operations',
-  cacheHitRate: '> 80% untuk frequently accessed data',
-  memoryUsage: '< 100MB untuk dashboard operations',
-  errorRate: '< 1% untuk semua operations'
+interface EnhancedPerformanceMetrics {
+  apiResponseTime: '<2 detik untuk semua operasi',
+  databaseQueryTime: '<100ms untuk typical operations',
+  cacheHitRate: '>80% untuk frequently accessed data',
+  memoryUsage: '<100MB untuk dashboard operations',
+  errorRate: '<1% untuk semua operasi',
+  dailyCalculationTime: '<1 detik untuk cash flow'
 }
 ```
-
-## = Implementation Roadmap
-
-### **Phase 1: Foundation (Week 1-2)**
-- **Priority 1**: Database schema migration
-- **Priority 2**: Service layer implementation
-- **Priority 3**: Basic CRUD API endpoints
-- **Priority 4**: Unit tests untuk core functionality
-
-### **Phase 2: Integration (Week 3-4)**
-- **Priority 5**: Dashboard component development
-- **Priority 6**: Form component creation
-- **Priority 7**: API integration with existing transaction system
-- **Priority 8**: Role-based access control implementation
-
-### **Phase 3: Enhancement (Week 5)**
-- **Priority 9**: Advanced reporting features
-- **Priority 10**: Mobile responsiveness optimization
-- **Priority 11**: Performance monitoring integration
-- **Priority 12**: Comprehensive testing (unit, integration, E2E)
-
-### **Deployment Strategy**
-```typescript
-// Feature flags untuk gradual rollout
-const featureFlags = {
-  danaKasirEnabled: process.env.ENABLE_DANA_KASIR === 'true',
-  newDashboardLayout: process.env.ENABLE_NEW_DASHBOARD === 'true',
-  advancedReporting: process.env.ENABLE_ADVANCED_REPORTING === 'true'
-}
-
-// Rollback capabilities
-const rollbackPlan = {
-  databaseMigration: 'Rollback migration available',
-  apiCompatibility: 'v1 API backward compatible',
-  uiFallback: 'Original dashboard layout available'
-}
-```
-
-##  Quality Gates & Success Criteria
-
-### **Functional Requirements**
--  **Input Speed**: Pengeluaran input < 30 detik
--  **Real-time Updates**: Sync pendapatan & pengeluaran < 5 detik
--  **Role Access**: Permissions berfungsi dengan benar
--  **Data Accuracy**: Summary calculations akurat 100%
-
-### **Technical Requirements**
--  **API Performance**: Response time < 2 detik
--  **Database Queries**: Typical operations < 100ms
--  **Mobile Responsive**: Layout berfungsi di mobile
--  **Test Coverage**: 80%+ untuk semua komponen
--  **Error Handling**: Proper error codes dan messages
-
-### **Integration Requirements**
--  **Backward Compatibility**: Tidak breaking existing API
--  **Consistent Patterns**: Mengikuti existing code patterns
--  **Security Standards**: Mengikuti existing security practices
--  **Documentation**: API docs terupdate dan lengkap
 
 ---
 
-**Design Version**: 1.0
+## 📊 Enhanced Implementation Roadmap
+
+### **Phase 1: Foundation Enhancement** (Week 1-2)
+- **Priority 1**: Enhanced database schema migration
+- **Priority 2**: PengeluaranService enhancement dengan historical data
+- **Priority 3**: Enhanced CRUD endpoints dengan date filtering
+- **Priority 4**: Unit tests untuk enhanced functionality
+
+### **Phase 2: Integration & Business Logic** (Week 2-3)
+- **Priority 5**: Daily cash flow calculation service
+- **Priority 6**: Enhanced summary API with historical data
+- **Priority 7**: Historical data API endpoints
+- **Priority 8**: Daily closing functionality
+- **Priority 9**: Integration tests with transaction system
+
+### **Phase 3: Enhanced Frontend Integration** (Week 3-4)
+- **Priority 10**: Enhanced dashboard with summary cards and navigation
+- **Priority 11**: Date picker and historical view components
+- **Priority 12**: Enhanced form with validation and date selection
+- **Priority 13**: Historical data cards with pagination
+- **Priority 14**: State management integration with caching
+
+### **Phase 4: Quality & Polish** (Week 4-5)
+- **Priority 15**: Daily reports with export functionality
+- **Priority 16**: E2E testing for enhanced workflows
+- **Priority 17**: Performance optimization and monitoring
+- **Priority 18**: Documentation update and user guides
+
+---
+
+## 📈 Enhanced Success Criteria
+
+### **Enhanced Functional Requirements**:
+- ✅ Kasir dapat input pengeluaran < 30 detik dengan date picker
+- ✅ Real-time sync pendapatan dan pengeluaran < 5 detik
+- ✅ Role-based access berfungsi dengan benar
+- ✅ Owner dapat monitoring semua data kasir dalam satu view
+- ✅ Historical data tracking untuk 30 hari terakhir
+- ✅ Daily cash flow calculation otomatis dan akurat
+- ✅ Daily reports dengan export functionality (PDF/Excel)
+- ✅ Mobile responsive design untuk semua layer
+
+### **Enhanced Technical Requirements**:
+- ✅ API response time < 2 detik untuk semua operasi
+- ✅ Database query time < 100ms untuk typical operations
+- ✅ Historical query performance < 500ms untuk 30 hari data
+- ✅ Proper error handling dan validation
+- ✅ 80%+ test coverage untuk semua komponen
+- ✅ Zero security vulnerabilities
+- ✅ Performance baseline < 3 seconds untuk load time
+
+### **Enhanced Integration Requirements**:
+- ✅ Backward compatibility dengan existing transaction system
+- ✅ Consistent patterns dengan existing codebase
+- ✅ Security standards dengan existing authentication
+- ✅ Documentation lengkap dan up-to-date
+
+---
+
+## ⚠️ Enhanced Risk Assessment
+
+### **High Risk Items**:
+1. **Historical Data Volume**: Database growth dan query performance
+   - **Mitigation**: Proper indexing dan pagination strategy
+   - **Contingency**: Data retention policy untuk data lama
+
+2. **Daily Calculation Complexity**: Cash flow calculation accuracy
+   - **Mitigation**: Comprehensive unit tests dan audit trails
+   - **Validation**: Double-entry validation untuk penutupan harian
+
+### **Medium Risk Items**:
+1. **Enhanced Frontend Integration**: Component conflicts dengan existing
+   - **Mitigation**: Careful component isolation dan testing
+   - **Fallback**: Original dashboard layout available
+
+2. **Role-Based Access**: Permission complexity enhancement
+   - **Mitigation**: Clear permission matrix documentation
+   - **Testing**: Comprehensive access control testing
+
+---
+
+## 💡 Enhanced Design Summary
+
+**Strategic Enhancement**:
+- Memperluas Dana Kasir dengan historical data tracking dan daily management
+- Mempertahankan prinsip "Keep it Simple" dengan fitur yang value-adding
+- Menjaga konsistensi dengan arsitektur existing
+
+**Key Enhancements**:
+1. **Historical Data Tracking**: 30 hari dengan pagination dan filtering
+2. **Daily Cash Flow**: Perhitungan otomatis dengan validasi
+3. **Enhanced Navigation**: Date picker dan view toggle yang intuitif
+4. **Comprehensive Reporting**: Daily reports dengan export capability
+5. **Performance Optimization**: Indexing dan caching strategy yang tepat
+
+**Implementation Strategy**:
+- Phase-by-phase development dengan proper testing
+- Backward compatibility maintenance
+- Enhanced monitoring untuk performance tracking
+- Documentation update untuk setiap fitur baru
+
+---
+
+**Design Version**: 2.0 (Enhanced)
 **Last Updated**: 2025-01-29
-**Architect**: Claude Code Assistant
-**Status**: Ready for Implementation
-**Next Phase**: Database Schema Implementation
+**Architect**: Claude Code Assistant (with Sequential MCP Analysis)
+**Status**: Ready for Enhanced Implementation

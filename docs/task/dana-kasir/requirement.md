@@ -4,10 +4,10 @@
 
 Berdasarkan analisis mendalam terhadap struktur kode yang ada (`app/api/kasir/transaksi`, `app/api/kasir/transaksi/[kode]`, `app/api/products/[id]/history`, `features/kasir/services/transaksiService.ts`, dan `prisma/schema.prisma`), berikut adalah temuan utama untuk implementasi fitur Dana Kasir:
 
-## =Ê Current Architecture Assessment
+## =ï¿½ Current Architecture Assessment
 
 ### **Existing Strengths**
-1. **3-Tier Architecture**: Presentation ’ Business Logic ’ Data Access pattern yang konsisten
+1. **3-Tier Architecture**: Presentation ï¿½ Business Logic ï¿½ Data Access pattern yang konsisten
 2. **Authentication System**: Clerk integration dengan role-based access control yang sudah mature
 3. **Database Design**: Prisma ORM dengan proper indexing, UUID primary keys, dan well-defined relations
 4. **API Patterns**: RESTful endpoints dengan consistent error handling dan response formatting
@@ -16,12 +16,17 @@ Berdasarkan analisis mendalam terhadap struktur kode yang ada (`app/api/kasir/tr
 
 ### **Identified Gaps for Dana Kasir**
 1. **Missing Database Model**: Tidak ada model untuk PengeluaranKasir
-2. **API Endpoints**: Perlu CRUD operations untuk pengeluaran kasir
-3. **UI Components**: Dashboard kasir perlu enhancement dengan summary cards dan form pengeluaran
-4. **Business Logic**: Perlu service layer untuk perhitungan dana kasir harian
-5. **Navigation**: Owner sidebar perlu menu item untuk akses Dana Kasir
+2. **Missing Historical Data**: Perlu tracking histori pengeluaran per hari
+3. **Missing Daily Closing**: Perlu mekanisme penutupan harian dana kasir
+4. **Missing Daily Report**: Perlu laporan harian yang lengkap (pemasukan, pengeluaran, selisih)
+5. **Missing Payment Source Tracking**: Perlu tracking sumber pendapatan (hanya dari rental payments)
+6. **API Endpoints**: Perlu CRUD operations dan histori untuk pengeluaran kasir
+7. **UI Components**: Dashboard kasir perlu enhancement dengan cards lengkap (pemasukan, pengeluaran, saldo, histori)
+8. **Business Logic**: Perlu service layer untuk perhitungan dana kasir, closing, dan reporting
+9. **Navigation**: Owner sidebar perlu menu item untuk akses Dana Kasir
+10. **Missing Date Navigation**: Perlu navigasi tanggal untuk melihat histori dan laporan
 
-## <× Implementation Strategy
+## <ï¿½ Implementation Strategy
 
 ### **Phase 1: Database Schema Extension (Risk: LOW)**
 ```sql
@@ -107,7 +112,7 @@ const authResult = await requirePermission('kasir', 'read')
 // Implementasi filter logic di service layer
 ```
 
-## =Ê Data Flow Analysis
+## =ï¿½ Data Flow Analysis
 
 ### **Pendapatan Sources (Existing System):**
 ```mermaid
@@ -136,7 +141,7 @@ flowchart TD
     B --> E[Saldo Akhir Hari Ini]
 ```
 
-## <¯ Quality Assurance Requirements
+## <ï¿½ Quality Assurance Requirements
 
 ### **Code Quality Standards:**
 - **TypeScript Strict Mode**: Menggunakan tipe yang aman
@@ -151,7 +156,7 @@ flowchart TD
 - **Caching**: React Query untuk client-side caching
 - **Rate Limiting**: API rate limiting untuk security
 
-## =È Implementation Roadmap
+## =ï¿½ Implementation Roadmap
 
 ### **Week 1: Foundation**
 1. **Database Migration**: Buat Prisma migration untuk PengeluaranKasir
