@@ -831,7 +831,11 @@ export class TransaksiService {
               id: true,
               nama: true,
               telepon: true,
-              alamat: true,
+            },
+          },
+          kasir: {
+            select: {
+              nama: true,
             },
           },
           items: {
@@ -841,7 +845,6 @@ export class TransaksiService {
                   id: true,
                   code: true,
                   name: true,
-                  imageUrl: true,
                 },
               },
             },

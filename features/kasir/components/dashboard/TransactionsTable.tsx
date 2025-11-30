@@ -198,27 +198,12 @@ function TransactionRow({ transaction }: { transaction: Transaction }) {
       <TableCell className="px-4 py-3">
         {transaction.kasir ? (
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-gray-100 rounded-full flex items-center justify-center">
-              <User className="h-3 w-3 text-gray-600" />
-            </div>
-            <div>
-              <div className="text-sm font-medium text-gray-900">
+              <span className="text-sm font-medium text-gray-900">
                 {transaction.kasir.nama}
-              </div>
-              <div className="text-xs text-gray-500">
-                {transaction.kasir.isActive ? (
-                  <span className="text-green-600">Aktif</span>
-                ) : (
-                  <span className="text-orange-600">Non-aktif</span>
-                )}
-              </div>
-            </div>
+              </span>
           </div>
         ) : (
           <div className="flex items-center gap-2 text-gray-400">
-            <div className="w-6 h-6 bg-gray-50 rounded-full flex items-center justify-center">
-              <User className="h-3 w-3 text-gray-400" />
-            </div>
             <span className="text-sm">-</span>
           </div>
         )}
