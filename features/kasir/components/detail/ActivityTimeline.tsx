@@ -80,9 +80,27 @@ const ReturnActivityDisplay: React.FC<ReturnActivityProps> = ({ activity }) => {
   )
 }
 
-// Pickup Activity Display Component - RPK-48
+// Pickup Activity Display Component - ENHANCED (Task 4)
 interface PickupActivityProps {
   activity: ActivityLog
+}
+
+// ✅ Helper function to parse kondisiAwal
+interface ParsedKondisiAwal {
+  sizeId: string
+  size: string
+  ageCategory: string
+  condition: string
+}
+
+function parseKondisiAwal(kondisiAwal: string): ParsedKondisiAwal {
+  const parts = kondisiAwal.split('|')
+  return {
+    sizeId: parts[0] || '',
+    size: parts[1] || 'Unknown',
+    ageCategory: parts[2] || 'Unknown',
+    condition: parts[3] || 'Unknown',
+  }
 }
 
 const PickupActivityDisplay: React.FC<PickupActivityProps> = ({ activity }) => {
@@ -102,28 +120,49 @@ const PickupActivityDisplay: React.FC<PickupActivityProps> = ({ activity }) => {
         </div>
 
         <p className="text-sm text-gray-600 mt-1">{activity.description}</p>
-        <div className="text-xs text-gray-600 mt-1">Oleh: {activity.performedBy}</div>
+        
+        {/* ✅ ENHANCED: Show kasir name instead of user ID */}
+        <div className="text-xs text-gray-600 mt-1">
+          Oleh: {activity.details?.processedByName || activity.performedBy}
+        </div>
 
-        {/* Pickup Details Expansion */}
+        {/* Pickup Details Expansion - ENHANCED */}
         {activity.details && (
           <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
-            <div className="text-sm font-medium text-blue-900 mb-2">
-              Detail Pengambilan
-            </div>
-            
+            <div className="text-sm font-medium text-blue-900 mb-2">Detail Pengambilan</div>
+
+            {/* ✅ ENHANCED: Show product details with size and age category */}
             {activity.details.items && Array.isArray(activity.details.items) && (
               <div className="space-y-1 mb-2">
-                {activity.details.items.map((item: { itemId: string; jumlahDiambil: number }, idx: number) => (
-                  <div key={idx} className="flex items-center text-sm text-blue-800">
-                    <div className="w-2 h-2 rounded-full bg-blue-600 mr-2"></div>
-                    <span>
-                      Item: {item.jumlahDiambil} unit diambil
-                    </span>
-                  </div>
-                ))}
+                {activity.details.items.map(
+                  (
+                    item: {
+                      itemId: string
+                      jumlahDiambil: number
+                      productName?: string
+                      kondisiAwal?: string
+                    },
+                    idx: number,
+                  ) => {
+                    // Parse kondisiAwal for size info
+                    const sizeInfo = item.kondisiAwal ? parseKondisiAwal(item.kondisiAwal) : null
+
+                    return (
+                      <div key={idx} className="flex items-center text-sm text-blue-800">
+                        <div className="w-2 h-2 rounded-full bg-blue-600 mr-2"></div>
+                        <span>
+                          {/* ✅ Format: [Product Name] ([Size] - [Age Category]) - [Quantity] unit diambil */}
+                          {item.productName || 'Unknown Product'}
+                          {sizeInfo && ` (${sizeInfo.size} - ${sizeInfo.ageCategory})`} -{' '}
+                          {item.jumlahDiambil} unit diambil
+                        </span>
+                      </div>
+                    )
+                  },
+                )}
               </div>
             )}
-            
+
             {activity.details.catatan && (
               <div className="mt-2 pt-2 border-t border-blue-300">
                 <div className="text-sm font-medium text-blue-900 mb-1">Catatan:</div>
@@ -351,9 +390,13 @@ export function ActivityTimeline({
             )
           }
 
-          // Special handling for pickup activities - RPK-48
-          if (activity.action === 'picked_up' || 
-              (activity.description && activity.description.includes('Pickup dilakukan'))) {
+          // Special handling for pickup activities - ENHANCED (Task 4)
+          if (
+            activity.action === 'picked_up' ||
+            (activity.description &&
+              (activity.description.includes('Pickup dilakukan') ||
+                activity.description.includes('Pickup:')))
+          ) {
             return (
               <div key={activity.id} className="relative pb-6">
                 <PickupActivityDisplay activity={activity} />

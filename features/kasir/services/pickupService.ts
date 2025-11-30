@@ -136,6 +136,26 @@ export class PickupService {
 
       // 2. Process pickup in atomic transaction
       const result = await this.prisma.$transaction(async (tx) => {
+        // ✅ ENHANCED: Fetch transaction items with product details and kasir info
+        const allTransactionItems = await tx.transaksiItem.findMany({
+          where: { transaksiId: transactionId },
+          include: {
+            produk: {
+              select: { id: true, name: true, code: true },
+            },
+          },
+        })
+
+        // ✅ ENHANCED: Fetch transaction with kasir info for user name
+        const transaction = await tx.transaksi.findUnique({
+          where: { id: transactionId },
+          include: {
+            kasir: {
+              select: { nama: true },
+            },
+          },
+        })
+
         // Update each item's pickup quantity
         // NOTE: rentedStock is already incremented during transaction creation
         // So we don't need to increment it again during pickup
@@ -150,14 +170,28 @@ export class PickupService {
           })
         }
 
-        // Create activity log with optional note (RPK-48)
-        const itemsDescription = items.map((item) => `${item.jumlahDiambil} item`).join(', ')
+        // ✅ ENHANCED: Create activity log with product details and kasir name
+        const itemsDescription = items
+          .map((item) => {
+            const transactionItem = allTransactionItems.find((ti) => ti.id === item.id)
+            return `${transactionItem?.produk?.name || 'Unknown Product'} (${item.jumlahDiambil} unit)`
+          })
+          .join(', ')
+
         const activityData = {
-          items: items.map((item) => ({
-            itemId: item.id,
-            jumlahDiambil: item.jumlahDiambil,
-          })),
+          items: items.map((item) => {
+            const transactionItem = allTransactionItems.find((ti) => ti.id === item.id)
+            return {
+              itemId: item.id,
+              jumlahDiambil: item.jumlahDiambil,
+              // ✅ NEW: Add product details
+              productName: transactionItem?.produk?.name,
+              productCode: transactionItem?.produk?.code,
+              kondisiAwal: transactionItem?.kondisiAwal,
+            }
+          }),
           processedBy: this.userId,
+          processedByName: transaction?.kasir?.nama, // ✅ NEW: Add kasir name
           timestamp: new Date().toISOString(),
           ...(catatan && { catatan }),
         }
@@ -167,19 +201,14 @@ export class PickupService {
             transaksiId: transactionId,
             tipe: 'diambil',
             deskripsi: catatan
-              ? `Pickup dilakukan: ${itemsDescription} - ${catatan}`
-              : `Pickup dilakukan: ${itemsDescription}`,
+              ? `Pickup: ${itemsDescription} - ${catatan}`
+              : `Pickup: ${itemsDescription}`,
             data: activityData,
             createdBy: this.userId,
           },
         })
 
-        // Calculate pickup completion statistics within the transaction
-        const allTransactionItems = await tx.transaksiItem.findMany({
-          where: { transaksiId: transactionId },
-          select: { jumlah: true, jumlahDiambil: true },
-        })
-
+        // ✅ TASK 3: Calculate pickup stats without creating unnecessary logs
         const pickupStats = allTransactionItems.reduce(
           (stats, item) => {
             const isFullyPickedUp = item.jumlahDiambil >= item.jumlah
@@ -189,50 +218,17 @@ export class PickupService {
               notPickedUp: stats.notPickedUp + (item.jumlahDiambil === 0 ? 1 : 0),
             }
           },
-          { totalItems: 0, fullyPickedUp: 0, notPickedUp: 0 }
+          { totalItems: 0, fullyPickedUp: 0, notPickedUp: 0 },
         )
 
-        // Log pickup status for monitoring
-        await tx.aktivitasTransaksi.create({
-          data: {
-            transaksiId: transactionId,
-            tipe: 'status_pickup',
-            deskripsi: `Status pickup: ${pickupStats.fullyPickedUp} lengkap, ${pickupStats.notPickedUp} belum`,
-            data: {
-              pickupStats: {
-                ...pickupStats,
-                partiallyPickedUp: pickupStats.totalItems - pickupStats.fullyPickedUp - pickupStats.notPickedUp,
-              },
-              calculatedBy: this.userId,
-              timestamp: new Date().toISOString(),
-            },
-            createdBy: this.userId,
-          },
-        })
+        // ✅ REMOVED: status_pickup activity log (clutters timeline)
+        // ✅ REMOVED: status_changed activity log (redundant)
 
-        // Update transaction status to 'diambil' if all items are fully picked up
+        // ✅ SIMPLIFIED: Update transaction status without additional logging
         if (pickupStats.fullyPickedUp === pickupStats.totalItems && pickupStats.notPickedUp === 0) {
           await tx.transaksi.update({
             where: { id: transactionId },
             data: { status: 'diambil' },
-          })
-
-          // Create status change activity log
-          await tx.aktivitasTransaksi.create({
-            data: {
-              transaksiId: transactionId,
-              tipe: 'status_changed',
-              deskripsi: 'Status transaksi diubah menjadi diambil',
-              data: {
-                previousStatus: 'active',
-                newStatus: 'diambil',
-                pickupStats,
-                autoUpdated: true,
-                reason: 'All items fully picked up',
-                timestamp: new Date().toISOString(),
-              },
-              createdBy: this.userId,
-            },
           })
         }
 

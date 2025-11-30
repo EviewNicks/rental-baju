@@ -112,52 +112,26 @@ export function PickupModal({ isOpen, onClose, transaction }: PickupModalProps) 
     setPickupItems([])
     setPickupNote('') // Reset note when modal closes (RPK-48)
     setIsSyncingCache(false)
-    reset()
+    // ✅ REMOVED: reset() call to prevent unnecessary cache invalidation
     onClose()
-  }, [isSyncingCache, reset, onClose])
+  }, [isSyncingCache, onClose])
 
-  const handleCloseAfterSync = useCallback(() => {
-    // Small delay for visual confirmation
-    setTimeout(() => {
-      handleClose()
-    }, 500)
-  }, [handleClose])
-
-  // Monitor cache synchronization state
+  // ✅ SIMPLIFIED: Single useEffect for success handling
+  // Handle successful pickup with coordinated timing
   useEffect(() => {
-    if (isSuccess && isSyncingCache) {
-      // Cache synchronization is in progress after successful API call
-      console.log('📡 PickupModal: Cache synchronization in progress')
+    if (isSuccess && !isPending) {
+      // Immediately stop syncing and show success
+      setIsSyncingCache(false)
+      setShowSuccess(true)
 
-      // Set a timeout to handle potential cache sync issues
-      const timeout = setTimeout(() => {
-        if (isSyncingCache) {
-          console.warn('⚠️ PickupModal: Cache sync timeout, forcing modal close')
-          setIsSyncingCache(false)
-        }
-      }, 10000) // 10 second timeout
+      // Auto close after 1.5 seconds
+      const closeTimer = setTimeout(() => {
+        handleClose()
+      }, 1500)
 
-      return () => clearTimeout(timeout)
+      return () => clearTimeout(closeTimer)
     }
-  }, [isSuccess, isSyncingCache])
-
-  // Handle successful pickup with cache sync completion
-  useEffect(() => {
-    if (isSuccess && !isPending && isSyncingCache) {
-      // API call successful, wait a bit for cache sync then close
-      const syncTimer = setTimeout(() => {
-        setIsSyncingCache(false)
-        setShowSuccess(true)
-
-        // Auto close after showing success
-        setTimeout(() => {
-          handleCloseAfterSync()
-        }, 1500)
-      }, 500) // Give time for cache sync to complete
-
-      return () => clearTimeout(syncTimer)
-    }
-  }, [isSuccess, isPending, isSyncingCache, handleCloseAfterSync])
+  }, [isSuccess, isPending, handleClose])
 
   // Initialize pickup items from transaction data
   useEffect(() => {
