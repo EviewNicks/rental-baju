@@ -124,10 +124,11 @@ export function PickupModal({ isOpen, onClose, transaction }: PickupModalProps) 
       setIsSyncingCache(false)
       setShowSuccess(true)
 
-      // Auto close after 1.5 seconds
+      // ✅ SIMPLE FIX: Increase delay to 4s to allow cache sync to complete
+      // This ensures the detail page shows updated data immediately after modal closes
       const closeTimer = setTimeout(() => {
         handleClose()
-      }, 1500)
+      }, 4000)  // Changed from 1500 to 4000
 
       return () => clearTimeout(closeTimer)
     }

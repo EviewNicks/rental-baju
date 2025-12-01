@@ -34,8 +34,97 @@ export class PickupService {
   }
 
   /**
+   * Validate pickup request using provided transaction data (no re-fetch)
+   * ✅ PERFORMANCE: Eliminates redundant database query
+   * ✅ TASK 1.5 Phase 1: Quick Wins
+   */
+  async validatePickupRequestWithData(
+    transaction: TransaksiWithDetails,
+    items: PickupItemRequest[],
+    catatan?: string,
+  ): Promise<PickupValidationResult> {
+    try {
+      // ✅ Use provided transaction data (no database fetch)
+      
+      // Validate remaining quantities to prevent over-pickup
+      const quantityErrors: string[] = []
+      
+      for (const pickupItem of items) {
+        const transactionItem = transaction.items.find((ti) => ti.id === pickupItem.id)
+        
+        if (!transactionItem) {
+          quantityErrors.push(
+            `Item dengan ID ${pickupItem.id} tidak ditemukan dalam transaksi`
+          )
+          continue
+        }
+
+        // Calculate remaining quantity
+        const remainingQuantity = transactionItem.jumlah - transactionItem.jumlahDiambil
+
+        // Validate pickup doesn't exceed remaining quantity
+        if (pickupItem.jumlahDiambil > remainingQuantity) {
+          quantityErrors.push(
+            `Jumlah pickup untuk ${transactionItem.produk.name} melebihi sisa yang tersedia. ` +
+            `Tersedia: ${remainingQuantity}, Diminta: ${pickupItem.jumlahDiambil}`
+          )
+        }
+
+        // Validate pickup quantity is positive
+        if (pickupItem.jumlahDiambil <= 0) {
+          quantityErrors.push(
+            `Jumlah pickup untuk ${transactionItem.produk.name} harus lebih dari 0`
+          )
+        }
+      }
+
+      // Return early if quantity validation fails
+      if (quantityErrors.length > 0) {
+        return {
+          valid: false,
+          errors: quantityErrors,
+        }
+      }
+
+      // Prepare validation context
+      const context: ValidationContext = {
+        transactionStatus: transaction.status,
+        transactionCode: transaction.kode,
+        items: transaction.items,
+      }
+
+      // Run comprehensive validation using business rules
+      const validationResult = PickupValidator.validatePickupRequest(context, items, catatan)
+
+      // Transform to service interface format
+      return {
+        valid: validationResult.valid,
+        errors: validationResult.errors.map((e) => e.message),
+        warnings:
+          validationResult.warnings.length > 0
+            ? validationResult.warnings.map((w) => w.message)
+            : undefined,
+      }
+    } catch (error) {
+      console.error('Pickup validation failed:', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        transactionCode: transaction.kode,
+        itemCount: items.length,
+        userId: this.userId,
+        timestamp: new Date().toISOString(),
+      })
+
+      return {
+        valid: false,
+        errors: ['Terjadi kesalahan saat validasi pickup'],
+      }
+    }
+  }
+
+  /**
    * Validate pickup request against comprehensive business rules
    * ✅ TASK 11: Enhanced with quantity validation to prevent over-pickup
+   * @deprecated Use validatePickupRequestWithData() for better performance
    */
   async validatePickupRequest(
     transactionId: string,
@@ -175,70 +264,61 @@ export class PickupService {
         }
       }
 
-      // 2. Process pickup in atomic transaction
-      const result = await this.prisma.$transaction(async (tx) => {
-        // ✅ ENHANCED: Fetch transaction items with product details and kasir info
-        const allTransactionItems = await tx.transaksiItem.findMany({
-          where: { transaksiId: transactionId },
-          include: {
-            produk: {
-              select: { id: true, name: true, code: true },
-            },
-          },
-        })
-
-        // ✅ ENHANCED: Fetch transaction with kasir info for user name
-        const transaction = await tx.transaksi.findUnique({
-          where: { id: transactionId },
-          include: {
-            kasir: {
-              select: { nama: true },
-            },
-          },
-        })
-
-        // ✅ TASK 11: Update each item's pickup quantity with concurrent pickup prevention
-        // Verify current quantities before updating to prevent race conditions
-        for (const pickupItem of items) {
-          // Re-fetch current item state within transaction to get latest jumlahDiambil
-          const currentItem = await tx.transaksiItem.findUnique({
-            where: { id: pickupItem.id },
-            select: { 
-              id: true, 
-              jumlah: true, 
-              jumlahDiambil: true,
+      // 2. Process pickup in atomic transaction (OPTIMIZED - Task 1.5)
+      const resultTransactionId = await this.prisma.$transaction(
+        async (tx) => {
+          // ✅ ENHANCED: Fetch transaction items with product details and kasir info
+          const allTransactionItems = await tx.transaksiItem.findMany({
+            where: { transaksiId: transactionId },
+            include: {
               produk: {
-                select: { name: true }
-              }
-            },
-          })
-
-          if (!currentItem) {
-            throw new Error(`Item dengan ID ${pickupItem.id} tidak ditemukan`)
-          }
-
-          // Calculate remaining quantity with current database value
-          const remainingQuantity = currentItem.jumlah - currentItem.jumlahDiambil
-
-          // Validate pickup doesn't exceed remaining quantity (concurrent pickup prevention)
-          if (pickupItem.jumlahDiambil > remainingQuantity) {
-            throw new Error(
-              `Jumlah pickup untuk ${currentItem.produk.name} melebihi sisa yang tersedia. ` +
-              `Tersedia: ${remainingQuantity}, Diminta: ${pickupItem.jumlahDiambil}. ` +
-              `Item mungkin telah diambil oleh proses lain. Silakan refresh dan coba lagi.`
-            )
-          }
-
-          // Update pickup quantity
-          await tx.transaksiItem.update({
-            where: { id: pickupItem.id },
-            data: {
-              jumlahDiambil: {
-                increment: pickupItem.jumlahDiambil,
+                select: { id: true, name: true, code: true },
               },
             },
           })
-        }
+
+          // ✅ ENHANCED: Fetch transaction with kasir info for user name
+          const transaction = await tx.transaksi.findUnique({
+            where: { id: transactionId },
+            include: {
+              kasir: {
+                select: { nama: true },
+              },
+            },
+          })
+
+          // ✅ TASK 11 + TASK 1.5 FIX: Update each item's pickup quantity
+          // OPTIMIZATION: Use cached data instead of re-fetching (eliminates N queries)
+          for (const pickupItem of items) {
+            // ✅ FIX: Use already-fetched data instead of re-fetching
+            const currentItem = allTransactionItems.find(ti => ti.id === pickupItem.id)
+
+            if (!currentItem) {
+              throw new Error(`Item dengan ID ${pickupItem.id} tidak ditemukan`)
+            }
+
+            // Calculate remaining quantity with cached data
+            const remainingQuantity = currentItem.jumlah - currentItem.jumlahDiambil
+
+            // Validate pickup doesn't exceed remaining quantity (concurrent pickup prevention)
+            if (pickupItem.jumlahDiambil > remainingQuantity) {
+              throw new Error(
+                `Jumlah pickup untuk ${currentItem.produk.name} melebihi sisa yang tersedia. ` +
+                `Tersedia: ${remainingQuantity}, Diminta: ${pickupItem.jumlahDiambil}. ` +
+                `Item mungkin telah diambil oleh proses lain. Silakan refresh dan coba lagi.`
+              )
+            }
+
+            // Update pickup quantity
+            await tx.transaksiItem.update({
+              where: { id: pickupItem.id },
+              data: {
+                jumlahDiambil: {
+                  increment: pickupItem.jumlahDiambil,
+                },
+              },
+            })
+          }
 
         // ✅ ENHANCED: Create activity log with product details and kasir name
         const itemsDescription = items
@@ -297,41 +377,63 @@ export class PickupService {
           })
         }
 
-        // Get updated transaction with all details
-        const updatedTransaction = await tx.transaksi.findUnique({
-          where: { id: transactionId },
-          include: {
-            penyewa: {
-              select: {
-                id: true,
-                nama: true,
-                telepon: true,
-                alamat: true,
-              },
+        // ✅ TASK 1.5 FIX: Return only transaction ID (not full object)
+        // This eliminates the heavy final query from inside transaction
+        return transactionId
+      },
+      {
+        timeout: 8000, // ✅ TASK 1.5 FIX: Safety net - increased from default 5000ms
+      }
+    )
+
+      // ✅ TASK 1.5 FIX: Fetch updated transaction with full details OUTSIDE transaction
+      // This prevents timeout by moving expensive query outside the transaction block
+      const updatedTransaction = await this.prisma.transaksi.findUnique({
+        where: { id: resultTransactionId },
+        include: {
+          penyewa: {
+            select: {
+              id: true,
+              nama: true,
+              telepon: true,
+              alamat: true,
             },
-            items: {
-              include: {
-                produk: {
-                  select: {
-                    id: true,
-                    code: true,
-                    name: true,
-                    imageUrl: true,
-                  },
+          },
+          kasir: {
+            // ✅ TASK 1.5: Include kasir information (minimal fields for performance)
+            select: {
+              id: true,
+              nama: true,
+              // ✅ REMOVED: isActive, createdAt, updatedAt (not needed in response)
+            },
+          },
+          items: {
+            include: {
+              produk: {
+                select: {
+                  id: true,
+                  code: true,
+                  name: true,
+                  imageUrl: true,
                 },
               },
             },
-            pembayaran: {
-              orderBy: { createdAt: 'desc' },
-            },
-            aktivitas: {
-              orderBy: { createdAt: 'desc' },
-            },
           },
-        })
-
-        return updatedTransaction as unknown as TransaksiWithDetails
+          pembayaran: {
+            orderBy: { createdAt: 'desc' },
+          },
+          aktivitas: {
+            orderBy: { createdAt: 'desc' },
+            take: 10, // ✅ TASK 1.5: Limit to latest 10 activities (reduces payload size)
+          },
+        },
       })
+
+      if (!updatedTransaction) {
+        throw new Error('Failed to fetch updated transaction details after pickup')
+      }
+
+      const result = updatedTransaction as unknown as TransaksiWithDetails
 
       // 3. Generate success message
       const totalItems = items.reduce((sum, item) => sum + item.jumlahDiambil, 0)
@@ -372,8 +474,12 @@ export class PickupService {
       let errorMessage = 'Gagal memproses pickup'
 
       if (error instanceof Error) {
+        // ✅ TASK 1.5 FIX: Transaction timeout errors (specific handling)
+        if (error.message.includes('Transaction already closed') || error.message.includes('expired transaction')) {
+          errorMessage = 'Operasi pickup memakan waktu terlalu lama. Silakan coba lagi.'
+        }
         // Database connection errors
-        if (error.message.includes('connection') || error.message.includes('timeout')) {
+        else if (error.message.includes('connection') || error.message.includes('timeout')) {
           errorMessage = 'Database connection error. Silakan coba lagi beberapa saat.'
         }
         // Constraint violations

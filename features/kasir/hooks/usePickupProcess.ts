@@ -281,9 +281,15 @@ export function usePickupValidation() {
 
 /**
  * Extract specific error message from backend response
+ * ✅ TASK 1.5: Enhanced with timeout error handling
  */
 function extractSpecificErrorMessage(message: string): string | null {
   // Extract specific error details from backend message
+  
+  // ✅ TASK 1.5 FIX: Transaction timeout errors
+  if (message.includes('memakan waktu terlalu lama') || message.includes('Transaction already closed')) {
+    return 'Operasi pickup memakan waktu terlalu lama. Silakan coba lagi.'
+  }
   if (message.includes('Database connection error')) {
     return 'Database sedang sibuk. Silakan coba lagi beberapa saat.'
   }
