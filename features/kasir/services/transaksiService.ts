@@ -145,7 +145,7 @@ export interface TransaksiListResponse {
 
 /**
  * Calculate enhanced transaction status based on pickup status and business rules
- * Moved from frontend statusUtils to backend for consistent status processing
+ * ✅ STATUS MISMATCH FIX: Moved from frontend to backend for single source of truth
  * Priority: terlambat > cancelled > selesai > diambil > active
  *
  * @param baseStatus - Original status from database
@@ -156,9 +156,8 @@ export interface TransaksiListResponse {
  */
 function calculateEnhancedStatus(
   baseStatus: TransactionStatus,
-  items: Array<{ jumlahDiambil: number; statusKembali?: string }> | undefined,
+  items: Array<{ jumlah: number; jumlahDiambil: number; statusKembali?: string }> | undefined,
   endDate?: string | Date,
-  hasPickup?: boolean,
 ): TransactionStatus {
   // Priority 1: Check if explicit overdue status (terlambat)
   if (baseStatus === 'terlambat') {
@@ -202,14 +201,18 @@ function calculateEnhancedStatus(
     }
   }
 
-  // Priority 6: Check if any items have been picked up
-  if (baseStatus === 'active') {
-    // Use server flag if available, fallback to item parsing
-    const pickupDetected = hasPickup ?? (items?.some((item) => item.jumlahDiambil > 0) || false)
+  // ✅ STATUS MISMATCH FIX: Priority 6 - Check if ALL items are fully picked up (not just ANY)
+  // This aligns with the backend pickup logic in pickupService.ts
+  if (baseStatus === 'active' && items && items.length > 0) {
+    // Check if ALL items are fully picked up (same logic as pickupService)
+    const allItemsPickedUp = items.every((item) => item.jumlahDiambil >= item.jumlah)
 
-    if (pickupDetected) {
+    if (allItemsPickedUp) {
       return 'diambil'
     }
+
+    // If some items are picked up but not all, stay as 'active'
+    // This prevents the mismatch where frontend shows 'diambil' but backend shows 'active'
   }
 
   return baseStatus
@@ -367,9 +370,16 @@ export class TransaksiService {
         transaksi.kasir = null
       }
 
+      const enhancedStatus = calculateEnhancedStatus(
+        transaksi.status as TransactionStatus,
+        transaksi.items,
+        transaksi.tglSelesai?.toISOString(),
+      )
+
       // TSK-24: Transform items with multi-condition return data
       const enhancedTransaksi = {
         ...transaksi,
+        status: enhancedStatus, // ✅ Enhanced status calculated on backend
         //eslint-disable-next-line @typescript-eslint/no-explicit-any
         items: this.transformItemsWithMultiCondition(transaksi.items as any),
       }
@@ -672,7 +682,6 @@ export class TransaksiService {
       }
     }
   }
-
 
   /**
    * Get transaction by ID with minimal data for return validation
@@ -1031,6 +1040,7 @@ export class TransaksiService {
         tglSelesai: true,
         items: {
           select: {
+            jumlah: true, // ✅ Added for enhanced status calculation
             jumlahDiambil: true,
             statusKembali: true,
           },

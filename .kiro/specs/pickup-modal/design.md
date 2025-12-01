@@ -2,13 +2,22 @@
 
 ## Overview
 
-This design addresses critical performance and UX issues in the pickup modal workflow. The solution focuses on three main areas:
+This design addresses critical performance and UX issues in the pickup modal workflow. The solution focuses on four main areas:
 
 1. **Race Condition Resolution**: Simplify conflicting useEffect hooks and remove unnecessary cache resets
 2. **Activity Log Enhancement**: Enrich activity data with product details, size information, and user names
 3. **Performance Optimization**: Implement optimistic updates and efficient cache management
+4. **Partial Pickup Support (CRITICAL)**: Fix status transition logic to support multiple pickup visits
 
-The design maintains backward compatibility while significantly improving user experience through faster modal closure (from 3-5s to 1.5s) and clearer activity descriptions.
+The design maintains backward compatibility while significantly improving user experience through faster modal closure (from 3-5s to 1.5s), clearer activity descriptions, and proper support for partial pickups.
+
+### Critical Bug Fix: Partial Pickup
+
+**Current Issue:** When a customer picks up only some items, the transaction status incorrectly changes to "diambil", causing the pickup button to disappear even though items remain.
+
+**Root Cause:** Status transition logic in `pickupService.ts` checks if ANY items are fully picked up instead of checking if ALL items are fully picked up.
+
+**Solution:** Correct the status transition logic to only set status to "diambil" when every single item has `jumlahDiambil >= jumlah`.
 
 ## Architecture
 
@@ -232,6 +241,22 @@ Testable: yes - property
 Thoughts: This is about immediate cache updates. For any pickup request, the cache should reflect the change before server response.
 Testable: yes - property
 
+9.1 WHEN a customer picks up only some items, THE System SHALL keep the pickup button available
+Thoughts: This is about button visibility logic. For any transaction with remaining items, the pickup button should be visible regardless of status.
+Testable: yes - property
+
+9.2 WHEN calculating transaction status, THE System SHALL set status to "diambil" ONLY when ALL items are fully picked up
+Thoughts: This is the core status transition logic. We can test with various combinations of picked/unpicked items.
+Testable: yes - property
+
+10.1 WHEN checking if all items are picked up, THE System SHALL verify that EVERY product has jumlahDiambil equal to jumlah
+Thoughts: This is about the correctness of the "all picked up" check. We need to verify it checks quantities, not just product count.
+Testable: yes - property
+
+11.1 WHEN a pickup exceeds remaining quantity, THE System SHALL reject the operation
+Thoughts: This is validation logic that should apply to all pickup requests. We can test with various invalid quantities.
+Testable: yes - property
+
 ### Property Reflection
 
 After reviewing all properties, the following consolidations are identified:
@@ -284,6 +309,18 @@ Property 9: Error message specificity
 Property 10: Optimistic cache updates
 *For any* pickup request with items, the cache should immediately reflect updated jumlahDiambil values before server response
 **Validates: Requirements 8.1, 8.2**
+
+Property 11: Partial pickup button availability
+*For any* transaction with at least one item having jumlahDiambil < jumlah, the pickup button should be visible regardless of transaction status being 'active', 'terlambat', or 'diambil'
+**Validates: Requirements 9.1, 9.4**
+
+Property 12: Status transition correctness
+*For any* transaction, status should be set to 'diambil' if and only if ALL items satisfy jumlahDiambil >= jumlah
+**Validates: Requirements 9.2, 10.1, 10.2**
+
+Property 13: Quantity validation
+*For any* pickup request, if any item's requested jumlahDiambil exceeds (jumlah - current jumlahDiambil), the operation should be rejected with a specific error
+**Validates: Requirements 11.4**
 
 ## Error Handling
 
@@ -440,6 +477,65 @@ Each property test must include a comment:
 6. **Remove unwanted logs** (status_pickup, status_changed) (lines ~160-180)
 7. **Update ActivityTimeline** with parseKondisiAwal helper
 8. **Add optimistic updates** to usePickupProcess (optional)
+9. **🔴 FIX CRITICAL BUG: Correct status transition logic** in pickupService.processPickup (lines ~140-160)
+10. **🔴 FIX CRITICAL BUG: Update button visibility logic** in ActionButtonPanel.tsx to include 'diambil' status
+
+### Critical Bug Fix Details
+
+#### Issue: Partial Pickup Status Transition
+
+**Current Buggy Code (pickupService.ts ~line 140):**
+```typescript
+// ❌ WRONG: This checks if ANY items are fully picked up
+if (pickupStats.fullyPickedUp === pickupStats.totalItems && pickupStats.notPickedUp === 0) {
+  await tx.transaksi.update({
+    where: { id: transactionId },
+    data: { status: 'diambil' },
+  })
+}
+```
+
+**Problem:** `pickupStats.totalItems` is the COUNT of products, not total quantity. If you have:
+- Product A: 2 items, 2 picked up (fully picked)
+- Product B: 2 items, 0 picked up (not picked)
+
+Then: `fullyPickedUp = 1`, `totalItems = 2`, `notPickedUp = 1`
+Condition is FALSE, but it should be FALSE because not all QUANTITIES are picked up!
+
+**Correct Fix:**
+```typescript
+// ✅ CORRECT: Check if ALL quantities are picked up
+const allItemsPickedUp = allTransactionItems.every(item => 
+  item.jumlahDiambil >= item.jumlah
+)
+
+if (allItemsPickedUp) {
+  await tx.transaksi.update({
+    where: { id: transactionId },
+    data: { status: 'diambil' },
+  })
+}
+```
+
+#### Issue: Button Visibility Logic
+
+**Current Code (ActionButtonPanel.tsx ~line 72):**
+```typescript
+// ❌ WRONG: Excludes 'diambil' status
+const canPickup = (transaction.status === 'active' || transaction.status === 'terlambat') && isPickupAvailable(transaction)
+```
+
+**Correct Fix:**
+```typescript
+// ✅ CORRECT: Include 'diambil' status for partial pickups
+const canPickup = (
+  transaction.status === 'active' || 
+  transaction.status === 'terlambat' || 
+  transaction.status === 'diambil'
+) && isPickupAvailable(transaction)
+```
+
+**Rationale:** Even if status is 'diambil', there might still be items with remaining quantities. The `isPickupAvailable()` function already checks for remaining items, so we just need to allow the status.
 
 ### Backward Compatibility
 

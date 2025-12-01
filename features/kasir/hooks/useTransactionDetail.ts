@@ -5,7 +5,8 @@ import { queryKeys } from '@/lib/react-query'
 import { kasirApi } from '../api'
 import type { TransactionDetail } from '../types'
 import type { TransaksiResponse } from '../types'
-import { calculateEnhancedStatus } from '../lib/utils/statusUtils'
+// ✅ STATUS MISMATCH FIX: Removed calculateEnhancedStatus import
+// Status calculation is now handled on backend for consistency
 
 interface UseTransactionDetailOptions {
   enabled?: boolean
@@ -237,9 +238,9 @@ async function transformApiToUI(apiData: TransaksiResponse): Promise<Transaction
     })
   }
 
-  // Calculate enhanced status based on pickup status with server-side optimization
-  const hasPickup = items.some(item => (item.jumlahDiambil || 0) > 0)
-  const calculatedStatus = calculateEnhancedStatus(apiData.status, items, apiData.tglSelesai, hasPickup)
+  // ✅ STATUS MISMATCH FIX: Use backend-provided enhanced status directly
+  // Status is now calculated on backend for single source of truth
+  const calculatedStatus = apiData.status  // Already enhanced by TransaksiService
 
   const transformed: TransactionDetail = {
     id: apiData.id,

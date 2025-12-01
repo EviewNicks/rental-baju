@@ -35,6 +35,7 @@ export class PickupService {
 
   /**
    * Validate pickup request against comprehensive business rules
+   * ✅ TASK 11: Enhanced with quantity validation to prevent over-pickup
    */
   async validatePickupRequest(
     transactionId: string,
@@ -63,17 +64,57 @@ export class PickupService {
         }
       }
 
-      // 2. Prepare validation context
+      // 2. ✅ TASK 11: Validate remaining quantities to prevent over-pickup
+      const quantityErrors: string[] = []
+      
+      for (const pickupItem of items) {
+        const transactionItem = transaction.items.find((ti) => ti.id === pickupItem.id)
+        
+        if (!transactionItem) {
+          quantityErrors.push(
+            `Item dengan ID ${pickupItem.id} tidak ditemukan dalam transaksi`
+          )
+          continue
+        }
+
+        // Calculate remaining quantity
+        const remainingQuantity = transactionItem.jumlah - transactionItem.jumlahDiambil
+
+        // Validate pickup doesn't exceed remaining quantity
+        if (pickupItem.jumlahDiambil > remainingQuantity) {
+          quantityErrors.push(
+            `Jumlah pickup untuk ${transactionItem.produk.name} melebihi sisa yang tersedia. ` +
+            `Tersedia: ${remainingQuantity}, Diminta: ${pickupItem.jumlahDiambil}`
+          )
+        }
+
+        // Validate pickup quantity is positive
+        if (pickupItem.jumlahDiambil <= 0) {
+          quantityErrors.push(
+            `Jumlah pickup untuk ${transactionItem.produk.name} harus lebih dari 0`
+          )
+        }
+      }
+
+      // Return early if quantity validation fails
+      if (quantityErrors.length > 0) {
+        return {
+          valid: false,
+          errors: quantityErrors,
+        }
+      }
+
+      // 3. Prepare validation context
       const context: ValidationContext = {
         transactionStatus: transaction.status,
         transactionCode: transaction.kode,
         items: transaction.items,
       }
 
-      // 3. Run comprehensive validation using business rules
+      // 4. Run comprehensive validation using business rules
       const validationResult = PickupValidator.validatePickupRequest(context, items, catatan)
 
-      // 4. Transform to service interface format
+      // 5. Transform to service interface format
       return {
         valid: validationResult.valid,
         errors: validationResult.errors.map((e) => e.message),
@@ -156,10 +197,39 @@ export class PickupService {
           },
         })
 
-        // Update each item's pickup quantity
-        // NOTE: rentedStock is already incremented during transaction creation
-        // So we don't need to increment it again during pickup
+        // ✅ TASK 11: Update each item's pickup quantity with concurrent pickup prevention
+        // Verify current quantities before updating to prevent race conditions
         for (const pickupItem of items) {
+          // Re-fetch current item state within transaction to get latest jumlahDiambil
+          const currentItem = await tx.transaksiItem.findUnique({
+            where: { id: pickupItem.id },
+            select: { 
+              id: true, 
+              jumlah: true, 
+              jumlahDiambil: true,
+              produk: {
+                select: { name: true }
+              }
+            },
+          })
+
+          if (!currentItem) {
+            throw new Error(`Item dengan ID ${pickupItem.id} tidak ditemukan`)
+          }
+
+          // Calculate remaining quantity with current database value
+          const remainingQuantity = currentItem.jumlah - currentItem.jumlahDiambil
+
+          // Validate pickup doesn't exceed remaining quantity (concurrent pickup prevention)
+          if (pickupItem.jumlahDiambil > remainingQuantity) {
+            throw new Error(
+              `Jumlah pickup untuk ${currentItem.produk.name} melebihi sisa yang tersedia. ` +
+              `Tersedia: ${remainingQuantity}, Diminta: ${pickupItem.jumlahDiambil}. ` +
+              `Item mungkin telah diambil oleh proses lain. Silakan refresh dan coba lagi.`
+            )
+          }
+
+          // Update pickup quantity
           await tx.transaksiItem.update({
             where: { id: pickupItem.id },
             data: {
@@ -208,24 +278,19 @@ export class PickupService {
           },
         })
 
-        // ✅ TASK 3: Calculate pickup stats without creating unnecessary logs
-        const pickupStats = allTransactionItems.reduce(
-          (stats, item) => {
-            const isFullyPickedUp = item.jumlahDiambil >= item.jumlah
-            return {
-              totalItems: stats.totalItems + 1,
-              fullyPickedUp: stats.fullyPickedUp + (isFullyPickedUp ? 1 : 0),
-              notPickedUp: stats.notPickedUp + (item.jumlahDiambil === 0 ? 1 : 0),
-            }
-          },
-          { totalItems: 0, fullyPickedUp: 0, notPickedUp: 0 },
+        // ✅ TASK 9: Fix critical partial pickup bug - Check if ALL items are fully picked up
+        // Use Array.every() to verify EVERY item has jumlahDiambil >= jumlah
+        // This correctly handles partial pickups where some items are picked but others are not
+        const allItemsPickedUp = allTransactionItems.every(item => 
+          item.jumlahDiambil >= item.jumlah
         )
 
         // ✅ REMOVED: status_pickup activity log (clutters timeline)
         // ✅ REMOVED: status_changed activity log (redundant)
 
-        // ✅ SIMPLIFIED: Update transaction status without additional logging
-        if (pickupStats.fullyPickedUp === pickupStats.totalItems && pickupStats.notPickedUp === 0) {
+        // ✅ FIXED: Update transaction status ONLY when ALL quantities are picked up
+        // This ensures partial pickups keep status as 'active' or 'terlambat'
+        if (allItemsPickedUp) {
           await tx.transaksi.update({
             where: { id: transactionId },
             data: { status: 'diambil' },

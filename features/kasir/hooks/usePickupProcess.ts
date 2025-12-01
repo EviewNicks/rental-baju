@@ -161,20 +161,30 @@ export function usePickupProcess(transactionCode: string) {
       const startTime = Date.now()
 
       try {
-        // Invalidate and refetch transaction detail to get updated data
-        await queryClient.invalidateQueries({
-          queryKey: queryKeys.kasir.transaksi.detail(transactionCode),
-          refetchType: 'active',
-        })
+        // ✅ FIX: Invalidate BOTH base and transformed queries simultaneously
+        await Promise.all([
+          // Invalidate base query
+          queryClient.invalidateQueries({
+            queryKey: queryKeys.kasir.transaksi.detail(transactionCode),
+            refetchType: 'active',
+          }),
+          // ✅ CRITICAL: Also invalidate transformed query
+          queryClient.invalidateQueries({
+            queryKey: [...queryKeys.kasir.transaksi.detail(transactionCode), 'transformed'],
+            refetchType: 'active',
+          }),
+          // Invalidate transaction list
+          queryClient.invalidateQueries({
+            queryKey: queryKeys.kasir.transaksi.lists(),
+            refetchType: 'active',
+          }),
+        ])
 
-        // Also invalidate transaction list in case it's displayed elsewhere
-        await queryClient.invalidateQueries({
-          queryKey: queryKeys.kasir.transaksi.lists(),
-          refetchType: 'active',
-        })
-
-        // Wait for cache update to complete
-        await waitForCacheUpdate(queryClient, queryKeys.kasir.transaksi.detail(transactionCode))
+        // Wait for BOTH queries to complete
+        await Promise.all([
+          waitForCacheUpdate(queryClient, queryKeys.kasir.transaksi.detail(transactionCode)),
+          waitForCacheUpdate(queryClient, [...queryKeys.kasir.transaksi.detail(transactionCode), 'transformed']),
+        ])
 
         const duration = Date.now() - startTime
         console.log(`✅ Cache synchronization completed in ${duration}ms for transaction:`, transactionCode)

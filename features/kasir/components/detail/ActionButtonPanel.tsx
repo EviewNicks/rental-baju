@@ -97,7 +97,15 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
   const canReturn =
     (transaction.status === 'active' || transaction.status === 'terlambat' || transaction.status === 'diambil') &&
     transaction.products?.some((p) => p.jumlahDiambil && p.jumlahDiambil > 0)
-  const canPickup = (transaction.status === 'active' || transaction.status === 'terlambat') && isPickupAvailable(transaction)
+  
+  // ✅ TASK 10: Fix partial pickup button visibility
+  // Include 'diambil' status to support partial pickups across multiple visits
+  // isPickupAvailable() already checks for remaining items, so we just need to allow the status
+  const canPickup = (
+    transaction.status === 'active' || 
+    transaction.status === 'terlambat' ||
+    transaction.status === 'diambil'  // Allow pickup even if status is 'diambil' (for partial pickups)
+  ) && isPickupAvailable(transaction)
   const needsPayment =
     transaction.amountPaid < transaction.totalAmount ||
     (transaction.penalties && transaction.penalties.some((p) => p.status === 'pending'))

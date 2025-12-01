@@ -112,3 +112,51 @@ This specification addresses performance and user experience issues in the picku
 3. WHEN the server confirms the pickup, THE System SHALL replace optimistic data with server data
 4. WHEN an error occurs, THE System SHALL revert optimistic updates and show the error
 5. WHEN multiple items are picked up, THE System SHALL update all affected items optimistically
+
+### Requirement 9: Partial Pickup Support (CRITICAL BUG FIX)
+
+**User Story:** As a customer, I want to pick up rental items in multiple visits (partial pickup), so that I can collect items gradually based on my schedule and availability.
+
+#### Acceptance Criteria
+
+1. WHEN a customer picks up only some items from a transaction, THE System SHALL keep the pickup button available for remaining items
+2. WHEN calculating transaction status, THE System SHALL set status to "diambil" ONLY when ALL items are fully picked up
+3. WHEN some items are fully picked up but others are not, THE System SHALL maintain transaction status as "active" or "terlambat"
+4. WHEN displaying pickup button, THE System SHALL show it for transactions with status "active", "terlambat", OR "diambil" that have remaining items
+5. WHEN a partial pickup occurs, THE System SHALL correctly calculate remaining quantities for each product
+
+### Requirement 10: Status Transition Logic Correction
+
+**User Story:** As a system administrator, I want accurate transaction status transitions, so that the system correctly reflects the pickup state of each transaction.
+
+#### Acceptance Criteria
+
+1. WHEN checking if all items are picked up, THE System SHALL verify that EVERY product has jumlahDiambil equal to jumlah
+2. WHEN any product has jumlahDiambil less than jumlah, THE System SHALL NOT change status to "diambil"
+3. WHEN status is "diambil" but items remain, THE System SHALL allow additional pickup operations
+4. WHEN calculating pickup completion, THE System SHALL use total quantity across all products, not count of products
+5. WHEN a pickup operation completes, THE System SHALL recalculate status based on current pickup state
+
+### Requirement 12: Status Consistency (CRITICAL BUG FIX)
+
+**User Story:** As a kasir, I want the transaction status to be consistent between API response and frontend display, so that I can trust the system's status information.
+
+#### Acceptance Criteria
+
+1. WHEN the API returns transaction data, THE status field SHALL be calculated using enhanced status logic on the backend
+2. WHEN the frontend receives transaction data, THE System SHALL use the backend-provided status directly without recalculation
+3. WHEN comparing API response and UI display, THE status SHALL always match exactly
+4. WHEN status calculation logic changes, THE System SHALL only need updates in one place (backend)
+5. WHEN multiple clients access the same transaction, THE System SHALL return consistent status across all clients
+
+### Requirement 11: Concurrent Pickup Prevention
+
+**User Story:** As a kasir, I want to prevent data conflicts when multiple staff process pickups simultaneously, so that inventory remains accurate.
+
+#### Acceptance Criteria
+
+1. WHEN a pickup is being processed, THE System SHALL lock the transaction to prevent concurrent modifications
+2. WHEN a concurrent pickup is detected, THE System SHALL display a clear error message suggesting refresh
+3. WHEN pickup validation occurs, THE System SHALL verify current jumlahDiambil values from database
+4. WHEN a pickup exceeds remaining quantity, THE System SHALL reject the operation with specific error
+5. WHEN a conflict is resolved, THE System SHALL provide a retry button to attempt pickup again
