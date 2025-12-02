@@ -1,0 +1,197 @@
+{
+  "info": {
+    "name": "Dana Kasir - Dana Summary API",
+    "description": "API testing untuk Dana Summary (Daily Cash Flow Summary). Menampilkan ringkasan harian income dan expenses.\n\n🔐 AUTHENTICATION:\n• Menggunakan Clerk session token dari browser cookies\n• Role: Kasir (read), Owner (read)\n\n📋 ENDPOINT:\n• GET /api/kasir/dana-summary - Get daily summary with income & expenses\n\n📊 RESPONSE DATA:\n• summary: totalIncome, totalExpense, netBalance, date\n• income: List of rental transactions (IncomeItem[])\n• expenses: List of expenses (PengeluaranKasir[])\n\n⚡ FEATURES:\n• WITA timezone support (Asia/Makassar)\n• Date filtering (default: today)\n• Aggregated calculations\n\n📚 Documentation: .kiro/specs/dana-kasir-management/",
+    "version": "1.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "cookie",
+    "cookie": [
+      {
+        "key": "__session",
+        "value": "{{clerk_session_token}}",
+        "description": "Clerk session token dari browser"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "description": "Base URL aplikasi"
+    },
+    {
+      "key": "test_date",
+      "value": "2025-01-29",
+      "description": "Tanggal untuk testing (format: YYYY-MM-DD)"
+    }
+  ],
+  "item": [
+    {
+      "name": "Get Dana Summary - Today",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/kasir/dana-summary",
+          "host": ["{{base_url}}"],
+          "path": ["api", "kasir", "dana-summary"]
+        },
+        "description": "Get daily summary untuk hari ini (default).\n\n✅ Auth: Kasir (read), Owner (read)\n📅 Date: Today in WITA timezone\n📊 Returns: summary + income list + expense list"
+      },
+      "response": []
+    },
+    {
+      "name": "Get Dana Summary - Specific Date",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/kasir/dana-summary?date={{test_date}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "kasir", "dana-summary"],
+          "query": [
+            {
+              "key": "date",
+              "value": "{{test_date}}",
+              "description": "Tanggal dalam format YYYY-MM-DD"
+            }
+          ]
+        },
+        "description": "Get daily summary untuk tanggal tertentu.\n\n✅ Auth: Kasir (read), Owner (read)\n📅 Date: Custom date in WITA timezone\n📊 Returns: summary + income list + expense list"
+      },
+      "response": [
+        {
+          "name": "Success Response",
+          "originalRequest": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/kasir/dana-summary?date=2025-01-29"
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"success\": true,\n  \"data\": {\n    \"summary\": {\n      \"totalIncome\": 500000,\n      \"totalExpense\": 150000,\n      \"netBalance\": 350000,\n      \"date\": \"2025-01-29\"\n    },\n    \"income\": [\n      {\n        \"transaksiKode\": \"TRX001\",\n        \"customerName\": \"John Doe\",\n        \"rentalAmount\": 450000,\n        \"penaltyAmount\": 50000,\n        \"status\": \"completed\",\n        \"kasirId\": \"kasir-uuid-1\",\n        \"kasirName\": \"Budi Santoso\",\n        \"createdAt\": \"2025-01-29T10:00:00Z\"\n      }\n    ],\n    \"expenses\": [\n      {\n        \"id\": \"expense-uuid-1\",\n        \"kasirId\": \"kasir-uuid-1\",\n        \"harga\": 75000,\n        \"kategori\": \"Transport\",\n        \"deskripsi\": \"Bensin motor\",\n        \"isActive\": true,\n        \"createdAt\": \"2025-01-29T14:20:00Z\",\n        \"updatedAt\": \"2025-01-29T14:20:00Z\",\n        \"createdBy\": \"user-123\",\n        \"kasir\": {\n          \"id\": \"kasir-uuid-1\",\n          \"nama\": \"Budi Santoso\"\n        }\n      },\n      {\n        \"id\": \"expense-uuid-2\",\n        \"kasirId\": \"kasir-uuid-1\",\n        \"harga\": 75000,\n        \"kategori\": \"Operasional\",\n        \"deskripsi\": \"Pulsa komunikasi\",\n        \"isActive\": true,\n        \"createdAt\": \"2025-01-29T15:30:00Z\",\n        \"updatedAt\": \"2025-01-29T15:30:00Z\",\n        \"createdBy\": \"user-123\",\n        \"kasir\": {\n          \"id\": \"kasir-uuid-1\",\n          \"nama\": \"Budi Santoso\"\n        }\n      }\n    ]\n  }\n}"
+        }
+      ]
+    },
+    {
+      "name": "Validation Error - Invalid Date Format",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/kasir/dana-summary?date=invalid-date",
+          "host": ["{{base_url}}"],
+          "path": ["api", "kasir", "dana-summary"],
+          "query": [
+            {
+              "key": "date",
+              "value": "invalid-date",
+              "description": "Invalid date format"
+            }
+          ]
+        },
+        "description": "Test validation error untuk date format yang invalid."
+      },
+      "response": [
+        {
+          "name": "Validation Error",
+          "originalRequest": {
+            "method": "GET"
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"success\": false,\n  \"error\": {\n    \"message\": \"Invalid date format\",\n    \"code\": \"VALIDATION_ERROR\",\n    \"details\": [\n      {\n        \"field\": \"date\",\n        \"message\": \"Invalid date format. Use YYYY-MM-DD\",\n        \"code\": \"invalid_string\"\n      }\n    ]\n  }\n}"
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Basic response validation",
+          "pm.test('Response has valid structure', function () {",
+          "  const response = pm.response.json();",
+          "  pm.expect(response).to.have.property('success');",
+          "});",
+          "",
+          "// Success response validation",
+          "if (pm.response.code === 200) {",
+          "  pm.test('Success response has complete data', function () {",
+          "    const response = pm.response.json();",
+          "    pm.expect(response.success).to.eql(true);",
+          "    pm.expect(response).to.have.property('data');",
+          "    pm.expect(response.data).to.have.property('summary');",
+          "    pm.expect(response.data).to.have.property('income');",
+          "    pm.expect(response.data).to.have.property('expenses');",
+          "  });",
+          "  ",
+          "  pm.test('Summary has required fields', function () {",
+          "    const summary = pm.response.json().data.summary;",
+          "    pm.expect(summary).to.have.property('totalIncome');",
+          "    pm.expect(summary).to.have.property('totalExpense');",
+          "    pm.expect(summary).to.have.property('netBalance');",
+          "    pm.expect(summary).to.have.property('date');",
+          "  });",
+          "  ",
+          "  pm.test('Net balance calculation is correct', function () {",
+          "    const summary = pm.response.json().data.summary;",
+          "    const expectedBalance = summary.totalIncome - summary.totalExpense;",
+          "    pm.expect(summary.netBalance).to.eql(expectedBalance);",
+          "  });",
+          "}",
+          "",
+          "// Error response validation",
+          "if (pm.response.code >= 400) {",
+          "  pm.test('Error response has proper structure', function () {",
+          "    const response = pm.response.json();",
+          "    pm.expect(response.success).to.eql(false);",
+          "    pm.expect(response).to.have.property('error');",
+          "    pm.expect(response.error).to.have.property('message');",
+          "    pm.expect(response.error).to.have.property('code');",
+          "  });",
+          "}",
+          "",
+          "// Performance check",
+          "pm.test('Response time is under 2s', function () {",
+          "  pm.expect(pm.response.responseTime).to.be.below(2000);",
+          "});"
+        ]
+      }
+    }
+  ]
+}
