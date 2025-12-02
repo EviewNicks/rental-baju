@@ -121,13 +121,14 @@ model Penyewa {
 }
 
 model Kasir {
-  id        String   @id @default(uuid())
-  nama      String
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  createdBy String?
-  transaksi Transaksi[]
+  id          String             @id @default(uuid())
+  nama        String
+  isActive    Boolean            @default(true)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  createdBy   String?
+  transaksi   Transaksi[]
+  pengeluaran PengeluaranKasir[]
 
   @@index([nama])
   @@index([isActive])
@@ -296,4 +297,23 @@ enum SizeEnum {
   XL
   XXL
   UNIVERSAL
+}
+
+model PengeluaranKasir {
+  id        String   @id @default(uuid())
+  kasirId   String
+  harga     Decimal  @db.Decimal(12, 2)
+  kategori  String   // 'Operasional' | 'Maintenance' | 'Transport' | 'Lainnya'
+  deskripsi String?
+  isActive  Boolean  @default(true)  // For soft delete
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String
+  
+  kasir     Kasir    @relation(fields: [kasirId], references: [id])
+  
+  @@index([kasirId, createdAt])
+  @@index([isActive])
+  @@index([createdAt])
+  @@map("pengeluaran_kasir")
 }
