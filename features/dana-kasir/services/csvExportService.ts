@@ -3,7 +3,7 @@
 
 import { PrismaClient } from '@prisma/client'
 import { getWITADayRange, formatWITADate } from '../utils/timezone'
-import { formatCurrency } from '../utils/currency'
+import { formatCurrencyForCSV } from '../utils/currency'
 
 /**
  * CSVExportService - Handles CSV export functionality

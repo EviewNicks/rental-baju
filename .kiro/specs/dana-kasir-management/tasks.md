@@ -18,29 +18,29 @@ This implementation plan breaks down the Dana Kasir Management feature into disc
 
 ## Phase 1: Database Foundation & Core Services
 
-### - [ ] 1. Database Schema Implementation
+### - [x] 1. Database Schema Implementation
 
-- [ ] 1.1 Create Prisma migration for PengeluaranKasir model
+- [x] 1.1 Create Prisma migration for PengeluaranKasir model
   - Add PengeluaranKasir model to schema.prisma
   - Include all fields: id, kasirId, harga, kategori, deskripsi, isActive, createdAt, updatedAt, createdBy
   - Add relation to Kasir model
   - Add indexes for performance (kasirId + createdAt, isActive, createdAt)
   - _Requirements: 2.3, 12.1, 12.2_
 
-- [ ] 1.2 Generate and test migration
+- [x] 1.2 Generate and test migration
   - Run `npx prisma push `
   - migrate prisma kita sednag bermaslaah jadi kedpeannya guankan prisma push saja untuk mengupdate schema prisma 
   - Test rollback capability
   - _Requirements: All database-related requirements_
 
-- [ ] 1.3 Update Kasir model with relation
+- [x] 1.3 Update Kasir model with relation
   - Add `pengeluaran PengeluaranKasir[]` relation to Kasir model
   - Regenerate Prisma client
   - _Requirements: 12.1_
 
-### - [ ] 2. Type Definitions & Validation Schemas
+### - [x] 2. Type Definitions & Validation Schemas
 
-- [ ] 2.1 Create dana-kasir types file
+- [x] 2.1 Create dana-kasir types file
   - Create `features/dana-kasir/types.ts`
   - Define ExpenseCategory type
   - Define PengeluaranKasir interface
@@ -50,7 +50,7 @@ This implementation plan breaks down the Dana Kasir Management feature into disc
   - Define IncomeItem interface
   - _Requirements: 2.2, 2.4, 4.1_
 
-- [ ] 2.2 Create Zod validation schemas
+- [x] 2.2 Create Zod validation schemas
   - Create `features/dana-kasir/validation.ts`
   - Implement createPengeluaranSchema with validation rules
   - Implement updatePengeluaranSchema with validation rules
@@ -59,15 +59,15 @@ This implementation plan breaks down the Dana Kasir Management feature into disc
 
 
 
-### - [ ] 3. PengeluaranService Implementation
+### - [x] 3. PengeluaranService Implementation
 
-- [ ] 3.1 Create PengeluaranService class
+- [x] 3.1 Create PengeluaranService class
   - Create `features/dana-kasir/services/pengeluaranService.ts`
   - Implement constructor with Prisma client and userId
   - Add timezone utility for WITA (Asia/Makassar)
   - _Requirements: 2.3, 12.1_
 
-- [ ] 3.2 Implement create method
+- [x] 3.2 Implement create method
   - Validate input using Zod schema
   - Set createdBy to current userId
   - Set kasirId from authenticated user
@@ -75,7 +75,7 @@ This implementation plan breaks down the Dana Kasir Management feature into disc
   - Return created record
   - _Requirements: 2.2, 2.3, 12.1_
 
-- [ ] 3.3 Implement update method
+- [x] 3.3 Implement update method
   - Validate input using Zod schema
   - Check record exists and belongs to user
   - Update only allowed fields (harga, kategori, deskripsi)
@@ -83,21 +83,21 @@ This implementation plan breaks down the Dana Kasir Management feature into disc
   - Return updated record
   - _Requirements: 2.5, 3.3, 12.2_
 
-- [ ] 3.4 Implement softDelete method
+- [x] 3.4 Implement softDelete method
   - Check record exists
   - Set isActive to false
   - Update updatedAt timestamp
   - Return success confirmation
   - _Requirements: 3.5, 12.3_
 
-- [ ] 3.5 Implement getByDate method
+- [x] 3.5 Implement getByDate method
   - Filter by date range (00:00 - 23:59 WITA)
   - Filter by isActive = true
   - Order by createdAt DESC
   - Include kasir relation
   - _Requirements: 1.1, 5.2, 12.5_
 
-- [ ] 3.6 Implement getById method
+- [x] 3.6 Implement getById method
   - Query by id
   - Filter by isActive = true
   - Include kasir relation
@@ -106,15 +106,15 @@ This implementation plan breaks down the Dana Kasir Management feature into disc
 
 
 
-### - [ ] 4. DanaSummaryService Implementation
+### - [x] 4. DanaSummaryService Implementation
 
-- [ ] 4.1 Create DanaSummaryService class
+- [x] 4.1 Create DanaSummaryService class
   - Create `features/dana-kasir/services/danaSummaryService.ts`
   - Implement constructor with Prisma client
   - Add date utility functions for WITA timezone
   - _Requirements: 4.1, 4.2, 4.3, 4.4_
 
-- [ ] 4.2 Implement getIncomeList method
+- [x] 4.2 Implement getIncomeList method
   - Query Transaksi table for selected date
   - Filter by createdAt in WITA timezone
   - Include penyewa and kasir relations
@@ -123,7 +123,7 @@ This implementation plan breaks down the Dana Kasir Management feature into disc
   - Return formatted IncomeItem array
   - _Requirements: 1.1, 1.2, 1.3, 1.4_
 
-- [ ] 4.3 Implement getExpenseList method
+- [x] 4.3 Implement getExpenseList method
   - Query PengeluaranKasir for selected date
   - Filter by isActive = true
   - Filter by createdAt in WITA timezone
@@ -131,7 +131,7 @@ This implementation plan breaks down the Dana Kasir Management feature into disc
   - Order by createdAt DESC
   - _Requirements: 2.4, 5.2, 12.5_
 
-- [ ] 4.4 Implement getDailySummary method
+- [x] 4.4 Implement getDailySummary method
   - Call getIncomeList for date
   - Call getExpenseList for date
   - Calculate totalIncome (sum rental + penalty)
@@ -144,9 +144,9 @@ This implementation plan breaks down the Dana Kasir Management feature into disc
 
 ## Phase 2: API Layer Implementation
 
-### - [ ] 5. Expense CRUD API Endpoints
+### - [x] 5. Expense CRUD API Endpoints
 
-- [ ] 5.1 Create GET /api/kasir/pengeluaran endpoint
+- [x] 5.1 Create GET /api/kasir/pengeluaran endpoint
   - Create `app/api/kasir/pengeluaran/route.ts`
   - Implement GET handler
   - Authenticate user with Clerk
@@ -155,7 +155,7 @@ This implementation plan breaks down the Dana Kasir Management feature into disc
   - Return formatted response
   - _Requirements: 2.4, 5.2, 6.1_
 
-- [ ] 5.2 Create POST /api/kasir/pengeluaran endpoint
+- [x] 5.2 Create POST /api/kasir/pengeluaran endpoint
   - Implement POST handler in same route file
   - Authenticate user with Clerk
   - Check user has Kasir role
@@ -164,7 +164,7 @@ This implementation plan breaks down the Dana Kasir Management feature into disc
   - Return created record or validation errors
   - _Requirements: 2.1, 2.2, 2.3, 6.2, 9.1, 9.2, 9.3, 9.4_
 
-- [ ] 5.3 Create PUT /api/kasir/pengeluaran/[id] endpoint
+- [x] 5.3 Create PUT /api/kasir/pengeluaran/[id] endpoint
   - Create `app/api/kasir/pengeluaran/[id]/route.ts`
   - Implement PUT handler
   - Authenticate user with Clerk
@@ -174,7 +174,7 @@ This implementation plan breaks down the Dana Kasir Management feature into disc
   - Return updated record or errors
   - _Requirements: 2.5, 3.2, 3.3, 6.2_
 
-- [ ] 5.4 Create DELETE /api/kasir/pengeluaran/[id] endpoint
+- [x] 5.4 Create DELETE /api/kasir/pengeluaran/[id] endpoint
   - Implement DELETE handler in same route file
   - Authenticate user with Clerk
   - Check user has Kasir role
@@ -184,9 +184,9 @@ This implementation plan breaks down the Dana Kasir Management feature into disc
 
 
 
-### - [ ] 6. Dana Summary API Endpoint
+### - [x] 6. Dana Summary API Endpoint
 
-- [ ] 6.1 Create GET /api/kasir/dana-summary endpoint
+- [x] 6.1 Create GET /api/kasir/dana-summary endpoint
   - Create `app/api/kasir/dana-summary/route.ts`
   - Implement GET handler
   - Authenticate user with Clerk
@@ -199,9 +199,9 @@ This implementation plan breaks down the Dana Kasir Management feature into disc
 
 
 
-### - [ ] 7. CSV Export API Endpoint
+### - [x] 7. CSV Export API Endpoint
 
-- [ ] 7.1 Create CSV export service
+- [x] 7.1 Create CSV export service
   - Create `features/dana-kasir/services/csvExportService.ts`
   - Implement generateCSV method
   - Accept startDate and endDate parameters
@@ -210,11 +210,11 @@ This implementation plan breaks down the Dana Kasir Management feature into disc
   - Return CSV string
   - _Requirements: 8.3, 8.4_
 
-- [ ] 7.2 Create GET /api/kasir/dana-export endpoint
+- [x] 7.2 Create GET /api/kasir/dana-export endpoint
   - Create `app/api/kasir/dana-export/route.ts`
   - Implement GET handler
   - Authenticate user with Clerk
-  - Check user has Owner role
+  - Check user has Owner role (using requireDanaKasirExport)
   - Parse startDate and endDate query parameters
   - Call csvExportService.generateCSV
   - Set response headers for file download
@@ -224,17 +224,17 @@ This implementation plan breaks down the Dana Kasir Management feature into disc
 
 
 
-### - [ ] 8. Authorization Middleware
+### - [x] 8. Authorization Middleware
 
-- [ ] 8.1 Create role-based authorization helpers
-  - Create `features/dana-kasir/middleware/auth.ts`
+- [x] 8.1 Create role-based authorization helpers
+  - update `lib\auth-middleware.ts`
   - Implement requireKasirWrite function
   - Implement requireOwnerRead function
   - Implement requireAuthenticated function
   - Add error handling for unauthorized access
   - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5_
 
-- [ ] 8.2 Apply authorization to API endpoints
+- [x] 8.2 Apply authorization to API endpoints
   - Add requireKasirWrite to POST, PUT, DELETE endpoints
   - Add requireAuthenticated to GET endpoints
   - Add requireOwnerRead to export endpoint
@@ -245,16 +245,16 @@ This implementation plan breaks down the Dana Kasir Management feature into disc
 
 ## Phase 3: UI Components Implementation
 
-### - [ ] 9. Dana Kasir Dashboard Page
+### - [x] 9. Dana Kasir Dashboard Page
 
-- [ ] 9.1 Create dashboard page structure
+- [x] 9.1 Create dashboard page structure
   - Create `app/(kasir)/dana-kasir/page.tsx`
   - Set up page layout with proper routing
   - Add authentication check
   - Add role-based rendering (Kasir vs Owner)
   - _Requirements: 6.1, 6.3, 7.1, 7.2_
 
-- [ ] 9.2 Implement date navigation component
+- [x] 9.2 Implement date navigation component
   - Create `features/dana-kasir/components/DateNavigation.tsx`
   - Add date picker for selecting date
   - Add "Today" quick button
@@ -262,7 +262,7 @@ This implementation plan breaks down the Dana Kasir Management feature into disc
   - Update URL with selected date
   - _Requirements: 5.1, 5.2, 5.4_
 
-- [ ] 9.3 Implement summary cards component
+- [x] 9.3 Implement summary cards component
   - Create `features/dana-kasir/components/SummaryCards.tsx`
   - Display total income card
   - Display total expense card
@@ -271,7 +271,7 @@ This implementation plan breaks down the Dana Kasir Management feature into disc
   - Show loading states
   - _Requirements: 4.1, 4.5_
 
-- [ ] 9.4 Implement income list component
+- [x] 9.4 Implement income list component
   - Create `features/dana-kasir/components/IncomeList.tsx`
   - Display transaction code, customer name
   - Display rental amount and penalty amount separately
@@ -280,7 +280,7 @@ This implementation plan breaks down the Dana Kasir Management feature into disc
   - Show empty state when no data
   - _Requirements: 1.1, 1.2, 1.3, 1.5_
 
-- [ ] 9.5 Implement expense list component
+- [x] 9.5 Implement expense list component
   - Create `features/dana-kasir/components/ExpenseList.tsx`
   - Display amount, category, description
   - Display kasir name and timestamp
@@ -288,7 +288,7 @@ This implementation plan breaks down the Dana Kasir Management feature into disc
   - Show empty state when no data
   - _Requirements: 2.4, 3.1_
 
-- [ ] 9.6 Integrate components in dashboard
+- [x] 9.6 Integrate components in dashboard
   - Add DateNavigation at top
   - Add SummaryCards below navigation
   - Add IncomeList and ExpenseList side by side
@@ -297,9 +297,9 @@ This implementation plan breaks down the Dana Kasir Management feature into disc
   - Implement responsive layout for mobile
   - _Requirements: 7.1, 7.2, 8.1, 10.1, 10.2, 10.3_
 
-### - [ ] 10. Expense Form Component
+### - [x] 10. Expense Form Component
 
-- [ ] 10.1 Create expense form modal
+- [x] 10.1 Create expense form modal
   - Create `features/dana-kasir/components/PengeluaranForm.tsx`
   - Implement modal dialog with form
   - Add amount input with Rupiah formatting
@@ -308,14 +308,14 @@ This implementation plan breaks down the Dana Kasir Management feature into disc
   - Add submit and cancel buttons
   - _Requirements: 2.1, 3.2_
 
-- [ ] 10.2 Implement form validation
+- [x] 10.2 Implement form validation
   - Add client-side validation using Zod schema
   - Show validation errors inline
   - Disable submit when invalid
   - Show loading state during submission
   - _Requirements: 2.2, 9.1, 9.2, 9.3, 9.4_
 
-- [ ] 10.3 Implement form submission
+- [x] 10.3 Implement form submission
   - Call POST /api/kasir/pengeluaran on submit
   - Handle success with toast notification
   - Handle errors with error display
@@ -323,37 +323,37 @@ This implementation plan breaks down the Dana Kasir Management feature into disc
   - Refresh expense list
   - _Requirements: 2.3, 9.5_
 
-- [ ] 10.4 Implement edit mode
+- [x] 10.4 Implement edit mode
   - Pre-populate form with existing data
   - Call PUT /api/kasir/pengeluaran/[id] on submit
   - Handle success and errors
   - _Requirements: 3.2, 3.3_
 
-- [ ] 10.5 Add mobile-friendly inputs
+- [x] 10.5 Add mobile-friendly inputs
   - Use numeric keyboard for amount input
   - Use touch-friendly dropdowns
   - Optimize layout for small screens
   - _Requirements: 10.4_
 
-### - [ ] 11. Delete Confirmation Dialog
+### - [x] 11. Delete Confirmation Dialog
 
-- [ ] 11.1 Create delete confirmation component
+- [x] 11.1 Create delete confirmation component
   - Create `features/dana-kasir/components/DeleteConfirmation.tsx`
   - Implement confirmation dialog
   - Show expense details in confirmation
   - Add confirm and cancel buttons
   - _Requirements: 3.4_
 
-- [ ] 11.2 Implement delete action
+- [x] 11.2 Implement delete action
   - Call DELETE /api/kasir/pengeluaran/[id] on confirm
   - Handle success with toast notification
   - Handle errors with error display
   - Refresh expense list on success
   - _Requirements: 3.5_
 
-### - [ ] 12. CSV Export Dialog
+### - [x] 12. CSV Export Dialog
 
-- [ ] 12.1 Create export dialog component
+- [x] 12.1 Create export dialog component
   - Create `features/dana-kasir/components/ExportDialog.tsx`
   - Add date range picker
   - Add preset options (today, this week, this month)
@@ -361,7 +361,7 @@ This implementation plan breaks down the Dana Kasir Management feature into disc
   - Show loading state during export
   - _Requirements: 8.1, 8.2_
 
-- [ ] 12.2 Implement export action
+- [x] 12.2 Implement export action
   - Call GET /api/kasir/dana-export with date range
   - Trigger file download
   - Handle errors with error display

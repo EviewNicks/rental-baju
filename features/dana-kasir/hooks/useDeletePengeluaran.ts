@@ -1,12 +1,12 @@
 /**
  * useDeletePengeluaran Hook
  * 
- * React Query mutation hook for deleting expense (soft delete)
+ * React Query mutation hook for deleting (soft delete) expense
  * 
  * Features:
- * - Soft delete expense by setting isActive = false
- * - Optimistic updates
- * - Cache invalidation
+ * - API call to DELETE /api/kasir/pengeluaran/[id]
+ * - Soft delete (sets isActive = false)
+ * - Cache invalidation after success
  * - Error handling
  * 
  * Requirements: 3.4, 3.5
@@ -19,14 +19,11 @@ interface DeletePengeluaranParams {
 }
 
 /**
- * Delete expense (soft delete)
+ * Delete (soft delete) existing expense
  */
 async function deletePengeluaran(id: string): Promise<void> {
   const response = await fetch(`/api/kasir/pengeluaran/${id}`, {
     method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json',
-    },
   })
 
   if (!response.ok) {

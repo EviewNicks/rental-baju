@@ -16,8 +16,12 @@ import { DateNavigation } from './DateNavigation'
 import { SummaryCards } from './SummaryCards'
 import { IncomeList } from './IncomeList'
 import { ExpenseList } from './ExpenseList'
+import { PengeluaranForm } from './PengeluaranForm'
+import { DeleteConfirmation } from './DeleteConfirmation'
+import { ExportDialog } from './ExportDialog'
 import { useDanaSummary } from '../hooks/useDanaSummary'
 import { formatWITADate } from '../utils/timezone'
+import { PengeluaranKasir } from '../types'
 
 interface DanaKasirDashboardProps {
   initialDate: Date
@@ -29,6 +33,9 @@ export function DanaKasirDashboard({ initialDate, userRole }: DanaKasirDashboard
   const [selectedDate, setSelectedDate] = useState(initialDate)
   const [showExpenseForm, setShowExpenseForm] = useState(false)
   const [showExportDialog, setShowExportDialog] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [editingExpense, setEditingExpense] = useState<PengeluaranKasir | null>(null)
+  const [deletingExpense, setDeletingExpense] = useState<PengeluaranKasir | null>(null)
 
   // Fetch dashboard data
   const { data, isLoading, error, refetch } = useDanaSummary(selectedDate)
@@ -47,16 +54,56 @@ export function DanaKasirDashboard({ initialDate, userRole }: DanaKasirDashboard
 
   // Handle add expense
   const handleAddExpense = () => {
+    setEditingExpense(null)
     setShowExpenseForm(true)
-    // TODO: Implement in Task 10 - Open PengeluaranForm modal
-    console.log('Add expense clicked')
+  }
+
+  // Handle edit expense
+  const handleEditExpense = (expense: PengeluaranKasir) => {
+    setEditingExpense(expense)
+    setShowExpenseForm(true)
+  }
+
+  // Handle expense form close
+  const handleExpenseFormClose = () => {
+    setShowExpenseForm(false)
+    setEditingExpense(null)
+  }
+
+  // Handle expense form success
+  const handleExpenseFormSuccess = () => {
+    setShowExpenseForm(false)
+    setEditingExpense(null)
+    refetch() // Refresh data
+  }
+
+  // Handle delete expense
+  const handleDeleteExpense = (expense: PengeluaranKasir) => {
+    setDeletingExpense(expense)
+    setShowDeleteConfirm(true)
+  }
+
+  // Handle delete confirmation close
+  const handleDeleteConfirmClose = () => {
+    setShowDeleteConfirm(false)
+    setDeletingExpense(null)
+  }
+
+  // Handle delete success
+  const handleDeleteSuccess = () => {
+    setShowDeleteConfirm(false)
+    setDeletingExpense(null)
+    refetch() // Refresh data
   }
 
   // Handle export
   const handleExport = () => {
     setShowExportDialog(true)
-    // TODO: Implement in Task 12 - Open ExportDialog
-    console.log('Export clicked')
+  }
+
+  // Handle export dialog close
+  const handleExportDialogClose = () => {
+    setShowExportDialog(false)
   }
 
   return (
@@ -116,6 +163,8 @@ export function DanaKasirDashboard({ initialDate, userRole }: DanaKasirDashboard
           expenses={data?.expenses || []}
           isLoading={isLoading}
           canWrite={canWrite}
+          onEdit={handleEditExpense}
+          onDelete={handleDeleteExpense}
           onRefresh={refetch}
         />
       </div>
@@ -153,6 +202,28 @@ export function DanaKasirDashboard({ initialDate, userRole }: DanaKasirDashboard
           </div>
         </div>
       )}
+
+      {/* Expense Form Modal */}
+      <PengeluaranForm
+        isOpen={showExpenseForm}
+        onClose={handleExpenseFormClose}
+        initialData={editingExpense}
+        onSuccess={handleExpenseFormSuccess}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <DeleteConfirmation
+        isOpen={showDeleteConfirm}
+        onClose={handleDeleteConfirmClose}
+        expense={deletingExpense}
+        onSuccess={handleDeleteSuccess}
+      />
+
+      {/* Export Dialog */}
+      <ExportDialog
+        isOpen={showExportDialog}
+        onClose={handleExportDialogClose}
+      />
     </div>
   )
 }

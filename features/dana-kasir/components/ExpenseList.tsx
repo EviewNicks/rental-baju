@@ -24,6 +24,8 @@ interface ExpenseListProps {
   expenses: PengeluaranKasir[]
   isLoading?: boolean
   canWrite?: boolean
+  onEdit?: (expense: PengeluaranKasir) => void
+  onDelete?: (expense: PengeluaranKasir) => void
   onRefresh?: () => void
 }
 
@@ -31,6 +33,8 @@ export function ExpenseList({
   expenses, 
   isLoading, 
   canWrite = false,
+  onEdit,
+  onDelete,
   onRefresh 
 }: ExpenseListProps) {
   const [selectedExpense, setSelectedExpense] = useState<PengeluaranKasir | null>(null)
@@ -175,9 +179,7 @@ export function ExpenseList({
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => {
-                        // TODO: Open edit modal
-                        setSelectedExpense(expense)
-                        console.log('Edit expense:', expense.id)
+                        onEdit?.(expense)
                       }}
                       className="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-colors"
                       title="Edit"
@@ -186,8 +188,7 @@ export function ExpenseList({
                     </button>
                     <button
                       onClick={() => {
-                        // TODO: Open delete confirmation
-                        console.log('Delete expense:', expense.id)
+                        onDelete?.(expense)
                       }}
                       className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors"
                       title="Hapus"

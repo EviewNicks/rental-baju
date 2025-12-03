@@ -8,7 +8,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Users, BookOpen, UserCog } from 'lucide-react'
+import { Users, BookOpen, UserCog, Wallet } from 'lucide-react'
 
 export function OwnerSidebar() {
   return (
@@ -34,6 +34,16 @@ export function OwnerSidebar() {
               >
                 <Users className="mr-3 h-4 w-4" />
                 Kasir
+              </Button>
+            </Link>
+
+            <Link href="/dana-kasir">
+              <Button
+                variant="ghost"
+                className="w-full justify-start hover:bg-green-50 hover:text-green-700"
+              >
+                <Wallet className="mr-3 h-4 w-4" />
+                Dana Kasir
               </Button>
             </Link>
 
