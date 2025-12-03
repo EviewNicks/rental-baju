@@ -11,7 +11,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, Download } from 'lucide-react'
+import { Download } from 'lucide-react'
 import { DateNavigation } from './DateNavigation'
 import { SummaryCards } from './SummaryCards'
 import { IncomeList } from './IncomeList'
@@ -163,25 +163,16 @@ export function DanaKasirDashboard({ initialDate, userRole }: DanaKasirDashboard
           expenses={data?.expenses || []}
           isLoading={isLoading}
           canWrite={canWrite}
+          onAdd={handleAddExpense}  // NEW: Pass add handler
           onEdit={handleEditExpense}
           onDelete={handleDeleteExpense}
           onRefresh={refetch}
         />
       </div>
 
-      {/* Action Buttons - Prominent */}
-      <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-        {canWrite && (
-          <button
-            onClick={handleAddExpense}
-            className="flex items-center gap-2 px-6 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-sm font-medium shadow-md hover:shadow-lg"
-          >
-            <Plus className="w-5 h-5" />
-            Tambah Pengeluaran
-          </button>
-        )}
-        
-        {canExport && (
+      {/* Export Button - Owner Only */}
+      {canExport && (
+        <div className="flex justify-center">
           <button
             onClick={handleExport}
             className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium shadow-md hover:shadow-lg"
@@ -189,8 +180,8 @@ export function DanaKasirDashboard({ initialDate, userRole }: DanaKasirDashboard
             <Download className="w-5 h-5" />
             Export CSV
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Role Info Badge */}
       {canExport && (

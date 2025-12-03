@@ -113,12 +113,12 @@ model PengeluaranKasir {
 - Auth: Kasir (read), Owner (read)
 
 **POST /api/kasir/pengeluaran**
-- Body: `{ harga, kategori, deskripsi }`
+- Body: `{ kasirId, harga, kategori, deskripsi }`
 - Returns: Created expense record
 - Auth: Kasir (write only)
 
 **PUT /api/kasir/pengeluaran/[id]**
-- Body: `{ harga?, kategori?, deskripsi? }`
+- Body: `{ kasirId?, harga?, kategori?, deskripsi? }`
 - Returns: Updated expense record
 - Auth: Kasir (write only)
 
@@ -154,6 +154,7 @@ class PengeluaranService {
   async softDelete(id: string): Promise<void>
   async getByDate(date: Date): Promise<PengeluaranKasir[]>
   async getById(id: string): Promise<PengeluaranKasir | null>
+  async getActiveKasirList(): Promise<Kasir[]>  // NEW: Get list of active kasir for dropdown
 }
 ```
 
@@ -215,6 +216,7 @@ interface PengeluaranFormProps {
 }
 
 interface PengeluaranFormData {
+  kasirId: string  // NEW: Selected kasir from dropdown
   harga: number
   kategori: 'Operasional' | 'Maintenance' | 'Transport' | 'Lainnya'
   deskripsi?: string
@@ -255,12 +257,14 @@ export interface PengeluaranKasir {
 
 // API request/response types
 export interface CreatePengeluaranRequest {
+  kasirId: string  // NEW: Kasir ID selected from dropdown
   harga: number
   kategori: ExpenseCategory
   deskripsi?: string
 }
 
 export interface UpdatePengeluaranRequest {
+  kasirId?: string  // NEW: Can update kasir assignment
   harga?: number
   kategori?: ExpenseCategory
   deskripsi?: string
@@ -284,6 +288,9 @@ export interface DanaSummaryResponse {
 import { z } from 'zod'
 
 export const createPengeluaranSchema = z.object({
+  kasirId: z.string()
+    .uuid('Kasir ID tidak valid')
+    .min(1, 'Kasir harus dipilih'),  // NEW: Validate kasir selection
   harga: z.number()
     .positive('Jumlah harus lebih besar dari 0')
     .max(999999999.99, 'Jumlah terlalu besar'),
@@ -296,6 +303,9 @@ export const createPengeluaranSchema = z.object({
 })
 
 export const updatePengeluaranSchema = z.object({
+  kasirId: z.string()
+    .uuid('Kasir ID tidak valid')
+    .optional(),  // NEW: Can update kasir assignment
   harga: z.number()
     .positive('Jumlah harus lebih besar dari 0')
     .max(999999999.99, 'Jumlah terlalu besar')
@@ -341,7 +351,7 @@ export const updatePengeluaranSchema = z.object({
 **Validates: Requirements 2.4**
 
 ### Property 8: Expense field modification restriction
-*For any* expense update operation, only the harga, deskripsi, and kategori fields should be modifiable; kasirId, createdAt, and id should remain unchanged.
+*For any* expense update operation, only the kasirId, harga, deskripsi, and kategori fields should be modifiable; createdBy, createdAt, and id should remain unchanged.
 **Validates: Requirements 2.5**
 
 ### Property 9: Update timestamp preservation
@@ -393,7 +403,7 @@ export const updatePengeluaranSchema = z.object({
 **Validates: Requirements 9.4**
 
 ### Property 21: Creator audit trail
-*For any* created expense, the kasirId field should match the authenticated user's ID who performed the creation.
+*For any* created expense, the createdBy field should contain the authenticated user's Clerk ID who performed the creation, while kasirId should contain the selected kasir from the dropdown.
 **Validates: Requirements 12.1**
 
 ### Property 22: Soft delete filtering

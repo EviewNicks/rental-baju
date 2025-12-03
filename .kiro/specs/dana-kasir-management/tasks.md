@@ -44,17 +44,19 @@ This implementation plan breaks down the Dana Kasir Management feature into disc
   - Create `features/dana-kasir/types.ts`
   - Define ExpenseCategory type
   - Define PengeluaranKasir interface
-  - Define CreatePengeluaranRequest interface
-  - Define UpdatePengeluaranRequest interface
+  - Define CreatePengeluaranRequest interface (including kasirId) ← **UPDATED**
+  - Define UpdatePengeluaranRequest interface (including optional kasirId) ← **UPDATED**
   - Define DanaSummaryResponse interface
   - Define IncomeItem interface
+  - Define KasirListItem interface (for dropdown) ← **NEW**
   - _Requirements: 2.2, 2.4, 4.1_
 
 - [x] 2.2 Create Zod validation schemas
   - Create `features/dana-kasir/validation.ts`
-  - Implement createPengeluaranSchema with validation rules
-  - Implement updatePengeluaranSchema with validation rules
+  - Implement createPengeluaranSchema with validation rules (including kasirId) ← **UPDATED**
+  - Implement updatePengeluaranSchema with validation rules (including optional kasirId) ← **UPDATED**
   - Add error messages in Indonesian
+  - Add validation for kasirId (UUID format, required for create) ← **NEW**
   - _Requirements: 2.2, 9.1, 9.2, 9.3, 9.4_
 
 
@@ -68,9 +70,10 @@ This implementation plan breaks down the Dana Kasir Management feature into disc
   - _Requirements: 2.3, 12.1_
 
 - [x] 3.2 Implement create method
-  - Validate input using Zod schema
-  - Set createdBy to current userId
-  - Set kasirId from authenticated user
+  - Validate input using Zod schema (including kasirId) ← **UPDATED**
+  - Set createdBy to current userId (Clerk ID) ← **UPDATED**
+  - Use kasirId from request data (not from authenticated user) ← **UPDATED**
+  - Validate kasirId exists in Kasir table ← **NEW**
   - Save to database with WITA timestamp
   - Return created record
   - _Requirements: 2.2, 2.3, 12.1_
@@ -159,8 +162,9 @@ This implementation plan breaks down the Dana Kasir Management feature into disc
   - Implement POST handler in same route file
   - Authenticate user with Clerk
   - Check user has Kasir role
-  - Parse and validate request body
-  - Call PengeluaranService.create
+  - Parse and validate request body (including kasirId) ← **UPDATED**
+  - Validate kasirId exists in database ← **NEW**
+  - Call PengeluaranService.create with kasirId from request body ← **UPDATED**
   - Return created record or validation errors
   - _Requirements: 2.1, 2.2, 2.3, 6.2, 9.1, 9.2, 9.3, 9.4_
 
@@ -241,6 +245,13 @@ This implementation plan breaks down the Dana Kasir Management feature into disc
   - Test authorization enforcement
   - _Requirements: 6.1, 6.2, 6.3, 6.4_
 
+- [x] 8.3 Use existing /api/kasir/kasir endpoint for dropdown ← **UPDATED**
+  - ~~Create `app/api/kasir/list/route.ts`~~ (Not needed - use existing endpoint)
+  - Use `/api/kasir/kasir?limit=100&isActive=true` for dropdown
+  - Extract id and nama from response
+  - Simpler solution - reuse existing endpoint
+  - _Requirements: 2.1_
+
 
 
 ## Phase 3: UI Components Implementation
@@ -302,6 +313,7 @@ This implementation plan breaks down the Dana Kasir Management feature into disc
 - [x] 10.1 Create expense form modal
   - Create `features/dana-kasir/components/PengeluaranForm.tsx`
   - Implement modal dialog with form
+  - Add kasir dropdown (fetch from /api/kasir/kasir?limit=100&isActive=true) ← **UPDATED**
   - Add amount input with Rupiah formatting
   - Add category dropdown with fixed options
   - Add description textarea
@@ -368,59 +380,61 @@ This implementation plan breaks down the Dana Kasir Management feature into disc
   - Close dialog on success
   - _Requirements: 8.3, 8.5_
 
-### - [ ] 13. Navigation Integration
+### - [x] 13. Navigation Integration
 
-- [ ] 13.1 Add Dana Kasir button to Kasir dashboard
-  - Update `app/(kasir)/dashboard/page.tsx`
-  - Add "Dana Kasir" button in header or action area
+- [x] 13.1 Add Dana Kasir button to Kasir dashboard
+  - Update `features/kasir/components/dashboard/TransactionsDashoard.tsx`
+  - Add "Dana Kasir" button in action area (next to Tambah Transaksi)
   - Link to /dana-kasir route
+  - Use green color scheme with Wallet icon
   - _Requirements: 7.1, 7.2_
 
-- [ ] 13.2 Add Dana Kasir menu to Owner sidebar
+- [x] 13.2 Add Dana Kasir menu to Owner sidebar
   - Update `components/layout/OwnerSidebar.tsx`
-  - Add "Dana Kasir" menu item with icon
+  - Add "Dana Kasir" menu item with Wallet icon
   - Link to /dana-kasir route
+  - Use green hover color scheme
   - _Requirements: 7.3, 7.4_
 
 ## Phase 4: Integration & Polish
 
-### - [ ] 14. React Query Integration
+### - [x] 14. React Query Integration
 
-- [ ] 14.1 Create React Query hooks
-  - Create `features/dana-kasir/hooks/useDanaSummary.ts`
-  - Create `features/dana-kasir/hooks/usePengeluaran.ts`
-  - Create `features/dana-kasir/hooks/useCreatePengeluaran.ts`
-  - Create `features/dana-kasir/hooks/useUpdatePengeluaran.ts`
-  - Create `features/dana-kasir/hooks/useDeletePengeluaran.ts`
-  - Configure cache settings (5 min stale time)
+- [x] 14.1 Create React Query hooks
+  - Create `features/dana-kasir/hooks/useDanaSummary.ts` ✅
+  - ~~Create `features/dana-kasir/hooks/usePengeluaran.ts`~~ (Not needed - expenses included in useDanaSummary)
+  - Create `features/dana-kasir/hooks/useCreatePengeluaran.ts` ✅
+  - Create `features/dana-kasir/hooks/useUpdatePengeluaran.ts` ✅
+  - Create `features/dana-kasir/hooks/useDeletePengeluaran.ts` ✅
+  - Configure cache settings (5 min stale time) ✅
   - _Requirements: 11.1, 11.2, 11.3_
 
-- [ ] 14.2 Integrate hooks in components
-  - Use useDanaSummary in dashboard
-  - Use usePengeluaran in expense list
-  - Use mutations in form and delete dialog
-  - Implement optimistic updates
-  - Handle loading and error states
+- [x] 14.2 Integrate hooks in components
+  - Use useDanaSummary in dashboard ✅
+  - ~~Use usePengeluaran in expense list~~ (Uses useDanaSummary instead)
+  - Use mutations in form and delete dialog ✅
+  - ~~Implement optimistic updates~~ (Skipped for MVP - cache invalidation sufficient)
+  - Handle loading and error states ✅
   - _Requirements: 11.1, 11.2, 11.3_
 
-### - [ ] 15. Error Handling & User Feedback
+### - [x] 15. Error Handling & User Feedback
 
-- [ ] 15.1 Implement toast notifications
-  - Add success toast for create/update/delete
-  - Add error toast for failures
-  - Add loading toast for long operations
+- [x] 15.1 Implement toast notifications
+  - Add success toast for create/update/delete ✅
+  - Add error toast for failures ✅
+  - Add loading toast for long operations ✅ (via loading states)
   - _Requirements: 2.3, 9.5_
 
-- [ ] 15.2 Implement error boundaries
-  - Add error boundary around dashboard
-  - Show user-friendly error messages
-  - Provide retry mechanism
+- [x] 15.2 Implement error boundaries
+  - Add error boundary around dashboard ✅
+  - Show user-friendly error messages ✅
+  - Provide retry mechanism ✅
   - _Requirements: 9.5_
 
-- [ ] 15.3 Implement empty states
-  - Add empty state for no income
-  - Add empty state for no expenses
-  - Add helpful messages and actions
+- [x] 15.3 Implement empty states
+  - Add empty state for no income ✅
+  - Add empty state for no expenses ✅
+  - Add helpful messages and actions ✅
   - _Requirements: 1.5_
 
 ### - [ ] 16. Mobile Responsive Design

@@ -39,11 +39,11 @@ The Dana Kasir Management feature provides a daily cash flow management system f
 
 #### Acceptance Criteria
 
-1. WHEN a Kasir clicks the add expense button, THE Dana Kasir System SHALL display a form with fields for amount (Rupiah format), description (free text), and category (dropdown selection)
-2. WHEN a Kasir submits an expense entry, THE Dana Kasir System SHALL validate that amount is a positive decimal number and category is one of the predefined values (Operasional, Maintenance, Transport, Lainnya)
-3. WHEN an expense is successfully created, THE Dana Kasir System SHALL store the expense with the current Kasir ID, timestamp in WITA timezone, and display a success notification
-4. WHEN displaying expenses, THE Dana Kasir System SHALL show amount, description, category, creation timestamp, and the Kasir ID who created the entry
-5. WHEN a Kasir edits an existing expense, THE Dana Kasir System SHALL allow modification of amount, description, and category fields only
+1. WHEN a Kasir clicks the add expense button, THE Dana Kasir System SHALL display a form with fields for kasir selection (dropdown), amount (Rupiah format), description (free text), and category (dropdown selection)
+2. WHEN a Kasir submits an expense entry, THE Dana Kasir System SHALL validate that a kasir is selected, amount is a positive decimal number, and category is one of the predefined values (Operasional, Maintenance, Transport, Lainnya)
+3. WHEN an expense is successfully created, THE Dana Kasir System SHALL store the expense with the selected Kasir ID, authenticated user ID (createdBy), timestamp in WITA timezone, and display a success notification
+4. WHEN displaying expenses, THE Dana Kasir System SHALL show kasir name, amount, description, category, creation timestamp, and the Kasir who is responsible for the expense
+5. WHEN a Kasir edits an existing expense, THE Dana Kasir System SHALL allow modification of kasir selection, amount, description, and category fields only
 
 ### Requirement 3: Expense Management
 
@@ -123,11 +123,12 @@ The Dana Kasir Management feature provides a daily cash flow management system f
 
 #### Acceptance Criteria
 
-1. WHEN a Kasir submits an expense form with an empty amount field, THE Dana Kasir System SHALL display an error message "Jumlah harus diisi"
-2. WHEN a Kasir submits an expense form with a negative or zero amount, THE Dana Kasir System SHALL display an error message "Jumlah harus lebih besar dari 0"
-3. WHEN a Kasir submits an expense form without selecting a category, THE Dana Kasir System SHALL display an error message "Kategori harus dipilih"
-4. WHEN a Kasir submits an expense form with a description exceeding 500 characters, THE Dana Kasir System SHALL display an error message "Deskripsi maksimal 500 karakter"
-5. WHEN a network error occurs during data submission, THE Dana Kasir System SHALL display a user-friendly error message and provide a retry option
+1. WHEN a Kasir submits an expense form without selecting a kasir, THE Dana Kasir System SHALL display an error message "Kasir harus dipilih"
+2. WHEN a Kasir submits an expense form with an empty amount field, THE Dana Kasir System SHALL display an error message "Jumlah harus diisi"
+3. WHEN a Kasir submits an expense form with a negative or zero amount, THE Dana Kasir System SHALL display an error message "Jumlah harus lebih besar dari 0"
+4. WHEN a Kasir submits an expense form without selecting a category, THE Dana Kasir System SHALL display an error message "Kategori harus dipilih"
+5. WHEN a Kasir submits an expense form with a description exceeding 500 characters, THE Dana Kasir System SHALL display an error message "Deskripsi maksimal 500 karakter"
+6. WHEN a network error occurs during data submission, THE Dana Kasir System SHALL display a user-friendly error message and provide a retry option
 
 ### Requirement 10: Mobile Responsive Design
 
@@ -159,10 +160,10 @@ The Dana Kasir Management feature provides a daily cash flow management system f
 
 #### Acceptance Criteria
 
-1. WHEN an expense is created, THE Dana Kasir System SHALL record the Kasir ID of the user who created the entry
-2. WHEN an expense is updated, THE Dana Kasir System SHALL record the updated timestamp while preserving the original creation timestamp
-3. WHEN an expense is soft deleted, THE Dana Kasir System SHALL record the deletion timestamp and the Kasir ID who performed the deletion
-4. WHEN displaying income records, THE Dana Kasir System SHALL show the Kasir ID associated with each rental transaction
+1. WHEN an expense is created, THE Dana Kasir System SHALL record both the selected Kasir ID (kasirId) and the authenticated user ID (createdBy) who created the entry
+2. WHEN an expense is updated, THE Dana Kasir System SHALL record the updated timestamp while preserving the original creation timestamp and createdBy field
+3. WHEN an expense is soft deleted, THE Dana Kasir System SHALL record the deletion timestamp while preserving the audit trail
+4. WHEN displaying income records, THE Dana Kasir System SHALL show the Kasir name associated with each rental transaction
 5. WHEN querying historical data, THE Dana Kasir System SHALL exclude soft-deleted expense records from calculations and displays
 
 ---

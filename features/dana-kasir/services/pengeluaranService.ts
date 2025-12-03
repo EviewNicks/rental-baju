@@ -35,9 +35,9 @@ export class PengeluaranService {
    * 
    * Validates input, sets audit fields, and saves to database
    * 
-   * @param data - Expense data (harga, kategori, deskripsi)
+   * @param data - Expense data (kasirId, harga, kategori, deskripsi)
    * @returns Created expense record with kasir relation
-   * @throws Error if validation fails or database error occurs
+   * @throws Error if validation fails, kasir not found, or database error occurs
    */
   async create(data: CreatePengeluaranRequest): Promise<PengeluaranKasir> {
     // Validate input using Zod schema
@@ -54,14 +54,24 @@ export class PengeluaranService {
 
     const validatedData = validationResult.data
 
+    // NEW: Validate kasirId exists in Kasir table
+    const kasirExists = await this.prisma.kasir.findUnique({
+      where: { id: validatedData.kasirId }
+    })
+
+    if (!kasirExists) {
+      throw new Error('Kasir tidak ditemukan')
+    }
+
     // Create expense with audit fields
+    // NEW: Use kasirId from request data (not from authenticated user)
     const expense = await this.prisma.pengeluaranKasir.create({
       data: {
-        kasirId: this.kasirId,
+        kasirId: validatedData.kasirId,  // NEW: From request data
         harga: new Prisma.Decimal(validatedData.harga),
         kategori: validatedData.kategori,
         deskripsi: validatedData.deskripsi,
-        createdBy: this.userId,
+        createdBy: this.userId,  // Clerk userId (who created it)
         isActive: true
       },
       include: {
@@ -81,8 +91,8 @@ export class PengeluaranService {
   /**
    * Update an existing expense record
    * 
-   * Only allows updating: harga, kategori, deskripsi
-   * Preserves: kasirId, createdAt, createdBy, id
+   * Only allows updating: kasirId, harga, kategori, deskripsi
+   * Preserves: createdAt, createdBy, id
    * Updates: updatedAt automatically
    * 
    * @param id - Expense ID to update
@@ -125,8 +135,24 @@ export class PengeluaranService {
       throw new Error('Not authorized to update this expense')
     }
 
+    // NEW: Validate kasirId if provided
+    if (validatedData.kasirId) {
+      const kasirExists = await this.prisma.kasir.findUnique({
+        where: { id: validatedData.kasirId }
+      })
+
+      if (!kasirExists) {
+        throw new Error('Kasir tidak ditemukan')
+      }
+    }
+
     // Prepare update data (only allowed fields)
     const updateData: Prisma.PengeluaranKasirUpdateInput = {}
+    
+    // NEW: Allow kasirId update
+    if (validatedData.kasirId !== undefined) {
+      updateData.kasirId = validatedData.kasirId
+    }
     
     if (validatedData.harga !== undefined) {
       updateData.harga = new Prisma.Decimal(validatedData.harga)
@@ -261,6 +287,31 @@ export class PengeluaranService {
     }
 
     return this.transformPrismaResult(expense)
+  }
+
+  /**
+   * Get list of active kasir for dropdown
+   * 
+   * NEW: Returns all active kasir with id and nama only
+   * Used for kasir selection dropdown in expense form
+   * 
+   * @returns Array of active kasir with id and nama
+   */
+  async getActiveKasirList(): Promise<Array<{ id: string; nama: string }>> {
+    const kasirList = await this.prisma.kasir.findMany({
+      where: {
+        isActive: true
+      },
+      select: {
+        id: true,
+        nama: true
+      },
+      orderBy: {
+        nama: 'asc'
+      }
+    })
+
+    return kasirList
   }
 
   /**

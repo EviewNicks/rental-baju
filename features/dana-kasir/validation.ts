@@ -6,6 +6,11 @@ import { EXPENSE_CATEGORIES } from './types'
 
 // Create expense validation schema
 export const createPengeluaranSchema = z.object({
+  kasirId: z
+    .string({ message: 'Kasir harus dipilih' })
+    .uuid('Kasir ID tidak valid')
+    .min(1, 'Kasir harus dipilih'),  // NEW: Validate kasir selection
+    
   harga: z
     .number({ message: 'Jumlah harus berupa angka' })
     .positive('Jumlah harus lebih besar dari 0')
@@ -30,6 +35,11 @@ export const createPengeluaranSchema = z.object({
 
 // Update expense validation schema (all fields optional)
 export const updatePengeluaranSchema = z.object({
+  kasirId: z
+    .string()
+    .uuid('Kasir ID tidak valid')
+    .optional(),  // NEW: Can update kasir assignment
+    
   harga: z
     .number({ message: 'Jumlah harus berupa angka' })
     .positive('Jumlah harus lebih besar dari 0')
@@ -95,6 +105,8 @@ export const validateDateRange = (data: unknown) => {
 
 // Error message mapping for consistent error handling
 export const ERROR_MESSAGES = {
+  REQUIRED_KASIR: 'Kasir harus dipilih',  // NEW
+  INVALID_KASIR_ID: 'Kasir ID tidak valid',  // NEW
   REQUIRED_AMOUNT: 'Jumlah harus diisi',
   INVALID_AMOUNT: 'Jumlah harus lebih besar dari 0',
   AMOUNT_TOO_LARGE: 'Jumlah terlalu besar',

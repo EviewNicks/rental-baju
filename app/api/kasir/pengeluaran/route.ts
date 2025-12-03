@@ -92,7 +92,7 @@ export async function GET(request: NextRequest) {
  * POST /api/kasir/pengeluaran
  * 
  * Create a new expense record
- * Body: { harga, kategori, deskripsi }
+ * Body: { kasirId, harga, kategori, deskripsi }  // NEW: kasirId required
  * Auth: Kasir (write only)
  */
 export async function POST(request: NextRequest) {
@@ -134,7 +134,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Validate request body
+    // Validate request body (including kasirId)
     const validation = validateCreatePengeluaran(requestBody)
     if (!validation.success) {
       return NextResponse.json(
@@ -154,13 +154,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Get user's kasir ID (for now, we'll use userId as kasirId)
-    const kasirId = userId
+    // NEW: Use kasirId from request body (not from authenticated user)
+    // This allows admin to record expenses on behalf of different kasir
+    const kasirId = validation.data.kasirId
 
     // Create service instance
+    // userId = Clerk ID (who created it), kasirId = selected kasir (who is responsible)
     const pengeluaranService = new PengeluaranService(prisma, userId, kasirId)
 
-    // Create expense
+    // Create expense with kasirId from request
     const expense = await pengeluaranService.create(validation.data)
 
     return NextResponse.json(
@@ -185,6 +187,20 @@ export async function POST(request: NextRequest) {
           }
         },
         { status: 400 }
+      )
+    }
+
+    // Handle kasir not found error
+    if (error instanceof Error && error.message.includes('Kasir tidak ditemukan')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            message: error.message,
+            code: 'KASIR_NOT_FOUND'
+          }
+        },
+        { status: 404 }
       )
     }
 

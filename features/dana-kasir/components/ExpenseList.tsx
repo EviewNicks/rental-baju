@@ -24,6 +24,7 @@ interface ExpenseListProps {
   expenses: PengeluaranKasir[]
   isLoading?: boolean
   canWrite?: boolean
+  onAdd?: () => void  // NEW: Handler for add button
   onEdit?: (expense: PengeluaranKasir) => void
   onDelete?: (expense: PengeluaranKasir) => void
   onRefresh?: () => void
@@ -33,6 +34,7 @@ export function ExpenseList({
   expenses, 
   isLoading, 
   canWrite = false,
+  onAdd,  // NEW
   onEdit,
   onDelete,
   onRefresh 
@@ -69,10 +71,7 @@ export function ExpenseList({
           </div>
           {canWrite && (
             <button
-              onClick={() => {
-                // TODO: Open add expense modal
-                console.log('Add expense clicked')
-              }}
+              onClick={onAdd}
               className="flex items-center gap-2 px-3 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-sm font-medium"
             >
               <Plus className="w-4 h-4" />
@@ -128,10 +127,7 @@ export function ExpenseList({
             </span>
             {canWrite && (
               <button
-                onClick={() => {
-                  // TODO: Open add expense modal
-                  console.log('Add expense clicked')
-                }}
+                onClick={onAdd}
                 className="flex items-center gap-2 px-3 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-sm font-medium"
               >
                 <Plus className="w-4 h-4" />

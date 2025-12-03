@@ -53,8 +53,16 @@ export const getWITADayRange = (date: Date): { start: Date; end: Date } => {
  * Format date to YYYY-MM-DD string in WITA timezone
  */
 export const formatWITADate = (date: Date): string => {
-  const witaDate = toWITADate(date)
-  return witaDate.toISOString().split('T')[0]
+  // Use toLocaleDateString with Asia/Makassar timezone to get correct date
+  const options: Intl.DateTimeFormatOptions = {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    timeZone: 'Asia/Makassar'
+  }
+  
+  const parts = date.toLocaleDateString('en-CA', options) // en-CA gives YYYY-MM-DD format
+  return parts
 }
 
 /**

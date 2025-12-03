@@ -30,12 +30,14 @@ export interface PengeluaranKasir {
 
 // API request types
 export interface CreatePengeluaranRequest {
+  kasirId: string  // NEW: Selected kasir from dropdown
   harga: number
   kategori: ExpenseCategory
   deskripsi?: string
 }
 
 export interface UpdatePengeluaranRequest {
+  kasirId?: string  // NEW: Can update kasir assignment
   harga?: number
   kategori?: ExpenseCategory
   deskripsi?: string
@@ -70,9 +72,16 @@ export interface DanaSummaryResponse {
 
 // Form data for UI components
 export interface PengeluaranFormData {
+  kasirId: string  // NEW: Selected kasir from dropdown
   harga: number
   kategori: ExpenseCategory
   deskripsi?: string
+}
+
+// Kasir list item for dropdown (NEW)
+export interface KasirListItem {
+  id: string
+  nama: string
 }
 
 // API response wrapper

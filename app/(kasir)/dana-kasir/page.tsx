@@ -23,6 +23,7 @@ import { useUserRole } from '@/features/auth'
 import ErrorBoundary, { ApiErrorFallback } from '@/features/kasir/components/ui/error-boundary'
 import { DanaKasirDashboard } from '@/features/dana-kasir/components/DanaKasirDashboard'
 import { DanaKasirSkeleton } from '@/features/dana-kasir/components/DanaKasirSkeleton'
+import { getCurrentWITADate, parseWITADate } from '@/features/dana-kasir/utils/timezone'
 
 /**
  * Dashboard content component with search params
@@ -31,9 +32,9 @@ function DashboardContent() {
   const searchParams = useSearchParams()
   const { role, isLoading: roleLoading } = useUserRole()
   
-  // Get date from URL or default to today
+  // Get date from URL or default to today in WITA timezone
   const dateParam = searchParams.get('date')
-  const selectedDate = dateParam ? new Date(dateParam) : new Date()
+  const selectedDate = dateParam ? parseWITADate(dateParam) : getCurrentWITADate()
 
   // Show loading state while checking role
   if (roleLoading) {

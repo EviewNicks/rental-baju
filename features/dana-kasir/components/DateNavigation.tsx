@@ -55,12 +55,13 @@ export function DateNavigation({
     setShowDatePicker(false)
   }
 
-  // Format date for display
+  // Format date for display in WITA timezone
   const displayDate = selectedDate.toLocaleDateString('id-ID', {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
-    day: 'numeric'
+    day: 'numeric',
+    timeZone: 'Asia/Makassar' // WITA timezone
   })
 
   // Check if selected date is today

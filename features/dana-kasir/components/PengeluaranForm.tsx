@@ -42,15 +42,23 @@ interface PengeluaranFormProps {
 }
 
 interface FormData {
+  kasirId: string  // NEW: Selected kasir from dropdown
   harga: number
   kategori: ExpenseCategory | ''
   deskripsi: string
 }
 
 interface FormErrors {
+  kasirId?: string  // NEW
   harga?: string
   kategori?: string
   deskripsi?: string
+}
+
+// NEW: Kasir list item type
+interface KasirListItem {
+  id: string
+  nama: string
 }
 
 export function PengeluaranForm({ 
@@ -63,6 +71,7 @@ export function PengeluaranForm({
   
   // Form state
   const [formData, setFormData] = useState<FormData>({
+    kasirId: '',  // NEW
     harga: 0,
     kategori: '',
     deskripsi: ''
@@ -71,11 +80,22 @@ export function PengeluaranForm({
   const [amountInput, setAmountInput] = useState('')
   const [errors, setErrors] = useState<FormErrors>({})
   
+  // NEW: Kasir list state
+  const [kasirList, setKasirList] = useState<KasirListItem[]>([])
+  const [isLoadingKasir, setIsLoadingKasir] = useState(false)
+  
   // Mutations
   const createMutation = useCreatePengeluaran()
   const updateMutation = useUpdatePengeluaran()
   
   const isLoading = createMutation.isPending || updateMutation.isPending
+
+  // NEW: Fetch kasir list when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      fetchKasirList()
+    }
+  }, [isOpen])
 
   // Reset form when modal opens/closes or initialData changes
   useEffect(() => {
@@ -83,6 +103,7 @@ export function PengeluaranForm({
       if (initialData) {
         // Edit mode - populate form
         setFormData({
+          kasirId: initialData.kasirId,  // NEW
           harga: initialData.harga,
           kategori: initialData.kategori,
           deskripsi: initialData.deskripsi || '',
@@ -91,6 +112,7 @@ export function PengeluaranForm({
       } else {
         // Create mode - reset form
         setFormData({
+          kasirId: '',  // NEW
           harga: 0,
           kategori: '',
           deskripsi: ''
@@ -100,6 +122,34 @@ export function PengeluaranForm({
       setErrors({})
     }
   }, [isOpen, initialData])
+
+  // NEW: Fetch kasir list from API
+  const fetchKasirList = async () => {
+    setIsLoadingKasir(true)
+    try {
+      // Use existing /api/kasir/kasir endpoint with appropriate params
+      // limit=100 to get all active kasir (reasonable limit for dropdown)
+      // isActive=true to filter only active kasir
+      const response = await fetch('/api/kasir/kasir?limit=100&isActive=true')
+      if (!response.ok) {
+        throw new Error('Failed to fetch kasir list')
+      }
+      const result = await response.json()
+      if (result.success && result.data?.data) {
+        // Extract id and nama only for dropdown
+        const simplifiedList = result.data.data.map((kasir: any) => ({
+          id: kasir.id,
+          nama: kasir.nama
+        }))
+        setKasirList(simplifiedList)
+      }
+    } catch (error) {
+      console.error('Error fetching kasir list:', error)
+      toast.error('Gagal memuat daftar kasir')
+    } finally {
+      setIsLoadingKasir(false)
+    }
+  }
 
   // Handle amount input formatting
   const handleAmountChange = (value: string) => {
@@ -119,6 +169,16 @@ export function PengeluaranForm({
     // Clear error when user types
     if (errors.harga) {
       setErrors(prev => ({ ...prev, harga: undefined }))
+    }
+  }
+
+  // NEW: Handle kasir change
+  const handleKasirChange = (value: string) => {
+    setFormData(prev => ({ ...prev, kasirId: value }))
+    
+    // Clear error when user selects
+    if (errors.kasirId) {
+      setErrors(prev => ({ ...prev, kasirId: undefined }))
     }
   }
 
@@ -178,6 +238,7 @@ export function PengeluaranForm({
         await updateMutation.mutateAsync({
           id: initialData.id,
           data: {
+            kasirId: formData.kasirId,  // NEW: Include kasirId
             harga: formData.harga,
             kategori: formData.kategori as ExpenseCategory,
             deskripsi: formData.deskripsi || undefined,
@@ -187,6 +248,7 @@ export function PengeluaranForm({
       } else {
         // Create new expense
         await createMutation.mutateAsync({
+          kasirId: formData.kasirId,  // NEW: Include kasirId
           harga: formData.harga,
           kategori: formData.kategori as ExpenseCategory,
           deskripsi: formData.deskripsi || undefined,
@@ -205,7 +267,7 @@ export function PengeluaranForm({
   // Handle close
   const handleClose = () => {
     if (isLoading) return // Prevent closing while loading
-    setFormData({ harga: 0, kategori: '', deskripsi: '' })
+    setFormData({ kasirId: '', harga: 0, kategori: '', deskripsi: '' })  // NEW: Reset kasirId
     setAmountInput('')
     setErrors({})
     onClose()
@@ -230,6 +292,36 @@ export function PengeluaranForm({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* NEW: Kasir Selection Field */}
+          <div className="space-y-2">
+            <Label htmlFor="kasirId">
+              Kasir <span className="text-red-500">*</span>
+            </Label>
+            <Select
+              value={formData.kasirId}
+              onValueChange={handleKasirChange}
+              disabled={isLoading || isLoadingKasir}
+            >
+              <SelectTrigger 
+                id="kasirId"
+                className="w-full"
+                aria-invalid={!!errors.kasirId}
+              >
+                <SelectValue placeholder={isLoadingKasir ? "Memuat..." : "Pilih kasir"} />
+              </SelectTrigger>
+              <SelectContent>
+                {kasirList.map((kasir) => (
+                  <SelectItem key={kasir.id} value={kasir.id}>
+                    {kasir.nama}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.kasirId && (
+              <p className="text-sm text-red-600">{errors.kasirId}</p>
+            )}
+          </div>
+
           {/* Amount Field */}
           <div className="space-y-2">
             <Label htmlFor="harga">
@@ -317,7 +409,7 @@ export function PengeluaranForm({
             </Button>
             <Button
               type="submit"
-              disabled={isLoading || !formData.harga || !formData.kategori}
+              disabled={isLoading || !formData.kasirId || !formData.harga || !formData.kategori}
               className="w-full sm:w-auto"
             >
               {isLoading ? (
