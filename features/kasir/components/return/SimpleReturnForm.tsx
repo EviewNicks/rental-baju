@@ -162,9 +162,18 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
       Object.entries(formState.itemConditions).forEach(([itemId, condition]) => {
         let itemPenalty = 0
 
-        // Get item name from transaction data
+        // Get item name and size info from transaction data
         const item = transaction.items?.find((i) => i.id === itemId)
         const itemName = item?.produk?.name || 'Unknown Product'
+        
+        // Extract size information from kondisiAwal
+        const sizeInfo = item?.kondisiAwal ? (() => {
+          const parts = item.kondisiAwal.split('|')
+          if (parts.length >= 4) {
+            return ` (${parts[1]} | ${parts[2]})`
+          }
+          return ''
+        })() : ''
 
         // Calculate penalty for each condition within this item
         condition.conditions.forEach((c) => {
@@ -182,7 +191,7 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
         totalPenalty += itemPenalty
         itemBreakdown.push({
           itemId,
-          itemName,
+          itemName: itemName + sizeInfo,
           penalty: itemPenalty,
         })
       })

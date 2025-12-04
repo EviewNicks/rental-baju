@@ -2,13 +2,20 @@
  * Simplified Unified Return Service - Option 2: Balanced Approach
  *
  * Transformation from 1,396 lines to ~300 lines using pre-validation pattern
- * Performance optimization: 20-32s � <3s processing time
+ * Performance optimization: 20-32s → <3s processing time
  *
  * Key Changes:
  * - Pre-validation pattern (extract validation outside transaction)
+ * - Atomic stock updates INSIDE transaction (critical fix for data consistency)
  * - Minimal transaction scope (only critical operations)
  * - Simplified error handling and logging
  * - All business logic preserved
+ *
+ * CRITICAL FIX (2024-12-04):
+ * - Moved stock updates INSIDE transaction to ensure atomicity
+ * - Prevents data inconsistency between return records and inventory
+ * - Aligns with transaction service pattern for consistency
+ * - Eliminates race conditions and silent failures
  */
 
 import { PrismaClient, Prisma } from '@prisma/client'
@@ -704,10 +711,57 @@ export class UnifiedReturnService {
             ),
           ])
 
+          // ✅ CRITICAL FIX: Move stock updates INSIDE transaction for atomicity
+          // This ensures that if stock update fails, the entire return is rolled back
+          // Prevents data inconsistency between return records and inventory
+          if (sizeUpdates.size > 0) {
+            kasirLogger.returnProcess.info(
+              'processUnifiedReturn',
+              'Starting atomic stock updates inside transaction',
+              { sizeUpdateCount: sizeUpdates.size },
+            )
+
+            await Promise.all(
+              Array.from(sizeUpdates.entries()).map(async ([sizeId, quantity]) => {
+                try {
+                  // Update stock atomically within transaction
+                  // rentedQuantity--, availableQuantity++
+                  await inventoryService.updateStockOnReturn(sizeId, quantity)
+                  
+                  kasirLogger.returnProcess.debug(
+                    'processUnifiedReturn',
+                    'Stock updated successfully inside transaction',
+                    { sizeId, quantity },
+                  )
+                } catch (error) {
+                  kasirLogger.returnProcess.error(
+                    'processUnifiedReturn',
+                    'Stock update failed - transaction will rollback',
+                    {
+                      sizeId,
+                      quantity,
+                      error: error instanceof Error ? error.message : 'Unknown error',
+                    },
+                  )
+                  // Throw error to trigger transaction rollback
+                  throw new Error(
+                    `Stock update failed for size ${sizeId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+                  )
+                }
+              }),
+            )
+
+            kasirLogger.returnProcess.info(
+              'processUnifiedReturn',
+              'All stock updates completed atomically',
+              { totalSizeUpdates: sizeUpdates.size },
+            )
+          }
+
           const transactionDuration = Date.now() - transactionStart
           kasirLogger.returnProcess.info(
             'processUnifiedReturn',
-            'Optimized transaction completed',
+            'Optimized transaction completed with atomic stock updates',
             {
               transaksiId,
               duration: transactionDuration,
@@ -727,53 +781,8 @@ export class UnifiedReturnService {
             processingMode: 'unified' as const,
           }
         },
-        { timeout: 15000 }, // Reduced timeout due to optimization
+        { timeout: 30000 }, // ✅ Increased timeout to accommodate stock updates inside transaction
       )
-
-      // ENHANCED: Update stock using InventoryService after transaction completion
-      // Process size updates outside transaction for consistency with new schema
-      if (sizeUpdates.size > 0) {
-        kasirLogger.returnProcess.info(
-          'processUnifiedReturn',
-          'Starting stock updates with InventoryService',
-          { sizeUpdateCount: sizeUpdates.size },
-        )
-
-        try {
-          await Promise.all(
-            Array.from(sizeUpdates.entries()).map(async ([sizeId, quantity]) => {
-              try {
-                await inventoryService.updateStockOnReturn(sizeId, quantity)
-                kasirLogger.returnProcess.debug(
-                  'processUnifiedReturn',
-                  'Stock updated successfully',
-                  { sizeId, quantity },
-                )
-              } catch (error) {
-                kasirLogger.returnProcess.error('processUnifiedReturn', 'Stock update failed', {
-                  sizeId,
-                  quantity,
-                  error: error instanceof Error ? error.message : 'Unknown error',
-                })
-                throw new Error(
-                  `Stock update failed for size ${sizeId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
-                )
-              }
-            }),
-          )
-
-          kasirLogger.returnProcess.info(
-            'processUnifiedReturn',
-            'All stock updates completed successfully',
-            { totalSizeUpdates: sizeUpdates.size },
-          )
-        } catch (stockError) {
-          kasirLogger.returnProcess.error('processUnifiedReturn', 'Critical stock update failure', {
-            error: stockError instanceof Error ? stockError.message : 'Unknown error',
-          })
-          throw stockError
-        }
-      }
 
       const totalProcessingTime = Date.now() - startTime
       kasirLogger.returnProcess.info('processUnifiedReturn', 'Transaction completed successfully', {

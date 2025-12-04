@@ -15,6 +15,7 @@ import type {
   ConditionCategory,
 } from '../../types'
 import { kasirLogger } from '../../lib/logger'
+import { extractSizeInfo } from '../../lib/utils/kondisiAwalParser'
 
 /**
  * UnifiedConditionForm Component
@@ -369,6 +370,9 @@ export function UnifiedConditionForm({
     return 'border-gray-200'
   }
 
+  // Extract size information from kondisiAwal
+  const sizeInfo = useMemo(() => extractSizeInfo(item), [item])
+
   return (
     <Card className={`transition-all duration-200 ${getCardStyling()}`}>
       <CardHeader>
@@ -380,6 +384,11 @@ export function UnifiedConditionForm({
             <div>
               <CardTitle className="text-lg flex items-center gap-2">
                 {item.produk?.name || 'Unknown Product'}
+                {sizeInfo.hasSizeInfo && (
+                  <Badge variant="outline" className="bg-indigo-100 text-indigo-800 border-indigo-200">
+                    {sizeInfo.size} | {sizeInfo.ageCategory}
+                  </Badge>
+                )}
                 <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-200">
                   {item.jumlahDiambil} unit
                 </Badge>
@@ -392,11 +401,6 @@ export function UnifiedConditionForm({
                   </Badge>
                 )}
               </CardTitle>
-              <p className="text-sm text-gray-600 mt-1">
-                {currentCondition.conditions.length === 1
-                  ? 'Kondisi tunggal untuk semua unit'
-                  : `Kondisi berbeda untuk ${currentCondition.conditions.length} kelompok unit`}
-              </p>
             </div>
           </div>
 
