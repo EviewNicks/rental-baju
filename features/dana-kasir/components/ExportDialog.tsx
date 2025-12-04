@@ -109,9 +109,11 @@ export function ExportDialog({ isOpen, onClose }: ExportDialogProps) {
       let filename = `dana-kasir-${startDate}.csv`
       
       if (contentDisposition) {
-        const filenameMatch = contentDisposition.match(/filename="?(.+)"?/)
+        // Match filename with or without quotes, properly handling both cases
+        const filenameMatch = contentDisposition.match(/filename="([^"]+)"|filename=([^;]+)/)
         if (filenameMatch) {
-          filename = filenameMatch[1]
+          // Use the first capturing group (quoted) or second (unquoted)
+          filename = (filenameMatch[1] || filenameMatch[2]).trim()
         }
       }
 

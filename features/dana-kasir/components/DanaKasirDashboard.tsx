@@ -11,7 +11,6 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Download } from 'lucide-react'
 import { DateNavigation } from './DateNavigation'
 import { SummaryCards } from './SummaryCards'
 import { IncomeList } from './IncomeList'
@@ -124,6 +123,7 @@ export function DanaKasirDashboard({ initialDate, userRole }: DanaKasirDashboard
           selectedDate={selectedDate}
           onDateChange={handleDateChange}
           canExport={canExport}
+          onExport={handleExport}
         />
       </div>
 
@@ -163,29 +163,16 @@ export function DanaKasirDashboard({ initialDate, userRole }: DanaKasirDashboard
           expenses={data?.expenses || []}
           isLoading={isLoading}
           canWrite={canWrite}
-          onAdd={handleAddExpense}  // NEW: Pass add handler
+          onAdd={handleAddExpense}
           onEdit={handleEditExpense}
           onDelete={handleDeleteExpense}
           onRefresh={refetch}
         />
       </div>
 
-      {/* Export Button - Owner Only */}
-      {canExport && (
-        <div className="flex justify-center">
-          <button
-            onClick={handleExport}
-            className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium shadow-md hover:shadow-lg"
-          >
-            <Download className="w-5 h-5" />
-            Export CSV
-          </button>
-        </div>
-      )}
-
       {/* Role Info Badge */}
       {canExport && (
-        <div className="mt-6 flex justify-center">
+        <div className="flex justify-center">
           <div className="inline-flex items-center px-4 py-2 bg-blue-50 border border-blue-200 rounded-lg">
             <span className="text-sm text-blue-800">
               <strong>Mode Owner:</strong> Anda dapat melihat semua data dalam mode read-only

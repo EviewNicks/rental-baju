@@ -20,12 +20,14 @@ interface DateNavigationProps {
   selectedDate: Date
   onDateChange: (date: Date) => void
   canExport?: boolean
+  onExport?: () => void
 }
 
 export function DateNavigation({ 
   selectedDate, 
   onDateChange,
-  canExport = false 
+  canExport = false,
+  onExport
 }: DateNavigationProps) {
   const [showDatePicker, setShowDatePicker] = useState(false)
 
@@ -128,12 +130,9 @@ export function DateNavigation({
       </div>
 
       {/* Export Button (Owner only) */}
-      {canExport && (
+      {canExport && onExport && (
         <button
-          onClick={() => {
-            // TODO: Implement export dialog
-            console.log('Export clicked')
-          }}
+          onClick={onExport}
           className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors text-sm font-medium"
         >
           <Download className="w-4 h-4" />
