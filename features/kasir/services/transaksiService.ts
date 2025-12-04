@@ -14,7 +14,7 @@ import {
 import { TransactionCodeGenerator } from '../lib/utils/codeGenerator'
 import { PriceCalculator } from '../lib/utils/server'
 import { createAvailabilityService, AvailabilityService } from './availabilityService'
-import { inventoryService } from './inventoryService'
+import { createInventoryService } from './inventoryService'
 import type { TransactionStatus } from '../types'
 import { TransactionLogger } from '../lib/logger/transactionLogger'
 
@@ -605,20 +605,23 @@ export class TransaksiService {
     tx: any, // Prisma transaction type
     items: CreateTransaksiRequest['items'],
   ): Promise<void> {
+    // ✅ PERFORMANCE FIX: Use transaction-scoped inventory service
+    const txInventoryService = createInventoryService(tx)
+    
     for (const item of items) {
       // Validate availability using InventoryService
-      const isAvailable = await inventoryService.checkAvailability(item.productSizeId, item.jumlah)
+      const isAvailable = await txInventoryService.checkAvailability(item.productSizeId, item.jumlah)
 
       if (!isAvailable) {
         // Get stock status for detailed error message
-        const stockStatus = await inventoryService.getStockStatus(item.productSizeId)
+        const stockStatus = await txInventoryService.getStockStatus(item.productSizeId)
         throw new Error(
           `Insufficient stock for product size. Available: ${stockStatus.availableQuantity}, Requested: ${item.jumlah}`,
         )
       }
 
       // Update stock using InventoryService (atomic operation)
-      await inventoryService.updateStockOnCreate(item.productSizeId, item.jumlah)
+      await txInventoryService.updateStockOnCreate(item.productSizeId, item.jumlah)
     }
   }
 
@@ -657,6 +660,9 @@ export class TransaksiService {
       throw new Error(`Ukuran produk dengan ID ${missingIds[0]} tidak tersedia`)
     }
 
+    // ✅ PERFORMANCE FIX: Use global inventory service for pre-validation (outside transaction)
+    const inventoryService = createInventoryService(this.prisma)
+    
     // Validate each item using InventoryService for real-time stock checking
     for (const item of items) {
       const productSize = productSizes.find((ps) => ps.id === item.productSizeId)
@@ -950,6 +956,9 @@ export class TransaksiService {
             },
           })
 
+          // ✅ PERFORMANCE FIX: Use transaction-scoped inventory service
+          const txInventoryService = createInventoryService(tx)
+          
           // Restore stock using InventoryService for consistency
           await Promise.all(
             transaksiItems.map(async (item) => {
@@ -963,7 +972,7 @@ export class TransaksiService {
 
                 if (productSizeId) {
                   // Use InventoryService for consistent stock management
-                  await inventoryService.updateStockOnReturn(productSizeId, quantityToRestore)
+                  await txInventoryService.updateStockOnReturn(productSizeId, quantityToRestore)
                 }
               }
             }),

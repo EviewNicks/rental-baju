@@ -60,13 +60,11 @@ export interface ConsistencyValidation {
 /**
  * InventoryService provides centralized inventory management with atomic operations
  * and real-time stock tracking using the Enhanced ProductSize schema
+ * 
+ * PERFORMANCE FIX: Accepts Prisma instance to avoid connection pool exhaustion
  */
 export class InventoryService {
-  private prisma: PrismaClient
-
-  constructor() {
-    this.prisma = new PrismaClient()
-  }
+  constructor(private prisma: PrismaClient) {}
 
   /**
    * Update stock when creating a rental transaction
@@ -82,8 +80,6 @@ export class InventoryService {
     }
 
     try {
-      console.info('Updating stock on create', { sizeId, quantity })
-
       await this.prisma.productSize.update({
         where: { id: sizeId },
         data: {
@@ -91,10 +87,7 @@ export class InventoryService {
           availableQuantity: { decrement: quantity },
         },
       })
-
-      console.info('Stock updated on create successfully', { sizeId, quantity })
     } catch (error) {
-      console.error('Failed to update stock on create', { sizeId, quantity, error })
       throw new Error(
         `Failed to update stock on create: ${error instanceof Error ? error.message : 'Unknown error'}`,
       )
@@ -115,8 +108,6 @@ export class InventoryService {
     }
 
     try {
-      console.info('Updating stock on return', { sizeId, quantity })
-
       await this.prisma.productSize.update({
         where: { id: sizeId },
         data: {
@@ -124,10 +115,7 @@ export class InventoryService {
           availableQuantity: { increment: quantity },
         },
       })
-
-      console.info('Stock updated on return successfully', { sizeId, quantity })
     } catch (error) {
-      console.error('Failed to update stock on return', { sizeId, quantity, error })
       throw new Error(
         `Failed to update stock on return: ${error instanceof Error ? error.message : 'Unknown error'}`,
       )
@@ -158,24 +146,13 @@ export class InventoryService {
       })
 
       if (!productSize) {
-        console.warn('ProductSize not found for availability check', { sizeId })
         return false
       }
 
       // Ensure availableQuantity is not negative due to any inconsistency
       const availableQuantity = Math.max(0, productSize.availableQuantity || 0)
-      const isAvailable = availableQuantity >= requestedQty
-
-      console.debug('Availability check result', {
-        sizeId,
-        requestedQty,
-        availableQuantity,
-        isAvailable,
-      })
-
-      return isAvailable
+      return availableQuantity >= requestedQty
     } catch (error) {
-      console.error('Failed to check availability', { sizeId, requestedQty, error })
       // Return false on error to prevent overselling
       return false
     }
@@ -212,23 +189,14 @@ export class InventoryService {
       const isAvailable = availableQuantity > 0
       const utilizationRate = originalQuantity > 0 ? (rentedQuantity / originalQuantity) * 100 : 0
 
-      const status: StockStatus = {
+      return {
         originalQuantity,
         availableQuantity,
         rentedQuantity,
         isAvailable,
         utilizationRate: Math.round(utilizationRate * 100) / 100, // Round to 2 decimal places
       }
-
-      console.debug('Stock status retrieved', {
-        sizeId,
-        status,
-      })
-
-      return status
     } catch (error) {
-      console.error('Failed to get stock status', { sizeId, error })
-
       // Return default status on error to prevent system failure
       return {
         originalQuantity: 0,
@@ -287,13 +255,6 @@ export class InventoryService {
         stockStatus,
       }
     } catch (error) {
-      console.error('Failed to check availability by product and size', {
-        productId,
-        size,
-        requestedQty,
-        error,
-      })
-
       return {
         productId,
         size,
@@ -348,26 +309,14 @@ export class InventoryService {
       const availableQuantity = sizes.reduce((sum, size) => sum + size.availableQuantity, 0)
       const rentedQuantity = sizes.reduce((sum, size) => sum + size.rentedQuantity, 0)
 
-      const status: ProductStockStatus = {
+      return {
         productId,
         totalQuantity,
         availableQuantity,
         rentedQuantity,
         sizes,
       }
-
-      console.debug('Product stock status retrieved', {
-        productId,
-        totalSizes: sizes.length,
-        totalQuantity,
-        availableQuantity,
-        rentedQuantity,
-      })
-
-      return status
     } catch (error) {
-      console.error('Failed to get product stock status', { productId, error })
-
       // Return default status on error
       return {
         productId,
@@ -407,26 +356,13 @@ export class InventoryService {
       const calculatedTotal = availableQuantity + rentedQuantity
       const difference = originalQuantity - calculatedTotal
 
-      const validation: ConsistencyValidation = {
+      return {
         isConsistent: difference === 0,
         originalQuantity,
         calculatedTotal,
         difference,
       }
-
-      if (!validation.isConsistent) {
-        console.warn('Inventory consistency issue detected', {
-          sizeId,
-          originalQuantity,
-          calculatedTotal,
-          difference,
-        })
-      }
-
-      return validation
     } catch (error) {
-      console.error('Failed to validate consistency', { sizeId, error })
-
       // Return inconsistent status on error
       return {
         isConsistent: false,
@@ -445,34 +381,17 @@ export class InventoryService {
    * @returns Array of ConsistencyValidation results
    */
   async validateBatchConsistency(sizeIds: string[]): Promise<ConsistencyValidation[]> {
-    const results = await Promise.all(sizeIds.map((sizeId) => this.validateConsistency(sizeId)))
-
-    const inconsistentCount = results.filter((r) => !r.isConsistent).length
-    if (inconsistentCount > 0) {
-      console.warn('Batch consistency validation completed with issues', {
-        totalSizes: sizeIds.length,
-        inconsistentCount,
-        inconsistentSizeIds: results
-          .filter((r) => !r.isConsistent)
-          .map((_, index) => sizeIds[index]),
-      })
-    } else {
-      console.info('Batch consistency validation completed successfully', {
-        totalSizes: sizeIds.length,
-      })
-    }
-
-    return results
+    return await Promise.all(sizeIds.map((sizeId) => this.validateConsistency(sizeId)))
   }
 
-  /**
-   * Clean up database connections
-   * Call this method when shutting down the service
-   */
-  async disconnect(): Promise<void> {
-    await this.prisma.$disconnect()
-  }
 }
 
-// Export singleton instance for easy usage across the application
-export const inventoryService = new InventoryService()
+// Export factory function for creating inventory service with Prisma instance
+export const createInventoryService = (prisma: PrismaClient) => {
+  return new InventoryService(prisma)
+}
+
+// Export singleton instance for backward compatibility (uses global prisma)
+// NOTE: For performance-critical operations, use createInventoryService with transaction prisma
+import { prisma as globalPrisma } from '@/lib/prisma'
+export const inventoryService = new InventoryService(globalPrisma)

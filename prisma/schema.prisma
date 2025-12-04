@@ -222,18 +222,20 @@ model TransaksiItemReturn {
 }
 
 model Pembayaran {
-  id          String    @id @default(uuid())
-  transaksiId String
-  jumlah      Decimal   @db.Decimal(10, 2)
-  metode      String
-  referensi   String?
-  catatan     String?
-  createdBy   String
-  createdAt   DateTime  @default(now())
-  transaksi   Transaksi @relation(fields: [transaksiId], references: [id], onDelete: Cascade)
+  id               String    @id @default(uuid())
+  transaksiId      String
+  jumlah           Decimal   @db.Decimal(10, 2)
+  metode           String
+  referensi        String?
+  catatan          String?
+  createdBy        String
+  createdAt        DateTime  @default(now())
+  penaltyBreakdown Json?     // NEW: Detailed penalty breakdown for metode='penalty'
+  transaksi        Transaksi @relation(fields: [transaksiId], references: [id], onDelete: Cascade)
 
   @@index([transaksiId])
   @@index([createdAt])
+  @@index([metode, createdAt])  // NEW: For penalty payment queries
   @@map("pembayaran")
 }
 

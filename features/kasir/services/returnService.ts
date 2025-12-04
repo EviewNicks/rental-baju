@@ -31,7 +31,7 @@ import { createAuditService, AuditService } from './auditService'
 import { ConditionCategory } from '../types'
 import { kasirLogger } from '../lib/logger'
 import { parseKondisiAwal } from '../lib/utils/kondisiAwalParser'
-import { inventoryService } from './inventoryService'
+import { createInventoryService } from './inventoryService'
 
 // Unified return request interface - treats all returns as multi-condition
 interface UnifiedReturnRequest {
@@ -88,6 +88,68 @@ export interface ReturnValidationError {
   field: string
   message: string
   code: string
+}
+
+// Unified Activity Data Interface
+interface UnifiedActivityData {
+  summary: {
+    totalItems: number
+    totalPenalty: number
+    totalLatePenalty: number
+    totalConditionPenalty: number
+    isLateReturn: boolean
+    lateDays: number
+    returnDate: string
+  }
+  items: Array<{
+    itemId: string
+    productCode: string
+    productName: string
+    sizeInfo: string
+    totalItemPenalty: number
+    conditions: Array<{
+      kondisiAkhir: string
+      jumlahKembali: number
+      conditionCategory: ConditionCategory
+      penaltyAmount: number
+      manualPrice?: number
+      useManualPricing: boolean
+    }>
+  }>
+  metadata: {
+    processingMode: 'unified'
+    processingTime: number
+    statusChange: {
+      from: string
+      to: string
+    }
+  }
+}
+
+// Penalty Payment Data Interface
+interface PenaltyPaymentData {
+  transaksiId: string
+  jumlah: number
+  metode: 'penalty'
+  catatan: string
+  penaltyBreakdown: {
+    latePenalty: number
+    conditionPenalty: number
+    itemPenalties: Array<{
+      itemId: string
+      productName: string
+      sizeInfo: string
+      totalPenalty: number
+      latePenalty: number
+      conditionPenalty: number
+      conditions: Array<{
+        kondisiAkhir: string
+        jumlahKembali: number
+        penaltyAmount: number
+      }>
+    }>
+  }
+  createdBy: string
 }
 
 export class UnifiedReturnService {
@@ -174,8 +236,10 @@ export class UnifiedReturnService {
           : Promise.resolve([]),
       ])
 
-      const productMap = new Map(products.map((p) => [p.id, p]))
-      const sizeMap = new Map(productSizes.map((ps) => [ps.id, ps]))
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const productMap = new Map(products.map((p: any) => [p.id, p]))
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const sizeMap = new Map(productSizes.map((ps: any) => [ps.id, ps]))
 
       // Check transaction status eligibility
       if (
@@ -289,8 +353,10 @@ export class UnifiedReturnService {
       return {
         isValid: true,
         transaction: { transaction },
-        products: productMap,
-        productSizes: sizeMap,
+        //eslint-disable-next-line @typescript-eslint/no-explicit-any
+        products: productMap as Map<string, any>,
+        //eslint-disable-next-line @typescript-eslint/no-explicit-any
+        productSizes: sizeMap as Map<string, any>,
       }
     } catch (error) {
       kasirLogger.returnProcess.error('validateReturnRequest', 'Optimized validation failed', {
@@ -354,7 +420,8 @@ export class UnifiedReturnService {
       if (hasManualPricing && !hasHilangConditions) {
         // Enhanced penalty calculation for manual pricing
         const itemsForEnhancedCalculation = request.items.flatMap((returnItem) => {
-          const transactionItem = transaction.items.find((item) => item.id === returnItem.itemId)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const transactionItem = transaction.items.find((item: any) => item.id === returnItem.itemId)
           if (!transactionItem) {
             throw new Error(`Item dengan ID ${returnItem.itemId} tidak ditemukan`)
           }
@@ -408,7 +475,8 @@ export class UnifiedReturnService {
       } else {
         // Standard penalty calculation
         const itemsForCalculation = request.items.flatMap((returnItem) => {
-          const transactionItem = transaction.items.find((item) => item.id === returnItem.itemId)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const transactionItem = transaction.items.find((item: any) => item.id === returnItem.itemId)
           if (!transactionItem) {
             throw new Error(`Item dengan ID ${returnItem.itemId} tidak ditemukan`)
           }
@@ -568,7 +636,8 @@ export class UnifiedReturnService {
       const transactionStart = Date.now()
 
       const result = await this.prisma.$transaction(
-        async (tx) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        async (tx: any) => {
           const processedItems: UnifiedReturnProcessingResult['processedItems'] = []
 
           // PERFORMANCE: Collections already defined outside transaction
@@ -601,8 +670,9 @@ export class UnifiedReturnService {
 
           // Calculate all operations first
           for (const item of request.items) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const transactionItem = validation.transaction!.transaction.items.find(
-              (ti) => ti.id === item.itemId,
+              (ti: any) => ti.id === item.itemId,
             )
             if (!transactionItem) {
               throw new Error(`Transaction item ${item.itemId} not found`)
@@ -712,37 +782,20 @@ export class UnifiedReturnService {
           ])
 
           // ✅ CRITICAL FIX: Move stock updates INSIDE transaction for atomicity
+          // ✅ PERFORMANCE FIX: Use transaction-scoped inventory service to avoid connection pool exhaustion
           // This ensures that if stock update fails, the entire return is rolled back
           // Prevents data inconsistency between return records and inventory
           if (sizeUpdates.size > 0) {
-            kasirLogger.returnProcess.info(
-              'processUnifiedReturn',
-              'Starting atomic stock updates inside transaction',
-              { sizeUpdateCount: sizeUpdates.size },
-            )
-
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const txInventoryService = createInventoryService(tx as any as PrismaClient)
+            
             await Promise.all(
               Array.from(sizeUpdates.entries()).map(async ([sizeId, quantity]) => {
                 try {
                   // Update stock atomically within transaction
                   // rentedQuantity--, availableQuantity++
-                  await inventoryService.updateStockOnReturn(sizeId, quantity)
-                  
-                  kasirLogger.returnProcess.debug(
-                    'processUnifiedReturn',
-                    'Stock updated successfully inside transaction',
-                    { sizeId, quantity },
-                  )
+                  await txInventoryService.updateStockOnReturn(sizeId, quantity)
                 } catch (error) {
-                  kasirLogger.returnProcess.error(
-                    'processUnifiedReturn',
-                    'Stock update failed - transaction will rollback',
-                    {
-                      sizeId,
-                      quantity,
-                      error: error instanceof Error ? error.message : 'Unknown error',
-                    },
-                  )
                   // Throw error to trigger transaction rollback
                   throw new Error(
                     `Stock update failed for size ${sizeId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -750,18 +803,47 @@ export class UnifiedReturnService {
                 }
               }),
             )
+          }
+
+          // ✅ NEW: Create penalty payment record (Task 3.2: Integrate payment creation)
+          // This ensures penalty is tracked in dana kasir system
+          // Placed inside transaction for atomicity - if this fails, entire return rolls back
+          if (penaltyCalculation.totalPenalty > 0) {
+            const penaltyPaymentData = this.buildPenaltyPaymentData(
+              transaksiId,
+              request,
+              { ...result, processedItems },
+              penaltyCalculation,
+              validation.transaction!.transaction,
+            )
+
+            await tx.pembayaran.create({
+              data: {
+                transaksiId: penaltyPaymentData.transaksiId,
+                jumlah: new Decimal(penaltyPaymentData.jumlah),
+                metode: penaltyPaymentData.metode,
+                catatan: penaltyPaymentData.catatan,
+                createdBy: penaltyPaymentData.createdBy,
+                penaltyBreakdown: penaltyPaymentData.penaltyBreakdown as unknown as Prisma.InputJsonValue,
+              },
+            })
 
             kasirLogger.returnProcess.info(
               'processUnifiedReturn',
-              'All stock updates completed atomically',
-              { totalSizeUpdates: sizeUpdates.size },
+              'Penalty payment record created',
+              {
+                transaksiId,
+                penaltyAmount: penaltyPaymentData.jumlah,
+                latePenalty: penaltyPaymentData.penaltyBreakdown.latePenalty,
+                conditionPenalty: penaltyPaymentData.penaltyBreakdown.conditionPenalty,
+              },
             )
           }
 
           const transactionDuration = Date.now() - transactionStart
           kasirLogger.returnProcess.info(
             'processUnifiedReturn',
-            'Optimized transaction completed with atomic stock updates',
+            'Optimized transaction completed with atomic stock updates and penalty payment',
             {
               transaksiId,
               duration: transactionDuration,
@@ -769,6 +851,7 @@ export class UnifiedReturnService {
               itemUpdates: itemUpdates.length,
               stockUpdates: stockUpdates.size,
               sizeUpdates: sizeUpdates.size,
+              penaltyPaymentCreated: penaltyCalculation.totalPenalty > 0,
             },
           )
 
@@ -795,7 +878,13 @@ export class UnifiedReturnService {
       // PERFORMANCE OPTIMIZATION: Move post-processing to background
       setImmediate(async () => {
         try {
-          await this.processBackgroundActivities(transaksiId, request, result, penaltyCalculation)
+          await this.processBackgroundActivities(
+            transaksiId,
+            request,
+            result,
+            penaltyCalculation,
+            validation.transaction!.transaction,
+          )
         } catch (error) {
           kasirLogger.returnProcess.warn('processUnifiedReturn', 'Background processing failed', {
             transaksiId,
@@ -827,14 +916,151 @@ export class UnifiedReturnService {
   }
 
   /**
+   * Build unified activity data with comprehensive breakdown
+   * Task 2.1: Create UnifiedActivityData builder
+   */
+  private buildUnifiedActivityData(
+    request: UnifiedReturnRequest,
+    result: UnifiedReturnProcessingResult,
+    penaltyCalculation: PenaltyCalculationResult,
+    transaction: TransaksiForValidation,
+  ): UnifiedActivityData {
+    // Calculate late penalty breakdown
+    const lateDays = penaltyCalculation.totalLateDays || 0
+    const isLateReturn = lateDays > 0
+    const flatLatePenalty = isLateReturn ? 20000 * result.processedItems.length : 0
+    const totalConditionPenalty = penaltyCalculation.totalPenalty - flatLatePenalty
+
+    // Build items array with full details
+    const items = result.processedItems.map((processedItem) => {
+      const requestItem = request.items.find((ri) => ri.itemId === processedItem.itemId)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const transactionItem = transaction.items.find((ti: any) => ti.id === processedItem.itemId)
+
+      if (!requestItem || !transactionItem) {
+        throw new Error(`Item ${processedItem.itemId} not found in request or transaction`)
+      }
+
+      // Extract size info from kondisiAwal
+      const parsedKondisi = parseKondisiAwal(transactionItem.kondisiAwal)
+      const sizeInfo = parsedKondisi.productSizeId && !parsedKondisi.isLegacyFormat
+        ? `${parsedKondisi.size} | ${parsedKondisi.ageCategory}`
+        : 'N/A'
+
+      return {
+        itemId: processedItem.itemId,
+        productCode: transactionItem.produk.code || 'N/A',
+        productName: transactionItem.produk.name,
+        sizeInfo,
+        totalItemPenalty: processedItem.penalty,
+        conditions: requestItem.conditions.map((condition, index) => ({
+          kondisiAkhir: condition.kondisiAkhir,
+          jumlahKembali: condition.jumlahKembali,
+          conditionCategory: condition.conditionCategory || ConditionCategory.BAIK,
+          penaltyAmount: processedItem.conditionBreakdown?.[index]?.penaltyAmount || 0,
+          manualPrice: condition.manualPrice,
+          useManualPricing: condition.useManualPricing || false,
+        })),
+      }
+    })
+
+    return {
+      summary: {
+        totalItems: result.processedItems.length,
+        totalPenalty: penaltyCalculation.totalPenalty,
+        totalLatePenalty: flatLatePenalty,
+        totalConditionPenalty,
+        isLateReturn,
+        lateDays,
+        returnDate: result.returnedAt.toISOString(),
+      },
+      items,
+      metadata: {
+        processingMode: 'unified',
+        processingTime: 0, // Will be set by caller
+        statusChange: {
+          from: transaction.status,
+          to: 'selesai',
+        },
+      },
+    }
+  }
+
+  /**
+   * Build penalty payment data with detailed breakdown
+   * Task 3.1: Implement penalty payment builder
+   */
+  private buildPenaltyPaymentData(
+    transaksiId: string,
+    request: UnifiedReturnRequest,
+    result: UnifiedReturnProcessingResult,
+    penaltyCalculation: PenaltyCalculationResult,
+    transaction: TransaksiForValidation,
+  ): PenaltyPaymentData {
+    // Calculate late penalty breakdown
+    const lateDays = penaltyCalculation.totalLateDays || 0
+    const isLateReturn = lateDays > 0
+    const flatLatePenalty = isLateReturn ? 20000 * result.processedItems.length : 0
+    const totalConditionPenalty = penaltyCalculation.totalPenalty - flatLatePenalty
+
+    // Build item penalties array
+    const itemPenalties = result.processedItems.map((processedItem) => {
+      const requestItem = request.items.find((ri) => ri.itemId === processedItem.itemId)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const transactionItem = transaction.items.find((ti: any) => ti.id === processedItem.itemId)
+
+      if (!requestItem || !transactionItem) {
+        throw new Error(`Item ${processedItem.itemId} not found`)
+      }
+
+      // Extract size info
+      const parsedKondisi = parseKondisiAwal(transactionItem.kondisiAwal)
+      const sizeInfo = parsedKondisi.productSizeId && !parsedKondisi.isLegacyFormat
+        ? `${parsedKondisi.size} | ${parsedKondisi.ageCategory}`
+        : 'N/A'
+
+      // Calculate item-level late penalty
+      const itemLatePenalty = isLateReturn ? 20000 : 0
+      const itemConditionPenalty = processedItem.penalty - itemLatePenalty
+
+      return {
+        itemId: processedItem.itemId,
+        productName: transactionItem.produk.name,
+        sizeInfo,
+        totalPenalty: processedItem.penalty,
+        latePenalty: itemLatePenalty,
+        conditionPenalty: itemConditionPenalty,
+        conditions: (processedItem.conditionBreakdown || []).map((cb) => ({
+          kondisiAkhir: cb.kondisiAkhir,
+          jumlahKembali: cb.jumlahKembali,
+          penaltyAmount: cb.penaltyAmount,
+        })),
+      }
+    })
+
+    return {
+      transaksiId,
+      jumlah: penaltyCalculation.totalPenalty,
+      metode: 'penalty',
+      catatan: `Penalty pengembalian: ${isLateReturn ? `Terlambat ${lateDays} hari (Rp ${flatLatePenalty.toLocaleString('id-ID')})` : 'Tepat waktu'}${totalConditionPenalty > 0 ? ` + Kondisi barang (Rp ${totalConditionPenalty.toLocaleString('id-ID')})` : ''}`,
+      penaltyBreakdown: {
+        latePenalty: flatLatePenalty,
+        conditionPenalty: totalConditionPenalty,
+        itemPenalties,
+      },
+      createdBy: this.userId,
+    }
+  }
+
+  /**
    * BACKGROUND: Process non-critical activities asynchronously
    */
   private async processBackgroundActivities(
     transaksiId: string,
     request: UnifiedReturnRequest,
-    //eslint-disable-next-line @typescript-eslint/no-explicit-any
-    result: any,
+    result: UnifiedReturnProcessingResult,
     penaltyCalculation: PenaltyCalculationResult,
+    transaction: TransaksiForValidation,
   ): Promise<void> {
     const backgroundStart = Date.now()
 
@@ -845,38 +1071,40 @@ export class UnifiedReturnService {
         tglKembali: request.tglKembali || new Date().toISOString(),
       })
 
-      // Create simplified return activity
+      // Build unified activity data with full breakdown
+      const activityData = this.buildUnifiedActivityData(
+        request,
+        result,
+        penaltyCalculation,
+        transaction,
+      )
+
+      // Set processing time
+      activityData.metadata.processingTime = Date.now() - backgroundStart
+
+      // Create single comprehensive activity (Task 2: Unified Activity)
+      // This replaces the previous 3 separate activities (dikembalikan, penalty_added, status_changed)
+      const lateDays = activityData.summary.lateDays
+      const penaltyDesc = activityData.summary.totalPenalty > 0
+        ? `, Penalty: Rp ${activityData.summary.totalPenalty.toLocaleString('id-ID')}${lateDays > 0 ? ` (Terlambat ${lateDays} hari)` : ''}`
+        : ''
+
       await this.createReturnActivity(transaksiId, {
         tipe: 'dikembalikan',
-        deskripsi: `Pengembalian diproses: ${result.processedItems.length} items`,
-        data: {
-          itemsCount: result.processedItems.length,
-          totalPenalty: penaltyCalculation.totalPenalty,
-          processingMode: 'optimized',
-          timestamp: new Date().toISOString(),
-        },
+        deskripsi: `Pengembalian lengkap: ${activityData.summary.totalItems} items${penaltyDesc}`,
+        data: activityData as unknown as Prisma.InputJsonValue,
       })
-
-      // Create penalty activity if applicable
-      if (penaltyCalculation.totalPenalty > 0) {
-        await this.createReturnActivity(transaksiId, {
-          tipe: 'penalty_added',
-          deskripsi: `Penalty applied: Rp ${penaltyCalculation.totalPenalty.toLocaleString('id-ID')}`,
-          data: {
-            totalPenalty: penaltyCalculation.totalPenalty,
-            timestamp: new Date().toISOString(),
-          },
-        })
-      }
 
       const backgroundDuration = Date.now() - backgroundStart
       kasirLogger.returnProcess.info(
         'processBackgroundActivities',
-        'Background activities completed',
+        'Unified activity created successfully',
         {
           transaksiId,
           duration: backgroundDuration,
-          activitiesCreated: penaltyCalculation.totalPenalty > 0 ? 2 : 1,
+          totalItems: activityData.summary.totalItems,
+          totalPenalty: activityData.summary.totalPenalty,
+          activitiesCreated: 1, // Only 1 unified activity instead of 2-3
         },
       )
     } catch (error) {
