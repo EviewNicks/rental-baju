@@ -22,9 +22,12 @@ export class DanaSummaryService {
    * Get daily summary with income, expenses, and net balance
    * 
    * Calculates:
-   * - Total income (rental + penalty amounts)
+   * - Total income (rental + penalty amounts from transactions + penalty payments)
    * - Total expenses (sum of active expenses)
    * - Net balance (income - expenses)
+   * 
+   * Task 5.1: Added penalty payment aggregation from TransaksiItem.totalReturnPenalty
+   * Requirements: 3.1, 3.2, 3.7
    * 
    * @param date - Date to calculate summary for
    * @returns Daily summary object
@@ -32,7 +35,7 @@ export class DanaSummaryService {
   async getDailySummary(date: Date): Promise<DailySummary> {
     const { start, end } = getWITADayRange(date)
 
-    // Calculate total income from transactions
+    // Calculate total income from transactions (rental + flat late penalty)
     const incomeResult = await this.prisma.transaksi.aggregate({
       where: {
         createdAt: {
@@ -43,6 +46,25 @@ export class DanaSummaryService {
       _sum: {
         jumlahBayar: true,
         flatLatePenalty: true
+      }
+    })
+
+    // Task 5.1: Calculate penalty income from TransaksiItem.totalReturnPenalty
+    // Use tglKembali for date filtering (Requirements: 3.2, 3.5)
+    const penaltyResult = await this.prisma.transaksiItem.aggregate({
+      where: {
+        transaksi: {
+          tglKembali: {
+            gte: start,
+            lte: end
+          }
+        },
+        totalReturnPenalty: {
+          gt: 0
+        }
+      },
+      _sum: {
+        totalReturnPenalty: true
       }
     })
 
@@ -61,11 +83,15 @@ export class DanaSummaryService {
     })
 
     // Convert Decimal to number and handle null values
+    // Requirements 3.2: totalIncome = sum(jumlahBayar) + sum(flatLatePenalty) + sum(totalReturnPenalty)
     const totalIncome = 
       (incomeResult._sum.jumlahBayar?.toNumber() || 0) +
-      (incomeResult._sum.flatLatePenalty?.toNumber() || 0)
+      (incomeResult._sum.flatLatePenalty?.toNumber() || 0) +
+      (penaltyResult._sum.totalReturnPenalty?.toNumber() || 0)
     
     const totalExpense = expenseResult._sum.harga?.toNumber() || 0
+    
+    // Requirements 3.7: netBalance = (rental + penalty) - expenses
     const netBalance = totalIncome - totalExpense
 
     return {
@@ -77,22 +103,22 @@ export class DanaSummaryService {
   }
 
   /**
-   * Get list of income items (rental transactions) for a specific date
+   * Get list of income items (rental transactions + penalty payments) for a specific date
    * 
-   * Returns all transactions with:
-   * - Transaction code
-   * - Customer name
-   * - Rental amount (jumlahBayar)
-   * - Penalty amount (flatLatePenalty)
-   * - Transaction status
-   * - Kasir information
+   * Task 6: Enhanced to include penalty payment entries
+   * Requirements: 3.3, 3.4, 3.5, 3.6
+   * 
+   * Returns:
+   * - Rental transactions (type='rental')
+   * - Penalty payments (type='penalty') with breakdown
    * 
    * @param date - Date to query income for
-   * @returns Array of income items
+   * @returns Array of income items sorted by date
    */
   async getIncomeList(date: Date): Promise<IncomeItem[]> {
     const { start, end } = getWITADayRange(date)
 
+    // Get rental transactions
     const transactions = await this.prisma.transaksi.findMany({
       where: {
         createdAt: {
@@ -118,7 +144,60 @@ export class DanaSummaryService {
       }
     })
 
-    return transactions.map(transaction => ({
+    // Task 6.1: Query penalty payments (Requirements: 3.3, 3.5)
+    // Use tglKembali for date filtering instead of createdAt
+    const penaltyPayments = await this.prisma.transaksi.findMany({
+      where: {
+        tglKembali: {
+          gte: start,
+          lte: end
+        },
+        items: {
+          some: {
+            totalReturnPenalty: {
+              gt: 0
+            }
+          }
+        }
+      },
+      include: {
+        penyewa: {
+          select: {
+            nama: true
+          }
+        },
+        kasir: {
+          select: {
+            id: true,
+            nama: true
+          }
+        },
+        items: {
+          where: {
+            totalReturnPenalty: {
+              gt: 0
+            }
+          },
+          select: {
+            totalReturnPenalty: true,
+            returns: {
+              select: {
+                kondisiAkhir: true,
+                jumlahKembali: true,
+                penaltyAmount: true
+              }
+            }
+          }
+        }
+      },
+      orderBy: {
+        tglKembali: 'desc'
+      }
+    })
+
+    // Map rental transactions to income items
+    const rentalIncome: IncomeItem[] = transactions.map(transaction => ({
+      type: 'rental' as const,
       transaksiKode: transaction.kode,
       customerName: transaction.penyewa.nama,
       rentalAmount: transaction.jumlahBayar.toNumber(),
@@ -128,6 +207,42 @@ export class DanaSummaryService {
       kasirName: transaction.kasir?.nama || 'N/A',
       createdAt: transaction.createdAt
     }))
+
+    // Task 6.2: Build penalty income entries (Requirements: 3.4, 3.6)
+    const penaltyIncome: IncomeItem[] = penaltyPayments.map(transaction => {
+      // Calculate penalty breakdown
+      const totalPenalty = transaction.items.reduce(
+        (sum, item) => sum + (item.totalReturnPenalty?.toNumber() || 0),
+        0
+      )
+      
+      // Calculate late penalty (flat 20,000 per item if late)
+      const itemCount = transaction.items.length
+      const latePenalty = transaction.flatLatePenalty.toNumber()
+      const conditionPenalty = totalPenalty - latePenalty
+
+      return {
+        type: 'penalty' as const,
+        transaksiKode: transaction.kode,
+        customerName: transaction.penyewa.nama,
+        rentalAmount: 0, // No rental amount for penalty entries
+        penaltyAmount: totalPenalty,
+        status: transaction.status,
+        kasirId: transaction.kasirId || '',
+        kasirName: transaction.kasir?.nama || 'N/A',
+        createdAt: transaction.tglKembali || transaction.createdAt,
+        // Requirements 3.4, 3.6: Include penalty breakdown
+        penaltyBreakdown: {
+          latePenalty,
+          conditionPenalty,
+          itemCount
+        }
+      }
+    })
+
+    // Combine and sort by date (Requirements: 3.3)
+    const allIncome = [...rentalIncome, ...penaltyIncome]
+    return allIncome.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
   }
 
   /**

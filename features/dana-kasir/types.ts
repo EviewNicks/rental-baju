@@ -45,6 +45,7 @@ export interface UpdatePengeluaranRequest {
 
 // Income item from rental transactions
 export interface IncomeItem {
+  type: 'rental' | 'penalty'  // NEW: Distinguish between rental and penalty income
   transaksiKode: string
   customerName: string
   rentalAmount: number
@@ -53,6 +54,13 @@ export interface IncomeItem {
   kasirId: string
   kasirName: string
   createdAt: Date
+  
+  // NEW: Penalty-specific fields (Requirements 3.4, 3.6)
+  penaltyBreakdown?: {
+    latePenalty: number
+    conditionPenalty: number
+    itemCount: number
+  }
 }
 
 // Daily summary data

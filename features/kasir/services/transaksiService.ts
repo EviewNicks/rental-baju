@@ -607,10 +607,13 @@ export class TransaksiService {
   ): Promise<void> {
     // ✅ PERFORMANCE FIX: Use transaction-scoped inventory service
     const txInventoryService = createInventoryService(tx)
-    
+
     for (const item of items) {
       // Validate availability using InventoryService
-      const isAvailable = await txInventoryService.checkAvailability(item.productSizeId, item.jumlah)
+      const isAvailable = await txInventoryService.checkAvailability(
+        item.productSizeId,
+        item.jumlah,
+      )
 
       if (!isAvailable) {
         // Get stock status for detailed error message
@@ -662,7 +665,7 @@ export class TransaksiService {
 
     // ✅ PERFORMANCE FIX: Use global inventory service for pre-validation (outside transaction)
     const inventoryService = createInventoryService(this.prisma)
-    
+
     // Validate each item using InventoryService for real-time stock checking
     for (const item of items) {
       const productSize = productSizes.find((ps) => ps.id === item.productSizeId)
@@ -931,7 +934,8 @@ export class TransaksiService {
     }
 
     // Update transaction in a database transaction
-    const updatedTransaksi = await this.prisma.$transaction(async (tx) => {
+    //eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const updatedTransaksi = await this.prisma.$transaction(async (tx: any) => {
       // Update main transaction
       const updated = await tx.transaksi.update({
         where: { id },
@@ -958,10 +962,11 @@ export class TransaksiService {
 
           // ✅ PERFORMANCE FIX: Use transaction-scoped inventory service
           const txInventoryService = createInventoryService(tx)
-          
+
           // Restore stock using InventoryService for consistency
           await Promise.all(
-            transaksiItems.map(async (item) => {
+            //eslint-disable-next-line @typescript-eslint/no-explicit-any
+            transaksiItems.map(async (item: any) => {
               const quantityToRestore =
                 data.status === 'cancelled' ? item.jumlah : item.jumlah - (item.jumlahDiambil || 0)
 

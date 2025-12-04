@@ -15,7 +15,7 @@
  * Requirements: 1.1, 1.2, 1.3, 1.5
  */
 
-import { Receipt, User, Clock } from 'lucide-react'
+import { Receipt, User, Clock, AlertCircle, TrendingDown } from 'lucide-react'
 import { IncomeItem } from '../types'
 import { formatRupiah } from '../utils/currency'
 
@@ -89,64 +89,107 @@ export function IncomeList({ income, isLoading }: IncomeListProps) {
       {/* Income List */}
       <div className="p-6">
         <div className="space-y-4 max-h-[600px] overflow-y-auto">
-          {income.map((item) => (
-            <div
-              key={item.transaksiKode}
-              className="border-b border-gray-100 pb-4 last:border-0 last:pb-0"
-            >
-              {/* Transaction Code */}
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-blue-600">
-                  {item.transaksiKode}
-                </span>
-                <span className={`text-xs px-2 py-1 rounded-full ${
-                  item.status === 'completed' 
-                    ? 'bg-green-100 text-green-700'
-                    : 'bg-yellow-100 text-yellow-700'
-                }`}>
-                  {item.status}
-                </span>
-              </div>
-
-              {/* Customer Name */}
-              <div className="flex items-center gap-2 mb-2">
-                <User className="w-4 h-4 text-gray-400" />
-                <span className="text-sm text-gray-900">
-                  {item.customerName}
-                </span>
-              </div>
-
-              {/* Amounts */}
-              <div className="space-y-1 mb-2">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-600">Sewa:</span>
-                  <span className="font-medium text-gray-900">
-                    {formatRupiah(item.rentalAmount)}
+          {income.map((item) => {
+            // Task 7: Visual distinction for penalty entries (Requirements: 3.6)
+            const isPenaltyEntry = item.type === 'penalty'
+            const borderColor = isPenaltyEntry ? 'border-orange-100' : 'border-gray-100'
+            const bgColor = isPenaltyEntry ? 'bg-orange-50/30' : ''
+            
+            return (
+              <div
+                key={`${item.type}-${item.transaksiKode}`}
+                className={`border-b ${borderColor} pb-4 last:border-0 last:pb-0 ${bgColor} ${isPenaltyEntry ? 'p-3 rounded-lg' : ''}`}
+              >
+                {/* Transaction Code with Type Badge */}
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    {isPenaltyEntry && (
+                      <AlertCircle className="w-4 h-4 text-orange-500" />
+                    )}
+                    <span className="text-sm font-medium text-blue-600">
+                      {item.transaksiKode}
+                    </span>
+                    {isPenaltyEntry && (
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 font-medium">
+                        Penalty
+                      </span>
+                    )}
+                  </div>
+                  <span className={`text-xs px-2 py-1 rounded-full ${
+                    item.status === 'completed' || item.status === 'selesai'
+                      ? 'bg-green-100 text-green-700'
+                      : 'bg-yellow-100 text-yellow-700'
+                  }`}>
+                    {item.status}
                   </span>
                 </div>
-                {item.penaltyAmount > 0 && (
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">Denda:</span>
-                    <span className="font-medium text-red-600">
-                      {formatRupiah(item.penaltyAmount)}
+
+                {/* Customer Name */}
+                <div className="flex items-center gap-2 mb-2">
+                  <User className="w-4 h-4 text-gray-400" />
+                  <span className="text-sm text-gray-900">
+                    {item.customerName}
+                  </span>
+                </div>
+
+                {/* Amounts */}
+                <div className="space-y-1 mb-2">
+                  {!isPenaltyEntry && (
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-600">Sewa:</span>
+                      <span className="font-medium text-gray-900">
+                        {formatRupiah(item.rentalAmount)}
+                      </span>
+                    </div>
+                  )}
+                  
+                  {/* Task 7: Display penalty breakdown (Requirements: 3.4, 3.6) */}
+                  {isPenaltyEntry && item.penaltyBreakdown && (
+                    <>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-600">Denda Terlambat:</span>
+                        <span className="font-medium text-orange-600">
+                          {formatRupiah(item.penaltyBreakdown.latePenalty)}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-600">Denda Kondisi:</span>
+                        <span className="font-medium text-orange-600">
+                          {formatRupiah(item.penaltyBreakdown.conditionPenalty)}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1 text-xs text-gray-500 mt-1">
+                        <TrendingDown className="w-3 h-3" />
+                        <span>{item.penaltyBreakdown.itemCount} item(s)</span>
+                      </div>
+                    </>
+                  )}
+                  
+                  {!isPenaltyEntry && item.penaltyAmount > 0 && (
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-600">Denda:</span>
+                      <span className="font-medium text-red-600">
+                        {formatRupiah(item.penaltyAmount)}
+                      </span>
+                    </div>
+                  )}
+                  
+                  <div className="flex items-center justify-between text-sm pt-1 border-t border-gray-100">
+                    <span className="text-gray-900 font-medium">Total:</span>
+                    <span className={`font-bold ${isPenaltyEntry ? 'text-orange-600' : 'text-green-600'}`}>
+                      {formatRupiah(item.rentalAmount + item.penaltyAmount)}
                     </span>
                   </div>
-                )}
-                <div className="flex items-center justify-between text-sm pt-1 border-t border-gray-100">
-                  <span className="text-gray-900 font-medium">Total:</span>
-                  <span className="font-bold text-green-600">
-                    {formatRupiah(item.rentalAmount + item.penaltyAmount)}
-                  </span>
+                </div>
+
+                {/* Kasir Info */}
+                <div className="flex items-center gap-2 text-xs text-gray-500">
+                  <Clock className="w-3 h-3" />
+                  <span>Kasir: {item.kasirName}</span>
                 </div>
               </div>
-
-              {/* Kasir Info */}
-              <div className="flex items-center gap-2 text-xs text-gray-500">
-                <Clock className="w-3 h-3" />
-                <span>Kasir: {item.kasirName}</span>
-              </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
 
         {/* Total Summary */}

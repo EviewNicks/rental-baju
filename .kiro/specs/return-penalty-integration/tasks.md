@@ -116,20 +116,20 @@ This implementation plan transforms the return service to use unified activity l
   - Verify entire transaction rolls back
   - Verify no return records or activities created
 
-- [ ] 4. Checkpoint - Ensure all tests pass
+- [x] 4. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 ---
 
 ## Phase 2: Dana Kasir Integration
 
-- [ ] 5. Update Dana Summary Service
+- [x] 5. Update Dana Summary Service
   - Modify `getDailySummary()` to include penalty payments
   - Add penalty payment aggregation query
   - Update totalIncome calculation formula
   - _Requirements: 3.1, 3.2, 3.7_
 
-- [ ] 5.1 Add penalty payment aggregation
+- [x] 5.1 Add penalty payment aggregation
   - Query TransaksiItem.totalReturnPenalty sum for date range
   - Use tglKembali for date filtering instead of createdAt
   - Add to existing income calculation
@@ -154,20 +154,20 @@ This implementation plan transforms the return service to use unified activity l
   - Create test data with income and expenses
   - Verify netBalance = (rental + penalty) - expenses
 
-- [ ] 6. Enhance Income List with Penalty Entries
+- [x] 6. Enhance Income List with Penalty Entries
   - Modify `getIncomeList()` to query penalty payments
   - Add penalty payment entries to income list
   - Include penaltyBreakdown in response
   - Sort combined list by date
   - _Requirements: 3.3, 3.4, 3.6_
 
-- [ ] 6.1 Query penalty payments
+- [x] 6.1 Query penalty payments
   - Add Pembayaran query with metode='penalty' filter
   - Include transaction and penyewa relations
   - Filter by date range using tglKembali
   - _Requirements: 3.3, 3.5_
 
-- [ ] 6.2 Build penalty income entries
+- [x] 6.2 Build penalty income entries
   - Map penalty payments to EnhancedIncomeItem format
   - Set type='penalty'
   - Extract penaltyBreakdown from payment
@@ -188,14 +188,14 @@ This implementation plan transforms the return service to use unified activity l
   - Verify each penalty entry has required fields
   - Verify penaltyBreakdown structure
 
-- [ ] 7. Update Dana Kasir Dashboard UI
+- [x] 7. Update Dana Kasir Dashboard UI
   - Modify DanaKasirDashboard component to display penalty income
   - Add penalty income section in income list
   - Show penalty breakdown on expand/hover
   - Add visual distinction for penalty entries
   - _Requirements: 3.6_
 
-- [ ] 7.1 Add penalty income display
+- [x] 7.1 Add penalty income display
   - Create PenaltyIncomeItem component
   - Display penalty icon and amount
   - Show latePenalty and conditionPenalty breakdown
