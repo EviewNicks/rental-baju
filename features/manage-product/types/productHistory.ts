@@ -36,6 +36,18 @@ export interface ProductHistoryItem {
   
   // NEW: Product Size Information (Optional for backward compatibility)
   sizeInfo?: SizeInfo | null
+  
+  // NEW: Detailed Penalty Breakdown (Requirements 4.2, 4.3)
+  penalty?: {
+    total: number              // Total penalty amount
+    late: number               // Late penalty (flat 20k per item)
+    condition: number          // Condition-based penalties
+    breakdown: Array<{         // Per-condition breakdown
+      kondisiAkhir: string     // Condition: 'kotor', 'rusak', 'hilang'
+      jumlahKembali: number    // Quantity returned in this condition
+      penaltyAmount: number    // Penalty for this condition
+    }>
+  }
 }
 
 // NEW: Activity Information from AktivitasTransaksi

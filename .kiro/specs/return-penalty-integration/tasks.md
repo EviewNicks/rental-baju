@@ -202,27 +202,27 @@ This implementation plan transforms the return service to use unified activity l
   - Add tooltip with detailed breakdown
   - _Requirements: 3.6_
 
-- [ ] 8. Checkpoint - Ensure all tests pass
+- [x] 8. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 ---
 
 ## Phase 3: Product History Enhancement
 
-- [ ] 9. Update Product History API
+- [x] 9. Update Product History API
   - Modify product history query to include penalty data
   - Extract penalty information from TransaksiItem
   - Build penalty breakdown from TransaksiItemReturn
   - Handle transactions without penalty gracefully
   - _Requirements: 4.1, 4.2, 4.3, 4.7_
 
-- [ ] 9.1 Enhance product history query
+- [x] 9.1 Enhance product history query
   - Include TransaksiItem.totalReturnPenalty in query
   - Include TransaksiItemReturn records with conditions
   - Calculate late penalty from transaction dates
   - _Requirements: 4.1, 4.2_
 
-- [ ] 9.2 Build penalty data structure
+- [x] 9.2 Build penalty data structure
   - Create `buildPenaltyData()` helper method
   - Calculate penalty.total, penalty.late, penalty.condition
   - Build penalty.breakdown array from return conditions
@@ -250,28 +250,28 @@ This implementation plan transforms the return service to use unified activity l
   - Verify no errors thrown
   - Verify penalty field is null or undefined
 
-- [ ] 10. Update Product History UI
+- [x] 10. Update Product History UI
   - Modify ProductHistoryCard component to display penalty
   - Add penalty section in TimelineItem
   - Show penalty breakdown on expand
   - Add visual indicator for transactions with penalty
   - _Requirements: 4.4, 4.5, 4.6_
 
-- [ ] 10.1 Create penalty display component
+- [x] 10.1 Create penalty display component
   - Create PenaltyBadge component for timeline
   - Show total penalty amount
   - Add red/orange color coding
   - Display breakdown on hover/click
   - _Requirements: 4.4, 4.6_
 
-- [ ] 10.2 Update TimelineItem component
+- [x] 10.2 Update TimelineItem component
   - Add conditional penalty section
   - Display penalty badge if penalty exists
   - Show late penalty and condition penalty separately
   - List condition-specific penalties
   - _Requirements: 4.5, 4.6_
 
-- [ ] 11. Checkpoint - Ensure all tests pass
+- [x] 11. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 ---

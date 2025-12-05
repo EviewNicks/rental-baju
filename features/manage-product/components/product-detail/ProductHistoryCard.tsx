@@ -7,12 +7,11 @@
 'use client'
 
 import React from 'react'
-import { History, AlertCircle, RefreshCw } from 'lucide-react'
+import { History, AlertCircle, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useProductHistory, useProductHistoryPagination } from '../../hooks/useProductHistory'
 import { TimelineItem, TimelineItemSkeleton } from './TimelineItem'
-import { PaginationControls } from './PaginationControls'
 import type { Product } from '../../types'
 import type { ProductHistoryItem } from '../../types/productHistory'
 
@@ -146,18 +145,52 @@ export function ProductHistoryCard({
       data-testid={dataTestId}
     >
       <CardHeader>
-        <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-          <History className="w-5 h-5 text-gray-600" />
-          Riwayat Sewa
-          {isFetching && (
-            <div title="Memperbarui data...">
-              <RefreshCw className="h-4 w-4 text-blue-500 animate-spin" />
+        <div className="flex items-center justify-between gap-4">
+          {/* Title Section */}
+          <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+            <History className="w-5 h-5 text-gray-600" />
+            Riwayat Sewa
+            {isFetching && (
+              <div title="Memperbarui data...">
+                <RefreshCw className="h-4 w-4 text-blue-500 animate-spin" />
+              </div>
+            )}
+          </CardTitle>
+
+          {/* Pagination Controls - Top Right */}
+          {historyData.pagination && historyData.pagination.totalPages > 1 && (
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePageChange(page - 1)}
+                disabled={page <= 1 || isFetching}
+                className="h-8 w-8 p-0"
+                aria-label="Halaman sebelumnya"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              
+              <span className="text-xs text-gray-600 font-medium min-w-[60px] text-center">
+                {page} / {historyData.pagination.totalPages}
+              </span>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePageChange(page + 1)}
+                disabled={page >= historyData.pagination.totalPages || isFetching}
+                className="h-8 w-8 p-0"
+                aria-label="Halaman selanjutnya"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
             </div>
           )}
-        </CardTitle>
+        </div>
       </CardHeader>
 
-      <CardContent className="space-y-2   pt-2">
+      <CardContent className="space-y-6 pt-2">
         {/* Timeline */}
         <div className="space-y-6">
           {historyData.data.map((historyItem: ProductHistoryItem, index: number) => (
@@ -169,17 +202,6 @@ export function ProductHistoryCard({
             />
           ))}
         </div>
-
-        {/* Pagination */}
-        {historyData.pagination && historyData.pagination.totalPages > 1 && (
-          <PaginationControls
-            currentPage={historyData.pagination.page}
-            totalPages={historyData.pagination.totalPages}
-            onPageChange={handlePageChange}
-            isLoading={isFetching}
-            data-testid="history-pagination"
-          />
-        )}
       </CardContent>
     </Card>
   )
