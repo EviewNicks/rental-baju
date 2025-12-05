@@ -809,10 +809,20 @@ export class UnifiedReturnService {
           // This ensures penalty is tracked in dana kasir system
           // Placed inside transaction for atomicity - if this fails, entire return rolls back
           if (penaltyCalculation.totalPenalty > 0) {
+            // Build temporary result object for penalty payment data
+            const tempResult: UnifiedReturnProcessingResult = {
+              success: true,
+              transactionId: transaksiId,
+              returnedAt: returnDate,
+              penalty: penaltyCalculation.totalPenalty,
+              processedItems,
+              processingMode: 'unified' as const,
+            }
+
             const penaltyPaymentData = this.buildPenaltyPaymentData(
               transaksiId,
               request,
-              { ...result, processedItems },
+              tempResult,
               penaltyCalculation,
               validation.transaction!.transaction,
             )

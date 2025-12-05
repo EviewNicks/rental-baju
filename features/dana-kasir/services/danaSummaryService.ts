@@ -180,7 +180,7 @@ export class DanaSummaryService {
           },
           select: {
             totalReturnPenalty: true,
-            returns: {
+            returnConditions: {
               select: {
                 kondisiAkhir: true,
                 jumlahKembali: true,
