@@ -147,13 +147,13 @@ export function IncomeList({ income, isLoading }: IncomeListProps) {
                   {isPenaltyEntry && item.penaltyBreakdown && (
                     <>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-600">Denda Terlambat:</span>
+                        <span className="text-gray-600">Denda Kondisi:</span>
                         <span className="font-medium text-orange-600">
                           {formatRupiah(item.penaltyBreakdown.latePenalty)}
                         </span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-600">Denda Kondisi:</span>
+                        <span className="text-gray-600">Denda Terlambat: </span>
                         <span className="font-medium text-orange-600">
                           {formatRupiah(item.penaltyBreakdown.conditionPenalty)}
                         </span>

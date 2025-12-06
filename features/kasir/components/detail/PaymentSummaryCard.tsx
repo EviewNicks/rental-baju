@@ -222,22 +222,47 @@ export function PaymentSummaryCard({
           <h4 className="text-sm font-medium text-gray-900 mb-3">
             Riwayat Pembayaran ({validPayments.length})
           </h4>
-          <div className="space-y-2" data-testid="payment-history">
-            {validPayments.map((payment) => (
-              <div key={payment.id} className="flex justify-between items-center text-sm">
-                <div>
-                  <div className="text-gray-900" data-testid={`payment-amount-${payment.id}`}>
-                    {formatCurrency(Number(payment.amount) || 0)}
-                  </div>
-                  <div className="text-gray-500 text-xs">
-                    {formatDate(payment.timestamp)} • {payment.method.toUpperCase()}
+          <div className="space-y-3" data-testid="payment-history">
+            {validPayments.map((payment) => {
+              // Check if this is a penalty payment
+              const isPenaltyPayment = payment.method === 'penalty'
+              
+              return (
+                <div 
+                  key={payment.id} 
+                  className={`${isPenaltyPayment ? 'p-3 rounded-lg bg-orange-50 border border-orange-200' : ''}`}
+                >
+                  <div className="flex justify-between items-center text-sm">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <div className={`font-medium ${isPenaltyPayment ? 'text-orange-900' : 'text-gray-900'}`} data-testid={`payment-amount-${payment.id}`}>
+                          {formatCurrency(Number(payment.amount) || 0)}
+                        </div>
+                        {isPenaltyPayment && (
+                          <Badge variant="outline" className="text-xs bg-orange-100 text-orange-700 border-orange-300">
+                            Penalty
+                          </Badge>
+                        )}
+                      </div>
+                      <div className={`text-xs mt-1 ${isPenaltyPayment ? 'text-orange-600' : 'text-gray-500'}`}>
+                        {formatDate(payment.timestamp)} • {payment.method.toUpperCase()}
+                      </div>
+                      {/* Show penalty description if available */}
+                      {isPenaltyPayment && payment.notes && (
+                        <div className="text-xs text-orange-700 mt-1 italic">
+                          {payment.notes}
+                        </div>
+                      )}
+                    </div>
+                    {!isPenaltyPayment && (
+                      <Badge variant="outline" className="text-xs capitalize">
+                        {payment.type}
+                      </Badge>
+                    )}
                   </div>
                 </div>
-                <Badge variant="outline" className="text-xs capitalize">
-                  {payment.type}
-                </Badge>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
       )}

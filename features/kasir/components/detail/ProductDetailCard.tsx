@@ -179,7 +179,7 @@ export function ProductDetailCard({ item, pickupInfo }: ProductDetailCardProps) 
             )}
           </div>
 
-          {/* Return Status Section - Simple display mirroring pickup style */}
+          {/* Return Status Section - Enhanced with penalty breakdown */}
           {hasReturnData && (
             <div className="p-3 rounded-lg border bg-green-50 border-green-200">
               <div className="flex items-center justify-between">
@@ -197,15 +197,45 @@ export function ProductDetailCard({ item, pickupInfo }: ProductDetailCardProps) 
                   </span>
                 </div>
               </div>
-              {/* Show penalty only if meaningful amount exists */}
+              
+              {/* Enhanced penalty display with breakdown */}
               {hasPenalty && (
-                <div className="mt-2 p-2 bg-red-50 border border-red-100 rounded-md">
+                <div className="mt-2 p-3 bg-orange-50 border border-orange-200 rounded-md space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-medium text-red-800">Denda Pengembalian</span>
-                    <span className="text-sm font-bold text-red-700">
+                    <span className="text-xs font-medium text-orange-800">Total Denda</span>
+                    <span className="text-sm font-bold text-orange-700">
                       {formatCurrency(item.totalReturnPenalty!)}
                     </span>
                   </div>
+                  
+                  {/* Condition breakdown detail - FIXED: Use modalAwalUsed as the actual penalty */}
+                  {item.conditionBreakdown && item.conditionBreakdown.length > 0 && (
+                    <div className="pt-2 border-t border-orange-200 space-y-1.5">
+                      <div className="text-xs font-medium text-orange-800 mb-1">
+                        Rincian per Kondisi:
+                      </div>
+                      {item.conditionBreakdown.map((condition, idx) => {
+                        // FIXED: modalAwalUsed is the actual manual price (penalty amount)
+                        const actualPenalty = condition.modalAwalUsed || condition.penaltyAmount
+                        
+                        return (
+                          <div key={condition.id || idx} className="flex items-center justify-between text-xs">
+                            <div className="flex items-center gap-2">
+                              <span className="text-orange-700">
+                                {condition.kondisiAkhir}
+                              </span>
+                              <span className="text-orange-600">
+                                ({condition.jumlahKembali}x)
+                              </span>
+                            </div>
+                            <span className="font-medium text-orange-700">
+                              {formatCurrency(actualPenalty)}
+                            </span>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
                 </div>
               )}
             </div>

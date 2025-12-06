@@ -450,9 +450,13 @@ export class UnifiedReturnService {
           },
         )
 
+        // ✅ FIX: Use first item's lateDays instead of summing across items
+        // All items in a transaction have the same expected/actual return dates,
+        // so they all have the same late days. Summing them gives wrong total.
+        // Example: 2 items × 9 days = 18 days ❌ Should be just 9 days ✅
         return {
           totalPenalty: enhancedResult.totalPenalty,
-          totalLateDays: enhancedResult.itemPenalties.reduce((sum, p) => sum + p.lateDays, 0),
+          totalLateDays: enhancedResult.itemPenalties[0]?.lateDays || 0,  // ✅ Use first item's late days
           itemPenalties: enhancedResult.itemPenalties.map((penalty) => ({
             itemId: penalty.itemId,
             productName: penalty.productName,
@@ -642,30 +646,25 @@ export class UnifiedReturnService {
 
           // PERFORMANCE: Collections already defined outside transaction
 
-          // Helper function to calculate penalty distribution
-          const calculateConditionPenalty = (
+          // Helper function to get penalty amount from manual price
+          // FIXED: Multiply manualPrice by quantity to get total penalty
+          const getConditionPenalty = (
             //eslint-disable-next-line @typescript-eslint/no-explicit-any
             condition: any,
-            basePenalty: number,
-            //eslint-disable-next-line @typescript-eslint/no-explicit-any
-            allConditions: any[],
           ) => {
-            if (condition.conditionCategory === 'BAIK') return 0
-
-            const nonBaikConditions = allConditions.filter((c) => c.conditionCategory !== 'BAIK')
-            const totalManualPrice = nonBaikConditions.reduce(
-              (sum, c) => sum + (c.manualPrice || 0),
-              0,
-            )
-
-            if (totalManualPrice > 0) {
-              const conditionWeight = condition.manualPrice || 0
-              return Math.round((conditionWeight / totalManualPrice) * basePenalty)
+            // If manual pricing is used, multiply manualPrice by quantity
+            if (condition.useManualPricing && condition.manualPrice) {
+              // ✅ FIX: manualPrice is per-unit price, multiply by jumlahKembali
+              return condition.manualPrice * condition.jumlahKembali
+            }
+            
+            // For BAIK condition, no penalty
+            if (condition.conditionCategory === 'BAIK') {
+              return 0
             }
 
-            return nonBaikConditions.length > 0
-              ? Math.round(basePenalty / nonBaikConditions.length)
-              : basePenalty
+            // Fallback to 0 if no manual price
+            return 0
           }
 
           // Calculate all operations first
@@ -685,20 +684,13 @@ export class UnifiedReturnService {
               penaltyAmount: number
             }> = []
 
-            // Prepare return records
-            const totalItemPenalty =
-              penaltyCalculation.itemPenalties.find((p) => p.itemId.startsWith(item.itemId))
-                ?.totalPenalty || 0
-
+            // FIXED: Calculate penalty directly from manualPrice
             for (const condition of item.conditions) {
-              const conditionPenalty = calculateConditionPenalty(
-                condition,
-                totalItemPenalty,
-                item.conditions,
-              )
+              const conditionPenalty = getConditionPenalty(condition)
               const hasManualPricing =
                 'conditionCategory' in condition && 'manualPrice' in condition
 
+              // FIXED: Store manualPrice in modalAwalUsed for proper display
               returnRecords.push({
                 transaksiItemId: item.itemId,
                 kondisiAkhir: condition.kondisiAkhir,
@@ -707,7 +699,10 @@ export class UnifiedReturnService {
                 penaltyAmount: conditionPenalty,
                 manualPrice: hasManualPricing ? new Decimal(condition.manualPrice || 0) : null,
                 useManualPricing: hasManualPricing ? condition.useManualPricing || false : false,
-                modalAwalUsed: condition.modalAwal ? new Decimal(condition.modalAwal) : null,
+                // FIXED: Store manualPrice in modalAwalUsed so it can be displayed correctly
+                modalAwalUsed: hasManualPricing && condition.manualPrice 
+                  ? new Decimal(condition.manualPrice) 
+                  : (condition.modalAwal ? new Decimal(condition.modalAwal) : null),
                 createdBy: this.userId,
               })
 
@@ -967,7 +962,10 @@ export class UnifiedReturnService {
           kondisiAkhir: condition.kondisiAkhir,
           jumlahKembali: condition.jumlahKembali,
           conditionCategory: condition.conditionCategory || ConditionCategory.BAIK,
-          penaltyAmount: processedItem.conditionBreakdown?.[index]?.penaltyAmount || 0,
+          // FIXED: Use manualPrice as the actual penalty amount
+          penaltyAmount: condition.useManualPricing && condition.manualPrice 
+            ? condition.manualPrice 
+            : (processedItem.conditionBreakdown?.[index]?.penaltyAmount || 0),
           manualPrice: condition.manualPrice,
           useManualPricing: condition.useManualPricing || false,
         })),
@@ -1033,6 +1031,20 @@ export class UnifiedReturnService {
       const itemLatePenalty = isLateReturn ? 20000 : 0
       const itemConditionPenalty = processedItem.penalty - itemLatePenalty
 
+      // FIXED: Use manualPrice from request as the actual penalty
+      const conditionsWithManualPrice = (processedItem.conditionBreakdown || []).map((cb, idx) => {
+        const requestCondition = requestItem.conditions[idx]
+        const actualPenalty = requestCondition?.useManualPricing && requestCondition?.manualPrice
+          ? requestCondition.manualPrice
+          : cb.penaltyAmount
+        
+        return {
+          kondisiAkhir: cb.kondisiAkhir,
+          jumlahKembali: cb.jumlahKembali,
+          penaltyAmount: actualPenalty,
+        }
+      })
+
       return {
         itemId: processedItem.itemId,
         productName: transactionItem.produk.name,
@@ -1040,11 +1052,7 @@ export class UnifiedReturnService {
         totalPenalty: processedItem.penalty,
         latePenalty: itemLatePenalty,
         conditionPenalty: itemConditionPenalty,
-        conditions: (processedItem.conditionBreakdown || []).map((cb) => ({
-          kondisiAkhir: cb.kondisiAkhir,
-          jumlahKembali: cb.jumlahKembali,
-          penaltyAmount: cb.penaltyAmount,
-        })),
+        conditions: conditionsWithManualPrice,
       }
     })
 
