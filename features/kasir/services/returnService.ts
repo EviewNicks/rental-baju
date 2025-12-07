@@ -152,6 +152,27 @@ interface PenaltyPaymentData {
   createdBy: string
 }
 
+// Lost Item Resolution Interfaces
+interface LostItemResolutionRequest {
+  transaksiId: string
+  returnRecordId: string // TransaksiItemReturn.id
+  resolutionType: 'customer_replaced' | 'deposit_kept'
+  notes?: string
+}
+
+interface LostItemResolutionResult {
+  success: boolean
+  resolutionType: string
+  refundAmount?: number // Only for customer_replaced
+  stockUpdates: {
+    sizeId: string
+    rentedQuantity: number
+    availableQuantity: number
+    lostQuantity: number
+  }
+  message: string
+}
+
 export class UnifiedReturnService {
   private transaksiService: TransaksiService
   private auditService: AuditService
@@ -1180,6 +1201,216 @@ export class UnifiedReturnService {
 
       throw new Error(
         `Gagal mendapatkan transaksi: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      )
+    }
+  }
+
+  /**
+   * Resolve a lost item with one of two options:
+   * 1. customer_replaced: Customer bought replacement → refund deposit + restore stock
+   * 2. deposit_kept: Keep deposit → mark as lost in inventory
+   *
+   * @param request - Resolution request with type and details
+   * @returns Resolution result with stock updates and refund info
+   * @throws Error if validation fails or transaction fails
+   */
+  async resolveLostItem(
+    request: LostItemResolutionRequest,
+  ): Promise<LostItemResolutionResult> {
+    const startTime = Date.now()
+
+    kasirLogger.returnProcess.info('resolveLostItem', 'Starting lost item resolution', {
+      returnRecordId: request.returnRecordId,
+      resolutionType: request.resolutionType,
+    })
+
+    try {
+      // PHASE 1: VALIDATION (outside transaction)
+      // Fetch return record with related data
+      const returnRecord = await this.prisma.transaksiItemReturn.findUnique({
+        where: { id: request.returnRecordId },
+        include: {
+          transaksiItem: {
+            include: {
+              produk: true,
+            },
+          },
+        },
+      })
+
+      // Validate return record exists
+      if (!returnRecord) {
+        throw new Error('Return record not found')
+      }
+
+      // Validate condition is HILANG
+      if (returnRecord.conditionCategory !== 'HILANG') {
+        throw new Error('Can only resolve HILANG items')
+      }
+
+      // Validate not already resolved
+      if (returnRecord.resolutionStatus) {
+        throw new Error(
+          `Item already resolved as ${returnRecord.resolutionStatus} on ${returnRecord.resolutionDate}`,
+        )
+      }
+
+      // Parse kondisiAwal to get sizeId
+      const kondisiAwal = parseKondisiAwal(returnRecord.transaksiItem.kondisiAwal)
+      if (!kondisiAwal.productSizeId) {
+        throw new Error('Cannot resolve: Product size ID not found in kondisiAwal')
+      }
+
+      const sizeId = kondisiAwal.productSizeId
+
+      // Fetch product size for validation
+      const productSize = await this.prisma.productSize.findUnique({
+        where: { id: sizeId },
+      })
+
+      if (!productSize) {
+        throw new Error('Product size not found')
+      }
+
+      // Validate rentedQuantity
+      if (productSize.rentedQuantity < 1) {
+        throw new Error('No rented quantity to resolve')
+      }
+
+      // PHASE 2: ATOMIC TRANSACTION
+      const result = await this.prisma.$transaction(async (tx) => {
+        const txInventoryService = createInventoryService(tx as PrismaClient)
+
+        let refundAmount: number | undefined
+
+        // Process based on resolution type
+        if (request.resolutionType === 'customer_replaced') {
+          // Option 1: Customer bought replacement
+          // - Refund deposit
+          // - Restore stock (rentedQuantity--, availableQuantity++)
+
+          // Calculate refund amount (negative of original penalty)
+          refundAmount = Number(returnRecord.penaltyAmount)
+
+          // Create refund payment
+          await tx.pembayaran.create({
+            data: {
+              transaksiId: request.transaksiId,
+              jumlah: new Decimal(-refundAmount),
+              metode: 'refund',
+              catatan: `Refund dana jaminan barang hilang - Customer beli sendiri: ${returnRecord.transaksiItem.produk.name}${request.notes ? ` (${request.notes})` : ''}`,
+              createdBy: this.userId,
+            },
+          })
+
+          // Update stock: restore to available
+          await txInventoryService.updateStockOnReturn(sizeId, 1)
+
+          // Update resolution status
+          await tx.transaksiItemReturn.update({
+            where: { id: request.returnRecordId },
+            data: {
+              resolutionStatus: 'resolved_replaced',
+              resolutionDate: new Date(),
+              resolutionNotes: request.notes,
+            },
+          })
+
+          kasirLogger.returnProcess.info(
+            'resolveLostItem',
+            'Customer replacement processed',
+            {
+              returnRecordId: request.returnRecordId,
+              refundAmount,
+              sizeId,
+            },
+          )
+        } else if (request.resolutionType === 'deposit_kept') {
+          // Option 2: Keep deposit
+          // - No refund
+          // - Mark as lost (rentedQuantity--, lostQuantity++)
+
+          // Update stock: mark as lost
+          await tx.productSize.update({
+            where: { id: sizeId },
+            data: {
+              rentedQuantity: { decrement: 1 },
+              lostQuantity: { increment: 1 },
+            },
+          })
+
+          // Update resolution status
+          await tx.transaksiItemReturn.update({
+            where: { id: request.returnRecordId },
+            data: {
+              resolutionStatus: 'resolved_lost',
+              resolutionDate: new Date(),
+              resolutionNotes: request.notes,
+            },
+          })
+
+          kasirLogger.returnProcess.info('resolveLostItem', 'Deposit retention processed', {
+            returnRecordId: request.returnRecordId,
+            sizeId,
+          })
+        } else {
+          throw new Error(`Invalid resolution type: ${request.resolutionType}`)
+        }
+
+        // Fetch updated stock for result
+        const updatedStock = await tx.productSize.findUnique({
+          where: { id: sizeId },
+          select: {
+            rentedQuantity: true,
+            availableQuantity: true,
+            lostQuantity: true,
+          },
+        })
+
+        if (!updatedStock) {
+          throw new Error('Failed to fetch updated stock')
+        }
+
+        return {
+          refundAmount,
+          stockUpdates: {
+            sizeId,
+            rentedQuantity: updatedStock.rentedQuantity,
+            availableQuantity: updatedStock.availableQuantity,
+            lostQuantity: updatedStock.lostQuantity,
+          },
+        }
+      })
+
+      // Build success result
+      const successResult: LostItemResolutionResult = {
+        success: true,
+        resolutionType: request.resolutionType,
+        refundAmount: result.refundAmount,
+        stockUpdates: result.stockUpdates,
+        message:
+          request.resolutionType === 'customer_replaced'
+            ? `Barang hilang berhasil diselesaikan. Dana jaminan Rp ${result.refundAmount?.toLocaleString('id-ID')} dikembalikan.`
+            : 'Barang hilang berhasil diselesaikan. Dana jaminan ditahan.',
+      }
+
+      kasirLogger.returnProcess.info('resolveLostItem', 'Lost item resolution completed', {
+        returnRecordId: request.returnRecordId,
+        resolutionType: request.resolutionType,
+        processingTime: Date.now() - startTime,
+      })
+
+      return successResult
+    } catch (error) {
+      kasirLogger.returnProcess.error('resolveLostItem', 'Lost item resolution failed', {
+        returnRecordId: request.returnRecordId,
+        resolutionType: request.resolutionType,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        processingTime: Date.now() - startTime,
+      })
+
+      throw new Error(
+        `Gagal menyelesaikan barang hilang: ${error instanceof Error ? error.message : 'Unknown error'}`,
       )
     }
   }
