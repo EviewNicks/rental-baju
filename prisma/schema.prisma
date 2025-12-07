@@ -84,6 +84,7 @@ model ProductSize {
   quantity         Int         // Legacy field - will be migrated to originalQuantity
   originalQuantity Int         @default(0)  // Total stock owned
   rentedQuantity   Int         @default(0)  // Currently rented
+  lostQuantity     Int         @default(0)  // Lost items (NEW: Task 1.1)
   availableQuantity Int        @default(0)  // Available for rent
   isActive         Boolean     @default(true)
   createdAt        DateTime    @default(now())
@@ -212,12 +213,16 @@ model TransaksiItemReturn {
   conditionCategory  ConditionCategory @default(BAIK)
   manualPrice        Decimal?          @db.Decimal(10, 2)
   useManualPricing   Boolean           @default(false)
+  resolutionStatus   String?           // 'resolved_replaced' | 'resolved_lost' (NEW: Task 1.2)
+  resolutionDate     DateTime?         // When resolution was completed (NEW: Task 1.2)
+  resolutionNotes    String?           // Optional notes about resolution (NEW: Task 1.2)
   transaksiItem      TransaksiItem     @relation(fields: [transaksiItemId], references: [id], onDelete: Cascade)
 
   @@index([transaksiItemId, createdAt], map: "idx_transaksi_item_return_timeline")
   @@index([transaksiItemId, penaltyAmount], map: "idx_transaksi_item_return_penalty")
   @@index([conditionCategory], map: "idx_transaksi_item_return_condition")
   @@index([useManualPricing, manualPrice], map: "idx_transaksi_item_return_manual_pricing")
+  @@index([resolutionStatus], map: "idx_transaksi_item_return_resolution")
   @@map("transaksi_item_return")
 }
 
