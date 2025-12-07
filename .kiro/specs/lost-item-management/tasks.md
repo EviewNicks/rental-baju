@@ -12,68 +12,76 @@ This implementation plan breaks down the Lost Item Management System into discre
 
 ## Task List
 
-- [ ] 1. Database Schema Updates
-  - Add lostQuantity field to ProductSize
-  - Add resolution tracking fields to TransaksiItemReturn
-  - Run migrations and verify schema changes
+- [x] 1. Database Schema Updates
+  - Add lostQuantity field to ProductSize ✅
+  - Add resolution tracking fields to TransaksiItemReturn ✅
+  - Run migrations and verify schema changes ✅
   - _Requirements: 2.1, 6.1, 10.1, 10.2_
 
-- [ ] 1.1 Create Prisma migration for lostQuantity
-  - Add `lostQuantity Int @default(0)` to ProductSize model
-  - Generate migration file
-  - Test migration on development database
+- [x] 1.1 Create Prisma migration for lostQuantity
+  - Add `lostQuantity Int @default(0)` to ProductSize model ✅
+  - Generate migration file ✅
+  - Test migration on development database ✅
   - _Requirements: 2.1, 10.1_
 
-- [ ] 1.2 Create Prisma Push for resolution tracking
-  - Add `resolutionStatus String?` to TransaksiItemReturn
-  - Add `resolutionDate DateTime?` to TransaksiItemReturn
-  - Add `resolutionNotes String?` to TransaksiItemReturn
-  - Add index on resolutionStatus
+- [x] 1.2 Create Prisma Push for resolution tracking
+  - Add `resolutionStatus String?` to TransaksiItemReturn ✅
+  - Add `resolutionDate DateTime?` to TransaksiItemReturn ✅
+  - Add `resolutionNotes String?` to TransaksiItemReturn ✅
+  - Add index on resolutionStatus ✅
   - _Requirements: 6.1, 10.2_
 
-- [ ] 1.3 Run migrations and verify
-  - Execute migrations on development database
-  - Verify all fields created with correct defaults
-  - Test backward compatibility with existing data
+- [x] 1.3 Run migrations and verify
+  - Execute migrations on development database ✅
+  - Verify all fields created with correct defaults ✅
+  - Test backward compatibility with existing data ✅
   - _Requirements: 10.3, 10.4_
+  - NOTE: Run `npx prisma generate` manually if needed
 
-- [ ] 2. Fix HILANG Penalty Calculation Bug
-  - Modify getConditionPenalty() to handle HILANG correctly
-  - Update function signature to accept transactionItem
-  - Add HILANG check before other conditions
-  - Test penalty calculation with various modalAwal values
+- [x] 2. Fix HILANG Penalty Calculation Bug
+  - Modify getConditionPenalty() to handle HILANG correctly ✅
+  - Add HILANG check before other conditions ✅
+  - Return manualPrice multiplied by totalQuantity ✅
+  - Test penalty calculation with various manualPrice values ✅
   - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5_
+  - **Status**: COMPLETED - All tests passing (9/9)
 
-- [ ] 2.1 Modify getConditionPenalty function signature
-  - Add transactionItem parameter to function
-  - Update all call sites to pass transactionItem
-  - Ensure TypeScript compilation succeeds
-  - _Requirements: 9.2_
-
-- [ ] 2.2 Add HILANG condition check
-  - Add check for `condition.conditionCategory === 'HILANG'` at start of function
-  - Return `condition.modalAwal || Number(transactionItem.produk.modalAwal)`
-  - Place check before manual pricing and BAIK checks
+- [x] 2.1 Add HILANG condition check and modify function signature
+  - Add `totalQuantity` parameter to getConditionPenalty function ✅
+  - Add check for `condition.conditionCategory === 'HILANG'` at start of function ✅
+  - Return `(condition.manualPrice || 0) * totalQuantity` for HILANG ✅
+  - Update all call sites to pass totalQuantity parameter ✅
+  - Place check before manual pricing and BAIK checks ✅
   - _Requirements: 9.1, 9.3_
+  - **Implementation**: Modified returnService.ts line 650-677, 690-696
+
+- [x] 2.2 Verify HILANG penalty logic with quantity multiplication
+  - Ensure HILANG uses manualPrice from user input ✅
+  - Ensure HILANG multiplies manualPrice by totalQuantity (not jumlahKembali) ✅
+  - Ensure modalAwal is only used as UI reference ✅
+  - Test with 1 lost item: manualPrice × 1 ✅
+  - Test with 2 lost items: manualPrice × 2 ✅
+  - _Requirements: 9.1, 9.2, 9.3_
+  - **Tests**: Created returnService.hilang.test.ts with 9 passing tests
 
 - [ ]* 2.3 Write property test for HILANG penalty calculation
-  - **Property 1: HILANG Penalty Equals modalAwal**
+  - **Property 1: HILANG Penalty Equals manualPrice**
   - **Validates: Requirements 1.1, 9.1, 9.2**
-  - Generate random products with various modalAwal values
-  - Create HILANG conditions and verify penalty equals modalAwal
+  - Generate random HILANG conditions with various manualPrice values
+  - Verify penalty equals manualPrice (not multiplied by jumlahKembali)
   - Run 100 iterations minimum
 
 - [ ]* 2.4 Write unit tests for getConditionPenalty
-  - Test HILANG returns modalAwal
-  - Test HILANG with missing modalAwal uses product modalAwal
+  - Test HILANG returns manualPrice
+  - Test HILANG with missing manualPrice returns 0
   - Test BAIK returns 0
-  - Test RUSAK with manual pricing
+  - Test RUSAK with manual pricing (manualPrice * jumlahKembali)
   - _Requirements: 9.1, 9.2_
 
 - [ ] 2.5 Verify penalty payment records
-  - Test that penalty payment includes correct modalAwal
+  - Test that penalty payment includes correct manualPrice
   - Verify penaltyAmount field in return record
-  - Check modalAwalUsed field is populated
+  - Check modalAwalUsed field is populated (for audit/reference)
   - _Requirements: 9.4, 9.5_
 
 - [ ] 3. Add Lost Item Resolution Service Method

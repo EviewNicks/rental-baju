@@ -648,10 +648,19 @@ export class UnifiedReturnService {
 
           // Helper function to get penalty amount from manual price
           // FIXED: Multiply manualPrice by quantity to get total penalty
+          // Task 2.1: Added totalQuantity parameter for HILANG calculation
           const getConditionPenalty = (
             //eslint-disable-next-line @typescript-eslint/no-explicit-any
             condition: any,
+            totalQuantity: number,  // ✅ NEW: Total quantity for HILANG items
           ) => {
+            // ✅ HILANG: Use totalQuantity (not jumlahKembali which is 0)
+            // For lost items, we charge manualPrice × number of lost items
+            if (condition.conditionCategory === 'HILANG') {
+              const manualPrice = condition.manualPrice || 0
+              return manualPrice * totalQuantity  // ✅ Multiply by lost item count
+            }
+            
             // If manual pricing is used, multiply manualPrice by quantity
             if (condition.useManualPricing && condition.manualPrice) {
               // ✅ FIX: manualPrice is per-unit price, multiply by jumlahKembali
@@ -686,7 +695,13 @@ export class UnifiedReturnService {
 
             // FIXED: Calculate penalty directly from manualPrice
             for (const condition of item.conditions) {
-              const conditionPenalty = getConditionPenalty(condition)
+              // Task 2.1: For HILANG, use jumlahDiambil as totalQuantity
+              // For other conditions, use jumlahKembali
+              const totalQuantity = condition.conditionCategory === 'HILANG' 
+                ? transactionItem.jumlahDiambil 
+                : condition.jumlahKembali
+              
+              const conditionPenalty = getConditionPenalty(condition, totalQuantity)  // ✅ Pass totalQuantity
               const hasManualPricing =
                 'conditionCategory' in condition && 'manualPrice' in condition
 

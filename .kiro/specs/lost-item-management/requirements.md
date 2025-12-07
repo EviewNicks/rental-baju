@@ -126,15 +126,19 @@ This feature addresses the current gap where lost items are not properly tracked
 
 ### Requirement 9: Bug Fix - HILANG Penalty Calculation
 
-**User Story:** As a producer, I want lost item penalty to be correctly calculated as modalAwal, so that security deposit accurately reflects item replacement cost.
+**User Story:** As a producer, I want lost item penalty to be correctly calculated from user input, so that security deposit accurately reflects item replacement cost.
 
 #### Acceptance Criteria
 
-1. WHEN getConditionPenalty function processes HILANG condition THEN the System SHALL return modalAwal as penalty amount
-2. WHEN HILANG condition has no modalAwal value THEN the System SHALL use product modalAwal from transaction item
-3. WHEN HILANG penalty is calculated THEN the System SHALL execute calculation before manual pricing and BAIK condition checks
+1. WHEN getConditionPenalty function processes HILANG condition THEN the System SHALL return manualPrice multiplied by totalQuantity as penalty amount
+2. WHEN HILANG condition has no manualPrice value THEN the System SHALL return 0 as penalty
+3. WHEN HILANG penalty is calculated THEN the System SHALL multiply manualPrice by totalQuantity (NOT by jumlahKembali which is 0)
 4. WHEN return record is created for HILANG item THEN the System SHALL store calculated penalty in penaltyAmount field
-5. WHEN penalty payment is created for HILANG item THEN the System SHALL include modalAwal in payment breakdown
+5. WHEN penalty payment is created for HILANG item THEN the System SHALL include total penalty (manualPrice × totalQuantity) in payment breakdown
+
+**Note:** modalAwal from product is used as reference/default value in UI form only, not in penalty calculation
+
+**Example:** If 2 items are lost with manualPrice = Rp 500,000 per item, penalty = Rp 500,000 × 2 = Rp 1,000,000
 
 ### Requirement 10: Migration and Backward Compatibility
 

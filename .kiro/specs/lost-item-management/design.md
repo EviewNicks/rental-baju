@@ -154,15 +154,16 @@ private getConditionPenalty(condition: any): number {
 
 // AFTER (FIXED)
 private getConditionPenalty(
-  condition: any, 
-  transactionItem: any
+  condition: any,
+  totalQuantity: number  // ✅ NEW: Total quantity for HILANG calculation
 ): number {
-  // ✅ HILANG: Use modalAwal as penalty
+  // ✅ HILANG: Multiply manualPrice by totalQuantity (not jumlahKembali which is 0)
   if (condition.conditionCategory === 'HILANG') {
-    return condition.modalAwal || Number(transactionItem.produk.modalAwal)
+    const manualPrice = condition.manualPrice || 0
+    return manualPrice * totalQuantity  // ✅ Multiply by number of lost items
   }
   
-  // Manual pricing for RUSAK
+  // Manual pricing for RUSAK (multiply by jumlahKembali - items returned damaged)
   if (condition.useManualPricing && condition.manualPrice) {
     return condition.manualPrice * condition.jumlahKembali
   }
@@ -174,6 +175,23 @@ private getConditionPenalty(
   
   return 0
 }
+```
+
+**Key Changes:**
+- Added `totalQuantity` parameter to function signature
+- HILANG uses `condition.manualPrice × totalQuantity` (user input × lost item count)
+- No need for `transactionItem` parameter (modalAwal only used as UI reference)
+- HILANG penalty = `manualPrice × totalQuantity` (e.g., 2 items × Rp 500k = Rp 1M)
+- RUSAK penalty = `manualPrice × jumlahKembali` (existing behavior)
+
+**Example:**
+```typescript
+// 2 items lost, Rp 500,000 per item
+getConditionPenalty(
+  { conditionCategory: 'HILANG', manualPrice: 500000, jumlahKembali: 0 },
+  2  // totalQuantity
+)
+// Returns: 500,000 × 2 = 1,000,000 ✅
 ```
 
 ### 2. New: LostItemResolutionModal Component
