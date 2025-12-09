@@ -313,6 +313,8 @@ async function transformApiToUI(apiData: TransaksiResponse): Promise<Transaction
             jumlahKembali: number
             penaltyAmount: number
             modalAwalUsed?: number | null
+            resolutionStatus?: string | null
+            resolutionDate?: string | null
             createdAt?: string
             createdBy?: string
           }>

@@ -42,6 +42,8 @@ interface TransactionItem {
     jumlahKembali: number
     penaltyAmount: Decimal | string | number
     modalAwalUsed?: Decimal | string | number | null
+    resolutionStatus?: string | null
+    resolutionDate?: string | Date | null
     createdAt: string | Date
     createdBy: string
   }>
@@ -159,6 +161,8 @@ export interface FormattedTransactionResponse {
       jumlahKembali: number
       penaltyAmount: number
       modalAwalUsed?: number | null
+      resolutionStatus?: string | null
+      resolutionDate?: string | null
       createdAt: string
       createdBy: string
     }>
@@ -302,6 +306,12 @@ export function formatTransactionResponse(
               ? (typeof condition.modalAwalUsed === 'object'
                   ? Number(condition.modalAwalUsed)
                   : Number(condition.modalAwalUsed))
+              : null,
+            resolutionStatus: condition.resolutionStatus || null,
+            resolutionDate: condition.resolutionDate
+              ? (typeof condition.resolutionDate === 'object'
+                  ? condition.resolutionDate.toISOString()
+                  : condition.resolutionDate)
               : null,
             createdAt: typeof condition.createdAt === 'object'
               ? condition.createdAt.toISOString()

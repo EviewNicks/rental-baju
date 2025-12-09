@@ -315,7 +315,7 @@ export class UnifiedReturnService {
           }
         }
 
-        // Validate each condition (simplified)
+        // ✅ FIX: Simplified validation - consistent for all categories
         let totalReturnQuantity = 0
         for (const condition of returnItem.conditions) {
           if (!condition.kondisiAkhir || condition.kondisiAkhir.trim() === '') {
@@ -327,18 +327,12 @@ export class UnifiedReturnService {
             continue
           }
 
-          const isLostItem = isLostItemCondition(condition.kondisiAkhir)
-          if (isLostItem && condition.jumlahKembali !== 0) {
+          // All categories require quantity > 0 (including HILANG)
+          if (condition.jumlahKembali <= 0) {
             errors.push({
               field: `items[${returnItem.itemId}].conditions.jumlahKembali`,
-              message: 'Barang hilang harus memiliki jumlah kembali = 0',
-              code: 'LOST_ITEM_INVALID_QUANTITY',
-            })
-          } else if (!isLostItem && condition.jumlahKembali <= 0) {
-            errors.push({
-              field: `items[${returnItem.itemId}].conditions.jumlahKembali`,
-              message: 'Barang yang dikembalikan harus memiliki jumlah kembali > 0',
-              code: 'RETURNED_ITEM_INVALID_QUANTITY',
+              message: 'Jumlah harus lebih dari 0',
+              code: 'INVALID_QUANTITY',
             })
           }
 
@@ -428,17 +422,12 @@ export class UnifiedReturnService {
         ),
       )
 
-      // Check if request has HILANG conditions - use standard path for proper modalAwal handling
-      const hasHilangConditions = request.items.some((item) =>
-        item.conditions.some(
-          (condition) =>
-            condition.conditionCategory === 'HILANG' ||
-            condition.kondisiAkhir.toLowerCase().includes('hilang'),
-        ),
-      )
-
-      // Use standard calculation for HILANG items, enhanced for others
-      if (hasManualPricing && !hasHilangConditions) {
+      // ✅ FIX: HILANG items should use Enhanced Calculator with manual pricing
+      // Removed hasHilangConditions check - HILANG should go through enhanced path
+      // This ensures manualPrice (user input) is used instead of modalAwal (product cost)
+      
+      // Use enhanced calculation for all manual pricing (including HILANG)
+      if (hasManualPricing) {
         // Enhanced penalty calculation for manual pricing
         const itemsForEnhancedCalculation = request.items.flatMap((returnItem) => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -667,34 +656,21 @@ export class UnifiedReturnService {
 
           // PERFORMANCE: Collections already defined outside transaction
 
-          // Helper function to get penalty amount from manual price
-          // FIXED: Multiply manualPrice by quantity to get total penalty
-          // Task 2.1: Added totalQuantity parameter for HILANG calculation
+          // ✅ CRITICAL FIX: Simplified penalty calculation - consistent for all categories
+          // All categories use jumlahKembali (user input quantity)
           const getConditionPenalty = (
             //eslint-disable-next-line @typescript-eslint/no-explicit-any
             condition: any,
-            totalQuantity: number,  // ✅ NEW: Total quantity for HILANG items
           ) => {
-            // ✅ HILANG: Use totalQuantity (not jumlahKembali which is 0)
-            // For lost items, we charge manualPrice × number of lost items
-            if (condition.conditionCategory === 'HILANG') {
-              const manualPrice = condition.manualPrice || 0
-              return manualPrice * totalQuantity  // ✅ Multiply by lost item count
-            }
-            
-            // If manual pricing is used, multiply manualPrice by quantity
-            if (condition.useManualPricing && condition.manualPrice) {
-              // ✅ FIX: manualPrice is per-unit price, multiply by jumlahKembali
-              return condition.manualPrice * condition.jumlahKembali
-            }
-            
-            // For BAIK condition, no penalty
+            // BAIK: No penalty
             if (condition.conditionCategory === 'BAIK') {
               return 0
             }
-
-            // Fallback to 0 if no manual price
-            return 0
+            
+            // All other categories (including HILANG): manualPrice × jumlahKembali
+            const manualPrice = condition.manualPrice || 0
+            const quantity = condition.jumlahKembali || 0
+            return manualPrice * quantity
           }
 
           // Calculate all operations first
@@ -714,15 +690,9 @@ export class UnifiedReturnService {
               penaltyAmount: number
             }> = []
 
-            // FIXED: Calculate penalty directly from manualPrice
+            // ✅ CRITICAL FIX: Simplified penalty calculation
             for (const condition of item.conditions) {
-              // Task 2.1: For HILANG, use jumlahDiambil as totalQuantity
-              // For other conditions, use jumlahKembali
-              const totalQuantity = condition.conditionCategory === 'HILANG' 
-                ? transactionItem.jumlahDiambil 
-                : condition.jumlahKembali
-              
-              const conditionPenalty = getConditionPenalty(condition, totalQuantity)  // ✅ Pass totalQuantity
+              const conditionPenalty = getConditionPenalty(condition)
               const hasManualPricing =
                 'conditionCategory' in condition && 'manualPrice' in condition
 
@@ -1008,6 +978,16 @@ export class UnifiedReturnService {
       }
     })
 
+    // ✅ FIX: Determine correct target status based on lost items
+    const hasUnresolvedLostItems = request.items.some((item) =>
+      item.conditions.some(
+        (condition) =>
+          condition.conditionCategory === 'HILANG' ||
+          condition.kondisiAkhir.toLowerCase().includes('hilang')
+      )
+    )
+    const targetStatus = hasUnresolvedLostItems ? 'pending_resolution' : 'selesai'
+
     return {
       summary: {
         totalItems: result.processedItems.length,
@@ -1024,7 +1004,7 @@ export class UnifiedReturnService {
         processingTime: 0, // Will be set by caller
         statusChange: {
           from: transaction.status,
-          to: 'selesai',
+          to: targetStatus,
         },
       },
     }
@@ -1119,9 +1099,50 @@ export class UnifiedReturnService {
     const backgroundStart = Date.now()
 
     try {
-      // Update transaction status to 'selesai'
+      // ✅ FIX: Check for unresolved HILANG items before setting status
+      // If any HILANG items exist, set status to 'pending_resolution'
+      // Otherwise, set status to 'selesai'
+      const hasUnresolvedLostItems = request.items.some((item) =>
+        item.conditions.some(
+          (condition) =>
+            condition.conditionCategory === 'HILANG' ||
+            condition.kondisiAkhir.toLowerCase().includes('hilang')
+        )
+      )
+
+      const newStatus = hasUnresolvedLostItems ? 'pending_resolution' : 'selesai'
+
+      kasirLogger.returnProcess.info(
+        'processBackgroundActivities',
+        'Determining transaction status based on lost items',
+        {
+          transaksiId,
+          hasUnresolvedLostItems,
+          newStatus,
+          itemsWithHilang: request.items
+            .filter((item) =>
+              item.conditions.some(
+                (c) =>
+                  c.conditionCategory === 'HILANG' ||
+                  c.kondisiAkhir.toLowerCase().includes('hilang')
+              )
+            )
+            .map((item) => ({
+              itemId: item.itemId,
+              conditions: item.conditions
+                .filter(
+                  (c) =>
+                    c.conditionCategory === 'HILANG' ||
+                    c.kondisiAkhir.toLowerCase().includes('hilang')
+                )
+                .map((c) => c.kondisiAkhir),
+            })),
+        }
+      )
+
+      // Update transaction status with conditional logic
       await this.transaksiService.updateTransaksiStatus(transaksiId, {
-        status: 'selesai',
+        status: newStatus,
         tglKembali: request.tglKembali || new Date().toISOString(),
       })
 
@@ -1201,6 +1222,101 @@ export class UnifiedReturnService {
 
       throw new Error(
         `Gagal mendapatkan transaksi: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      )
+    }
+  }
+
+  /**
+   * TASK 11.1: Create activity record for lost item resolution
+   * Logs resolution type, stock changes, and refund amount
+   */
+  private async createLostItemResolutionActivity(
+    transaksiId: string,
+    returnRecord: {
+      id: string
+      kondisiAkhir: string
+      penaltyAmount: Decimal
+      transaksiItem: {
+        produk: {
+          id: string
+          name: string
+          code: string
+        }
+      }
+    },
+    resolutionType: 'customer_replaced' | 'deposit_kept',
+    result: {
+      refundAmount?: number
+      stockUpdates: {
+        sizeId: string
+        rentedQuantity: number
+        availableQuantity: number
+        lostQuantity: number
+      }
+    },
+    notes?: string,
+  ): Promise<void> {
+    try {
+      const activityDescription =
+        resolutionType === 'customer_replaced'
+          ? `Barang hilang diselesaikan - Customer beli sendiri: ${returnRecord.transaksiItem.produk.name}${result.refundAmount ? ` (Refund: Rp ${result.refundAmount.toLocaleString('id-ID')})` : ''}`
+          : `Barang hilang diselesaikan - Dana jaminan ditahan: ${returnRecord.transaksiItem.produk.name} (Rp ${Number(returnRecord.penaltyAmount).toLocaleString('id-ID')})`
+
+      await this.createReturnActivity(transaksiId, {
+        tipe: 'barang_hilang_diselesaikan',
+        deskripsi: activityDescription,
+        data: {
+          returnRecordId: returnRecord.id,
+          productId: returnRecord.transaksiItem.produk.id,
+          productName: returnRecord.transaksiItem.produk.name,
+          productCode: returnRecord.transaksiItem.produk.code,
+          resolutionType,
+          depositAmount: Number(returnRecord.penaltyAmount),
+          refundAmount: result.refundAmount || 0,
+          stockChanges: {
+            sizeId: result.stockUpdates.sizeId,
+            rentedQuantity: {
+              before: result.stockUpdates.rentedQuantity + 1, // Before decrement
+              after: result.stockUpdates.rentedQuantity,
+            },
+            availableQuantity: {
+              before:
+                resolutionType === 'customer_replaced'
+                  ? result.stockUpdates.availableQuantity - 1
+                  : result.stockUpdates.availableQuantity,
+              after: result.stockUpdates.availableQuantity,
+            },
+            lostQuantity: {
+              before:
+                resolutionType === 'deposit_kept'
+                  ? result.stockUpdates.lostQuantity - 1
+                  : result.stockUpdates.lostQuantity,
+              after: result.stockUpdates.lostQuantity,
+            },
+          },
+          notes: notes || null,
+          resolvedAt: new Date().toISOString(),
+        } as Prisma.InputJsonValue,
+      })
+
+      kasirLogger.returnProcess.info(
+        'createLostItemResolutionActivity',
+        'Resolution activity created',
+        {
+          transaksiId,
+          resolutionType,
+          productName: returnRecord.transaksiItem.produk.name,
+        },
+      )
+    } catch (error) {
+      // Log warning but don't throw - activity creation failure shouldn't break resolution
+      kasirLogger.returnProcess.warn(
+        'createLostItemResolutionActivity',
+        'Failed to create resolution activity',
+        {
+          transaksiId,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        },
       )
     }
   }
@@ -1394,10 +1510,56 @@ export class UnifiedReturnService {
             : 'Barang hilang berhasil diselesaikan. Dana jaminan ditahan.',
       }
 
+      // TASK 11.1: Create activity record for resolution
+      await this.createLostItemResolutionActivity(
+        request.transaksiId,
+        returnRecord,
+        request.resolutionType,
+        result,
+        request.notes,
+      )
+
+      // ✅ NEW: Check if all lost items are resolved, update status to 'selesai'
+      const unresolvedLostItems = await this.prisma.transaksiItemReturn.count({
+        where: {
+          transaksiItem: {
+            transaksiId: request.transaksiId,
+          },
+          conditionCategory: 'HILANG',
+          resolutionStatus: null,
+        },
+      })
+
+      kasirLogger.returnProcess.info(
+        'resolveLostItem',
+        'Checking for remaining unresolved lost items',
+        {
+          transaksiId: request.transaksiId,
+          unresolvedLostItems,
+        }
+      )
+
+      // If all lost items are resolved, update transaction status to 'selesai'
+      if (unresolvedLostItems === 0) {
+        await this.transaksiService.updateTransaksiStatus(request.transaksiId, {
+          status: 'selesai',
+        })
+
+        kasirLogger.returnProcess.info(
+          'resolveLostItem',
+          'All lost items resolved - transaction status updated to selesai',
+          {
+            transaksiId: request.transaksiId,
+          }
+        )
+      }
+
       kasirLogger.returnProcess.info('resolveLostItem', 'Lost item resolution completed', {
         returnRecordId: request.returnRecordId,
         resolutionType: request.resolutionType,
         processingTime: Date.now() - startTime,
+        unresolvedLostItems,
+        statusUpdated: unresolvedLostItems === 0,
       })
 
       return successResult
@@ -1414,4 +1576,18 @@ export class UnifiedReturnService {
       )
     }
   }
+}
+
+
+/**
+ * Factory function to create UnifiedReturnService instance
+ * @param prisma - Prisma client instance
+ * @param userId - User ID for audit logging
+ * @returns UnifiedReturnService instance
+ */
+export function createUnifiedReturnService(
+  prisma: PrismaClient,
+  userId: string,
+): UnifiedReturnService {
+  return new UnifiedReturnService(prisma, userId)
 }

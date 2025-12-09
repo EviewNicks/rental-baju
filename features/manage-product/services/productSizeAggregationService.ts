@@ -419,6 +419,7 @@ export class ProductSizeAggregationService {
   /**
    * Get comprehensive inventory data for a product using InventoryService
    * NEW METHOD: Integrates with Enhanced ProductSize schema
+   * Lost Item Management (Task 1): Added lostQuantity field to sizeDetails
    */
   async getComprehensiveInventory(productId: string): Promise<
     ProductSizeAggregation & {
@@ -426,6 +427,7 @@ export class ProductSizeAggregationService {
         totalOriginal: number
         totalAvailable: number
         totalRented: number
+        totalLost: number  // ✅ Lost Item Management
         utilizationRate: number
         isHealthy: boolean
       }
@@ -436,6 +438,7 @@ export class ProductSizeAggregationService {
         originalQuantity: number
         availableQuantity: number
         rentedQuantity: number
+        lostQuantity: number  // ✅ Lost Item Management
         utilizationRate: number
         isAvailable: boolean
       }>
@@ -447,11 +450,15 @@ export class ProductSizeAggregationService {
     // Get detailed inventory status using InventoryService
     const productStockStatus = await inventoryService.getProductStockStatus(productId)
 
+    // ✅ Lost Item Management: Calculate total lost quantity
+    const totalLost = productStockStatus.sizes.reduce((sum, size) => sum + (size.lostQuantity || 0), 0)
+
     // Enhanced inventory analysis
     const inventoryStatus = {
       totalOriginal: productStockStatus.totalQuantity,
       totalAvailable: productStockStatus.availableQuantity,
       totalRented: productStockStatus.rentedQuantity,
+      totalLost,  // ✅ Lost Item Management
       utilizationRate:
         productStockStatus.totalQuantity > 0
           ? (productStockStatus.rentedQuantity / productStockStatus.totalQuantity) * 100
@@ -460,6 +467,7 @@ export class ProductSizeAggregationService {
     }
 
     // Enhanced size details with real-time data
+    // ✅ Lost Item Management: Added lostQuantity field
     const sizeDetails = productStockStatus.sizes.map((size) => ({
       id: size.id,
       ageCategory: size.ageCategory as AgeCategory,
@@ -467,6 +475,7 @@ export class ProductSizeAggregationService {
       originalQuantity: size.originalQuantity,
       availableQuantity: size.availableQuantity,
       rentedQuantity: size.rentedQuantity,
+      lostQuantity: size.lostQuantity || 0,  // ✅ Lost Item Management
       utilizationRate:
         size.originalQuantity > 0 ? (size.rentedQuantity / size.originalQuantity) * 100 : 0,
       isAvailable: size.isAvailable,

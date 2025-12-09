@@ -39,6 +39,7 @@ export interface ProductStockStatus {
   totalQuantity: number
   availableQuantity: number
   rentedQuantity: number
+  lostQuantity: number  // ✅ Lost Item Management
   sizes: Array<{
     id: string
     ageCategory: string
@@ -46,6 +47,7 @@ export interface ProductStockStatus {
     originalQuantity: number
     availableQuantity: number
     rentedQuantity: number
+    lostQuantity: number  // ✅ Lost Item Management
     isAvailable: boolean
   }>
 }
@@ -284,6 +286,7 @@ export class InventoryService {
           originalQuantity: true,
           availableQuantity: true,
           rentedQuantity: true,
+          lostQuantity: true,  // ✅ Lost Item Management
         },
         orderBy: [{ ageCategory: 'asc' }, { size: 'asc' }],
       })
@@ -292,6 +295,7 @@ export class InventoryService {
         const originalQuantity = Math.max(0, size.originalQuantity || 0)
         const availableQuantity = Math.max(0, size.availableQuantity || 0)
         const rentedQuantity = Math.max(0, size.rentedQuantity || 0)
+        const lostQuantity = Math.max(0, size.lostQuantity || 0)  // ✅ Lost Item Management
         const isAvailable = availableQuantity > 0
 
         return {
@@ -301,6 +305,7 @@ export class InventoryService {
           originalQuantity,
           availableQuantity,
           rentedQuantity,
+          lostQuantity,  // ✅ Lost Item Management
           isAvailable,
         }
       })
@@ -308,12 +313,14 @@ export class InventoryService {
       const totalQuantity = sizes.reduce((sum, size) => sum + size.originalQuantity, 0)
       const availableQuantity = sizes.reduce((sum, size) => sum + size.availableQuantity, 0)
       const rentedQuantity = sizes.reduce((sum, size) => sum + size.rentedQuantity, 0)
+      const lostQuantity = sizes.reduce((sum, size) => sum + (size.lostQuantity || 0), 0)  // ✅ Lost Item Management
 
       return {
         productId,
         totalQuantity,
         availableQuantity,
         rentedQuantity,
+        lostQuantity,  // ✅ Lost Item Management
         sizes,
       }
     } catch (error) {
@@ -323,6 +330,7 @@ export class InventoryService {
         totalQuantity: 0,
         availableQuantity: 0,
         rentedQuantity: 0,
+        lostQuantity: 0,  // ✅ Lost Item Management
         sizes: [],
       }
     }

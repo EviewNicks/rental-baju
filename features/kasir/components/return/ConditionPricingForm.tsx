@@ -93,23 +93,13 @@ export function ConditionPricingForm({
       errors.push('Deskripsi kondisi maksimal 500 karakter')
     }
 
-    // Special validation for lost items (HILANG category)
-    const isLostCondition = condition.conditionCategory === 'HILANG'
-
-    if (!isLostCondition && (!condition.jumlahKembali || condition.jumlahKembali <= 0)) {
+    // Quantity validation - HILANG items need quantity input for penalty calculation
+    if (!condition.jumlahKembali || condition.jumlahKembali <= 0) {
       errors.push('Jumlah harus lebih dari 0')
-    } else if (isLostCondition && condition.jumlahKembali !== 0) {
-      errors.push('Barang hilang harus memiliki jumlah kembali = 0')
     } else if (condition.jumlahKembali > maxQuantity) {
       errors.push(`Jumlah tidak boleh lebih dari ${maxQuantity}`)
     }
 
-    // Manual pricing validation - required for non-BAIK categories
-    if (condition.conditionCategory && condition.conditionCategory !== 'BAIK') {
-      if (condition.manualPrice === undefined || condition.manualPrice < 0) {
-        errors.push('Harga penalty harus diisi untuk kondisi selain "Baik"')
-      }
-    }
 
     // Smart warnings - simplified for HILANG category
     if (condition.conditionCategory === 'HILANG' && condition.jumlahKembali > 1) {
@@ -158,9 +148,10 @@ export function ConditionPricingForm({
         useManualPricing: value !== 'BAIK', // Auto-set based on category
       }
 
-      // Auto-correct quantity for HILANG category
+      // Setup for HILANG category
       if (value === 'HILANG') {
-        newCondition.jumlahKembali = 0 // Auto-set to 0 for lost items
+        // ✅ FIX: Don't auto-set jumlahKembali to 0 - let user input quantity
+        // Backend will set jumlahKembali = 0 when processing
         newCondition.useManualPricing = true // Force manual pricing for lost items
         // Auto-populate penalty with modalAwal for lost items
         if (productModalAwal > 0) {
@@ -309,7 +300,7 @@ export function ConditionPricingForm({
             <label className="text-sm font-medium text-gray-700">
               Jumlah
               {condition.conditionCategory === 'HILANG' && (
-                <span className="text-gray-500 font-normal"> (Otomatis 0 untuk hilang)</span>
+                <span className="text-red-600 font-normal"> (Jumlah barang hilang)</span>
               )}
             </label>
             <Input
@@ -318,15 +309,13 @@ export function ConditionPricingForm({
               max={maxQuantity}
               value={condition.jumlahKembali || ''}
               onChange={(e) => handleQuantityChange(e.target.value)}
-              disabled={disabled || condition.conditionCategory === 'HILANG'}
-              className={`text-center ${
-                condition.conditionCategory === 'HILANG' ? 'bg-gray-100 cursor-not-allowed' : ''
-              }`}
-              placeholder={condition.conditionCategory === 'HILANG' ? '0' : '0'}
+              disabled={disabled}
+              className="text-center"
+              placeholder="0"
             />
             {condition.conditionCategory === 'HILANG' && (
-              <p className="text-xs text-gray-500 mt-1">
-                💡 Barang hilang otomatis memiliki jumlah kembali = 0
+              <p className="text-xs text-red-600 mt-1">
+                💡 Masukkan jumlah barang yang hilang (backend akan set jumlah kembali = 0)
               </p>
             )}
           </div>
@@ -363,19 +352,6 @@ export function ConditionPricingForm({
             )}
           </div>
         </div>
-
-        {/* Lost Item Help Text */}
-        {condition.conditionCategory === 'HILANG' && (
-          <div className="mt-2 p-2 bg-blue-50 rounded-md border border-blue-200">
-            <div className="flex items-center gap-2 text-sm text-blue-700">
-              <AlertTriangle className="h-4 w-4" />
-              <span>
-                <strong>Barang Hilang:</strong> Item tidak dikembalikan, jumlah kembali otomatis =
-                0, penalty otomatis = Rp {productModalAwal.toLocaleString('id-ID')}
-              </span>
-            </div>
-          </div>
-        )}
 
         {/* Remove Button */}
         {canRemove && (

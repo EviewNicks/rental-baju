@@ -12,6 +12,9 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 /**
  * Enhanced Size Detail from API sizeDetails array
  * Represents individual size with complete inventory information
+ * 
+ * Lost Item Management (Task 1): Added lostQuantity field
+ * Inventory Invariant: originalQuantity = rentedQuantity + lostQuantity + availableQuantity
  */
 interface EnhancedSizeDetail {
   id: string
@@ -20,6 +23,7 @@ interface EnhancedSizeDetail {
   originalQuantity: number      // Total stock owned
   availableQuantity: number     // Available for rent
   rentedQuantity: number        // Currently rented
+  lostQuantity: number          // Permanently lost items (Lost Item Management)
   utilizationRate: number       // Percentage: (rented / original) * 100
   isAvailable: boolean          // Boolean: availableQuantity > 0
 }
@@ -27,11 +31,14 @@ interface EnhancedSizeDetail {
 /**
  * Inventory Status from API inventoryStatus object
  * Represents aggregate inventory statistics
+ * 
+ * Lost Item Management (Task 1): Added totalLost field
  */
 interface InventoryStatus {
   totalOriginal: number         // Sum of all originalQuantity
   totalAvailable: number        // Sum of all availableQuantity
   totalRented: number           // Sum of all rentedQuantity
+  totalLost: number             // Sum of all lostQuantity (Lost Item Management)
   utilizationRate: number       // Percentage: (totalRented / totalOriginal) * 100
   isHealthy: boolean            // Boolean: utilizationRate < 80%
 }
@@ -54,6 +61,8 @@ interface AdminSizeInventoryCardProps {
 
 /**
  * Internal statistics calculated from sizeDetails
+ * 
+ * Lost Item Management (Task 1): Added totalLost and lost per category
  */
 interface SizeStatistics {
   totalSizes: number            // Total number of size variations
@@ -61,6 +70,7 @@ interface SizeStatistics {
   totalOriginal: number         // Sum of originalQuantity
   totalAvailable: number        // Sum of availableQuantity
   totalRented: number           // Sum of rentedQuantity
+  totalLost: number             // Sum of lostQuantity (Lost Item Management)
   isInStock: boolean            // totalAvailable > 0
   // Breakdown by age category
   byCategory: Record<string, {
@@ -68,6 +78,7 @@ interface SizeStatistics {
     original: number            // Total originalQuantity in this category
     available: number           // Total availableQuantity in this category
     rented: number              // Total rentedQuantity in this category
+    lost: number                // Total lostQuantity in this category (Lost Item Management)
     sizes: EnhancedSizeDetail[] // Array of sizes in this category
   }>
 }
@@ -171,8 +182,41 @@ function getProgressBarColor(utilizationRate: number): string {
  * AdminSizeInventoryCard Component
  * 
  * Displays enhanced inventory information for admin product detail page.
- * Shows detailed breakdown of original, rented, and available quantities
+ * Shows detailed breakdown of original, rented, available, and lost quantities
  * with utilization rates and visual indicators.
+ * 
+ * Lost Item Management Integration (Task 1):
+ * - Displays lostQuantity for each size
+ * - Shows total lost items in summary statistics
+ * - Maintains inventory invariant: original = rented + lost + available
+ * - Visual indicators for lost items (red color coding)
+ * 
+ * @example
+ * ```tsx
+ * <AdminSizeInventoryCard
+ *   sizeDetails={[
+ *     {
+ *       id: '1',
+ *       size: 'M',
+ *       ageCategory: 'ADULT',
+ *       originalQuantity: 10,
+ *       availableQuantity: 5,
+ *       rentedQuantity: 3,
+ *       lostQuantity: 2,  // Lost Item Management
+ *       utilizationRate: 30,
+ *       isAvailable: true
+ *     }
+ *   ]}
+ *   inventoryStatus={{
+ *     totalOriginal: 10,
+ *     totalAvailable: 5,
+ *     totalRented: 3,
+ *     totalLost: 2,  // Lost Item Management
+ *     utilizationRate: 30,
+ *     isHealthy: true
+ *   }}
+ * />
+ * ```
  */
 export function AdminSizeInventoryCard({
   sizeDetails,
@@ -187,6 +231,7 @@ export function AdminSizeInventoryCard({
     const totalOriginal = sizeDetails.reduce((sum, size) => sum + size.originalQuantity, 0)
     const totalAvailable = sizeDetails.reduce((sum, size) => sum + size.availableQuantity, 0)
     const totalRented = sizeDetails.reduce((sum, size) => sum + size.rentedQuantity, 0)
+    const totalLost = sizeDetails.reduce((sum, size) => sum + (size.lostQuantity || 0), 0)
     
     // Count available sizes
     const availableSizes = sizeDetails.filter(size => size.availableQuantity > 0).length
@@ -201,6 +246,7 @@ export function AdminSizeInventoryCard({
           original: 0, 
           available: 0,
           rented: 0,
+          lost: 0,
           sizes: [] 
         }
       }
@@ -208,6 +254,7 @@ export function AdminSizeInventoryCard({
       acc[category].original += size.originalQuantity
       acc[category].available += size.availableQuantity
       acc[category].rented += size.rentedQuantity
+      acc[category].lost += size.lostQuantity || 0
       acc[category].sizes.push(size)
       return acc
     }, {} as SizeStatistics['byCategory'])
@@ -218,6 +265,7 @@ export function AdminSizeInventoryCard({
       totalOriginal,
       totalAvailable,
       totalRented,
+      totalLost,
       byCategory,
       isInStock: totalAvailable > 0,
     }
@@ -257,9 +305,9 @@ export function AdminSizeInventoryCard({
       </CardHeader>
       
       <CardContent className="space-y-6">
-        {/* Statistics Summary - 4 Columns */}
+        {/* Statistics Summary - 5 Columns (Lost Item Management) */}
         {showStats && (
-          <div className="grid grid-cols-4 gap-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+          <div className="grid grid-cols-5 gap-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
             <div className="text-center">
               <div className="text-xl font-bold text-blue-600">{stats.totalSizes}</div>
               <div className="text-xs text-gray-600">Variasi</div>
@@ -273,15 +321,20 @@ export function AdminSizeInventoryCard({
               <div className="text-xs text-gray-600">Disewa</div>
             </div>
             <div className="text-center">
+              <div className="text-xl font-bold text-red-600">{stats.totalLost}</div>
+              <div className="text-xs text-gray-600">Hilang</div>
+            </div>
+            <div className="text-center">
               <div className="text-xl font-bold text-purple-600">{stats.totalOriginal}</div>
               <div className="text-xs text-gray-600">Total</div>
             </div>
             
             {/* Overall Status Message */}
-            <div className="col-span-4 mt-2 pt-2 border-t border-gray-200">
+            <div className="col-span-5 mt-2 pt-2 border-t border-gray-200">
               <div className="text-sm text-gray-600 text-center">
                 💡 Overall: {inventoryStatus.totalAvailable} dari {inventoryStatus.totalOriginal} pcs tersedia 
-                ({inventoryStatus.totalRented} sedang disewa)
+                ({inventoryStatus.totalRented} sedang disewa
+                {stats.totalLost > 0 && <span className="text-red-600">, {stats.totalLost} hilang</span>})
               </div>
             </div>
           </div>
@@ -310,6 +363,9 @@ export function AdminSizeInventoryCard({
                     {data.available} dari {data.original} pcs tersedia
                     {data.rented > 0 && (
                       <span className="text-orange-600 ml-1">({data.rented} disewa)</span>
+                    )}
+                    {data.lost > 0 && (
+                      <span className="text-red-600 ml-1">({data.lost} hilang)</span>
                     )}
                   </div>
                 </div>
@@ -362,7 +418,7 @@ export function AdminSizeInventoryCard({
                           </Badge>
                         </div>
                         
-                        {/* Availability Breakdown */}
+                        {/* Availability Breakdown (Lost Item Management) */}
                         <div className="space-y-1 text-sm">
                           <div className="flex justify-between">
                             <span className="text-gray-600">Tersedia:</span>
@@ -376,6 +432,15 @@ export function AdminSizeInventoryCard({
                               <span className="text-gray-600">Sedang disewa:</span>
                               <span className="font-semibold text-orange-600">
                                 {size.rentedQuantity} pcs
+                              </span>
+                            </div>
+                          )}
+                          
+                          {size.lostQuantity > 0 && (
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Hilang:</span>
+                              <span className="font-semibold text-red-600">
+                                {size.lostQuantity} pcs
                               </span>
                             </div>
                           )}

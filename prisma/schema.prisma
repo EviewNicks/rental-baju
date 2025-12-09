@@ -154,7 +154,7 @@ model Transaksi {
   createdBy       String
   createdAt       DateTime             @default(now())
   updatedAt       DateTime             @updatedAt
-  flatLatePenalty Decimal              @default(20000) @db.Decimal(10, 2)
+  flatLatePenalty Decimal              @default(0) @db.Decimal(10, 2)
   isLateReturn    Boolean              @default(false)
   aktivitas       AktivitasTransaksi[]
   pembayaran      Pembayaran[]

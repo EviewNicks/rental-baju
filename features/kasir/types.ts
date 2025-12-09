@@ -10,7 +10,7 @@
 // CORE TYPES & ENUMS
 // ==========================================
 
-export type TransactionStatus = 'active' | 'diambil' | 'selesai' | 'terlambat' | 'cancelled'
+export type TransactionStatus = 'active' | 'diambil' | 'selesai' | 'terlambat' | 'cancelled' | 'pending_resolution'
 export type PaymentMethod = 'tunai' | 'transfer' | 'kartu'
 export type ActivityType = 'dibuat' | 'dibayar' | 'diambil' | 'selesai' | 'terlambat' | 'dibatalkan'
 export type ReturnStatus = 'belum' | 'sebagian' | 'lengkap'
@@ -388,6 +388,35 @@ export interface TransactionDetail extends Transaction {
     pricePerDay: number
     duration: number
     subtotal: number
+    sizeInfo?: string // Size information for display
+    // ✅ Multi-condition summary for lost item resolution
+    multiConditionSummary?: {
+      totalPenalty: number
+      lostItems: number
+      goodItems: number
+      totalQuantity: number
+      conditionBreakdown: Array<{
+        id: string
+        kondisiAkhir: string
+        jumlahKembali: number
+        penaltyAmount: number
+        modalAwalUsed?: number | null
+        resolutionStatus?: string | null
+        resolutionDate?: string | null
+      }>
+    }
+    // Legacy conditionBreakdown (backward compatibility)
+    conditionBreakdown?: Array<{
+      id: string
+      kondisiAkhir: string
+      jumlahKembali: number
+      penaltyAmount: number
+      modalAwalUsed?: number | null
+      resolutionStatus?: string | null
+      resolutionDate?: string | null
+      createdAt?: string
+      createdBy?: string
+    }>
   }>
   timeline: ActivityLog[]
   penalties?: Penalty[]

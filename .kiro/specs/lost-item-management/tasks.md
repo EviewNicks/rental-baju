@@ -166,13 +166,13 @@ This implementation plan breaks down the Lost Item Management System into discre
     - HILANG penalty tests: 9/9 passing
     - Resolution service tests: 9/9 passing
 
-- [ ] 5. Add InventoryService Method for Lost Items
+- [x] 5. Add InventoryService Method for Lost Items
   - Create updateStockOnLost() method
   - Implement stock update logic
   - Add error handling
   - _Requirements: 5.2, 5.3_
 
-- [ ] 5.1 Create updateStockOnLost method
+- [x] 5.1 Create updateStockOnLost method
   - Add method to InventoryService
   - Update rentedQuantity (decrement)
   - Update lostQuantity (increment)
@@ -193,60 +193,64 @@ This implementation plan breaks down the Lost Item Management System into discre
   - Process HILANG return
   - Verify rentedQuantity and availableQuantity unchanged
 
-- [ ] 6. Create Lost Item Resolution Modal Component
-  - Create LostItemResolutionModal.tsx
-  - Implement simple 2-option form
-  - Add confirmation dialog
-  - Handle loading and error states
+- [x] 6. Create Lost Item Resolution Modal Component ✅
+  - Create LostItemResolutionModal.tsx ✅
+  - Implement simple 2-option form ✅
+  - Add confirmation dialog ✅
+  - Handle loading and error states ✅
   - _Requirements: 3.2, 3.3, 3.4_
+  - **Status**: COMPLETED - Modal component created
 
-- [ ] 6.1 Create modal component structure
-  - Create LostItemResolutionModal.tsx file
-  - Define component props interface
-  - Set up modal state management
-  - Add modal open/close handlers
+- [x] 6.1 Create modal component structure ✅
+  - Create LostItemResolutionModal.tsx file ✅
+  - Define component props interface ✅
+  - Set up modal state management ✅
+  - Add modal open/close handlers ✅
   - _Requirements: 3.2_
+  - **Implementation**: features/kasir/components/detail/LostItemResolutionModal.tsx
 
-- [ ] 6.2 Implement lost items list display
-  - Display list of unresolved lost items
-  - Show product name, size info, deposit amount
-  - Format currency values properly
-  - Add item selection UI
+- [x] 6.2 Implement lost items list display ✅
+  - Display list of unresolved lost items ✅
+  - Show product name, size info, deposit amount ✅
+  - Format currency values properly ✅
+  - Add item selection UI ✅
   - _Requirements: 3.4_
 
-- [ ] 6.3 Add resolution option selection
-  - Add radio buttons for two options
-  - Option 1: "Customer Beli Sendiri" (customer_replaced)
-  - Option 2: "Ganti dengan Dana Jaminan" (deposit_kept)
-  - Show description for each option
+- [x] 6.3 Add resolution option selection ✅
+  - Add radio buttons for two options ✅
+  - Option 1: "Customer Beli Sendiri" (customer_replaced) ✅
+  - Option 2: "Ganti dengan Dana Jaminan" (deposit_kept) ✅
+  - Show description for each option ✅
   - _Requirements: 3.3_
 
-- [ ] 6.4 Implement resolution submission
-  - Add confirm button
-  - Call resolveLostItem API endpoint
-  - Handle loading state during submission
-  - Handle success and error responses
-  - Show success/error toast messages
-  - Close modal on success
+- [x] 6.4 Implement resolution submission ✅
+  - Add confirm button ✅
+  - Call resolveLostItem API endpoint ✅
+  - Handle loading state during submission ✅
+  - Handle success and error responses ✅
+  - Show success/error toast messages ✅
+  - Close modal on success ✅
   - _Requirements: 3.5_
 
-- [ ] 6.5 Add cancel functionality
-  - Add cancel button
-  - Close modal without changes
-  - Confirm cancellation if form is dirty
+- [x] 6.5 Add cancel functionality ✅
+  - Add cancel button ✅
+  - Close modal without changes ✅
+  - Confirm cancellation if form is dirty ✅
   - _Requirements: 3.2_
 
-- [ ] 7. Update ActionButtonPanel Component
-  - Add "Resolve Barang Hilang" button
-  - Implement button visibility logic
-  - Connect to LostItemResolutionModal
+- [x] 7. Update ActionButtonPanel Component ✅
+  - Add "Resolve Barang Hilang" button ✅
+  - Implement button visibility logic ✅
+  - Connect to LostItemResolutionModal ✅
   - _Requirements: 3.1, 6.4_
+  - **Status**: COMPLETED - Button and modal integrated
 
-- [ ] 7.1 Add unresolved lost items detection
-  - Query transaction products for HILANG items
-  - Check resolutionStatus is null
-  - Set hasUnresolvedLostItems flag
+- [x] 7.1 Add unresolved lost items detection ✅
+  - Query transaction products for HILANG items ✅
+  - Check resolutionStatus is null ✅
+  - Set hasUnresolvedLostItems flag ✅
   - _Requirements: 6.4_
+  - **Implementation**: ActionButtonPanel.tsx lines 90-102
 
 - [ ]* 7.2 Write property test for unresolved items query
   - **Property 9: Unresolved Lost Items Query Accuracy**
@@ -254,68 +258,79 @@ This implementation plan breaks down the Lost Item Management System into discre
   - Generate transactions with mix of resolved/unresolved items
   - Verify query returns correct subset
 
-- [ ] 7.3 Add resolve button to UI
-  - Add button with Package icon
-  - Show only when hasUnresolvedLostItems is true
-  - Add click handler to open modal
-  - Style consistently with other buttons
+- [x] 7.3 Add resolve button to UI ✅
+  - Add button with Package icon ✅
+  - Show only when hasUnresolvedLostItems is true ✅
+  - Add click handler to open modal ✅
+  - Style consistently with other buttons ✅
   - _Requirements: 3.1_
+  - **Implementation**: ActionButtonPanel.tsx lines 155-162
 
-- [ ] 7.4 Connect modal to button
-  - Add modal state management
-  - Pass transaction and lost items to modal
-  - Handle modal close and refresh data
+- [x] 7.4 Connect modal to button ✅
+  - Add modal state management ✅
+  - Pass transaction and lost items to modal ✅
+  - Handle modal close and refresh data ✅
   - _Requirements: 3.1_
+  - **Implementation**: ActionButtonPanel.tsx lines 234-254
 
-- [ ] 8. Create API Endpoint for Lost Item Resolution
-  - Create /api/kasir/transaksi/[id]/resolve-lost-item route
-  - Implement POST handler
-  - Add request validation
-  - Call resolveLostItem service method
-  - Return appropriate responses
+- [x] 8. Create API Endpoint for Lost Item Resolution ✅
+  - Create /api/kasir/transaksi/[id]/resolve-lost-item route ✅
+  - Implement POST handler ✅
+  - Add request validation ✅
+  - Call resolveLostItem service method ✅
+  - Return appropriate responses ✅
   - _Requirements: 3.5, 7.1-7.5_
+  - **Status**: COMPLETED - API endpoint created with full error handling
 
-- [ ] 8.1 Create API route file
-  - Create route.ts in appropriate directory
-  - Set up POST handler
-  - Add authentication check
-  - Add request body validation
+- [x] 8.1 Create API route file ✅
+  - Create route.ts in appropriate directory ✅
+  - Set up POST handler ✅
+  - Add authentication check ✅
+  - Add request body validation ✅
   - _Requirements: 3.5_
+  - **Implementation**: app/api/kasir/transaksi/[id]/resolve-lost-item/route.ts
 
-- [ ] 8.2 Implement resolution logic
-  - Extract request parameters
-  - Call UnifiedReturnService.resolveLostItem()
-  - Handle success response
-  - Handle error responses
-  - Return appropriate HTTP status codes
+- [x] 8.2 Implement resolution logic ✅
+  - Extract request parameters ✅
+  - Call UnifiedReturnService.resolveLostItem() ✅
+  - Handle success response ✅
+  - Handle error responses ✅
+  - Return appropriate HTTP status codes ✅
   - _Requirements: 7.1, 7.2, 7.3_
+  - **Implementation**: Lines 75-115 (service call and response handling)
 
-- [ ] 8.3 Add error handling
-  - Catch validation errors
-  - Catch transaction errors
-  - Return descriptive error messages
-  - Log errors for debugging
+- [x] 8.3 Add error handling ✅
+  - Catch validation errors ✅
+  - Catch transaction errors ✅
+  - Return descriptive error messages ✅
+  - Log errors for debugging ✅
   - _Requirements: 7.4, 7.5, 8.4_
+  - **Implementation**: Lines 117-230 (comprehensive error handling)
 
-- [ ] 9. Update Transaction Detail Hook
-  - Modify useTransactionDetail to include resolution data
-  - Add conditionBreakdown to product type
-  - Add resolutionStatus to breakdown items
-  - Ensure data transformation includes new fields
+- [x] 9. Update Transaction Detail Hook ✅
+  - Modify useTransactionDetail to include resolution data ✅
+  - Add conditionBreakdown to product type ✅
+  - Add resolutionStatus to breakdown items ✅
+  - Ensure data transformation includes new fields ✅
   - _Requirements: 6.4_
+  - **Status**: COMPLETED - Resolution data included in transaction detail
 
-- [ ] 9.1 Update API response transformation
-  - Include resolutionStatus in conditionBreakdown
-  - Include resolutionDate if present
-  - Map resolution data correctly
+- [x] 9.1 Update API response transformation ✅
+  - Include resolutionStatus in conditionBreakdown ✅
+  - Include resolutionDate if present ✅
+  - Map resolution data correctly ✅
   - _Requirements: 6.4_
+  - **Implementation**: features/kasir/services/transaksiService.ts (lines 1158-1165)
 
-- [ ] 9.2 Update TypeScript interfaces
-  - Add resolutionStatus to ConditionBreakdown type
-  - Add resolutionDate to ConditionBreakdown type
-  - Update TransactionDetail type
-  - Ensure type safety throughout
+- [x] 9.2 Update TypeScript interfaces ✅
+  - Add resolutionStatus to ConditionBreakdown type ✅
+  - Add resolutionDate to ConditionBreakdown type ✅
+  - Update TransactionDetail type ✅
+  - Ensure type safety throughout ✅
   - _Requirements: 6.1_
+  - **Implementation**: 
+    - features/kasir/services/transaksiService.ts (lines 64-72)
+    - features/kasir/hooks/useTransactionDetail.ts (lines 309-321)
 
 - [ ] 10. Checkpoint - Verify UI Integration
   - Ensure all tests pass

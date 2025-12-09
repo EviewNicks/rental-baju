@@ -77,12 +77,14 @@ export function UnifiedConditionForm({
     const remaining = currentCondition.totalQuantity - totalReturned
     const hasValidConditions = currentCondition.conditions.every((c) => {
       // Special validation for HILANG category
+      // ✅ FIX: Allow non-zero jumlahKembali for HILANG (frontend sends quantity, backend sets jumlahKembali=0)
       if (c.conditionCategory === 'HILANG') {
         return (
           c.kondisiAkhir &&
           c.kondisiAkhir.length >= 4 &&
           c.kondisiAkhir.length <= 500 &&
-          c.jumlahKembali === 0 &&
+          c.jumlahKembali !== undefined &&
+          c.jumlahKembali > 0 &&  // ✅ Changed: Allow positive quantity for HILANG
           c.useManualPricing &&
           c.manualPrice !== undefined &&
           c.manualPrice >= 0
@@ -115,11 +117,8 @@ export function UnifiedConditionForm({
     if (totalReturned > currentCondition.totalQuantity) {
       error = `Total ${totalReturned} melebihi maksimal ${currentCondition.totalQuantity} unit`
     } else if (totalReturned === 0) {
-      // Check if all conditions are HILANG (valid case for totalReturned = 0)
-      const allHilang = currentCondition.conditions.every(c => c.conditionCategory === 'HILANG')
-      if (!allHilang) {
-        error = 'Minimal harus mengembalikan 1 unit atau tandai sebagai hilang'
-      }
+      // ✅ FIX: With new HILANG logic, totalReturned should never be 0 (HILANG now requires quantity > 0)
+      error = 'Minimal harus mengembalikan 1 unit'
     } else if (!hasValidConditions) {
       // Check specific validation issues with enhanced BAIK category validation
       const invalidConditions = currentCondition.conditions.filter((c) => {
@@ -216,8 +215,9 @@ export function UnifiedConditionForm({
     const firstCondition = currentCondition.conditions[0]
     if (!firstCondition?.kondisiAkhir || !firstCondition?.jumlahKembali) return false // Invalid first condition
 
-    // Don't show suggestion for HILANG condition - it should be complete by itself
-    if (firstCondition.conditionCategory === 'HILANG') return false
+    // ✅ FIX: Allow suggestion for HILANG when there's remaining quantity
+    // Example: 2 units total, 1 HILANG, 1 BAIK - should show "Add Condition" button
+    // Removed: if (firstCondition.conditionCategory === 'HILANG') return false
 
     const shouldShow =
       validation.remaining > 0 && validation.remaining < currentCondition.totalQuantity
@@ -433,38 +433,6 @@ export function UnifiedConditionForm({
           </div>
         </div>
 
-        {/* Smart Suggestion Alert */}
-        {shouldShowSuggestion && !showSuggestion && validation.remaining > 0 && (
-          <Alert className="mt-4 border-blue-200 bg-blue-50">
-            <Lightbulb className="h-4 w-4" />
-            <AlertDescription>
-              <div className="flex items-center justify-between">
-                <div>
-                  <strong>Saran:</strong> Masih ada {validation.remaining} unit yang belum
-                  dialokasikan. Apakah kondisinya berbeda dengan yang sudah diisi?
-                </div>
-                <div className="flex gap-2 ml-4">
-                  <Button
-                    size="sm"
-                    onClick={handleAcceptSuggestion}
-                    disabled={disabled}
-                    className="bg-blue-600 hover:bg-blue-700 text-white"
-                  >
-                    Tambah Kondisi
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={handleDismissSuggestion}
-                    disabled={disabled}
-                  >
-                    Nanti
-                  </Button>
-                </div>
-              </div>
-            </AlertDescription>
-          </Alert>
-        )}
 
         {/* Validation Error Display - Only show when touched */}
         {validation.error && touched && (
