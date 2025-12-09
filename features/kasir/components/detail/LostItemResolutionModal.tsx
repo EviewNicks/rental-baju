@@ -1,12 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { AlertCircle, Package, RefreshCw } from 'lucide-react'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { AlertCircle, Package, RefreshCw, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import type { TransactionDetail } from '../../types'
 
@@ -27,6 +28,12 @@ interface LostItemResolutionModalProps {
 
 type ResolutionType = 'customer_replaced' | 'deposit_kept'
 
+interface Kasir {
+  id: string
+  nama: string  // ✅ Match dengan API response
+  isActive: boolean
+}
+
 export function LostItemResolutionModal({
   isOpen,
   onClose,
@@ -36,6 +43,41 @@ export function LostItemResolutionModal({
   const [resolutionType, setResolutionType] = useState<ResolutionType>('customer_replaced')
   const [notes, setNotes] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [kasirId, setKasirId] = useState<string>('')
+  const [kasirList, setKasirList] = useState<Kasir[]>([])
+  const [isLoadingKasir, setIsLoadingKasir] = useState(false)
+
+  // Fetch kasir list when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      fetchKasirList()
+    }
+  }, [isOpen])
+
+  const fetchKasirList = async () => {
+    setIsLoadingKasir(true)
+    try {
+      const response = await fetch('/api/kasir/kasir?limit=100&isActive=true')
+      if (!response.ok) {
+        throw new Error('Gagal mengambil daftar kasir')
+      }
+      const result = await response.json()
+      
+      // ✅ Fix: Access nested data structure correctly
+      // API returns: { success: true, data: { data: [...], pagination: {...}, summary: {...} } }
+      const kasirData = result.data?.data || []
+      
+      // Filter only active kasirs
+      const activeKasirs = kasirData.filter((kasir: Kasir) => kasir.isActive)
+      
+      setKasirList(activeKasirs)
+    } catch (error) {
+      console.error('Error fetching kasir list:', error)
+      toast.error('Gagal mengambil daftar kasir')
+    } finally {
+      setIsLoadingKasir(false)
+    }
+  }
 
   const handleSubmit = async () => {
     if (lostItems.length === 0) {
@@ -43,19 +85,42 @@ export function LostItemResolutionModal({
       return
     }
 
+    // Validate kasir selection
+    if (!kasirId) {
+      toast.error('Pilih kasir terlebih dahulu')
+      return
+    }
+
     setIsSubmitting(true)
 
     try {
+      // ✅ FIX: Use transactionCode instead of kode (Transaction interface uses transactionCode)
+      const transactionCode = transaction.transactionCode || transaction.id
+      
+      console.log('[LostItemResolutionModal] Starting resolution:', {
+        transactionCode,
+        transactionId: transaction.id,
+        lostItemsCount: lostItems.length,
+        resolutionType,
+        kasirId,
+      })
+
       // Process each lost item
       for (const item of lostItems) {
+        console.log('[LostItemResolutionModal] Processing item:', {
+          returnRecordId: item.returnRecordId,
+          productName: item.productName,
+        })
+
         const response = await fetch(
-          `/api/kasir/transaksi/${transaction.id}/resolve-lost-item`,
+          `/api/kasir/transaksi/${transactionCode}/resolve-lost-item`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               returnRecordId: item.returnRecordId,
               resolutionType,
+              kasirId,
               notes: notes.trim() || undefined,
             }),
           },
@@ -63,12 +128,23 @@ export function LostItemResolutionModal({
 
         if (!response.ok) {
           const error = await response.json()
-          throw new Error(error.message || 'Gagal menyelesaikan barang hilang')
+          console.error('[LostItemResolutionModal] API error:', {
+            status: response.status,
+            statusText: response.statusText,
+            error,
+            item: item.returnRecordId,
+          })
+          throw new Error(error.error?.message || error.message || 'Gagal menyelesaikan barang hilang')
         }
 
         const result = await response.json()
-        console.log('Resolution result:', result)
+        console.log('[LostItemResolutionModal] Item resolved successfully:', {
+          returnRecordId: item.returnRecordId,
+          result,
+        })
       }
+
+      console.log('[LostItemResolutionModal] All items resolved successfully')
 
       // Success
       toast.success(
@@ -80,6 +156,7 @@ export function LostItemResolutionModal({
       // Reset form
       setResolutionType('customer_replaced')
       setNotes('')
+      setKasirId('')
 
       // Close modal and refresh
       onClose()
@@ -93,7 +170,7 @@ export function LostItemResolutionModal({
 
   const handleCancel = () => {
     // Confirm if form is dirty
-    if (notes.trim()) {
+    if (notes.trim() || kasirId) {
       if (!confirm('Batalkan perubahan?')) {
         return
       }
@@ -102,6 +179,7 @@ export function LostItemResolutionModal({
     // Reset and close
     setResolutionType('customer_replaced')
     setNotes('')
+    setKasirId('')
     onClose()
   }
 
@@ -140,6 +218,39 @@ export function LostItemResolutionModal({
                 </div>
               ))}
             </div>
+          </div>
+
+          {/* Kasir Selection */}
+          <div className="space-y-2">
+            <Label htmlFor="kasir" className="text-sm font-semibold text-gray-900">
+              Pilih Kasir <span className="text-red-500">*</span>
+            </Label>
+            {isLoadingKasir ? (
+              <div className="flex items-center gap-2 p-3 border rounded-lg bg-gray-50">
+                <Loader2 className="h-4 w-4 animate-spin text-gray-500" />
+                <span className="text-sm text-gray-600">Memuat daftar kasir...</span>
+              </div>
+            ) : (
+              <Select value={kasirId} onValueChange={setKasirId}>
+                <SelectTrigger id="kasir" className="w-full">
+                  <SelectValue placeholder="Pilih kasir untuk expense tracking" />
+                </SelectTrigger>
+                <SelectContent>
+                  {kasirList.length === 0 ? (
+                    <div className="p-2 text-sm text-gray-500">Tidak ada kasir aktif</div>
+                  ) : (
+                    kasirList.map((kasir) => (
+                      <SelectItem key={kasir.id} value={kasir.id}>
+                        {kasir.nama}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+            )}
+            <p className="text-xs text-gray-500">
+              Kasir yang dipilih akan digunakan untuk mencatat pengeluaran refund dana jaminan
+            </p>
           </div>
 
           {/* Resolution Options */}

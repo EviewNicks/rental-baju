@@ -152,9 +152,35 @@ This feature addresses the current gap where lost items are not properly tracked
 4. WHEN new fields are queried THEN the System SHALL handle null values gracefully without errors
 5. WHEN existing return processing is executed THEN the System SHALL continue working with new schema fields
 
+### Requirement 11: Refund Expense Tracking
+
+**User Story:** As a producer, I want refund payments to be automatically recorded as expenses in Dana Kasir, so that I can track cash outflow and maintain accurate financial records.
+
+#### Acceptance Criteria
+
+1. WHEN customer replacement resolution is processed THEN the System SHALL create expense record in PengeluaranKasir table
+2. WHEN refund expense is created THEN the System SHALL use kategori "Refund Dana Jaminan"
+3. WHEN refund expense is created THEN the System SHALL set harga equal to refund amount (positive value)
+4. WHEN refund expense is created THEN the System SHALL set kasirId from user selection in resolution modal
+5. WHEN refund expense is created THEN the System SHALL generate deskripsi with format "Refund dana jaminan - [Product Name] - [Customer Name] - Transaksi #[Transaction Code]"
+6. WHEN refund expense creation fails THEN the System SHALL rollback entire resolution transaction including payment and stock updates
+7. WHEN refund expense is created THEN the System SHALL appear in Dana Summary expense list for the current date
+
+### Requirement 12: Kasir Selection in Resolution
+
+**User Story:** As a producer, I want to select which kasir handles the refund, so that expense is properly attributed to the correct kasir account.
+
+#### Acceptance Criteria
+
+1. WHEN resolution modal is displayed THEN the System SHALL show kasir selection dropdown
+2. WHEN kasir dropdown is displayed THEN the System SHALL list all active kasir ordered by name
+3. WHEN resolution is submitted without kasir selection THEN the System SHALL show validation error
+4. WHEN resolution is submitted with kasir selection THEN the System SHALL use selected kasirId for expense record
+5. WHEN kasir list is loading THEN the System SHALL show loading indicator in dropdown
+
 ---
 
-**Requirements Version**: 1.0  
-**Date**: December 7, 2025  
+**Requirements Version**: 1.1  
+**Date**: December 9, 2025  
 **Approach**: Keep It Simple - Minimal Changes, Maximum Value  
-**Status**: Ready for Design Phase
+**Status**: Updated with Refund Expense Tracking

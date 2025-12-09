@@ -88,15 +88,29 @@ export class PenaltyCalculator {
 
   /**
    * Calculate penalty for late return based on dates
+   * ✅ FIX: Normalize dates to compare only date (not time) to prevent same-day returns from being charged
    */
   static calculateLatePenalty(
     expectedDate: Date, 
     actualDate: Date, 
     dailyRate: number = this.DEFAULT_DAILY_RATE
   ): number {
+    // ✅ FIX: Normalize to date only (remove hours/minutes/seconds)
+    // This ensures returns on the same day are not considered late
+    const expectedDay = new Date(
+      expectedDate.getFullYear(), 
+      expectedDate.getMonth(), 
+      expectedDate.getDate()
+    )
+    const actualDay = new Date(
+      actualDate.getFullYear(), 
+      actualDate.getMonth(), 
+      actualDate.getDate()
+    )
+    
     // Calculate difference in days
-    const timeDiff = actualDate.getTime() - expectedDate.getTime()
-    const lateDays = Math.max(0, Math.ceil(timeDiff / (1000 * 60 * 60 * 24)))
+    const timeDiff = actualDay.getTime() - expectedDay.getTime()
+    const lateDays = Math.max(0, Math.floor(timeDiff / (1000 * 60 * 60 * 24)))  // ✅ Changed Math.ceil to Math.floor
     
     // Apply maximum penalty limit
     const cappedLateDays = Math.min(lateDays, this.MAX_PENALTY_DAYS)
@@ -628,14 +642,28 @@ export class PenaltyCalculator {
   /**
    * Calculate flat penalty for late return transactions
    * NEW: Flat 20k penalty system instead of per-day calculation
+   * ✅ FIX: Normalize dates to compare only date (not time) to prevent same-day returns from being charged
    */
   static calculateFlatLatePenalty(
     expectedDate: Date,
     actualDate: Date,
     customAmount?: number
   ): { isLate: boolean; penalty: number; lateDays: number } {
-    const timeDiff = actualDate.getTime() - expectedDate.getTime()
-    const lateDays = Math.max(0, Math.ceil(timeDiff / (1000 * 60 * 60 * 24)))
+    // ✅ FIX: Normalize to date only (remove hours/minutes/seconds)
+    // This ensures returns on the same day are not considered late
+    const expectedDay = new Date(
+      expectedDate.getFullYear(), 
+      expectedDate.getMonth(), 
+      expectedDate.getDate()
+    )
+    const actualDay = new Date(
+      actualDate.getFullYear(), 
+      actualDate.getMonth(), 
+      actualDate.getDate()
+    )
+    
+    const timeDiff = actualDay.getTime() - expectedDay.getTime()
+    const lateDays = Math.max(0, Math.floor(timeDiff / (1000 * 60 * 60 * 24)))  // ✅ Changed Math.ceil to Math.floor
     const isLate = lateDays > 0
 
     return {

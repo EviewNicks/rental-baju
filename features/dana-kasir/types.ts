@@ -6,6 +6,7 @@ export const EXPENSE_CATEGORIES = [
   'Operasional',
   'Maintenance', 
   'Transport',
+  'Refund Dana Jaminan',  // ✅ NEW: For lost item refunds
   'Lainnya'
 ] as const
 

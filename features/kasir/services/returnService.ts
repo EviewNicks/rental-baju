@@ -157,6 +157,7 @@ interface LostItemResolutionRequest {
   transaksiId: string
   returnRecordId: string // TransaksiItemReturn.id
   resolutionType: 'customer_replaced' | 'deposit_kept'
+  kasirId: string // ✅ NEW: Selected kasir for expense tracking
   notes?: string
 }
 
@@ -164,6 +165,7 @@ interface LostItemResolutionResult {
   success: boolean
   resolutionType: string
   refundAmount?: number // Only for customer_replaced
+  expenseCreated?: boolean // ✅ NEW: Indicates if expense was recorded
   stockUpdates: {
     sizeId: string
     rentedQuantity: number
@@ -728,16 +730,27 @@ export class UnifiedReturnService {
               conditionCount: item.conditions.length,
             })
 
-            // Prepare stock updates
-            const totalReturned = item.conditions.reduce((sum, c) => sum + c.jumlahKembali, 0)
-            const currentStock = stockUpdates.get(transactionItem.produkId) || 0
-            stockUpdates.set(transactionItem.produkId, currentStock + totalReturned)
+            // Prepare stock updates (SKIP HILANG items)
+            // ✅ FIX: Only count non-HILANG items for stock update
+            // HILANG items should NOT update stock until resolution
+            const nonHilangReturned = item.conditions
+              .filter(c => c.conditionCategory !== 'HILANG')
+              .reduce((sum, c) => sum + c.jumlahKembali, 0)
+            
+            if (nonHilangReturned > 0) {
+              const currentStock = stockUpdates.get(transactionItem.produkId) || 0
+              stockUpdates.set(transactionItem.produkId, currentStock + nonHilangReturned)
+            }
 
-            // Prepare size updates if applicable
+            // Prepare size updates if applicable (SKIP HILANG items)
             const parsedKondisi = parseKondisiAwal(transactionItem.kondisiAwal)
             if (parsedKondisi?.productSizeId && !parsedKondisi.isLegacyFormat) {
-              const currentSizeStock = sizeUpdates.get(parsedKondisi.productSizeId) || 0
-              sizeUpdates.set(parsedKondisi.productSizeId, currentSizeStock + totalReturned)
+              // ✅ FIX: Only count non-HILANG items for stock update
+              // HILANG items should NOT update stock until resolution
+              if (nonHilangReturned > 0) {
+                const currentSizeStock = sizeUpdates.get(parsedKondisi.productSizeId) || 0
+                sizeUpdates.set(parsedKondisi.productSizeId, currentSizeStock + nonHilangReturned)
+              }
             }
 
             processedItems.push({
@@ -886,24 +899,17 @@ export class UnifiedReturnService {
         totalPenalty: result.penalty,
       })
 
-      // PERFORMANCE OPTIMIZATION: Move post-processing to background
-      setImmediate(async () => {
-        try {
-          await this.processBackgroundActivities(
-            transaksiId,
-            request,
-            result,
-            penaltyCalculation,
-            validation.transaction!.transaction,
-          )
-        } catch (error) {
-          kasirLogger.returnProcess.warn('processUnifiedReturn', 'Background processing failed', {
-            transaksiId,
-            error: error instanceof Error ? error.message : 'Unknown error',
-          })
-          // Don't throw - background failures shouldn't affect main processing
-        }
-      })
+      // ✅ CRITICAL FIX: Execute post-processing synchronously to ensure activity log is created
+      // before response is sent to client. This prevents race condition where activity log
+      // is created AFTER the API response, causing it to not appear in the response.
+      // Trade-off: +50-100ms response time for data consistency and immediate availability.
+      await this.processBackgroundActivities(
+        transaksiId,
+        request,
+        result,
+        penaltyCalculation,
+        validation.transaction!.transaction,
+      )
 
       return result
     } catch (error) {
@@ -1398,15 +1404,38 @@ export class UnifiedReturnService {
         const txInventoryService = createInventoryService(tx as PrismaClient)
 
         let refundAmount: number | undefined
+        let expenseCreated = false
 
         // Process based on resolution type
         if (request.resolutionType === 'customer_replaced') {
           // Option 1: Customer bought replacement
           // - Refund deposit
+          // - Create expense record
           // - Restore stock (rentedQuantity--, availableQuantity++)
+
+          kasirLogger.returnProcess.info(
+            'resolveLostItem',
+            'Processing customer_replaced resolution',
+            {
+              returnRecordId: request.returnRecordId,
+              transaksiId: request.transaksiId,
+              kasirId: request.kasirId,
+              penaltyAmount: Number(returnRecord.penaltyAmount),
+            }
+          )
 
           // Calculate refund amount (negative of original penalty)
           refundAmount = Number(returnRecord.penaltyAmount)
+
+          kasirLogger.returnProcess.info(
+            'resolveLostItem',
+            'Creating refund payment',
+            {
+              transaksiId: request.transaksiId,
+              refundAmount,
+              productName: returnRecord.transaksiItem.produk.name,
+            }
+          )
 
           // Create refund payment
           await tx.pembayaran.create({
@@ -1419,8 +1448,130 @@ export class UnifiedReturnService {
             },
           })
 
+          kasirLogger.returnProcess.info(
+            'resolveLostItem',
+            'Refund payment created successfully',
+            {
+              transaksiId: request.transaksiId,
+              refundAmount,
+            }
+          )
+
+          // ✅ NEW: Create expense record for refund tracking
+          // Get transaction details for customer name
+          kasirLogger.returnProcess.info(
+            'resolveLostItem',
+            'Fetching transaction details for expense record',
+            {
+              transaksiId: request.transaksiId,
+              returnRecordId: request.returnRecordId,
+            }
+          )
+
+          let customerName = 'Customer'
+          let transactionCode = 'N/A'
+
+          try {
+            const transactionDetails = await tx.transaksi.findUnique({
+              where: { id: request.transaksiId },
+              select: {
+                kode: true,
+                penyewa: {
+                  select: { nama: true }
+                }
+              }
+            })
+
+            kasirLogger.returnProcess.info(
+              'resolveLostItem',
+              'Transaction details fetched successfully',
+              {
+                transaksiId: request.transaksiId,
+                hasDetails: !!transactionDetails,
+                hasPenyewa: !!transactionDetails?.penyewa,
+                kode: transactionDetails?.kode,
+                penyewaNama: transactionDetails?.penyewa?.nama,
+              }
+            )
+
+            customerName = transactionDetails?.penyewa?.nama || 'Customer'
+            transactionCode = transactionDetails?.kode || 'N/A'
+          } catch (error) {
+            kasirLogger.returnProcess.error(
+              'resolveLostItem',
+              'Failed to fetch transaction details - using defaults',
+              {
+                transaksiId: request.transaksiId,
+                error: error instanceof Error ? error.message : 'Unknown error',
+              }
+            )
+            // Continue with default values
+          }
+
+          const productName = returnRecord.transaksiItem.produk.name
+          const expenseData = {
+            kasirId: request.kasirId,
+            harga: new Decimal(refundAmount),
+            kategori: 'Refund Dana Jaminan',
+            deskripsi: `Refund dana jaminan - ${productName} - ${customerName} - Transaksi #${transactionCode}`,
+            createdBy: this.userId,
+            isActive: true,
+          }
+
+          kasirLogger.returnProcess.info(
+            'resolveLostItem',
+            'Creating expense record',
+            {
+              expenseData: {
+                ...expenseData,
+                harga: refundAmount, // Log as number for readability
+              },
+            }
+          )
+
+          await tx.pengeluaranKasir.create({
+            data: expenseData,
+          })
+
+          kasirLogger.returnProcess.info(
+            'resolveLostItem',
+            'Expense record created successfully',
+            {
+              kasirId: request.kasirId,
+              refundAmount,
+            }
+          )
+
+          expenseCreated = true
+
+          kasirLogger.returnProcess.info(
+            'resolveLostItem',
+            'Updating stock - restoring to available',
+            {
+              sizeId,
+              quantity: 1,
+            }
+          )
+
           // Update stock: restore to available
           await txInventoryService.updateStockOnReturn(sizeId, 1)
+
+          kasirLogger.returnProcess.info(
+            'resolveLostItem',
+            'Stock updated successfully',
+            {
+              sizeId,
+            }
+          )
+
+          kasirLogger.returnProcess.info(
+            'resolveLostItem',
+            'Updating resolution status',
+            {
+              returnRecordId: request.returnRecordId,
+              resolutionStatus: 'resolved_replaced',
+            }
+          )
 
           // Update resolution status
           await tx.transaksiItemReturn.update({
@@ -1434,10 +1585,12 @@ export class UnifiedReturnService {
 
           kasirLogger.returnProcess.info(
             'resolveLostItem',
-            'Customer replacement processed',
+            'Customer replacement processed with expense record',
             {
               returnRecordId: request.returnRecordId,
               refundAmount,
+              expenseCreated,
+              kasirId: request.kasirId,
               sizeId,
             },
           )
@@ -1489,6 +1642,7 @@ export class UnifiedReturnService {
 
         return {
           refundAmount,
+          expenseCreated,
           stockUpdates: {
             sizeId,
             rentedQuantity: updatedStock.rentedQuantity,
@@ -1503,6 +1657,7 @@ export class UnifiedReturnService {
         success: true,
         resolutionType: request.resolutionType,
         refundAmount: result.refundAmount,
+        expenseCreated: result.expenseCreated,
         stockUpdates: result.stockUpdates,
         message:
           request.resolutionType === 'customer_replaced'

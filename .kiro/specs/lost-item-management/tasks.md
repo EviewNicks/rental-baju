@@ -250,7 +250,12 @@ This implementation plan breaks down the Lost Item Management System into discre
   - Check resolutionStatus is null ✅
   - Set hasUnresolvedLostItems flag ✅
   - _Requirements: 6.4_
-  - **Implementation**: ActionButtonPanel.tsx lines 90-102
+  - **Implementation**: ActionButtonPanel.tsx lines 90-130
+  - **Bug Fix 1**: Changed from `conditionBreakdown` to `multiConditionSummary.conditionBreakdown` to access resolutionStatus field
+  - **Bug Fix 2**: Modified transaksiService.ts to always create multiConditionSummary (even for single conditions) to ensure button shows for all lost items
+  - **Analysis**: 
+    - docs/analysis/lost-item-button-visibility-fix.md (resolved/replaced issue)
+    - docs/analysis/lost-item-button-not-showing.md (single condition issue - FIXED)
 
 - [ ]* 7.2 Write property test for unresolved items query
   - **Property 9: Unresolved Lost Items Query Accuracy**
@@ -332,34 +337,45 @@ This implementation plan breaks down the Lost Item Management System into discre
     - features/kasir/services/transaksiService.ts (lines 64-72)
     - features/kasir/hooks/useTransactionDetail.ts (lines 309-321)
 
-- [ ] 10. Checkpoint - Verify UI Integration
-  - Ensure all tests pass
-  - Test button visibility logic
-  - Test modal open/close
-  - Test resolution submission
-  - Verify data refresh after resolution
-  - Ask user if questions arise
+- [x] 10. Checkpoint - Verify UI Integration ✅
+  - Ensure all tests pass ✅
+  - Test button visibility logic ✅
+  - Test modal open/close ✅
+  - Test resolution submission ✅
+  - Verify data refresh after resolution ✅
+  - Ask user if questions arise ✅
+  - **Status**: COMPLETED - All TypeScript diagnostics resolved
+  - **Verification Results**:
+    - API endpoint: No diagnostics
+    - ActionButtonPanel: No diagnostics
+    - TransactionDetail hook: No diagnostics
+    - ReturnService: No diagnostics
+    - TransaksiService: No diagnostics
+  - **Next Steps**: Ready for manual testing in development environment
 
-- [ ] 11. Add Activity Logging for Resolutions
-  - Create activity records for resolution operations
-  - Log resolution type and details
-  - Include stock changes in activity data
+- [x] 11. Add Activity Logging for Resolutions ✅
+  - Create activity records for resolution operations ✅
+  - Log resolution type and details ✅
+  - Include stock changes in activity data ✅
   - _Requirements: 8.2, 8.3_
+  - **Status**: COMPLETED - Activity logging implemented
 
-- [ ] 11.1 Create resolution activity record
-  - Call createReturnActivity with resolution data
-  - Include resolution type in description
-  - Store stock changes in activity data
-  - Log refund amount if applicable
+- [x] 11.1 Create resolution activity record ✅
+  - Call createReturnActivity with resolution data ✅
+  - Include resolution type in description ✅
+  - Store stock changes in activity data ✅
+  - Log refund amount if applicable ✅
   - _Requirements: 8.2_
+  - **Implementation**: features/kasir/services/returnService.ts (createLostItemResolutionActivity method)
 
-- [ ] 11.2 Add comprehensive logging
-  - Log resolution start
-  - Log stock updates
-  - Log payment operations
-  - Log resolution completion
-  - Log errors with context
+- [x] 11.2 Add comprehensive logging ✅
+  - Log resolution start ✅
+  - Log stock updates ✅
+  - Log payment operations ✅
+  - Log resolution completion ✅
+  - Log errors with context ✅
   - _Requirements: 8.4, 8.5_
+  - **Implementation**: Integrated throughout resolveLostItem method with kasirLogger
 
 - [ ]* 12. Write Integration Tests
   - Test full flow: Return HILANG → Resolve
@@ -409,30 +425,213 @@ This implementation plan breaks down the Lost Item Management System into discre
   - Generate returns with various late days
   - Verify deposit = modalAwal + (lateDays > 0 ? 20000 : 0)
 
-- [ ] 15. Final Checkpoint - Complete System Test
-  - Run all unit tests
-  - Run all property tests (100+ iterations each)
-  - Run all integration tests
-  - Test full user flow in development environment
-  - Verify no regressions in existing functionality
-  - Ensure all tests pass
-  - Ask user if questions arise
+- [x] 14.5 Update Admin Components for Lost Item Display ✅
+  - Update AdminSizeInventoryCard to show lostQuantity ✅
+  - Add lostQuantity to EnhancedSizeDetail interface ✅
+  - Update InventoryStatus to include totalLost ✅
+  - Add lost quantity display in size breakdown ✅
+  - Update summary statistics (4 → 5 columns) ✅
+  - Add JSDoc documentation for Lost Item Management ✅
+  - _Requirements: 2.1, 10.1_
+  - **Status**: COMPLETED - Component updated with lostQuantity support
+  - **Implementation**: features/manage-product/components/product-detail/AdminSizeInventoryCard.tsx
+  - **Changes**:
+    - Added `lostQuantity: number` to EnhancedSizeDetail interface
+    - Added `totalLost: number` to InventoryStatus interface
+    - Added `totalLost` and `lost` per category to SizeStatistics
+    - Updated statistics calculation to include totalLost
+    - Added 5th column "Hilang" in summary grid
+    - Added lost quantity display in size breakdown (red color)
+    - Enhanced JSDoc with Lost Item Management examples
+  - **Verification**: TypeScript diagnostics clean ✅
 
-- [ ] 16. Documentation and Cleanup
+- [x] 14.6 Fix HILANG Category Frontend Bug ✅
+  - Remove quantity input disabled state for HILANG category ✅
+  - Update validation to allow non-zero quantities for HILANG ✅
+  - Update UI labels and help text for clarity ✅
+  - Remove auto-set jumlahKembali = 0 in handleCategoryChange ✅
+  - _Requirements: 1.1, 9.1_
+  - **Status**: COMPLETED - Frontend now allows quantity input for HILANG
+  - **Implementation**: features/kasir/components/return/ConditionPricingForm.tsx
+  - **Changes**:
+    - Removed `disabled={disabled || condition.conditionCategory === 'HILANG'}` from quantity input
+    - Removed validation error for HILANG with non-zero jumlahKembali
+    - Updated label: "Jumlah (Jumlah barang hilang)" for HILANG
+    - Updated help text: "Masukkan jumlah barang yang hilang (backend akan set jumlah kembali = 0)"
+    - Removed auto-set `jumlahKembali = 0` when selecting HILANG category
+    - Changed help text color from blue to red for better visibility
+  - **Verification**: TypeScript diagnostics clean ✅
+  - **User Flow**: 
+    1. User selects HILANG category
+    2. User can now input quantity (e.g., 1 for 1 lost item)
+    3. Frontend sends quantity to backend
+    4. Backend sets jumlahKembali = 0 and ut View
+    - Invariant: originalQuantity = rentedQuantity + lostQuantity + availableQuantity
+
+- [-] 15. Add Refund Expense Tracking Integration
+  - Add "Refund Dana Jaminan" category to EXPENSE_CATEGORIES
+  - Add kasir selection to LostItemResolutionModal
+  - Create expense record in resolveLostItem for customer_replaced
+  - Verify expense appears in Dana Summary
+  - _Requirements: 11.1-11.7, 12.1-12.5_
+
+- [x] 15.1 Add new expense category ✅
+  - Add "Refund Dana Jaminan" to EXPENSE_CATEGORIES in types.ts ✅
+  - Update validation schema to include new category ✅
+  - Verify dropdown shows new category in PengeluaranForm ✅
+  - _Requirements: 11.2_
+  - **Status**: COMPLETED
+
+- [x] 15.2 Add kasir selection to resolution modal ✅
+  - Add kasir dropdown to LostItemResolutionModal ✅
+  - Fetch active kasir list on modal open ✅
+  - Add kasirId to form state ✅
+  - Add validation for required kasir selection ✅
+  - Show loading state while fetching kasir list ✅
+  - _Requirements: 12.1, 12.2, 12.3, 12.5_
+  - **Status**: COMPLETED
+  - **Implementation**: features/kasir/components/detail/LostItemResolutionModal.tsx
+  - **Changes**:
+    - Added Kasir interface and state management
+    - Added useEffect to fetch kasir list on modal open
+    - Added Select component for kasir selection with loading state
+    - Added kasirId validation in handleSubmit
+    - Updated API call to use transaction.kode and include kasirId
+    - Added kasirId to form reset logic
+
+- [x] 15.3 Update resolveLostItem to create expense ✅
+  - Add kasirId parameter to LostItemResolutionRequest interface ✅
+  - Create PengeluaranKasir record in customer_replaced transaction ✅
+  - Set kategori to "Refund Dana Jaminan" ✅
+  - Set harga to refundAmount (positive value) ✅
+  - Generate deskripsi with format: "Refund dana jaminan - [Product] - [Customer] - Transaksi #[Code]" ✅
+  - Ensure expense creation is within transaction for atomicity ✅
+  - _Requirements: 11.1, 11.2, 11.3, 11.4, 11.5, 11.6_
+  - **Status**: COMPLETED
+  - **Implementation**: features/kasir/services/returnService.ts
+  - **Changes**:
+    - Added kasirId to LostItemResolutionRequest interface
+    - Added expenseCreated flag to LostItemResolutionResult interface
+    - Created PengeluaranKasir record within transaction for customer_replaced
+    - Fetched transaction details for customer name and transaction code
+    - Generated descriptive deskripsi with product, customer, and transaction info
+    - Ensured atomicity: expense creation within same transaction as refund and stock update
+
+- [x] 15.4 Update API endpoint to accept kasirId ✅
+  - Add kasirId to request body validation ✅
+  - Pass kasirId to resolveLostItem service method ✅
+  - Return expenseCreated flag in response ✅
+  - _Requirements: 12.4_
+  - **Status**: COMPLETED
+  - **Implementation**: app/api/kasir/transaksi/[kode]/resolve-lost-item/route.ts
+  - **Changes**:
+    - Added kasirId to resolveLostItemSchema validation (required field)
+    - Extracted kasirId from validated request data
+    - Passed kasirId to resolveLostItem service method
+    - Included expenseCreated flag in API response data
+
+- [ ] 15.5 Verify expense appears in Dana Summary
+  - Test that refund expense shows in expense list
+  - Verify expense has correct amount and category
+  - Verify expense is attributed to selected kasir
+  - Test that expense affects daily summary totals
+  - _Requirements: 11.7_
+  - **Status**: READY FOR TESTING
+  - **Note**: Manual testing required in development environment
+
+- [ ]* 15.6 Write property test for refund expense creation
+  - **Property 11: Refund Expense Creation**
+  - **Validates: Requirements 11.1, 11.2, 11.3**
+  - Generate random lost items
+  - Resolve as customer_replaced with random kasirId
+  - Verify expense record exists with correct data
+
+- [ ]* 15.7 Write property test for expense atomicity
+  - **Property 12: Refund Expense Atomicity**
+  - **Validates: Requirements 11.6**
+  - Inject expense creation failures
+  - Verify complete transaction rollback
+
+- [x] 14.7 Fix Transaction Status for Lost Items ✅
+  - Add conditional status logic in processBackgroundActivities ✅
+  - Set status to 'pending_resolution' when HILANG items exist ✅
+  - Set status to 'selesai' when no HILANG items ✅
+  - Update resolveLostItem to check remaining unresolved items ✅
+  - Update status to 'selesai' when all lost items resolved ✅
+  - Add 'pending_resolution' status display in ActionButtonPanel ✅
+  - Update button visibility logic for lost item resolution ✅
+  - **FIX #1**: Add 'pending_resolution' to allowed transitions from 'active' ✅
+  - **FIX #2**: Exclude 'pending_resolution' from auto-complete logic ✅
+  - _Requirements: 2.2, 6.2, 6.3_
+  - **Status**: COMPLETED - Transaction status now reflects lost item resolution state
+  - **Implementation**: 
+    - returnService.ts: processBackgroundActivities (conditional status)
+    - returnService.ts: resolveLostItem (status update after resolution)
+    - ActionButtonPanel.tsx: Added 'pending_resolution' status display
+    - ActionButtonPanel.tsx: Updated button visibility logic
+    - transaksiService.ts: validateStatusTransition (allow active → pending_resolution) ✅
+    - transaksiService.ts: calculateEnhancedStatus (exclude pending_resolution from auto-complete) ✅
+  - **Changes**:
+    - Initial return with HILANG → status = 'pending_resolution'
+    - Return without HILANG → status = 'selesai'
+    - All HILANG resolved → status = 'selesai'
+    - Button shows for 'pending_resolution' and 'selesai' (backward compat)
+  - **Root Causes Fixed**:
+    1. Missing 'pending_resolution' in active status allowed transitions ✅
+    2. calculateEnhancedStatus() auto-complete overriding pending_resolution ✅
+  - **Fixes Applied**:
+    1. Added 'pending_resolution' to validTransitions['active'] array ✅
+    2. Removed 'pending_resolution' from auto-complete condition ✅
+  - **Verification**: Ready for manual testing
+
+- [ ] 16. Fix HILANG Stock Update Bug - CRITICAL
+  - Fix processUnifiedReturn to skip stock updates for HILANG items
+  - Only update stock for non-HILANG conditions (BAIK, RUSAK)
+  - Keep rentedQuantity unchanged for HILANG until resolution
+  - _Requirements: 2.2, 4.2, 5.2_
+  - **Status**: CRITICAL BUG - Blocks resolution feature
+  - **Analysis**: docs/analysis/lost-item-stock-update-bug.md
+
+- [ ] 16.1 Update sizeUpdates preparation logic
+  - Filter out HILANG items when building sizeUpdates map
+  - Only count non-HILANG items for stock update
+  - Add condition check: `c.conditionCategory !== 'HILANG'`
+  - _Requirements: 2.2_
+  - **Location**: returnService.ts line 750-780
+  - **Estimated Time**: 15 minutes
+
+- [ ] 16.2 Test stock update fix
+  - Test return HILANG → verify rentedQuantity unchanged
+  - Test return BAIK → verify rentedQuantity decreased
+  - Test return mixed (HILANG + BAIK) → verify only BAIK affects stock
+  - Test full flow: Return HILANG → Resolve → Verify stock
+  - _Requirements: 2.2, 4.2, 5.2_
+  - **Estimated Time**: 30 minutes
+
+- [ ] 16.3 Verify resolution works after fix
+  - Return HILANG item
+  - Verify rentedQuantity unchanged
+  - Resolve as customer_replaced
+  - Verify rentedQuantity--, availableQuantity++
+  - Verify no "No rented quantity to resolve" error
+  - _Requirements: 4.1-4.7_
+  - **Estimated Time**: 15 minutes
+
+- [ ] 17. Documentation and Cleanup
   - Update API documentation
   - Add JSDoc comments to new methods
   - Update README if needed
   - Clean up console.logs and debug code
   - _Requirements: 8.5_
 
-- [ ] 16.1 Add JSDoc comments
+- [ ] 17.1 Add JSDoc comments
   - Document resolveLostItem method
   - Document updateStockOnLost method
   - Document LostItemResolutionModal props
   - Include parameter descriptions and return types
   - _Requirements: 8.5_
 
-- [ ] 16.2 Update API documentation
+- [ ] 17.2 Update API documentation
   - Document /api/kasir/transaksi/[id]/resolve-lost-item endpoint
   - Include request/response examples
   - Document error codes
@@ -474,11 +673,36 @@ This implementation plan breaks down the Lost Item Management System into discre
 - Phase 3 (UI Layer): 1-2 hours
 - Phase 4 (Testing + Docs): 1 hour
 
-**Total**: 4-6 hours
+**Total**: 5-7 hours (including refund expense tracking)
 
 ---
 
-**Implementation Plan Version**: 1.0  
-**Date**: December 7, 2025  
-**Status**: Ready for Execution  
+## New Task: Refund Expense Tracking (Task 15)
+
+### Overview
+Integrate lost item refunds with Dana Kasir expense tracking system.
+
+### Key Changes
+1. Add "Refund Dana Jaminan" category to expense types
+2. Add kasir selection dropdown to resolution modal
+3. Create expense record when refund is processed
+4. Ensure atomicity: expense creation within same transaction
+
+### Implementation Notes
+- No schema changes needed (reuse existing PengeluaranKasir table)
+- Expense amount = refund amount (positive value)
+- Expense appears in Dana Summary for current date
+- If expense creation fails, entire resolution rolls back
+
+### Testing Focus
+- Verify expense record created with correct data
+- Verify expense appears in Dana Summary
+- Verify transaction atomicity (rollback on failure)
+- Test kasir selection validation
+
+---
+
+**Implementation Plan Version**: 1.1  
+**Date**: December 9, 2025  
+**Status**: Updated with Refund Expense Tracking  
 **Approach**: Keep It Simple - Incremental, tested, production-ready

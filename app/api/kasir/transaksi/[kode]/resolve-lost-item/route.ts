@@ -16,6 +16,7 @@ import { z } from 'zod'
 const resolveLostItemSchema = z.object({
   returnRecordId: z.string().min(1, 'Return record ID is required'),
   resolutionType: z.enum(['customer_replaced', 'deposit_kept']),
+  kasirId: z.string().min(1, 'Kasir ID is required'), // ✅ NEW: Required kasir selection
   notes: z.string().optional(),
 })
 
@@ -88,7 +89,7 @@ export async function POST(
       )
     }
 
-    const { returnRecordId, resolutionType, notes } = validation.data
+    const { returnRecordId, resolutionType, kasirId, notes } = validation.data
 
     // 6. Get transaction using appropriate method based on parameter type
     const transaksiService = new TransaksiService(prisma, user.id)
@@ -117,6 +118,7 @@ export async function POST(
       transaksiId: transaction.id,
       returnRecordId,
       resolutionType,
+      kasirId,
       notes,
     })
 
@@ -138,6 +140,7 @@ export async function POST(
       data: {
         resolutionType: result.resolutionType,
         refundAmount: result.refundAmount,
+        expenseCreated: result.expenseCreated, // ✅ NEW: Indicate if expense was created
         stockUpdates: result.stockUpdates,
       },
     })

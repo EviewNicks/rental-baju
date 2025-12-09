@@ -84,23 +84,27 @@ Producer views transaction → ActionButtonPanel
   ↓
 Click button → LostItemResolutionModal
   ↓
+Select kasir from dropdown (required)
+  ↓
 Select resolution option:
   ├─ Customer Beli Sendiri
   │    ↓
-  │    UnifiedReturnService.resolveLostItem('customer_replaced')
+  │    UnifiedReturnService.resolveLostItem('customer_replaced', kasirId)
   │    ↓
   │    BEGIN TRANSACTION
   │      - Create refund payment (negative amount)
+  │      - Create expense record in PengeluaranKasir ✅ NEW
   │      - Update stock: rentedQuantity--, availableQuantity++
   │      - Update resolutionStatus: 'resolved_replaced'
   │    COMMIT
   │
   └─ Ganti dengan Dana
        ↓
-       UnifiedReturnService.resolveLostItem('deposit_kept')
+       UnifiedReturnService.resolveLostItem('deposit_kept', kasirId)
        ↓
        BEGIN TRANSACTION
          - No payment (keep deposit)
+         - No expense record (deposit kept)
          - Update stock: rentedQuantity--, lostQuantity++
          - Update resolutionStatus: 'resolved_lost'
        COMMIT
@@ -117,6 +121,7 @@ interface LostItemResolutionRequest {
   transaksiId: string
   returnRecordId: string  // TransaksiItemReturn.id
   resolutionType: 'customer_replaced' | 'deposit_kept'
+  kasirId: string  // ✅ NEW: Selected kasir for expense tracking
   notes?: string
 }
 
@@ -124,6 +129,7 @@ interface LostItemResolutionResult {
   success: boolean
   resolutionType: string
   refundAmount?: number  // Only for customer_replaced
+  expenseCreated?: boolean  // ✅ NEW: Indicates if expense was recorded
   stockUpdates: {
     sizeId: string
     rentedQuantity: number
@@ -213,7 +219,9 @@ interface LostItemResolutionModalProps {
 
 // Simple modal with:
 // - List of unresolved lost items
+// - Kasir selection dropdown (required) ✅ NEW
 // - Two radio buttons: Customer Beli Sendiri / Ganti dengan Dana
+// - Notes textarea (optional)
 // - Confirm button
 // - Cancel button
 ```
@@ -414,6 +422,22 @@ model Pembayaran {
 **Validates: Requirements 1.1, 1.2**
 
 **Test Strategy**: Generate returns with various late days, verify deposit = modalAwal + (lateDays > 0 ? 20000 : 0).
+
+### Property 11: Refund Expense Creation
+
+*For any* lost item resolved as "customer_replaced", an expense record should be created in PengeluaranKasir with kategori "Refund Dana Jaminan" and harga equal to refund amount.
+
+**Validates: Requirements 11.1, 11.2, 11.3**
+
+**Test Strategy**: Generate random lost items, resolve as customer_replaced, verify expense record exists with correct amount and category.
+
+### Property 12: Refund Expense Atomicity
+
+*For any* lost item resolution where expense creation fails, all changes (payment, stock, status) should be rolled back completely.
+
+**Validates: Requirements 11.6**
+
+**Test Strategy**: Inject expense creation failures, verify complete transaction rollback occurs.
 
 ## Error Handling
 
@@ -709,10 +733,61 @@ kasirLogger.error('Resolution transaction failed', { ... })
 2. **Unresolved items aging**: Alert if items unresolved > 7 days
 3. **Stock invariant violation**: Critical alert if invariant breaks
 
+## Integration with Dana Kasir
+
+### Refund Expense Recording
+
+**When**: Customer replacement resolution is processed  
+**Action**: Create expense record in PengeluaranKasir
+
+**Implementation**:
+```typescript
+// In resolveLostItem method, within transaction
+if (request.resolutionType === 'customer_replaced') {
+  // 1. Create refund payment (existing)
+  await tx.pembayaran.create({ ... })
+  
+  // 2. Create expense record (NEW)
+  await tx.pengeluaranKasir.create({
+    data: {
+      kasirId: request.kasirId,
+      harga: new Decimal(refundAmount),  // Positive value
+      kategori: 'Refund Dana Jaminan',
+      deskripsi: `Refund dana jaminan - ${productName} - ${customerName} - Transaksi #${transactionCode}`,
+      createdBy: this.userId,
+      isActive: true
+    }
+  })
+  
+  // 3. Update stock (existing)
+  await txInventoryService.updateStockOnReturn(sizeId, 1)
+  
+  // 4. Update resolution status (existing)
+  await tx.transaksiItemReturn.update({ ... })
+}
+```
+
+**Validation**:
+- kasirId must be provided and valid
+- Expense creation must succeed or entire transaction rolls back
+- Expense appears in Dana Summary for current date
+
+**Category Addition**:
+```typescript
+// features/dana-kasir/types.ts
+export const EXPENSE_CATEGORIES = [
+  'Operasional',
+  'Maintenance', 
+  'Transport',
+  'Refund Dana Jaminan',  // ✅ NEW
+  'Lainnya'
+] as const
+```
+
 ---
 
-**Design Version**: 1.0  
-**Date**: December 7, 2025  
-**Status**: Ready for Implementation Planning  
+**Design Version**: 1.1  
+**Date**: December 9, 2025  
+**Status**: Updated with Refund Expense Tracking  
 **Complexity**: LOW  
-**Estimated Implementation Time**: 4-6 hours
+**Estimated Implementation Time**: 5-7 hours

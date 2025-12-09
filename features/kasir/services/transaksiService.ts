@@ -178,7 +178,8 @@ function calculateEnhancedStatus(
 
   // Priority 4: Check if all items have been returned (auto-complete logic)
   // This runs BEFORE overdue check to prioritize completion over timing
-  if (baseStatus === 'active' || baseStatus === 'diambil' || baseStatus === 'pending_resolution') {
+  // ✅ FIX: Exclude pending_resolution from auto-complete - it should only transition via resolveLostItem()
+  if (baseStatus === 'active' || baseStatus === 'diambil') {
     if (items && items.length > 0) {
       const allItemsReturned = items.every((item) => {
         // Check if this item has been fully returned using statusKembali
@@ -1176,7 +1177,7 @@ export class TransaksiService {
    */
   private validateStatusTransition(currentStatus: string, newStatus: string): void {
     const validTransitions: Record<string, string[]> = {
-      active: ['selesai', 'terlambat', 'cancelled', 'diambil'],
+      active: ['selesai', 'terlambat', 'cancelled', 'diambil', 'pending_resolution'], // ✅ FIX: Allow transition to pending_resolution for HILANG items
       diambil: ['selesai', 'cancelled'],
       terlambat: ['selesai', 'cancelled'],
       pending_resolution: ['selesai', 'cancelled'], // ✅ FIX: Allow transition after lost items resolved

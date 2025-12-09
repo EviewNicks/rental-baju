@@ -80,13 +80,14 @@
       "Bash(dir:*)",
       "Bash(npx tsx:*)",
       "Bash(yarn lint:fix:*)",
-      "WebFetch(domain:clerk.com)"
+      "WebFetch(domain:clerk.com)",
+      "mcp__tavily__tavily-search"
     ],
     "deny": []
   },
-  "outputStyle": "default",
+  "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "@21st-dev/magic"
   ],
-  "enableAllProjectMcpServers": true
+  "outputStyle": "default"
 }
