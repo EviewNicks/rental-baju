@@ -4,29 +4,26 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { PrismaClient } from '@prisma/client'
-import { PengeluaranService } from '@/features/dana-kasir/services'
+import { PengeluaranService } from '@/features/dana-kasir/services/pengeluaranService'
 import { validateUpdatePengeluaran } from '@/features/dana-kasir/validation'
 
 const prisma = new PrismaClient()
 
 /**
  * PUT /api/kasir/pengeluaran/[id]
- * 
+ *
  * Update an existing expense record
  * Body: { harga?, kategori?, deskripsi? }
  * Auth: Kasir (write only)
  */
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     // Authenticate user
     const { userId } = await auth()
     if (!userId) {
       return NextResponse.json(
         { success: false, error: { message: 'Unauthorized', code: 'UNAUTHORIZED' } },
-        { status: 401 }
+        { status: 401 },
       )
     }
 
@@ -34,17 +31,17 @@ export async function PUT(
     // For now, we'll assume all authenticated users can update expenses
     // In production, add role checking
 
-    const { id } = params
+    const { id } = await params
     if (!id) {
       return NextResponse.json(
         {
           success: false,
           error: {
             message: 'Expense ID is required',
-            code: 'VALIDATION_ERROR'
-          }
+            code: 'VALIDATION_ERROR',
+          },
         },
-        { status: 400 }
+        { status: 400 },
       )
     }
 
@@ -52,16 +49,16 @@ export async function PUT(
     let requestBody
     try {
       requestBody = await request.json()
-    } catch (error) {
+    } catch {
       return NextResponse.json(
         {
           success: false,
           error: {
             message: 'Invalid JSON in request body',
-            code: 'VALIDATION_ERROR'
-          }
+            code: 'VALIDATION_ERROR',
+          },
         },
-        { status: 400 }
+        { status: 400 },
       )
     }
 
@@ -74,14 +71,14 @@ export async function PUT(
           error: {
             message: 'Validation failed',
             code: 'VALIDATION_ERROR',
-            details: validation.error?.issues.map((issue: any) => ({
+            details: validation.error?.issues.map((issue) => ({
               field: issue.path.join('.'),
               message: issue.message,
-              code: issue.code
-            }))
-          }
+              code: issue.code,
+            })),
+          },
         },
-        { status: 400 }
+        { status: 400 },
       )
     }
 
@@ -96,12 +93,11 @@ export async function PUT(
 
     return NextResponse.json({
       success: true,
-      data: expense
+      data: expense,
     })
-
   } catch (error) {
     console.error('Error updating expense:', error)
-    
+
     // Handle specific service errors
     if (error instanceof Error) {
       if (error.message.includes('not found')) {
@@ -110,36 +106,36 @@ export async function PUT(
             success: false,
             error: {
               message: 'Expense not found',
-              code: 'NOT_FOUND'
-            }
+              code: 'NOT_FOUND',
+            },
           },
-          { status: 404 }
+          { status: 404 },
         )
       }
-      
+
       if (error.message.includes('not authorized')) {
         return NextResponse.json(
           {
             success: false,
             error: {
               message: 'Not authorized to update this expense',
-              code: 'FORBIDDEN'
-            }
+              code: 'FORBIDDEN',
+            },
           },
-          { status: 403 }
+          { status: 403 },
         )
       }
-      
+
       if (error.message.includes('Validation failed')) {
         return NextResponse.json(
           {
             success: false,
             error: {
               message: error.message,
-              code: 'VALIDATION_ERROR'
-            }
+              code: 'VALIDATION_ERROR',
+            },
           },
-          { status: 400 }
+          { status: 400 },
         )
       }
     }
@@ -149,31 +145,28 @@ export async function PUT(
         success: false,
         error: {
           message: 'Internal server error',
-          code: 'INTERNAL_ERROR'
-        }
+          code: 'INTERNAL_ERROR',
+        },
       },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }
 
 /**
  * DELETE /api/kasir/pengeluaran/[id]
- * 
+ *
  * Soft delete an expense record
  * Auth: Kasir (write only)
  */
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     // Authenticate user
     const { userId } = await auth()
     if (!userId) {
       return NextResponse.json(
         { success: false, error: { message: 'Unauthorized', code: 'UNAUTHORIZED' } },
-        { status: 401 }
+        { status: 401 },
       )
     }
 
@@ -181,17 +174,17 @@ export async function DELETE(
     // For now, we'll assume all authenticated users can delete expenses
     // In production, add role checking
 
-    const { id } = params
+    const { id } = await params
     if (!id) {
       return NextResponse.json(
         {
           success: false,
           error: {
             message: 'Expense ID is required',
-            code: 'VALIDATION_ERROR'
-          }
+            code: 'VALIDATION_ERROR',
+          },
         },
-        { status: 400 }
+        { status: 400 },
       )
     }
 
@@ -206,12 +199,11 @@ export async function DELETE(
 
     return NextResponse.json({
       success: true,
-      message: 'Expense deleted successfully'
+      message: 'Expense deleted successfully',
     })
-
   } catch (error) {
     console.error('Error deleting expense:', error)
-    
+
     // Handle specific service errors
     if (error instanceof Error) {
       if (error.message.includes('not found')) {
@@ -220,23 +212,23 @@ export async function DELETE(
             success: false,
             error: {
               message: 'Expense not found or already deleted',
-              code: 'NOT_FOUND'
-            }
+              code: 'NOT_FOUND',
+            },
           },
-          { status: 404 }
+          { status: 404 },
         )
       }
-      
+
       if (error.message.includes('not authorized')) {
         return NextResponse.json(
           {
             success: false,
             error: {
               message: 'Not authorized to delete this expense',
-              code: 'FORBIDDEN'
-            }
+              code: 'FORBIDDEN',
+            },
           },
-          { status: 403 }
+          { status: 403 },
         )
       }
     }
@@ -246,10 +238,10 @@ export async function DELETE(
         success: false,
         error: {
           message: 'Internal server error',
-          code: 'INTERNAL_ERROR'
-        }
+          code: 'INTERNAL_ERROR',
+        },
       },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }

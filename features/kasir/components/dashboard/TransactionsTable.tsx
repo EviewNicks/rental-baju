@@ -1,7 +1,7 @@
 import type { Transaction } from '../../types'
 import { StatusBadge } from '../ui/status-badge'
 import { formatCurrency, formatDate, getDaysOverdue } from '../../lib/utils/client'
-import { Clock, Phone, Package, Eye, User } from 'lucide-react'
+import { Clock, Phone, Package, Eye} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import {

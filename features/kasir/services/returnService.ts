@@ -20,11 +20,7 @@
 
 import { PrismaClient, Prisma } from '@prisma/client'
 import { Decimal } from '@prisma/client/runtime/library'
-import {
-  ReturnRequest,
-  UnifiedValidationError,
-  isLostItemCondition,
-} from '../lib/validation/ReturnSchema'
+import { ReturnRequest, UnifiedValidationError } from '../lib/validation/ReturnSchema'
 import { PenaltyCalculator, PenaltyCalculationResult } from '../lib/utils/penaltyCalculator'
 import { TransaksiService, TransaksiWithDetails, TransaksiForValidation } from './transaksiService'
 import { createAuditService, AuditService } from './auditService'
@@ -427,13 +423,15 @@ export class UnifiedReturnService {
       // ✅ FIX: HILANG items should use Enhanced Calculator with manual pricing
       // Removed hasHilangConditions check - HILANG should go through enhanced path
       // This ensures manualPrice (user input) is used instead of modalAwal (product cost)
-      
+
       // Use enhanced calculation for all manual pricing (including HILANG)
       if (hasManualPricing) {
         // Enhanced penalty calculation for manual pricing
         const itemsForEnhancedCalculation = request.items.flatMap((returnItem) => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const transactionItem = transaction.items.find((item: any) => item.id === returnItem.itemId)
+          const transactionItem = transaction.items.find(
+            (item: any) => item.id === returnItem.itemId,
+          )
           if (!transactionItem) {
             throw new Error(`Item dengan ID ${returnItem.itemId} tidak ditemukan`)
           }
@@ -468,7 +466,7 @@ export class UnifiedReturnService {
         // Example: 2 items × 9 days = 18 days ❌ Should be just 9 days ✅
         return {
           totalPenalty: enhancedResult.totalPenalty,
-          totalLateDays: enhancedResult.itemPenalties[0]?.lateDays || 0,  // ✅ Use first item's late days
+          totalLateDays: enhancedResult.itemPenalties[0]?.lateDays || 0, // ✅ Use first item's late days
           itemPenalties: enhancedResult.itemPenalties.map((penalty) => ({
             itemId: penalty.itemId,
             productName: penalty.productName,
@@ -492,7 +490,9 @@ export class UnifiedReturnService {
         // Standard penalty calculation
         const itemsForCalculation = request.items.flatMap((returnItem) => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const transactionItem = transaction.items.find((item: any) => item.id === returnItem.itemId)
+          const transactionItem = transaction.items.find(
+            (item: any) => item.id === returnItem.itemId,
+          )
           if (!transactionItem) {
             throw new Error(`Item dengan ID ${returnItem.itemId} tidak ditemukan`)
           }
@@ -668,7 +668,7 @@ export class UnifiedReturnService {
             if (condition.conditionCategory === 'BAIK') {
               return 0
             }
-            
+
             // All other categories (including HILANG): manualPrice × jumlahKembali
             const manualPrice = condition.manualPrice || 0
             const quantity = condition.jumlahKembali || 0
@@ -677,8 +677,8 @@ export class UnifiedReturnService {
 
           // Calculate all operations first
           for (const item of request.items) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const transactionItem = validation.transaction!.transaction.items.find(
+              //eslint-disable-next-line @typescript-eslint/no-explicit-any
               (ti: any) => ti.id === item.itemId,
             )
             if (!transactionItem) {
@@ -708,9 +708,12 @@ export class UnifiedReturnService {
                 manualPrice: hasManualPricing ? new Decimal(condition.manualPrice || 0) : null,
                 useManualPricing: hasManualPricing ? condition.useManualPricing || false : false,
                 // FIXED: Store manualPrice in modalAwalUsed so it can be displayed correctly
-                modalAwalUsed: hasManualPricing && condition.manualPrice 
-                  ? new Decimal(condition.manualPrice) 
-                  : (condition.modalAwal ? new Decimal(condition.modalAwal) : null),
+                modalAwalUsed:
+                  hasManualPricing && condition.manualPrice
+                    ? new Decimal(condition.manualPrice)
+                    : condition.modalAwal
+                      ? new Decimal(condition.modalAwal)
+                      : null,
                 createdBy: this.userId,
               })
 
@@ -734,9 +737,9 @@ export class UnifiedReturnService {
             // ✅ FIX: Only count non-HILANG items for stock update
             // HILANG items should NOT update stock until resolution
             const nonHilangReturned = item.conditions
-              .filter(c => c.conditionCategory !== 'HILANG')
+              .filter((c) => c.conditionCategory !== 'HILANG')
               .reduce((sum, c) => sum + c.jumlahKembali, 0)
-            
+
             if (nonHilangReturned > 0) {
               const currentStock = stockUpdates.get(transactionItem.produkId) || 0
               stockUpdates.set(transactionItem.produkId, currentStock + nonHilangReturned)
@@ -802,7 +805,7 @@ export class UnifiedReturnService {
           if (sizeUpdates.size > 0) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const txInventoryService = createInventoryService(tx as any as PrismaClient)
-            
+
             await Promise.all(
               Array.from(sizeUpdates.entries()).map(async ([sizeId, quantity]) => {
                 try {
@@ -848,7 +851,8 @@ export class UnifiedReturnService {
                 metode: penaltyPaymentData.metode,
                 catatan: penaltyPaymentData.catatan,
                 createdBy: penaltyPaymentData.createdBy,
-                penaltyBreakdown: penaltyPaymentData.penaltyBreakdown as unknown as Prisma.InputJsonValue,
+                penaltyBreakdown:
+                  penaltyPaymentData.penaltyBreakdown as unknown as Prisma.InputJsonValue,
               },
             })
 
@@ -960,9 +964,10 @@ export class UnifiedReturnService {
 
       // Extract size info from kondisiAwal
       const parsedKondisi = parseKondisiAwal(transactionItem.kondisiAwal)
-      const sizeInfo = parsedKondisi.productSizeId && !parsedKondisi.isLegacyFormat
-        ? `${parsedKondisi.size} | ${parsedKondisi.ageCategory}`
-        : 'N/A'
+      const sizeInfo =
+        parsedKondisi.productSizeId && !parsedKondisi.isLegacyFormat
+          ? `${parsedKondisi.size} | ${parsedKondisi.ageCategory}`
+          : 'N/A'
 
       return {
         itemId: processedItem.itemId,
@@ -975,9 +980,10 @@ export class UnifiedReturnService {
           jumlahKembali: condition.jumlahKembali,
           conditionCategory: condition.conditionCategory || ConditionCategory.BAIK,
           // FIXED: Use manualPrice as the actual penalty amount
-          penaltyAmount: condition.useManualPricing && condition.manualPrice 
-            ? condition.manualPrice 
-            : (processedItem.conditionBreakdown?.[index]?.penaltyAmount || 0),
+          penaltyAmount:
+            condition.useManualPricing && condition.manualPrice
+              ? condition.manualPrice
+              : processedItem.conditionBreakdown?.[index]?.penaltyAmount || 0,
           manualPrice: condition.manualPrice,
           useManualPricing: condition.useManualPricing || false,
         })),
@@ -989,8 +995,8 @@ export class UnifiedReturnService {
       item.conditions.some(
         (condition) =>
           condition.conditionCategory === 'HILANG' ||
-          condition.kondisiAkhir.toLowerCase().includes('hilang')
-      )
+          condition.kondisiAkhir.toLowerCase().includes('hilang'),
+      ),
     )
     const targetStatus = hasUnresolvedLostItems ? 'pending_resolution' : 'selesai'
 
@@ -1045,9 +1051,10 @@ export class UnifiedReturnService {
 
       // Extract size info
       const parsedKondisi = parseKondisiAwal(transactionItem.kondisiAwal)
-      const sizeInfo = parsedKondisi.productSizeId && !parsedKondisi.isLegacyFormat
-        ? `${parsedKondisi.size} | ${parsedKondisi.ageCategory}`
-        : 'N/A'
+      const sizeInfo =
+        parsedKondisi.productSizeId && !parsedKondisi.isLegacyFormat
+          ? `${parsedKondisi.size} | ${parsedKondisi.ageCategory}`
+          : 'N/A'
 
       // Calculate item-level late penalty
       const itemLatePenalty = isLateReturn ? 20000 : 0
@@ -1056,10 +1063,11 @@ export class UnifiedReturnService {
       // FIXED: Use manualPrice from request as the actual penalty
       const conditionsWithManualPrice = (processedItem.conditionBreakdown || []).map((cb, idx) => {
         const requestCondition = requestItem.conditions[idx]
-        const actualPenalty = requestCondition?.useManualPricing && requestCondition?.manualPrice
-          ? requestCondition.manualPrice
-          : cb.penaltyAmount
-        
+        const actualPenalty =
+          requestCondition?.useManualPricing && requestCondition?.manualPrice
+            ? requestCondition.manualPrice
+            : cb.penaltyAmount
+
         return {
           kondisiAkhir: cb.kondisiAkhir,
           jumlahKembali: cb.jumlahKembali,
@@ -1112,8 +1120,8 @@ export class UnifiedReturnService {
         item.conditions.some(
           (condition) =>
             condition.conditionCategory === 'HILANG' ||
-            condition.kondisiAkhir.toLowerCase().includes('hilang')
-        )
+            condition.kondisiAkhir.toLowerCase().includes('hilang'),
+        ),
       )
 
       const newStatus = hasUnresolvedLostItems ? 'pending_resolution' : 'selesai'
@@ -1130,8 +1138,8 @@ export class UnifiedReturnService {
               item.conditions.some(
                 (c) =>
                   c.conditionCategory === 'HILANG' ||
-                  c.kondisiAkhir.toLowerCase().includes('hilang')
-              )
+                  c.kondisiAkhir.toLowerCase().includes('hilang'),
+              ),
             )
             .map((item) => ({
               itemId: item.itemId,
@@ -1139,11 +1147,11 @@ export class UnifiedReturnService {
                 .filter(
                   (c) =>
                     c.conditionCategory === 'HILANG' ||
-                    c.kondisiAkhir.toLowerCase().includes('hilang')
+                    c.kondisiAkhir.toLowerCase().includes('hilang'),
                 )
                 .map((c) => c.kondisiAkhir),
             })),
-        }
+        },
       )
 
       // Update transaction status with conditional logic
@@ -1166,9 +1174,10 @@ export class UnifiedReturnService {
       // Create single comprehensive activity (Task 2: Unified Activity)
       // This replaces the previous 3 separate activities (dikembalikan, penalty_added, status_changed)
       const lateDays = activityData.summary.lateDays
-      const penaltyDesc = activityData.summary.totalPenalty > 0
-        ? `, Penalty: Rp ${activityData.summary.totalPenalty.toLocaleString('id-ID')}${lateDays > 0 ? ` (Terlambat ${lateDays} hari)` : ''}`
-        : ''
+      const penaltyDesc =
+        activityData.summary.totalPenalty > 0
+          ? `, Penalty: Rp ${activityData.summary.totalPenalty.toLocaleString('id-ID')}${lateDays > 0 ? ` (Terlambat ${lateDays} hari)` : ''}`
+          : ''
 
       await this.createReturnActivity(transaksiId, {
         tipe: 'dikembalikan',
@@ -1336,9 +1345,7 @@ export class UnifiedReturnService {
    * @returns Resolution result with stock updates and refund info
    * @throws Error if validation fails or transaction fails
    */
-  async resolveLostItem(
-    request: LostItemResolutionRequest,
-  ): Promise<LostItemResolutionResult> {
+  async resolveLostItem(request: LostItemResolutionRequest): Promise<LostItemResolutionResult> {
     const startTime = Date.now()
 
     kasirLogger.returnProcess.info('resolveLostItem', 'Starting lost item resolution', {
@@ -1421,21 +1428,17 @@ export class UnifiedReturnService {
               transaksiId: request.transaksiId,
               kasirId: request.kasirId,
               penaltyAmount: Number(returnRecord.penaltyAmount),
-            }
+            },
           )
 
           // Calculate refund amount (negative of original penalty)
           refundAmount = Number(returnRecord.penaltyAmount)
 
-          kasirLogger.returnProcess.info(
-            'resolveLostItem',
-            'Creating refund payment',
-            {
-              transaksiId: request.transaksiId,
-              refundAmount,
-              productName: returnRecord.transaksiItem.produk.name,
-            }
-          )
+          kasirLogger.returnProcess.info('resolveLostItem', 'Creating refund payment', {
+            transaksiId: request.transaksiId,
+            refundAmount,
+            productName: returnRecord.transaksiItem.produk.name,
+          })
 
           // Create refund payment
           await tx.pembayaran.create({
@@ -1448,14 +1451,10 @@ export class UnifiedReturnService {
             },
           })
 
-          kasirLogger.returnProcess.info(
-            'resolveLostItem',
-            'Refund payment created successfully',
-            {
-              transaksiId: request.transaksiId,
-              refundAmount,
-            }
-          )
+          kasirLogger.returnProcess.info('resolveLostItem', 'Refund payment created successfully', {
+            transaksiId: request.transaksiId,
+            refundAmount,
+          })
 
           // ✅ NEW: Create expense record for refund tracking
           // Get transaction details for customer name
@@ -1465,7 +1464,7 @@ export class UnifiedReturnService {
             {
               transaksiId: request.transaksiId,
               returnRecordId: request.returnRecordId,
-            }
+            },
           )
 
           let customerName = 'Customer'
@@ -1477,9 +1476,9 @@ export class UnifiedReturnService {
               select: {
                 kode: true,
                 penyewa: {
-                  select: { nama: true }
-                }
-              }
+                  select: { nama: true },
+                },
+              },
             })
 
             kasirLogger.returnProcess.info(
@@ -1491,7 +1490,7 @@ export class UnifiedReturnService {
                 hasPenyewa: !!transactionDetails?.penyewa,
                 kode: transactionDetails?.kode,
                 penyewaNama: transactionDetails?.penyewa?.nama,
-              }
+              },
             )
 
             customerName = transactionDetails?.penyewa?.nama || 'Customer'
@@ -1503,7 +1502,7 @@ export class UnifiedReturnService {
               {
                 transaksiId: request.transaksiId,
                 error: error instanceof Error ? error.message : 'Unknown error',
-              }
+              },
             )
             // Continue with default values
           }
@@ -1518,29 +1517,21 @@ export class UnifiedReturnService {
             isActive: true,
           }
 
-          kasirLogger.returnProcess.info(
-            'resolveLostItem',
-            'Creating expense record',
-            {
-              expenseData: {
-                ...expenseData,
-                harga: refundAmount, // Log as number for readability
-              },
-            }
-          )
+          kasirLogger.returnProcess.info('resolveLostItem', 'Creating expense record', {
+            expenseData: {
+              ...expenseData,
+              harga: refundAmount, // Log as number for readability
+            },
+          })
 
           await tx.pengeluaranKasir.create({
             data: expenseData,
           })
 
-          kasirLogger.returnProcess.info(
-            'resolveLostItem',
-            'Expense record created successfully',
-            {
-              kasirId: request.kasirId,
-              refundAmount,
-            }
-          )
+          kasirLogger.returnProcess.info('resolveLostItem', 'Expense record created successfully', {
+            kasirId: request.kasirId,
+            refundAmount,
+          })
 
           expenseCreated = true
 
@@ -1550,28 +1541,20 @@ export class UnifiedReturnService {
             {
               sizeId,
               quantity: 1,
-            }
+            },
           )
 
           // Update stock: restore to available
           await txInventoryService.updateStockOnReturn(sizeId, 1)
 
-          kasirLogger.returnProcess.info(
-            'resolveLostItem',
-            'Stock updated successfully',
-            {
-              sizeId,
-            }
-          )
+          kasirLogger.returnProcess.info('resolveLostItem', 'Stock updated successfully', {
+            sizeId,
+          })
 
-          kasirLogger.returnProcess.info(
-            'resolveLostItem',
-            'Updating resolution status',
-            {
-              returnRecordId: request.returnRecordId,
-              resolutionStatus: 'resolved_replaced',
-            }
-          )
+          kasirLogger.returnProcess.info('resolveLostItem', 'Updating resolution status', {
+            returnRecordId: request.returnRecordId,
+            resolutionStatus: 'resolved_replaced',
+          })
 
           // Update resolution status
           await tx.transaksiItemReturn.update({
@@ -1691,7 +1674,7 @@ export class UnifiedReturnService {
         {
           transaksiId: request.transaksiId,
           unresolvedLostItems,
-        }
+        },
       )
 
       // If all lost items are resolved, update transaction status to 'selesai'
@@ -1705,7 +1688,7 @@ export class UnifiedReturnService {
           'All lost items resolved - transaction status updated to selesai',
           {
             transaksiId: request.transaksiId,
-          }
+          },
         )
       }
 
@@ -1732,7 +1715,6 @@ export class UnifiedReturnService {
     }
   }
 }
-
 
 /**
  * Factory function to create UnifiedReturnService instance

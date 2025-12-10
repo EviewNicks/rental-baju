@@ -9,20 +9,20 @@ import { ApiResponse } from '@/features/dana-kasir/types'
 
 /**
  * GET /api/kasir/dana-export
- * 
+ *
  * Export income and expense data to CSV format
- * 
+ *
  * Query Parameters:
  * - startDate: Start date in YYYY-MM-DD format (required)
  * - endDate: End date in YYYY-MM-DD format (required)
- * 
+ *
  * Authorization:
  * - Owner role required (read-only access)
- * 
+ *
  * Response:
  * - CSV file download with proper headers
  * - Filename format: dana-kasir-YYYY-MM-DD-to-YYYY-MM-DD.csv
- * 
+ *
  * Requirements: 8.1, 8.2, 8.3, 8.4, 8.5, 6.4
  */
 export async function GET(request: NextRequest) {
@@ -32,7 +32,6 @@ export async function GET(request: NextRequest) {
     if (authResult.error) {
       return authResult.error
     }
-    const user = authResult.user
 
     // Parse query parameters
     const searchParams = request.nextUrl.searchParams
@@ -46,10 +45,10 @@ export async function GET(request: NextRequest) {
           success: false,
           error: {
             message: 'Parameter startDate dan endDate harus diisi',
-            code: 'MISSING_PARAMETERS'
-          }
+            code: 'MISSING_PARAMETERS',
+          },
         },
-        { status: 400 }
+        { status: 400 },
       )
     }
 
@@ -64,10 +63,10 @@ export async function GET(request: NextRequest) {
           success: false,
           error: {
             message: 'Format tanggal tidak valid. Gunakan format YYYY-MM-DD',
-            code: 'INVALID_DATE_FORMAT'
-          }
+            code: 'INVALID_DATE_FORMAT',
+          },
         },
-        { status: 400 }
+        { status: 400 },
       )
     }
 
@@ -78,10 +77,10 @@ export async function GET(request: NextRequest) {
           success: false,
           error: {
             message: 'Tanggal mulai harus lebih kecil atau sama dengan tanggal akhir',
-            code: 'INVALID_DATE_RANGE'
-          }
+            code: 'INVALID_DATE_RANGE',
+          },
         },
-        { status: 400 }
+        { status: 400 },
       )
     }
 
@@ -93,10 +92,10 @@ export async function GET(request: NextRequest) {
           success: false,
           error: {
             message: 'Rentang tanggal maksimal 1 tahun (365 hari)',
-            code: 'DATE_RANGE_TOO_LARGE'
-          }
+            code: 'DATE_RANGE_TOO_LARGE',
+          },
         },
-        { status: 400 }
+        { status: 400 },
       )
     }
 
@@ -112,11 +111,11 @@ export async function GET(request: NextRequest) {
         'Content-Type': 'text/csv; charset=utf-8',
         'Content-Disposition': `attachment; filename="${filename}"`,
         'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0'
-      }
+        Pragma: 'no-cache',
+        Expires: '0',
+      },
     })
-
+    //eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error('CSV Export Error:', error)
 
@@ -126,13 +125,14 @@ export async function GET(request: NextRequest) {
         {
           success: false,
           error: {
-            message: error.message === 'Unauthorized' 
-              ? 'Anda harus login terlebih dahulu'
-              : 'Hanya Owner yang dapat mengekspor data',
-            code: error.message === 'Unauthorized' ? 'UNAUTHORIZED' : 'FORBIDDEN'
-          }
+            message:
+              error.message === 'Unauthorized'
+                ? 'Anda harus login terlebih dahulu'
+                : 'Hanya Owner yang dapat mengekspor data',
+            code: error.message === 'Unauthorized' ? 'UNAUTHORIZED' : 'FORBIDDEN',
+          },
         },
-        { status: error.message === 'Unauthorized' ? 401 : 403 }
+        { status: error.message === 'Unauthorized' ? 401 : 403 },
       )
     }
 
@@ -143,10 +143,10 @@ export async function GET(request: NextRequest) {
           success: false,
           error: {
             message: 'Terjadi kesalahan database',
-            code: 'DATABASE_ERROR'
-          }
+            code: 'DATABASE_ERROR',
+          },
         },
-        { status: 500 }
+        { status: 500 },
       )
     }
 
@@ -156,10 +156,10 @@ export async function GET(request: NextRequest) {
         success: false,
         error: {
           message: 'Terjadi kesalahan saat mengekspor data',
-          code: 'INTERNAL_ERROR'
-        }
+          code: 'INTERNAL_ERROR',
+        },
       },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }

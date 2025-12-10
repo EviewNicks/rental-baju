@@ -39,6 +39,7 @@ describe('ProductService - Rental State Preservation', () => {
       id: 'mocked-product',
       name: 'Mocked Product',
       sizes: [],
+      //eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any)
   })
 

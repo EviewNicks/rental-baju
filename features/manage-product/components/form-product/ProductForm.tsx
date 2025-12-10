@@ -22,7 +22,6 @@ import { logger } from '@/services/logger'
 import { useEffect, useCallback, useRef } from 'react'
 import { createMaterialHandlers } from '../../utils/MaterialHandlers'
 import { useProductFormStrategy } from '../../hooks/useProductFormStrategy'
-import { RentalStateWarning } from './RentalStateWarning'
 
 // Component-specific logger for product form
 const formLogger = logger.child('ProductForm')
@@ -85,7 +84,6 @@ export function ProductForm({
   formatCurrency,
   categories,
   product,
-  onSimplifiedSizesChange, // Legacy - kept for backward compatibility
   onCategoryFormDataChange,
   onStrategySizesChange,
   categoryFormData: externalCategoryFormData, // External state from parent
@@ -297,7 +295,11 @@ export function ProductForm({
           onStrategySizesChange(transformedSizes)
         }
       } catch (error) {
-        formLogger.error('strategySync', 'Failed to sync form data with strategy', error instanceof Error ? error : new Error(String(error)))
+        formLogger.error(
+          'strategySync',
+          'Failed to sync form data with strategy',
+          error instanceof Error ? error : new Error(String(error)),
+        )
       } finally {
         setTimeout(() => {
           transformingRef.current = false
@@ -533,7 +535,9 @@ export function ProductForm({
                           <div className="mt-2 text-sm text-yellow-700">
                             <p>{errors.sizes}</p>
                             <div className="mt-3 text-xs">
-                              <strong>💡 Lihat detail lengkap di bagian error di atas halaman.</strong>
+                              <strong>
+                                💡 Lihat detail lengkap di bagian error di atas halaman.
+                              </strong>
                             </div>
                           </div>
                         </div>
@@ -559,7 +563,7 @@ export function ProductForm({
                   )}
                 </div>
               )}
-              
+
               {/* Strategy-based size management will be rendered here by the existing dynamic strategy section */}
             </FormSection>
           ) : (

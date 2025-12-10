@@ -15,9 +15,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { CreatePengeluaranRequest, PengeluaranKasir } from '../types'
 
-interface CreatePengeluaranParams {
-  data: CreatePengeluaranRequest
-}
 
 /**
  * Create new expense

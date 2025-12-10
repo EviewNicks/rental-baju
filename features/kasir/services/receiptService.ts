@@ -9,31 +9,6 @@ import type { TransaksiWithDetails } from './transaksiService'
 import { Decimal } from '@prisma/client/runtime/library'
 
 /**
- * Transaction detail interface for receipt generation
- * @deprecated Use TransaksiWithDetails directly
- */
-interface TransactionDetail {
-  kode: string
-  createdAt: string
-  penyewa: { nama: string }
-  kasir: { nama: string } | null
-  items: TransactionItem[]
-  totalHarga: number | Decimal
-}
-
-/**
- * Transaction item interface
- */
-interface TransactionItem {
-  produk: { name: string }
-  kondisiAwal: string // Format: "uuid|SIZE|TYPE|condition"
-  jumlah: number
-  hargaSewa: number | Decimal
-  durasi: number
-  subtotal: number | Decimal
-}
-
-/**
  * Receipt Service Class
  * Generates PDF receipts for rental transactions
  */
@@ -78,6 +53,7 @@ export class ReceiptService {
       y = this.addTransactionInfo(doc, transactionData, y)
       y = this.addItems(doc, transactionData.items, y)
       y = this.addSummary(doc, transactionData, y)
+      //eslint-disable-next-line @typescript-eslint/no-unused-vars
       y = this.addFooter(doc, y)
 
       // Convert PDF to buffer
@@ -131,11 +107,7 @@ export class ReceiptService {
   /**
    * Add transaction information section
    */
-  private addTransactionInfo(
-    doc: jsPDF,
-    data: TransaksiWithDetails,
-    y: number
-  ): number {
+  private addTransactionInfo(doc: jsPDF, data: TransaksiWithDetails, y: number): number {
     const centerX = this.PDF_WIDTH_MM / 2
 
     // Title
@@ -186,9 +158,7 @@ export class ReceiptService {
 
       // Extract size and format product name
       const size = this.extractSize(item.kondisiAwal || '')
-      const productName = size
-        ? `${item.produk.name} (${size})`
-        : item.produk.name
+      const productName = size ? `${item.produk.name} (${size})` : item.produk.name
 
       // Product name
       doc.text(productName, this.MARGIN, y)
@@ -196,11 +166,7 @@ export class ReceiptService {
 
       // Quantity x Price x Duration
       const priceFormatted = this.formatCurrency(item.hargaSewa)
-      doc.text(
-        `${item.jumlah} x ${priceFormatted} x ${item.durasi} hari`,
-        this.MARGIN,
-        y
-      )
+      doc.text(`${item.jumlah} x ${priceFormatted} x ${item.durasi} hari`, this.MARGIN, y)
       y += this.LINE_HEIGHT
 
       // Subtotal
@@ -280,11 +246,12 @@ export class ReceiptService {
    */
   private formatCurrency(amount: number | Decimal): string {
     // Convert Decimal to number if needed
-    const numericAmount = typeof amount === 'number' 
-      ? amount 
-      : amount instanceof Decimal 
-        ? amount.toNumber() 
-        : Number(amount)
+    const numericAmount =
+      typeof amount === 'number'
+        ? amount
+        : amount instanceof Decimal
+          ? amount.toNumber()
+          : Number(amount)
 
     // Handle edge cases
     if (numericAmount === 0) return 'Rp 0'

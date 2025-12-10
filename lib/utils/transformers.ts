@@ -45,6 +45,7 @@ export function datesToISO(values: (Date | null)[]): (string | null)[] {
  * ✅ PERFORMANCE: Uses spread operator + minimal conversions
  * ✅ PERFORMANCE: Only transforms what's necessary
  */
+//eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function transformTransactionForAPI(transaction: any) {
   return {
     ...transaction,
@@ -59,6 +60,7 @@ export function transformTransactionForAPI(transaction: any) {
     createdAt: dateToISO(transaction.createdAt),
     updatedAt: dateToISO(transaction.updatedAt),
     // Transform items efficiently
+    //eslint-disable-next-line @typescript-eslint/no-explicit-any
     fullItems: transaction.items?.map((item: any) => ({
       ...item,
       hargaSewa: decimalToNumber(item.hargaSewa),
@@ -68,12 +70,14 @@ export function transformTransactionForAPI(transaction: any) {
       }
     })),
     // Transform pembayaran efficiently
+    //eslint-disable-next-line @typescript-eslint/no-explicit-any
     pembayaran: transaction.pembayaran?.map((payment: any) => ({
       ...payment,
       jumlah: decimalToNumber(payment.jumlah),
       createdAt: dateToISO(payment.createdAt)
     })),
     // Transform aktivitas efficiently (already limited to 10)
+    //eslint-disable-next-line @typescript-eslint/no-explicit-any
     aktivitas: transaction.aktivitas?.map((activity: any) => ({
       ...activity,
       createdAt: dateToISO(activity.createdAt)
@@ -85,6 +89,7 @@ export function transformTransactionForAPI(transaction: any) {
  * Lightweight transaction transformer for pickup responses
  * ✅ PERFORMANCE: Minimal transformation for pickup-specific needs
  */
+//eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function transformPickupResponse(transaction: any) {
   return {
     ...transaction,
@@ -97,6 +102,7 @@ export function transformPickupResponse(transaction: any) {
     createdAt: dateToISO(transaction.createdAt),
     updatedAt: dateToISO(transaction.updatedAt),
     // Minimal item transformation
+    //eslint-disable-next-line @typescript-eslint/no-explicit-any
     fullItems: transaction.items?.map((item: any) => ({
       ...item,
       hargaSewa: decimalToNumber(item.hargaSewa),

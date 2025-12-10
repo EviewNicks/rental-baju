@@ -429,6 +429,7 @@ export class ProductHistoryService {
    */
   public buildPenaltyBreakdown(
     penalties: PenaltyDetail[],
+    //eslint-disable-next-line @typescript-eslint/no-unused-vars
     duration: number,
   ): {
     total: number
@@ -453,11 +454,6 @@ export class ProductHistoryService {
       if (totalPenalty === 0) {
         return null
       }
-
-      // Calculate late penalty (flat 20,000 per item if duration > rental period)
-      // Note: Late penalty is typically stored separately in TransaksiItem.flatLatePenalty
-      // For now, we'll estimate based on condition penalties
-      const LATE_PENALTY_PER_ITEM = 20000
 
       // Separate condition penalties from late penalties
       // Condition penalties are those with kondisiAkhir != 'Baik'

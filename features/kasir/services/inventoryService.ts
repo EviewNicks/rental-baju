@@ -39,7 +39,7 @@ export interface ProductStockStatus {
   totalQuantity: number
   availableQuantity: number
   rentedQuantity: number
-  lostQuantity: number  // ✅ Lost Item Management
+  lostQuantity: number // ✅ Lost Item Management
   sizes: Array<{
     id: string
     ageCategory: string
@@ -47,7 +47,7 @@ export interface ProductStockStatus {
     originalQuantity: number
     availableQuantity: number
     rentedQuantity: number
-    lostQuantity: number  // ✅ Lost Item Management
+    lostQuantity: number // ✅ Lost Item Management
     isAvailable: boolean
   }>
 }
@@ -62,7 +62,7 @@ export interface ConsistencyValidation {
 /**
  * InventoryService provides centralized inventory management with atomic operations
  * and real-time stock tracking using the Enhanced ProductSize schema
- * 
+ *
  * PERFORMANCE FIX: Accepts Prisma instance to avoid connection pool exhaustion
  */
 export class InventoryService {
@@ -154,7 +154,7 @@ export class InventoryService {
       // Ensure availableQuantity is not negative due to any inconsistency
       const availableQuantity = Math.max(0, productSize.availableQuantity || 0)
       return availableQuantity >= requestedQty
-    } catch (error) {
+    } catch {
       // Return false on error to prevent overselling
       return false
     }
@@ -198,7 +198,7 @@ export class InventoryService {
         isAvailable,
         utilizationRate: Math.round(utilizationRate * 100) / 100, // Round to 2 decimal places
       }
-    } catch (error) {
+    } catch {
       // Return default status on error to prevent system failure
       return {
         originalQuantity: 0,
@@ -256,7 +256,7 @@ export class InventoryService {
         available: isAvailable,
         stockStatus,
       }
-    } catch (error) {
+    } catch {
       return {
         productId,
         size,
@@ -286,7 +286,7 @@ export class InventoryService {
           originalQuantity: true,
           availableQuantity: true,
           rentedQuantity: true,
-          lostQuantity: true,  // ✅ Lost Item Management
+          lostQuantity: true, // ✅ Lost Item Management
         },
         orderBy: [{ ageCategory: 'asc' }, { size: 'asc' }],
       })
@@ -295,7 +295,7 @@ export class InventoryService {
         const originalQuantity = Math.max(0, size.originalQuantity || 0)
         const availableQuantity = Math.max(0, size.availableQuantity || 0)
         const rentedQuantity = Math.max(0, size.rentedQuantity || 0)
-        const lostQuantity = Math.max(0, size.lostQuantity || 0)  // ✅ Lost Item Management
+        const lostQuantity = Math.max(0, size.lostQuantity || 0) // ✅ Lost Item Management
         const isAvailable = availableQuantity > 0
 
         return {
@@ -305,7 +305,7 @@ export class InventoryService {
           originalQuantity,
           availableQuantity,
           rentedQuantity,
-          lostQuantity,  // ✅ Lost Item Management
+          lostQuantity, // ✅ Lost Item Management
           isAvailable,
         }
       })
@@ -313,24 +313,24 @@ export class InventoryService {
       const totalQuantity = sizes.reduce((sum, size) => sum + size.originalQuantity, 0)
       const availableQuantity = sizes.reduce((sum, size) => sum + size.availableQuantity, 0)
       const rentedQuantity = sizes.reduce((sum, size) => sum + size.rentedQuantity, 0)
-      const lostQuantity = sizes.reduce((sum, size) => sum + (size.lostQuantity || 0), 0)  // ✅ Lost Item Management
+      const lostQuantity = sizes.reduce((sum, size) => sum + (size.lostQuantity || 0), 0) // ✅ Lost Item Management
 
       return {
         productId,
         totalQuantity,
         availableQuantity,
         rentedQuantity,
-        lostQuantity,  // ✅ Lost Item Management
+        lostQuantity, // ✅ Lost Item Management
         sizes,
       }
-    } catch (error) {
+    } catch {
       // Return default status on error
       return {
         productId,
         totalQuantity: 0,
         availableQuantity: 0,
         rentedQuantity: 0,
-        lostQuantity: 0,  // ✅ Lost Item Management
+        lostQuantity: 0, // ✅ Lost Item Management
         sizes: [],
       }
     }
@@ -370,7 +370,7 @@ export class InventoryService {
         calculatedTotal,
         difference,
       }
-    } catch (error) {
+    } catch {
       // Return inconsistent status on error
       return {
         isConsistent: false,
@@ -391,7 +391,6 @@ export class InventoryService {
   async validateBatchConsistency(sizeIds: string[]): Promise<ConsistencyValidation[]> {
     return await Promise.all(sizeIds.map((sizeId) => this.validateConsistency(sizeId)))
   }
-
 }
 
 // Export factory function for creating inventory service with Prisma instance

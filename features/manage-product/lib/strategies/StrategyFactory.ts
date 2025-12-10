@@ -19,7 +19,6 @@ import {
 import { AccessoriesAgeBasedStrategy } from './AccessoriesAgeBasedStrategy'
 import { AccessoriesUniversalStrategy } from './AccessoriesUniversalStrategy'
 import { ClothingStrategy } from './ClothingStrategy'
-import { UniversalFallbackStrategy } from './UniversalFallbackStrategy'
 
 /**
  * Default strategy registry
@@ -139,8 +138,18 @@ export class FormStrategyFactory {
       throw new Error(`Default strategy "${defaultType}" not found in registry`)
     }
 
+    const strategy = new StrategyClass()
 
-    return new StrategyClass()
+    // Log context information untuk debugging
+    if (context && process.env.NODE_ENV === 'development') {
+      console.log(`StrategyFactory: Created default ${strategy.type} strategy for category "${context.categoryName || 'unknown'}" (${context.categoryId || 'no-id'})`)
+
+      if (context.isEditMode && context.existingData) {
+        console.log(`StrategyFactory: Default strategy in edit mode with ${context.existingData.length} existing size entries`)
+      }
+    }
+
+    return strategy
   }
 
   /**

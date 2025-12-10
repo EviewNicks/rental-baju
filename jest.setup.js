@@ -79,6 +79,7 @@ global.atob = jest.fn()
 global.btoa = jest.fn()
 
 // Mock TextEncoder and TextDecoder for jsPDF
+//eslint-disable-next-line @typescript-eslint/no-require-imports
 const { TextEncoder, TextDecoder } = require('util')
 global.TextEncoder = TextEncoder
 global.TextDecoder = TextDecoder

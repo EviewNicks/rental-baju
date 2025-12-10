@@ -1,7 +1,7 @@
 /**
  * Unit Tests for HILANG Penalty Calculation
  * Task 2.2: Verify HILANG penalty logic with quantity multiplication
- * 
+ *
  * Tests the fix for getConditionPenalty() to correctly handle HILANG items
  * by multiplying manualPrice by totalQuantity (not jumlahKembali which is 0)
  */
@@ -17,17 +17,18 @@ describe('HILANG Penalty Calculation Logic', () => {
     const condition = {
       conditionCategory: 'HILANG',
       manualPrice: 500000,
-      jumlahKembali: 0,  // Lost items not returned
+      jumlahKembali: 0, // Lost items not returned
       useManualPricing: true,
     }
-    const totalQuantity = 1  // 1 item lost
+    const totalQuantity = 1 // 1 item lost
 
     // Simulate the fixed getConditionPenalty logic
-    const penalty = condition.conditionCategory === 'HILANG'
-      ? (condition.manualPrice || 0) * totalQuantity
-      : condition.manualPrice * condition.jumlahKembali
+    const penalty =
+      condition.conditionCategory === 'HILANG'
+        ? (condition.manualPrice || 0) * totalQuantity
+        : condition.manualPrice * condition.jumlahKembali
 
-    expect(penalty).toBe(500000)  // 500,000 × 1 = 500,000
+    expect(penalty).toBe(500000) // 500,000 × 1 = 500,000
   })
 
   /**
@@ -38,17 +39,18 @@ describe('HILANG Penalty Calculation Logic', () => {
     const condition = {
       conditionCategory: 'HILANG',
       manualPrice: 500000,
-      jumlahKembali: 0,  // Lost items not returned
+      jumlahKembali: 0, // Lost items not returned
       useManualPricing: true,
     }
-    const totalQuantity = 2  // 2 items lost
+    const totalQuantity = 2 // 2 items lost
 
     // Simulate the fixed getConditionPenalty logic
-    const penalty = condition.conditionCategory === 'HILANG'
-      ? (condition.manualPrice || 0) * totalQuantity
-      : condition.manualPrice * condition.jumlahKembali
+    const penalty =
+      condition.conditionCategory === 'HILANG'
+        ? (condition.manualPrice || 0) * totalQuantity
+        : condition.manualPrice * condition.jumlahKembali
 
-    expect(penalty).toBe(1000000)  // 500,000 × 2 = 1,000,000
+    expect(penalty).toBe(1000000) // 500,000 × 2 = 1,000,000
   })
 
   /**
@@ -65,11 +67,10 @@ describe('HILANG Penalty Calculation Logic', () => {
     const totalQuantity = 2
 
     // Simulate the fixed getConditionPenalty logic
-    const penalty = condition.conditionCategory === 'HILANG'
-      ? (condition.manualPrice || 0) * totalQuantity
-      : 0
+    const penalty =
+      condition.conditionCategory === 'HILANG' ? (condition.manualPrice || 0) * totalQuantity : 0
 
-    expect(penalty).toBe(0)  // 0 × 2 = 0
+    expect(penalty).toBe(0) // 0 × 2 = 0
   })
 
   /**
@@ -80,17 +81,18 @@ describe('HILANG Penalty Calculation Logic', () => {
     const condition = {
       conditionCategory: 'RUSAK_BERAT',
       manualPrice: 100000,
-      jumlahKembali: 2,  // 2 damaged items returned
+      jumlahKembali: 2, // 2 damaged items returned
       useManualPricing: true,
     }
     const totalQuantity = 2
 
     // Simulate the fixed getConditionPenalty logic
-    const penalty = condition.conditionCategory === 'HILANG'
-      ? (condition.manualPrice || 0) * totalQuantity
-      : condition.manualPrice * condition.jumlahKembali
+    const penalty =
+      condition.conditionCategory === 'HILANG'
+        ? (condition.manualPrice || 0) * totalQuantity
+        : condition.manualPrice * condition.jumlahKembali
 
-    expect(penalty).toBe(200000)  // 100,000 × 2 = 200,000
+    expect(penalty).toBe(200000) // 100,000 × 2 = 200,000
   })
 
   /**
@@ -107,12 +109,14 @@ describe('HILANG Penalty Calculation Logic', () => {
     const totalQuantity = 3
 
     // Simulate the fixed getConditionPenalty logic
-    const penalty = condition.conditionCategory === 'BAIK' ? 0 : 
-                    condition.conditionCategory === 'HILANG'
-                      ? (condition.manualPrice || 0) * totalQuantity
-                      : condition.manualPrice * condition.jumlahKembali
+    const penalty =
+      condition.conditionCategory === 'BAIK'
+        ? 0
+        : condition.conditionCategory === 'HILANG'
+          ? (condition.manualPrice || 0) * totalQuantity
+          : condition.manualPrice * condition.jumlahKembali
 
-    expect(penalty).toBe(0)  // BAIK always 0
+    expect(penalty).toBe(0) // BAIK always 0
   })
 
   /**
@@ -123,20 +127,21 @@ describe('HILANG Penalty Calculation Logic', () => {
     const condition = {
       conditionCategory: 'HILANG',
       manualPrice: 750000,
-      jumlahKembali: 0,  // ❌ This is 0 for lost items
+      jumlahKembali: 0, // ❌ This is 0 for lost items
       useManualPricing: true,
     }
-    const totalQuantity = 3  // ✅ Use this instead
+    const totalQuantity = 3 // ✅ Use this instead
 
     // OLD BROKEN LOGIC (would return 0):
     const brokenPenalty = condition.manualPrice * condition.jumlahKembali
-    expect(brokenPenalty).toBe(0)  // ❌ Wrong!
+    expect(brokenPenalty).toBe(0) // ❌ Wrong!
 
     // NEW FIXED LOGIC (uses totalQuantity):
-    const fixedPenalty = condition.conditionCategory === 'HILANG'
-      ? (condition.manualPrice || 0) * totalQuantity
-      : condition.manualPrice * condition.jumlahKembali
-    expect(fixedPenalty).toBe(2250000)  // ✅ Correct! 750,000 × 3 = 2,250,000
+    const fixedPenalty =
+      condition.conditionCategory === 'HILANG'
+        ? (condition.manualPrice || 0) * totalQuantity
+        : condition.manualPrice * condition.jumlahKembali
+    expect(fixedPenalty).toBe(2250000) // ✅ Correct! 750,000 × 3 = 2,250,000
   })
 })
 
@@ -146,23 +151,22 @@ describe('HILANG Penalty Calculation Logic', () => {
  */
 describe('HILANG Penalty - Real World Scenarios', () => {
   it('Scenario: Customer loses 2 wedding dresses worth Rp 500k each', () => {
-    const manualPrice = 500000  // Per dress
+    const manualPrice = 500000 // Per dress
     const lostQuantity = 2
-    const jumlahKembali = 0  // Not returned
+    const jumlahKembali = 0 // Not returned
 
     const totalPenalty = manualPrice * lostQuantity
-    
+
     expect(totalPenalty).toBe(1000000)
-    expect(jumlahKembali).toBe(0)  // Verify items not returned
+    expect(jumlahKembali).toBe(0) // Verify items not returned
   })
 
   it('Scenario: Customer loses 1 suit worth Rp 750k', () => {
     const manualPrice = 750000
     const lostQuantity = 1
-    const jumlahKembali = 0
 
     const totalPenalty = manualPrice * lostQuantity
-    
+
     expect(totalPenalty).toBe(750000)
   })
 
@@ -173,14 +177,14 @@ describe('HILANG Penalty - Real World Scenarios', () => {
     ]
 
     let totalPenalty = 0
-    conditions.forEach(c => {
+    conditions.forEach((c) => {
       if (c.category === 'BAIK') {
         totalPenalty += 0
       } else if (c.category === 'HILANG') {
-        totalPenalty += c.manualPrice * c.quantity  // Use quantity, not jumlahKembali
+        totalPenalty += c.manualPrice * c.quantity // Use quantity, not jumlahKembali
       }
     })
 
-    expect(totalPenalty).toBe(500000)  // Only HILANG item charged
+    expect(totalPenalty).toBe(500000) // Only HILANG item charged
   })
 })

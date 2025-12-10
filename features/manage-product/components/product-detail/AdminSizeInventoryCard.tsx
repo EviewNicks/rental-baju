@@ -4,7 +4,6 @@ import React from 'react'
 import { Package, CheckCircle, XCircle, AlertCircle } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Progress } from '@/components/ui/progress'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 
 // ===== INTERFACES =====
@@ -12,7 +11,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 /**
  * Enhanced Size Detail from API sizeDetails array
  * Represents individual size with complete inventory information
- * 
+ *
  * Lost Item Management (Task 1): Added lostQuantity field
  * Inventory Invariant: originalQuantity = rentedQuantity + lostQuantity + availableQuantity
  */
@@ -20,27 +19,27 @@ interface EnhancedSizeDetail {
   id: string
   ageCategory: 'ADULT' | 'CHILD' | 'UNIVERSAL'
   size: string
-  originalQuantity: number      // Total stock owned
-  availableQuantity: number     // Available for rent
-  rentedQuantity: number        // Currently rented
-  lostQuantity: number          // Permanently lost items (Lost Item Management)
-  utilizationRate: number       // Percentage: (rented / original) * 100
-  isAvailable: boolean          // Boolean: availableQuantity > 0
+  originalQuantity: number // Total stock owned
+  availableQuantity: number // Available for rent
+  rentedQuantity: number // Currently rented
+  lostQuantity: number // Permanently lost items (Lost Item Management)
+  utilizationRate: number // Percentage: (rented / original) * 100
+  isAvailable: boolean // Boolean: availableQuantity > 0
 }
 
 /**
  * Inventory Status from API inventoryStatus object
  * Represents aggregate inventory statistics
- * 
+ *
  * Lost Item Management (Task 1): Added totalLost field
  */
 interface InventoryStatus {
-  totalOriginal: number         // Sum of all originalQuantity
-  totalAvailable: number        // Sum of all availableQuantity
-  totalRented: number           // Sum of all rentedQuantity
-  totalLost: number             // Sum of all lostQuantity (Lost Item Management)
-  utilizationRate: number       // Percentage: (totalRented / totalOriginal) * 100
-  isHealthy: boolean            // Boolean: utilizationRate < 80%
+  totalOriginal: number // Sum of all originalQuantity
+  totalAvailable: number // Sum of all availableQuantity
+  totalRented: number // Sum of all rentedQuantity
+  totalLost: number // Sum of all lostQuantity (Lost Item Management)
+  utilizationRate: number // Percentage: (totalRented / totalOriginal) * 100
+  isHealthy: boolean // Boolean: utilizationRate < 80%
 }
 
 /**
@@ -61,26 +60,29 @@ interface AdminSizeInventoryCardProps {
 
 /**
  * Internal statistics calculated from sizeDetails
- * 
+ *
  * Lost Item Management (Task 1): Added totalLost and lost per category
  */
 interface SizeStatistics {
-  totalSizes: number            // Total number of size variations
-  availableSizes: number        // Number of sizes with availableQuantity > 0
-  totalOriginal: number         // Sum of originalQuantity
-  totalAvailable: number        // Sum of availableQuantity
-  totalRented: number           // Sum of rentedQuantity
-  totalLost: number             // Sum of lostQuantity (Lost Item Management)
-  isInStock: boolean            // totalAvailable > 0
+  totalSizes: number // Total number of size variations
+  availableSizes: number // Number of sizes with availableQuantity > 0
+  totalOriginal: number // Sum of originalQuantity
+  totalAvailable: number // Sum of availableQuantity
+  totalRented: number // Sum of rentedQuantity
+  totalLost: number // Sum of lostQuantity (Lost Item Management)
+  isInStock: boolean // totalAvailable > 0
   // Breakdown by age category
-  byCategory: Record<string, {
-    count: number               // Number of sizes in this category
-    original: number            // Total originalQuantity in this category
-    available: number           // Total availableQuantity in this category
-    rented: number              // Total rentedQuantity in this category
-    lost: number                // Total lostQuantity in this category (Lost Item Management)
-    sizes: EnhancedSizeDetail[] // Array of sizes in this category
-  }>
+  byCategory: Record<
+    string,
+    {
+      count: number // Number of sizes in this category
+      original: number // Total originalQuantity in this category
+      available: number // Total availableQuantity in this category
+      rented: number // Total rentedQuantity in this category
+      lost: number // Total lostQuantity in this category (Lost Item Management)
+      sizes: EnhancedSizeDetail[] // Array of sizes in this category
+    }
+  >
 }
 
 // ===== CONFIGURATION =====
@@ -116,10 +118,10 @@ const AGE_CATEGORY_CONFIG = {
  * Utilization level thresholds for color coding
  */
 const UTILIZATION_THRESHOLDS = {
-  LOW: 30,      // 0-30%: Green (healthy)
-  MEDIUM: 60,   // 31-60%: Yellow (moderate)
-  HIGH: 80,     // 61-80%: Orange (high demand)
-  CRITICAL: 100 // 81-100%: Red (almost full/full)
+  LOW: 30, // 0-30%: Green (healthy)
+  MEDIUM: 60, // 31-60%: Yellow (moderate)
+  HIGH: 80, // 61-80%: Orange (high demand)
+  CRITICAL: 100, // 81-100%: Red (almost full/full)
 } as const
 
 // ===== UTILITY FUNCTIONS =====
@@ -139,26 +141,26 @@ function getUtilizationLevel(rate: number): 'low' | 'medium' | 'high' | 'critica
  */
 function getStatusBadge(availableQuantity: number, originalQuantity: number) {
   if (availableQuantity === 0) {
-    return { 
-      variant: 'destructive' as const, 
-      label: 'Habis', 
+    return {
+      variant: 'destructive' as const,
+      label: 'Habis',
       icon: XCircle,
-      className: 'bg-red-100 text-red-600 border-red-200'
+      className: 'bg-red-100 text-red-600 border-red-200',
     }
   }
   if (availableQuantity < originalQuantity) {
-    return { 
-      variant: 'secondary' as const, 
-      label: 'Sebagian', 
+    return {
+      variant: 'secondary' as const,
+      label: 'Sebagian',
       icon: AlertCircle,
-      className: 'bg-yellow-100 text-yellow-600 border-yellow-200'
+      className: 'bg-yellow-100 text-yellow-600 border-yellow-200',
     }
   }
-  return { 
-    variant: 'default' as const, 
-    label: 'Tersedia', 
+  return {
+    variant: 'default' as const,
+    label: 'Tersedia',
     icon: CheckCircle,
-    className: 'bg-green-100 text-green-600 border-green-200'
+    className: 'bg-green-100 text-green-600 border-green-200',
   }
 }
 
@@ -168,11 +170,16 @@ function getStatusBadge(availableQuantity: number, originalQuantity: number) {
 function getProgressBarColor(utilizationRate: number): string {
   const level = getUtilizationLevel(utilizationRate)
   switch (level) {
-    case 'low': return 'bg-green-500'
-    case 'medium': return 'bg-yellow-500'
-    case 'high': return 'bg-orange-500'
-    case 'critical': return 'bg-red-500'
-    default: return 'bg-gray-500'
+    case 'low':
+      return 'bg-green-500'
+    case 'medium':
+      return 'bg-yellow-500'
+    case 'high':
+      return 'bg-orange-500'
+    case 'critical':
+      return 'bg-red-500'
+    default:
+      return 'bg-gray-500'
   }
 }
 
@@ -180,17 +187,17 @@ function getProgressBarColor(utilizationRate: number): string {
 
 /**
  * AdminSizeInventoryCard Component
- * 
+ *
  * Displays enhanced inventory information for admin product detail page.
  * Shows detailed breakdown of original, rented, available, and lost quantities
  * with utilization rates and visual indicators.
- * 
+ *
  * Lost Item Management Integration (Task 1):
  * - Displays lostQuantity for each size
  * - Shows total lost items in summary statistics
  * - Maintains inventory invariant: original = rented + lost + available
  * - Visual indicators for lost items (red color coding)
- * 
+ *
  * @example
  * ```tsx
  * <AdminSizeInventoryCard
@@ -221,9 +228,9 @@ function getProgressBarColor(utilizationRate: number): string {
 export function AdminSizeInventoryCard({
   sizeDetails,
   inventoryStatus,
-  title = "Detail Ukuran & Stok",
+  title = 'Detail Ukuran & Stok',
   showStats = true,
-  showProgress = true
+  showProgress = true,
 }: AdminSizeInventoryCardProps) {
   // ===== STATISTICS CALCULATION =====
   const stats = React.useMemo((): SizeStatistics => {
@@ -232,33 +239,36 @@ export function AdminSizeInventoryCard({
     const totalAvailable = sizeDetails.reduce((sum, size) => sum + size.availableQuantity, 0)
     const totalRented = sizeDetails.reduce((sum, size) => sum + size.rentedQuantity, 0)
     const totalLost = sizeDetails.reduce((sum, size) => sum + (size.lostQuantity || 0), 0)
-    
+
     // Count available sizes
-    const availableSizes = sizeDetails.filter(size => size.availableQuantity > 0).length
+    const availableSizes = sizeDetails.filter((size) => size.availableQuantity > 0).length
     const totalSizes = sizeDetails.length
-    
+
     // Group by age category
-    const byCategory = sizeDetails.reduce((acc, size) => {
-      const category = size.ageCategory
-      if (!acc[category]) {
-        acc[category] = { 
-          count: 0, 
-          original: 0, 
-          available: 0,
-          rented: 0,
-          lost: 0,
-          sizes: [] 
+    const byCategory = sizeDetails.reduce(
+      (acc, size) => {
+        const category = size.ageCategory
+        if (!acc[category]) {
+          acc[category] = {
+            count: 0,
+            original: 0,
+            available: 0,
+            rented: 0,
+            lost: 0,
+            sizes: [],
+          }
         }
-      }
-      acc[category].count += 1
-      acc[category].original += size.originalQuantity
-      acc[category].available += size.availableQuantity
-      acc[category].rented += size.rentedQuantity
-      acc[category].lost += size.lostQuantity || 0
-      acc[category].sizes.push(size)
-      return acc
-    }, {} as SizeStatistics['byCategory'])
-    
+        acc[category].count += 1
+        acc[category].original += size.originalQuantity
+        acc[category].available += size.availableQuantity
+        acc[category].rented += size.rentedQuantity
+        acc[category].lost += size.lostQuantity || 0
+        acc[category].sizes.push(size)
+        return acc
+      },
+      {} as SizeStatistics['byCategory'],
+    )
+
     return {
       totalSizes,
       availableSizes,
@@ -303,7 +313,7 @@ export function AdminSizeInventoryCard({
           <span className="text-xs text-gray-500 ml-2">(Admin View)</span>
         </CardTitle>
       </CardHeader>
-      
+
       <CardContent className="space-y-6">
         {/* Statistics Summary - 5 Columns (Lost Item Management) */}
         {showStats && (
@@ -328,13 +338,16 @@ export function AdminSizeInventoryCard({
               <div className="text-xl font-bold text-purple-600">{stats.totalOriginal}</div>
               <div className="text-xs text-gray-600">Total</div>
             </div>
-            
+
             {/* Overall Status Message */}
             <div className="col-span-5 mt-2 pt-2 border-t border-gray-200">
               <div className="text-sm text-gray-600 text-center">
-                💡 Overall: {inventoryStatus.totalAvailable} dari {inventoryStatus.totalOriginal} pcs tersedia 
-                ({inventoryStatus.totalRented} sedang disewa
-                {stats.totalLost > 0 && <span className="text-red-600">, {stats.totalLost} hilang</span>})
+                💡 Overall: {inventoryStatus.totalAvailable} dari {inventoryStatus.totalOriginal}{' '}
+                pcs tersedia ({inventoryStatus.totalRented} sedang disewa
+                {stats.totalLost > 0 && (
+                  <span className="text-red-600">, {stats.totalLost} hilang</span>
+                )}
+                )
               </div>
             </div>
           </div>
@@ -345,17 +358,18 @@ export function AdminSizeInventoryCard({
           {Object.entries(stats.byCategory).map(([category, data]) => {
             const config = AGE_CATEGORY_CONFIG[category as keyof typeof AGE_CATEGORY_CONFIG]
             const categoryUtilization = data.original > 0 ? (data.rented / data.original) * 100 : 0
-            
+
             return (
               <div key={category} className="border rounded-lg p-4">
                 {/* Category Header */}
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <span className="text-lg">{config.icon}</span>
-                    <span className={`font-semibold ${config.color}`}>
-                      {config.label}
-                    </span>
-                    <Badge variant="outline" className={`text-xs ${config.bgColor} ${config.borderColor} ${config.color}`}>
+                    <span className={`font-semibold ${config.color}`}>{config.label}</span>
+                    <Badge
+                      variant="outline"
+                      className={`text-xs ${config.bgColor} ${config.borderColor} ${config.color}`}
+                    >
                       {data.count} ukuran
                     </Badge>
                   </div>
@@ -369,12 +383,12 @@ export function AdminSizeInventoryCard({
                     )}
                   </div>
                 </div>
-                
+
                 {/* Category Progress Bar */}
                 {showProgress && categoryUtilization > 0 && (
                   <div className="mb-3">
                     <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                      <div 
+                      <div
                         className={`h-full ${getProgressBarColor(categoryUtilization)}`}
                         style={{ width: `${categoryUtilization}%` }}
                       />
@@ -385,12 +399,15 @@ export function AdminSizeInventoryCard({
                     </div>
                   </div>
                 )}
-                
+
                 {/* Individual Size Items */}
                 <div className="space-y-2">
                   {data.sizes.map((size) => {
-                    const statusBadge = getStatusBadge(size.availableQuantity, size.originalQuantity)
-                    
+                    const statusBadge = getStatusBadge(
+                      size.availableQuantity,
+                      size.originalQuantity,
+                    )
+
                     return (
                       <div
                         key={size.id}
@@ -407,7 +424,7 @@ export function AdminSizeInventoryCard({
                           <span className="font-medium text-sm">
                             {config.label} - Size {size.size}
                           </span>
-                          <Badge 
+                          <Badge
                             variant={statusBadge.variant}
                             className={`text-xs ${statusBadge.className}`}
                             role="status"
@@ -417,7 +434,7 @@ export function AdminSizeInventoryCard({
                             {statusBadge.label}
                           </Badge>
                         </div>
-                        
+
                         {/* Availability Breakdown (Lost Item Management) */}
                         <div className="space-y-1 text-sm">
                           <div className="flex justify-between">
@@ -426,7 +443,7 @@ export function AdminSizeInventoryCard({
                               {size.availableQuantity} dari {size.originalQuantity} pcs
                             </span>
                           </div>
-                          
+
                           {size.rentedQuantity > 0 && (
                             <div className="flex justify-between">
                               <span className="text-gray-600">Sedang disewa:</span>
@@ -435,7 +452,7 @@ export function AdminSizeInventoryCard({
                               </span>
                             </div>
                           )}
-                          
+
                           {size.lostQuantity > 0 && (
                             <div className="flex justify-between">
                               <span className="text-gray-600">Hilang:</span>
@@ -445,12 +462,12 @@ export function AdminSizeInventoryCard({
                             </div>
                           )}
                         </div>
-                        
+
                         {/* Individual Size Utilization Progress Bar */}
                         {showProgress && size.utilizationRate > 0 && (
                           <div className="mt-3 space-y-1">
                             <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                              <div 
+                              <div
                                 className={`h-full ${getProgressBarColor(size.utilizationRate)}`}
                                 style={{ width: `${size.utilizationRate}%` }}
                                 aria-label={`Utilization rate: ${size.utilizationRate}%`}
@@ -480,21 +497,19 @@ export function AdminSizeInventoryCard({
             <div className="flex items-center justify-center gap-2 text-green-600">
               <CheckCircle className="w-4 h-4" />
               <span className="font-medium">
-                Tersedia {inventoryStatus.totalAvailable} dari {inventoryStatus.totalOriginal} item dalam stok
+                Tersedia {inventoryStatus.totalAvailable} dari {inventoryStatus.totalOriginal} item
+                dalam stok
               </span>
               <span className="text-xs text-gray-500 ml-2">
-                (Utilization: {inventoryStatus.utilizationRate.toFixed(0)}% - {inventoryStatus.isHealthy ? 'Healthy' : 'High'})
+                (Utilization: {inventoryStatus.utilizationRate.toFixed(0)}% -{' '}
+                {inventoryStatus.isHealthy ? 'Healthy' : 'High'})
               </span>
             </div>
           ) : (
             <div className="flex items-center justify-center gap-2 text-red-600">
               <XCircle className="w-4 h-4" />
-              <span className="font-medium">
-                Stok habis - semua ukuran sedang disewa
-              </span>
-              <span className="text-xs text-gray-500 ml-2">
-                (Perlu restock segera)
-              </span>
+              <span className="font-medium">Stok habis - semua ukuran sedang disewa</span>
+              <span className="text-xs text-gray-500 ml-2">(Perlu restock segera)</span>
             </div>
           )}
         </div>

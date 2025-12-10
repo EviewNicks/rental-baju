@@ -11,7 +11,7 @@
 // ==========================================
 
 export type TransactionStatus = 'active' | 'diambil' | 'selesai' | 'terlambat' | 'cancelled' | 'pending_resolution'
-export type PaymentMethod = 'tunai' | 'transfer' | 'kartu'
+export type PaymentMethod = 'tunai' | 'transfer' | 'kartu' | 'penalty'
 export type ActivityType = 'dibuat' | 'dibayar' | 'diambil' | 'selesai' | 'terlambat' | 'dibatalkan'
 export type ReturnStatus = 'belum' | 'sebagian' | 'lengkap'
 export type TransactionStep = 1 | 2 | 3 | 4
@@ -370,10 +370,11 @@ export interface Penalty {
 export interface Payment {
   id: string
   amount: number
-  method: 'cash' | 'qris' | 'transfer'
+  method: 'cash' | 'qris' | 'transfer' | 'penalty'
   timestamp: string
   type: 'rental' | 'penalty' | 'deposit'
   reference?: string
+  notes?: string
 }
 
 // Legacy TransactionDetail - replaced by TransaksiDetail
@@ -603,6 +604,13 @@ export interface TransaksiResponse extends TransaksiCore {
     nama: string
     telepon: string
     alamat: string
+  }
+  kasir?: {
+    id: string
+    nama: string
+    isActive: boolean
+    createdAt: string
+    updatedAt: string
   }
   metodeBayar: PaymentMethod
   catatan?: string
