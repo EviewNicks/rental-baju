@@ -12,7 +12,7 @@ interface ActivityTimelineProps {
   'data-testid'?: string
 }
 
-// Return Activity Display Component
+// Return Activity Display Component - ENHANCED (Unified Activity Logging)
 interface ReturnActivityProps {
   activity: ActivityLog
 }
@@ -20,6 +20,11 @@ interface ReturnActivityProps {
 const ReturnActivityDisplay: React.FC<ReturnActivityProps> = ({ activity }) => {
   const Icon = actionIcons[activity.action] || Package
   const colorClass = actionColors[activity.action] || 'text-blue-600 bg-blue-100'
+
+  // ✅ Extract unified activity data structure
+  const summary = activity.details?.summary
+  const items = activity.details?.items
+  const metadata = activity.details?.metadata
 
   return (
     <div className="flex items-start gap-4">
@@ -36,41 +41,182 @@ const ReturnActivityDisplay: React.FC<ReturnActivityProps> = ({ activity }) => {
         <p className="text-sm text-gray-600 mt-1">{activity.description}</p>
         <div className="text-xs text-gray-600 mt-1">Oleh: {activity.performedBy}</div>
 
-        {/* Return Details Expansion */}
+        {/* ✅ ENHANCED: Unified Activity Details */}
         {activity.details && (
-          <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
-            <div className="text-sm font-medium text-blue-900 mb-2">
-              Detail Pengembalian
-            </div>
-            
-            {activity.details.conditions?.map((condition: { kondisiAkhir: string; jumlahKembali: number; penaltyAmount: number }, idx: number) => (
-              <div key={idx} className="flex justify-between items-center text-sm text-blue-800 mb-1">
-                <span className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-blue-600"></div>
-                  {condition.kondisiAkhir}: {condition.jumlahKembali} item{condition.jumlahKembali > 1 ? 's' : ''}
-                </span>
-                {condition.penaltyAmount > 0 && (
-                  <span className="font-medium text-red-600">
-                    Denda: {formatCurrency(condition.penaltyAmount)}
-                  </span>
-                )}
+          <div className="mt-3 space-y-3">
+            {/* Summary Section */}
+            {summary && (
+              <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                <div className="text-sm font-medium text-blue-900 mb-2">Ringkasan Pengembalian</div>
+                
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div className="flex justify-between">
+                    <span className="text-blue-700">Total Item:</span>
+                    <span className="font-medium text-blue-900">{summary.totalItems}</span>
+                  </div>
+                  
+                  {summary.isLateReturn && (
+                    <div className="flex justify-between">
+                      <span className="text-orange-700">Terlambat:</span>
+                      <span className="font-medium text-orange-900">{summary.lateDays} hari</span>
+                    </div>
+                  )}
+                  
+                  {summary.totalLatePenalty > 0 && (
+                    <div className="flex justify-between col-span-2">
+                      <span className="text-orange-700">Denda Keterlambatan:</span>
+                      <span className="font-medium text-orange-900">
+                        {formatCurrency(summary.totalLatePenalty)}
+                      </span>
+                    </div>
+                  )}
+                  
+                  {summary.totalConditionPenalty > 0 && (
+                    <div className="flex justify-between col-span-2">
+                      <span className="text-red-700">Denda Kondisi:</span>
+                      <span className="font-medium text-red-900">
+                        {formatCurrency(summary.totalConditionPenalty)}
+                      </span>
+                    </div>
+                  )}
+                  
+                  {summary.totalPenalty > 0 && (
+                    <div className="flex justify-between col-span-2 pt-2 border-t border-blue-300">
+                      <span className="text-blue-900 font-semibold">Total Denda:</span>
+                      <span className="font-bold text-red-600">
+                        {formatCurrency(summary.totalPenalty)}
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
-            ))}
-            
-            {activity.details.totalPenalty > 0 && (
-              <div className="mt-2 pt-2 border-t border-blue-300">
-                <div className="flex justify-between text-sm font-medium">
-                  <span className="text-blue-900">Total Denda:</span>
-                  <span className="text-red-600">
-                    {formatCurrency(activity.details.totalPenalty)}
+            )}
+
+            {/* Items Breakdown Section */}
+            {items && items.length > 0 && (
+              <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+                <div className="text-sm font-medium text-green-900 mb-2">
+                  Detail Per Item ({items.length} produk)
+                </div>
+                
+                <div className="space-y-3">
+                  {items.map((item: {
+                    itemId: string
+                    productCode: string
+                    productName: string
+                    sizeInfo: string
+                    totalItemPenalty: number
+                    conditions: Array<{
+                      kondisiAkhir: string
+                      jumlahKembali: number
+                      penaltyAmount: number
+                      conditionCategory: string
+                      useManualPricing?: boolean
+                      manualPrice?: number
+                    }>
+                  }, idx: number) => (
+                    <div key={item.itemId || idx} className="bg-white p-2 rounded border border-green-300">
+                      {/* Product Info */}
+                      <div className="flex justify-between items-start mb-2">
+                        <div className="flex-1">
+                          <div className="text-sm font-medium text-gray-900">
+                            {item.productName}
+                          </div>
+                          <div className="text-xs text-gray-600">
+                            {item.productCode} • {item.sizeInfo}
+                          </div>
+                        </div>
+                        {item.totalItemPenalty > 0 && (
+                          <div className="text-xs font-semibold text-red-600">
+                            {formatCurrency(item.totalItemPenalty)}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Conditions Breakdown - FIXED: Show manualPrice as the penalty */}
+                      {item.conditions && item.conditions.length > 0 && (
+                        <div className="space-y-1 pl-2 border-l-2 border-green-400">
+                          {item.conditions.map((condition, condIdx) => {
+                            // Color coding by condition
+                            const conditionColor = 
+                              condition.conditionCategory === 'HILANG' ? 'text-red-700' :
+                              condition.conditionCategory === 'RUSAK_BERAT' ? 'text-orange-700' :
+                              condition.conditionCategory === 'RUSAK_RINGAN' ? 'text-orange-600' :
+                              condition.conditionCategory === 'KOTOR' ? 'text-yellow-700' :
+                              'text-green-700'
+
+                            // FIXED: manualPrice is the actual penalty amount
+                            const actualPenalty = condition.useManualPricing && condition.manualPrice 
+                              ? condition.manualPrice 
+                              : condition.penaltyAmount
+
+                            return (
+                              <div key={condIdx} className="flex justify-between items-center text-xs">
+                                <span className={`flex items-center gap-1 ${conditionColor}`}>
+                                  <div className="w-1.5 h-1.5 rounded-full bg-current"></div>
+                                  {condition.kondisiAkhir}: {condition.jumlahKembali} unit
+                                </span>
+                                {actualPenalty > 0 && (
+                                  <span className="font-medium text-red-600">
+                                    {formatCurrency(actualPenalty)}
+                                  </span>
+                                )}
+                              </div>
+                            )
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Metadata Section (Optional - for debugging/admin) */}
+            {metadata && metadata.processingMode === 'unified' && (
+              <div className="p-2 bg-gray-50 rounded border border-gray-200">
+                <div className="flex items-center justify-between text-xs text-gray-600">
+                  <span>
+                    Status: {metadata.statusChange?.from} → {metadata.statusChange?.to}
+                  </span>
+                  <span className="text-gray-500">
+                    Proses: {metadata.processingTime}ms
                   </span>
                 </div>
               </div>
             )}
-            
-            {activity.details.itemsAffected && (
-              <div className="mt-2 text-xs text-blue-700">
-                Item: {activity.details.itemsAffected.join(', ')}
+
+            {/* ⚠️ FALLBACK: Legacy format support (backward compatibility) */}
+            {!summary && !items && activity.details.conditions && (
+              <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                <div className="text-sm font-medium text-yellow-900 mb-2">
+                  Detail Pengembalian (Format Lama)
+                </div>
+                
+                {activity.details.conditions.map((condition: { kondisiAkhir: string; jumlahKembali: number; penaltyAmount: number }, idx: number) => (
+                  <div key={idx} className="flex justify-between items-center text-sm text-yellow-800 mb-1">
+                    <span className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-yellow-600"></div>
+                      {condition.kondisiAkhir}: {condition.jumlahKembali} item{condition.jumlahKembali > 1 ? 's' : ''}
+                    </span>
+                    {condition.penaltyAmount > 0 && (
+                      <span className="font-medium text-red-600">
+                        Denda: {formatCurrency(condition.penaltyAmount)}
+                      </span>
+                    )}
+                  </div>
+                ))}
+                
+                {activity.details.totalPenalty > 0 && (
+                  <div className="mt-2 pt-2 border-t border-yellow-300">
+                    <div className="flex justify-between text-sm font-medium">
+                      <span className="text-yellow-900">Total Denda:</span>
+                      <span className="text-red-600">
+                        {formatCurrency(activity.details.totalPenalty)}
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -80,9 +226,27 @@ const ReturnActivityDisplay: React.FC<ReturnActivityProps> = ({ activity }) => {
   )
 }
 
-// Pickup Activity Display Component - RPK-48
+// Pickup Activity Display Component - ENHANCED (Task 4)
 interface PickupActivityProps {
   activity: ActivityLog
+}
+
+// ✅ Helper function to parse kondisiAwal
+interface ParsedKondisiAwal {
+  sizeId: string
+  size: string
+  ageCategory: string
+  condition: string
+}
+
+function parseKondisiAwal(kondisiAwal: string): ParsedKondisiAwal {
+  const parts = kondisiAwal.split('|')
+  return {
+    sizeId: parts[0] || '',
+    size: parts[1] || 'Unknown',
+    ageCategory: parts[2] || 'Unknown',
+    condition: parts[3] || 'Unknown',
+  }
 }
 
 const PickupActivityDisplay: React.FC<PickupActivityProps> = ({ activity }) => {
@@ -102,28 +266,49 @@ const PickupActivityDisplay: React.FC<PickupActivityProps> = ({ activity }) => {
         </div>
 
         <p className="text-sm text-gray-600 mt-1">{activity.description}</p>
-        <div className="text-xs text-gray-600 mt-1">Oleh: {activity.performedBy}</div>
+        
+        {/* ✅ ENHANCED: Show kasir name instead of user ID */}
+        <div className="text-xs text-gray-600 mt-1">
+          Oleh: {activity.details?.processedByName || activity.performedBy}
+        </div>
 
-        {/* Pickup Details Expansion */}
+        {/* Pickup Details Expansion - ENHANCED */}
         {activity.details && (
           <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
-            <div className="text-sm font-medium text-blue-900 mb-2">
-              Detail Pengambilan
-            </div>
-            
+            <div className="text-sm font-medium text-blue-900 mb-2">Detail Pengambilan</div>
+
+            {/* ✅ ENHANCED: Show product details with size and age category */}
             {activity.details.items && Array.isArray(activity.details.items) && (
               <div className="space-y-1 mb-2">
-                {activity.details.items.map((item: { itemId: string; jumlahDiambil: number }, idx: number) => (
-                  <div key={idx} className="flex items-center text-sm text-blue-800">
-                    <div className="w-2 h-2 rounded-full bg-blue-600 mr-2"></div>
-                    <span>
-                      Item: {item.jumlahDiambil} unit diambil
-                    </span>
-                  </div>
-                ))}
+                {activity.details.items.map(
+                  (
+                    item: {
+                      itemId: string
+                      jumlahDiambil: number
+                      productName?: string
+                      kondisiAwal?: string
+                    },
+                    idx: number,
+                  ) => {
+                    // Parse kondisiAwal for size info
+                    const sizeInfo = item.kondisiAwal ? parseKondisiAwal(item.kondisiAwal) : null
+
+                    return (
+                      <div key={idx} className="flex items-center text-sm text-blue-800">
+                        <div className="w-2 h-2 rounded-full bg-blue-600 mr-2"></div>
+                        <span>
+                          {/* ✅ Format: [Product Name] ([Size] - [Age Category]) - [Quantity] unit diambil */}
+                          {item.productName || 'Unknown Product'}
+                          {sizeInfo && ` (${sizeInfo.size} - ${sizeInfo.ageCategory})`} -{' '}
+                          {item.jumlahDiambil} unit diambil
+                        </span>
+                      </div>
+                    )
+                  },
+                )}
               </div>
             )}
-            
+
             {activity.details.catatan && (
               <div className="mt-2 pt-2 border-t border-blue-300">
                 <div className="text-sm font-medium text-blue-900 mb-1">Catatan:</div>
@@ -351,9 +536,13 @@ export function ActivityTimeline({
             )
           }
 
-          // Special handling for pickup activities - RPK-48
-          if (activity.action === 'picked_up' || 
-              (activity.description && activity.description.includes('Pickup dilakukan'))) {
+          // Special handling for pickup activities - ENHANCED (Task 4)
+          if (
+            activity.action === 'picked_up' ||
+            (activity.description &&
+              (activity.description.includes('Pickup dilakukan') ||
+                activity.description.includes('Pickup:')))
+          ) {
             return (
               <div key={activity.id} className="relative pb-6">
                 <PickupActivityDisplay activity={activity} />

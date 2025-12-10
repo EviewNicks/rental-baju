@@ -13,6 +13,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { ProductService } from '@/features/manage-product/services/productService'
 import { ProductSizeAggregationService } from '@/features/manage-product/services/productSizeAggregationService'
+import { ProductHistoryService } from '@/features/manage-product/services/productHistoryService'
 import { FileUploadService } from '@/features/manage-product/services/fileUploadService'
 import { prisma } from '@/lib/prisma'
 import { updateProductSchema } from '@/features/manage-product/lib/validation/productSchema'
@@ -22,7 +23,7 @@ import type { UpdateProductWithSizesRequest } from '@/features/manage-product/ty
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     // Authentication check
-    const { userId } = await auth()
+    const { userId, sessionClaims } = await auth()
     if (!userId) {
       return NextResponse.json(
         { error: { message: 'Unauthorized', code: 'UNAUTHORIZED' } },
@@ -32,16 +33,20 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     const { id } = await params
 
-    // Get query parameters for aggregation
+    // Get query parameters for aggregation and break-even
     const { searchParams } = new URL(request.url)
     const includeAggregation = searchParams.get('includeAggregation') === 'true'
     const includeBreakdown = searchParams.get('includeBreakdown') !== 'false' // default true
+    const includeBreakEven = searchParams.get('includeBreakEven') === 'true' // RPK-MODAL
 
     // Initialize service
     const productService = new ProductService(prisma, userId)
 
     // Get product by ID
     const product = await productService.getProductById(id)
+
+    // Prepare response object
+    let responseData: Record<string, unknown> = { ...product }
 
     // Add aggregation data if requested
     if (includeAggregation) {
@@ -50,20 +55,53 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       })
 
       try {
-        const aggregation = await aggregationService.getProductAggregation(product.id)
+        // ENHANCED: Use comprehensive inventory method with InventoryService integration
+        const comprehensiveInventory = await aggregationService.getComprehensiveInventory(product.id)
 
-        return NextResponse.json({
-          ...product,
-          aggregation,
-        }, { status: 200 })
+        responseData = {
+          ...responseData,
+          // Legacy aggregation for backward compatibility
+          aggregation: {
+            productId: comprehensiveInventory.productId,
+            totalQuantity: comprehensiveInventory.totalQuantity,
+            aggregatedSizes: comprehensiveInventory.aggregatedSizes,
+            hasAdvancedSizing: comprehensiveInventory.hasAdvancedSizing,
+            categoryBreakdown: comprehensiveInventory.categoryBreakdown,
+            lastCalculated: comprehensiveInventory.lastCalculated,
+          },
+          // NEW: Comprehensive inventory data with Enhanced ProductSize fields
+          inventoryStatus: comprehensiveInventory.inventoryStatus,
+          sizeDetails: comprehensiveInventory.sizeDetails,
+        }
       } catch (error) {
-        // If aggregation fails, include product without aggregation data
+        // If aggregation fails, continue without aggregation data
         console.warn(`Failed to get aggregation for product ${product.id}:`, error)
-        return NextResponse.json(product, { status: 200 })
       }
     }
 
-    return NextResponse.json(product, { status: 200 })
+    // RPK-MODAL: Add break-even status if requested and authorized
+    if (includeBreakEven) {
+      // Check role permissions (Owner, Producer only)
+      const userRole = determineUserRole(sessionClaims)
+      const canViewBreakEven = ['owner', 'producer'].includes(userRole)
+
+      if (canViewBreakEven) {
+        try {
+          const historyService = new ProductHistoryService(prisma, userId)
+          const breakEvenStatus = await historyService.getBreakEvenStatus(id)
+
+          responseData = {
+            ...responseData,
+            breakEvenStatus,
+          }
+        } catch (error) {
+          // If break-even calculation fails, continue without break-even data
+          console.warn(`Failed to get break-even status for product ${product.id}:`, error)
+        }
+      }
+    }
+
+    return NextResponse.json(responseData, { status: 200 })
   } catch (error) {
     if (error instanceof NotFoundError) {
       return NextResponse.json(
@@ -127,10 +165,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const quantity = formData.get('quantity')
       ? parseInt(formData.get('quantity') as string)
       : undefined
-    const rentedStock = formData.get('rentedStock') // ✅ Added rentedStock parsing
-      ? parseInt(formData.get('rentedStock') as string)
-      : undefined
-    const categoryId = (formData.get('categoryId') as string) || undefined
+      const categoryId = (formData.get('categoryId') as string) || undefined
     const size = (formData.get('size') as string) || undefined
     const colorId = (formData.get('colorId') as string) || undefined
     // Material Management fields - RPK-45
@@ -180,12 +215,36 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     // Size Management fields - Advanced only (no hasSizes flag)
     const sizesStr = formData.get('sizes') as string
-    let sizes: Array<{ id?: string; ageCategory: string; size: string; quantity: number; isActive?: boolean }> = []
+    let sizes: Array<{
+      id?: string;
+      ageCategory: string;
+      size: string;
+      quantity: number;
+      originalQuantity?: number;
+      rentedQuantity?: number;
+      availableQuantity?: number;
+      isActive?: boolean
+    }> = []
+
+    console.log(`[API Route] Raw sizes string received:`, {
+      sizesStr: sizesStr,
+      sizesStrType: typeof sizesStr,
+      sizesStrLength: sizesStr ? sizesStr.length : 0,
+      timestamp: new Date().toISOString()
+    })
 
     // Parse sizes if provided (for updates)
     if (sizesStr) {
       try {
         sizes = JSON.parse(sizesStr)
+        console.log(`[API Route] Parsed sizes:`, {
+          sizes: sizes,
+          sizesLength: sizes.length,
+          sizesType: typeof sizes,
+          isArray: Array.isArray(sizes),
+          timestamp: new Date().toISOString()
+        })
+        
         // Validate that if sizes are provided, array should not be empty
         if (sizes.length === 0) {
           return NextResponse.json(
@@ -193,12 +252,19 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
             { status: 400 },
           )
         }
-      } catch {
+      } catch (parseError) {
+        console.error(`[API Route] Failed to parse sizes:`, {
+          error: parseError,
+          sizesStr: sizesStr,
+          timestamp: new Date().toISOString()
+        })
         return NextResponse.json(
           { error: { message: 'Format data ukuran tidak valid', code: 'VALIDATION_ERROR' } },
           { status: 400 },
         )
       }
+    } else {
+      console.log(`[API Route] No sizes string provided`)
     }
 
     // Prepare update data
@@ -209,15 +275,30 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     if (modalAwal !== undefined) updateData.modalAwal = modalAwal
     if (currentPrice !== undefined) updateData.currentPrice = currentPrice // ✅ Fixed: use currentPrice instead of hargaSewa
     if (quantity !== undefined) updateData.quantity = quantity
-    if (rentedStock !== undefined) updateData.rentedStock = rentedStock // ✅ Added rentedStock handling
-    if (categoryId !== undefined) updateData.categoryId = categoryId
+        if (categoryId !== undefined) updateData.categoryId = categoryId
     if (size !== undefined) updateData.size = size
     if (colorId !== undefined) updateData.colorId = colorId
     // Material Management fields - RPK-45
     if (materialId !== undefined) updateData.materialId = materialId
     if (materialQuantity !== undefined) updateData.materialQuantity = materialQuantity
-    // Size Management fields - Advanced only
-    if (sizes.length > 0) updateData.sizes = sizes
+    // Size Management fields - Enhanced ProductSize fields processed in service layer
+    if (sizes.length > 0) {
+      console.log(`[API Route] Adding sizes to updateData:`, {
+        sizes: sizes,
+        sizesLength: sizes.length,
+        timestamp: new Date().toISOString()
+      })
+      updateData.sizes = sizes  // Pass raw data to service layer
+    } else {
+      console.log(`[API Route] No sizes to add to updateData`)
+    }
+    
+    console.log(`[API Route] Final updateData:`, {
+      updateData: updateData,
+      hasSizes: 'sizes' in updateData,
+      sizesCount: updateData.sizes ? (Array.isArray(updateData.sizes) ? updateData.sizes.length : 'not array') : 'no sizes',
+      timestamp: new Date().toISOString()
+    })
 
     // Validate materialQuantity if provided
     if (materialQuantityStr && (isNaN(materialQuantity!) || materialQuantity! <= 0)) {
@@ -261,6 +342,61 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const productService = new ProductService(prisma, userId)
     const fileUploadService = new FileUploadService(userId)
 
+    // ENHANCED: Validate update safety if sizes are being updated
+    if (sizes.length > 0) {
+      try {
+        // Check current rental state before update
+        const currentProduct = await productService.getProductById(id)
+        
+        // Validate that quantity changes are safe
+        for (const newSize of sizes) {
+          const existingSize = currentProduct.sizes?.find(
+            s => s.ageCategory === newSize.ageCategory && s.size === newSize.size
+          )
+          
+          if (existingSize) {
+            const newOriginalQty = newSize.originalQuantity || newSize.quantity
+            const currentRented = existingSize.rentedQuantity || 0
+            const currentLost = existingSize.lostQuantity || 0
+            const minRequired = currentRented + currentLost
+            
+            if (newOriginalQty < minRequired) {
+              return NextResponse.json(
+                {
+                  error: {
+                    message: `Cannot reduce quantity for ${newSize.ageCategory}-${newSize.size} below ${minRequired} (${currentRented} rented + ${currentLost} lost)`,
+                    code: 'QUANTITY_VALIDATION_ERROR',
+                    field: 'sizes',
+                    details: {
+                      ageCategory: newSize.ageCategory,
+                      size: newSize.size,
+                      requestedQuantity: newOriginalQty,
+                      minimumRequired: minRequired,
+                      currentRented: currentRented,
+                      currentLost: currentLost,
+                    },
+                  },
+                },
+                { status: 400 },
+              )
+            }
+          }
+        }
+      } catch (error) {
+        // If validation fails, return error
+        return NextResponse.json(
+          {
+            error: {
+              message: 'Failed to validate update safety',
+              code: 'VALIDATION_ERROR',
+              details: error instanceof Error ? error.message : 'Unknown error',
+            },
+          },
+          { status: 400 },
+        )
+      }
+    }
+
     // Handle image upload if provided
     if (image && image.size > 0) {
       try {
@@ -293,7 +429,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       }
     }
 
-    // Update product using advanced-only architecture
+    // Update product using advanced-only architecture with rental state preservation
     const product = await productService.updateProduct(id, updateData as unknown as UpdateProductWithSizesRequest)
 
     return NextResponse.json(product, { status: 200 })
@@ -364,5 +500,35 @@ export async function DELETE(
 
     // Handle unknown errors
     return NextResponse.json(formatErrorResponse(error as Error, requestId), { status: 500 })
+  }
+}
+
+/**
+ * Helper function to determine user role from Clerk session claims
+ * RPK-MODAL: Role-based access control for break-even status
+ * 
+ * @param sessionClaims - Clerk session claims object
+ * @returns User role (owner, producer, kasir)
+ */
+function determineUserRole(sessionClaims: Record<string, unknown> | null): 'owner' | 'producer' | 'kasir' {
+  // Default to producer role for safety (masked customer data)
+  if (!sessionClaims || typeof sessionClaims !== 'object') {
+    return 'producer'
+  }
+
+  // Extract role from custom session claims
+  // This should match the role structure from your Clerk configuration
+  const metadata = sessionClaims.metadata as Record<string, unknown> | undefined
+  const role = metadata?.role || sessionClaims.role || 'producer'
+
+  // Validate and normalize role
+  switch (String(role).toLowerCase()) {
+    case 'owner':
+      return 'owner'
+    case 'kasir':
+      return 'kasir'
+    case 'producer':
+    default:
+      return 'producer'
   }
 }

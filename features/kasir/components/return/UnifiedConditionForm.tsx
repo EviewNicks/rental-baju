@@ -15,6 +15,7 @@ import type {
   ConditionCategory,
 } from '../../types'
 import { kasirLogger } from '../../lib/logger'
+import { extractSizeInfo } from '../../lib/utils/kondisiAwalParser'
 
 /**
  * UnifiedConditionForm Component
@@ -75,6 +76,21 @@ export function UnifiedConditionForm({
     )
     const remaining = currentCondition.totalQuantity - totalReturned
     const hasValidConditions = currentCondition.conditions.every((c) => {
+      // Special validation for HILANG category
+      // ✅ FIX: Allow non-zero jumlahKembali for HILANG (frontend sends quantity, backend sets jumlahKembali=0)
+      if (c.conditionCategory === 'HILANG') {
+        return (
+          c.kondisiAkhir &&
+          c.kondisiAkhir.length >= 4 &&
+          c.kondisiAkhir.length <= 500 &&
+          c.jumlahKembali !== undefined &&
+          c.jumlahKembali > 0 &&  // ✅ Changed: Allow positive quantity for HILANG
+          c.useManualPricing &&
+          c.manualPrice !== undefined &&
+          c.manualPrice >= 0
+        )
+      }
+
       const basicValidation =
         c.kondisiAkhir &&
         c.kondisiAkhir.length >= 4 &&
@@ -101,7 +117,8 @@ export function UnifiedConditionForm({
     if (totalReturned > currentCondition.totalQuantity) {
       error = `Total ${totalReturned} melebihi maksimal ${currentCondition.totalQuantity} unit`
     } else if (totalReturned === 0) {
-      error = 'Minimal harus mengembalikan 1 unit atau tandai sebagai hilang'
+      // ✅ FIX: With new HILANG logic, totalReturned should never be 0 (HILANG now requires quantity > 0)
+      error = 'Minimal harus mengembalikan 1 unit'
     } else if (!hasValidConditions) {
       // Check specific validation issues with enhanced BAIK category validation
       const invalidConditions = currentCondition.conditions.filter((c) => {
@@ -198,6 +215,10 @@ export function UnifiedConditionForm({
     const firstCondition = currentCondition.conditions[0]
     if (!firstCondition?.kondisiAkhir || !firstCondition?.jumlahKembali) return false // Invalid first condition
 
+    // ✅ FIX: Allow suggestion for HILANG when there's remaining quantity
+    // Example: 2 units total, 1 HILANG, 1 BAIK - should show "Add Condition" button
+    // Removed: if (firstCondition.conditionCategory === 'HILANG') return false
+
     const shouldShow =
       validation.remaining > 0 && validation.remaining < currentCondition.totalQuantity
 
@@ -210,6 +231,7 @@ export function UnifiedConditionForm({
       totalQuantity: currentCondition.totalQuantity,
       shouldShow,
       firstConditionValid: !!(firstCondition?.kondisiAkhir && firstCondition?.jumlahKembali),
+      firstConditionCategory: firstCondition?.conditionCategory,
     })
 
     return shouldShow
@@ -348,6 +370,9 @@ export function UnifiedConditionForm({
     return 'border-gray-200'
   }
 
+  // Extract size information from kondisiAwal
+  const sizeInfo = useMemo(() => extractSizeInfo(item), [item])
+
   return (
     <Card className={`transition-all duration-200 ${getCardStyling()}`}>
       <CardHeader>
@@ -359,6 +384,11 @@ export function UnifiedConditionForm({
             <div>
               <CardTitle className="text-lg flex items-center gap-2">
                 {item.produk?.name || 'Unknown Product'}
+                {sizeInfo.hasSizeInfo && (
+                  <Badge variant="outline" className="bg-indigo-100 text-indigo-800 border-indigo-200">
+                    {sizeInfo.size} | {sizeInfo.ageCategory}
+                  </Badge>
+                )}
                 <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-200">
                   {item.jumlahDiambil} unit
                 </Badge>
@@ -371,11 +401,6 @@ export function UnifiedConditionForm({
                   </Badge>
                 )}
               </CardTitle>
-              <p className="text-sm text-gray-600 mt-1">
-                {currentCondition.conditions.length === 1
-                  ? 'Kondisi tunggal untuk semua unit'
-                  : `Kondisi berbeda untuk ${currentCondition.conditions.length} kelompok unit`}
-              </p>
             </div>
           </div>
 
@@ -408,38 +433,6 @@ export function UnifiedConditionForm({
           </div>
         </div>
 
-        {/* Smart Suggestion Alert */}
-        {shouldShowSuggestion && !showSuggestion && validation.remaining > 0 && (
-          <Alert className="mt-4 border-blue-200 bg-blue-50">
-            <Lightbulb className="h-4 w-4" />
-            <AlertDescription>
-              <div className="flex items-center justify-between">
-                <div>
-                  <strong>Saran:</strong> Masih ada {validation.remaining} unit yang belum
-                  dialokasikan. Apakah kondisinya berbeda dengan yang sudah diisi?
-                </div>
-                <div className="flex gap-2 ml-4">
-                  <Button
-                    size="sm"
-                    onClick={handleAcceptSuggestion}
-                    disabled={disabled}
-                    className="bg-blue-600 hover:bg-blue-700 text-white"
-                  >
-                    Tambah Kondisi
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={handleDismissSuggestion}
-                    disabled={disabled}
-                  >
-                    Nanti
-                  </Button>
-                </div>
-              </div>
-            </AlertDescription>
-          </Alert>
-        )}
 
         {/* Validation Error Display - Only show when touched */}
         {validation.error && touched && (
@@ -487,7 +480,7 @@ export function UnifiedConditionForm({
           ))}
 
           {/* Add Condition Button - Progressive Disclosure */}
-          {!disabled && !isLoading && validation.remaining > 0 && (
+          {!disabled && !isLoading && validation.remaining > 0 && shouldShowSuggestion && (
             <div className="flex justify-center pt-4">
               <Button
                 variant="outline"

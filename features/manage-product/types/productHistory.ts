@@ -30,6 +30,81 @@ export interface ProductHistoryItem {
   status: string              // Transaction status
   itemQuantity: number        // Number of items rented
   duration: number           // Rental duration in days
+  
+  // NEW: Activity Timeline (Optional for backward compatibility)
+  activities?: ActivityInfo[]
+  
+  // NEW: Product Size Information (Optional for backward compatibility)
+  sizeInfo?: SizeInfo | null
+  
+  // NEW: Detailed Penalty Breakdown (Requirements 4.2, 4.3)
+  penalty?: {
+    total: number              // Total penalty amount
+    late: number               // Late penalty (flat 20k per item)
+    condition: number          // Condition-based penalties
+    breakdown: Array<{         // Per-condition breakdown
+      kondisiAkhir: string     // Condition: 'kotor', 'rusak', 'hilang'
+      jumlahKembali: number    // Quantity returned in this condition
+      penaltyAmount: number    // Penalty for this condition
+    }>
+  }
+}
+
+// NEW: Activity Information from AktivitasTransaksi
+export interface ActivityInfo {
+  id: string
+  type: string                // 'dibuat', 'dibatalkan', 'dikembalikan', 'terlambat', 'diperbarui'
+  typeLabel: string           // Human-readable Indonesian label
+  description: string         // Activity description
+  createdAt: Date | string    // Activity timestamp
+  createdBy: string           // User who created the activity
+  metadata?: ActivityMetadata // Role-filtered metadata
+}
+
+// NEW: Activity Metadata (role-filtered based on permissions)
+export interface ActivityMetadata {
+  // Common metadata (all roles)
+  itemsCount?: number
+  totalAmount?: string
+  
+  // Kasir information (all roles)
+  kasirId?: string
+  kasirName?: string
+  
+  // Status change metadata (all roles)
+  previousStatus?: string
+  newStatus?: string
+  reason?: string
+  
+  // Stock and refund information (all roles)
+  stockRestored?: boolean
+  needsRefund?: boolean
+  
+  // Pickup/Return quantities (all roles)
+  jumlahDiambil?: number
+  jumlahKembali?: number
+  
+  // Penalty information (all roles)
+  penaltyAmount?: number
+  kondisiAkhir?: string
+  
+  // Performance metrics (owner only)
+  transactionDuration?: number
+  optimizedSystem?: boolean
+  sizeAware?: boolean
+  
+  // Customer data (owner only - filtered for producer/kasir)
+  customerName?: string
+  customerContact?: string
+}
+
+// NEW: Product Size Information parsed from kondisiAwal
+export interface SizeInfo {
+  productSizeId: string       // UUID of ProductSize
+  size: string                // 'XS', 'S', 'M', 'L', 'XL', 'XXL', 'UNIVERSAL'
+  ageCategory: string         // 'ADULT', 'CHILD', 'UNIVERSAL'
+  condition?: string          // Optional condition notes
+  displayText: string         // Pre-formatted: "Size: M (ADULT)"
 }
 
 // API Response Structure
@@ -134,6 +209,20 @@ export interface ProductHistoryRawResult {
     penaltyAmount: number
     modalAwalUsed?: number
   }>
+  // NEW: Size information from kondisiAwal field
+  kondisiAwal?: string | null
+  // NEW: Activity data from AktivitasTransaksi join
+  activities?: RawActivityData[]
+}
+
+// NEW: Raw Activity Data from database (before transformation)
+export interface RawActivityData {
+  id: string
+  tipe: string                // Activity type from database
+  deskripsi: string           // Activity description
+  data: Record<string, unknown> | null  // JSON metadata
+  createdBy: string           // User who created activity
+  createdAt: Date             // Activity timestamp
 }
 
 // Type Guards

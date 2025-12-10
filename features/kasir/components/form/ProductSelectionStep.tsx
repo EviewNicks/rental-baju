@@ -88,22 +88,9 @@ export function ProductSelectionStep({
     }
 
     return productsResponse.data.map((apiProduct): Product => {
-      // 🔧 CRITICAL FIX: Enhanced size fallback logic for cart display
-      // Priority: 1) API size/color fields → 2) First size from sizes array → 3) "Unknown"
-      let size = apiProduct.size || 'Unknown'
+      // Simplified mapping - API now handles all size logic with Enhanced ProductSize
+      const size = apiProduct.size || 'Unknown'
       const color = apiProduct.color?.name || 'Unknown'
-
-      // If product has sizes array but no legacy size/color, use first size as fallback
-      if (
-        (!apiProduct.size || !apiProduct.color) &&
-        apiProduct.sizes &&
-        apiProduct.sizes.length > 0
-      ) {
-        const firstSize = apiProduct.sizes[0]
-        if (!apiProduct.size && firstSize.size) {
-          size = firstSize.size
-        }
-      }
 
       return {
         id: apiProduct.id,

@@ -31,6 +31,13 @@ import type {
   ProductAvailabilityListResponse,
   ProductAvailabilityQueryParams,
 
+  // Kasir types
+  CreateKasirRequest,
+  UpdateKasirRequest,
+  KasirResponse,
+  KasirListResponse,
+  KasirQueryParams,
+
   // API wrapper types
   ApiResponse,
 } from './types'
@@ -796,6 +803,47 @@ export class KasirApi {
       body: JSON.stringify(data),
     })
   }
+
+  // Kasir Management Operations
+  static async createKasir(data: CreateKasirRequest): Promise<KasirResponse> {
+    return apiRequest<KasirResponse>('/kasir', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  }
+
+  static async getKasirById(id: string): Promise<KasirResponse> {
+    return apiRequest<KasirResponse>(`/kasir/${id}`)
+  }
+
+  static async getKasirList(params: Partial<KasirQueryParams> = {}): Promise<KasirListResponse> {
+    // Set default values for required fields
+    const queryParams = {
+      page: 1,
+      limit: 20,
+      ...params
+    }
+    const queryString = buildQueryString(queryParams)
+    const endpoint = queryString ? `/kasir?${queryString}` : '/kasir?page=1&limit=20'
+    return apiRequest<KasirListResponse>(endpoint)
+  }
+
+  static async updateKasir(id: string, data: UpdateKasirRequest): Promise<KasirResponse> {
+    return apiRequest<KasirResponse>(`/kasir/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    })
+  }
+
+  static async deleteKasir(id: string): Promise<void> {
+    return apiRequest<void>(`/kasir/${id}`, {
+      method: 'DELETE',
+    })
+  }
+
+  static async getKasirForSelection(): Promise<Array<{ id: string; nama: string; isActive: boolean }>> {
+    return apiRequest<Array<{ id: string; nama: string; isActive: boolean }>>('/kasir/selection')
+  }
 }
 
 // Export default instance for convenience
@@ -926,5 +974,16 @@ export const kasirApi = {
     create: (data: CreatePembayaranRequest) => KasirApi.createPembayaran(data),
     update: (id: string, data: Partial<Omit<CreatePembayaranRequest, 'transaksiId'>>) =>
       KasirApi.updatePembayaran(id, data),
+  },
+
+  // Kasir Management shortcuts
+  kasir: {
+    create: (data: CreateKasirRequest) => KasirApi.createKasir(data),
+    getById: (id: string) => KasirApi.getKasirById(id),
+    getAll: (params?: Partial<KasirQueryParams>) => KasirApi.getKasirList(params),
+    update: (id: string, data: UpdateKasirRequest) => KasirApi.updateKasir(id, data),
+    delete: (id: string) => KasirApi.deleteKasir(id),
+    search: (query: string) => KasirApi.getKasirList({ search: query, page: 1, limit: 10 }),
+    getForSelection: () => KasirApi.getKasirForSelection(),
   },
 }

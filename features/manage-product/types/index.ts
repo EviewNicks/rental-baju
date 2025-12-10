@@ -17,8 +17,7 @@ export interface BaseProduct {
   modalAwal: any // Prisma Decimal (server-side only)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   currentPrice: any // Prisma Decimal (server-side only)
-  quantity: number
-  rentedStock: number
+  // NOTE: quantity and rentedStock fields removed - now using Enhanced ProductSize fields
   // Material Management fields - RPK-45 (NULLABLE untuk backward compatibility)
   materialId?: string
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -32,6 +31,24 @@ export interface BaseProduct {
   createdAt: Date
   updatedAt: Date
   createdBy: string
+  // Enhanced inventory data (optional - from aggregation service)
+  sizeDetails?: Array<{
+    id: string
+    ageCategory: 'ADULT' | 'CHILD' | 'UNIVERSAL'
+    size: string
+    originalQuantity: number
+    availableQuantity: number
+    rentedQuantity: number
+    utilizationRate: number
+    isAvailable: boolean
+  }>
+  inventoryStatus?: {
+    totalOriginal: number
+    totalAvailable: number
+    totalRented: number
+    utilizationRate: number
+    isHealthy: boolean
+  }
 }
 
 export interface BaseCategory {
@@ -54,8 +71,7 @@ export interface ClientProduct {
   categoryId: string
   modalAwal: number
   currentPrice: number
-  quantity: number
-  rentedStock: number
+  // NOTE: quantity and rentedStock fields removed - now using Enhanced ProductSize fields
   // Material Management fields - RPK-45 (client-safe numbers)
   materialId?: string
   materialCost?: number
@@ -70,6 +86,8 @@ export interface ClientProduct {
   category: ClientCategory
   material?: ClientMaterial
   sizes: ClientProductSize[]
+  // RPK-MODAL: Break-even status (optional, only when includeBreakEven=true)
+  breakEvenStatus?: BreakEvenStatus
 }
 
 export interface ClientCategory {
@@ -119,7 +137,12 @@ export interface BaseProductSize {
   productId: string
   ageCategory: AgeCategory
   size: SizeEnum
-  quantity: number
+  quantity: number // Legacy field - keep for backward compatibility
+  // Enhanced ProductSize fields
+  originalQuantity: number
+  rentedQuantity: number
+  lostQuantity?: number // Lost items tracking
+  availableQuantity: number
   isActive: boolean
   createdAt: Date
   updatedAt: Date
@@ -131,7 +154,12 @@ export interface ClientProductSize {
   productId: string
   ageCategory: AgeCategory
   size: SizeEnum
-  quantity: number
+  quantity: number // Legacy field - keep for backward compatibility
+  // Enhanced ProductSize fields
+  originalQuantity: number
+  rentedQuantity: number
+  lostQuantity?: number // Lost items tracking
+  availableQuantity: number
   isActive: boolean
   createdAt: Date | string
   updatedAt: Date | string
@@ -148,6 +176,8 @@ export interface Product extends BaseProduct {
   category: Category
   material?: Material
   sizes: ProductSize[]
+  // RPK-MODAL: Break-even status (optional, only when includeBreakEven=true)
+  breakEvenStatus?: BreakEvenStatus
 }
 
 export interface Category extends BaseCategory {
@@ -175,7 +205,20 @@ export type AgeCategory = 'ADULT' | 'CHILD' | 'UNIVERSAL'
 export type SizeEnum = 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL' | 'UNIVERSAL'
 
 // Category Types for Dynamic Form System
-export type CategoryType = 'clothing' | 'accessories_age_based' | 'accessories_universal'
+export type CategoryType = 'clothing' | 'accessories_age_based' | 'accessories_universal' | 'universal_fallback'
+
+/**
+ * Break-Even Status Types
+ * RPK-MODAL: Product Break-Even Status Badge Feature
+ */
+export interface BreakEvenStatus {
+  modalAwal: number
+  totalRevenue: number
+  isBreakEven: boolean
+  progressPercentage: number
+  transactionCount: number
+  profit?: number // Only if isBreakEven = true
+}
 
 // Filter types untuk UI components
 export type CategoryFilterValue = string | undefined
@@ -270,7 +313,7 @@ export interface UpdateCategoryRequest {
 export interface CategoryFormData {
   name: string
   color: string
-  type?: CategoryType
+  type: CategoryType
 }
 
 export type CategoryModalMode = 'add' | 'edit' | 'view'
@@ -298,7 +341,12 @@ export interface ProductFormData {
 export interface CreateProductSizeRequest {
   ageCategory: AgeCategory
   size: SizeEnum
-  quantity: number
+  quantity: number // Legacy field
+  // Enhanced ProductSize fields
+  originalQuantity?: number
+  rentedQuantity?: number
+  lostQuantity?: number // Lost items tracking
+  availableQuantity?: number
   isActive?: boolean
 }
 
@@ -306,7 +354,12 @@ export interface UpdateProductSizeRequest {
   id?: string
   ageCategory: AgeCategory
   size: SizeEnum
-  quantity: number
+  quantity: number // Legacy field
+  // Enhanced ProductSize fields
+  originalQuantity?: number
+  rentedQuantity?: number
+  lostQuantity?: number // Lost items tracking
+  availableQuantity?: number
   isActive?: boolean
 }
 
@@ -354,8 +407,12 @@ export interface AggregatedSizeView {
     adult?: number
     child?: number
     universal?: number
+    total?: number
   }
   hasMultipleCategories: boolean
+  rentedQuantity?: number
+  availableQuantity?: number
+  utilizationRate?: number
 }
 
 /**
@@ -431,6 +488,12 @@ export interface AggregationServiceResponse<T> {
     calculatedAt: Date
     fromCache: boolean
     calculationTimeMs: number
+    performance?: 'excellent' | 'good' | 'needs_attention' | 'critical'
+    cacheStats?: {
+      hitRatio: number
+      totalEntries: number
+      memoryUsage: string
+    }
   }
 }
 

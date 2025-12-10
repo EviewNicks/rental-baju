@@ -2,13 +2,20 @@
  * Simplified Unified Return Service - Option 2: Balanced Approach
  *
  * Transformation from 1,396 lines to ~300 lines using pre-validation pattern
- * Performance optimization: 20-32s � <3s processing time
+ * Performance optimization: 20-32s → <3s processing time
  *
  * Key Changes:
  * - Pre-validation pattern (extract validation outside transaction)
+ * - Atomic stock updates INSIDE transaction (critical fix for data consistency)
  * - Minimal transaction scope (only critical operations)
  * - Simplified error handling and logging
  * - All business logic preserved
+ *
+ * CRITICAL FIX (2024-12-04):
+ * - Moved stock updates INSIDE transaction to ensure atomicity
+ * - Prevents data inconsistency between return records and inventory
+ * - Aligns with transaction service pattern for consistency
+ * - Eliminates race conditions and silent failures
  */
 
 import { PrismaClient, Prisma } from '@prisma/client'
@@ -24,6 +31,7 @@ import { createAuditService, AuditService } from './auditService'
 import { ConditionCategory } from '../types'
 import { kasirLogger } from '../lib/logger'
 import { parseKondisiAwal } from '../lib/utils/kondisiAwalParser'
+import { createInventoryService } from './inventoryService'
 
 // Unified return request interface - treats all returns as multi-condition
 interface UnifiedReturnRequest {
@@ -80,6 +88,91 @@ export interface ReturnValidationError {
   field: string
   message: string
   code: string
+}
+
+// Unified Activity Data Interface
+interface UnifiedActivityData {
+  summary: {
+    totalItems: number
+    totalPenalty: number
+    totalLatePenalty: number
+    totalConditionPenalty: number
+    isLateReturn: boolean
+    lateDays: number
+    returnDate: string
+  }
+  items: Array<{
+    itemId: string
+    productCode: string
+    productName: string
+    sizeInfo: string
+    totalItemPenalty: number
+    conditions: Array<{
+      kondisiAkhir: string
+      jumlahKembali: number
+      conditionCategory: ConditionCategory
+      penaltyAmount: number
+      manualPrice?: number
+      useManualPricing: boolean
+    }>
+  }>
+  metadata: {
+    processingMode: 'unified'
+    processingTime: number
+    statusChange: {
+      from: string
+      to: string
+    }
+  }
+}
+
+// Penalty Payment Data Interface
+interface PenaltyPaymentData {
+  transaksiId: string
+  jumlah: number
+  metode: 'penalty'
+  catatan: string
+  penaltyBreakdown: {
+    latePenalty: number
+    conditionPenalty: number
+    itemPenalties: Array<{
+      itemId: string
+      productName: string
+      sizeInfo: string
+      totalPenalty: number
+      latePenalty: number
+      conditionPenalty: number
+      conditions: Array<{
+        kondisiAkhir: string
+        jumlahKembali: number
+        penaltyAmount: number
+      }>
+    }>
+  }
+  createdBy: string
+}
+
+// Lost Item Resolution Interfaces
+interface LostItemResolutionRequest {
+  transaksiId: string
+  returnRecordId: string // TransaksiItemReturn.id
+  resolutionType: 'customer_replaced' | 'deposit_kept'
+  kasirId: string // ✅ NEW: Selected kasir for expense tracking
+  notes?: string
+}
+
+interface LostItemResolutionResult {
+  success: boolean
+  resolutionType: string
+  refundAmount?: number // Only for customer_replaced
+  expenseCreated?: boolean // ✅ NEW: Indicates if expense was recorded
+  stockUpdates: {
+    sizeId: string
+    rentedQuantity: number
+    availableQuantity: number
+    lostQuantity: number
+  }
+  message: string
 }
 
 export class UnifiedReturnService {
@@ -148,7 +241,14 @@ export class UnifiedReturnService {
         productIds.length > 0
           ? this.prisma.product.findMany({
               where: { id: { in: productIds } },
-              select: { id: true, name: true, rentedStock: true },
+              include: {
+                sizes: {
+                  select: {
+                    originalQuantity: true,
+                    rentedQuantity: true,
+                  },
+                },
+              },
             })
           : Promise.resolve([]),
         productSizeIds.length > 0
@@ -159,8 +259,10 @@ export class UnifiedReturnService {
           : Promise.resolve([]),
       ])
 
-      const productMap = new Map(products.map((p) => [p.id, p]))
-      const sizeMap = new Map(productSizes.map((ps) => [ps.id, ps]))
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const productMap = new Map(products.map((p: any) => [p.id, p]))
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const sizeMap = new Map(productSizes.map((ps: any) => [ps.id, ps]))
 
       // Check transaction status eligibility
       if (
@@ -215,7 +317,7 @@ export class UnifiedReturnService {
           }
         }
 
-        // Validate each condition (simplified)
+        // ✅ FIX: Simplified validation - consistent for all categories
         let totalReturnQuantity = 0
         for (const condition of returnItem.conditions) {
           if (!condition.kondisiAkhir || condition.kondisiAkhir.trim() === '') {
@@ -227,18 +329,12 @@ export class UnifiedReturnService {
             continue
           }
 
-          const isLostItem = isLostItemCondition(condition.kondisiAkhir)
-          if (isLostItem && condition.jumlahKembali !== 0) {
+          // All categories require quantity > 0 (including HILANG)
+          if (condition.jumlahKembali <= 0) {
             errors.push({
               field: `items[${returnItem.itemId}].conditions.jumlahKembali`,
-              message: 'Barang hilang harus memiliki jumlah kembali = 0',
-              code: 'LOST_ITEM_INVALID_QUANTITY',
-            })
-          } else if (!isLostItem && condition.jumlahKembali <= 0) {
-            errors.push({
-              field: `items[${returnItem.itemId}].conditions.jumlahKembali`,
-              message: 'Barang yang dikembalikan harus memiliki jumlah kembali > 0',
-              code: 'RETURNED_ITEM_INVALID_QUANTITY',
+              message: 'Jumlah harus lebih dari 0',
+              code: 'INVALID_QUANTITY',
             })
           }
 
@@ -274,8 +370,10 @@ export class UnifiedReturnService {
       return {
         isValid: true,
         transaction: { transaction },
-        products: productMap,
-        productSizes: sizeMap,
+        //eslint-disable-next-line @typescript-eslint/no-explicit-any
+        products: productMap as Map<string, any>,
+        //eslint-disable-next-line @typescript-eslint/no-explicit-any
+        productSizes: sizeMap as Map<string, any>,
       }
     } catch (error) {
       kasirLogger.returnProcess.error('validateReturnRequest', 'Optimized validation failed', {
@@ -326,10 +424,16 @@ export class UnifiedReturnService {
         ),
       )
 
+      // ✅ FIX: HILANG items should use Enhanced Calculator with manual pricing
+      // Removed hasHilangConditions check - HILANG should go through enhanced path
+      // This ensures manualPrice (user input) is used instead of modalAwal (product cost)
+      
+      // Use enhanced calculation for all manual pricing (including HILANG)
       if (hasManualPricing) {
         // Enhanced penalty calculation for manual pricing
         const itemsForEnhancedCalculation = request.items.flatMap((returnItem) => {
-          const transactionItem = transaction.items.find((item) => item.id === returnItem.itemId)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const transactionItem = transaction.items.find((item: any) => item.id === returnItem.itemId)
           if (!transactionItem) {
             throw new Error(`Item dengan ID ${returnItem.itemId} tidak ditemukan`)
           }
@@ -343,7 +447,10 @@ export class UnifiedReturnService {
             manualPrice: condition.manualPrice || 0,
             quantity: condition.jumlahKembali,
             useManualPricing: condition.useManualPricing || false,
-            modalAwal: condition.modalAwal || Number(transactionItem.produk.modalAwal),
+            modalAwal:
+              condition.modalAwal ||
+              condition.manualPrice ||
+              Number(transactionItem.produk.modalAwal),
           }))
         })
 
@@ -355,9 +462,13 @@ export class UnifiedReturnService {
           },
         )
 
+        // ✅ FIX: Use first item's lateDays instead of summing across items
+        // All items in a transaction have the same expected/actual return dates,
+        // so they all have the same late days. Summing them gives wrong total.
+        // Example: 2 items × 9 days = 18 days ❌ Should be just 9 days ✅
         return {
           totalPenalty: enhancedResult.totalPenalty,
-          totalLateDays: enhancedResult.itemPenalties.reduce((sum, p) => sum + p.lateDays, 0),
+          totalLateDays: enhancedResult.itemPenalties[0]?.lateDays || 0,  // ✅ Use first item's late days
           itemPenalties: enhancedResult.itemPenalties.map((penalty) => ({
             itemId: penalty.itemId,
             productName: penalty.productName,
@@ -380,7 +491,8 @@ export class UnifiedReturnService {
       } else {
         // Standard penalty calculation
         const itemsForCalculation = request.items.flatMap((returnItem) => {
-          const transactionItem = transaction.items.find((item) => item.id === returnItem.itemId)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const transactionItem = transaction.items.find((item: any) => item.id === returnItem.itemId)
           if (!transactionItem) {
             throw new Error(`Item dengan ID ${returnItem.itemId} tidak ditemukan`)
           }
@@ -528,51 +640,46 @@ export class UnifiedReturnService {
       // PERFORMANCE OPTIMIZATION: Stock validation integrated into main validation
       // Removed redundant preValidateStockAvailability for faster processing
 
+      // PERFORMANCE OPTIMIZATION: Prepare collections before transaction
+      //eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const returnRecords: any[] = []
+      //eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const itemUpdates: any[] = []
+      const stockUpdates: Map<string, number> = new Map()
+      const sizeUpdates: Map<string, number> = new Map()
+
       // PERFORMANCE OPTIMIZATION: Batch operations in transaction
       const transactionStart = Date.now()
 
       const result = await this.prisma.$transaction(
-        async (tx) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        async (tx: any) => {
           const processedItems: UnifiedReturnProcessingResult['processedItems'] = []
 
-          // PERFORMANCE: Prepare all operations before executing
-          //eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const returnRecords: any[] = []
-          //eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const itemUpdates: any[] = []
-          const stockUpdates: Map<string, number> = new Map()
-          const sizeUpdates: Map<string, number> = new Map()
+          // PERFORMANCE: Collections already defined outside transaction
 
-          // Helper function to calculate penalty distribution
-          const calculateConditionPenalty = (
+          // ✅ CRITICAL FIX: Simplified penalty calculation - consistent for all categories
+          // All categories use jumlahKembali (user input quantity)
+          const getConditionPenalty = (
             //eslint-disable-next-line @typescript-eslint/no-explicit-any
             condition: any,
-            basePenalty: number,
-              //eslint-disable-next-line @typescript-eslint/no-explicit-any
-            allConditions: any[],
           ) => {
-            if (condition.conditionCategory === 'BAIK') return 0
-
-            const nonBaikConditions = allConditions.filter((c) => c.conditionCategory !== 'BAIK')
-            const totalManualPrice = nonBaikConditions.reduce(
-              (sum, c) => sum + (c.manualPrice || 0),
-              0,
-            )
-
-            if (totalManualPrice > 0) {
-              const conditionWeight = condition.manualPrice || 0
-              return Math.round((conditionWeight / totalManualPrice) * basePenalty)
+            // BAIK: No penalty
+            if (condition.conditionCategory === 'BAIK') {
+              return 0
             }
-
-            return nonBaikConditions.length > 0
-              ? Math.round(basePenalty / nonBaikConditions.length)
-              : basePenalty
+            
+            // All other categories (including HILANG): manualPrice × jumlahKembali
+            const manualPrice = condition.manualPrice || 0
+            const quantity = condition.jumlahKembali || 0
+            return manualPrice * quantity
           }
 
           // Calculate all operations first
           for (const item of request.items) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const transactionItem = validation.transaction!.transaction.items.find(
-              (ti) => ti.id === item.itemId,
+              (ti: any) => ti.id === item.itemId,
             )
             if (!transactionItem) {
               throw new Error(`Transaction item ${item.itemId} not found`)
@@ -585,20 +692,13 @@ export class UnifiedReturnService {
               penaltyAmount: number
             }> = []
 
-            // Prepare return records
-            const totalItemPenalty =
-              penaltyCalculation.itemPenalties.find((p) => p.itemId.startsWith(item.itemId))
-                ?.totalPenalty || 0
-
+            // ✅ CRITICAL FIX: Simplified penalty calculation
             for (const condition of item.conditions) {
-              const conditionPenalty = calculateConditionPenalty(
-                condition,
-                totalItemPenalty,
-                item.conditions,
-              )
+              const conditionPenalty = getConditionPenalty(condition)
               const hasManualPricing =
                 'conditionCategory' in condition && 'manualPrice' in condition
 
+              // FIXED: Store manualPrice in modalAwalUsed for proper display
               returnRecords.push({
                 transaksiItemId: item.itemId,
                 kondisiAkhir: condition.kondisiAkhir,
@@ -607,7 +707,10 @@ export class UnifiedReturnService {
                 penaltyAmount: conditionPenalty,
                 manualPrice: hasManualPricing ? new Decimal(condition.manualPrice || 0) : null,
                 useManualPricing: hasManualPricing ? condition.useManualPricing || false : false,
-                modalAwalUsed: condition.modalAwal ? new Decimal(condition.modalAwal) : null,
+                // FIXED: Store manualPrice in modalAwalUsed so it can be displayed correctly
+                modalAwalUsed: hasManualPricing && condition.manualPrice 
+                  ? new Decimal(condition.manualPrice) 
+                  : (condition.modalAwal ? new Decimal(condition.modalAwal) : null),
                 createdBy: this.userId,
               })
 
@@ -627,16 +730,27 @@ export class UnifiedReturnService {
               conditionCount: item.conditions.length,
             })
 
-            // Prepare stock updates
-            const totalReturned = item.conditions.reduce((sum, c) => sum + c.jumlahKembali, 0)
-            const currentStock = stockUpdates.get(transactionItem.produkId) || 0
-            stockUpdates.set(transactionItem.produkId, currentStock + totalReturned)
+            // Prepare stock updates (SKIP HILANG items)
+            // ✅ FIX: Only count non-HILANG items for stock update
+            // HILANG items should NOT update stock until resolution
+            const nonHilangReturned = item.conditions
+              .filter(c => c.conditionCategory !== 'HILANG')
+              .reduce((sum, c) => sum + c.jumlahKembali, 0)
+            
+            if (nonHilangReturned > 0) {
+              const currentStock = stockUpdates.get(transactionItem.produkId) || 0
+              stockUpdates.set(transactionItem.produkId, currentStock + nonHilangReturned)
+            }
 
-            // Prepare size updates if applicable
+            // Prepare size updates if applicable (SKIP HILANG items)
             const parsedKondisi = parseKondisiAwal(transactionItem.kondisiAwal)
             if (parsedKondisi?.productSizeId && !parsedKondisi.isLegacyFormat) {
-              const currentSizeStock = sizeUpdates.get(parsedKondisi.productSizeId) || 0
-              sizeUpdates.set(parsedKondisi.productSizeId, currentSizeStock + totalReturned)
+              // ✅ FIX: Only count non-HILANG items for stock update
+              // HILANG items should NOT update stock until resolution
+              if (nonHilangReturned > 0) {
+                const currentSizeStock = sizeUpdates.get(parsedKondisi.productSizeId) || 0
+                sizeUpdates.set(parsedKondisi.productSizeId, currentSizeStock + nonHilangReturned)
+              }
             }
 
             processedItems.push({
@@ -649,7 +763,7 @@ export class UnifiedReturnService {
             })
           }
 
-          // PERFORMANCE: Execute batch operations in parallel
+          // PERFORMANCE: Execute batch operations in parallel (inside transaction)
           await Promise.all([
             // 1. Create all return records
             returnRecords.length > 0
@@ -679,32 +793,81 @@ export class UnifiedReturnService {
                 }),
               ),
             ),
-
-            // 3. Update product stocks in parallel
-            Promise.all(
-              Array.from(stockUpdates.entries()).map(([productId, quantity]) =>
-                tx.product.update({
-                  where: { id: productId },
-                  data: { rentedStock: { decrement: quantity } },
-                }),
-              ),
-            ),
-
-            // 4. Update product sizes in parallel
-            Promise.all(
-              Array.from(sizeUpdates.entries()).map(([sizeId, quantity]) =>
-                tx.productSize.update({
-                  where: { id: sizeId },
-                  data: { quantity: { increment: quantity } },
-                }),
-              ),
-            ),
           ])
+
+          // ✅ CRITICAL FIX: Move stock updates INSIDE transaction for atomicity
+          // ✅ PERFORMANCE FIX: Use transaction-scoped inventory service to avoid connection pool exhaustion
+          // This ensures that if stock update fails, the entire return is rolled back
+          // Prevents data inconsistency between return records and inventory
+          if (sizeUpdates.size > 0) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const txInventoryService = createInventoryService(tx as any as PrismaClient)
+            
+            await Promise.all(
+              Array.from(sizeUpdates.entries()).map(async ([sizeId, quantity]) => {
+                try {
+                  // Update stock atomically within transaction
+                  // rentedQuantity--, availableQuantity++
+                  await txInventoryService.updateStockOnReturn(sizeId, quantity)
+                } catch (error) {
+                  // Throw error to trigger transaction rollback
+                  throw new Error(
+                    `Stock update failed for size ${sizeId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+                  )
+                }
+              }),
+            )
+          }
+
+          // ✅ NEW: Create penalty payment record (Task 3.2: Integrate payment creation)
+          // This ensures penalty is tracked in dana kasir system
+          // Placed inside transaction for atomicity - if this fails, entire return rolls back
+          if (penaltyCalculation.totalPenalty > 0) {
+            // Build temporary result object for penalty payment data
+            const tempResult: UnifiedReturnProcessingResult = {
+              success: true,
+              transactionId: transaksiId,
+              returnedAt: returnDate,
+              penalty: penaltyCalculation.totalPenalty,
+              processedItems,
+              processingMode: 'unified' as const,
+            }
+
+            const penaltyPaymentData = this.buildPenaltyPaymentData(
+              transaksiId,
+              request,
+              tempResult,
+              penaltyCalculation,
+              validation.transaction!.transaction,
+            )
+
+            await tx.pembayaran.create({
+              data: {
+                transaksiId: penaltyPaymentData.transaksiId,
+                jumlah: new Decimal(penaltyPaymentData.jumlah),
+                metode: penaltyPaymentData.metode,
+                catatan: penaltyPaymentData.catatan,
+                createdBy: penaltyPaymentData.createdBy,
+                penaltyBreakdown: penaltyPaymentData.penaltyBreakdown as unknown as Prisma.InputJsonValue,
+              },
+            })
+
+            kasirLogger.returnProcess.info(
+              'processUnifiedReturn',
+              'Penalty payment record created',
+              {
+                transaksiId,
+                penaltyAmount: penaltyPaymentData.jumlah,
+                latePenalty: penaltyPaymentData.penaltyBreakdown.latePenalty,
+                conditionPenalty: penaltyPaymentData.penaltyBreakdown.conditionPenalty,
+              },
+            )
+          }
 
           const transactionDuration = Date.now() - transactionStart
           kasirLogger.returnProcess.info(
             'processUnifiedReturn',
-            'Optimized transaction completed',
+            'Optimized transaction completed with atomic stock updates and penalty payment',
             {
               transaksiId,
               duration: transactionDuration,
@@ -712,6 +875,7 @@ export class UnifiedReturnService {
               itemUpdates: itemUpdates.length,
               stockUpdates: stockUpdates.size,
               sizeUpdates: sizeUpdates.size,
+              penaltyPaymentCreated: penaltyCalculation.totalPenalty > 0,
             },
           )
 
@@ -724,7 +888,7 @@ export class UnifiedReturnService {
             processingMode: 'unified' as const,
           }
         },
-        { timeout: 15000 }, // Reduced timeout due to optimization
+        { timeout: 30000 }, // ✅ Increased timeout to accommodate stock updates inside transaction
       )
 
       const totalProcessingTime = Date.now() - startTime
@@ -735,18 +899,17 @@ export class UnifiedReturnService {
         totalPenalty: result.penalty,
       })
 
-      // PERFORMANCE OPTIMIZATION: Move post-processing to background
-      setImmediate(async () => {
-        try {
-          await this.processBackgroundActivities(transaksiId, request, result, penaltyCalculation)
-        } catch (error) {
-          kasirLogger.returnProcess.warn('processUnifiedReturn', 'Background processing failed', {
-            transaksiId,
-            error: error instanceof Error ? error.message : 'Unknown error',
-          })
-          // Don't throw - background failures shouldn't affect main processing
-        }
-      })
+      // ✅ CRITICAL FIX: Execute post-processing synchronously to ensure activity log is created
+      // before response is sent to client. This prevents race condition where activity log
+      // is created AFTER the API response, causing it to not appear in the response.
+      // Trade-off: +50-100ms response time for data consistency and immediate availability.
+      await this.processBackgroundActivities(
+        transaksiId,
+        request,
+        result,
+        penaltyCalculation,
+        validation.transaction!.transaction,
+      )
 
       return result
     } catch (error) {
@@ -770,56 +933,259 @@ export class UnifiedReturnService {
   }
 
   /**
+   * Build unified activity data with comprehensive breakdown
+   * Task 2.1: Create UnifiedActivityData builder
+   */
+  private buildUnifiedActivityData(
+    request: UnifiedReturnRequest,
+    result: UnifiedReturnProcessingResult,
+    penaltyCalculation: PenaltyCalculationResult,
+    transaction: TransaksiForValidation,
+  ): UnifiedActivityData {
+    // Calculate late penalty breakdown
+    const lateDays = penaltyCalculation.totalLateDays || 0
+    const isLateReturn = lateDays > 0
+    const flatLatePenalty = isLateReturn ? 20000 * result.processedItems.length : 0
+    const totalConditionPenalty = penaltyCalculation.totalPenalty - flatLatePenalty
+
+    // Build items array with full details
+    const items = result.processedItems.map((processedItem) => {
+      const requestItem = request.items.find((ri) => ri.itemId === processedItem.itemId)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const transactionItem = transaction.items.find((ti: any) => ti.id === processedItem.itemId)
+
+      if (!requestItem || !transactionItem) {
+        throw new Error(`Item ${processedItem.itemId} not found in request or transaction`)
+      }
+
+      // Extract size info from kondisiAwal
+      const parsedKondisi = parseKondisiAwal(transactionItem.kondisiAwal)
+      const sizeInfo = parsedKondisi.productSizeId && !parsedKondisi.isLegacyFormat
+        ? `${parsedKondisi.size} | ${parsedKondisi.ageCategory}`
+        : 'N/A'
+
+      return {
+        itemId: processedItem.itemId,
+        productCode: transactionItem.produk.code || 'N/A',
+        productName: transactionItem.produk.name,
+        sizeInfo,
+        totalItemPenalty: processedItem.penalty,
+        conditions: requestItem.conditions.map((condition, index) => ({
+          kondisiAkhir: condition.kondisiAkhir,
+          jumlahKembali: condition.jumlahKembali,
+          conditionCategory: condition.conditionCategory || ConditionCategory.BAIK,
+          // FIXED: Use manualPrice as the actual penalty amount
+          penaltyAmount: condition.useManualPricing && condition.manualPrice 
+            ? condition.manualPrice 
+            : (processedItem.conditionBreakdown?.[index]?.penaltyAmount || 0),
+          manualPrice: condition.manualPrice,
+          useManualPricing: condition.useManualPricing || false,
+        })),
+      }
+    })
+
+    // ✅ FIX: Determine correct target status based on lost items
+    const hasUnresolvedLostItems = request.items.some((item) =>
+      item.conditions.some(
+        (condition) =>
+          condition.conditionCategory === 'HILANG' ||
+          condition.kondisiAkhir.toLowerCase().includes('hilang')
+      )
+    )
+    const targetStatus = hasUnresolvedLostItems ? 'pending_resolution' : 'selesai'
+
+    return {
+      summary: {
+        totalItems: result.processedItems.length,
+        totalPenalty: penaltyCalculation.totalPenalty,
+        totalLatePenalty: flatLatePenalty,
+        totalConditionPenalty,
+        isLateReturn,
+        lateDays,
+        returnDate: result.returnedAt.toISOString(),
+      },
+      items,
+      metadata: {
+        processingMode: 'unified',
+        processingTime: 0, // Will be set by caller
+        statusChange: {
+          from: transaction.status,
+          to: targetStatus,
+        },
+      },
+    }
+  }
+
+  /**
+   * Build penalty payment data with detailed breakdown
+   * Task 3.1: Implement penalty payment builder
+   */
+  private buildPenaltyPaymentData(
+    transaksiId: string,
+    request: UnifiedReturnRequest,
+    result: UnifiedReturnProcessingResult,
+    penaltyCalculation: PenaltyCalculationResult,
+    transaction: TransaksiForValidation,
+  ): PenaltyPaymentData {
+    // Calculate late penalty breakdown
+    const lateDays = penaltyCalculation.totalLateDays || 0
+    const isLateReturn = lateDays > 0
+    const flatLatePenalty = isLateReturn ? 20000 * result.processedItems.length : 0
+    const totalConditionPenalty = penaltyCalculation.totalPenalty - flatLatePenalty
+
+    // Build item penalties array
+    const itemPenalties = result.processedItems.map((processedItem) => {
+      const requestItem = request.items.find((ri) => ri.itemId === processedItem.itemId)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const transactionItem = transaction.items.find((ti: any) => ti.id === processedItem.itemId)
+
+      if (!requestItem || !transactionItem) {
+        throw new Error(`Item ${processedItem.itemId} not found`)
+      }
+
+      // Extract size info
+      const parsedKondisi = parseKondisiAwal(transactionItem.kondisiAwal)
+      const sizeInfo = parsedKondisi.productSizeId && !parsedKondisi.isLegacyFormat
+        ? `${parsedKondisi.size} | ${parsedKondisi.ageCategory}`
+        : 'N/A'
+
+      // Calculate item-level late penalty
+      const itemLatePenalty = isLateReturn ? 20000 : 0
+      const itemConditionPenalty = processedItem.penalty - itemLatePenalty
+
+      // FIXED: Use manualPrice from request as the actual penalty
+      const conditionsWithManualPrice = (processedItem.conditionBreakdown || []).map((cb, idx) => {
+        const requestCondition = requestItem.conditions[idx]
+        const actualPenalty = requestCondition?.useManualPricing && requestCondition?.manualPrice
+          ? requestCondition.manualPrice
+          : cb.penaltyAmount
+        
+        return {
+          kondisiAkhir: cb.kondisiAkhir,
+          jumlahKembali: cb.jumlahKembali,
+          penaltyAmount: actualPenalty,
+        }
+      })
+
+      return {
+        itemId: processedItem.itemId,
+        productName: transactionItem.produk.name,
+        sizeInfo,
+        totalPenalty: processedItem.penalty,
+        latePenalty: itemLatePenalty,
+        conditionPenalty: itemConditionPenalty,
+        conditions: conditionsWithManualPrice,
+      }
+    })
+
+    return {
+      transaksiId,
+      jumlah: penaltyCalculation.totalPenalty,
+      metode: 'penalty',
+      catatan: `Penalty pengembalian: ${isLateReturn ? `Terlambat ${lateDays} hari (Rp ${flatLatePenalty.toLocaleString('id-ID')})` : 'Tepat waktu'}${totalConditionPenalty > 0 ? ` + Kondisi barang (Rp ${totalConditionPenalty.toLocaleString('id-ID')})` : ''}`,
+      penaltyBreakdown: {
+        latePenalty: flatLatePenalty,
+        conditionPenalty: totalConditionPenalty,
+        itemPenalties,
+      },
+      createdBy: this.userId,
+    }
+  }
+
+  /**
    * BACKGROUND: Process non-critical activities asynchronously
    */
   private async processBackgroundActivities(
     transaksiId: string,
     request: UnifiedReturnRequest,
-    //eslint-disable-next-line @typescript-eslint/no-explicit-any
-    result: any,
+    result: UnifiedReturnProcessingResult,
     penaltyCalculation: PenaltyCalculationResult,
+    transaction: TransaksiForValidation,
   ): Promise<void> {
     const backgroundStart = Date.now()
 
     try {
-      // Update transaction status to 'selesai'
+      // ✅ FIX: Check for unresolved HILANG items before setting status
+      // If any HILANG items exist, set status to 'pending_resolution'
+      // Otherwise, set status to 'selesai'
+      const hasUnresolvedLostItems = request.items.some((item) =>
+        item.conditions.some(
+          (condition) =>
+            condition.conditionCategory === 'HILANG' ||
+            condition.kondisiAkhir.toLowerCase().includes('hilang')
+        )
+      )
+
+      const newStatus = hasUnresolvedLostItems ? 'pending_resolution' : 'selesai'
+
+      kasirLogger.returnProcess.info(
+        'processBackgroundActivities',
+        'Determining transaction status based on lost items',
+        {
+          transaksiId,
+          hasUnresolvedLostItems,
+          newStatus,
+          itemsWithHilang: request.items
+            .filter((item) =>
+              item.conditions.some(
+                (c) =>
+                  c.conditionCategory === 'HILANG' ||
+                  c.kondisiAkhir.toLowerCase().includes('hilang')
+              )
+            )
+            .map((item) => ({
+              itemId: item.itemId,
+              conditions: item.conditions
+                .filter(
+                  (c) =>
+                    c.conditionCategory === 'HILANG' ||
+                    c.kondisiAkhir.toLowerCase().includes('hilang')
+                )
+                .map((c) => c.kondisiAkhir),
+            })),
+        }
+      )
+
+      // Update transaction status with conditional logic
       await this.transaksiService.updateTransaksiStatus(transaksiId, {
-        status: 'selesai',
+        status: newStatus,
         tglKembali: request.tglKembali || new Date().toISOString(),
       })
 
-      // Create simplified return activity
+      // Build unified activity data with full breakdown
+      const activityData = this.buildUnifiedActivityData(
+        request,
+        result,
+        penaltyCalculation,
+        transaction,
+      )
+
+      // Set processing time
+      activityData.metadata.processingTime = Date.now() - backgroundStart
+
+      // Create single comprehensive activity (Task 2: Unified Activity)
+      // This replaces the previous 3 separate activities (dikembalikan, penalty_added, status_changed)
+      const lateDays = activityData.summary.lateDays
+      const penaltyDesc = activityData.summary.totalPenalty > 0
+        ? `, Penalty: Rp ${activityData.summary.totalPenalty.toLocaleString('id-ID')}${lateDays > 0 ? ` (Terlambat ${lateDays} hari)` : ''}`
+        : ''
+
       await this.createReturnActivity(transaksiId, {
         tipe: 'dikembalikan',
-        deskripsi: `Pengembalian diproses: ${result.processedItems.length} items`,
-        data: {
-          itemsCount: result.processedItems.length,
-          totalPenalty: penaltyCalculation.totalPenalty,
-          processingMode: 'optimized',
-          timestamp: new Date().toISOString(),
-        },
+        deskripsi: `Pengembalian lengkap: ${activityData.summary.totalItems} items${penaltyDesc}`,
+        data: activityData as unknown as Prisma.InputJsonValue,
       })
-
-      // Create penalty activity if applicable
-      if (penaltyCalculation.totalPenalty > 0) {
-        await this.createReturnActivity(transaksiId, {
-          tipe: 'penalty_added',
-          deskripsi: `Penalty applied: Rp ${penaltyCalculation.totalPenalty.toLocaleString('id-ID')}`,
-          data: {
-            totalPenalty: penaltyCalculation.totalPenalty,
-            timestamp: new Date().toISOString(),
-          },
-        })
-      }
 
       const backgroundDuration = Date.now() - backgroundStart
       kasirLogger.returnProcess.info(
         'processBackgroundActivities',
-        'Background activities completed',
+        'Unified activity created successfully',
         {
           transaksiId,
           duration: backgroundDuration,
-          activitiesCreated: penaltyCalculation.totalPenalty > 0 ? 2 : 1,
+          totalItems: activityData.summary.totalItems,
+          totalPenalty: activityData.summary.totalPenalty,
+          activitiesCreated: 1, // Only 1 unified activity instead of 2-3
         },
       )
     } catch (error) {
@@ -865,4 +1231,518 @@ export class UnifiedReturnService {
       )
     }
   }
+
+  /**
+   * TASK 11.1: Create activity record for lost item resolution
+   * Logs resolution type, stock changes, and refund amount
+   */
+  private async createLostItemResolutionActivity(
+    transaksiId: string,
+    returnRecord: {
+      id: string
+      kondisiAkhir: string
+      penaltyAmount: Decimal
+      transaksiItem: {
+        produk: {
+          id: string
+          name: string
+          code: string
+        }
+      }
+    },
+    resolutionType: 'customer_replaced' | 'deposit_kept',
+    result: {
+      refundAmount?: number
+      stockUpdates: {
+        sizeId: string
+        rentedQuantity: number
+        availableQuantity: number
+        lostQuantity: number
+      }
+    },
+    notes?: string,
+  ): Promise<void> {
+    try {
+      const activityDescription =
+        resolutionType === 'customer_replaced'
+          ? `Barang hilang diselesaikan - Customer beli sendiri: ${returnRecord.transaksiItem.produk.name}${result.refundAmount ? ` (Refund: Rp ${result.refundAmount.toLocaleString('id-ID')})` : ''}`
+          : `Barang hilang diselesaikan - Dana jaminan ditahan: ${returnRecord.transaksiItem.produk.name} (Rp ${Number(returnRecord.penaltyAmount).toLocaleString('id-ID')})`
+
+      await this.createReturnActivity(transaksiId, {
+        tipe: 'barang_hilang_diselesaikan',
+        deskripsi: activityDescription,
+        data: {
+          returnRecordId: returnRecord.id,
+          productId: returnRecord.transaksiItem.produk.id,
+          productName: returnRecord.transaksiItem.produk.name,
+          productCode: returnRecord.transaksiItem.produk.code,
+          resolutionType,
+          depositAmount: Number(returnRecord.penaltyAmount),
+          refundAmount: result.refundAmount || 0,
+          stockChanges: {
+            sizeId: result.stockUpdates.sizeId,
+            rentedQuantity: {
+              before: result.stockUpdates.rentedQuantity + 1, // Before decrement
+              after: result.stockUpdates.rentedQuantity,
+            },
+            availableQuantity: {
+              before:
+                resolutionType === 'customer_replaced'
+                  ? result.stockUpdates.availableQuantity - 1
+                  : result.stockUpdates.availableQuantity,
+              after: result.stockUpdates.availableQuantity,
+            },
+            lostQuantity: {
+              before:
+                resolutionType === 'deposit_kept'
+                  ? result.stockUpdates.lostQuantity - 1
+                  : result.stockUpdates.lostQuantity,
+              after: result.stockUpdates.lostQuantity,
+            },
+          },
+          notes: notes || null,
+          resolvedAt: new Date().toISOString(),
+        } as Prisma.InputJsonValue,
+      })
+
+      kasirLogger.returnProcess.info(
+        'createLostItemResolutionActivity',
+        'Resolution activity created',
+        {
+          transaksiId,
+          resolutionType,
+          productName: returnRecord.transaksiItem.produk.name,
+        },
+      )
+    } catch (error) {
+      // Log warning but don't throw - activity creation failure shouldn't break resolution
+      kasirLogger.returnProcess.warn(
+        'createLostItemResolutionActivity',
+        'Failed to create resolution activity',
+        {
+          transaksiId,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        },
+      )
+    }
+  }
+
+  /**
+   * Resolve a lost item with one of two options:
+   * 1. customer_replaced: Customer bought replacement → refund deposit + restore stock
+   * 2. deposit_kept: Keep deposit → mark as lost in inventory
+   *
+   * @param request - Resolution request with type and details
+   * @returns Resolution result with stock updates and refund info
+   * @throws Error if validation fails or transaction fails
+   */
+  async resolveLostItem(
+    request: LostItemResolutionRequest,
+  ): Promise<LostItemResolutionResult> {
+    const startTime = Date.now()
+
+    kasirLogger.returnProcess.info('resolveLostItem', 'Starting lost item resolution', {
+      returnRecordId: request.returnRecordId,
+      resolutionType: request.resolutionType,
+    })
+
+    try {
+      // PHASE 1: VALIDATION (outside transaction)
+      // Fetch return record with related data
+      const returnRecord = await this.prisma.transaksiItemReturn.findUnique({
+        where: { id: request.returnRecordId },
+        include: {
+          transaksiItem: {
+            include: {
+              produk: true,
+            },
+          },
+        },
+      })
+
+      // Validate return record exists
+      if (!returnRecord) {
+        throw new Error('Return record not found')
+      }
+
+      // Validate condition is HILANG
+      if (returnRecord.conditionCategory !== 'HILANG') {
+        throw new Error('Can only resolve HILANG items')
+      }
+
+      // Validate not already resolved
+      if (returnRecord.resolutionStatus) {
+        throw new Error(
+          `Item already resolved as ${returnRecord.resolutionStatus} on ${returnRecord.resolutionDate}`,
+        )
+      }
+
+      // Parse kondisiAwal to get sizeId
+      const kondisiAwal = parseKondisiAwal(returnRecord.transaksiItem.kondisiAwal)
+      if (!kondisiAwal.productSizeId) {
+        throw new Error('Cannot resolve: Product size ID not found in kondisiAwal')
+      }
+
+      const sizeId = kondisiAwal.productSizeId
+
+      // Fetch product size for validation
+      const productSize = await this.prisma.productSize.findUnique({
+        where: { id: sizeId },
+      })
+
+      if (!productSize) {
+        throw new Error('Product size not found')
+      }
+
+      // Validate rentedQuantity
+      if (productSize.rentedQuantity < 1) {
+        throw new Error('No rented quantity to resolve')
+      }
+
+      // PHASE 2: ATOMIC TRANSACTION
+      const result = await this.prisma.$transaction(async (tx) => {
+        const txInventoryService = createInventoryService(tx as PrismaClient)
+
+        let refundAmount: number | undefined
+        let expenseCreated = false
+
+        // Process based on resolution type
+        if (request.resolutionType === 'customer_replaced') {
+          // Option 1: Customer bought replacement
+          // - Refund deposit
+          // - Create expense record
+          // - Restore stock (rentedQuantity--, availableQuantity++)
+
+          kasirLogger.returnProcess.info(
+            'resolveLostItem',
+            'Processing customer_replaced resolution',
+            {
+              returnRecordId: request.returnRecordId,
+              transaksiId: request.transaksiId,
+              kasirId: request.kasirId,
+              penaltyAmount: Number(returnRecord.penaltyAmount),
+            }
+          )
+
+          // Calculate refund amount (negative of original penalty)
+          refundAmount = Number(returnRecord.penaltyAmount)
+
+          kasirLogger.returnProcess.info(
+            'resolveLostItem',
+            'Creating refund payment',
+            {
+              transaksiId: request.transaksiId,
+              refundAmount,
+              productName: returnRecord.transaksiItem.produk.name,
+            }
+          )
+
+          // Create refund payment
+          await tx.pembayaran.create({
+            data: {
+              transaksiId: request.transaksiId,
+              jumlah: new Decimal(-refundAmount),
+              metode: 'refund',
+              catatan: `Refund dana jaminan barang hilang - Customer beli sendiri: ${returnRecord.transaksiItem.produk.name}${request.notes ? ` (${request.notes})` : ''}`,
+              createdBy: this.userId,
+            },
+          })
+
+          kasirLogger.returnProcess.info(
+            'resolveLostItem',
+            'Refund payment created successfully',
+            {
+              transaksiId: request.transaksiId,
+              refundAmount,
+            }
+          )
+
+          // ✅ NEW: Create expense record for refund tracking
+          // Get transaction details for customer name
+          kasirLogger.returnProcess.info(
+            'resolveLostItem',
+            'Fetching transaction details for expense record',
+            {
+              transaksiId: request.transaksiId,
+              returnRecordId: request.returnRecordId,
+            }
+          )
+
+          let customerName = 'Customer'
+          let transactionCode = 'N/A'
+
+          try {
+            const transactionDetails = await tx.transaksi.findUnique({
+              where: { id: request.transaksiId },
+              select: {
+                kode: true,
+                penyewa: {
+                  select: { nama: true }
+                }
+              }
+            })
+
+            kasirLogger.returnProcess.info(
+              'resolveLostItem',
+              'Transaction details fetched successfully',
+              {
+                transaksiId: request.transaksiId,
+                hasDetails: !!transactionDetails,
+                hasPenyewa: !!transactionDetails?.penyewa,
+                kode: transactionDetails?.kode,
+                penyewaNama: transactionDetails?.penyewa?.nama,
+              }
+            )
+
+            customerName = transactionDetails?.penyewa?.nama || 'Customer'
+            transactionCode = transactionDetails?.kode || 'N/A'
+          } catch (error) {
+            kasirLogger.returnProcess.error(
+              'resolveLostItem',
+              'Failed to fetch transaction details - using defaults',
+              {
+                transaksiId: request.transaksiId,
+                error: error instanceof Error ? error.message : 'Unknown error',
+              }
+            )
+            // Continue with default values
+          }
+
+          const productName = returnRecord.transaksiItem.produk.name
+          const expenseData = {
+            kasirId: request.kasirId,
+            harga: new Decimal(refundAmount),
+            kategori: 'Refund Dana Jaminan',
+            deskripsi: `Refund dana jaminan - ${productName} - ${customerName} - Transaksi #${transactionCode}`,
+            createdBy: this.userId,
+            isActive: true,
+          }
+
+          kasirLogger.returnProcess.info(
+            'resolveLostItem',
+            'Creating expense record',
+            {
+              expenseData: {
+                ...expenseData,
+                harga: refundAmount, // Log as number for readability
+              },
+            }
+          )
+
+          await tx.pengeluaranKasir.create({
+            data: expenseData,
+          })
+
+          kasirLogger.returnProcess.info(
+            'resolveLostItem',
+            'Expense record created successfully',
+            {
+              kasirId: request.kasirId,
+              refundAmount,
+            }
+          )
+
+          expenseCreated = true
+
+          kasirLogger.returnProcess.info(
+            'resolveLostItem',
+            'Updating stock - restoring to available',
+            {
+              sizeId,
+              quantity: 1,
+            }
+          )
+
+          // Update stock: restore to available
+          await txInventoryService.updateStockOnReturn(sizeId, 1)
+
+          kasirLogger.returnProcess.info(
+            'resolveLostItem',
+            'Stock updated successfully',
+            {
+              sizeId,
+            }
+          )
+
+          kasirLogger.returnProcess.info(
+            'resolveLostItem',
+            'Updating resolution status',
+            {
+              returnRecordId: request.returnRecordId,
+              resolutionStatus: 'resolved_replaced',
+            }
+          )
+
+          // Update resolution status
+          await tx.transaksiItemReturn.update({
+            where: { id: request.returnRecordId },
+            data: {
+              resolutionStatus: 'resolved_replaced',
+              resolutionDate: new Date(),
+              resolutionNotes: request.notes,
+            },
+          })
+
+          kasirLogger.returnProcess.info(
+            'resolveLostItem',
+            'Customer replacement processed with expense record',
+            {
+              returnRecordId: request.returnRecordId,
+              refundAmount,
+              expenseCreated,
+              kasirId: request.kasirId,
+              sizeId,
+            },
+          )
+        } else if (request.resolutionType === 'deposit_kept') {
+          // Option 2: Keep deposit
+          // - No refund
+          // - Mark as lost (rentedQuantity--, lostQuantity++)
+
+          // Update stock: mark as lost
+          await tx.productSize.update({
+            where: { id: sizeId },
+            data: {
+              rentedQuantity: { decrement: 1 },
+              lostQuantity: { increment: 1 },
+            },
+          })
+
+          // Update resolution status
+          await tx.transaksiItemReturn.update({
+            where: { id: request.returnRecordId },
+            data: {
+              resolutionStatus: 'resolved_lost',
+              resolutionDate: new Date(),
+              resolutionNotes: request.notes,
+            },
+          })
+
+          kasirLogger.returnProcess.info('resolveLostItem', 'Deposit retention processed', {
+            returnRecordId: request.returnRecordId,
+            sizeId,
+          })
+        } else {
+          throw new Error(`Invalid resolution type: ${request.resolutionType}`)
+        }
+
+        // Fetch updated stock for result
+        const updatedStock = await tx.productSize.findUnique({
+          where: { id: sizeId },
+          select: {
+            rentedQuantity: true,
+            availableQuantity: true,
+            lostQuantity: true,
+          },
+        })
+
+        if (!updatedStock) {
+          throw new Error('Failed to fetch updated stock')
+        }
+
+        return {
+          refundAmount,
+          expenseCreated,
+          stockUpdates: {
+            sizeId,
+            rentedQuantity: updatedStock.rentedQuantity,
+            availableQuantity: updatedStock.availableQuantity,
+            lostQuantity: updatedStock.lostQuantity,
+          },
+        }
+      })
+
+      // Build success result
+      const successResult: LostItemResolutionResult = {
+        success: true,
+        resolutionType: request.resolutionType,
+        refundAmount: result.refundAmount,
+        expenseCreated: result.expenseCreated,
+        stockUpdates: result.stockUpdates,
+        message:
+          request.resolutionType === 'customer_replaced'
+            ? `Barang hilang berhasil diselesaikan. Dana jaminan Rp ${result.refundAmount?.toLocaleString('id-ID')} dikembalikan.`
+            : 'Barang hilang berhasil diselesaikan. Dana jaminan ditahan.',
+      }
+
+      // TASK 11.1: Create activity record for resolution
+      await this.createLostItemResolutionActivity(
+        request.transaksiId,
+        returnRecord,
+        request.resolutionType,
+        result,
+        request.notes,
+      )
+
+      // ✅ NEW: Check if all lost items are resolved, update status to 'selesai'
+      const unresolvedLostItems = await this.prisma.transaksiItemReturn.count({
+        where: {
+          transaksiItem: {
+            transaksiId: request.transaksiId,
+          },
+          conditionCategory: 'HILANG',
+          resolutionStatus: null,
+        },
+      })
+
+      kasirLogger.returnProcess.info(
+        'resolveLostItem',
+        'Checking for remaining unresolved lost items',
+        {
+          transaksiId: request.transaksiId,
+          unresolvedLostItems,
+        }
+      )
+
+      // If all lost items are resolved, update transaction status to 'selesai'
+      if (unresolvedLostItems === 0) {
+        await this.transaksiService.updateTransaksiStatus(request.transaksiId, {
+          status: 'selesai',
+        })
+
+        kasirLogger.returnProcess.info(
+          'resolveLostItem',
+          'All lost items resolved - transaction status updated to selesai',
+          {
+            transaksiId: request.transaksiId,
+          }
+        )
+      }
+
+      kasirLogger.returnProcess.info('resolveLostItem', 'Lost item resolution completed', {
+        returnRecordId: request.returnRecordId,
+        resolutionType: request.resolutionType,
+        processingTime: Date.now() - startTime,
+        unresolvedLostItems,
+        statusUpdated: unresolvedLostItems === 0,
+      })
+
+      return successResult
+    } catch (error) {
+      kasirLogger.returnProcess.error('resolveLostItem', 'Lost item resolution failed', {
+        returnRecordId: request.returnRecordId,
+        resolutionType: request.resolutionType,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        processingTime: Date.now() - startTime,
+      })
+
+      throw new Error(
+        `Gagal menyelesaikan barang hilang: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      )
+    }
+  }
+}
+
+
+/**
+ * Factory function to create UnifiedReturnService instance
+ * @param prisma - Prisma client instance
+ * @param userId - User ID for audit logging
+ * @returns UnifiedReturnService instance
+ */
+export function createUnifiedReturnService(
+  prisma: PrismaClient,
+  userId: string,
+): UnifiedReturnService {
+  return new UnifiedReturnService(prisma, userId)
 }

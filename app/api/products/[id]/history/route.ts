@@ -9,7 +9,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { ProductHistoryService } from '@/features/manage-product/services/productHistoryService'
 import { prisma } from '@/lib/prisma'
-import { advancedProductParamsSchema } from '@/features/manage-product/lib/validation/advancedProductSchema'
+import { productParamsSchema } from '@/features/manage-product/lib/validation/productSchema'
 import type { UserRole, HistoryQueryParams } from '@/features/manage-product/types/productHistory'
 import {
   isValidSortBy,
@@ -40,7 +40,7 @@ export async function GET(
 
     // Extract and validate product ID from params
     const { id } = await params
-    const { id: productId } = advancedProductParamsSchema.parse({ id })
+    const { id: productId } = productParamsSchema.parse({ id })
 
     // Extract and validate query parameters
     const { searchParams } = new URL(request.url)

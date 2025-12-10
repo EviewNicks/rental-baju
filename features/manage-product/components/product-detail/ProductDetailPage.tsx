@@ -17,10 +17,12 @@ import { ProductImageSection } from './ProductImageSection'
 import { ProductInfoSection } from './ProductInfoSection'
 import { ProductActionButtons } from './ProductActionButton'
 import { ProductHistoryCard } from './ProductHistoryCard'
-import { SizeDetailCard } from '@/features/homepage/components/SizeDetailCard'
+import { AdminSizeInventoryCard } from './AdminSizeInventoryCard'
+import { BreakEvenBadge } from '../shared/BreakEvenBadge'
+import { BreakEvenProgress } from './BreakEvenProgress'
 import { useProduct, useDeleteProduct } from '@/features/manage-product/hooks/useProducts'
 import { showSuccess, showError } from '@/lib/notifications'
-import type { Product } from '@/features/manage-product/types'
+import type { Product, ProductSize } from '@/features/manage-product/types'
 
 interface ProductDetailPageProps {
   productId: string
@@ -35,8 +37,15 @@ export function ProductDetailPage({
 }: ProductDetailPageProps) {
   const router = useRouter()
 
-  // Use real API data through hooks
-  const { data: product, isLoading, error: productError, refetch } = useProduct(productId)
+  // Use real API data through hooks - RPK-MODAL: Include break-even status
+  const {
+    data: product,
+    isLoading,
+    error: productError,
+    refetch,
+  } = useProduct(productId, {
+    includeBreakEven: true,
+  })
 
   const deleteProductMutation = useDeleteProduct()
 
@@ -127,13 +136,35 @@ export function ProductDetailPage({
             </BreadcrumbList>
           </Breadcrumb>
 
-          <div>
+          <div className="flex flex-row  justify-between">
             <div className="flex items-center gap-3 mb-2">
               <div className="w-1 h-8 bg-yellow-400 rounded-full"></div>
-              <h1 className="text-3xl font-bold text-gray-900">Detail Produk</h1>
+              <h1 className="text-xl font-bold text-gray-900">Detail Produk</h1>
+
+              {/* RPK-MODAL: Break-Even Badge in Header */}
+              {product.breakEvenStatus?.isBreakEven && (
+                <BreakEvenBadge
+                  modalAwal={product.breakEvenStatus.modalAwal}
+                  totalRevenue={product.breakEvenStatus.totalRevenue}
+                  transactionCount={product.breakEvenStatus.transactionCount}
+                  size="lg"
+                  showTooltip={true}
+                />
+              )}
+
+              <p className="text-3xl font-semibold text-gray-900 mt-1">{product.name}</p>
             </div>
-            <p className="text-lg text-gray-600">Informasi lengkap tentang produk</p>
-            <p className="text-xl font-semibold text-gray-900 mt-1">{product.name}</p>
+
+            {/* RPK-MODAL: Break-Even Progress in Header */}
+            {product.breakEvenStatus && (
+              <div className="mt-4 max-w-2xl min-w-80">
+                <BreakEvenProgress
+                  modalAwal={product.breakEvenStatus.modalAwal}
+                  totalRevenue={product.breakEvenStatus.totalRevenue}
+                  transactionCount={product.breakEvenStatus.transactionCount}
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -165,14 +196,35 @@ export function ProductDetailPage({
 
         {/* Bottom Section: Supporting Cards - Status & Inventory, System Info */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          {/* Size Detail Card - Admin Context */}
-          <SizeDetailCard
-            sizes={product.sizes}
+          {/* Admin Size Inventory Card - Enhanced Inventory Display */}
+          <AdminSizeInventoryCard
+            sizeDetails={product.sizeDetails || []}
+            inventoryStatus={
+              product.inventoryStatus || {
+                totalOriginal:
+                  product.sizes?.reduce(
+                    (sum: number, size: ProductSize) =>
+                      sum + (size.originalQuantity || size.quantity),
+                    0,
+                  ) || 0,
+                totalAvailable:
+                  product.sizes?.reduce(
+                    (sum: number, size: ProductSize) =>
+                      sum + (size.availableQuantity || size.quantity),
+                    0,
+                  ) || 0,
+                totalRented:
+                  product.sizes?.reduce(
+                    (sum: number, size: ProductSize) => sum + (size.rentedQuantity || 0),
+                    0,
+                  ) || 0,
+                utilizationRate: 0,
+                isHealthy: true,
+              }
+            }
             title="Detail Ukuran & Stok"
             showStats={true}
             showProgress={true}
-            context="admin"
-            editable={true}
           />
           <ProductHistoryCard product={product} />
         </div>
@@ -207,9 +259,23 @@ function ProductDetailSkeleton() {
             <div className="flex items-center gap-3 mb-2">
               <div className="w-1 h-8 bg-gray-200 rounded-full"></div>
               <div className="h-8 bg-gray-200 rounded w-48"></div>
+              {/* RPK-MODAL: Break-Even Badge Skeleton */}
+              <div className="h-6 bg-gray-200 rounded w-24"></div>
             </div>
             <div className="h-4 bg-gray-200 rounded w-56"></div>
             <div className="h-6 bg-gray-200 rounded w-64 mt-1"></div>
+            {/* RPK-MODAL: Break-Even Progress Skeleton */}
+            <div className="mt-4 max-w-md space-y-2">
+              <div className="flex justify-between">
+                <div className="h-4 bg-gray-200 rounded w-32"></div>
+                <div className="h-4 bg-gray-200 rounded w-16"></div>
+              </div>
+              <div className="h-3 bg-gray-200 rounded w-full"></div>
+              <div className="flex justify-between">
+                <div className="h-3 bg-gray-200 rounded w-24"></div>
+                <div className="h-3 bg-gray-200 rounded w-20"></div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

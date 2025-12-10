@@ -42,11 +42,11 @@ export async function GET(request: NextRequest) {
     // Validate query parameters
     const validatedQuery = productAvailabilityQuerySchema.parse(queryParams)
 
-    const { page, limit, search, categoryId, available, size, status, sortBy, sortOrder, minPrice, maxPrice } = validatedQuery
+    const { page, limit, search, categoryId, available, size, ageCategory, minAvailableQuantity, status, sortBy, sortOrder, minPrice, maxPrice } = validatedQuery
     const skip = (page - 1) * limit
 
-    // Dynamic validation for sortBy field to prevent Prisma errors
-    const validSortFields = ['name', 'currentPrice', 'createdAt', 'quantity']
+    // Dynamic validation for sortBy field to prevent Prisma errors (Updated for Enhanced ProductSize)
+    const validSortFields = ['name', 'currentPrice', 'createdAt', 'availableQuantity']
     if (!validSortFields.includes(sortBy)) {
       return NextResponse.json(
         {
@@ -90,9 +90,43 @@ export async function GET(request: NextRequest) {
       whereClause.categoryId = categoryId
     }
 
-    // Filter by size
+    // Filter by size on ProductSize relation level (Enhanced ProductSize)
     if (size && size.length > 0) {
-      whereClause.size = { in: size }
+      whereClause.sizes = {
+        some: {
+          size: { in: size },
+          isActive: true
+        }
+      }
+    }
+
+    // Filter by age category on ProductSize relation level
+    if (ageCategory && ageCategory.length > 0) {
+      whereClause.sizes = {
+        some: {
+          ageCategory: { in: ageCategory },
+          isActive: true,
+          ...(size && size.length > 0 && {
+            size: { in: size }
+          })
+        }
+      }
+    }
+
+    // Filter by minimum available quantity
+    if (minAvailableQuantity !== undefined) {
+      whereClause.sizes = {
+        some: {
+          availableQuantity: { gte: minAvailableQuantity },
+          isActive: true,
+          ...(ageCategory && ageCategory.length > 0 && {
+            ageCategory: { in: ageCategory }
+          }),
+          ...(size && size.length > 0 && {
+            size: { in: size }
+          })
+        }
+      }
     }
 
     // Enhanced filters for kasir workflow - optimized for performance
@@ -119,7 +153,7 @@ export async function GET(request: NextRequest) {
 
   
     // Get products with related data including ProductSize information
-    const [products, allProducts] = await Promise.all([
+    const [products, total] = await Promise.all([
       prisma.product.findMany({
         skip,
         take: limit,
@@ -148,18 +182,8 @@ export async function GET(request: NextRequest) {
           },
         },
       }),
-      // Get all products matching base criteria for accurate count calculation
-      prisma.product.findMany({
-        where: whereClause,
-        include: {
-          sizes: {
-            where: { isActive: true },
-            select: {
-              quantity: true,
-            },
-          },
-        },
-      }),
+      // Optimized count query instead of double data fetch
+      prisma.product.count({ where: whereClause }),
     ])
 
     // SIMPLIFIED: Use database fields directly instead of complex calculations
@@ -167,25 +191,13 @@ export async function GET(request: NextRequest) {
 
     const formattedProducts = products
       .map((product) => {
-        // Calculate total available quantity across all sizes
-        const totalAvailable = product.sizes.reduce((sum, size) => sum + size.quantity, 0)
+        // Calculate total available quantity using Enhanced ProductSize fields
+        const totalAvailable = product.sizes.reduce((sum, size) => sum + (size.availableQuantity || 0), 0)
+        const totalRented = product.sizes.reduce((sum, size) => sum + (size.rentedQuantity || 0), 0)
+        const totalOriginal = product.sizes.reduce((sum, size) => sum + (size.originalQuantity || 0), 0)
 
-        // 🔧 CRITICAL FIX: Enhanced legacy field mapping for cart display
-        // Priority: 1) Product legacy fields → 2) First size from sizes array → 3) "Unknown"
-        let legacySize = product.size || 'Unknown'
-        let legacyColor = { name: 'Unknown' } // Default color structure
-
-        // If product has no legacy size but has sizes array, use first size as fallback
-        if (!product.size && product.sizes && product.sizes.length > 0) {
-          const firstSize = product.sizes[0]
-          legacySize = firstSize.size
-        }
-
-        // For color, we don't have product-level color anymore, so we'll use a structured default
-        // The frontend will use category color for UI display
-        if (!legacyColor) {
-          legacyColor = { name: 'Unknown' }
-        }
+        // Enhanced ProductSize integration - no more legacy fallbacks needed
+        // Size information is now properly handled by Enhanced ProductSize fields
 
         return {
           id: product.id,
@@ -193,20 +205,22 @@ export async function GET(request: NextRequest) {
           name: product.name,
           description: product.description,
           currentPrice: Number(product.currentPrice),
-          // ENHANCED: Size-based inventory information
-          totalInventory: product.quantity, // Legacy field for backward compatibility
-          availableQuantity: totalAvailable, // Total across all active sizes
-          rentedQuantity: product.rentedStock, // Legacy field
-          // 🔧 CRITICAL FIX: Add legacy size and color fields for frontend fallback
-          size: legacySize,
-          color: legacyColor,
+          // ENHANCED: Size-based inventory information using Enhanced ProductSize schema
+          totalInventory: totalOriginal, // Total original stock from all sizes
+          availableQuantity: totalAvailable, // Total available stock across all sizes
+          rentedQuantity: totalRented, // Total rented stock across all sizes
+          // Legacy compatibility fields - simplified for frontend
+          size: product.sizes && product.sizes.length > 0 ? product.sizes[0].size : 'Unknown',
+          color: { name: 'Default' }, // Simplified - frontend uses category color
           // NEW: Size-specific information
           sizes: product.sizes.map(size => ({
             id: size.id,
             ageCategory: size.ageCategory,
             size: size.size,
-            quantity: size.quantity,
-            availableQuantity: size.quantity, // All sizes are available at ProductSize level
+            quantity: size.quantity, // Legacy field (keep for backward compatibility)
+            originalQuantity: size.originalQuantity, // ✅ Enhanced field
+            rentedQuantity: size.rentedQuantity, // ✅ Enhanced field
+            availableQuantity: size.availableQuantity, // ✅ Enhanced field (FIXED)
             // Add color field to sizes for selectedSize mapping
             color: `${size.ageCategory} - ${size.size}`, // Generated color description
           })),
@@ -225,24 +239,28 @@ export async function GET(request: NextRequest) {
       // Filter out products with no available quantity if 'available' filter is true
       .filter((product) => !available || product.availableQuantity > 0)
 
-    // Calculate accurate total count by filtering allProducts with same logic
-    const filteredAllProducts = available
-      ? allProducts.filter((product) => {
-          // Calculate total available across all active sizes
-          const totalAvailable = product.sizes?.reduce((sum, size) => sum + size.quantity, 0) || 0
-          return totalAvailable > 0
+    // Use optimized count query result (already includes availability filtering)
+    const finalTotal = available
+      ? await prisma.product.count({
+          where: {
+            ...whereClause,
+            sizes: {
+              some: {
+                availableQuantity: { gt: 0 },
+                isActive: true
+              }
+            }
+          }
         })
-      : allProducts
-    
-    const total = filteredAllProducts.length
-    const totalPages = Math.ceil(total / limit)
+      : total
+    const totalPages = Math.ceil(finalTotal / limit)
 
     const responseData = {
       data: formattedProducts,
       pagination: {
         page,
         limit,
-        total,
+        total: finalTotal,
         totalPages,
       },
     }

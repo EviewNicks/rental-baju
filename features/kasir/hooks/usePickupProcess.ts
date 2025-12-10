@@ -1,6 +1,6 @@
 'use client'
 
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient, QueryClient } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/react-query'
 import { KasirApiError } from '../api'
 
@@ -27,6 +27,50 @@ export interface PickupResponse {
       // ... full transaction data as per API response
     }
   }
+}
+
+/**
+ * Helper function to wait for cache update completion
+ */
+async function waitForCacheUpdate(
+  queryClient: QueryClient,
+  queryKey: readonly string[],
+  timeout: number = 5000
+): Promise<void> {
+  return new Promise((resolve) => {
+    const startTime = Date.now()
+
+    const checkCache = () => {
+      try {
+        const queryState = queryClient.getQueryState(queryKey)
+
+        // Check if query is successfully fetched and not invalid
+        if (
+          queryState?.status === 'success' &&
+          queryState?.isInvalidated === false &&
+          queryState?.fetchStatus === 'idle'
+        ) {
+          resolve()
+          return
+        }
+
+        // Check timeout
+        if (Date.now() - startTime > timeout) {
+          console.warn('Cache update timeout, proceeding anyway')
+          resolve() // Resolve on timeout to avoid blocking UI
+          return
+        }
+
+        // Continue checking
+        setTimeout(checkCache, 100)
+      } catch (error) {
+        console.error('Error checking cache state:', error)
+        resolve() // Resolve on error to avoid blocking UI
+      }
+    }
+
+    checkCache()
+  })
 }
 
 /**
@@ -112,23 +156,61 @@ export function usePickupProcess(transactionCode: string) {
       }
     },
 
-    onSuccess: () => {
-      // Invalidate and refetch transaction detail to get updated data
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.kasir.transaksi.detail(transactionCode),
-      })
+    onSuccess: async () => {
+      console.log('🔄 Cache synchronization started for transaction:', transactionCode)
+      const startTime = Date.now()
 
-      // Also invalidate transaction list in case it's displayed elsewhere
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.kasir.transaksi.lists(),
-      })
+      try {
+        // ✅ FIX: Invalidate BOTH base and transformed queries simultaneously
+        await Promise.all([
+          // Invalidate base query
+          queryClient.invalidateQueries({
+            queryKey: queryKeys.kasir.transaksi.detail(transactionCode),
+            refetchType: 'active',
+          }),
+          // ✅ CRITICAL: Also invalidate transformed query
+          queryClient.invalidateQueries({
+            queryKey: [...queryKeys.kasir.transaksi.detail(transactionCode), 'transformed'],
+            refetchType: 'active',
+          }),
+          // Invalidate transaction list
+          queryClient.invalidateQueries({
+            queryKey: queryKeys.kasir.transaksi.lists(),
+            refetchType: 'active',
+          }),
+        ])
+
+        // Wait for BOTH queries to complete
+        await Promise.all([
+          waitForCacheUpdate(queryClient, queryKeys.kasir.transaksi.detail(transactionCode)),
+          waitForCacheUpdate(queryClient, [...queryKeys.kasir.transaksi.detail(transactionCode), 'transformed']),
+        ])
+
+        const duration = Date.now() - startTime
+        console.log(`✅ Cache synchronization completed in ${duration}ms for transaction:`, transactionCode)
+      } catch (error) {
+        console.error('❌ Cache synchronization failed:', {
+          transactionCode,
+          error: error instanceof Error ? error.message : 'Unknown error',
+          duration: Date.now() - startTime,
+        })
+        // Continue anyway - don't block the UI on cache sync failure
+      }
     },
 
-    onSettled: () => {
+    onSettled: async () => {
       // Always refetch transaction detail after pickup attempt
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.kasir.transaksi.detail(transactionCode),
-      })
+      try {
+        await queryClient.invalidateQueries({
+          queryKey: queryKeys.kasir.transaksi.detail(transactionCode),
+          refetchType: 'active',
+        })
+      } catch (error) {
+        console.error('❌ Final cache refresh failed:', {
+          transactionCode,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        })
+      }
     },
 
     // Retry configuration for pickup operations
@@ -199,9 +281,15 @@ export function usePickupValidation() {
 
 /**
  * Extract specific error message from backend response
+ * ✅ TASK 1.5: Enhanced with timeout error handling
  */
 function extractSpecificErrorMessage(message: string): string | null {
   // Extract specific error details from backend message
+  
+  // ✅ TASK 1.5 FIX: Transaction timeout errors
+  if (message.includes('memakan waktu terlalu lama') || message.includes('Transaction already closed')) {
+    return 'Operasi pickup memakan waktu terlalu lama. Silakan coba lagi.'
+  }
   if (message.includes('Database connection error')) {
     return 'Database sedang sibuk. Silakan coba lagi beberapa saat.'
   }

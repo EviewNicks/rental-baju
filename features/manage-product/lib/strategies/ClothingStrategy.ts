@@ -18,15 +18,20 @@ export class ClothingStrategy implements CategoryFormStrategy {
   readonly type: CategoryType = 'clothing'
 
   /**
-   * Available size options untuk clothing
+   * Available size options untuk clothing dengan age categorization
    */
   private readonly sizeOptions = [
-    { value: 'XS', label: 'XS (Extra Small)' },
-    { value: 'S', label: 'S (Small)' },
-    { value: 'M', label: 'M (Medium)' },
-    { value: 'L', label: 'L (Large)' },
-    { value: 'XL', label: 'XL (Extra Large)' },
-    { value: 'XXL', label: 'XXL (Double Extra Large)' }
+    { value: 'XS_ANAK', label: 'XS - Anak (Extra Small)' },
+    { value: 'XS_DEWASA', label: 'XS - Dewasa (Extra Small)' },
+    { value: 'S_ANAK', label: 'S - Anak (Small)' },
+    { value: 'S_DEWASA', label: 'S - Dewasa (Small)' },
+    { value: 'M_ANAK', label: 'M - Anak (Medium)' },
+    { value: 'M_DEWASA', label: 'M - Dewasa (Medium)' },
+    { value: 'L_ANAK', label: 'L - Anak (Large)' },
+    { value: 'L_DEWASA', label: 'L - Dewasa (Large)' },
+    { value: 'XL_ANAK', label: 'XL - Anak (Extra Large)' },
+    { value: 'XL_DEWASA', label: 'XL - Dewasa (Extra Large)' },
+    { value: 'XXL_DEWASA', label: 'XXL - Dewasa (Double Extra Large)' }
   ]
 
   private ensureNumber(value: unknown): number {
@@ -36,6 +41,27 @@ export class ClothingStrategy implements CategoryFormStrategy {
       if (!isNaN(parsed)) return parsed
     }
     return 0
+  }
+
+  /**
+   * Parse size-age combination string
+   * @param sizeAgeCombination - e.g., 'XS_DEWASA', 'S_ANAK'
+   * @returns { size, ageCategory }
+   */
+  private parseSizeAgeCombination(sizeAgeCombination: string): { size: string; ageCategory: 'ADULT' | 'CHILD' } {
+    const [size, ageCategory] = sizeAgeCombination.split('_')
+    return {
+      size,
+      ageCategory: ageCategory === 'DEWASA' ? 'ADULT' : 'CHILD'
+    }
+  }
+
+  /**
+   * Get base size from size-age combination
+   * @param sizeAgeCombination - e.g., 'XS_DEWASA' → 'XS'
+   */
+  private getBaseSize(sizeAgeCombination: string): string {
+    return sizeAgeCombination.split('_')[0]
   }
 
   /**
@@ -53,7 +79,7 @@ export class ClothingStrategy implements CategoryFormStrategy {
       validation: z.array(z.string()).min(1, 'Pilih minimal satu ukuran'),
       options: this.sizeOptions,
       defaultValue: [],
-      helpText: 'Pilih semua ukuran yang tersedia untuk produk ini'
+      helpText: 'Pilih semua ukuran yang tersedia untuk produk ini (dewasa dan anak-anak)'
     }
 
     // Generate conditional quantity fields
@@ -92,14 +118,15 @@ export class ClothingStrategy implements CategoryFormStrategy {
     const selectedSizes = formData.sizes || []
 
     if (Array.isArray(selectedSizes)) {
-      selectedSizes.forEach((sizeValue: string) => {
-        const quantityKey = `quantity_${sizeValue}`
+      selectedSizes.forEach((sizeAgeCombination: string) => {
+        const quantityKey = `quantity_${sizeAgeCombination}`
         const quantity = this.ensureNumber(formData[quantityKey])
 
         if (quantity > 0) {
+          const { size, ageCategory } = this.parseSizeAgeCombination(sizeAgeCombination)
           sizes.push({
-            ageCategory: 'ADULT', // Default untuk clothing
-            size: sizeValue as 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL',
+            ageCategory,
+            size: size as 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL',
             quantity,
             isActive: true
           })
@@ -130,7 +157,7 @@ export class ClothingStrategy implements CategoryFormStrategy {
         })
       },
       {
-        message: 'Minimal satu ukuran yang dipilih harus memiliki stok',
+        message: 'Minimal satu ukuran (dewasa atau anak) yang dipilih harus memiliki stok',
         path: ['sizes']
       }
     )
@@ -156,7 +183,7 @@ export class ClothingStrategy implements CategoryFormStrategy {
    * Form description untuk user guidance
    */
   getFormDescription(): string {
-    return 'Untuk pakaian standar dengan ukuran S, M, L, XL, XXL. Pilih ukuran yang tersedia dan masukkan jumlah stoknya.'
+    return 'Untuk pakaian standar dengan ukuran S, M, L, XL, XXL untuk dewasa dan anak-anak. Pilih ukuran yang tersedia dan masukkan jumlah stoknya.'
   }
 
   /**
@@ -168,13 +195,17 @@ export class ClothingStrategy implements CategoryFormStrategy {
       ...defaultValues
     }
 
-    // Group sizes berdasarkan size value
+    // Group sizes berdasarkan size-age combination
     const selectedSizes: string[] = []
 
     sizes.forEach(size => {
-      if (size.ageCategory === 'ADULT' && this.sizeOptions.some(opt => opt.value === size.size)) {
-        selectedSizes.push(size.size)
-        const quantityKey = `quantity_${size.size}`
+      const ageSuffix = size.ageCategory === 'ADULT' ? 'DEWASA' : 'ANAK'
+      const sizeAgeCombination = `${size.size}_${ageSuffix}`
+
+      // Check if this combination exists in our size options
+      if (this.sizeOptions.some(opt => opt.value === sizeAgeCombination)) {
+        selectedSizes.push(sizeAgeCombination)
+        const quantityKey = `quantity_${sizeAgeCombination}`
         formData[quantityKey] = size.quantity
       }
     })
@@ -191,15 +222,16 @@ export class ClothingStrategy implements CategoryFormStrategy {
     const selectedSizes = formData.sizes || []
 
     if (Array.isArray(selectedSizes)) {
-      selectedSizes.forEach((sizeValue: string) => {
-        const quantityKey = `quantity_${sizeValue}`
+      selectedSizes.forEach((sizeAgeCombination: string) => {
+        const quantityKey = `quantity_${sizeAgeCombination}`
         const quantity = this.ensureNumber(formData[quantityKey])
 
         if (quantity > 0) {
+          const { size, ageCategory } = this.parseSizeAgeCombination(sizeAgeCombination)
           sizes.push({
-            ageCategory: 'ADULT',
+            ageCategory,
             //eslint-disable-next-line @typescript-eslint/no-explicit-any
-            size: sizeValue as any, // Type assertion for valid size enum
+            size: size as any, // Type assertion for valid size enum
             quantity,
             isActive: true
           })
@@ -253,26 +285,39 @@ export class ClothingStrategy implements CategoryFormStrategy {
    */
   validateProductSizes(sizes: CreateProductSizeRequest[]): { isValid: boolean; errors: string[] } {
     const errors: string[] = []
-    const validSizes = this.sizeOptions.map(opt => opt.value)
+    const validSizeAgeCombinations = this.sizeOptions.map(opt => opt.value)
+    const validBaseSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
 
-    // Filter ADULT sizes
-    const clothingSizes = sizes.filter(size => size.ageCategory === 'ADULT')
+    // Check untuk valid size-age combinations
+    const invalidCombinations: string[] = []
+    sizes.forEach(size => {
+      const ageSuffix = size.ageCategory === 'ADULT' ? 'DEWASA' : 'ANAK'
+      const sizeAgeCombination = `${size.size}_${ageSuffix}`
 
-    // Check untuk invalid sizes
-    const invalidSizes = clothingSizes.filter(size => !validSizes.includes(size.size))
-    if (invalidSizes.length > 0) {
-      errors.push(`Ukuran tidak valid: ${invalidSizes.map(s => s.size).join(', ')}. Gunakan: ${validSizes.join(', ')}`)
+      if (!validSizeAgeCombinations.includes(sizeAgeCombination)) {
+        invalidCombinations.push(sizeAgeCombination)
+      }
+    })
+
+    if (invalidCombinations.length > 0) {
+      errors.push(`Kombinasi ukuran tidak valid: ${invalidCombinations.join(', ')}. Gunakan format: XS_DEWASA, S_ANAK, dll`)
     }
 
-    // Check untuk duplicate sizes
-    const sizeValues = clothingSizes.map(s => s.size)
-    const uniqueSizes = new Set(sizeValues)
-    if (sizeValues.length !== uniqueSizes.size) {
-      errors.push('Tidak boleh ada ukuran duplikat')
+    // Check untuk valid base sizes
+    const invalidBaseSizes = sizes.filter(size => !validBaseSizes.includes(size.size))
+    if (invalidBaseSizes.length > 0) {
+      errors.push(`Ukuran tidak valid: ${invalidBaseSizes.map(s => s.size).join(', ')}. Gunakan: ${validBaseSizes.join(', ')}`)
+    }
+
+    // Check untuk duplicate size-age combinations
+    const sizeAgeCombinations = sizes.map(s => `${s.size}_${s.ageCategory === 'ADULT' ? 'DEWASA' : 'ANAK'}`)
+    const uniqueCombinations = new Set(sizeAgeCombinations)
+    if (sizeAgeCombinations.length !== uniqueCombinations.size) {
+      errors.push('Tidak boleh ada kombinasi ukuran duplikat (contoh: S_DEWASA duplikat)')
     }
 
     // Check semua quantities positif
-    const zeroQuantities = clothingSizes.filter(s => s.quantity <= 0)
+    const zeroQuantities = sizes.filter(s => s.quantity <= 0)
     if (zeroQuantities.length > 0) {
       errors.push('Semua ukuran harus memiliki jumlah stok minimal 1')
     }

@@ -162,21 +162,32 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
       Object.entries(formState.itemConditions).forEach(([itemId, condition]) => {
         let itemPenalty = 0
 
-        // Get item name from transaction data
+        // Get item name and size info from transaction data
         const item = transaction.items?.find((i) => i.id === itemId)
         const itemName = item?.produk?.name || 'Unknown Product'
+        
+        // Extract size information from kondisiAwal
+        const sizeInfo = item?.kondisiAwal ? (() => {
+          const parts = item.kondisiAwal.split('|')
+          if (parts.length >= 4) {
+            return ` (${parts[1]} | ${parts[2]})`
+          }
+          return ''
+        })() : ''
 
         // Calculate penalty for each condition within this item
         condition.conditions.forEach((c) => {
-          // Use same logic as ConditionPricingForm (line 227-232)
+          // ✅ SIMPLE: All categories use jumlahKembali (quantity user input)
           const effectivePrice = c.conditionCategory === 'BAIK' ? 0 : c.manualPrice || 0
-          itemPenalty += effectivePrice * c.jumlahKembali
+          const quantity = c.jumlahKembali || 0
+
+          itemPenalty += effectivePrice * quantity
         })
 
         totalPenalty += itemPenalty
         itemBreakdown.push({
           itemId,
-          itemName,
+          itemName: itemName + sizeInfo,
           penalty: itemPenalty,
         })
       })

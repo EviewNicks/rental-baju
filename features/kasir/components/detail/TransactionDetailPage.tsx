@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowLeft, AlertTriangle, RefreshCw } from 'lucide-react'
+import { ArrowLeft, AlertTriangle, RefreshCw, Printer, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { StatusBadge } from '@/features/kasir/components/ui/status-badge'
 import { CustomerInfoCard } from './CustomerInfoCard'
@@ -11,6 +11,7 @@ import { PaymentSummaryCard } from './PaymentSummaryCard'
 import { ActivityTimeline } from './ActivityTimeline'
 import { ActionButtonsPanel } from './ActionButtonPanel'
 import { useTransactionDetail } from '../../hooks/useTransactionDetail'
+import { useReceiptPrint } from '../../hooks/useReceiptPrint'
 import { formatDate } from '../../lib/utils/client'
 import { detectTransactionError } from '../../lib/utils/errorDetector'
 
@@ -21,6 +22,14 @@ interface TransactionDetailPageProps {
 export function TransactionDetailPage({ transactionId }: TransactionDetailPageProps) {
   const { transaction, isLoading, error, refreshTransaction, clearError } =
     useTransactionDetail(transactionId)
+  const { printReceipt, isPrinting } = useReceiptPrint()
+
+  // Handler for print receipt button
+  const handlePrintReceipt = () => {
+    if (transaction?.transactionCode) {
+      printReceipt(transaction.transactionCode)
+    }
+  }
 
   if (isLoading) {
     return <TransactionDetailSkeleton />
@@ -112,6 +121,25 @@ export function TransactionDetailPage({ transactionId }: TransactionDetailPagePr
             </div>
             <div className="flex items-center gap-3">
               <StatusBadge data-testid="status-badge" status={transaction.status} />
+              <Button
+                data-testid="print-receipt-button"
+                variant="outline"
+                size="sm"
+                onClick={handlePrintReceipt}
+                disabled={isPrinting}
+              >
+                {isPrinting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Printer className="h-4 w-4 mr-2" />
+                    Cetak Struk
+                  </>
+                )}
+              </Button>
               <Button
                 data-testid="refresh-button"
                 variant="outline"

@@ -1,7 +1,13 @@
 'use client'
 
 import { useState, useCallback, useEffect } from 'react'
-import type { TransactionFormData, TransactionStep, Customer, ProductSelection } from '../types'
+import type {
+  TransactionFormData,
+  TransactionStep,
+  Customer,
+  ProductSelection,
+  KasirSelectionData,
+} from '../types'
 import type { CreateTransaksiRequest, UpdateTransaksiRequest } from '../types'
 import { useCreateTransaksi } from './useTransaksi'
 import { useTransactionFormPersistence } from './useTransactionFormPersistence'
@@ -19,6 +25,11 @@ const initialFormData: TransactionFormData = {
   paymentMethod: 'cash',
   paymentAmount: 0,
   paymentStatus: 'unpaid',
+  kasirSelection: {
+    kasirId: null,
+    kasirInfo: null,
+    isAutoAssigned: false,
+  },
 }
 
 // Helper function to convert date-only string to ISO datetime format
@@ -90,7 +101,7 @@ export function useTransactionForm() {
       const existingIndex = prev.products.findIndex(
         (p) =>
           p.product.id === product.product.id &&
-          (product.productSizeId ? p.productSizeId === product.productSizeId : !p.productSizeId)
+          (product.productSizeId ? p.productSizeId === product.productSizeId : !p.productSizeId),
       )
 
       if (existingIndex >= 0) {
@@ -98,7 +109,7 @@ export function useTransactionForm() {
         const updated = [...prev.products]
         updated[existingIndex] = {
           ...updated[existingIndex],
-          quantity: updated[existingIndex].quantity + product.quantity
+          quantity: updated[existingIndex].quantity + product.quantity,
         }
         return { ...prev, products: updated }
       }
@@ -111,27 +122,37 @@ export function useTransactionForm() {
   const removeProduct = useCallback((productId: string, productSizeId?: string) => {
     setFormData((prev) => ({
       ...prev,
-      products: prev.products.filter((p) =>
-        !(p.product.id === productId &&
-          (productSizeId ? p.productSizeId === productSizeId : !p.productSizeId))
+      products: prev.products.filter(
+        (p) =>
+          !(
+            p.product.id === productId &&
+            (productSizeId ? p.productSizeId === productSizeId : !p.productSizeId)
+          ),
       ),
     }))
   }, [])
 
-  const updateProductQuantity = useCallback((productId: string, quantity: number, productSizeId?: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      products: prev.products.map((p) =>
-        (p.product.id === productId &&
-          (productSizeId ? p.productSizeId === productSizeId : !p.productSizeId))
-          ? { ...p, quantity }
-          : p
-      ),
-    }))
-  }, [])
+  const updateProductQuantity = useCallback(
+    (productId: string, quantity: number, productSizeId?: string) => {
+      setFormData((prev) => ({
+        ...prev,
+        products: prev.products.map((p) =>
+          p.product.id === productId &&
+          (productSizeId ? p.productSizeId === productSizeId : !p.productSizeId)
+            ? { ...p, quantity }
+            : p,
+        ),
+      }))
+    },
+    [],
+  )
 
   const setCustomer = useCallback((customer: Customer) => {
     setFormData((prev) => ({ ...prev, customer }))
+  }, [])
+
+  const setKasirSelection = useCallback((kasirSelection: KasirSelectionData) => {
+    setFormData((prev) => ({ ...prev, kasirSelection }))
   }, [])
 
   // updateDuration function removed - duration is now fixed at 4 days
@@ -162,13 +183,22 @@ export function useTransactionForm() {
           return step2Valid
 
         case 3:
+          // Kasir Selection step
+          const hasKasirId = !!formData.kasirSelection?.kasirId
+          const step3Valid = hasKasirId
+
+          if (!step3Valid) {
+          }
+          return step3Valid
+
+        case 4:
           const hasPickupDate = !!formData.pickupDate
           const hasReturnDate = !!formData.returnDate
           const hasPaymentMethod = !!formData.paymentMethod
           const paymentCondition = formData.paymentStatus === 'unpaid' || formData.paymentAmount > 0
-          const step3Valid = hasPickupDate && hasReturnDate && hasPaymentMethod && paymentCondition
+          const step4Valid = hasPickupDate && hasReturnDate && hasPaymentMethod && paymentCondition
 
-          return step3Valid
+          return step4Valid
 
         default:
           return false
@@ -178,7 +208,7 @@ export function useTransactionForm() {
   )
 
   const nextStep = useCallback(() => {
-    if (currentStep < 3 && validateStep(currentStep)) {
+    if (currentStep < 4 && validateStep(currentStep)) {
       setCurrentStep((prev) => (prev + 1) as TransactionStep)
     }
   }, [currentStep, validateStep])
@@ -200,10 +230,10 @@ export function useTransactionForm() {
   )
 
   const submitTransaction = useCallback(async () => {
-    // Step 3 validation check
-    const step3Valid = validateStep(3)
+    // Step 4 validation check (Payment step)
+    const step4Valid = validateStep(4)
 
-    if (!step3Valid) {
+    if (!step4Valid) {
       return false
     }
 
@@ -212,6 +242,7 @@ export function useTransactionForm() {
       // Transform form data to API format
       const createRequest: CreateTransaksiRequest = {
         penyewaId: formData.customer?.id || '',
+        kasirId: formData.kasirSelection?.kasirId || '', // Include kasirId if selected
         items: formData.products.map((product) => {
           // Base item data
           const baseItem = {
@@ -412,6 +443,7 @@ export function useTransactionForm() {
     removeProduct,
     updateProductQuantity,
     setCustomer,
+    setKasirSelection,
     // updateDuration removed - duration is now fixed
     calculateTotal,
     validateStep,

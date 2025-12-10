@@ -54,6 +54,25 @@ class TransactionLogger {
   }
 
   /**
+   * Log debug information for kasir flow tracking
+   * FIXED: Added separate method for debug logging to avoid type conflicts
+   */
+  //eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static logKasirDebug(debugData: Record<string, any>): void {
+    if (!this.config.enabled || !['api-payload', 'both'].includes(this.config.logLevel)) {
+      return
+    }
+
+    this.prettyPrintJson(debugData, '🔍 KASIR FLOW DEBUG', {
+      description: 'Kasir validation and assignment tracking for debugging',
+      timestamp: new Date().toISOString(),
+      source: debugData.source || 'unknown',
+      endpoint: 'Kasir Flow Tracking',
+      format: 'debug-log',
+    })
+  }
+
+  /**
    * Pretty print JSON data with consistent formatting
    */
   //eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -100,6 +119,12 @@ class TransactionLogger {
       if (data.penyewaId) {
         console.log('%cCustomer ID:', 'color: #059669; font-weight: bold;', data.penyewaId)
       }
+      console.groupEnd()
+    }
+
+    if (data.kasirId) {
+      console.groupCollapsed('%c💼 Kasir Info', 'color: #6B7280; font-weight: bold;')
+      console.log('%cKasir ID:', 'color: #059669; font-weight: bold;', data.kasirId)
       console.groupEnd()
     }
 

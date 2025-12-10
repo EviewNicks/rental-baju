@@ -144,11 +144,11 @@ export interface RolePermissions {
  * Higher roles inherit permissions from lower roles in the hierarchy
  */
 export const ROLE_HIERARCHY: Record<string, string[]> = {
-  owner: ['owner', 'producer', 'admin', 'kasir'],    // Owner has all permissions
-  producer: ['producer', 'admin', 'kasir'],          // Producer has admin + kasir permissions
-  admin: ['admin', 'kasir'],                         // Admin has kasir permissions (legacy)
-  kasir: ['kasir'],                                  // Kasir has only kasir permissions
-  user: ['user']                                     // User has limited permissions
+  owner: ['owner', 'producer', 'admin', 'kasir'], // Owner has all permissions
+  producer: ['producer', 'admin', 'kasir'], // Producer has admin + kasir permissions
+  admin: ['admin', 'kasir'], // Admin has kasir permissions (legacy)
+  kasir: ['kasir'], // Kasir has only kasir permissions
+  user: ['user'], // User has limited permissions
 }
 
 export const KASIR_PERMISSIONS: RolePermissions = {
@@ -170,9 +170,16 @@ export const KASIR_PERMISSIONS: RolePermissions = {
     { resource: 'produk', action: 'read' },
     { resource: 'produk', action: 'update' },
     { resource: 'produk', action: 'delete' },
+    { resource: 'kasir', action: 'create' },
+    { resource: 'kasir', action: 'read' },
+    { resource: 'kasir', action: 'update' },
+    { resource: 'kasir', action: 'delete' },
     { resource: 'audit', action: 'read' },
     { resource: 'dashboard', action: 'read' },
-    { resource: 'reports', action: 'read' }
+    { resource: 'reports', action: 'read' },
+    // Dana Kasir permissions
+    { resource: 'dana-kasir', action: 'read' },
+    { resource: 'dana-kasir-export', action: 'read' },
   ],
   producer: [
     // Producer has product management + kasir operational access
@@ -188,7 +195,10 @@ export const KASIR_PERMISSIONS: RolePermissions = {
     { resource: 'produk', action: 'read' },
     { resource: 'produk', action: 'update' },
     { resource: 'produk', action: 'delete' },
-    { resource: 'dashboard', action: 'read' }
+    { resource: 'kasir', action: 'read' },
+    { resource: 'dashboard', action: 'read' },
+    // Dana Kasir permissions
+    { resource: 'dana-kasir', action: 'read' },
   ],
   admin: [
     // Admin has full access
@@ -203,10 +213,15 @@ export const KASIR_PERMISSIONS: RolePermissions = {
     { resource: 'pembayaran', action: 'create' },
     { resource: 'pembayaran', action: 'read' },
     { resource: 'produk', action: 'read' },
-    { resource: 'audit', action: 'read' }
+    { resource: 'kasir', action: 'create' },
+    { resource: 'kasir', action: 'read' },
+    { resource: 'kasir', action: 'update' },
+    { resource: 'audit', action: 'read' },
+    // Dana Kasir permissions
+    { resource: 'dana-kasir', action: 'read' },
   ],
   kasir: [
-    // Kasir has operational access
+    // Kasir has operational access (limited read for selection workflow)
     { resource: 'penyewa', action: 'create' },
     { resource: 'penyewa', action: 'read' },
     { resource: 'penyewa', action: 'update' },
@@ -215,12 +230,18 @@ export const KASIR_PERMISSIONS: RolePermissions = {
     { resource: 'transaksi', action: 'update' },
     { resource: 'pembayaran', action: 'create' },
     { resource: 'pembayaran', action: 'read' },
-    { resource: 'produk', action: 'read' }
+    { resource: 'kasir', action: 'read' }, // For selection workflow
+    { resource: 'produk', action: 'read' },
+    // Dana Kasir permissions
+    { resource: 'dana-kasir', action: 'read' },
+    { resource: 'dana-kasir', action: 'create' },
+    { resource: 'dana-kasir', action: 'update' },
+    { resource: 'dana-kasir', action: 'delete' },
   ],
   user: [
     // Regular users have limited access (not applicable for kasir endpoints)
-    { resource: 'penyewa', action: 'read' }
-  ]
+    { resource: 'penyewa', action: 'read' },
+  ],
 }
 
 /**
@@ -229,19 +250,19 @@ export const KASIR_PERMISSIONS: RolePermissions = {
 export function hasPermission(
   userRole: string,
   resource: string,
-  action: 'create' | 'read' | 'update' | 'delete'
+  action: 'create' | 'read' | 'update' | 'delete',
 ): boolean {
   // Get all roles this user inherits from (including their own role)
   const inheritedRoles = ROLE_HIERARCHY[userRole] || []
-  
+
   // Check if any of the inherited roles has the required permission
   for (const role of inheritedRoles) {
     const rolePermissions = KASIR_PERMISSIONS[role as keyof RolePermissions] || []
-    if (rolePermissions.some(p => p.resource === resource && p.action === action)) {
+    if (rolePermissions.some((p) => p.resource === resource && p.action === action)) {
       return true
     }
   }
-  
+
   return false // Fail-safe default: no permission found
 }
 
@@ -274,7 +295,7 @@ export function isKasirRole(userRole: string): boolean {
  */
 export async function requirePermission(
   resource: string,
-  action: 'create' | 'read' | 'update' | 'delete'
+  action: 'create' | 'read' | 'update' | 'delete',
 ) {
   const authResult = await requireAuth()
   if (authResult.error) {
@@ -288,10 +309,10 @@ export async function requirePermission(
         {
           success: false,
           error: `Access denied. Insufficient permissions for ${action} on ${resource}`,
-          code: 'INSUFFICIENT_PERMISSIONS'
+          code: 'INSUFFICIENT_PERMISSIONS',
         },
-        { status: 403 }
-      )
+        { status: 403 },
+      ),
     }
   }
 
@@ -307,31 +328,31 @@ const rateLimitStore = new Map<string, { count: number; resetTime: number }>()
 export function checkRateLimit(
   identifier: string,
   maxRequests: number = 100,
-  windowMs: number = 60000
+  windowMs: number = 60000,
 ): { allowed: boolean; remainingRequests: number; resetTime: number } {
   const now = Date.now()
   const key = identifier
-  
+
   let record = rateLimitStore.get(key)
-  
+
   if (!record || now > record.resetTime) {
     record = { count: 0, resetTime: now + windowMs }
     rateLimitStore.set(key, record)
   }
-  
+
   if (record.count >= maxRequests) {
     return {
       allowed: false,
       remainingRequests: 0,
-      resetTime: record.resetTime
+      resetTime: record.resetTime,
     }
   }
-  
+
   record.count++
   return {
     allowed: true,
     remainingRequests: maxRequests - record.count,
-    resetTime: record.resetTime
+    resetTime: record.resetTime,
   }
 }
 
@@ -341,10 +362,10 @@ export function checkRateLimit(
 export async function withRateLimit(
   identifier: string,
   maxRequests: number = 100,
-  windowMs: number = 60000
+  windowMs: number = 60000,
 ) {
   const rateLimit = checkRateLimit(identifier, maxRequests, windowMs)
-  
+
   if (!rateLimit.allowed) {
     return {
       error: NextResponse.json(
@@ -352,26 +373,180 @@ export async function withRateLimit(
           success: false,
           error: 'Rate limit exceeded',
           code: 'RATE_LIMIT_EXCEEDED',
-          retryAfter: Math.ceil((rateLimit.resetTime - Date.now()) / 1000)
+          retryAfter: Math.ceil((rateLimit.resetTime - Date.now()) / 1000),
         },
-        { 
+        {
           status: 429,
           headers: {
             'Retry-After': Math.ceil((rateLimit.resetTime - Date.now()) / 1000).toString(),
             'X-RateLimit-Limit': maxRequests.toString(),
             'X-RateLimit-Remaining': '0',
-            'X-RateLimit-Reset': rateLimit.resetTime.toString()
-          }
-        }
-      )
+            'X-RateLimit-Reset': rateLimit.resetTime.toString(),
+          },
+        },
+      ),
     }
   }
-  
+
   return {
     rateLimitHeaders: {
       'X-RateLimit-Limit': maxRequests.toString(),
       'X-RateLimit-Remaining': rateLimit.remainingRequests.toString(),
-      'X-RateLimit-Reset': rateLimit.resetTime.toString()
+      'X-RateLimit-Reset': rateLimit.resetTime.toString(),
+    },
+  }
+}
+
+// ============================================================================
+// DANA KASIR MANAGEMENT - Authorization Functions
+// ============================================================================
+
+/**
+ * Dana Kasir specific user type
+ */
+export interface DanaKasirUser {
+  id: string
+  role: string
+  kasirId?: string
+}
+
+/**
+ * Get authenticated user for Dana Kasir endpoints
+ * Returns simplified user object with kasirId
+ */
+export async function getDanaKasirUser(): Promise<DanaKasirUser | null> {
+  try {
+    const { userId } = await auth()
+    if (!userId) {
+      return null
+    }
+
+    // Get user dengan custom claims untuk role
+    const client = await clerkClient()
+    const user = await client.users.getUser(userId)
+    const role = (user.publicMetadata.role as string) || 'user'
+
+    // TODO: In production, get actual kasirId from database
+    // For now, use userId as kasirId for MVP
+    return {
+      id: userId,
+      role: role,
+      kasirId: userId, // Temporary: use userId as kasirId
+    }
+  } catch (error) {
+    console.error('Error getting Dana Kasir user:', error)
+    return null
+  }
+}
+
+/**
+ * Require Dana Kasir write permissions (Kasir only)
+ * Used for: Create, Update, Delete expense operations
+ */
+export async function requireDanaKasirWrite() {
+  const authResult = await requireAuth()
+  if (authResult.error) {
+    return authResult
+  }
+
+  // Check if user has write permission for dana-kasir
+  const hasAccess = hasPermission(authResult.user.role, 'dana-kasir', 'create')
+  if (!hasAccess) {
+    return {
+      error: NextResponse.json(
+        {
+          success: false,
+          error: {
+            message: 'Only Kasir can perform this action',
+            code: 'FORBIDDEN',
+          },
+        },
+        { status: 403 },
+      ),
     }
   }
+
+  return authResult
+}
+
+/**
+ * Require Dana Kasir read permissions (Kasir, Owner, Admin)
+ * Used for: View income, expenses, and summary
+ */
+export async function requireDanaKasirRead() {
+  const authResult = await requireAuth()
+  if (authResult.error) {
+    return authResult
+  }
+
+  // Check if user has read permission for dana-kasir
+  const hasAccess = hasPermission(authResult.user.role, 'dana-kasir', 'read')
+  if (!hasAccess) {
+    return {
+      error: NextResponse.json(
+        {
+          success: false,
+          error: {
+            message: 'Insufficient permissions to view Dana Kasir data',
+            code: 'FORBIDDEN',
+          },
+        },
+        { status: 403 },
+      ),
+    }
+  }
+
+  return authResult
+}
+
+/**
+ * Require Dana Kasir export permissions (Owner only)
+ * Used for: CSV export functionality
+ */
+export async function requireDanaKasirExport() {
+  const authResult = await requireAuth()
+  if (authResult.error) {
+    return authResult
+  }
+
+  // Check if user has export permission (owner only)
+  const hasAccess = hasPermission(authResult.user.role, 'dana-kasir-export', 'read')
+  if (!hasAccess) {
+    return {
+      error: NextResponse.json(
+        {
+          success: false,
+          error: {
+            message: 'Only Owner can export Dana Kasir data',
+            code: 'FORBIDDEN',
+          },
+        },
+        { status: 403 },
+      ),
+    }
+  }
+
+  return authResult
+}
+
+/**
+ * Check if user can modify specific expense
+ * Kasir can only modify their own expenses
+ */
+export function canModifyDanaKasirExpense(
+  userRole: string,
+  userId: string,
+  expenseKasirId: string,
+): boolean {
+  // Owner can view but not modify (read-only)
+  if (userRole === 'owner') {
+    return false
+  }
+
+  // Kasir can only modify their own expenses
+  if (userRole === 'kasir') {
+    return userId === expenseKasirId
+  }
+
+  return false
 }

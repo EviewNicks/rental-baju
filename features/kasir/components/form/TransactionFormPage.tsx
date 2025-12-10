@@ -10,6 +10,7 @@ import { NotificationBanner } from '../ui/NotificationBanner'
 import { useTransactionForm } from '../../hooks/useTransactionForm'
 import { ProductSelectionStep } from './ProductSelectionStep'
 import { CustomerBiodataStep } from './CustomerBiodataStep'
+import { CashierSelectionStep } from './CashierSelectionStep'
 import { PaymentSummaryStep } from './PaymentSummaryStep'
 import { getStepValidationMessage } from '../../lib/constants/stepValidationMessages'
 import type { ProductSelection } from '../../types'
@@ -34,6 +35,7 @@ export function TransactionFormPage() {
     removeProduct,
     updateProductQuantity,
     setCustomer,
+    setKasirSelection,
     // updateDuration removed - duration is now fixed
     calculateTotal,
     validateStep,
@@ -301,6 +303,22 @@ export function TransactionFormPage() {
           )}
 
           {currentStep === 3 && (
+            <div data-testid="cashier-selection-step">
+              <CashierSelectionStep
+                selectedKasir={formData.kasirSelection || {
+                  kasirId: null,
+                  kasirInfo: null,
+                  isAutoAssigned: false,
+                }}
+                onSelectKasir={setKasirSelection}
+                onNext={nextStep}
+                onPrev={prevStep}
+                canProceed={validateStep(currentStep)}
+              />
+            </div>
+          )}
+
+          {currentStep === 4 && (
             <div data-testid="payment-summary-step">
               <PaymentSummaryStep
                 formData={formData}

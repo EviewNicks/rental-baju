@@ -23,6 +23,7 @@ import type {
 } from '@/features/manage-product/types'
 import type { CategoryFormData } from '@/features/manage-product/lib/strategies/CategoryFormStrategy'
 import { FormStrategyFactory } from '@/features/manage-product/lib/strategies/StrategyFactory'
+import { RentalStateWarning, extractRentalStateDetails } from './RentalStateWarning'
 
 // Image format validation constants
 const SUPPORTED_IMAGE_FORMATS = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
@@ -160,7 +161,7 @@ export function ProductFormPage({
     // Fix: Initialize optional fields with undefined instead of empty strings to prevent Select.Item errors
     materialId: product?.materialId || undefined,
     materialQuantity: product?.materialQuantity || undefined,
-    quantity: product?.quantity || 1,
+    quantity: product?.sizes ? ProductSizeTransformer.calculateTotalQuantity(product.sizes, 'simplified') : 1,
     modalAwal: product?.modalAwal ? Number(product.modalAwal) : 0,
     currentPrice: product?.currentPrice ? Number(product.currentPrice) : 0,
     description: product?.description || '',
@@ -613,6 +614,32 @@ export function ProductFormPage({
                                 errorData.details ||
                                 'Kode produk sudah digunakan. Silakan gunakan kode yang berbeda.'
                               )
+                            case 'QUANTITY_VALIDATION_ERROR':
+                              // Handle rental state validation errors with enhanced component
+                              const rentalDetails = extractRentalStateDetails(createProductMutation.error)
+                              if (rentalDetails) {
+                                // Set field-specific error for sizes
+                                setErrors(prev => ({ 
+                                  ...prev, 
+                                  sizes: `Konflik rental: Ukuran ${rentalDetails.ageCategory}-${rentalDetails.size} memiliki ${rentalDetails.currentRented} item dirental + ${rentalDetails.currentLost} hilang`
+                                }))
+                                setTouched(prev => ({ ...prev, sizes: true }))
+
+                                return (
+                                  <RentalStateWarning 
+                                    details={rentalDetails}
+                                    onClose={() => {
+                                      createProductMutation.reset()
+                                      setErrors(prev => {
+                                        const updated = { ...prev }
+                                        delete updated.sizes
+                                        return updated
+                                      })
+                                    }}
+                                  />
+                                )
+                              }
+                              return errorData.message || 'Tidak dapat mengurangi quantity karena ada item yang sedang dirental.'
                             case 'VALIDATION_ERROR':
                               // Handle field-level validation errors
                               if (errorData.validationErrors && Array.isArray(errorData.validationErrors)) {
@@ -677,6 +704,32 @@ export function ProductFormPage({
                                 errorData.details ||
                                 'Kode produk sudah digunakan. Silakan gunakan kode yang berbeda.'
                               )
+                            case 'QUANTITY_VALIDATION_ERROR':
+                              // Handle rental state validation errors with enhanced component
+                              const rentalDetails = extractRentalStateDetails(updateProductMutation.error)
+                              if (rentalDetails) {
+                                // Set field-specific error for sizes
+                                setErrors(prev => ({ 
+                                  ...prev, 
+                                  sizes: `Konflik rental: Ukuran ${rentalDetails.ageCategory}-${rentalDetails.size} memiliki ${rentalDetails.currentRented} item dirental + ${rentalDetails.currentLost} hilang`
+                                }))
+                                setTouched(prev => ({ ...prev, sizes: true }))
+
+                                return (
+                                  <RentalStateWarning 
+                                    details={rentalDetails}
+                                    onClose={() => {
+                                      updateProductMutation.reset()
+                                      setErrors(prev => {
+                                        const updated = { ...prev }
+                                        delete updated.sizes
+                                        return updated
+                                      })
+                                    }}
+                                  />
+                                )
+                              }
+                              return errorData.message || 'Tidak dapat mengurangi quantity karena ada item yang sedang dirental.'
                             case 'VALIDATION_ERROR':
                               // Handle field-level validation errors
                               if (errorData.validationErrors && Array.isArray(errorData.validationErrors)) {

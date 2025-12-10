@@ -5,6 +5,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { categoryApi } from '../api'
+import type { CategoryType } from '../types'
 
 // Simple query keys
 const queryKeys = {
@@ -38,7 +39,7 @@ export function useUpdateCategory() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: { name?: string; description?: string; color?: string; type?: string } }) =>
+    mutationFn: ({ id, data }: { id: string; data: { name?: string; description?: string; color?: string; type?: CategoryType } }) =>
       categoryApi.updateCategory(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.categories.all })

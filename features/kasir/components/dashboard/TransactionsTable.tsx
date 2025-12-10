@@ -1,7 +1,7 @@
 import type { Transaction } from '../../types'
 import { StatusBadge } from '../ui/status-badge'
 import { formatCurrency, formatDate, getDaysOverdue } from '../../lib/utils/client'
-import { Clock, Phone, Package, Eye } from 'lucide-react'
+import { Clock, Phone, Package, Eye, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import {
@@ -66,6 +66,12 @@ export function TransactionTable({ transactions, isLoading }: TransactionTablePr
               className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
             >
               Total
+            </TableHead>
+            <TableHead
+              scope="col"
+              className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+            >
+              Kasir
             </TableHead>
             <TableHead
               scope="col"
@@ -190,6 +196,19 @@ function TransactionRow({ transaction }: { transaction: Transaction }) {
         </div>
       </TableCell>
       <TableCell className="px-4 py-3">
+        {transaction.kasir ? (
+          <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-gray-900">
+                {transaction.kasir.nama}
+              </span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 text-gray-400">
+            <span className="text-sm">-</span>
+          </div>
+        )}
+      </TableCell>
+      <TableCell className="px-4 py-3">
         <StatusBadge status={transaction.status} />
       </TableCell>
       <TableCell className="px-4 py-3 text-center">
@@ -229,6 +248,9 @@ function TransactionTableSkeleton() {
             </TableHead>
             <TableHead className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
               Total
+            </TableHead>
+            <TableHead className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+              Kasir
             </TableHead>
             <TableHead className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
               Status

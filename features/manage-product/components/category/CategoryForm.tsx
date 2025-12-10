@@ -67,6 +67,8 @@ export function CategoryForm({
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [touched, setTouched] = useState<Record<string, boolean>>({})
 
+
+
   // Simple validation function
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {}

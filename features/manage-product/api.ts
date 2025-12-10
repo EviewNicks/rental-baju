@@ -4,7 +4,7 @@
  */
 
 // Import types for size management
-import type { AggregatedSizeView, AggregationQueryParams } from './types'
+import type { AggregatedSizeView, AggregationQueryParams, CategoryType } from './types'
 
 // Base API configuration
 const API_BASE_URL = '/api'
@@ -55,6 +55,7 @@ export const productApi = {
     colorId?: string | string[]
     page?: number
     limit?: number
+    includeBreakEven?: boolean // RPK-MODAL
   }) => {
     const queryString = params ? buildQueryParams(params) : ''
     const url = `${API_BASE_URL}/products${queryString ? `?${queryString}` : ''}`
@@ -63,8 +64,14 @@ export const productApi = {
   },
 
   // Get single product by ID
-  getProductById: async (id: string) => {
-    const response = await fetch(`${API_BASE_URL}/products/${id}`)
+  getProductById: async (id: string, includeAggregation = true, includeBreakEven = false) => {
+    const params = new URLSearchParams()
+    if (includeAggregation) params.append('includeAggregation', 'true')
+    if (includeBreakEven) params.append('includeBreakEven', 'true') // RPK-MODAL
+    
+    const queryString = params.toString()
+    const url = `${API_BASE_URL}/products/${id}${queryString ? `?${queryString}` : ''}`
+    const response = await fetch(url)
     return handleResponse(response)
   },
 
@@ -159,7 +166,7 @@ export const categoryApi = {
   },
 
   // Create new category
-  createCategory: async (data: { name: string; description?: string; color?: string; type?: string }) => {
+  createCategory: async (data: { name: string; description?: string; color?: string; type: CategoryType }) => {
     const response = await fetch(`${API_BASE_URL}/categories`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -169,7 +176,7 @@ export const categoryApi = {
   },
 
   // Update existing category
-  updateCategory: async (id: string, data: { name?: string; description?: string; color?: string; type?: string }) => {
+  updateCategory: async (id: string, data: { name?: string; description?: string; color?: string; type?: CategoryType }) => {
     const response = await fetch(`${API_BASE_URL}/categories/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },

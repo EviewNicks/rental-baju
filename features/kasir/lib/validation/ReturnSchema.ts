@@ -21,17 +21,12 @@ export const isLostItemCondition = (kondisiAkhir: string): boolean => {
 export const getExpectedReturnQuantity = (
   kondisiAkhir: string,
 ): { min: number; max: number; message: string } => {
-  if (isLostItemCondition(kondisiAkhir)) {
-    return {
-      min: 0,
-      max: 0,
-      message: 'Barang hilang atau tidak dikembalikan harus memiliki jumlah kembali = 0',
-    }
-  }
+  // ✅ FIX: HILANG items now require quantity > 0 (user input for penalty calculation)
+  // Backend will set jumlahKembali = 0 when processing
   return {
     min: 1,
     max: 999,
-    message: 'Barang yang dikembalikan harus memiliki jumlah kembali minimal 1',
+    message: 'Jumlah harus minimal 1 (untuk HILANG: jumlah barang yang hilang)',
   }
 }
 
@@ -68,18 +63,13 @@ export const unifiedConditionSchema = z
   })
   .refine(
     (data) => {
-      // Unified validation logic - works for all scenarios
-      const isLostItem = isLostItemCondition(data.kondisiAkhir)
-
-      if (isLostItem) {
-        return data.jumlahKembali === 0
-      } else {
-        return data.jumlahKembali >= 1
-      }
+      // ✅ FIX: Simplified validation - all categories require quantity >= 1
+      // For HILANG: quantity represents number of lost items (for penalty calculation)
+      // Backend will handle setting jumlahKembali = 0 for HILANG items
+      return data.jumlahKembali >= 1
     },
     {
-      message:
-        'Jumlah kembali tidak sesuai dengan kondisi barang. Barang hilang harus 0, barang yang dikembalikan minimal 1',
+      message: 'Jumlah harus minimal 1',
       path: ['jumlahKembali'],
     },
   )
@@ -104,23 +94,12 @@ export const unifiedReturnItemSchema = z.object({
     )
     .refine(
       (conditions) => {
-        // Validate total quantity logic for multi-condition scenarios
-        const hasLostItems = conditions.some((c) => isLostItemCondition(c.kondisiAkhir))
-        const hasReturnedItems = conditions.some((c) => !isLostItemCondition(c.kondisiAkhir))
-
-        // Allow mixed scenarios (some lost, some returned) but validate quantities
-        if (hasLostItems && hasReturnedItems) {
-          return conditions.every((c) => {
-            const isLost = isLostItemCondition(c.kondisiAkhir)
-            return isLost ? c.jumlahKembali === 0 : c.jumlahKembali > 0
-          })
-        }
-
-        return true
+        // ✅ FIX: Simplified validation - all conditions require quantity > 0
+        // No special case for HILANG - backend handles the logic
+        return conditions.every((c) => c.jumlahKembali > 0)
       },
       {
-        message:
-          'Untuk skenario mixed (sebagian hilang, sebagian dikembalikan): barang hilang harus jumlah = 0, barang yang dikembalikan harus jumlah > 0',
+        message: 'Semua kondisi harus memiliki jumlah > 0',
       },
     ),
 })

@@ -14,6 +14,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { ProductService } from '@/features/manage-product/services/productService'
+import { ProductSizeTransformer } from '@/features/manage-product/utils/ProductSizeTransformer'
 import { prisma } from '@/lib/prisma'
 import type { Product } from '@/features/manage-product/types'
 
@@ -112,8 +113,10 @@ export async function GET(request: NextRequest) {
     const availableProducts = result.products.filter(product => {
       // Hanya tampilkan produk yang available dan ada stock
       if (query.status === 'AVAILABLE') {
-        const availableStock = product.quantity - (product.rentedStock || 0)
-        return product.status === 'AVAILABLE' && availableStock > 0
+        const totalQuantity = ProductSizeTransformer.calculateTotalQuantity(product.sizes || [], 'simplified')
+        // Calculate available quantity from Enhanced ProductSize fields
+        const availableQuantity = product.sizes?.reduce((sum, size) => sum + (size.availableQuantity || 0), 0) || 0
+        return product.status === 'AVAILABLE' && availableQuantity > 0
       }
       return true
     })

@@ -79,6 +79,14 @@ export function useTransactions(options: UseTransactionsOptions = {}) {
         notes: transaction.catatan || '',
         createdAt: transaction.createdAt,
         updatedAt: transaction.updatedAt,
+        // FIX: Include kasir information from API response
+        kasir: transaction.kasir ? {
+          id: transaction.kasir.id,
+          nama: transaction.kasir.nama,
+          isActive: transaction.kasir.isActive,
+          createdAt: transaction.kasir.createdAt,
+          updatedAt: transaction.kasir.updatedAt,
+        } : undefined,
       }
     })
   }, [transactionData])

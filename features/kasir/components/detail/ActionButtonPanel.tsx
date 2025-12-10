@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { PaymentModal } from './PaymentModal'
 import { PickupModal } from './PickupModal'
 import { CancelModal } from './CancelModal'
+import { LostItemResolutionModal } from './LostItemResolutionModal'
 import type { TransactionDetail } from '../../types'
 import { isPickupAvailable, calculateTransactionPickupStatus } from '../../lib/utils/client'
 import { queryKeys } from '@/lib/react-query'
@@ -22,6 +23,7 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false)
   const [isPickupModalOpen, setIsPickupModalOpen] = useState(false)
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false)
+  const [isLostItemModalOpen, setIsLostItemModalOpen] = useState(false)
   const router = useRouter()
   const queryClient = useQueryClient()
 
@@ -93,17 +95,88 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
   // Calculate pickup status for enhanced logic
   const pickupStatus = calculateTransactionPickupStatus(transaction)
 
+  // ✅ TASK 7.1: Detect unresolved lost items
+  // FIX: Use conditionBreakdown (not multiConditionSummary.conditionBreakdown) which has resolutionStatus
+  const hasUnresolvedLostItems = transaction.products?.some((p) => {
+    // Debug logging
+    componentLogger.debug('hasUnresolvedLostItems', 'Checking product for lost items', {
+      productId: p.id,
+      productName: p.product.name,
+      hasConditionBreakdown: !!p.conditionBreakdown,
+      conditionBreakdownLength: p.conditionBreakdown?.length || 0,
+      conditionBreakdown: p.conditionBreakdown,
+    })
+
+    return p.conditionBreakdown?.some((c) => {
+      const isHilang = c.kondisiAkhir.toLowerCase().includes('hilang')
+      const isUnresolved = !c.resolutionStatus
+
+      componentLogger.debug('hasUnresolvedLostItems', 'Checking condition', {
+        conditionId: c.id,
+        kondisiAkhir: c.kondisiAkhir,
+        isHilang,
+        resolutionStatus: c.resolutionStatus,
+        isUnresolved,
+        willTriggerButton: isHilang && isUnresolved,
+      })
+
+      return isHilang && isUnresolved
+    })
+  })
+
+  // Collect lost items for modal
+  // FIX: Use conditionBreakdown (not multiConditionSummary.conditionBreakdown) which has resolutionStatus
+  const lostItems = transaction.products
+    ?.flatMap((p) =>
+      p.conditionBreakdown
+        ?.filter((c) => c.kondisiAkhir.toLowerCase().includes('hilang') && !c.resolutionStatus)
+        .map((c) => ({
+          returnRecordId: c.id || '',
+          itemId: p.id,
+          productName: p.product.name,
+          sizeInfo: p.sizeInfo || 'N/A',
+          depositAmount: Number(c.penaltyAmount || 0),
+        })) || [],
+    )
+    .filter((item) => item.returnRecordId) || []
+
+  // Debug logging for lost items
+  componentLogger.debug('lostItems', 'Lost items collection', {
+    hasUnresolvedLostItems,
+    lostItemsCount: lostItems.length,
+    lostItems: lostItems.map((item) => ({
+      returnRecordId: item.returnRecordId,
+      productName: item.productName,
+      depositAmount: item.depositAmount,
+    })),
+  })
+
   // Enhanced button visibility logic - FIXED: Allow actions for 'active', 'terlambat', and 'diambil' status
   const canReturn =
     (transaction.status === 'active' || transaction.status === 'terlambat' || transaction.status === 'diambil') &&
     transaction.products?.some((p) => p.jumlahDiambil && p.jumlahDiambil > 0)
-  const canPickup = (transaction.status === 'active' || transaction.status === 'terlambat') && isPickupAvailable(transaction)
+  
+  // ✅ TASK 10: Fix partial pickup button visibility
+  // Include 'diambil' status to support partial pickups across multiple visits
+  // isPickupAvailable() already checks for remaining items, so we just need to allow the status
+  const canPickup = (
+    transaction.status === 'active' || 
+    transaction.status === 'terlambat' ||
+    transaction.status === 'diambil'  // Allow pickup even if status is 'diambil' (for partial pickups)
+  ) && isPickupAvailable(transaction)
   const needsPayment =
     transaction.amountPaid < transaction.totalAmount ||
     (transaction.penalties && transaction.penalties.some((p) => p.status === 'pending'))
   const canCancel =
     (transaction.status === 'active' || transaction.status === 'terlambat') &&
     transaction.products?.every((p) => (p.jumlahDiambil || 0) === 0)
+
+  // ✅ FIX: Lost item resolution button visibility
+  // Show button for 'pending_resolution' (new status) and 'selesai' (backward compatibility)
+  // Hide for 'cancelled' status
+  const canResolveLostItems = 
+    hasUnresolvedLostItems && 
+    transaction.status !== 'cancelled'
 
   // COMPREHENSIVE LOGGING for debugging button visibility
   componentLogger.debug('render', 'Button visibility calculation', {
@@ -163,6 +236,17 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
           </Button>
         )}
 
+        {/* ✅ TASK 7.3: Resolve Lost Items Button */}
+        {canResolveLostItems && (
+          <Button
+            onClick={() => setIsLostItemModalOpen(true)}
+            className="w-full bg-orange-600 hover:bg-orange-700 text-white"
+          >
+            <Package className="h-4 w-4 mr-2" />
+            Resolve Barang Hilang
+          </Button>
+        )}
+
         {/* Process Payment */}
         {needsPayment && (
           <Button
@@ -207,6 +291,12 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
             <div className="flex items-center gap-2 text-green-600">
               <Package className="h-4 w-4" />
               Barang telah diambil
+            </div>
+          )}
+          {transaction.status === 'pending_resolution' && (
+            <div className="flex items-center gap-2 text-orange-600">
+              <AlertTriangle className="h-4 w-4" />
+              Menunggu resolusi barang hilang
             </div>
           )}
           {transaction.status === 'selesai' && (
@@ -270,6 +360,29 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
           })
         }}
         transaction={transaction}
+      />
+
+      {/* ✅ TASK 7.4: Lost Item Resolution Modal */}
+      <LostItemResolutionModal
+        isOpen={isLostItemModalOpen}
+        onClose={() => {
+          componentLogger.info('onClose', 'Lost item modal closing - triggering data refresh')
+
+          setIsLostItemModalOpen(false)
+          setIsProcessing(null)
+
+          // Force refresh transaction data after resolution
+          queryClient.invalidateQueries({
+            queryKey: queryKeys.kasir.transaksi.detail(transaction.transactionCode),
+          })
+
+          componentLogger.debug('onClose', 'Query invalidation triggered for lost item resolution', {
+            transactionCode: transaction.transactionCode,
+            queryKey: queryKeys.kasir.transaksi.detail(transaction.transactionCode)
+          })
+        }}
+        transaction={transaction}
+        lostItems={lostItems}
       />
     </div>
   )

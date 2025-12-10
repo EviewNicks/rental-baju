@@ -15,15 +15,15 @@ async function validateImport() {
     const products = await prisma.product.findMany({
       where: {
         categoryId: ORGANZA_CATEGORY_ID,
-        isActive: true
+        isActive: true,
       },
       include: {
         category: true,
-        sizes: true
+        sizes: true,
       },
       orderBy: {
-        code: 'asc'
-      }
+        code: 'asc',
+      },
     })
 
     console.log(`✅ Found ${products.length} Organza products`)
@@ -35,54 +35,44 @@ async function validateImport() {
     }
 
     console.log('📊 Product Details:')
-    console.log('=' .repeat(80))
+    console.log('='.repeat(80))
 
-    let totalStock = 0
     let totalSizes = 0
 
     products.forEach((product, index) => {
       const sizeCount = product.sizes.length
-      totalStock += product.quantity
       totalSizes += sizeCount
 
       console.log(`${index + 1}. ${product.code} - ${product.name}`)
       console.log(`   Price: Rp${product.currentPrice.toString()}`)
-      console.log(`   Stock: ${product.quantity} items`)
       console.log(`   Sizes: ${sizeCount} variations`)
 
-      product.sizes.forEach(size => {
+      product.sizes.forEach((size) => {
         console.log(`      - ${size.ageCategory} ${size.size}: ${size.quantity} items`)
       })
 
       console.log('')
     })
 
-    console.log('=' .repeat(80))
+    console.log('='.repeat(80))
     console.log('📈 Summary:')
     console.log(`   Total Products: ${products.length}`)
-    console.log(`   Total Stock: ${totalStock} items`)
     console.log(`   Total Size Records: ${totalSizes}`)
     console.log(`   Category: ${products[0]?.category.name || 'N/A'}`)
-    console.log('=' .repeat(80))
+    console.log('='.repeat(80))
 
     console.log('')
     console.log('✅ Validation Complete!')
 
     const expectedProducts = 14
-    const expectedStock = 141
 
     if (products.length === expectedProducts) {
       console.log(`✅ Product count matches expected (${expectedProducts})`)
     } else {
-      console.log(`⚠️  Product count mismatch: Expected ${expectedProducts}, got ${products.length}`)
+      console.log(
+        `⚠️  Product count mismatch: Expected ${expectedProducts}, got ${products.length}`,
+      )
     }
-
-    if (totalStock === expectedStock) {
-      console.log(`✅ Total stock matches expected (${expectedStock})`)
-    } else {
-      console.log(`⚠️  Stock count mismatch: Expected ${expectedStock}, got ${totalStock}`)
-    }
-
   } catch (error) {
     console.error('❌ Validation failed:', error)
     throw error

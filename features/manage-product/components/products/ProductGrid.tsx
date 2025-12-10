@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import type { Product } from '@/features/manage-product/types'
 import { getStatusBadge, formatCurrency } from '@/features/manage-product/lib/utils/product'
+import { BreakEvenBadge } from '../shared/BreakEvenBadge'
 import { lightenColor } from '../../lib/utils/color'
 import { getContrastTextColor } from '../../lib/utils/color'
 import { getValidImageUrl } from '../../lib/utils/imageValidate'
@@ -20,9 +21,21 @@ export function ProductGrid({ products, onProductClick }: ProductGridProps) {
       {products.map((product) => (
         <Card
           key={product.id}
-          className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer py-0"
+          className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer py-0 relative"
           onClick={() => onProductClick(product)}
         >
+          {/* RPK-MODAL: Corner Badge */}
+          {product.breakEvenStatus?.isBreakEven && (
+            <div className="absolute top-2 right-2 z-10">
+              <BreakEvenBadge
+                modalAwal={product.breakEvenStatus.modalAwal}
+                totalRevenue={product.breakEvenStatus.totalRevenue}
+                transactionCount={product.breakEvenStatus.transactionCount}
+                size="sm"
+                showTooltip={true}
+              />
+            </div>
+          )}
           <div className="aspect-[4/3] bg-gray-100 relative overflow-hidden">
             <Image
               src={getValidImageUrl(product.imageUrl)}

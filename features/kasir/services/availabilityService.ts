@@ -5,7 +5,7 @@
  */
 
 import { PrismaClient } from '@prisma/client'
-import { calculateAvailableStock } from '../lib/typeUtils'
+import { inventoryService } from './inventoryService'
 
 export interface ProductAvailability {
   productId: string
@@ -40,13 +40,11 @@ export class AvailabilityService {
     productId: string,
     checkDate: Date = new Date()
   ): Promise<ProductAvailability> {
-    // Get product with inventory tracking fields
+    // Get product using Enhanced ProductSize schema
     const product = await this.prisma.product.findUnique({
       where: { id: productId },
       select: {
         id: true,
-        quantity: true,        // Total inventory (immutable)
-        rentedStock: true,     // Currently rented out
         status: true
       }
     })
@@ -91,15 +89,14 @@ export class AvailabilityService {
       }
     })
 
-    // SIMPLIFIED: Use database fields directly instead of calculations
-    // Calculate available stock using utility function
-    const availableQuantity = calculateAvailableStock(product.quantity, product.rentedStock)
-    
+    // ENHANCED: Use InventoryService for Enhanced ProductSize fields
+    const stockStatus = await inventoryService.getProductStockStatus(productId)
+
     return {
       productId,
-      totalStock: product.quantity,           // Total inventory (unchanged during rentals)
-      rentedQuantity: product.rentedStock,    // Currently rented out
-      availableQuantity,                      // Calculated: quantity - rentedStock
+      totalStock: stockStatus.totalQuantity,           // Total inventory from Enhanced ProductSize
+      rentedQuantity: stockStatus.rentedQuantity,     // Currently rented out
+      availableQuantity: stockStatus.availableQuantity, // Available from Enhanced ProductSize
       activeRentals: activeRentals.map(rental => ({
         transaksiId: rental.transaksi.id,
         transaksiKode: rental.transaksi.kode,
@@ -227,9 +224,7 @@ export class AvailabilityService {
         status: 'AVAILABLE'
       },
       select: {
-        id: true,
-        quantity: true,
-        rentedStock: true
+        id: true
       }
     })
 
@@ -238,14 +233,14 @@ export class AvailabilityService {
     let outOfStock = 0
     let totalRented = 0
 
+    // ENHANCED: Use InventoryService for each product
     for (const product of products) {
-      // Calculate available stock using utility function
-      const availableStock = calculateAvailableStock(product.quantity, product.rentedStock)
-      totalRented += product.rentedStock
+      const stockStatus = await inventoryService.getProductStockStatus(product.id)
+      totalRented += stockStatus.rentedQuantity
 
-      if (availableStock === 0) {
+      if (stockStatus.availableQuantity === 0) {
         outOfStock++
-      } else if (availableStock === product.quantity) {
+      } else if (stockStatus.availableQuantity === stockStatus.totalQuantity) {
         fullyAvailable++
       } else {
         partiallyAvailable++
@@ -281,8 +276,6 @@ export class AvailabilityService {
         id: true,
         name: true,
         code: true,
-        quantity: true,
-        rentedStock: true,
         category: {
           select: { name: true }
         }
@@ -291,17 +284,17 @@ export class AvailabilityService {
 
     const lowStockProducts = []
 
+    // ENHANCED: Use InventoryService for each product
     for (const product of products) {
-      // Calculate available stock using utility function
-      const availableStock = calculateAvailableStock(product.quantity, product.rentedStock)
-      
-      if (availableStock <= threshold && availableStock > 0) {
+      const stockStatus = await inventoryService.getProductStockStatus(product.id)
+
+      if (stockStatus.availableQuantity <= threshold && stockStatus.availableQuantity > 0) {
         lowStockProducts.push({
           productId: product.id,
           productName: product.name,
           productCode: product.code,
-          totalStock: product.quantity,
-          availableQuantity: availableStock,
+          totalStock: stockStatus.totalQuantity,
+          availableQuantity: stockStatus.availableQuantity,
           categoryName: product.category.name
         })
       }

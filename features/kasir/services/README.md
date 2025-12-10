@@ -7,25 +7,25 @@ This directory contains all business logic services for the kasir (cashier) modu
 ## Services
 
 ### TransaksiService (`transaksiService.ts`)
-Handles transaction creation and management with dual inventory system support.
+Handles transaction creation and management with Enhanced ProductSize schema integration.
 
 **Key Methods**:
 - `createTransaksi()` - Legacy transaction creation
-- `createTransaksiSizeAware()` - Size-aware transaction creation (optimized)
+- `createTransaksiSizeAware()` - Size-aware transaction creation with InventoryService
 - `updateTransaksiStatus()` - Transaction status updates
 - `getTransaksiForValidation()` - Transaction data for validation
 
-**Recent Fixes (RPK-52)**:
-- ✅ Fixed dual inventory system updates in `createTransaksiSizeAware()`
-- ✅ Added `updateProductQuantities()` call to maintain `rentedStock` consistency
-- ✅ Parallel execution of size-aware and legacy stock updates
-- ✅ Enhanced logging for performance tracking
+**Recent Updates (Phase 3 - Inventory System Simplification)**:
+- ✅ **Integrated InventoryService**: Uses centralized inventory management
+- ✅ **Real-time Stock Validation**: Enhanced stock availability checking
+- ✅ **Atomic Operations**: Single source of truth for inventory updates
+- ✅ **Eliminated Dual System Complexity**: Simplified stock tracking logic
 
 ### UnifiedReturnService (`returnService.ts`)
-Optimized return processing with single transaction approach.
+Optimized return processing with single transaction approach and InventoryService integration.
 
 **Key Methods**:
-- `processUnifiedReturn()` - Main return processing method (optimized)
+- `processUnifiedReturn()` - Main return processing method with InventoryService
 - `processLegacyReturn()` - Legacy compatibility wrapper
 - `validateItemReturn()` - Lightweight inline validation helper
 
@@ -34,20 +34,56 @@ Optimized return processing with single transaction approach.
 - ✅ **Race condition elimination**: All validation inside transaction scope
 - ✅ **Database operations reduction**: 8-10 reads → 2-3 reads
 - ✅ **Code complexity reduction**: 878 lines → ~400 lines
+- ✅ **Enhanced Stock Management**: Uses InventoryService for atomic stock updates
+
+### InventoryService (`inventoryService.ts`) - NEW
+**Centralized inventory management service providing single source of truth for stock tracking using Enhanced ProductSize schema.**
+
+**Core Methods**:
+- `updateStockOnCreate(sizeId, quantity)` - Atomic stock decrement when creating transactions
+- `updateStockOnReturn(sizeId, quantity)` - Atomic stock increment when processing returns
+- `checkAvailability(sizeId, requestedQty)` - Real-time stock availability validation
+- `getStockStatus(sizeId)` - Comprehensive inventory information for specific size
+
+**Helper Methods**:
+- `checkAvailabilityByProductAndSize(productId, size, qty)` - Find ProductSize then check availability
+- `getProductStockStatus(productId)` - Get stock status for all sizes of a product
+- `validateConsistency(sizeId)` - Data integrity validation and consistency checks
+
+**Architecture Benefits**:
+- ✅ **Single Source of Truth**: Eliminates dual inventory system complexity
+- ✅ **Atomic Operations**: Prevents race conditions with single-table updates
+- ✅ **Performance Optimized**: Direct database operations without transaction overhead
+- ✅ **Real-time Accuracy**: Always reflects current inventory state
+- ✅ **Error Handling**: Comprehensive error messages and logging
+- ✅ **Type Safety**: Full TypeScript support with interfaces
 
 ## Architecture Patterns
 
-### Dual Inventory System
-The system maintains two inventory tracking methods:
+### Enhanced ProductSize Schema (Phase 3 Implementation)
+The system now uses single source of truth for inventory tracking:
 
-1. **Legacy System**: `Product.quantity` and `Product.rentedStock`
-2. **Size-Aware System**: `ProductSize.quantity` for size-specific tracking
+**Enhanced ProductSize Fields**:
+- `originalQuantity` - Total initial stock quantity
+- `rentedQuantity` - Currently rented/rented out quantity
+- `availableQuantity` - Available for rent (original - rented)
+- `isActive` - Size status for inventory management
 
-### Transaction Flow
+**Migration from Dual System**:
+- **Previous**: Product.quantity + Product.rentedStock + ProductSize.quantity
+- **New**: ProductSize.originalQuantity + ProductSize.rentedQuantity + ProductSize.availableQuantity
+
+### Transaction Flow (Simplified)
 ```
-CREATE → Dual Updates (ProductSize.quantity--, Product.rentedStock++)
-RETURN → Dual Restoration (ProductSize.quantity++, Product.rentedStock--)
+CREATE → InventoryService.updateStockOnCreate(sizeId, quantity)
+RETURN → InventoryService.updateStockOnReturn(sizeId, quantity)
 ```
+
+### InventoryService Pattern
+- **Atomic Operations**: Single-table updates prevent race conditions
+- **Real-time Validation**: Stock availability checked before transactions
+- **Performance Optimized**: Stock updates moved outside main transactions
+- **Centralized Logic**: Single service handles all inventory operations
 
 ### Return Processing Flow (Optimized)
 ```

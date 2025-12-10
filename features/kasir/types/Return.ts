@@ -161,8 +161,16 @@ export interface LegacyEnhancedReturnProcessingResult {
 
 /**
  * Transaction status for return processing
+ * ✅ FIXED: Aligned with TransactionStatus - removed invalid 'dikembalikan' status
+ * Valid statuses for return processing include all active/in-progress states
  */
-export type ExtendedTransactionStatus = 'active' | 'dikembalikan' | 'terlambat' | 'cancelled'
+export type ExtendedTransactionStatus = 
+  | 'active'              // Transaction created, items not picked up
+  | 'diambil'             // Items picked up by customer (valid for return)
+  | 'pending_resolution'  // Waiting for lost item resolution (valid for return)
+  | 'terlambat'           // Transaction overdue (valid for return)
+  | 'cancelled'           // Transaction cancelled
+  | 'selesai'             // Transaction completed (for reference)
 
 /**
  * Transaction item for return validation

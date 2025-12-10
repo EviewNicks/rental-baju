@@ -8,7 +8,7 @@ import { TransactionTabs } from './TransactionTabs'
 import { TransactionTable } from './TransactionsTable'
 import { Button } from '@/components/ui/button'
 import { AuthenticationControls } from '@/features/auth/components/AuthenticationControls'
-import { Plus, Shirt } from 'lucide-react'
+import { Plus, Shirt, Wallet } from 'lucide-react'
 
 export function TransactionsDashboard() {
   const [activeTab, setActiveTab] = useState<TransactionStatus | 'all'>('all')
@@ -150,8 +150,21 @@ export function TransactionsDashboard() {
             </p>
           </div>
 
-        {/* Add Transaction Button */}
-        <div className="flex justify-end">
+        {/* Action Buttons */}
+        <div className="flex justify-end gap-3">
+          {/* Dana Kasir Button */}
+          <Link href="/dana-kasir" data-testid="dana-kasir-link">
+            <Button
+              variant="outline"
+              className="bg-green-50 border-green-200 text-green-700 hover:bg-green-100 hover:border-green-300 font-medium shadow-sm"
+              data-testid="dana-kasir-button"
+            >
+              <Wallet className="h-4 w-4 mr-2" />
+              Dana Kasir
+            </Button>
+          </Link>
+
+          {/* Add Transaction Button */}
           <Link href="/dashboard/new" data-testid="add-transaction-link">
             <Button
               className="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-medium shadow-lg shadow-yellow-400/25"

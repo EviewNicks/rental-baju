@@ -9,9 +9,9 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
-import { AdvancedProductSizeAggregationService } from '@/features/manage-product/services/advancedProductSizeAggregationService'
+import { ProductSizeAggregationService } from '@/features/manage-product/services/productSizeAggregationService'
 import { prisma } from '@/lib/prisma'
-import { advancedProductParamsSchema } from '@/features/manage-product/lib/validation/advancedProductSchema'
+import { productParamsSchema } from '@/features/manage-product/lib/validation/productSchema'
 import { NotFoundError } from '@/features/manage-product/lib/errors/AppError'
 
 export async function GET(
@@ -31,7 +31,7 @@ export async function GET(
     const { id } = await params
 
     // Validate product ID parameter
-    const { id: validatedId } = advancedProductParamsSchema.parse({ id })
+    const { id: validatedId } = productParamsSchema.parse({ id })
 
     // Parse query parameters
     const { searchParams } = new URL(request.url)
@@ -61,15 +61,20 @@ export async function GET(
       )
     }
 
-    // Initialize advanced aggregation service
-    const aggregationService = new AdvancedProductSizeAggregationService(prisma, {
+    // Initialize aggregation service
+    const aggregationService = new ProductSizeAggregationService(prisma, {
+      enableCaching: !queryParams.forceRefresh,
+      includeBreakdown: queryParams.includeBreakdown,
+    }, {
       enableCaching: !queryParams.forceRefresh,
       includeBreakdown: queryParams.includeBreakdown,
       includeRentalTracking: queryParams.includeRentalTracking,
+      performanceThresholdMs: 50,
+      maxCacheSize: 1000,
     })
 
     // Get advanced aggregated sizes
-    const aggregationResponse = await aggregationService.getAdvancedAggregatedSizes(
+    const aggregationResponse = await aggregationService.getAggregatedSizes(
       validatedId,
       {
         includeBreakdown: queryParams.includeBreakdown,

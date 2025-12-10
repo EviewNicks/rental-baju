@@ -53,7 +53,7 @@ export class CategoryService {
       data: {
         name: validatedData.name,
         color: validatedData.color,
-        type: validatedData.type || 'clothing', // Default to 'clothing' if not provided
+        type: validatedData.type, // Type is now guaranteed by schema default
         createdBy: this.userId,
       },
     })

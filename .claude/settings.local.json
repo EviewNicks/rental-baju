@@ -65,8 +65,6 @@
       "mcp__playwright__playwright_console_logs",
       "Bash(timeout 10s yarn app:*)",
       "Bash(true)",
-      "Bash(npx prisma db execute:*)",
-      "Bash(npx prisma:*)",
       "Bash(cat:*)",
       "WebSearch",
       "WebFetch(domain:github.com)",
@@ -75,28 +73,6 @@
       "mcp__playwright__playwright_hover",
       "Bash(git fetch:*)",
       "Bash(git add:*)",
-      "Read(/D:\\.work\\rental-software\\features\\homepage\\component/**)",
-      "Read(/D:\\.work\\rental-software\\features\\homepage\\component/**)",
-      "Read(/D:\\.work\\rental-software\\features\\auth\\hooks/**)",
-      "Read(/D:\\.work\\rental-software\\app\\owner/**)",
-      "Read(/D:\\.work\\rental-software\\app\\owner/**)",
-      "Read(/D:\\.work\\rental-software\\app\\(kasir)/**)",
-      "Read(/D:\\.work\\rental-software\\features\\homepage\\component/**)",
-      "Read(/D:\\.work\\rental-software\\features\\auth\\hooks/**)",
-      "Read(/D:\\.work\\rental-software\\app\\(kasir)/**)",
-      "Read(/D:\\.work\\rental-software\\app\\producer/**)",
-      "Read(/D:\\.work\\rental-software\\app\\owner/**)",
-      "Read(/D:\\.work\\rental-software\\app\\owner/**)",
-      "Read(/D:\\.work\\rental-software\\app\\(kasir)\\dashboard/**)",
-      "Read(/D:\\.work\\rental-software\\app\\producer\\manage-product/**)",
-      "Read(/D:\\.work\\rental-software\\app\\owner/**)",
-      "Read(/D:\\.work\\rental-software\\app\\producer/**)",
-      "Read(/D:\\.work\\rental-software\\app\\(kasir)/**)",
-      "Read(/D:\\.work\\rental-software\\features\\auth\\hooks/**)",
-      "Read(/D:\\.work\\rental-software\\app\\owner/**)",
-      "Read(/D:\\.work\\rental-software\\app\\api\\kasir\\produk\\available/**)",
-      "Read(/D:\\.work\\rental-software\\features\\manage-product\\docs\\task/**)",
-      "Read(/D:\\.work\\rental-software\\app\\api\\kasir\\produk\\available/**)",
       "mcp__atlassian__getAccessibleAtlassianResources",
       "mcp__atlassian__getConfluencePage",
       "mcp__atlassian__getVisibleJiraProjects",
@@ -104,9 +80,14 @@
       "Bash(dir:*)",
       "Bash(npx tsx:*)",
       "Bash(yarn lint:fix:*)",
-      "WebFetch(domain:clerk.com)"
+      "WebFetch(domain:clerk.com)",
+      "mcp__tavily__tavily-search"
     ],
     "deny": []
   },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "@21st-dev/magic"
+  ],
   "outputStyle": "default"
 }

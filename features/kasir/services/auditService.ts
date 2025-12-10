@@ -14,7 +14,7 @@ export type AuditData =
   | undefined
 
 export interface AuditLogEntry {
-  entityType: 'penyewa' | 'transaksi' | 'pembayaran' | 'produk'
+  entityType: 'penyewa' | 'transaksi' | 'pembayaran' | 'produk' | 'kasir'
   entityId: string
   action: 'create' | 'read' | 'update' | 'delete'
   userId: string
@@ -148,6 +148,28 @@ export class AuditService {
   ): Promise<void> {
     await this.logActivity({
       entityType: 'pembayaran',
+      entityId,
+      action,
+      oldData,
+      newData,
+      metadata,
+      userId: this.userId,
+      userRole: this.userRole
+    })
+  }
+
+  /**
+   * Log cashier (kasir) operations
+   */
+  async logKasirActivity(
+    action: 'create' | 'read' | 'update' | 'delete',
+    entityId: string,
+    oldData?: AuditData,
+    newData?: AuditData,
+    metadata?: Record<string, unknown>
+  ): Promise<void> {
+    await this.logActivity({
+      entityType: 'kasir',
       entityId,
       action,
       oldData,

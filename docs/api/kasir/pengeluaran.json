@@ -1,0 +1,344 @@
+{
+  "info": {
+    "name": "Dana Kasir - Pengeluaran API",
+    "description": "API testing untuk Expense Management (Pengeluaran Kasir). Includes CRUD operations untuk pengeluaran dengan role-based access control.\n\n🔐 AUTHENTICATION:\n• Menggunakan Clerk session token dari browser cookies\n• Role: Kasir (write), Owner (read-only)\n\n📋 ENDPOINTS:\n• GET /api/kasir/pengeluaran - List expenses by date\n• POST /api/kasir/pengeluaran - Create new expense\n• PUT /api/kasir/pengeluaran/[id] - Update expense\n• DELETE /api/kasir/pengeluaran/[id] - Soft delete expense\n\n⚡ VALIDATION:\n• Amount: Positive number, max 999999999.99\n• Category: Operasional, Maintenance, Transport, Lainnya\n• Description: Max 500 characters (optional)\n\n📚 Documentation: .kiro/specs/dana-kasir-management/",
+    "version": "1.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "cookie",
+    "cookie": [
+      {
+        "key": "__session",
+        "value": "{{clerk_session_token}}",
+        "description": "Clerk session token dari browser"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "description": "Base URL aplikasi"
+    },
+    {
+      "key": "expense_id",
+      "value": "",
+      "description": "ID pengeluaran untuk testing update/delete"
+    },
+    {
+      "key": "test_date",
+      "value": "2025-01-29",
+      "description": "Tanggal untuk testing (format: YYYY-MM-DD)"
+    }
+  ],
+  "item": [
+    {
+      "name": "Get Expenses by Date",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/kasir/pengeluaran?date={{test_date}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "kasir", "pengeluaran"],
+          "query": [
+            {
+              "key": "date",
+              "value": "{{test_date}}",
+              "description": "Tanggal dalam format YYYY-MM-DD (optional, default: today)"
+            }
+          ]
+        },
+        "description": "Get list of expenses untuk tanggal tertentu. Default: today in WITA timezone.\n\n✅ Auth: Kasir (read), Owner (read)\n📅 Timezone: WITA (Asia/Makassar)\n🔍 Filter: Active expenses only (isActive=true)"
+      },
+      "response": [
+        {
+          "name": "Success Response",
+          "originalRequest": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/kasir/pengeluaran?date=2025-01-29",
+              "host": ["{{base_url}}"],
+              "path": ["api", "kasir", "pengeluaran"]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"id\": \"uuid-1\",\n      \"kasirId\": \"kasir-uuid-1\",\n      \"harga\": 50000,\n      \"kategori\": \"Operasional\",\n      \"deskripsi\": \"Beli pulsa untuk komunikasi\",\n      \"isActive\": true,\n      \"createdAt\": \"2025-01-29T10:30:00Z\",\n      \"updatedAt\": \"2025-01-29T10:30:00Z\",\n      \"createdBy\": \"user-123\",\n      \"kasir\": {\n        \"id\": \"kasir-uuid-1\",\n        \"nama\": \"Budi Santoso\"\n      }\n    }\n  ]\n}"
+        }
+      ]
+    },
+    {
+      "name": "Create Expense",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "  const response = pm.response.json();",
+              "  pm.collectionVariables.set('expense_id', response.data.id);",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"harga\": 75000,\n  \"kategori\": \"Transport\",\n  \"deskripsi\": \"Bensin motor untuk antar produk\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/kasir/pengeluaran",
+          "host": ["{{base_url}}"],
+          "path": ["api", "kasir", "pengeluaran"]
+        },
+        "description": "Create new expense record.\n\n✅ Auth: Kasir (write only)\n📋 Required: harga, kategori\n📝 Optional: deskripsi\n\n🔍 Validation:\n• harga: Positive number, max 999999999.99\n• kategori: Operasional, Maintenance, Transport, Lainnya\n• deskripsi: Max 500 characters"
+      },
+      "response": [
+        {
+          "name": "Success Response",
+          "originalRequest": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"harga\": 75000,\n  \"kategori\": \"Transport\",\n  \"deskripsi\": \"Bensin motor untuk antar produk\"\n}"
+            }
+          },
+          "status": "Created",
+          "code": 201,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"success\": true,\n  \"data\": {\n    \"id\": \"uuid-2\",\n    \"kasirId\": \"kasir-uuid-1\",\n    \"harga\": 75000,\n    \"kategori\": \"Transport\",\n    \"deskripsi\": \"Bensin motor untuk antar produk\",\n    \"isActive\": true,\n    \"createdAt\": \"2025-01-29T14:20:00Z\",\n    \"updatedAt\": \"2025-01-29T14:20:00Z\",\n    \"createdBy\": \"user-123\",\n    \"kasir\": {\n      \"id\": \"kasir-uuid-1\",\n      \"nama\": \"Budi Santoso\"\n    }\n  }\n}"
+        }
+      ]
+    },
+    {
+      "name": "Update Expense",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"harga\": 80000,\n  \"kategori\": \"Transport\",\n  \"deskripsi\": \"Bensin motor untuk antar produk (updated)\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/kasir/pengeluaran/{{expense_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "kasir", "pengeluaran", "{{expense_id}}"]
+        },
+        "description": "Update existing expense record.\n\n✅ Auth: Kasir (write only, own expenses)\n📝 Fields: harga, kategori, deskripsi (all optional)\n🔒 Preserved: kasirId, createdAt, id\n⏰ Updated: updatedAt (automatic)"
+      },
+      "response": [
+        {
+          "name": "Success Response",
+          "originalRequest": {
+            "method": "PUT",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"harga\": 80000,\n  \"deskripsi\": \"Bensin motor untuk antar produk (updated)\"\n}"
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"success\": true,\n  \"data\": {\n    \"id\": \"uuid-2\",\n    \"kasirId\": \"kasir-uuid-1\",\n    \"harga\": 80000,\n    \"kategori\": \"Transport\",\n    \"deskripsi\": \"Bensin motor untuk antar produk (updated)\",\n    \"isActive\": true,\n    \"createdAt\": \"2025-01-29T14:20:00Z\",\n    \"updatedAt\": \"2025-01-29T14:25:00Z\",\n    \"createdBy\": \"user-123\",\n    \"kasir\": {\n      \"id\": \"kasir-uuid-1\",\n      \"nama\": \"Budi Santoso\"\n    }\n  }\n}"
+        }
+      ]
+    },
+    {
+      "name": "Delete Expense",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/kasir/pengeluaran/{{expense_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "kasir", "pengeluaran", "{{expense_id}}"]
+        },
+        "description": "Soft delete expense record.\n\n✅ Auth: Kasir (write only, own expenses)\n🗑️ Soft Delete: Sets isActive=false\n📊 Audit Trail: Record preserved in database"
+      },
+      "response": [
+        {
+          "name": "Success Response",
+          "originalRequest": {
+            "method": "DELETE"
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"success\": true,\n  \"message\": \"Expense deleted successfully\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "Validation Error - Invalid Amount",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"harga\": -5000,\n  \"kategori\": \"Operasional\",\n  \"deskripsi\": \"Test invalid amount\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/kasir/pengeluaran",
+          "host": ["{{base_url}}"],
+          "path": ["api", "kasir", "pengeluaran"]
+        },
+        "description": "Test validation error untuk amount yang invalid (negative number)."
+      },
+      "response": [
+        {
+          "name": "Validation Error",
+          "originalRequest": {
+            "method": "POST"
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"success\": false,\n  \"error\": {\n    \"message\": \"Validation failed\",\n    \"code\": \"VALIDATION_ERROR\",\n    \"details\": [\n      {\n        \"field\": \"harga\",\n        \"message\": \"Jumlah harus lebih besar dari 0\",\n        \"code\": \"too_small\"\n      }\n    ]\n  }\n}"
+        }
+      ]
+    },
+    {
+      "name": "Validation Error - Invalid Category",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"harga\": 50000,\n  \"kategori\": \"InvalidCategory\",\n  \"deskripsi\": \"Test invalid category\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/kasir/pengeluaran",
+          "host": ["{{base_url}}"],
+          "path": ["api", "kasir", "pengeluaran"]
+        },
+        "description": "Test validation error untuk kategori yang invalid."
+      },
+      "response": [
+        {
+          "name": "Validation Error",
+          "originalRequest": {
+            "method": "POST"
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"success\": false,\n  \"error\": {\n    \"message\": \"Validation failed\",\n    \"code\": \"VALIDATION_ERROR\",\n    \"details\": [\n      {\n        \"field\": \"kategori\",\n        \"message\": \"Kategori harus dipilih\",\n        \"code\": \"invalid_enum_value\"\n      }\n    ]\n  }\n}"
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Basic response validation",
+          "pm.test('Response has valid structure', function () {",
+          "  const response = pm.response.json();",
+          "  pm.expect(response).to.have.property('success');",
+          "});",
+          "",
+          "// Success response validation",
+          "if (pm.response.code === 200 || pm.response.code === 201) {",
+          "  pm.test('Success response has data', function () {",
+          "    const response = pm.response.json();",
+          "    pm.expect(response.success).to.eql(true);",
+          "    if (pm.request.method !== 'DELETE') {",
+          "      pm.expect(response).to.have.property('data');",
+          "    }",
+          "  });",
+          "}",
+          "",
+          "// Error response validation",
+          "if (pm.response.code >= 400) {",
+          "  pm.test('Error response has proper structure', function () {",
+          "    const response = pm.response.json();",
+          "    pm.expect(response.success).to.eql(false);",
+          "    pm.expect(response).to.have.property('error');",
+          "    pm.expect(response.error).to.have.property('message');",
+          "    pm.expect(response.error).to.have.property('code');",
+          "  });",
+          "}",
+          "",
+          "// Performance check",
+          "pm.test('Response time is under 2s', function () {",
+          "  pm.expect(pm.response.responseTime).to.be.below(2000);",
+          "});"
+        ]
+      }
+    }
+  ]
+}

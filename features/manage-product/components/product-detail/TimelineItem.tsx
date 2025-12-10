@@ -2,6 +2,7 @@
  * TimelineItem Component - RPK-46 Product History
  * Individual timeline entry for product rental history
  * Follows ActivityTimeline.tsx visual patterns and structure
+ * ENHANCED: Now displays activity timeline, size information, and detailed penalty breakdown
  */
 
 'use client'
@@ -9,6 +10,8 @@
 import React from 'react'
 import { Calendar, User, TrendingUp, AlertCircle } from 'lucide-react'
 import { formatDate, formatCurrency } from '@/features/kasir/lib/utils/client'
+import { SizeDisplay } from './SizeDisplay'
+import { PenaltyBadge } from './PenaltyBadge'
 import type { ProductHistoryItem } from '../../types/productHistory'
 
 interface TimelineItemProps {
@@ -92,6 +95,13 @@ export function TimelineItem({
             </span>
           </div>
 
+          {/* NEW: Size Information */}
+          {item.sizeInfo && (
+            <div className="mt-2">
+              <SizeDisplay sizeInfo={item.sizeInfo} compact />
+            </div>
+          )}
+
           {/* Transaction Details */}
           <div className="mt-2 p-3 bg-gray-50 rounded-lg">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
@@ -156,6 +166,13 @@ export function TimelineItem({
               {item.rentalEnd ? formatDate(item.rentalEnd.toString()) : 'Belum selesai'}
             </div>
           </div>
+
+          {/* NEW: Detailed Penalty Breakdown (Requirements 4.4, 4.5, 4.6) */}
+          {item.penalty && (
+            <div className="mt-3">
+              <PenaltyBadge penalty={item.penalty} data-testid="penalty-badge" />
+            </div>
+          )}
         </div>
       </div>
 

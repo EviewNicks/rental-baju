@@ -66,6 +66,25 @@ export const penyewaQuerySchema = z.object({
   search: z.string().optional()
 })
 
+// Kasir (Cashier) Validation Schemas
+export const createKasirSchema = z.object({
+  nama: z
+    .string()
+    .min(2, 'Nama kasir minimal 2 karakter')
+    .max(100, 'Nama kasir maksimal 100 karakter')
+    .regex(/^[a-zA-Z\s.,'-]+$/, 'Nama kasir hanya boleh mengandung huruf dan tanda baca'),
+  isActive: z.boolean().optional().default(true)
+})
+
+export const updateKasirSchema = createKasirSchema.partial()
+
+export const kasirQuerySchema = z.object({
+  page: z.coerce.number().min(1).default(1),
+  limit: z.coerce.number().min(1).max(100).default(10),
+  search: z.string().optional(),
+  isActive: z.coerce.boolean().optional()
+})
+
 // Transaksi (Transaction) Validation Schemas - Size-Aware
 export const createTransaksiItemSchema = z.object({
   produkId: z.string().uuid('ID produk tidak valid'),
@@ -85,6 +104,7 @@ export const createTransaksiItemLegacySchema = z.object({
 
 export const createTransaksiSchema = z.object({
   penyewaId: z.string().uuid('ID penyewa tidak valid'),
+  kasirId: z.string().uuid('ID kasir tidak valid').optional().or(z.literal('')),
   items: z
     .array(createTransaksiItemSchema)
     .min(1, 'Minimal harus ada 1 item')
@@ -157,7 +177,7 @@ export const updateTransaksiItemSchema = z.object({
 })
 
 export const updateTransaksiSchema = z.object({
-  status: z.enum(['active', 'diambil', 'selesai', 'terlambat', 'cancelled']).optional(),
+  status: z.enum(['active', 'diambil', 'selesai', 'terlambat', 'cancelled', 'pending_resolution']).optional(),
   tglKembali: z.string().datetime('Format tanggal kembali tidak valid (ISO 8601)').optional(),
   catatan: z.string().max(1000, 'Catatan maksimal 1000 karakter').optional(),
   items: z.array(updateTransaksiItemSchema).optional()
@@ -190,17 +210,20 @@ export const createPembayaranSchema = z.object({
   catatan: z.string().max(500, 'Catatan maksimal 500 karakter').optional()
 })
 
-// Product Availability Query Schema - Enhanced for Kasir Workflow
+// Product Availability Query Schema - Enhanced for Kasir Workflow with ProductSize support
 export const productAvailabilityQuerySchema = z.object({
   page: z.coerce.number().min(1).default(1),
   limit: z.coerce.number().min(1).max(100).default(10),
   search: z.string().optional(),
   categoryId: z.string().uuid('ID kategori tidak valid').optional(),
   available: z.coerce.boolean().default(true),
-  size: z.union([z.string(), z.array(z.string())]).optional(),
+  // Enhanced ProductSize filtering
+  size: z.union([z.string(), z.array(z.string())]).optional(), // Size filter (S, M, L, etc.)
+  ageCategory: z.union([z.string(), z.array(z.string())]).optional(), // Age category filter (ADULT, CHILD, UNIVERSAL)
+  minAvailableQuantity: z.coerce.number().min(0, 'Kuantitas tersedia minimal tidak boleh negatif').optional(), // Minimum available quantity filter
   // Enhanced filters for kasir workflow
   status: z.enum(['AVAILABLE', 'RENTED', 'MAINTENANCE']).optional(), // Product status filter
-  sortBy: z.enum(['name', 'currentPrice', 'createdAt', 'quantity']).default('name'), // Fixed: Use correct database field names
+  sortBy: z.enum(['name', 'currentPrice', 'createdAt', 'availableQuantity']).default('name'), // Updated with Enhanced ProductSize fields
   sortOrder: z.enum(['asc', 'desc']).default('asc'), // Sort direction
   minPrice: z.coerce.number().min(0, 'Harga minimal tidak boleh negatif').optional(), // Price range minimum with validation
   maxPrice: z.coerce.number().min(0, 'Harga maksimal tidak boleh negatif').optional(), // Price range maximum with validation
@@ -217,6 +240,7 @@ export const productAvailabilityQuerySchema = z.object({
 }).transform((data) => ({
   ...data,
   size: Array.isArray(data.size) ? data.size : data.size ? [data.size] : undefined,
+  ageCategory: Array.isArray(data.ageCategory) ? data.ageCategory : data.ageCategory ? [data.ageCategory] : undefined,
 }))
 
 // Transaction Code Generation Schema
