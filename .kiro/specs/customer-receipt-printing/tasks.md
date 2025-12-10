@@ -12,56 +12,56 @@ This implementation plan breaks down the Customer Receipt PDF Preview feature in
 
 ## Task List
 
-- [-] 1. Setup and Configuration
+- [x] 1. Setup and Configuration
   - Create store configuration constants
   - Install jsPDF dependency
   - Setup TypeScript types
   - _Requirements: 10.1, 10.2_
 
-- [ ] 1.1 Create store configuration file
+- [x] 1.1 Create store configuration file
   - Create `config/constants.ts`
   - Define STORE_CONFIG with name, address, phone
   - Export as const for type safety
   - _Requirements: 10.1, 10.2_
 
-- [ ] 1.2 Install jsPDF dependency
+- [x] 1.2 Install jsPDF dependency
   - Run `npm install jspdf @types/jspdf`
   - Verify installation in package.json
   - _Requirements: 5.1, 5.2, 5.3_
 
-- [ ] 2. Backend Receipt Service Implementation
+- [x] 2. Backend Receipt Service Implementation
   - Implement core PDF generation logic
   - Create formatting utilities
   - Handle data extraction
   - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5_
 
-- [ ] 2.1 Create ReceiptService class structure
+- [x] 2.1 Create ReceiptService class structure
   - Create `features/kasir/services/receiptService.ts`
   - Define class with generateReceiptPDF method
   - Setup jsPDF instance with 58mm width, portrait orientation
   - _Requirements: 5.1, 5.2, 5.3_
 
-- [ ] 2.2 Implement currency formatting utility
+- [x] 2.2 Implement currency formatting utility
   - Create formatCurrency method
   - Format: "Rp [space] [number with dots]"
   - Handle edge cases (0, negative, large numbers)
   - _Requirements: 4.1_
 
-- [ ] 2.3 Implement date formatting utility
+- [x] 2.3 Implement date formatting utility
   - Create formatDate method
   - Format: "DD MMM YYYY HH:mm" (Indonesian)
   - Map month numbers to Indonesian abbreviations
   - Handle timezone conversion to local time
   - _Requirements: 4.2_
 
-- [ ] 2.4 Implement size extraction utility
+- [x] 2.4 Implement size extraction utility
   - Create extractSize method
   - Parse kondisiAwal pipe-delimited string
   - Extract second segment (SIZE)
   - Handle malformed input gracefully
   - _Requirements: 3.2_
 
-- [ ] 2.5 Implement header section generator
+- [x] 2.5 Implement header section generator
   - Create addHeader method
   - Add store name from STORE_CONFIG
   - Add store address from STORE_CONFIG
@@ -69,7 +69,7 @@ This implementation plan breaks down the Customer Receipt PDF Preview feature in
   - Add separator line
   - _Requirements: 2.1, 10.2_
 
-- [ ] 2.6 Implement transaction info section generator
+- [x] 2.6 Implement transaction info section generator
   - Create addTransactionInfo method
   - Add "STRUK TRANSAKSI" title
   - Add transaction code (Kode: ...)
@@ -79,7 +79,7 @@ This implementation plan breaks down the Customer Receipt PDF Preview feature in
   - Add separator line
   - _Requirements: 2.2, 6.2, 6.3, 6.4_
 
-- [ ] 2.7 Implement items section generator
+- [x] 2.7 Implement items section generator
   - Create addItems method
   - Add "DETAIL PRODUK" title
   - Add separator line
@@ -90,7 +90,7 @@ This implementation plan breaks down the Customer Receipt PDF Preview feature in
   - Add blank line between items
   - _Requirements: 2.3, 3.1, 3.2, 3.3, 3.4, 6.5_
 
-- [ ] 2.8 Implement summary section generator
+- [x] 2.8 Implement summary section generator
   - Create addSummary method
   - Add "RINGKASAN PEMBAYARAN" title
   - Add separator line
@@ -98,7 +98,7 @@ This implementation plan breaks down the Customer Receipt PDF Preview feature in
   - Add separator line
   - _Requirements: 2.4_
 
-- [ ] 2.9 Implement footer section generator
+- [x] 2.9 Implement footer section generator
   - Create addFooter method
   - Add blank line
   - Add "Terima Kasih!" centered
@@ -108,7 +108,7 @@ This implementation plan breaks down the Customer Receipt PDF Preview feature in
   - Add final separator line
   - _Requirements: 2.5_
 
-- [ ] 2.10 Integrate all sections in generateReceiptPDF
+- [x] 2.10 Integrate all sections in generateReceiptPDF
   - Call addHeader and track y position
   - Call addTransactionInfo and track y position
   - Call addItems and track y position
@@ -117,31 +117,31 @@ This implementation plan breaks down the Customer Receipt PDF Preview feature in
   - Return PDF as Buffer
   - _Requirements: 1.2, 5.1, 5.2_
 
-- [ ] 3. API Route Implementation
+- [x] 3. API Route Implementation
   - Create receipt PDF endpoint
   - Integrate with existing services
   - Handle authentication and errors
   - _Requirements: 1.2, 6.1, 9.1_
 
-- [ ] 3.1 Create API route file
+- [x] 3.1 Create API route file
   - Create `app/api/kasir/receipt/[transaksiId]/pdf/route.ts`
   - Define GET handler with RouteParams interface
   - Setup basic structure
   - _Requirements: 1.2_
 
-- [ ] 3.2 Implement authentication check
+- [x] 3.2 Implement authentication check
   - Use requirePermission middleware
   - Check for 'transaksi' read permission
   - Return 401 if unauthorized
   - _Requirements: 9.1_
 
-- [ ] 3.3 Implement transaction data retrieval
+- [x] 3.3 Implement transaction data retrieval
   - Initialize TransaksiService with user ID
   - Call getTransaksiByCode with transaksiId
   - Handle transaction not found (404)
   - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5_
 
-- [ ] 3.4 Implement PDF generation and response
+- [x] 3.4 Implement PDF generation and response
   - Initialize ReceiptService
   - Call generateReceiptPDF with transaction data
   - Create NextResponse with PDF buffer
@@ -149,7 +149,7 @@ This implementation plan breaks down the Customer Receipt PDF Preview feature in
   - Set Content-Disposition to "inline"
   - _Requirements: 1.2, 5.4_
 
-- [ ] 3.5 Implement error handling
+- [x] 3.5 Implement error handling
   - Wrap in try-catch block
   - Log errors to console with context (transaksiId, userId, error details)
   - Return 500 with error message on failure

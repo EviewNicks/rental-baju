@@ -55,21 +55,37 @@ export function CategoryManagementModal({ isOpen, onClose }: CategoryManagementM
   const handleFormSubmit = async (formData: CategoryFormData) => {
     try {
       if (mode === 'add') {
-        await createCategoryMutation.mutateAsync({
+        // Validate formData.type before proceeding
+        if (!formData.type) {
+          throw new Error('Type kategori wajib dipilih')
+        }
+
+        // Validate type is one of the expected values
+        const validTypes = ['clothing', 'accessories_age_based', 'accessories_universal']
+        if (!validTypes.includes(formData.type)) {
+          throw new Error('Tipe kategori tidak valid')
+        }
+
+        const payload = {
           name: formData.name,
           color: formData.color,
           type: formData.type,
-        })
+        }
+        
+        await createCategoryMutation.mutateAsync(payload)
         showSuccess('Kategori berhasil ditambahkan', `Kategori ${formData.name} telah dibuat`)
       } else if (mode === 'edit' && selectedCategory) {
-        await updateCategoryMutation.mutateAsync({
+        const payload = {
           id: selectedCategory.id,
           data: {
             name: formData.name,
             color: formData.color,
             type: formData.type,
           },
-        })
+        }
+        console.log('CategoryManagementModal - Updating category with payload:', payload)
+        
+        await updateCategoryMutation.mutateAsync(payload)
         showSuccess(
           'Kategori berhasil diperbarui',
           `Perubahan pada kategori ${formData.name} telah disimpan`,

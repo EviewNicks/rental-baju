@@ -1,0 +1,189 @@
+{
+  "info": {
+    "name": "Kasir - Receipt PDF API",
+    "description": "API testing untuk Receipt PDF Generation. Generate PDF receipt dari transaksi.\n\n🔐 AUTHENTICATION:\n• Menggunakan Clerk session token dari browser cookies\n• Role: Kasir (read), Owner (read)\n\n📋 ENDPOINT:\n• GET /api/kasir/receipt/[transaksiId]/pdf - Generate PDF receipt\n\n📊 RESPONSE:\n• Content-Type: application/pdf\n• Content-Disposition: inline\n• PDF file yang bisa dibuka di browser\n\n⚡ FEATURES:\n• Support transaction code (TXN-20251201-002) atau UUID\n• 58mm thermal paper simulation\n• Indonesian format (currency, date)\n• Store info dari STORE_CONFIG\n\n📚 Documentation: .kiro/specs/customer-receipt-printing/",
+    "version": "1.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "cookie",
+    "cookie": [
+      {
+        "key": "__session",
+        "value": "{{clerk_session_token}}",
+        "description": "Clerk session token dari browser"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "description": "Base URL aplikasi"
+    },
+    {
+      "key": "transaction_code",
+      "value": "TXN-20251201-002",
+      "description": "Kode transaksi untuk testing"
+    },
+    {
+      "key": "transaction_id",
+      "value": "d293ea84-d7f3-4788-8f09-e2ce2f8defcb",
+      "description": "UUID transaksi untuk testing"
+    }
+  ],
+  "item": [
+    {
+      "name": "Generate Receipt PDF - By Transaction Code",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/pdf"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/kasir/receipt/{{transaction_code}}/pdf",
+          "host": ["{{base_url}}"],
+          "path": ["api", "kasir", "receipt", "{{transaction_code}}", "pdf"]
+        },
+        "description": "Generate PDF receipt menggunakan transaction code.\n\n✅ Auth: Kasir (read), Owner (read)\n📄 Returns: PDF file (application/pdf)\n📋 Format: 58mm thermal paper simulation\n\n**Expected Response:**\n- Status: 200 OK\n- Content-Type: application/pdf\n- Content-Disposition: inline; filename=\"receipt-TXN-20251201-002.pdf\"\n- Body: PDF binary data"
+      },
+      "response": []
+    },
+    {
+      "name": "Generate Receipt PDF - By Transaction ID",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/pdf"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/kasir/receipt/{{transaction_id}}/pdf",
+          "host": ["{{base_url}}"],
+          "path": ["api", "kasir", "receipt", "{{transaction_id}}", "pdf"]
+        },
+        "description": "Generate PDF receipt menggunakan transaction UUID.\n\n✅ Auth: Kasir (read), Owner (read)\n📄 Returns: PDF file (application/pdf)\n📋 Format: 58mm thermal paper simulation\n\n**Expected Response:**\n- Status: 200 OK\n- Content-Type: application/pdf\n- Content-Disposition: inline\n- Body: PDF binary data"
+      },
+      "response": []
+    },
+    {
+      "name": "Error - Transaction Not Found",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/pdf"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/kasir/receipt/TXN-99999999-999/pdf",
+          "host": ["{{base_url}}"],
+          "path": ["api", "kasir", "receipt", "TXN-99999999-999", "pdf"]
+        },
+        "description": "Test error handling untuk transaksi yang tidak ditemukan."
+      },
+      "response": [
+        {
+          "name": "Transaction Not Found",
+          "originalRequest": {
+            "method": "GET"
+          },
+          "status": "Not Found",
+          "code": 404,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"success\": false,\n  \"error\": {\n    \"message\": \"Transaksi tidak ditemukan\",\n    \"code\": \"NOT_FOUND\"\n  }\n}"
+        }
+      ]
+    },
+    {
+      "name": "Error - Invalid Transaction ID Format",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/pdf"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/kasir/receipt/invalid-format/pdf",
+          "host": ["{{base_url}}"],
+          "path": ["api", "kasir", "receipt", "invalid-format", "pdf"]
+        },
+        "description": "Test validation error untuk format ID yang invalid."
+      },
+      "response": [
+        {
+          "name": "Validation Error",
+          "originalRequest": {
+            "method": "GET"
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"success\": false,\n  \"error\": {\n    \"message\": \"Parameter harus berupa kode transaksi (contoh: TXN-20251201-002) atau ID transaksi\",\n    \"code\": \"VALIDATION_ERROR\"\n  }\n}"
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Test for successful PDF generation",
+          "if (pm.response.code === 200) {",
+          "  pm.test('Response is PDF', function () {",
+          "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/pdf');",
+          "  });",
+          "  ",
+          "  pm.test('Content-Disposition is inline', function () {",
+          "    const disposition = pm.response.headers.get('Content-Disposition');",
+          "    pm.expect(disposition).to.include('inline');",
+          "    pm.expect(disposition).to.include('filename');",
+          "  });",
+          "  ",
+          "  pm.test('PDF has content', function () {",
+          "    pm.expect(pm.response.stream).to.not.be.empty;",
+          "  });",
+          "}",
+          "",
+          "// Test for error responses",
+          "if (pm.response.code >= 400) {",
+          "  pm.test('Error response has proper structure', function () {",
+          "    const response = pm.response.json();",
+          "    pm.expect(response.success).to.eql(false);",
+          "    pm.expect(response).to.have.property('error');",
+          "    pm.expect(response.error).to.have.property('message');",
+          "    pm.expect(response.error).to.have.property('code');",
+          "  });",
+          "}",
+          "",
+          "// Performance check",
+          "pm.test('Response time is under 3s', function () {",
+          "  pm.expect(pm.response.responseTime).to.be.below(3000);",
+          "});"
+        ]
+      }
+    }
+  ]
+}

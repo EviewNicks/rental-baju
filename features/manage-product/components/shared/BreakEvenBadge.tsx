@@ -1,7 +1,7 @@
 /**
  * BreakEvenBadge Component
  * RPK-MODAL: Product Break-Even Status Badge Feature
- * 
+ *
  * Displays a visual badge when a product has recovered its initial capital investment (modalAwal)
  * through accumulated rental revenue. Includes tooltip with detailed financial breakdown.
  */
@@ -10,12 +10,7 @@
 
 import React from 'react'
 import { Badge } from '@/components/ui/badge'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { formatCurrency } from '@/features/manage-product/lib/utils/product'
 
 interface BreakEvenBadgeProps {
@@ -30,13 +25,13 @@ interface BreakEvenBadgeProps {
 
 /**
  * BreakEvenBadge - Reusable badge component for break-even status
- * 
+ *
  * Visual Design:
  * - Soft yellow styling (bg-yellow-100 text-yellow-800 border-yellow-300)
  * - Trophy emoji 🏆
  * - Text: "Modal Kembali"
  * - Only displays when totalRevenue >= modalAwal
- * 
+ *
  * @param modalAwal - Initial capital investment
  * @param totalRevenue - Total accumulated revenue
  * @param transactionCount - Number of transactions
@@ -57,10 +52,10 @@ export function BreakEvenBadge({
   if (isLoading) {
     const sizeClasses = {
       sm: 'h-5 w-20',
-      md: 'h-6 w-24', 
+      md: 'h-6 w-24',
       lg: 'h-8 w-28',
     }
-    
+
     return (
       <div
         className={`animate-pulse bg-gray-200 rounded-md ${sizeClasses[size]} ${className}`}
@@ -71,7 +66,7 @@ export function BreakEvenBadge({
 
   // Only display badge when break-even is achieved
   const isBreakEven = totalRevenue >= modalAwal
-  
+
   if (!isBreakEven) {
     return null
   }
@@ -112,30 +107,28 @@ export function BreakEvenBadge({
   return (
     <TooltipProvider>
       <Tooltip>
-        <TooltipTrigger asChild>
-          {badgeContent}
-        </TooltipTrigger>
+        <TooltipTrigger asChild>{badgeContent}</TooltipTrigger>
         <TooltipContent
           side="bottom"
-          className="max-w-xs p-3"
+          className="max-w-xs p-3 bg-amber-50"
           aria-label="Detail break-even status"
         >
           <div className="space-y-2 text-sm">
             <div className="font-semibold text-yellow-800 border-b border-yellow-200 pb-1">
               📊 Detail Modal Kembali
             </div>
-            
+
             <div className="space-y-1">
               <div className="flex justify-between">
                 <span className="text-gray-600">Modal Awal:</span>
                 <span className="font-medium">{formatCurrency(modalAwal)}</span>
               </div>
-              
+
               <div className="flex justify-between">
                 <span className="text-gray-600">Total Pendapatan:</span>
                 <span className="font-medium text-green-600">{formatCurrency(totalRevenue)}</span>
               </div>
-              
+
               <div className="flex justify-between border-t border-gray-200 pt-1">
                 <span className="text-gray-600">Keuntungan:</span>
                 <span className="font-semibold text-green-700">
@@ -143,7 +136,7 @@ export function BreakEvenBadge({
                 </span>
               </div>
             </div>
-            
+
             <div className="text-xs text-gray-500 pt-1 border-t border-gray-200">
               Dari {transactionCount} transaksi
             </div>

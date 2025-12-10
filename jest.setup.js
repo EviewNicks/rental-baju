@@ -78,6 +78,11 @@ global.BroadcastChannel = jest.fn().mockImplementation(() => ({
 global.atob = jest.fn()
 global.btoa = jest.fn()
 
+// Mock TextEncoder and TextDecoder for jsPDF
+const { TextEncoder, TextDecoder } = require('util')
+global.TextEncoder = TextEncoder
+global.TextDecoder = TextDecoder
+
 // Mock matchMedia
 Object.defineProperty(window, 'matchMedia', {
   writable: true,

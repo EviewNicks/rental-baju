@@ -141,6 +141,7 @@ export interface BaseProductSize {
   // Enhanced ProductSize fields
   originalQuantity: number
   rentedQuantity: number
+  lostQuantity?: number // Lost items tracking
   availableQuantity: number
   isActive: boolean
   createdAt: Date
@@ -157,6 +158,7 @@ export interface ClientProductSize {
   // Enhanced ProductSize fields
   originalQuantity: number
   rentedQuantity: number
+  lostQuantity?: number // Lost items tracking
   availableQuantity: number
   isActive: boolean
   createdAt: Date | string
@@ -311,7 +313,7 @@ export interface UpdateCategoryRequest {
 export interface CategoryFormData {
   name: string
   color: string
-  type?: CategoryType
+  type: CategoryType
 }
 
 export type CategoryModalMode = 'add' | 'edit' | 'view'
@@ -343,6 +345,7 @@ export interface CreateProductSizeRequest {
   // Enhanced ProductSize fields
   originalQuantity?: number
   rentedQuantity?: number
+  lostQuantity?: number // Lost items tracking
   availableQuantity?: number
   isActive?: boolean
 }
@@ -355,6 +358,7 @@ export interface UpdateProductSizeRequest {
   // Enhanced ProductSize fields
   originalQuantity?: number
   rentedQuantity?: number
+  lostQuantity?: number // Lost items tracking
   availableQuantity?: number
   isActive?: boolean
 }

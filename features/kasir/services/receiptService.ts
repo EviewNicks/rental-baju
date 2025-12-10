@@ -5,17 +5,20 @@
 
 import { jsPDF } from 'jspdf'
 import { STORE_CONFIG } from '@/config/constants'
+import type { TransaksiWithDetails } from './transaksiService'
+import { Decimal } from '@prisma/client/runtime/library'
 
 /**
  * Transaction detail interface for receipt generation
+ * @deprecated Use TransaksiWithDetails directly
  */
 interface TransactionDetail {
   kode: string
   createdAt: string
   penyewa: { nama: string }
-  kasir: { nama: string }
+  kasir: { nama: string } | null
   items: TransactionItem[]
-  totalHarga: number
+  totalHarga: number | Decimal
 }
 
 /**
@@ -25,9 +28,9 @@ interface TransactionItem {
   produk: { name: string }
   kondisiAwal: string // Format: "uuid|SIZE|TYPE|condition"
   jumlah: number
-  hargaSewa: number
+  hargaSewa: number | Decimal
   durasi: number
-  subtotal: number
+  subtotal: number | Decimal
 }
 
 /**
@@ -44,33 +47,59 @@ export class ReceiptService {
 
   /**
    * Generate PDF receipt from transaction data
-   * @param transactionData - Complete transaction details
+   * @param transactionData - Complete transaction details (TransaksiWithDetails)
    * @returns PDF as Buffer
    */
-  async generateReceiptPDF(transactionData: TransactionDetail): Promise<Buffer> {
-    // Create jsPDF instance with 58mm width, portrait orientation
-    const doc = new jsPDF({
-      orientation: 'portrait',
-      unit: 'mm',
-      format: [this.PDF_WIDTH_MM, 297], // Width 58mm, height will be dynamic
-    })
+  async generateReceiptPDF(transactionData: TransaksiWithDetails): Promise<Buffer> {
+    try {
+      // Validate input data
+      if (!transactionData) {
+        throw new Error('Transaction data is required')
+      }
+      if (!transactionData.items || transactionData.items.length === 0) {
+        throw new Error('Transaction must have at least one item')
+      }
 
-    // Set font to courier (monospace) for consistent spacing
-    doc.setFont('courier')
-    doc.setFontSize(this.FONT_SIZE)
+      // Create jsPDF instance with 58mm width, portrait orientation
+      const doc = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: [this.PDF_WIDTH_MM, 297], // Width 58mm, height will be dynamic
+      })
 
-    let y = this.MARGIN
+      // Set font to courier (monospace) for consistent spacing
+      doc.setFont('courier')
+      doc.setFontSize(this.FONT_SIZE)
 
-    // Add all sections
-    y = this.addHeader(doc, y)
-    y = this.addTransactionInfo(doc, transactionData, y)
-    y = this.addItems(doc, transactionData.items, y)
-    y = this.addSummary(doc, transactionData, y)
-    y = this.addFooter(doc, y)
+      let y = this.MARGIN
 
-    // Convert PDF to buffer
-    const pdfOutput = doc.output('arraybuffer')
-    return Buffer.from(pdfOutput)
+      // Add all sections with error handling
+      y = this.addHeader(doc, y)
+      y = this.addTransactionInfo(doc, transactionData, y)
+      y = this.addItems(doc, transactionData.items, y)
+      y = this.addSummary(doc, transactionData, y)
+      y = this.addFooter(doc, y)
+
+      // Convert PDF to buffer
+      const pdfOutput = doc.output('arraybuffer')
+      const buffer = Buffer.from(pdfOutput)
+
+      // Log success with buffer size
+      console.log('PDF generated successfully:', {
+        transactionCode: transactionData.kode,
+        bufferSize: buffer.length,
+        itemCount: transactionData.items.length,
+      })
+
+      return buffer
+    } catch (error) {
+      console.error('PDF generation failed:', {
+        transactionCode: transactionData?.kode,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+      })
+      throw error
+    }
   }
 
   /**
@@ -104,7 +133,7 @@ export class ReceiptService {
    */
   private addTransactionInfo(
     doc: jsPDF,
-    data: TransactionDetail,
+    data: TransaksiWithDetails,
     y: number
   ): number {
     const centerX = this.PDF_WIDTH_MM / 2
@@ -189,7 +218,7 @@ export class ReceiptService {
   /**
    * Add payment summary section
    */
-  private addSummary(doc: jsPDF, data: TransactionDetail, y: number): number {
+  private addSummary(doc: jsPDF, data: TransaksiWithDetails, y: number): number {
     const centerX = this.PDF_WIDTH_MM / 2
 
     // Separator
@@ -246,16 +275,23 @@ export class ReceiptService {
 
   /**
    * Format currency to Indonesian format
-   * @param amount - Numeric amount
+   * @param amount - Numeric amount or Decimal
    * @returns Formatted string (e.g., "Rp 300.000")
    */
-  private formatCurrency(amount: number): string {
+  private formatCurrency(amount: number | Decimal): string {
+    // Convert Decimal to number if needed
+    const numericAmount = typeof amount === 'number' 
+      ? amount 
+      : amount instanceof Decimal 
+        ? amount.toNumber() 
+        : Number(amount)
+
     // Handle edge cases
-    if (amount === 0) return 'Rp 0'
-    if (!amount || isNaN(amount)) return 'Rp 0'
+    if (numericAmount === 0) return 'Rp 0'
+    if (!numericAmount || isNaN(numericAmount)) return 'Rp 0'
 
     // Format with dot as thousand separator
-    const formatted = Math.abs(amount)
+    const formatted = Math.abs(numericAmount)
       .toString()
       .replace(/\B(?=(\d{3})+(?!\d))/g, '.')
 
@@ -264,11 +300,11 @@ export class ReceiptService {
 
   /**
    * Format date to Indonesian format
-   * @param dateString - ISO date string
+   * @param dateInput - ISO date string or Date object
    * @returns Formatted string (e.g., "01 Des 2024 12:19")
    */
-  private formatDate(dateString: string): string {
-    const date = new Date(dateString)
+  private formatDate(dateInput: string | Date): string {
+    const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput
 
     // Indonesian month abbreviations
     const monthNames = [

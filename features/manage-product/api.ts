@@ -4,7 +4,7 @@
  */
 
 // Import types for size management
-import type { AggregatedSizeView, AggregationQueryParams } from './types'
+import type { AggregatedSizeView, AggregationQueryParams, CategoryType } from './types'
 
 // Base API configuration
 const API_BASE_URL = '/api'
@@ -166,7 +166,7 @@ export const categoryApi = {
   },
 
   // Create new category
-  createCategory: async (data: { name: string; description?: string; color?: string; type?: string }) => {
+  createCategory: async (data: { name: string; description?: string; color?: string; type: CategoryType }) => {
     const response = await fetch(`${API_BASE_URL}/categories`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -176,7 +176,7 @@ export const categoryApi = {
   },
 
   // Update existing category
-  updateCategory: async (id: string, data: { name?: string; description?: string; color?: string; type?: string }) => {
+  updateCategory: async (id: string, data: { name?: string; description?: string; color?: string; type?: CategoryType }) => {
     const response = await fetch(`${API_BASE_URL}/categories/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
