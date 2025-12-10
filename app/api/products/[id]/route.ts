@@ -226,10 +226,25 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       isActive?: boolean
     }> = []
 
+    console.log(`[API Route] Raw sizes string received:`, {
+      sizesStr: sizesStr,
+      sizesStrType: typeof sizesStr,
+      sizesStrLength: sizesStr ? sizesStr.length : 0,
+      timestamp: new Date().toISOString()
+    })
+
     // Parse sizes if provided (for updates)
     if (sizesStr) {
       try {
         sizes = JSON.parse(sizesStr)
+        console.log(`[API Route] Parsed sizes:`, {
+          sizes: sizes,
+          sizesLength: sizes.length,
+          sizesType: typeof sizes,
+          isArray: Array.isArray(sizes),
+          timestamp: new Date().toISOString()
+        })
+        
         // Validate that if sizes are provided, array should not be empty
         if (sizes.length === 0) {
           return NextResponse.json(
@@ -237,12 +252,19 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
             { status: 400 },
           )
         }
-      } catch {
+      } catch (parseError) {
+        console.error(`[API Route] Failed to parse sizes:`, {
+          error: parseError,
+          sizesStr: sizesStr,
+          timestamp: new Date().toISOString()
+        })
         return NextResponse.json(
           { error: { message: 'Format data ukuran tidak valid', code: 'VALIDATION_ERROR' } },
           { status: 400 },
         )
       }
+    } else {
+      console.log(`[API Route] No sizes string provided`)
     }
 
     // Prepare update data
@@ -261,8 +283,22 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     if (materialQuantity !== undefined) updateData.materialQuantity = materialQuantity
     // Size Management fields - Enhanced ProductSize fields processed in service layer
     if (sizes.length > 0) {
+      console.log(`[API Route] Adding sizes to updateData:`, {
+        sizes: sizes,
+        sizesLength: sizes.length,
+        timestamp: new Date().toISOString()
+      })
       updateData.sizes = sizes  // Pass raw data to service layer
+    } else {
+      console.log(`[API Route] No sizes to add to updateData`)
     }
+    
+    console.log(`[API Route] Final updateData:`, {
+      updateData: updateData,
+      hasSizes: 'sizes' in updateData,
+      sizesCount: updateData.sizes ? (Array.isArray(updateData.sizes) ? updateData.sizes.length : 'not array') : 'no sizes',
+      timestamp: new Date().toISOString()
+    })
 
     // Validate materialQuantity if provided
     if (materialQuantityStr && (isNaN(materialQuantity!) || materialQuantity! <= 0)) {
@@ -306,6 +342,61 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const productService = new ProductService(prisma, userId)
     const fileUploadService = new FileUploadService(userId)
 
+    // ENHANCED: Validate update safety if sizes are being updated
+    if (sizes.length > 0) {
+      try {
+        // Check current rental state before update
+        const currentProduct = await productService.getProductById(id)
+        
+        // Validate that quantity changes are safe
+        for (const newSize of sizes) {
+          const existingSize = currentProduct.sizes?.find(
+            s => s.ageCategory === newSize.ageCategory && s.size === newSize.size
+          )
+          
+          if (existingSize) {
+            const newOriginalQty = newSize.originalQuantity || newSize.quantity
+            const currentRented = existingSize.rentedQuantity || 0
+            const currentLost = existingSize.lostQuantity || 0
+            const minRequired = currentRented + currentLost
+            
+            if (newOriginalQty < minRequired) {
+              return NextResponse.json(
+                {
+                  error: {
+                    message: `Cannot reduce quantity for ${newSize.ageCategory}-${newSize.size} below ${minRequired} (${currentRented} rented + ${currentLost} lost)`,
+                    code: 'QUANTITY_VALIDATION_ERROR',
+                    field: 'sizes',
+                    details: {
+                      ageCategory: newSize.ageCategory,
+                      size: newSize.size,
+                      requestedQuantity: newOriginalQty,
+                      minimumRequired: minRequired,
+                      currentRented: currentRented,
+                      currentLost: currentLost,
+                    },
+                  },
+                },
+                { status: 400 },
+              )
+            }
+          }
+        }
+      } catch (error) {
+        // If validation fails, return error
+        return NextResponse.json(
+          {
+            error: {
+              message: 'Failed to validate update safety',
+              code: 'VALIDATION_ERROR',
+              details: error instanceof Error ? error.message : 'Unknown error',
+            },
+          },
+          { status: 400 },
+        )
+      }
+    }
+
     // Handle image upload if provided
     if (image && image.size > 0) {
       try {
@@ -338,7 +429,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       }
     }
 
-    // Update product using advanced-only architecture
+    // Update product using advanced-only architecture with rental state preservation
     const product = await productService.updateProduct(id, updateData as unknown as UpdateProductWithSizesRequest)
 
     return NextResponse.json(product, { status: 200 })

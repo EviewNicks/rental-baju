@@ -156,19 +156,19 @@ This implementation plan breaks down the Customer Receipt PDF Preview feature in
   - Handle specific error types (404, 401, 500)
   - _Requirements: 7.1, 7.2, 7.4_
 
-- [ ] 4. Frontend Hook Implementation
+- [x] 4. Frontend Hook Implementation
   - Create React hook for receipt printing
   - Manage loading state
   - Handle API calls and errors
   - _Requirements: 1.2, 1.3, 1.4, 1.5_
 
-- [ ] 4.1 Create useReceiptPrint hook file
+- [x] 4.1 Create useReceiptPrint hook file
   - Create `features/kasir/hooks/useReceiptPrint.ts`
   - Define hook function and return interface
   - Setup isPrinting state with useState
   - _Requirements: 1.3, 7.3, 8.2_
 
-- [ ] 4.2 Implement printReceipt function
+- [x] 4.2 Implement printReceipt function
   - Create async function accepting transactionId
   - Set isPrinting to true at start
   - Fetch PDF from API endpoint
@@ -177,39 +177,39 @@ This implementation plan breaks down the Customer Receipt PDF Preview feature in
   - Set isPrinting to false in finally block
   - _Requirements: 1.2, 8.3_
 
-- [ ] 4.3 Implement success feedback
+- [x] 4.3 Implement success feedback
   - Show success toast "Struk berhasil dibuat"
   - Log success to console
   - _Requirements: 1.4_
 
-- [ ] 4.4 Implement error handling
+- [x] 4.4 Implement error handling
   - Catch fetch errors
   - Show error toast "Gagal membuat struk. Silakan coba lagi."
   - Log error to console with details
   - Ensure isPrinting resets to false
   - _Requirements: 1.5, 7.2, 7.3, 7.5_
 
-- [ ] 5. Frontend Component Integration
+- [x] 5. Frontend Component Integration
   - Add button to TransactionDetailPage
   - Integrate hook
   - Handle button states
   - _Requirements: 1.1, 1.3, 8.2, 8.4_
 
-- [ ] 5.1 Import dependencies in TransactionDetailPage
+- [x] 5.1 Import dependencies in TransactionDetailPage
   - Import useReceiptPrint hook
   - Import Printer and Loader2 icons from lucide-react
   - _Requirements: 1.1_
 
-- [ ] 5.2 Integrate useReceiptPrint hook
+- [x] 5.2 Integrate useReceiptPrint hook
   - Call useReceiptPrint() in component
   - Destructure printReceipt and isPrinting
   - _Requirements: 1.2, 1.3_
 
-- [ ] 5.3 Create handlePrintReceipt function
+- [x] 5.3 Create handlePrintReceipt function
   - Create handler that calls printReceipt with transaction.transactionCode
   - _Requirements: 1.2_
 
-- [ ] 5.4 Add "Cetak Struk" button to header
+- [x] 5.4 Add "Cetak Struk" button to header
   - Position after StatusBadge, before Refresh button
   - Use Button component with variant="outline" size="sm"
   - Add data-testid="print-receipt-button"
@@ -217,19 +217,19 @@ This implementation plan breaks down the Customer Receipt PDF Preview feature in
   - Set disabled to isPrinting
   - _Requirements: 1.1, 1.3_
 
-- [ ] 5.5 Implement button loading state
+- [x] 5.5 Implement button loading state
   - Show Loader2 icon with spin animation when isPrinting is true
   - Show "Generating..." text when isPrinting is true
   - Show Printer icon and "Cetak Struk" text when isPrinting is false
   - _Requirements: 1.3, 8.2_
 
-- [ ] 6. Unit Tests for ReceiptService
+- [x] 6. Unit Tests for ReceiptService
   - Test PDF generation
   - Test formatting utilities
   - Test data extraction
   - _Requirements: All formatting and generation requirements_
 
-- [ ] 6.1 Test generateReceiptPDF returns valid buffer
+- [x] 6.1 Test generateReceiptPDF returns valid buffer
   - **Property 1: PDF Generation Completeness**
   - **Validates: Requirements 1.2, 5.1, 5.2**
   - Create test with mock transaction data
@@ -237,7 +237,7 @@ This implementation plan breaks down the Customer Receipt PDF Preview feature in
   - Assert buffer is instance of Buffer
   - Assert buffer length > 0
 
-- [ ] 6.2 Test formatCurrency with various amounts
+- [x] 6.2 Test formatCurrency with various amounts
   - **Property 7: Currency Formatting Consistency**
   - **Validates: Requirements 4.1**
   - Test formatCurrency(300000) === "Rp 300.000"
@@ -245,14 +245,14 @@ This implementation plan breaks down the Customer Receipt PDF Preview feature in
   - Test formatCurrency(50000) === "Rp 50.000"
   - Test formatCurrency(0) === "Rp 0"
 
-- [ ] 6.3 Test formatDate with ISO strings
+- [x] 6.3 Test formatDate with ISO strings
   - **Property 8: Date Formatting Consistency**
   - **Validates: Requirements 4.2**
   - Test formatDate with known ISO date
   - Assert format matches "DD MMM YYYY HH:mm"
   - Assert month is Indonesian abbreviation
 
-- [ ] 6.4 Test extractSize from kondisiAwal
+- [x] 6.4 Test extractSize from kondisiAwal
   - **Property 5: Size Extraction Accuracy**
   - **Validates: Requirements 3.2**
   - Test extractSize("uuid|M|ADULT|baik") === "M"
@@ -260,42 +260,42 @@ This implementation plan breaks down the Customer Receipt PDF Preview feature in
   - Test extractSize("invalid") === ""
   - Test extractSize("") === ""
 
-- [ ] 6.5 Test store config integration
+- [x] 6.5 Test store config integration
   - **Property 2: Store Information Consistency**
   - **Validates: Requirements 2.1, 10.2**
   - Mock STORE_CONFIG
   - Generate PDF
   - Assert PDF contains store name, address, phone
 
-- [ ] 6.6 Test transaction data preservation
+- [x] 6.6 Test transaction data preservation
   - **Property 3: Transaction Data Preservation**
   - **Validates: Requirements 2.2, 6.2, 6.3, 6.4**
   - Create mock transaction with known values
   - Generate PDF
   - Assert PDF contains transaction code, customer name, kasir name
 
-- [ ] 6.7 Test item listing completeness
+- [x] 6.7 Test item listing completeness
   - **Property 4: Item Listing Completeness**
   - **Validates: Requirements 2.3, 3.3, 6.5**
   - Create transaction with 3 items
   - Generate PDF
   - Assert PDF contains all 3 items with complete details
 
-- [ ] 6.8 Test item order preservation
+- [x] 6.8 Test item order preservation
   - **Property 6: Item Order Preservation**
   - **Validates: Requirements 3.4**
   - Create transaction with items in specific order
   - Generate PDF
   - Assert items appear in same order in PDF
 
-- [ ] 6.9 Test footer content
+- [x] 6.9 Test footer content
   - **Property 11: Footer Content Consistency**
   - **Validates: Requirements 2.5**
   - Generate PDF
   - Assert PDF contains "Terima Kasih!"
   - Assert PDF contains disclaimer text
 
-- [ ] 6.10 Test PDF dimensions
+- [x] 6.10 Test PDF dimensions
   - **Property 9: PDF Dimension Specification**
   - **Validates: Requirements 5.1, 5.2**
   - Generate PDF
@@ -341,13 +341,13 @@ This implementation plan breaks down the Customer Receipt PDF Preview feature in
   - Assert status 500
   - Assert console.error was called with error details
 
-- [ ] 8. Unit Tests for useReceiptPrint Hook
+- [x] 8. Unit Tests for useReceiptPrint Hook
   - Test hook state management
   - Test success and error flows
   - Test loading states
   - _Requirements: 1.3, 1.4, 1.5, 7.3, 8.2_
 
-- [ ] 8.1 Test isPrinting state during generation
+- [x] 8.1 Test isPrinting state during generation
   - **Property 13: Loading State Management**
   - **Validates: Requirements 1.3, 7.3, 8.2**
   - Render hook
@@ -355,19 +355,19 @@ This implementation plan breaks down the Customer Receipt PDF Preview feature in
   - Assert isPrinting === true during execution
   - Assert isPrinting === false after completion
 
-- [ ] 8.2 Test success toast display
+- [x] 8.2 Test success toast display
   - Mock successful fetch
   - Mock toast.success
   - Call printReceipt
   - Assert toast.success called with "Struk berhasil dibuat"
 
-- [ ] 8.3 Test error toast display
+- [x] 8.3 Test error toast display
   - Mock failed fetch
   - Mock toast.error
   - Call printReceipt
   - Assert toast.error called with error message
 
-- [ ] 8.4 Test new tab opening
+- [x] 8.4 Test new tab opening
   - **Property 14: New Tab Navigation**
   - **Validates: Requirements 1.2, 8.3**
   - Mock window.open
@@ -375,7 +375,7 @@ This implementation plan breaks down the Customer Receipt PDF Preview feature in
   - Call printReceipt
   - Assert window.open called with blob URL and '_blank'
 
-- [ ] 8.5 Test error recovery
+- [x] 8.5 Test error recovery
   - Mock failed fetch
   - Call printReceipt
   - Assert isPrinting resets to false

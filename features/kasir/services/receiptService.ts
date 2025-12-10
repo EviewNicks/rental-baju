@@ -157,7 +157,7 @@ export class ReceiptService {
     y += this.LINE_HEIGHT
 
     // Kasir name
-    doc.text(`Kasir   : ${data.kasir.nama}`, this.MARGIN, y)
+    doc.text(`Kasir   : ${data.kasir?.nama || 'N/A'}`, this.MARGIN, y)
     y += this.LINE_HEIGHT
 
     // Separator
@@ -169,7 +169,7 @@ export class ReceiptService {
   /**
    * Add product items section
    */
-  private addItems(doc: jsPDF, items: TransactionItem[], y: number): number {
+  private addItems(doc: jsPDF, items: TransaksiWithDetails['items'], y: number): number {
     const centerX = this.PDF_WIDTH_MM / 2
 
     // Title
@@ -185,7 +185,7 @@ export class ReceiptService {
       y += this.LINE_HEIGHT
 
       // Extract size and format product name
-      const size = this.extractSize(item.kondisiAwal)
+      const size = this.extractSize(item.kondisiAwal || '')
       const productName = size
         ? `${item.produk.name} (${size})`
         : item.produk.name

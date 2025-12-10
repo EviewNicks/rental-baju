@@ -89,7 +89,7 @@ export const categorySchema = z.object({
     .enum(['clothing', 'accessories_age_based', 'accessories_universal'], {
       message: 'Tipe kategori harus salah satu dari: clothing, accessories_age_based, accessories_universal',
     })
-    .optional(),
+    .default('clothing'), // Add default back as safety net
 })
 
 export const updateCategorySchema = categorySchema.partial()

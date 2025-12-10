@@ -19,6 +19,7 @@ import {
 import { AccessoriesAgeBasedStrategy } from './AccessoriesAgeBasedStrategy'
 import { AccessoriesUniversalStrategy } from './AccessoriesUniversalStrategy'
 import { ClothingStrategy } from './ClothingStrategy'
+import { UniversalFallbackStrategy } from './UniversalFallbackStrategy'
 
 /**
  * Default strategy registry
@@ -26,7 +27,7 @@ import { ClothingStrategy } from './ClothingStrategy'
 const DEFAULT_STRATEGIES: StrategyRegistry = {
   'accessories_age_based': AccessoriesAgeBasedStrategy,
   'accessories_universal': AccessoriesUniversalStrategy,
-  'clothing': ClothingStrategy
+  'clothing': ClothingStrategy,
 }
 
 /**
@@ -34,7 +35,7 @@ const DEFAULT_STRATEGIES: StrategyRegistry = {
  */
 export class FormStrategyFactory {
   private static config: StrategyFactoryConfig = {
-    defaultStrategy: 'clothing',
+    defaultStrategy: 'universal_fallback', // Use universal fallback as default
     customStrategies: DEFAULT_STRATEGIES,
     enableFallback: true
   }
@@ -42,13 +43,18 @@ export class FormStrategyFactory {
   /**
    * Create strategy instance berdasarkan category type
    */
-  static create(categoryType: CategoryType): CategoryFormStrategy {
+  static create(categoryType: CategoryType, context?: {
+    categoryId?: string
+    categoryName?: string
+    isEditMode?: boolean
+    existingData?: unknown[]
+  }): CategoryFormStrategy {
     try {
       // Validate category type
       if (!this.isValidCategoryType(categoryType)) {
         if (this.config.enableFallback) {
           console.warn(`Unknown category type "${categoryType}", falling back to default strategy`)
-          return this.createDefaultStrategy()
+          return this.createDefaultStrategy(context)
         } else {
           throw new InvalidCategoryTypeError(categoryType)
         }
@@ -60,7 +66,7 @@ export class FormStrategyFactory {
       if (!StrategyClass) {
         if (this.config.enableFallback) {
           console.warn(`No strategy found for category type "${categoryType}", falling back to default`)
-          return this.createDefaultStrategy()
+          return this.createDefaultStrategy(context)
         } else {
           throw new Error(`No strategy registered for category type: ${categoryType}`)
         }
@@ -96,7 +102,14 @@ export class FormStrategyFactory {
       existingData?: unknown[]
     }
   ): CategoryFormStrategy {
-    const strategy = this.create(categoryType)
+    // Use fallback strategy for unknown category types
+    let actualCategoryType = categoryType
+    if (!this.isValidCategoryType(categoryType)) {
+      console.warn(`Unknown category type "${categoryType}", using universal fallback`)
+      actualCategoryType = 'universal_fallback'
+    }
+
+    const strategy = this.create(actualCategoryType, context)
 
     // Log context information untuk debugging
     if (process.env.NODE_ENV === 'development') {
@@ -113,13 +126,19 @@ export class FormStrategyFactory {
   /**
    * Get default strategy
    */
-  static createDefaultStrategy(): CategoryFormStrategy {
-    const defaultType = this.config.defaultStrategy || 'clothing'
+  static createDefaultStrategy(context?: {
+    categoryId?: string
+    categoryName?: string
+    isEditMode?: boolean
+    existingData?: unknown[]
+  }): CategoryFormStrategy {
+    const defaultType = this.config.defaultStrategy || 'universal_fallback'
     const StrategyClass = this.getStrategyClass(defaultType)
 
     if (!StrategyClass) {
       throw new Error(`Default strategy "${defaultType}" not found in registry`)
     }
+
 
     return new StrategyClass()
   }
@@ -195,7 +214,7 @@ export class FormStrategyFactory {
    * Validate category type
    */
   private static isValidCategoryType(categoryType: string): categoryType is CategoryType {
-    const validTypes: CategoryType[] = ['clothing', 'accessories_age_based', 'accessories_universal']
+    const validTypes: CategoryType[] = ['clothing', 'accessories_age_based', 'accessories_universal', 'universal_fallback']
     return validTypes.includes(categoryType as CategoryType)
   }
 

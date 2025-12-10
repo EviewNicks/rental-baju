@@ -6,7 +6,7 @@ import { FormSection } from '@/features/manage-product/components/form-product/F
 import { DynamicFormField } from '@/features/manage-product/components/form-product/DynamicFormField'
 import { ImageUpload } from '@/features/manage-product/components/products/ImageUpload'
 import { MaterialSelector } from '@/features/manage-product/components/material/MaterialSelector'
-import { InlineSizeManagement } from '@/features/manage-product/components/form-product/InlineSizeManagement'
+
 import { SizeManagementPlaceholder } from '@/features/manage-product/components/form-product/SizeManagementPlaceholder'
 import { useAggregatedSizes } from '@/features/manage-product/hooks/useAggregatedSizes'
 import { getProductSizeMode } from '@/features/manage-product/lib/utils/sizeManagementUtils'
@@ -22,6 +22,7 @@ import { logger } from '@/services/logger'
 import { useEffect, useCallback, useRef } from 'react'
 import { createMaterialHandlers } from '../../utils/MaterialHandlers'
 import { useProductFormStrategy } from '../../hooks/useProductFormStrategy'
+import { RentalStateWarning } from './RentalStateWarning'
 
 // Component-specific logger for product form
 const formLogger = logger.child('ProductForm')
@@ -62,7 +63,7 @@ interface ProductFormProps {
   // Optional product data for size mode detection (edit mode)
   product?: ClientProduct
 
-  // Size management handlers
+  // Size management handlers (legacy - kept for backward compatibility)
   onHasSizesChange?: (hasSizes: boolean) => void
   onAggregatedSizesChange?: (sizes: AggregatedSizeView[]) => void
   onSimplifiedSizesChange?: (sizes: SimplifiedSizeEntry[]) => void
@@ -84,7 +85,7 @@ export function ProductForm({
   formatCurrency,
   categories,
   product,
-  onSimplifiedSizesChange,
+  onSimplifiedSizesChange, // Legacy - kept for backward compatibility
   onCategoryFormDataChange,
   onStrategySizesChange,
   categoryFormData: externalCategoryFormData, // External state from parent
@@ -512,20 +513,78 @@ export function ProductForm({
                 </div>
               </div>
             </FormSection>
-          ) : currentStrategy && selectedCategory ? null : ( // Show dynamic strategy-based form fields (existing logic) // This will be handled by the existing dynamic strategy section above
-            // Fallback to InlineSizeManagement for backward compatibility (only when category is selected but no strategy)
+          ) : currentStrategy && selectedCategory ? (
+            // Show enhanced size management with rental state error handling
             <FormSection title="Ukuran & Stok" data-testid="size-management-section">
-              <InlineSizeManagement
-                sizes={formData.simplifiedSizes || []}
-                onSizesChange={(sizes) => {
-                  if (onSimplifiedSizesChange) {
-                    onSimplifiedSizesChange(sizes)
-                  } else {
-                    onInputChange('simplifiedSizes', sizes)
-                  }
-                }}
-                errors={errors.sizes || undefined}
-              />
+              {/* Enhanced Size Error Display for Rental State Conflicts */}
+              {errors.sizes && touched.sizes && (
+                <div className="mb-4">
+                  {errors.sizes.includes('Konflik rental:') ? (
+                    // Show enhanced rental state warning for rental conflicts
+                    <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-md">
+                      <div className="flex items-start">
+                        <div className="flex-shrink-0">
+                          <div className="w-5 h-5 text-yellow-400">⚠️</div>
+                        </div>
+                        <div className="ml-3">
+                          <h3 className="text-sm font-medium text-yellow-800">
+                            Masalah Rental State Terdeteksi
+                          </h3>
+                          <div className="mt-2 text-sm text-yellow-700">
+                            <p>{errors.sizes}</p>
+                            <div className="mt-3 text-xs">
+                              <strong>💡 Lihat detail lengkap di bagian error di atas halaman.</strong>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    // Show standard error for other size-related issues
+                    <div className="p-4 bg-red-50 border border-red-200 rounded-md">
+                      <div className="flex items-start">
+                        <div className="flex-shrink-0">
+                          <div className="w-5 h-5 text-red-400">⚠️</div>
+                        </div>
+                        <div className="ml-3">
+                          <h3 className="text-sm font-medium text-red-800">
+                            Masalah dengan Ukuran Produk
+                          </h3>
+                          <div className="mt-2 text-sm text-red-700">
+                            <p>{errors.sizes}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              {/* Strategy-based size management will be rendered here by the existing dynamic strategy section */}
+            </FormSection>
+          ) : (
+            // Force strategy initialization for all categories
+            <FormSection title="Ukuran & Stok" data-testid="size-management-section">
+              <div className="text-center py-8 px-4">
+                <div className="flex flex-col items-center space-y-3">
+                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                    <Tag className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <div className="space-y-1">
+                    <h3 className="text-sm font-medium text-blue-900">Memuat Strategi Kategori</h3>
+                    <p className="text-xs text-blue-600">
+                      Sistem sedang memuat konfigurasi ukuran untuk kategori ini...
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => formData.categoryId && initializeStrategy(formData.categoryId)}
+                      className="text-xs text-blue-600 hover:text-blue-500 underline"
+                    >
+                      Coba Lagi
+                    </button>
+                  </div>
+                </div>
+              </div>
             </FormSection>
           )}
 

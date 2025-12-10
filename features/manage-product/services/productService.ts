@@ -342,6 +342,7 @@ export class ProductService {
   /**
    * Update an existing product (advanced-only architecture)
    * All products now support sizes - no legacy single-size support
+   * FIXED: Preserves rental state and lost item tracking during quantity updates
    */
   async updateProduct(id: string, request: UpdateProductWithSizesRequest): Promise<Product> {
     // Validate input
@@ -371,7 +372,6 @@ export class ProductService {
       // Get existing category for size validation
       category = await this.getCategoryWithTypes(existingProduct.categoryId)
     }
-
 
     // Validate and process sizes if being updated
     let processedSizes: CreateProductSizeRequest[] | undefined
@@ -406,7 +406,7 @@ export class ProductService {
       if (validatedData.name !== undefined) updateData.name = validatedData.name
       if (validatedData.description !== undefined)
         updateData.description = validatedData.description
-                if (validatedData.categoryId !== undefined) updateData.categoryId = validatedData.categoryId
+      if (validatedData.categoryId !== undefined) updateData.categoryId = validatedData.categoryId
       if (validatedData.size !== undefined) updateData.size = validatedData.size
       if (validatedData.materialId !== undefined) updateData.materialId = validatedData.materialId
       if (validatedData.materialQuantity !== undefined)
@@ -429,28 +429,91 @@ export class ProductService {
         data: updateData,
       })
 
-      // Handle sizes update - advanced-only architecture
+      // FIXED: Handle sizes update - PRESERVE RENTAL STATE
       if (processedSizes !== undefined) {
-        // Delete existing sizes
-        await tx.productSize.deleteMany({
+        // Get existing sizes with current rental state
+        const existingSizes = await tx.productSize.findMany({
           where: { productId: validatedId },
+          select: {
+            id: true,
+            ageCategory: true,
+            size: true,
+            rentedQuantity: true,
+            lostQuantity: true,
+          },
         })
 
-        // Create new sizes if not empty
-        if (processedSizes.length > 0) {
-          await tx.productSize.createMany({
-            data: processedSizes.map((size) => ({
-              productId: validatedId,
-              ageCategory: size.ageCategory,
-              size: size.size,
-              quantity: size.quantity,
-              // Enhanced ProductSize fields
-              originalQuantity: size.originalQuantity || size.quantity,
-              availableQuantity: size.availableQuantity || size.quantity,
-              rentedQuantity: size.rentedQuantity || 0,
-              isActive: size.isActive ?? true,
-              createdBy: this.userId,
-            })),
+        // Create a map for quick lookup
+        const existingSizeMap = new Map(
+          existingSizes.map(s => [`${s.ageCategory}-${s.size}`, s])
+        )
+
+        for (const newSize of processedSizes) {
+          const key = `${newSize.ageCategory}-${newSize.size}`
+          const existing = existingSizeMap.get(key)
+
+          if (existing) {
+            // UPDATE existing size - PRESERVE rental state
+            const newOriginalQty = newSize.originalQuantity || newSize.quantity
+            const currentRented = existing.rentedQuantity
+            const currentLost = existing.lostQuantity || 0
+
+            // Validate: new quantity must cover existing rentals + lost items
+            if (newOriginalQty < currentRented + currentLost) {
+              throw new ConflictError(
+                `Cannot reduce quantity below rented (${currentRented}) + lost (${currentLost}) items for size ${newSize.ageCategory}-${newSize.size}`
+              )
+            }
+
+            // Calculate new available quantity
+            const newAvailable = newOriginalQty - currentRented - currentLost
+
+            await tx.productSize.update({
+              where: { id: existing.id },
+              data: {
+                quantity: newSize.quantity,
+                originalQuantity: newOriginalQty,
+                availableQuantity: newAvailable,
+                // rentedQuantity: PRESERVED (not updated)
+                // lostQuantity: PRESERVED (not updated)
+                updatedAt: new Date(),
+              },
+            })
+
+            // Remove from map (processed)
+            existingSizeMap.delete(key)
+          } else {
+            // CREATE new size
+            await tx.productSize.create({
+              data: {
+                productId: validatedId,
+                ageCategory: newSize.ageCategory,
+                size: newSize.size,
+                quantity: newSize.quantity,
+                originalQuantity: newSize.originalQuantity || newSize.quantity,
+                availableQuantity: newSize.availableQuantity || newSize.quantity,
+                rentedQuantity: 0,
+                lostQuantity: 0,
+                isActive: true,
+                createdBy: this.userId,
+              },
+            })
+          }
+        }
+
+        // Soft-delete sizes that were removed (if any remain in map)
+        const sizesToDelete = Array.from(existingSizeMap.values())
+        for (const size of sizesToDelete) {
+          // Validate: cannot delete size with active rentals or lost items
+          if (size.rentedQuantity > 0 || (size.lostQuantity && size.lostQuantity > 0)) {
+            throw new ConflictError(
+              `Cannot remove size ${size.ageCategory}-${size.size} with active rentals (${size.rentedQuantity}) or lost items (${size.lostQuantity || 0})`
+            )
+          }
+
+          await tx.productSize.update({
+            where: { id: size.id },
+            data: { isActive: false },
           })
         }
       }
@@ -1137,6 +1200,88 @@ export class ProductService {
   // ============== HELPER METHODS ==============
 
   /**
+   * Validate that product update is safe regarding active rentals
+   */
+  private async validateProductUpdateSafety(productId: string): Promise<{
+    hasActiveRentals: boolean
+    hasLostItems: boolean
+    rentalSummary: Array<{ ageCategory: string; size: string; rentedQuantity: number; lostQuantity: number }>
+  }> {
+    const sizesWithRentals = await this.prisma.productSize.findMany({
+      where: {
+        productId,
+        OR: [
+          { rentedQuantity: { gt: 0 } },
+          { lostQuantity: { gt: 0 } },
+        ],
+      },
+      select: {
+        ageCategory: true,
+        size: true,
+        rentedQuantity: true,
+        lostQuantity: true,
+      },
+    })
+
+    return {
+      hasActiveRentals: sizesWithRentals.some(s => s.rentedQuantity > 0),
+      hasLostItems: sizesWithRentals.some(s => (s.lostQuantity || 0) > 0),
+      rentalSummary: sizesWithRentals.map(s => ({
+        ageCategory: s.ageCategory,
+        size: s.size,
+        rentedQuantity: s.rentedQuantity,
+        lostQuantity: s.lostQuantity || 0,
+      })),
+    }
+  }
+
+  /**
+   * Validate inventory consistency after update
+   */
+  private async validateInventoryConsistency(productId: string): Promise<{
+    isConsistent: boolean
+    errors: string[]
+  }> {
+    const sizes = await this.prisma.productSize.findMany({
+      where: { productId, isActive: true },
+      select: {
+        id: true,
+        ageCategory: true,
+        size: true,
+        originalQuantity: true,
+        rentedQuantity: true,
+        lostQuantity: true,
+        availableQuantity: true,
+      },
+    })
+
+    const errors: string[] = []
+
+    for (const size of sizes) {
+      const expectedAvailable = size.originalQuantity - size.rentedQuantity - (size.lostQuantity || 0)
+      
+      // Check inventory invariant
+      if (size.originalQuantity < size.rentedQuantity + (size.lostQuantity || 0)) {
+        errors.push(
+          `Size ${size.ageCategory}-${size.size}: originalQuantity (${size.originalQuantity}) < rentedQuantity (${size.rentedQuantity}) + lostQuantity (${size.lostQuantity || 0})`
+        )
+      }
+
+      // Check available quantity calculation
+      if (size.availableQuantity !== expectedAvailable) {
+        errors.push(
+          `Size ${size.ageCategory}-${size.size}: availableQuantity (${size.availableQuantity}) should be ${expectedAvailable}`
+        )
+      }
+    }
+
+    return {
+      isConsistent: errors.length === 0,
+      errors,
+    }
+  }
+
+  /**
    * Validate size data with business rules
    */
   private validateSizeData(sizes: CreateProductSizeRequest[]): SizeValidationResult {
@@ -1339,9 +1484,10 @@ export class ProductService {
       size: (size.size as SizeEnum) || ('UNIVERSAL' as const),
       isActive: size.isActive ?? true,
       // Enhanced ProductSize fields for new products
-      originalQuantity: size.quantity || 0,        // Fix: Set original quantity
-      availableQuantity: size.quantity || 0,       // Fix: Set initial available quantity
-      rentedQuantity: 0,                      // Fix: No rented items for new products
+      originalQuantity: size.originalQuantity || size.quantity || 0,
+      availableQuantity: size.availableQuantity || size.quantity || 0,
+      rentedQuantity: size.rentedQuantity || 0,
+      lostQuantity: size.lostQuantity || 0,
     }))
   }
 
@@ -1356,6 +1502,7 @@ export class ProductService {
 
     // If multiple sizes provided, sum them into one UNIVERSAL entry
     const totalQuantity = sizes.reduce((sum, size) => sum + size.quantity, 0)
+    const totalOriginalQuantity = sizes.reduce((sum, size) => sum + (size.originalQuantity || size.quantity), 0)
 
     return [{
       ageCategory: 'UNIVERSAL' as const,
@@ -1363,9 +1510,10 @@ export class ProductService {
       quantity: totalQuantity,
       isActive: true,
       // Enhanced ProductSize fields for new products
-      originalQuantity: totalQuantity,           // Fix: Set original quantity
-      availableQuantity: totalQuantity,          // Fix: Set initial available quantity
-      rentedQuantity: 0,                     // Fix: No rented items for new products
+      originalQuantity: totalOriginalQuantity,
+      availableQuantity: totalOriginalQuantity,
+      rentedQuantity: 0,
+      lostQuantity: 0,
     }]
   }
 
@@ -1377,9 +1525,10 @@ export class ProductService {
     return sizes.map(size => ({
       ...size,
       // Enhanced ProductSize fields for new products
-      originalQuantity: size.quantity || 0,        // Fix: Set original quantity
-      availableQuantity: size.quantity || 0,       // Fix: Set initial available quantity
-      rentedQuantity: 0,                      // Fix: No rented items for new products
+      originalQuantity: size.originalQuantity || size.quantity || 0,
+      availableQuantity: size.availableQuantity || size.quantity || 0,
+      rentedQuantity: size.rentedQuantity || 0,
+      lostQuantity: size.lostQuantity || 0,
       isActive: size.isActive ?? true,
       // Ensure size is uppercase for consistency
       size: size.size.toUpperCase() as SizeEnum,
@@ -1421,6 +1570,7 @@ export class ProductService {
       // Enhanced ProductSize fields
       originalQuantity: (prismaSize.originalQuantity as number) || 0,
       rentedQuantity: (prismaSize.rentedQuantity as number) || 0,
+      lostQuantity: (prismaSize.lostQuantity as number) || 0,
       availableQuantity: (prismaSize.availableQuantity as number) || 0,
       isActive: prismaSize.isActive as boolean,
       createdAt: prismaSize.createdAt as Date,
@@ -1493,6 +1643,7 @@ export class ProductService {
           // Enhanced ProductSize fields
           originalQuantity: (size.originalQuantity as number) || 0,
           rentedQuantity: (size.rentedQuantity as number) || 0,
+          lostQuantity: (size.lostQuantity as number) || 0,
           availableQuantity: (size.availableQuantity as number) || 0,
           isActive: size.isActive as boolean,
           createdAt: size.createdAt as Date,
