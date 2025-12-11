@@ -7,6 +7,8 @@ import { jsPDF } from 'jspdf'
 import { STORE_CONFIG } from '@/config/constants'
 import type { TransaksiWithDetails } from './transaksiService'
 import { Decimal } from '@prisma/client/runtime/library'
+import fs from 'fs'
+import path from 'path'
 
 /**
  * Receipt Service Class
@@ -14,7 +16,7 @@ import { Decimal } from '@prisma/client/runtime/library'
  */
 export class ReceiptService {
   // PDF configuration constants
-  private readonly PDF_WIDTH_MM = 58 // 58mm thermal paper width
+  private readonly PDF_WIDTH_MM = 80 // 80mm thermal paper width
   private readonly FONT_SIZE = 8
   private readonly LINE_HEIGHT = 4
   private readonly MARGIN = 2
@@ -35,11 +37,11 @@ export class ReceiptService {
         throw new Error('Transaction must have at least one item')
       }
 
-      // Create jsPDF instance with 58mm width, portrait orientation
+      // Create jsPDF instance with 80mm width, portrait orientation
       const doc = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
-        format: [this.PDF_WIDTH_MM, 297], // Width 58mm, height will be dynamic
+        format: [this.PDF_WIDTH_MM, 297], // Width 80mm, height will be dynamic
       })
 
       // Set font to courier (monospace) for consistent spacing
@@ -49,7 +51,7 @@ export class ReceiptService {
       let y = this.MARGIN
 
       // Add all sections with error handling
-      y = this.addHeader(doc, y)
+      y = await this.addHeader(doc, y)
       y = this.addTransactionInfo(doc, transactionData, y)
       y = this.addItems(doc, transactionData.items, y)
       y = this.addSummary(doc, transactionData, y)
@@ -79,10 +81,44 @@ export class ReceiptService {
   }
 
   /**
-   * Add header section with store information
+   * Load logo image for PDF
+   * @returns Base64 encoded logo or null if loading fails
    */
-  private addHeader(doc: jsPDF, y: number): number {
+  private async loadLogo(): Promise<string | null> {
+    try {
+      const logoPath = path.join(process.cwd(), 'public', 'logo.jpg')
+      if (fs.existsSync(logoPath)) {
+        const logoBuffer = fs.readFileSync(logoPath)
+        return `data:image/jpeg;base64,${logoBuffer.toString('base64')}`
+      }
+      return null
+    } catch (error) {
+      console.warn('Failed to load logo:', error)
+      return null
+    }
+  }
+
+  /**
+   * Add header section with store information and logo
+   */
+  private async addHeader(doc: jsPDF, y: number): Promise<number> {
     const centerX = this.PDF_WIDTH_MM / 2
+
+    // Try to add logo
+    try {
+      const logoBase64 = await this.loadLogo()
+      if (logoBase64) {
+        const logoWidth = 15 // 15mm width
+        const logoHeight = 10 // 10mm height
+        const logoX = centerX - logoWidth / 2
+        
+        doc.addImage(logoBase64, 'JPEG', logoX, y, logoWidth, logoHeight)
+        y += logoHeight + 2 // Add space after logo
+      }
+    } catch (error) {
+      console.warn('Failed to add logo to PDF:', error)
+      // Continue without logo
+    }
 
     // Store name (centered, bold)
     doc.setFontSize(10)
@@ -116,20 +152,34 @@ export class ReceiptService {
     y += this.LINE_HEIGHT + 1
 
     // Transaction code
-    doc.text(`Kode    : ${data.kode}`, this.MARGIN, y)
+    doc.text(`Kode            : ${data.kode}`, this.MARGIN, y)
     y += this.LINE_HEIGHT
 
-    // Date
-    const formattedDate = this.formatDate(data.createdAt)
-    doc.text(`Tanggal : ${formattedDate}`, this.MARGIN, y)
+    // Transaction date
+    const formattedTransactionDate = this.formatDate(data.createdAt)
+    doc.text(`Tgl Transaksi   : ${formattedTransactionDate}`, this.MARGIN, y)
     y += this.LINE_HEIGHT
+
+    // Pickup date (tglMulai)
+    if (data.tglMulai) {
+      const formattedPickupDate = this.formatDate(data.tglMulai)
+      doc.text(`Tgl Pengambilan : ${formattedPickupDate}`, this.MARGIN, y)
+      y += this.LINE_HEIGHT
+    }
+
+    // Return date (tglSelesai)
+    if (data.tglSelesai) {
+      const formattedReturnDate = this.formatDate(data.tglSelesai)
+      doc.text(`Tgl Pengembalian: ${formattedReturnDate}`, this.MARGIN, y)
+      y += this.LINE_HEIGHT
+    }
 
     // Customer name
-    doc.text(`Customer: ${data.penyewa.nama}`, this.MARGIN, y)
+    doc.text(`Customer        : ${data.penyewa.nama}`, this.MARGIN, y)
     y += this.LINE_HEIGHT
 
     // Kasir name
-    doc.text(`Kasir   : ${data.kasir?.nama || 'N/A'}`, this.MARGIN, y)
+    doc.text(`Kasir           : ${data.kasir?.nama || 'N/A'}`, this.MARGIN, y)
     y += this.LINE_HEIGHT
 
     // Separator
@@ -164,9 +214,9 @@ export class ReceiptService {
       doc.text(productName, this.MARGIN, y)
       y += this.LINE_HEIGHT
 
-      // Quantity x Price x Duration
+      // Quantity x Price (no duration as it's default 4 days)
       const priceFormatted = this.formatCurrency(item.hargaSewa)
-      doc.text(`${item.jumlah} x ${priceFormatted} x ${item.durasi} hari`, this.MARGIN, y)
+      doc.text(`${item.jumlah} x ${priceFormatted}`, this.MARGIN, y)
       y += this.LINE_HEIGHT
 
       // Subtotal
@@ -198,10 +248,20 @@ export class ReceiptService {
     // Separator
     y = this.addSeparator(doc, y)
 
-    // Total
+    // Total Harga
     y += this.LINE_HEIGHT
     const totalFormatted = this.formatCurrency(data.totalHarga)
-    doc.text(`Total Sewa: ${totalFormatted}`, this.MARGIN, y)
+    doc.text(`Total Harga     : ${totalFormatted}`, this.MARGIN, y)
+    y += this.LINE_HEIGHT
+
+    // DP/Jumlah Bayar
+    const jumlahBayarFormatted = this.formatCurrency(data.jumlahBayar || 0)
+    doc.text(`DP/Jumlah Bayar : ${jumlahBayarFormatted}`, this.MARGIN, y)
+    y += this.LINE_HEIGHT
+
+    // Sisa Bayar
+    const sisaBayarFormatted = this.formatCurrency(data.sisaBayar || 0)
+    doc.text(`Sisa Bayar      : ${sisaBayarFormatted}`, this.MARGIN, y)
     y += this.LINE_HEIGHT
 
     // Separator

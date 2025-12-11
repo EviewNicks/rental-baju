@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This document specifies the requirements for the Customer Receipt PDF Preview feature (MVP Phase 1) for the Maguru Rental system. The feature enables cashiers to generate and preview transaction receipts in PDF format before proceeding to thermal printer integration in Phase 2.
+This document specifies the requirements for the Customer Receipt PDF Preview feature (MVP Phase 1) for the Erlima Mode Rental system. The feature enables cashiers to generate and preview transaction receipts in PDF format before proceeding to thermal printer integration in Phase 2.
 
 The system shall provide a simple, manual receipt generation mechanism accessible from the transaction detail page, producing a standardized PDF receipt that opens in a new browser tab for preview and optional printing.
 
@@ -36,10 +36,10 @@ The system shall provide a simple, manual receipt generation mechanism accessibl
 
 #### Acceptance Criteria
 
-1. WHEN generating a receipt, THE Receipt System SHALL include a header section containing the store name "MAGURU RENTAL", address "Jl. Contoh No. 123, Jakarta 12345", and phone "(021) 123-4567"
-2. WHEN generating a receipt, THE Receipt System SHALL include a transaction info section containing the transaction code, date in Indonesian format, customer name, and kasir name
+1. WHEN generating a receipt, THE Receipt System SHALL include a header section containing the company logo from "public/logo.jpg", store name "ERLIMA MODE", address "Jalan Abdullah Dg Sirua No 136D, Kota Makassar", and phone "+62 821-9699-9962"
+2. WHEN generating a receipt, THE Receipt System SHALL include a transaction info section containing the transaction code, transaction date, pickup date, return date, customer name, and kasir name in Indonesian format
 3. WHEN generating a receipt, THE Receipt System SHALL include a product details section listing each rented item with product name, size, quantity, price per unit, duration, and subtotal
-4. WHEN generating a receipt, THE Receipt System SHALL include a payment summary section showing the total rental amount
+4. WHEN generating a receipt, THE Receipt System SHALL include a payment summary section showing the total amount, down payment/amount paid, and remaining balance
 5. WHEN generating a receipt, THE Receipt System SHALL include a footer section with "Terima Kasih!" and the disclaimer "Barang yang sudah disewa tidak dapat dikembalikan"
 
 ### Requirement 3: Product Item Display
@@ -70,7 +70,7 @@ The system shall provide a simple, manual receipt generation mechanism accessibl
 
 #### Acceptance Criteria
 
-1. WHEN generating a PDF, THE Receipt System SHALL create a document with 58mm width to match thermal paper dimensions
+1. WHEN generating a PDF, THE Receipt System SHALL create a document with 80mm width to match thermal paper dimensions
 2. WHEN generating a PDF, THE Receipt System SHALL use portrait orientation with dynamic height based on content
 3. WHEN generating a PDF, THE Receipt System SHALL use courier (monospace) font for consistent character spacing
 4. WHEN generating a PDF, THE Receipt System SHALL set the content-disposition header to "inline" so the PDF opens in browser rather than downloading
@@ -85,7 +85,9 @@ The system shall provide a simple, manual receipt generation mechanism accessibl
 2. WHEN the transaction API returns data, THE Receipt System SHALL extract the transaction code from data.kode field
 3. WHEN the transaction API returns data, THE Receipt System SHALL extract customer name from data.penyewa.nama field
 4. WHEN the transaction API returns data, THE Receipt System SHALL extract kasir name from data.kasir.nama field
-5. WHEN the transaction API returns data, THE Receipt System SHALL iterate through data.items array to extract all product information
+5. WHEN the transaction API returns data, THE Receipt System SHALL extract transaction date from data.createdAt, pickup date from data.tglMulai, and return date from data.tglSelesai fields
+6. WHEN the transaction API returns data, THE Receipt System SHALL extract payment information from data.totalHarga, data.jumlahBayar, and data.sisaBayar fields
+7. WHEN the transaction API returns data, THE Receipt System SHALL iterate through data.items array to extract all product information
 
 ### Requirement 7: Error Handling and User Feedback
 

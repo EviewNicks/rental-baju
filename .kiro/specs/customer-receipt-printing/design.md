@@ -2,9 +2,9 @@
 
 ## Overview
 
-The Customer Receipt PDF Preview feature provides a manual receipt generation mechanism for the Maguru Rental system. The design follows a clean service-oriented architecture with clear separation between presentation (React components), business logic (Receipt Service), and data access (Transaction API).
+The Customer Receipt PDF Preview feature provides a manual receipt generation mechanism for the Erlima Mode Rental system. The design follows a clean service-oriented architecture with clear separation between presentation (React components), business logic (Receipt Service), and data access (Transaction API).
 
-The system generates PDF receipts that simulate 58mm thermal paper output, allowing validation of receipt format before Phase 2 thermal printer integration. The design prioritizes simplicity, maintainability, and extensibility.
+The system generates PDF receipts that simulate 80mm thermal paper output, allowing validation of receipt format before Phase 2 thermal printer integration. The design prioritizes simplicity, maintainability, and extensibility with enhanced branding through logo integration and comprehensive transaction information display.
 
 ## Architecture
 
@@ -171,10 +171,14 @@ import { STORE_CONFIG } from '@/config/constants'
 interface TransactionDetail {
   kode: string
   createdAt: string
+  tglMulai: string
+  tglSelesai: string
   penyewa: { nama: string }
   kasir: { nama: string }
   items: TransactionItem[]
   totalHarga: number
+  jumlahBayar: number
+  sisaBayar: number
 }
 
 interface TransactionItem {
@@ -279,15 +283,16 @@ export async function GET(
 
 ### 4. Configuration
 
-#### Store Configuration (New)
+#### Store Configuration (Updated)
 ```typescript
 // config/constants.ts
 
 export const STORE_CONFIG = {
-  name: 'MAGURU RENTAL',
-  address: 'Jl. Contoh No. 123, Jakarta 12345',
-  phone: '(021) 123-4567',
-  email: 'info@magururental.com', // Optional, not used in MVP
+  name: 'ERLIMA MODE',
+  address: 'Jalan Abdullah Dg Sirua No 136D, Kota Makassar',
+  phone: '+62 821-9699-9962',
+  logo: '/logo.jpg', // Logo path for PDF generation
+  email: 'info@erlimamode.com', // Optional, not used in MVP
 } as const
 
 export type StoreConfig = typeof STORE_CONFIG
@@ -383,7 +388,7 @@ private extractSize(kondisiAwal: string): string {
 **Validates: Requirements 1.2, 5.1, 5.2**
 
 ### Property 2: Store Information Consistency
-*For any* generated receipt, the header section should contain exactly the store name "MAGURU RENTAL", address "Jl. Contoh No. 123, Jakarta 12345", and phone "(021) 123-4567" from STORE_CONFIG.
+*For any* generated receipt, the header section should contain exactly the store name "ERLIMA MODE", address "Jalan Abdullah Dg Sirua No 136D, Kota Makassar", phone "+62 821-9699-9962", and logo from STORE_CONFIG.
 **Validates: Requirements 2.1, 10.2**
 
 ### Property 3: Transaction Data Preservation
@@ -411,7 +416,7 @@ private extractSize(kondisiAwal: string): string {
 **Validates: Requirements 4.2**
 
 ### Property 9: PDF Dimension Specification
-*For any* generated PDF, the document width should be exactly 58mm and orientation should be portrait.
+*For any* generated PDF, the document width should be exactly 80mm and orientation should be portrait.
 **Validates: Requirements 5.1, 5.2**
 
 ### Property 10: Font Specification
@@ -449,6 +454,18 @@ private extractSize(kondisiAwal: string): string {
 ### Property 18: Configuration Reactivity
 *For any* change to STORE_CONFIG values, all subsequently generated receipts should reflect the new configuration values.
 **Validates: Requirements 10.3**
+
+### Property 19: Logo Integration
+*For any* generated receipt, the header section should contain the company logo loaded from the configured logo path.
+**Validates: Requirements 2.1**
+
+### Property 20: Date Fields Completeness
+*For any* transaction, the receipt should display transaction date, pickup date (tglMulai), and return date (tglSelesai) in Indonesian format.
+**Validates: Requirements 2.2, 6.5**
+
+### Property 21: Payment Breakdown Accuracy
+*For any* transaction, the payment summary should display total amount (totalHarga), down payment (jumlahBayar), and remaining balance (sisaBayar) with correct calculations.
+**Validates: Requirements 2.4, 6.6**
 
 ## Error Handling
 

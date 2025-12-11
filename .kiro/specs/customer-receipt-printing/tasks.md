@@ -2,10 +2,10 @@
 
 ## Overview
 
-This implementation plan breaks down the Customer Receipt PDF Preview feature into discrete, manageable tasks. Each task builds incrementally on previous work, with property-based tests integrated close to implementation to catch errors early.
+This implementation plan breaks down the Customer Receipt PDF Preview feature into discrete, manageable tasks. Each task builds incrementally on previous work, with property-based tests integrated close to implementation to catch errors early. The plan includes improvements for Erlima Mode branding, enhanced transaction information, and 80mm paper format.
 
-**Total Estimated Time:** 1 day (8 hours)
-**Approach:** Implementation-first, then testing
+**Total Estimated Time:** 1.5 days (12 hours) - includes improvements
+**Approach:** Implementation-first, then testing, followed by improvements
 **Testing:** Unit tests + Integration tests (no E2E for MVP)
 
 ---
@@ -20,7 +20,8 @@ This implementation plan breaks down the Customer Receipt PDF Preview feature in
 
 - [x] 1.1 Create store configuration file
   - Create `config/constants.ts`
-  - Define STORE_CONFIG with name, address, phone
+  - Define STORE_CONFIG with name "ERLIMA MODE", address "Jalan Abdullah Dg Sirua No 136D, Kota Makassar", phone "+62 821-9699-9962"
+  - Add logo path "/logo.jpg" for PDF generation
   - Export as const for type safety
   - _Requirements: 10.1, 10.2_
 
@@ -38,7 +39,8 @@ This implementation plan breaks down the Customer Receipt PDF Preview feature in
 - [x] 2.1 Create ReceiptService class structure
   - Create `features/kasir/services/receiptService.ts`
   - Define class with generateReceiptPDF method
-  - Setup jsPDF instance with 58mm width, portrait orientation
+  - Setup jsPDF instance with 80mm width, portrait orientation
+  - Add logo loading capability for PDF generation
   - _Requirements: 5.1, 5.2, 5.3_
 
 - [x] 2.2 Implement currency formatting utility
@@ -63,7 +65,8 @@ This implementation plan breaks down the Customer Receipt PDF Preview feature in
 
 - [x] 2.5 Implement header section generator
   - Create addHeader method
-  - Add store name from STORE_CONFIG
+  - Add company logo from STORE_CONFIG.logo path
+  - Add store name "ERLIMA MODE" from STORE_CONFIG
   - Add store address from STORE_CONFIG
   - Add store phone from STORE_CONFIG
   - Add separator line
@@ -73,11 +76,13 @@ This implementation plan breaks down the Customer Receipt PDF Preview feature in
   - Create addTransactionInfo method
   - Add "STRUK TRANSAKSI" title
   - Add transaction code (Kode: ...)
-  - Add formatted date (Tanggal: ...)
+  - Add transaction date (Tgl Transaksi: ...)
+  - Add pickup date (Tgl Pengambilan: ...) from tglMulai
+  - Add return date (Tgl Pengembalian: ...) from tglSelesai
   - Add customer name (Customer: ...)
   - Add kasir name (Kasir: ...)
   - Add separator line
-  - _Requirements: 2.2, 6.2, 6.3, 6.4_
+  - _Requirements: 2.2, 6.2, 6.3, 6.4, 6.5_
 
 - [x] 2.7 Implement items section generator
   - Create addItems method
@@ -94,9 +99,11 @@ This implementation plan breaks down the Customer Receipt PDF Preview feature in
   - Create addSummary method
   - Add "RINGKASAN PEMBAYARAN" title
   - Add separator line
-  - Add total sewa with formatted currency
+  - Add total harga with formatted currency
+  - Add DP/jumlah bayar with formatted currency
+  - Add sisa bayar with formatted currency
   - Add separator line
-  - _Requirements: 2.4_
+  - _Requirements: 2.4, 6.6_
 
 - [x] 2.9 Implement footer section generator
   - Create addFooter method
@@ -437,7 +444,95 @@ This implementation plan breaks down the Customer Receipt PDF Preview feature in
   - Test with long product names
   - Test with large amounts (millions)
 
-- [ ] 10. Final Checkpoint - Ensure all tests pass
+- [x] 10. Improvements Implementation
+
+
+  - Update existing implementation with new requirements
+  - Add logo integration and enhanced data fields
+  - _Requirements: 2.1, 2.2, 2.4, 5.1_
+
+
+
+- [ ] 10.1 Update store configuration
+  - Update STORE_CONFIG in `config/constants.ts`
+  - Change name to "ERLIMA MODE"
+  - Update address to "Jalan Abdullah Dg Sirua No 136D, Kota Makassar"
+  - Update phone to "+62 821-9699-9962"
+  - Add logo path "/logo.jpg"
+
+
+  - _Requirements: 2.1, 10.2_
+
+- [x] 10.2 Update PDF dimensions
+
+
+  - Change PDF_WIDTH_MM from 58 to 80 in ReceiptService
+  - Update all width calculations accordingly
+  - _Requirements: 5.1_
+
+- [x] 10.3 Implement logo integration
+
+
+  - Add logo loading method in ReceiptService
+  - Integrate logo display in addHeader method
+  - Position logo above store name
+  - Handle logo loading errors gracefully
+
+
+  - _Requirements: 2.1_
+
+- [ ] 10.4 Enhance transaction info section
+  - Add tglMulai as "Tgl Pengambilan"
+  - Add tglSelesai as "Tgl Pengembalian"
+
+
+  - Update field labels for clarity
+  - _Requirements: 2.2, 6.5_
+
+- [x] 10.5 Enhance payment summary section
+
+  - Add jumlahBayar as "DP/Jumlah Bayar"
+  - Add sisaBayar as "Sisa Bayar"
+  - Maintain totalHarga as "Total Harga"
+  - Format all amounts with currency formatting
+  - _Requirements: 2.4, 6.6_
+
+
+- [ ] 10.6 Update unit tests for improvements
+  - **Property 19: Logo Integration**
+  - **Validates: Requirements 2.1**
+  - Test logo loading and display in PDF
+
+  - Mock logo file for testing
+
+- [ ] 10.7 Update unit tests for date fields
+  - **Property 20: Date Fields Completeness**
+  - **Validates: Requirements 2.2, 6.5**
+
+  - Test tglMulai and tglSelesai formatting
+  - Verify all three dates appear in PDF
+
+- [x] 10.8 Update unit tests for payment breakdown
+
+
+  - **Property 21: Payment Breakdown Accuracy**
+  - **Validates: Requirements 2.4, 6.6**
+  - Test totalHarga, jumlahBayar, sisaBayar display
+  - Verify currency formatting for all amounts
+
+- [ ] 10.9 Update store config tests
+  - **Property 2: Store Information Consistency (Updated)**
+  - **Validates: Requirements 2.1, 10.2**
+  - Update expected values to ERLIMA MODE data
+  - Test logo integration in header
+
+- [ ] 10.10 Update PDF dimension tests
+  - **Property 9: PDF Dimension Specification (Updated)**
+  - **Validates: Requirements 5.1, 5.2**
+  - Update expected width from 58mm to 80mm
+  - Verify orientation remains portrait
+
+- [ ] 11. Final Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 ---
