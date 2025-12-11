@@ -11,10 +11,13 @@ import {
   ArrowLeft,
   ArrowRight,
   Loader2,
+  Edit,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { CustomerRegistrationModal } from './CustomerRegistrationModal'
+import { CustomerEditModal } from './CustomerEditModal'
+import { PaginationControls } from '../common/PaginationControls'
 import type { Customer, PenyewaResponse } from '../../types'
 import { usePenyewaSearch, usePenyewaList } from '../../hooks/usePenyewa'
 
@@ -24,6 +27,9 @@ interface CustomerBiodataStepProps {
   onNext: () => void
   onPrev: () => void
   canProceed: boolean
+  // New props for enhanced functionality
+  enableEdit?: boolean
+  pageSize?: number
 }
 
 export function CustomerBiodataStep({
@@ -32,10 +38,15 @@ export function CustomerBiodataStep({
   onNext,
   onPrev,
   canProceed,
+  enableEdit = true,
+  pageSize = 20,
 }: CustomerBiodataStepProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('')
   const [showRegistrationModal, setShowRegistrationModal] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
 
   // Debounce search query
   useEffect(() => {
@@ -46,18 +57,27 @@ export function CustomerBiodataStep({
     return () => clearTimeout(timeoutId)
   }, [searchQuery])
 
-  // Fetch customers - use search if query exists, otherwise get recent customers
+  // Fetch customers with pagination support
+  const isSearchMode = debouncedSearchQuery.length >= 2
+  
   const {
     data: searchResults,
     isLoading: isSearching,
     error: searchError,
-  } = usePenyewaSearch(debouncedSearchQuery, debouncedSearchQuery.length >= 2)
+  } = usePenyewaSearch(
+    debouncedSearchQuery, 
+    isSearchMode,
+    { page: currentPage, limit: pageSize }
+  )
 
   const {
     data: allCustomersResponse,
     isLoading: isLoadingAll,
     error: allCustomersError,
-  } = usePenyewaList({ limit: 20 })
+  } = usePenyewaList({ 
+    page: currentPage, 
+    limit: pageSize 
+  })
 
   // Transform API data to Customer interface
   const transformPenyewaToCustomer = (penyewa: PenyewaResponse): Customer => ({
@@ -66,24 +86,32 @@ export function CustomerBiodataStep({
     phone: penyewa.telepon,
     email: penyewa.email || '',
     address: penyewa.alamat,
+    identityNumber: penyewa.nik || undefined,
     totalTransactions: 0, // This would need to come from API if needed
     createdAt: penyewa.createdAt,
   })
 
-  const customers = useMemo(() => {
-    if (debouncedSearchQuery.length >= 2 && searchResults?.data) {
-      return searchResults.data.map(transformPenyewaToCustomer)
+  const { customers, pagination } = useMemo(() => {
+    if (isSearchMode && searchResults?.data) {
+      return {
+        customers: searchResults.data.map(transformPenyewaToCustomer),
+        pagination: searchResults.pagination
+      }
     } else if (allCustomersResponse?.data) {
-      return allCustomersResponse.data.map(transformPenyewaToCustomer)
+      return {
+        customers: allCustomersResponse.data.map(transformPenyewaToCustomer),
+        pagination: allCustomersResponse.pagination
+      }
     }
-    return []
-  }, [searchResults, allCustomersResponse, debouncedSearchQuery])
+    return { customers: [], pagination: null }
+  }, [searchResults, allCustomersResponse, isSearchMode])
 
   const isLoading = isSearching || isLoadingAll
   const error = searchError || allCustomersError
 
   const handleSearch = (query: string) => {
     setSearchQuery(query)
+    setCurrentPage(1) // Reset to first page when searching
   }
 
   const handleCustomerRegistered = (customer: Customer) => {
@@ -99,6 +127,24 @@ export function CustomerBiodataStep({
   const handleChangeCustomer = () => {
     // Reset selected customer to allow selection of a different one
     onSelectCustomer({} as Customer)
+  }
+
+  const handleEditCustomer = (customer: Customer) => {
+    setEditingCustomer(customer)
+    setShowEditModal(true)
+  }
+
+  const handleCustomerUpdated = (updatedCustomer: Customer) => {
+    // Update the selected customer if it's the one being edited
+    if (selectedCustomer?.id === updatedCustomer.id) {
+      onSelectCustomer(updatedCustomer)
+    }
+    setShowEditModal(false)
+    setEditingCustomer(null)
+  }
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
   }
 
   return (
@@ -214,8 +260,15 @@ export function CustomerBiodataStep({
           data-testid="customer-list-section"
         >
           <div className="p-6 border-b border-gray-200/50" data-testid="customer-list-header">
-            <div className="text-lg font-semibold text-gray-900" data-testid="customer-list-count">
-              Daftar Penyewa ({isLoading ? '...' : customers.length})
+            <div className="flex items-center justify-between">
+              <div className="text-lg font-semibold text-gray-900" data-testid="customer-list-count">
+                Daftar Penyewa ({isLoading ? '...' : pagination?.total || customers.length})
+              </div>
+              {pagination && pagination.totalPages > 1 && (
+                <div className="text-sm text-gray-600">
+                  Halaman {pagination.page} dari {pagination.totalPages}
+                </div>
+              )}
             </div>
           </div>
 
@@ -248,13 +301,15 @@ export function CustomerBiodataStep({
             <>
               <div className="max-h-96 overflow-y-auto" data-testid="customer-list-items">
                 {customers.map((customer) => (
-                  <button
+                  <div
                     key={customer.id}
-                    onClick={() => handleSelectCustomer(customer)}
-                    className="w-full p-6 text-left hover:bg-gray-50/50 transition-colors border-b border-gray-200/50 last:border-b-0"
+                    className="flex items-center gap-4 p-6 hover:bg-gray-50/50 transition-colors border-b border-gray-200/50 last:border-b-0"
                     data-testid={`customer-list-item-${customer.id}`}
                   >
-                    <div className="flex items-center gap-4">
+                    <button
+                      onClick={() => handleSelectCustomer(customer)}
+                      className="flex items-center gap-4 flex-1 text-left"
+                    >
                       <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
                         <User className="h-6 w-6 text-gray-600" />
                       </div>
@@ -269,8 +324,23 @@ export function CustomerBiodataStep({
                           className="text-sm text-gray-600 flex items-center gap-4 mt-1"
                           data-testid={`customer-contact-${customer.id}`}
                         >
-                          <span>{customer.phone}</span>
-                          {customer.email && <span>{customer.email}</span>}
+                          <span className="flex items-center gap-1">
+                            <Phone className="h-3 w-3" />
+                            {customer.phone}
+                          </span>
+                          {customer.email && (
+                            <span className="flex items-center gap-1">
+                              <Mail className="h-3 w-3" />
+                              {customer.email}
+                            </span>
+                          )}
+                        </div>
+                        <div
+                          className="text-sm text-gray-600 flex items-center gap-1 mt-1"
+                          data-testid={`customer-address-${customer.id}`}
+                        >
+                          <MapPin className="h-3 w-3" />
+                          <span className="truncate">{customer.address}</span>
                         </div>
                         <div
                           className="text-xs text-gray-500 mt-2"
@@ -280,10 +350,33 @@ export function CustomerBiodataStep({
                           {new Date(customer.createdAt).toLocaleDateString('id-ID')}
                         </div>
                       </div>
-                    </div>
-                  </button>
+                    </button>
+                    
+                    {enableEdit && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEditCustomer(customer)}
+                        className="flex-shrink-0"
+                        data-testid={`edit-customer-button-${customer.id}`}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
                 ))}
               </div>
+
+              {/* Pagination Controls */}
+              {pagination && pagination.totalPages > 1 && (
+                <PaginationControls
+                  currentPage={pagination.page}
+                  totalPages={pagination.totalPages}
+                  onPageChange={handlePageChange}
+                  isLoading={isLoading}
+                  showPageInfo={false} // Already shown in header
+                />
+              )}
 
               {customers.length === 0 && !isLoading && (
                 <div
@@ -331,6 +424,20 @@ export function CustomerBiodataStep({
           isOpen={showRegistrationModal}
           onClose={() => setShowRegistrationModal(false)}
           onCustomerRegistered={handleCustomerRegistered}
+        />
+      </div>
+
+      {/* Customer Edit Modal */}
+      <div data-testid="customer-edit-modal-container">
+        <CustomerEditModal
+          isOpen={showEditModal}
+          customer={editingCustomer}
+          onClose={() => {
+            setShowEditModal(false)
+            setEditingCustomer(null)
+          }}
+          onCustomerUpdated={handleCustomerUpdated}
+          disableNameField={true}
         />
       </div>
     </div>

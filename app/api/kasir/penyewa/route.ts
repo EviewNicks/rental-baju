@@ -67,6 +67,10 @@ export async function POST(request: NextRequest) {
         if (['nama', 'telepon', 'alamat'].includes(key)) {
           return true
         }
+        // For NIK field, preserve empty strings (Zod schema handles this)
+        if (key === 'nik') {
+          return value !== null && value !== undefined
+        }
         // Remove empty optional fields
         return value !== '' && value !== null && value !== undefined
       }),

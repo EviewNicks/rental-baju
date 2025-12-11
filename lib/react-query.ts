@@ -76,7 +76,7 @@ export const queryKeys = {
       list: (params: Record<string, unknown>) => [...queryKeys.kasir.penyewa.lists(), params] as const,
       details: () => [...queryKeys.kasir.penyewa.all(), 'detail'] as const,
       detail: (id: string) => [...queryKeys.kasir.penyewa.details(), id] as const,
-      search: (query: string) => [...queryKeys.kasir.penyewa.lists(), 'search', query] as const,
+      search: (query: string, params?: Record<string, unknown>) => [...queryKeys.kasir.penyewa.lists(), 'search', query, params] as const,
     },
     // Transaksi (Transaction) queries
     transaksi: {

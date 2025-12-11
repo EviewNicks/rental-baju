@@ -1,35 +1,16 @@
-PS D:\.work\rental-software> git checkout develop
-error: Your local changes to the following files would be overwritten by checkout:
-        app/api/kasir/dana-export/route.ts
-        app/api/kasir/dana-summary/route.ts
-        app/api/kasir/pengeluaran/[id]/route.ts
-        app/api/kasir/pengeluaran/route.ts
-        app/api/public/products/route.ts
-        features/dana-kasir/components/ExpenseList.tsx
-        features/dana-kasir/components/PengeluaranForm.tsx
-        features/dana-kasir/hooks/useCreatePengeluaran.ts
-        features/dana-kasir/hooks/useDeletePengeluaran.ts
-        features/dana-kasir/services/csvExportService.ts
-        features/dana-kasir/services/danaSummaryService.ts
-        features/dana-kasir/services/pengeluaranService.ts
-        features/kasir/components/dashboard/TransactionsTable.tsx
-        features/kasir/components/management/KasirListPage.tsx
-        features/kasir/components/return/UnifiedConditionForm.tsx
-        features/kasir/lib/validation/ReturnSchema.ts
-        features/kasir/services/__tests__/returnService.hilang.test.ts
-        features/kasir/services/inventoryService.ts
-        features/kasir/services/pickupService.ts
-        features/kasir/services/receiptService.ts
-        features/kasir/services/returnService.ts
-        features/kasir/types.ts
-        features/manage-product/components/form-product/ProductForm.tsx
-        features/manage-product/components/product-detail/AdminSizeInventoryCard.tsx    
-        features/manage-product/lib/strategies/StrategyFactory.ts
-        features/manage-product/lib/strategies/UniversalFallbackStrategy.ts
-        features/manage-product/services/__tests__/productService.rental-state-preservation.test.ts
-        features/manage-product/services/productHistoryService.ts
-        jest.setup.js
-        lib/utils/transformers.ts
-Please commit your changes or stash them before you switch branches.
-Aborting
-PS D:\.work\rental-software> 
+ │ │ Cache skipped reason: (auto no cache)
+ GET /api/kasir/produk/available?available=true&page=1&limit=12&sortBy=name&sortOrder=asc 200 in 3138ms
+ │ GET https://api.clerk.com/v1/users/user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH 200 in 805ms (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
+ PUT /api/kasir/penyewa/1bb8111f-e344-47f5-a4e9-78d78c3df0fa 200 in 2898ms
+ │ GET https://api.clerk.com/v1/users/user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH 200 in 578ms (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
+ GET /dashboard/new 200 in 669ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 353ms
+ GET /api/categories 200 in 1006ms
+ GET /api/kasir/penyewa?page=1&limit=20 200 in 1676ms
+ │ GET https://api.clerk.com/v1/users/user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH 200 in 604ms (cache skip)
+ │ │ Cache skipped reason: (auto no cache)
+ GET /api/kasir/produk/available?available=true&page=1&limit=12&sortBy=name&sortOrder=asc 200 in 2733ms
+ │ GET https://api.clerk.com/v1/users/user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH 200 in 720ms (cache skip)
+ │ │ 

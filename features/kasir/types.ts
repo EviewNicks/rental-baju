@@ -819,6 +819,45 @@ export function sanitizePenyewaInput(input: Record<string, unknown>): Record<str
         }
         break
 
+      case 'nik':
+        // Sanitize NIK - keep only digits, max 16 characters
+        console.log('[NIK_SANITIZATION_START]', {
+          key,
+          value,
+          valueType: typeof value,
+          valueLength: typeof value === 'string' ? value.length : 'N/A'
+        })
+        
+        if (typeof value === 'string') {
+          const originalValue = value
+          const afterRegex = value.replace(/\D/g, '')
+          const sanitizedValue = afterRegex.substring(0, 16)
+          
+          console.log('[NIK_SANITIZATION_SUCCESS]', {
+            originalValue,
+            afterRegex,
+            sanitizedValue,
+            originalLength: originalValue.length,
+            afterRegexLength: afterRegex.length,
+            sanitizedLength: sanitizedValue.length,
+            willAssign: sanitizedValue
+          })
+          
+          sanitized[key] = sanitizedValue // ✅ FIX: Actually save the sanitized value!
+          
+          console.log('[NIK_SANITIZATION_ASSIGNED]', {
+            assignedValue: sanitized[key],
+            assignedType: typeof sanitized[key],
+            keyInSanitized: key in sanitized
+          })
+        } else {
+          console.log('[NIK_SANITIZATION_NON_STRING]', {
+            value,
+            type: typeof value
+          })
+        }
+        break
+
       default:
         // For other fields, just ensure they're safe strings if they are strings
         if (typeof value === 'string') {
@@ -897,6 +936,9 @@ export function formatPenyewaData(penyewa: {
   telepon: string
   alamat: string
   email?: string | null
+  nik?: string | null
+  foto?: string | null
+  catatan?: string | null
   createdAt: Date
   updatedAt: Date
 }): PenyewaResponse {
@@ -906,9 +948,9 @@ export function formatPenyewaData(penyewa: {
     telepon: penyewa.telepon,
     alamat: penyewa.alamat,
     email: penyewa.email || null,
-    nik: null, // Will be added to database model later
-    foto: null, // Will be added to database model later
-    catatan: null, // Will be added to database model later
+    nik: penyewa.nik || null,
+    foto: penyewa.foto || null,
+    catatan: penyewa.catatan || null,
     createdAt: penyewa.createdAt.toISOString(),
     updatedAt: penyewa.updatedAt.toISOString(),
   }
