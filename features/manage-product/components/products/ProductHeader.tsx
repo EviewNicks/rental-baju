@@ -28,7 +28,9 @@ export function ProductHeader({ onAddProduct }: ProductHeaderProps) {
               <Image
                 src="/logo.jpg"
                 alt="Erlima Mode Logo"
-                className="w-8 h-8 rounded-lg object-cover transition-transform duration-200 group-hover:scale-105"
+                width={32}
+                height={32}
+                className="rounded-lg object-cover transition-transform duration-200 group-hover:scale-105"
               />
               <span className="text-xl font-bold text-neutral-900 transition-colors duration-200 group-hover:text-gold-500">
                 Erlima Mode

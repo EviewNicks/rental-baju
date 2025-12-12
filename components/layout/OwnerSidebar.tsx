@@ -7,9 +7,9 @@
 
 import React from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Users, BookOpen, UserCog, Wallet } from 'lucide-react'
-import Image from 'next/image'
 
 export function OwnerSidebar() {
   return (
@@ -20,7 +20,9 @@ export function OwnerSidebar() {
           <Image
             src="/logo.jpg"
             alt="Erlima Mode Logo"
-            className="w-8 h-8 rounded-lg object-cover"
+            width={32}
+            height={32}
+            className="rounded-lg object-cover"
           />
           <span className="text-xl font-bold bg-gradient-to-r from-red-600 to-pink-600 bg-clip-text text-transparent">
             Erlima Mode
