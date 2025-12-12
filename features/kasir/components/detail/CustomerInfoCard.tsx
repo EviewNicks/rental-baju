@@ -107,8 +107,8 @@ export function CustomerInfoCard({
             {currentCustomer.identityNumber && (
               <div className="flex items-center gap-3 text-gray-600" data-testid="customer-info-nik">
                 <CreditCard className="h-4 w-4" aria-hidden="true" />
-                <span aria-label={`Nomor identitas: ${currentCustomer.identityNumber}`}>
-                  {currentCustomer.identityNumber}
+                <span aria-label={`NIK: ${currentCustomer.identityNumber}`}>
+                  NIK: {currentCustomer.identityNumber}
                 </span>
               </div>
             )}

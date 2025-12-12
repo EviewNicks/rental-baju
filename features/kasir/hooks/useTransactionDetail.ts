@@ -166,6 +166,14 @@ export function useTransactionDetail(
     }
   }
 
+  // Customer update function for CustomerInfoCard integration
+  const updateCustomerInTransaction = (updatedCustomer: { id: string; name: string; phone: string; email?: string; address: string; identityNumber?: string; nik?: string }) => {
+    // Force refresh transaction data to get latest customer info including email
+    if (transaction) {
+      refreshTransaction()
+    }
+  }
+
   return {
     transaction,
     isLoading: isLoading || isRefetching || isTransforming,
@@ -175,6 +183,8 @@ export function useTransactionDetail(
     // Enhanced functions for better cache management
     syncTransactionData,
     refetchTransformed,
+    // Customer update function
+    updateCustomerInTransaction,
     // Raw API data for debugging
     apiData,
     // Enhanced loading states for debugging
@@ -266,9 +276,9 @@ async function transformApiToUI(apiData: TransaksiResponse): Promise<Transaction
       id: apiData.penyewa.id,
       name: apiData.penyewa.nama,
       phone: apiData.penyewa.telepon,
-      email: '', // Not available in current API response
+      email: (apiData.penyewa as any).email || '', // Email from API response
       address: apiData.penyewa.alamat,
-      identityNumber: '', // Not available in current API response
+      identityNumber: (apiData.penyewa as any).nik || '', // NIK from API response
       createdAt: '', // Not available in current API response
       totalTransactions: 0, // Would need separate API call
     },

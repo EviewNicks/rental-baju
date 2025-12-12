@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { X, User, Phone, Mail, MapPin, CreditCard, Loader2, CheckCircle, AlertCircle } from 'lucide-react'
+import { User, Phone, Mail, MapPin, CreditCard, Loader2, CheckCircle, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -289,28 +289,31 @@ export function CustomerEditModal({
       setTimeout(() => {
         onClose()
       }, 1500)
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error updating customer:', error)
       
       // Handle specific API errors
-      if (error.message?.includes('telepon sudah terdaftar')) {
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      const errorResponse = error && typeof error === 'object' && 'response' in error ? error.response as { status?: number } : null
+      
+      if (errorMessage.includes('telepon sudah terdaftar')) {
         setErrors({ telepon: 'Nomor telepon sudah digunakan oleh penyewa lain' })
-      } else if (error.message?.includes('tidak ditemukan')) {
+      } else if (errorMessage.includes('tidak ditemukan')) {
         setGeneralError('Data penyewa tidak ditemukan. Silakan refresh halaman dan coba lagi.')
-      } else if (error.message?.includes('connection') || error.message?.includes('network')) {
+      } else if (errorMessage.includes('connection') || errorMessage.includes('network')) {
         setGeneralError('Koneksi bermasalah. Periksa koneksi internet Anda dan coba lagi.')
-      } else if (error.message?.includes('timeout')) {
+      } else if (errorMessage.includes('timeout')) {
         setGeneralError('Permintaan timeout. Silakan coba lagi dalam beberapa saat.')
-      } else if (error.response?.status === 403) {
+      } else if (errorResponse?.status === 403) {
         setGeneralError('Anda tidak memiliki izin untuk mengubah data penyewa.')
-      } else if (error.response?.status === 422) {
+      } else if (errorResponse?.status === 422) {
         setGeneralError('Data yang dikirim tidak valid. Periksa kembali form Anda.')
-      } else if (error.response?.status >= 500) {
+      } else if (errorResponse?.status && errorResponse.status >= 500) {
         setGeneralError('Terjadi kesalahan server. Silakan coba lagi dalam beberapa saat.')
       } else {
         // Generic error with actionable message
         setGeneralError(
-          error.message || 
+          errorMessage || 
           'Terjadi kesalahan saat memperbarui data penyewa. Silakan periksa koneksi internet dan coba lagi.'
         )
       }

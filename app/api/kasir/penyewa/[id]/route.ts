@@ -180,14 +180,10 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         // For NIK field, preserve empty strings to allow clearing
         if (key === 'nik') {
           const keep = value !== null && value !== undefined
-          console.log(`[FILTER_NIK] "${value}" (${typeof value}) -> ${keep ? 'KEEP' : 'REMOVE'}`)
           return keep
         }
         // For other fields, remove empty values to let Zod handle defaults
         const keep = value !== '' && value !== null && value !== undefined
-        if (key !== 'telepon' && key !== 'alamat') { // Don't log required fields
-          console.log(`[FILTER_${key.toUpperCase()}] "${value}" (${typeof value}) -> ${keep ? 'KEEP' : 'REMOVE'}`)
-        }
         return keep
       }),
     )

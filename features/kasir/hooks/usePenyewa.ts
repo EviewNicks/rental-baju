@@ -136,12 +136,15 @@ export function useUpdatePenyewa() {
       // Update penyewa in list caches
       queryClient.setQueriesData(
         { queryKey: queryKeys.kasir.penyewa.lists() },
-        (oldData: any) => {
-          if (!oldData?.data) return oldData
+        (oldData: unknown) => {
+          if (!oldData || typeof oldData !== 'object' || !('data' in oldData)) return oldData
+          
+          const typedOldData = oldData as { data: Array<{ id: string }> }
+          if (!typedOldData.data) return oldData
           
           return {
-            ...oldData,
-            data: oldData.data.map((penyewa: any) =>
+            ...typedOldData,
+            data: typedOldData.data.map((penyewa) =>
               penyewa.id === id ? updatedPenyewa : penyewa
             ),
           }
@@ -151,12 +154,15 @@ export function useUpdatePenyewa() {
       // Update search results caches
       queryClient.setQueriesData(
         { queryKey: ['kasir', 'penyewa', 'list', 'search'] },
-        (oldData: any) => {
-          if (!oldData?.data) return oldData
+        (oldData: unknown) => {
+          if (!oldData || typeof oldData !== 'object' || !('data' in oldData)) return oldData
+          
+          const typedOldData = oldData as { data: Array<{ id: string }> }
+          if (!typedOldData.data) return oldData
           
           return {
-            ...oldData,
-            data: oldData.data.map((penyewa: any) =>
+            ...typedOldData,
+            data: typedOldData.data.map((penyewa) =>
               penyewa.id === id ? updatedPenyewa : penyewa
             ),
           }

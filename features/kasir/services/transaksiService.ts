@@ -24,6 +24,8 @@ export interface TransaksiWithDetails extends Transaksi {
     nama: string
     telepon: string
     alamat: string
+    nik?: string | null // Add NIK field for customer identity number
+    email?: string | null // Add email field for customer contact
   }
   kasir: {
     // NEW: Include kasir information from database
@@ -106,6 +108,8 @@ export interface TransaksiForValidation {
     nama: string
     telepon: string
     alamat: string
+    nik?: string | null // Add NIK field for customer identity number
+    email?: string | null // Add email field for customer contact
   }
   items: Array<{
     id: string
@@ -293,6 +297,8 @@ export class TransaksiService {
               nama: true,
               telepon: true,
               alamat: true,
+              nik: true, // Add NIK field for customer identity number
+              email: true, // Add email field for customer contact
             },
           },
           kasir: {
@@ -521,6 +527,8 @@ export class TransaksiService {
                   nama: true,
                   telepon: true,
                   alamat: true,
+                  nik: true, // Add NIK field for customer identity number
+                  email: true, // Add email field for customer contact
                 },
               },
               kasir: {
@@ -783,6 +791,8 @@ export class TransaksiService {
             nama: true,
             telepon: true,
             alamat: true,
+            nik: true, // Add NIK field for customer identity number
+            email: true, // Add email field for customer contact
           },
         },
         items: {

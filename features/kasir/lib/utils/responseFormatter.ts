@@ -73,6 +73,8 @@ interface TransactionCustomer {
   nama: string
   telepon: string
   alamat: string
+  nik?: string | null
+  email?: string | null
 }
 
 interface TransactionKasir {
@@ -113,6 +115,8 @@ export interface FormattedTransactionResponse {
     nama: string
     telepon: string
     alamat: string
+    nik?: string | null
+    email?: string | null
   }
   kasir: {
     id: string
@@ -206,6 +210,10 @@ export function formatTransactionResponse(
       nama: transaksi.penyewa.nama,
       telepon: transaksi.penyewa.telepon,
       alamat: transaksi.penyewa.alamat,
+      // Add NIK field for customer identity number
+      nik: (transaksi.penyewa as any).nik || null,
+      // Add email field for customer contact
+      email: (transaksi.penyewa as any).email || null,
     },
     kasir: transaksi.kasir ? {
       id: transaksi.kasir.id,
