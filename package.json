@@ -33,7 +33,7 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
-    "@clerk/nextjs": "6.28.0",
+    "@clerk/nextjs": "^6.36.2",
     "@hookform/resolvers": "^5.1.1",
     "@prisma/client": "6.11.1",
     "@radix-ui/react-alert-dialog": "^1.1.14",
@@ -74,7 +74,7 @@
     "zod": "^4.0.14"
   },
   "devDependencies": {
-    "@clerk/testing": "1.10.8",
+    "@clerk/testing": "^1.13.23",
     "@eslint/eslintrc": "^3",
     "@playwright/test": "^1.53.1",
     "@svgr/webpack": "^8.1.0",
