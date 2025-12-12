@@ -27,6 +27,18 @@
   --color-gold-800: #B44D12;
   --color-gold-900: #8D2B0B;
 
+  /* Gold (Aksen utama) Primary */
+  --color-primary-50: #FFFBEA;
+  --color-primary-100: #FFF3C4;
+  --color-primary-200: #FCE588;
+  --color-primary-300: #FADB5F;
+  --color-primary-400: #F7C948;
+  --color-primary-500: #FFD700;
+  --color-primary-600: #F0B429;
+  --color-primary-700: #DE911D;
+  --color-primary-800: #B44D12;
+  --color-primary-900: #8D2B0B;
+
   /* Olive */
   --color-olive-500: #84CC16;
 

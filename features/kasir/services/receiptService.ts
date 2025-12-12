@@ -285,9 +285,11 @@ export class ReceiptService {
 
     // Disclaimer (centered, smaller font)
     doc.setFontSize(this.FONT_SIZE - 1)
-    doc.text('Barang yang sudah disewa', centerX, y, { align: 'center' })
+    doc.text('Barang yang sudah diambil', centerX, y, { align: 'center' })
     y += this.LINE_HEIGHT
-    doc.text('tidak dapat dikembalikan', centerX, y, { align: 'center' })
+    doc.text('tidak dapat di tukar', centerX, y, { align: 'center' })
+    y += this.LINE_HEIGHT
+    doc.text('*S&K Berlaku*', centerX, y, { align: 'center' })
     y += this.LINE_HEIGHT
 
     // Reset font size

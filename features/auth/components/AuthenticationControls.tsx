@@ -29,7 +29,7 @@ export function AuthenticationControls({
             <span className="text-white font-bold text-sm">R</span>
           </div>
           <span className="text-xl font-bold text-neutral-900 transition-colors duration-200 group-hover:text-gold-500">
-            RentalBaju
+            Erlima Mode
           </span>
         </Link>
       )}

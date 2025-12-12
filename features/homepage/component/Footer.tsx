@@ -26,7 +26,7 @@ export default function Footer() {
               <div className="w-10 h-10 bg-gradient-to-br from-gold-500 to-gold-600 rounded-lg flex items-center justify-center">
                 <Shirt className="w-6 h-6 text-white" />
               </div>
-              <span className="text-2xl font-bold">RentalBaju</span>
+              <span className="text-2xl font-bold">Erlima Mode</span>
             </div>
 
             <p data-testid="footer-description" className="text-neutral-300 leading-relaxed">
@@ -139,7 +139,7 @@ export default function Footer() {
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <div className="text-center md:text-left" data-testid="footer-copyright">
               <p className="text-neutral-400 text-sm">
-                © {new Date().getFullYear()} RentalBaju. Semua hak dilindungi undang-undang.
+                © {new Date().getFullYear()} Erlima Mode. Semua hak dilindungi undang-undang.
               </p>
               <p className="text-neutral-500 text-xs mt-1">
                 Terdaftar dan diawasi oleh Kementerian Perdagangan RI

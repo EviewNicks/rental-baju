@@ -21,11 +21,13 @@ export function ProductHeader({ onAddProduct }: ProductHeaderProps) {
           <div className="flex justify-between items-center h-12">
             {/* Brand/Logo */}
             <Link href="/" className="flex items-center space-x-2 group" data-testid="brand-link">
-              <div className="w-8 h-8 bg-gradient-to-br from-gold-500 to-gold-600 rounded-lg flex items-center justify-center transition-transform duration-200 group-hover:scale-105">
-                <Shirt className="w-5 h-5 text-white" />
-              </div>
+              <img 
+                src="/logo.jpg" 
+                alt="Erlima Mode Logo" 
+                className="w-8 h-8 rounded-lg object-cover transition-transform duration-200 group-hover:scale-105"
+              />
               <span className="text-xl font-bold text-neutral-900 transition-colors duration-200 group-hover:text-gold-500">
-                RentalBaju
+                Erlima Mode
               </span>
             </Link>
 

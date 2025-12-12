@@ -16,11 +16,13 @@ export function OwnerSidebar() {
       <div className="flex flex-col h-full">
         {/* Logo */}
         <div className="flex items-center space-x-3 p-6 border-b border-gray-200">
-          <div className="w-8 h-8 bg-gradient-to-br from-red-600 to-pink-600 rounded-lg flex items-center justify-center">
-            <BookOpen className="w-5 h-5 text-white" />
-          </div>
+          <img 
+            src="/logo.jpg" 
+            alt="Erlima Mode Logo" 
+            className="w-8 h-8 rounded-lg object-cover"
+          />
           <span className="text-xl font-bold bg-gradient-to-r from-red-600 to-pink-600 bg-clip-text text-transparent">
-            Rental-Baju
+            Erlima Mode
           </span>
         </div>
 
@@ -71,8 +73,8 @@ export function OwnerSidebar() {
 
         {/* Footer */}
         <div className="p-6 border-t border-gray-200">
-          <p className="text-xs text-gray-500 text-center">Admin Panel v2.0</p>
-          <p className="text-xs text-gray-400 text-center mt-1">© 2024 Maguru</p>
+          <p className="text-xs text-gray-500 text-center">Erlima Mode v2.0</p>
+          <p className="text-xs text-gray-400 text-center mt-1">© 2024 Erlima Mode</p>
         </div>
       </div>
     </aside>

@@ -31,7 +31,7 @@ const firaCode = Fira_Code({
 })
 
 export const metadata: Metadata = {
-  title: 'RentalBaju - Solusi Penyewaan Pakaian Terpercaya',
+  title: 'Erlima Mode - Solusi Penyewaan Pakaian Terpercaya',
   description:
     'Koleksi pakaian pesta, casual, dan tradisional untuk acara spesial Anda. Temukan pakaian yang sempurna dengan kualitas premium dan harga terjangkau.',
 }
