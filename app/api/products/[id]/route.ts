@@ -17,7 +17,11 @@ import { ProductHistoryService } from '@/features/manage-product/services/produc
 import { FileUploadService } from '@/features/manage-product/services/fileUploadService'
 import { prisma } from '@/lib/prisma'
 import { updateProductSchema } from '@/features/manage-product/lib/validation/productSchema'
-import { NotFoundError, ValidationError, formatErrorResponse } from '@/features/manage-product/lib/errors/AppError'
+import {
+  NotFoundError,
+  ValidationError,
+  formatErrorResponse,
+} from '@/features/manage-product/lib/errors/AppError'
 import type { UpdateProductWithSizesRequest } from '@/features/manage-product/types'
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -56,7 +60,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
       try {
         // ENHANCED: Use comprehensive inventory method with InventoryService integration
-        const comprehensiveInventory = await aggregationService.getComprehensiveInventory(product.id)
+        const comprehensiveInventory = await aggregationService.getComprehensiveInventory(
+          product.id,
+        )
 
         responseData = {
           ...responseData,
@@ -165,7 +171,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const quantity = formData.get('quantity')
       ? parseInt(formData.get('quantity') as string)
       : undefined
-      const categoryId = (formData.get('categoryId') as string) || undefined
+    const categoryId = (formData.get('categoryId') as string) || undefined
     const size = (formData.get('size') as string) || undefined
     const colorId = (formData.get('colorId') as string) || undefined
     // Material Management fields - RPK-45
@@ -188,7 +194,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
               code: 'IMAGE_FORMAT_ERROR',
               field: 'image',
               details: `Format ${image.type} tidak didukung. Gunakan JPG, PNG, atau WebP.`,
-              supportedFormats: SUPPORTED_IMAGE_FORMATS
+              supportedFormats: SUPPORTED_IMAGE_FORMATS,
             },
           },
           { status: 400 },
@@ -205,7 +211,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
               code: 'IMAGE_SIZE_ERROR',
               field: 'image',
               details: `Ukuran file terlalu besar. Maksimal 5MB. File Anda: ${(image.size / 1024 / 1024).toFixed(2)}MB.`,
-              maxSize: MAX_FILE_SIZE
+              maxSize: MAX_FILE_SIZE,
             },
           },
           { status: 413 },
@@ -216,39 +222,30 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     // Size Management fields - Advanced only (no hasSizes flag)
     const sizesStr = formData.get('sizes') as string
     let sizes: Array<{
-      id?: string;
-      ageCategory: string;
-      size: string;
-      quantity: number;
-      originalQuantity?: number;
-      rentedQuantity?: number;
-      availableQuantity?: number;
+      id?: string
+      ageCategory: string
+      size: string
+      quantity: number
+      originalQuantity?: number
+      rentedQuantity?: number
+      availableQuantity?: number
       isActive?: boolean
     }> = []
-
-    console.log(`[API Route] Raw sizes string received:`, {
-      sizesStr: sizesStr,
-      sizesStrType: typeof sizesStr,
-      sizesStrLength: sizesStr ? sizesStr.length : 0,
-      timestamp: new Date().toISOString()
-    })
 
     // Parse sizes if provided (for updates)
     if (sizesStr) {
       try {
         sizes = JSON.parse(sizesStr)
-        console.log(`[API Route] Parsed sizes:`, {
-          sizes: sizes,
-          sizesLength: sizes.length,
-          sizesType: typeof sizes,
-          isArray: Array.isArray(sizes),
-          timestamp: new Date().toISOString()
-        })
-        
+
         // Validate that if sizes are provided, array should not be empty
         if (sizes.length === 0) {
           return NextResponse.json(
-            { error: { message: 'Jika menyediakan data ukuran, minimal 1 ukuran harus ada', code: 'VALIDATION_ERROR' } },
+            {
+              error: {
+                message: 'Jika menyediakan data ukuran, minimal 1 ukuran harus ada',
+                code: 'VALIDATION_ERROR',
+              },
+            },
             { status: 400 },
           )
         }
@@ -256,7 +253,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         console.error(`[API Route] Failed to parse sizes:`, {
           error: parseError,
           sizesStr: sizesStr,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         })
         return NextResponse.json(
           { error: { message: 'Format data ukuran tidak valid', code: 'VALIDATION_ERROR' } },
@@ -275,7 +272,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     if (modalAwal !== undefined) updateData.modalAwal = modalAwal
     if (currentPrice !== undefined) updateData.currentPrice = currentPrice // ✅ Fixed: use currentPrice instead of hargaSewa
     if (quantity !== undefined) updateData.quantity = quantity
-        if (categoryId !== undefined) updateData.categoryId = categoryId
+    if (categoryId !== undefined) updateData.categoryId = categoryId
     if (size !== undefined) updateData.size = size
     if (colorId !== undefined) updateData.colorId = colorId
     // Material Management fields - RPK-45
@@ -283,22 +280,10 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     if (materialQuantity !== undefined) updateData.materialQuantity = materialQuantity
     // Size Management fields - Enhanced ProductSize fields processed in service layer
     if (sizes.length > 0) {
-      console.log(`[API Route] Adding sizes to updateData:`, {
-        sizes: sizes,
-        sizesLength: sizes.length,
-        timestamp: new Date().toISOString()
-      })
-      updateData.sizes = sizes  // Pass raw data to service layer
+      updateData.sizes = sizes // Pass raw data to service layer
     } else {
       console.log(`[API Route] No sizes to add to updateData`)
     }
-    
-    console.log(`[API Route] Final updateData:`, {
-      updateData: updateData,
-      hasSizes: 'sizes' in updateData,
-      sizesCount: updateData.sizes ? (Array.isArray(updateData.sizes) ? updateData.sizes.length : 'not array') : 'no sizes',
-      timestamp: new Date().toISOString()
-    })
 
     // Validate materialQuantity if provided
     if (materialQuantityStr && (isNaN(materialQuantity!) || materialQuantity! <= 0)) {
@@ -347,19 +332,19 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       try {
         // Check current rental state before update
         const currentProduct = await productService.getProductById(id)
-        
+
         // Validate that quantity changes are safe
         for (const newSize of sizes) {
           const existingSize = currentProduct.sizes?.find(
-            s => s.ageCategory === newSize.ageCategory && s.size === newSize.size
+            (s) => s.ageCategory === newSize.ageCategory && s.size === newSize.size,
           )
-          
+
           if (existingSize) {
             const newOriginalQty = newSize.originalQuantity || newSize.quantity
             const currentRented = existingSize.rentedQuantity || 0
             const currentLost = existingSize.lostQuantity || 0
             const minRequired = currentRented + currentLost
-            
+
             if (newOriginalQty < minRequired) {
               return NextResponse.json(
                 {
@@ -430,7 +415,10 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     // Update product using advanced-only architecture with rental state preservation
-    const product = await productService.updateProduct(id, updateData as unknown as UpdateProductWithSizesRequest)
+    const product = await productService.updateProduct(
+      id,
+      updateData as unknown as UpdateProductWithSizesRequest,
+    )
 
     return NextResponse.json(product, { status: 200 })
   } catch (error) {
@@ -446,7 +434,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     if (error instanceof Error && error.message.includes('connection pool')) {
       return NextResponse.json(
         formatErrorResponse(new Error('Database connection timeout. Please try again.'), requestId),
-        { status: 503 }
+        { status: 503 },
       )
     }
 
@@ -494,7 +482,7 @@ export async function DELETE(
     if (error instanceof Error && error.message.includes('connection pool')) {
       return NextResponse.json(
         formatErrorResponse(new Error('Database connection timeout. Please try again.'), requestId),
-        { status: 503 }
+        { status: 503 },
       )
     }
 
@@ -506,11 +494,13 @@ export async function DELETE(
 /**
  * Helper function to determine user role from Clerk session claims
  * RPK-MODAL: Role-based access control for break-even status
- * 
+ *
  * @param sessionClaims - Clerk session claims object
  * @returns User role (owner, producer, kasir)
  */
-function determineUserRole(sessionClaims: Record<string, unknown> | null): 'owner' | 'producer' | 'kasir' {
+function determineUserRole(
+  sessionClaims: Record<string, unknown> | null,
+): 'owner' | 'producer' | 'kasir' {
   // Default to producer role for safety (masked customer data)
   if (!sessionClaims || typeof sessionClaims !== 'object') {
     return 'producer'
