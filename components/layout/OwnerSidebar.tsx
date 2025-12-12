@@ -1,6 +1,6 @@
 /**
  * Owner Sidebar Component
- * 
+ *
  * Reusable sidebar untuk owner role yang dapat diinjeksi
  * ke dalam berbagai layouts berdasarkan kondisi role
  */
@@ -9,6 +9,7 @@ import React from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Users, BookOpen, UserCog, Wallet } from 'lucide-react'
+import Image from 'next/image'
 
 export function OwnerSidebar() {
   return (
@@ -16,9 +17,9 @@ export function OwnerSidebar() {
       <div className="flex flex-col h-full">
         {/* Logo */}
         <div className="flex items-center space-x-3 p-6 border-b border-gray-200">
-          <img 
-            src="/logo.jpg" 
-            alt="Erlima Mode Logo" 
+          <Image
+            src="/logo.jpg"
+            alt="Erlima Mode Logo"
             className="w-8 h-8 rounded-lg object-cover"
           />
           <span className="text-xl font-bold bg-gradient-to-r from-red-600 to-pink-600 bg-clip-text text-transparent">

@@ -1,10 +1,11 @@
 'use client'
 
-import { Plus, Settings, Shirt } from 'lucide-react'
+import { Plus, Settings } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { AuthenticationControls } from '@/features/auth/components/AuthenticationControls'
+import Image from 'next/image'
 
 interface ProductHeaderProps {
   onAddProduct: () => void
@@ -16,14 +17,17 @@ export function ProductHeader({ onAddProduct }: ProductHeaderProps) {
   return (
     <>
       {/* Top Tier: Authentication Navigation */}
-      <div className="bg-white/95 backdrop-blur-sm border-b border-neutral-100" data-testid="product-auth-nav">
+      <div
+        className="bg-white/95 backdrop-blur-sm border-b border-neutral-100"
+        data-testid="product-auth-nav"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-12">
             {/* Brand/Logo */}
             <Link href="/" className="flex items-center space-x-2 group" data-testid="brand-link">
-              <img 
-                src="/logo.jpg" 
-                alt="Erlima Mode Logo" 
+              <Image
+                src="/logo.jpg"
+                alt="Erlima Mode Logo"
                 className="w-8 h-8 rounded-lg object-cover transition-transform duration-200 group-hover:scale-105"
               />
               <span className="text-xl font-bold text-neutral-900 transition-colors duration-200 group-hover:text-gold-500">
@@ -33,18 +37,15 @@ export function ProductHeader({ onAddProduct }: ProductHeaderProps) {
 
             {/* Authentication Controls */}
             <div className="hidden md:flex">
-              <AuthenticationControls 
-                showDashboardLink={true}
-                showLogo={false} 
-              />
+              <AuthenticationControls showDashboardLink={true} showLogo={false} />
             </div>
 
             {/* Mobile Authentication Menu */}
             <div className="md:hidden">
-              <AuthenticationControls 
+              <AuthenticationControls
                 showDashboardLink={true}
                 showLogo={false}
-                className="space-x-2" 
+                className="space-x-2"
               />
             </div>
           </div>

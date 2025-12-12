@@ -20,10 +20,13 @@ interface TransactionItem {
     modalAwal: Decimal | string | number
     imageUrl?: string | null | undefined
     size?: string | null | undefined
-    category?: {
-      id: string
-      name: string
-    } | null | undefined
+    category?:
+      | {
+          id: string
+          name: string
+        }
+      | null
+      | undefined
   }
   jumlah: number
   jumlahDiambil: number
@@ -211,80 +214,90 @@ export function formatTransactionResponse(
       telepon: transaksi.penyewa.telepon,
       alamat: transaksi.penyewa.alamat,
       // Add NIK field for customer identity number
+      //eslint-disable-next-line @typescript-eslint/no-explicit-any
       nik: (transaksi.penyewa as any).nik || null,
       // Add email field for customer contact
+      //eslint-disable-next-line @typescript-eslint/no-explicit-any
       email: (transaksi.penyewa as any).email || null,
     },
-    kasir: transaksi.kasir ? {
-      id: transaksi.kasir.id,
-      nama: transaksi.kasir.nama,
-      isActive: transaksi.kasir.isActive,
-      createdAt: typeof transaksi.kasir.createdAt === 'object'
-        ? transaksi.kasir.createdAt.toISOString()
-        : transaksi.kasir.createdAt,
-      updatedAt: typeof transaksi.kasir.updatedAt === 'object'
-        ? transaksi.kasir.updatedAt.toISOString()
-        : transaksi.kasir.updatedAt,
-    } : null,
+    kasir: transaksi.kasir
+      ? {
+          id: transaksi.kasir.id,
+          nama: transaksi.kasir.nama,
+          isActive: transaksi.kasir.isActive,
+          createdAt:
+            typeof transaksi.kasir.createdAt === 'object'
+              ? transaksi.kasir.createdAt.toISOString()
+              : transaksi.kasir.createdAt,
+          updatedAt:
+            typeof transaksi.kasir.updatedAt === 'object'
+              ? transaksi.kasir.updatedAt.toISOString()
+              : transaksi.kasir.updatedAt,
+        }
+      : null,
     status: transaksi.status,
 
     // Handle Decimal types with robust type checking
-    totalHarga: typeof transaksi.totalHarga === 'object'
-      ? Number(transaksi.totalHarga)
-      : Number(transaksi.totalHarga),
-    jumlahBayar: typeof transaksi.jumlahBayar === 'object'
-      ? Number(transaksi.jumlahBayar)
-      : Number(transaksi.jumlahBayar),
-    sisaBayar: typeof transaksi.sisaBayar === 'object'
-      ? Number(transaksi.sisaBayar)
-      : Number(transaksi.sisaBayar),
+    totalHarga:
+      typeof transaksi.totalHarga === 'object'
+        ? Number(transaksi.totalHarga)
+        : Number(transaksi.totalHarga),
+    jumlahBayar:
+      typeof transaksi.jumlahBayar === 'object'
+        ? Number(transaksi.jumlahBayar)
+        : Number(transaksi.jumlahBayar),
+    sisaBayar:
+      typeof transaksi.sisaBayar === 'object'
+        ? Number(transaksi.sisaBayar)
+        : Number(transaksi.sisaBayar),
 
     // Handle Date types with robust type checking
-    tglMulai: typeof transaksi.tglMulai === 'object'
-      ? transaksi.tglMulai.toISOString()
-      : transaksi.tglMulai,
+    tglMulai:
+      typeof transaksi.tglMulai === 'object'
+        ? transaksi.tglMulai.toISOString()
+        : transaksi.tglMulai,
     tglSelesai: transaksi.tglSelesai
-      ? (typeof transaksi.tglSelesai === 'object'
-          ? transaksi.tglSelesai.toISOString()
-          : transaksi.tglSelesai)
+      ? typeof transaksi.tglSelesai === 'object'
+        ? transaksi.tglSelesai.toISOString()
+        : transaksi.tglSelesai
       : null,
     tglKembali: transaksi.tglKembali
-      ? (typeof transaksi.tglKembali === 'object'
-          ? transaksi.tglKembali.toISOString()
-          : transaksi.tglKembali)
+      ? typeof transaksi.tglKembali === 'object'
+        ? transaksi.tglKembali.toISOString()
+        : transaksi.tglKembali
       : null,
 
     metodeBayar: transaksi.metodeBayar,
     catatan: transaksi.catatan,
     createdBy: transaksi.createdBy,
-    createdAt: typeof transaksi.createdAt === 'object'
-      ? transaksi.createdAt.toISOString()
-      : transaksi.createdAt,
-    updatedAt: typeof transaksi.updatedAt === 'object'
-      ? transaksi.updatedAt.toISOString()
-      : transaksi.updatedAt,
+    createdAt:
+      typeof transaksi.createdAt === 'object'
+        ? transaksi.createdAt.toISOString()
+        : transaksi.createdAt,
+    updatedAt:
+      typeof transaksi.updatedAt === 'object'
+        ? transaksi.updatedAt.toISOString()
+        : transaksi.updatedAt,
     items: transaksi.items.map((item: TransactionItem) => ({
       id: item.id,
       produk: {
         id: item.produk.id,
         code: item.produk.code,
         name: item.produk.name,
-        modalAwal: typeof item.produk.modalAwal === 'object'
-          ? Number(item.produk.modalAwal)
-          : Number(item.produk.modalAwal),
+        modalAwal:
+          typeof item.produk.modalAwal === 'object'
+            ? Number(item.produk.modalAwal)
+            : Number(item.produk.modalAwal),
         imageUrl: item.produk.imageUrl || null,
         size: item.produk.size || null,
         category: item.produk.category?.name || null,
       },
       jumlah: item.jumlah,
       jumlahDiambil: item.jumlahDiambil,
-      hargaSewa: typeof item.hargaSewa === 'object'
-        ? Number(item.hargaSewa)
-        : Number(item.hargaSewa),
+      hargaSewa:
+        typeof item.hargaSewa === 'object' ? Number(item.hargaSewa) : Number(item.hargaSewa),
       durasi: item.durasi,
-      subtotal: typeof item.subtotal === 'object'
-        ? Number(item.subtotal)
-        : Number(item.subtotal),
+      subtotal: typeof item.subtotal === 'object' ? Number(item.subtotal) : Number(item.subtotal),
       kondisiAwal: item.kondisiAwal,
       kondisiAkhir: item.kondisiAkhir,
       statusKembali: item.statusKembali,
@@ -297,9 +310,10 @@ export function formatTransactionResponse(
         multiConditionSummary: item.multiConditionSummary,
       }),
       ...(item.totalReturnPenalty && {
-        totalReturnPenalty: typeof item.totalReturnPenalty === 'object'
-          ? Number(item.totalReturnPenalty)
-          : Number(item.totalReturnPenalty),
+        totalReturnPenalty:
+          typeof item.totalReturnPenalty === 'object'
+            ? Number(item.totalReturnPenalty)
+            : Number(item.totalReturnPenalty),
       }),
       ...(item.returnConditions &&
         item.returnConditions.length > 0 && {
@@ -307,39 +321,38 @@ export function formatTransactionResponse(
             id: condition.id,
             kondisiAkhir: condition.kondisiAkhir,
             jumlahKembali: condition.jumlahKembali,
-            penaltyAmount: typeof condition.penaltyAmount === 'object'
-              ? Number(condition.penaltyAmount)
-              : Number(condition.penaltyAmount),
+            penaltyAmount:
+              typeof condition.penaltyAmount === 'object'
+                ? Number(condition.penaltyAmount)
+                : Number(condition.penaltyAmount),
             modalAwalUsed: condition.modalAwalUsed
-              ? (typeof condition.modalAwalUsed === 'object'
-                  ? Number(condition.modalAwalUsed)
-                  : Number(condition.modalAwalUsed))
+              ? typeof condition.modalAwalUsed === 'object'
+                ? Number(condition.modalAwalUsed)
+                : Number(condition.modalAwalUsed)
               : null,
             resolutionStatus: condition.resolutionStatus || null,
             resolutionDate: condition.resolutionDate
-              ? (typeof condition.resolutionDate === 'object'
-                  ? condition.resolutionDate.toISOString()
-                  : condition.resolutionDate)
+              ? typeof condition.resolutionDate === 'object'
+                ? condition.resolutionDate.toISOString()
+                : condition.resolutionDate
               : null,
-            createdAt: typeof condition.createdAt === 'object'
-              ? condition.createdAt.toISOString()
-              : condition.createdAt,
+            createdAt:
+              typeof condition.createdAt === 'object'
+                ? condition.createdAt.toISOString()
+                : condition.createdAt,
             createdBy: condition.createdBy,
           })),
         }),
     })),
     pembayaran: transaksi.pembayaran.map((payment: TransactionPayment) => ({
       id: payment.id,
-      jumlah: typeof payment.jumlah === 'object'
-        ? Number(payment.jumlah)
-        : Number(payment.jumlah),
+      jumlah: typeof payment.jumlah === 'object' ? Number(payment.jumlah) : Number(payment.jumlah),
       metode: payment.metode,
       referensi: payment.referensi,
       catatan: payment.catatan,
       createdBy: payment.createdBy,
-      createdAt: typeof payment.createdAt === 'object'
-        ? payment.createdAt.toISOString()
-        : payment.createdAt,
+      createdAt:
+        typeof payment.createdAt === 'object' ? payment.createdAt.toISOString() : payment.createdAt,
     })),
     aktivitas: transaksi.aktivitas.map((activity: TransactionActivity) => ({
       id: activity.id,
@@ -347,9 +360,10 @@ export function formatTransactionResponse(
       deskripsi: activity.deskripsi,
       data: activity.data,
       createdBy: activity.createdBy,
-      createdAt: typeof activity.createdAt === 'object'
-        ? activity.createdAt.toISOString()
-        : activity.createdAt,
+      createdAt:
+        typeof activity.createdAt === 'object'
+          ? activity.createdAt.toISOString()
+          : activity.createdAt,
     })),
   }
 }

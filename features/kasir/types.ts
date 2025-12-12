@@ -10,7 +10,13 @@
 // CORE TYPES & ENUMS
 // ==========================================
 
-export type TransactionStatus = 'active' | 'diambil' | 'selesai' | 'terlambat' | 'cancelled' | 'pending_resolution'
+export type TransactionStatus =
+  | 'active'
+  | 'diambil'
+  | 'selesai'
+  | 'terlambat'
+  | 'cancelled'
+  | 'pending_resolution'
 export type PaymentMethod = 'tunai' | 'transfer' | 'kartu' | 'penalty'
 export type ActivityType = 'dibuat' | 'dibayar' | 'diambil' | 'selesai' | 'terlambat' | 'dibatalkan'
 export type ReturnStatus = 'belum' | 'sebagian' | 'lengkap'
@@ -820,16 +826,14 @@ export function sanitizePenyewaInput(input: Record<string, unknown>): Record<str
         break
 
       case 'nik':
-        
         if (typeof value === 'string') {
-          const originalValue = value
           const afterRegex = value.replace(/\D/g, '')
           const sanitizedValue = afterRegex.substring(0, 16)
           sanitized[key] = sanitizedValue // ✅ FIX: Actually save the sanitized value!
         } else {
           console.log('[NIK_SANITIZATION_NON_STRING]', {
             value,
-            type: typeof value
+            type: typeof value,
           })
         }
         break

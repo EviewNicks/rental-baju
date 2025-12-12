@@ -428,8 +428,8 @@ export class UnifiedReturnService {
       if (hasManualPricing) {
         // Enhanced penalty calculation for manual pricing
         const itemsForEnhancedCalculation = request.items.flatMap((returnItem) => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const transactionItem = transaction.items.find(
+            //eslint-disable-next-line @typescript-eslint/no-explicit-any
             (item: any) => item.id === returnItem.itemId,
           )
           if (!transactionItem) {
@@ -489,8 +489,8 @@ export class UnifiedReturnService {
       } else {
         // Standard penalty calculation
         const itemsForCalculation = request.items.flatMap((returnItem) => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const transactionItem = transaction.items.find(
+            //eslint-disable-next-line @typescript-eslint/no-explicit-any
             (item: any) => item.id === returnItem.itemId,
           )
           if (!transactionItem) {
