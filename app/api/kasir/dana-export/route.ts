@@ -115,7 +115,7 @@ export async function GET(request: NextRequest) {
         Expires: '0',
       },
     })
-    //eslint-disable-next-line @typescript-eslint/no-explicit-any
+    //eslint-disable-next-line 
   } catch (error: any) {
     console.error('CSV Export Error:', error)
 

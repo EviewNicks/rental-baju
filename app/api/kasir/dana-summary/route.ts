@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
             error: {
               message: 'Invalid date format',
               code: 'VALIDATION_ERROR',
-              //eslint-disable-next-line @typescript-eslint/no-explicit-any
+              //eslint-disable-next-line 
               details: dateValidation.error?.issues.map((issue: any) => ({
                 field: issue.path.join('.'),
                 message: issue.message,

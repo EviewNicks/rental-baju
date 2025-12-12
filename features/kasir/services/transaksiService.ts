@@ -376,7 +376,7 @@ export class TransaksiService {
       const enhancedTransaksi = {
         ...transaksi,
         status: enhancedStatus, // ✅ Enhanced status calculated on backend
-        //eslint-disable-next-line @typescript-eslint/no-explicit-any
+        //eslint-disable-next-line
         items: this.transformItemsWithMultiCondition(transaksi.items as any),
       }
 
@@ -647,7 +647,7 @@ export class TransaksiService {
       const enhancedTransaksi = {
         ...transaksi,
         status: enhancedStatus,
-        //eslint-disable-next-line @typescript-eslint/no-explicit-any
+        //eslint-disable-next-line
         items: this.transformItemsWithMultiCondition(transaksi.items as any),
       }
 
@@ -674,10 +674,10 @@ export class TransaksiService {
    * @private
    */
   private async validateStockAvailabilityInTransaction(
-    //eslint-disable-next-line @typescript-eslint/no-explicit-any
+    //eslint-disable-next-line
     tx: any,
     items: CreateTransaksiRequest['items'],
-    //eslint-disable-next-line @typescript-eslint/no-explicit-any
+    //eslint-disable-next-line
     productSizes: any[],
   ): Promise<void> {
     const txInventoryService = createInventoryService(tx)
@@ -718,7 +718,7 @@ export class TransaksiService {
    * @private
    */
   private async updateProductSizeQuantitiesWithoutValidation(
-    //eslint-disable-next-line @typescript-eslint/no-explicit-any
+    //eslint-disable-next-line
     tx: any,
     items: CreateTransaksiRequest['items'],
   ): Promise<void> {
@@ -1010,7 +1010,7 @@ export class TransaksiService {
     }
 
     // Update transaction in a database transaction
-    //eslint-disable-next-line @typescript-eslint/no-explicit-any
+    //eslint-disable-next-line
     const updatedTransaksi = await this.prisma.$transaction(async (tx: any) => {
       // Update main transaction
       const updated = await tx.transaksi.update({
@@ -1041,7 +1041,7 @@ export class TransaksiService {
 
           // Restore stock using InventoryService for consistency
           await Promise.all(
-            //eslint-disable-next-line @typescript-eslint/no-explicit-any
+            //eslint-disable-next-line
             transaksiItems.map(async (item: any) => {
               const quantityToRestore =
                 data.status === 'cancelled' ? item.jumlah : item.jumlah - (item.jumlahDiambil || 0)
