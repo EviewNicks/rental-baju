@@ -10,8 +10,14 @@
 // CORE TYPES & ENUMS
 // ==========================================
 
-export type TransactionStatus = 'active' | 'diambil' | 'selesai' | 'terlambat' | 'cancelled' | 'pending_resolution'
-export type PaymentMethod = 'tunai' | 'transfer' | 'kartu'
+export type TransactionStatus =
+  | 'active'
+  | 'diambil'
+  | 'selesai'
+  | 'terlambat'
+  | 'cancelled'
+  | 'pending_resolution'
+export type PaymentMethod = 'tunai' | 'transfer' | 'kartu' | 'penalty'
 export type ActivityType = 'dibuat' | 'dibayar' | 'diambil' | 'selesai' | 'terlambat' | 'dibatalkan'
 export type ReturnStatus = 'belum' | 'sebagian' | 'lengkap'
 export type TransactionStep = 1 | 2 | 3 | 4
@@ -370,10 +376,11 @@ export interface Penalty {
 export interface Payment {
   id: string
   amount: number
-  method: 'cash' | 'qris' | 'transfer'
+  method: 'cash' | 'qris' | 'transfer' | 'penalty'
   timestamp: string
   type: 'rental' | 'penalty' | 'deposit'
   reference?: string
+  notes?: string
 }
 
 // Legacy TransactionDetail - replaced by TransaksiDetail
@@ -604,6 +611,13 @@ export interface TransaksiResponse extends TransaksiCore {
     telepon: string
     alamat: string
   }
+  kasir?: {
+    id: string
+    nama: string
+    isActive: boolean
+    createdAt: string
+    updatedAt: string
+  }
   metodeBayar: PaymentMethod
   catatan?: string
   createdBy: string
@@ -811,6 +825,19 @@ export function sanitizePenyewaInput(input: Record<string, unknown>): Record<str
         }
         break
 
+      case 'nik':
+        if (typeof value === 'string') {
+          const afterRegex = value.replace(/\D/g, '')
+          const sanitizedValue = afterRegex.substring(0, 16)
+          sanitized[key] = sanitizedValue // ✅ FIX: Actually save the sanitized value!
+        } else {
+          console.log('[NIK_SANITIZATION_NON_STRING]', {
+            value,
+            type: typeof value,
+          })
+        }
+        break
+
       default:
         // For other fields, just ensure they're safe strings if they are strings
         if (typeof value === 'string') {
@@ -889,6 +916,9 @@ export function formatPenyewaData(penyewa: {
   telepon: string
   alamat: string
   email?: string | null
+  nik?: string | null
+  foto?: string | null
+  catatan?: string | null
   createdAt: Date
   updatedAt: Date
 }): PenyewaResponse {
@@ -898,9 +928,9 @@ export function formatPenyewaData(penyewa: {
     telepon: penyewa.telepon,
     alamat: penyewa.alamat,
     email: penyewa.email || null,
-    nik: null, // Will be added to database model later
-    foto: null, // Will be added to database model later
-    catatan: null, // Will be added to database model later
+    nik: penyewa.nik || null,
+    foto: penyewa.foto || null,
+    catatan: penyewa.catatan || null,
     createdAt: penyewa.createdAt.toISOString(),
     updatedAt: penyewa.updatedAt.toISOString(),
   }

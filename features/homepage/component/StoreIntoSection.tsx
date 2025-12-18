@@ -135,7 +135,7 @@ export default function StoreInfoSection() {
                         <div className="flex-1">
                           <h3 className="font-bold text-neutral-900 mb-2">Alamat Toko</h3>
                           <p className="text-neutral-600 leading-relaxed">
-                            <strong>RentalBaju Fashion Center</strong>
+                            <strong>Erlima Mode Fashion Center</strong>
                             <br />
                             Jl. Fashion Street No. 123, Blok A-15
                             <br />

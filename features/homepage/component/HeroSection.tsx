@@ -46,7 +46,7 @@ export default function HeroSection() {
                 className="text-4xl md:text-5xl lg:text-6xl font-bold text-neutral-900 leading-tight"
               >
                 <span className="bg-gradient-to-r from-gold-500 to-gold-600 bg-clip-text text-transparent">
-                  RentalBaju
+                  Erlima Mode
                 </span>
                 <br />
                 Solusi Penyewaan Pakaian Terpercaya

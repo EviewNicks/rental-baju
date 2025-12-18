@@ -170,18 +170,25 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       )
     }
 
-    // Sanitize input data
+    // Sanitize input data with NIK debugging
     const sanitizedData = sanitizePenyewaInput(body as Record<string, unknown>)
-
+    
     // Remove empty optional fields to let Zod handle defaults
+    // Special handling for NIK: preserve empty strings to allow clearing the field
     const processedData = Object.fromEntries(
-      Object.entries(sanitizedData).filter(([value]) => {
-        // Remove empty values to let Zod handle defaults
-        return value !== '' && value !== null && value !== undefined
+      Object.entries(sanitizedData).filter(([key, value]) => {
+        // For NIK field, preserve empty strings to allow clearing
+        if (key === 'nik') {
+          const keep = value !== null && value !== undefined
+          return keep
+        }
+        // For other fields, remove empty values to let Zod handle defaults
+        const keep = value !== '' && value !== null && value !== undefined
+        return keep
       }),
     )
 
-    // Validate request data
+    // Validate request data with NIK debugging
     const validatedData = updatePenyewaSchema.parse(processedData)
 
     // Check if there's actually data to update

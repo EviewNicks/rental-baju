@@ -2,7 +2,7 @@
 
 /**
  * Expense List Component
- * 
+ *
  * Displays list of expenses with CRUD actions
  * Shows:
  * - Amount
@@ -11,11 +11,9 @@
  * - Kasir name
  * - Timestamp
  * - Edit/Delete buttons (Kasir only)
- * 
+ *
  * Requirements: 2.4, 3.1
  */
-
-import { useState } from 'react'
 import { ShoppingCart, Plus, Edit2, Trash2, Clock } from 'lucide-react'
 import { PengeluaranKasir } from '../types'
 import { formatRupiah } from '../utils/currency'
@@ -24,23 +22,20 @@ interface ExpenseListProps {
   expenses: PengeluaranKasir[]
   isLoading?: boolean
   canWrite?: boolean
-  onAdd?: () => void  // NEW: Handler for add button
+  onAdd?: () => void // NEW: Handler for add button
   onEdit?: (expense: PengeluaranKasir) => void
   onDelete?: (expense: PengeluaranKasir) => void
   onRefresh?: () => void
 }
 
-export function ExpenseList({ 
-  expenses, 
-  isLoading, 
+export function ExpenseList({
+  expenses,
+  isLoading,
   canWrite = false,
-  onAdd,  // NEW
+  onAdd, // NEW
   onEdit,
   onDelete,
-  onRefresh 
 }: ExpenseListProps) {
-  const [selectedExpense, setSelectedExpense] = useState<PengeluaranKasir | null>(null)
-
   if (isLoading) {
     return (
       <div className="bg-white rounded-lg shadow p-6">
@@ -65,9 +60,7 @@ export function ExpenseList({
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2">
             <ShoppingCart className="w-5 h-5 text-orange-600" />
-            <h2 className="text-lg font-semibold text-gray-900">
-              Pengeluaran
-            </h2>
+            <h2 className="text-lg font-semibold text-gray-900">Pengeluaran</h2>
           </div>
           {canWrite && (
             <button
@@ -83,9 +76,7 @@ export function ExpenseList({
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
             <ShoppingCart className="w-8 h-8 text-gray-400" />
           </div>
-          <p className="text-gray-500 text-sm">
-            Belum ada pengeluaran hari ini
-          </p>
+          <p className="text-gray-500 text-sm">Belum ada pengeluaran hari ini</p>
         </div>
       </div>
     )
@@ -117,14 +108,10 @@ export function ExpenseList({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <ShoppingCart className="w-5 h-5 text-orange-600" />
-            <h2 className="text-lg font-semibold text-gray-900">
-              Pengeluaran
-            </h2>
+            <h2 className="text-lg font-semibold text-gray-900">Pengeluaran</h2>
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-sm font-medium text-gray-600">
-              {expenses.length} item
-            </span>
+            <span className="text-sm font-medium text-gray-600">{expenses.length} item</span>
             {canWrite && (
               <button
                 onClick={onAdd}
@@ -142,13 +129,12 @@ export function ExpenseList({
       <div className="p-6">
         <div className="space-y-4 max-h-[600px] overflow-y-auto">
           {expenses.map((expense) => (
-            <div
-              key={expense.id}
-              className="border-b border-gray-100 pb-4 last:border-0 last:pb-0"
-            >
+            <div key={expense.id} className="border-b border-gray-100 pb-4 last:border-0 last:pb-0">
               {/* Category and Amount */}
               <div className="flex items-center justify-between mb-2">
-                <span className={`text-xs px-2 py-1 rounded-full font-medium ${getCategoryColor(expense.kategori)}`}>
+                <span
+                  className={`text-xs px-2 py-1 rounded-full font-medium ${getCategoryColor(expense.kategori)}`}
+                >
                   {expense.kategori}
                 </span>
                 <span className="text-lg font-bold text-gray-900">
@@ -158,9 +144,7 @@ export function ExpenseList({
 
               {/* Description */}
               {expense.deskripsi && (
-                <p className="text-sm text-gray-700 mb-2">
-                  {expense.deskripsi}
-                </p>
+                <p className="text-sm text-gray-700 mb-2">{expense.deskripsi}</p>
               )}
 
               {/* Kasir Info and Actions */}
@@ -201,12 +185,8 @@ export function ExpenseList({
         {/* Total Summary */}
         <div className="mt-4 pt-4 border-t border-gray-200">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-gray-900">
-              Total Pengeluaran:
-            </span>
-            <span className="text-lg font-bold text-orange-600">
-              {formatRupiah(totalExpense)}
-            </span>
+            <span className="text-sm font-medium text-gray-900">Total Pengeluaran:</span>
+            <span className="text-lg font-bold text-orange-600">{formatRupiah(totalExpense)}</span>
           </div>
         </div>
       </div>

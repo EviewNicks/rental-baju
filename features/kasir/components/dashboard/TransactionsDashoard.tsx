@@ -40,7 +40,7 @@ export function TransactionsDashboard() {
                   <Shirt className="w-5 h-5 text-white" />
                 </div>
                 <span className="text-xl font-bold text-neutral-900 transition-colors duration-200 group-hover:text-gold-500">
-                  RentalBaju
+                  Erlima Mode
                 </span>
               </Link>
 
@@ -110,7 +110,7 @@ export function TransactionsDashboard() {
                 <Shirt className="w-5 h-5 text-white" />
               </div>
               <span className="text-xl font-bold text-neutral-900 transition-colors duration-200 group-hover:text-gold-500">
-                RentalBaju
+                Erlima Mode
               </span>
             </Link>
 

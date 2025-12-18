@@ -54,7 +54,7 @@ export function SidebarKasir({ className = '' }: { className?: string }) {
             <div className="w-10 h-10 bg-gradient-to-br from-lime-500 to-lime-400 rounded-xl flex items-center justify-center shadow-md">
               <span className="text-black font-bold text-lg">RB</span>
             </div>
-            {!collapsed && <span className="text-xl font-bold text-neutral-900">RentalBaju</span>}
+            {!collapsed && <span className="text-xl font-bold text-neutral-900">Erlima Mode</span>}
           </div>
           <button
             className="ml-2 p-2 rounded-lg hover:bg-lime-50 text-neutral-500"

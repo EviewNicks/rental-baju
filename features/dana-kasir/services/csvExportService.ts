@@ -3,11 +3,10 @@
 
 import { PrismaClient } from '@prisma/client'
 import { getWITADayRange, formatWITADate } from '../utils/timezone'
-import { formatCurrencyForCSV } from '../utils/currency'
 
 /**
  * CSVExportService - Handles CSV export functionality
- * 
+ *
  * Responsibilities:
  * - Query income and expense data for date range
  * - Format data as CSV with proper columns
@@ -19,7 +18,7 @@ export class CSVExportService {
 
   /**
    * Generate CSV file for income and expense data
-   * 
+   *
    * CSV Columns:
    * - Tanggal (Date)
    * - Tipe (Type: Pendapatan/Pengeluaran)
@@ -30,7 +29,7 @@ export class CSVExportService {
    * - Jumlah (Amount)
    * - Kasir ID
    * - Nama Kasir (Kasir Name)
-   * 
+   *
    * @param startDate - Start date of range
    * @param endDate - End date of range
    * @returns CSV string
@@ -45,25 +44,25 @@ export class CSVExportService {
       where: {
         createdAt: {
           gte: startRange.start,
-          lte: endRange.end
-        }
+          lte: endRange.end,
+        },
       },
       include: {
         penyewa: {
           select: {
-            nama: true
-          }
+            nama: true,
+          },
         },
         kasir: {
           select: {
             id: true,
-            nama: true
-          }
-        }
+            nama: true,
+          },
+        },
       },
       orderBy: {
-        createdAt: 'asc'
-      }
+        createdAt: 'asc',
+      },
     })
 
     // Query expense data
@@ -72,39 +71,41 @@ export class CSVExportService {
         isActive: true,
         createdAt: {
           gte: startRange.start,
-          lte: endRange.end
-        }
+          lte: endRange.end,
+        },
       },
       include: {
         kasir: {
           select: {
             id: true,
-            nama: true
-          }
-        }
+            nama: true,
+          },
+        },
       },
       orderBy: {
-        createdAt: 'asc'
-      }
+        createdAt: 'asc',
+      },
     })
 
     // Build CSV content
     const csvRows: string[] = []
 
     // CSV Header
-    csvRows.push([
-      'Tanggal',
-      'Tipe',
-      'Kode Transaksi',
-      'Nama Customer',
-      'Kategori',
-      'Deskripsi',
-      'Jumlah Rental',
-      'Jumlah Penalty',
-      'Total Jumlah',
-      'Kasir ID',
-      'Nama Kasir'
-    ].join(','))
+    csvRows.push(
+      [
+        'Tanggal',
+        'Tipe',
+        'Kode Transaksi',
+        'Nama Customer',
+        'Kategori',
+        'Deskripsi',
+        'Jumlah Rental',
+        'Jumlah Penalty',
+        'Total Jumlah',
+        'Kasir ID',
+        'Nama Kasir',
+      ].join(','),
+    )
 
     // Add income rows (transactions)
     for (const transaction of transactions) {
@@ -112,38 +113,42 @@ export class CSVExportService {
       const penaltyAmount = transaction.flatLatePenalty.toNumber()
       const totalAmount = rentalAmount + penaltyAmount
 
-      csvRows.push([
-        formatWITADate(transaction.createdAt),
-        'Pendapatan',
-        this.escapeCsvValue(transaction.kode),
-        this.escapeCsvValue(transaction.penyewa.nama),
-        '', // No category for income
-        '', // No description for income
-        rentalAmount.toString(),
-        penaltyAmount.toString(),
-        totalAmount.toString(),
-        transaction.kasirId || '',
-        this.escapeCsvValue(transaction.kasir?.nama || 'N/A')
-      ].join(','))
+      csvRows.push(
+        [
+          formatWITADate(transaction.createdAt),
+          'Pendapatan',
+          this.escapeCsvValue(transaction.kode),
+          this.escapeCsvValue(transaction.penyewa.nama),
+          '', // No category for income
+          '', // No description for income
+          rentalAmount.toString(),
+          penaltyAmount.toString(),
+          totalAmount.toString(),
+          transaction.kasirId || '',
+          this.escapeCsvValue(transaction.kasir?.nama || 'N/A'),
+        ].join(','),
+      )
     }
 
     // Add expense rows
     for (const expense of expenses) {
       const amount = expense.harga.toNumber()
 
-      csvRows.push([
-        formatWITADate(expense.createdAt),
-        'Pengeluaran',
-        '', // No transaction code for expenses
-        '', // No customer name for expenses
-        this.escapeCsvValue(expense.kategori),
-        this.escapeCsvValue(expense.deskripsi || ''),
-        '', // No rental amount for expenses
-        '', // No penalty amount for expenses
-        amount.toString(),
-        expense.kasirId,
-        this.escapeCsvValue(expense.kasir.nama)
-      ].join(','))
+      csvRows.push(
+        [
+          formatWITADate(expense.createdAt),
+          'Pengeluaran',
+          '', // No transaction code for expenses
+          '', // No customer name for expenses
+          this.escapeCsvValue(expense.kategori),
+          this.escapeCsvValue(expense.deskripsi || ''),
+          '', // No rental amount for expenses
+          '', // No penalty amount for expenses
+          amount.toString(),
+          expense.kasirId,
+          this.escapeCsvValue(expense.kasir.nama),
+        ].join(','),
+      )
     }
 
     // Join all rows with newline
@@ -152,11 +157,11 @@ export class CSVExportService {
 
   /**
    * Escape CSV values to handle commas, quotes, and newlines
-   * 
+   *
    * Rules:
    * - Wrap in quotes if contains comma, quote, or newline
    * - Escape quotes by doubling them
-   * 
+   *
    * @param value - Value to escape
    * @returns Escaped CSV value
    */
@@ -178,9 +183,9 @@ export class CSVExportService {
 
   /**
    * Generate filename for CSV export
-   * 
+   *
    * Format: dana-kasir-YYYY-MM-DD-to-YYYY-MM-DD.csv
-   * 
+   *
    * @param startDate - Start date
    * @param endDate - End date
    * @returns Filename string

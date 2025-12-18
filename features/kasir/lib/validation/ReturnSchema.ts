@@ -18,9 +18,7 @@ export const isLostItemCondition = (kondisiAkhir: string): boolean => {
   )
 }
 
-export const getExpectedReturnQuantity = (
-  kondisiAkhir: string,
-): { min: number; max: number; message: string } => {
+export const getExpectedReturnQuantity = (): { min: number; max: number; message: string } => {
   // ✅ FIX: HILANG items now require quantity > 0 (user input for penalty calculation)
   // Backend will set jumlahKembali = 0 when processing
   return {

@@ -54,6 +54,7 @@ export function CategoryList({ categories, onEdit, onDelete, loading }: Category
                       clothing: 'bg-blue-50 text-blue-700 border-blue-200',
                       accessories_age_based: 'bg-green-50 text-green-700 border-green-200',
                       accessories_universal: 'bg-purple-50 text-purple-700 border-purple-200',
+                      universal_fallback: 'bg-gray-50 text-gray-700 border-gray-200',
                     }
 
                     return (

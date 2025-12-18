@@ -5,6 +5,7 @@
  * Menggunakan pattern size management yang fleksibel dan universal.
  */
 
+import { z } from 'zod'
 import type {
   CategoryFormStrategy,
   FormSectionConfig,
@@ -46,6 +47,7 @@ export class UniversalFallbackStrategy implements CategoryFormStrategy {
             type: 'checkbox-group',
             label: 'Ukuran Tersedia',
             required: true,
+            validation: z.array(z.string()).min(1, 'At least one size must be selected'),
             options: [
               { value: 'XS', label: 'XS (Extra Small)' },
               { value: 'S', label: 'S (Small)' },
@@ -63,6 +65,32 @@ export class UniversalFallbackStrategy implements CategoryFormStrategy {
     ]
   }
 
+  getValidationSchema(): z.ZodSchema {
+    return z.object({
+      categoryId: z.string().min(1, 'Category ID is required'),
+      sizes: z.array(z.string()).min(1, 'At least one size must be selected'),
+      // Dynamic validation for quantity fields
+      quantity_XS: z.number().min(0).max(999).optional(),
+      quantity_S: z.number().min(0).max(999).optional(),
+      quantity_M: z.number().min(0).max(999).optional(),
+      quantity_L: z.number().min(0).max(999).optional(),
+      quantity_XL: z.number().min(0).max(999).optional(),
+      quantity_XXL: z.number().min(0).max(999).optional(),
+    }).refine((data) => {
+      // Ensure at least one selected size has quantity > 0
+      const selectedSizes = data.sizes || []
+      const hasValidQuantity = selectedSizes.some(size => {
+        const quantityKey = `quantity_${size}` as keyof typeof data
+        const quantity = data[quantityKey] as number
+        return quantity && quantity > 0
+      })
+      return hasValidQuantity
+    }, {
+      message: 'At least one selected size must have quantity greater than 0',
+      path: ['sizes']
+    })
+  }
+
   /**
    * Generate quantity fields berdasarkan ukuran yang dipilih
    */
@@ -74,6 +102,7 @@ export class UniversalFallbackStrategy implements CategoryFormStrategy {
       type: 'number' as const,
       label: `Stok ${size}`,
       required: false,
+      validation: z.number().min(0, 'Quantity must be 0 or greater').max(999, 'Quantity cannot exceed 999').optional(),
       min: 0,
       max: 999,
       defaultValue: 0,
@@ -110,6 +139,7 @@ export class UniversalFallbackStrategy implements CategoryFormStrategy {
       if (quantity > 0) {
         sizes.push({
           ageCategory: 'ADULT', // Default ke ADULT untuk universal strategy
+          //eslint-disable-next-line @typescript-eslint/no-explicit-any
           size: size as any, // SizeEnum
           quantity,
           originalQuantity: quantity,

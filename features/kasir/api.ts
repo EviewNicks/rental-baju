@@ -85,6 +85,13 @@ function sanitizePenyewaInput(input: Record<string, unknown>): Record<string, un
         }
         break
 
+      case 'nik':
+        // Sanitize NIK - keep only digits, max 16 characters
+        if (typeof value === 'string') {
+          sanitized[key] = value.replace(/\D/g, '').substring(0, 16)
+        }
+        break
+
       default:
         // For other fields, just ensure they're safe strings if they are strings
         if (typeof value === 'string') {

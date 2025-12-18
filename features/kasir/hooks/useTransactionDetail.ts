@@ -166,6 +166,14 @@ export function useTransactionDetail(
     }
   }
 
+  // Customer update function for CustomerInfoCard integration
+  const updateCustomerInTransaction = () => {
+    // Force refresh transaction data to get latest customer info including email
+    if (transaction) {
+      refreshTransaction()
+    }
+  }
+
   return {
     transaction,
     isLoading: isLoading || isRefetching || isTransforming,
@@ -175,6 +183,8 @@ export function useTransactionDetail(
     // Enhanced functions for better cache management
     syncTransactionData,
     refetchTransformed,
+    // Customer update function
+    updateCustomerInTransaction,
     // Raw API data for debugging
     apiData,
     // Enhanced loading states for debugging
@@ -183,7 +193,6 @@ export function useTransactionDetail(
     isRefreshing: isRefetching,
   }
 }
-
 
 /**
  * Transform API TransaksiResponse to UI TransactionDetail type
@@ -209,7 +218,7 @@ async function transformApiToUI(apiData: TransaksiResponse): Promise<Transaction
       transactionCode: apiData.kode,
       itemsType: typeof rawItems,
       hasFullItems: !!(apiData as unknown as Record<string, unknown>).fullItems,
-      hasItems: !!apiData.items
+      hasItems: !!apiData.items,
     })
   }
 
@@ -222,7 +231,7 @@ async function transformApiToUI(apiData: TransaksiResponse): Promise<Transaction
     hasItems: !!apiData.items,
     itemsCount: items.length,
     sourceField: (apiData as unknown as Record<string, unknown>).fullItems ? 'fullItems' : 'items',
-    itemsWithPickup: items.filter(item => (item.jumlahDiambil || 0) > 0).length
+    itemsWithPickup: items.filter((item) => (item.jumlahDiambil || 0) > 0).length,
   })
 
   // Validation: Ensure penyewa data is valid
@@ -234,13 +243,13 @@ async function transformApiToUI(apiData: TransaksiResponse): Promise<Transaction
     console.warn('Transform warning: Missing penyewa required fields', {
       transactionCode: apiData.kode,
       hasNama: !!apiData.penyewa.nama,
-      hasTelepon: !!apiData.penyewa.telepon
+      hasTelepon: !!apiData.penyewa.telepon,
     })
   }
 
   // ✅ STATUS MISMATCH FIX: Use backend-provided enhanced status directly
   // Status is now calculated on backend for single source of truth
-  const calculatedStatus = apiData.status  // Already enhanced by TransaksiService
+  const calculatedStatus = apiData.status // Already enhanced by TransaksiService
 
   const transformed: TransactionDetail = {
     id: apiData.id,
@@ -266,9 +275,11 @@ async function transformApiToUI(apiData: TransaksiResponse): Promise<Transaction
       id: apiData.penyewa.id,
       name: apiData.penyewa.nama,
       phone: apiData.penyewa.telepon,
-      email: '', // Not available in current API response
+      //eslint-disable-next-line @typescript-eslint/no-explicit-any
+      email: (apiData.penyewa as any).email || '', // Email from API response
       address: apiData.penyewa.alamat,
-      identityNumber: '', // Not available in current API response
+      //eslint-disable-next-line @typescript-eslint/no-explicit-any
+      identityNumber: (apiData.penyewa as any).nik || '', // NIK from API response
       createdAt: '', // Not available in current API response
       totalTransactions: 0, // Would need separate API call
     },
@@ -303,22 +314,26 @@ async function transformApiToUI(apiData: TransaksiResponse): Promise<Transaction
         // RPK-51: Add kondisiAwal for AgeSizes parsing
         kondisiAwal: item.kondisiAwal,
         // Handle optional return fields that may not exist in TypeScript interface
-        ...('totalReturnPenalty' in item && item.totalReturnPenalty !== undefined ? {
-          totalReturnPenalty: item.totalReturnPenalty as number
-        } : {}),
-        ...('conditionBreakdown' in item && item.conditionBreakdown ? {
-          conditionBreakdown: item.conditionBreakdown as Array<{
-            id: string
-            kondisiAkhir: string
-            jumlahKembali: number
-            penaltyAmount: number
-            modalAwalUsed?: number | null
-            resolutionStatus?: string | null
-            resolutionDate?: string | null
-            createdAt?: string
-            createdBy?: string
-          }>
-        } : {}),
+        ...('totalReturnPenalty' in item && item.totalReturnPenalty !== undefined
+          ? {
+              totalReturnPenalty: item.totalReturnPenalty as number,
+            }
+          : {}),
+        ...('conditionBreakdown' in item && item.conditionBreakdown
+          ? {
+              conditionBreakdown: item.conditionBreakdown as Array<{
+                id: string
+                kondisiAkhir: string
+                jumlahKembali: number
+                penaltyAmount: number
+                modalAwalUsed?: number | null
+                resolutionStatus?: string | null
+                resolutionDate?: string | null
+                createdAt?: string
+                createdBy?: string
+              }>,
+            }
+          : {}),
       }
     }),
 
@@ -366,9 +381,9 @@ function mapActivityTypeToAction(
     dibuat: 'created',
     dibayar: 'paid',
     diambil: 'picked_up',
-    selesai: 'returned',              // UPDATED: Map selesai to returned activity
-    dikembalikan: 'returned',         // LEGACY: Keep for backward compatibility
-    penalty_added: 'penalty_added',  // NEW: Penalty activity mapping
+    selesai: 'returned', // UPDATED: Map selesai to returned activity
+    dikembalikan: 'returned', // LEGACY: Keep for backward compatibility
+    penalty_added: 'penalty_added', // NEW: Penalty activity mapping
     penalty_diterapkan: 'penalty_added', // NEW: Penalty alias mapping
     terlambat: 'overdue',
     dibatalkan: 'penalty_added', // Map cancelled to penalty for now

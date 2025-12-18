@@ -1,22 +1,18 @@
 /**
  * useDeletePengeluaran Hook
- * 
+ *
  * React Query mutation hook for deleting (soft delete) expense
- * 
+ *
  * Features:
  * - API call to DELETE /api/kasir/pengeluaran/[id]
  * - Soft delete (sets isActive = false)
  * - Cache invalidation after success
  * - Error handling
- * 
+ *
  * Requirements: 3.4, 3.5
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-
-interface DeletePengeluaranParams {
-  id: string
-}
 
 /**
  * Delete (soft delete) existing expense

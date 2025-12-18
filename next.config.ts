@@ -131,10 +131,7 @@ const nextConfig = {
     ignoreBuildErrors: false,
   },
 
-  // ESLint configuration - strict untuk semua environment
-  eslint: {
-    ignoreDuringBuilds: false,
-  },
+  // ESLint configuration removed - use CLI instead
 
   // Performance logging - hanya di development
   ...(process.env.NODE_ENV === 'development' &&

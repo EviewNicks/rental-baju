@@ -46,14 +46,10 @@ export class AuditService {
   ) {}
 
   /**
-   * Log audit entry for any operation
+   * Log audit entry for any operation using dedicated ActivityLog table
    */
   async logActivity(entry: Omit<AuditLogEntry, 'timestamp'>): Promise<void> {
     try {
-      // Create audit log entry in database
-      // Note: We'll use a simple JSON storage approach since audit table wasn't in original schema
-      // In production, consider dedicated audit table
-      
       const auditData = {
         ...entry,
         timestamp: new Date(),
@@ -61,8 +57,9 @@ export class AuditService {
         userRole: this.userRole || 'unknown'
       }
 
-      // Store in aktivitas_transaksi table as a workaround for now
-      // In production, create dedicated audit_log table
+
+
+      // Also log to aktivitas_transaksi for transaction-related activities (backward compatibility)
       if (entry.entityType === 'transaksi') {
         await this.prisma.aktivitasTransaksi.create({
           data: {
@@ -81,10 +78,6 @@ export class AuditService {
             createdBy: this.userId
           }
         })
-      } else {
-        // For non-transaction entities, audit logging disabled for cleaner console output
-        // In production, implement proper audit table
-        // console.log('[AUDIT]', JSON.stringify(auditData, null, 2))
       }
     } catch (error) {
       // Audit logging should never break the main operation
@@ -93,7 +86,7 @@ export class AuditService {
   }
 
   /**
-   * Log customer (penyewa) operations
+   * Log customer (penyewa) operations with enhanced logging
    */
   async logPenyewaActivity(
     action: 'create' | 'read' | 'update' | 'delete',
@@ -102,17 +95,33 @@ export class AuditService {
     newData?: AuditData,
     metadata?: Record<string, unknown>
   ): Promise<void> {
-    await this.logActivity({
-      entityType: 'penyewa',
-      entityId,
-      action,
-      oldData,
-      newData,
-      metadata,
-      userId: this.userId,
-      userRole: this.userRole
-    })
+    try {
+      // Enhanced logging for penyewa operations
+      const auditData = {
+        entityType: 'penyewa' as const,
+        entityId,
+        action,
+        oldData: this.sanitizeData(oldData),
+        newData: this.sanitizeData(newData),
+        metadata: {
+          ...metadata,
+          timestamp: new Date().toISOString(),
+          userAgent: metadata?.userAgent || 'unknown',
+          ipAddress: metadata?.ipAddress || 'unknown'
+        },
+        userId: this.userId,
+        userRole: this.userRole || 'unknown'
+      }
+
+
+      // Store detailed audit log
+      await this.logActivity(auditData)
+    } catch (error) {
+      console.error('Failed to log penyewa activity:', error)
+      // Don't throw - audit logging should not break main operations
+    }
   }
+
 
   /**
    * Log transaction operations

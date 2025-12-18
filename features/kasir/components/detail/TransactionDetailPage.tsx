@@ -20,7 +20,7 @@ interface TransactionDetailPageProps {
 }
 
 export function TransactionDetailPage({ transactionId }: TransactionDetailPageProps) {
-  const { transaction, isLoading, error, refreshTransaction, clearError } =
+  const { transaction, isLoading, error, refreshTransaction, clearError, updateCustomerInTransaction } =
     useTransactionDetail(transactionId)
   const { printReceipt, isPrinting } = useReceiptPrint()
 
@@ -194,7 +194,11 @@ export function TransactionDetailPage({ transactionId }: TransactionDetailPagePr
 
             {/* Customer and Kasir Info */}
             <KasirInfoCard data-testid="kasir-info-card" kasir={transaction.kasir || null} />
-            <CustomerInfoCard data-testid="customer-info-card" customer={transaction.customer} />
+            <CustomerInfoCard 
+              data-testid="customer-info-card" 
+              customer={transaction.customer} 
+              onCustomerUpdated={updateCustomerInTransaction}
+            />
 
             {/* Products */}
             <div data-testid="product-detail-card" className="space-y-4">

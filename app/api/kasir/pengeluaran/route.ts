@@ -12,7 +12,7 @@ const prisma = new PrismaClient()
 
 /**
  * GET /api/kasir/pengeluaran
- * 
+ *
  * Get expenses for a specific date
  * Query params: date (optional, defaults to today)
  * Auth: Kasir (read), Owner (read)
@@ -24,14 +24,14 @@ export async function GET(request: NextRequest) {
     if (!userId) {
       return NextResponse.json(
         { success: false, error: { message: 'Unauthorized', code: 'UNAUTHORIZED' } },
-        { status: 401 }
+        { status: 401 },
       )
     }
 
     // Parse query parameters
     const { searchParams } = new URL(request.url)
     const dateParam = searchParams.get('date')
-    
+
     // Validate and parse date
     let queryDate: Date
     if (dateParam) {
@@ -43,14 +43,14 @@ export async function GET(request: NextRequest) {
             error: {
               message: 'Invalid date format',
               code: 'VALIDATION_ERROR',
-              details: dateValidation.error?.issues.map((issue: any) => ({
+              details: dateValidation.error?.issues.map((issue) => ({
                 field: issue.path.join('.'),
                 message: issue.message,
-                code: issue.code
-              }))
-            }
+                code: issue.code,
+              })),
+            },
           },
-          { status: 400 }
+          { status: 400 },
         )
       }
       queryDate = dateValidation.data.date || getCurrentWITADate()
@@ -70,9 +70,8 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: expenses
+      data: expenses,
     })
-
   } catch (error) {
     console.error('Error fetching expenses:', error)
     return NextResponse.json(
@@ -80,17 +79,17 @@ export async function GET(request: NextRequest) {
         success: false,
         error: {
           message: 'Internal server error',
-          code: 'INTERNAL_ERROR'
-        }
+          code: 'INTERNAL_ERROR',
+        },
       },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }
 
 /**
  * POST /api/kasir/pengeluaran
- * 
+ *
  * Create a new expense record
  * Body: { kasirId, harga, kategori, deskripsi }  // NEW: kasirId required
  * Auth: Kasir (write only)
@@ -102,7 +101,7 @@ export async function POST(request: NextRequest) {
     if (!userId) {
       return NextResponse.json(
         { success: false, error: { message: 'Unauthorized', code: 'UNAUTHORIZED' } },
-        { status: 401 }
+        { status: 401 },
       )
     }
 
@@ -121,16 +120,16 @@ export async function POST(request: NextRequest) {
     let requestBody
     try {
       requestBody = await request.json()
-    } catch (error) {
+    } catch {
       return NextResponse.json(
         {
           success: false,
           error: {
             message: 'Invalid JSON in request body',
-            code: 'VALIDATION_ERROR'
-          }
+            code: 'VALIDATION_ERROR',
+          },
         },
-        { status: 400 }
+        { status: 400 },
       )
     }
 
@@ -143,14 +142,14 @@ export async function POST(request: NextRequest) {
           error: {
             message: 'Validation failed',
             code: 'VALIDATION_ERROR',
-            details: validation.error?.issues.map((issue: any) => ({
+            details: validation.error?.issues.map((issue) => ({
               field: issue.path.join('.'),
               message: issue.message,
-              code: issue.code
-            }))
-          }
+              code: issue.code,
+            })),
+          },
         },
-        { status: 400 }
+        { status: 400 },
       )
     }
 
@@ -168,14 +167,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         success: true,
-        data: expense
+        data: expense,
       },
-      { status: 201 }
+      { status: 201 },
     )
-
   } catch (error) {
     console.error('Error creating expense:', error)
-    
+
     // Handle validation errors from service
     if (error instanceof Error && error.message.includes('Validation failed')) {
       return NextResponse.json(
@@ -183,10 +181,10 @@ export async function POST(request: NextRequest) {
           success: false,
           error: {
             message: error.message,
-            code: 'VALIDATION_ERROR'
-          }
+            code: 'VALIDATION_ERROR',
+          },
         },
-        { status: 400 }
+        { status: 400 },
       )
     }
 
@@ -197,10 +195,10 @@ export async function POST(request: NextRequest) {
           success: false,
           error: {
             message: error.message,
-            code: 'KASIR_NOT_FOUND'
-          }
+            code: 'KASIR_NOT_FOUND',
+          },
         },
-        { status: 404 }
+        { status: 404 },
       )
     }
 
@@ -209,10 +207,10 @@ export async function POST(request: NextRequest) {
         success: false,
         error: {
           message: 'Internal server error',
-          code: 'INTERNAL_ERROR'
-        }
+          code: 'INTERNAL_ERROR',
+        },
       },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }

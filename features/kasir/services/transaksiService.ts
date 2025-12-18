@@ -24,6 +24,8 @@ export interface TransaksiWithDetails extends Transaksi {
     nama: string
     telepon: string
     alamat: string
+    nik?: string | null // Add NIK field for customer identity number
+    email?: string | null // Add email field for customer contact
   }
   kasir: {
     // NEW: Include kasir information from database
@@ -106,6 +108,8 @@ export interface TransaksiForValidation {
     nama: string
     telepon: string
     alamat: string
+    nik?: string | null // Add NIK field for customer identity number
+    email?: string | null // Add email field for customer contact
   }
   items: Array<{
     id: string
@@ -257,17 +261,6 @@ export class TransaksiService {
       }
       throw new Error('Kasir tidak ditemukan atau tidak aktif')
     }
-
-    // 🔍 DEBUG: Log kasir validation success (dev only)
-    if (process.env.NODE_ENV === 'development') {
-      TransactionLogger.logKasirDebug({
-        kasirId,
-        kasirName: kasir.nama,
-        validation: 'kasir_validation_success',
-        timestamp: new Date().toISOString(),
-        source: 'TransaksiService.validateKasirExistsAndActive',
-      })
-    }
   }
 
   /**
@@ -293,6 +286,8 @@ export class TransaksiService {
               nama: true,
               telepon: true,
               alamat: true,
+              nik: true, // Add NIK field for customer identity number
+              email: true, // Add email field for customer contact
             },
           },
           kasir: {
@@ -333,7 +328,7 @@ export class TransaksiService {
                   penaltyAmount: true,
                   modalAwalUsed: true,
                   resolutionStatus: true, // ✅ TASK 9.1: Include resolution status
-                  resolutionDate: true,   // ✅ TASK 9.1: Include resolution date
+                  resolutionDate: true, // ✅ TASK 9.1: Include resolution date
                   createdAt: true,
                   createdBy: true,
                 },
@@ -381,7 +376,7 @@ export class TransaksiService {
       const enhancedTransaksi = {
         ...transaksi,
         status: enhancedStatus, // ✅ Enhanced status calculated on backend
-        //eslint-disable-next-line @typescript-eslint/no-explicit-any
+        //eslint-disable-next-line
         items: this.transformItemsWithMultiCondition(transaksi.items as any),
       }
 
@@ -441,10 +436,10 @@ export class TransaksiService {
         throw new Error('Penyewa tidak ditemukan')
       }
 
-      // NEW: Validate kasir if provided
-      if (data.kasirId) {
-        await this.validateKasirExistsAndActive(data.kasirId)
-      }
+      // // NEW: Validate kasir if provided
+      // if (data.kasirId) {
+      //   await this.validateKasirExistsAndActive(data.kasirId)
+      // }
 
       // STEP 2: Get product data for pricing
       // NOTE: Stock validation moved INSIDE transaction to prevent double validation
@@ -521,6 +516,8 @@ export class TransaksiService {
                   nama: true,
                   telepon: true,
                   alamat: true,
+                  nik: true, // Add NIK field for customer identity number
+                  email: true, // Add email field for customer contact
                 },
               },
               kasir: {
@@ -619,11 +616,15 @@ export class TransaksiService {
 
       // Create activity log AFTER transaction (async, non-blocking)
       // This saves 1-2 seconds by not blocking transaction completion
-      this.createActivityLogAsync(transaksi.id, kode, data, priceCalculation, transactionStartTime).catch(
-        (err) => {
-          console.error('Failed to create activity log:', err)
-        },
-      )
+      this.createActivityLogAsync(
+        transaksi.id,
+        kode,
+        data,
+        priceCalculation,
+        transactionStartTime,
+      ).catch((err) => {
+        console.error('Failed to create activity log:', err)
+      })
 
       // 🔍 DEBUG: Log transaction creation success with kasir assignment
       TransactionLogger.logKasirDebug({
@@ -646,7 +647,7 @@ export class TransaksiService {
       const enhancedTransaksi = {
         ...transaksi,
         status: enhancedStatus,
-        //eslint-disable-next-line @typescript-eslint/no-explicit-any
+        //eslint-disable-next-line
         items: this.transformItemsWithMultiCondition(transaksi.items as any),
       }
 
@@ -673,10 +674,10 @@ export class TransaksiService {
    * @private
    */
   private async validateStockAvailabilityInTransaction(
-    //eslint-disable-next-line @typescript-eslint/no-explicit-any
+    //eslint-disable-next-line
     tx: any,
     items: CreateTransaksiRequest['items'],
-    //eslint-disable-next-line @typescript-eslint/no-explicit-any
+    //eslint-disable-next-line
     productSizes: any[],
   ): Promise<void> {
     const txInventoryService = createInventoryService(tx)
@@ -697,7 +698,10 @@ export class TransaksiService {
 
       // ✅ VALIDATION 2: Check actual stock availability using InventoryService
       // This is the real validation - checks if we have enough quantity
-      const isAvailable = await txInventoryService.checkAvailability(item.productSizeId, item.jumlah)
+      const isAvailable = await txInventoryService.checkAvailability(
+        item.productSizeId,
+        item.jumlah,
+      )
 
       if (!isAvailable) {
         const stockStatus = await txInventoryService.getStockStatus(item.productSizeId)
@@ -714,7 +718,7 @@ export class TransaksiService {
    * @private
    */
   private async updateProductSizeQuantitiesWithoutValidation(
-    //eslint-disable-next-line @typescript-eslint/no-explicit-any
+    //eslint-disable-next-line
     tx: any,
     items: CreateTransaksiRequest['items'],
   ): Promise<void> {
@@ -762,8 +766,6 @@ export class TransaksiService {
     }
   }
 
-
-
   /**
    * Get transaction by ID with minimal data for return validation
    * Ultra-lean query to reduce validation time by ~70%
@@ -783,6 +785,8 @@ export class TransaksiService {
             nama: true,
             telepon: true,
             alamat: true,
+            nik: true, // Add NIK field for customer identity number
+            email: true, // Add email field for customer contact
           },
         },
         items: {
@@ -1006,7 +1010,7 @@ export class TransaksiService {
     }
 
     // Update transaction in a database transaction
-    //eslint-disable-next-line @typescript-eslint/no-explicit-any
+    //eslint-disable-next-line
     const updatedTransaksi = await this.prisma.$transaction(async (tx: any) => {
       // Update main transaction
       const updated = await tx.transaksi.update({
@@ -1037,7 +1041,7 @@ export class TransaksiService {
 
           // Restore stock using InventoryService for consistency
           await Promise.all(
-            //eslint-disable-next-line @typescript-eslint/no-explicit-any
+            //eslint-disable-next-line
             transaksiItems.map(async (item: any) => {
               const quantityToRestore =
                 data.status === 'cancelled' ? item.jumlah : item.jumlah - (item.jumlahDiambil || 0)
@@ -1207,7 +1211,7 @@ export class TransaksiService {
       if (item.returnConditions && item.returnConditions.length > 0) {
         // ✅ FIX: Always create multiConditionSummary for consistency (even for single conditions)
         // This ensures lost item resolution button works for all scenarios
-        
+
         // Calculate multi-condition summary
         const totalPenalty = item.returnConditions.reduce(
           (sum, condition) => sum + Number(condition.penaltyAmount),

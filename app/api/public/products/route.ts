@@ -14,7 +14,6 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { ProductService } from '@/features/manage-product/services/productService'
-import { ProductSizeTransformer } from '@/features/manage-product/utils/ProductSizeTransformer'
 import { prisma } from '@/lib/prisma'
 import type { Product } from '@/features/manage-product/types'
 
@@ -29,7 +28,7 @@ interface PublicProduct {
     color: string
   }
   currentPrice: number // Harga sewa per hari
-  modalAwal: number    // Nilai barang
+  modalAwal: number // Nilai barang
   imageUrl?: string
   status: 'AVAILABLE' | 'RENTED' | 'MAINTENANCE'
   sizes: Array<{
@@ -67,7 +66,7 @@ function convertToPublicProduct(product: Product): PublicProduct {
     modalAwal: Number(product.modalAwal), // Convert Decimal to number
     imageUrl: product.imageUrl,
     status: product.status,
-    sizes: product.sizes.map(size => ({
+    sizes: product.sizes.map((size) => ({
       size: size.size,
       ageCategory: size.ageCategory,
       quantity: size.quantity,
@@ -110,12 +109,12 @@ export async function GET(request: NextRequest) {
     const result = await productService.getProducts(productQuery)
 
     // Filter products dengan available stock untuk public API
-    const availableProducts = result.products.filter(product => {
+    const availableProducts = result.products.filter((product) => {
       // Hanya tampilkan produk yang available dan ada stock
       if (query.status === 'AVAILABLE') {
-        const totalQuantity = ProductSizeTransformer.calculateTotalQuantity(product.sizes || [], 'simplified')
         // Calculate available quantity from Enhanced ProductSize fields
-        const availableQuantity = product.sizes?.reduce((sum, size) => sum + (size.availableQuantity || 0), 0) || 0
+        const availableQuantity =
+          product.sizes?.reduce((sum, size) => sum + (size.availableQuantity || 0), 0) || 0
         return product.status === 'AVAILABLE' && availableQuantity > 0
       }
       return true

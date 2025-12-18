@@ -137,7 +137,8 @@ export function PengeluaranForm({
       const result = await response.json()
       if (result.success && result.data?.data) {
         // Extract id and nama only for dropdown
-        const simplifiedList = result.data.data.map((kasir: any) => ({
+        //eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const simplifiedList = result.data.data.map((kasir:any) => ({
           id: kasir.id,
           nama: kasir.nama
         }))

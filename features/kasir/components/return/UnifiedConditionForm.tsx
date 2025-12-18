@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Package, Plus, Lightbulb, CheckCircle, AlertCircle, Clock } from 'lucide-react'
+import { Package, Plus, CheckCircle, AlertCircle, Clock } from 'lucide-react'
 import { ConditionPricingForm } from './ConditionPricingForm'
 import type {
   UnifiedConditionFormProps,
@@ -54,7 +54,6 @@ export function UnifiedConditionForm({
   }
 
   const [currentCondition, setCurrentCondition] = useState<EnhancedItemCondition>(initialCondition)
-  const [showSuggestion, setShowSuggestion] = useState(false)
   const [touched, setTouched] = useState(true) // Start as touched with valid BAIK defaults
 
   // Debug logging for component initialization
@@ -84,7 +83,7 @@ export function UnifiedConditionForm({
           c.kondisiAkhir.length >= 4 &&
           c.kondisiAkhir.length <= 500 &&
           c.jumlahKembali !== undefined &&
-          c.jumlahKembali > 0 &&  // ✅ Changed: Allow positive quantity for HILANG
+          c.jumlahKembali > 0 && // ✅ Changed: Allow positive quantity for HILANG
           c.useManualPricing &&
           c.manualPrice !== undefined &&
           c.manualPrice >= 0
@@ -313,8 +312,6 @@ export function UnifiedConditionForm({
         },
       ],
     }))
-
-    setShowSuggestion(false)
   }, [item.id, currentCondition.conditions.length, validation.remaining])
 
   // Remove condition (only allow if more than 1 condition exists)
@@ -338,25 +335,7 @@ export function UnifiedConditionForm({
     [item.id, currentCondition.conditions],
   )
 
-  // Smart suggestion handler
-  const handleAcceptSuggestion = useCallback(() => {
-    kasirLogger.userInteraction.info(
-      'handleAcceptSuggestion',
-      'User accepted condition split suggestion',
-      {
-        itemId: item.id,
-        remainingQuantity: validation.remaining,
-        suggestedAction: 'add_condition_for_remaining',
-      },
-    )
 
-    handleAddCondition()
-    setShowSuggestion(false)
-  }, [item.id, validation.remaining, handleAddCondition])
-
-  const handleDismissSuggestion = useCallback(() => {
-    setShowSuggestion(false)
-  }, [])
 
   // Get card styling based on validation state
   const getCardStyling = () => {
@@ -385,7 +364,10 @@ export function UnifiedConditionForm({
               <CardTitle className="text-lg flex items-center gap-2">
                 {item.produk?.name || 'Unknown Product'}
                 {sizeInfo.hasSizeInfo && (
-                  <Badge variant="outline" className="bg-indigo-100 text-indigo-800 border-indigo-200">
+                  <Badge
+                    variant="outline"
+                    className="bg-indigo-100 text-indigo-800 border-indigo-200"
+                  >
                     {sizeInfo.size} | {sizeInfo.ageCategory}
                   </Badge>
                 )}
@@ -432,7 +414,6 @@ export function UnifiedConditionForm({
             )}
           </div>
         </div>
-
 
         {/* Validation Error Display - Only show when touched */}
         {validation.error && touched && (

@@ -1,13 +1,13 @@
 // Dana Kasir Management - DanaSummaryService
 // Service layer for daily summary calculations and income/expense aggregation
 
-import { PrismaClient, Prisma } from '@prisma/client'
+import { PrismaClient } from '@prisma/client'
 import { DailySummary, IncomeItem, PengeluaranKasir } from '../types'
 import { getWITADayRange, formatWITADate } from '../utils/timezone'
 
 /**
  * DanaSummaryService - Handles daily summary calculations
- * 
+ *
  * Responsibilities:
  * - Calculate daily income from rental transactions
  * - Calculate daily expenses from PengeluaranKasir
@@ -20,15 +20,15 @@ export class DanaSummaryService {
 
   /**
    * Get daily summary with income, expenses, and net balance
-   * 
+   *
    * Calculates:
    * - Total income (rental + penalty amounts from transactions + penalty payments)
    * - Total expenses (sum of active expenses)
    * - Net balance (income - expenses)
-   * 
+   *
    * Task 5.1: Added penalty payment aggregation from TransaksiItem.totalReturnPenalty
    * Requirements: 3.1, 3.2, 3.7
-   * 
+   *
    * @param date - Date to calculate summary for
    * @returns Daily summary object
    */
@@ -40,13 +40,13 @@ export class DanaSummaryService {
       where: {
         createdAt: {
           gte: start,
-          lte: end
-        }
+          lte: end,
+        },
       },
       _sum: {
         jumlahBayar: true,
-        flatLatePenalty: true
-      }
+        flatLatePenalty: true,
+      },
     })
 
     // Task 5.1: Calculate penalty income from TransaksiItem.totalReturnPenalty
@@ -56,16 +56,16 @@ export class DanaSummaryService {
         transaksi: {
           tglKembali: {
             gte: start,
-            lte: end
-          }
+            lte: end,
+          },
         },
         totalReturnPenalty: {
-          gt: 0
-        }
+          gt: 0,
+        },
       },
       _sum: {
-        totalReturnPenalty: true
-      }
+        totalReturnPenalty: true,
+      },
     })
 
     // Calculate total expenses from PengeluaranKasir
@@ -74,23 +74,23 @@ export class DanaSummaryService {
         isActive: true,
         createdAt: {
           gte: start,
-          lte: end
-        }
+          lte: end,
+        },
       },
       _sum: {
-        harga: true
-      }
+        harga: true,
+      },
     })
 
     // Convert Decimal to number and handle null values
     // Requirements 3.2: totalIncome = sum(jumlahBayar) + sum(flatLatePenalty) + sum(totalReturnPenalty)
-    const totalIncome = 
+    const totalIncome =
       (incomeResult._sum.jumlahBayar?.toNumber() || 0) +
       (incomeResult._sum.flatLatePenalty?.toNumber() || 0) +
       (penaltyResult._sum.totalReturnPenalty?.toNumber() || 0)
-    
+
     const totalExpense = expenseResult._sum.harga?.toNumber() || 0
-    
+
     // Requirements 3.7: netBalance = (rental + penalty) - expenses
     const netBalance = totalIncome - totalExpense
 
@@ -98,20 +98,20 @@ export class DanaSummaryService {
       totalIncome,
       totalExpense,
       netBalance,
-      date: formatWITADate(date)
+      date: formatWITADate(date),
     }
   }
 
   /**
    * Get list of income items (rental transactions + penalty payments) for a specific date
-   * 
+   *
    * Task 6: Enhanced to include penalty payment entries
    * Requirements: 3.3, 3.4, 3.5, 3.6
-   * 
+   *
    * Returns:
    * - Rental transactions (type='rental')
    * - Penalty payments (type='penalty') with breakdown
-   * 
+   *
    * @param date - Date to query income for
    * @returns Array of income items sorted by date
    */
@@ -123,25 +123,25 @@ export class DanaSummaryService {
       where: {
         createdAt: {
           gte: start,
-          lte: end
-        }
+          lte: end,
+        },
       },
       include: {
         penyewa: {
           select: {
-            nama: true
-          }
+            nama: true,
+          },
         },
         kasir: {
           select: {
             id: true,
-            nama: true
-          }
-        }
+            nama: true,
+          },
+        },
       },
       orderBy: {
-        createdAt: 'desc'
-      }
+        createdAt: 'desc',
+      },
     })
 
     // Task 6.1: Query penalty payments (Requirements: 3.3, 3.5)
@@ -150,33 +150,33 @@ export class DanaSummaryService {
       where: {
         tglKembali: {
           gte: start,
-          lte: end
+          lte: end,
         },
         items: {
           some: {
             totalReturnPenalty: {
-              gt: 0
-            }
-          }
-        }
+              gt: 0,
+            },
+          },
+        },
       },
       include: {
         penyewa: {
           select: {
-            nama: true
-          }
+            nama: true,
+          },
         },
         kasir: {
           select: {
             id: true,
-            nama: true
-          }
+            nama: true,
+          },
         },
         items: {
           where: {
             totalReturnPenalty: {
-              gt: 0
-            }
+              gt: 0,
+            },
           },
           select: {
             totalReturnPenalty: true,
@@ -184,19 +184,19 @@ export class DanaSummaryService {
               select: {
                 kondisiAkhir: true,
                 jumlahKembali: true,
-                penaltyAmount: true
-              }
-            }
-          }
-        }
+                penaltyAmount: true,
+              },
+            },
+          },
+        },
       },
       orderBy: {
-        tglKembali: 'desc'
-      }
+        tglKembali: 'desc',
+      },
     })
 
     // Map rental transactions to income items
-    const rentalIncome: IncomeItem[] = transactions.map(transaction => ({
+    const rentalIncome: IncomeItem[] = transactions.map((transaction) => ({
       type: 'rental' as const,
       transaksiKode: transaction.kode,
       customerName: transaction.penyewa.nama,
@@ -205,17 +205,17 @@ export class DanaSummaryService {
       status: transaction.status,
       kasirId: transaction.kasirId || '',
       kasirName: transaction.kasir?.nama || 'N/A',
-      createdAt: transaction.createdAt
+      createdAt: transaction.createdAt,
     }))
 
     // Task 6.2: Build penalty income entries (Requirements: 3.4, 3.6)
-    const penaltyIncome: IncomeItem[] = penaltyPayments.map(transaction => {
+    const penaltyIncome: IncomeItem[] = penaltyPayments.map((transaction) => {
       // Calculate penalty breakdown
       const totalPenalty = transaction.items.reduce(
         (sum, item) => sum + (item.totalReturnPenalty?.toNumber() || 0),
-        0
+        0,
       )
-      
+
       // Calculate late penalty (flat 20,000 per item if late)
       const itemCount = transaction.items.length
       const latePenalty = transaction.flatLatePenalty.toNumber()
@@ -235,8 +235,8 @@ export class DanaSummaryService {
         penaltyBreakdown: {
           latePenalty,
           conditionPenalty,
-          itemCount
-        }
+          itemCount,
+        },
       }
     })
 
@@ -247,16 +247,16 @@ export class DanaSummaryService {
 
   /**
    * Get list of expenses for a specific date
-   * 
+   *
    * Returns all active expenses with:
    * - Amount, category, description
    * - Kasir information
    * - Creation timestamp
-   * 
+   *
    * Filters:
    * - Only active expenses (isActive = true)
    * - Date range in WITA timezone
-   * 
+   *
    * @param date - Date to query expenses for
    * @returns Array of expense records
    */
@@ -268,41 +268,42 @@ export class DanaSummaryService {
         isActive: true,
         createdAt: {
           gte: start,
-          lte: end
-        }
+          lte: end,
+        },
       },
       include: {
         kasir: {
           select: {
             id: true,
-            nama: true
-          }
-        }
+            nama: true,
+          },
+        },
       },
       orderBy: {
-        createdAt: 'desc'
-      }
+        createdAt: 'desc',
+      },
     })
 
-    return expenses.map(expense => ({
+    return expenses.map((expense) => ({
       id: expense.id,
       kasirId: expense.kasirId,
       harga: expense.harga.toNumber(),
+      //eslint-disable-next-line @typescript-eslint/no-explicit-any
       kategori: expense.kategori as any, // Type assertion for kategori
       deskripsi: expense.deskripsi || undefined,
       isActive: expense.isActive,
       createdAt: expense.createdAt,
       updatedAt: expense.updatedAt,
       createdBy: expense.createdBy,
-      kasir: expense.kasir
+      kasir: expense.kasir,
     }))
   }
 
   /**
    * Get complete daily data (summary + income list + expense list)
-   * 
+   *
    * Convenience method that combines all three queries
-   * 
+   *
    * @param date - Date to query data for
    * @returns Object with summary, income, and expenses
    */
@@ -310,13 +311,13 @@ export class DanaSummaryService {
     const [summary, income, expenses] = await Promise.all([
       this.getDailySummary(date),
       this.getIncomeList(date),
-      this.getExpenseList(date)
+      this.getExpenseList(date),
     ])
 
     return {
       summary,
       income,
-      expenses
+      expenses,
     }
   }
 }

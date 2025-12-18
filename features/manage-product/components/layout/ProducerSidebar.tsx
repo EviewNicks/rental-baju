@@ -113,7 +113,7 @@ export function ProducerSidebar() {
         <div className="flex items-center justify-between">
           {isExpanded && (
             <div>
-              <h2 className="text-lg font-bold text-gray-900">RentalBaju</h2>
+              <h2 className="text-lg font-bold text-gray-900">Erlima Mode</h2>
               <p className="text-sm text-gray-500">Producer Panel</p>
             </div>
           )}

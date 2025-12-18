@@ -157,57 +157,128 @@ export class PenyewaService {
   }
 
   /**
-   * Update penyewa data
+   * Update penyewa data with enhanced validation and logging
    */
   async updatePenyewa(id: string, data: UpdatePenyewaRequest): Promise<Penyewa> {
-    // Check if penyewa exists
-    const existingPenyewa = await this.prisma.penyewa.findUnique({
-      where: { id }
-    })
-
-    if (!existingPenyewa) {
-      throw new Error('Penyewa tidak ditemukan')
-    }
-
-    // If updating phone number, check uniqueness
-    if (data.telepon) {
-      const existingPhone = await this.prisma.penyewa.findUnique({
-        where: { telepon: data.telepon }
+    const startTime = Date.now()
+    
+    try {
+      // Check if penyewa exists
+      const existingPenyewa = await this.prisma.penyewa.findUnique({
+        where: { id }
       })
 
-      if (existingPhone && existingPhone.id !== id) {
-        throw new Error('Nomor telepon sudah terdaftar')
+      if (!existingPenyewa) {
+        throw new Error('Penyewa tidak ditemukan')
       }
+
+      // If updating phone number, check uniqueness
+      if (data.telepon) {
+        const existingPhone = await this.prisma.penyewa.findUnique({
+          where: { telepon: data.telepon }
+        })
+
+        if (existingPhone && existingPhone.id !== id) {
+          throw new Error('Nomor telepon sudah terdaftar')
+        }
+      }
+
+      // Prepare update data with explicit handling for NIK and other optional fields
+      const updateData: Record<string, unknown> = {}
+      
+      // Handle required fields
+      if (data.nama) updateData.nama = data.nama
+      if (data.telepon) updateData.telepon = data.telepon
+      if (data.alamat) updateData.alamat = data.alamat
+      
+      // Handle optional fields with explicit null handling
+      if (data.email !== undefined) {
+        updateData.email = data.email || null
+      }
+      
+      if (data.nik !== undefined) {
+        updateData.nik = data.nik || null
+      } else {
+        console.log('[SERVICE_NIK_NOT_IN_REQUEST]', {
+          requestKeys: Object.keys(data),
+          hasNikKey: 'nik' in data
+        })
+      }
+      if (data.foto !== undefined) {
+        updateData.foto = data.foto || null
+      }
+      if (data.catatan !== undefined) {
+        updateData.catatan = data.catatan || null
+      }
+
+
+      // Update penyewa
+      const updatedPenyewa = await this.prisma.penyewa.update({
+        where: { id },
+        data: updateData
+      })
+
+
+
+
+      // Log audit trail with enhanced metadata
+      await this.auditService.logPenyewaActivity(
+        'update',
+        id,
+        existingPenyewa,
+        updatedPenyewa,
+        {
+          operation: 'customer_update',
+          changedFields: Object.keys(data),
+          requestData: {
+            ...data,
+            nik: data.nik ? '[REDACTED]' : data.nik
+          },
+          processedData: {
+            ...updateData,
+            nik: updateData.nik ? '[REDACTED]' : updateData.nik
+          },
+          duration: Date.now() - startTime,
+          nikUpdated: data.nik !== undefined,
+          nikValue: data.nik ? '[REDACTED]' : null
+        }
+      )
+
+      return updatedPenyewa
+    } catch (error) {
+      // Enhanced error logging
+      console.error('[PENYEWA_UPDATE_ERROR]', {
+        penyewaId: id,
+        requestData: {
+          ...data,
+          nik: data.nik ? `[${data.nik.length} chars]` : data.nik
+        },
+        error: error instanceof Error ? error.message : 'Unknown error',
+        errorStack: error instanceof Error ? error.stack : undefined,
+        duration: Date.now() - startTime
+      })
+
+      // Log failed update attempt
+      await this.auditService.logPenyewaActivity(
+        'update',
+        id,
+        undefined,
+        undefined,
+        {
+          operation: 'customer_update_failed',
+          requestData: {
+            ...data,
+            nik: data.nik ? '[REDACTED]' : data.nik
+          },
+          error: error instanceof Error ? error.message : 'Unknown error',
+          duration: Date.now() - startTime
+        }
+      ).catch(auditError => {
+        console.error('Failed to log update error:', auditError)
+      })
+
+      throw error
     }
-
-    // Update penyewa
-    const updatedPenyewa = await this.prisma.penyewa.update({
-      where: { id },
-      data: {
-        ...(data.nama && { nama: data.nama }),
-        ...(data.telepon && { telepon: data.telepon }),
-        ...(data.alamat && { alamat: data.alamat }),
-        ...(data.email !== undefined && { email: data.email || null }),
-        ...(data.nik !== undefined && { nik: data.nik || null }),
-        ...(data.foto !== undefined && { foto: data.foto || null }),
-        ...(data.catatan !== undefined && { catatan: data.catatan || null })
-      }
-    })
-
-    // Log audit trail
-    await this.auditService.logPenyewaActivity(
-      'update',
-      id,
-      existingPenyewa,
-      updatedPenyewa,
-      {
-        operation: 'customer_update',
-        changedFields: Object.keys(data),
-        requestData: data
-      }
-    )
-
-    return updatedPenyewa
   }
 
   /**

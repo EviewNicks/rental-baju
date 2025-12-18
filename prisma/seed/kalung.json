@@ -6,7 +6,7 @@
     "modalAwal": 30000,
     "currentPrice": 30000,
     "quantity": 2,
-    "categoryId": "66b2c4c3-44bb-4165-9d0f-27bff4ab9e74",
+    "categoryId": "f5f0e545-f380-4b8d-9502-189b739f8381",
     "imageUrl": "/products/accesories.png",
     "sizes": [{ "ageCategory": "UNIVERSAL", "size": "UNIVERSAL", "quantity": 2 }]
   },
@@ -17,7 +17,7 @@
     "modalAwal": 30000,
     "currentPrice": 30000,
     "quantity": 2,
-    "categoryId": "66b2c4c3-44bb-4165-9d0f-27bff4ab9e74",
+    "categoryId": "f5f0e545-f380-4b8d-9502-189b739f8381",
     "imageUrl": "/products/accesories.png",
     "sizes": [{ "ageCategory": "UNIVERSAL", "size": "UNIVERSAL", "quantity": 2 }]
   }

@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import {
   Table,
   TableBody,
@@ -47,21 +46,6 @@ interface Kasir {
   createdBy?: string
 }
 
-interface KasirListResponse {
-  data: Kasir[]
-  pagination: {
-    page: number
-    limit: number
-    total: number
-    totalPages: number
-  }
-  summary: {
-    total: number
-    active: number
-    inactive: number
-  }
-}
-
 export function KasirListPage() {
   const router = useRouter()
   const [filters, setFilters] = useState<KasirFilters>({})
@@ -70,32 +54,24 @@ export function KasirListPage() {
   const [kasirToDelete, setKasirToDelete] = useState<Kasir | null>(null)
 
   // Use real API with React Query
-  const {
-    kasirs,
-    kasirsPaginated,
-    availableKasirs,
-    isLoadingKasirs,
-    isDeleting,
-    deleteKasir,
-  } = useKasirManagement()
+  const { kasirs, isLoadingKasirs, deleteKasir } = useKasirManagement()
 
   const handleSearch = (term: string) => {
     setSearchTerm(term)
     // Debounced search implementation
     const timeoutId = setTimeout(() => {
-      setFilters(prev => ({ ...prev, search: term }))
+      setFilters((prev) => ({ ...prev, search: term }))
     }, 300)
     return () => clearTimeout(timeoutId)
   }
 
   const handleStatusFilter = (status: 'active' | 'inactive' | 'all') => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
-      status: status === 'all' ? undefined : status
+      status: status === 'all' ? undefined : status,
     }))
   }
 
-  
   const handleDelete = (kasir: Kasir) => {
     setKasirToDelete(kasir)
     setDeleteDialogOpen(true)
@@ -104,20 +80,20 @@ export function KasirListPage() {
   // Calculate summary statistics from API data
   const summaryStats = {
     total: kasirs?.length || 0,
-    active: kasirs?.filter(k => k.isActive).length || 0,
-    inactive: kasirs?.filter(k => !k.isActive).length || 0
+    active: kasirs?.filter((k) => k.isActive).length || 0,
+    inactive: kasirs?.filter((k) => !k.isActive).length || 0,
   }
 
   // Filter kasirs based on search and status filters
-  const filteredKasirs = kasirs?.filter(kasir => {
-    const matchesSearch = !filters.search ||
-      kasir.nama.toLowerCase().includes(filters.search.toLowerCase())
-    const matchesStatus = !filters.status ||
-      (filters.status === 'active' ? kasir.isActive : !kasir.isActive)
-    return matchesSearch && matchesStatus
-  }) || []
+  const filteredKasirs =
+    kasirs?.filter((kasir) => {
+      const matchesSearch =
+        !filters.search || kasir.nama.toLowerCase().includes(filters.search.toLowerCase())
+      const matchesStatus =
+        !filters.status || (filters.status === 'active' ? kasir.isActive : !kasir.isActive)
+      return matchesSearch && matchesStatus
+    }) || []
 
-  
   const confirmDelete = async () => {
     if (!kasirToDelete) return
 
@@ -140,9 +116,7 @@ export function KasirListPage() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Manajemen Kasir</h1>
-            <p className="text-gray-600 mt-1">
-              Kelola data kasir untuk sistem transaksi
-            </p>
+            <p className="text-gray-600 mt-1">Kelola data kasir untuk sistem transaksi</p>
           </div>
           <Button onClick={() => router.push('/owner/manage-kasir/add')}>
             <Plus className="mr-2 h-4 w-4" />
@@ -230,7 +204,10 @@ export function KasirListPage() {
             {isLoadingKasirs ? (
               <div className="space-y-4">
                 {Array.from({ length: 5 }).map((_, i) => (
-                  <div key={i} className="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg">
+                  <div
+                    key={i}
+                    className="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg"
+                  >
                     <div className="h-10 w-10 bg-gray-200 rounded-full animate-pulse" />
                     <div className="flex-1 space-y-2">
                       <div className="h-4 bg-gray-200 rounded w-32 animate-pulse" />
@@ -309,8 +286,8 @@ export function KasirListPage() {
             <DialogHeader>
               <DialogTitle>Konfirmasi Hapus Kasir</DialogTitle>
               <DialogDescription>
-                Apakah Anda yakin ingin menghapus kasir &quot;{kasirToDelete?.nama}&quot;?
-                Tindakan ini tidak dapat dibatalkan.
+                Apakah Anda yakin ingin menghapus kasir &quot;{kasirToDelete?.nama}&quot;? Tindakan
+                ini tidak dapat dibatalkan.
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>

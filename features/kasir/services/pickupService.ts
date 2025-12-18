@@ -5,6 +5,7 @@
  */
 
 import { PrismaClient } from '@prisma/client'
+import { Decimal } from '@prisma/client/runtime/library'
 import { PickupItemRequest } from '../lib/validation/kasirSchema'
 import { TransaksiWithDetails, TransaksiService } from './transaksiService'
 import { PickupValidator, ValidationContext } from '../lib/validation/pickupValidation'
@@ -90,7 +91,26 @@ export class PickupService {
       const context: ValidationContext = {
         transactionStatus: transaction.status,
         transactionCode: transaction.kode,
-        items: transaction.items,
+        items: transaction.items.map(item => ({
+          id: item.id,
+          transaksiId: transaction.id, // Use transaction ID since item doesn't have it
+          produkId: item.produkId,
+          jumlah: item.jumlah,
+          hargaSewa: item.hargaSewa,
+          durasi: item.durasi,
+          subtotal: item.subtotal,
+          kondisiAwal: item.kondisiAwal ?? null, // Handle undefined -> null
+          statusKembali: item.statusKembali,
+          jumlahDiambil: item.jumlahDiambil,
+          totalReturnPenalty: item.totalReturnPenalty ?? new Decimal(0), // Provide default
+          conditionCount: 1, // Default value since not available in TransaksiWithDetails
+          migratedFromSingleMode: false, // Default value since not available in TransaksiWithDetails
+          produk: {
+            id: item.produk.id,
+            name: item.produk.name,
+            code: item.produk.code,
+          },
+        })),
       }
 
       // Run comprehensive validation using business rules
@@ -197,7 +217,26 @@ export class PickupService {
       const context: ValidationContext = {
         transactionStatus: transaction.status,
         transactionCode: transaction.kode,
-        items: transaction.items,
+        items: transaction.items.map(item => ({
+          id: item.id,
+          transaksiId: transaction.id, // Use transaction ID since item doesn't have it
+          produkId: item.produkId,
+          jumlah: item.jumlah,
+          hargaSewa: item.hargaSewa,
+          durasi: item.durasi,
+          subtotal: item.subtotal,
+          kondisiAwal: item.kondisiAwal ?? null, // Handle undefined -> null
+          statusKembali: item.statusKembali,
+          jumlahDiambil: item.jumlahDiambil,
+          totalReturnPenalty: item.totalReturnPenalty ?? new Decimal(0), // Provide default
+          conditionCount: 1, // Default value since not available in TransaksiWithDetails
+          migratedFromSingleMode: false, // Default value since not available in TransaksiWithDetails
+          produk: {
+            id: item.produk.id,
+            name: item.produk.name,
+            code: item.produk.code,
+          },
+        })),
       }
 
       // 4. Run comprehensive validation using business rules

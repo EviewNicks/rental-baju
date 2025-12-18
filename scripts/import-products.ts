@@ -31,10 +31,18 @@ interface ProductData {
   quantity: number
   categoryId: string
   imageUrl: string
+  // Material fields for schema compatibility
+  materialId?: string
+  materialQuantity?: number
   sizes: Array<{
     ageCategory: 'ADULT' | 'CHILD' | 'UNIVERSAL'
     size: 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL' | 'UNIVERSAL'
     quantity: number
+    // NEW: Enhanced quantity tracking
+    originalQuantity?: number
+    rentedQuantity?: number
+    lostQuantity?: number
+    availableQuantity?: number
   }>
 }
 
@@ -356,7 +364,17 @@ async function importProducts(): Promise<ImportResult> {
           quantity: product.quantity,
           categoryId: product.categoryId,
           imageUrl: finalImageUrl,
-          sizes: product.sizes,
+          // Material fields (only supported fields)
+          materialId: product.materialId,
+          materialQuantity: product.materialQuantity,
+          sizes: product.sizes.map(size => ({
+            ...size,
+            // Set proper quantity fields for new schema
+            originalQuantity: size.originalQuantity || size.quantity,
+            rentedQuantity: size.rentedQuantity || 0,
+            lostQuantity: size.lostQuantity || 0,
+            availableQuantity: size.availableQuantity || size.quantity,
+          })),
         })
 
         console.log(`   ✅ Success (${product.sizes.length} sizes created)`)

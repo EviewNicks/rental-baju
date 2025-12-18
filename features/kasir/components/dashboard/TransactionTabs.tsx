@@ -56,7 +56,8 @@ function getTabConfiguration(): TabConfig[] {
       diambil: 'diambil',
       selesai: 'completed',
       terlambat: 'overdue',
-      cancelled: 'cancelled'
+      cancelled: 'cancelled',
+      pending_resolution: 'total' // Map pending_resolution to total for now
     }
 
     return {
