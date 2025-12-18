@@ -6,8 +6,8 @@
     "modalAwal": 30000,
     "currentPrice": 30000,
     "quantity": 2,
-    "categoryId": "dfd0eae4-3824-4c7c-a98f-e848d8427dec",
-    "imageUrl": "/products/accesories.png",
+    "categoryId": "05235f1a-2839-4de6-b3d7-6c27d5f034da",
+    "imageUrl": "products/anting/AMM01.jpg",
     "sizes": [{ "ageCategory": "UNIVERSAL", "size": "UNIVERSAL", "quantity": 2 }]
   },
   {
@@ -17,8 +17,8 @@
     "modalAwal": 30000,
     "currentPrice": 30000,
     "quantity": 2,
-    "categoryId": "dfd0eae4-3824-4c7c-a98f-e848d8427dec",
-    "imageUrl": "/products/accesories.png",
+    "categoryId": "05235f1a-2839-4de6-b3d7-6c27d5f034da",
+    "imageUrl": "products/anting/AMP01.jpg",
     "sizes": [{ "ageCategory": "UNIVERSAL", "size": "UNIVERSAL", "quantity": 2 }]
   },
   {
@@ -28,8 +28,8 @@
     "modalAwal": 30000,
     "currentPrice": 30000,
     "quantity": 1,
-    "categoryId": "dfd0eae4-3824-4c7c-a98f-e848d8427dec",
-    "imageUrl": "/products/accesories.png",
+    "categoryId": "05235f1a-2839-4de6-b3d7-6c27d5f034da",
+    "imageUrl": "products/anting/AMP02.jpg",
     "sizes": [{ "ageCategory": "UNIVERSAL", "size": "UNIVERSAL", "quantity": 1 }]
   }
 ]

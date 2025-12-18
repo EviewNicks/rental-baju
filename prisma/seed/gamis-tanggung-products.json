@@ -6,7 +6,7 @@
     "modalAwal": 100000,
     "currentPrice": 100000,
     "quantity": 1,
-    "categoryId": "7e447c17-6fdf-4208-83b9-60a5d5295b17",
+    "categoryId": "239a6f1b-cf64-4282-b7cc-9bc2533259e8",
     "imageUrl": "/products/gamis-tanggung/GAT01.jpg",
     "sizes": [{ "ageCategory": "ADULT", "size": "M", "quantity": 1 }]
   },
@@ -17,7 +17,7 @@
     "modalAwal": 100000,
     "currentPrice": 100000,
     "quantity": 1,
-    "categoryId": "7e447c17-6fdf-4208-83b9-60a5d5295b17",
+    "categoryId": "239a6f1b-cf64-4282-b7cc-9bc2533259e8",
     "imageUrl": "/products/gamis-tanggung/GAC02.jpg",
     "sizes": [{ "ageCategory": "ADULT", "size": "M", "quantity": 1 }]
   }
