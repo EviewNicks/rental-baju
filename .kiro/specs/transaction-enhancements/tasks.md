@@ -6,7 +6,7 @@ This document provides a step-by-step implementation plan for the transaction en
 
 ## Tasks
 
-- [ ] 1. Database Schema Updates
+- [x] 1. Database Schema Updates
   - Update Prisma schema with new fields for discount (discountType, discountValue)
   - Apply database migration to add new columns
   - Leverage existing TransaksiItem.durasi field for duration functionality
