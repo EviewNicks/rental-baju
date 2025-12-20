@@ -16,6 +16,7 @@ import { KasirApi } from '../api'
 import { useMutation } from '@tanstack/react-query'
 import type { CreatePembayaranRequest } from '../types'
 import { TransactionLogger } from '../lib/logger/transactionLogger'
+import { PriceCalculator } from '../lib/utils/priceCalculator'
 // import { toast } from '@/hooks/use-toast' // TODO: Add toast implementation when available
 
 const initialFormData: TransactionFormData = {
@@ -30,6 +31,10 @@ const initialFormData: TransactionFormData = {
     kasirInfo: null,
     isAutoAssigned: false,
   },
+  // Task 4: Default values for transaction enhancements
+  duration: 4, // Default to 4-day package
+  discountType: null, // No discount by default
+  discountValue: null, // No discount value by default
 }
 
 // Helper function to convert date-only string to ISO datetime format
@@ -158,11 +163,16 @@ export function useTransactionForm() {
   // updateDuration function removed - duration is now fixed at 4 days
 
   const calculateTotal = useCallback(() => {
-    return formData.products.reduce((total, item) => {
-      // Fixed 4-day package pricing - no duration multiplication
-      return total + item.product.pricePerDay * item.quantity
-    }, 0)
-  }, [formData.products])
+    // Use enhanced price calculator for accurate totals
+    const calculation = PriceCalculator.calculateTransactionTotalWithEnhancements({
+      items: formData.products,
+      duration: formData.duration || 4,
+      discountType: formData.discountType,
+      discountValue: formData.discountValue,
+    })
+    
+    return calculation.finalTotal
+  }, [formData.products, formData.duration, formData.discountType, formData.discountValue])
 
   const validateStep = useCallback(
     (step: TransactionStep): boolean => {
@@ -244,11 +254,11 @@ export function useTransactionForm() {
         penyewaId: formData.customer?.id || '',
         kasirId: formData.kasirSelection?.kasirId || '', // Include kasirId if selected
         items: formData.products.map((product) => {
-          // Base item data
+          // Base item data with dynamic duration
           const baseItem = {
             produkId: product.product.id,
             jumlah: product.quantity,
-            durasi: FIXED_DURATION, // Always 4 days for fixed package
+            durasi: formData.duration || 4, // Use selected duration instead of fixed
             kondisiAwal: 'baik',
           }
 
@@ -272,6 +282,9 @@ export function useTransactionForm() {
               ? 'transfer'
               : 'kartu',
         catatan: formData.notes || undefined,
+        // Task 4: Add discount fields to API request
+        discountType: formData.discountType,
+        discountValue: formData.discountValue,
       }
 
       for (const product of formData.products) {

@@ -445,6 +445,11 @@ export interface TransactionFormData {
   notes?: string
   currentStep?: TransactionStep // For persistence
   kasirSelection?: KasirSelectionData // Cashier selection data
+  
+  // Task 4: New fields for transaction enhancements
+  duration: 4 | 7 // Duration package selection (4-day or 7-day)
+  discountType: 'percent' | 'nominal' | null // Discount type selection
+  discountValue: number | null // Discount value (percentage or nominal amount)
 }
 
 // Cashier Selection Data for transaction form
@@ -538,6 +543,9 @@ export interface CreateTransaksiRequest {
   tglSelesai?: string // ISO date string
   metodeBayar?: PaymentMethod
   catatan?: string
+  // Task 4: Add discount fields for transaction enhancements
+  discountType?: 'percent' | 'nominal' | null
+  discountValue?: number | null
 }
 
 // Legacy transaction request interface (backward compatibility)

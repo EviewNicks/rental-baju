@@ -322,7 +322,6 @@ export function TransactionFormPage() {
             <div data-testid="payment-summary-step">
               <PaymentSummaryStep
                 formData={formData}
-                totalAmount={calculateTotal()}
                 onUpdateFormData={updateFormData}
                 onSubmit={handleSubmitTransaction}
                 onPrev={prevStep}

@@ -11,6 +11,7 @@ import {
   UpdateTransaksiRequest,
   TransaksiQueryParams,
 } from '../lib/validation/kasirSchema'
+import type { ProductSelection } from '../types'
 import { TransactionCodeGenerator } from '../lib/utils/codeGenerator'
 import { PriceCalculator } from '../lib/utils/server'
 import { createAvailabilityService, AvailabilityService } from './availabilityService'
@@ -456,23 +457,33 @@ export class TransaksiService {
         },
       })
 
-      // Prepare items for enhanced price calculation
-      const itemsWithPrices = data.items.map((item) => {
-        const productSize = productSizes.find((ps) => ps.id === item.productSizeId)!
-        return {
-          produkId: item.produkId,
-          productSizeId: item.productSizeId,
-          jumlah: item.jumlah,
-          hargaSewa: productSize.product.currentPrice,
-        }
-      })
-
       // Get duration from first item (all items should have same duration in UI)
       const duration = data.items[0]?.durasi as 4 | 7 || 4
 
+      // Prepare items for enhanced price calculation
+      const itemsForCalculation: ProductSelection[] = data.items.map((item) => {
+        const productSize = productSizes.find((ps) => ps.id === item.productSizeId)!
+        return {
+          product: {
+            id: item.produkId,
+            name: productSize.product.name,
+            pricePerDay: Number(productSize.product.currentPrice),
+            // Add required fields for ProductSelection
+            category: '',
+            size: productSize.size,
+            color: '',
+            image: '',
+            available: true,
+          },
+          quantity: item.jumlah,
+          duration: duration,
+          productSizeId: item.productSizeId,
+        }
+      })
+
       // ENHANCED: Use enhanced price calculation with discount support
       priceCalculation = PriceCalculator.calculateTransactionTotalWithEnhancements({
-        items: itemsWithPrices,
+        items: itemsForCalculation,
         duration,
         discountType: data.discountType,
         discountValue: data.discountValue || undefined,

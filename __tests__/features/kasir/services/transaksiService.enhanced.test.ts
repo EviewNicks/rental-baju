@@ -43,19 +43,21 @@ const mockPrisma = {
 } as unknown as PrismaClient
 
 // Mock InventoryService
+const mockInventoryService = {
+  checkAvailability: jest.fn().mockResolvedValue(true),
+  getStockStatus: jest.fn().mockResolvedValue({
+    originalQuantity: 10,
+    availableQuantity: 8,
+    rentedQuantity: 2,
+    isAvailable: true,
+    utilizationRate: 20,
+  }),
+  updateStockOnCreate: jest.fn().mockResolvedValue(undefined),
+  updateStockOnReturn: jest.fn().mockResolvedValue(undefined),
+}
+
 jest.mock('@/features/kasir/services/inventoryService', () => ({
-  createInventoryService: jest.fn(() => ({
-    checkAvailability: jest.fn().mockResolvedValue(true),
-    getStockStatus: jest.fn().mockResolvedValue({
-      originalQuantity: 10,
-      availableQuantity: 8,
-      rentedQuantity: 2,
-      isAvailable: true,
-      utilizationRate: 20,
-    }),
-    updateStockOnCreate: jest.fn().mockResolvedValue(undefined),
-    updateStockOnReturn: jest.fn().mockResolvedValue(undefined),
-  })),
+  createInventoryService: jest.fn(() => mockInventoryService),
 }))
 
 // Mock PriceCalculator and DateCalculator
@@ -108,6 +110,16 @@ describe('TransaksiService Enhanced Tests', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     transaksiService = new TransaksiService(mockPrisma, userId)
+    
+    // Reset inventory service mocks
+    mockInventoryService.checkAvailability.mockResolvedValue(true)
+    mockInventoryService.getStockStatus.mockResolvedValue({
+      originalQuantity: 10,
+      availableQuantity: 8,
+      rentedQuantity: 2,
+      isAvailable: true,
+      utilizationRate: 20,
+    })
   })
 
   describe('createTransaksiSizeAware with Discount System', () => {

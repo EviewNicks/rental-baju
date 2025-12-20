@@ -61,23 +61,27 @@ This document provides a step-by-step implementation plan for the transaction en
   - Test transaction retrieval with new fields
   - _Requirements: 8.1, 8.2, 8.3, 8.4_
 
-- [ ] 4. Frontend UI Components
-  - [ ] 4.1 Create duration selector component
-    - Add radio button group for 4-day vs 7-day packages
-    - Display pricing information for each option
-    - Integrate with form state management
+- [x] 4. Frontend UI Components
+  - [x] 4.1 Create duration selector component
+    - ✅ Added radio button group for 4-day vs 7-day packages
+    - ✅ Display pricing information for each option (1x vs 1.5x multiplier)
+    - ✅ Integrated with form state management
+    - ✅ Real-time return date calculation
     - _Requirements: 2.1, 2.4, 6.1, 6.6_
 
-  - [ ] 4.2 Create discount input component
-    - Add radio buttons for discount type selection (none/percent/nominal)
-    - Add conditional input field based on discount type
-    - Display discount savings calculation
+  - [x] 4.2 Create discount input component
+    - ✅ Added radio buttons for discount type selection (none/percent/nominal)
+    - ✅ Added conditional input field based on discount type
+    - ✅ Display discount savings calculation with real-time preview
+    - ✅ Input validation with error messages
     - _Requirements: 1.1, 1.2, 1.3, 6.2, 6.3, 6.4_
 
-  - [ ] 4.3 Update payment summary display
-    - Show price breakdown with subtotal and final total
-    - Display duration multiplier effects on item prices
-    - Show discount information when applied
+  - [x] 4.3 Update payment summary display
+    - ✅ Show price breakdown with subtotal and final total
+    - ✅ Display duration multiplier effects on item prices
+    - ✅ Show discount information when applied
+    - ✅ Enhanced product list with duration-adjusted pricing
+    - ✅ Real-time calculation updates
     - _Requirements: 1.4, 4.4, 6.5, 9.1, 9.4, 9.5_
 
 - [ ]* 4.4 Write unit tests for UI components
@@ -86,22 +90,25 @@ This document provides a step-by-step implementation plan for the transaction en
   - Test payment summary display logic
   - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5_
 
-- [ ] 5. Form Integration and State Management
-  - [ ] 5.1 Update form state structure
-    - Add duration and discount fields to form data interface
-    - Implement state update handlers for new fields
+- [x] 5. Form Integration and State Management
+  - [x] 5.1 Update form state structure
+    - ✅ Added duration and discount fields to form data interface
+    - ✅ Implemented state update handlers for new fields
+    - ✅ Updated default values in initialFormData
     - _Requirements: 2.5, 2.6, 8.5_
 
-  - [ ] 5.2 Integrate real-time calculations
-    - Recalculate prices when duration changes
-    - Recalculate totals when discount changes
-    - Update return date when pickup date or duration changes
+  - [x] 5.2 Integrate real-time calculations
+    - ✅ Recalculate prices when duration changes
+    - ✅ Recalculate totals when discount changes
+    - ✅ Update return date when pickup date or duration changes
+    - ✅ Enhanced calculateTotal function with PriceCalculator
     - _Requirements: 2.5, 2.6, 4.5, 4.6, 3.5, 3.6_
 
-  - [ ] 5.3 Add form validation
-    - Validate discount values (percent 0-100, nominal not exceeding subtotal)
-    - Prevent negative final totals
-    - Display clear error messages for invalid inputs
+  - [x] 5.3 Add form validation
+    - ✅ Validate discount values (percent 0-100, nominal not exceeding subtotal)
+    - ✅ Prevent negative final totals
+    - ✅ Display clear error messages for invalid inputs
+    - ✅ Real-time validation feedback
     - _Requirements: 7.1, 7.2, 7.3, 7.5, 1.5, 4.7_
 
 - [ ]* 5.4 Write property tests for form validation
