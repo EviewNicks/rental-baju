@@ -12,19 +12,19 @@ This document provides a step-by-step implementation plan for the transaction en
   - Leverage existing TransaksiItem.durasi field for duration functionality
   - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7_
 
-- [ ] 2. Backend Service Layer Updates
-  - [ ] 2.1 Create price calculation utilities
+- [x] 2. Backend Service Layer Updates
+  - [x] 2.1 Create price calculation utilities
     - Implement duration multiplier logic (4-day = 1x, 7-day = 1.5x)
     - Implement discount calculation (percent and nominal)
     - Create comprehensive price calculation method
     - _Requirements: 2.2, 2.3, 4.1, 4.2, 4.3_
 
-  - [ ] 2.2 Create date calculation utilities
+  - [x] 2.2 Create date calculation utilities
     - Implement correct return date calculation (pickup + duration - 1)
     - Handle month boundary edge cases
     - _Requirements: 3.1, 3.2, 3.3, 3.4_
 
-  - [ ] 2.3 Update validation schemas
+  - [x] 2.3 Update validation schemas
     - Add discount type and value validation to Zod schemas
     - Add duration validation for UI (4 or 7 days only)
     - Add cross-field validation for discount consistency

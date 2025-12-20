@@ -90,7 +90,9 @@ export const createTransaksiItemSchema = z.object({
   produkId: z.string().uuid('ID produk tidak valid'),
   productSizeId: z.string().uuid('ID ukuran produk tidak valid'), // NEW: Size-specific field
   jumlah: z.number().int().min(1, 'Jumlah minimal 1').max(100, 'Jumlah maksimal 100'),
-  durasi: z.number().int().min(1, 'Durasi minimal 1 hari').max(365, 'Durasi maksimal 365 hari'),
+  durasi: z.number().int().refine(val => val === 4 || val === 7, {
+    message: 'Durasi harus 4 atau 7 hari'
+  }),
   kondisiAwal: z.string().max(500, 'Kondisi awal maksimal 500 karakter').optional()
 })
 
@@ -125,7 +127,13 @@ export const createTransaksiSchema = z.object({
     .datetime('Format tanggal selesai tidak valid (ISO 8601)')
     .optional(),
   metodeBayar: z.enum(['tunai', 'transfer', 'kartu']).default('tunai'),
-  catatan: z.string().max(1000, 'Catatan maksimal 1000 karakter').optional()
+  catatan: z.string().max(1000, 'Catatan maksimal 1000 karakter').optional(),
+  // New fields for discount system
+  discountType: z.enum(['percent', 'nominal']).optional().nullable(),
+  discountValue: z.number()
+    .min(0, 'Nilai diskon tidak boleh negatif')
+    .optional()
+    .nullable()
 }).refine((data) => {
   if (data.tglSelesai) {
     return new Date(data.tglSelesai) > new Date(data.tglMulai)
@@ -134,6 +142,27 @@ export const createTransaksiSchema = z.object({
 }, {
   message: 'Tanggal selesai harus setelah tanggal mulai',
   path: ['tglSelesai']
+}).refine((data) => {
+  // Validate discount consistency - both type and value must be provided together
+  if (data.discountType && !data.discountValue) {
+    return false
+  }
+  if (data.discountValue && data.discountValue > 0 && !data.discountType) {
+    return false
+  }
+  return true
+}, {
+  message: 'Jika memberikan diskon, harus mengisi tipe dan nilai diskon',
+  path: ['discountValue']
+}).refine((data) => {
+  // Validate percent discount range (0-100)
+  if (data.discountType === 'percent' && data.discountValue) {
+    return data.discountValue >= 0 && data.discountValue <= 100
+  }
+  return true
+}, {
+  message: 'Diskon persentase harus antara 0-100',
+  path: ['discountValue']
 })
 
 // Legacy schema for backward compatibility
@@ -278,6 +307,58 @@ export type TransaksiQueryParams = z.infer<typeof transaksiQuerySchema>
 
 export type CreatePembayaranRequest = z.infer<typeof createPembayaranSchema>
 export type ProductAvailabilityQueryParams = z.infer<typeof productAvailabilityQuerySchema>
+
+// Frontend form validation schema for UI state management
+export const transactionFormSchema = z.object({
+  penyewaId: z.string().uuid('ID penyewa tidak valid'),
+  kasirId: z.string().uuid('ID kasir tidak valid').optional().or(z.literal('')),
+  items: z
+    .array(createTransaksiItemSchema)
+    .min(1, 'Minimal harus ada 1 item')
+    .max(50, 'Maksimal 50 item per transaksi'),
+  tglMulai: z
+    .string()
+    .datetime('Format tanggal mulai tidak valid (ISO 8601)')
+    .refine((date) => {
+      const inputDate = new Date(date)
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      return inputDate >= today
+    }, {
+      message: 'Tanggal mulai tidak boleh di masa lalu'
+    }),
+  metodeBayar: z.enum(['tunai', 'transfer', 'kartu']).default('tunai'),
+  catatan: z.string().max(1000, 'Catatan maksimal 1000 karakter').optional(),
+  // UI-specific fields for form state management
+  duration: z.number().refine(val => val === 4 || val === 7, {
+    message: 'Durasi harus 4 atau 7 hari'
+  }).default(4), // Used for UI state and calculating tglSelesai
+  discountType: z.enum(['percent', 'nominal']).optional().nullable(),
+  discountValue: z.number().min(0, 'Nilai diskon tidak boleh negatif').optional().nullable()
+}).refine((data) => {
+  // Validate discount consistency
+  if (data.discountType && !data.discountValue) {
+    return false
+  }
+  if (data.discountValue && data.discountValue > 0 && !data.discountType) {
+    return false
+  }
+  return true
+}, {
+  message: 'Jika memberikan diskon, harus mengisi tipe dan nilai diskon',
+  path: ['discountValue']
+}).refine((data) => {
+  // Validate percent discount range
+  if (data.discountType === 'percent' && data.discountValue) {
+    return data.discountValue >= 0 && data.discountValue <= 100
+  }
+  return true
+}, {
+  message: 'Diskon persentase harus antara 0-100',
+  path: ['discountValue']
+})
+
+export type TransactionFormData = z.infer<typeof transactionFormSchema>
 
 // Pickup Validation Schemas (TSK-22)
 export const pickupItemSchema = z.object({
