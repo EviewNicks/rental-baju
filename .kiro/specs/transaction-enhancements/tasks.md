@@ -39,18 +39,21 @@ This document provides a step-by-step implementation plan for the transaction en
   - **Property 2: Date calculation accuracy**
   - **Validates: Requirements 3.1, 3.2, 3.3**
 
-- [ ] 3. API Layer Updates
-  - [ ] 3.1 Update transaction creation endpoint
-    - Accept new discount fields in request body
-    - Integrate price calculation service
-    - Store discount information in database
-    - Use existing TransaksiItem.durasi for duration handling
+- [x] 3. API Layer Updates
+  - [x] 3.1 Update transaction creation endpoint
+    - ✅ Enhanced existing `createTransaksiSizeAware` method (no duplicate code)
+    - ✅ Accept new discount fields in request body
+    - ✅ Integrate enhanced price calculation service
+    - ✅ Store discount information in database
+    - ✅ Use existing TransaksiItem.durasi for duration handling
+    - ✅ Enhanced activity logging with discount details
     - _Requirements: 8.2, 8.3, 8.4, 1.6, 2.7_
 
-  - [ ] 3.2 Update transaction retrieval endpoints
-    - Include discount information in responses
-    - Maintain backward compatibility with existing API contracts
-    - Calculate duration from existing TransaksiItem.durasi fields
+  - [x] 3.2 Update transaction retrieval endpoints
+    - ✅ Enhanced serializers to include discount information
+    - ✅ Updated response formatter with discount fields
+    - ✅ Maintain backward compatibility with existing API contracts
+    - ✅ Calculate duration from existing TransaksiItem.durasi fields
     - _Requirements: 8.5, 8.7, 1.7, 9.2, 9.3_
 
 - [ ]* 3.3 Write integration tests for API endpoints

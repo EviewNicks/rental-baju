@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
       TransactionLogger.logApiPayload(validatedData)
     }
 
-    // Create transaction with full details (single query)
+    // Create transaction with enhanced discount and duration support
     const transaksiService = new TransaksiService(prisma, userId)
     const transaksi = await transaksiService.createTransaksiSizeAware(validatedData)
 

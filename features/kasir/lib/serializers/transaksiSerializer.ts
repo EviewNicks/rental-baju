@@ -32,6 +32,9 @@ export function serializeTransaksi(transaksi: TransaksiWithDetails) {
     tglKembali: transaksi.tglKembali?.toISOString() || null,
     metodeBayar: transaksi.metodeBayar,
     catatan: transaksi.catatan,
+    // Enhanced: Include discount information
+    discountType: transaksi.discountType,
+    discountValue: transaksi.discountValue ? Number(transaksi.discountValue) : null,
     createdBy: transaksi.createdBy,
     createdAt: transaksi.createdAt.toISOString(),
     updatedAt: transaksi.updatedAt.toISOString(),
@@ -114,6 +117,9 @@ export function serializeTransaksiListItem(transaksi: TransaksiWithDetails) {
     tglKembali: transaksi.tglKembali?.toISOString() || null,
     metodeBayar: transaksi.metodeBayar,
     catatan: transaksi.catatan,
+    // Enhanced: Include discount information for list view
+    discountType: transaksi.discountType,
+    discountValue: transaksi.discountValue ? Number(transaksi.discountValue) : null,
     createdBy: transaksi.createdBy,
     createdAt: transaksi.createdAt.toISOString(),
     updatedAt: transaksi.updatedAt.toISOString(),

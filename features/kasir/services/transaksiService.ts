@@ -415,8 +415,8 @@ export class TransaksiService {
   // This improves performance by eliminating dual inventory system complexity
 
   /**
-   * Create new transaction with size-aware stock management
-   * NEW: Support for size-based inventory tracking with optimized transaction pattern
+   * Create new transaction with size-aware stock management and enhancements
+   * ENHANCED: Now supports discount system and duration packages (4-day/7-day)
    * OPTIMIZED: Returns full transaction details to eliminate double query
    *
    * PHASE 2 OPTIMIZATION: Pre-validation pattern to prevent transaction timeouts
@@ -425,7 +425,7 @@ export class TransaksiService {
    * Step 3: Update stock quantities with retry logic AFTER transaction
    */
   async createTransaksiSizeAware(data: CreateTransaksiRequest): Promise<TransaksiWithDetails> {
-    let priceCalculation: ReturnType<typeof PriceCalculator.calculateTransactionTotal> | null = null
+    let priceCalculation: ReturnType<typeof PriceCalculator.calculateTransactionTotalWithEnhancements> | null = null
 
     try {
       const penyewa = await this.prisma.penyewa.findUnique({
@@ -436,14 +436,7 @@ export class TransaksiService {
         throw new Error('Penyewa tidak ditemukan')
       }
 
-      // // NEW: Validate kasir if provided
-      // if (data.kasirId) {
-      //   await this.validateKasirExistsAndActive(data.kasirId)
-      // }
-
-      // STEP 2: Get product data for pricing
-      // NOTE: Stock validation moved INSIDE transaction to prevent double validation
-      // This eliminates 8-12 seconds of redundant queries
+      // Get product data for enhanced pricing
       const productSizeIds = data.items.map((item) => item.productSizeId)
       const uniqueSizeIds = [...new Set(productSizeIds)]
 
@@ -463,23 +456,35 @@ export class TransaksiService {
         },
       })
 
-      // Calculate prices using size-specific data
+      // Prepare items for enhanced price calculation
       const itemsWithPrices = data.items.map((item) => {
         const productSize = productSizes.find((ps) => ps.id === item.productSizeId)!
         return {
           produkId: item.produkId,
           productSizeId: item.productSizeId,
           jumlah: item.jumlah,
-          durasi: 4, // Fixed 4-day package
           hargaSewa: productSize.product.currentPrice,
         }
       })
 
-      priceCalculation = PriceCalculator.calculateTransactionTotal(itemsWithPrices)
+      // Get duration from first item (all items should have same duration in UI)
+      const duration = data.items[0]?.durasi as 4 | 7 || 4
+
+      // ENHANCED: Use enhanced price calculation with discount support
+      priceCalculation = PriceCalculator.calculateTransactionTotalWithEnhancements({
+        items: itemsWithPrices,
+        duration,
+        discountType: data.discountType,
+        discountValue: data.discountValue || undefined,
+      })
 
       if (!priceCalculation) {
-        throw new Error('Failed to calculate transaction pricing')
+        throw new Error('Failed to calculate enhanced transaction pricing')
       }
+
+      // ENHANCED: Calculate return date using DateCalculator
+      const DateCalculator = await import('../lib/utils/dateCalculator').then(m => m.DateCalculator)
+      const returnDate = DateCalculator.calculateReturnDate(data.tglMulai, duration)
 
       // Generate transaction code
       const kode = await this.codeGenerator.generateTransactionCode()
@@ -493,20 +498,23 @@ export class TransaksiService {
           // This is the ONLY validation - removed redundant pre-validation
           await this.validateStockAvailabilityInTransaction(tx, data.items, productSizes)
 
-          // Create main transaction with full relations (1 operation)
+          // ENHANCED: Create main transaction with discount fields
           const createdTransaksi = await tx.transaksi.create({
             data: {
               kode,
               penyewaId: data.penyewaId,
-              kasirId: data.kasirId || null, // NEW: Include kasirId if provided
+              kasirId: data.kasirId || null,
               status: 'active',
-              totalHarga: priceCalculation!.totalHarga,
+              totalHarga: priceCalculation!.finalTotal,
               jumlahBayar: new Decimal(0),
-              sisaBayar: priceCalculation!.totalHarga,
+              sisaBayar: priceCalculation!.finalTotal,
               tglMulai: new Date(data.tglMulai),
-              tglSelesai: data.tglSelesai ? new Date(data.tglSelesai) : null,
+              tglSelesai: new Date(returnDate), // ENHANCED: Use calculated return date
               metodeBayar: data.metodeBayar || 'tunai',
               catatan: data.catatan || null,
+              // ENHANCED: Store discount information
+              discountType: data.discountType || null,
+              discountValue: data.discountValue ? new Decimal(data.discountValue) : null,
               createdBy: this.userId,
             },
             include: {
@@ -516,8 +524,8 @@ export class TransaksiService {
                   nama: true,
                   telepon: true,
                   alamat: true,
-                  nik: true, // Add NIK field for customer identity number
-                  email: true, // Add email field for customer contact
+                  nik: true,
+                  email: true,
                 },
               },
               kasir: {
@@ -532,7 +540,7 @@ export class TransaksiService {
             },
           })
 
-          // Create transaction items (1 operation - bulk insert)
+          // ENHANCED: Create transaction items with enhanced pricing
           const itemsData = data.items.map((item, index) => {
             const calculation = priceCalculation!.itemCalculations[index]
             const productSize = productSizes.find((ps) => ps.id === item.productSizeId)!
@@ -540,9 +548,9 @@ export class TransaksiService {
               transaksiId: createdTransaksi.id,
               produkId: item.produkId,
               jumlah: item.jumlah,
-              hargaSewa: calculation.hargaSewa,
-              durasi: 4, // Fixed 4-day package
-              subtotal: calculation.subtotal,
+              hargaSewa: new Decimal(calculation.adjustedPrice).div(item.jumlah), // Price per unit after duration multiplier
+              durasi: duration, // ENHANCED: Use actual duration from form
+              subtotal: calculation.adjustedPrice,
               kondisiAwal: `${item.productSizeId}|${productSize.size}|${productSize.ageCategory}|${item.kondisiAwal || ''}`,
             }
           })
@@ -590,13 +598,12 @@ export class TransaksiService {
             },
           })
 
-          // Fetch pembayaran
+          // Fetch pembayaran and aktivitas
           const pembayaran = await tx.pembayaran.findMany({
             where: { transaksiId: createdTransaksi.id },
             orderBy: { createdAt: 'desc' },
           })
 
-          // Fetch aktivitas
           const aktivitas = await tx.aktivitasTransaksi.findMany({
             where: { transaksiId: createdTransaksi.id },
             orderBy: { createdAt: 'desc' },
@@ -614,16 +621,16 @@ export class TransaksiService {
         },
       )
 
-      // Create activity log AFTER transaction (async, non-blocking)
-      // This saves 1-2 seconds by not blocking transaction completion
-      this.createActivityLogAsync(
+      // ENHANCED: Create enhanced activity log AFTER transaction (async, non-blocking)
+      this.createEnhancedActivityLogAsync(
         transaksi.id,
         kode,
         data,
         priceCalculation,
+        duration,
         transactionStartTime,
-      ).catch((err) => {
-        console.error('Failed to create activity log:', err)
+      ).catch((err: Error) => {
+        console.error('Failed to create enhanced activity log:', err)
       })
 
       // 🔍 DEBUG: Log transaction creation success with kasir assignment
@@ -631,7 +638,10 @@ export class TransaksiService {
         transactionCode: transaksi.kode,
         transactionId: transaksi.id,
         kasirId: data.kasirId,
-        success: 'transaction_created_with_kasir',
+        success: 'transaction_created_with_enhancements',
+        discountType: data.discountType,
+        discountValue: data.discountValue,
+        duration,
         timestamp: new Date().toISOString(),
         source: 'TransaksiService.createTransaksiSizeAware',
       })
@@ -655,11 +665,13 @@ export class TransaksiService {
     } catch (error) {
       // Enhanced error logging for debugging
       if (error instanceof Error) {
-        console.error('🚨 [ERROR] Details:', {
+        console.error('🚨 [ERROR] Enhanced Transaction Creation Failed:', {
           message: error.message,
           itemCount: data.items.length,
           penyewaId: data.penyewaId,
-          totalAmount: priceCalculation?.totalHarga?.toString() || 'unknown',
+          discountType: data.discountType,
+          discountValue: data.discountValue,
+          totalAmount: priceCalculation?.finalTotal?.toString() || 'unknown',
         })
       }
 
@@ -732,15 +744,15 @@ export class TransaksiService {
   }
 
   /**
-   * Create activity log asynchronously (non-blocking)
-   * OPTIMIZED: Moved outside transaction to reduce transaction time
+   * Create enhanced activity log with discount information
    * @private
    */
-  private async createActivityLogAsync(
+  private async createEnhancedActivityLogAsync(
     transaksiId: string,
     kode: string,
     data: CreateTransaksiRequest,
-    priceCalculation: ReturnType<typeof PriceCalculator.calculateTransactionTotal>,
+    priceCalculation: ReturnType<typeof PriceCalculator.calculateTransactionTotalWithEnhancements>,
+    duration: 4 | 7,
     transactionStartTime: number,
   ): Promise<void> {
     try {
@@ -748,21 +760,26 @@ export class TransaksiService {
         data: {
           transaksiId,
           tipe: 'dibuat',
-          deskripsi: `Transaksi ${kode} dibuat${data.kasirId ? ' dengan kasir ter assign' : ''}`,
+          deskripsi: `Transaksi ${kode} dibuat${data.kasirId ? ' dengan kasir ter assign' : ''}${data.discountType ? ` dengan diskon ${data.discountType}` : ''}`,
           data: {
             items: data.items.length,
-            totalHarga: priceCalculation.totalHarga.toString(),
+            subtotal: priceCalculation.subtotal.toString(),
+            discountAmount: priceCalculation.discountAmount.toString(),
+            totalHarga: priceCalculation.finalTotal.toString(),
+            discountType: data.discountType || null,
+            discountValue: data.discountValue || null,
+            duration,
+            durationMultiplier: priceCalculation.durationMultiplier,
             kasirId: data.kasirId || null,
             sizeAware: true,
-            optimizedSystem: true,
+            enhancedSystem: true,
             transactionDuration: Date.now() - transactionStartTime,
           },
           createdBy: this.userId,
         },
       })
     } catch (error) {
-      // Log error but don't throw - activity log is not critical
-      console.error('Failed to create activity log:', error)
+      console.error('Failed to create enhanced activity log:', error)
     }
   }
 

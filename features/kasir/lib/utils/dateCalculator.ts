@@ -54,8 +54,8 @@ export class DateCalculator {
     const returnDate = new Date(pickup)
     returnDate.setDate(returnDate.getDate() + (duration - 1))
     
-    // Format in local timezone
-    return returnDate.toLocaleDateString('sv-SE') // Returns YYYY-MM-DD format
+    // Format in specified timezone (using the timezone parameter)
+    return returnDate.toLocaleDateString('sv-SE', { timeZone: timezone }) // Returns YYYY-MM-DD format
   }
 
   /**

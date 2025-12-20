@@ -1,91 +1,131 @@
-# Git Branch Cleanup Report
+PS D:\.work\rental-software> yarn test --testPathPatterns="enhanced" --verbose
+yarn run v1.22.22
+$ jest app/creator/dashboard/page.test.tsx  --verbose --testPathPatterns=enhanced --verbose
+ℹ️ Environment validation skipped for CI/Test environment
+ FAIL  __tests__/features/kasir/services/transaksiService.enhanced.test.ts
+  TransaksiService Enhanced Tests
+    createTransaksiSizeAware with Discount System
+      × should create transaction without discount (4-day package) (5 ms)
+      × should create transaction with 10% discount (4-day package) (1 ms)
+      × should create transaction with nominal discount (7-day package) (1 ms)
+      √ should validate discount consistency (3 ms)
+      × should handle duration multiplier correctly (1 ms)                                                                                                                                                  
+      × should calculate return date correctly (2 ms)                                                                                                                                                       
+    Error Handling                                                                                                                                                                                          
+      √ should handle penyewa not found (1 ms)                                                                                                                                                              
+      √ should handle product size not found (1 ms)                                                                                                                                                         
+      √ should handle price calculation failure (1 ms)                                                                                                                                                      
+                                                                                                                                                                                                            
+  ● TransaksiService Enhanced Tests › createTransaksiSizeAware with Discount System › should create transaction without discount (4-day package)                                                            
+                                                                                                                                                                                                            
+    Size M (ADULT) untuk Test Product tidak mencukupi. Tersedia: 0, Diminta: 2
 
-## Status Sebelum Cleanup
-```bash
-PS D:\.work\rental-software> git branch -a
-  0a
-  backup-develop-20250904
-* develop
-  feature/RPK-50-producer
-  feature/RPK-51-transaksi
-  feature/RPK-52-accesories
-  feature/RPK-52-pengambilan
-  feature/auth-update
-  feature/improve-project
-  improve
-  main
-  non-auth
-  performance-transaksi
-  transaksi-improve
-  remotes/origin/HEAD -> origin/main
-  remotes/origin/add-claude-github-actions-1755484176474
-  remotes/origin/develop
-  remotes/origin/feature/RPK-50-producer
-  remotes/origin/feature/RPK-51-transaksi
-  remotes/origin/feature/RPK-52-accesories
-  remotes/origin/feature/auth-update
-  remotes/origin/feature/improve-project
-  remotes/origin/main
-  remotes/origin/non-auth
-  remotes/origin/performance-transaksi
-  remotes/origin/transaksi-improve
-```
+      718 |       if (!isAvailable) {
+      719 |         const stockStatus = await txInventoryService.getStockStatus(item.productSizeId)
+    > 720 |         throw new Error(
+          |               ^
+      721 |           `Size ${productSize.size} (${productSize.ageCategory}) untuk ${productSize.product.name} tidak mencukupi. Tersedia: ${stockStatus.availableQuantity}, Diminta: ${item.jumlah}`,       
+      722 |         )
+      723 |       }
 
-## Cleanup Actions Performed
+      at TransaksiService.validateStockAvailabilityInTransaction (features/kasir/services/transaksiService.ts:720:15)
+      at transaksi.prisma.$transaction.timeout (features/kasir/services/transaksiService.ts:499:11)
+      at TransaksiService.createTransaksiSizeAware (features/kasir/services/transaksiService.ts:495:25)
+      at Object.<anonymous> (__tests__/features/kasir/services/transaksiService.enhanced.test.ts:169:22)
 
-### Phase 1: Dependabot Branch Cleanup
-1. **git remote prune origin** - Menghapus referensi lokal untuk branch dependabot yang sudah tidak ada di remote
-2. **git push origin --delete** - Menghapus 23 branch dependabot yang masih ada di remote repository
+  ● TransaksiService Enhanced Tests › createTransaksiSizeAware with Discount System › should create transaction with 10% discount (4-day package)
 
-### Phase 2: Unused Branch Cleanup
-**Branch yang Dipertahankan:**
-- `main` - branch utama
-- `develop` - branch development utama
-- `feature/improve-project` - branch feature yang masih aktif
-- `improve` - branch improvement yang masih diperlukan
+    Size M (ADULT) untuk Test Product tidak mencukupi. Tersedia: 0, Diminta: 2
 
-**Local Branches yang Dihapus:**
-- `0a`
-- `backup-develop-20250904`
-- `feature/RPK-50-producer`
-- `feature/RPK-51-transaksi`
-- `feature/RPK-52-accesories`
-- `feature/RPK-52-pengambilan`
-- `feature/auth-update`
-- `non-auth`
-- `performance-transaksi`
-- `transaksi-improve`
+      718 |       if (!isAvailable) {
+      719 |         const stockStatus = await txInventoryService.getStockStatus(item.productSizeId)
+    > 720 |         throw new Error(
+          |               ^
+      721 |           `Size ${productSize.size} (${productSize.ageCategory}) untuk ${productSize.product.name} tidak mencukupi. Tersedia: ${stockStatus.availableQuantity}, Diminta: ${item.jumlah}`,       
+      722 |         )
+      723 |       }
 
-**Remote Branches yang Dihapus:**
-- `origin/add-claude-github-actions-1755484176474`
-- `origin/feature/RPK-50-producer`
-- `origin/feature/RPK-51-transaksi`
-- `origin/feature/RPK-52-accesories`
-- `origin/feature/auth-update`
-- `origin/non-auth`
-- `origin/performance-transaksi`
-- `origin/transaksi-improve`
+      at TransaksiService.validateStockAvailabilityInTransaction (features/kasir/services/transaksiService.ts:720:15)
+      at transaksi.prisma.$transaction.timeout (features/kasir/services/transaksiService.ts:499:11)
+      at TransaksiService.createTransaksiSizeAware (features/kasir/services/transaksiService.ts:495:25)
+      at Object.<anonymous> (__tests__/features/kasir/services/transaksiService.enhanced.test.ts:230:22)
 
-## Status Setelah Cleanup
-```bash
-PS D:\.work\rental-software> git branch -a
-* develop
-  feature/improve-project
-  improve
-  main
-  remotes/origin/HEAD -> origin/main
-  remotes/origin/develop
-  remotes/origin/feature/improve-project
-  remotes/origin/main
-```
+  ● TransaksiService Enhanced Tests › createTransaksiSizeAware with Discount System › should create transaction with nominal discount (7-day package)
 
-## Summary
-✅ **Pembersihan branch berhasil dilakukan**
-- **Sebelum cleanup:** 35 total branches (12 lokal + 23 remote)
-- **Setelah cleanup:** 8 total branches (4 lokal + 4 remote)
-- **Total branch yang dihapus:** 27 branches
-  - 23 dependabot branches
-  - 9 local unused branches
-  - 8 remote unused branches
+    Size M (ADULT) untuk Test Product tidak mencukupi. Tersedia: 0, Diminta: 2
 
-Repository sekarang lebih bersih dan hanya menyimpan branch yang masih aktif dan diperlukan untuk development.
+      718 |       if (!isAvailable) {
+      719 |         const stockStatus = await txInventoryService.getStockStatus(item.productSizeId)
+    > 720 |         throw new Error(
+          |               ^
+      721 |           `Size ${productSize.size} (${productSize.ageCategory}) untuk ${productSize.product.name} tidak mencukupi. Tersedia: ${stockStatus.availableQuantity}, Diminta: ${item.jumlah}`,       
+      722 |         )
+      723 |       }
+
+      at TransaksiService.validateStockAvailabilityInTransaction (features/kasir/services/transaksiService.ts:720:15)
+      at transaksi.prisma.$transaction.timeout (features/kasir/services/transaksiService.ts:499:11)
+      at TransaksiService.createTransaksiSizeAware (features/kasir/services/transaksiService.ts:495:25)
+      at Object.<anonymous> (__tests__/features/kasir/services/transaksiService.enhanced.test.ts:299:22)
+
+  ● TransaksiService Enhanced Tests › createTransaksiSizeAware with Discount System › should handle duration multiplier correctly
+
+    Size M (ADULT) untuk Test Product tidak mencukupi. Tersedia: 0, Diminta: 2
+
+      718 |       if (!isAvailable) {
+      719 |         const stockStatus = await txInventoryService.getStockStatus(item.productSizeId)
+    > 720 |         throw new Error(
+          |               ^
+      721 |           `Size ${productSize.size} (${productSize.ageCategory}) untuk ${productSize.product.name} tidak mencukupi. Tersedia: ${stockStatus.availableQuantity}, Diminta: ${item.jumlah}`,       
+      722 |         )
+      723 |       }
+
+      at TransaksiService.validateStockAvailabilityInTransaction (features/kasir/services/transaksiService.ts:720:15)
+      at transaksi.prisma.$transaction.timeout (features/kasir/services/transaksiService.ts:499:11)
+      at TransaksiService.createTransaksiSizeAware (features/kasir/services/transaksiService.ts:495:25)
+      at Object.<anonymous> (__tests__/features/kasir/services/transaksiService.enhanced.test.ts:348:7)
+
+  ● TransaksiService Enhanced Tests › createTransaksiSizeAware with Discount System › should calculate return date correctly
+
+    Size M (ADULT) untuk Test Product tidak mencukupi. Tersedia: 0, Diminta: 2
+
+      718 |       if (!isAvailable) {
+      719 |         const stockStatus = await txInventoryService.getStockStatus(item.productSizeId)
+    > 720 |         throw new Error(
+          |               ^
+      721 |           `Size ${productSize.size} (${productSize.ageCategory}) untuk ${productSize.product.name} tidak mencukupi. Tersedia: ${stockStatus.availableQuantity}, Diminta: ${item.jumlah}`,       
+      722 |         )
+      723 |       }
+
+      at TransaksiService.validateStockAvailabilityInTransaction (features/kasir/services/transaksiService.ts:720:15)
+      at transaksi.prisma.$transaction.timeout (features/kasir/services/transaksiService.ts:499:11)
+      at TransaksiService.createTransaksiSizeAware (features/kasir/services/transaksiService.ts:495:25)
+      at Object.<anonymous> (__tests__/features/kasir/services/transaksiService.enhanced.test.ts:366:7)
+
+ PASS  __tests__/features/kasir/lib/utils/priceCalculator.enhanced.test.ts
+  PriceCalculator Enhanced Tests
+    calculateTransactionTotalWithEnhancements                                                                                                                                                               
+      √ should calculate 4-day package without discount (1 ms)                                                                                                                                              
+      √ should calculate 7-day package without discount (1 ms)
+      √ should calculate 4-day package with 10% discount (1 ms)                                                                                                                                             
+      √ should calculate 7-day package with 15% discount (1 ms)                                                                                                                                             
+      √ should calculate 4-day package with nominal discount (4 ms)                                                                                                                                         
+      √ should calculate 7-day package with nominal discount                                                                                                                                                
+      √ should prevent negative totals with excessive nominal discount (1 ms)                                                                                                                               
+      √ should handle zero discount value (1 ms)                                                                                                                                                            
+      √ should handle 100% discount                                                                                                                                                                         
+      √ should handle single item transaction                                                                                                                                                               
+      √ should validate discount parameters (1 ms)                                                                                                                                                          
+    Edge Cases                                                                                                                                                                                              
+      √ should handle empty items array (1 ms)                                                                                                                                                              
+      √ should handle very large quantities                                                                                                                                                                 
+      √ should handle decimal prices correctly (1 ms)                                                                                                                                                       
+                                                                                                                                                                                                            
+[DetailedJsonReporter] Total: 23, Passed: 18, Failed: 5                                                                                                                                                     
+Test Suites: 1 failed, 1 passed, 2 total                                                                                                                                                                    
+Tests:       5 failed, 18 passed, 23 total
+Snapshots:   0 total
+Time:        1.846 s
+Ran all test suites matching app/creator/dashboard/page.test.tsx|enhanced.
+error Command failed with exit code 1.
+info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.
+PS D:\.work\rental-software> 

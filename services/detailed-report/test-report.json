@@ -1,49 +1,289 @@
 {
-  "numTotalTests": 3,
-  "numPassedTests": 3,
-  "numFailedTests": 0,
+  "numTotalTests": 23,
+  "numPassedTests": 16,
+  "numFailedTests": 7,
   "numPendingTests": 0,
-  "startTime": "2025-12-10T05:45:10.207Z",
-  "endTime": "2025-12-10T05:45:13.534Z",
+  "startTime": "2025-12-20T14:21:37.113Z",
+  "endTime": "2025-12-20T14:21:40.910Z",
   "testResults": [
     {
-      "testFilePath": "D:\\.work\\rental-software\\features\\manage-product\\services\\__tests__\\productService.rental-state-preservation.test.ts",
+      "testFilePath": "D:\\.work\\rental-software\\__tests__\\features\\kasir\\lib\\utils\\priceCalculator.enhanced.test.ts",
       "testFileResults": [
         {
           "ancestorTitles": [
-            "ProductService - Rental State Preservation",
-            "updateProduct with rental state preservation"
+            "PriceCalculator Enhanced Tests",
+            "calculateTransactionTotalWithEnhancements"
           ],
-          "fullName": "ProductService - Rental State Preservation updateProduct with rental state preservation should preserve rentedQuantity when updating quantity",
+          "fullName": "PriceCalculator Enhanced Tests calculateTransactionTotalWithEnhancements should calculate 4-day package without discount",
           "status": "passed",
-          "title": "should preserve rentedQuantity when updating quantity",
+          "title": "should calculate 4-day package without discount",
           "failureMessages": [],
-          "duration": 11
+          "duration": 13
         },
         {
           "ancestorTitles": [
-            "ProductService - Rental State Preservation",
-            "updateProduct with rental state preservation"
+            "PriceCalculator Enhanced Tests",
+            "calculateTransactionTotalWithEnhancements"
           ],
-          "fullName": "ProductService - Rental State Preservation updateProduct with rental state preservation should reject quantity reduction below rented + lost items",
+          "fullName": "PriceCalculator Enhanced Tests calculateTransactionTotalWithEnhancements should calculate 7-day package without discount",
           "status": "passed",
-          "title": "should reject quantity reduction below rented + lost items",
+          "title": "should calculate 7-day package without discount",
           "failureMessages": [],
-          "duration": 35
+          "duration": 1
         },
         {
           "ancestorTitles": [
-            "ProductService - Rental State Preservation",
-            "updateProduct with rental state preservation"
+            "PriceCalculator Enhanced Tests",
+            "calculateTransactionTotalWithEnhancements"
           ],
-          "fullName": "ProductService - Rental State Preservation updateProduct with rental state preservation should handle new sizes without rental state",
+          "fullName": "PriceCalculator Enhanced Tests calculateTransactionTotalWithEnhancements should calculate 4-day package with 10% discount",
           "status": "passed",
-          "title": "should handle new sizes without rental state",
+          "title": "should calculate 4-day package with 10% discount",
           "failureMessages": [],
-          "duration": 7
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PriceCalculator Enhanced Tests",
+            "calculateTransactionTotalWithEnhancements"
+          ],
+          "fullName": "PriceCalculator Enhanced Tests calculateTransactionTotalWithEnhancements should calculate 7-day package with 15% discount",
+          "status": "passed",
+          "title": "should calculate 7-day package with 15% discount",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PriceCalculator Enhanced Tests",
+            "calculateTransactionTotalWithEnhancements"
+          ],
+          "fullName": "PriceCalculator Enhanced Tests calculateTransactionTotalWithEnhancements should calculate 4-day package with nominal discount",
+          "status": "passed",
+          "title": "should calculate 4-day package with nominal discount",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PriceCalculator Enhanced Tests",
+            "calculateTransactionTotalWithEnhancements"
+          ],
+          "fullName": "PriceCalculator Enhanced Tests calculateTransactionTotalWithEnhancements should calculate 7-day package with nominal discount",
+          "status": "passed",
+          "title": "should calculate 7-day package with nominal discount",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "PriceCalculator Enhanced Tests",
+            "calculateTransactionTotalWithEnhancements"
+          ],
+          "fullName": "PriceCalculator Enhanced Tests calculateTransactionTotalWithEnhancements should prevent negative totals with excessive nominal discount",
+          "status": "passed",
+          "title": "should prevent negative totals with excessive nominal discount",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PriceCalculator Enhanced Tests",
+            "calculateTransactionTotalWithEnhancements"
+          ],
+          "fullName": "PriceCalculator Enhanced Tests calculateTransactionTotalWithEnhancements should handle zero discount value",
+          "status": "passed",
+          "title": "should handle zero discount value",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "PriceCalculator Enhanced Tests",
+            "calculateTransactionTotalWithEnhancements"
+          ],
+          "fullName": "PriceCalculator Enhanced Tests calculateTransactionTotalWithEnhancements should handle 100% discount",
+          "status": "passed",
+          "title": "should handle 100% discount",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PriceCalculator Enhanced Tests",
+            "calculateTransactionTotalWithEnhancements"
+          ],
+          "fullName": "PriceCalculator Enhanced Tests calculateTransactionTotalWithEnhancements should handle single item transaction",
+          "status": "passed",
+          "title": "should handle single item transaction",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "PriceCalculator Enhanced Tests",
+            "calculateTransactionTotalWithEnhancements"
+          ],
+          "fullName": "PriceCalculator Enhanced Tests calculateTransactionTotalWithEnhancements should validate discount parameters",
+          "status": "passed",
+          "title": "should validate discount parameters",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PriceCalculator Enhanced Tests",
+            "Edge Cases"
+          ],
+          "fullName": "PriceCalculator Enhanced Tests Edge Cases should handle empty items array",
+          "status": "passed",
+          "title": "should handle empty items array",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "PriceCalculator Enhanced Tests",
+            "Edge Cases"
+          ],
+          "fullName": "PriceCalculator Enhanced Tests Edge Cases should handle very large quantities",
+          "status": "passed",
+          "title": "should handle very large quantities",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "PriceCalculator Enhanced Tests",
+            "Edge Cases"
+          ],
+          "fullName": "PriceCalculator Enhanced Tests Edge Cases should handle decimal prices correctly",
+          "status": "passed",
+          "title": "should handle decimal prices correctly",
+          "failureMessages": [],
+          "duration": 1
         }
       ],
       "failureMessage": null
+    },
+    {
+      "testFilePath": "D:\\.work\\rental-software\\__tests__\\features\\kasir\\services\\transaksiService.enhanced.test.ts",
+      "testFileResults": [
+        {
+          "ancestorTitles": [
+            "TransaksiService Enhanced Tests",
+            "createTransaksiSizeAware with Discount System"
+          ],
+          "fullName": "TransaksiService Enhanced Tests createTransaksiSizeAware with Discount System should create transaction without discount (4-day package)",
+          "status": "failed",
+          "title": "should create transaction without discount (4-day package)",
+          "failureMessages": [
+            "TypeError: mockPriceCalculator.mockReturnValue is not a function\n    at Object.mockReturnValue (D:\\.work\\rental-software\\__tests__\\features\\kasir\\services\\transaksiService.enhanced.test.ts:165:27)\n    at Promise.finally.completed (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1556:28)\n    at new Promise (<anonymous>)\n    at callAsyncCircusFn (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1496:10)\n    at _callCircusHook (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:975:40)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at _runTest (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:940:5)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:839:13)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at run (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:757:3)\n    at runAndTransformResultsToJestFormat (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1917:21)\n    at jestAdapter (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\runner.js:101:19)\n    at runTestInternal (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:275:16)\n    at runTest (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:343:7)\n    at Object.worker (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:497:12)"
+          ],
+          "duration": 5
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Enhanced Tests",
+            "createTransaksiSizeAware with Discount System"
+          ],
+          "fullName": "TransaksiService Enhanced Tests createTransaksiSizeAware with Discount System should create transaction with 10% discount (4-day package)",
+          "status": "failed",
+          "title": "should create transaction with 10% discount (4-day package)",
+          "failureMessages": [
+            "TypeError: mockPriceCalculator.mockReturnValue is not a function\n    at Object.mockReturnValue (D:\\.work\\rental-software\\__tests__\\features\\kasir\\services\\transaksiService.enhanced.test.ts:165:27)\n    at Promise.finally.completed (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1556:28)\n    at new Promise (<anonymous>)\n    at callAsyncCircusFn (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1496:10)\n    at _callCircusHook (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:975:40)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at _runTest (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:940:5)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:839:13)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at run (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:757:3)\n    at runAndTransformResultsToJestFormat (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1917:21)\n    at jestAdapter (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\runner.js:101:19)\n    at runTestInternal (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:275:16)\n    at runTest (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:343:7)\n    at Object.worker (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:497:12)"
+          ],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Enhanced Tests",
+            "createTransaksiSizeAware with Discount System"
+          ],
+          "fullName": "TransaksiService Enhanced Tests createTransaksiSizeAware with Discount System should create transaction with nominal discount (7-day package)",
+          "status": "failed",
+          "title": "should create transaction with nominal discount (7-day package)",
+          "failureMessages": [
+            "TypeError: mockPriceCalculator.mockReturnValue is not a function\n    at Object.mockReturnValue (D:\\.work\\rental-software\\__tests__\\features\\kasir\\services\\transaksiService.enhanced.test.ts:165:27)\n    at Promise.finally.completed (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1556:28)\n    at new Promise (<anonymous>)\n    at callAsyncCircusFn (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1496:10)\n    at _callCircusHook (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:975:40)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at _runTest (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:940:5)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:839:13)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at run (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:757:3)\n    at runAndTransformResultsToJestFormat (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1917:21)\n    at jestAdapter (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\runner.js:101:19)\n    at runTestInternal (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:275:16)\n    at runTest (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:343:7)\n    at Object.worker (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:497:12)"
+          ],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Enhanced Tests",
+            "createTransaksiSizeAware with Discount System"
+          ],
+          "fullName": "TransaksiService Enhanced Tests createTransaksiSizeAware with Discount System should validate discount consistency",
+          "status": "failed",
+          "title": "should validate discount consistency",
+          "failureMessages": [
+            "TypeError: mockPriceCalculator.mockReturnValue is not a function\n    at Object.mockReturnValue (D:\\.work\\rental-software\\__tests__\\features\\kasir\\services\\transaksiService.enhanced.test.ts:165:27)\n    at Promise.finally.completed (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1556:28)\n    at new Promise (<anonymous>)\n    at callAsyncCircusFn (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1496:10)\n    at _callCircusHook (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:975:40)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at _runTest (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:940:5)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:839:13)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at run (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:757:3)\n    at runAndTransformResultsToJestFormat (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1917:21)\n    at jestAdapter (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\runner.js:101:19)\n    at runTestInternal (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:275:16)\n    at runTest (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:343:7)\n    at Object.worker (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:497:12)"
+          ],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Enhanced Tests",
+            "createTransaksiSizeAware with Discount System"
+          ],
+          "fullName": "TransaksiService Enhanced Tests createTransaksiSizeAware with Discount System should handle duration multiplier correctly",
+          "status": "failed",
+          "title": "should handle duration multiplier correctly",
+          "failureMessages": [
+            "TypeError: mockPriceCalculator.mockReturnValue is not a function\n    at Object.mockReturnValue (D:\\.work\\rental-software\\__tests__\\features\\kasir\\services\\transaksiService.enhanced.test.ts:165:27)\n    at Promise.finally.completed (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1556:28)\n    at new Promise (<anonymous>)\n    at callAsyncCircusFn (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1496:10)\n    at _callCircusHook (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:975:40)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at _runTest (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:940:5)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:839:13)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at run (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:757:3)\n    at runAndTransformResultsToJestFormat (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1917:21)\n    at jestAdapter (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\runner.js:101:19)\n    at runTestInternal (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:275:16)\n    at runTest (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:343:7)\n    at Object.worker (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:497:12)"
+          ],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Enhanced Tests",
+            "createTransaksiSizeAware with Discount System"
+          ],
+          "fullName": "TransaksiService Enhanced Tests createTransaksiSizeAware with Discount System should calculate return date correctly",
+          "status": "failed",
+          "title": "should calculate return date correctly",
+          "failureMessages": [
+            "TypeError: mockPriceCalculator.mockReturnValue is not a function\n    at Object.mockReturnValue (D:\\.work\\rental-software\\__tests__\\features\\kasir\\services\\transaksiService.enhanced.test.ts:165:27)\n    at Promise.finally.completed (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1556:28)\n    at new Promise (<anonymous>)\n    at callAsyncCircusFn (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1496:10)\n    at _callCircusHook (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:975:40)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at _runTest (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:940:5)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:839:13)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at run (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:757:3)\n    at runAndTransformResultsToJestFormat (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1917:21)\n    at jestAdapter (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\runner.js:101:19)\n    at runTestInternal (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:275:16)\n    at runTest (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:343:7)\n    at Object.worker (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:497:12)"
+          ],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Enhanced Tests",
+            "Error Handling"
+          ],
+          "fullName": "TransaksiService Enhanced Tests Error Handling should handle penyewa not found",
+          "status": "passed",
+          "title": "should handle penyewa not found",
+          "failureMessages": [],
+          "duration": 9
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Enhanced Tests",
+            "Error Handling"
+          ],
+          "fullName": "TransaksiService Enhanced Tests Error Handling should handle product size not found",
+          "status": "passed",
+          "title": "should handle product size not found",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Enhanced Tests",
+            "Error Handling"
+          ],
+          "fullName": "TransaksiService Enhanced Tests Error Handling should handle price calculation failure",
+          "status": "failed",
+          "title": "should handle price calculation failure",
+          "failureMessages": [
+            "TypeError: mockPriceCalculator.mockReturnValue is not a function\n    at Object.mockReturnValue (D:\\.work\\rental-software\\__tests__\\features\\kasir\\services\\transaksiService.enhanced.test.ts:534:27)\n    at Promise.finally.completed (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1556:28)\n    at new Promise (<anonymous>)\n    at callAsyncCircusFn (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1496:10)\n    at _callCircusTest (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1006:40)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at _runTest (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:946:3)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:839:13)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at run (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:757:3)\n    at runAndTransformResultsToJestFormat (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1917:21)\n    at jestAdapter (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\runner.js:101:19)\n    at runTestInternal (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:275:16)\n    at runTest (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:343:7)\n    at Object.worker (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:497:12)"
+          ],
+          "duration": 0
+        }
+      ],
+      "failureMessage": "\u001b[1m\u001b[31m  \u001b[1m● \u001b[22m\u001b[1mTransaksiService Enhanced Tests › createTransaksiSizeAware with Discount System › should create transaction without discount (4-day package)\u001b[39m\u001b[22m\n\n    TypeError: mockPriceCalculator.mockReturnValue is not a function\n\u001b[2m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m 163 |\u001b[39m       \u001b[90m// Setup default PriceCalculator mock\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 164 |\u001b[39m       \u001b[36mconst\u001b[39m mockPriceCalculator \u001b[33m=\u001b[39m \u001b[33mPriceCalculator\u001b[39m\u001b[33m.\u001b[39mcalculateTransactionTotalWithEnhancements \u001b[36mas\u001b[39m jest\u001b[33m.\u001b[39m\u001b[33mMockedFunction\u001b[39m\u001b[33m<\u001b[39m\u001b[36mtypeof\u001b[39m \u001b[33mPriceCalculator\u001b[39m\u001b[33m.\u001b[39mcalculateTransactionTotalWithEnhancements\u001b[33m>\u001b[39m\u001b[22m\n\u001b[2m    \u001b[31m\u001b[1m>\u001b[22m\u001b[2m\u001b[39m\u001b[90m 165 |\u001b[39m       mockPriceCalculator\u001b[33m.\u001b[39mmockReturnValue({\u001b[22m\n\u001b[2m     \u001b[90m     |\u001b[39m                           \u001b[31m\u001b[1m^\u001b[22m\u001b[2m\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 166 |\u001b[39m         subtotal\u001b[33m:\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mDecimal\u001b[39m(\u001b[35m100000\u001b[39m)\u001b[33m,\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 167 |\u001b[39m         discountAmount\u001b[33m:\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mDecimal\u001b[39m(\u001b[35m0\u001b[39m)\u001b[33m,\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 168 |\u001b[39m         finalTotal\u001b[33m:\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mDecimal\u001b[39m(\u001b[35m100000\u001b[39m)\u001b[33m,\u001b[39m\u001b[0m\u001b[22m\n\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat Object.mockReturnValue (\u001b[22m\u001b[2m\u001b[0m\u001b[36m__tests__/features/kasir/services/transaksiService.enhanced.test.ts\u001b[39m\u001b[0m\u001b[2m:165:27)\u001b[22m\u001b[2m\u001b[22m\n\n\u001b[1m\u001b[31m  \u001b[1m● \u001b[22m\u001b[1mTransaksiService Enhanced Tests › createTransaksiSizeAware with Discount System › should create transaction with 10% discount (4-day package)\u001b[39m\u001b[22m\n\n    TypeError: mockPriceCalculator.mockReturnValue is not a function\n\u001b[2m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m 163 |\u001b[39m       \u001b[90m// Setup default PriceCalculator mock\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 164 |\u001b[39m       \u001b[36mconst\u001b[39m mockPriceCalculator \u001b[33m=\u001b[39m \u001b[33mPriceCalculator\u001b[39m\u001b[33m.\u001b[39mcalculateTransactionTotalWithEnhancements \u001b[36mas\u001b[39m jest\u001b[33m.\u001b[39m\u001b[33mMockedFunction\u001b[39m\u001b[33m<\u001b[39m\u001b[36mtypeof\u001b[39m \u001b[33mPriceCalculator\u001b[39m\u001b[33m.\u001b[39mcalculateTransactionTotalWithEnhancements\u001b[33m>\u001b[39m\u001b[22m\n\u001b[2m    \u001b[31m\u001b[1m>\u001b[22m\u001b[2m\u001b[39m\u001b[90m 165 |\u001b[39m       mockPriceCalculator\u001b[33m.\u001b[39mmockReturnValue({\u001b[22m\n\u001b[2m     \u001b[90m     |\u001b[39m                           \u001b[31m\u001b[1m^\u001b[22m\u001b[2m\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 166 |\u001b[39m         subtotal\u001b[33m:\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mDecimal\u001b[39m(\u001b[35m100000\u001b[39m)\u001b[33m,\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 167 |\u001b[39m         discountAmount\u001b[33m:\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mDecimal\u001b[39m(\u001b[35m0\u001b[39m)\u001b[33m,\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 168 |\u001b[39m         finalTotal\u001b[33m:\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mDecimal\u001b[39m(\u001b[35m100000\u001b[39m)\u001b[33m,\u001b[39m\u001b[0m\u001b[22m\n\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat Object.mockReturnValue (\u001b[22m\u001b[2m\u001b[0m\u001b[36m__tests__/features/kasir/services/transaksiService.enhanced.test.ts\u001b[39m\u001b[0m\u001b[2m:165:27)\u001b[22m\u001b[2m\u001b[22m\n\n\u001b[1m\u001b[31m  \u001b[1m● \u001b[22m\u001b[1mTransaksiService Enhanced Tests › createTransaksiSizeAware with Discount System › should create transaction with nominal discount (7-day package)\u001b[39m\u001b[22m\n\n    TypeError: mockPriceCalculator.mockReturnValue is not a function\n\u001b[2m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m 163 |\u001b[39m       \u001b[90m// Setup default PriceCalculator mock\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 164 |\u001b[39m       \u001b[36mconst\u001b[39m mockPriceCalculator \u001b[33m=\u001b[39m \u001b[33mPriceCalculator\u001b[39m\u001b[33m.\u001b[39mcalculateTransactionTotalWithEnhancements \u001b[36mas\u001b[39m jest\u001b[33m.\u001b[39m\u001b[33mMockedFunction\u001b[39m\u001b[33m<\u001b[39m\u001b[36mtypeof\u001b[39m \u001b[33mPriceCalculator\u001b[39m\u001b[33m.\u001b[39mcalculateTransactionTotalWithEnhancements\u001b[33m>\u001b[39m\u001b[22m\n\u001b[2m    \u001b[31m\u001b[1m>\u001b[22m\u001b[2m\u001b[39m\u001b[90m 165 |\u001b[39m       mockPriceCalculator\u001b[33m.\u001b[39mmockReturnValue({\u001b[22m\n\u001b[2m     \u001b[90m     |\u001b[39m                           \u001b[31m\u001b[1m^\u001b[22m\u001b[2m\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 166 |\u001b[39m         subtotal\u001b[33m:\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mDecimal\u001b[39m(\u001b[35m100000\u001b[39m)\u001b[33m,\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 167 |\u001b[39m         discountAmount\u001b[33m:\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mDecimal\u001b[39m(\u001b[35m0\u001b[39m)\u001b[33m,\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 168 |\u001b[39m         finalTotal\u001b[33m:\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mDecimal\u001b[39m(\u001b[35m100000\u001b[39m)\u001b[33m,\u001b[39m\u001b[0m\u001b[22m\n\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat Object.mockReturnValue (\u001b[22m\u001b[2m\u001b[0m\u001b[36m__tests__/features/kasir/services/transaksiService.enhanced.test.ts\u001b[39m\u001b[0m\u001b[2m:165:27)\u001b[22m\u001b[2m\u001b[22m\n\n\u001b[1m\u001b[31m  \u001b[1m● \u001b[22m\u001b[1mTransaksiService Enhanced Tests › createTransaksiSizeAware with Discount System › should validate discount consistency\u001b[39m\u001b[22m\n\n    TypeError: mockPriceCalculator.mockReturnValue is not a function\n\u001b[2m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m 163 |\u001b[39m       \u001b[90m// Setup default PriceCalculator mock\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 164 |\u001b[39m       \u001b[36mconst\u001b[39m mockPriceCalculator \u001b[33m=\u001b[39m \u001b[33mPriceCalculator\u001b[39m\u001b[33m.\u001b[39mcalculateTransactionTotalWithEnhancements \u001b[36mas\u001b[39m jest\u001b[33m.\u001b[39m\u001b[33mMockedFunction\u001b[39m\u001b[33m<\u001b[39m\u001b[36mtypeof\u001b[39m \u001b[33mPriceCalculator\u001b[39m\u001b[33m.\u001b[39mcalculateTransactionTotalWithEnhancements\u001b[33m>\u001b[39m\u001b[22m\n\u001b[2m    \u001b[31m\u001b[1m>\u001b[22m\u001b[2m\u001b[39m\u001b[90m 165 |\u001b[39m       mockPriceCalculator\u001b[33m.\u001b[39mmockReturnValue({\u001b[22m\n\u001b[2m     \u001b[90m     |\u001b[39m                           \u001b[31m\u001b[1m^\u001b[22m\u001b[2m\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 166 |\u001b[39m         subtotal\u001b[33m:\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mDecimal\u001b[39m(\u001b[35m100000\u001b[39m)\u001b[33m,\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 167 |\u001b[39m         discountAmount\u001b[33m:\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mDecimal\u001b[39m(\u001b[35m0\u001b[39m)\u001b[33m,\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 168 |\u001b[39m         finalTotal\u001b[33m:\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mDecimal\u001b[39m(\u001b[35m100000\u001b[39m)\u001b[33m,\u001b[39m\u001b[0m\u001b[22m\n\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat Object.mockReturnValue (\u001b[22m\u001b[2m\u001b[0m\u001b[36m__tests__/features/kasir/services/transaksiService.enhanced.test.ts\u001b[39m\u001b[0m\u001b[2m:165:27)\u001b[22m\u001b[2m\u001b[22m\n\n\u001b[1m\u001b[31m  \u001b[1m● \u001b[22m\u001b[1mTransaksiService Enhanced Tests › createTransaksiSizeAware with Discount System › should handle duration multiplier correctly\u001b[39m\u001b[22m\n\n    TypeError: mockPriceCalculator.mockReturnValue is not a function\n\u001b[2m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m 163 |\u001b[39m       \u001b[90m// Setup default PriceCalculator mock\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 164 |\u001b[39m       \u001b[36mconst\u001b[39m mockPriceCalculator \u001b[33m=\u001b[39m \u001b[33mPriceCalculator\u001b[39m\u001b[33m.\u001b[39mcalculateTransactionTotalWithEnhancements \u001b[36mas\u001b[39m jest\u001b[33m.\u001b[39m\u001b[33mMockedFunction\u001b[39m\u001b[33m<\u001b[39m\u001b[36mtypeof\u001b[39m \u001b[33mPriceCalculator\u001b[39m\u001b[33m.\u001b[39mcalculateTransactionTotalWithEnhancements\u001b[33m>\u001b[39m\u001b[22m\n\u001b[2m    \u001b[31m\u001b[1m>\u001b[22m\u001b[2m\u001b[39m\u001b[90m 165 |\u001b[39m       mockPriceCalculator\u001b[33m.\u001b[39mmockReturnValue({\u001b[22m\n\u001b[2m     \u001b[90m     |\u001b[39m                           \u001b[31m\u001b[1m^\u001b[22m\u001b[2m\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 166 |\u001b[39m         subtotal\u001b[33m:\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mDecimal\u001b[39m(\u001b[35m100000\u001b[39m)\u001b[33m,\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 167 |\u001b[39m         discountAmount\u001b[33m:\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mDecimal\u001b[39m(\u001b[35m0\u001b[39m)\u001b[33m,\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 168 |\u001b[39m         finalTotal\u001b[33m:\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mDecimal\u001b[39m(\u001b[35m100000\u001b[39m)\u001b[33m,\u001b[39m\u001b[0m\u001b[22m\n\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat Object.mockReturnValue (\u001b[22m\u001b[2m\u001b[0m\u001b[36m__tests__/features/kasir/services/transaksiService.enhanced.test.ts\u001b[39m\u001b[0m\u001b[2m:165:27)\u001b[22m\u001b[2m\u001b[22m\n\n\u001b[1m\u001b[31m  \u001b[1m● \u001b[22m\u001b[1mTransaksiService Enhanced Tests › createTransaksiSizeAware with Discount System › should calculate return date correctly\u001b[39m\u001b[22m\n\n    TypeError: mockPriceCalculator.mockReturnValue is not a function\n\u001b[2m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m 163 |\u001b[39m       \u001b[90m// Setup default PriceCalculator mock\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 164 |\u001b[39m       \u001b[36mconst\u001b[39m mockPriceCalculator \u001b[33m=\u001b[39m \u001b[33mPriceCalculator\u001b[39m\u001b[33m.\u001b[39mcalculateTransactionTotalWithEnhancements \u001b[36mas\u001b[39m jest\u001b[33m.\u001b[39m\u001b[33mMockedFunction\u001b[39m\u001b[33m<\u001b[39m\u001b[36mtypeof\u001b[39m \u001b[33mPriceCalculator\u001b[39m\u001b[33m.\u001b[39mcalculateTransactionTotalWithEnhancements\u001b[33m>\u001b[39m\u001b[22m\n\u001b[2m    \u001b[31m\u001b[1m>\u001b[22m\u001b[2m\u001b[39m\u001b[90m 165 |\u001b[39m       mockPriceCalculator\u001b[33m.\u001b[39mmockReturnValue({\u001b[22m\n\u001b[2m     \u001b[90m     |\u001b[39m                           \u001b[31m\u001b[1m^\u001b[22m\u001b[2m\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 166 |\u001b[39m         subtotal\u001b[33m:\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mDecimal\u001b[39m(\u001b[35m100000\u001b[39m)\u001b[33m,\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 167 |\u001b[39m         discountAmount\u001b[33m:\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mDecimal\u001b[39m(\u001b[35m0\u001b[39m)\u001b[33m,\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 168 |\u001b[39m         finalTotal\u001b[33m:\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mDecimal\u001b[39m(\u001b[35m100000\u001b[39m)\u001b[33m,\u001b[39m\u001b[0m\u001b[22m\n\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat Object.mockReturnValue (\u001b[22m\u001b[2m\u001b[0m\u001b[36m__tests__/features/kasir/services/transaksiService.enhanced.test.ts\u001b[39m\u001b[0m\u001b[2m:165:27)\u001b[22m\u001b[2m\u001b[22m\n\n\u001b[1m\u001b[31m  \u001b[1m● \u001b[22m\u001b[1mTransaksiService Enhanced Tests › Error Handling › should handle price calculation failure\u001b[39m\u001b[22m\n\n    TypeError: mockPriceCalculator.mockReturnValue is not a function\n\u001b[2m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m 532 |\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 533 |\u001b[39m       \u001b[36mconst\u001b[39m mockPriceCalculator \u001b[33m=\u001b[39m \u001b[33mPriceCalculator\u001b[39m\u001b[33m.\u001b[39mcalculateTransactionTotalWithEnhancements \u001b[36mas\u001b[39m jest\u001b[33m.\u001b[39m\u001b[33mMockedFunction\u001b[39m\u001b[33m<\u001b[39m\u001b[36mtypeof\u001b[39m \u001b[33mPriceCalculator\u001b[39m\u001b[33m.\u001b[39mcalculateTransactionTotalWithEnhancements\u001b[33m>\u001b[39m\u001b[22m\n\u001b[2m    \u001b[31m\u001b[1m>\u001b[22m\u001b[2m\u001b[39m\u001b[90m 534 |\u001b[39m       mockPriceCalculator\u001b[33m.\u001b[39mmockReturnValue(\u001b[36mnull\u001b[39m \u001b[36mas\u001b[39m unknown \u001b[36mas\u001b[39m \u001b[33mReturnType\u001b[39m\u001b[33m<\u001b[39m\u001b[36mtypeof\u001b[39m \u001b[33mPriceCalculator\u001b[39m\u001b[33m.\u001b[39mcalculateTransactionTotalWithEnhancements\u001b[33m>\u001b[39m) \u001b[90m// Simulate calculation failure\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m     |\u001b[39m                           \u001b[31m\u001b[1m^\u001b[22m\u001b[2m\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 535 |\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 536 |\u001b[39m       \u001b[36mconst\u001b[39m transactionData \u001b[33m=\u001b[39m {\u001b[22m\n\u001b[2m     \u001b[90m 537 |\u001b[39m         penyewaId\u001b[33m:\u001b[39m \u001b[32m'penyewa-123'\u001b[39m\u001b[33m,\u001b[39m\u001b[0m\u001b[22m\n\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat Object.mockReturnValue (\u001b[22m\u001b[2m\u001b[0m\u001b[36m__tests__/features/kasir/services/transaksiService.enhanced.test.ts\u001b[39m\u001b[0m\u001b[2m:534:27)\u001b[22m\u001b[2m\u001b[22m\n"
     }
   ]
 }
