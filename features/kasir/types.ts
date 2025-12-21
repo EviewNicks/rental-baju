@@ -320,6 +320,9 @@ export interface Transaction {
   returnDate?: string
   paymentMethod?: string
   notes?: string
+  // 🆕 ENHANCEMENT: Discount system fields
+  discountType?: 'percent' | 'nominal' | null
+  discountValue?: number | null
   createdAt: string
   updatedAt: string
   kasir?: {
@@ -630,6 +633,9 @@ export interface TransaksiResponse extends TransaksiCore {
   catatan?: string
   createdBy: string
   tglKembali?: string // Will be validated against item status in Phase 2
+  // 🆕 ENHANCEMENT: Discount system fields
+  discountType?: 'percent' | 'nominal' | null
+  discountValue?: number | null
 
   // New flat penalty system fields
   flatLatePenalty: number // Default 20000 (20k flat penalty)

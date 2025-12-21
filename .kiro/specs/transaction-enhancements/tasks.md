@@ -135,10 +135,15 @@ This document provides a step-by-step implementation plan for the transaction en
     - Document any issues found
     - _Requirements: 2.7, 4.7, 6.7_
 
-  - [ ] 6.3 Update transaction detail views
-    - Display duration package information
-    - Show discount details when applicable
-    - Format all monetary values consistently
+  - [x] 6.3 Update transaction detail views
+    - ✅ Enhanced PaymentSummaryCard with discount breakdown display
+    - ✅ Show subtotal before discount when discount is applied
+    - ✅ Display discount type (percent/nominal) and amount
+    - ✅ Updated ProductDetailCard with dynamic duration display
+    - ✅ Show "Harga/X Hari" based on actual duration (4 or 7 days)
+    - ✅ Display base price reference for 7-day packages
+    - ✅ Added discount fields to Transaction interface
+    - ✅ Backward compatible with transactions without discount
     - _Requirements: 9.1, 9.2, 9.3, 9.6, 9.7_
 
 - [ ]* 6.4 Write automated end-to-end tests

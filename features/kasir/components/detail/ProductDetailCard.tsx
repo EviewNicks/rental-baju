@@ -3,7 +3,6 @@ import { Badge } from '@/components/ui/badge'
 import { formatCurrency } from '../../lib/utils/client'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
-import React from 'react'
 import {
   parseKondisiAwal,
   formatSizeWithAge,
@@ -52,6 +51,11 @@ export function ProductDetailCard({ item, pickupInfo }: ProductDetailCardProps) 
   // Parse size information from kondisiAwal (RPK-51 AgeSizes system)
   const sizeInfo = extractSizeInfo(item)
   const parsedKondisiAwal = parseKondisiAwal(item.kondisiAwal)
+
+  // 🆕 ENHANCEMENT: Calculate base price from adjusted price
+  const durationMultiplier = item.duration === 7 ? 1.5 : 1.0
+  const basePricePerDay = Math.round(item.pricePerDay / durationMultiplier)
+  const adjustedPricePerDay = item.pricePerDay // This is already adjusted
 
   // Calculate pickup status - use explicit pickupInfo or derive from item data
   const actualJumlahDiambil = pickupInfo?.jumlahDiambil ?? item.jumlahDiambil ?? 0
@@ -321,14 +325,20 @@ export function ProductDetailCard({ item, pickupInfo }: ProductDetailCardProps) 
             </div>
             <div className="text-center md:text-left">
               <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
-                Harga/Hari
+                Harga/{item.duration} Hari
               </div>
               <div
                 className="text-lg font-bold text-gray-900"
-                aria-label={`Harga per hari: ${formatCurrency(item.pricePerDay)}`}
+                aria-label={`Harga per ${item.duration} hari: ${formatCurrency(adjustedPricePerDay)}`}
               >
-                {formatCurrency(item.pricePerDay)}
+                {formatCurrency(adjustedPricePerDay)}
               </div>
+              {/* Show base price if different from adjusted price */}
+              {durationMultiplier !== 1.0 && (
+                <div className="text-xs text-gray-500 mt-1">
+                  Base: {formatCurrency(basePricePerDay)}
+                </div>
+              )}
             </div>
             <div className="text-center md:text-left">
               <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">

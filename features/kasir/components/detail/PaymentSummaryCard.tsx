@@ -41,6 +41,29 @@ export function PaymentSummaryCard({
   }, 0)
 
   const transactionAmount = Number(validTransaction.totalAmount) || 0
+  
+  // 🆕 ENHANCEMENT: Calculate discount information for display
+  const hasDiscount = validTransaction.discountType && validTransaction.discountValue
+  const discountType = validTransaction.discountType
+  const discountValue = Number(validTransaction.discountValue) || 0
+  
+  // 🔧 FIX: Calculate subtotal from items (most accurate approach)
+  const calculateSubtotalFromItems = (items: Array<{ subtotal: number }>) => {
+    if (!Array.isArray(items)) return 0
+    return items.reduce((sum, item) => sum + (Number(item.subtotal) || 0), 0)
+  }
+  
+  // Calculate subtotal before discount using items data
+  let subtotalBeforeDiscount = transactionAmount
+  let discountAmount = 0
+  
+  if (hasDiscount && discountValue > 0) {
+    // 🔧 FIX: Try both 'products' and 'items' field names
+    const itemsData = validTransaction.products || validTransaction.items || []
+    subtotalBeforeDiscount = calculateSubtotalFromItems(itemsData)
+    discountAmount = subtotalBeforeDiscount - transactionAmount
+  }
+  
   const grandTotal = transactionAmount + totalPenalties
   const remainingBalance = grandTotal - totalPaid
 
@@ -163,12 +186,40 @@ export function PaymentSummaryCard({
 
       {/* Payment Summary */}
       <div className="space-y-3">
-        <div className="flex justify-between text-sm">
-          <span className="text-gray-600">Total Sewa:</span>
-          <span className="font-medium text-gray-900" data-testid="total-amount">
-            {formatCurrency(transactionAmount)}
-          </span>
-        </div>
+        {/* Show subtotal before discount if discount exists */}
+        {hasDiscount ? (
+          <>
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-600">Subtotal:</span>
+              <span className="font-medium text-gray-900">
+                {formatCurrency(subtotalBeforeDiscount)}
+              </span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-600">
+                {discountType === 'percent' ? `Diskon ${discountValue}%` : 'Diskon'}:
+              </span>
+              <span className="font-medium text-green-600">
+                -{formatCurrency(discountAmount)}
+              </span>
+            </div>
+            <div className="border-t border-gray-200 pt-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Total Sewa:</span>
+                <span className="font-medium text-gray-900" data-testid="total-amount">
+                  {formatCurrency(transactionAmount)}
+                </span>
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-600">Total Sewa:</span>
+            <span className="font-medium text-gray-900" data-testid="total-amount">
+              {formatCurrency(transactionAmount)}
+            </span>
+          </div>
+        )}
 
         {totalPenalties > 0 && (
           <div className="flex justify-between text-sm">
