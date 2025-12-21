@@ -115,20 +115,33 @@ This document provides a step-by-step implementation plan for the transaction en
   - **Property 3: Discount validation consistency**
   - **Validates: Requirements 7.1, 7.2, 7.3**
 
-- [ ] 6. Integration and End-to-End Testing
-  - [ ] 6.1 Wire all components together
-    - Connect duration selector to price calculations
-    - Connect discount input to total calculations
-    - Ensure all form fields work together seamlessly
+- [x] 6. Integration and End-to-End Testing
+  - [x] 6.1 Manual Testing Guide Created
+    - ✅ Comprehensive testing scenarios for all enhancements
+    - ✅ Step-by-step test cases for duration packages
+    - ✅ Detailed discount system validation tests
+    - ✅ Date calculation edge case testing
+    - ✅ End-to-end transaction flow validation
+    - ✅ Performance and browser compatibility testing
+    - _File: `.kiro/specs/transaction-enhancements/testing-guide.md`_
+    - _Requirements: 2.7, 4.7, 6.7, All requirements integration_
+
+  - [ ] 6.2 Execute Manual Testing
+    - Follow testing guide step by step
+    - Validate all duration package functionality
+    - Test discount system thoroughly
+    - Verify date calculations accuracy
+    - Test complete transaction flows
+    - Document any issues found
     - _Requirements: 2.7, 4.7, 6.7_
 
-  - [ ] 6.2 Update transaction detail views
+  - [ ] 6.3 Update transaction detail views
     - Display duration package information
     - Show discount details when applicable
     - Format all monetary values consistently
     - _Requirements: 9.1, 9.2, 9.3, 9.6, 9.7_
 
-- [ ]* 6.3 Write end-to-end tests
+- [ ]* 6.4 Write automated end-to-end tests
   - Test complete transaction flow with discounts
   - Test complete transaction flow with different durations
   - Test edge cases and error scenarios

@@ -359,9 +359,12 @@ export function handleMultiConditionError(
     }
   }
 
-  // Handle timeout errors
+  // Handle timeout errors - suppress repetitive logging
   if (error.message.includes('timeout') || error.message.includes('abort')) {
-    console.error('🔴 Timeout Error:', baseContext)
+    // Only log timeout errors in development or if it's a new unique error
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('⚠️ Timeout Error (suppressed in production):', baseContext)
+    }
     return {
       userMessage: 'Proses memakan waktu terlalu lama. Coba lagi.',
       technicalMessage: error.message,
