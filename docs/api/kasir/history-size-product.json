@@ -1,0 +1,669 @@
+{
+  "info": {
+    "name": "Kasir Product History API Collection - Availability Product View (Task 2)",
+    "description": "Complete API collection untuk Product History endpoint yang mendukung Availability Product View feature. Endpoint ini menyediakan transaction history untuk specific product size dengan date-aware inventory management dan caching optimization.\n\n🆕 AVAILABILITY PRODUCT VIEW ARCHITECTURE:\n• Date-aware inventory: Stock deduction hanya saat pickup, bukan saat transaction creation\n• Transaction history display: Show existing bookings untuk informed decision making\n• Status filtering: Hanya tampilkan 'active' dan 'diambil' transactions\n• Performance optimization: 5-minute caching per product size\n• Real-time availability checking dengan date range overlap detection\n\n🔗 DEPENDENCIES & EXECUTION ORDER:\n1. Setup: Login → Get session token\n2. Prerequisites: Create Product dengan sizes → Get productSizeId\n3. History Testing: Test various query parameters dan scenarios\n4. Caching: Test cache behavior dan performance\n5. Error Scenarios: Test validation dan error handling\n\n📋 REQUIRED VARIABLES:\n- base_url: http://localhost:3000\n- clerk_session_token: From browser cookies\n- productSizeId: ID dari product size untuk testing\n\n⚡ PERFORMANCE TARGETS:\n- Response Time: <500ms dengan cache hit\n- Cache TTL: 5 minutes per product size\n- API SLA: <2s untuk fresh data requests\n- Concurrent requests: Handle multiple availability checks\n\n📚 Full documentation: .kiro/specs/availability-product-view/requirements.md | .kiro/specs/availability-product-view/design.md",
+    "version": "1.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "cookie",
+    "cookie": [
+      {
+        "key": "__session",
+        "value": "{{clerk_session_token}}",
+        "description": "Clerk session token dari browser"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "description": "Base URL aplikasi"
+    },
+    {
+      "key": "productSizeId",
+      "value": "",
+      "description": "ID product size untuk testing history endpoint"
+    },
+    {
+      "key": "clerk_session_token",
+      "value": "",
+      "description": "Session token dari Clerk authentication"
+    }
+  ],
+  "item": [
+    {
+      "name": "Product History - Basic Scenarios",
+      "item": [
+        {
+          "name": "Get Product History - Default Parameters",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/kasir/transaksi/product-history?productSizeId={{productSizeId}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "kasir", "transaksi", "product-history"],
+              "query": [
+                {
+                  "key": "productSizeId",
+                  "value": "{{productSizeId}}",
+                  "description": "REQUIRED: ID dari product size yang ingin dilihat historynya"
+                }
+              ]
+            },
+            "description": "Mendapatkan transaction history untuk specific product size dengan default parameters.\n\n🔧 DEFAULT BEHAVIOR:\n• statuses: ['active', 'diambil'] (hanya status yang relevan)\n• limit: 50 transactions\n• sortBy: 'date_proximity' (closest to current date first)\n• Caching: 5-minute TTL per product size\n\n📋 EXPECTED RESPONSE:\n• success: true\n• data: Array of transaction history\n• cached: boolean (true jika dari cache)\n• metadata: Query parameters dan cache info"
+          },
+          "response": [
+            {
+              "name": "Success Response - Default",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/kasir/transaksi/product-history?productSizeId=size-uuid-1",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "kasir", "transaksi", "product-history"],
+                  "query": [
+                    {
+                      "key": "productSizeId",
+                      "value": "size-uuid-1"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"id\": \"txn-uuid-1\",\n      \"transactionCode\": \"TXN-001\",\n      \"customerName\": \"John Doe\",\n      \"quantity\": 2,\n      \"tglMulai\": \"2024-02-04T00:00:00Z\",\n      \"tglSelesai\": \"2024-02-07T00:00:00Z\",\n      \"status\": \"active\",\n      \"dateRange\": \"4-7 Feb\",\n      \"displayText\": \"TXN-001 (2 item) untuk 4-7 Feb\",\n      \"daysFromNow\": 2\n    },\n    {\n      \"id\": \"txn-uuid-2\",\n      \"transactionCode\": \"TXN-002\",\n      \"customerName\": \"Jane Smith\",\n      \"quantity\": 1,\n      \"tglMulai\": \"2024-02-10T00:00:00Z\",\n      \"tglSelesai\": \"2024-02-13T00:00:00Z\",\n      \"status\": \"diambil\",\n      \"dateRange\": \"10-13 Feb\",\n      \"displayText\": \"TXN-002 (1 item) untuk 10-13 Feb\",\n      \"daysFromNow\": 8\n    }\n  ],\n  \"cached\": false,\n  \"metadata\": {\n    \"productSizeId\": \"size-uuid-1\",\n    \"statuses\": [\"active\", \"diambil\"],\n    \"limit\": 50,\n    \"sortBy\": \"date_proximity\",\n    \"totalResults\": 2,\n    \"cacheExpiresAt\": \"2024-02-02T10:05:00Z\",\n    \"serviceUsed\": \"ItemHistoryService\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Product History - Custom Parameters",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/kasir/transaksi/product-history?productSizeId={{productSizeId}}&statuses=active&limit=10&sortBy=date_desc",
+              "host": ["{{base_url}}"],
+              "path": ["api", "kasir", "transaksi", "product-history"],
+              "query": [
+                {
+                  "key": "productSizeId",
+                  "value": "{{productSizeId}}",
+                  "description": "REQUIRED: ID dari product size"
+                },
+                {
+                  "key": "statuses",
+                  "value": "active",
+                  "description": "Filter by status: 'active', 'diambil', atau 'active,diambil' (comma-separated)"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Limit jumlah results (default: 50)"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "date_desc",
+                  "description": "Sort order: 'date_proximity', 'date_asc', 'date_desc'"
+                }
+              ]
+            },
+            "description": "Mendapatkan transaction history dengan custom filtering dan sorting parameters.\n\n🔧 CUSTOM PARAMETERS:\n• statuses: Filter specific status (active only dalam contoh ini)\n• limit: Batasi jumlah results untuk performance\n• sortBy: date_desc untuk newest first\n\n📋 USE CASES:\n• Lihat hanya active bookings\n• Limit results untuk quick preview\n• Sort by newest transactions first"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Product History - Multiple Statuses",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/kasir/transaksi/product-history?productSizeId={{productSizeId}}&statuses=active,diambil&sortBy=date_asc",
+              "host": ["{{base_url}}"],
+              "path": ["api", "kasir", "transaksi", "product-history"],
+              "query": [
+                {
+                  "key": "productSizeId",
+                  "value": "{{productSizeId}}",
+                  "description": "REQUIRED: ID dari product size"
+                },
+                {
+                  "key": "statuses",
+                  "value": "active,diambil",
+                  "description": "Multiple statuses separated by comma"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "date_asc",
+                  "description": "Sort by date ascending (oldest first)"
+                }
+              ]
+            },
+            "description": "Test multiple status filtering dengan comma-separated values.\n\n🔧 MULTIPLE STATUS FILTERING:\n• statuses: 'active,diambil' untuk both status\n• Useful untuk comprehensive view\n• sortBy: date_asc untuk chronological order\n\n📋 BUSINESS LOGIC:\n• Hanya 'active' dan 'diambil' yang supported\n• 'selesai' dan 'cancelled' tidak ditampilkan\n• Invalid statuses akan di-filter out"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Product History - Caching Tests",
+      "item": [
+        {
+          "name": "Test Cache Miss (Fresh Request)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/kasir/transaksi/product-history?productSizeId={{productSizeId}}&limit=5",
+              "host": ["{{base_url}}"],
+              "path": ["api", "kasir", "transaksi", "product-history"],
+              "query": [
+                {
+                  "key": "productSizeId",
+                  "value": "{{productSizeId}}",
+                  "description": "Product size ID untuk testing cache behavior"
+                },
+                {
+                  "key": "limit",
+                  "value": "5",
+                  "description": "Small limit untuk faster testing"
+                }
+              ]
+            },
+            "description": "Test cache miss scenario - first request untuk specific product size.\n\n🔧 CACHE MISS TESTING:\n• First request akan hit database\n• Response: cached: false\n• Cache akan di-set untuk 5 minutes\n• Performance: Slower response time\n\n📋 EXPECTED BEHAVIOR:\n• cached: false dalam response\n• cachedAt: undefined\n• cacheExpiresAt: Set untuk 5 minutes dari now\n• serviceUsed: 'ItemHistoryService' untuk debugging"
+          },
+          "response": []
+        },
+        {
+          "name": "Test Cache Hit (Repeat Request)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/kasir/transaksi/product-history?productSizeId={{productSizeId}}&limit=5",
+              "host": ["{{base_url}}"],
+              "path": ["api", "kasir", "transaksi", "product-history"],
+              "query": [
+                {
+                  "key": "productSizeId",
+                  "value": "{{productSizeId}}",
+                  "description": "Same product size ID untuk testing cache hit"
+                },
+                {
+                  "key": "limit",
+                  "value": "5",
+                  "description": "Same parameters untuk cache key match"
+                }
+              ]
+            },
+            "description": "Test cache hit scenario - repeat request dengan same parameters.\n\n🔧 CACHE HIT TESTING:\n• Repeat request dalam 5 minutes\n• Response: cached: true\n• Data served from memory cache\n• Performance: Much faster response time\n\n📋 EXPECTED BEHAVIOR:\n• cached: true dalam response\n• cachedAt: Timestamp when cache was set\n• Same data as previous request\n• Faster response time (<50ms typical)"
+          },
+          "response": []
+        },
+        {
+          "name": "Test Different Cache Key",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/kasir/transaksi/product-history?productSizeId={{productSizeId}}&limit=10&sortBy=date_desc",
+              "host": ["{{base_url}}"],
+              "path": ["api", "kasir", "transaksi", "product-history"],
+              "query": [
+                {
+                  "key": "productSizeId",
+                  "value": "{{productSizeId}}",
+                  "description": "Same product size ID"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Different limit untuk different cache key"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "date_desc",
+                  "description": "Different sortBy untuk different cache key"
+                }
+              ]
+            },
+            "description": "Test different cache key generation dengan different parameters.\n\n🔧 CACHE KEY TESTING:\n• Same productSizeId but different parameters\n• Should generate different cache key\n• Result: cache miss (fresh database query)\n\n📋 CACHE KEY FORMAT:\n• Key: `${productSizeId}:${JSON.stringify({ statuses, limit, sortBy })}`\n• Different parameters = different cache entry\n• Each combination cached separately"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Product History - Error Scenarios",
+      "item": [
+        {
+          "name": "Missing productSizeId Parameter",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/kasir/transaksi/product-history",
+              "host": ["{{base_url}}"],
+              "path": ["api", "kasir", "transaksi", "product-history"]
+            },
+            "description": "Test validation error ketika productSizeId parameter tidak disediakan.\n\n🔧 VALIDATION ERROR TESTING:\n• Missing required parameter\n• Expected: 400 Bad Request\n• Error message: 'productSizeId parameter is required'\n\n📋 ERROR RESPONSE STRUCTURE:\n• error: string message\n• status: 400\n• Proper error handling untuk client"
+          },
+          "response": [
+            {
+              "name": "Missing Parameter Error",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/kasir/transaksi/product-history",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "kasir", "transaksi", "product-history"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"error\": \"productSizeId parameter is required\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Invalid productSizeId",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/kasir/transaksi/product-history?productSizeId=invalid-uuid",
+              "host": ["{{base_url}}"],
+              "path": ["api", "kasir", "transaksi", "product-history"],
+              "query": [
+                {
+                  "key": "productSizeId",
+                  "value": "invalid-uuid",
+                  "description": "Invalid/non-existent product size ID"
+                }
+              ]
+            },
+            "description": "Test behavior dengan invalid atau non-existent productSizeId.\n\n🔧 INVALID ID TESTING:\n• Non-existent productSizeId\n• Should return empty data array\n• No error - graceful handling\n\n📋 EXPECTED BEHAVIOR:\n• success: true\n• data: [] (empty array)\n• No 404 error - business logic decision\n• Metadata shows query parameters"
+          },
+          "response": []
+        },
+        {
+          "name": "Unauthorized Request",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/kasir/transaksi/product-history?productSizeId={{productSizeId}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "kasir", "transaksi", "product-history"],
+              "query": [
+                {
+                  "key": "productSizeId",
+                  "value": "{{productSizeId}}",
+                  "description": "Valid product size ID"
+                }
+              ]
+            },
+            "description": "Test authentication error ketika session token tidak valid atau missing.\n\n🔧 AUTHENTICATION TESTING:\n• Remove atau invalid session token\n• Expected: 401 Unauthorized\n• Clerk authentication validation\n\n📋 SETUP UNTUK TEST:\n1. Remove __session cookie dari request\n2. Atau set invalid session token\n3. Verify 401 response\n\n⚠️ NOTE: Disable auth cookie untuk test ini",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [
+            {
+              "name": "Unauthorized Error",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/kasir/transaksi/product-history?productSizeId=size-uuid-1",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "kasir", "transaksi", "product-history"],
+                  "query": [
+                    {
+                      "key": "productSizeId",
+                      "value": "size-uuid-1"
+                    }
+                  ]
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"error\": \"Unauthorized\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Invalid Status Filter",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/kasir/transaksi/product-history?productSizeId={{productSizeId}}&statuses=selesai,cancelled,invalid",
+              "host": ["{{base_url}}"],
+              "path": ["api", "kasir", "transaksi", "product-history"],
+              "query": [
+                {
+                  "key": "productSizeId",
+                  "value": "{{productSizeId}}",
+                  "description": "Valid product size ID"
+                },
+                {
+                  "key": "statuses",
+                  "value": "selesai,cancelled,invalid",
+                  "description": "Invalid statuses - should be filtered out"
+                }
+              ]
+            },
+            "description": "Test behavior dengan invalid status values.\n\n🔧 STATUS FILTERING TESTING:\n• Invalid statuses: 'selesai', 'cancelled', 'invalid'\n• Only 'active' dan 'diambil' allowed\n• Should filter out invalid values\n• Fallback to default: ['active', 'diambil']\n\n📋 EXPECTED BEHAVIOR:\n• success: true (no error)\n• Invalid statuses filtered out\n• Uses default statuses if all invalid\n• Graceful handling of bad input"
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Set default headers",
+          "pm.request.headers.add({",
+          "  key: 'User-Agent',",
+          "  value: 'PostmanRuntime/7.32.3'",
+          "});",
+          "",
+          "// Auto-generate productSizeId if not set (untuk testing)",
+          "if (!pm.collectionVariables.get('productSizeId')) {",
+          "  pm.collectionVariables.set('productSizeId', 'test-size-uuid-' + Date.now());",
+          "}"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Enhanced test script for Product History API (Availability Product View)",
+          "pm.test('Status code is success (200) or expected error', function () {",
+          "  pm.expect(pm.response.code).to.be.oneOf([200, 400, 401, 500]);",
+          "});",
+          "",
+          "pm.test('Response time is acceptable (<2s SLA)', function () {",
+          "  pm.expect(pm.response.responseTime).to.be.below(2000);",
+          "});",
+          "",
+          "// Test successful responses",
+          "if (pm.response.code === 200) {",
+          "  pm.test('Success response has correct structure', function () {",
+          "    const response = pm.response.json();",
+          "    ",
+          "    // Basic structure validation",
+          "    pm.expect(response).to.have.property('success');",
+          "    pm.expect(response.success).to.eql(true);",
+          "    pm.expect(response).to.have.property('data');",
+          "    pm.expect(response.data).to.be.an('array');",
+          "    pm.expect(response).to.have.property('cached');",
+          "    pm.expect(response.cached).to.be.a('boolean');",
+          "    pm.expect(response).to.have.property('metadata');",
+          "    ",
+          "    // Metadata validation",
+          "    const metadata = response.metadata;",
+          "    pm.expect(metadata).to.have.property('productSizeId');",
+          "    pm.expect(metadata).to.have.property('statuses');",
+          "    pm.expect(metadata).to.have.property('limit');",
+          "    pm.expect(metadata).to.have.property('sortBy');",
+          "    pm.expect(metadata).to.have.property('totalResults');",
+          "    pm.expect(metadata).to.have.property('cacheExpiresAt');",
+          "    pm.expect(metadata).to.have.property('serviceUsed');",
+          "    ",
+          "    // Service validation",
+          "    pm.expect(metadata.serviceUsed).to.eql('ItemHistoryService');",
+          "  });",
+          "  ",
+          "  pm.test('Transaction history data structure is correct', function () {",
+          "    const response = pm.response.json();",
+          "    ",
+          "    if (response.data.length > 0) {",
+          "      const historyItem = response.data[0];",
+          "      ",
+          "      // Required fields validation",
+          "      pm.expect(historyItem).to.have.property('id');",
+          "      pm.expect(historyItem).to.have.property('transactionCode');",
+          "      pm.expect(historyItem).to.have.property('customerName');",
+          "      pm.expect(historyItem).to.have.property('quantity');",
+          "      pm.expect(historyItem).to.have.property('tglMulai');",
+          "      pm.expect(historyItem).to.have.property('tglSelesai');",
+          "      pm.expect(historyItem).to.have.property('status');",
+          "      pm.expect(historyItem).to.have.property('dateRange');",
+          "      pm.expect(historyItem).to.have.property('displayText');",
+          "      pm.expect(historyItem).to.have.property('daysFromNow');",
+          "      ",
+          "      // Data type validation",
+          "      pm.expect(historyItem.quantity).to.be.a('number');",
+          "      pm.expect(historyItem.quantity).to.be.above(0);",
+          "      pm.expect(historyItem.daysFromNow).to.be.a('number');",
+          "      ",
+          "      // Status validation (only 'active' and 'diambil' allowed)",
+          "      pm.expect(historyItem.status).to.be.oneOf(['active', 'diambil']);",
+          "      ",
+          "      // Display text format validation",
+          "      const expectedFormat = new RegExp(`${historyItem.transactionCode} \\\\(${historyItem.quantity} item\\\\) untuk .+`);",
+          "      pm.expect(historyItem.displayText).to.match(expectedFormat);",
+          "    }",
+          "  });",
+          "  ",
+          "  pm.test('Status filtering works correctly', function () {",
+          "    const response = pm.response.json();",
+          "    const metadata = response.metadata;",
+          "    ",
+          "    // Verify only allowed statuses",
+          "    pm.expect(metadata.statuses).to.be.an('array');",
+          "    metadata.statuses.forEach(status => {",
+          "      pm.expect(status).to.be.oneOf(['active', 'diambil']);",
+          "    });",
+          "    ",
+          "    // Verify data matches status filter",
+          "    response.data.forEach(item => {",
+          "      pm.expect(metadata.statuses).to.include(item.status);",
+          "    });",
+          "  });",
+          "  ",
+          "  pm.test('Sorting works correctly', function () {",
+          "    const response = pm.response.json();",
+          "    const metadata = response.metadata;",
+          "    ",
+          "    if (response.data.length > 1) {",
+          "      const sortBy = metadata.sortBy;",
+          "      ",
+          "      if (sortBy === 'date_proximity') {",
+          "        // Check if sorted by days from now (ascending)",
+          "        for (let i = 1; i < response.data.length; i++) {",
+          "          const prev = Math.abs(response.data[i-1].daysFromNow);",
+          "          const curr = Math.abs(response.data[i].daysFromNow);",
+          "          pm.expect(prev).to.be.at.most(curr);",
+          "        }",
+          "      } else if (sortBy === 'date_asc') {",
+          "        // Check if sorted by start date ascending",
+          "        for (let i = 1; i < response.data.length; i++) {",
+          "          const prevDate = new Date(response.data[i-1].tglMulai);",
+          "          const currDate = new Date(response.data[i].tglMulai);",
+          "          pm.expect(prevDate.getTime()).to.be.at.most(currDate.getTime());",
+          "        }",
+          "      } else if (sortBy === 'date_desc') {",
+          "        // Check if sorted by start date descending",
+          "        for (let i = 1; i < response.data.length; i++) {",
+          "          const prevDate = new Date(response.data[i-1].tglMulai);",
+          "          const currDate = new Date(response.data[i].tglMulai);",
+          "          pm.expect(prevDate.getTime()).to.be.at.least(currDate.getTime());",
+          "        }",
+          "      }",
+          "    }",
+          "  });",
+          "  ",
+          "  pm.test('Cache behavior is correct', function () {",
+          "    const response = pm.response.json();",
+          "    ",
+          "    if (response.cached) {",
+          "      // Cache hit - should have cachedAt",
+          "      pm.expect(response).to.have.property('cachedAt');",
+          "      pm.expect(response.cachedAt).to.be.a('string');",
+          "      ",
+          "      // Response time should be faster for cached responses",
+          "      pm.expect(pm.response.responseTime).to.be.below(500);",
+          "    } else {",
+          "      // Cache miss - should not have cachedAt",
+          "      pm.expect(response).to.not.have.property('cachedAt');",
+          "    }",
+          "    ",
+          "    // Cache expiration should always be set",
+          "    pm.expect(response.metadata.cacheExpiresAt).to.be.a('string');",
+          "    const expiresAt = new Date(response.metadata.cacheExpiresAt);",
+          "    const now = new Date();",
+          "    pm.expect(expiresAt.getTime()).to.be.above(now.getTime());",
+          "  });",
+          "}",
+          "",
+          "// Test error responses",
+          "if (pm.response.code === 400) {",
+          "  pm.test('Bad request has proper error structure', function () {",
+          "    const response = pm.response.json();",
+          "    pm.expect(response).to.have.property('error');",
+          "    pm.expect(response.error).to.be.a('string');",
+          "    ",
+          "    // Check for specific error messages",
+          "    if (response.error.includes('productSizeId')) {",
+          "      pm.expect(response.error).to.include('required');",
+          "    }",
+          "  });",
+          "}",
+          "",
+          "if (pm.response.code === 401) {",
+          "  pm.test('Unauthorized response is correct', function () {",
+          "    const response = pm.response.json();",
+          "    pm.expect(response).to.have.property('error');",
+          "    pm.expect(response.error).to.eql('Unauthorized');",
+          "  });",
+          "}",
+          "",
+          "if (pm.response.code === 500) {",
+          "  pm.test('Server error has proper structure', function () {",
+          "    const response = pm.response.json();",
+          "    pm.expect(response).to.have.property('error');",
+          "    pm.expect(response).to.have.property('details');",
+          "    pm.expect(response.error).to.include('Failed to fetch product history');",
+          "  });",
+          "}",
+          "",
+          "// Performance monitoring",
+          "pm.test('API performance meets requirements', function () {",
+          "  const responseTime = pm.response.responseTime;",
+          "  const response = pm.response.json();",
+          "  ",
+          "  if (pm.response.code === 200 && response.cached) {",
+          "    // Cache hit should be very fast",
+          "    pm.expect(responseTime).to.be.below(500);",
+          "  } else {",
+          "    // Fresh requests should meet SLA",
+          "    pm.expect(responseTime).to.be.below(2000);",
+          "  }",
+          "});",
+          "",
+          "// Store productSizeId if returned in response (for chaining)",
+          "if (pm.response.code === 200) {",
+          "  const response = pm.response.json();",
+          "  if (response.metadata && response.metadata.productSizeId) {",
+          "    pm.collectionVariables.set('productSizeId', response.metadata.productSizeId);",
+          "  }",
+          "}",
+          "",
+          "// Log performance metrics for monitoring",
+          "console.log(`Product History API Performance:`,",
+          "  `Response Time: ${pm.response.responseTime}ms,`,",
+          "  `Status: ${pm.response.code},`,",
+          "  `Cached: ${pm.response.code === 200 ? pm.response.json().cached : 'N/A'}`",
+          ");"
+        ]
+      }
+    }
+  ]
+}

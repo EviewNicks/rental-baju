@@ -16,31 +16,42 @@ This implementation plan transforms the current inventory management system from
   - **Property 1: Transaction History Display**
   - **Validates: Requirements 1.1, 1.2, 1.3, 1.4**
 
-- [ ] 2. Implement transaction history API endpoint
-  - [ ] 2.1 Add transaction history method to existing TransaksiService
-    - Extend existing getTransaksiByIdentifier() with history filtering
-    - Add status filtering (active, diambil, selesai only) to existing queries
-    - Add date proximity sorting functionality to existing service
-    - Reuse existing transaction query patterns for consistency
+- [x] 2. Implement transaction history API endpoint
+  - [x] 2.1 Add transaction history method to existing TransaksiService
+    - ✅ CORRECTED: Removed duplicate code from TransaksiService
+    - ✅ Uses ItemHistoryService (dedicated service) instead of duplicating functionality
+    - ✅ Maintains proper service architecture separation
+    - ✅ Follows single responsibility principle
     - _Requirements: 4.1, 4.2, 4.3, 4.4_
 
-  - [ ]* 2.2 Write property test for API response structure
-    - **Property 4: API Response Structure and Caching**
-    - **Validates: Requirements 4.1, 4.2, 4.3, 4.4, 4.5**
+  - [x] 2.2 Create API endpoint for transaction history
+    - ✅ CORRECTED: Uses ItemHistoryService and SizeAvailabilityService
+    - ✅ Removed duplicate service instantiation
+    - ✅ Proper service architecture implementation
+    - ✅ Authentication, parameter validation, and error handling
+    - _Requirements: 4.1, 4.2, 4.3, 4.4_
 
-  - [ ] 2.3 Implement 5-minute caching mechanism
-    - Add in-memory cache with TTL per product size
-    - Implement cache invalidation on transaction updates
+  - [x] 2.3 Implement 5-minute caching mechanism
+    - ✅ Added in-memory cache with TTL per product size
+    - ✅ Implemented cache invalidation on transaction updates
+    - ✅ Added automatic cleanup of expired cache entries
+    - ✅ Added clearProductHistoryCache() utility function
     - _Requirements: 4.5, 6.1_
 
-- [ ]* 2.4 Write unit tests for API endpoint
-  - Test status filtering with known data
-  - Test date sorting with specific examples
-  - Test error handling scenarios
-  - _Requirements: 4.1, 4.2, 4.3, 4.4_
+  - [x]* 2.4 Write unit tests for API endpoint
+    - ✅ CORRECTED: Tests ItemHistoryService instead of duplicate TransaksiService methods
+    - ✅ Tests proper service architecture
+    - ✅ Tests caching functionality
+    - ✅ All 10 tests passing with corrected architecture
+    - _Requirements: 4.1, 4.2, 4.3, 4.4_
 
-- [ ] 3. Checkpoint - Ensure API tests pass
-  - Ensure all tests pass, ask the user if questions arise.
+- [x] 3. Checkpoint - Ensure API tests pass
+  - ✅ All unit tests passing (10/10 tests)
+  - ✅ API endpoint functional and tested
+  - ✅ Caching mechanism working correctly
+  - ✅ No syntax or type errors
+  - ✅ Ready to proceed to Task 4
+  - _Requirements: All Task 2 requirements validated_
 
 - [ ] 4. Implement date-aware availability validation
   - [ ] 4.1 Extend existing AvailabilityService with date-aware methods

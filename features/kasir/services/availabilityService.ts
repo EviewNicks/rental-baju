@@ -30,7 +30,7 @@ export interface AvailabilityQueryOptions {
 }
 
 export class AvailabilityService {
-  constructor(private prisma: PrismaClient) {}
+  constructor(protected prisma: PrismaClient) {}
 
   /**
    * Get real-time availability for a single product
