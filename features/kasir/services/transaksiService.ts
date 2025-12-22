@@ -14,10 +14,12 @@ import {
 import type { ProductSelection } from '../types'
 import { TransactionCodeGenerator } from '../lib/utils/codeGenerator'
 import { PriceCalculator } from '../lib/utils/server'
-import { createAvailabilityService, AvailabilityService } from './availabilityService'
+import { createAvailabilityService } from './availabilityService'
 import { createInventoryService } from './inventoryService'
 import type { TransactionStatus } from '../types'
+import { DateCalculator } from '../lib/utils/dateCalculator'
 import { TransactionLogger } from '../lib/logger/transactionLogger'
+
 
 export interface TransaksiWithDetails extends Transaksi {
   penyewa: {
@@ -228,41 +230,15 @@ function calculateEnhancedStatus(
 
 export class TransaksiService {
   private codeGenerator: TransactionCodeGenerator
-  private availabilityService: AvailabilityService
 
   constructor(
     private prisma: PrismaClient,
     private userId: string,
   ) {
     this.codeGenerator = new TransactionCodeGenerator(prisma)
-    this.availabilityService = createAvailabilityService(prisma)
   }
 
-  /**
-   * Validate kasir exists and is active
-   * NEW: Kasir validation for transaction assignment
-   * OPTIMIZED: Conditional logging for development only
-   * @private
-   */
-  private async validateKasirExistsAndActive(kasirId: string): Promise<void> {
-    const kasir = await this.prisma.kasir.findUnique({
-      where: { id: kasirId, isActive: true },
-    })
 
-    if (!kasir) {
-      // 🔍 DEBUG: Log kasir validation failure (dev only)
-      if (process.env.NODE_ENV === 'development') {
-        TransactionLogger.logKasirDebug({
-          kasirId,
-          validation: 'kasir_validation_failed',
-          reason: 'not_found_or_inactive',
-          timestamp: new Date().toISOString(),
-          source: 'TransaksiService.validateKasirExistsAndActive',
-        })
-      }
-      throw new Error('Kasir tidak ditemukan atau tidak aktif')
-    }
-  }
 
   /**
    * Unified method to get transaction by ID or code
@@ -494,7 +470,6 @@ export class TransaksiService {
       }
 
       // ENHANCED: Calculate return date using DateCalculator
-      const DateCalculator = await import('../lib/utils/dateCalculator').then(m => m.DateCalculator)
       const returnDate = DateCalculator.calculateReturnDate(data.tglMulai, duration)
 
       // Generate transaction code
@@ -505,9 +480,15 @@ export class TransaksiService {
 
       const transaksi = await this.prisma.$transaction(
         async (tx) => {
-          // Validate stock availability INSIDE transaction (prevents race conditions)
-          // This is the ONLY validation - removed redundant pre-validation
-          await this.validateStockAvailabilityInTransaction(tx, data.items, productSizes)
+          // TASK 4.1: Validate stock availability with date-aware checking
+          // Pass startDate and endDate for date-aware availability validation
+          await this.validateStockAvailabilityInTransaction(
+            tx, 
+            data.items, 
+            productSizes,
+            new Date(data.tglMulai), // Start date from form
+            new Date(returnDate)     // Calculated end date
+          )
 
           // ENHANCED: Create main transaction with discount fields
           const createdTransaksi = await tx.transaksi.create({
@@ -693,7 +674,7 @@ export class TransaksiService {
   /**
    * Validate stock availability INSIDE transaction (single source of truth)
    * OPTIMIZED: Validates once inside transaction to prevent race conditions
-   * FIXED: Removed redundant isActive check - query already filters by isActive
+   * ENHANCED: Now supports date-aware availability validation using tglMulai and tglSelesai
    * @private
    */
   private async validateStockAvailabilityInTransaction(
@@ -702,8 +683,11 @@ export class TransaksiService {
     items: CreateTransaksiRequest['items'],
     //eslint-disable-next-line
     productSizes: any[],
+    startDate?: Date, // TASK 4.1: Added for date-aware validation
+    endDate?: Date    // TASK 4.1: Added for date-aware validation
   ): Promise<void> {
     const txInventoryService = createInventoryService(tx)
+    const txAvailabilityService = createAvailabilityService(tx)
 
     for (const item of items) {
       const productSize = productSizes.find((ps) => ps.id === item.productSizeId)
@@ -714,23 +698,40 @@ export class TransaksiService {
         throw new Error(`Ukuran produk tidak ditemukan untuk item ${item.productSizeId}`)
       }
 
-      // ❌ REMOVED: isActive check - redundant because:
-      // 1. Query already filters by ProductSize.isActive = true
-      // 2. If size is inactive, it won't reach here (caught by !productSize check above)
-      // 3. Stock availability is the real validation
-
-      // ✅ VALIDATION 2: Check actual stock availability using InventoryService
-      // This is the real validation - checks if we have enough quantity
-      const isAvailable = await txInventoryService.checkAvailability(
-        item.productSizeId,
-        item.jumlah,
-      )
-
-      if (!isAvailable) {
-        const stockStatus = await txInventoryService.getStockStatus(item.productSizeId)
-        throw new Error(
-          `Size ${productSize.size} (${productSize.ageCategory}) untuk ${productSize.product.name} tidak mencukupi. Tersedia: ${stockStatus.availableQuantity}, Diminta: ${item.jumlah}`,
+      // ✅ VALIDATION 2: Use date-aware availability checking if dates are provided
+      if (startDate && endDate) {
+        // TASK 4.1: Use date-aware availability validation
+        const availabilityCheck = await txAvailabilityService.checkDateRangeAvailability(
+          [{ productId: item.produkId, quantity: item.jumlah }],
+          startDate,
+          endDate
         )
+
+        if (!availabilityCheck.available) {
+          const conflict = availabilityCheck.conflicts[0]
+          const overlappingTransactions = conflict.overlappingTransactions
+            .map(t => t.transactionCode)
+            .join(', ')
+          
+          throw new Error(
+            `Size ${productSize.size} (${productSize.ageCategory}) untuk ${productSize.product.name} tidak tersedia untuk periode ${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}. ` +
+            `Tersedia: ${conflict.available}, Diminta: ${conflict.requested}. ` +
+            `Konflik dengan transaksi: ${overlappingTransactions}`
+          )
+        }
+      } else {
+        // Legacy validation: Check current stock availability using InventoryService
+        const isAvailable = await txInventoryService.checkAvailability(
+          item.productSizeId,
+          item.jumlah,
+        )
+
+        if (!isAvailable) {
+          const stockStatus = await txInventoryService.getStockStatus(item.productSizeId)
+          throw new Error(
+            `Size ${productSize.size} (${productSize.ageCategory}) untuk ${productSize.product.name} tidak mencukupi. Tersedia: ${stockStatus.availableQuantity}, Diminta: ${item.jumlah}`,
+          )
+        }
       }
     }
   }

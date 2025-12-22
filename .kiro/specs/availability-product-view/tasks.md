@@ -53,24 +53,24 @@ This implementation plan transforms the current inventory management system from
   - ✅ Ready to proceed to Task 4
   - _Requirements: All Task 2 requirements validated_
 
-- [ ] 4. Implement date-aware availability validation
+- [x] 4. Implement date-aware availability validation
   - [ ] 4.1 Extend existing AvailabilityService with date-aware methods
     - Add date overlap detection to existing AvailabilityService
     - Extend checkRentalAvailability() with date range support
     - Use tglMulai and tglSelesai fields for date range calculations
     - _Requirements: 3.1, 3.2, 3.5_
 
-  - [ ]* 4.2 Write property test for date overlap detection
+  - [x] 4.2 Write property test for date overlap detection
     - **Property 10: Date Overlap Detection Accuracy**
     - **Validates: Requirements 3.1, 3.5**
 
-  - [ ] 4.3 Integrate availability validation into transaction creation
+  - [x] 4.3 Integrate availability validation into transaction creation
     - Update existing TransaksiService.createTransaksiSizeAware() with date checks
     - Reuse existing error handling patterns
     - Maintain existing transaction creation workflow
     - _Requirements: 3.1, 3.3, 3.4_
 
-  - [ ]* 4.4 Write property test for availability validation
+  - [x] 4.4 Write property test for availability validation
     - **Property 3: Date Range Availability Validation**
     - **Validates: Requirements 3.1, 3.2, 3.4, 3.5**
 
@@ -86,7 +86,7 @@ This implementation plan transforms the current inventory management system from
     - Maintain existing pickup service functionality
     - _Requirements: 2.2, 2.3, 7.2_
 
-  - [ ]* 5.3 Write property test for stock management flow
+  - [ ] 5.3 Write property test for stock management flow
     - **Property 2: Stock Management Flow Separation**
     - **Validates: Requirements 2.1, 2.2**
 

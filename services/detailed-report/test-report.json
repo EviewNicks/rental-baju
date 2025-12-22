@@ -1,123 +1,82 @@
 {
-  "numTotalTests": 9,
-  "numPassedTests": 5,
-  "numFailedTests": 4,
+  "numTotalTests": 6,
+  "numPassedTests": 6,
+  "numFailedTests": 0,
   "numPendingTests": 0,
-  "startTime": "2025-12-20T14:54:10.795Z",
-  "endTime": "2025-12-20T14:54:12.818Z",
+  "startTime": "2025-12-22T05:25:05.067Z",
+  "endTime": "2025-12-22T05:25:07.096Z",
   "testResults": [
     {
-      "testFilePath": "D:\\.work\\rental-software\\__tests__\\features\\kasir\\services\\transaksiService.enhanced.test.ts",
+      "testFilePath": "D:\\.work\\rental-software\\__tests__\\features\\kasir\\services\\dateAwareAvailability.test.ts",
       "testFileResults": [
         {
           "ancestorTitles": [
-            "TransaksiService Enhanced Tests",
-            "createTransaksiSizeAware with Discount System"
+            "AvailabilityService - Date-Aware Functionality",
+            "checkDateRangeAvailability"
           ],
-          "fullName": "TransaksiService Enhanced Tests createTransaksiSizeAware with Discount System should create transaction without discount (4-day package)",
+          "fullName": "AvailabilityService - Date-Aware Functionality checkDateRangeAvailability should detect date range conflicts correctly",
           "status": "passed",
-          "title": "should create transaction without discount (4-day package)",
+          "title": "should detect date range conflicts correctly",
           "failureMessages": [],
-          "duration": 14
-        },
-        {
-          "ancestorTitles": [
-            "TransaksiService Enhanced Tests",
-            "createTransaksiSizeAware with Discount System"
-          ],
-          "fullName": "TransaksiService Enhanced Tests createTransaksiSizeAware with Discount System should create transaction with 10% discount (4-day package)",
-          "status": "failed",
-          "title": "should create transaction with 10% discount (4-day package)",
-          "failureMessages": [
-            "Error: Size M (ADULT) untuk Test Product tidak mencukupi. Tersedia: 0, Diminta: 2\n    at TransaksiService.validateStockAvailabilityInTransaction (D:\\.work\\rental-software\\features\\kasir\\services\\transaksiService.ts:731:15)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at transaksi.prisma.$transaction.timeout (D:\\.work\\rental-software\\features\\kasir\\services\\transaksiService.ts:510:11)\n    at TransaksiService.createTransaksiSizeAware (D:\\.work\\rental-software\\features\\kasir\\services\\transaksiService.ts:506:25)\n    at Object.<anonymous> (D:\\.work\\rental-software\\__tests__\\features\\kasir\\services\\transaksiService.enhanced.test.ts:341:22)"
-          ],
           "duration": 7
         },
         {
           "ancestorTitles": [
-            "TransaksiService Enhanced Tests",
-            "createTransaksiSizeAware with Discount System"
+            "AvailabilityService - Date-Aware Functionality",
+            "checkDateRangeAvailability"
           ],
-          "fullName": "TransaksiService Enhanced Tests createTransaksiSizeAware with Discount System should create transaction with nominal discount (7-day package)",
-          "status": "failed",
-          "title": "should create transaction with nominal discount (7-day package)",
-          "failureMessages": [
-            "Error: Size M (ADULT) untuk Test Product tidak mencukupi. Tersedia: 0, Diminta: 2\n    at TransaksiService.validateStockAvailabilityInTransaction (D:\\.work\\rental-software\\features\\kasir\\services\\transaksiService.ts:731:15)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at transaksi.prisma.$transaction.timeout (D:\\.work\\rental-software\\features\\kasir\\services\\transaksiService.ts:510:11)\n    at TransaksiService.createTransaksiSizeAware (D:\\.work\\rental-software\\features\\kasir\\services\\transaksiService.ts:506:25)\n    at Object.<anonymous> (D:\\.work\\rental-software\\__tests__\\features\\kasir\\services\\transaksiService.enhanced.test.ts:410:22)"
-          ],
+          "fullName": "AvailabilityService - Date-Aware Functionality checkDateRangeAvailability should allow booking when no conflicts exist",
+          "status": "passed",
+          "title": "should allow booking when no conflicts exist",
+          "failureMessages": [],
           "duration": 1
         },
         {
           "ancestorTitles": [
-            "TransaksiService Enhanced Tests",
-            "createTransaksiSizeAware with Discount System"
+            "AvailabilityService - Date-Aware Functionality",
+            "getOverlappingTransactions"
           ],
-          "fullName": "TransaksiService Enhanced Tests createTransaksiSizeAware with Discount System should validate discount consistency",
-          "status": "failed",
-          "title": "should validate discount consistency",
-          "failureMessages": [
-            "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mrejects\u001b[2m.\u001b[22mtoThrow\u001b[2m()\u001b[22m\n\nReceived promise resolved instead of rejected\nResolved to value: \u001b[31m{\"aktivitas\": [], \"catatan\": \"Test transaction\", \"createdAt\": 2025-12-20T14:54:12.698Z, \"createdBy\": \"user-123\", \"discountType\": null, \"discountValue\": null, \"id\": \"transaction-123\", \"items\": [{\"durasi\": 4, \"hargaSewa\": \"50000\", \"id\": \"item-123\", \"jumlah\": 2, \"kondisiAwal\": \"size-123|M|ADULT|Baik\", \"produk\": {\"category\": {\"id\": \"cat-1\", \"name\": \"Category 1\"}, \"code\": \"PRD-001\", \"id\": \"product-123\", \"imageUrl\": null, \"modalAwal\": \"100000\", \"name\": \"Test Product\", \"size\": \"M\"}, \"produkId\": \"product-123\", \"returnConditions\": [], \"subtotal\": \"100000\"}], \"jumlahBayar\": \"0\", \"kasir\": {\"createdAt\": 2025-12-20T14:54:12.628Z, \"id\": \"kasir-123\", \"isActive\": true, \"nama\": \"Jane Kasir\", \"updatedAt\": 2025-12-20T14:54:12.628Z}, \"kasirId\": \"kasir-123\", \"kode\": \"TXN-20241221-001\", \"metodeBayar\": \"tunai\", \"pembayaran\": [], \"penyewa\": {\"alamat\": \"Jl. Test No. 123\", \"email\": \"john@example.com\", \"id\": \"penyewa-123\", \"nama\": \"John Doe\", \"nik\": \"1234567890123456\", \"telepon\": \"08123456789\"}, \"penyewaId\": \"penyewa-123\", \"sisaBayar\": \"100000\", \"status\": undefined, \"tglMulai\": \"2024-12-21T00:00:00.000Z\", \"tglSelesai\": 2024-12-24T00:00:00.000Z, \"totalHarga\": \"100000\", \"updatedAt\": 2025-12-20T14:54:12.698Z}\u001b[39m\n    at expect (D:\\.work\\rental-software\\node_modules\\expect\\build\\index.js:2116:15)\n    at Object.<anonymous> (D:\\.work\\rental-software\\__tests__\\features\\kasir\\services\\transaksiService.enhanced.test.ts:427:19)\n    at Promise.finally.completed (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1556:28)\n    at new Promise (<anonymous>)\n    at callAsyncCircusFn (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1496:10)\n    at _callCircusTest (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1006:40)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at _runTest (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:946:3)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:839:13)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at run (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:757:3)\n    at runAndTransformResultsToJestFormat (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1917:21)\n    at jestAdapter (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\runner.js:101:19)\n    at runTestInternal (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\index.js:275:16)\n    at runTest (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\index.js:343:7)"
-          ],
-          "duration": 3
+          "fullName": "AvailabilityService - Date-Aware Functionality getOverlappingTransactions should find transactions that overlap with date range",
+          "status": "passed",
+          "title": "should find transactions that overlap with date range",
+          "failureMessages": [],
+          "duration": 1
         },
         {
           "ancestorTitles": [
-            "TransaksiService Enhanced Tests",
-            "createTransaksiSizeAware with Discount System"
+            "AvailabilityService - Date-Aware Functionality",
+            "getOverlappingTransactions"
           ],
-          "fullName": "TransaksiService Enhanced Tests createTransaksiSizeAware with Discount System should handle duration multiplier correctly",
+          "fullName": "AvailabilityService - Date-Aware Functionality getOverlappingTransactions should handle ongoing rentals (null end date)",
           "status": "passed",
-          "title": "should handle duration multiplier correctly",
+          "title": "should handle ongoing rentals (null end date)",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "AvailabilityService - Date-Aware Functionality",
+            "checkRentalAvailability with date range"
+          ],
+          "fullName": "AvailabilityService - Date-Aware Functionality checkRentalAvailability with date range should use date-aware checking when endDate is provided",
+          "status": "passed",
+          "title": "should use date-aware checking when endDate is provided",
           "failureMessages": [],
           "duration": 2
         },
         {
           "ancestorTitles": [
-            "TransaksiService Enhanced Tests",
-            "createTransaksiSizeAware with Discount System"
+            "AvailabilityService - Date-Aware Functionality",
+            "checkRentalAvailability with date range"
           ],
-          "fullName": "TransaksiService Enhanced Tests createTransaksiSizeAware with Discount System should calculate return date correctly",
-          "status": "failed",
-          "title": "should calculate return date correctly",
-          "failureMessages": [
-            "Error: \u001b[2mexpect(\u001b[22m\u001b[31mjest.fn()\u001b[39m\u001b[2m).\u001b[22mtoHaveBeenCalledWith\u001b[2m(\u001b[22m\u001b[32m...expected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: \u001b[32m\"2024-12-27T00:00:00.000Z\"\u001b[39m, \u001b[32m7\u001b[39m\n\nNumber of calls: \u001b[31m0\u001b[39m\n    at Object.toHaveBeenCalledWith (D:\\.work\\rental-software\\__tests__\\features\\kasir\\services\\transaksiService.enhanced.test.ts:480:10)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)"
-          ],
-          "duration": 3
-        },
-        {
-          "ancestorTitles": [
-            "TransaksiService Enhanced Tests",
-            "Error Handling"
-          ],
-          "fullName": "TransaksiService Enhanced Tests Error Handling should handle penyewa not found",
+          "fullName": "AvailabilityService - Date-Aware Functionality checkRentalAvailability with date range should use legacy checking when endDate is not provided",
           "status": "passed",
-          "title": "should handle penyewa not found",
+          "title": "should use legacy checking when endDate is not provided",
           "failureMessages": [],
           "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "TransaksiService Enhanced Tests",
-            "Error Handling"
-          ],
-          "fullName": "TransaksiService Enhanced Tests Error Handling should handle product size not found",
-          "status": "passed",
-          "title": "should handle product size not found",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "TransaksiService Enhanced Tests",
-            "Error Handling"
-          ],
-          "fullName": "TransaksiService Enhanced Tests Error Handling should handle price calculation failure",
-          "status": "passed",
-          "title": "should handle price calculation failure",
-          "failureMessages": [],
-          "duration": 4
         }
       ],
-      "failureMessage": "\u001b[1m\u001b[31m  \u001b[1m● \u001b[22m\u001b[1mTransaksiService Enhanced Tests › createTransaksiSizeAware with Discount System › should create transaction with 10% discount (4-day package)\u001b[39m\u001b[22m\n\n    Size M (ADULT) untuk Test Product tidak mencukupi. Tersedia: 0, Diminta: 2\n\u001b[2m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m 729 |\u001b[39m       \u001b[36mif\u001b[39m (\u001b[33m!\u001b[39misAvailable) {\u001b[22m\n\u001b[2m     \u001b[90m 730 |\u001b[39m         \u001b[36mconst\u001b[39m stockStatus \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m txInventoryService\u001b[33m.\u001b[39mgetStockStatus(item\u001b[33m.\u001b[39mproductSizeId)\u001b[22m\n\u001b[2m    \u001b[31m\u001b[1m>\u001b[22m\u001b[2m\u001b[39m\u001b[90m 731 |\u001b[39m         \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\u001b[22m\n\u001b[2m     \u001b[90m     |\u001b[39m               \u001b[31m\u001b[1m^\u001b[22m\u001b[2m\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 732 |\u001b[39m           \u001b[32m`Size ${productSize.size} (${productSize.ageCategory}) untuk ${productSize.product.name} tidak mencukupi. Tersedia: ${stockStatus.availableQuantity}, Diminta: ${item.jumlah}`\u001b[39m\u001b[33m,\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 733 |\u001b[39m         )\u001b[22m\n\u001b[2m     \u001b[90m 734 |\u001b[39m       }\u001b[0m\u001b[22m\n\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat TransaksiService.validateStockAvailabilityInTransaction (\u001b[22m\u001b[2mfeatures/kasir/services/transaksiService.ts\u001b[2m:731:15)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat transaksi.prisma.$transaction.timeout (\u001b[22m\u001b[2mfeatures/kasir/services/transaksiService.ts\u001b[2m:510:11)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat TransaksiService.createTransaksiSizeAware (\u001b[22m\u001b[2mfeatures/kasir/services/transaksiService.ts\u001b[2m:506:25)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat Object.<anonymous> (\u001b[22m\u001b[2m\u001b[0m\u001b[36m__tests__/features/kasir/services/transaksiService.enhanced.test.ts\u001b[39m\u001b[0m\u001b[2m:341:22)\u001b[22m\u001b[2m\u001b[22m\n\n\u001b[1m\u001b[31m  \u001b[1m● \u001b[22m\u001b[1mTransaksiService Enhanced Tests › createTransaksiSizeAware with Discount System › should create transaction with nominal discount (7-day package)\u001b[39m\u001b[22m\n\n    Size M (ADULT) untuk Test Product tidak mencukupi. Tersedia: 0, Diminta: 2\n\u001b[2m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m 729 |\u001b[39m       \u001b[36mif\u001b[39m (\u001b[33m!\u001b[39misAvailable) {\u001b[22m\n\u001b[2m     \u001b[90m 730 |\u001b[39m         \u001b[36mconst\u001b[39m stockStatus \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m txInventoryService\u001b[33m.\u001b[39mgetStockStatus(item\u001b[33m.\u001b[39mproductSizeId)\u001b[22m\n\u001b[2m    \u001b[31m\u001b[1m>\u001b[22m\u001b[2m\u001b[39m\u001b[90m 731 |\u001b[39m         \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\u001b[22m\n\u001b[2m     \u001b[90m     |\u001b[39m               \u001b[31m\u001b[1m^\u001b[22m\u001b[2m\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 732 |\u001b[39m           \u001b[32m`Size ${productSize.size} (${productSize.ageCategory}) untuk ${productSize.product.name} tidak mencukupi. Tersedia: ${stockStatus.availableQuantity}, Diminta: ${item.jumlah}`\u001b[39m\u001b[33m,\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 733 |\u001b[39m         )\u001b[22m\n\u001b[2m     \u001b[90m 734 |\u001b[39m       }\u001b[0m\u001b[22m\n\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat TransaksiService.validateStockAvailabilityInTransaction (\u001b[22m\u001b[2mfeatures/kasir/services/transaksiService.ts\u001b[2m:731:15)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat transaksi.prisma.$transaction.timeout (\u001b[22m\u001b[2mfeatures/kasir/services/transaksiService.ts\u001b[2m:510:11)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat TransaksiService.createTransaksiSizeAware (\u001b[22m\u001b[2mfeatures/kasir/services/transaksiService.ts\u001b[2m:506:25)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat Object.<anonymous> (\u001b[22m\u001b[2m\u001b[0m\u001b[36m__tests__/features/kasir/services/transaksiService.enhanced.test.ts\u001b[39m\u001b[0m\u001b[2m:410:22)\u001b[22m\u001b[2m\u001b[22m\n\n\u001b[1m\u001b[31m  \u001b[1m● \u001b[22m\u001b[1mTransaksiService Enhanced Tests › createTransaksiSizeAware with Discount System › should validate discount consistency\u001b[39m\u001b[22m\n\n    \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mrejects\u001b[2m.\u001b[22mtoThrow\u001b[2m()\u001b[22m\n\n    Received promise resolved instead of rejected\n    Resolved to value: \u001b[31m{\"aktivitas\": [], \"catatan\": \"Test transaction\", \"createdAt\": 2025-12-20T14:54:12.698Z, \"createdBy\": \"user-123\", \"discountType\": null, \"discountValue\": null, \"id\": \"transaction-123\", \"items\": [{\"durasi\": 4, \"hargaSewa\": \"50000\", \"id\": \"item-123\", \"jumlah\": 2, \"kondisiAwal\": \"size-123|M|ADULT|Baik\", \"produk\": {\"category\": {\"id\": \"cat-1\", \"name\": \"Category 1\"}, \"code\": \"PRD-001\", \"id\": \"product-123\", \"imageUrl\": null, \"modalAwal\": \"100000\", \"name\": \"Test Product\", \"size\": \"M\"}, \"produkId\": \"product-123\", \"returnConditions\": [], \"subtotal\": \"100000\"}], \"jumlahBayar\": \"0\", \"kasir\": {\"createdAt\": 2025-12-20T14:54:12.628Z, \"id\": \"kasir-123\", \"isActive\": true, \"nama\": \"Jane Kasir\", \"updatedAt\": 2025-12-20T14:54:12.628Z}, \"kasirId\": \"kasir-123\", \"kode\": \"TXN-20241221-001\", \"metodeBayar\": \"tunai\", \"pembayaran\": [], \"penyewa\": {\"alamat\": \"Jl. Test No. 123\", \"email\": \"john@example.com\", \"id\": \"penyewa-123\", \"nama\": \"John Doe\", \"nik\": \"1234567890123456\", \"telepon\": \"08123456789\"}, \"penyewaId\": \"penyewa-123\", \"sisaBayar\": \"100000\", \"status\": undefined, \"tglMulai\": \"2024-12-21T00:00:00.000Z\", \"tglSelesai\": 2024-12-24T00:00:00.000Z, \"totalHarga\": \"100000\", \"updatedAt\": 2025-12-20T14:54:12.698Z}\u001b[39m\n\u001b[2m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m 425 |\u001b[39m       \u001b[90m// This should be caught by Zod validation before reaching the service\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 426 |\u001b[39m       \u001b[90m// But we test the service behavior if invalid data somehow gets through\u001b[39m\u001b[22m\n\u001b[2m    \u001b[31m\u001b[1m>\u001b[22m\u001b[2m\u001b[39m\u001b[90m 427 |\u001b[39m       \u001b[36mawait\u001b[39m expect(transaksiService\u001b[33m.\u001b[39mcreateTransaksiSizeAware(invalidData))\u001b[22m\n\u001b[2m     \u001b[90m     |\u001b[39m                   \u001b[31m\u001b[1m^\u001b[22m\u001b[2m\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 428 |\u001b[39m         \u001b[33m.\u001b[39mrejects\u001b[33m.\u001b[39mtoThrow()\u001b[22m\n\u001b[2m     \u001b[90m 429 |\u001b[39m     })\u001b[22m\n\u001b[2m     \u001b[90m 430 |\u001b[39m\u001b[0m\u001b[22m\n\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat expect (\u001b[22m\u001b[2mnode_modules/expect/build/index.js\u001b[2m:2116:15)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat Object.<anonymous> (\u001b[22m\u001b[2m\u001b[0m\u001b[36m__tests__/features/kasir/services/transaksiService.enhanced.test.ts\u001b[39m\u001b[0m\u001b[2m:427:19)\u001b[22m\u001b[2m\u001b[22m\n\n\u001b[1m\u001b[31m  \u001b[1m● \u001b[22m\u001b[1mTransaksiService Enhanced Tests › createTransaksiSizeAware with Discount System › should calculate return date correctly\u001b[39m\u001b[22m\n\n    \u001b[2mexpect(\u001b[22m\u001b[31mjest.fn()\u001b[39m\u001b[2m).\u001b[22mtoHaveBeenCalledWith\u001b[2m(\u001b[22m\u001b[32m...expected\u001b[39m\u001b[2m)\u001b[22m\n\n    Expected: \u001b[32m\"2024-12-27T00:00:00.000Z\"\u001b[39m, \u001b[32m7\u001b[39m\n\n    Number of calls: \u001b[31m0\u001b[39m\n\u001b[2m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m 478 |\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 479 |\u001b[39m       expect(\u001b[33mDateCalculator\u001b[39m\u001b[33m.\u001b[39mcalculateReturnDate)\u001b[22m\n\u001b[2m    \u001b[31m\u001b[1m>\u001b[22m\u001b[2m\u001b[39m\u001b[90m 480 |\u001b[39m         \u001b[33m.\u001b[39mtoHaveBeenCalledWith(\u001b[32m'2024-12-27T00:00:00.000Z'\u001b[39m\u001b[33m,\u001b[39m \u001b[35m7\u001b[39m)\u001b[22m\n\u001b[2m     \u001b[90m     |\u001b[39m          \u001b[31m\u001b[1m^\u001b[22m\u001b[2m\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 481 |\u001b[39m     })\u001b[22m\n\u001b[2m     \u001b[90m 482 |\u001b[39m   })\u001b[22m\n\u001b[2m     \u001b[90m 483 |\u001b[39m\u001b[0m\u001b[22m\n\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat Object.toHaveBeenCalledWith (\u001b[22m\u001b[2m\u001b[0m\u001b[36m__tests__/features/kasir/services/transaksiService.enhanced.test.ts\u001b[39m\u001b[0m\u001b[2m:480:10)\u001b[22m\u001b[2m\u001b[22m\n"
+      "failureMessage": null
     }
   ]
 }

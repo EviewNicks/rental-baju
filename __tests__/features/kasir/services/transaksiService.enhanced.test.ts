@@ -60,6 +60,24 @@ jest.mock('@/features/kasir/services/inventoryService', () => ({
   createInventoryService: jest.fn(() => mockInventoryService),
 }))
 
+// Mock AvailabilityService for date-aware validation
+const mockAvailabilityService = {
+  checkDateRangeAvailability: jest.fn().mockResolvedValue({
+    available: true,
+    conflicts: [],
+  }),
+  getOverlappingTransactions: jest.fn().mockResolvedValue([]),
+  checkRentalAvailability: jest.fn().mockResolvedValue({
+    available: true,
+    conflicts: [],
+  }),
+}
+
+jest.mock('@/features/kasir/services/availabilityService', () => ({
+  createAvailabilityService: jest.fn(() => mockAvailabilityService),
+  AvailabilityService: jest.fn().mockImplementation(() => mockAvailabilityService),
+}))
+
 // Mock PriceCalculator and DateCalculator
 jest.mock('@/features/kasir/lib/utils/priceCalculator', () => ({
   PriceCalculator: {
