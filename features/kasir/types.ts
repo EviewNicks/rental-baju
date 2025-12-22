@@ -200,6 +200,7 @@ export interface ProductSize {
 export interface Product {
   id: string
   name: string
+  code?: string // Product code for identification and search
   category: string
   categoryType?: 'clothing' | 'accessories_age_based' | 'accessories_universal' // RPK-52: Category type for dynamic forms
   size: string

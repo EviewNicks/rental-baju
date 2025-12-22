@@ -151,6 +151,7 @@ export function ProductSelectionStep({
 
       return {
         id: apiProduct.id,
+        code: apiProduct.code, // ✅ FIXED: Map product code from API
         name: apiProduct.name,
         category: apiProduct.category.name.toLowerCase(),
         categoryType: apiProduct.category.type,
