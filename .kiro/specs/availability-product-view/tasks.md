@@ -82,7 +82,7 @@ This implementation plan transforms the current inventory management system from
     - _Requirements: 2.1, 7.1, 7.4_
 
   - [x] 5.2 Ensure PickupService handles stock deduction
-    - Verify pickup operation reduces stock quantities
+    - Verify pickup operation reduces stock quantities 
     - Maintain existing pickup service functionality
     - _Requirements: 2.2, 2.3, 7.2_
 

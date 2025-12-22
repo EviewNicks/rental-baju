@@ -3,8 +3,8 @@
   "numPassedTests": 6,
   "numFailedTests": 0,
   "numPendingTests": 0,
-  "startTime": "2025-12-22T05:25:05.067Z",
-  "endTime": "2025-12-22T05:25:07.096Z",
+  "startTime": "2025-12-22T05:56:52.990Z",
+  "endTime": "2025-12-22T05:56:54.542Z",
   "testResults": [
     {
       "testFilePath": "D:\\.work\\rental-software\\__tests__\\features\\kasir\\services\\dateAwareAvailability.test.ts",
@@ -18,7 +18,7 @@
           "status": "passed",
           "title": "should detect date range conflicts correctly",
           "failureMessages": [],
-          "duration": 7
+          "duration": 3
         },
         {
           "ancestorTitles": [

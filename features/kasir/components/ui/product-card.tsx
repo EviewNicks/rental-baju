@@ -181,6 +181,7 @@ export function ProductCard({
               selectedSizeId={selectedSize?.id}
               onSizeSelect={handleSizeSelect}
               disabled={isOutOfStock}
+              productName={product.name}
             />
           </div>
         )}
