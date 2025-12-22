@@ -1,11 +1,19 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { X, Clock, Package, AlertCircle, Loader2, History } from 'lucide-react'
+import { X, Clock, Package, AlertCircle, Loader2, History, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import type { TransactionHistoryItem } from '../../types/availability'
+import { 
+  createAvailabilityError, 
+  determineErrorType, 
+  shouldRetry, 
+  calculateRetryDelay,
+  RETRY_CONFIGS,
+  type AvailabilityError 
+} from '../../lib/errors/availabilityErrors'
 
 interface ProductHistoryPopupProps {
   productSizeId: string
@@ -28,6 +36,12 @@ interface ApiResponse {
     cacheExpiresAt: string
   }
   error?: string
+  userMessage?: string
+  errorType?: string
+  retryable?: boolean
+  suggestions?: string[]
+  helpText?: string
+  timestamp?: string
 }
 
 export function ProductHistoryPopup({
@@ -40,10 +54,43 @@ export function ProductHistoryPopup({
 }: ProductHistoryPopupProps) {
   const [historyData, setHistoryData] = useState<TransactionHistoryItem[]>([])
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<AvailabilityError | null>(null)
   const [retryCount, setRetryCount] = useState(0)
+  const [isRetrying, setIsRetrying] = useState(false)
 
-  // Fetch transaction history data
+  // Helper function to safely render suggestions
+  const renderSuggestions = (error: AvailabilityError) => {
+    if (!error.details?.suggestions || !Array.isArray(error.details.suggestions)) return null
+    
+    return (
+      <div className="mb-4">
+        <p className="text-xs font-medium text-gray-700 mb-2">Saran:</p>
+        <ul className="text-xs text-gray-600 space-y-1">
+          {(error.details.suggestions as string[]).map((suggestion, index) => (
+            <li key={index} className="flex items-start gap-1">
+              <span className="text-gray-400">•</span>
+              <span>{suggestion}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    )
+  }
+
+  // Helper function to safely render help text
+  const renderHelpText = (error: AvailabilityError) => {
+    if (!error.details?.helpText || typeof error.details.helpText !== 'string') return null
+    
+    return (
+      <div className="mb-4 p-2 bg-blue-50 rounded border border-blue-200">
+        <p className="text-xs text-blue-700">
+          💡 {error.details.helpText}
+        </p>
+      </div>
+    )
+  }
+
+  // Fetch transaction history data with enhanced error handling
   const fetchHistory = async () => {
     if (!productSizeId || !isOpen) return
 
@@ -51,6 +98,10 @@ export function ProductHistoryPopup({
     setError(null)
 
     try {
+      // Add timeout to fetch request (Requirement 5.5: Handle API timeouts gracefully)
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 second timeout
+
       const response = await fetch(
         `/api/kasir/transaksi/product-history?productSizeId=${encodeURIComponent(productSizeId)}&statuses=active,diambil&limit=20&sortBy=date_proximity`,
         {
@@ -58,24 +109,80 @@ export function ProductHistoryPopup({
           headers: {
             'Content-Type': 'application/json',
           },
+          signal: controller.signal
         }
       )
 
+      clearTimeout(timeoutId)
+
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+        // Handle enhanced API error responses with user-friendly messages
+        const errorData = await response.json().catch(() => ({ 
+          error: 'Koneksi bermasalah',
+          userMessage: 'Tidak dapat terhubung ke server. Silakan periksa koneksi internet Anda.',
+          errorType: 'API_ERROR',
+          retryable: true 
+        }))
+        
+        // Use API-provided error type and user message if available
+        const errorType = errorData.errorType || determineErrorType({ status: response.status })
+        const userMessage = errorData.userMessage || errorData.error || response.statusText
+        
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        throw createAvailabilityError(errorType as any, {
+          statusCode: response.status,
+          message: userMessage,
+          retryable: errorData.retryable,
+          suggestions: errorData.suggestions,
+          helpText: errorData.helpText
+        })
       }
 
       const result: ApiResponse = await response.json()
 
       if (!result.success) {
-        throw new Error(result.error || 'Failed to fetch transaction history')
+        // Use API-provided error information with enhanced user messages
+        const errorType = result.errorType || determineErrorType(new Error(result.error || 'Failed to fetch'))
+        const userMessage = result.userMessage || result.error || 'Gagal memuat riwayat transaksi'
+        
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        throw createAvailabilityError(errorType as any, {
+          message: userMessage,
+          retryable: result.retryable,
+          suggestions: result.suggestions,
+          helpText: result.helpText
+        })
       }
 
       setHistoryData(result.data || [])
       setRetryCount(0) // Reset retry count on success
+      setIsRetrying(false)
     } catch (err) {
-      console.error('Failed to fetch transaction history:', err)
-      setError(err instanceof Error ? err.message : 'Network error occurred')
+      console.error('Failed to fetch transaction history:', {
+        error: err,
+        productSizeId,
+        retryCount,
+        timestamp: new Date().toISOString()
+      })
+
+      // Handle abort error (timeout)
+      if (err instanceof Error && err.name === 'AbortError') {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const timeoutError = createAvailabilityError('NETWORK_TIMEOUT' as any, {
+          message: 'Request timeout after 10 seconds'
+        })
+        setError(timeoutError)
+      } else if (err && typeof err === 'object' && 'type' in err) {
+        // Already an AvailabilityError
+        setError(err as AvailabilityError)
+      } else {
+        // Unknown error - determine type and create error
+        const errorType = determineErrorType(err)
+        const availabilityError = createAvailabilityError(errorType, {
+          message: err instanceof Error ? err.message : 'Unknown error'
+        })
+        setError(availabilityError)
+      }
     } finally {
       setIsLoading(false)
     }
@@ -90,19 +197,33 @@ export function ProductHistoryPopup({
       setHistoryData([])
       setError(null)
       setRetryCount(0)
+      setIsRetrying(false)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, productSizeId])
 
-  // Handle retry with exponential backoff
-  const handleRetry = () => {
+  // Enhanced retry with exponential backoff and proper error handling
+  const handleRetry = async () => {
+    if (!error || !shouldRetry(error, retryCount + 1)) {
+      return
+    }
+
     const newRetryCount = retryCount + 1
     setRetryCount(newRetryCount)
+    setIsRetrying(true)
     
-    // Exponential backoff: 1s, 2s, 4s
-    const delay = Math.min(1000 * Math.pow(2, newRetryCount - 1), 4000)
+    const config = RETRY_CONFIGS[error.type]
+    if (!config) {
+      setIsRetrying(false)
+      return
+    }
+
+    // Calculate delay with exponential backoff
+    const delay = calculateRetryDelay(newRetryCount, config)
     
-    setTimeout(() => {
-      fetchHistory()
+    setTimeout(async () => {
+      await fetchHistory()
+      setIsRetrying(false)
     }, delay)
   }
 
@@ -175,25 +296,91 @@ export function ProductHistoryPopup({
             </div>
           )}
 
-          {/* Error State */}
+          {/* Enhanced Error State with specific error handling */}
           {error && !isLoading && (
             <div className="flex items-center justify-center py-12">
               <div className="text-center space-y-4 max-w-md">
-                <div className="p-3 bg-red-50 rounded-full w-fit mx-auto">
-                  <AlertCircle className="h-8 w-8 text-red-600" />
+                <div className={cn(
+                  "p-3 rounded-full w-fit mx-auto",
+                  error.retryable ? "bg-orange-50" : "bg-red-50"
+                )}>
+                  <AlertCircle className={cn(
+                    "h-8 w-8",
+                    error.retryable ? "text-orange-600" : "text-red-600"
+                  )} />
                 </div>
                 <div>
-                  <h3 className="font-medium text-gray-900 mb-2">Gagal Memuat Data</h3>
-                  <p className="text-sm text-gray-600 mb-4">{error}</p>
-                  <Button
-                    onClick={handleRetry}
-                    variant="outline"
-                    size="sm"
-                    disabled={retryCount >= 3}
-                    className="text-blue-600 border-blue-200 hover:bg-blue-50"
-                  >
-                    {retryCount >= 3 ? 'Maksimal percobaan tercapai' : `Coba Lagi ${retryCount > 0 ? `(${retryCount}/3)` : ''}`}
-                  </Button>
+                  <h3 className="font-medium text-gray-900 mb-2">
+                    {error.retryable ? 'Gagal Memuat Data' : 'Terjadi Kesalahan'}
+                  </h3>
+                  <p className="text-sm text-gray-600 mb-2">{error.userMessage}</p>
+                  
+                  {/* Show technical details for debugging (only in development) */}
+                  {process.env.NODE_ENV === 'development' && error.technicalMessage && (
+                    <p className="text-xs text-gray-400 mb-4 font-mono">
+                      Debug: {error.technicalMessage}
+                    </p>
+                  )}
+                  
+                  {/* Show suggestions if available */}
+                  {renderSuggestions(error)}
+                  
+                  {/* Show help text if available */}
+                  {renderHelpText(error)}
+                  
+                  {/* Retry button with enhanced logic */}
+                  {error.retryable && (
+                    <div className="space-y-2">
+                      <Button
+                        onClick={handleRetry}
+                        variant="outline"
+                        size="sm"
+                        disabled={!shouldRetry(error, retryCount + 1) || isRetrying}
+                        className={cn(
+                          "text-blue-600 border-blue-200 hover:bg-blue-50",
+                          isRetrying && "opacity-50"
+                        )}
+                      >
+                        {isRetrying ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Mencoba lagi...
+                          </>
+                        ) : shouldRetry(error, retryCount + 1) ? (
+                          <>
+                            <RefreshCw className="h-4 w-4 mr-2" />
+                            Coba Lagi {retryCount > 0 ? `(${retryCount}/${RETRY_CONFIGS[error.type]?.maxAttempts || 3})` : ''}
+                          </>
+                        ) : (
+                          'Maksimal percobaan tercapai'
+                        )}
+                      </Button>
+                      
+                      {/* Show retry info */}
+                      {retryCount > 0 && shouldRetry(error, retryCount + 1) && (
+                        <p className="text-xs text-gray-500">
+                          Percobaan ke-{retryCount} dari {RETRY_CONFIGS[error.type]?.maxAttempts || 3}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                  
+                  {/* Non-retryable errors - show helpful actions */}
+                  {!error.retryable && (
+                    <div className="space-y-2">
+                      <Button
+                        onClick={onClose}
+                        variant="outline"
+                        size="sm"
+                        className="text-gray-600 border-gray-200 hover:bg-gray-50"
+                      >
+                        Tutup
+                      </Button>
+                      <p className="text-xs text-gray-500">
+                        Silakan refresh halaman atau hubungi admin jika masalah berlanjut
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

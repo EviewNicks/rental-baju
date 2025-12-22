@@ -362,7 +362,7 @@ export class PickupService {
 
           // ✅ TASK 5: Deduct stock during pickup operation (moved from transaction creation)
           // This implements the new stock management flow where stock is only deducted when items are actually picked up
-          //eslint-
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const txInventoryService = createInventoryService(tx as any) // Type assertion for transaction context
           
           for (const pickupItem of items) {
