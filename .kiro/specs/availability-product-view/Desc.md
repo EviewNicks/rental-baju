@@ -71,3 +71,75 @@ Hasil: ❌ Error - "Tersedia: 2 unit, Diminta: 3 unit. Konflik dengan transaksi:
 Jadi implementasi ini mendukung tujuan utama (history display) sekaligus mencegah masalah overbooking yang bisa terjadi dalam sistem rental.
 
 Apakah penjelasan ini membantu memperjelas mengapa kedua service perlu diupdate?
+
+#  Penjelasan Implementasi  Task 5
+Apa yang Sudah Dilakukan (Task 1-4):
+Task 1-3: Sistem Dasar
+
+Membuat interface dan service untuk tracking history transaksi per produk
+Membuat API endpoint untuk mendapatkan riwayat transaksi berdasarkan productSizeId
+Semua berfungsi dengan baik dan sudah ditest
+Task 4: Date-Aware Validation ✅
+
+Menambahkan method checkDateRangeAvailability() dan getOverlappingTransactions() di AvailabilityService
+Mengupdate validateStockAvailabilityInTransaction() di TransaksiService untuk menerima parameter startDate dan endDate
+Sekarang sistem bisa mengecek apakah ada konflik tanggal SEBELUM transaksi dibuat
+Contoh: Jika ada transaksi aktif untuk tanggal 24-30 Des, sistem akan tolak transaksi baru untuk tanggal 25-28 Des (overlap)
+Masalah yang Perlu Diperbaiki (Task 5):
+Alur Saat Ini (SALAH):
+
+User membuat transaksi → Stock langsung dikurangi ❌
+User melakukan pickup → Stock TIDAK dikurangi lagi (sudah dikurangi di step 1)
+Alur yang Benar (Task 5):
+
+User membuat transaksi → Stock TIDAK dikurangi ✅
+User melakukan pickup → Stock baru dikurangi ✅
+Mengapa Ini Penting?
+Bayangkan skenario ini:
+
+Produk A punya 10 stock
+User 1 buat transaksi untuk 5 item (24-30 Des) → Stock jadi 5 tersisa
+User 2 buat transaksi untuk 5 item (31 Des-6 Jan) → Stock jadi 0 tersisa ❌ SALAH!
+Padahal seharusnya:
+
+User 1 buat transaksi untuk 5 item (24-30 Des) → Stock tetap 10 (belum diambil)
+User 2 buat transaksi untuk 5 item (31 Des-6 Jan) → Stock tetap 10 (belum diambil)
+User 1 pickup 5 item → Stock jadi 5 tersisa ✅
+User 2 pickup 5 item → Stock jadi 0 tersisa ✅
+Dengan date-aware validation (Task 4), sistem sudah bisa deteksi overlap tanggal. Sekarang Task 5 memastikan stock hanya dikurangi saat pickup, bukan saat transaksi dibuat.
+
+Perubahan yang Perlu Dilakukan:
+File 1: 
+transaksiService.ts
+ (line ~556)
+
+// SEBELUM (line 556):
+await this.updateProductSizeQuantitiesWithoutValidation(tx, data.items)
+
+// SESUDAH:
+// ❌ REMOVED: Stock deduction moved to pickup operation (Task 5)
+// Stock is now deducted during pickup, not during transaction creation
+// This allows multiple transactions for different date ranges without immediate stock conflict
+File 2: 
+pickupService.ts
+ (line ~360)
+
+// TAMBAHKAN setelah update jumlahDiambil:
+// ✅ TASK 5: Deduct stock during pickup operation
+const txInventoryService = createInventoryService(tx)
+
+for (const pickupItem of items) {
+  const transactionItem = allTransactionItems.find(ti => ti.id === pickupItem.id)
+  if (!transactionItem) continue
+  
+  // Extract productSizeId from kondisiAwal field
+  // Format: "productSizeId|size|ageCategory|condition"
+  const kondisiParts = transactionItem.kondisiAwal?.split('|') || []
+  const productSizeId = kondisiParts[0]
+  
+  if (productSizeId) {
+    await txInventoryService.updateStockOnCreate(productSizeId, pickupItem.jumlahDiambil)
+  }
+}
+
+

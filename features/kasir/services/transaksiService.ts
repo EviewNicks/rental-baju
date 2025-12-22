@@ -551,9 +551,11 @@ export class TransaksiService {
             data: itemsData,
           })
 
-          // Update product quantities - OPTIMIZED: Single inventory system
-          // Stock already validated above, just update quantities
-          await this.updateProductSizeQuantitiesWithoutValidation(tx, data.items)
+          // ❌ TASK 5: Stock deduction REMOVED from transaction creation
+          // Stock is now deducted during pickup operation (see PickupService.processPickup)
+          // This allows multiple transactions for different date ranges without immediate stock conflict
+          // Date-aware validation (Task 4.1) prevents overbooking by checking overlapping periods
+          // await this.updateProductSizeQuantitiesWithoutValidation(tx, data.items) // REMOVED
 
           // Fetch items with full product details
           const items = await tx.transaksiItem.findMany({
@@ -733,25 +735,6 @@ export class TransaksiService {
           )
         }
       }
-    }
-  }
-
-  /**
-   * Update product size quantities WITHOUT validation (already validated)
-   * OPTIMIZED: Skips validation to avoid double-checking
-   * @private
-   */
-  private async updateProductSizeQuantitiesWithoutValidation(
-    //eslint-disable-next-line
-    tx: any,
-    items: CreateTransaksiRequest['items'],
-  ): Promise<void> {
-    const txInventoryService = createInventoryService(tx)
-
-    // Update stock using InventoryService (atomic operation)
-    // Validation already done in validateStockAvailabilityInTransaction
-    for (const item of items) {
-      await txInventoryService.updateStockOnCreate(item.productSizeId, item.jumlah)
     }
   }
 

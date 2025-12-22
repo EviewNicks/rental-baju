@@ -74,19 +74,19 @@ This implementation plan transforms the current inventory management system from
     - **Property 3: Date Range Availability Validation**
     - **Validates: Requirements 3.1, 3.2, 3.4, 3.5**
 
-- [ ] 5. Modify stock management flow
-  - [ ] 5.1 Update TransaksiService to skip stock deduction
+- [x] 5. Modify stock management flow
+  - [x] 5.1 Update TransaksiService to skip stock deduction
     - Remove stock deduction from transaction creation
     - Preserve all existing API interfaces
     - Maintain backward compatibility
     - _Requirements: 2.1, 7.1, 7.4_
 
-  - [ ] 5.2 Ensure PickupService handles stock deduction
+  - [x] 5.2 Ensure PickupService handles stock deduction
     - Verify pickup operation reduces stock quantities
     - Maintain existing pickup service functionality
     - _Requirements: 2.2, 2.3, 7.2_
 
-  - [ ] 5.3 Write property test for stock management flow
+  - [x] 5.3 Write property test for stock management flow
     - **Property 2: Stock Management Flow Separation**
     - **Validates: Requirements 2.1, 2.2**
 

@@ -9,6 +9,7 @@ import { Decimal } from '@prisma/client/runtime/library'
 import { PickupItemRequest } from '../lib/validation/kasirSchema'
 import { TransaksiWithDetails, TransaksiService } from './transaksiService'
 import { PickupValidator, ValidationContext } from '../lib/validation/pickupValidation'
+import { createInventoryService } from './inventoryService' // ✅ TASK 5: Added for stock deduction
 
 export interface PickupValidationResult {
   valid: boolean
@@ -357,6 +358,32 @@ export class PickupService {
                 },
               },
             })
+          }
+
+          // ✅ TASK 5: Deduct stock during pickup operation (moved from transaction creation)
+          // This implements the new stock management flow where stock is only deducted when items are actually picked up
+          //eslint-
+          const txInventoryService = createInventoryService(tx as any) // Type assertion for transaction context
+          
+          for (const pickupItem of items) {
+            const transactionItem = allTransactionItems.find(ti => ti.id === pickupItem.id)
+            if (!transactionItem) continue
+            
+            // Extract productSizeId from kondisiAwal field
+            // Format: "productSizeId|size|ageCategory|condition"
+            const kondisiParts = transactionItem.kondisiAwal?.split('|') || []
+            const productSizeId = kondisiParts[0]
+            
+            if (productSizeId) {
+              // Deduct stock for the picked up quantity
+              await txInventoryService.updateStockOnCreate(productSizeId, pickupItem.jumlahDiambil)
+            } else {
+              console.warn('Could not extract productSizeId from kondisiAwal:', {
+                itemId: pickupItem.id,
+                kondisiAwal: transactionItem.kondisiAwal,
+                transactionId: transactionId
+              })
+            }
           }
 
         // ✅ ENHANCED: Create activity log with product details and kasir name

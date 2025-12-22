@@ -23,7 +23,7 @@ export class EnhancedAvailabilityService extends AvailabilityService {
    * Check availability for multiple product sizes with date range support
    * This is the main method for date-aware availability checking
    */
-  async checkDateRangeAvailability(
+  async checkProductSizeDateRangeAvailability(
     checks: DateRangeAvailabilityCheck[]
   ): Promise<AvailabilityResult[]> {
     const results: AvailabilityResult[] = []
@@ -62,7 +62,7 @@ export class EnhancedAvailabilityService extends AvailabilityService {
     const { productSizeId, requestedQuantity, startDate, endDate } = check
 
     // Get overlapping transactions for this date range
-    const overlappingTransactions = await this.getOverlappingTransactions(
+    const overlappingTransactions = await this.getProductSizeOverlappingTransactions(
       productSizeId,
       startDate,
       endDate
@@ -114,10 +114,10 @@ export class EnhancedAvailabilityService extends AvailabilityService {
   }
 
   /**
-   * Get transactions that overlap with the specified date range
+   * Get transactions that overlap with the specified date range for a specific product size
    * REVISED: Only considers 'active' and 'diambil' status transactions
    */
-  async getOverlappingTransactions(
+  async getProductSizeOverlappingTransactions(
     productSizeId: string,
     startDate: Date,
     endDate: Date
@@ -266,7 +266,7 @@ export class EnhancedAvailabilityService extends AvailabilityService {
     }))
 
     // Check availability for all items
-    const availabilityResults = await this.checkDateRangeAvailability(checks)
+    const availabilityResults = await this.checkProductSizeDateRangeAvailability(checks)
 
     // Validate each result
     for (let i = 0; i < availabilityResults.length; i++) {
@@ -308,7 +308,7 @@ export class EnhancedAvailabilityService extends AvailabilityService {
 }
 
 /**
- * Factory function to create EnhancedAvailabilityService instance
+ * Factory function to create SizeAvailabilityService instance
  */
 export const createEnhancedAvailabilityService = (prisma: PrismaClient): EnhancedAvailabilityService => {
   return new EnhancedAvailabilityService(prisma)
