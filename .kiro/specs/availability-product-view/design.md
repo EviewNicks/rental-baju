@@ -119,25 +119,35 @@ class TransactionHistoryService {
 - Automatic cache invalidation on transaction updates
 - Batch cache warming for frequently accessed sizes
 
-### 3. Enhanced AvailabilityService
+### 3. Enhanced AvailabilityService (FIXED - ProductSize Support)
 
-**Purpose:** Extend existing availability service with date-aware checking
+**Purpose:** Extend existing availability service with date-aware checking and ProductSize-specific validation
 
 **New Methods:**
 ```typescript
 interface DateRangeAvailabilityCheck {
-  productSizeId: string
+  productId?: string      // Legacy support
+  productSizeId?: string  // NEW: Size-specific validation
   requestedQuantity: number
   startDate: Date
   endDate: Date
 }
 
 class EnhancedAvailabilityService extends AvailabilityService {
+  // FIXED: Now supports both productId and productSizeId
   async checkDateRangeAvailability(
-    checks: DateRangeAvailabilityCheck[]
+    checks: Array<{ productId?: string; productSizeId?: string; quantity: number }>
   ): Promise<AvailabilityResult[]>
   
+  // LEGACY: Product-level overlap detection
   async getOverlappingTransactions(
+    productId: string,
+    startDate: Date,
+    endDate: Date
+  ): Promise<OverlappingTransaction[]>
+  
+  // NEW: ProductSize-specific overlap detection
+  async getOverlappingTransactionsByProductSize(
     productSizeId: string,
     startDate: Date,
     endDate: Date
@@ -149,6 +159,12 @@ class EnhancedAvailabilityService extends AvailabilityService {
   ): boolean
 }
 ```
+
+**Key Improvements:**
+- ✅ **ProductSize-Aware Validation:** Checks availability per specific size (M, L, XL) instead of entire product
+- ✅ **Backward Compatibility:** Still supports legacy productId validation
+- ✅ **Accurate Overlap Detection:** Uses `kondisiAwal` field to match exact productSizeId
+- ✅ **Size-Specific Conflicts:** Error messages show which specific size has conflicts
 
 ### 4. Modified Stock Management Flow
 
@@ -195,14 +211,15 @@ interface OverlapResult {
 }
 ```
 
-### Availability Check Result
+### Availability Check Result (FIXED)
 
 ```typescript
 interface AvailabilityCheckResult {
-  productSizeId: string
+  productId?: string        // Legacy support
+  productSizeId?: string    // NEW: Size-specific result
   totalStock: number
   availableQuantity: number
-  reservedQuantity: number // New: Reserved but not picked up
+  reservedQuantity: number // Reserved but not picked up
   conflicts: ConflictDetail[]
   canBook: boolean
 }
@@ -211,6 +228,7 @@ interface ConflictDetail {
   transactionCode: string
   conflictQuantity: number
   conflictPeriod: DateRange
+  productSizeId?: string    // NEW: Which specific size has conflict
 }
 ```
 

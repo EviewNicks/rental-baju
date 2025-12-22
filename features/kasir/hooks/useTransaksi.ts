@@ -97,13 +97,15 @@ export function useCreateTransaksi() {
       })
     },
     onError: (error: KasirApiError) => {
-      // Error will be handled by the component
+      // ✅ FIX: Enhanced error logging with detailed message preservation
       console.error('Failed to create transaksi:', error.message)
       
       // Enhanced error logging for cache-related issues
       if (error.message.includes('tidak mencukupi') || error.message.includes('Tersedia')) {
         console.warn('[useTransaksi] 🔄 Inventory conflict detected - possible cache staleness', {
           error: error.message,
+          errorCode: error.code,
+          errorDetails: error.details,
           timestamp: new Date().toISOString(),
           suggestion: 'User may have been viewing stale inventory data',
           solution: 'Cache has been optimized to 30s refresh',
@@ -114,6 +116,15 @@ export function useCreateTransaksi() {
           queryKey: queryKeys.kasir.produk.all(),
         })
       }
+
+      // ✅ FIX: Log detailed error information for debugging
+      console.error('[useTransaksi] Detailed error information:', {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        validationErrors: error.validationErrors,
+        timestamp: new Date().toISOString(),
+      })
     },
   })
 }

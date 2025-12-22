@@ -40,6 +40,8 @@ export function PaymentSummaryStep({
   isSubmitting,
 }: PaymentSummaryStepProps) {
   const [paymentDisplayValue, setPaymentDisplayValue] = useState('')
+  // ✅ FIX: Add local submission state to prevent multiple API calls
+  const [isSubmittingLocal, setIsSubmittingLocal] = useState(false)
 
   // Calculate enhanced pricing with duration and discount
   const priceCalculation = useMemo(() => {
@@ -109,13 +111,21 @@ export function PaymentSummaryStep({
     [formData.pickupDate, onUpdateFormData],
   )
 
-  // Handle discount change
+  // Handle discount change with validation
   const handleDiscountChange = useCallback(
     (type: 'percent' | 'nominal' | null, value: number | null) => {
-      onUpdateFormData({
-        discountType: type,
-        discountValue: value,
-      })
+      // If value is 0 or null, reset both type and value to null
+      if (!value || value === 0) {
+        onUpdateFormData({
+          discountType: null,
+          discountValue: null,
+        })
+      } else {
+        onUpdateFormData({
+          discountType: type,
+          discountValue: value,
+        })
+      }
     },
     [onUpdateFormData],
   )
@@ -143,11 +153,48 @@ export function PaymentSummaryStep({
     }
   }, [formData.paymentAmount, finalTotal, formData.paymentStatus, onUpdateFormData])
 
-  const handleSubmit = async () => {
-    const success = await onSubmit()
-    if (success) {
+  const handleSubmit = useCallback(async () => {
+    // ✅ FIX: Enhanced multiple submission prevention with double guard
+    if (isSubmitting || isSubmittingLocal) {
+      console.warn('[PaymentSummaryStep] Submission blocked - already in progress', {
+        isSubmitting,
+        isSubmittingLocal,
+        timestamp: new Date().toISOString(),
+      })
+      return
     }
-  }
+
+    // ✅ FIX: Set local submission lock immediately
+    setIsSubmittingLocal(true)
+
+    try {
+      // Client-side validation before submit
+      if (formData.discountType && (!formData.discountValue || formData.discountValue === 0)) {
+        // Auto-reset discount if type is selected but value is empty/zero
+        onUpdateFormData({
+          discountType: null,
+          discountValue: null,
+        })
+        // Wait for next render cycle, then submit
+        await new Promise(resolve => setTimeout(resolve, 0))
+        const success = await onSubmit()
+        if (success) {
+          // Transaction completed successfully
+        }
+        return
+      }
+
+      const success = await onSubmit()
+      if (success) {
+        // Transaction completed successfully
+      }
+    } catch (error) {
+      console.error('[PaymentSummaryStep] Submission error:', error)
+    } finally {
+      // ✅ FIX: Always release local submission lock
+      setIsSubmittingLocal(false)
+    }
+  }, [isSubmitting, isSubmittingLocal, formData.discountType, formData.discountValue, onUpdateFormData, onSubmit])
 
   return (
     <div className="max-w-4xl mx-auto space-y-6" data-testid="payment-summary-layout">
@@ -388,7 +435,10 @@ export function PaymentSummaryStep({
                       : 'Masukkan nominal'
                   }
                   value={formData.discountValue || ''}
-                  onChange={(e) => handleDiscountChange(formData.discountType, Number(e.target.value) || 0)}
+                  onChange={(e) => {
+                    const inputValue = Number(e.target.value) || 0
+                    handleDiscountChange(formData.discountType, inputValue)
+                  }}
                   max={formData.discountType === 'percent' ? 100 : subtotal}
                   min={0}
                   className={formData.discountType === 'nominal' ? 'pl-10' : ''}
@@ -431,6 +481,13 @@ export function PaymentSummaryStep({
                   </div>
                 ) : null
               })()}
+
+              {/* Warning for empty discount value */}
+              {formData.discountType && (!formData.discountValue || formData.discountValue === 0) && (
+                <div className="text-xs text-amber-600 bg-amber-50 p-2 rounded border border-amber-200">
+                  💡 Masukkan nilai diskon atau pilih &quot;Tanpa Diskon&quot; untuk melanjutkan
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -707,12 +764,12 @@ export function PaymentSummaryStep({
 
           <Button
             onClick={handleSubmit}
-            disabled={isSubmitting || !formData.pickupDate || !formData.paymentMethod}
+            disabled={isSubmitting || isSubmittingLocal || !formData.pickupDate || !formData.paymentMethod}
             className="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-semibold px-8 py-3 shadow-lg transition-all duration-200"
             size="lg"
             data-testid="submit-transaction-button"
           >
-            {isSubmitting ? 'Memproses...' : 'Buat Transaksi'}
+            {(isSubmitting || isSubmittingLocal) ? 'Memproses...' : 'Buat Transaksi'}
           </Button>
         </div>
       </div>

@@ -52,8 +52,8 @@ describe('AvailabilityService - Date-Aware Functionality', () => {
       )
 
       // Mock inventory service
-      const { inventoryService } = require('../../../../features/kasir/services/inventoryService')
-      inventoryService.getProductStockStatus.mockResolvedValue({
+      const inventoryService = await import('../../../../features/kasir/services/inventoryService')
+      jest.spyOn(inventoryService.inventoryService, 'getProductStockStatus').mockResolvedValue({
         totalQuantity: 5,
         availableQuantity: 3,
         rentedQuantity: 2,
@@ -77,8 +77,8 @@ describe('AvailabilityService - Date-Aware Functionality', () => {
       ;(mockPrisma.transaksiItem.findMany as jest.Mock).mockResolvedValue([])
 
       // Mock inventory service
-      const { inventoryService } = require('../../../../features/kasir/services/inventoryService')
-      inventoryService.getProductStockStatus.mockResolvedValue({
+      const inventoryService = await import('../../../../features/kasir/services/inventoryService')
+      jest.spyOn(inventoryService.inventoryService, 'getProductStockStatus').mockResolvedValue({
         totalQuantity: 5,
         availableQuantity: 5,
         rentedQuantity: 0,

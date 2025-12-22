@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { X, Clock, Package, AlertCircle, Loader2, History, RefreshCw } from 'lucide-react'
+import { X, Package, AlertCircle, Loader2, History, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
@@ -26,7 +26,14 @@ interface ProductHistoryPopupProps {
 
 interface ApiResponse {
   success: boolean
-  data: TransactionHistoryItem[]
+  data: Array<{
+    transactionCode: string
+    quantity: number
+    startDate: string // API returns ISO string
+    endDate: string   // API returns ISO string
+    status: 'active' | 'diambil'
+    displayText: string
+  }>
   cached: boolean
   cachedAt?: string
   metadata?: {
@@ -154,7 +161,21 @@ export function ProductHistoryPopup({
         })
       }
 
-      setHistoryData(result.data || [])
+      // Parse dates from ISO strings to Date objects
+      const parsedData = (result.data || []).map(item => ({
+        ...item,
+        startDate: new Date(item.startDate),
+        endDate: new Date(item.endDate)
+      }))
+
+      console.log('ProductHistoryPopup: Parsed data:', {
+        productSizeId,
+        rawData: result.data,
+        parsedData,
+        totalResults: result.metadata?.totalResults
+      })
+
+      setHistoryData(parsedData)
       setRetryCount(0) // Reset retry count on success
       setIsRetrying(false)
     } catch (err) {
@@ -225,23 +246,6 @@ export function ProductHistoryPopup({
       await fetchHistory()
       setIsRetrying(false)
     }, delay)
-  }
-
-  // Format date for display
-  const formatDateRange = (startDate: Date, endDate: Date): string => {
-    const start = new Date(startDate)
-    const end = new Date(endDate)
-    
-    const startDay = start.getDate()
-    const endDay = end.getDate()
-    const startMonth = start.toLocaleDateString('id-ID', { month: 'short' })
-    const endMonth = end.toLocaleDateString('id-ID', { month: 'short' })
-    
-    if (startMonth === endMonth) {
-      return `${startDay}-${endDay} ${startMonth}`
-    } else {
-      return `${startDay} ${startMonth} - ${endDay} ${endMonth}`
-    }
   }
 
   // Get status badge variant
@@ -410,10 +414,6 @@ export function ProductHistoryPopup({
                 <h3 className="font-medium text-gray-900">
                   Ditemukan {historyData.length} transaksi aktif
                 </h3>
-                <Badge variant="outline" className="text-xs">
-                  <Clock className="h-3 w-3 mr-1" />
-                  Cache 5 menit
-                </Badge>
               </div>
 
               <div className="space-y-3">
@@ -442,13 +442,6 @@ export function ProductHistoryPopup({
                         </span>
                       </div>
                       
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Clock className="h-4 w-4" />
-                        <span>
-                          {formatDateRange(transaction.startDate, transaction.endDate)}
-                        </span>
-                      </div>
-                      
                       {/* Display formatted text as per requirement */}
                       <div className="mt-2 text-xs text-gray-500 font-mono">
                         {transaction.displayText}
@@ -463,8 +456,7 @@ export function ProductHistoryPopup({
 
         {/* Footer */}
         <div className="border-t border-gray-200 p-4 bg-gray-50">
-          <div className="flex items-center justify-between text-xs text-gray-500">
-            <span>Data diperbarui setiap 5 menit</span>
+          <div className="flex items-center text-xs text-gray-500">
             <Button
               onClick={onClose}
               variant="outline"

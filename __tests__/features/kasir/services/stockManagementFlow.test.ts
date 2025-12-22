@@ -6,10 +6,12 @@
 
 import { PrismaClient } from '@prisma/client'
 import { TransaksiService } from '../../../../features/kasir/services/transaksiService'
-import { PickupService, createPickupService } from '../../../../features/kasir/services/pickupService'
-import { InventoryService, createInventoryService } from '../../../../features/kasir/services/inventoryService'
+// import { PickupService, createPickupService } from '../../../../features/kasir/services/pickupService'
+// import { InventoryService, createInventoryService } from '../../../../features/kasir/services/inventoryService'
 import { CreateTransaksiRequest } from '../../../../features/kasir/lib/validation/kasirSchema'
 import { Decimal } from '@prisma/client/runtime/library'
+import * as fs from 'fs'
+import * as path from 'path'
 
 // Mock Prisma for testing
 const mockPrisma = {
@@ -40,15 +42,15 @@ const mockPrisma = {
 
 describe('Stock Management Flow - Property Tests', () => {
   let transaksiService: TransaksiService
-  let pickupService: PickupService
-  let inventoryService: InventoryService
+  // let pickupService: PickupService
+  // let inventoryService: InventoryService
   const mockUserId = 'test-user-123'
 
   beforeEach(() => {
     jest.clearAllMocks()
     transaksiService = new TransaksiService(mockPrisma, mockUserId)
-    pickupService = createPickupService(mockPrisma, mockUserId, transaksiService)
-    inventoryService = createInventoryService(mockPrisma)
+    // pickupService = createPickupService(mockPrisma, mockUserId, transaksiService)
+    // inventoryService = createInventoryService(mockPrisma)
   })
 
   describe('Property 2: Stock Management Flow Separation', () => {
@@ -143,7 +145,7 @@ describe('Stock Management Flow - Property Tests', () => {
       // Act: Create transaction
       try {
         await transaksiService.createTransaksiSizeAware(mockTransactionData)
-      } catch (error) {
+      } catch {
         // Expected to fail due to mocking, but we're testing the flow
       }
 
@@ -229,8 +231,8 @@ describe('Stock Management Flow - Property Tests', () => {
       // by checking the source code structure rather than runtime behavior
       
       // Read the pickup service source to verify stock deduction is implemented
-      const pickupServiceSource = require('fs').readFileSync(
-        require('path').join(__dirname, '../../../../features/kasir/services/pickupService.ts'),
+      const pickupServiceSource = fs.readFileSync(
+        path.join(__dirname, '../../../../features/kasir/services/pickupService.ts'),
         'utf8'
       )
 
@@ -245,8 +247,8 @@ describe('Stock Management Flow - Property Tests', () => {
       // by checking the source code structure
       
       // Read the transaction service source to verify stock deduction is removed
-      const transaksiServiceSource = require('fs').readFileSync(
-        require('path').join(__dirname, '../../../../features/kasir/services/transaksiService.ts'),
+      const transaksiServiceSource = fs.readFileSync(
+        path.join(__dirname, '../../../../features/kasir/services/transaksiService.ts'),
         'utf8'
       )
 

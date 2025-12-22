@@ -54,10 +54,12 @@ This implementation plan transforms the current inventory management system from
   - _Requirements: All Task 2 requirements validated_
 
 - [x] 4. Implement date-aware availability validation
-  - [ ] 4.1 Extend existing AvailabilityService with date-aware methods
-    - Add date overlap detection to existing AvailabilityService
-    - Extend checkRentalAvailability() with date range support
-    - Use tglMulai and tglSelesai fields for date range calculations
+  - [x] 4.1 Extend existing AvailabilityService with date-aware methods
+    - ✅ FIXED: Add date overlap detection to existing AvailabilityService with ProductSize support
+    - ✅ FIXED: Extend checkRentalAvailability() with date range support for both productId and productSizeId
+    - ✅ FIXED: Use tglMulai and tglSelesai fields for date range calculations
+    - ✅ FIXED: Add getOverlappingTransactionsByProductSize() method for size-specific validation
+    - ✅ FIXED: Update TransaksiService to use productSizeId instead of productId
     - _Requirements: 3.1, 3.2, 3.5_
 
   - [x] 4.2 Write property test for date overlap detection

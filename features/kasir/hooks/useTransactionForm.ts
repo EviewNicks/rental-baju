@@ -240,6 +240,15 @@ export function useTransactionForm() {
   )
 
   const submitTransaction = useCallback(async () => {
+    // ✅ FIX: Enhanced submission guard with early return
+    if (isSubmitting) {
+      console.warn('[useTransactionForm] Submission blocked - already in progress', {
+        isSubmitting,
+        timestamp: new Date().toISOString(),
+      })
+      return false
+    }
+
     // Step 4 validation check (Payment step)
     const step4Valid = validateStep(4)
 
@@ -282,9 +291,13 @@ export function useTransactionForm() {
               ? 'transfer'
               : 'kartu',
         catatan: formData.notes || undefined,
-        // Task 4: Add discount fields to API request
-        discountType: formData.discountType,
-        discountValue: formData.discountValue,
+        // Task 4: Add discount fields to API request - only send if both type and value exist
+        discountType: formData.discountType && formData.discountValue && formData.discountValue > 0 
+          ? formData.discountType 
+          : undefined,
+        discountValue: formData.discountType && formData.discountValue && formData.discountValue > 0 
+          ? formData.discountValue 
+          : undefined,
       }
 
       for (const product of formData.products) {
@@ -408,6 +421,8 @@ export function useTransactionForm() {
             errorType: 'TRANSACTION_FAILURE',
             errorMessage: errorMessage,
             createTransaksiError: createTransaksiMutation.error?.message,
+            createTransaksiErrorCode: createTransaksiMutation.error?.code,
+            createTransaksiErrorDetails: createTransaksiMutation.error?.details,
           },
           'useTransactionForm',
         )

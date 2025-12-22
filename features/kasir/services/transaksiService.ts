@@ -702,9 +702,9 @@ export class TransaksiService {
 
       // ✅ VALIDATION 2: Use date-aware availability checking if dates are provided
       if (startDate && endDate) {
-        // TASK 4.1: Use date-aware availability validation
+        // TASK 4.1 FIX: Use productSizeId instead of productId for size-aware validation
         const availabilityCheck = await txAvailabilityService.checkDateRangeAvailability(
-          [{ productId: item.produkId, quantity: item.jumlah }],
+          [{ productSizeId: item.productSizeId, quantity: item.jumlah }],
           startDate,
           endDate
         )

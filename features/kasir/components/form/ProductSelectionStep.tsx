@@ -27,6 +27,7 @@ import {
   determineErrorType, 
   type AvailabilityError 
 } from '../../lib/errors/availabilityErrors'
+import { ProductHistoryPopup } from '../ui/ProductHistoryPopup'
 
 interface ProductSelectionStepProps {
   selectedProducts: ProductSelection[]
@@ -60,6 +61,21 @@ export function ProductSelectionStep({
   const [pageSize, setPageSize] = useState(12)
   // Enhanced error handling for availability checks
   const [availabilityErrors, setAvailabilityErrors] = useState<Map<string, AvailabilityError>>(new Map())
+  
+  // History popup state management
+  const [historyPopup, setHistoryPopup] = useState<{
+    isOpen: boolean
+    productSizeId: string
+    productName: string
+    size: string
+    ageCategory: string
+  }>({
+    isOpen: false,
+    productSizeId: '',
+    productName: '',
+    size: '',
+    ageCategory: '',
+  })
 
   // Helper function to safely render error details
   const renderErrorDetails = (error: AvailabilityError) => {
@@ -71,6 +87,27 @@ export function ProductSelectionStep({
         Produk ID: {productId}
       </p>
     )
+  }
+
+  // History popup handlers
+  const openHistoryPopup = (productSizeId: string, productName: string, size: string, ageCategory: string) => {
+    setHistoryPopup({
+      isOpen: true,
+      productSizeId,
+      productName,
+      size,
+      ageCategory,
+    })
+  }
+
+  const closeHistoryPopup = () => {
+    setHistoryPopup({
+      isOpen: false,
+      productSizeId: '',
+      productName: '',
+      size: '',
+      ageCategory: '',
+    })
   }
 
   // Dynamic page size calculation based on current data
@@ -369,6 +406,7 @@ export function ProductSelectionStep({
                         product={product}
                         onAddToCart={handleAddProduct}
                         selectedQuantity={getSelectedQuantity(product.id)}
+                        onOpenHistory={openHistoryPopup}
                       />
                     </div>
                   ))}
@@ -620,6 +658,16 @@ export function ProductSelectionStep({
           )}
         </div>
       </div>
+
+      {/* Product History Popup - Moved to ProductSelectionStep for better display */}
+      <ProductHistoryPopup
+        productSizeId={historyPopup.productSizeId}
+        productName={historyPopup.productName}
+        size={historyPopup.size}
+        ageCategory={historyPopup.ageCategory}
+        isOpen={historyPopup.isOpen}
+        onClose={closeHistoryPopup}
+      />
     </div>
   )
 }

@@ -15,6 +15,7 @@ interface ProductCardProps {
   onAddToCart: (product: Product, quantity: number, productSizeId?: string) => void
   selectedQuantity?: number
   className?: string
+  onOpenHistory?: (productSizeId: string, productName: string, size: string, ageCategory: string) => void
 }
 
 export function ProductCard({
@@ -22,6 +23,7 @@ export function ProductCard({
   onAddToCart,
   selectedQuantity = 0,
   className,
+  onOpenHistory,
 }: ProductCardProps) {
   const [quantity, setQuantity] = useState(selectedQuantity)
   const [selectedSize, setSelectedSize] = useState<ProductSize | null>(null)
@@ -182,6 +184,7 @@ export function ProductCard({
               onSizeSelect={handleSizeSelect}
               disabled={isOutOfStock}
               productName={product.name}
+              onOpenHistory={onOpenHistory}
             />
           </div>
         )}

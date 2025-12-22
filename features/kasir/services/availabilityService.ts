@@ -132,7 +132,8 @@ export class AvailabilityService {
   ): Promise<{
     available: boolean
     conflicts: Array<{
-      productId: string
+      productId?: string
+      productSizeId?: string
       requested: number
       available: number
       shortage: number
@@ -147,15 +148,25 @@ export class AvailabilityService {
   }> {
     // If endDate is provided, use date-aware availability checking
     if (endDate) {
-      return this.checkDateRangeAvailability(items, startDate, endDate)
+      // Convert items to support both productId and productSizeId
+      const convertedItems = items.map(item => ({ productId: item.productId, quantity: item.quantity }))
+      return this.checkDateRangeAvailability(convertedItems, startDate, endDate)
     }
 
     // Legacy behavior: check current availability without date range
     const conflicts: Array<{
-      productId: string
+      productId?: string
+      productSizeId?: string
       requested: number
       available: number
       shortage: number
+      overlappingTransactions?: Array<{
+        transactionCode: string
+        quantity: number
+        startDate: Date
+        endDate: Date
+        status: string
+      }>
     }> = []
 
     for (const item of items) {
@@ -180,15 +191,17 @@ export class AvailabilityService {
   /**
    * TASK 4.1: Check if requested quantities are available for specific date range
    * Date-aware availability validation using tglMulai and tglSelesai fields
+   * FIXED: Now supports both productId and productSizeId for proper size-aware validation
    */
   async checkDateRangeAvailability(
-    items: Array<{ productId: string; quantity: number }>,
+    items: Array<{ productId?: string; productSizeId?: string; quantity: number }>,
     startDate: Date,
     endDate: Date
   ): Promise<{
     available: boolean
     conflicts: Array<{
-      productId: string
+      productId?: string
+      productSizeId?: string
       requested: number
       available: number
       shortage: number
@@ -202,7 +215,8 @@ export class AvailabilityService {
     }>
   }> {
     const conflicts: Array<{
-      productId: string
+      productId?: string
+      productSizeId?: string
       requested: number
       available: number
       shortage: number
@@ -216,37 +230,75 @@ export class AvailabilityService {
     }> = []
 
     for (const item of items) {
-      // Get overlapping transactions for this product and date range
-      const overlappingTransactions = await this.getOverlappingTransactions(
-        item.productId,
-        startDate,
-        endDate
-      )
+      // TASK 4.1 FIX: Support both productId and productSizeId
+      if (item.productSizeId) {
+        // NEW: ProductSize-aware validation for size-specific availability
+        const overlappingTransactions = await this.getOverlappingTransactionsByProductSize(
+          item.productSizeId,
+          startDate,
+          endDate
+        )
 
-      // Calculate total quantity reserved during this period
-      const reservedQuantity = overlappingTransactions.reduce(
-        (sum, transaction) => sum + transaction.quantity,
-        0
-      )
+        // Calculate total quantity reserved during this period for this specific size
+        const reservedQuantity = overlappingTransactions.reduce(
+          (sum, transaction) => sum + transaction.quantity,
+          0
+        )
 
-      // Get total stock for this product
-      const stockStatus = await inventoryService.getProductStockStatus(item.productId)
-      const availableForPeriod = stockStatus.totalQuantity - reservedQuantity
+        // Get total stock for this specific product size
+        const stockStatus = await inventoryService.getStockStatus(item.productSizeId)
+        const availableForPeriod = stockStatus.availableQuantity - reservedQuantity
 
-      if (availableForPeriod < item.quantity) {
-        conflicts.push({
-          productId: item.productId,
-          requested: item.quantity,
-          available: availableForPeriod,
-          shortage: item.quantity - availableForPeriod,
-          overlappingTransactions: overlappingTransactions.map(t => ({
-            transactionCode: t.transactionCode,
-            quantity: t.quantity,
-            startDate: t.startDate,
-            endDate: t.endDate,
-            status: t.status
-          }))
-        })
+        if (availableForPeriod < item.quantity) {
+          conflicts.push({
+            productSizeId: item.productSizeId,
+            requested: item.quantity,
+            available: Math.max(0, availableForPeriod),
+            shortage: item.quantity - Math.max(0, availableForPeriod),
+            overlappingTransactions: overlappingTransactions.map(t => ({
+              transactionCode: t.transactionCode,
+              quantity: t.quantity,
+              startDate: t.startDate,
+              endDate: t.endDate,
+              status: t.status
+            }))
+          })
+        }
+      } else if (item.productId) {
+        // LEGACY: Product-level validation (existing behavior)
+        const overlappingTransactions = await this.getOverlappingTransactions(
+          item.productId,
+          startDate,
+          endDate
+        )
+
+        // Calculate total quantity reserved during this period
+        const reservedQuantity = overlappingTransactions.reduce(
+          (sum, transaction) => sum + transaction.quantity,
+          0
+        )
+
+        // Get total stock for this product
+        const stockStatus = await inventoryService.getProductStockStatus(item.productId)
+        const availableForPeriod = stockStatus.totalQuantity - reservedQuantity
+
+        if (availableForPeriod < item.quantity) {
+          conflicts.push({
+            productId: item.productId,
+            requested: item.quantity,
+            available: availableForPeriod,
+            shortage: item.quantity - availableForPeriod,
+            overlappingTransactions: overlappingTransactions.map(t => ({
+              transactionCode: t.transactionCode,
+              quantity: t.quantity,
+              startDate: t.startDate,
+              endDate: t.endDate,
+              status: t.status
+            }))
+          })
+        }
+      } else {
+        throw new Error('Either productId or productSizeId must be provided')
       }
     }
 
@@ -277,6 +329,72 @@ export class AvailabilityService {
     const overlappingTransactions = await this.prisma.transaksiItem.findMany({
       where: {
         produkId: productId,
+        transaksi: {
+          status: {
+            in: ['active', 'diambil'] // Only count active and picked-up rentals
+          },
+          // Date overlap condition: (tglMulai <= endDate) AND (tglSelesai >= startDate)
+          AND: [
+            {
+              tglMulai: { lte: endDate }
+            },
+            {
+              OR: [
+                { tglSelesai: { gte: startDate } }, // Has end date and overlaps
+                { tglSelesai: null } // No end date (ongoing rental)
+              ]
+            }
+          ]
+        }
+      },
+      include: {
+        transaksi: {
+          select: {
+            id: true,
+            kode: true,
+            status: true,
+            tglMulai: true,
+            tglSelesai: true
+          }
+        }
+      }
+    })
+
+    return overlappingTransactions
+      .filter(item => item.transaksi) // Filter out items with null transaksi relation
+      .map(item => ({
+        transactionId: item.transaksi.id,
+        transactionCode: item.transaksi.kode,
+        quantity: item.jumlah,
+        startDate: item.transaksi.tglMulai,
+        endDate: item.transaksi.tglSelesai || new Date('2099-12-31'), // Use far future date for ongoing rentals
+        status: item.transaksi.status
+      }))
+  }
+
+  /**
+   * TASK 4.1 FIX: Get transactions that overlap with the specified date range for a specific ProductSize
+   * Uses kondisiAwal field to match productSizeId and date range calculations
+   */
+  async getOverlappingTransactionsByProductSize(
+    productSizeId: string,
+    startDate: Date,
+    endDate: Date
+  ): Promise<Array<{
+    transactionId: string
+    transactionCode: string
+    quantity: number
+    startDate: Date
+    endDate: Date
+    status: string
+  }>> {
+    // Find transactions that overlap with the requested date range for specific product size
+    // kondisiAwal format: "productSizeId|size|ageCategory|condition"
+    const overlappingTransactions = await this.prisma.transaksiItem.findMany({
+      where: {
+        kondisiAwal: {
+          startsWith: productSizeId // Match productSizeId at the beginning of kondisiAwal
+        },
         transaksi: {
           status: {
             in: ['active', 'diambil'] // Only count active and picked-up rentals
