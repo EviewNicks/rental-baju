@@ -44,12 +44,12 @@ export class ProfessionalReceiptService {
   // Table column configuration for professional layout - FULL WIDTH
   private readonly TABLE_COLUMNS: TableColumn[] = [
     { header: 'No', width: 12, align: 'center' },      // Reduced width since only numbers
-    { header: 'Kategori', width: 28, align: 'left' },   // Increased width
+    { header: 'Kategori', width: 25, align: 'left' },   // Increased width
     { header: 'Nama Barang', width: 60, align: 'left' }, // Increased width
-    { header: 'Size', width: 18, align: 'center' },     // Increased width
-    { header: 'Qty', width: 12, align: 'center' },      // Increased width
+    { header: 'Size', width: 25, align: 'center' },     // Increased width
+    { header: 'Qty', width: 10, align: 'center' },      // Increased width
     { header: '@Harga', width: 20, align: 'right' },    // Increased width
-    { header: 'Total Harga', width: 25, align: 'right' } // Increased width
+    { header: 'Total Harga', width: 22, align: 'right' } // Increased width
   ]
 
   /**
@@ -179,18 +179,32 @@ export class ProfessionalReceiptService {
     doc.text('PENAWARAN PENJUALAN', rightX, currentY, { align: 'right' })
     currentY += 8
 
-    // Create invisible table for transaction details
-    const tableData = [
-      ['Nomor:', data.kode],
-      ['Tanggal:', this.formatDate(data.createdAt.toString())],
-      ['Pembayaran:', data.metodeBayar],
-      ['Kepada Yth:', data.penyewa.nama]
-    ]
+    // Create invisible table for transaction details (without transaction number, add pickup/return dates)
+    const tableData = []
+    
+    // Tanggal (transaction date - date only)
+    tableData.push(['Tanggal:', this.formatDateOnly(data.createdAt.toString())])
+    
+    // Tgl Pengambilan (pickup date - if available)
+    if (data.tglMulai) {
+      tableData.push(['Tgl Pengambilan:', this.formatDateOnly(data.tglMulai.toString())])
+    }
+    
+    // Tgl Pengembalian (return date - if available)
+    if (data.tglSelesai) {
+      tableData.push(['Tgl Pengembalian:', this.formatDateOnly(data.tglSelesai.toString())])
+    }
+    
+    // Pembayaran (payment method)
+    tableData.push(['Pembayaran:', data.metodeBayar])
+    
+    // Kepada Yth (customer name)
+    tableData.push(['Kepada Yth:', data.penyewa.nama])
 
-    // Table configuration for transaction info (invisible borders)
-    const labelWidth = 25 // Width for labels (Nomor:, Tanggal:, etc.)
-    const valueWidth = 45 // Width for values
-    const rowHeight = 4 // Height for each row
+    // Table configuration for transaction info (invisible borders) - increased width for longer labels
+    const labelWidth = 35 // Width for labels (increased from 25 to accommodate longer labels like "Tgl Pengembalian:")
+    const valueWidth = 40 // Width for values (slightly reduced to maintain total width)
+    const rowHeight = 4.0 // Height for each row (slightly increased for better spacing)
     const tableStartX = rightX - labelWidth - valueWidth // Start position for table
 
     // Set normal font for table content
@@ -237,8 +251,9 @@ export class ProfessionalReceiptService {
       // Extract category name (handle null/undefined category)
       const categoryName = item.produk.category?.name || 'N/A'
       
-      // Extract size from kondisiAwal
-      const size = this.extractSize(item.kondisiAwal || '')
+      // Extract category type and format size display (with type assertion)
+      const categoryType = (item.produk.category as { type?: string })?.type || 'clothing'
+      const formattedSize = this.formatSizeDisplay(item.kondisiAwal || '', categoryType)
       
       // Format currency amounts (without Rp prefix for professional format)
       const unitPrice = this.formatCurrency(item.hargaSewa)
@@ -249,7 +264,7 @@ export class ProfessionalReceiptService {
         (index + 1).toString(),    // No (increment number: 1, 2, 3, ...)
         categoryName,              // Kategori
         item.produk.name,          // Nama Barang
-        size || '-',               // Size (show dash if empty)
+        formattedSize || '-',      // Size (context-aware format)
         item.jumlah.toString(),    // Qty
         unitPrice,                 // @Harga
         totalPrice                 // Total Harga
@@ -408,7 +423,7 @@ export class ProfessionalReceiptService {
    * @returns New Y position after bottom note
    */
   private addBottomNote(doc: jsPDF, y: number): number {
-    let currentY = y + 10 // Add spacing before bottom note
+    const currentY = y + 10 // Add spacing before bottom note
     
     // Final note (centered at bottom)
     const noteText = 'Harga dan stok di atas dapat berubah sewaktu-waktu tanpa pemberitahuan'
@@ -608,6 +623,37 @@ export class ProfessionalReceiptService {
   }
 
   /**
+   * Format date to Indonesian format (date only, without time)
+   * @param dateString - ISO date string
+   * @returns Formatted string (e.g., "15 Des 2025")
+   */
+  private formatDateOnly(dateString: string): string {
+    const date = new Date(dateString)
+
+    // Indonesian month abbreviations
+    const monthNames = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'Mei',
+      'Jun',
+      'Jul',
+      'Agu',
+      'Sep',
+      'Okt',
+      'Nov',
+      'Des',
+    ]
+
+    const day = date.getDate().toString().padStart(2, '0')
+    const month = monthNames[date.getMonth()]
+    const year = date.getFullYear()
+
+    return `${day} ${month} ${year}`
+  }
+
+  /**
    * Format date to Indonesian format
    * @param dateString - ISO date string
    * @returns Formatted string (e.g., "15 Des 2025")
@@ -639,7 +685,69 @@ export class ProfessionalReceiptService {
   }
 
   /**
-   * Extract size from kondisiAwal field
+   * Format size display based on category type and product size information
+   * @param kondisiAwal - Format: "uuid|SIZE|TYPE|condition" or size info
+   * @param categoryType - Category type from product.category.type
+   * @returns Formatted size string
+   */
+  private formatSizeDisplay(kondisiAwal: string, categoryType: string): string {
+    if (!kondisiAwal) return '-'
+
+    const parts = kondisiAwal.split('|')
+    if (parts.length < 2) return '-'
+
+    const size = parts[1] // SIZE from kondisiAwal
+    const ageCategory = parts.length >= 3 ? parts[2] : '' // TYPE/AgeCategory from kondisiAwal
+
+    // Debug logging (remove in production)
+    console.log('formatSizeDisplay Debug:', {
+      kondisiAwal,
+      categoryType,
+      size,
+      ageCategory,
+      parts
+    })
+
+    // Handle different category types
+    switch (categoryType) {
+      case 'clothing':
+        // Format: SIZE(AgeCategory) - e.g., M(D), L(A)
+        // Special handling: if size is UNIVERSAL, treat as accessories_age_based
+        if (size === 'UNIVERSAL') {
+          return ageCategory === 'ADULT' ? 'D' : 
+                 ageCategory === 'CHILD' ? 'A' : 'U'
+        }
+        if (ageCategory) {
+          const ageCode = ageCategory === 'ADULT' ? 'D' : 
+                         ageCategory === 'CHILD' ? 'A' : 'U'
+          return `${size}(${ageCode})`
+        }
+        return size
+
+      case 'accessories_universal':
+        // Format: U (always universal)
+        return 'U'
+
+      case 'accessories_age_based':
+        // Format: AgeCategory only - e.g., D, A (no size enum needed)
+        if (ageCategory) {
+          return ageCategory === 'ADULT' ? 'D' : 
+                 ageCategory === 'CHILD' ? 'A' : 'U'
+        }
+        // If no age category, try to infer from size enum as fallback
+        if (size === 'UNIVERSAL') {
+          return 'U'
+        }
+        return '-'
+
+      default:
+        // Fallback to original size
+        return size || '-'
+    }
+  }
+
+  /**
+   * Extract size from kondisiAwal field (legacy method - kept for compatibility)
    * @param kondisiAwal - Format: "uuid|SIZE|TYPE|condition"
    * @returns Size string (e.g., "M", "L")
    */
