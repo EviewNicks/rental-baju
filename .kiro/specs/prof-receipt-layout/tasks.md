@@ -129,31 +129,31 @@ This implementation plan breaks down the Professional Receipt Layout feature int
   - Return PDF as Buffer
   - _Requirements: 1.2, 7.1, 7.2_
 
-- [ ] 3. API Route Implementation
+- [x] 3. API Route Implementation
   - Create professional receipt PDF endpoint
   - Integrate with existing services
   - Handle authentication and errors
   - _Requirements: 1.2, 12.1_
 
-- [ ] 3.1 Create professional receipt API route file
-  - Create `app/api/kasir/receipt/[transaksiId]/professional/route.ts`
+- [x] 3.1 Create professional receipt API route file
+  - update `app\api\kasir\receipt\[transaksiId]\pdf\route.ts`
   - Define GET handler with RouteParams interface
   - Setup basic structure for professional receipt generation
   - _Requirements: 1.2_
 
-- [ ] 3.2 Implement authentication check
+- [x] 3.2 Implement authentication check
   - Use requirePermission middleware
   - Check for 'transaksi' read permission
   - Return 401 if unauthorized
   - _Requirements: 12.1_
 
-- [ ] 3.3 Implement transaction data retrieval
+- [x] 3.3 Implement transaction data retrieval
   - Initialize TransaksiService with user ID
   - Call getTransaksiByCode with transaksiId
   - Handle transaction not found (404)
   - _Requirements: 8.1_
 
-- [ ] 3.4 Implement professional PDF generation and response
+- [x] 3.4 Implement professional PDF generation and response
   - Initialize ProfessionalReceiptService
   - Call generateProfessionalReceiptPDF with transaction data
   - Create NextResponse with PDF buffer
@@ -161,7 +161,7 @@ This implementation plan breaks down the Professional Receipt Layout feature int
   - Set Content-Disposition to "inline" with professional filename
   - _Requirements: 1.2_
 
-- [ ] 3.5 Implement enhanced error handling
+- [x] 3.5 Implement enhanced error handling
   - Wrap in try-catch block
   - Log errors to console with context (transaksiId, userId, error details)
   - Return 500 with error message on failure
