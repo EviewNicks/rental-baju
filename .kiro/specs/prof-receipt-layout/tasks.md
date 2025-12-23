@@ -40,9 +40,10 @@ This implementation plan breaks down the Professional Receipt Layout feature int
 - [x] 2.1 Create ProfessionalReceiptService class structure
   - Create `features/kasir/services/professionalReceiptService.ts`
   - Define class with generateProfessionalReceiptPDF method
-  - Setup jsPDF instance with 140x200mm dimensions (14x20cm)
+  - Setup jsPDF instance with 200x140mm dimensions (20x14cm) - LANDSCAPE
   - Configure professional layout constants
   - _Requirements: 7.1, 7.2, 7.3_
+  - **NEEDS UPDATE**: Change orientation from portrait to landscape
 
 - [x] 2.2 Implement table generation utilities
   - Create createBorderedTable method for table generation
@@ -168,19 +169,19 @@ This implementation plan breaks down the Professional Receipt Layout feature int
   - Handle table generation errors gracefully
   - _Requirements: 10.2, 10.3, 12.4_
 
-- [ ] 4. Frontend Hook Implementation
+- [x] 4. Frontend Hook Implementation
   - Create React hook for professional receipt printing
   - Manage loading state
   - Handle API calls and errors
   - _Requirements: 1.2, 1.3, 1.4, 1.5_
 
-- [ ] 4.1 Create useProfessionalReceiptPrint hook file
+- [x] 4.1 Create useProfessionalReceiptPrint hook file
   - Create `features/kasir/hooks/useProfessionalReceiptPrint.ts`
   - Define hook function and return interface
   - Setup isPrinting state with useState
   - _Requirements: 1.3, 11.2_
 
-- [ ] 4.2 Implement printProfessionalReceipt function
+- [x] 4.2 Implement printProfessionalReceipt function
   - Create async function accepting transactionId
   - Set isPrinting to true at start
   - Fetch PDF from professional API endpoint
@@ -189,60 +190,63 @@ This implementation plan breaks down the Professional Receipt Layout feature int
   - Set isPrinting to false in finally block
   - _Requirements: 1.2, 11.3_
 
-- [ ] 4.3 Implement success feedback
+- [x] 4.3 Implement success feedback
   - Show success toast "Struk profesional berhasil dibuat"
   - Log success to console
   - _Requirements: 1.4_
 
-- [ ] 4.4 Implement error handling
+- [x] 4.4 Implement error handling
   - Catch fetch errors
   - Show error toast "Gagal membuat struk. Silakan coba lagi."
   - Log error to console with details
   - Ensure isPrinting resets to false
   - _Requirements: 1.5, 10.3, 10.4, 10.5_
 
-- [ ] 5. Frontend Component Integration
+- [x] 5. Frontend Component Integration
   - Add professional receipt button to TransactionDetailPage
   - Integrate hook
   - Handle button states
   - _Requirements: 1.1, 1.3, 11.2, 11.4_
 
-- [ ] 5.1 Import dependencies in TransactionDetailPage
+- [x] 5.1 Import dependencies in TransactionDetailPage
   - Import useProfessionalReceiptPrint hook
   - Import appropriate icons from lucide-react
   - _Requirements: 1.1_
 
-- [ ] 5.2 Integrate useProfessionalReceiptPrint hook
+- [x] 5.2 Integrate useProfessionalReceiptPrint hook
   - Call useProfessionalReceiptPrint() in component
   - Destructure printProfessionalReceipt and isPrinting
   - _Requirements: 1.2, 1.3_
 
-- [ ] 5.3 Create handlePrintProfessionalReceipt function
+- [x] 5.3 Create handlePrintProfessionalReceipt function
   - Create handler that calls printProfessionalReceipt with transaction.transactionCode
   - _Requirements: 1.2_
+  - **ANA: Existing handlePrintReceipt function already calls printReceipt with transaction.transaction
 
-- [ ] 5.4 Add "Cetak Struk Profesional" button to header
+- [x] 5.4 Add "Cetak Struk Profesional" button to header
   - Position appropriately in page header
   - Use Button component with variant="outline" size="sm"
   - Add data-testid="print-professional-receipt-button"
   - Set onClick to handlePrintProfessionalReceipt
   - Set disabled to isPrinting
   - _Requirements: 1.1, 1.3_
+  - **ANALYSIS**: Existing button with data-testid=int-receipt-button" already positioned correctly with proper props
 
-- [ ] 5.5 Implement button loading state
+- [x] 5.5 Implement button loading state
   - Show loading icon with spin animation when isPrinting is true
   - Show "Generating..." text when isPrinting is true
   - Show appropriate icon and "Cetak Struk Profesional" text when isPrinting is false
   - _Requirements: 1.3, 11.2_
+  - **ANALYSIS**: Existing implementation shows Loader2 with spin animation and "Generating..." text when isPrinting is true
 
-- [ ] 6. Unit Tests for ProfessionalReceiptService
+- [x] 6. Unit Tests for ProfessionalReceiptService
   - Test PDF generation
   - Test table generation utilities
   - Test formatting utilities
   - Test calculation logic
   - _Requirements: All formatting and generation requirements_
 
-- [ ] 6.1 Test generateProfessionalReceiptPDF returns valid buffer
+- [x] 6.1 Test generateProfessionalReceiptPDF returns valid buffer
   - **Property 1: Professional PDF Generation Completeness**
   - **Validates: Requirements 1.2, 7.1, 7.2**
   - Create test with mock transaction data
@@ -250,21 +254,21 @@ This implementation plan breaks down the Professional Receipt Layout feature int
   - Assert buffer is instance of Buffer
   - Assert buffer length > 0
 
-- [ ] 6.2 Test createBorderedTable functionality
+- [x] 6.2 Test createBorderedTable functionality
   - **Property 4: Table Structure Consistency**
   - **Validates: Requirements 4.1, 7.5**
   - Test table creation with specified columns
   - Verify table dimensions and positioning
   - Test border rendering
 
-- [ ] 6.3 Test calculateDiscount with various scenarios
+- [x] 6.3 Test calculateDiscount with various scenarios
   - **Property 9: Financial Calculation Accuracy**
   - **Validates: Requirements 5.1, 5.2**
   - Test percentage discount calculation
   - Test fixed discount calculation
   - Test edge cases (0%, 100%, negative values)
 
-- [ ] 6.4 Test formatCurrency for professional format
+- [x] 6.4 Test formatCurrency for professional format
   - **Property 8: Currency Formatting Consistency**
   - **Validates: Requirements 5.5**
   - Test formatCurrency(2250000) === "2.250.000"
@@ -272,40 +276,40 @@ This implementation plan breaks down the Professional Receipt Layout feature int
   - Test formatCurrency(0) === "0"
   - Verify no "Rp" prefix
 
-- [ ] 6.5 Test formatDate for Indonesian format
+- [x] 6.5 Test formatDate for Indonesian format
   - Test formatDate with known ISO date
   - Assert format matches "DD MMM YYYY"
   - Assert month is Indonesian abbreviation
 
-- [ ] 6.6 Test extractSize from kondisiAwal
+- [x] 6.6 Test extractSize from kondisiAwal
   - **Property 6: Size Extraction Accuracy**
   - **Validates: Requirements 9.1, 9.2, 9.3**
   - Test extractSize("uuid|L|ADULT|baik") === "L"
   - Test extractSize("uuid|UNIVERSAL|ADULT|baik") === "UNIVERSAL"
   - Test malformed input handling
 
-- [ ] 6.7 Test store config integration
+- [x] 6.7 Test store config integration
   - **Property 2: Store Information Consistency**
   - **Validates: Requirements 2.1, 2.2, 2.3, 2.4, 13.2**
   - Mock STORE_CONFIG
   - Generate PDF
   - Assert PDF contains store name, address, phone, logo
 
-- [ ] 6.8 Test transaction data preservation
+- [x] 6.8 Test transaction data preservation
   - **Property 3: Transaction Metadata Preservation**
   - **Validates: Requirements 3.2, 3.3, 3.4, 3.5**
   - Create mock transaction with known values
   - Generate PDF
   - Assert PDF contains transaction code, date, payment method, customer name
 
-- [ ] 6.9 Test item data completeness
+- [x] 6.9 Test item data completeness
   - **Property 5: Item Data Completeness**
   - **Validates: Requirements 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8**
   - Create transaction with multiple items
   - Generate PDF
   - Assert all items appear in table with correct data
 
-- [ ] 6.10 Test financial summary calculations
+- [x] 6.10 Test financial summary calculations
   - **Property 10: Fixed Values Consistency**
   - **Validates: Requirements 5.3, 5.4**
   - Test subtotal calculation
@@ -313,7 +317,7 @@ This implementation plan breaks down the Professional Receipt Layout feature int
   - Verify "Biaya Lain-lain" is always 0
   - Verify total matches data.totalHarga
 
-- [ ] 6.11 Test footer content consistency
+- [x] 6.11 Test footer content consistency
   - **Property 12: Footer Content Consistency**
   - **Validates: Requirements 6.1, 6.2, 6.3, 6.4, 6.5**
   - Generate PDF
@@ -321,7 +325,7 @@ This implementation plan breaks down the Professional Receipt Layout feature int
   - Assert footer contains signature area
   - Assert footer contains required text
 
-- [ ] 6.12 Test PDF dimensions and layout
+- [x] 6.12 Test PDF dimensions and layout
   - **Property 13: PDF Dimension Specification**
   - **Validates: Requirements 7.1, 7.2, 7.3**
   - Generate PDF
@@ -329,13 +333,13 @@ This implementation plan breaks down the Professional Receipt Layout feature int
   - Assert height === 200mm
   - Assert orientation === portrait
 
-- [ ] 7. Integration Tests for API Route
+- [x] 7. Integration Tests for API Route
   - Test API endpoint responses
   - Test authentication
   - Test error scenarios
   - _Requirements: 1.2, 12.1, 10.2_
 
-- [ ] 7.1 Test successful professional PDF generation
+- [x] 7.1 Test successful professional PDF generation
   - Mock authenticated request
   - Mock valid transaction
   - Call GET handler
@@ -343,20 +347,20 @@ This implementation plan breaks down the Professional Receipt Layout feature int
   - Assert Content-Type === "application/pdf"
   - Assert Content-Disposition contains "professional-receipt"
 
-- [ ] 7.2 Test authentication enforcement
+- [x] 7.2 Test authentication enforcement
   - **Property 21: Authentication Enforcement**
   - **Validates: Requirements 12.1**
   - Mock unauthenticated request
   - Call GET handler
   - Assert status 401
 
-- [ ] 7.3 Test transaction not found
+- [x] 7.3 Test transaction not found
   - Mock authenticated request
   - Mock non-existent transaction ID
   - Call GET handler
   - Assert status 404
 
-- [ ] 7.4 Test PDF generation error handling
+- [x] 7.4 Test PDF generation error handling
   - **Property 22: Error Logging Completeness**
   - **Validates: Requirements 10.2, 12.4**
   - Mock authenticated request
@@ -366,13 +370,13 @@ This implementation plan breaks down the Professional Receipt Layout feature int
   - Assert status 500
   - Assert console.error was called with error details
 
-- [ ] 8. Unit Tests for useProfessionalReceiptPrint Hook
+- [x]  8. Unit Tests for useProfessionalReceiptPrint Hook
   - Test hook state management
   - Test success and error flows
   - Test loading states
   - _Requirements: 1.3, 1.4, 1.5, 11.2_
 
-- [ ] 8.1 Test isPrinting state during generation
+- [x] 8.1 Test isPrinting state during generation
   - **Property 16: Loading State Management**
   - **Validates: Requirements 1.3, 11.2**
   - Render hook
@@ -380,7 +384,7 @@ This implementation plan breaks down the Professional Receipt Layout feature int
   - Assert isPrinting === true during execution
   - Assert isPrinting === false after completion
 
-- [ ] 8.2 Test success toast display
+- [x] 8.2 Test success toast display
   - **Property 17: Success Feedback Consistency**
   - **Validates: Requirements 1.4**
   - Mock successful fetch
@@ -388,7 +392,7 @@ This implementation plan breaks down the Professional Receipt Layout feature int
   - Call printProfessionalReceipt
   - Assert toast.success called with "Struk profesional berhasil dibuat"
 
-- [ ] 8.3 Test error toast display
+- [x] 8.3 Test error toast display
   - **Property 18: Error Feedback Consistency**
   - **Validates: Requirements 1.5, 10.3**
   - Mock failed fetch
@@ -396,7 +400,7 @@ This implementation plan breaks down the Professional Receipt Layout feature int
   - Call printProfessionalReceipt
   - Assert toast.error called with error message
 
-- [ ] 8.4 Test new tab opening
+- [x] 8.4 Test new tab opening
   - **Property 19: New Tab Navigation**
   - **Validates: Requirements 11.3**
   - Mock window.open
@@ -404,7 +408,7 @@ This implementation plan breaks down the Professional Receipt Layout feature int
   - Call printProfessionalReceipt
   - Assert window.open called with blob URL and '_blank'
 
-- [ ] 8.5 Test error recovery
+- [x] 8.5 Test error recovery
   - Mock failed fetch
   - Call printProfessionalReceipt
   - Assert isPrinting resets to false

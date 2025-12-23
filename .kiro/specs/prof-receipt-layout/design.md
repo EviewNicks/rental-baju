@@ -33,7 +33,7 @@ The system generates PDF receipts in 14x20cm format (HVS paper) with bordered ta
 ┌─────────────────────────────────────────────────────────────┐
 │                   Next.js API Layer                          │
 │  ┌────────────────────────────────────────────────────────┐ │
-│  │  GET /api/kasir/receipt/[transaksiId]/professional    │ │
+│  │  GET /api/kasir/receipt/[transaksiId]/pdf               │ │
 │  │  - Authentication Check                                │ │
 │  │  - Parameter Validation                                │ │
 │  │  - Error Handling                                      │ │
@@ -92,7 +92,7 @@ useProfessionalReceiptPrint.printReceipt(transactionId)
         ↓
 setState(isPrinting: true)
         ↓
-fetch('/api/kasir/receipt/[id]/professional')
+fetch('/api/kasir/receipt/[id]/pdf')
         ↓
 API: requirePermission('transaksi', 'read')
         ↓
@@ -268,7 +268,7 @@ export class ProfessionalReceiptService {
   /**
    * Format currency to Indonesian format
    * @param amount - Numeric amount
-   * @returns Formatted string (e.g., "2.250.000")
+   * @returns Formatted string (e.g., "Rp 2.250.000")
    */
   private formatCurrency(amount: number): string
 
@@ -308,7 +308,7 @@ export class ProfessionalReceiptService {
 
 #### Professional Receipt PDF Endpoint (New)
 ```typescript
-// app/api/kasir/receipt/[transaksiId]/professional/route.ts
+// app/api/kasir/receipt/[transaksiId]/pdf/route.ts
 
 interface RouteParams {
   params: Promise<{
@@ -317,7 +317,7 @@ interface RouteParams {
 }
 
 /**
- * GET /api/kasir/receipt/[transaksiId]/professional
+ * GET /api/kasir/receipt/[transaksiId]/pdf
  * Generate and return professional PDF receipt for a transaction
  * 
  * @param request - Next.js request object
@@ -468,7 +468,7 @@ private calculateDiscount(subtotal: number, discountType: string, discountValue:
 **Validates: Requirements 9.4**
 
 ### Property 8: Currency Formatting Consistency
-*For any* numeric amount in the receipt, the formatted currency string should use Indonesian format without "Rp" prefix but with dot separators (e.g., "2.250.000").
+*For any* numeric amount in the receipt, the formatted currency string should use Indonesian format with "Rp" prefix and dot separators (e.g., "Rp 2.250.000").
 **Validates: Requirements 5.5**
 
 ### Property 9: Financial Calculation Accuracy
@@ -588,7 +588,7 @@ private calculateDiscount(subtotal: number, discountType: string, discountValue:
 // Frontend Hook
 try {
   setIsPrinting(true)
-  const response = await fetch(`/api/kasir/receipt/${transactionId}/professional`)
+  const response = await fetch(`/api/kasir/receipt/${transactionId}/pdf`)
   
   if (!response.ok) {
     throw new Error(`HTTP ${response.status}`)
@@ -684,12 +684,12 @@ describe('ProfessionalReceiptService', () => {
   })
 
   describe('formatCurrency', () => {
-    it('should format currency without Rp prefix but with dot separators', () => {
+    it('should format currency with Rp prefix and dot separators', () => {
       const service = new ProfessionalReceiptService()
       
-      expect(service.formatCurrency(2250000)).toBe('2.250.000')
-      expect(service.formatCurrency(1000000)).toBe('1.000.000')
-      expect(service.formatCurrency(115000)).toBe('115.000')
+      expect(service.formatCurrency(2250000)).toBe('Rp 2.250.000')
+      expect(service.formatCurrency(1000000)).toBe('Rp 1.000.000')
+      expect(service.formatCurrency(115000)).toBe('Rp 115.000')
     })
   })
 
@@ -761,7 +761,7 @@ describe('useProfessionalReceiptPrint', () => {
 
 #### API Route Tests
 ```typescript
-describe('GET /api/kasir/receipt/[transaksiId]/professional', () => {
+describe('GET /api/kasir/receipt/[transaksiId]/pdf', () => {
   it('should return PDF with correct headers for valid transaction', async () => {
     const response = await GET(mockRequest, { params: { transaksiId: 'TXN-123' } })
     
@@ -798,7 +798,7 @@ describe('GET /api/kasir/receipt/[transaksiId]/professional', () => {
 - [ ] Size extraction works for all kondisiAwal formats
 - [ ] Financial summary calculates correctly
 - [ ] Footer contains keterangan and signature areas
-- [ ] Currency formatting uses dot separators (no Rp prefix)
+- [ ] Currency formatting uses dot separators (with Rp prefix)
 - [ ] Date formatting is in Indonesian format
 - [ ] Success toast appears after generation
 - [ ] Error toast appears on failure

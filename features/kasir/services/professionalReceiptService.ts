@@ -31,9 +31,9 @@ interface TableColumn {
  * Generates professional PDF receipts with table layout, logo, and comprehensive transaction details
  */
 export class ProfessionalReceiptService {
-  // PDF configuration constants for professional layout
-  private readonly PDF_WIDTH_MM = 140  // 14cm width (HVS paper format)
-  private readonly PDF_HEIGHT_MM = 200 // 20cm height (HVS paper format)
+  // PDF configuration constants for professional layout (LANDSCAPE)
+  private readonly PDF_WIDTH_MM = 200  // 20cm width (HVS paper format - landscape)
+  private readonly PDF_HEIGHT_MM = 140 // 14cm height (HVS paper format - landscape)
   private readonly MARGIN = 10
   private readonly HEADER_HEIGHT = 40
   private readonly TABLE_ROW_HEIGHT = 8
@@ -41,15 +41,15 @@ export class ProfessionalReceiptService {
   private readonly HEADER_FONT_SIZE = 12
   private readonly TITLE_FONT_SIZE = 14
 
-  // Table column configuration for professional layout
+  // Table column configuration for professional layout - FULL WIDTH
   private readonly TABLE_COLUMNS: TableColumn[] = [
-    { header: 'No', width: 15, align: 'center' },
-    { header: 'Kategori', width: 25, align: 'left' },
-    { header: 'Nama Barang', width: 40, align: 'left' },
-    { header: 'Size', width: 15, align: 'center' },
-    { header: 'Qty', width: 10, align: 'center' },
-    { header: '@Harga', width: 20, align: 'right' },
-    { header: 'Total Harga', width: 25, align: 'right' }
+    { header: 'No', width: 12, align: 'center' },      // Reduced width since only numbers
+    { header: 'Kategori', width: 28, align: 'left' },   // Increased width
+    { header: 'Nama Barang', width: 60, align: 'left' }, // Increased width
+    { header: 'Size', width: 18, align: 'center' },     // Increased width
+    { header: 'Qty', width: 12, align: 'center' },      // Increased width
+    { header: '@Harga', width: 20, align: 'right' },    // Increased width
+    { header: 'Total Harga', width: 25, align: 'right' } // Increased width
   ]
 
   /**
@@ -69,7 +69,7 @@ export class ProfessionalReceiptService {
 
       // Create jsPDF instance with 140x200mm dimensions (14x20cm HVS paper)
       const doc = new jsPDF({
-        orientation: 'portrait',
+        orientation: 'landscape',
         unit: 'mm',
         format: [this.PDF_WIDTH_MM, this.PDF_HEIGHT_MM],
       })
@@ -83,10 +83,16 @@ export class ProfessionalReceiptService {
       // Add all sections with error handling and position tracking
       y = await this.addProfessionalHeader(doc, transactionData, y)
       y = this.addTransactionInfoSection(doc, transactionData, y)
-      y = this.addItemsTable(doc, transactionData.items, transactionData.kode, y)
-      y = this.addFinancialSummary(doc, transactionData, y)
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      y = this.addProfessionalFooter(doc, y)
+      y = this.addItemsTable(doc, transactionData.items, transactionData.kode, y - 5) // Reduced spacing before table (was +2, now -5 to bring table closer)
+      // Horizontal alignment: Signature (left) and Financial Summary (right) on same level
+      // Store the Y position after table for both sections to use the same starting point
+      const afterTableY = y // Add consistent spacing after table for both sections
+      const signatureY = this.addSignatureSection(doc, afterTableY)
+      const financialY = this.addFinancialSummary(doc, transactionData, afterTableY)
+      // Use the maximum Y position from both sections
+      y = Math.max(signatureY, financialY)
+      // Remaining sections
+      y = this.addKeteranganSection(doc, y - 5)
 
       // Convert PDF to buffer
       const pdfOutput = doc.output('arraybuffer')
@@ -119,14 +125,14 @@ export class ProfessionalReceiptService {
    * @returns New Y position after header
    */
   private async addProfessionalHeader(doc: jsPDF, transactionData: TransactionDetail, y: number): Promise<number> {
-    const currentY = y
+    const currentY = y + 2 // Reduced padding from top margin (was +5, now +2)
 
     // Try to load and add logo in top-left corner
     try {
       const logoBase64 = await this.loadLogo()
       if (logoBase64) {
-        const logoWidth = 25 // 25mm width
-        const logoHeight = 15 // 15mm height
+        const logoWidth = 20 // Logo width
+        const logoHeight = 12 // Logo height
         doc.addImage(logoBase64, 'JPEG', this.MARGIN, currentY, logoWidth, logoHeight)
       }
     } catch (error) {
@@ -134,64 +140,79 @@ export class ProfessionalReceiptService {
       // Continue without logo
     }
 
-    // Store information (left side, below logo)
-    const storeInfoY = currentY + 18 // Position below logo
+    // Store information (positioned right next to logo, vertically centered with logo)
+    const storeInfoX = this.MARGIN + 25 // Position next to logo
+    const logoMiddleY = currentY + 6 // Middle of logo (12mm height / 2 = 6mm)
+    
     doc.setFont('helvetica', 'bold')
     doc.setFontSize(this.TITLE_FONT_SIZE)
     
-    // Store name "ERLIMA MODE" prominently
-    doc.text(STORE_CONFIG.name, this.MARGIN, storeInfoY)
+    // Store name "ERLIMA MODE" prominently - centered vertically with logo
+    doc.text(STORE_CONFIG.name, storeInfoX, logoMiddleY - 2)
     
-    // Store address and phone (normal font)
+    // Store address and phone (normal font, smaller) - positioned below store name
     doc.setFont('helvetica', 'normal')
-    doc.setFontSize(this.FONT_SIZE)
-    doc.text(STORE_CONFIG.address, this.MARGIN, storeInfoY + 5)
-    doc.text(STORE_CONFIG.phone, this.MARGIN, storeInfoY + 10)
+    doc.setFontSize(this.FONT_SIZE - 1) // Slightly smaller font
+    doc.text(STORE_CONFIG.address, storeInfoX, logoMiddleY + 3)
+    doc.text(STORE_CONFIG.phone, storeInfoX, logoMiddleY + 7)
 
-    return storeInfoY + 15 // Return Y position after header
+    return currentY + 15 // Reduced return spacing (was +18, now +15)
   }
 
   /**
-   * Add transaction information section (right side header)
+   * Add transaction information section (right side header) - TABLE FORMAT without borders
    * @param doc - jsPDF document instance
    * @param data - Transaction data
    * @param y - Current Y position
    * @returns New Y position after transaction info
    */
   private addTransactionInfoSection(doc: jsPDF, data: TransactionDetail, y: number): number {
-    const rightX = this.PDF_WIDTH_MM - this.MARGIN - 60 // Position from right side
-    let currentY = y
+    // JUSTIFY BETWEEN: Position at far right to create space-between effect with left header
+    const rightX = this.PDF_WIDTH_MM - this.MARGIN - 5 // Almost at right margin for justify-between effect
+    let currentY = y - 13 // Align with header top (reduced from -15 to -13)
 
     // Set font for transaction info
     doc.setFont('helvetica', 'bold')
     doc.setFontSize(this.HEADER_FONT_SIZE)
 
-    // Document type "PENAWARAN PENJUALAN" (top-right)
-    doc.text('PENAWARAN PENJUALAN', rightX, currentY, { align: 'left' })
+    // Document type "PENAWARAN PENJUALAN" (top-right, right-aligned for better justify effect)
+    doc.text('PENAWARAN PENJUALAN', rightX, currentY, { align: 'right' })
     currentY += 8
 
-    // Set normal font for details
+    // Create invisible table for transaction details
+    const tableData = [
+      ['Nomor:', data.kode],
+      ['Tanggal:', this.formatDate(data.createdAt.toString())],
+      ['Pembayaran:', data.metodeBayar],
+      ['Kepada Yth:', data.penyewa.nama]
+    ]
+
+    // Table configuration for transaction info (invisible borders)
+    const labelWidth = 25 // Width for labels (Nomor:, Tanggal:, etc.)
+    const valueWidth = 45 // Width for values
+    const rowHeight = 4 // Height for each row
+    const tableStartX = rightX - labelWidth - valueWidth // Start position for table
+
+    // Set normal font for table content
     doc.setFont('helvetica', 'normal')
     doc.setFontSize(this.FONT_SIZE)
 
-    // Transaction number (Nomor: data.kode)
-    doc.text(`Nomor: ${data.kode}`, rightX, currentY)
-    currentY += 5
+    // Draw table rows without borders
+    for (let i = 0; i < tableData.length; i++) {
+      const row = tableData[i]
+      const rowY = currentY + (i * rowHeight)
+      
+      // Label column (left-aligned within its cell)
+      doc.text(row[0], tableStartX, rowY, { align: 'left' })
+      
+      // Value column (left-aligned within its cell, positioned after label column)
+      doc.text(row[1], tableStartX + labelWidth, rowY, { align: 'left' })
+    }
 
-    // Transaction date (Tanggal: formatted date)
-    const formattedDate = this.formatDate(data.createdAt.toString())
-    doc.text(`Tanggal: ${formattedDate}`, rightX, currentY)
-    currentY += 5
+    // Update Y position after table
+    currentY += (tableData.length * rowHeight) + 2 // Add small spacing after table
 
-    // Payment method (Pembayaran: data.metodeBayar)
-    doc.text(`Pembayaran: ${data.metodeBayar}`, rightX, currentY)
-    currentY += 5
-
-    // Customer name (Kepada Yth: data.penyewa.nama)
-    doc.text(`Kepada Yth: ${data.penyewa.nama}`, rightX, currentY)
-    currentY += 8
-
-    return Math.max(currentY, y + 35) // Ensure minimum height for section
+    return Math.max(currentY, y + 8) // Reduced minimum height (was +10, now +8)
   }
 
   /**
@@ -204,13 +225,15 @@ export class ProfessionalReceiptService {
    */
   private addItemsTable(doc: jsPDF, items: TransaksiWithDetails['items'], transactionCode: string, y: number): number {
     const startX = this.MARGIN
-    const currentY = y + 10 // Add some spacing before table
+    const currentY = y + 5 // Reduced spacing before table (was +10, now +5)
 
     // Prepare table data
     const tableData: string[][] = []
     
-    // Process each item
-    for (const item of items) {
+    // Process each item with increment number
+    for (let index = 0; index < items.length; index++) {
+      const item = items[index]
+      
       // Extract category name (handle null/undefined category)
       const categoryName = item.produk.category?.name || 'N/A'
       
@@ -221,9 +244,9 @@ export class ProfessionalReceiptService {
       const unitPrice = this.formatCurrency(item.hargaSewa)
       const totalPrice = this.formatCurrency(item.subtotal)
       
-      // Create table row
+      // Create table row with increment number (1, 2, 3, ...)
       const row = [
-        transactionCode,           // No (transaction code for all items)
+        (index + 1).toString(),    // No (increment number: 1, 2, 3, ...)
         categoryName,              // Kategori
         item.produk.name,          // Nama Barang
         size || '-',               // Size (show dash if empty)
@@ -235,14 +258,14 @@ export class ProfessionalReceiptService {
       tableData.push(row)
     }
 
-    // Create the bordered table
+    // Create the bordered table with full width
     const endY = this.createBorderedTable(doc, this.TABLE_COLUMNS, tableData, startX, currentY)
     
     return endY + 5 // Add spacing after table
   }
 
   /**
-   * Add financial summary section (Sub Total, Diskon, Biaya Lain-lain, Total)
+   * Add financial summary section (right side, aligned with signature)
    * @param doc - jsPDF document instance
    * @param data - Transaction data
    * @param y - Current Y position
@@ -250,7 +273,7 @@ export class ProfessionalReceiptService {
    */
   private addFinancialSummary(doc: jsPDF, data: TransactionDetail, y: number): number {
     const rightX = this.PDF_WIDTH_MM - this.MARGIN - 50 // Position from right side
-    let currentY = y + 10 // Add spacing before summary
+    let currentY = y // Use the same Y position as signature section for horizontal alignment
 
     // Set font for financial summary
     doc.setFont('helvetica', 'normal')
@@ -272,88 +295,130 @@ export class ProfessionalReceiptService {
     // Get total from transaction data
     const totalAmount = typeof data.totalHarga === 'number' ? data.totalHarga : data.totalHarga.toNumber()
 
-    // Display financial breakdown
+    // Display financial breakdown with justify-between layout
+    const summaryWidth = 45 // Width of the financial summary section (same as separator line)
+    const leftLabelX = rightX // Left position for labels
+    const rightValueX = rightX + summaryWidth // Right position for values (aligned with separator end)
+
     // Sub Total
-    doc.text('Sub Total:', rightX, currentY, { align: 'left' })
-    doc.text(this.formatCurrency(subtotal), rightX + 35, currentY, { align: 'right' })
+    doc.text('Sub Total:', leftLabelX, currentY, { align: 'left' })
+    doc.text(this.formatCurrency(subtotal), rightValueX, currentY, { align: 'right' })
     currentY += 5
 
     // Diskon (only show if there's a discount)
     if (discountAmount > 0) {
-      doc.text('Diskon:', rightX, currentY, { align: 'left' })
-      doc.text(`-${this.formatCurrency(discountAmount)}`, rightX + 35, currentY, { align: 'right' })
+      doc.text('Diskon:', leftLabelX, currentY, { align: 'left' })
+      doc.text(`-${this.formatCurrency(discountAmount)}`, rightValueX, currentY, { align: 'right' })
       currentY += 5
     }
 
     // Biaya Lain-lain (always 0 for now, reserved for future use)
-    doc.text('Biaya Lain-lain:', rightX, currentY, { align: 'left' })
-    doc.text(this.formatCurrency(0), rightX + 35, currentY, { align: 'right' })
-    currentY += 5
+    doc.text('Biaya Lain-lain:', leftLabelX, currentY, { align: 'left' })
+    doc.text(this.formatCurrency(0), rightValueX, currentY, { align: 'right' })
+    currentY += 3
 
     // Add separator line
     doc.setLineWidth(0.3)
-    doc.line(rightX, currentY + 1, rightX + 45, currentY + 1)
-    currentY += 4
+    doc.line(rightX, currentY + 1, rightX + summaryWidth, currentY + 1)
+    currentY += 6
 
     // Total (bold)
     doc.setFont('helvetica', 'bold')
-    doc.text('Total:', rightX, currentY, { align: 'left' })
-    doc.text(this.formatCurrency(totalAmount), rightX + 35, currentY, { align: 'right' })
+    doc.text('Total:', leftLabelX, currentY, { align: 'left' })
+    doc.text(this.formatCurrency(totalAmount), rightValueX, currentY, { align: 'right' })
     currentY += 8
 
-    return currentY
-  }
-
-  /**
-   * Add professional footer with keterangan and signature area
-   * @param doc - jsPDF document instance
-   * @param y - Current Y position
-   * @returns New Y position after footer
-   */
-  private addProfessionalFooter(doc: jsPDF, y: number): number {
-    let currentY = y + 15 // Add spacing before footer
-    const leftX = this.MARGIN
-    const rightX = this.PDF_WIDTH_MM - this.MARGIN - 50
-
-    // Set font for footer
+    // Payment information section (similar to receiptService.ts)
     doc.setFont('helvetica', 'normal')
     doc.setFontSize(this.FONT_SIZE)
 
-    // Left side - Keterangan section
+    // DP/Jumlah Bayar
+    const jumlahBayarAmount = typeof data.jumlahBayar === 'number' ? data.jumlahBayar : (data.jumlahBayar?.toNumber() || 0)
+    doc.text('DP/Jumlah Bayar:', leftLabelX, currentY, { align: 'left' })
+    doc.text(this.formatCurrency(jumlahBayarAmount), rightValueX, currentY, { align: 'right' })
+    currentY += 5
+
+    // Sisa Bayar
+    const sisaBayarAmount = typeof data.sisaBayar === 'number' ? data.sisaBayar : (data.sisaBayar?.toNumber() || 0)
+    doc.text('Sisa Bayar:', leftLabelX, currentY, { align: 'left' })
+    doc.text(this.formatCurrency(sisaBayarAmount), rightValueX, currentY, { align: 'right' })
+    currentY += 8
+
+    return currentY // Return the final Y position
+  }
+
+  /**
+   * Add keterangan section (left side footer)
+   * @param doc - jsPDF document instance
+   * @param y - Current Y position
+   * @returns New Y position after keterangan section
+   */
+  private addKeteranganSection(doc: jsPDF, y: number): number {
+    let currentY = y + 10 // Add spacing before keterangan
+    const leftX = this.MARGIN
+
+    // Set font for keterangan
     doc.setFont('helvetica', 'bold')
+    doc.setFontSize(this.FONT_SIZE)
+    
+    // Keterangan title
     doc.text('Keterangan:', leftX, currentY)
     
+    // Disclaimer text (normal font)
     doc.setFont('helvetica', 'normal')
     currentY += 5
     
-    // Disclaimer text
     const disclaimerText = 'Barang yg sudah dibeli tidak dapat ditukar atau dikembalikan'
     doc.text(disclaimerText, leftX, currentY)
     
-    // Right side - Signature section
+    return currentY + 5 // Return position after keterangan
+  }
+
+  /**
+   * Add signature section (left side, aligned with financial summary)
+   * @param doc - jsPDF document instance
+   * @param y - Current Y position
+   * @returns New Y position after signature section
+   */
+  private addSignatureSection(doc: jsPDF, y: number): number {
+    const leftX = this.MARGIN
+    let currentY = y // Use the same Y position as financial summary for horizontal alignment
+
+    // Set font for signature
     doc.setFont('helvetica', 'normal')
-    doc.text('Bagian Penjualan,', rightX, currentY - 5)
+    doc.setFontSize(this.FONT_SIZE)
     
-    // Signature line with date
-    currentY += 15
-    doc.text('Tgl. ___________', rightX, currentY)
+    // "Bagian Penjualan," label
+    doc.text('Bagian Penjualan,', leftX, currentY)
     
-    // Add signature line (underline for name)
+    // Date line
+    currentY += 20
+    doc.text('Nama. _______________', leftX, currentY)
+    
+    // Signature line (underline for name)
     currentY += 10
-    doc.line(rightX, currentY, rightX + 40, currentY)
     
-    // Move to bottom for final note
-    currentY += 10
+    return currentY // Return position after signature
+  }
+
+  /**
+   * Add bottom note (centered at bottom)
+   * @param doc - jsPDF document instance
+   * @param y - Current Y position
+   * @returns New Y position after bottom note
+   */
+  private addBottomNote(doc: jsPDF, y: number): number {
+    let currentY = y + 10 // Add spacing before bottom note
     
     // Final note (centered at bottom)
     const noteText = 'Harga dan stok di atas dapat berubah sewaktu-waktu tanpa pemberitahuan'
     const centerX = this.PDF_WIDTH_MM / 2
+    
+    doc.setFont('helvetica', 'normal')
     doc.setFontSize(this.FONT_SIZE - 1) // Slightly smaller font
     doc.text(noteText, centerX, currentY, { align: 'center' })
     
-    currentY += 5
-    
-    return currentY
+    return currentY + 5
   }
 
   /**

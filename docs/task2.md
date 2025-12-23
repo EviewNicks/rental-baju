@@ -1,140 +1,159 @@
-🧪 Test Scenarios
-# 1. Transaction History Popup (Task 6)
-✅ Test Case 1.1: Basic History Display
-Steps:
+# Manual Testing Guide - Professional Receipt Layout
 
-Buka halaman Kasir → Transaksi Baru
-Pilih produk yang memiliki size variants
-Klik tombol History (ikon) pada size button
-Popup history muncul
-Expected Results:
+## Overview
+Testing panduan untuk fitur Professional Receipt Layout yang menghasilkan PDF struk profesional dengan format tabel 14x20cm.
 
-✅ Popup menampilkan riwayat transaksi
-✅ Format: "TXN-001 (2 item) untuk 4-7 Feb"
-✅ Status badge: Aktif (biru), Diambil (hijau)
-✅ Sorting berdasarkan tanggal terdekat
-✅ Test Case 1.2: Empty State
-Steps:
+## Prerequisites
+- ✅ Backend service sudah implemented
+- ✅ API route sudah ready
+- ❌ Frontend hook belum ada (perlu dibuat)
+- ❌ Button UI belum terintegrasi (perlu dibuat)
 
-Pilih produk yang belum pernah disewa
-Klik History button
-Expected Results:
+## Testing Checklist
 
-✅ Tampil pesan: "Belum Ada Transaksi"
-✅ Icon package dengan penjelasan
-✅ Test Case 1.3: Error Handling
-Steps:
+### 1. Frontend Integration Test
+**Status: BELUM READY - Perlu implementasi hook & UI**
 
-Matikan internet/simulasi network error
-Klik History button
-Expected Results:
+#### 1.1 Button Visibility
+- [x] Navigate ke transaction detail page
+- [x] Verify button "Cetak Struk Profesional" muncul di header
+- [x] Button positioned next to "Cetak Struk" yang existing
+- [x] Button styling consistent dengan design system
 
-✅ Error message user-friendly dalam bahasa Indonesia
-✅ Tombol "Coba Lagi" dengan retry counter
-✅ Suggestions dan help text muncul
+#### 1.2 Loading State
+- [x] Click button → loading state muncul immediately
+- [x] Button disabled saat loading
+- [x] Loading icon (Loader2) dengan spin animation
+- [x] Text berubah jadi "Generating..."
 
+### 2. PDF Generation Test
+**Status: READY - Backend sudah implemented**
 
-# 2. Date-Aware Availability (Task 4 & 5)
-✅ Test Case 2.1: Stock Management Flow
-Steps:
+#### 2.1 Happy Path
+- [x] Click button → PDF terbuka di new tab
+- [x] Success toast: "Struk profesional berhasil dibuat"
+- [x] Button kembali ke normal state
+- [x] Original page tetap terbuka (tidak navigate away)
 
-Cek stock produk A (misal: 10 unit)
-Buat transaksi baru untuk 5 unit produk A
-Cek stock setelah transaksi dibuat
-Lakukan pickup untuk transaksi tersebut
-Cek stock setelah pickup
-Expected Results:
+#### 2.2 PDF Content Validation
+- [ ] **Header Section:**
+  - Logo ERLIMA MODE di top-left
+  - Store name "ERLIMA MODE" prominent
+  - Address: "Jl. Abd Dg sirua no 136D kota makassar"
+  - Phone: "+62 821-9699-9962"
 
-✅ Setelah buat transaksi: Stock tetap 10 (tidak berkurang)
-✅ Setelah pickup: Stock jadi 5 (berkurang saat pickup)
+- [ ] **Transaction Info (Top-Right):**
+  - Document type: "PENAWARAN PENJUALAN"
+  - Nomor: [transaction code]
+  - Tanggal: format Indonesian (DD MMM YYYY)
+  - Pembayaran: [payment method]
+  - Kepada Yth: [customer name]
 
-##  Test Case 2.2: Date Overlap Detection
-Steps:
+- [ ] **Table Structure:**
+  - 7 columns: No, Kategori, Nama Barang, Size, Qty, @Harga, Total Harga
+  - Borders properly rendered
+  - Column alignment correct (center/left/right)
+  - All items displayed with correct data
 
-Buat transaksi A: 3 unit untuk 24-30 Des 2024
-Coba buat transaksi B: 5 unit untuk 25-28 Des 2024 (overlap)
-Expected Results:
+- [ ] **Financial Summary:**
+  - Sub Total calculation correct
+  - Diskon calculation (if any)
+  - Biaya Lain-lain: 0
+  - Total matches transaction total
+  - Currency format: dot separators (no Rp prefix)
 
-✅ Transaksi B ditolak dengan error message
-✅ Pesan: "Produk sudah dibooking untuk periode ini: TXN-XXX"
-✅ Informasi available quantity
+- [ ] **Footer:**
+  - Keterangan section with disclaimer
+  - Signature area "Bagian Penjualan"
+  - Date line "Tgl. ___________"
+  - Price change notice
 
-## ✅ Test Case 2.3: Non-Overlapping Dates
-Steps:
+#### 2.3 PDF Technical Specs
+- [ ] Dimensions: 14x20cm (140x200mm)
+- [ ] Portrait orientation
+- [ ] Professional margins
+- [ ] Clear, readable fonts
+- [ ] Browser print (Ctrl+P) works correctly
 
-Buat transaksi A: 3 unit untuk 24-30 Des 2024
-Buat transaksi B: 5 unit untuk 31 Des - 6 Jan 2025 (tidak overlap)
-Expected Results:
+### 3. Error Handling Test
 
-✅ Kedua transaksi berhasil dibuat
-✅ Stock tidak berkurang sampai pickup
-3. API & Caching (Task 2)
-✅ Test Case 3.1: API Response
-Steps:
+#### 3.1 Network Errors
+- [ ] Disconnect network → click button
+- [ ] Error toast: "Gagal membuat struk. Silakan coba lagi."
+- [ ] Button returns to clickable state
+- [ ] No console errors that break UI
 
-Buka Developer Tools → Network tab
-Klik History button pada produk
-Lihat request ke /api/kasir/transaksi/product-history
-Expected Results:
+#### 3.2 Invalid Transaction
+- [ ] Test dengan transaction ID yang tidak exist
+- [ ] Appropriate error handling
+- [ ] User feedback clear
 
-✅ Response status 200
-✅ Data format sesuai: {success: true, data: [...], cached: false}
-✅ Metadata berisi cacheExpiresAt
-✅ Test Case 3.2: Caching Behavior
-Steps:
+### 4. Data Scenarios Test
 
-Klik History button (request pertama)
-Tutup popup, buka lagi dalam 5 menit
-Tunggu > 5 menit, buka lagi
-Expected Results:
+#### 4.1 Various Transaction Types
+- [ ] Single item transaction
+- [ ] Multiple items (different categories)
+- [ ] Different sizes (S, M, L, XL, UNIVERSAL)
+- [ ] Transactions with discounts (percentage & nominal)
+- [ ] Long product names (text wrapping)
+- [ ] Large amounts (millions)
+- [ ] Many items (10+ items)
 
-✅ Request ke-2: cached: true di response
-✅ Request ke-3: cached: false (cache expired)
-✅ Badge "Cache 5 menit" muncul di popup
-4. Error Handling (Task 7)
-✅ Test Case 4.1: Network Errors
-Steps:
+#### 4.2 Size Extraction Test
+- [ ] kondisiAwal: "uuid|L|ADULT|baik" → Size: "L"
+- [ ] kondisiAwal: "uuid|UNIVERSAL|ADULT|baik" → Size: "UNIVERSAL"
+- [ ] Malformed kondisiAwal → Size: empty/dash
+- [ ] Missing kondisiAwal → Size: empty/dash
 
-Disconnect internet
-Klik History button
-Klik "Coba Lagi"
-Expected Results:
+### 5. Performance Test
+- [ ] PDF generation < 3 seconds (typical transaction)
+- [ ] UI remains responsive during generation
+- [ ] Other buttons clickable while generating
+- [ ] No memory leaks on repeated use
 
-✅ Error message: "Koneksi terlalu lambat atau server tidak merespons"
-✅ Suggestions list muncul
-✅ Help text dengan emoji 💡
-✅ Retry dengan exponential backoff
-✅ Test Case 4.2: Product Not Found
-Steps:
+## Implementation Priority
 
-Manipulasi URL/productSizeId yang tidak valid
-Trigger API call
-Expected Results:
+### Phase 1: Frontend Implementation (URGENT)
+1. **Create useProfessionalReceiptPrint hook**
+   ```typescript
+   // features/kasir/hooks/useProfessionalReceiptPrint.ts
+   ```
 
-✅ Error: "Produk yang Anda cari tidak tersedia"
-✅ Suggestions: "Periksa kembali produk yang dipilih"
-✅ Non-retryable error (no retry button)
-5. UI Integration (Task 8)
-✅ Test Case 5.1: ProductSelectionStep Integration
-Steps:
+2. **Update TransactionDetailPage**
+   - Import hook
+   - Add button next to existing "Cetak Struk"
+   - Handle loading states
 
-Buka halaman transaksi
-Coba add produk yang conflict
-Lihat error display di ProductSelectionStep
-Expected Results:
+### Phase 2: Testing
+1. Manual testing dengan checklist di atas
+2. Fix bugs yang ditemukan
+3. Performance optimization jika diperlukan
 
-✅ Orange warning box muncul
-✅ "Peringatan Ketersediaan" header
-✅ Error message per produk
-✅ Tombol "Tutup" untuk dismiss error
-✅ Test Case 5.2: Responsive Design
-Steps:
+## Test Data Requirements
 
-Test di desktop (1920x1080)
-Test di tablet (768px)
-Test di mobile (375px)
-Expected Results:
+### Sample Transaction Data
+- Transaction dengan 1 item
+- Transaction dengan multiple items
+- Transaction dengan discount
+- Transaction dengan long product names
+- Transaction dengan berbagai ukuran (S, M, L, XL, UNIVERSAL)
 
-✅ Popup responsive di semua ukuran
-✅ History button visible dan clickable
-✅ Text tidak terpotong
+### Test Environment
+- Browser: Chrome, Firefox, Edge
+- Network conditions: Normal, Slow, Offline
+- Different screen sizes
+- Different printers (untuk print test)
+
+## Success Criteria
+- ✅ All manual tests pass
+- ✅ PDF content matches requirements exactly
+- ✅ Error handling works properly
+- ✅ Performance meets targets (< 3s)
+- ✅ UI/UX smooth dan responsive
+- ✅ No console errors
+- ✅ Print functionality works
+
+## Notes
+- Backend sudah ready, fokus ke frontend integration
+- Testing bisa dimulai setelah hook & UI implemented
+- Priority: basic functionality dulu, polish kemudian
