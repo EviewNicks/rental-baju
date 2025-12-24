@@ -11,12 +11,15 @@ import {
   UpdateTransaksiRequest,
   TransaksiQueryParams,
 } from '../lib/validation/kasirSchema'
+import type { ProductSelection } from '../types'
 import { TransactionCodeGenerator } from '../lib/utils/codeGenerator'
 import { PriceCalculator } from '../lib/utils/server'
-import { createAvailabilityService, AvailabilityService } from './availabilityService'
+import { createAvailabilityService } from './availabilityService'
 import { createInventoryService } from './inventoryService'
 import type { TransactionStatus } from '../types'
+import { DateCalculator } from '../lib/utils/dateCalculator'
 import { TransactionLogger } from '../lib/logger/transactionLogger'
+
 
 export interface TransaksiWithDetails extends Transaksi {
   penyewa: {
@@ -227,41 +230,15 @@ function calculateEnhancedStatus(
 
 export class TransaksiService {
   private codeGenerator: TransactionCodeGenerator
-  private availabilityService: AvailabilityService
 
   constructor(
     private prisma: PrismaClient,
     private userId: string,
   ) {
     this.codeGenerator = new TransactionCodeGenerator(prisma)
-    this.availabilityService = createAvailabilityService(prisma)
   }
 
-  /**
-   * Validate kasir exists and is active
-   * NEW: Kasir validation for transaction assignment
-   * OPTIMIZED: Conditional logging for development only
-   * @private
-   */
-  private async validateKasirExistsAndActive(kasirId: string): Promise<void> {
-    const kasir = await this.prisma.kasir.findUnique({
-      where: { id: kasirId, isActive: true },
-    })
 
-    if (!kasir) {
-      // 🔍 DEBUG: Log kasir validation failure (dev only)
-      if (process.env.NODE_ENV === 'development') {
-        TransactionLogger.logKasirDebug({
-          kasirId,
-          validation: 'kasir_validation_failed',
-          reason: 'not_found_or_inactive',
-          timestamp: new Date().toISOString(),
-          source: 'TransaksiService.validateKasirExistsAndActive',
-        })
-      }
-      throw new Error('Kasir tidak ditemukan atau tidak aktif')
-    }
-  }
 
   /**
    * Unified method to get transaction by ID or code
@@ -415,8 +392,8 @@ export class TransaksiService {
   // This improves performance by eliminating dual inventory system complexity
 
   /**
-   * Create new transaction with size-aware stock management
-   * NEW: Support for size-based inventory tracking with optimized transaction pattern
+   * Create new transaction with size-aware stock management and enhancements
+   * ENHANCED: Now supports discount system and duration packages (4-day/7-day)
    * OPTIMIZED: Returns full transaction details to eliminate double query
    *
    * PHASE 2 OPTIMIZATION: Pre-validation pattern to prevent transaction timeouts
@@ -425,7 +402,7 @@ export class TransaksiService {
    * Step 3: Update stock quantities with retry logic AFTER transaction
    */
   async createTransaksiSizeAware(data: CreateTransaksiRequest): Promise<TransaksiWithDetails> {
-    let priceCalculation: ReturnType<typeof PriceCalculator.calculateTransactionTotal> | null = null
+    let priceCalculation: ReturnType<typeof PriceCalculator.calculateTransactionTotalWithEnhancements> | null = null
 
     try {
       const penyewa = await this.prisma.penyewa.findUnique({
@@ -436,14 +413,7 @@ export class TransaksiService {
         throw new Error('Penyewa tidak ditemukan')
       }
 
-      // // NEW: Validate kasir if provided
-      // if (data.kasirId) {
-      //   await this.validateKasirExistsAndActive(data.kasirId)
-      // }
-
-      // STEP 2: Get product data for pricing
-      // NOTE: Stock validation moved INSIDE transaction to prevent double validation
-      // This eliminates 8-12 seconds of redundant queries
+      // Get product data for enhanced pricing
       const productSizeIds = data.items.map((item) => item.productSizeId)
       const uniqueSizeIds = [...new Set(productSizeIds)]
 
@@ -463,23 +433,44 @@ export class TransaksiService {
         },
       })
 
-      // Calculate prices using size-specific data
-      const itemsWithPrices = data.items.map((item) => {
+      // Get duration from first item (all items should have same duration in UI)
+      const duration = data.items[0]?.durasi as 4 | 7 || 4
+
+      // Prepare items for enhanced price calculation
+      const itemsForCalculation: ProductSelection[] = data.items.map((item) => {
         const productSize = productSizes.find((ps) => ps.id === item.productSizeId)!
         return {
-          produkId: item.produkId,
+          product: {
+            id: item.produkId,
+            name: productSize.product.name,
+            pricePerDay: Number(productSize.product.currentPrice),
+            // Add required fields for ProductSelection
+            category: '',
+            size: productSize.size,
+            color: '',
+            image: '',
+            available: true,
+          },
+          quantity: item.jumlah,
+          duration: duration,
           productSizeId: item.productSizeId,
-          jumlah: item.jumlah,
-          durasi: 4, // Fixed 4-day package
-          hargaSewa: productSize.product.currentPrice,
         }
       })
 
-      priceCalculation = PriceCalculator.calculateTransactionTotal(itemsWithPrices)
+      // ENHANCED: Use enhanced price calculation with discount support
+      priceCalculation = PriceCalculator.calculateTransactionTotalWithEnhancements({
+        items: itemsForCalculation,
+        duration,
+        discountType: data.discountType,
+        discountValue: data.discountValue || undefined,
+      })
 
       if (!priceCalculation) {
-        throw new Error('Failed to calculate transaction pricing')
+        throw new Error('Failed to calculate enhanced transaction pricing')
       }
+
+      // ENHANCED: Calculate return date using DateCalculator
+      const returnDate = DateCalculator.calculateReturnDate(data.tglMulai, duration)
 
       // Generate transaction code
       const kode = await this.codeGenerator.generateTransactionCode()
@@ -489,24 +480,33 @@ export class TransaksiService {
 
       const transaksi = await this.prisma.$transaction(
         async (tx) => {
-          // Validate stock availability INSIDE transaction (prevents race conditions)
-          // This is the ONLY validation - removed redundant pre-validation
-          await this.validateStockAvailabilityInTransaction(tx, data.items, productSizes)
+          // TASK 4.1: Validate stock availability with date-aware checking
+          // Pass startDate and endDate for date-aware availability validation
+          await this.validateStockAvailabilityInTransaction(
+            tx, 
+            data.items, 
+            productSizes,
+            new Date(data.tglMulai), // Start date from form
+            new Date(returnDate)     // Calculated end date
+          )
 
-          // Create main transaction with full relations (1 operation)
+          // ENHANCED: Create main transaction with discount fields
           const createdTransaksi = await tx.transaksi.create({
             data: {
               kode,
               penyewaId: data.penyewaId,
-              kasirId: data.kasirId || null, // NEW: Include kasirId if provided
+              kasirId: data.kasirId || null,
               status: 'active',
-              totalHarga: priceCalculation!.totalHarga,
+              totalHarga: priceCalculation!.finalTotal,
               jumlahBayar: new Decimal(0),
-              sisaBayar: priceCalculation!.totalHarga,
+              sisaBayar: priceCalculation!.finalTotal,
               tglMulai: new Date(data.tglMulai),
-              tglSelesai: data.tglSelesai ? new Date(data.tglSelesai) : null,
+              tglSelesai: new Date(returnDate), // ENHANCED: Use calculated return date
               metodeBayar: data.metodeBayar || 'tunai',
               catatan: data.catatan || null,
+              // ENHANCED: Store discount information
+              discountType: data.discountType || null,
+              discountValue: data.discountValue ? new Decimal(data.discountValue) : null,
               createdBy: this.userId,
             },
             include: {
@@ -516,8 +516,8 @@ export class TransaksiService {
                   nama: true,
                   telepon: true,
                   alamat: true,
-                  nik: true, // Add NIK field for customer identity number
-                  email: true, // Add email field for customer contact
+                  nik: true,
+                  email: true,
                 },
               },
               kasir: {
@@ -532,7 +532,7 @@ export class TransaksiService {
             },
           })
 
-          // Create transaction items (1 operation - bulk insert)
+          // ENHANCED: Create transaction items with enhanced pricing
           const itemsData = data.items.map((item, index) => {
             const calculation = priceCalculation!.itemCalculations[index]
             const productSize = productSizes.find((ps) => ps.id === item.productSizeId)!
@@ -540,9 +540,9 @@ export class TransaksiService {
               transaksiId: createdTransaksi.id,
               produkId: item.produkId,
               jumlah: item.jumlah,
-              hargaSewa: calculation.hargaSewa,
-              durasi: 4, // Fixed 4-day package
-              subtotal: calculation.subtotal,
+              hargaSewa: new Decimal(calculation.adjustedPrice).div(item.jumlah), // Price per unit after duration multiplier
+              durasi: duration, // ENHANCED: Use actual duration from form
+              subtotal: calculation.adjustedPrice,
               kondisiAwal: `${item.productSizeId}|${productSize.size}|${productSize.ageCategory}|${item.kondisiAwal || ''}`,
             }
           })
@@ -551,9 +551,11 @@ export class TransaksiService {
             data: itemsData,
           })
 
-          // Update product quantities - OPTIMIZED: Single inventory system
-          // Stock already validated above, just update quantities
-          await this.updateProductSizeQuantitiesWithoutValidation(tx, data.items)
+          // ❌ TASK 5: Stock deduction REMOVED from transaction creation
+          // Stock is now deducted during pickup operation (see PickupService.processPickup)
+          // This allows multiple transactions for different date ranges without immediate stock conflict
+          // Date-aware validation (Task 4.1) prevents overbooking by checking overlapping periods
+          // await this.updateProductSizeQuantitiesWithoutValidation(tx, data.items) // REMOVED
 
           // Fetch items with full product details
           const items = await tx.transaksiItem.findMany({
@@ -590,13 +592,12 @@ export class TransaksiService {
             },
           })
 
-          // Fetch pembayaran
+          // Fetch pembayaran and aktivitas
           const pembayaran = await tx.pembayaran.findMany({
             where: { transaksiId: createdTransaksi.id },
             orderBy: { createdAt: 'desc' },
           })
 
-          // Fetch aktivitas
           const aktivitas = await tx.aktivitasTransaksi.findMany({
             where: { transaksiId: createdTransaksi.id },
             orderBy: { createdAt: 'desc' },
@@ -614,16 +615,16 @@ export class TransaksiService {
         },
       )
 
-      // Create activity log AFTER transaction (async, non-blocking)
-      // This saves 1-2 seconds by not blocking transaction completion
-      this.createActivityLogAsync(
+      // ENHANCED: Create enhanced activity log AFTER transaction (async, non-blocking)
+      this.createEnhancedActivityLogAsync(
         transaksi.id,
         kode,
         data,
         priceCalculation,
+        duration,
         transactionStartTime,
-      ).catch((err) => {
-        console.error('Failed to create activity log:', err)
+      ).catch((err: Error) => {
+        console.error('Failed to create enhanced activity log:', err)
       })
 
       // 🔍 DEBUG: Log transaction creation success with kasir assignment
@@ -631,7 +632,10 @@ export class TransaksiService {
         transactionCode: transaksi.kode,
         transactionId: transaksi.id,
         kasirId: data.kasirId,
-        success: 'transaction_created_with_kasir',
+        success: 'transaction_created_with_enhancements',
+        discountType: data.discountType,
+        discountValue: data.discountValue,
+        duration,
         timestamp: new Date().toISOString(),
         source: 'TransaksiService.createTransaksiSizeAware',
       })
@@ -655,11 +659,13 @@ export class TransaksiService {
     } catch (error) {
       // Enhanced error logging for debugging
       if (error instanceof Error) {
-        console.error('🚨 [ERROR] Details:', {
+        console.error('🚨 [ERROR] Enhanced Transaction Creation Failed:', {
           message: error.message,
           itemCount: data.items.length,
           penyewaId: data.penyewaId,
-          totalAmount: priceCalculation?.totalHarga?.toString() || 'unknown',
+          discountType: data.discountType,
+          discountValue: data.discountValue,
+          totalAmount: priceCalculation?.finalTotal?.toString() || 'unknown',
         })
       }
 
@@ -670,7 +676,7 @@ export class TransaksiService {
   /**
    * Validate stock availability INSIDE transaction (single source of truth)
    * OPTIMIZED: Validates once inside transaction to prevent race conditions
-   * FIXED: Removed redundant isActive check - query already filters by isActive
+   * ENHANCED: Now supports date-aware availability validation using tglMulai and tglSelesai
    * @private
    */
   private async validateStockAvailabilityInTransaction(
@@ -679,8 +685,11 @@ export class TransaksiService {
     items: CreateTransaksiRequest['items'],
     //eslint-disable-next-line
     productSizes: any[],
+    startDate?: Date, // TASK 4.1: Added for date-aware validation
+    endDate?: Date    // TASK 4.1: Added for date-aware validation
   ): Promise<void> {
     const txInventoryService = createInventoryService(tx)
+    const txAvailabilityService = createAvailabilityService(tx)
 
     for (const item of items) {
       const productSize = productSizes.find((ps) => ps.id === item.productSizeId)
@@ -691,56 +700,54 @@ export class TransaksiService {
         throw new Error(`Ukuran produk tidak ditemukan untuk item ${item.productSizeId}`)
       }
 
-      // ❌ REMOVED: isActive check - redundant because:
-      // 1. Query already filters by ProductSize.isActive = true
-      // 2. If size is inactive, it won't reach here (caught by !productSize check above)
-      // 3. Stock availability is the real validation
-
-      // ✅ VALIDATION 2: Check actual stock availability using InventoryService
-      // This is the real validation - checks if we have enough quantity
-      const isAvailable = await txInventoryService.checkAvailability(
-        item.productSizeId,
-        item.jumlah,
-      )
-
-      if (!isAvailable) {
-        const stockStatus = await txInventoryService.getStockStatus(item.productSizeId)
-        throw new Error(
-          `Size ${productSize.size} (${productSize.ageCategory}) untuk ${productSize.product.name} tidak mencukupi. Tersedia: ${stockStatus.availableQuantity}, Diminta: ${item.jumlah}`,
+      // ✅ VALIDATION 2: Use date-aware availability checking if dates are provided
+      if (startDate && endDate) {
+        // TASK 4.1 FIX: Use productSizeId instead of productId for size-aware validation
+        const availabilityCheck = await txAvailabilityService.checkDateRangeAvailability(
+          [{ productSizeId: item.productSizeId, quantity: item.jumlah }],
+          startDate,
+          endDate
         )
+
+        if (!availabilityCheck.available) {
+          const conflict = availabilityCheck.conflicts[0]
+          const overlappingTransactions = conflict.overlappingTransactions
+            .map(t => t.transactionCode)
+            .join(', ')
+          
+          throw new Error(
+            `Size ${productSize.size} (${productSize.ageCategory}) untuk ${productSize.product.name} tidak tersedia untuk periode ${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}. ` +
+            `Tersedia: ${conflict.available}, Diminta: ${conflict.requested}. ` +
+            `Konflik dengan transaksi: ${overlappingTransactions}`
+          )
+        }
+      } else {
+        // Legacy validation: Check current stock availability using InventoryService
+        const isAvailable = await txInventoryService.checkAvailability(
+          item.productSizeId,
+          item.jumlah,
+        )
+
+        if (!isAvailable) {
+          const stockStatus = await txInventoryService.getStockStatus(item.productSizeId)
+          throw new Error(
+            `Size ${productSize.size} (${productSize.ageCategory}) untuk ${productSize.product.name} tidak mencukupi. Tersedia: ${stockStatus.availableQuantity}, Diminta: ${item.jumlah}`,
+          )
+        }
       }
     }
   }
 
   /**
-   * Update product size quantities WITHOUT validation (already validated)
-   * OPTIMIZED: Skips validation to avoid double-checking
+   * Create enhanced activity log with discount information
    * @private
    */
-  private async updateProductSizeQuantitiesWithoutValidation(
-    //eslint-disable-next-line
-    tx: any,
-    items: CreateTransaksiRequest['items'],
-  ): Promise<void> {
-    const txInventoryService = createInventoryService(tx)
-
-    // Update stock using InventoryService (atomic operation)
-    // Validation already done in validateStockAvailabilityInTransaction
-    for (const item of items) {
-      await txInventoryService.updateStockOnCreate(item.productSizeId, item.jumlah)
-    }
-  }
-
-  /**
-   * Create activity log asynchronously (non-blocking)
-   * OPTIMIZED: Moved outside transaction to reduce transaction time
-   * @private
-   */
-  private async createActivityLogAsync(
+  private async createEnhancedActivityLogAsync(
     transaksiId: string,
     kode: string,
     data: CreateTransaksiRequest,
-    priceCalculation: ReturnType<typeof PriceCalculator.calculateTransactionTotal>,
+    priceCalculation: ReturnType<typeof PriceCalculator.calculateTransactionTotalWithEnhancements>,
+    duration: 4 | 7,
     transactionStartTime: number,
   ): Promise<void> {
     try {
@@ -748,21 +755,26 @@ export class TransaksiService {
         data: {
           transaksiId,
           tipe: 'dibuat',
-          deskripsi: `Transaksi ${kode} dibuat${data.kasirId ? ' dengan kasir ter assign' : ''}`,
+          deskripsi: `Transaksi ${kode} dibuat${data.kasirId ? ' dengan kasir ter assign' : ''}${data.discountType ? ` dengan diskon ${data.discountType}` : ''}`,
           data: {
             items: data.items.length,
-            totalHarga: priceCalculation.totalHarga.toString(),
+            subtotal: priceCalculation.subtotal.toString(),
+            discountAmount: priceCalculation.discountAmount.toString(),
+            totalHarga: priceCalculation.finalTotal.toString(),
+            discountType: data.discountType || null,
+            discountValue: data.discountValue || null,
+            duration,
+            durationMultiplier: priceCalculation.durationMultiplier,
             kasirId: data.kasirId || null,
             sizeAware: true,
-            optimizedSystem: true,
+            enhancedSystem: true,
             transactionDuration: Date.now() - transactionStartTime,
           },
           createdBy: this.userId,
         },
       })
     } catch (error) {
-      // Log error but don't throw - activity log is not critical
-      console.error('Failed to create activity log:', error)
+      console.error('Failed to create enhanced activity log:', error)
     }
   }
 

@@ -1,204 +1,160 @@
 /**
- * Price Calculator Utilities - RPK-26
- * Business logic for calculating rental prices and totals
+ * Frontend Price Calculator for Transaction Enhancements
+ * Handles duration multipliers and discount calculations
  */
 
-import { Decimal } from '@prisma/client/runtime/library'
-
-export interface TransactionItem {
-  produkId: string
-  jumlah: number
-  durasi: number // Fixed at 4 for all transactions
-  hargaSewa: number | Decimal
-}
+import type { ProductSelection } from '../../types'
 
 export interface PriceCalculationResult {
-  subtotal: Decimal
-  totalHarga: Decimal
+  subtotal: number
+  discountAmount: number
+  finalTotal: number
+  duration: 4 | 7
+  durationMultiplier: number
   itemCalculations: Array<{
     produkId: string
+    productSizeId?: string
     jumlah: number
-    durasi: number
-    hargaSewa: Decimal
-    subtotal: Decimal
+    durasi: 4 | 7
+    basePrice: number
+    adjustedPrice: number
   }>
 }
 
+export interface PriceCalculationParams {
+  items: ProductSelection[]
+  duration: 4 | 7
+  discountType?: 'percent' | 'nominal' | null
+  discountValue?: number | null
+}
+
+// Legacy types for backward compatibility
+export interface TransactionItem {
+  produkId: string
+  productSizeId?: string
+  jumlah: number
+  hargaSewa: number
+}
+
+export interface EnhancedTransactionItem extends TransactionItem {
+  durasi: 4 | 7
+}
+
+// Legacy alias for PriceCalculationResult
+export type EnhancedPriceCalculationResult = PriceCalculationResult
+
 export class PriceCalculator {
   /**
-   * Calculate total price for transaction items
-   * New Formula: subtotal = hargaSewa * jumlah (fixed 4-day package)
+   * Calculate transaction total with duration multipliers and discounts
+   * Frontend version for real-time calculations
    */
-  static calculateTransactionTotal(items: TransactionItem[]): PriceCalculationResult {
-    const itemCalculations = items.map((item) => {
-      const hargaSewa = new Decimal(item.hargaSewa.toString())
-      const jumlah = new Decimal(item.jumlah)
-
-      // Fixed 4-day package pricing - no duration multiplication
-      const subtotal = hargaSewa.mul(jumlah)
-
+  static calculateTransactionTotalWithEnhancements(params: PriceCalculationParams): PriceCalculationResult {
+    const { items, duration, discountType, discountValue } = params
+    
+    // Duration multiplier logic
+    const durationMultiplier = duration === 7 ? 1.5 : 1.0
+    
+    // Calculate item totals with duration multiplier
+    const itemCalculations = items.map(item => {
+      const basePrice = item.product.pricePerDay * item.quantity
+      const adjustedPrice = basePrice * durationMultiplier
+      
       return {
-        produkId: item.produkId,
-        jumlah: item.jumlah,
-        durasi: 4, // Always 4 for fixed package
-        hargaSewa,
-        subtotal
+        produkId: item.product.id,
+        productSizeId: item.productSizeId,
+        jumlah: item.quantity,
+        durasi: duration,
+        basePrice,
+        adjustedPrice
       }
     })
-
-    const totalHarga = itemCalculations.reduce(
-      (total, item) => total.add(item.subtotal),
-      new Decimal(0)
-    )
-
+    
+    // Calculate subtotal
+    const subtotal = itemCalculations.reduce((sum, item) => sum + item.adjustedPrice, 0)
+    
+    // Calculate discount amount
+    let discountAmount = 0
+    if (discountType && discountValue && discountValue > 0) {
+      if (discountType === 'percent') {
+        discountAmount = (subtotal * discountValue) / 100
+      } else if (discountType === 'nominal') {
+        // Prevent discount from exceeding subtotal (negative total)
+        discountAmount = Math.min(discountValue, subtotal)
+      }
+    }
+    
+    // Calculate final total
+    const finalTotal = Math.max(0, subtotal - discountAmount) // Ensure non-negative
+    
     return {
-      subtotal: totalHarga, // For backward compatibility
-      totalHarga,
+      subtotal,
+      discountAmount,
+      finalTotal,
+      duration,
+      durationMultiplier,
       itemCalculations
     }
   }
-
+  
   /**
-   * Calculate remaining payment amount
+   * Validate discount input
    */
-  static calculateRemainingPayment(
-    totalHarga: number | Decimal,
-    jumlahBayar: number | Decimal
-  ): Decimal {
-    const total = new Decimal(totalHarga.toString())
-    const paid = new Decimal(jumlahBayar.toString())
+  static validateDiscount(
+    discountType: 'percent' | 'nominal' | null,
+    discountValue: number | null,
+    subtotal: number
+  ): { isValid: boolean; error?: string } {
+    if (!discountType || discountValue === null || discountValue === 0) {
+      return { isValid: true } // No discount is valid
+    }
     
-    const remaining = total.sub(paid)
-    return remaining.greaterThan(0) ? remaining : new Decimal(0)
-  }
-
-  /**
-   * Calculate payment percentage
-   */
-  static calculatePaymentPercentage(
-    totalHarga: number | Decimal,
-    jumlahBayar: number | Decimal
-  ): number {
-    const total = new Decimal(totalHarga.toString())
-    const paid = new Decimal(jumlahBayar.toString())
-
-    if (total.equals(0)) return 0
-
-    const percentage = paid.div(total).mul(100)
-    return Math.min(percentage.toNumber(), 100)
-  }
-
-  /**
-   * Check if transaction is fully paid
-   */
-  static isFullyPaid(
-    totalHarga: number | Decimal,
-    jumlahBayar: number | Decimal
-  ): boolean {
-    const total = new Decimal(totalHarga.toString())
-    const paid = new Decimal(jumlahBayar.toString())
+    if (discountValue < 0) {
+      return { isValid: false, error: 'Nilai diskon tidak boleh negatif' }
+    }
     
-    return paid.greaterThanOrEqualTo(total)
-  }
-
-  /**
-   * Validate payment amount
-   */
-  static validatePaymentAmount(
-    paymentAmount: number | Decimal,
-    totalHarga: number | Decimal,
-    currentJumlahBayar: number | Decimal
-  ): {
-    isValid: boolean
-    error?: string
-    maxAmount?: Decimal
-  } {
-    const payment = new Decimal(paymentAmount.toString())
-    const total = new Decimal(totalHarga.toString())
-    const currentPaid = new Decimal(currentJumlahBayar.toString())
-
-    if (payment.lessThanOrEqualTo(0)) {
-      return {
-        isValid: false,
-        error: 'Jumlah pembayaran harus lebih dari 0'
+    if (discountType === 'percent') {
+      if (discountValue > 100) {
+        return { isValid: false, error: 'Diskon persentase tidak boleh lebih dari 100%' }
+      }
+    } else if (discountType === 'nominal') {
+      if (discountValue > subtotal) {
+        return { isValid: false, error: 'Diskon nominal tidak boleh melebihi subtotal' }
       }
     }
-
-    const maxPayment = total.sub(currentPaid)
-    if (payment.greaterThan(maxPayment)) {
-      return {
-        isValid: false,
-        error: 'Jumlah pembayaran melebihi sisa tagihan',
-        maxAmount: maxPayment
-      }
-    }
-
+    
     return { isValid: true }
   }
 
-  /**
-   * Calculate late fee for returns after 4 days
-   * Fixed rate: Rp 20.000 per item per day after day 4
-   */
-  static calculateLateFee(
-    daysLate: number,
-    totalItems: number,
-    lateFeePerItem: number = 20000 // Rp 20.000 per item per day
-  ): Decimal {
-    if (daysLate <= 0) return new Decimal(0)
-
-    const items = new Decimal(totalItems)
-    const days = new Decimal(daysLate)
-    const feePerItem = new Decimal(lateFeePerItem)
-
-    return items.mul(days).mul(feePerItem)
+  // Legacy methods for backward compatibility with pembayaranService
+  static validatePaymentAmount(amount: number, totalAmount: number): { isValid: boolean; error?: string } {
+    if (amount < 0) {
+      return { isValid: false, error: 'Jumlah pembayaran tidak boleh negatif' }
+    }
+    if (amount > totalAmount * 2) { // Allow overpayment up to 2x for change
+      return { isValid: false, error: 'Jumlah pembayaran terlalu besar' }
+    }
+    return { isValid: true }
   }
 
-  /**
-   * Calculate total late fee for transaction items
-   */
-  static calculateTransactionLateFee(
-    items: TransactionItem[],
-    daysLate: number
-  ): Decimal {
-    if (daysLate <= 0) return new Decimal(0)
-
-    const totalItems = items.reduce((total, item) => total + item.jumlah, 0)
-    return this.calculateLateFee(daysLate, totalItems)
+  static calculateRemainingPayment(totalAmount: number, paidAmount: number): number {
+    return Math.max(0, totalAmount - paidAmount)
   }
 
-  /**
-   * Format price to Indonesian Rupiah display
-   */
-  static formatToRupiah(amount: number | Decimal): string {
-    const value = typeof amount === 'number' ? amount : amount.toNumber()
-    
+  static formatToRupiah(amount: number): string {
     return new Intl.NumberFormat('id-ID', {
       style: 'currency',
       currency: 'IDR',
       minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(value)
+      maximumFractionDigits: 0,
+    }).format(amount)
   }
 
-  /**
-   * Convert Decimal to number safely for JSON serialization
-   */
-  static decimalToNumber(decimal: Decimal): number {
-    return decimal.toNumber()
+  static calculatePaymentPercentage(paidAmount: number, totalAmount: number): number {
+    if (totalAmount === 0) return 0
+    return Math.min(100, (paidAmount / totalAmount) * 100)
   }
 
-  /**
-   * Convert number to Decimal safely for calculations
-   */
-  static numberToDecimal(num: number): Decimal {
-    return new Decimal(num)
-  }
-
-  /**
-   * Round Decimal to 2 decimal places for currency
-   */
-  static roundCurrency(decimal: Decimal): Decimal {
-    return decimal.toDecimalPlaces(2)
+  static isFullyPaid(paidAmount: number, totalAmount: number): boolean {
+    return paidAmount >= totalAmount
   }
 }

@@ -267,6 +267,9 @@ async function transformApiToUI(apiData: TransaksiResponse): Promise<Transaction
     status: calculatedStatus,
     paymentMethod: apiData.metodeBayar,
     notes: apiData.catatan || '',
+    // 🆕 ENHANCEMENT: Include discount information
+    discountType: apiData.discountType || null,
+    discountValue: apiData.discountValue || null,
     createdAt: apiData.createdAt,
     updatedAt: apiData.updatedAt,
 

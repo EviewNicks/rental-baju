@@ -10,6 +10,45 @@ const isEdgeRuntime = typeof process !== 'undefined' && process.env.NEXT_RUNTIME
 // Tentukan level log minimum berdasarkan environment
 const LOG_LEVEL = process.env.NODE_ENV === 'production' ? 'info' : 'debug'
 
+// Cache untuk mencegah spam error yang sama
+const errorCache = new Map<string, { count: number; lastSeen: number }>()
+const ERROR_CACHE_DURATION = 30000 // 30 detik
+const MAX_SAME_ERROR_COUNT = 3 // Maksimal 3 kali error yang sama dalam periode cache
+
+// Fungsi untuk mengecek apakah error harus di-suppress
+const shouldSuppressError = (errorMessage: string): boolean => {
+  // Suppress TimeoutError yang berulang
+  if (errorMessage.includes('TimeoutError') || errorMessage.includes('timeout')) {
+    const now = Date.now()
+    const cacheKey = `timeout_${errorMessage.substring(0, 100)}` // Ambil 100 karakter pertama sebagai key
+    
+    const cached = errorCache.get(cacheKey)
+    if (cached) {
+      // Jika masih dalam periode cache dan sudah mencapai batas maksimal
+      if (now - cached.lastSeen < ERROR_CACHE_DURATION && cached.count >= MAX_SAME_ERROR_COUNT) {
+        return true // Suppress error ini
+      }
+      // Update cache
+      errorCache.set(cacheKey, { 
+        count: cached.count + 1, 
+        lastSeen: now 
+      })
+    } else {
+      // Tambah ke cache
+      errorCache.set(cacheKey, { count: 1, lastSeen: now })
+    }
+    
+    // Bersihkan cache yang sudah expired
+    for (const [key, value] of errorCache.entries()) {
+      if (now - value.lastSeen > ERROR_CACHE_DURATION) {
+        errorCache.delete(key)
+      }
+    }
+  }
+  
+  return false
+}
+
 // Level log dengan prioritas numerik (semakin kecil semakin penting)
 const LOG_LEVELS = {
   error: 0,
@@ -237,6 +276,12 @@ export const logger: Logger = {
     error?: Error | Record<string, unknown>,
   ): void {
     if (!shouldLog('error')) return
+
+    // Cek apakah error harus di-suppress
+    const errorMessage = error instanceof Error ? error.message : JSON.stringify(error)
+    if (shouldSuppressError(errorMessage)) {
+      return // Skip logging untuk error yang berulang
+    }
 
     // Ekstrak stack trace jika error adalah instance Error
     const errorData =

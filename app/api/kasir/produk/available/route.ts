@@ -422,15 +422,30 @@ export async function GET(request: NextRequest) {
 
     // Generic fallback with enhanced logging for debugging
     const requestId = crypto.randomUUID()
-    console.error('Unhandled error in GET /api/kasir/produk/available:', {
-      requestId,
-      error: error instanceof Error ? {
-        name: error.name,
-        message: error.message,
-        stack: error.stack
-      } : error,
-      timestamp: new Date().toISOString()
-    })
+    
+    // Suppress repetitive timeout errors
+    if (error instanceof Error && (error.name === 'TimeoutError' || error.message.includes('timeout'))) {
+      // Only log timeout errors in development or first occurrence
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('⚠️ Timeout error in GET /api/kasir/produk/available (suppressed in production):', {
+          requestId,
+          errorName: error.name,
+          message: error.message.substring(0, 100) + '...',
+          timestamp: new Date().toISOString()
+        })
+      }
+    } else {
+      // Log other errors normally
+      console.error('Unhandled error in GET /api/kasir/produk/available:', {
+        requestId,
+        error: error instanceof Error ? {
+          name: error.name,
+          message: error.message,
+          stack: error.stack
+        } : error,
+        timestamp: new Date().toISOString()
+      })
+    }
 
     return NextResponse.json(
       {

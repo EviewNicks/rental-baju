@@ -10,6 +10,7 @@ import {
   Loader2,
   ChevronLeft,
   ChevronRight,
+  AlertTriangle,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -21,6 +22,12 @@ import { formatCurrency } from '../../lib/utils/client'
 import { generateCartItemKey } from '../../lib/utils/keyGeneration'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
+import { 
+  createAvailabilityError, 
+  determineErrorType, 
+  type AvailabilityError 
+} from '../../lib/errors/availabilityErrors'
+import { ProductHistoryPopup } from '../ui/ProductHistoryPopup'
 
 interface ProductSelectionStepProps {
   selectedProducts: ProductSelection[]
@@ -52,6 +59,56 @@ export function ProductSelectionStep({
   // Pagination state - FIXED: Use pageSize from filters state for consistency
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(12)
+  // Enhanced error handling for availability checks
+  const [availabilityErrors, setAvailabilityErrors] = useState<Map<string, AvailabilityError>>(new Map())
+  
+  // History popup state management
+  const [historyPopup, setHistoryPopup] = useState<{
+    isOpen: boolean
+    productSizeId: string
+    productName: string
+    size: string
+    ageCategory: string
+  }>({
+    isOpen: false,
+    productSizeId: '',
+    productName: '',
+    size: '',
+    ageCategory: '',
+  })
+
+  // Helper function to safely render error details
+  const renderErrorDetails = (error: AvailabilityError) => {
+    if (!error.details?.productId) return null
+    
+    const productId = error.details.productId as string
+    return (
+      <p className="text-xs text-orange-600 mt-1">
+        Produk ID: {productId}
+      </p>
+    )
+  }
+
+  // History popup handlers
+  const openHistoryPopup = (productSizeId: string, productName: string, size: string, ageCategory: string) => {
+    setHistoryPopup({
+      isOpen: true,
+      productSizeId,
+      productName,
+      size,
+      ageCategory,
+    })
+  }
+
+  const closeHistoryPopup = () => {
+    setHistoryPopup({
+      isOpen: false,
+      productSizeId: '',
+      productName: '',
+      size: '',
+      ageCategory: '',
+    })
+  }
 
   // Dynamic page size calculation based on current data
   const availablePageSizes = [12, 24, 48]
@@ -94,6 +151,7 @@ export function ProductSelectionStep({
 
       return {
         id: apiProduct.id,
+        code: apiProduct.code, // ✅ FIXED: Map product code from API
         name: apiProduct.name,
         category: apiProduct.category.name.toLowerCase(),
         categoryType: apiProduct.category.type,
@@ -133,20 +191,54 @@ export function ProductSelectionStep({
   }
 
   const handleAddProduct = (product: Product, quantity: number, productSizeId?: string) => {
-    // Enhanced duplicate detection: Check if product with same size is already in cart
-    const existingProductIndex = selectedProducts.findIndex(
-      (item) =>
-        item.product.id === product.id &&
-        (productSizeId ? item.productSizeId === productSizeId : !item.productSizeId),
-    )
+    try {
+      // Clear any previous availability errors for this product
+      const errorKey = `${product.id}-${productSizeId || 'no-size'}`
+      if (availabilityErrors.has(errorKey)) {
+        const newErrors = new Map(availabilityErrors)
+        newErrors.delete(errorKey)
+        setAvailabilityErrors(newErrors)
+      }
 
-    if (existingProductIndex >= 0) {
-      // Update quantity of existing size-specific item
-      const existingProduct = selectedProducts[existingProductIndex]
-      onUpdateQuantity(product.id, existingProduct.quantity + quantity, productSizeId)
-    } else {
-      // Add new product (with optional productSizeId)
-      onAddProduct(product, quantity, productSizeId)
+      // Enhanced duplicate detection: Check if product with same size is already in cart
+      const existingProductIndex = selectedProducts.findIndex(
+        (item) =>
+          item.product.id === product.id &&
+          (productSizeId ? item.productSizeId === productSizeId : !item.productSizeId),
+      )
+
+      if (existingProductIndex >= 0) {
+        // Update quantity of existing size-specific item
+        const existingProduct = selectedProducts[existingProductIndex]
+        onUpdateQuantity(product.id, existingProduct.quantity + quantity, productSizeId)
+      } else {
+        // Add new product (with optional productSizeId)
+        onAddProduct(product, quantity, productSizeId)
+      }
+    } catch (err) {
+      // Handle availability errors when adding products
+      console.error('Error adding product:', {
+        productId: product.id,
+        productSizeId,
+        quantity,
+        error: err,
+        timestamp: new Date().toISOString()
+      })
+
+      const errorType = determineErrorType(err)
+      const availabilityError = createAvailabilityError(errorType, {
+        productId: product.id,
+        productSizeId,
+        requestedQuantity: quantity,
+        availableQuantity: product.availableQuantity,
+        message: err instanceof Error ? err.message : 'Unknown error'
+      })
+
+      // Store error for this specific product/size combination
+      const errorKey = `${product.id}-${productSizeId || 'no-size'}`
+      const newErrors = new Map(availabilityErrors)
+      newErrors.set(errorKey, availabilityError)
+      setAvailabilityErrors(newErrors)
     }
   }
 
@@ -191,6 +283,37 @@ export function ProductSelectionStep({
           isLoading={isLoading}
           productCount={totalItems}
         />
+
+        {/* Availability Errors Display - Task 7.2: Integrate error handling */}
+        {availabilityErrors.size > 0 && (
+          <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 space-y-3">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-orange-600" />
+              <h3 className="font-medium text-orange-900">Peringatan Ketersediaan</h3>
+            </div>
+            <div className="space-y-2">
+              {Array.from(availabilityErrors.entries()).map(([key, error]) => (
+                <div key={key} className="bg-white rounded-lg p-3 border border-orange-200">
+                  <p className="text-sm text-orange-800">{error.userMessage}</p>
+                  {renderErrorDetails(error)}
+                  <Button
+                    onClick={() => {
+                      const newErrors = new Map(availabilityErrors)
+                      newErrors.delete(key)
+                      setAvailabilityErrors(newErrors)
+                    }}
+                    variant="ghost"
+                    size="sm"
+                    className="text-orange-600 hover:text-orange-700 p-0 h-auto mt-2"
+                  >
+                    <X className="h-4 w-4 mr-1" />
+                    Tutup
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Products Grid */}
         <div
@@ -284,6 +407,7 @@ export function ProductSelectionStep({
                         product={product}
                         onAddToCart={handleAddProduct}
                         selectedQuantity={getSelectedQuantity(product.id)}
+                        onOpenHistory={openHistoryPopup}
                       />
                     </div>
                   ))}
@@ -535,6 +659,16 @@ export function ProductSelectionStep({
           )}
         </div>
       </div>
+
+      {/* Product History Popup - Moved to ProductSelectionStep for better display */}
+      <ProductHistoryPopup
+        productSizeId={historyPopup.productSizeId}
+        productName={historyPopup.productName}
+        size={historyPopup.size}
+        ageCategory={historyPopup.ageCategory}
+        isOpen={historyPopup.isOpen}
+        onClose={closeHistoryPopup}
+      />
     </div>
   )
 }

@@ -102,6 +102,9 @@ interface TransactionData {
   tglKembali: string | Date | null
   metodeBayar: string
   catatan: string | null
+  // Enhanced: Include discount fields
+  discountType: string | null
+  discountValue: Decimal | string | number | null
   createdBy: string
   createdAt: string | Date
   updatedAt: string | Date
@@ -137,6 +140,9 @@ export interface FormattedTransactionResponse {
   tglKembali: string | null
   metodeBayar: string
   catatan: string | null
+  // Enhanced: Include discount fields
+  discountType: string | null
+  discountValue: number | null
   createdBy: string
   createdAt: string
   updatedAt: string
@@ -269,6 +275,13 @@ export function formatTransactionResponse(
 
     metodeBayar: transaksi.metodeBayar,
     catatan: transaksi.catatan,
+    // Enhanced: Include discount information
+    discountType: transaksi.discountType,
+    discountValue: transaksi.discountValue
+      ? typeof transaksi.discountValue === 'object'
+        ? Number(transaksi.discountValue)
+        : Number(transaksi.discountValue)
+      : null,
     createdBy: transaksi.createdBy,
     createdAt:
       typeof transaksi.createdAt === 'object'

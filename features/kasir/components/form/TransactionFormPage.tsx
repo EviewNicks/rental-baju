@@ -150,18 +150,22 @@ export function TransactionFormPage() {
 
       // Show error message based on the type of error
       if (createError) {
+        // ✅ FIX: Extract detailed error message from mutation error
         let userFriendlyMessage = createError.message || 'Terjadi kesalahan saat membuat transaksi'
 
-        // RPK-51: Map size-specific error codes to user-friendly messages
+        // ✅ FIX: Enhanced error mapping for availability conflicts
         if (createError.code === 'NOT_FOUND' && createError.message?.includes('tidak ditemukan')) {
           userFriendlyMessage =
             'Ukuran produk yang dipilih tidak tersedia. Silakan pilih ukuran lain atau refresh halaman.'
         } else if (
-          createError.code === 'AVAILABILITY_ERROR' &&
-          createError.message?.includes('tidak mencukupi')
+          (createError.code === 'AVAILABILITY_ERROR' || createError.code === 'VALIDATION_ERROR') &&
+          (createError.message?.includes('tidak mencukupi') || createError.message?.includes('tidak tersedia'))
         ) {
-          userFriendlyMessage =
-            'Stok untuk ukuran yang dipilih tidak mencukupi. Silakan kurangi jumlah atau pilih ukuran lain.'
+          // ✅ FIX: Use the detailed server message for availability conflicts
+          userFriendlyMessage = createError.message
+        } else if (createError.message?.includes('Konflik dengan transaksi')) {
+          // ✅ FIX: Handle date overlap conflicts with detailed message
+          userFriendlyMessage = createError.message
         }
 
         setErrorMessage(userFriendlyMessage)
@@ -322,7 +326,6 @@ export function TransactionFormPage() {
             <div data-testid="payment-summary-step">
               <PaymentSummaryStep
                 formData={formData}
-                totalAmount={calculateTotal()}
                 onUpdateFormData={updateFormData}
                 onSubmit={handleSubmitTransaction}
                 onPrev={prevStep}

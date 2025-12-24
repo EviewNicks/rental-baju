@@ -103,3 +103,6 @@ export interface KasirInfo {
   updatedAt: string
   createdBy?: string
 }
+
+// Availability Product View Types - Task 1
+export * from './availability'

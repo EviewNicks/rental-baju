@@ -156,6 +156,9 @@ model Transaksi {
   updatedAt       DateTime             @updatedAt
   flatLatePenalty Decimal              @default(0) @db.Decimal(10, 2)
   isLateReturn    Boolean              @default(false)
+  // New fields for discount system
+  discountType    String?              // 'percent' | 'nominal' | null
+  discountValue   Decimal?             @db.Decimal(10, 2)
   aktivitas       AktivitasTransaksi[]
   pembayaran      Pembayaran[]
   penyewa         Penyewa              @relation(fields: [penyewaId], references: [id])
@@ -170,6 +173,7 @@ model Transaksi {
   @@index([status, id], map: "idx_transaksi_status_id_validation")
   @@index([id, tglSelesai, status], map: "idx_transaksi_penalty_dates")
   @@index([isLateReturn], map: "idx_transaksi_late_penalty")
+  @@index([discountType])  // New index for discount queries
   @@map("transaksi")
 }
 

@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect} from 'react'
 import { Search, Filter, ArrowUpDown, DollarSign } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
@@ -28,6 +29,9 @@ export function KasirFilterBar({
   isLoading = false,
   productCount = 0,
 }: KasirFilterBarProps) {
+  // Local search state for debounced search
+  const [localSearchValue, setLocalSearchValue] = useState(filters.search || '')
+  
   // Fetch categories from API
   const { data: categoriesData, isLoading: isLoadingCategories } = useCategories()
   const categories = categoriesData?.categories || []
@@ -50,6 +54,42 @@ export function KasirFilterBar({
     { value: 'createdAt', label: 'Terbaru Ditambah' },
   ]
 
+  // Debounced search implementation
+  useEffect(() => {
+    if (localSearchValue === filters.search) return // No change needed
+    
+    const timeoutId = setTimeout(() => {
+      onFiltersChange({
+        ...filters,
+        search: localSearchValue,
+      })
+    }, 1200) // 1200ms delay for better UX
+
+    return () => clearTimeout(timeoutId)
+  }, [localSearchValue, filters, onFiltersChange])
+
+  // Handle search input changes
+  const handleSearchChange = (value: string) => {
+    setLocalSearchValue(value)
+  }
+
+  // Handle Enter key press for immediate search
+  const handleSearchKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      // Immediately trigger search on Enter
+      onFiltersChange({
+        ...filters,
+        search: localSearchValue,
+      })
+    }
+  }
+
+  // Sync local search value when filters.search changes externally (e.g., reset)
+  useEffect(() => {
+    setLocalSearchValue(filters.search || '')
+  }, [filters.search])
+
   const handleFilterChange = (key: keyof KasirFilters, value: string | number | undefined) => {
     onFiltersChange({
       ...filters,
@@ -58,6 +98,7 @@ export function KasirFilterBar({
   }
 
   const resetFilters = () => {
+    setLocalSearchValue('') // Reset local search state
     onFiltersChange({
       search: '',
       categoryId: '',
@@ -82,13 +123,27 @@ export function KasirFilterBar({
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                 <Input
-                  placeholder="Cari produk untuk kasir..."
-                  value={filters.search || ''}
-                  onChange={(e) => handleFilterChange('search', e.target.value)}
+                  placeholder="Cari produk (nama/kode/deskripsi)... Tekan Enter untuk cari"
+                  value={localSearchValue}
+                  onChange={(e) => handleSearchChange(e.target.value)}
+                  onKeyPress={handleSearchKeyPress}
                   className="pl-10 border-border focus:ring-2 focus:ring-ring/20"
                   disabled={isLoading}
                   data-testid="kasir-search-input"
                 />
+                {/* Search indicator */}
+                {localSearchValue !== filters.search && localSearchValue && (
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
+                      <span>Mengetik...</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+              {/* Search help text */}
+              <div className="text-xs text-muted-foreground mt-1 ml-1">
+                💡 Tip: Ketik dan tekan <kbd className="px-1 py-0.5 bg-gray-100 rounded text-xs">Enter</kbd> untuk pencarian langsung
               </div>
             </div>
             {/* Reset Button */}

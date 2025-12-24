@@ -82,8 +82,7 @@ export class PembayaranService {
     // 2. Validate payment amount
     const validation = PriceCalculator.validatePaymentAmount(
       data.jumlah,
-      transaksi.totalHarga,
-      transaksi.jumlahBayar
+      Number(transaksi.totalHarga)
     )
 
     if (!validation.isValid) {
@@ -108,8 +107,8 @@ export class PembayaranService {
       // Update transaction payment amounts
       const newJumlahBayar = transaksi.jumlahBayar.add(data.jumlah)
       const newSisaBayar = PriceCalculator.calculateRemainingPayment(
-        transaksi.totalHarga,
-        newJumlahBayar
+        Number(transaksi.totalHarga),
+        Number(newJumlahBayar)
       )
 
       await tx.transaksi.update({
@@ -271,13 +270,13 @@ export class PembayaranService {
     })
 
     const paymentPercentage = PriceCalculator.calculatePaymentPercentage(
-      transaksi.totalHarga,
-      transaksi.jumlahBayar
+      Number(transaksi.jumlahBayar),
+      Number(transaksi.totalHarga)
     )
 
     const isFullyPaid = PriceCalculator.isFullyPaid(
-      transaksi.totalHarga,
-      transaksi.jumlahBayar
+      Number(transaksi.jumlahBayar),
+      Number(transaksi.totalHarga)
     )
 
     return {
@@ -394,8 +393,8 @@ export class PembayaranService {
       // Update transaction amounts
       const newJumlahBayar = payment.transaksi.jumlahBayar.sub(payment.jumlah)
       const newSisaBayar = PriceCalculator.calculateRemainingPayment(
-        payment.transaksi.totalHarga,
-        newJumlahBayar
+        Number(payment.transaksi.totalHarga),
+        Number(newJumlahBayar)
       )
 
       await tx.transaksi.update({
@@ -416,7 +415,7 @@ export class PembayaranService {
         data: {
           transaksiId: payment.transaksiId,
           tipe: 'pembayaran_dibatalkan',
-          deskripsi: `Pembayaran ${payment.metode} sebesar ${PriceCalculator.formatToRupiah(payment.jumlah)} dibatalkan`,
+          deskripsi: `Pembayaran ${payment.metode} sebesar ${PriceCalculator.formatToRupiah(Number(payment.jumlah))} dibatalkan`,
           data: {
             cancelledPaymentId: id,
             amount: payment.jumlah.toString(),

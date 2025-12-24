@@ -200,6 +200,7 @@ export interface ProductSize {
 export interface Product {
   id: string
   name: string
+  code?: string // Product code for identification and search
   category: string
   categoryType?: 'clothing' | 'accessories_age_based' | 'accessories_universal' // RPK-52: Category type for dynamic forms
   size: string
@@ -320,6 +321,9 @@ export interface Transaction {
   returnDate?: string
   paymentMethod?: string
   notes?: string
+  // 🆕 ENHANCEMENT: Discount system fields
+  discountType?: 'percent' | 'nominal' | null
+  discountValue?: number | null
   createdAt: string
   updatedAt: string
   kasir?: {
@@ -445,6 +449,11 @@ export interface TransactionFormData {
   notes?: string
   currentStep?: TransactionStep // For persistence
   kasirSelection?: KasirSelectionData // Cashier selection data
+  
+  // Task 4: New fields for transaction enhancements
+  duration: 4 | 7 // Duration package selection (4-day or 7-day)
+  discountType: 'percent' | 'nominal' | null // Discount type selection
+  discountValue: number | null // Discount value (percentage or nominal amount)
 }
 
 // Cashier Selection Data for transaction form
@@ -538,6 +547,9 @@ export interface CreateTransaksiRequest {
   tglSelesai?: string // ISO date string
   metodeBayar?: PaymentMethod
   catatan?: string
+  // Task 4: Add discount fields for transaction enhancements
+  discountType?: 'percent' | 'nominal' | null
+  discountValue?: number | null
 }
 
 // Legacy transaction request interface (backward compatibility)
@@ -622,6 +634,9 @@ export interface TransaksiResponse extends TransaksiCore {
   catatan?: string
   createdBy: string
   tglKembali?: string // Will be validated against item status in Phase 2
+  // 🆕 ENHANCEMENT: Discount system fields
+  discountType?: 'percent' | 'nominal' | null
+  discountValue?: number | null
 
   // New flat penalty system fields
   flatLatePenalty: number // Default 20000 (20k flat penalty)

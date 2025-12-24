@@ -15,6 +15,7 @@ interface ProductCardProps {
   onAddToCart: (product: Product, quantity: number, productSizeId?: string) => void
   selectedQuantity?: number
   className?: string
+  onOpenHistory?: (productSizeId: string, productName: string, size: string, ageCategory: string) => void
 }
 
 export function ProductCard({
@@ -22,6 +23,7 @@ export function ProductCard({
   onAddToCart,
   selectedQuantity = 0,
   className,
+  onOpenHistory,
 }: ProductCardProps) {
   const [quantity, setQuantity] = useState(selectedQuantity)
   const [selectedSize, setSelectedSize] = useState<ProductSize | null>(null)
@@ -122,7 +124,19 @@ export function ProductCard({
       {/* Product Info */}
       <div className="p-4 space-y-3">
         <div>
-          <h3 className="font-semibold text-gray-900 text-sm">{product.name}</h3>
+          <div className="flex items-start justify-between gap-2">
+            <h3 className="font-semibold text-gray-900 text-sm flex-1">{product.name}</h3>
+            {/* Product Code Display */}
+            {product.code && (
+              <Badge 
+                variant="outline" 
+                className="text-xs font-mono bg-gray-50 text-gray-700 border-gray-300 shrink-0"
+                title={`Kode Produk: ${product.code}`}
+              >
+                {product.code}
+              </Badge>
+            )}
+          </div>
           <p className="text-xs text-gray-600 mt-1">{product.description}</p>
         </div>
 
@@ -181,6 +195,8 @@ export function ProductCard({
               selectedSizeId={selectedSize?.id}
               onSizeSelect={handleSizeSelect}
               disabled={isOutOfStock}
+              productName={product.name}
+              onOpenHistory={onOpenHistory}
             />
           </div>
         )}

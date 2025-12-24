@@ -1,7 +1,7 @@
 /**
- * API Route: Receipt PDF Generation
+ * API Route: Professional Receipt PDF Generation
  * 
- * GET /api/kasir/receipt/[transaksiId]/pdf - Generate and return PDF receipt
+ * GET /api/kasir/receipt/[transaksiId]/pdf - Generate and return professional PDF receipt
  * 
  * Authentication: Clerk (kasir/owner roles)
  * Authorization: Requires 'transaksi' read permission
@@ -10,7 +10,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { TransaksiService } from '@/features/kasir/services/transaksiService'
-import { ReceiptService } from '@/features/kasir/services/receiptService'
+import { ProfessionalReceiptService } from '@/features/kasir/services/professionalReceiptService'
 import { requirePermission } from '@/lib/auth-middleware'
 import { TransactionCodeGenerator } from '@/features/kasir/lib/utils/codeGenerator'
 
@@ -22,7 +22,7 @@ interface RouteParams {
 
 /**
  * GET /api/kasir/receipt/[transaksiId]/pdf
- * Generate and return PDF receipt for a transaction
+ * Generate and return professional PDF receipt for a transaction
  * 
  * @param request - Next.js request object
  * @param params - Route parameters containing transaksiId
@@ -32,7 +32,7 @@ interface RouteParams {
  * @throws 404 - Not Found if transaction doesn't exist
  * @throws 500 - Internal Server Error if PDF generation fails
  */
-export async function GET(request: NextRequest, { params }: RouteParams) {
+export async function GET(_request: NextRequest, { params }: RouteParams) {
   try {
     // Authentication and permission check
     const authResult = await requirePermission('transaksi', 'read')
@@ -67,18 +67,19 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       ? await transaksiService.getTransaksiById(transaksiId)
       : await transaksiService.getTransaksiByCode(transaksiId)
 
-    // Initialize receipt service
-    const receiptService = new ReceiptService()
-
-    // Generate PDF receipt
-    const pdfBuffer = await receiptService.generateReceiptPDF(transaksi)
+    // Initialize professional receipt service
+    const professionalReceiptService = new ProfessionalReceiptService()
+    
+    // Generate professional PDF receipt
+    const pdfBuffer = await professionalReceiptService.generateProfessionalReceiptPDF(transaksi)
+    const filename = `professional-receipt-${transaksi.kode}.pdf`
 
     // Return PDF with appropriate headers
-    return new NextResponse(Buffer.from(pdfBuffer), {
+    return new NextResponse(new Uint8Array(pdfBuffer), {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `inline; filename="receipt-${transaksi.kode}.pdf"`,
+        'Content-Disposition': `inline; filename="${filename}"`,
         'Cache-Control': 'no-cache, no-store, must-revalidate',
         'Pragma': 'no-cache',
         'Expires': '0'
@@ -88,7 +89,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const { transaksiId } = await params
     
     // Comprehensive error logging with transaction context
-    console.error('Receipt PDF generation error', {
+    console.error('Professional receipt PDF generation error', {
       level: 'error',
       endpoint: 'GET /api/kasir/receipt/[transaksiId]/pdf',
       transactionId: transaksiId,
@@ -131,7 +132,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       {
         success: false,
         error: {
-          message: 'Failed to generate receipt',
+          message: 'Failed to generate professional receipt',
           code: 'INTERNAL_ERROR'
         }
       },
