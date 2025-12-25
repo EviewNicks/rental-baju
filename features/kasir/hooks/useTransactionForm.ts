@@ -441,6 +441,7 @@ export function useTransactionForm() {
     createPembayaranMutation,
     updateTransaksiMutation,
     clearFormData,
+    isSubmitting,
   ])
 
   const resetForm = useCallback(() => {

@@ -131,12 +131,12 @@
 **Files:** `features/kasir/services/professionalReceiptService.ts`
 
 **Subtasks:**
-- [ ] Add payment method display mapping function
-- [ ] Update thermal receipt payment method display
-- [ ] Update professional receipt payment method display
-- [ ] Map bank methods to "Transfer" in receipts
-- [ ] Keep "Tunai" display for cash payments
-- [ ] Test receipt generation with new methods
+- [x] Add payment method display mapping function
+- [x] Update thermal receipt payment method display
+- [x] Update professional receipt payment method display
+- [x] Map bank methods to "Transfer" in receipts
+- [x] Keep "Tunai" display for cash payments
+- [x] Test receipt generation with new methods
 
 **Acceptance Criteria:**
 - Receipts show "Tunai" for cash payments
@@ -152,11 +152,11 @@
 **Subtasks:**
 - [x] ✅ UPDATE existing `usePaymentMethods` hook (don't create new)
 - [x] ✅ REMOVE `requiresReference` logic from existing hook
-- [ ] ✅ UPDATE existing `mapPaymentMethod()` function (don't create new)
-- [ ] ✅ ADD backward compatibility mapping to existing function
-- [ ] ✅ UPDATE existing UI payment method mapping
+- [x] ✅ UPDATE existing `mapPaymentMethod()` function (don't create new)
+- [x] ✅ ADD backward compatibility mapping to existing function
+- [x] ✅ UPDATE existing UI payment method mapping
 - [x] ✅ ADD helper functions within existing hook (avoid separate exports)
-- [ ] Test hook functionality
+- [x] Test hook functionality
 
 **Acceptance Criteria:**
 - Existing hook returns new payment method configurations

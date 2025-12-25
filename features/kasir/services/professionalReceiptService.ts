@@ -195,8 +195,13 @@ export class ProfessionalReceiptService {
       tableData.push(['Tgl Pengembalian:', this.formatDateOnly(data.tglSelesai.toString())])
     }
     
-    // Pembayaran (payment method)
-    tableData.push(['Pembayaran:', data.metodeBayar])
+    // Pembayaran (payment method) - use multiple payment methods if available
+    if (data.pembayaran && data.pembayaran.length > 0) {
+      tableData.push(['Pembayaran:', this.formatMultiplePaymentMethods(data.pembayaran)])
+    } else {
+      // Fallback to transaction's metodeBayar if no payment records
+      tableData.push(['Pembayaran:', this.formatPaymentMethodDisplay(data.metodeBayar)])
+    }
     
     // Kepada Yth (customer name)
     tableData.push(['Kepada Yth:', data.penyewa.nama])
@@ -594,6 +599,54 @@ export class ProfessionalReceiptService {
     }
     
     return 0
+  }
+
+  /**
+   * Format payment method for display in receipts
+   * Shows specific bank names for better clarity
+   * @param method - Payment method from database
+   * @returns Formatted display string
+   */
+  private formatPaymentMethodDisplay(method: string): string {
+    const displayMapping: Record<string, string> = {
+      'tunai': 'Tunai',
+      'bca': 'Transfer BCA',
+      'bri': 'Transfer BRI', 
+      'mandiri': 'Transfer Mandiri',
+      'qris': 'QRIS',
+      // Legacy backward compatibility
+      'transfer': 'Transfer',
+      'kartu': 'Transfer'
+    }
+    return displayMapping[method] || method
+  }
+
+  /**
+   * Format multiple payment methods for display
+   * Handles cases where transaction has multiple payments with different methods
+   * @param pembayaran - Array of payment records
+   * @returns Formatted payment methods string
+   */
+  private formatMultiplePaymentMethods(pembayaran: TransactionDetail['pembayaran']): string {
+    if (!pembayaran || pembayaran.length === 0) {
+      return 'Belum Bayar'
+    }
+
+    if (pembayaran.length === 1) {
+      // Single payment method
+      return this.formatPaymentMethodDisplay(pembayaran[0].metode)
+    }
+
+    // Multiple payment methods - show all unique methods
+    const uniqueMethods = [...new Set(pembayaran.map(p => p.metode))]
+    const formattedMethods = uniqueMethods.map(method => this.formatPaymentMethodDisplay(method))
+    
+    if (formattedMethods.length <= 2) {
+      return formattedMethods.join(' + ')
+    } else {
+      // If more than 2 methods, show first two and count
+      return `${formattedMethods.slice(0, 2).join(' + ')} (+${formattedMethods.length - 2} lainnya)`
+    }
   }
 
   /**

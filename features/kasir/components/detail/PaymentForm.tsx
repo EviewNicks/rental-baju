@@ -162,10 +162,7 @@ export function PaymentForm({
               <RadioGroupItem value="tunai" id="primary-tunai" />
               <Label htmlFor="primary-tunai" className="flex items-center gap-2 cursor-pointer flex-1">
                 <Banknote className="h-5 w-5 text-green-600" />
-                <div>
-                  <div className="font-medium text-gray-900">💵 Tunai</div>
-                  <div className="text-xs text-gray-500">Pembayaran cash langsung</div>
-                </div>
+                  <div className="font-medium text-gray-900">Tunai</div>
               </Label>
             </div>
             
@@ -173,10 +170,7 @@ export function PaymentForm({
               <RadioGroupItem value="bank" id="primary-bank" />
               <Label htmlFor="primary-bank" className="flex items-center gap-2 cursor-pointer flex-1">
                 <CreditCard className="h-5 w-5 text-blue-600" />
-                <div>
-                  <div className="font-medium text-gray-900">🏦 Bank/Transfer</div>
-                  <div className="text-xs text-gray-500">Transfer bank atau QRIS</div>
-                </div>
+                  <div className="font-medium text-gray-900">Bank/Transfer</div>
               </Label>
             </div>
           </RadioGroup>
@@ -197,7 +191,7 @@ export function PaymentForm({
                 <RadioGroupItem value="bca" id="bank-bca" />
                 <Label htmlFor="bank-bca" className="flex items-center gap-2 cursor-pointer flex-1">
                   <CreditCard className="h-4 w-4 text-blue-600" />
-                  <span className="font-medium text-gray-900">🏦 BCA</span>
+                  <span className="font-medium text-gray-900">BCA</span>
                 </Label>
               </div>
               
@@ -205,7 +199,7 @@ export function PaymentForm({
                 <RadioGroupItem value="bri" id="bank-bri" />
                 <Label htmlFor="bank-bri" className="flex items-center gap-2 cursor-pointer flex-1">
                   <CreditCard className="h-4 w-4 text-blue-600" />
-                  <span className="font-medium text-gray-900">🏦 BRI</span>
+                  <span className="font-medium text-gray-900">BRI</span>
                 </Label>
               </div>
               
@@ -213,7 +207,7 @@ export function PaymentForm({
                 <RadioGroupItem value="mandiri" id="bank-mandiri" />
                 <Label htmlFor="bank-mandiri" className="flex items-center gap-2 cursor-pointer flex-1">
                   <CreditCard className="h-4 w-4 text-blue-600" />
-                  <span className="font-medium text-gray-900">🏦 Mandiri</span>
+                  <span className="font-medium text-gray-900">Mandiri</span>
                 </Label>
               </div>
               
@@ -221,7 +215,7 @@ export function PaymentForm({
                 <RadioGroupItem value="qris" id="bank-qris" />
                 <Label htmlFor="bank-qris" className="flex items-center gap-2 cursor-pointer flex-1">
                   <Smartphone className="h-4 w-4 text-purple-600" />
-                  <span className="font-medium text-gray-900">📱 QRIS</span>
+                  <span className="font-medium text-gray-900">QRIS</span>
                 </Label>
               </div>
             </RadioGroup>

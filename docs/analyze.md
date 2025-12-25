@@ -1,97 +1,44 @@
-## Error Type
-Console Error
-
-# features/kasir/hooks/useTransaksi.ts (101:15) @ useCreateTransaksi.useMutation [as onError]
-
-## Error Message
-Failed to create transaksi: "Size M (ADULT) untuk Jas Jaguar Abu tidak tersedia untuk periode 25/12/2025 - 28/12/2025. Tersedia: 2, Diminta: 4. Konflik dengan transaksi: TXN-20251222-001"
-
-
-    at useCreateTransaksi.useMutation [as onError] (features/kasir/hooks/useTransaksi.ts:101:15)
-    at async useTransactionForm.useCallback[submitTransaction] (features/kasir/hooks/useTransactionForm.ts:312:34)
-    at async handleSubmitTransaction (features/kasir/components/form/TransactionFormPage.tsx:131:21)
-    at async handleSubmit (features/kasir/components/form/PaymentSummaryStep.tsx:176:21)
-
-## Code Frame
-   99 |     onError: (error: KasirApiError) => {
-  100 |       // Error will be handled by the component
-> 101 |       console.error('Failed to create transaksi:', error.message)
-      |               ^
-  102 |       
-  103 |       // Enhanced error logging for cache-related issues
-  104 |       if (error.message.includes('tidak mencukupi') || error.message.includes('Tersedia')) {
-
-Next.js version: 16.0.10 (Turbopack)
-
-
-
-# features/kasir/hooks/useTransactionForm.ts (409:17) @ useTransactionForm.useCallback[submitTransaction]
-
-## Error Type
-Console Error
-
-## Error Message
-❌ Transaction creation failed! {} "useTransactionForm"
-
-
-    at useTransactionForm.useCallback[submitTransaction] (features/kasir/hooks/useTransactionForm.ts:409:17)
-    at async handleSubmitTransaction (features/kasir/components/form/TransactionFormPage.tsx:131:21)
-    at async handleSubmit (features/kasir/components/form/PaymentSummaryStep.tsx:176:21)
-
-## Code Frame
-  407 |         )
-  408 |       } else {
-> 409 |         console.error(
-      |                 ^
-  410 |           '❌ Transaction creation failed!',
-  411 |           {
-  412 |             errorType: 'TRANSACTION_FAILURE',
-
-Next.js version: 16.0.10 (Turbopack)
-
-# features/kasir/api.ts (332:13) @ apiRequest
-
-## Error Type
-Console KasirApiError
-
-## Error Message
-Size M (ADULT) untuk Jas Jaguar Abu tidak tersedia untuk periode 25/12/2025 - 28/12/2025. Tersedia: 2, Diminta: 4. Konflik dengan transaksi: TXN-20251222-001
-
-
-    at apiRequest (features/kasir/api.ts:332:13)
-
-## Code Frame
-  330 |       }
-  331 |
-> 332 |       throw new KasirApiError(
-      |             ^
-  333 |         error.code,
-  334 |         error.message,
-  335 |         error.details,
-
-Next.js version: 16.0.10 (Turbopack)
-
-
-# features/kasir/components/form/TransactionFormPage.tsx (149:15) @ handleSubmitTransaction
-
-
-## Error Type
-Console Error
-
-## Error Message
-❌ Transaction submission failed {}
-
-
-    at handleSubmitTransaction (features/kasir/components/form/TransactionFormPage.tsx:149:15)
-    at async handleSubmit (features/kasir/components/form/PaymentSummaryStep.tsx:176:21)
-
-## Code Frame
-  147 |       }
-  148 |
-> 149 |       console.error('❌ Transaction submission failed', errorDetails)
-      |               ^
-  150 |
-  151 |       // Show error message based on the type of error
-  152 |       if (createError) {
-
-Next.js version: 16.0.10 (Turbopack)
+ POST /dashboard 200 in 311ms (compile: 53ms, proxy.ts: 163ms, render: 96ms)
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 12.4s (compile: 4.7s, proxy.ts: 210ms, render: 7.5s)
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 4.0s (compile: 21ms, proxy.ts: 45ms, render: 3.9s)
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 4.0s (compile: 26ms, proxy.ts: 69ms, render: 3.9s)
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 3.0s (compile: 15ms, proxy.ts: 75ms, render: 2.9s)
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 3.4s (compile: 10ms, proxy.ts: 37ms, render: 3.3s)
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 5.1s (compile: 14ms, proxy.ts: 1249ms, render: 3.8s)
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 3.9s (compile: 7ms, proxy.ts: 17ms, render: 3.8s)
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 3.1s (compile: 6ms, proxy.ts: 25ms, render: 3.1s)
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 3.1s (compile: 11ms, proxy.ts: 26ms, render: 3.1s)
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 3.4s (compile: 4ms, proxy.ts: 25ms, render: 3.4s)
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 2.4s (compile: 15ms, proxy.ts: 57ms, render: 2.4s)
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 2.8s (compile: 14ms, proxy.ts: 36ms, render: 2.8s)
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 2.8s (compile: 6ms, proxy.ts: 13ms, render: 2.8s)
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 2.4s (compile: 8ms, proxy.ts: 20ms, render: 2.4s)
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 3.1s (compile: 12ms, proxy.ts: 27ms, render: 3.1s)
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 5.5s (compile: 21ms, proxy.ts: 1188ms, render: 4.3s)
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 3.6s (compile: 20ms, proxy.ts: 45ms, render: 3.5s)
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 3.2s (compile: 5ms, proxy.ts: 17ms, render: 3.2s)
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 3.8s (compile: 5ms, proxy.ts: 12ms, render: 3.7s)
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 6.6s (compile: 26ms, proxy.ts: 1144ms, render: 5.4s)
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 3.3s (compile: 19ms, proxy.ts: 29ms, render: 3.3s)
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 3.2s (compile: 11ms, proxy.ts: 24ms, render: 3.1s)
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 14.5s (compile: 7ms, proxy.ts: 22ms, render: 14.5s)
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 3.2s (compile: 4ms, proxy.ts: 17ms, render: 3.2s)
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 7.5s (compile: 8ms, proxy.ts: 14ms, render: 7.4s)
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 3.0s (compile: 6ms, proxy.ts: 19ms, render: 2.9s)
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 3.8s (compile: 29ms, proxy.ts: 43ms, render: 3.8s)
+ GET /api/kasir/transaksi?page=1&limit=100&search=T 200 in 2.7s (compile: 10ms, proxy.ts: 27ms, render: 2.6s)
+ GET /api/kasir/transaksi?page=1&limit=100&search=TXN 200 in 3.5s (compile: 12ms, proxy.ts: 32ms, render: 3.4s)
+ GET /api/kasir/transaksi?page=1&limit=100&search=TXN- 200 in 3.3s (compile: 11ms, proxy.ts: 21ms, render: 3.3s)
+ GET /api/kasir/transaksi?page=1&limit=100&search=TX 200 in 9.9s (compile: 16ms, proxy.ts: 35ms, render: 9.9s)
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 3.7s (compile: 18ms, proxy.ts: 880ms, render: 2.8s)
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 6.0s (compile: 33ms, proxy.ts: 41ms, render: 5.9s)
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 3.1s (compile: 14ms, proxy.ts: 85ms, render: 3.0s)
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 22.1s (compile: 11ms, proxy.ts: 38ms, render: 22.0s)
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 2.4s (compile: 5ms, proxy.ts: 13ms, render: 2.4s)
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 9.4s (compile: 34ms, proxy.ts: 46ms, render: 9.3s)
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 2.6s (compile: 6ms, proxy.ts: 14ms, render: 2.5s)
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 9.4s (compile: 10ms, proxy.ts: 23ms, render: 9.4s)
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 3.7s (compile: 11ms, proxy.ts: 34ms, render: 3.7s)
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 4.0s (compile: 15ms, proxy.ts: 980ms, render: 3.0s)
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 3.3s (compile: 13ms, proxy.ts: 38ms, render: 3.3s)
+ GET /api/kasir/transaksi?page=1&limit=100 200 in 3.5s (compile: 8ms, proxy.ts: 19ms, render: 3.5s)

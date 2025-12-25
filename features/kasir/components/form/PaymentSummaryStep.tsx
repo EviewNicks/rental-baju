@@ -42,8 +42,42 @@ export function PaymentSummaryStep({
   const [paymentDisplayValue, setPaymentDisplayValue] = useState('')
   // ✅ FIX: Add local submission state to prevent multiple API calls
   const [isSubmittingLocal, setIsSubmittingLocal] = useState(false)
+  // ✅ FIX: Add local state for primary payment method selection
+  const [primaryPaymentMethod, setPrimaryPaymentMethod] = useState<'tunai' | 'bank'>(() => {
+    if (formData.paymentMethod === 'tunai') return 'tunai'
+    if (['bca', 'bri', 'mandiri', 'qris'].includes(formData.paymentMethod)) return 'bank'
+    return 'tunai' // default
+  })
 
-  // Calculate enhanced pricing with duration and discount
+  // ✅ FIX: Add handler for primary payment method change
+  const handlePrimaryPaymentMethodChange = useCallback(
+    (value: 'tunai' | 'bank') => {
+      setPrimaryPaymentMethod(value)
+      
+      if (value === 'tunai') {
+        // Direct selection for cash
+        onUpdateFormData({ paymentMethod: 'tunai' })
+      } else if (value === 'bank') {
+        // For bank, set a default bank method to show options, or keep current if already bank
+        const currentMethod = formData.paymentMethod
+        if (!['bca', 'bri', 'mandiri', 'qris'].includes(currentMethod)) {
+          // Set default bank method to show the options
+          onUpdateFormData({ paymentMethod: 'bca' })
+        }
+        // If already a bank method, keep it as is
+      }
+    },
+    [formData.paymentMethod, onUpdateFormData],
+  )
+
+  // ✅ FIX: Sync local state with form data changes
+  useEffect(() => {
+    if (formData.paymentMethod === 'tunai') {
+      setPrimaryPaymentMethod('tunai')
+    } else if (['bca', 'bri', 'mandiri', 'qris'].includes(formData.paymentMethod)) {
+      setPrimaryPaymentMethod('bank')
+    }
+  }, [formData.paymentMethod])
   const priceCalculation = useMemo(() => {
     return PriceCalculator.calculateTransactionTotalWithEnhancements({
       items: formData.products,
@@ -518,17 +552,8 @@ export function PaymentSummaryStep({
             Pilih Kategori Pembayaran
           </Label>
           <RadioGroup
-            value={(() => {
-              if (formData.paymentMethod === 'tunai') return 'tunai'
-              if (['bca', 'bri', 'mandiri', 'qris'].includes(formData.paymentMethod)) return 'bank'
-              return 'tunai' // default
-            })()}
-            onValueChange={(value: 'tunai' | 'bank') => {
-              if (value === 'tunai') {
-                onUpdateFormData({ paymentMethod: 'tunai' })
-              }
-              // For bank, wait for specific selection
-            }}
+            value={primaryPaymentMethod}
+            onValueChange={handlePrimaryPaymentMethodChange}
             className="grid grid-cols-1 md:grid-cols-2 gap-4"
             data-testid="primary-payment-method-selection"
           >
@@ -537,7 +562,7 @@ export function PaymentSummaryStep({
               <Label htmlFor="primary-tunai-summary" className="flex items-center gap-2 cursor-pointer flex-1">
                 <Banknote className="h-5 w-5 text-green-600" />
                 <div>
-                  <div className="font-medium text-gray-900">💵 Tunai</div>
+                  <div className="font-medium text-gray-900"> Tunai</div>
                   <div className="text-xs text-gray-500">Pembayaran cash langsung</div>
                 </div>
               </Label>
@@ -548,7 +573,7 @@ export function PaymentSummaryStep({
               <Label htmlFor="primary-bank-summary" className="flex items-center gap-2 cursor-pointer flex-1">
                 <CreditCard className="h-5 w-5 text-blue-600" />
                 <div>
-                  <div className="font-medium text-gray-900">🏦 Bank/Transfer</div>
+                  <div className="font-medium text-gray-900"> Bank/Transfer</div>
                   <div className="text-xs text-gray-500">Transfer bank atau QRIS</div>
                 </div>
               </Label>
@@ -557,7 +582,7 @@ export function PaymentSummaryStep({
         </div>
 
         {/* Secondary Level Selection - Bank Options */}
-        {['bca', 'bri', 'mandiri', 'qris'].includes(formData.paymentMethod) && (
+        {primaryPaymentMethod === 'bank' && (
           <div className="space-y-4 pl-4 border-l-2 border-blue-200 bg-blue-50/30 rounded-r-lg py-4 pr-4">
             <Label className="text-sm font-medium text-blue-700">
               Pilih Bank atau QRIS
@@ -574,7 +599,7 @@ export function PaymentSummaryStep({
                 <RadioGroupItem value="bca" id="bank-bca-summary" />
                 <Label htmlFor="bank-bca-summary" className="flex items-center gap-2 cursor-pointer flex-1">
                   <CreditCard className="h-4 w-4 text-blue-600" />
-                  <span className="font-medium text-gray-900">🏦 BCA</span>
+                  <span className="font-medium text-gray-900">BCA</span>
                 </Label>
               </div>
               
@@ -582,7 +607,7 @@ export function PaymentSummaryStep({
                 <RadioGroupItem value="bri" id="bank-bri-summary" />
                 <Label htmlFor="bank-bri-summary" className="flex items-center gap-2 cursor-pointer flex-1">
                   <CreditCard className="h-4 w-4 text-blue-600" />
-                  <span className="font-medium text-gray-900">🏦 BRI</span>
+                  <span className="font-medium text-gray-900">BRI</span>
                 </Label>
               </div>
               
@@ -590,7 +615,7 @@ export function PaymentSummaryStep({
                 <RadioGroupItem value="mandiri" id="bank-mandiri-summary" />
                 <Label htmlFor="bank-mandiri-summary" className="flex items-center gap-2 cursor-pointer flex-1">
                   <CreditCard className="h-4 w-4 text-blue-600" />
-                  <span className="font-medium text-gray-900">🏦 Mandiri</span>
+                  <span className="font-medium text-gray-900">Mandiri</span>
                 </Label>
               </div>
               
@@ -598,19 +623,12 @@ export function PaymentSummaryStep({
                 <RadioGroupItem value="qris" id="bank-qris-summary" />
                 <Label htmlFor="bank-qris-summary" className="flex items-center gap-2 cursor-pointer flex-1">
                   <Smartphone className="h-4 w-4 text-purple-600" />
-                  <span className="font-medium text-gray-900">📱 QRIS</span>
+                  <span className="font-medium text-gray-900">QRIS</span>
                 </Label>
               </div>
             </RadioGroup>
           </div>
         )}
-
-        {/* Help text */}
-        <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
-          <p className="text-sm text-gray-600">
-            ℹ️ Semua metode pembayaran tidak memerlukan nomor referensi
-          </p>
-        </div>
 
         {/* Payment Amount */}
         <div className="space-y-6">

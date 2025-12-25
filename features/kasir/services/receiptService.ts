@@ -302,6 +302,26 @@ export class ReceiptService {
   }
 
   /**
+   * Format payment method for display in receipts
+   * Shows specific bank names for better clarity
+   * @param method - Payment method from database
+   * @returns Formatted display string
+   */
+  private formatPaymentMethodDisplay(method: string): string {
+    const displayMapping: Record<string, string> = {
+      'tunai': 'Tunai',
+      'bca': 'Transfer BCA',
+      'bri': 'Transfer BRI',
+      'mandiri': 'Transfer Mandiri', 
+      'qris': 'QRIS',
+      // Legacy backward compatibility
+      'transfer': 'Transfer',
+      'kartu': 'Transfer'
+    }
+    return displayMapping[method] || method
+  }
+
+  /**
    * Format currency to Indonesian format
    * @param amount - Numeric amount or Decimal
    * @returns Formatted string (e.g., "Rp 300.000")
