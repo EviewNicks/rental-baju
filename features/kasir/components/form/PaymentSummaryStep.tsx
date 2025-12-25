@@ -111,21 +111,33 @@ export function PaymentSummaryStep({
     [formData.pickupDate, onUpdateFormData],
   )
 
-  // Handle discount change with validation
-  const handleDiscountChange = useCallback(
-    (type: 'percent' | 'nominal' | null, value: number | null) => {
-      // If value is 0 or null, reset both type and value to null
-      if (!value || value === 0) {
+  // ✅ FIX: Separate discount type selection from value input
+  const handleDiscountTypeChange = useCallback(
+    (type: 'percent' | 'nominal' | null) => {
+      if (type === null) {
+        // Explicit reset when "none" selected
         onUpdateFormData({
           discountType: null,
           discountValue: null,
         })
       } else {
+        // Just set type, keep existing value if valid, otherwise null
         onUpdateFormData({
           discountType: type,
-          discountValue: value,
+          discountValue: formData.discountValue || null,
         })
       }
+    },
+    [onUpdateFormData, formData.discountValue],
+  )
+
+  // ✅ FIX: Separate function for discount value changes
+  const handleDiscountValueChange = useCallback(
+    (value: number) => {
+      // Only update value, keep existing type
+      onUpdateFormData({
+        discountValue: value || null,
+      })
     },
     [onUpdateFormData],
   )
@@ -382,9 +394,9 @@ export function PaymentSummaryStep({
             value={formData.discountType || 'none'}
             onValueChange={(value) => {
               if (value === 'none') {
-                handleDiscountChange(null, null)
+                handleDiscountTypeChange(null)
               } else {
-                handleDiscountChange(value as 'percent' | 'nominal', formData.discountValue || 0)
+                handleDiscountTypeChange(value as 'percent' | 'nominal')
               }
             }}
             className="grid grid-cols-1 md:grid-cols-3 gap-4"
@@ -437,7 +449,7 @@ export function PaymentSummaryStep({
                   value={formData.discountValue || ''}
                   onChange={(e) => {
                     const inputValue = Number(e.target.value) || 0
-                    handleDiscountChange(formData.discountType, inputValue)
+                    handleDiscountValueChange(inputValue)
                   }}
                   max={formData.discountType === 'percent' ? 100 : subtotal}
                   min={0}
@@ -502,7 +514,7 @@ export function PaymentSummaryStep({
 
         <RadioGroup
           value={formData.paymentMethod}
-          onValueChange={(value: 'cash' | 'qris' | 'transfer') =>
+          onValueChange={(value: 'tunai' | 'bca' | 'bri' | 'mandiri' | 'qris') =>
             onUpdateFormData({ paymentMethod: value })
           }
           className="grid grid-cols-1 md:grid-cols-3 gap-4"
@@ -512,8 +524,8 @@ export function PaymentSummaryStep({
             className="flex items-center space-x-3 border border-gray-200 rounded-lg p-4"
             data-testid="payment-method-cash"
           >
-            <RadioGroupItem value="cash" id="cash" data-testid="payment-method-cash-radio" />
-            <Label htmlFor="cash" className="flex items-center gap-2 cursor-pointer">
+            <RadioGroupItem value="tunai" id="tunai" data-testid="payment-method-cash-radio" />
+            <Label htmlFor="tunai" className="flex items-center gap-2 cursor-pointer">
               <Banknote className="h-5 w-5" />
               Tunai
             </Label>
@@ -530,16 +542,16 @@ export function PaymentSummaryStep({
           </div>
           <div
             className="flex items-center space-x-3 border border-gray-200 rounded-lg p-4"
-            data-testid="payment-method-transfer"
+            data-testid="payment-method-bca"
           >
             <RadioGroupItem
-              value="transfer"
-              id="transfer"
-              data-testid="payment-method-transfer-radio"
+              value="bca"
+              id="bca"
+              data-testid="payment-method-bca-radio"
             />
-            <Label htmlFor="transfer" className="flex items-center gap-2 cursor-pointer">
+            <Label htmlFor="bca" className="flex items-center gap-2 cursor-pointer">
               <CreditCard className="h-5 w-5" />
-              Transfer Bank
+              BCA
             </Label>
           </div>
         </RadioGroup>

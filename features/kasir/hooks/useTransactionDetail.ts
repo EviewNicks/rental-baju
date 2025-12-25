@@ -398,12 +398,17 @@ function mapActivityTypeToAction(
 /**
  * Map API payment method to UI payment method types
  */
-function mapPaymentMethod(apiMethod: string): 'cash' | 'qris' | 'transfer' {
-  const mapping: Record<string, 'cash' | 'qris' | 'transfer'> = {
-    tunai: 'cash',
-    transfer: 'transfer',
-    kartu: 'qris', // Map kartu to qris for UI consistency
+function mapPaymentMethod(apiMethod: string): 'tunai' | 'bca' | 'bri' | 'mandiri' | 'qris' {
+  const mapping: Record<string, 'tunai' | 'bca' | 'bri' | 'mandiri' | 'qris'> = {
+    tunai: 'tunai',
+    bca: 'bca',
+    bri: 'bri',
+    mandiri: 'mandiri',
+    qris: 'qris',
+    // Legacy backward compatibility
+    transfer: 'bca', // Default legacy transfers to BCA
+    kartu: 'qris'    // Map legacy card to QRIS
   }
 
-  return mapping[apiMethod] || 'cash'
+  return mapping[apiMethod] || 'tunai'
 }

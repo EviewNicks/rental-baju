@@ -20,31 +20,16 @@ import { usePaymentMethods } from '../../hooks/usePaymentProcessing'
 import { formatCurrency } from '../../lib/utils/client'
 
 // Payment form validation schema
-const paymentFormSchema = z
-  .object({
-    jumlah: z
-      .number()
-      .positive('Jumlah pembayaran harus lebih dari 0')
-      .min(1000, 'Jumlah pembayaran minimal Rp 1.000'),
-    metode: z.enum(['tunai', 'transfer', 'kartu'], {
-      message: 'Pilih metode pembayaran',
-    }),
-    referensi: z.string().optional(),
-    catatan: z.string().max(500, 'Catatan maksimal 500 karakter').optional(),
-  })
-  .refine(
-    (data) => {
-      // Reference is required for transfer and kartu methods
-      if ((data.metode === 'transfer' || data.metode === 'kartu') && !data.referensi?.trim()) {
-        return false
-      }
-      return true
-    },
-    {
-      message: 'Nomor referensi wajib diisi untuk metode transfer dan QRIS/Kartu',
-      path: ['referensi'],
-    },
-  )
+const paymentFormSchema = z.object({
+  jumlah: z
+    .number()
+    .positive('Jumlah pembayaran harus lebih dari 0')
+    .min(1000, 'Jumlah pembayaran minimal Rp 1.000'),
+  metode: z.enum(['tunai', 'bca', 'bri', 'mandiri', 'qris'], {
+    message: 'Pilih metode pembayaran',
+  }),
+  catatan: z.string().max(500, 'Catatan maksimal 500 karakter').optional(),
+})
 
 type PaymentFormData = z.infer<typeof paymentFormSchema>
 
@@ -70,32 +55,12 @@ export function PaymentForm({
     defaultValues: {
       jumlah: remainingAmount,
       metode: 'tunai',
-      referensi: '',
       catatan: '',
     },
   })
 
   const selectedMethod = form.watch('metode')
   const selectedMethodInfo = paymentMethods.find((m) => m.value === selectedMethod)
-  const referensiInputRef = useRef<HTMLInputElement>(null)
-
-  // Reset referensi field when switching to tunai method
-  useEffect(() => {
-    if (selectedMethod === 'tunai') {
-      form.setValue('referensi', '', { shouldValidate: true })
-      form.clearErrors('referensi')
-    }
-  }, [selectedMethod, form])
-
-  // Focus management and screen reader announcements
-  useEffect(() => {
-    if (selectedMethodInfo?.requiresReference && referensiInputRef.current) {
-      // Focus on referensi field when it becomes required
-      setTimeout(() => {
-        referensiInputRef.current?.focus()
-      }, 300) // Wait for transition to complete
-    }
-  }, [selectedMethodInfo?.requiresReference])
 
   const handleSubmit = (data: PaymentFormData) => {
     // Additional validation for amount
@@ -152,12 +117,7 @@ export function PaymentForm({
         <Select
           value={selectedMethod}
           onValueChange={(value) => {
-            form.setValue('metode', value as 'tunai' | 'transfer' | 'kartu')
-            // Clear referensi when switching to tunai
-            if (value === 'tunai') {
-              form.setValue('referensi', '')
-              form.clearErrors('referensi')
-            }
+            form.setValue('metode', value as 'tunai' | 'bca' | 'bri' | 'mandiri' | 'qris')
           }}
         >
           <SelectTrigger aria-label="Pilih metode pembayaran">
@@ -168,14 +128,9 @@ export function PaymentForm({
               <SelectItem
                 key={method.value}
                 value={method.value}
-                aria-label={`${method.label}${method.requiresReference ? ', memerlukan nomor referensi' : ''}`}
+                aria-label={method.label}
               >
-                <div className="flex items-center justify-between w-full">
-                  <span>{method.label}</span>
-                  {method.requiresReference && (
-                    <span className="text-xs text-gray-500 ml-2">*Referensi</span>
-                  )}
-                </div>
+                <span>{method.label}</span>
               </SelectItem>
             ))}
           </SelectContent>
@@ -184,45 +139,8 @@ export function PaymentForm({
           <p className="text-sm text-red-600">{form.formState.errors.metode.message}</p>
         )}
         <p className="text-sm text-gray-600">
-          {selectedMethodInfo?.requiresReference
-            ? 'Metode ini memerlukan nomor referensi'
-            : 'Pembayaran langsung tanpa referensi'}
+          Semua metode pembayaran tidak memerlukan nomor referensi
         </p>
-      </div>
-
-      {/* Reference Number (conditional) */}
-      <div
-        className={`transition-all duration-300 ${selectedMethodInfo?.requiresReference ? 'opacity-100 max-h-32' : 'opacity-0 max-h-0 overflow-hidden'}`}
-      >
-        {selectedMethodInfo?.requiresReference && (
-          <div className="space-y-2">
-            <Label htmlFor="referensi">
-              Nomor Referensi
-              <span className="text-red-500 ml-1">*</span>
-            </Label>
-            <Input
-              id="referensi"
-              placeholder={
-                selectedMethod === 'transfer'
-                  ? 'Nomor referensi transfer bank'
-                  : 'Nomor referensi QRIS/Kartu'
-              }
-              {...form.register('referensi')}
-              className="transition-all duration-200"
-            />
-            {form.formState.errors.referensi && (
-              <p className="text-sm text-red-600 animate-fade-in">
-                {form.formState.errors.referensi.message}
-              </p>
-            )}
-            <p className="text-sm text-gray-600 flex items-center gap-1">
-              <Info className="h-3 w-3" />
-              {selectedMethod === 'transfer'
-                ? 'Masukkan nomor referensi dari slip transfer bank'
-                : 'Masukkan nomor referensi dari QRIS atau struk kartu'}
-            </p>
-          </div>
-        )}
       </div>
 
       {/* Error Display */}

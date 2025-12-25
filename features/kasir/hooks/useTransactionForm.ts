@@ -23,7 +23,7 @@ const initialFormData: TransactionFormData = {
   products: [],
   pickupDate: '',
   returnDate: '',
-  paymentMethod: 'cash',
+  paymentMethod: 'tunai',
   paymentAmount: 0,
   paymentStatus: 'unpaid',
   kasirSelection: {
@@ -284,12 +284,7 @@ export function useTransactionForm() {
         }),
         tglMulai: convertDateToISODateTime(formData.pickupDate),
         tglSelesai: formData.returnDate ? convertDateToISODateTime(formData.returnDate) : undefined,
-        metodeBayar:
-          formData.paymentMethod === 'cash'
-            ? 'tunai'
-            : formData.paymentMethod === 'transfer'
-              ? 'transfer'
-              : 'kartu',
+        metodeBayar: formData.paymentMethod,
         catatan: formData.notes || undefined,
         // Task 4: Add discount fields to API request - only send if both type and value exist
         discountType: formData.discountType && formData.discountValue && formData.discountValue > 0 
@@ -325,12 +320,7 @@ export function useTransactionForm() {
         const paymentRequest: CreatePembayaranRequest = {
           transaksiKode: createdTransaction.kode,
           jumlah: formData.paymentAmount,
-          metode:
-            formData.paymentMethod === 'cash'
-              ? 'tunai'
-              : formData.paymentMethod === 'transfer'
-                ? 'transfer'
-                : 'kartu',
+          metode: formData.paymentMethod,
           catatan: 'Pembayaran awal transaksi',
         }
 

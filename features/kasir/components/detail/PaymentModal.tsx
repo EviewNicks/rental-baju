@@ -52,14 +52,12 @@ export function PaymentModal({ isOpen, onClose, transaction }: PaymentModalProps
 
   const handleSubmit = (formData: {
     jumlah: number
-    metode: 'tunai' | 'transfer' | 'kartu'
-    referensi?: string
+    metode: 'tunai' | 'bca' | 'bri' | 'mandiri' | 'qris'
     catatan?: string
   }) => {
     processPayment({
       jumlah: formData.jumlah,
       metode: formData.metode,
-      referensi: formData.referensi || undefined,
       catatan: formData.catatan || undefined,
     })
   }

@@ -10,6 +10,10 @@
 // CORE TYPES & ENUMS
 // ==========================================
 
+// UI-specific types for 2-level payment method selection
+export type PrimaryPaymentMethod = 'tunai' | 'bank'
+export type BankPaymentMethod = 'bca' | 'bri' | 'mandiri' | 'qris'
+
 export type TransactionStatus =
   | 'active'
   | 'diambil'
@@ -17,7 +21,7 @@ export type TransactionStatus =
   | 'terlambat'
   | 'cancelled'
   | 'pending_resolution'
-export type PaymentMethod = 'tunai' | 'transfer' | 'kartu' | 'penalty'
+export type PaymentMethod = 'tunai' | 'bca' | 'bri' | 'mandiri' | 'qris' | 'penalty'
 export type ActivityType = 'dibuat' | 'dibayar' | 'diambil' | 'selesai' | 'terlambat' | 'dibatalkan'
 export type ReturnStatus = 'belum' | 'sebagian' | 'lengkap'
 export type TransactionStep = 1 | 2 | 3 | 4
@@ -380,7 +384,7 @@ export interface Penalty {
 export interface Payment {
   id: string
   amount: number
-  method: 'cash' | 'qris' | 'transfer' | 'penalty'
+  method: 'tunai' | 'bca' | 'bri' | 'mandiri' | 'qris' | 'penalty'
   timestamp: string
   type: 'rental' | 'penalty' | 'deposit'
   reference?: string
@@ -443,7 +447,7 @@ export interface TransactionFormData {
   products: ProductSelection[]
   pickupDate: string
   returnDate: string
-  paymentMethod: 'cash' | 'qris' | 'transfer'
+  paymentMethod: 'tunai' | 'bca' | 'bri' | 'mandiri' | 'qris'
   paymentAmount: number
   paymentStatus: 'paid' | 'unpaid'
   notes?: string

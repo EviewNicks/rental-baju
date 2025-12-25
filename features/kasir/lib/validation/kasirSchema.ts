@@ -126,7 +126,7 @@ export const createTransaksiSchema = z.object({
     .string()
     .datetime('Format tanggal selesai tidak valid (ISO 8601)')
     .optional(),
-  metodeBayar: z.enum(['tunai', 'transfer', 'kartu']).default('tunai'),
+  metodeBayar: z.enum(['tunai', 'bca', 'bri', 'mandiri', 'qris']).default('tunai'),
   catatan: z.string().max(1000, 'Catatan maksimal 1000 karakter').optional(),
   // New fields for discount system
   discountType: z.enum(['percent', 'nominal']).optional().nullable(),
@@ -187,7 +187,7 @@ export const createTransaksiLegacySchema = z.object({
     .string()
     .datetime('Format tanggal selesai tidak valid (ISO 8601)')
     .optional(),
-  metodeBayar: z.enum(['tunai', 'transfer', 'kartu']).default('tunai'),
+  metodeBayar: z.enum(['tunai', 'bca', 'bri', 'mandiri', 'qris']).default('tunai'),
   catatan: z.string().max(1000, 'Catatan maksimal 1000 karakter').optional()
 }).refine((data) => {
   if (data.tglSelesai) {
@@ -234,8 +234,7 @@ export const transaksiQuerySchema = z.object({
 export const createPembayaranSchema = z.object({
   transaksiKode: z.string().min(1, 'Kode transaksi tidak boleh kosong'),
   jumlah: z.number().positive('Jumlah pembayaran harus lebih dari 0'),
-  metode: z.enum(['tunai', 'transfer', 'kartu']),
-  referensi: z.string().max(100, 'Referensi maksimal 100 karakter').optional(),
+  metode: z.enum(['tunai', 'bca', 'bri', 'mandiri', 'qris']),
   catatan: z.string().max(500, 'Catatan maksimal 500 karakter').optional()
 })
 
@@ -327,7 +326,7 @@ export const transactionFormSchema = z.object({
     }, {
       message: 'Tanggal mulai tidak boleh di masa lalu'
     }),
-  metodeBayar: z.enum(['tunai', 'transfer', 'kartu']).default('tunai'),
+  metodeBayar: z.enum(['tunai', 'bca', 'bri', 'mandiri', 'qris']).default('tunai'),
   catatan: z.string().max(1000, 'Catatan maksimal 1000 karakter').optional(),
   // UI-specific fields for form state management
   duration: z.number().refine(val => val === 4 || val === 7, {

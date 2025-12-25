@@ -41,9 +41,11 @@ export const statusTransitions = {
 
 // Payment Method Configuration
 export const paymentMethods = [
-  { value: 'tunai', label: 'Tunai', icon: '💵' },
-  { value: 'transfer', label: 'Transfer Bank', icon: '🏦' },
-  { value: 'kartu', label: 'Kartu Debit/Kredit', icon: '💳' },
+  { value: 'tunai', label: 'Tunai', icon: '💵', category: 'primary' },
+  { value: 'bca', label: 'BCA', icon: '🏦', category: 'bank' },
+  { value: 'bri', label: 'BRI', icon: '🏦', category: 'bank' },
+  { value: 'mandiri', label: 'Mandiri', icon: '🏦', category: 'bank' },
+  { value: 'qris', label: 'QRIS', icon: '📱', category: 'bank' },
 ] as const
 
 // Duration Options (in days)
