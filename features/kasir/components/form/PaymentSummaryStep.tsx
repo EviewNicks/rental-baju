@@ -505,56 +505,112 @@ export function PaymentSummaryStep({
         </div>
       </div>
 
-      {/* Payment Method */}
+      {/* Payment Method - 2-Level Selection */}
       <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-6 space-y-6">
         <div className="flex items-center gap-2 text-xl font-bold text-gray-900">
           <CreditCard className="h-6 w-6" />
           Metode Pembayaran
         </div>
 
-        <RadioGroup
-          value={formData.paymentMethod}
-          onValueChange={(value: 'tunai' | 'bca' | 'bri' | 'mandiri' | 'qris') =>
-            onUpdateFormData({ paymentMethod: value })
-          }
-          className="grid grid-cols-1 md:grid-cols-3 gap-4"
-          data-testid="payment-method-selection"
-        >
-          <div
-            className="flex items-center space-x-3 border border-gray-200 rounded-lg p-4"
-            data-testid="payment-method-cash"
+        {/* Primary Level Selection */}
+        <div className="space-y-4">
+          <Label className="text-sm font-medium text-gray-700">
+            Pilih Kategori Pembayaran
+          </Label>
+          <RadioGroup
+            value={(() => {
+              if (formData.paymentMethod === 'tunai') return 'tunai'
+              if (['bca', 'bri', 'mandiri', 'qris'].includes(formData.paymentMethod)) return 'bank'
+              return 'tunai' // default
+            })()}
+            onValueChange={(value: 'tunai' | 'bank') => {
+              if (value === 'tunai') {
+                onUpdateFormData({ paymentMethod: 'tunai' })
+              }
+              // For bank, wait for specific selection
+            }}
+            className="grid grid-cols-1 md:grid-cols-2 gap-4"
+            data-testid="primary-payment-method-selection"
           >
-            <RadioGroupItem value="tunai" id="tunai" data-testid="payment-method-cash-radio" />
-            <Label htmlFor="tunai" className="flex items-center gap-2 cursor-pointer">
-              <Banknote className="h-5 w-5" />
-              Tunai
+            <div className="flex items-center space-x-3 border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+              <RadioGroupItem value="tunai" id="primary-tunai-summary" />
+              <Label htmlFor="primary-tunai-summary" className="flex items-center gap-2 cursor-pointer flex-1">
+                <Banknote className="h-5 w-5 text-green-600" />
+                <div>
+                  <div className="font-medium text-gray-900">💵 Tunai</div>
+                  <div className="text-xs text-gray-500">Pembayaran cash langsung</div>
+                </div>
+              </Label>
+            </div>
+            
+            <div className="flex items-center space-x-3 border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+              <RadioGroupItem value="bank" id="primary-bank-summary" />
+              <Label htmlFor="primary-bank-summary" className="flex items-center gap-2 cursor-pointer flex-1">
+                <CreditCard className="h-5 w-5 text-blue-600" />
+                <div>
+                  <div className="font-medium text-gray-900">🏦 Bank/Transfer</div>
+                  <div className="text-xs text-gray-500">Transfer bank atau QRIS</div>
+                </div>
+              </Label>
+            </div>
+          </RadioGroup>
+        </div>
+
+        {/* Secondary Level Selection - Bank Options */}
+        {['bca', 'bri', 'mandiri', 'qris'].includes(formData.paymentMethod) && (
+          <div className="space-y-4 pl-4 border-l-2 border-blue-200 bg-blue-50/30 rounded-r-lg py-4 pr-4">
+            <Label className="text-sm font-medium text-blue-700">
+              Pilih Bank atau QRIS
             </Label>
+            <RadioGroup
+              value={formData.paymentMethod}
+              onValueChange={(value: 'bca' | 'bri' | 'mandiri' | 'qris') =>
+                onUpdateFormData({ paymentMethod: value })
+              }
+              className="grid grid-cols-1 md:grid-cols-2 gap-3"
+              data-testid="bank-payment-method-selection"
+            >
+              <div className="flex items-center space-x-3 border border-blue-200 rounded-lg p-3 hover:bg-blue-50 transition-colors bg-white">
+                <RadioGroupItem value="bca" id="bank-bca-summary" />
+                <Label htmlFor="bank-bca-summary" className="flex items-center gap-2 cursor-pointer flex-1">
+                  <CreditCard className="h-4 w-4 text-blue-600" />
+                  <span className="font-medium text-gray-900">🏦 BCA</span>
+                </Label>
+              </div>
+              
+              <div className="flex items-center space-x-3 border border-blue-200 rounded-lg p-3 hover:bg-blue-50 transition-colors bg-white">
+                <RadioGroupItem value="bri" id="bank-bri-summary" />
+                <Label htmlFor="bank-bri-summary" className="flex items-center gap-2 cursor-pointer flex-1">
+                  <CreditCard className="h-4 w-4 text-blue-600" />
+                  <span className="font-medium text-gray-900">🏦 BRI</span>
+                </Label>
+              </div>
+              
+              <div className="flex items-center space-x-3 border border-blue-200 rounded-lg p-3 hover:bg-blue-50 transition-colors bg-white">
+                <RadioGroupItem value="mandiri" id="bank-mandiri-summary" />
+                <Label htmlFor="bank-mandiri-summary" className="flex items-center gap-2 cursor-pointer flex-1">
+                  <CreditCard className="h-4 w-4 text-blue-600" />
+                  <span className="font-medium text-gray-900">🏦 Mandiri</span>
+                </Label>
+              </div>
+              
+              <div className="flex items-center space-x-3 border border-blue-200 rounded-lg p-3 hover:bg-blue-50 transition-colors bg-white">
+                <RadioGroupItem value="qris" id="bank-qris-summary" />
+                <Label htmlFor="bank-qris-summary" className="flex items-center gap-2 cursor-pointer flex-1">
+                  <Smartphone className="h-4 w-4 text-purple-600" />
+                  <span className="font-medium text-gray-900">📱 QRIS</span>
+                </Label>
+              </div>
+            </RadioGroup>
           </div>
-          <div
-            className="flex items-center space-x-3 border border-gray-200 rounded-lg p-4"
-            data-testid="payment-method-qris"
-          >
-            <RadioGroupItem value="qris" id="qris" data-testid="payment-method-qris-radio" />
-            <Label htmlFor="qris" className="flex items-center gap-2 cursor-pointer">
-              <Smartphone className="h-5 w-5" />
-              QRIS
-            </Label>
-          </div>
-          <div
-            className="flex items-center space-x-3 border border-gray-200 rounded-lg p-4"
-            data-testid="payment-method-bca"
-          >
-            <RadioGroupItem
-              value="bca"
-              id="bca"
-              data-testid="payment-method-bca-radio"
-            />
-            <Label htmlFor="bca" className="flex items-center gap-2 cursor-pointer">
-              <CreditCard className="h-5 w-5" />
-              BCA
-            </Label>
-          </div>
-        </RadioGroup>
+        )}
+
+        {/* Help text */}
+        <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+          <p className="text-sm text-gray-600">
+            ℹ️ Semua metode pembayaran tidak memerlukan nomor referensi
+          </p>
+        </div>
 
         {/* Payment Amount */}
         <div className="space-y-6">

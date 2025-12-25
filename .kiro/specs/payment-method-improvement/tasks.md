@@ -68,15 +68,15 @@
 **Files:** `features/kasir/components/detail/PaymentForm.tsx`
 
 **Subtasks:**
-- [ ] Remove reference field from form schema
-- [ ] Implement 2-level radio button selection
-- [ ] Add primary method state management
-- [ ] Add conditional bank method selection
-- [ ] Update form validation logic
-- [ ] Remove reference field UI components
-- [ ] Update form submission handling
-- [ ] Add proper accessibility attributes
-- [ ] Test form interactions and validation
+- [x] Remove reference field from form schema
+- [x] Implement 2-level radio button selection
+- [x] Add primary method state management
+- [x] Add conditional bank method selection
+- [x] Update form validation logic
+- [x] Remove reference field UI components
+- [x] Update form submission handling
+- [x] Add proper accessibility attributes
+- [x] Test form interactions and validation
 
 **Acceptance Criteria:**
 - Form shows 2-level payment method selection
@@ -92,11 +92,11 @@
 **Files:** `features/kasir/components/detail/PaymentModal.tsx`
 
 **Subtasks:**
-- [ ] Update form interface to remove reference handling
-- [ ] Integrate new PaymentForm component
-- [ ] Update success/error state handling
-- [ ] Update payment submission logic
-- [ ] Test modal interactions
+- [x] Update form interface to remove reference handling
+- [x] Integrate new PaymentForm component
+- [x] Update success/error state handling
+- [x] Update payment submission logic
+- [x] Test modal interactions
 
 **Acceptance Criteria:**
 - Modal uses updated PaymentForm component
@@ -110,12 +110,12 @@
 **Files:** `features/kasir/components/form/PaymentSummaryStep.tsx`
 
 **Subtasks:**
-- [ ] Replace payment method selection UI
-- [ ] Implement 2-level selection in transaction form
-- [ ] Update form data handling
-- [ ] Remove reference field from summary
-- [ ] Update payment method display logic
-- [ ] Test integration with transaction creation flow
+- [x] Replace payment method selection UI
+- [x] Implement 2-level selection in transaction form
+- [x] Update form data handling
+- [x] Remove reference field from summary
+- [x] Update payment method display logic
+- [x] Test integration with transaction creation flow
 
 **Acceptance Criteria:**
 - Transaction creation form shows new payment method selection
@@ -150,12 +150,12 @@
 **Files:** `features/kasir/hooks/usePaymentProcessing.ts`, `features/kasir/hooks/useTransactionDetail.ts`
 
 **Subtasks:**
-- [ ] ✅ UPDATE existing `usePaymentMethods` hook (don't create new)
-- [ ] ✅ REMOVE `requiresReference` logic from existing hook
+- [x] ✅ UPDATE existing `usePaymentMethods` hook (don't create new)
+- [x] ✅ REMOVE `requiresReference` logic from existing hook
 - [ ] ✅ UPDATE existing `mapPaymentMethod()` function (don't create new)
 - [ ] ✅ ADD backward compatibility mapping to existing function
 - [ ] ✅ UPDATE existing UI payment method mapping
-- [ ] ✅ ADD helper functions within existing hook (avoid separate exports)
+- [x] ✅ ADD helper functions within existing hook (avoid separate exports)
 - [ ] Test hook functionality
 
 **Acceptance Criteria:**

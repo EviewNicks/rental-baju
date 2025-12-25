@@ -135,3 +135,119 @@ Successfully completed Phase 1 of the Payment Method Improvement implementation.
 - Fixed form initialization and payment method mapping
 - Removed `referensi` field usage from service layer
 - Updated mock data to use new payment method values
+
+# Phase 2: UI Component Updates - COMPLETED ✅
+
+## Summary
+Successfully completed Phase 2 of the Payment Method Improvement implementation. All UI components have been updated to use 2-level payment method selection as specified in the design document.
+
+## Completed Tasks
+
+### ✅ Task 2.1: Update PaymentForm Component
+**File:** `features/kasir/components/detail/PaymentForm.tsx`
+
+**Changes Made:**
+- ✅ **Implemented 2-level radio button selection** (Primary → Bank sub-options)
+- ✅ **Added primary method state management** (`PrimaryPaymentMethod`)
+- ✅ **Added conditional bank method selection** (`BankPaymentMethod`)
+- ✅ **Removed reference field UI components** completely
+- ✅ **Updated form validation logic** for 2-level selection
+- ✅ **Added proper accessibility attributes** with clear labels
+- ✅ **Enhanced visual design** with icons and clear hierarchy
+
+**UI Structure Implemented:**
+```tsx
+// Primary Level Selection
+<RadioGroup value={primaryMethod} onValueChange={handlePrimaryMethodChange}>
+  <RadioGroupItem value="tunai">💵 Tunai</RadioGroupItem>
+  <RadioGroupItem value="bank">🏦 Bank/Transfer</RadioGroupItem>
+</RadioGroup>
+
+// Secondary Level Selection (conditional)
+{primaryMethod === 'bank' && (
+  <RadioGroup value={bankMethod} onValueChange={handleBankMethodChange}>
+    <RadioGroupItem value="bca">🏦 BCA</RadioGroupItem>
+    <RadioGroupItem value="bri">🏦 BRI</RadioGroupItem>
+    <RadioGroupItem value="mandiri">🏦 Mandiri</RadioGroupItem>
+    <RadioGroupItem value="qris">📱 QRIS</RadioGroupItem>
+  </RadioGroup>
+)}
+```
+
+**Result:** ✅ Form shows 2-level payment method selection, reference field completely removed
+
+### ✅ Task 2.2: Update PaymentModal Component
+**File:** `features/kasir/components/detail/PaymentModal.tsx`
+
+**Changes Made:**
+- ✅ **Integrated new PaymentForm component** with 2-level selection
+- ✅ **Removed reference field handling** from success message
+- ✅ **Updated payment submission logic** to work with new method structure
+- ✅ **Maintained success/error state handling**
+
+**Result:** ✅ Modal uses updated PaymentForm component, payment submission works with new method structure
+
+### ✅ Task 2.3: Update PaymentSummaryStep Component
+**File:** `features/kasir/components/form/PaymentSummaryStep.tsx`
+
+**Changes Made:**
+- ✅ **Replaced flat payment method selection** with 2-level structure
+- ✅ **Implemented 2-level selection in transaction form**
+- ✅ **Updated form data handling** for new payment method structure
+- ✅ **Enhanced visual design** with consistent styling
+- ✅ **Added conditional rendering** for bank sub-options
+
+**UI Structure Implemented:**
+```tsx
+// Primary Level Selection
+<RadioGroup value={primaryMethod} onValueChange={handlePrimaryChange}>
+  <RadioGroupItem value="tunai">💵 Tunai</RadioGroupItem>
+  <RadioGroupItem value="bank">🏦 Bank/Transfer</RadioGroupItem>
+</RadioGroup>
+
+// Secondary Level Selection (conditional)
+{showBankOptions && (
+  <RadioGroup value={formData.paymentMethod} onValueChange={handleBankChange}>
+    <RadioGroupItem value="bca">🏦 BCA</RadioGroupItem>
+    <RadioGroupItem value="bri">🏦 BRI</RadioGroupItem>
+    <RadioGroupItem value="mandiri">🏦 Mandiri</RadioGroupItem>
+    <RadioGroupItem value="qris">📱 QRIS</RadioGroupItem>
+  </RadioGroup>
+)}
+```
+
+**Result:** ✅ Transaction creation form shows new payment method selection, 2-level selection works in transaction context
+
+### ✅ Task 3.2: Update Hooks and Mapping Functions
+**File:** `features/kasir/hooks/usePaymentProcessing.ts`
+
+**Changes Made:**
+- ✅ **Updated existing `usePaymentMethods` hook** (didn't create new)
+- ✅ **Removed `requiresReference` logic** from existing hook
+- ✅ **Added helper functions within existing hook** (avoid separate exports)
+- ✅ **Updated payment method configurations** to new enum values
+
+**New Hook Structure:**
+```typescript
+export function usePaymentMethods() {
+  const paymentMethods = [
+    { value: 'tunai', label: 'Tunai', requiresReference: false },
+    { value: 'bca', label: 'BCA', requiresReference: false },
+    { value: 'bri', label: 'BRI', requiresReference: false },
+    { value: 'mandiri', label: 'Mandiri', requiresReference: false },
+    { value: 'qris', label: 'QRIS', requiresReference: false },
+  ] as const
+
+  // Helper functions within existing hook
+  const getPrimaryMethods = () => [
+    { value: 'tunai', label: 'Tunai', icon: '💵' },
+    { value: 'bank', label: 'Bank/Transfer', icon: '🏦' }
+  ]
+
+  const getBankMethods = () => paymentMethods.filter(m => m.value !== 'tunai')
+
+  return { paymentMethods, getPrimaryMethods, getBankMethods }
+}
+```
+
+**Result:** ✅ Existing hook returns new payment method configurations, no duplicate functions created
