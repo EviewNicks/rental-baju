@@ -8,15 +8,24 @@
  * - Auto-refresh optimization
  */
 
-export { useDebounce } from './useDebounce'
-export { useCacheManager } from './useCacheManager'
+export { useDebounce, useSearchDebounce } from './useDebounce'
+export { 
+  useCacheManager,
+  generateTransactionCacheKey,
+  generateTransactionDetailCacheKey,
+  generateInvalidationPattern
+} from './useCacheManager'
 export { usePerformanceMonitor } from './usePerformanceMonitor'
 export { useAutoRefresh } from './useAutoRefresh'
 
 // Types
 export type {
   DebounceOptions,
+  UseDebounceReturn,
   CacheManagerOptions,
+  CacheStats,
+  StorageStrategy,
   PerformanceMetrics,
-  AutoRefreshOptions
+  AutoRefreshOptions,
+  SearchParams
 } from './types'

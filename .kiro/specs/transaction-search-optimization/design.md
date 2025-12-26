@@ -143,8 +143,7 @@ interface CacheManager {
   // Persistent storage
   persistToSessionStorage(key: string, value: any): Promise<void>
   restoreFromSessionStorage(key: string): Promise<any | null>
-  persistToRedis(key: string, value: any, ttl?: number): Promise<void>
-  restoreFromRedis(key: string): Promise<any | null>
+  restoreAllFromSessionStorage(): Promise<void>
   
   // Storage fallback
   setStorageStrategy(strategy: StorageStrategy): void
@@ -164,7 +163,6 @@ interface CacheStats {
 enum StorageStrategy {
   MEMORY_ONLY = 'memory',
   SESSION_STORAGE = 'session',
-  REDIS_PRIMARY = 'redis',
   HYBRID = 'hybrid'
 }
 
@@ -183,9 +181,9 @@ interface CacheKeyGenerator {
 - Intelligent invalidation on data updates
 - Cross-tab cache sharing via BroadcastChannel
 - SessionStorage persistence for browser refresh survival
-- Optional Redis integration for production environments
 - Automatic fallback between storage strategies
 - Compression for large cache entries
+- Storage health monitoring and adaptation
 
 ### 3. Query Optimizer with Request Deduplication
 
@@ -411,7 +409,7 @@ interface CacheMetadata {
   lastCleanup: number
   persistentEntries: number
   sessionStorageSize: number
-  redisConnected: boolean
+  sessionStorageAvailable: boolean
 }
 
 interface PersistentCacheEntry {
@@ -419,7 +417,7 @@ interface PersistentCacheEntry {
   value: any
   timestamp: number
   ttl: number
-  compressionType?: 'gzip' | 'lz4'
+  compressionType?: 'base64'
   checksum: string
 }
 ```
@@ -530,23 +528,23 @@ interface SearchMetrics {
 
 ### Property 16: Persistent Cache Survival
 *For any* cached entry marked as persistent, the cache manager should restore the entry from SessionStorage after browser refresh and maintain data consistency.
-**Validates: Requirements 3.8, 3.10**
+**Validates: Requirements 3.6, 3.8**
 
-### Property 17: Redis Fallback Mechanism
-*For any* Redis connection failure, the cache manager should automatically fallback to in-memory caching without affecting user experience or data availability.
-**Validates: Requirements 3.9, 3.10**
+### Property 17: Storage Strategy Adaptation
+*For any* storage strategy failure (SessionStorage full, SessionStorage unavailable), the cache manager should adapt to the next available strategy without data loss.
+**Validates: Requirements 3.8, 3.9**
 
-### Property 18: Request Deduplication Efficiency
+### Property 19: Request Deduplication Efficiency
 *For any* burst of identical API requests within 1 second, the query optimizer should execute only one request and return the same response to all requesters.
 **Validates: Requirements 8.6, 8.7**
 
-### Property 19: Deduplication Cache TTL Management
+### Property 20: Deduplication Cache TTL Management
 *For any* deduplication cache entry exceeding memory limits, the query optimizer should evict entries using TTL-based cleanup while preserving active requests.
 **Validates: Requirements 8.8, 8.9**
 
-### Property 20: Storage Strategy Adaptation
-*For any* storage strategy failure (SessionStorage full, Redis unavailable), the cache manager should adapt to the next available strategy without data loss.
-**Validates: Requirements 3.9, 3.10**
+### Property 18: Storage Strategy Adaptation
+*For any* storage strategy failure (SessionStorage full, SessionStorage unavailable), the cache manager should adapt to the next available strategy without data loss.
+**Validates: Requirements 3.8, 3.9**
 
 ## Error Handling
 

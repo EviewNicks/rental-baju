@@ -39,7 +39,7 @@ Optimasi sistem pencarian transaksi dan caching untuk mengatasi masalah performa
 4. WHEN the user manually refreshes or changes filters, THE Auto_Refresh_System SHALL reset the refresh timer
 5. WHEN network connectivity is poor, THE Auto_Refresh_System SHALL increase refresh interval to 120 seconds
 
-### Requirement 3: Intelligent Cache Management with Persistent Storage
+### Requirement 3: Intelligent Cache Management with SessionStorage Persistence
 
 **User Story:** As a kasir user, I want the system to remember recent searches and data across browser sessions, so that I can navigate quickly without waiting for repeated API calls even after refreshing or reopening the browser.
 
@@ -51,10 +51,10 @@ Optimasi sistem pencarian transaksi dan caching untuk mengatasi masalah performa
 4. WHEN cache storage exceeds 50MB, THE Cache_Manager SHALL remove oldest entries using LRU strategy
 5. WHEN user switches between status tabs, THE Cache_Manager SHALL reuse cached data if available
 6. WHEN browser is refreshed or reopened, THE Cache_Manager SHALL restore cache from SessionStorage for immediate availability
-7. WHEN multiple users access same data, THE Cache_Manager SHALL optionally use Redis for shared caching (production optimization)
-8. WHEN SessionStorage is available, THE Cache_Manager SHALL persist frequently accessed cache entries to survive browser refresh
-9. WHEN Redis is configured in production, THE Cache_Manager SHALL use Redis as primary cache store with automatic fallback to memory cache
-10. WHEN persistent storage fails, THE Cache_Manager SHALL gracefully fallback to in-memory caching without affecting user experience
+7. WHEN SessionStorage is available, THE Cache_Manager SHALL persist frequently accessed cache entries to survive browser refresh
+8. WHEN SessionStorage fails or is full, THE Cache_Manager SHALL gracefully fallback to in-memory caching without affecting user experience
+9. WHEN multiple tabs are open, THE Cache_Manager SHALL share cache between tabs using BroadcastChannel to avoid duplicate API calls
+10. WHEN SessionStorage space is limited, THE Cache_Manager SHALL compress large cache entries to maximize storage efficiency
 
 ### Requirement 4: Query Optimization and Pagination
 

@@ -30,7 +30,6 @@ export interface CacheManagerOptions {
 export enum StorageStrategy {
   MEMORY_ONLY = 'memory',
   SESSION_STORAGE = 'session',
-  REDIS_PRIMARY = 'redis',
   HYBRID = 'hybrid'
 }
 
@@ -54,6 +53,18 @@ export interface CacheStats {
   entryCount: number
   persistentHits: number
   persistentMisses: number
+}
+
+// Search parameters for cache key generation
+export interface SearchParams {
+  search?: string
+  status?: string
+  dateFrom?: string
+  dateTo?: string
+  page?: number
+  limit?: number
+  sortBy?: string
+  sortOrder?: 'asc' | 'desc'
 }
 
 // Performance Monitor types
