@@ -320,7 +320,7 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
     }
 
     // ✅ PARTIAL RETURN FIX: Check if at least one item is being returned (quantity > 0)
-    const itemsBeingReturned = Object.entries(formState.itemConditions).filter(([_, condition]) => {
+    const itemsBeingReturned = Object.values(formState.itemConditions).filter((condition) => {
       const totalQuantity = condition.conditions.reduce((sum, c) => sum + (c.jumlahKembali || 0), 0)
       return condition.isValid && totalQuantity > 0
     })
@@ -334,7 +334,7 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
     }
 
     // Check all items being returned have valid conditions
-    const invalidItems = itemsBeingReturned.filter(([_, condition]) => !condition.isValid)
+    const invalidItems = itemsBeingReturned.filter((condition) => !condition.isValid)
 
     if (invalidItems.length > 0) {
       setFormState((prev) => ({
@@ -349,15 +349,15 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
     const requestedQuantities: Record<string, number> = {}
     const remainingQuantities: Record<string, number> = {}
 
-    itemsBeingReturned.forEach(([itemId, condition]) => {
-      const totalRequested = condition.conditions.reduce((sum, c) => sum + (c.jumlahKembali || 0), 0)
-      requestedQuantities[itemId] = totalRequested
+    itemsBeingReturned.forEach((condition) => {
+      const totalRequested = condition.conditions.reduce((sum: number, c) => sum + (c.jumlahKembali || 0), 0)
+      requestedQuantities[condition.itemId] = totalRequested
 
       // Get remaining quantity for this item
-      const item = returnableItems.find(i => i.id === itemId)
+      const item = returnableItems.find(i => i.id === condition.itemId)
       if (item) {
         const remainingResult = calculateRemainingQuantity(item)
-        remainingQuantities[itemId] = remainingResult.remainingToReturn
+        remainingQuantities[condition.itemId] = remainingResult.remainingToReturn
       }
     })
 
@@ -448,7 +448,7 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
     try {
       // ✅ PARTIAL RETURN FIX: Convert to API request format (unified)
       // Only include items that are actually being returned (quantity > 0)
-      const itemsBeingReturned = Object.entries(formState.itemConditions).filter(([_, condition]) => {
+      const itemsBeingReturned = Object.entries(formState.itemConditions).filter(([, condition]) => {
         const totalQuantity = condition.conditions.reduce((sum, c) => sum + (c.jumlahKembali || 0), 0)
         return totalQuantity > 0
       })

@@ -13,6 +13,7 @@ import type {
   ConditionSplit,
   ConditionValidationResult,
   ConditionCategory,
+  TransaksiItemResponse,
 } from '../../types'
 import { kasirLogger } from '../../lib/logger'
 import { extractSizeInfo } from '../../lib/utils/kondisiAwalParser'
@@ -38,7 +39,7 @@ export function UnifiedConditionForm({
 }: UnifiedConditionFormProps) {
   // ✅ SMART DEFAULT: Use remaining quantity as helpful default, but allow zero for partial return
   // This provides the best UX: auto-fill with remaining quantity, but user can adjust to 0 if needed
-  const getSmartDefaultQuantity = (item: any, existingValue?: EnhancedItemCondition | null, remainingQty?: number) => {
+  const getSmartDefaultQuantity = (item: TransaksiItemResponse, existingValue?: EnhancedItemCondition | null, remainingQty?: number) => {
     // If there's an existing value, use it (form already initialized)
     if (existingValue?.conditions?.[0]?.jumlahKembali !== undefined) {
       return existingValue.conditions[0].jumlahKembali
