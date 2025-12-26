@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useCallback, useEffect } from 'react'
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/react-query'
 import { kasirApi } from '../api'
@@ -32,7 +32,7 @@ export function useTransactions(options: UseTransactionsOptions = {}) {
   })
 
   // Debounce search input to reduce API calls
-  const { debouncedValue: debouncedSearch, isPending: isSearchPending } = useDebounce(
+  const { debouncedValue: debouncedSearch } = useDebounce(
     filters.search || '',
     {
       delay: 300,
@@ -40,14 +40,9 @@ export function useTransactions(options: UseTransactionsOptions = {}) {
     }
   )
 
-  // Initialize smart auto-refresh with network adaptation
+  // Initialize simplified auto-refresh
   const autoRefresh = useAutoRefresh({
     interval: refetchInterval,
-    pauseOnTyping: true,
-    pauseOnInactive: true,
-    adaptToNetwork: true,
-    maxInterval: 300000, // 5 minutes max
-    minInterval: 30000, // 30 seconds min
   })
 
   // Build query parameters from filters with debounced search
@@ -101,7 +96,6 @@ export function useTransactions(options: UseTransactionsOptions = {}) {
     isLoading,
     error,
     refetch,
-    isRefetching,
   } = useQuery<TransaksiListResponse>({
     queryKey: queryKeys.kasir.transaksi.list(queryParams),
     queryFn,
@@ -114,20 +108,45 @@ export function useTransactions(options: UseTransactionsOptions = {}) {
     refetchOnReconnect: true, // Refetch when network reconnects
   })
 
-  // Setup auto-refresh with smart conditions
-  useEffect(() => {
-    if (enabled && !isTyping) {
-      autoRefresh.start(() => {
-        refetch()
-      })
-    } else {
-      autoRefresh.pause()
-    }
+  // Store autoRefresh in ref to avoid dependency issues
+  const autoRefreshRef = useRef(autoRefresh)
+  autoRefreshRef.current = autoRefresh
 
-    return () => {
-      autoRefresh.stop()
+  // Store refresh callback in ref to avoid dependency issues
+  const refreshCallbackRef = useRef<() => void>(() => {})
+  refreshCallbackRef.current = () => refetch()
+
+  // Simplified auto-refresh setup - avoid continuous start/stop
+  useEffect(() => {
+    if (!enabled) return
+
+    const refresh = autoRefreshRef.current
+    
+    // Use callback from ref to avoid dependency issues
+    const stableCallback = () => {
+      if (refreshCallbackRef.current) {
+        refreshCallbackRef.current()
+      }
     }
-  }, [enabled, isTyping, autoRefresh, refetch])
+    
+    // Only start once when enabled
+    refresh.start(stableCallback)
+    
+    return () => {
+      refresh.stop()
+    }
+  }, [enabled]) // Remove refreshCallback from dependencies to avoid restart
+
+  // Separate effect for typing state management
+  useEffect(() => {
+    const refresh = autoRefreshRef.current
+    
+    if (isTyping) {
+      refresh.pause()
+    } else {
+      refresh.resume()
+    }
+  }, [isTyping])
 
   // Transform API data to match component expectations
   const transactions = useMemo(() => {
@@ -196,9 +215,21 @@ export function useTransactions(options: UseTransactionsOptions = {}) {
     }
   }, [transactionData])
 
+  // Stable updateFilters function to prevent circular dependencies
   const updateFilters = useCallback((newFilters: Partial<TransactionFilters>) => {
-    setFilters((prev) => ({ ...prev, ...newFilters }))
-  }, [])
+    setFilters((prev) => {
+      // Only update if there are actual changes
+      const hasChanges = Object.keys(newFilters).some(
+        key => prev[key as keyof TransactionFilters] !== newFilters[key as keyof TransactionFilters]
+      )
+      
+      if (!hasChanges) {
+        return prev // Return same reference if no changes
+      }
+      
+      return { ...prev, ...newFilters }
+    })
+  }, []) // Empty dependency array - this function should be stable
 
   // Helper function to manually refresh data with cache invalidation
   const refreshTransactions = useCallback(async () => {
@@ -223,7 +254,7 @@ export function useTransactions(options: UseTransactionsOptions = {}) {
     transactions,
     filters,
     updateFilters,
-    isLoading: isLoading || isRefetching || isSearchPending,
+    isLoading: isLoading && !transactionData, // Only show loading if no data yet
     error,
     counts,
     refreshTransactions,
