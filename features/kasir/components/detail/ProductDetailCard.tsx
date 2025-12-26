@@ -8,6 +8,11 @@ import {
   formatSizeWithAge,
   extractSizeInfo,
 } from '../../lib/utils/kondisiAwalParser'
+import { 
+  calculateReturnProgress, 
+  type TransaksiItemWithReturns 
+} from '../../lib/utils/partialReturnHelpers'
+import { ReturnProgressIndicator } from '../ui/return-progress-indicator'
 
 interface ProductDetailCardProps {
   item: {
@@ -82,6 +87,16 @@ export function ProductDetailCard({ item, pickupInfo }: ProductDetailCardProps) 
       item.totalReturnPenalty > 0 &&
       !isNaN(item.totalReturnPenalty),
   )
+
+  // ✅ TASK 7: Calculate return progress for this item (Requirements: 4.1, 4.5)
+  const returnProgress = calculateReturnProgress({
+    id: item.product.id,
+    jumlahDiambil: actualJumlahDiambil,
+    conditionBreakdown: item.conditionBreakdown,
+  } as TransaksiItemWithReturns)
+
+  // ✅ TASK 7: Show return progress when items have been picked up (Requirements: 4.2, 4.3)
+  const shouldShowReturnProgress = actualJumlahDiambil > 0
 
   return (
     <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-6 shadow-lg shadow-gray-900/5 transition-all duration-200">
@@ -182,6 +197,32 @@ export function ProductDetailCard({ item, pickupInfo }: ProductDetailCardProps) 
               </Badge>
             )}
           </div>
+
+          {/* ✅ TASK 7: Return Progress Section (Requirements: 4.1, 4.2, 4.3, 4.5) */}
+          {shouldShowReturnProgress && (
+            <div className="p-3 rounded-lg border bg-blue-50 border-blue-200">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-blue-900">Progress Pengembalian</span>
+                <span className="text-xs text-blue-700">
+                  {returnProgress.status === 'complete' ? 'Selesai' : 
+                   returnProgress.status === 'partial' ? 'Sebagian' : 'Belum Dimulai'}
+                </span>
+              </div>
+              
+              <ReturnProgressIndicator
+                progress={returnProgress}
+                size="sm"
+                showPercentage={true}
+                data-testid={`return-progress-${item.product.id}`}
+              />
+              
+              {returnProgress.status === 'partial' && (
+                <div className="mt-2 text-xs text-blue-600">
+                  Sisa {returnProgress.total - returnProgress.returned} item belum dikembalikan
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Return Status Section - Enhanced with penalty breakdown */}
           {hasReturnData && (

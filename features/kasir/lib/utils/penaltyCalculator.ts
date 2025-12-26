@@ -640,6 +640,310 @@ export class PenaltyCalculator {
   }
 
   /**
+   * ✅ TASK 5: Calculate session-based late penalty for partial returns
+   * Requirements: 7.2, 7.3, 7.4
+   * 
+   * For partial returns, late penalty is calculated based on current return date
+   * regardless of previous return sessions. Each session is evaluated independently.
+   */
+  static calculateSessionBasedLatePenalty(
+    expectedDate: Date,
+    currentReturnDate: Date,
+    itemsBeingReturnedCount: number,
+    customAmount?: number
+  ): {
+    isLate: boolean
+    penalty: number
+    lateDays: number
+    penaltyPerItem: number
+    sessionDescription: string
+  } {
+    // ✅ FIX: Normalize to date only (remove hours/minutes/seconds)
+    const expectedDay = new Date(
+      expectedDate.getFullYear(), 
+      expectedDate.getMonth(), 
+      expectedDate.getDate()
+    )
+    const currentDay = new Date(
+      currentReturnDate.getFullYear(), 
+      currentReturnDate.getMonth(), 
+      currentReturnDate.getDate()
+    )
+    
+    const timeDiff = currentDay.getTime() - expectedDay.getTime()
+    const lateDays = Math.max(0, Math.floor(timeDiff / (1000 * 60 * 60 * 24)))
+    const isLate = lateDays > 0
+
+    const penaltyPerItem = isLate ? (customAmount || this.FLAT_LATE_PENALTY) : 0
+    const totalPenalty = penaltyPerItem * itemsBeingReturnedCount
+
+    const sessionDescription = isLate 
+      ? `Session penalty: ${lateDays} hari terlambat, ${itemsBeingReturnedCount} item @ ${this.formatPenaltyAmount(penaltyPerItem)}`
+      : `Session penalty: Tepat waktu, tidak ada penalty`
+
+    return {
+      isLate,
+      penalty: totalPenalty,
+      lateDays,
+      penaltyPerItem,
+      sessionDescription
+    }
+  }
+
+  /**
+   * ✅ TASK 5: Calculate enhanced penalty for partial return session
+   * Requirements: 7.1, 7.2, 7.3, 7.4, 7.5
+   * 
+   * This method calculates penalties only for items being returned in the current session,
+   * ignoring previous return sessions. Late penalty is based on current return date.
+   */
+  static calculatePartialReturnSessionPenalty(
+    sessionItems: Array<{
+      id: string
+      productName: string
+      expectedReturnDate: Date
+      currentReturnDate: Date
+      conditionCategory?: string
+      manualPrice?: number
+      quantity: number
+      useManualPricing?: boolean
+      modalAwal?: number
+    }>,
+    settings?: {
+      applyFlatLatePenalty?: boolean
+      customLatePenalty?: number
+      sessionNumber?: number
+    }
+  ): {
+    sessionNumber: number
+    totalPenalty: number
+    sessionLatePenalty: number
+    sessionConditionPenalty: number
+    isLateSession: boolean
+    lateDays: number
+    itemPenalties: Array<{
+      itemId: string
+      productName: string
+      quantity: number
+      latePenalty: number
+      conditionPenalty: number
+      totalItemPenalty: number
+      isLate: boolean
+      description: string
+    }>
+    sessionSummary: {
+      totalItems: number
+      totalQuantity: number
+      lateItems: number
+      onTimeItems: number
+      manuallyPricedItems: number
+      avgPenaltyPerItem: number
+      avgPenaltyPerUnit: number
+    }
+    sessionDescription: string
+  } {
+    const { 
+      applyFlatLatePenalty = true, 
+      customLatePenalty,
+      sessionNumber = 1
+    } = settings || {}
+
+    if (sessionItems.length === 0) {
+      return {
+        sessionNumber,
+        totalPenalty: 0,
+        sessionLatePenalty: 0,
+        sessionConditionPenalty: 0,
+        isLateSession: false,
+        lateDays: 0,
+        itemPenalties: [],
+        sessionSummary: {
+          totalItems: 0,
+          totalQuantity: 0,
+          lateItems: 0,
+          onTimeItems: 0,
+          manuallyPricedItems: 0,
+          avgPenaltyPerItem: 0,
+          avgPenaltyPerUnit: 0
+        },
+        sessionDescription: `Session ${sessionNumber}: Tidak ada item`
+      }
+    }
+
+    // Use the first item's dates for session-level late penalty calculation
+    // All items in a session have the same expected and actual return dates
+    const firstItem = sessionItems[0]
+    const totalQuantity = sessionItems.reduce((sum, item) => sum + item.quantity, 0)
+
+    // Calculate session-based late penalty
+    const sessionLatePenaltyResult = this.calculateSessionBasedLatePenalty(
+      firstItem.expectedReturnDate,
+      firstItem.currentReturnDate,
+      totalQuantity, // Apply to all items being returned in this session
+      customLatePenalty
+    )
+
+    const sessionLatePenalty = applyFlatLatePenalty ? sessionLatePenaltyResult.penalty : 0
+
+    // Calculate condition penalties for each item
+    const itemPenalties = sessionItems.map(item => {
+      // Calculate manual pricing penalty for this item
+      const manualPricingResult = this.calculateManualPricingPenalty(
+        item.conditionCategory || 'BAIK',
+        item.manualPrice || 0,
+        item.quantity,
+        item.useManualPricing
+      )
+
+      // Late penalty is distributed across all items in the session
+      const itemLatePenalty = sessionLatePenalty > 0 
+        ? (sessionLatePenaltyResult.penaltyPerItem * item.quantity)
+        : 0
+
+      const totalItemPenalty = itemLatePenalty + manualPricingResult.penalty
+
+      // Generate item description
+      let description = ''
+      if (itemLatePenalty > 0 && manualPricingResult.penalty > 0) {
+        description = `Kombinasi penalty keterlambatan (${this.formatPenaltyAmount(itemLatePenalty)}) dan ${manualPricingResult.description.toLowerCase()}`
+      } else if (itemLatePenalty > 0) {
+        description = `Penalty keterlambatan session: ${sessionLatePenaltyResult.lateDays} hari`
+      } else if (manualPricingResult.penalty > 0) {
+        description = manualPricingResult.description
+      } else {
+        description = 'Tidak ada penalty - dikembalikan tepat waktu dalam kondisi baik'
+      }
+
+      return {
+        itemId: item.id,
+        productName: item.productName,
+        quantity: item.quantity,
+        latePenalty: itemLatePenalty,
+        conditionPenalty: manualPricingResult.penalty,
+        totalItemPenalty,
+        isLate: sessionLatePenaltyResult.isLate,
+        description
+      }
+    })
+
+    const sessionConditionPenalty = itemPenalties.reduce((sum, item) => sum + item.conditionPenalty, 0)
+    const totalPenalty = sessionLatePenalty + sessionConditionPenalty
+
+    // Calculate session summary
+    const lateItems = sessionLatePenaltyResult.isLate ? sessionItems.length : 0
+    const manuallyPricedItems = itemPenalties.filter(item => item.conditionPenalty > 0).length
+    const avgPenaltyPerItem = sessionItems.length > 0 ? totalPenalty / sessionItems.length : 0
+    const avgPenaltyPerUnit = totalQuantity > 0 ? totalPenalty / totalQuantity : 0
+
+    // Generate session description
+    const itemDescriptions = itemPenalties.map(item => 
+      `${item.productName} (${item.quantity})`
+    ).join(', ')
+
+    const penaltyDesc = totalPenalty > 0 
+      ? `, Penalty: ${this.formatPenaltyAmount(totalPenalty)}${sessionLatePenaltyResult.isLate ? ` (Terlambat ${sessionLatePenaltyResult.lateDays} hari)` : ''}`
+      : ''
+
+    const sessionDescription = `Session ${sessionNumber}: ${itemDescriptions}${penaltyDesc}`
+
+    return {
+      sessionNumber,
+      totalPenalty,
+      sessionLatePenalty,
+      sessionConditionPenalty,
+      isLateSession: sessionLatePenaltyResult.isLate,
+      lateDays: sessionLatePenaltyResult.lateDays,
+      itemPenalties,
+      sessionSummary: {
+        totalItems: sessionItems.length,
+        totalQuantity,
+        lateItems,
+        onTimeItems: sessionItems.length - lateItems,
+        manuallyPricedItems,
+        avgPenaltyPerItem,
+        avgPenaltyPerUnit
+      },
+      sessionDescription
+    }
+  }
+
+  /**
+   * ✅ TASK 5: Generate penalty preview for partial return session
+   * Requirements: 7.5
+   * 
+   * This method provides real-time penalty calculation for the current session
+   * without considering previous sessions. Used for penalty preview in forms.
+   */
+  static generatePartialReturnPenaltyPreview(
+    sessionItems: Array<{
+      id: string
+      productName: string
+      expectedReturnDate: Date
+      currentReturnDate: Date
+      conditionCategory?: string
+      manualPrice?: number
+      quantity: number
+      useManualPricing?: boolean
+    }>,
+    sessionNumber: number = 1
+  ): {
+    totalPenalty: number
+    isLateReturn: boolean
+    lateDays: number
+    flatLatePenalty: number
+    conditionPenalty: number
+    itemBreakdown: Array<{
+      itemId: string
+      itemName: string
+      quantity: number
+      penalty: number
+      isLate: boolean
+      description: string
+    }>
+    previewDescription: string
+  } {
+    if (sessionItems.length === 0) {
+      return {
+        totalPenalty: 0,
+        isLateReturn: false,
+        lateDays: 0,
+        flatLatePenalty: 0,
+        conditionPenalty: 0,
+        itemBreakdown: [],
+        previewDescription: 'Tidak ada item untuk dihitung penalty'
+      }
+    }
+
+    const sessionResult = this.calculatePartialReturnSessionPenalty(sessionItems, {
+      applyFlatLatePenalty: true,
+      sessionNumber
+    })
+
+    const itemBreakdown = sessionResult.itemPenalties.map(item => ({
+      itemId: item.itemId,
+      itemName: item.productName,
+      quantity: item.quantity,
+      penalty: item.totalItemPenalty,
+      isLate: item.isLate,
+      description: item.description
+    }))
+
+    const previewDescription = sessionResult.totalPenalty > 0
+      ? `Preview penalty session ${sessionNumber}: ${this.formatPenaltyAmount(sessionResult.totalPenalty)}${sessionResult.isLateSession ? ` (Terlambat ${sessionResult.lateDays} hari)` : ''}`
+      : `Preview session ${sessionNumber}: Tidak ada penalty`
+
+    return {
+      totalPenalty: sessionResult.totalPenalty,
+      isLateReturn: sessionResult.isLateSession,
+      lateDays: sessionResult.lateDays,
+      flatLatePenalty: sessionResult.sessionLatePenalty,
+      conditionPenalty: sessionResult.sessionConditionPenalty,
+      itemBreakdown,
+      previewDescription
+    }
+  }
+
+  /**
    * Calculate flat penalty for late return transactions
    * NEW: Flat 20k penalty system instead of per-day calculation
    * ✅ FIX: Normalize dates to compare only date (not time) to prevent same-day returns from being charged

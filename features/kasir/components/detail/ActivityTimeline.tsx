@@ -5,6 +5,7 @@ import { queryKeys } from '@/lib/react-query'
 import type { ActivityLog } from '../../types'
 import { formatDate, formatCurrency } from '../../lib/utils/client'
 import { actionIcons, actionColors } from '../../lib/constants/uiConfig'
+import { ReturnSessionHistory } from '../ui/return-progress-indicator'
 
 interface ActivityTimelineProps {
   timeline: ActivityLog[]
@@ -492,6 +493,17 @@ export function ActivityTimeline({
     })
   }
 
+  // ✅ TASK 7: Extract return sessions for session history display (Requirements: 4.3, 4.4, 5.2)
+  const returnSessions = deduplicatedTimeline
+    .filter(activity => activity.action === 'returned')
+    .map((activity, index) => ({
+      sessionNumber: index + 1,
+      date: formatDate(activity.timestamp),
+      itemsReturned: activity.details?.items?.length || 0,
+      totalPenalty: activity.details?.summary?.totalPenalty || 0,
+      performedBy: activity.details?.metadata?.processedByName || activity.performedBy,
+    }))
+
   if (!deduplicatedTimeline || deduplicatedTimeline.length === 0) {
     console.warn('ActivityTimeline: No activities to display')
     return (
@@ -521,6 +533,16 @@ export function ActivityTimeline({
           </div>
         )}
       </div>
+
+      {/* ✅ TASK 7: Return Session History Summary (Requirements: 4.3, 4.4, 5.2) */}
+      {returnSessions.length > 0 && (
+        <div className="mb-6">
+          <ReturnSessionHistory
+            sessions={returnSessions}
+            data-testid="return-session-history"
+          />
+        </div>
+      )}
 
       <div className="space-y-6">
         {deduplicatedTimeline.map((activity, index) => {

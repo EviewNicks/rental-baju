@@ -10,10 +10,15 @@ import { ProductDetailCard } from './ProductDetailCard'
 import { PaymentSummaryCard } from './PaymentSummaryCard'
 import { ActivityTimeline } from './ActivityTimeline'
 import { ActionButtonsPanel } from './ActionButtonPanel'
+import { TransactionProgressSummary } from '../ui/return-progress-indicator'
 import { useTransactionDetail } from '../../hooks/useTransactionDetail'
 import { useReceiptPrint } from '../../hooks/useReceiptPrint'
 import { formatDate } from '../../lib/utils/client'
 import { detectTransactionError } from '../../lib/utils/errorDetector'
+import { 
+  calculateTransactionProgress, 
+  type TransaksiItemWithReturns 
+} from '../../lib/utils/partialReturnHelpers'
 
 interface TransactionDetailPageProps {
   transactionId: string
@@ -97,6 +102,41 @@ export function TransactionDetailPage({ transactionId }: TransactionDetailPagePr
       </div>
     )
   }
+
+  // ✅ TASK 7: Calculate transaction progress for display (Requirements: 4.1, 4.4, 4.5)
+  const transactionProgress = calculateTransactionProgress({
+    id: transaction.id,
+    kode: transaction.transactionCode,
+    tglMulai: transaction.startDate,
+    tglSelesai: transaction.endDate,
+    status: transaction.status,
+    totalHarga: transaction.totalAmount || 0,
+    jumlahBayar: 0,
+    sisaBayar: 0,
+    createdAt: transaction.createdAt || new Date().toISOString(),
+    updatedAt: transaction.updatedAt || new Date().toISOString(),
+    penyewa: {
+      id: transaction.customer?.id || '',
+      nama: transaction.customer?.name || '',
+      telepon: transaction.customer?.phone || '',
+      alamat: transaction.customer?.address || '',
+    },
+    kasir: transaction.kasir ? {
+      id: transaction.kasir.id,
+      nama: transaction.kasir.nama,
+      isActive: transaction.kasir.isActive || true,
+    } : undefined,
+    metodeBayar: 'tunai' as const,
+    createdBy: transaction.kasir?.id || '',
+    items: transaction.products?.map(product => ({
+      id: product.id,
+      jumlahDiambil: product.jumlahDiambil || 0,
+      conditionBreakdown: product.conditionBreakdown,
+    })) as TransaksiItemWithReturns[] || []
+  })
+
+  // ✅ TASK 7: Show progress summary only if items have been picked up
+  const shouldShowProgressSummary = transaction.products?.some(p => (p.jumlahDiambil || 0) > 0)
 
   return (
     <div
@@ -199,6 +239,15 @@ export function TransactionDetailPage({ transactionId }: TransactionDetailPagePr
               customer={transaction.customer} 
               onCustomerUpdated={updateCustomerInTransaction}
             />
+
+            {/* ✅ TASK 7: Return Progress Summary (Requirements: 4.1, 4.4, 4.5) */}
+            {shouldShowProgressSummary && (
+              <TransactionProgressSummary
+                progress={transactionProgress}
+                totalItems={transaction.products?.length || 0}
+                data-testid="transaction-progress-summary"
+              />
+            )}
 
             {/* Products */}
             <div data-testid="product-detail-card" className="space-y-4">

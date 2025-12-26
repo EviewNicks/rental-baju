@@ -24,10 +24,17 @@ import { ReturnRequest, UnifiedValidationError } from '../lib/validation/ReturnS
 import { PenaltyCalculator, PenaltyCalculationResult } from '../lib/utils/penaltyCalculator'
 import { TransaksiService, TransaksiWithDetails, TransaksiForValidation } from './transaksiService'
 import { createAuditService, AuditService } from './auditService'
-import { ConditionCategory } from '../types'
+import { ConditionCategory, TransaksiDetail, TransactionStatus, PaymentMethod, ReturnStatus } from '../types'
 import { kasirLogger } from '../lib/logger'
 import { parseKondisiAwal } from '../lib/utils/kondisiAwalParser'
 import { createInventoryService } from './inventoryService'
+import { 
+  calculateRemainingQuantities, 
+  validatePartialReturnQuantities, 
+  calculateNextSessionNumber,
+  buildPartialReturnState,
+  type PartialReturnState
+} from '../lib/utils/partialReturnHelpers'
 
 // Unified return request interface - treats all returns as multi-condition
 interface UnifiedReturnRequest {
@@ -86,7 +93,7 @@ export interface ReturnValidationError {
   code: string
 }
 
-// Unified Activity Data Interface
+// ✅ TASK 4: Enhanced Unified Activity Data Interface with session information
 interface UnifiedActivityData {
   summary: {
     totalItems: number
@@ -115,6 +122,7 @@ interface UnifiedActivityData {
   metadata: {
     processingMode: 'unified'
     processingTime: number
+    sessionNumber: number // ✅ TASK 4: Add session number for activity logging
     statusChange: {
       from: string
       to: string
@@ -190,8 +198,54 @@ export class UnifiedReturnService {
    */
 
   /**
+   * ✅ TASK 4: Type adapter to convert TransaksiForValidation to TransaksiDetail format
+   * This allows partial return utilities to work with validation transaction data
+   */
+  private adaptTransactionForPartialReturn(transaction: TransaksiForValidation): TransaksiDetail {
+    return {
+      // Core fields from TransaksiCore
+      id: transaction.id,
+      kode: transaction.kode,
+      status: transaction.status as TransactionStatus,
+      totalHarga: 0, // Not available in validation type, use default
+      jumlahBayar: 0, // Not available in validation type, use default
+      sisaBayar: Number(transaction.sisaBayar), // Convert Decimal to number
+      tglMulai: transaction.tglMulai.toISOString(), // Convert Date to string
+      tglSelesai: transaction.tglSelesai?.toISOString(), // Convert Date to string
+      createdAt: transaction.createdAt.toISOString(), // Convert Date to string
+      updatedAt: transaction.updatedAt.toISOString(), // Convert Date to string
+      
+      // Customer information from TransaksiWithCustomer
+      penyewa: transaction.penyewa,
+      kasir: undefined, // Not available in validation type
+      
+      // TransaksiDetail specific fields
+      items: transaction.items.map(item => ({
+        ...item,
+        produk: {
+          ...item.produk,
+          modalAwal: Number(item.produk.modalAwal) // Convert Decimal to number
+        },
+        hargaSewa: Number(item.hargaSewa), // Convert Decimal to number
+        subtotal: Number(item.subtotal), // Convert Decimal to number
+        kondisiAwal: item.kondisiAwal || undefined, // Convert null to undefined
+        statusKembali: item.statusKembali as ReturnStatus // Cast to ReturnStatus
+      })),
+      pembayaran: [], // Empty for validation
+      aktivitas: [], // Empty for validation
+      metodeBayar: 'cash' as PaymentMethod, // Default fallback
+      catatan: undefined, // Not available in validation type
+      createdBy: this.userId, // Use current user ID as fallback
+      tglKembali: undefined // Not available in validation type
+    }
+  }
+
+  /**
+   * ✅ TASK 4: Enhanced validation for partial returns
    * OPTIMIZED: Batch validation request with single database query
    * Performance improvement: Reduces database round trips from 5-6 to 1-2
+   * 
+   * Requirements: 1.1, 1.3, 5.1, 6.1, 6.2
    */
   private async validateReturnRequest(
     transaksiId: string,
@@ -210,7 +264,7 @@ export class UnifiedReturnService {
       const validationStart = Date.now()
       kasirLogger.returnProcess.info(
         'validateReturnRequest',
-        'Starting optimized return request validation',
+        'Starting enhanced partial return validation',
         {
           transaksiId,
           itemCount: request.items.length,
@@ -273,21 +327,26 @@ export class UnifiedReturnService {
         }
       }
 
-      // Check if there are items that have been picked up but not returned
-      const hasUnreturnedItems = transaction.items.some(
-        (item) => item.jumlahDiambil > 0 && item.statusKembali !== 'lengkap',
-      )
+      // ✅ TASK 4: Enhanced check for partial return availability
+      // Use partial return utilities to calculate remaining quantities
+      const adaptedTransaction = this.adaptTransactionForPartialReturn(transaction)
+      const remainingQuantities = calculateRemainingQuantities(adaptedTransaction)
+      const hasReturnableItems = Object.values(remainingQuantities).some(qty => qty > 0)
 
-      if (!hasUnreturnedItems) {
+      if (!hasReturnableItems) {
         return {
           isValid: false,
-          error: 'Tidak ada barang yang perlu dikembalikan pada transaksi ini',
-          details: { hasUnreturnedItems: false },
+          error: 'Tidak ada barang yang dapat dikembalikan pada transaksi ini',
+          details: { hasReturnableItems: false, remainingQuantities },
         }
       }
 
-      // Optimized validation using cached data
+      // ✅ TASK 4: Enhanced validation using partial return utilities
       const errors: ReturnValidationError[] = []
+      
+      // Build requested quantities map for validation
+      const requestedQuantities: Record<string, number> = {}
+      
       for (const returnItem of request.items) {
         const transactionItem = transaction.items.find((item) => item.id === returnItem.itemId)
 
@@ -313,7 +372,7 @@ export class UnifiedReturnService {
           }
         }
 
-        // ✅ FIX: Simplified validation - consistent for all categories
+        // ✅ TASK 4: Enhanced quantity validation for partial returns
         let totalReturnQuantity = 0
         for (const condition of returnItem.conditions) {
           if (!condition.kondisiAkhir || condition.kondisiAkhir.trim() === '') {
@@ -337,29 +396,39 @@ export class UnifiedReturnService {
           totalReturnQuantity += condition.jumlahKembali
         }
 
-        // Check total return quantity
-        if (totalReturnQuantity > transactionItem.jumlahDiambil) {
+        // Store requested quantity for partial return validation
+        requestedQuantities[returnItem.itemId] = totalReturnQuantity
+      }
+
+      // ✅ TASK 4: Use partial return validation utility
+      const partialValidation = validatePartialReturnQuantities(requestedQuantities, remainingQuantities)
+      
+      if (!partialValidation.isValid) {
+        partialValidation.errors.forEach(error => {
           errors.push({
-            field: `items[${returnItem.itemId}]`,
-            message: `Total jumlah kembali (${totalReturnQuantity}) melebihi jumlah yang diambil (${transactionItem.jumlahDiambil})`,
-            code: 'EXCESS_TOTAL_QUANTITY',
+            field: 'partialReturn',
+            message: error,
+            code: 'PARTIAL_RETURN_VALIDATION_ERROR',
           })
-        }
+        })
       }
 
       const validationDuration = Date.now() - validationStart
-      kasirLogger.returnProcess.info('validateReturnRequest', 'Optimized validation completed', {
+      kasirLogger.returnProcess.info('validateReturnRequest', 'Enhanced partial return validation completed', {
         transaksiId,
         duration: validationDuration,
         itemsValidated: request.items.length,
         isValid: errors.length === 0,
+        remainingQuantities,
+        requestedQuantities,
+        partialValidationResult: partialValidation,
       })
 
       if (errors.length > 0) {
         return {
           isValid: false,
           error: `Validasi gagal: ${errors.map((e) => e.message).join(', ')}`,
-          details: { errors },
+          details: { errors, remainingQuantities, requestedQuantities },
         }
       }
 
@@ -372,7 +441,7 @@ export class UnifiedReturnService {
         productSizes: sizeMap as Map<string, any>,
       }
     } catch (error) {
-      kasirLogger.returnProcess.error('validateReturnRequest', 'Optimized validation failed', {
+      kasirLogger.returnProcess.error('validateReturnRequest', 'Enhanced partial return validation failed', {
         transaksiId,
         error: error instanceof Error ? error.message : 'Unknown error',
       })
@@ -937,8 +1006,11 @@ export class UnifiedReturnService {
   }
 
   /**
+   * ✅ TASK 4: Enhanced activity data builder with session information
    * Build unified activity data with comprehensive breakdown
    * Task 2.1: Create UnifiedActivityData builder
+   * 
+   * Requirements: 5.1, 5.2, 5.3
    */
   private buildUnifiedActivityData(
     request: UnifiedReturnRequest,
@@ -951,6 +1023,10 @@ export class UnifiedReturnService {
     const isLateReturn = lateDays > 0
     const flatLatePenalty = isLateReturn ? 20000 * result.processedItems.length : 0
     const totalConditionPenalty = penaltyCalculation.totalPenalty - flatLatePenalty
+
+    // ✅ TASK 4: Calculate session number for activity logging
+    const adaptedTransaction = this.adaptTransactionForPartialReturn(transaction)
+    const sessionNumber = calculateNextSessionNumber(adaptedTransaction)
 
     // Build items array with full details
     const items = result.processedItems.map((processedItem) => {
@@ -1014,6 +1090,7 @@ export class UnifiedReturnService {
       metadata: {
         processingMode: 'unified',
         processingTime: 0, // Will be set by caller
+        sessionNumber, // ✅ TASK 4: Add session number to metadata
         statusChange: {
           from: transaction.status,
           to: targetStatus,
@@ -1113,9 +1190,11 @@ export class UnifiedReturnService {
     const backgroundStart = Date.now()
 
     try {
-      // ✅ FIX: Check for unresolved HILANG items before setting status
+      // ✅ TASK 4: Enhanced transaction status logic for partial completion scenarios
+      // Requirements: 6.1, 6.2, 6.3, 6.4
+      // Check for unresolved HILANG items before setting status
       // If any HILANG items exist, set status to 'pending_resolution'
-      // Otherwise, set status to 'selesai'
+      // Otherwise, check if all items are fully returned before setting to 'selesai'
       const hasUnresolvedLostItems = request.items.some((item) =>
         item.conditions.some(
           (condition) =>
@@ -1124,15 +1203,31 @@ export class UnifiedReturnService {
         ),
       )
 
-      const newStatus = hasUnresolvedLostItems ? 'pending_resolution' : 'selesai'
+      // ✅ TASK 4: Check if all items are fully returned using partial return utilities
+      const adaptedTransaction = this.adaptTransactionForPartialReturn(transaction)
+      const partialReturnState = buildPartialReturnState(adaptedTransaction)
+      const allItemsFullyReturned = Object.values(partialReturnState.remainingQuantities).every(qty => qty === 0)
+
+      let newStatus: 'active' | 'terlambat' | 'diambil' | 'pending_resolution' | 'selesai' | 'cancelled'
+      if (hasUnresolvedLostItems) {
+        newStatus = 'pending_resolution'
+      } else if (allItemsFullyReturned) {
+        newStatus = 'selesai'
+      } else {
+        // ✅ TASK 4: Maintain current status for partial returns (Requirements: 6.2, 6.4)
+        newStatus = transaction.status as 'active' | 'terlambat' | 'diambil' | 'pending_resolution' | 'selesai' | 'cancelled'
+      }
 
       kasirLogger.returnProcess.info(
         'processBackgroundActivities',
-        'Determining transaction status based on lost items',
+        'Enhanced transaction status determination for partial returns',
         {
           transaksiId,
           hasUnresolvedLostItems,
+          allItemsFullyReturned,
+          currentStatus: transaction.status,
           newStatus,
+          remainingQuantities: partialReturnState.remainingQuantities,
           itemsWithHilang: request.items
             .filter((item) =>
               item.conditions.some(
@@ -1154,11 +1249,34 @@ export class UnifiedReturnService {
         },
       )
 
-      // Update transaction status with conditional logic
-      await this.transaksiService.updateTransaksiStatus(transaksiId, {
-        status: newStatus,
-        tglKembali: request.tglKembali || new Date().toISOString(),
-      })
+      // ✅ TASK 4: Only update status if it needs to change (Requirements: 6.4)
+      if (newStatus !== transaction.status) {
+        await this.transaksiService.updateTransaksiStatus(transaksiId, {
+          status: newStatus,
+          tglKembali: request.tglKembali || new Date().toISOString(),
+        })
+
+        kasirLogger.returnProcess.info(
+          'processBackgroundActivities',
+          'Transaction status updated for partial return',
+          {
+            transaksiId,
+            fromStatus: transaction.status,
+            toStatus: newStatus,
+            reason: hasUnresolvedLostItems ? 'unresolved_lost_items' : allItemsFullyReturned ? 'all_items_returned' : 'partial_return_complete',
+          },
+        )
+      } else {
+        kasirLogger.returnProcess.info(
+          'processBackgroundActivities',
+          'Transaction status maintained for partial return',
+          {
+            transaksiId,
+            status: newStatus,
+            reason: 'partial_return_in_progress',
+          },
+        )
+      }
 
       // Build unified activity data with full breakdown
       const activityData = this.buildUnifiedActivityData(
@@ -1171,17 +1289,32 @@ export class UnifiedReturnService {
       // Set processing time
       activityData.metadata.processingTime = Date.now() - backgroundStart
 
+      // ✅ TASK 4: Enhanced activity logging with session information
       // Create single comprehensive activity (Task 2: Unified Activity)
       // This replaces the previous 3 separate activities (dikembalikan, penalty_added, status_changed)
       const lateDays = activityData.summary.lateDays
+      const sessionNumber = activityData.metadata.sessionNumber
       const penaltyDesc =
         activityData.summary.totalPenalty > 0
           ? `, Penalty: Rp ${activityData.summary.totalPenalty.toLocaleString('id-ID')}${lateDays > 0 ? ` (Terlambat ${lateDays} hari)` : ''}`
           : ''
 
+      // ✅ TASK 4: Session-based activity description format
+      // Requirements: 5.2 - "Return Session X: Item A (returned/total), Item B (returned/total)"
+      const itemDescriptions = activityData.items.map(item => {
+        const totalReturned = item.conditions.reduce((sum, c) => sum + c.jumlahKembali, 0)
+        // Get total picked up from transaction data
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const transactionItem = transaction.items.find((ti: any) => ti.id === item.itemId)
+        const totalPickedUp = transactionItem?.jumlahDiambil || 0
+        return `${item.productName} (${totalReturned}/${totalPickedUp})`
+      }).join(', ')
+
+      const sessionDescription = `Return Session ${sessionNumber}: ${itemDescriptions}${penaltyDesc}`
+
       await this.createReturnActivity(transaksiId, {
         tipe: 'dikembalikan',
-        deskripsi: `Pengembalian lengkap: ${activityData.summary.totalItems} items${penaltyDesc}`,
+        deskripsi: sessionDescription,
         data: activityData as unknown as Prisma.InputJsonValue,
       })
 
@@ -1208,6 +1341,74 @@ export class UnifiedReturnService {
         },
       )
       throw error
+    }
+  }
+
+  /**
+   * ✅ TASK 4: Get partial return state for a transaction
+   * Requirements: 1.1, 1.3
+   */
+  async getPartialReturnState(transaksiId: string): Promise<PartialReturnState> {
+    try {
+      const transaction = await this.transaksiService.getTransaksiForValidation(transaksiId)
+      const adaptedTransaction = this.adaptTransactionForPartialReturn(transaction)
+      return buildPartialReturnState(adaptedTransaction)
+    } catch (error) {
+      kasirLogger.returnProcess.error('getPartialReturnState', 'Failed to get partial return state', {
+        transaksiId,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      })
+
+      throw new Error(
+        `Gagal mendapatkan status pengembalian parsial: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      )
+    }
+  }
+
+  /**
+   * ✅ TASK 4: Validate partial return quantities
+   * Requirements: 1.2, 3.3, 3.5
+   */
+  async validatePartialReturnQuantities(
+    transaksiId: string,
+    requestedQuantities: Record<string, number>
+  ): Promise<{ isValid: boolean; errors: string[] }> {
+    try {
+      const transaction = await this.transaksiService.getTransaksiForValidation(transaksiId)
+      const adaptedTransaction = this.adaptTransactionForPartialReturn(transaction)
+      const remainingQuantities = calculateRemainingQuantities(adaptedTransaction)
+      
+      return validatePartialReturnQuantities(requestedQuantities, remainingQuantities)
+    } catch (error) {
+      kasirLogger.returnProcess.error('validatePartialReturnQuantities', 'Failed to validate partial return quantities', {
+        transaksiId,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      })
+
+      return {
+        isValid: false,
+        errors: [`Gagal validasi kuantitas: ${error instanceof Error ? error.message : 'Unknown error'}`]
+      }
+    }
+  }
+
+  /**
+   * ✅ TASK 4: Calculate session number for a transaction
+   * Requirements: 5.1, 5.2
+   */
+  async calculateSessionNumber(transaksiId: string): Promise<number> {
+    try {
+      const transaction = await this.transaksiService.getTransaksiForValidation(transaksiId)
+      const adaptedTransaction = this.adaptTransactionForPartialReturn(transaction)
+      return calculateNextSessionNumber(adaptedTransaction)
+    } catch (error) {
+      kasirLogger.returnProcess.error('calculateSessionNumber', 'Failed to calculate session number', {
+        transaksiId,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      })
+
+      // Return 1 as fallback for first session
+      return 1
     }
   }
 

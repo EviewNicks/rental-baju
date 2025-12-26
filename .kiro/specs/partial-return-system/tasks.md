@@ -44,7 +44,7 @@ This implementation plan extends the existing return system to support partial r
   - **Property 1: Partial Return Quantity Validation**
   - **Validates: Requirements 1.2, 3.3, 3.5**
 
-- [ ] 4. Enhance UnifiedReturnService for partial returns
+- [x] 4. Enhance UnifiedReturnService for partial returns
   - Add partial return validation methods to existing service
   - Implement session-based penalty calculation logic
   - Enhance activity logging with session information and progress tracking
@@ -60,7 +60,7 @@ This implementation plan extends the existing return system to support partial r
   - **Property 6: Activity Logging Format Consistency**
   - **Validates: Requirements 5.2, 5.3**
 
-- [ ] 5. Implement late penalty calculation for partial returns
+- [x] 5. Implement late penalty calculation for partial returns
   - Enhance penalty calculator to handle session-based late penalties
   - Update penalty preview to show session-specific penalties
   - Ensure late penalty calculation uses current return date
@@ -71,7 +71,7 @@ This implementation plan extends the existing return system to support partial r
   - **Property 8: Late Penalty Calculation Accuracy**
   - **Validates: Requirements 7.2, 7.3**
 
-- [ ] 6. Enhance transaction status management
+- [x] 6. Enhance transaction status management
   - Update status transition logic to handle partial returns
   - Implement completion detection for all items + lost item resolution
   - Ensure status stability during partial operations
@@ -82,7 +82,7 @@ This implementation plan extends the existing return system to support partial r
   - **Property 7: Transaction Status Completion Logic**
   - **Validates: Requirements 6.1, 6.3**
 
-- [ ] 7. Add return progress tracking to transaction details
+- [x] 7. Add return progress tracking to transaction details
   - Implement progress calculation and display components
   - Add progress indicators to transaction item lists
   - Show return session history in activity timeline
