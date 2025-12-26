@@ -93,7 +93,7 @@ This implementation plan extends the existing return system to support partial r
   - **Property 5: Return Progress Calculation**
   - **Validates: Requirements 4.1, 4.5**
 
-- [ ] 8. Enhance data validation and consistency
+- [x] 8. Enhance data validation and consistency
   - Add concurrent operation protection for partial returns
   - Implement comprehensive validation against current database state
   - Ensure referential integrity during partial return operations
@@ -104,7 +104,7 @@ This implementation plan extends the existing return system to support partial r
   - **Property 9: Data Consistency During Partial Returns**
   - **Validates: Requirements 8.2, 8.4**
 
-- [ ] 9. Manual testing and cleanup
+- [x] 9. Manual testing and cleanup
   - Test complete partial return workflows end-to-end
   - Remove any unused code or dead functions created during development
   - Verify integration with existing lost item resolution system

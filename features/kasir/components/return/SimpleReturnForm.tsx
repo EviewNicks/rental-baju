@@ -162,22 +162,31 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
       return
     }
 
-    // Validate all items have conditions
-    const allItemsValid = Object.values(formState.itemConditions).every(
-      (condition) => condition.isValid && condition.conditions.length > 0,
-    )
+    // ✅ PARTIAL RETURN FIX: Validate all items have conditions and at least one item is being returned
+    const itemsBeingReturned = Object.values(formState.itemConditions).filter((condition) => {
+      const totalQuantity = condition.conditions.reduce((sum, c) => sum + (c.jumlahKembali || 0), 0)
+      return condition.isValid && condition.conditions.length > 0 && totalQuantity > 0
+    })
 
-    if (!allItemsValid) {
+    if (itemsBeingReturned.length === 0) {
       setFormState((prev) => ({ ...prev, penaltyPreview: null }))
       return
     }
 
     try {
-      // Local penalty calculation using existing condition data
+      // ✅ PARTIAL RETURN FIX: Local penalty calculation using only items being returned
       let totalPenalty = 0
       const itemBreakdown: Array<{ itemId: string; itemName: string; penalty: number }> = []
 
+      // Only calculate penalty for items being returned (quantity > 0)
       Object.entries(formState.itemConditions).forEach(([itemId, condition]) => {
+        const totalItemQuantity = condition.conditions.reduce((sum, c) => sum + (c.jumlahKembali || 0), 0)
+        
+        // Skip items with 0 quantity (not being returned in this session)
+        if (totalItemQuantity === 0) {
+          return
+        }
+
         let itemPenalty = 0
 
         // Get item name and size info from transaction data
@@ -195,11 +204,14 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
 
         // Calculate penalty for each condition within this item
         condition.conditions.forEach((c) => {
-          // ✅ SIMPLE: All categories use jumlahKembali (quantity user input)
-          const effectivePrice = c.conditionCategory === 'BAIK' ? 0 : c.manualPrice || 0
-          const quantity = c.jumlahKembali || 0
+          // Only calculate penalty for conditions with quantity > 0
+          if ((c.jumlahKembali || 0) > 0) {
+            // ✅ SIMPLE: All categories use jumlahKembali (quantity user input)
+            const effectivePrice = c.conditionCategory === 'BAIK' ? 0 : c.manualPrice || 0
+            const quantity = c.jumlahKembali || 0
 
-          itemPenalty += effectivePrice * quantity
+            itemPenalty += effectivePrice * quantity
+          }
         })
 
         totalPenalty += itemPenalty
@@ -223,9 +235,9 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
       const flatLatePenalty = latePenaltyResult.penalty // 20,000 per item
       const lateDays = latePenaltyResult.lateDays
 
-      // Add flat late penalty to total (20k per returnable item)
+      // ✅ PARTIAL RETURN FIX: Add flat late penalty to total (20k per item being returned)
       if (isLateReturn) {
-        const returnableItemsCount = Object.keys(formState.itemConditions).length
+        const returnableItemsCount = itemBreakdown.length // Only count items being returned
         totalPenalty += flatLatePenalty * returnableItemsCount
       }
 
@@ -307,24 +319,37 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
       return false
     }
 
-    // Check all returnable items have conditions
-    const missingConditions = returnableItems.filter(
-      (item) => !formState.itemConditions[item.id] || !formState.itemConditions[item.id].isValid,
-    )
+    // ✅ PARTIAL RETURN FIX: Check if at least one item is being returned (quantity > 0)
+    const itemsBeingReturned = Object.entries(formState.itemConditions).filter(([_, condition]) => {
+      const totalQuantity = condition.conditions.reduce((sum, c) => sum + (c.jumlahKembali || 0), 0)
+      return condition.isValid && totalQuantity > 0
+    })
 
-    if (missingConditions.length > 0) {
+    if (itemsBeingReturned.length === 0) {
       setFormState((prev) => ({
         ...prev,
-        error: `Kondisi belum lengkap untuk ${missingConditions.length} item`,
+        error: 'Minimal harus mengembalikan 1 item. Pilih item yang ingin dikembalikan di sesi ini.',
+      }))
+      return false
+    }
+
+    // Check all items being returned have valid conditions
+    const invalidItems = itemsBeingReturned.filter(([_, condition]) => !condition.isValid)
+
+    if (invalidItems.length > 0) {
+      setFormState((prev) => ({
+        ...prev,
+        error: `Kondisi belum lengkap untuk ${invalidItems.length} item yang akan dikembalikan`,
       }))
       return false
     }
 
     // ✅ TASK 3.3: Validate partial return quantities using utility function
+    // Only validate items that are actually being returned (quantity > 0)
     const requestedQuantities: Record<string, number> = {}
     const remainingQuantities: Record<string, number> = {}
 
-    Object.entries(formState.itemConditions).forEach(([itemId, condition]) => {
+    itemsBeingReturned.forEach(([itemId, condition]) => {
       const totalRequested = condition.conditions.reduce((sum, c) => sum + (c.jumlahKembali || 0), 0)
       requestedQuantities[itemId] = totalRequested
 
@@ -421,17 +446,25 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
     setFormState((prev) => ({ ...prev, isProcessing: true, error: null }))
 
     try {
-      // Convert to API request format (unified)
+      // ✅ PARTIAL RETURN FIX: Convert to API request format (unified)
+      // Only include items that are actually being returned (quantity > 0)
+      const itemsBeingReturned = Object.entries(formState.itemConditions).filter(([_, condition]) => {
+        const totalQuantity = condition.conditions.reduce((sum, c) => sum + (c.jumlahKembali || 0), 0)
+        return totalQuantity > 0
+      })
+
       const apiRequest = {
-        items: Object.entries(formState.itemConditions).map(([itemId, condition]) => ({
+        items: itemsBeingReturned.map(([itemId, condition]) => ({
           itemId,
-          conditions: condition.conditions.map((c) => ({
-            kondisiAkhir: c.kondisiAkhir,
-            jumlahKembali: c.jumlahKembali,
-            conditionCategory: c.conditionCategory,
-            useManualPricing: c.useManualPricing,
-            manualPrice: c.manualPrice,
-          })),
+          conditions: condition.conditions
+            .filter(c => (c.jumlahKembali || 0) > 0) // ✅ Only include conditions with quantity > 0
+            .map((c) => ({
+              kondisiAkhir: c.kondisiAkhir,
+              jumlahKembali: c.jumlahKembali,
+              conditionCategory: c.conditionCategory,
+              useManualPricing: c.useManualPricing,
+              manualPrice: c.manualPrice,
+            })),
         })),
         catatan: formState.catatan || undefined,
         tglKembali: new Date().toISOString(),
@@ -440,6 +473,8 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
       kasirLogger.returnProcess.info('SimpleReturnForm', 'Submitting return request', {
         transactionId: kode,
         itemCount: apiRequest.items.length,
+        totalItemsInForm: Object.keys(formState.itemConditions).length,
+        itemsSkipped: Object.keys(formState.itemConditions).length - apiRequest.items.length,
         hasNotes: !!formState.catatan,
       })
 
@@ -468,10 +503,14 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
   const returnableItems = transaction && transaction.items ? 
     getItemsWithRemainingQuantity({ ...transaction, items: transaction.items }) : []
 
-  // Check if form is valid for submission
+  // ✅ PARTIAL RETURN FIX: Check if form is valid for submission
+  // At least one item must be being returned (quantity > 0) and all returned items must be valid
   const isFormValid =
     returnableItems.length > 0 &&
-    returnableItems.every((item) => formState.itemConditions[item.id]?.isValid)
+    Object.values(formState.itemConditions).some((condition) => {
+      const totalQuantity = condition.conditions.reduce((sum, c) => sum + (c.jumlahKembali || 0), 0)
+      return condition.isValid && totalQuantity > 0
+    })
 
   if (isLoadingTransaction) {
     return (
@@ -613,16 +652,22 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
             Kondisi Barang
           </h2>
 
-          {returnableItems.map((item) => (
-            <UnifiedConditionForm
-              key={item.id}
-              item={item}
-              value={formState.itemConditions[item.id] || null}
-              onChange={(condition) => handleItemConditionChange(item.id, condition)}
-              disabled={formState.isProcessing}
-              isLoading={formState.isProcessing}
-            />
-          ))}
+          {returnableItems.map((item) => {
+            // ✅ Calculate remaining quantity for this specific item
+            const remainingResult = calculateRemainingQuantity(item)
+            
+            return (
+              <UnifiedConditionForm
+                key={item.id}
+                item={item}
+                value={formState.itemConditions[item.id] || null}
+                onChange={(condition) => handleItemConditionChange(item.id, condition)}
+                disabled={formState.isProcessing}
+                isLoading={formState.isProcessing}
+                remainingQuantity={remainingResult.remainingToReturn} // ✅ Pass calculated remaining quantity
+              />
+            )
+          })}
 
           {returnableItems.length === 0 && (
             <Alert>

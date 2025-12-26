@@ -109,7 +109,8 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
   const canReturn = (
     transaction.status === 'active' || 
     transaction.status === 'terlambat' || 
-    transaction.status === 'diambil'
+    transaction.status === 'diambil' ||
+    transaction.status === 'pending_resolution'  // ✅ TASK 2: Allow returns even when waiting for lost item resolution
   ) && hasReturnableItemsForActionButton(transaction)
   // ✅ TASK 7.1: Detect unresolved lost items
   // FIX: Use conditionBreakdown (not multiConditionSummary.conditionBreakdown) which has resolutionStatus

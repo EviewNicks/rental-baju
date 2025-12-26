@@ -34,27 +34,43 @@ export function UnifiedConditionForm({
   onChange,
   disabled = false,
   isLoading = false,
+  remainingQuantity, // Add remaining quantity prop
 }: UnifiedConditionFormProps) {
-  // Initialize with unified structure (always array) - Default to BAIK for better UX
+  // ✅ SMART DEFAULT: Use remaining quantity as helpful default, but allow zero for partial return
+  // This provides the best UX: auto-fill with remaining quantity, but user can adjust to 0 if needed
+  const getSmartDefaultQuantity = (item: any, existingValue?: EnhancedItemCondition | null, remainingQty?: number) => {
+    // If there's an existing value, use it (form already initialized)
+    if (existingValue?.conditions?.[0]?.jumlahKembali !== undefined) {
+      return existingValue.conditions[0].jumlahKembali
+    }
+    
+    // ✅ FIX: Use remaining quantity if provided, otherwise fall back to jumlahDiambil
+    // This fixes the issue where form shows total picked up instead of remaining quantity
+    return remainingQty !== undefined ? remainingQty : (item.jumlahDiambil || 0)
+  }
+
+  const smartDefaultQuantity = getSmartDefaultQuantity(item, value, remainingQuantity)
+  
   const initialCondition: EnhancedItemCondition = value || {
     itemId: item.id,
     mode: 'single', // Internal mode tracking (simplified)
     conditions: [
       {
         kondisiAkhir: 'Baik', // Default valid description for BAIK category
-        jumlahKembali: item.jumlahDiambil,
+        jumlahKembali: smartDefaultQuantity, // ✅ Smart default: remaining quantity, but adjustable to 0
         conditionCategory: 'BAIK' as ConditionCategory,
         useManualPricing: false,
         manualPrice: 0,
       },
     ],
-    isValid: true, // Valid by default with BAIK condition
-    totalQuantity: item.jumlahDiambil,
-    remainingQuantity: 0, // No remaining since all items allocated to BAIK
+    // ✅ Smart validation: valid if quantity > 0, but allow 0 for partial return scenarios
+    isValid: smartDefaultQuantity > 0, 
+    totalQuantity: remainingQuantity !== undefined ? remainingQuantity : item.jumlahDiambil, // ✅ Use remaining quantity for accurate total
+    remainingQuantity: Math.max(0, (remainingQuantity !== undefined ? remainingQuantity : item.jumlahDiambil) - smartDefaultQuantity),
   }
 
   const [currentCondition, setCurrentCondition] = useState<EnhancedItemCondition>(initialCondition)
-  const [touched, setTouched] = useState(true) // Start as touched with valid BAIK defaults
+  const [touched, setTouched] = useState(false) // ✅ Start as untouched - user needs to interact first
 
   // Debug logging for component initialization
   useEffect(() => {
@@ -95,7 +111,7 @@ export function UnifiedConditionForm({
         c.kondisiAkhir.length >= 4 &&
         c.kondisiAkhir.length <= 500 &&
         c.jumlahKembali !== undefined &&
-        c.jumlahKembali > 0 &&
+        c.jumlahKembali >= 0 && // ✅ PARTIAL RETURN FIX: Allow 0 quantity for partial return scenarios
         c.conditionCategory
 
       // Enhanced validation for BAIK category
@@ -115,9 +131,10 @@ export function UnifiedConditionForm({
 
     if (totalReturned > currentCondition.totalQuantity) {
       error = `Total ${totalReturned} melebihi maksimal ${currentCondition.totalQuantity} unit`
-    } else if (totalReturned === 0) {
-      // ✅ FIX: With new HILANG logic, totalReturned should never be 0 (HILANG now requires quantity > 0)
-      error = 'Minimal harus mengembalikan 1 unit'
+    } else if (totalReturned < 0) {
+      // ✅ PARTIAL RETURN FIX: Allow totalReturned = 0 for partial return scenarios
+      // User might not want to return any items in current session
+      error = 'Jumlah tidak boleh negatif'
     } else if (!hasValidConditions) {
       // Check specific validation issues with enhanced BAIK category validation
       const invalidConditions = currentCondition.conditions.filter((c) => {
@@ -148,8 +165,9 @@ export function UnifiedConditionForm({
           error = 'Kategori kondisi harus dipilih'
         } else if (firstInvalid.kondisiAkhir.length > 500) {
           error = 'Kondisi maksimal 500 karakter'
-        } else if (!firstInvalid.jumlahKembali || firstInvalid.jumlahKembali <= 0) {
-          error = 'Jumlah kembali harus lebih dari 0'
+        } else if (!firstInvalid.jumlahKembali || firstInvalid.jumlahKembali < 0) {
+          // ✅ PARTIAL RETURN FIX: Allow jumlahKembali = 0, only prevent negative values
+          error = 'Jumlah kembali tidak boleh negatif'
         } else if (firstInvalid.conditionCategory === 'BAIK' && firstInvalid.useManualPricing) {
           error = 'Kondisi BAIK tidak boleh menggunakan manual pricing'
         } else if (firstInvalid.conditionCategory === 'BAIK') {
@@ -166,17 +184,17 @@ export function UnifiedConditionForm({
     }
 
     // Progressive disclosure warnings/suggestions
-    if (remaining > 0 && totalReturned > 0 && !error) {
-      warnings.push(`Masih ada ${remaining} unit yang belum dialokasikan`)
-    }
 
     if (currentCondition.conditions.length > 3) {
       warnings.push('Banyak kondisi berbeda - pastikan sudah sesuai kebutuhan')
     }
 
-    // Debug logging for validation state changes
+    // ✅ SMART VALIDATION: Support both helpful defaults and partial return flexibility
+    // - Allow totalReturned = 0 for partial return scenarios (user can skip items)
+    // - Allow totalReturned > 0 for normal return scenarios (most common case)
+    // - Only show error for negative values or over-return
     const validationResult = {
-      isValid: !error,
+      isValid: !error && totalReturned >= 0, // ✅ Allow 0 or positive quantities
       remaining,
       totalReturned,
       maxAllowed: currentCondition.totalQuantity,
@@ -218,8 +236,13 @@ export function UnifiedConditionForm({
     // Example: 2 units total, 1 HILANG, 1 BAIK - should show "Add Condition" button
     // Removed: if (firstCondition.conditionCategory === 'HILANG') return false
 
+    // ✅ PARTIAL RETURN FIX: Progressive disclosure for partial return scenarios
+    // Show suggestion when user has entered some quantity but hasn't allocated all items
+    // Allow suggestion even when totalReturned = 0 (user might want to add conditions without returning in current session)
     const shouldShow =
-      validation.remaining > 0 && validation.remaining < currentCondition.totalQuantity
+      validation.remaining > 0 && 
+      validation.remaining < currentCondition.totalQuantity &&
+      validation.totalReturned >= 0 // ✅ Allow 0 or positive (was > 0)
 
     // Debug logging for progressive disclosure decision
     kasirLogger.returnProcess.debug('shouldShowSuggestion', 'Progressive disclosure evaluation', {
@@ -388,7 +411,7 @@ export function UnifiedConditionForm({
 
           {/* Status Indicator */}
           <div className="flex items-center gap-2">
-            {validation.isValid && validation.remaining === 0 ? (
+            {validation.isValid && validation.remaining === 0 && validation.totalReturned > 0 ? (
               <Badge className="bg-green-500 text-white">
                 <CheckCircle className="w-3 h-3 mr-1" />
                 Lengkap
@@ -398,9 +421,14 @@ export function UnifiedConditionForm({
                 <AlertCircle className="w-3 h-3 mr-1" />
                 Perlu Diperbaiki
               </Badge>
-            ) : validation.totalReturned > 0 ? (
+            ) : validation.totalReturned > 0 && touched ? (
               <Badge className="bg-yellow-500 text-black">
                 Dalam Proses ({validation.totalReturned}/{currentCondition.totalQuantity})
+              </Badge>
+            ) : validation.totalReturned > 0 && !touched ? (
+              <Badge className="bg-green-100 text-green-800 border-green-200">
+                <CheckCircle className="w-3 h-3 mr-1" />
+                Siap Diproses (Default)
               </Badge>
             ) : touched ? (
               <Badge className="bg-blue-100 text-blue-800 border-blue-200">
@@ -483,15 +511,17 @@ export function UnifiedConditionForm({
           <div className="flex items-center gap-4">
             <span>
               Status:{' '}
-              {validation.isValid && validation.remaining === 0
+              {validation.isValid && validation.remaining === 0 && validation.totalReturned > 0
                 ? '✅ Lengkap'
                 : validation.error && touched
                   ? '❌ Perlu diperbaiki'
                   : validation.totalReturned > 0
                     ? '⏳ Dalam proses'
-                    : touched
-                      ? '📝 Sedang diisi'
-                      : '📋 Siap diisi'}
+                    : validation.totalReturned === 0 && touched
+                      ? '⏸️ Tidak dikembalikan sesi ini'
+                      : validation.totalReturned > 0 && !touched
+                        ? '📋 Siap diproses (default)'
+                        : '📋 Siap diisi'}
             </span>
             {validation.remaining > 0 && <span>Sisa: {validation.remaining} unit</span>}
             <span>
@@ -499,9 +529,23 @@ export function UnifiedConditionForm({
             </span>
           </div>
 
-          {validation.isValid && validation.remaining === 0 && (
+          {validation.isValid && validation.remaining === 0 && validation.totalReturned > 0 && (
             <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200">
               Siap diproses
+            </Badge>
+          )}
+
+          {/* ✅ SMART DEFAULT: Show status for default values that are ready to process */}
+          {validation.isValid && validation.totalReturned > 0 && !touched && (
+            <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200">
+              Siap diproses (default)
+            </Badge>
+          )}
+
+          {/* ✅ PARTIAL RETURN: Show status for items not being returned in current session */}
+          {validation.totalReturned === 0 && touched && !validation.error && (
+            <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-200">
+              Tidak dikembalikan sesi ini
             </Badge>
           )}
         </div>

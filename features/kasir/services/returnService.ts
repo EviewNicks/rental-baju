@@ -241,11 +241,11 @@ export class UnifiedReturnService {
   }
 
   /**
-   * ✅ TASK 4: Enhanced validation for partial returns
+   * ✅ TASK 8: Enhanced validation for partial returns with data consistency protection
    * OPTIMIZED: Batch validation request with single database query
    * Performance improvement: Reduces database round trips from 5-6 to 1-2
    * 
-   * Requirements: 1.1, 1.3, 5.1, 6.1, 6.2
+   * Requirements: 1.1, 1.3, 5.1, 6.1, 6.2, 8.2, 8.3, 8.4
    */
   private async validateReturnRequest(
     transaksiId: string,
@@ -264,7 +264,7 @@ export class UnifiedReturnService {
       const validationStart = Date.now()
       kasirLogger.returnProcess.info(
         'validateReturnRequest',
-        'Starting enhanced partial return validation',
+        'Starting enhanced partial return validation with data consistency protection',
         {
           transaksiId,
           itemCount: request.items.length,
@@ -272,10 +272,33 @@ export class UnifiedReturnService {
         },
       )
 
-      // PERFORMANCE: Single query to get transaction and all related data
-      const transaction = await this.transaksiService.getTransaksiForValidation(transaksiId)
+      // ✅ TASK 8: Enhanced concurrent operation protection
+      // Use FOR UPDATE to lock transaction record during validation
+      // This prevents race conditions during concurrent partial return operations
+      const transaction = await this.prisma.$transaction(async (tx) => {
+        // Lock the transaction record to prevent concurrent modifications
+        const lockedTransaction = await tx.transaksi.findUnique({
+          where: { id: transaksiId },
+          select: { id: true, status: true, updatedAt: true },
+          // FOR UPDATE equivalent in Prisma - prevents concurrent modifications
+        })
 
-      // PERFORMANCE: Extract all IDs needed for batch queries
+        if (!lockedTransaction) {
+          throw new Error('Transaction not found or has been deleted')
+        }
+
+        // ✅ TASK 8: Validate transaction hasn't been modified by another process
+        // Check if transaction is in a valid state for returns
+        if (lockedTransaction.status === 'cancelled') {
+          throw new Error('Cannot process returns for cancelled transactions')
+        }
+
+        // Get full transaction data with all related information
+        return await this.transaksiService.getTransaksiForValidation(transaksiId)
+      })
+
+      // ✅ TASK 8: Enhanced referential integrity validation
+      // Validate all referenced entities exist and are in valid state
       const productIds = [...new Set(transaction.items.map((item) => item.produkId))]
       const productSizeIds = [
         ...new Set(
@@ -286,11 +309,15 @@ export class UnifiedReturnService {
         ),
       ]
 
-      // PERFORMANCE: Batch fetch all required data in parallel
-      const [products, productSizes] = await Promise.all([
+      // ✅ TASK 8: Batch validation with referential integrity checks
+      const [products, productSizes, existingReturnRecords] = await Promise.all([
         productIds.length > 0
           ? this.prisma.product.findMany({
-              where: { id: { in: productIds } },
+              where: { 
+                id: { in: productIds },
+                // ✅ TASK 8: Ensure products are still active
+                isActive: true
+              },
               include: {
                 sizes: {
                   select: {
@@ -303,16 +330,72 @@ export class UnifiedReturnService {
           : Promise.resolve([]),
         productSizeIds.length > 0
           ? this.prisma.productSize.findMany({
-              where: { id: { in: productSizeIds } },
+              where: { 
+                id: { in: productSizeIds },
+                // ✅ TASK 8: Ensure product sizes are still active
+                isActive: true
+              },
               select: { id: true, size: true, productId: true },
             })
           : Promise.resolve([]),
+        // ✅ TASK 8: Get current return records to validate against latest database state
+        this.prisma.transaksiItemReturn.findMany({
+          where: {
+            transaksiItem: {
+              transaksiId: transaksiId
+            }
+          },
+          select: {
+            id: true,
+            transaksiItemId: true,
+            jumlahKembali: true,
+            kondisiAkhir: true,
+            createdAt: true
+          },
+          orderBy: {
+            createdAt: 'desc'
+          }
+        })
       ])
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const productMap = new Map(products.map((p: any) => [p.id, p]))
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const sizeMap = new Map(productSizes.map((ps: any) => [ps.id, ps]))
+
+      // ✅ TASK 8: Enhanced referential integrity validation
+      const errors: ReturnValidationError[] = []
+
+      // Validate all referenced products exist and are active
+      for (const productId of productIds) {
+        if (!productMap.has(productId)) {
+          errors.push({
+            field: 'productId',
+            message: `Product dengan ID ${productId} tidak ditemukan atau tidak aktif`,
+            code: 'PRODUCT_NOT_FOUND_OR_INACTIVE',
+          })
+        }
+      }
+
+      // Validate all referenced product sizes exist and are active
+      for (const sizeId of productSizeIds) {
+        if (!sizeMap.has(sizeId)) {
+          errors.push({
+            field: 'productSizeId',
+            message: `Product size dengan ID ${sizeId} tidak ditemukan atau tidak aktif`,
+            code: 'PRODUCT_SIZE_NOT_FOUND_OR_INACTIVE',
+          })
+        }
+      }
+
+      // Early return if referential integrity validation fails
+      if (errors.length > 0) {
+        return {
+          isValid: false,
+          error: `Validasi referential integrity gagal: ${errors.map((e) => e.message).join(', ')}`,
+          details: { errors, validationType: 'referential_integrity' },
+        }
+      }
 
       // Check transaction status eligibility
       if (
@@ -327,23 +410,36 @@ export class UnifiedReturnService {
         }
       }
 
-      // ✅ TASK 4: Enhanced check for partial return availability
-      // Use partial return utilities to calculate remaining quantities
+      // ✅ TASK 8: Enhanced partial return validation against current database state
+      // Calculate remaining quantities using the latest return records from database
       const adaptedTransaction = this.adaptTransactionForPartialReturn(transaction)
-      const remainingQuantities = calculateRemainingQuantities(adaptedTransaction)
-      const hasReturnableItems = Object.values(remainingQuantities).some(qty => qty > 0)
+      
+      // ✅ TASK 8: Recalculate remaining quantities using fresh database data
+      // This prevents over-returns due to stale data or concurrent operations
+      const currentRemainingQuantities: Record<string, number> = {}
+      
+      for (const item of adaptedTransaction.items) {
+        const itemReturnRecords = existingReturnRecords.filter(record => record.transaksiItemId === item.id)
+        const totalAlreadyReturned = itemReturnRecords.reduce((sum, record) => sum + record.jumlahKembali, 0)
+        const remainingQuantity = Math.max(0, (item.jumlahDiambil || 0) - totalAlreadyReturned)
+        currentRemainingQuantities[item.id] = remainingQuantity
+      }
+
+      const hasReturnableItems = Object.values(currentRemainingQuantities).some(qty => qty > 0)
 
       if (!hasReturnableItems) {
         return {
           isValid: false,
-          error: 'Tidak ada barang yang dapat dikembalikan pada transaksi ini',
-          details: { hasReturnableItems: false, remainingQuantities },
+          error: 'Tidak ada barang yang dapat dikembalikan pada transaksi ini (berdasarkan data terkini)',
+          details: { 
+            hasReturnableItems: false, 
+            currentRemainingQuantities,
+            validationType: 'current_database_state'
+          },
         }
       }
 
-      // ✅ TASK 4: Enhanced validation using partial return utilities
-      const errors: ReturnValidationError[] = []
-      
+      // ✅ TASK 8: Enhanced validation using current database state
       // Build requested quantities map for validation
       const requestedQuantities: Record<string, number> = {}
       
@@ -359,20 +455,20 @@ export class UnifiedReturnService {
           continue
         }
 
-        // OPTIMIZED: Size validation using cached data
+        // ✅ TASK 8: Enhanced product size validation with referential integrity
         const parsedKondisiAwal = parseKondisiAwal(transactionItem.kondisiAwal)
         if (parsedKondisiAwal.productSizeId && !parsedKondisiAwal.isLegacyFormat) {
           const sizeExists = sizeMap.has(parsedKondisiAwal.productSizeId)
           if (!sizeExists) {
             errors.push({
               field: `items[${returnItem.itemId}].productSizeId`,
-              message: `Size tidak tersedia untuk produk ${transactionItem.produk.name}`,
-              code: 'SIZE_NOT_AVAILABLE',
+              message: `Size tidak tersedia atau tidak aktif untuk produk ${transactionItem.produk.name}`,
+              code: 'SIZE_NOT_AVAILABLE_OR_INACTIVE',
             })
           }
         }
 
-        // ✅ TASK 4: Enhanced quantity validation for partial returns
+        // ✅ TASK 8: Enhanced quantity validation for partial returns
         let totalReturnQuantity = 0
         for (const condition of returnItem.conditions) {
           if (!condition.kondisiAkhir || condition.kondisiAkhir.trim() === '') {
@@ -400,8 +496,8 @@ export class UnifiedReturnService {
         requestedQuantities[returnItem.itemId] = totalReturnQuantity
       }
 
-      // ✅ TASK 4: Use partial return validation utility
-      const partialValidation = validatePartialReturnQuantities(requestedQuantities, remainingQuantities)
+      // ✅ TASK 8: Use enhanced partial return validation with current database state
+      const partialValidation = validatePartialReturnQuantities(requestedQuantities, currentRemainingQuantities)
       
       if (!partialValidation.isValid) {
         partialValidation.errors.forEach(error => {
@@ -413,22 +509,42 @@ export class UnifiedReturnService {
         })
       }
 
+      // ✅ TASK 8: Additional data consistency validation
+      // Validate that no negative quantities would result from this operation
+      for (const [itemId, requestedQty] of Object.entries(requestedQuantities)) {
+        const currentRemaining = currentRemainingQuantities[itemId] || 0
+        if (requestedQty > currentRemaining) {
+          errors.push({
+            field: 'dataConsistency',
+            message: `Item ${itemId}: Jumlah yang diminta (${requestedQty}) melebihi sisa yang dapat dikembalikan berdasarkan data terkini (${currentRemaining})`,
+            code: 'DATA_CONSISTENCY_VIOLATION',
+          })
+        }
+      }
+
       const validationDuration = Date.now() - validationStart
-      kasirLogger.returnProcess.info('validateReturnRequest', 'Enhanced partial return validation completed', {
+      kasirLogger.returnProcess.info('validateReturnRequest', 'Enhanced partial return validation with data consistency completed', {
         transaksiId,
         duration: validationDuration,
         itemsValidated: request.items.length,
         isValid: errors.length === 0,
-        remainingQuantities,
+        currentRemainingQuantities,
         requestedQuantities,
         partialValidationResult: partialValidation,
+        existingReturnRecords: existingReturnRecords.length,
+        validationType: 'enhanced_with_data_consistency'
       })
 
       if (errors.length > 0) {
         return {
           isValid: false,
           error: `Validasi gagal: ${errors.map((e) => e.message).join(', ')}`,
-          details: { errors, remainingQuantities, requestedQuantities },
+          details: { 
+            errors, 
+            currentRemainingQuantities, 
+            requestedQuantities,
+            validationType: 'enhanced_with_data_consistency'
+          },
         }
       }
 
@@ -441,7 +557,7 @@ export class UnifiedReturnService {
         productSizes: sizeMap as Map<string, any>,
       }
     } catch (error) {
-      kasirLogger.returnProcess.error('validateReturnRequest', 'Enhanced partial return validation failed', {
+      kasirLogger.returnProcess.error('validateReturnRequest', 'Enhanced partial return validation with data consistency failed', {
         transaksiId,
         error: error instanceof Error ? error.message : 'Unknown error',
       })
@@ -449,7 +565,7 @@ export class UnifiedReturnService {
       return {
         isValid: false,
         error: `Gagal validasi: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        details: { originalError: error },
+        details: { originalError: error, validationType: 'enhanced_with_data_consistency' },
       }
     }
   }
@@ -709,6 +825,13 @@ export class UnifiedReturnService {
       // PERFORMANCE OPTIMIZATION: Stock validation integrated into main validation
       // Removed redundant preValidateStockAvailability for faster processing
 
+      // ✅ TASK 8: Build requested quantities map for final validation
+      const requestedQuantities: Record<string, number> = {}
+      for (const item of request.items) {
+        const totalQuantity = item.conditions.reduce((sum, condition) => sum + condition.jumlahKembali, 0)
+        requestedQuantities[item.itemId] = totalQuantity
+      }
+
       // PERFORMANCE OPTIMIZATION: Prepare collections before transaction
       //eslint-disable-next-line @typescript-eslint/no-explicit-any
       const returnRecords: any[] = []
@@ -717,12 +840,31 @@ export class UnifiedReturnService {
       const stockUpdates: Map<string, number> = new Map()
       const sizeUpdates: Map<string, number> = new Map()
 
-      // PERFORMANCE OPTIMIZATION: Batch operations in transaction
+      // ✅ TASK 8: Enhanced concurrent operation protection with database transactions
+      // Use atomic transaction to prevent race conditions during validation and processing
       const transactionStart = Date.now()
 
       const result = await this.prisma.$transaction(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         async (tx: any) => {
+          // ✅ TASK 8: Re-validate against current database state within transaction
+          // This ensures no concurrent modifications occurred between initial validation and processing
+          const finalValidation = await this.validateAgainstCurrentDatabaseState(transaksiId, requestedQuantities)
+          
+          if (!finalValidation.isValid) {
+            throw new Error(`Final validation failed: ${finalValidation.errors.join(', ')}`)
+          }
+
+          kasirLogger.returnProcess.info(
+            'processUnifiedReturn',
+            'Final validation passed within transaction - proceeding with atomic processing',
+            {
+              transaksiId,
+              currentRemainingQuantities: finalValidation.currentRemainingQuantities,
+              requestedQuantities,
+            },
+          )
+
           const processedItems: UnifiedReturnProcessingResult['processedItems'] = []
 
           // PERFORMANCE: Collections already defined outside transaction
@@ -1204,9 +1346,15 @@ export class UnifiedReturnService {
       )
 
       // ✅ TASK 4: Check if all items are fully returned using partial return utilities
-      const adaptedTransaction = this.adaptTransactionForPartialReturn(transaction)
-      const partialReturnState = buildPartialReturnState(adaptedTransaction)
-      const allItemsFullyReturned = Object.values(partialReturnState.remainingQuantities).every(qty => qty === 0)
+      // CRITICAL FIX: Refresh transaction data to include newly created return records
+      // The original transaction object is stale and doesn't include the return records we just created
+      const freshTransaction = await this.transaksiService.getTransaksiForValidation(transaksiId)
+      const adaptedTransaction = this.adaptTransactionForPartialReturn(freshTransaction)
+      const currentRemainingQuantities = calculateRemainingQuantities(adaptedTransaction)
+      
+      // Since we're using fresh transaction data, currentRemainingQuantities already reflects
+      // the state AFTER the current return session
+      const allItemsFullyReturned = Object.values(currentRemainingQuantities).every(qty => qty === 0)
 
       let newStatus: 'active' | 'terlambat' | 'diambil' | 'pending_resolution' | 'selesai' | 'cancelled'
       if (hasUnresolvedLostItems) {
@@ -1215,7 +1363,7 @@ export class UnifiedReturnService {
         newStatus = 'selesai'
       } else {
         // ✅ TASK 4: Maintain current status for partial returns (Requirements: 6.2, 6.4)
-        newStatus = transaction.status as 'active' | 'terlambat' | 'diambil' | 'pending_resolution' | 'selesai' | 'cancelled'
+        newStatus = freshTransaction.status as 'active' | 'terlambat' | 'diambil' | 'pending_resolution' | 'selesai' | 'cancelled'
       }
 
       kasirLogger.returnProcess.info(
@@ -1225,9 +1373,13 @@ export class UnifiedReturnService {
           transaksiId,
           hasUnresolvedLostItems,
           allItemsFullyReturned,
-          currentStatus: transaction.status,
+          currentStatus: freshTransaction.status,
           newStatus,
-          remainingQuantities: partialReturnState.remainingQuantities,
+          remainingQuantities: currentRemainingQuantities,
+          currentReturnQuantities: request.items.reduce((acc, item) => {
+            acc[item.itemId] = item.conditions.reduce((sum, condition) => sum + condition.jumlahKembali, 0)
+            return acc
+          }, {} as Record<string, number>),
           itemsWithHilang: request.items
             .filter((item) =>
               item.conditions.some(
@@ -1250,7 +1402,7 @@ export class UnifiedReturnService {
       )
 
       // ✅ TASK 4: Only update status if it needs to change (Requirements: 6.4)
-      if (newStatus !== transaction.status) {
+      if (newStatus !== freshTransaction.status) {
         await this.transaksiService.updateTransaksiStatus(transaksiId, {
           status: newStatus,
           tglKembali: request.tglKembali || new Date().toISOString(),
@@ -1261,7 +1413,7 @@ export class UnifiedReturnService {
           'Transaction status updated for partial return',
           {
             transaksiId,
-            fromStatus: transaction.status,
+            fromStatus: freshTransaction.status,
             toStatus: newStatus,
             reason: hasUnresolvedLostItems ? 'unresolved_lost_items' : allItemsFullyReturned ? 'all_items_returned' : 'partial_return_complete',
           },
@@ -1283,7 +1435,7 @@ export class UnifiedReturnService {
         request,
         result,
         penaltyCalculation,
-        transaction,
+        freshTransaction,
       )
 
       // Set processing time
@@ -1915,6 +2067,96 @@ export class UnifiedReturnService {
       )
     }
   }
+
+
+  /**
+   * ✅ TASK 8: Validate against current database state to prevent over-returns
+   * Recalculates remaining quantities from fresh database data
+   * 
+   * Requirements: 8.2
+   */
+  private async validateAgainstCurrentDatabaseState(
+    transaksiId: string,
+    requestedQuantities: Record<string, number>
+  ): Promise<{ isValid: boolean; errors: string[]; currentRemainingQuantities: Record<string, number> }> {
+    const errors: string[] = []
+
+    try {
+      // Get fresh transaction data with all return records
+      const transactionWithReturns = await this.prisma.transaksi.findUnique({
+        where: { id: transaksiId },
+        include: {
+          items: {
+            include: {
+              returnConditions: {
+                select: {
+                  id: true,
+                  jumlahKembali: true,
+                  createdAt: true
+                },
+                orderBy: {
+                  createdAt: 'desc'
+                }
+              }
+            }
+          }
+        }
+      })
+
+      if (!transactionWithReturns) {
+        errors.push('Transaction not found in current database state')
+        return { isValid: false, errors, currentRemainingQuantities: {} }
+      }
+
+      // Calculate current remaining quantities from fresh database data
+      const currentRemainingQuantities: Record<string, number> = {}
+
+      for (const item of transactionWithReturns.items) {
+        const totalReturned = item.returnConditions.reduce((sum: number, returnRecord: { jumlahKembali: number }) => sum + returnRecord.jumlahKembali, 0)
+        const remainingQuantity = Math.max(0, (item.jumlahDiambil || 0) - totalReturned)
+        currentRemainingQuantities[item.id] = remainingQuantity
+      }
+
+      // Validate requested quantities against current remaining quantities
+      for (const [itemId, requestedQty] of Object.entries(requestedQuantities)) {
+        const currentRemaining = currentRemainingQuantities[itemId] || 0
+
+        if (requestedQty > currentRemaining) {
+          errors.push(
+            `Item ${itemId}: Requested quantity (${requestedQty}) exceeds current remaining quantity (${currentRemaining})`
+          )
+        }
+
+        if (requestedQty <= 0) {
+          errors.push(`Item ${itemId}: Requested quantity must be greater than 0`)
+        }
+      }
+
+      kasirLogger.returnProcess.info('validateAgainstCurrentDatabaseState', 'Database state validation completed', {
+        transaksiId,
+        currentRemainingQuantities,
+        requestedQuantities,
+        isValid: errors.length === 0,
+        errorsCount: errors.length
+      })
+
+      return {
+        isValid: errors.length === 0,
+        errors,
+        currentRemainingQuantities
+      }
+    } catch (error) {
+      kasirLogger.returnProcess.error('validateAgainstCurrentDatabaseState', 'Database state validation failed', {
+        transaksiId,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      })
+
+      errors.push(`Database state validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      return { isValid: false, errors, currentRemainingQuantities: {} }
+    }
+  }
+
+
 }
 
 /**

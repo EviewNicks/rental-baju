@@ -47,6 +47,11 @@ export const statusConfig: Record<
     className: 'bg-gray-100 text-gray-800 border-gray-200',
     description: 'Transaksi dibatalkan',
   },
+  pending_resolution: {
+    label: 'Menunggu Resolusi',
+    className: 'bg-orange-100 text-orange-800 border-orange-200',
+    description: 'Menunggu resolusi barang hilang',
+  },
   // Legacy status mapping for backward compatibility
   dikembalikan: {
     label: 'Selesai', // Display as 'Selesai' for consistency

@@ -1315,6 +1315,7 @@ export interface UnifiedConditionFormProps {
   onChange: (condition: EnhancedItemCondition) => void
   disabled?: boolean
   isLoading?: boolean
+  remainingQuantity?: number // Add remaining quantity prop for accurate default calculation
 }
 
 export type ReturnProcessingResult = EnhancedReturnProcessingResult
