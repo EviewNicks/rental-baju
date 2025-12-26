@@ -27,5 +27,7 @@ export type {
   StorageStrategy,
   PerformanceMetrics,
   AutoRefreshOptions,
-  SearchParams
+  SearchParams,
+  NetworkCondition,
+  UserActivity
 } from './types'

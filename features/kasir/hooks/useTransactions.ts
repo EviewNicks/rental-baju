@@ -1,11 +1,18 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/react-query'
 import { kasirApi } from '../api'
 import type { TransactionFilters } from '../types'
-import type { TransactionStatus, TransaksiQueryParams } from '../types'
+import type { TransactionStatus, TransaksiQueryParams, TransaksiListResponse } from '../types'
+import { 
+  useCacheManager, 
+  generateTransactionCacheKey, 
+  generateInvalidationPattern,
+  useDebounce,
+  useAutoRefresh
+} from './optimization'
 
 interface UseTransactionsOptions {
   enabled?: boolean
@@ -13,42 +20,114 @@ interface UseTransactionsOptions {
 }
 
 export function useTransactions(options: UseTransactionsOptions = {}) {
-  const { enabled = true, refetchInterval = 30000 } = options // Auto-refresh every 30 seconds
+  const { enabled = true, refetchInterval = 60000 } = options // Increased from 30s to 60s
   const [filters, setFilters] = useState<TransactionFilters>({})
+  const [isTyping, setIsTyping] = useState(false)
+  
+  // Initialize cache manager
+  const cacheManager = useCacheManager({
+    maxSize: 50 * 1024 * 1024, // 50MB
+    defaultTTL: 5 * 60 * 1000, // 5 minutes
+    enablePersistence: true
+  })
 
-  // Build query parameters from filters
+  // Debounce search input to reduce API calls
+  const { debouncedValue: debouncedSearch, isPending: isSearchPending } = useDebounce(
+    filters.search || '',
+    {
+      delay: 300,
+      onPending: setIsTyping
+    }
+  )
+
+  // Initialize smart auto-refresh with network adaptation
+  const autoRefresh = useAutoRefresh({
+    interval: refetchInterval,
+    pauseOnTyping: true,
+    pauseOnInactive: true,
+    adaptToNetwork: true,
+    maxInterval: 300000, // 5 minutes max
+    minInterval: 30000, // 30 seconds min
+  })
+
+  // Build query parameters from filters with debounced search
   const queryParams = useMemo((): TransaksiQueryParams => {
     const params: TransaksiQueryParams = {
       page: 1,
-      limit: 100, // Load enough for dashboard display
+      limit: 20, // Reduced from 100 to 20 for better performance
     }
 
     if (filters.status && filters.status !== 'all') {
       params.status = filters.status as TransactionStatus
     }
 
-    if (filters.search) {
-      params.search = filters.search
+    if (debouncedSearch) {
+      params.search = debouncedSearch
     }
 
     return params
-  }, [filters])
+  }, [filters.status, debouncedSearch])
 
-  // Fetch transactions with React Query
+  // Generate cache key for current query
+  const cacheKey = useMemo(() => {
+    return generateTransactionCacheKey({
+      search: queryParams.search,
+      status: queryParams.status,
+      page: queryParams.page,
+      limit: queryParams.limit
+    })
+  }, [queryParams])
+
+  // Custom query function with cache integration
+  const queryFn = useCallback(async (): Promise<TransaksiListResponse> => {
+    // Try cache first
+    const cachedData = await cacheManager.get(cacheKey)
+    if (cachedData) {
+      return cachedData as TransaksiListResponse
+    }
+
+    // Fetch from API if not in cache
+    const apiData = await kasirApi.transaksi.getAll(queryParams)
+    
+    // Cache the result
+    await cacheManager.set(cacheKey, apiData)
+    
+    return apiData
+  }, [cacheManager, cacheKey, queryParams])
+
+  // Fetch transactions with React Query and cache integration
   const {
     data: transactionData,
     isLoading,
     error,
     refetch,
     isRefetching,
-  } = useQuery({
+  } = useQuery<TransaksiListResponse>({
     queryKey: queryKeys.kasir.transaksi.list(queryParams),
-    queryFn: () => kasirApi.transaksi.getAll(queryParams),
+    queryFn,
     enabled,
-    refetchInterval,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchInterval: false, // Disable React Query's auto-refresh, use our custom one
+    staleTime: 2 * 60 * 1000, // Reduced from 5 minutes to 2 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
+    // Implement stale-while-revalidate pattern
+    refetchOnWindowFocus: false, // Prevent excessive refetches
+    refetchOnReconnect: true, // Refetch when network reconnects
   })
+
+  // Setup auto-refresh with smart conditions
+  useEffect(() => {
+    if (enabled && !isTyping) {
+      autoRefresh.start(() => {
+        refetch()
+      })
+    } else {
+      autoRefresh.pause()
+    }
+
+    return () => {
+      autoRefresh.stop()
+    }
+  }, [enabled, isTyping, autoRefresh, refetch])
 
   // Transform API data to match component expectations
   const transactions = useMemo(() => {
@@ -117,33 +196,53 @@ export function useTransactions(options: UseTransactionsOptions = {}) {
     }
   }, [transactionData])
 
-  const updateFilters = (newFilters: Partial<TransactionFilters>) => {
+  const updateFilters = useCallback((newFilters: Partial<TransactionFilters>) => {
     setFilters((prev) => ({ ...prev, ...newFilters }))
-  }
+  }, [])
 
-  // Helper function to manually refresh data with error recovery
-  const refreshTransactions = () => {
+  // Helper function to manually refresh data with cache invalidation
+  const refreshTransactions = useCallback(async () => {
+    // Invalidate cache for current query
+    await cacheManager.invalidate(generateInvalidationPattern('search'))
     // Clear any cached error state and refetch
     refetch()
-  }
+  }, [cacheManager, refetch])
 
   // Clear error state function for error recovery
-  const clearError = () => {
+  const clearError = useCallback(() => {
     // This will be used by error boundary components
     refetch()
-  }
+  }, [refetch])
+
+  // Cache invalidation on data mutations (to be called after create/update/delete)
+  const invalidateCache = useCallback(async (type: 'all' | 'search' | 'detail' = 'all') => {
+    await cacheManager.invalidate(generateInvalidationPattern(type))
+  }, [cacheManager])
 
   return {
     transactions,
     filters,
     updateFilters,
-    isLoading: isLoading || isRefetching,
+    isLoading: isLoading || isRefetching || isSearchPending,
     error,
     counts,
     refreshTransactions,
-    clearError, // New function for error recovery
+    clearError,
+    invalidateCache, // New function for cache invalidation
     // Additional metadata
     pagination: transactionData?.pagination,
     summary: transactionData?.summary,
+    // Cache and performance info
+    cacheStats: cacheManager.getStats(),
+    isTyping,
+    // Auto-refresh status
+    autoRefreshStatus: {
+      isActive: autoRefresh.isActive,
+      isPaused: autoRefresh.isPaused,
+      networkCondition: autoRefresh.networkCondition,
+      userActivity: autoRefresh.userActivity,
+      isTabVisible: autoRefresh.isTabVisible,
+      currentInterval: autoRefresh.currentInterval,
+    },
   }
 }
