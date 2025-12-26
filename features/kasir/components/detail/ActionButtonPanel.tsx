@@ -5,12 +5,18 @@ import { useRouter } from 'next/navigation'
 import { useQueryClient } from '@tanstack/react-query'
 import { CheckCircle, DollarSign, RefreshCw, AlertTriangle, Package, RotateCcw, XCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { PaymentModal } from './PaymentModal'
 import { PickupModal } from './PickupModal'
 import { CancelModal } from './CancelModal'
 import { LostItemResolutionModal } from './LostItemResolutionModal'
 import type { TransactionDetail } from '../../types'
 import { isPickupAvailable, calculateTransactionPickupStatus } from '../../lib/utils/client'
+import { 
+  hasReturnableItemsForActionButton, 
+  calculateTransactionProgressForActionButton, 
+  formatReturnProgress
+} from '../../lib/utils/partialReturnHelpers'
 import { queryKeys } from '@/lib/react-query'
 import { logger } from '@/services/logger'
 
@@ -95,6 +101,16 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
   // Calculate pickup status for enhanced logic
   const pickupStatus = calculateTransactionPickupStatus(transaction)
 
+  // ✅ TASK 2: Enhanced return button logic using partial return utilities
+  // Calculate return progress for enhanced display
+  const returnProgress = calculateTransactionProgressForActionButton(transaction)
+
+  // Use hasReturnableItemsForActionButton() to check if any items have remaining returnable quantity
+  const canReturn = (
+    transaction.status === 'active' || 
+    transaction.status === 'terlambat' || 
+    transaction.status === 'diambil'
+  ) && hasReturnableItemsForActionButton(transaction)
   // ✅ TASK 7.1: Detect unresolved lost items
   // FIX: Use conditionBreakdown (not multiConditionSummary.conditionBreakdown) which has resolutionStatus
   const hasUnresolvedLostItems = transaction.products?.some((p) => {
@@ -152,9 +168,7 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
   })
 
   // Enhanced button visibility logic - FIXED: Allow actions for 'active', 'terlambat', and 'diambil' status
-  const canReturn =
-    (transaction.status === 'active' || transaction.status === 'terlambat' || transaction.status === 'diambil') &&
-    transaction.products?.some((p) => p.jumlahDiambil && p.jumlahDiambil > 0)
+  // REMOVED: Old canReturn logic - now using enhanced partial return utilities above
   
   // ✅ TASK 10: Fix partial pickup button visibility
   // Include 'diambil' status to support partial pickups across multiple visits
@@ -274,7 +288,7 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
 
       {/* Status Info */}
       <div className="pt-4 border-t border-gray-200">
-        <div className="text-sm text-gray-600">
+        <div className="text-sm text-gray-600 space-y-2">
           {transaction.status === 'active' && (
             <div className="flex items-center gap-2 text-blue-600">
               <CheckCircle className="h-4 w-4" />
@@ -303,6 +317,27 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
             <div className="flex items-center gap-2 text-green-600">
               <CheckCircle className="h-4 w-4" />
               Transaksi selesai
+            </div>
+          )}
+
+          {/* ✅ TASK 2: Return Progress Indicators */}
+          {(canReturn || returnProgress.status !== 'pending') && (
+            <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+              <span className="text-xs text-gray-500">Progress Pengembalian:</span>
+              <div className="flex items-center gap-2">
+                <Badge 
+                  variant="outline" 
+                  className={`text-xs ${
+                    returnProgress.status === 'complete' 
+                      ? 'border-green-200 text-green-700 bg-green-50'
+                      : returnProgress.status === 'partial'
+                      ? 'border-yellow-200 text-yellow-700 bg-yellow-50'
+                      : 'border-gray-200 text-gray-600 bg-gray-50'
+                  }`}
+                >
+                  {formatReturnProgress(returnProgress)}
+                </Badge>
+              </div>
             </div>
           )}
         </div>

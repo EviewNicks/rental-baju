@@ -17,7 +17,7 @@ This implementation plan extends the existing return system to support partial r
   - **Property 2: Remaining Quantity Calculation Accuracy**
   - **Validates: Requirements 2.2, 8.5**
 
-- [ ] 2. Enhance ActionButtonPanel return button logic
+- [x] 2. Enhance ActionButtonPanel return button logic
   - Modify `canReturn` logic to check remaining quantities instead of total quantities
   - Add return progress indicators to transaction detail view
   - Update button visibility for partial return scenarios
@@ -28,7 +28,7 @@ This implementation plan extends the existing return system to support partial r
   - **Property 4: Return Button Visibility Logic**
   - **Validates: Requirements 2.1, 2.3, 2.4**
 
-- [ ] 3. Enhance SimpleReturnForm for partial returns
+- [x] 3. Enhance SimpleReturnForm for partial returns
   - Modify item filtering to show only items with remaining quantities
   - Update form initialization to use remaining quantities instead of total picked up
   - Add validation for partial return quantities

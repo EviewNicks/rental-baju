@@ -9,6 +9,26 @@
 
 import type { TransaksiDetail, TransaksiItemResponse } from '../../types'
 
+// Import the ActionButtonPanel's TransactionDetail type for compatibility
+type ActionButtonTransactionDetail = {
+  status: string
+  products?: Array<{
+    id: string
+    jumlahDiambil?: number
+    conditionBreakdown?: Array<{
+      id: string
+      kondisiAkhir: string
+      jumlahKembali: number
+      penaltyAmount: number
+      modalAwalUsed?: number | null
+      resolutionStatus?: string | null
+      resolutionDate?: string | null
+      createdAt?: string
+      createdBy?: string
+    }>
+  }>
+}
+
 // ==========================================
 // INTERFACES
 // ==========================================
@@ -256,6 +276,47 @@ export function calculateTransactionProgress(transaction: TransaksiDetail): Retu
   }
 }
 
+/**
+ * Calculate overall transaction return progress (ActionButton version)
+ * Overloaded version for ActionButtonPanel's TransactionDetail format
+ * 
+ * @param transaction - Transaction with products (ActionButton format)
+ * @returns Overall progress information
+ */
+export function calculateTransactionProgressForActionButton(transaction: ActionButtonTransactionDetail): ReturnProgress {
+  if (!transaction.products || transaction.products.length === 0) {
+    return {
+      returned: 0,
+      total: 0,
+      percentage: 0,
+      status: 'pending'
+    }
+  }
+
+  const totalPickedUp = transaction.products.reduce((sum, product) => sum + (product.jumlahDiambil || 0), 0)
+  const totalReturned = transaction.products.reduce((sum, product) => {
+    return sum + calculateTotalReturned(product.conditionBreakdown)
+  }, 0)
+
+  const percentage = totalPickedUp > 0 ? (totalReturned / totalPickedUp) * 100 : 0
+  
+  let status: ReturnProgress['status']
+  if (totalReturned === 0) {
+    status = 'pending'
+  } else if (totalReturned >= totalPickedUp) {
+    status = 'complete'
+  } else {
+    status = 'partial'
+  }
+
+  return {
+    returned: totalReturned,
+    total: totalPickedUp,
+    percentage: Math.round(percentage),
+    status
+  }
+}
+
 // ==========================================
 // SESSION NUMBERING LOGIC
 // ==========================================
@@ -345,6 +406,22 @@ export function buildPartialReturnState(transaction: TransaksiDetail): PartialRe
 export function hasReturnableItems(transaction: TransaksiDetail): boolean {
   const itemsWithRemaining = getItemsWithRemainingQuantity(transaction)
   return itemsWithRemaining.length > 0
+}
+
+/**
+ * Check if transaction has any items available for partial return (ActionButton version)
+ * Overloaded version for ActionButtonPanel's TransactionDetail format
+ * 
+ * @param transaction - Transaction to check (ActionButton format)
+ * @returns True if any items can be returned
+ */
+export function hasReturnableItemsForActionButton(transaction: ActionButtonTransactionDetail): boolean {
+  return transaction.products?.some(product => {
+    const jumlahDiambil = product.jumlahDiambil || 0
+    const totalReturned = calculateTotalReturned(product.conditionBreakdown)
+    const remainingToReturn = Math.max(0, jumlahDiambil - totalReturned)
+    return remainingToReturn > 0
+  }) || false
 }
 
 /**

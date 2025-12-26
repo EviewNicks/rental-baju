@@ -35,13 +35,20 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Textarea } from '@/components/ui/textarea'
-import { ArrowLeft, CheckCircle, AlertCircle, Calculator, Package } from 'lucide-react'
+import { ArrowLeft, CheckCircle, AlertCircle, Calculator, Package, Info } from 'lucide-react'
 import { UnifiedConditionForm } from './UnifiedConditionForm'
 import type { EnhancedItemCondition } from '../../types'
 import { ConditionCategory } from '../../types'
 import { kasirApi } from '../../api'
 import { kasirLogger } from '../../lib/logger'
 import { PenaltyCalculator } from '../../lib/utils/penaltyCalculator'
+import { 
+  getItemsWithRemainingQuantity, 
+  calculateRemainingQuantity, 
+  buildPartialReturnState,
+  validatePartialReturnQuantities,
+  type TransaksiItemWithReturns 
+} from '../../lib/utils/partialReturnHelpers'
 
 interface SimpleReturnFormProps {
   kode: string
@@ -88,30 +95,40 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
     retry: 1,
   })
 
-  // Initialize item conditions when transaction loads
+  // ✅ TASK 3: Enhanced initialization using partial return utilities
   useEffect(() => {
     if (transaction && transaction.items && Object.keys(formState.itemConditions).length === 0) {
-      const returnableItems = transaction.items.filter(
-        (item) => item.jumlahDiambil > 0 && item.statusKembali !== 'lengkap',
-      )
+      // Safe wrapper to handle optional items
+      const safeTransaction = {
+        ...transaction,
+        items: transaction.items || []
+      }
+      
+      // Use partial return utilities to get items with remaining quantities
+      const returnableItems = getItemsWithRemainingQuantity(safeTransaction)
 
       const initialConditions: Record<string, EnhancedItemCondition> = {}
 
       returnableItems.forEach((item) => {
+        // Calculate remaining quantity for this item
+        const remainingQuantityResult = calculateRemainingQuantity(item)
+        
         initialConditions[item.id] = {
           itemId: item.id,
           mode: 'single',
           conditions: [
             {
               kondisiAkhir: 'Baik',
-              jumlahKembali: item.jumlahDiambil,
+              // ✅ TASK 3.2: Use remaining quantity instead of total picked up
+              jumlahKembali: remainingQuantityResult.remainingToReturn,
               conditionCategory: ConditionCategory.BAIK,
               useManualPricing: false,
               manualPrice: 0,
             },
           ],
           isValid: true,
-          totalQuantity: item.jumlahDiambil,
+          // ✅ TASK 3.2: Set totalQuantity to remaining returnable quantity
+          totalQuantity: remainingQuantityResult.remainingToReturn,
           remainingQuantity: 0,
         }
       })
@@ -123,11 +140,12 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
 
       kasirLogger.returnProcess.info(
         'SimpleReturnForm',
-        'Transaction loaded and conditions initialized',
+        'Transaction loaded with partial return logic',
         {
           transactionId: transaction.kode,
           returnableItemCount: returnableItems.length,
           totalConditions: Object.keys(initialConditions).length,
+          partialReturnState: buildPartialReturnState(safeTransaction),
         },
       )
     }
@@ -268,17 +286,21 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
     [kode],
   )
 
-  // Validate form before submission
+  // ✅ TASK 3: Enhanced validation using partial return utilities
   const validateForm = useCallback((): boolean => {
     if (!transaction) {
       setFormState((prev) => ({ ...prev, error: 'Transaksi tidak ditemukan' }))
       return false
     }
 
-    const returnableItems =
-      transaction.items?.filter(
-        (item) => item.jumlahDiambil > 0 && item.statusKembali !== 'lengkap',
-      ) || []
+    // Safe wrapper to handle optional items
+    const safeTransaction = {
+      ...transaction,
+      items: transaction.items || []
+    }
+
+    // ✅ TASK 3.1: Use partial return utilities to get returnable items
+    const returnableItems = getItemsWithRemainingQuantity(safeTransaction)
 
     if (returnableItems.length === 0) {
       setFormState((prev) => ({ ...prev, error: 'Tidak ada barang yang perlu dikembalikan' }))
@@ -294,6 +316,32 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
       setFormState((prev) => ({
         ...prev,
         error: `Kondisi belum lengkap untuk ${missingConditions.length} item`,
+      }))
+      return false
+    }
+
+    // ✅ TASK 3.3: Validate partial return quantities using utility function
+    const requestedQuantities: Record<string, number> = {}
+    const remainingQuantities: Record<string, number> = {}
+
+    Object.entries(formState.itemConditions).forEach(([itemId, condition]) => {
+      const totalRequested = condition.conditions.reduce((sum, c) => sum + (c.jumlahKembali || 0), 0)
+      requestedQuantities[itemId] = totalRequested
+
+      // Get remaining quantity for this item
+      const item = returnableItems.find(i => i.id === itemId)
+      if (item) {
+        const remainingResult = calculateRemainingQuantity(item)
+        remainingQuantities[itemId] = remainingResult.remainingToReturn
+      }
+    })
+
+    const quantityValidation = validatePartialReturnQuantities(requestedQuantities, remainingQuantities)
+    
+    if (!quantityValidation.isValid) {
+      setFormState((prev) => ({
+        ...prev,
+        error: `Validasi kuantitas gagal: ${quantityValidation.errors.join(', ')}`,
       }))
       return false
     }
@@ -416,11 +464,9 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
     }
   }, [onClose, router])
 
-  // Get returnable items
-  const returnableItems =
-    transaction?.items?.filter(
-      (item) => item.jumlahDiambil > 0 && item.statusKembali !== 'lengkap',
-    ) || []
+  // ✅ TASK 3.1: Get returnable items using partial return utilities
+  const returnableItems = transaction && transaction.items ? 
+    getItemsWithRemainingQuantity({ ...transaction, items: transaction.items }) : []
 
   // Check if form is valid for submission
   const isFormValid =
@@ -513,6 +559,52 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
             </div>
           </CardContent>
         </Card>
+
+        {/* ✅ TASK 3: Partial Return Information */}
+        {transaction && (
+          <Card className="mb-6 border-blue-200 bg-blue-50">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg text-blue-800">
+                <Info className="h-5 w-5" />
+                Informasi Pengembalian Parsial
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="font-medium text-blue-700">Item yang dapat dikembalikan:</span>
+                  <p className="text-blue-600">{returnableItems.length} item</p>
+                </div>
+                <div>
+                  <span className="font-medium text-blue-700">Session pengembalian:</span>
+                  <p className="text-blue-600">
+                    {transaction.items?.some(item => 
+                      (item as TransaksiItemWithReturns).conditionBreakdown && 
+                      (item as TransaksiItemWithReturns).conditionBreakdown!.length > 0
+                    ) ? 'Lanjutan' : 'Pertama'}
+                  </p>
+                </div>
+              </div>
+              {returnableItems.length > 0 && (
+                <div className="mt-3 pt-3 border-t border-blue-200">
+                  <div className="text-xs text-blue-600 space-y-1">
+                    {returnableItems.map((item) => {
+                      const remainingResult = calculateRemainingQuantity(item)
+                      return (
+                        <div key={item.id} className="flex justify-between">
+                          <span>{item.produk?.name || 'Unknown Product'}</span>
+                          <span className="font-medium">
+                            Sisa: {remainingResult.remainingToReturn}/{remainingResult.jumlahDiambil}
+                          </span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Item Conditions Form */}
         <div className="space-y-4 mb-6">
