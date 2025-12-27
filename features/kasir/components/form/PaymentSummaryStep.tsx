@@ -22,6 +22,8 @@ import type { TransactionFormData } from '../../types'
 import { formatCurrency } from '../../lib/utils/client'
 import { PriceCalculator } from '../../lib/utils/priceCalculator'
 import { DateCalculator } from '../../lib/utils/dateCalculator'
+import { SarungPairingIndicator } from '../ui/SarungPairingIndicator'
+import { isLinkedSarung } from '../../lib/utils/jasSarungUtils'
 import Image from 'next/image'
 
 interface PaymentSummaryStepProps {
@@ -277,6 +279,13 @@ export function PaymentSummaryStep({
             const adjustedPrice = itemCalculation?.adjustedPrice || basePrice
             const duration = formData.duration || 4
 
+            // Check if this is a linked sarung (should be free)
+            const isItemLinkedSarung = isLinkedSarung(
+              item.product.id,
+              item.productSizeId,
+              formData.products
+            )
+
             return (
               <div
                 key={`${item.product.id}-${item.productSizeId || 'default'}`}
@@ -295,7 +304,32 @@ export function PaymentSummaryStep({
                     className="w-16 h-16 object-cover rounded-lg"
                   />
                   <div className="flex-1">
-                    <div className="font-semibold text-gray-900">{item.product.name}</div>
+                    {/* Show pairing indicator for jas products with linked sarung */}
+                    {item.linkedSarung ? (
+                      <div className="space-y-2">
+                        <SarungPairingIndicator
+                          jasName={item.product.name}
+                          sarungName={`Sarung (ID: ${item.linkedSarung.productId.slice(-6)})`}
+                          sarungOriginalPrice={0} // Will be calculated from product data
+                          variant="payment"
+                          showPricing={false} // Don't show pricing here, will show in breakdown
+                        />
+                      </div>
+                    ) : isItemLinkedSarung ? (
+                      <div className="space-y-1">
+                        <div className="font-semibold text-gray-900 flex items-center gap-2">
+                          {item.product.name}
+                          <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full font-medium">
+                            GRATIS
+                          </span>
+                        </div>
+                        <div className="text-xs text-gray-500 italic">
+                          Sarung gratis dengan paket jas
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="font-semibold text-gray-900">{item.product.name}</div>
+                    )}
                     <div className="text-sm text-gray-600">
                       {selectedSize ? (
                         <>
@@ -306,23 +340,43 @@ export function PaymentSummaryStep({
                           {item.product.size} • {item.product.color} •{' '}
                         </>
                       )}
-                      {formatCurrency(item.product.pricePerDay)}/{duration} hari
-                      {duration === 7 && (
-                        <span className="text-orange-600 font-medium"> (+50%)</span>
+                      {!isItemLinkedSarung && (
+                        <>
+                          {formatCurrency(item.product.pricePerDay)}/{duration} hari
+                          {duration === 7 && (
+                            <span className="text-orange-600 font-medium"> (+50%)</span>
+                          )}
+                        </>
+                      )}
+                      {isItemLinkedSarung && (
+                        <span className="text-green-600 font-medium">Gratis dengan jas</span>
                       )}
                     </div>
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="font-semibold text-gray-900">
-                    {formatCurrency(adjustedPrice)}
-                  </div>
-                  <div className="text-sm text-gray-600">
-                    {item.quantity}x × {duration} hari
-                  </div>
-                  {duration === 7 && basePrice !== adjustedPrice && (
-                    <div className="text-xs text-orange-600">
-                      Base: {formatCurrency(basePrice)}
+                  {isItemLinkedSarung ? (
+                    <div className="space-y-1">
+                      <div className="font-semibold text-green-600">
+                        GRATIS
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        {item.quantity}x × {duration} hari
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      <div className="font-semibold text-gray-900">
+                        {formatCurrency(adjustedPrice)}
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        {item.quantity}x × {duration} hari
+                      </div>
+                      {duration === 7 && basePrice !== adjustedPrice && (
+                        <div className="text-xs text-orange-600">
+                          Base: {formatCurrency(basePrice)}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -752,18 +806,28 @@ export function PaymentSummaryStep({
               const basePrice = item.product.pricePerDay * item.quantity
               const adjustedPrice = itemCalculation?.adjustedPrice || basePrice
 
+              // Check if this is a linked sarung (should be free)
+              const isItemLinkedSarung = isLinkedSarung(
+                item.product.id,
+                item.productSizeId,
+                formData.products
+              )
+
               return (
                 <div key={`${item.product.id}-${item.productSizeId || 'default'}`} className="space-y-1">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">
                       {item.product.name}
                       {selectedSize && ` (${selectedSize.ageCategory} - ${selectedSize.size})`} × {item.quantity}
+                      {isItemLinkedSarung && (
+                        <span className="ml-2 text-green-600 font-medium text-xs">• GRATIS dengan jas</span>
+                      )}
                     </span>
-                    <span className="font-medium">
-                      {formatCurrency(basePrice)}
+                    <span className={`font-medium ${isItemLinkedSarung ? 'text-green-600' : ''}`}>
+                      {isItemLinkedSarung ? 'GRATIS' : formatCurrency(basePrice)}
                     </span>
                   </div>
-                  {formData.duration === 7 && (
+                  {formData.duration === 7 && !isItemLinkedSarung && (
                     <div className="flex justify-between text-xs text-orange-600 ml-4">
                       <span>↳ Paket 7 hari (+50%)</span>
                       <span>+ {formatCurrency(adjustedPrice - basePrice)}</span>

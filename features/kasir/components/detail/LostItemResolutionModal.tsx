@@ -97,20 +97,11 @@ export function LostItemResolutionModal({
       // ✅ FIX: Use transactionCode instead of kode (Transaction interface uses transactionCode)
       const transactionCode = transaction.transactionCode || transaction.id
       
-      console.log('[LostItemResolutionModal] Starting resolution:', {
-        transactionCode,
-        transactionId: transaction.id,
-        lostItemsCount: lostItems.length,
-        resolutionType,
-        kasirId,
-      })
-
+      // Debug logging removed for production
+      
       // Process each lost item
       for (const item of lostItems) {
-        console.log('[LostItemResolutionModal] Processing item:', {
-          returnRecordId: item.returnRecordId,
-          productName: item.productName,
-        })
+        // Processing item for resolution
 
         const response = await fetch(
           `/api/kasir/transaksi/${transactionCode}/resolve-lost-item`,
@@ -137,14 +128,11 @@ export function LostItemResolutionModal({
           throw new Error(error.error?.message || error.message || 'Gagal menyelesaikan barang hilang')
         }
 
-        const result = await response.json()
-        console.log('[LostItemResolutionModal] Item resolved successfully:', {
-          returnRecordId: item.returnRecordId,
-          result,
-        })
+        await response.json()
+        // Item resolved successfully
       }
 
-      console.log('[LostItemResolutionModal] All items resolved successfully')
+      // All items resolved successfully
 
       // Success
       toast.success(

@@ -228,6 +228,17 @@ export interface ProductSelection {
   // Size-aware fields (RPK-51) - Optional for backward compatibility
   productSizeId?: string // Selected size ID for API request
   selectedSize?: ProductSize // Full size info for UI display
+
+  // Jas-Sarung pairing fields - Optional for backward compatibility
+  linkedSarung?: LinkedSarung // Sarung linked to jas product
+}
+
+// Jas-Sarung pairing types
+export interface LinkedSarung {
+  productId: string
+  productSizeId: string
+  quantity: number
+  selectedSize: ProductSize
 }
 
 export interface ProductFilters {
@@ -525,6 +536,13 @@ export interface CreateTransaksiItemSizeAware {
   jumlah: number
   durasi: number // dalam hari
   kondisiAwal?: string
+  // TASK 9: Add linked sarung support for jas-sarung pairing
+  linkedSarung?: {
+    productId: string
+    productSizeId: string
+    quantity: number
+    selectedSize: ProductSize
+  }
 }
 
 // Legacy transaction item format (backward compatibility)
@@ -875,7 +893,7 @@ export function sanitizePenyewaInput(input: Record<string, unknown>): Record<str
  * Sanitize general text input
  * Removes HTML tags, normalizes whitespace, and trims
  */
-function sanitizeTextInput(input: string): string {
+export function sanitizeTextInput(input: string): string {
   return input
     .replace(/<[^>]*>/g, '') // Remove HTML tags
     .replace(/[<>'"&]/g, '') // Remove potentially dangerous characters

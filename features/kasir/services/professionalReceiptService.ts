@@ -41,15 +41,16 @@ export class ProfessionalReceiptService {
   private readonly HEADER_FONT_SIZE = 12
   private readonly TITLE_FONT_SIZE = 14
 
-  // Table column configuration for professional layout - FULL WIDTH
+  // Table column configuration for professional layout - UPDATED FOR JAS-SARUNG PAIRING
   private readonly TABLE_COLUMNS: TableColumn[] = [
-    { header: 'No', width: 12, align: 'center' },      // Reduced width since only numbers
-    { header: 'Kategori', width: 25, align: 'left' },   // Increased width
-    { header: 'Nama Barang', width: 60, align: 'left' }, // Increased width
-    { header: 'Size', width: 25, align: 'center' },     // Increased width
-    { header: 'Qty', width: 10, align: 'center' },      // Increased width
-    { header: '@Harga', width: 20, align: 'right' },    // Increased width
-    { header: 'Total Harga', width: 22, align: 'right' } // Increased width
+    { header: 'No', width: 12, align: 'center' },
+    { header: 'Kode Jas', width: 30, align: 'left' },        // NEW: Jas product code
+    { header: 'Kode Sarung', width: 30, align: 'left' },     // NEW: Sarung product code
+    // { header: 'Nama Barang', width: 50, align: 'left' },     // Reduced width
+    { header: 'Size', width: 25, align: 'center' },          // Reduced width
+    { header: 'Qty', width: 15, align: 'center' },
+    { header: '@Harga', width: 20, align: 'right' },         // Reduced width
+    { header: 'Total Harga', width: 20, align: 'right' }     // Reduced width
   ]
 
   /**
@@ -236,6 +237,7 @@ export class ProfessionalReceiptService {
 
   /**
    * Add items table with borders and proper formatting
+   * Updated to support jas-sarung pairing with separate code columns
    * @param doc - jsPDF document instance
    * @param items - Transaction items
    * @param transactionCode - Transaction code for "No" column
@@ -246,15 +248,16 @@ export class ProfessionalReceiptService {
     const startX = this.MARGIN
     const currentY = y + 5 // Reduced spacing before table (was +10, now +5)
 
-    // Prepare table data
+    // Prepare table data with jas-sarung pairing support
     const tableData: string[][] = []
     
     // Process each item with increment number
     for (let index = 0; index < items.length; index++) {
       const item = items[index]
       
-      // Extract category name (handle null/undefined category)
-      const categoryName = item.produk.category?.name || 'N/A'
+      // Extract jas and sarung codes based on pairing logic
+      const jasCode = this.extractJasCode(item)
+      const sarungCode = this.extractSarungCode(item)
       
       // Extract category type and format size display (with type assertion)
       const categoryType = (item.produk.category as { type?: string })?.type || 'clothing'
@@ -267,7 +270,8 @@ export class ProfessionalReceiptService {
       // Create table row with increment number (1, 2, 3, ...)
       const row = [
         (index + 1).toString(),    // No (increment number: 1, 2, 3, ...)
-        categoryName,              // Kategori
+        jasCode,                   // Kode Jas (product code if jas, "-" if not)
+        sarungCode,                // Kode Sarung (linked sarung code if paired, "-" if not)
         item.produk.name,          // Nama Barang
         formattedSize || '-',      // Size (context-aware format)
         item.jumlah.toString(),    // Qty
@@ -809,6 +813,51 @@ export class ProfessionalReceiptService {
 
     const parts = kondisiAwal.split('|')
     return parts.length >= 2 ? parts[1] : ''
+  }
+
+  /**
+   * Extract jas code from transaction item
+   * Returns product code if item is a jas product, "-" otherwise
+   * @param item - Transaction item
+   * @returns Jas product code or "-"
+   */
+  private extractJasCode(item: TransaksiWithDetails['items'][0]): string {
+    // Check if this item is a jas product by category name
+    const categoryName = item.produk.category?.name
+    if (categoryName && categoryName.startsWith('jas-')) {
+      return item.produk.code || '-'
+    }
+    return '-'
+  }
+
+  /**
+   * Extract sarung code from transaction item
+   * For jas products: returns linked sarung code if paired, "-" if not paired
+   * For sarung products: returns product code if rented separately, "-" if linked to jas
+   * For other products: returns "-"
+   * @param item - Transaction item
+   * @returns Sarung product code or "-"
+   */
+  private extractSarungCode(item: TransaksiWithDetails['items'][0]): string {
+    // Check if this is a jas product with linked sarung
+    const categoryName = item.produk.category?.name
+    if (categoryName && categoryName.startsWith('jas-')) {
+      // For jas products, check if there's a linked sarung in the pairing data
+      // Note: In the current implementation, pairing data is stored in ProductSelection
+      // but TransactionItem doesn't have linkedSarung field yet.
+      // For now, we'll return "-" and this will be enhanced when pairing data is stored in transaction
+      return '-' // TODO: Extract from pairing data when available
+    }
+    
+    // Check if this is a sarung product rented separately (not linked to jas)
+    if (categoryName === 'sarung') {
+      // If sarung is rented separately (not as part of pairing), show its code
+      // TODO: Add logic to detect if sarung is linked to jas or rented separately
+      return item.produk.code || '-'
+    }
+    
+    // For all other products, no sarung code
+    return '-'
   }
 
   /**

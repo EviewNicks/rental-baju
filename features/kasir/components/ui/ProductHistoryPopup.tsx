@@ -168,13 +168,8 @@ export function ProductHistoryPopup({
         endDate: new Date(item.endDate)
       }))
 
-      console.log('ProductHistoryPopup: Parsed data:', {
-        productSizeId,
-        rawData: result.data,
-        parsedData,
-        totalResults: result.metadata?.totalResults
-      })
-
+      // Debug logging removed for production
+      
       setHistoryData(parsedData)
       setRetryCount(0) // Reset retry count on success
       setIsRetrying(false)

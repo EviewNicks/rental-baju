@@ -9,6 +9,7 @@ import { formatCurrency } from '../../lib/utils/client'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
 import { SizeSelector } from './size-selector'
+import { isJasProduct } from '../../lib/utils/jasSarungUtils'
 
 interface ProductCardProps {
   product: Product
@@ -66,6 +67,17 @@ export function ProductCard({
     }
   }
 
+  // Check if this is a jas product for special handling
+  const isJas = isJasProduct(product)
+  
+  // Get appropriate button text based on product type
+  const getButtonText = () => {
+    if (quantity === 0) {
+      return isJas ? 'Pilih dengan Sarung' : 'Tambah ke Keranjang'
+    }
+    return isJas ? `Pilih ${quantity} dengan Sarung` : `Tambah ${quantity} ke Keranjang`
+  }
+
   const incrementQuantity = () => {
     const newQuantity = quantity + 1
     if (isQuantityAvailable(newQuantity)) {
@@ -117,6 +129,13 @@ export function ProductCard({
         {selectedQuantity > 0 && (
           <div className="absolute top-2 right-2">
             <Badge className="bg-yellow-400 text-gray-900">{selectedQuantity}x</Badge>
+          </div>
+        )}
+        {isJas && (
+          <div className="absolute bottom-2 left-2">
+            <Badge className="bg-blue-500 text-white text-xs">
+              Jas + Sarung Gratis
+            </Badge>
           </div>
         )}
       </div>
@@ -247,7 +266,7 @@ export function ProductCard({
                   size="sm"
                 >
                   <ShoppingCart className="h-3 w-3 mr-2" />
-                  {quantity === 0 ? 'Tambah ke Keranjang' : `Tambah ${quantity} ke Keranjang`}
+                  {getButtonText()}
                 </Button>
               </>
             )}
