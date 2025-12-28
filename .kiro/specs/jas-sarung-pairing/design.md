@@ -255,6 +255,13 @@ const openHistoryPopup = (productSizeId: string, productName: string, size: stri
 3. Create fallback mechanisms for pairing failures
 4. Add comprehensive error messages
 
+### Phase 6: Configurable Category System (NEW)
+1. Create configuration file for eligible categories
+2. Implement generic pairing service architecture
+3. Replace hardcoded category detection with configurable system
+4. Add support for future pairing types (gamis, kebaya, etc.)
+5. Ensure easy category management without code changes
+
 ## Data Flow
 
 ### Jas Product Selection Flow

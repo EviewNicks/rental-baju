@@ -10,6 +10,7 @@ import type { TransaksiWithDetails } from './transaksiService'
 import { Decimal } from '@prisma/client/runtime/library'
 import fs from 'fs'
 import path from 'path'
+import { sarungPairingService } from './pairingService'
 
 /**
  * Transaction Detail interface for professional receipt
@@ -822,9 +823,19 @@ export class ProfessionalReceiptService {
    * @returns Jas product code or "-"
    */
   private extractJasCode(item: TransaksiWithDetails['items'][0]): string {
-    // Check if this item is a jas product by category name
-    const categoryName = item.produk.category?.name
-    if (categoryName && categoryName.startsWith('jas-')) {
+    // Check if this item is eligible for sarung pairing using configurable system
+    const isEligible = sarungPairingService.isEligibleForPairing({
+      id: item.produk.id,
+      name: item.produk.name,
+      category: item.produk.category?.name || '',
+      pricePerDay: 0, // Not needed for detection
+      size: '',
+      color: '',
+      image: '',
+      available: true,
+    })
+    
+    if (isEligible) {
       return item.produk.code || '-'
     }
     return '-'
@@ -839,10 +850,20 @@ export class ProfessionalReceiptService {
    * @returns Sarung product code or "-"
    */
   private extractSarungCode(item: TransaksiWithDetails['items'][0]): string {
-    // Check if this is a jas product with linked sarung
-    const categoryName = item.produk.category?.name
-    if (categoryName && categoryName.startsWith('jas-')) {
-      // For jas products, check if there's a linked sarung in the pairing data
+    // Check if this is a product eligible for sarung pairing using configurable system
+    const isEligible = sarungPairingService.isEligibleForPairing({
+      id: item.produk.id,
+      name: item.produk.name,
+      category: item.produk.category?.name || '',
+      pricePerDay: 0, // Not needed for detection
+      size: '',
+      color: '',
+      image: '',
+      available: true,
+    })
+    
+    if (isEligible) {
+      // For eligible products, check if there's a linked sarung in the pairing data
       // Note: In the current implementation, pairing data is stored in ProductSelection
       // but TransactionItem doesn't have linkedSarung field yet.
       // For now, we'll return "-" and this will be enhanced when pairing data is stored in transaction
@@ -850,6 +871,7 @@ export class ProfessionalReceiptService {
     }
     
     // Check if this is a sarung product rented separately (not linked to jas)
+    const categoryName = item.produk.category?.name
     if (categoryName === 'sarung') {
       // If sarung is rented separately (not as part of pairing), show its code
       // TODO: Add logic to detect if sarung is linked to jas or rented separately

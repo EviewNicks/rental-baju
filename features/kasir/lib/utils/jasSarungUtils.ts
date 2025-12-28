@@ -1,26 +1,25 @@
 /**
  * Jas-Sarung Pairing Utilities
- * Utility functions for detecting jas products and filtering sarung products
- * Following architecture guidelines from docs/rules/architecture.md
+ * Task 16: Updated to use Configurable Category System
+ * Utility functions for detecting eligible products and filtering sarung products
+ * Now uses configuration-driven approach for future-proof category management
  */
 
 import type { Product, ProductWithCategory, ProductSelection } from '../../types'
+import { sarungPairingService } from '../../services/pairingService'
+import { 
+  SARUNG_GRATIS_ELIGIBLE_CATEGORIES, 
+  SARUNG_PAIRING_DISPLAY,
+  getAllEligibleCategories,
+  isEligibleForSarungGratis
+} from '../../config/pairingConfig'
 
-// Categories eligible for free sarung pairing
-export const CATEGORIES_SARUNG_GRATIS = [
-  'jas-jaguar',
-  'jas-polos', 
-  'jas-premium',
-  'jas-renda',
-  'renda',           // Regular renda category
-  'renda-premium'    // Premium renda category
-] as const
+// Re-export types for backward compatibility
+export type CategorySarungGratis = typeof SARUNG_GRATIS_ELIGIBLE_CATEGORIES[number]
 
-export type CategorySarungGratis = typeof CATEGORIES_SARUNG_GRATIS[number]
-
-// Sarung category constants
-export const SARUNG_CATEGORY = 'sarung'
-export const SARUNG_CATEGORY_TYPE = 'accessories_age_based'
+// Sarung category constants (from configuration)
+export const SARUNG_CATEGORY = SARUNG_PAIRING_DISPLAY.freeItemCategory
+export const SARUNG_CATEGORY_TYPE = SARUNG_PAIRING_DISPLAY.freeItemCategoryType
 
 /**
  * Get sarung category ID from categories.json
@@ -34,21 +33,13 @@ export function getSarungCategoryId(): string {
 
 /**
  * Check if a product category is eligible for free sarung pairing
+ * Now uses configurable system for future-proof category management
  * @param product - Product to check
  * @returns true if product category can get free sarung
  */
 export function isEligibleForFreeSarung(product: Product | ProductWithCategory): boolean {
-  if (!product.category) {
-    return false
-  }
-  
-  const categoryName = typeof product.category === 'string' 
-    ? product.category.toLowerCase()
-    : product.category.name.toLowerCase()
-    
-  return CATEGORIES_SARUNG_GRATIS.includes(categoryName as CategorySarungGratis)
+  return sarungPairingService.isEligibleForPairing(product)
 }
-
 
 /**
  * Filter products to get only sarung products
@@ -56,25 +47,7 @@ export function isEligibleForFreeSarung(product: Product | ProductWithCategory):
  * @returns Array of sarung products
  */
 export function getSarungProducts(products: Product[]): Product[] {
-  return products.filter(product => {
-    // Check category name - more flexible approach
-    const categoryName = typeof product.category === 'string'
-      ? product.category.toLowerCase()
-      : product.category
-
-    // Primary check: category name must be 'sarung'
-    const isSarungCategory = categoryName === SARUNG_CATEGORY
-    
-    // Optional check: category type if available (for backward compatibility)
-    const hasValidCategoryType = !product.categoryType || product.categoryType === SARUNG_CATEGORY_TYPE
-    
-    // Debug logging to help identify issues
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`Product ${product.name}: category=${categoryName}, categoryType=${product.categoryType}, isSarung=${isSarungCategory && hasValidCategoryType}`)
-    }
-
-    return isSarungCategory && hasValidCategoryType
-  })
+  return sarungPairingService.getFreeItemsForPairing(products)
 }
 
 /**
@@ -94,44 +67,31 @@ export function getSarungProductsWithCategory(products: ProductWithCategory[]): 
 
 /**
  * Validate sarung selection for pairing
+ * Now uses configurable validation system
+ * @param jasProduct - Main product (jas/renda) being paired
  * @param sarungProduct - Selected sarung product
- * @param mainProductQuantity - Quantity of main product being paired
+ * @param jasQuantity - Quantity of main product being paired
  * @param sarungQuantity - Requested sarung quantity
  * @returns Validation result with error message if invalid
  */
 export function validateSarungSelection(
+  jasProduct: Product | ProductWithCategory,
   sarungProduct: Product | ProductWithCategory,
-  mainProductQuantity: number,
+  jasQuantity: number,
   sarungQuantity: number
-): { isValid: boolean; error?: string } {
-  // Check if product is actually a sarung
-  const categoryName = typeof sarungProduct.category === 'string'
-    ? sarungProduct.category.toLowerCase()
-    : sarungProduct.category.name.toLowerCase()
-
-  if (categoryName !== SARUNG_CATEGORY) {
-    return {
-      isValid: false,
-      error: 'Produk yang dipilih bukan sarung'
-    }
+): { isValid: boolean; error?: string; userMessage?: string } {
+  const result = sarungPairingService.validatePairingSelection(
+    jasProduct,
+    sarungProduct,
+    jasQuantity,
+    sarungQuantity
+  )
+  
+  return {
+    isValid: result.isValid,
+    error: result.error,
+    userMessage: result.error // For backward compatibility
   }
-
-  // Check quantity limits
-  if (sarungQuantity <= 0) {
-    return {
-      isValid: false,
-      error: 'Jumlah sarung harus lebih dari 0'
-    }
-  }
-
-  if (sarungQuantity > mainProductQuantity) {
-    return {
-      isValid: false,
-      error: `Jumlah sarung tidak boleh melebihi jumlah produk utama (${mainProductQuantity})`
-    }
-  }
-
-  return { isValid: true }
 }
 
 /**
@@ -141,11 +101,8 @@ export function validateSarungSelection(
  * @returns true if product has sufficient stock
  */
 export function hasAvailableStock(product: Product, requestedQuantity: number): boolean {
-  const availableQuantity = product.availableQuantity || 0
-  return availableQuantity >= requestedQuantity
+  return sarungPairingService.hasAvailableStock(product, requestedQuantity)
 }
-
-
 
 /**
  * Create pairing display text for UI
@@ -154,7 +111,7 @@ export function hasAvailableStock(product: Product, requestedQuantity: number): 
  * @returns Formatted pairing text
  */
 export function createPairingDisplayText(mainProductName: string, sarungName: string): string {
-  return `${mainProductName} → dengan ${sarungName}`
+  return sarungPairingService.createPairingDisplayText(mainProductName, sarungName)
 }
 
 /**
@@ -163,7 +120,7 @@ export function createPairingDisplayText(mainProductName: string, sarungName: st
  * @returns Product code or '-' if not available
  */
 export function extractProductCode(product: Product | ProductWithCategory): string {
-  return product.code || '-'
+  return sarungPairingService.extractProductCode(product)
 }
 
 /**
@@ -183,3 +140,45 @@ export function isLinkedSarung(
     mainItem.linkedSarung?.productSizeId === productSizeId
   )
 }
+
+// Configuration-driven utility functions for future extensibility
+
+/**
+ * Get all eligible categories for pairing
+ * @returns Array of eligible category names
+ */
+export function getEligibleCategories(): string[] {
+  return getAllEligibleCategories()
+}
+
+/**
+ * Get pairing configuration for UI display
+ * @returns Current pairing configuration
+ */
+export function getPairingConfig() {
+  return SARUNG_PAIRING_DISPLAY
+}
+
+/**
+ * Get button text for eligible products
+ * @param product - Product to check
+ * @param quantity - Current quantity
+ * @returns Appropriate button text
+ */
+export function getPairingButtonText(product: Product, quantity: number = 0): string {
+  return sarungPairingService.getButtonText(product, quantity)
+}
+
+/**
+ * Get badge text for eligible products
+ * @returns Badge text from configuration
+ */
+export function getPairingBadgeText(): string {
+  return sarungPairingService.getBadgeText()
+}
+
+// Legacy compatibility exports (deprecated - use configuration-driven functions above)
+export const CATEGORIES_SARUNG_GRATIS = SARUNG_GRATIS_ELIGIBLE_CATEGORIES
+
+// For backward compatibility with existing validation
+export { isEligibleForSarungGratis as isJasProduct }

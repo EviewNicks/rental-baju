@@ -6,16 +6,14 @@ import {
   Dialog,
   DialogContent,
   DialogHeader,
-  DialogTitle,
-  DialogDescription,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ProductCard } from './product-card'
-import { getSarungProducts, getSarungCategoryId } from '../../lib/utils/jasSarungUtils'
+import { sarungPairingService } from '../../services/pairingService'
+import { getSarungCategoryId } from '../../lib/utils/jasSarungUtils'
 import {
   createSarungPairingError,
-  validateSarungSelection,
   SarungPairingErrorType,
 } from '../../lib/errors/sarungPairingErrors'
 import {
@@ -118,8 +116,8 @@ export function SarungSelectionModal({
       }
     })
 
-    // Filter only sarung products
-    const filteredSarungProducts = getSarungProducts(transformedProducts)
+    // Filter only sarung products using the pairing service
+    const filteredSarungProducts = sarungPairingService.getFreeItemsForPairing(transformedProducts)
 
     // Additional validation for sarung products
     const validatedProducts = filteredSarungProducts.filter((product) => {
@@ -227,26 +225,17 @@ export function SarungSelectionModal({
         return
       }
 
-      // Validate the selection using existing validation
-      const validationError = validateSarungSelection(
-        {
-          id: jasProduct.id,
-          name: jasProduct.name,
-          category: jasProduct.category,
-        },
-        {
-          id: product.id,
-          name: product.name,
-          category: product.category,
-          availableQuantity: product.availableQuantity,
-        },
+      // Validate the selection using the pairing service
+      const validationResult = sarungPairingService.validatePairingSelection(
+        jasProduct,
+        product,
         jasQuantity,
-        quantity,
+        quantity
       )
 
-      if (validationError) {
-        setValidationErrors([validationError.userMessage])
-        toast.error('Validasi Gagal', validationError.userMessage)
+      if (!validationResult.isValid) {
+        setValidationErrors([validationResult.error || 'Validasi gagal'])
+        toast.error('Validasi Gagal', validationResult.error || 'Validasi gagal')
         return
       }
 
@@ -323,26 +312,17 @@ export function SarungSelectionModal({
         })
       }
 
-      // Final validation before confirmation (existing validation)
-      const finalValidation = validateSarungSelection(
-        {
-          id: jasProduct.id,
-          name: jasProduct.name,
-          category: jasProduct.category,
-        },
-        {
-          id: selectedSarung.product.id,
-          name: selectedSarung.product.name,
-          category: selectedSarung.product.category,
-          availableQuantity: selectedSarung.product.availableQuantity,
-        },
+      // Final validation before confirmation using the pairing service
+      const finalValidationResult = sarungPairingService.validatePairingSelection(
+        jasProduct,
+        selectedSarung.product,
         jasQuantity,
-        selectedSarung.quantity,
+        selectedSarung.quantity
       )
 
-      if (finalValidation) {
-        setValidationErrors([finalValidation.userMessage])
-        toast.error('Validasi Akhir Gagal', finalValidation.userMessage)
+      if (!finalValidationResult.isValid) {
+        setValidationErrors([finalValidationResult.error || 'Validasi akhir gagal'])
+        toast.error('Validasi Akhir Gagal', finalValidationResult.error || 'Validasi akhir gagal')
         setIsSubmitting(false)
         return
       }
@@ -553,6 +533,12 @@ export function SarungSelectionModal({
                       }
                       onOpenHistory={onOpenHistory}
                       className="h-full min-h-[450px] w-full"
+                      context="sarung-modal"
+                      buttonTextOverride="Pilih"
+                      showCustomBadge={{
+                        text: "GRATIS",
+                        className: "bg-green-500 text-white text-xs px-2 py-1 shadow-md"
+                      }}
                     />
                     {selectedSarung?.product.id === product.id && (
                       <div className="absolute -top-2 -left-2 z-10">
@@ -569,12 +555,6 @@ export function SarungSelectionModal({
                         </Badge>
                       </div>
                     )}
-                    {/* Free sarung indicator */}
-                    <div className="absolute top-2 left-2 z-10">
-                      <Badge className="bg-green-500 text-white text-xs px-2 py-1 shadow-md">
-                        GRATIS
-                      </Badge>
-                    </div>
                   </div>
                 ))}
               </div>

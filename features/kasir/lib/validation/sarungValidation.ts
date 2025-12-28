@@ -6,7 +6,8 @@
 
 import type { Product, ProductSize } from '../../types'
 import { sanitizeTextInput } from '../../types'
-import { isEligibleForFreeSarung } from '../utils/jasSarungUtils'
+import { sarungPairingService } from '../../services/pairingService'
+import { getAllEligibleCategories } from '../../config/pairingConfig'
 
 // Validation result interface
 export interface ValidationResult {
@@ -15,15 +16,20 @@ export interface ValidationResult {
   warnings?: string[]
 }
 
-// Security constants
+// Security constants - now uses configurable categories
 export const VALIDATION_LIMITS = {
   MAX_QUANTITY: 50, // Maximum quantity per selection
   MIN_QUANTITY: 1,  // Minimum quantity per selection
   MAX_PRODUCT_NAME_LENGTH: 255,
   MAX_CATEGORY_NAME_LENGTH: 100,
-  ALLOWED_CATEGORIES: ['jas-jaguar', 'jas-polos', 'jas-premium', 'jas-renda', 'renda', 'renda-premium', 'sarung'],
   MAX_SELECTIONS_PER_SESSION: 100, // Prevent DoS attacks
 } as const
+
+// Get allowed categories from configuration
+const getAllowedCategories = () => {
+  const eligibleCategories = getAllEligibleCategories()
+  return [...eligibleCategories, 'sarung'] // Include sarung category
+}
 
 /**
  * Validate quantity input for sarung selection
@@ -90,13 +96,14 @@ export function validateProductData(product: Product): ValidationResult {
     }
   }
 
-  // Validate category
+  // Validate category using configurable system
   if (!product.category || typeof product.category !== 'string') {
     errors.push('Kategori produk tidak valid')
   } else {
     const normalizedCategory = product.category.toLowerCase().trim()
-    const isValidCategory = VALIDATION_LIMITS.ALLOWED_CATEGORIES.some(cat => 
-      normalizedCategory === cat || normalizedCategory.startsWith('jas-')
+    const allowedCategories = getAllowedCategories()
+    const isValidCategory = allowedCategories.some(cat => 
+      normalizedCategory === cat.toLowerCase()
     )
     
     if (!isValidCategory) {
@@ -148,13 +155,28 @@ export function validateSarungSelection(
   }
 
   // Validate main product category (should be eligible for free sarung)
-  if (!isEligibleForFreeSarung(mainProduct)) {
+  if (!sarungPairingService.isEligibleForPairing(mainProduct)) {
     errors.push('Produk yang dipilih tidak eligible untuk mendapat sarung gratis')
   }
 
-  // Validate sarung category
-  if (sarungProduct.category.toLowerCase() !== 'sarung') {
-    errors.push('Produk yang dipilih bukan kategori sarung yang valid')
+  // Validate sarung category using pairing service
+  const sarungCategory = sarungPairingService.getFreeItemCategory()
+  
+  // Get category names safely
+  const getProductCategoryName = (product: Product): string => {
+    if (typeof product.category === 'string') {
+      return product.category.toLowerCase()
+    }
+    if (product.category && typeof product.category === 'object' && 'name' in product.category) {
+      return (product.category as { name: string }).name?.toLowerCase() || ''
+    }
+    return ''
+  }
+  
+  const sarungProductCategory = getProductCategoryName(sarungProduct)
+
+  if (sarungProductCategory !== sarungCategory) {
+    errors.push(`Produk yang dipilih bukan kategori ${sarungCategory} yang valid`)
   }
 
   // Validate quantities

@@ -20,6 +20,7 @@ import { createInventoryService } from './inventoryService'
 import type { TransactionStatus } from '../types'
 import { DateCalculator } from '../lib/utils/dateCalculator'
 import { TransactionLogger } from '../lib/logger/transactionLogger'
+import { sarungPairingService } from './pairingService'
 
 
 export interface TransaksiWithDetails extends Transaksi {
@@ -443,10 +444,17 @@ export class TransaksiService {
       const itemsForCalculation: ProductSelection[] = data.items.map((item) => {
         const productSize = productSizes.find((ps) => ps.id === item.productSizeId)!
         
-        // TASK 9: Check if this is a product eligible for free sarung and has linked sarung
-        const isEligibleForSarung = productSize.product.category.name.toLowerCase().startsWith('jas-') || 
-                                   productSize.product.category.name.toLowerCase() === 'renda' ||
-                                   productSize.product.category.name.toLowerCase() === 'renda-premium'
+        // TASK 9: Check if this is a product eligible for free sarung using configurable system
+        const isEligibleForSarung = sarungPairingService.isEligibleForPairing({
+          id: item.produkId,
+          name: productSize.product.name,
+          category: productSize.product.category.name,
+          pricePerDay: Number(productSize.product.currentPrice),
+          size: productSize.size,
+          color: '',
+          image: '',
+          available: true,
+        })
         let linkedSarung: LinkedSarung | undefined = undefined
         
         // TASK 9: Find linked sarung if this is an eligible product and item has linkedSarung

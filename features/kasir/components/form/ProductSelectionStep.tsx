@@ -18,7 +18,7 @@ import { ProductCard } from '../ui/product-card'
 import { KasirFilterBar } from '../ui/KasirFilterBar'
 import { SarungSelectionModal } from '../ui/SarungSelectionModal'
 import { SarungPairingIndicator } from '../ui/SarungPairingIndicator'
-import type { Product, ProductSelection, KasirFilters } from '../../types'
+import type { Product, ProductSelection, KasirFilters, ProductSize } from '../../types'
 import { useAvailableProducts } from '../../hooks/useProduk'
 import { formatCurrency } from '../../lib/utils/client'
 import { generateCartItemKey } from '../../lib/utils/keyGeneration'
@@ -47,7 +47,7 @@ import { toast } from '@/lib/notifications'
 
 interface ProductSelectionStepProps {
   selectedProducts: ProductSelection[]
-  onAddProduct: (product: Product, quantity: number, productSizeId?: string) => void
+  onAddProduct: (product: Product, quantity: number, productSizeId?: string, linkedSarung?: ProductSelection['linkedSarung']) => void
   onRemoveProduct: (productId: string, productSizeId?: string) => void
   onUpdateQuantity: (productId: string, quantity: number, productSizeId?: string) => void
   onNext: () => void
@@ -168,18 +168,37 @@ export function ProductSelectionStep({
   }
 
   // Task 11: Enhanced sarung selection with comprehensive error handling
-  const handleSarungSelection = () => {
+  const handleSarungSelection = (selectedSarung?: {
+    product: Product
+    quantity: number
+    productSizeId?: string
+    selectedSize?: ProductSize
+  }) => {
     if (!sarungModal.jasProduct) return
 
     try {
-      // Add the jas product with pairing data
-      onAddProduct(sarungModal.jasProduct, sarungModal.jasQuantity, sarungModal.jasProductSizeId)
+      if (selectedSarung) {
+        // FIXED: Create proper linkedSarung data structure
+        const linkedSarungData: ProductSelection['linkedSarung'] = {
+          productId: selectedSarung.product.id,
+          productSizeId: selectedSarung.productSizeId || '',
+          quantity: selectedSarung.quantity,
+          selectedSize: selectedSarung.selectedSize!
+        }
+        
+        // Add jas product with linked sarung data
+        onAddProduct(sarungModal.jasProduct, sarungModal.jasQuantity, sarungModal.jasProductSizeId, linkedSarungData)
+        
+        toast.success('Berhasil', `Jas ${sarungModal.jasProduct.name} dengan sarung ${selectedSarung.product.name} ditambahkan ke keranjang`)
+      } else {
+        // Add jas product without sarung (Tanpa Sarung option)
+        onAddProduct(sarungModal.jasProduct, sarungModal.jasQuantity, sarungModal.jasProductSizeId)
+        
+        toast.success('Berhasil', `Jas ${sarungModal.jasProduct.name} ditambahkan ke keranjang tanpa sarung`)
+      }
       
       // Close the modal on success
       closeSarungModal()
-      
-      // Show success message
-      toast.success('Berhasil', 'Jas berhasil ditambahkan ke keranjang')
       
     } catch (err) {
       console.error('Error processing sarung selection:', err)
@@ -512,7 +531,7 @@ export function ProductSelectionStep({
         onUpdateQuantity(product.id, existingProduct.quantity + quantity, productSizeId)
         toast.success('Berhasil', `Jumlah ${product.name} diperbarui`)
       } else {
-        // Add new product (with optional productSizeId)
+        // Add new product (with optional productSizeId, no linkedSarung for normal products)
         onAddProduct(product, quantity, productSizeId)
         toast.success('Berhasil', `${product.name} ditambahkan ke keranjang`)
       }
@@ -871,27 +890,26 @@ export function ProductSelectionStep({
                         className="w-12 h-12 object-cover rounded-md"
                       />
                       <div className="flex-1 min-w-0">
-                        {/* Show pairing indicator for jas products with linked sarung */}
+                        {/* Clean product name display - pairing indicated by green text below */}
                         {item.linkedSarung ? (
-                          <div className="space-y-2">
-                            <SarungPairingIndicator
-                              jasName={item.product.name}
-                              sarungName={`Sarung (ID: ${item.linkedSarung.productId.slice(-6)})`}
-                              sarungOriginalPrice={0} // Will be calculated from product data
-                              variant="cart"
-                              className="mb-2"
-                            />
-                          </div>
+                          <SarungPairingIndicator
+                            jasName={item.product.name}
+                            sarungName={`Sarung ${item.linkedSarung.selectedSize?.size || 'Universal'}`}
+                            sarungOriginalPrice={0} // Sarung is always free in pairing
+                            variant="cart"
+                            showPricing={false} // Don't show pricing in the indicator itself
+                          />
                         ) : (
                           <h4 className="text-sm font-medium text-gray-900 truncate">
                             {item.product.name}
                           </h4>
                         )}
-                        <p className="text-xs text-gray-600">
-                          {item.product.size} •{' '}
+                        
+                        {/* Product details */}
+                        <p className="text-xs text-gray-600 mt-1">
                           {item.productSizeId && item.selectedSize && (
                             <span className="ml-1 font-medium text-yellow-700">
-                              • Size: {item.selectedSize.size} ({item.selectedSize.ageCategory})
+                            • Size: {item.selectedSize.size} ({item.selectedSize.ageCategory})
                             </span>
                           )}
                           {/* Fallback: Show size info if selectedSize is missing but productSizeId exists */}
@@ -901,7 +919,9 @@ export function ProductSelectionStep({
                             </span>
                           )}
                         </p>
-                        <p className="text-xs text-gray-600">
+                        
+                        {/* Price with clean pairing indication */}
+                        <p className="text-xs text-gray-600 mt-1">
                           {formatCurrency(item.product.pricePerDay)}/4 hari
                           {item.linkedSarung && (
                             <span className="ml-2 text-green-600 font-medium">+ Sarung GRATIS</span>

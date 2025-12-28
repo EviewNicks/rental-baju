@@ -8,6 +8,7 @@ import {
   AvailabilityError, 
   AvailabilityErrorType
 } from './availabilityErrors'
+import { sarungPairingService } from '../../services/pairingService'
 
 export enum SarungPairingErrorType {
   // Sarung availability errors
@@ -359,8 +360,19 @@ export function validateSarungSelection(
   jasQuantity: number,
   sarungQuantity: number
 ): SarungPairingError | null {
-  // Validate jas product
-  if (!jasProduct.category.toLowerCase().startsWith('jas-')) {
+  // Validate jas product using configurable system
+  const isEligible = sarungPairingService.isEligibleForPairing({
+    id: jasProduct.id,
+    name: jasProduct.name,
+    category: jasProduct.category,
+    pricePerDay: 0, // Not needed for detection
+    size: '',
+    color: '',
+    image: '',
+    available: true,
+  })
+  
+  if (!isEligible) {
     return createSarungPairingError(SarungPairingErrorType.INVALID_JAS_PRODUCT, {
       productName: jasProduct.name,
       jasProductId: jasProduct.id

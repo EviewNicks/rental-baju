@@ -68,7 +68,8 @@ export function TransactionFormPage() {
   const handleAddProduct = (
     product: ProductSelection['product'],
     quantity: number,
-    productSizeId?: string
+    productSizeId?: string,
+    linkedSarung?: ProductSelection['linkedSarung']
   ) => {
     // 🔧 FIX: Resolve selectedSize from product.sizes array using productSizeId
     let selectedSize: ProductSelection['selectedSize'] | undefined
@@ -82,6 +83,7 @@ export function TransactionFormPage() {
       duration: FIXED_DURATION, // Always 4 days for fixed package
       ...(productSizeId && { productSizeId }),
       ...(selectedSize && { selectedSize }), // Add selectedSize field
+      ...(linkedSarung && { linkedSarung }), // Add linkedSarung field for jas-sarung pairing
     }
 
     try {
@@ -97,6 +99,7 @@ export function TransactionFormPage() {
       console.error('Failed to add product', {
         productId: product.id,
         productSizeId,
+        linkedSarung: linkedSarung ? { productId: linkedSarung.productId, quantity: linkedSarung.quantity } : null,
         error: error instanceof Error ? error.message : 'Unknown error',
         timestamp: new Date().toISOString(),
       })

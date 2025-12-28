@@ -168,6 +168,21 @@ This implementation plan creates a jas-sarung pairing system that allows custome
   - Ensure all requirements are met through comprehensive testing
   - **Final Checkpoint**: Ensure all tests pass, ask the user if questions arise
 
+- [x] 16. Implement configurable category system for future-proof pairing
+  - ✅ Create configuration file for eligible categories management
+  - ✅ Implement generic pairing service with extension points
+  - ✅ Replace hardcoded category arrays with configurable system
+  - ✅ Add support for future categories (gamis, etc.) without code changes
+  - ✅ Update all detection logic to use configuration-driven approach
+  - ✅ Update TransaksiService.ts to use configurable jas detection
+  - ✅ Update professionalReceiptService.ts to use configurable system
+  - ✅ Update sarungValidation.ts to use dynamic category validation
+  - ✅ Update sarungPairingErrors.ts to use configurable detection
+  - ✅ Remove all hardcoded category detection logic
+  - ✅ Pass yarn lint and yarn type-check validation
+  - _Requirements: 10.1, 10.2 (Maintainability & Future-proof)_
+  - **Checkpoint**: ✅ Run `yarn lint && yarn type-check` to ensure code quality
+
 ## Notes
 
 - Tasks marked with `*` are optional property-based tests that can be skipped for faster MVP

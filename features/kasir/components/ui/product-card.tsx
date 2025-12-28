@@ -9,7 +9,7 @@ import { formatCurrency } from '../../lib/utils/client'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
 import { SizeSelector } from './size-selector'
-import { isEligibleForFreeSarung } from '../../lib/utils/jasSarungUtils'
+import { sarungPairingService } from '../../services/pairingService'
 
 interface ProductCardProps {
   product: Product
@@ -17,6 +17,12 @@ interface ProductCardProps {
   selectedQuantity?: number
   className?: string
   onOpenHistory?: (productSizeId: string, productName: string, size: string, ageCategory: string) => void
+  // NEW: Context awareness for different behaviors
+  context?: 'main-grid' | 'sarung-modal'
+  // NEW: Override button text for specific contexts
+  buttonTextOverride?: string
+  // NEW: Override badge display for specific contexts
+  showCustomBadge?: { text: string; className?: string }
 }
 
 export function ProductCard({
@@ -25,6 +31,9 @@ export function ProductCard({
   selectedQuantity = 0,
   className,
   onOpenHistory,
+  context = 'main-grid',
+  buttonTextOverride,
+  showCustomBadge,
 }: ProductCardProps) {
   const [quantity, setQuantity] = useState(selectedQuantity)
   const [selectedSize, setSelectedSize] = useState<ProductSize | null>(null)
@@ -68,14 +77,23 @@ export function ProductCard({
   }
 
   // Check if this is a product eligible for free sarung for special handling
-  const isEligible = isEligibleForFreeSarung(product)
+  const isEligible = sarungPairingService.isEligibleForPairing(product)
   
-  // Get appropriate button text based on product type
+  // Get appropriate button text based on product type and context
   const getButtonText = () => {
-    if (quantity === 0) {
-      return isEligible ? 'Pilih dengan Sarung' : 'Tambah ke Keranjang'
+    // Use override if provided (for specific contexts like sarung modal)
+    if (buttonTextOverride) {
+      return quantity === 0 ? buttonTextOverride : `${buttonTextOverride} ${quantity}`
     }
-    return isEligible ? `Pilih ${quantity} dengan Sarung` : `Tambah ${quantity} ke Keranjang`
+    
+    // Context-specific behavior
+    if (context === 'sarung-modal') {
+      // In sarung modal, all products should show selection text
+      return quantity === 0 ? 'Pilih Sarung' : `Pilih ${quantity} Sarung`
+    }
+    
+    // Default main-grid behavior
+    return sarungPairingService.getButtonText(product, quantity)
   }
 
   const incrementQuantity = () => {
@@ -131,10 +149,17 @@ export function ProductCard({
             <Badge className="bg-yellow-400 text-gray-900">{selectedQuantity}x</Badge>
           </div>
         )}
-        {isEligible && (
+        {/* Context-aware badge display */}
+        {showCustomBadge ? (
+          <div className="absolute bottom-2 left-2">
+            <Badge className={showCustomBadge.className || "bg-green-500 text-white text-xs"}>
+              {showCustomBadge.text}
+            </Badge>
+          </div>
+        ) : isEligible && context === 'main-grid' && (
           <div className="absolute bottom-2 left-2">
             <Badge className="bg-blue-500 text-white text-xs">
-              Jas + Sarung Gratis
+              {sarungPairingService.getBadgeText()}
             </Badge>
           </div>
         )}
@@ -169,25 +194,6 @@ export function ProductCard({
           <Badge variant="outline" className="text-xs capitalize">
             {product.category}
           </Badge>
-          {/* RPK-52: Category Type Badge */}
-          {product.categoryType && (
-            <Badge
-              variant="secondary"
-              className={`text-xs ${
-                product.categoryType === 'clothing'
-                  ? 'bg-blue-100 text-blue-800'
-                  : product.categoryType === 'accessories_age_based'
-                    ? 'bg-purple-100 text-purple-800'
-                    : 'bg-green-100 text-green-800'
-              }`}
-            >
-              {product.categoryType === 'clothing'
-                ? 'Pakaian'
-                : product.categoryType === 'accessories_age_based'
-                  ? 'Aksesoris Umur'
-                  : 'Aksesoris Universal'}
-            </Badge>
-          )}
         </div>
 
         <div className="flex items-center justify-between">
