@@ -9,7 +9,7 @@ import { formatCurrency } from '../../lib/utils/client'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
 import { SizeSelector } from './size-selector'
-import { isJasProduct } from '../../lib/utils/jasSarungUtils'
+import { isEligibleForFreeSarung } from '../../lib/utils/jasSarungUtils'
 
 interface ProductCardProps {
   product: Product
@@ -67,15 +67,15 @@ export function ProductCard({
     }
   }
 
-  // Check if this is a jas product for special handling
-  const isJas = isJasProduct(product)
+  // Check if this is a product eligible for free sarung for special handling
+  const isEligible = isEligibleForFreeSarung(product)
   
   // Get appropriate button text based on product type
   const getButtonText = () => {
     if (quantity === 0) {
-      return isJas ? 'Pilih dengan Sarung' : 'Tambah ke Keranjang'
+      return isEligible ? 'Pilih dengan Sarung' : 'Tambah ke Keranjang'
     }
-    return isJas ? `Pilih ${quantity} dengan Sarung` : `Tambah ${quantity} ke Keranjang`
+    return isEligible ? `Pilih ${quantity} dengan Sarung` : `Tambah ${quantity} ke Keranjang`
   }
 
   const incrementQuantity = () => {
@@ -131,7 +131,7 @@ export function ProductCard({
             <Badge className="bg-yellow-400 text-gray-900">{selectedQuantity}x</Badge>
           </div>
         )}
-        {isJas && (
+        {isEligible && (
           <div className="absolute bottom-2 left-2">
             <Badge className="bg-blue-500 text-white text-xs">
               Jas + Sarung Gratis

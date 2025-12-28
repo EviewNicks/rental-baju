@@ -30,7 +30,7 @@ import {
   type AvailabilityError 
 } from '../../lib/errors/availabilityErrors'
 import { ProductHistoryPopup } from '../ui/ProductHistoryPopup'
-import { isJasProduct, isLinkedSarung } from '../../lib/utils/jasSarungUtils'
+import { isEligibleForFreeSarung, isLinkedSarung } from '../../lib/utils/jasSarungUtils'
 import { 
   createSarungPairingError, 
   executeFallbackAction,
@@ -396,8 +396,8 @@ export function ProductSelectionStep({
         setAvailabilityErrors(newErrors)
       }
 
-      // Task 11: Enhanced jas product detection with error handling
-      if (isJasProduct(product)) {
+      // Task 11: Enhanced product detection with error handling for free sarung eligibility
+      if (isEligibleForFreeSarung(product)) {
         try {
           // Validate jas product before opening modal
           if (!product.availableQuantity || product.availableQuantity < quantity) {
@@ -1015,7 +1015,6 @@ export function ProductSelectionStep({
           onClose={closeSarungModal}
           jasProduct={sarungModal.jasProduct}
           jasQuantity={sarungModal.jasQuantity}
-          availableProducts={products}
           onConfirmSelection={handleSarungSelection}
           onOpenHistory={openHistoryPopup}
         />

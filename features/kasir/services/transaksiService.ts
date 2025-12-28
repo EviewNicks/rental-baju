@@ -443,12 +443,14 @@ export class TransaksiService {
       const itemsForCalculation: ProductSelection[] = data.items.map((item) => {
         const productSize = productSizes.find((ps) => ps.id === item.productSizeId)!
         
-        // TASK 9: Check if this is a jas product and has linked sarung
-        const isJasProduct = productSize.product.category.name.toLowerCase().startsWith('jas-')
+        // TASK 9: Check if this is a product eligible for free sarung and has linked sarung
+        const isEligibleForSarung = productSize.product.category.name.toLowerCase().startsWith('jas-') || 
+                                   productSize.product.category.name.toLowerCase() === 'renda' ||
+                                   productSize.product.category.name.toLowerCase() === 'renda-premium'
         let linkedSarung: LinkedSarung | undefined = undefined
         
-        // TASK 9: Find linked sarung if this is a jas product and item has linkedSarung
-        if (isJasProduct && 'linkedSarung' in item && item.linkedSarung) {
+        // TASK 9: Find linked sarung if this is an eligible product and item has linkedSarung
+        if (isEligibleForSarung && 'linkedSarung' in item && item.linkedSarung) {
           const linkedSarungData = item.linkedSarung as {
             productId: string
             productSizeId: string

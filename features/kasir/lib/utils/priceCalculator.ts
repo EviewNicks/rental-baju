@@ -4,7 +4,7 @@
  */
 
 import type { ProductSelection } from '../../types'
-import { isJasProduct } from './jasSarungUtils'
+import { isEligibleForFreeSarung } from './jasSarungUtils'
 
 export interface PriceCalculationResult {
   subtotal: number
@@ -19,7 +19,7 @@ export interface PriceCalculationResult {
     durasi: 4 | 7
     basePrice: number
     adjustedPrice: number
-    isJasProduct: boolean
+    isEligibleForFreeSarung: boolean
     linkedSarungPrice: number // Always 0 for linked sarung
   }>
   pairingInfo: {
@@ -69,12 +69,12 @@ export class PriceCalculator {
     
     // Calculate item totals with duration multiplier and pairing logic
     const itemCalculations = items.map(item => {
-      const isJas = isJasProduct(item.product)
+      const isEligibleForSarung = isEligibleForFreeSarung(item.product)
       const basePrice = item.product.pricePerDay * item.quantity
       const adjustedPrice = basePrice * durationMultiplier
       
-      // Track jas items
-      if (isJas) {
+      // Track eligible items
+      if (isEligibleForSarung) {
         totalJasItems += item.quantity
       }
       
@@ -96,7 +96,7 @@ export class PriceCalculator {
         durasi: duration,
         basePrice,
         adjustedPrice,
-        isJasProduct: isJas,
+        isEligibleForFreeSarung: isEligibleForSarung,
         linkedSarungPrice
       }
     })
@@ -237,11 +237,11 @@ export class PriceCalculator {
       return { isValid: true } // No pairing is valid
     }
 
-    // Check if jas product
-    if (!isJasProduct(item.product)) {
+    // Check if product is eligible for free sarung
+    if (!isEligibleForFreeSarung(item.product)) {
       return {
         isValid: false,
-        error: 'Sarung hanya dapat dipasangkan dengan produk jas'
+        error: 'Sarung hanya dapat dipasangkan dengan produk yang eligible'
       }
     }
 
@@ -303,7 +303,7 @@ export class PriceCalculator {
     let totalPairings = 0
 
     items.forEach(item => {
-      if (isJasProduct(item.product)) {
+      if (isEligibleForFreeSarung(item.product)) {
         jasItems.push(item)
         
         if (item.linkedSarung) {
@@ -353,8 +353,8 @@ export class PriceCalculator {
       }
 
       // Check for potential issues
-      if (isJasProduct(item.product) && !item.linkedSarung) {
-        warnings.push(`Item ${index + 1}: Jas "${item.product.name}" tidak dipasangkan dengan sarung`)
+      if (isEligibleForFreeSarung(item.product) && !item.linkedSarung) {
+        warnings.push(`Item ${index + 1}: Produk "${item.product.name}" tidak dipasangkan dengan sarung`)
       }
     })
 
@@ -406,20 +406,20 @@ export class PriceCalculator {
     }> = []
 
     items.forEach(item => {
-      const isJas = isJasProduct(item.product)
+      const isEligible = isEligibleForFreeSarung(item.product)
       const unitPrice = item.product.pricePerDay * durationMultiplier
       const totalPrice = unitPrice * item.quantity
 
       // Add to grand total (all items count)
       grandTotal += totalPrice
 
-      if (isJas) {
+      if (isEligible) {
         jasTotal += totalPrice
       }
 
       const breakdown = {
         productName: item.product.name,
-        isJas,
+        isJas: isEligible,
         quantity: item.quantity,
         unitPrice,
         totalPrice

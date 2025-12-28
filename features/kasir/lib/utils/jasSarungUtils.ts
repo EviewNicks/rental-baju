@@ -6,26 +6,38 @@
 
 import type { Product, ProductWithCategory, ProductSelection } from '../../types'
 
-// Jas category constants
-export const JAS_CATEGORIES = [
+// Categories eligible for free sarung pairing
+export const CATEGORIES_SARUNG_GRATIS = [
   'jas-jaguar',
   'jas-polos', 
   'jas-premium',
-  'jas-renda'
+  'jas-renda',
+  'renda',           // Regular renda category
+  'renda-premium'    // Premium renda category
 ] as const
 
-export type JasCategory = typeof JAS_CATEGORIES[number]
+export type CategorySarungGratis = typeof CATEGORIES_SARUNG_GRATIS[number]
 
 // Sarung category constants
 export const SARUNG_CATEGORY = 'sarung'
 export const SARUNG_CATEGORY_TYPE = 'accessories_age_based'
 
 /**
- * Detect if a product is a jas product based on category name
- * @param product - Product to check
- * @returns true if product is a jas product
+ * Get sarung category ID from categories.json
+ * This is used for API filtering
  */
-export function isJasProduct(product: Product | ProductWithCategory): boolean {
+export function getSarungCategoryId(): string {
+  // Based on categories.json, sarung category ID
+  // In production, this should be fetched from API or config
+  return 'd50fbc08-26f9-499f-bce1-189c7e18a171' // This is the categoryId from sarung.json
+}
+
+/**
+ * Check if a product category is eligible for free sarung pairing
+ * @param product - Product to check
+ * @returns true if product category can get free sarung
+ */
+export function isEligibleForFreeSarung(product: Product | ProductWithCategory): boolean {
   if (!product.category) {
     return false
   }
@@ -34,17 +46,9 @@ export function isJasProduct(product: Product | ProductWithCategory): boolean {
     ? product.category.toLowerCase()
     : product.category.name.toLowerCase()
     
-  return categoryName.startsWith('jas-')
+  return CATEGORIES_SARUNG_GRATIS.includes(categoryName as CategorySarungGratis)
 }
 
-/**
- * Check if a category name is a valid jas category
- * @param categoryName - Category name to validate
- * @returns true if category is a valid jas category
- */
-export function isValidJasCategory(categoryName: string): categoryName is JasCategory {
-  return JAS_CATEGORIES.includes(categoryName.toLowerCase() as JasCategory)
-}
 
 /**
  * Filter products to get only sarung products
@@ -53,16 +57,23 @@ export function isValidJasCategory(categoryName: string): categoryName is JasCat
  */
 export function getSarungProducts(products: Product[]): Product[] {
   return products.filter(product => {
-    // Check category name
+    // Check category name - more flexible approach
     const categoryName = typeof product.category === 'string'
       ? product.category.toLowerCase()
       : product.category
 
-    // Check category type if available
-    const categoryType = product.categoryType
+    // Primary check: category name must be 'sarung'
+    const isSarungCategory = categoryName === SARUNG_CATEGORY
+    
+    // Optional check: category type if available (for backward compatibility)
+    const hasValidCategoryType = !product.categoryType || product.categoryType === SARUNG_CATEGORY_TYPE
+    
+    // Debug logging to help identify issues
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`Product ${product.name}: category=${categoryName}, categoryType=${product.categoryType}, isSarung=${isSarungCategory && hasValidCategoryType}`)
+    }
 
-    return categoryName === SARUNG_CATEGORY && 
-           categoryType === SARUNG_CATEGORY_TYPE
+    return isSarungCategory && hasValidCategoryType
   })
 }
 
@@ -84,13 +95,13 @@ export function getSarungProductsWithCategory(products: ProductWithCategory[]): 
 /**
  * Validate sarung selection for pairing
  * @param sarungProduct - Selected sarung product
- * @param jasQuantity - Quantity of jas being paired
+ * @param mainProductQuantity - Quantity of main product being paired
  * @param sarungQuantity - Requested sarung quantity
  * @returns Validation result with error message if invalid
  */
 export function validateSarungSelection(
   sarungProduct: Product | ProductWithCategory,
-  jasQuantity: number,
+  mainProductQuantity: number,
   sarungQuantity: number
 ): { isValid: boolean; error?: string } {
   // Check if product is actually a sarung
@@ -113,10 +124,10 @@ export function validateSarungSelection(
     }
   }
 
-  if (sarungQuantity > jasQuantity) {
+  if (sarungQuantity > mainProductQuantity) {
     return {
       isValid: false,
-      error: `Jumlah sarung tidak boleh melebihi jumlah jas (${jasQuantity})`
+      error: `Jumlah sarung tidak boleh melebihi jumlah produk utama (${mainProductQuantity})`
     }
   }
 
@@ -134,30 +145,16 @@ export function hasAvailableStock(product: Product, requestedQuantity: number): 
   return availableQuantity >= requestedQuantity
 }
 
-/**
- * Get display name for jas category
- * @param category - Jas category name
- * @returns Formatted display name
- */
-export function getJasCategoryDisplayName(category: string): string {
-  const categoryMap: Record<string, string> = {
-    'jas-jaguar': 'Jas Jaguar',
-    'jas-polos': 'Jas Polos',
-    'jas-premium': 'Jas Premium',
-    'jas-renda': 'Jas Renda'
-  }
-  
-  return categoryMap[category.toLowerCase()] || category
-}
+
 
 /**
  * Create pairing display text for UI
- * @param jasName - Name of jas product
+ * @param mainProductName - Name of main product (jas/renda)
  * @param sarungName - Name of sarung product
  * @returns Formatted pairing text
  */
-export function createPairingDisplayText(jasName: string, sarungName: string): string {
-  return `${jasName} → dengan ${sarungName}`
+export function createPairingDisplayText(mainProductName: string, sarungName: string): string {
+  return `${mainProductName} → dengan ${sarungName}`
 }
 
 /**
@@ -170,7 +167,7 @@ export function extractProductCode(product: Product | ProductWithCategory): stri
 }
 
 /**
- * Check if a product is a linked sarung (free sarung paired with jas)
+ * Check if a product is a linked sarung (free sarung paired with main product)
  * @param productId - ID of product to check
  * @param productSizeId - Size ID of product to check (optional)
  * @param products - Array of products to search for pairing
@@ -181,8 +178,8 @@ export function isLinkedSarung(
   productSizeId: string | undefined,
   products: ProductSelection[]
 ): boolean {
-  return products.some(jasItem => 
-    jasItem.linkedSarung?.productId === productId &&
-    jasItem.linkedSarung?.productSizeId === productSizeId
+  return products.some(mainItem => 
+    mainItem.linkedSarung?.productId === productId &&
+    mainItem.linkedSarung?.productSizeId === productSizeId
   )
 }

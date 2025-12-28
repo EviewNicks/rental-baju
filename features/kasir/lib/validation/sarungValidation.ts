@@ -6,6 +6,7 @@
 
 import type { Product, ProductSize } from '../../types'
 import { sanitizeTextInput } from '../../types'
+import { isEligibleForFreeSarung } from '../utils/jasSarungUtils'
 
 // Validation result interface
 export interface ValidationResult {
@@ -20,7 +21,7 @@ export const VALIDATION_LIMITS = {
   MIN_QUANTITY: 1,  // Minimum quantity per selection
   MAX_PRODUCT_NAME_LENGTH: 255,
   MAX_CATEGORY_NAME_LENGTH: 100,
-  ALLOWED_CATEGORIES: ['jas-jaguar', 'jas-polos', 'jas-premium', 'jas-renda', 'sarung'],
+  ALLOWED_CATEGORIES: ['jas-jaguar', 'jas-polos', 'jas-premium', 'jas-renda', 'renda', 'renda-premium', 'sarung'],
   MAX_SELECTIONS_PER_SESSION: 100, // Prevent DoS attacks
 } as const
 
@@ -31,7 +32,7 @@ export const VALIDATION_LIMITS = {
 export function validateQuantityInput(
   quantity: number,
   availableStock: number,
-  jasQuantity: number
+  mainProductQuantity: number
 ): ValidationResult {
   const errors: string[] = []
   const warnings: string[] = []
@@ -51,12 +52,12 @@ export function validateQuantityInput(
   }
 
   // Pairing quantity validation
-  if (quantity > jasQuantity) {
-    errors.push(`Jumlah sarung (${quantity}) tidak boleh melebihi jumlah jas (${jasQuantity})`)
+  if (quantity > mainProductQuantity) {
+    errors.push(`Jumlah sarung (${quantity}) tidak boleh melebihi jumlah produk utama (${mainProductQuantity})`)
   }
 
   // Warning for high quantity selections
-  if (quantity > jasQuantity * 0.8 && quantity <= jasQuantity) {
+  if (quantity > mainProductQuantity * 0.8 && quantity <= mainProductQuantity) {
     warnings.push(`Jumlah sarung mendekati batas maksimal untuk pairing`)
   }
 
@@ -126,18 +127,18 @@ export function validateProductData(product: Product): ValidationResult {
  * Requirements: 9.2, 9.3 - Inventory validation and graceful degradation
  */
 export function validateSarungSelection(
-  jasProduct: Product,
+  mainProduct: Product,
   sarungProduct: Product,
-  jasQuantity: number,
+  mainProductQuantity: number,
   sarungQuantity: number
 ): ValidationResult {
   const errors: string[] = []
   const warnings: string[] = []
 
-  // Validate jas product
-  const jasValidation = validateProductData(jasProduct)
-  if (!jasValidation.isValid) {
-    errors.push(...jasValidation.errors.map(err => `Jas: ${err}`))
+  // Validate main product
+  const mainProductValidation = validateProductData(mainProduct)
+  if (!mainProductValidation.isValid) {
+    errors.push(...mainProductValidation.errors.map(err => `Produk utama: ${err}`))
   }
 
   // Validate sarung product
@@ -146,9 +147,9 @@ export function validateSarungSelection(
     errors.push(...sarungValidation.errors.map(err => `Sarung: ${err}`))
   }
 
-  // Validate jas category
-  if (!jasProduct.category.toLowerCase().startsWith('jas-')) {
-    errors.push('Produk yang dipilih bukan kategori jas yang valid')
+  // Validate main product category (should be eligible for free sarung)
+  if (!isEligibleForFreeSarung(mainProduct)) {
+    errors.push('Produk yang dipilih tidak eligible untuk mendapat sarung gratis')
   }
 
   // Validate sarung category
@@ -160,7 +161,7 @@ export function validateSarungSelection(
   const quantityValidation = validateQuantityInput(
     sarungQuantity,
     sarungProduct.availableQuantity || 0,
-    jasQuantity
+    mainProductQuantity
   )
   
   if (!quantityValidation.isValid) {
@@ -172,8 +173,8 @@ export function validateSarungSelection(
   }
 
   // Additional pairing validation
-  if (jasQuantity !== sarungQuantity) {
-    warnings.push(`Jumlah jas (${jasQuantity}) dan sarung (${sarungQuantity}) tidak sama`)
+  if (mainProductQuantity !== sarungQuantity) {
+    warnings.push(`Jumlah produk utama (${mainProductQuantity}) dan sarung (${sarungQuantity}) tidak sama`)
   }
 
   return {
@@ -250,14 +251,14 @@ export function validateSessionLimits(
  * Requirements: 9.2, 9.3, 10.1, 10.2
  */
 export function validateSarungModalSubmission(
-  jasProduct: Product,
+  mainProduct: Product,
   selectedSarung: {
     product: Product
     quantity: number
     productSizeId?: string
     selectedSize?: ProductSize
   } | null,
-  jasQuantity: number,
+  mainProductQuantity: number,
   currentSelections: number
 ): ValidationResult {
   const errors: string[] = []
@@ -269,18 +270,18 @@ export function validateSarungModalSubmission(
     errors.push(...sessionValidation.errors)
   }
 
-  // Validate jas product
-  const jasValidation = validateProductData(jasProduct)
-  if (!jasValidation.isValid) {
-    errors.push(...jasValidation.errors.map(err => `Jas: ${err}`))
+  // Validate main product
+  const mainProductValidation = validateProductData(mainProduct)
+  if (!mainProductValidation.isValid) {
+    errors.push(...mainProductValidation.errors.map(err => `Produk utama: ${err}`))
   }
 
   // If sarung is selected, validate it
   if (selectedSarung) {
     const sarungValidation = validateSarungSelection(
-      jasProduct,
+      mainProduct,
       selectedSarung.product,
-      jasQuantity,
+      mainProductQuantity,
       selectedSarung.quantity
     )
     
