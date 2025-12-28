@@ -102,15 +102,17 @@ export function useTransactionForm() {
 
   const addProduct = useCallback((product: ProductSelection) => {
     setFormData((prev) => {
-      // Check if product with same size already exists
+      // Enhanced duplicate detection: Check product ID, size, AND linkedSarung
       const existingIndex = prev.products.findIndex(
         (p) =>
           p.product.id === product.product.id &&
-          (product.productSizeId ? p.productSizeId === product.productSizeId : !p.productSizeId),
+          (product.productSizeId ? p.productSizeId === product.productSizeId : !p.productSizeId) &&
+          // ✅ FIX: Include linkedSarung in duplicate detection to allow separate cart items
+          (product.linkedSarung?.productId === p.linkedSarung?.productId)
       )
 
       if (existingIndex >= 0) {
-        // Update quantity of existing size-specific item
+        // Update quantity of existing item (same jas, same size, same sarung)
         const updated = [...prev.products]
         updated[existingIndex] = {
           ...updated[existingIndex],
@@ -119,31 +121,35 @@ export function useTransactionForm() {
         return { ...prev, products: updated }
       }
 
-      // Add new item
+      // Add new item (different jas, different size, OR different sarung)
       return { ...prev, products: [...prev.products, product] }
     })
   }, [])
 
-  const removeProduct = useCallback((productId: string, productSizeId?: string) => {
+  const removeProduct = useCallback((productId: string, productSizeId?: string, linkedSarungProductId?: string) => {
     setFormData((prev) => ({
       ...prev,
       products: prev.products.filter(
         (p) =>
           !(
             p.product.id === productId &&
-            (productSizeId ? p.productSizeId === productSizeId : !p.productSizeId)
+            (productSizeId ? p.productSizeId === productSizeId : !p.productSizeId) &&
+            // ✅ FIX: Include linkedSarung in removal logic for precise targeting
+            (linkedSarungProductId ? p.linkedSarung?.productId === linkedSarungProductId : !p.linkedSarung)
           ),
       ),
     }))
   }, [])
 
   const updateProductQuantity = useCallback(
-    (productId: string, quantity: number, productSizeId?: string) => {
+    (productId: string, quantity: number, productSizeId?: string, linkedSarungProductId?: string) => {
       setFormData((prev) => ({
         ...prev,
         products: prev.products.map((p) =>
           p.product.id === productId &&
-          (productSizeId ? p.productSizeId === productSizeId : !p.productSizeId)
+          (productSizeId ? p.productSizeId === productSizeId : !p.productSizeId) &&
+          // ✅ FIX: Include linkedSarung in quantity update logic for precise targeting
+          (linkedSarungProductId ? p.linkedSarung?.productId === linkedSarungProductId : !p.linkedSarung)
             ? { ...p, quantity }
             : p,
         ),

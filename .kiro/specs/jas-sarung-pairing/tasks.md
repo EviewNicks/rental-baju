@@ -183,6 +183,44 @@ This implementation plan creates a jas-sarung pairing system that allows custome
   - _Requirements: 10.1, 10.2 (Maintainability & Future-proof)_
   - **Checkpoint**: ✅ Run `yarn lint && yarn type-check` to ensure code quality
 
+- [x] 17. Fix validation system context confusion (CRITICAL BUG FIX)
+  - ✅ Identify root cause of "Kategori produk tidak diizinkan: anting" error
+  - ✅ Analyze validation system blocking non-jas products from cart
+  - ✅ Implement context-aware validation with validateCategoryForPairing parameter
+  - ✅ Update validateProductData() to support both general and pairing validation
+  - ✅ Update function calls to use appropriate validation context
+  - ✅ Ensure backward compatibility for all existing product categories
+  - ✅ Maintain security for pairing operations while allowing general operations
+  - ✅ Test all product categories can be added to cart normally
+  - ✅ Verify pairing validation still works for jas-sarung operations
+  - ✅ Pass yarn lint and yarn type-check validation
+  - _Requirements: 9.2, 9.3, 10.1 (Backward Compatibility & Validation)_
+  - **Checkpoint**: ✅ Run `yarn lint && yarn type-check` to ensure code quality
+  - **Critical**: This fixes blocking issue preventing normal product workflow
+
+- [x] 18. Implement Enhanced Modal with Quantity Distribution
+  - ✅ Enhance existing SarungSelectionModal with quantity distribution capability
+  - ✅ Add SarungDistribution interface and state management for multiple sarung selections
+  - ✅ Update ProductCard integration to support dynamic quantity selection
+  - ✅ Create DistributionPreview component showing breakdown of jas-sarung distribution
+  - ✅ Update handleSarungSelection to support quantity distribution logic
+  - ✅ Enhance confirmation logic to process multiple cart additions in one action
+  - ✅ Add validation for total quantity limits and distribution consistency
+  - ✅ Update modal UI/UX for better quantity distribution display
+  - ✅ Ensure backward compatibility with existing simple pairing (1:1) scenarios
+  - ✅ Update ProductSelectionStep to handle array of cart additions
+  - ✅ Pass yarn lint and yarn type-check validation
+  - _Requirements: 2.6, 4.1, 4.5, 9.2, 10.1, 10.2_
+  - **Checkpoint**: ✅ Run `yarn lint && yarn type-check` to ensure code quality
+
+- [ ]* 18.1 Write property test for quantity distribution logic
+  - **Property 12: Quantity Distribution Consistency**
+  - **Validates: Requirements 2.6, 4.1**
+
+- [ ]* 18.2 Write property test for multiple cart addition logic
+  - **Property 13: Multiple Cart Addition Accuracy**
+  - **Validates: Requirements 4.1, 4.5**
+
 ## Notes
 
 - Tasks marked with `*` are optional property-based tests that can be skipped for faster MVP

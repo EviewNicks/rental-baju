@@ -387,4 +387,316 @@ const openHistoryPopup = (productSizeId: string, productName: string, size: stri
 - Error occurrence logging
 - Performance metrics collection
 
+## Critical Issue Resolution: Validation System Blocking Non-Jas Products
+
+### Problem Analysis (December 2024)
+
+During manual testing, a critical issue was discovered where the validation system was blocking legitimate non-jas products from being added to cart:
+
+**Error Message**: "Kategori produk tidak diizinkan: anting"
+
+**Root Cause**: The `validateProductData()` function in `sarungValidation.ts` was being called for ALL products (including non-jas products) but only allowed categories eligible for pairing plus 'sarung'.
+
+### Impact Assessment
+
+**Blocked Categories**:
+- Accessories Universal: anting, gelang, kalung, bando-besar, bando-kecil
+- Clothing Categories: Dress, organic, Organza, gamis-anak, gamis-tanggung, gamis-dewasa
+- Accessories Age Based: songket
+
+**Allowed Categories** (Only):
+- jas-jaguar, jas-polos, jas-premium, jas-renda, renda, renda-premium, sarung
+
+### Design Flaw Analysis
+
+#### 1. Context Confusion in Validation
+```typescript
+// PROBLEM: Function designed for pairing validation used for general validation
+export function validateProductData(product: Product): ValidationResult {
+  // Category validation using pairing-only categories
+  const allowedCategories = getAllowedCategories() // Only pairing categories!
+  // This blocks all non-pairing categories
+}
+```
+
+#### 2. Violation of Single Responsibility Principle
+The `validateProductData()` function mixed two responsibilities:
+- General product data validation (ID, name, price, stock)
+- Pairing-specific category validation
+
+#### 3. Backward Compatibility Breach
+The pairing system, designed to be **additive**, became **restrictive** to existing functionality.
+
+### Solution Architecture
+
+#### Context-Aware Validation Pattern
+```typescript
+// SOLUTION: Add context parameter to distinguish validation scenarios
+export function validateProductData(
+  product: Product, 
+  validateCategoryForPairing: boolean = false
+): ValidationResult {
+  // General validation (always performed)
+  validateBasicProductData(product)
+  
+  // Pairing-specific validation (only when needed)
+  if (validateCategoryForPairing) {
+    validatePairingCategories(product)
+  }
+}
+```
+
+#### Usage Pattern Update
+```typescript
+// For general product addition (non-pairing context)
+const validation = validateProductData(product, false) // No category restriction
+
+// For pairing operations (pairing context)
+const validation = validateProductData(product, true) // Category restriction applied
+```
+
+### Implementation Strategy
+
+#### Phase 1: Update Validation Function
+1. Add `validateCategoryForPairing` parameter to `validateProductData()`
+2. Make category validation conditional based on context
+3. Maintain backward compatibility with existing calls
+
+#### Phase 2: Update Function Calls
+1. Update `handleAddProduct()` in `ProductSelectionStep.tsx` to use general validation
+2. Update `validateSarungSelection()` to use pairing-specific validation
+3. Update `validateSarungModalSubmission()` to use pairing-specific validation
+
+#### Phase 3: Testing & Validation
+1. Test all product categories can be added to cart normally
+2. Test pairing validation still works for jas-sarung operations
+3. Verify no regression in existing functionality
+
+### Backward Compatibility Guarantee
+
+**Non-Jas Products**: Must work exactly as before the pairing system implementation
+**Jas Products**: Enhanced with pairing functionality while maintaining fallback options
+**Existing Transactions**: No impact on historical data or existing workflows
+
+### Quality Assurance
+
+**Validation Requirements**:
+- All product categories from `categories.json` must be addable to cart
+- Pairing validation must still prevent invalid pairing combinations
+- No breaking changes to existing API contracts
+- Performance must remain optimal for general product operations
+
+This design update ensures the pairing system enhances functionality without restricting existing capabilities, maintaining the principle of additive enhancement rather than restrictive modification.
+
+## Enhanced Modal with Quantity Distribution (Task 18)
+
+### Problem Analysis
+The current modal implementation handles simple 1:1 pairing (1 jas → 1 sarung or no sarung). However, business scenarios often require more flexibility:
+
+**Common Business Case**: User selects 3 jas and wants to distribute sarung in various ways:
+- 3 jas with same sarung
+- 2 jas with Sarung A, 1 jas with Sarung B  
+- 2 jas with sarung, 1 jas without sarung
+- 1 jas with sarung, 2 jas without sarung
+
+### Solution Architecture: Enhanced Modal with Quantity Distribution
+
+#### 1. Enhanced Modal State Management
+```typescript
+interface SarungDistribution {
+  sarungSelections: Array<{
+    product: Product
+    quantity: number
+    productSizeId?: string
+    selectedSize?: ProductSize
+  }>
+  totalDistributed: number
+  remainingJas: number
+}
+
+// Enhanced modal state
+const [sarungDistribution, setSarungDistribution] = useState<SarungDistribution>({
+  sarungSelections: [],
+  totalDistributed: 0,
+  remainingJas: jasQuantity
+})
+```
+
+#### 2. Quantity Distribution UI Flow
+```
+1. User clicks jas product (quantity: 3)
+2. Modal opens showing available sarung products
+3. User clicks sarung → quantity selector appears (like existing ProductCard)
+4. User selects quantity (max: remaining jas quantity)
+5. Selected sarung appears in "Selected Sarung" section with quantity
+6. User can select additional sarung types with remaining quantity
+7. Distribution preview shows: "2 jas dengan sarung, 1 jas tanpa sarung"
+8. User confirms → multiple cart items created
+```
+
+#### 3. Enhanced ProductCard Integration
+```typescript
+// Reuse existing ProductCard with enhanced quantity handling
+<ProductCard
+  product={sarungProduct}
+  onAddToCart={(product, quantity, productSizeId) => {
+    handleSarungDistribution(product, quantity, productSizeId)
+  }}
+  selectedQuantity={getSelectedSarungQuantity(sarungProduct.id)}
+  maxQuantity={sarungDistribution.remainingJas} // Dynamic max based on remaining
+  onOpenHistory={onOpenHistory}
+  context="sarung-modal"
+  buttonTextOverride="Pilih"
+  showCustomBadge={{
+    text: "GRATIS",
+    className: "bg-green-500 text-white text-xs px-2 py-1 shadow-md"
+  }}
+/>
+```
+
+#### 4. Distribution Preview Component
+```typescript
+interface DistributionPreviewProps {
+  jasProduct: Product
+  jasQuantity: number
+  sarungSelections: SarungDistribution['sarungSelections']
+  totalDistributed: number
+}
+
+// Shows clear breakdown of distribution
+function DistributionPreview({ jasProduct, jasQuantity, sarungSelections, totalDistributed }: DistributionPreviewProps) {
+  const remainingJas = jasQuantity - totalDistributed
+  
+  return (
+    <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+      <h4 className="font-medium text-blue-900 mb-2">Distribusi Sarung:</h4>
+      
+      {/* Selected sarung breakdown */}
+      {sarungSelections.map((selection, index) => (
+        <div key={index} className="flex justify-between text-sm text-blue-800">
+          <span>{selection.quantity}x {jasProduct.name}</span>
+          <span>→ dengan {selection.product.name}</span>
+        </div>
+      ))}
+      
+      {/* Remaining jas without sarung */}
+      {remainingJas > 0 && (
+        <div className="flex justify-between text-sm text-gray-600">
+          <span>{remainingJas}x {jasProduct.name}</span>
+          <span>→ tanpa sarung</span>
+        </div>
+      )}
+      
+      {/* Total summary */}
+      <div className="border-t border-blue-200 mt-2 pt-2 font-medium text-blue-900">
+        Total: {jasQuantity}x {jasProduct.name}
+      </div>
+    </div>
+  )
+}
+```
+
+#### 5. Enhanced Confirmation Logic
+```typescript
+const handleConfirmDistribution = () => {
+  const cartAdditions: Array<{
+    product: Product
+    quantity: number
+    productSizeId?: string
+    linkedSarung?: ProductSelection['linkedSarung']
+  }> = []
+
+  // Add jas with sarung for each sarung selection
+  sarungDistribution.sarungSelections.forEach(selection => {
+    const linkedSarungData: ProductSelection['linkedSarung'] = {
+      productId: selection.product.id,
+      productSizeId: selection.productSizeId || '',
+      quantity: selection.quantity,
+      selectedSize: selection.selectedSize!
+    }
+    
+    cartAdditions.push({
+      product: jasProduct,
+      quantity: selection.quantity,
+      productSizeId: jasProductSizeId,
+      linkedSarung: linkedSarungData
+    })
+  })
+
+  // Add remaining jas without sarung (if any)
+  const remainingJas = jasQuantity - sarungDistribution.totalDistributed
+  if (remainingJas > 0) {
+    cartAdditions.push({
+      product: jasProduct,
+      quantity: remainingJas,
+      productSizeId: jasProductSizeId
+      // No linkedSarung = tanpa sarung
+    })
+  }
+
+  // Process all cart additions
+  onConfirmSelection(cartAdditions)
+}
+```
+
+#### 6. Cart Result Examples
+After confirmation, cart will contain separate items:
+
+**Example 1**: 3 jas, user selects 2 Sarung A + 1 Sarung B
+- Cart Item 1: "Jas Jaguar + Sarung A (2x)" 
+- Cart Item 2: "Jas Jaguar + Sarung B (1x)"
+
+**Example 2**: 3 jas, user selects 2 Sarung A only  
+- Cart Item 1: "Jas Jaguar + Sarung A (2x)"
+- Cart Item 2: "Jas Jaguar (1x)" // tanpa sarung
+
+**Example 3**: 3 jas, user selects "Tanpa Sarung"
+- Cart Item 1: "Jas Jaguar (3x)" // tanpa sarung
+
+### Implementation Benefits
+
+#### 1. **Flexible Business Logic**
+- Supports all common business scenarios
+- User has full control over sarung distribution
+- Clear preview before confirmation
+
+#### 2. **Code Reuse & Maintainability**
+- Reuses existing ProductCard component
+- Enhances existing modal instead of creating new one
+- No duplicate functionality or dead code
+
+#### 3. **Clear User Experience**
+- Intuitive quantity selection (same as existing UI)
+- Clear distribution preview
+- Separate cart items for easy management
+
+#### 4. **Backward Compatibility**
+- Existing simple pairing still works (1 jas → 1 sarung)
+- Enhanced functionality for complex scenarios
+- No breaking changes to existing code
+
+### Technical Implementation Strategy
+
+#### Phase 1: Enhanced Modal State
+1. Add `SarungDistribution` interface and state management
+2. Update modal to track multiple sarung selections
+3. Add distribution preview component
+
+#### Phase 2: Enhanced ProductCard Integration  
+1. Update `handleSarungSelection` to support quantity distribution
+2. Add dynamic max quantity based on remaining jas
+3. Update selected quantity display for multiple selections
+
+#### Phase 3: Enhanced Confirmation Logic
+1. Update `handleConfirmDistribution` to process multiple cart additions
+2. Update `handleSarungSelection` in ProductSelectionStep to handle arrays
+3. Add validation for total quantity limits
+
+#### Phase 4: UI/UX Enhancements
+1. Add distribution preview component
+2. Update modal layout for better quantity distribution display
+3. Add clear visual indicators for selected vs remaining quantities
+
+This enhanced modal approach provides the flexibility needed for complex business scenarios while maintaining code quality and user experience consistency.
+
 This design ensures minimal disruption to existing functionality while providing a robust, user-friendly jas-sarung pairing system that integrates seamlessly with the current kasir workflow.

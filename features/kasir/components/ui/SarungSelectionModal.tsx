@@ -19,25 +19,30 @@ import {
 import {
   validateQuantityInput,
   validateProductData,
-  validateSarungModalSubmission,
   validateProductSizeSelection,
   globalRateLimiter,
 } from '../../lib/validation/sarungValidation'
 import { toast } from '@/lib/notifications'
 import { useAvailableProducts } from '../../hooks/useProduk'
-import type { Product, ProductSize } from '../../types'
+import type { Product, ProductSize, SarungDistribution, ProductSelection } from '../../types'
 
 interface SarungSelectionModalProps {
   isOpen: boolean
   onClose: () => void
   jasProduct: Product
   jasQuantity: number
+  jasProductSizeId?: string // ✅ ADDED: jasProductSizeId prop
   onConfirmSelection: (selectedSarung?: {
     product: Product
     quantity: number
     productSizeId?: string
     selectedSize?: ProductSize
-  }) => void
+  } | Array<{
+    product: Product
+    quantity: number
+    productSizeId?: string
+    linkedSarung?: ProductSelection['linkedSarung']
+  }>) => void
   onOpenHistory?: (
     productSizeId: string,
     productName: string,
@@ -51,20 +56,29 @@ export function SarungSelectionModal({
   onClose,
   jasProduct,
   jasQuantity,
+  jasProductSizeId, // ✅ ADDED: Accept jasProductSizeId prop
   onConfirmSelection,
   onOpenHistory,
 }: SarungSelectionModalProps) {
+  // Task 18: Enhanced modal state for quantity distribution
+  const [sarungDistribution, setSarungDistribution] = useState<SarungDistribution>({
+    sarungSelections: [],
+    totalDistributed: 0,
+    remainingJas: jasQuantity
+  })
+  
+  // Legacy state for backward compatibility with simple pairing
   const [selectedSarung, setSelectedSarung] = useState<{
     product: Product
     quantity: number
     productSizeId?: string
     selectedSize?: ProductSize
   } | null>(null)
+  
   const [isSubmitting, setIsSubmitting] = useState(false) // For form submission loading
   const [retryCount, setRetryCount] = useState(0)
   const [lastError, setLastError] = useState<string | null>(null)
   const [validationErrors, setValidationErrors] = useState<string[]>([])
-  const [selectionCount, setSelectionCount] = useState(0) // Track selections for rate limiting
 
   // Task 12: Generate session ID for rate limiting
   const sessionId = `sarung-modal-${jasProduct.id}-${Date.now()}`
@@ -150,19 +164,84 @@ export function SarungSelectionModal({
       toast.error('Gagal Memuat Sarung', pairingError.userMessage)
     }
   }, [apiError, isOpen, jasProduct.id])
+
+  // Task 18: Helper functions for quantity distribution
+  const getSelectedSarungQuantity = (productId: string, productSizeId?: string) => {
+    const selection = sarungDistribution.sarungSelections.find(
+      s => s.product.id === productId && 
+           (productSizeId ? s.productSizeId === productSizeId : !s.productSizeId)
+    )
+    return selection?.quantity || 0
+  }
+
+  const updateSarungDistribution = (product: Product, quantity: number, productSizeId?: string) => {
+    const selectedSize = productSizeId 
+      ? product.sizes?.find(size => size.id === productSizeId)
+      : undefined
+
+    setSarungDistribution(prev => {
+      const existingIndex = prev.sarungSelections.findIndex(
+        s => s.product.id === product.id && 
+             (productSizeId ? s.productSizeId === productSizeId : !s.productSizeId)
+      )
+
+      const newSelections = [...prev.sarungSelections]
+      
+      if (quantity === 0) {
+        // Remove selection if quantity is 0
+        if (existingIndex >= 0) {
+          newSelections.splice(existingIndex, 1)
+        }
+      } else {
+        // Add or update selection
+        const newSelection = {
+          product,
+          quantity,
+          productSizeId,
+          selectedSize
+        }
+        
+        if (existingIndex >= 0) {
+          newSelections[existingIndex] = newSelection
+        } else {
+          newSelections.push(newSelection)
+        }
+      }
+
+      const totalDistributed = newSelections.reduce((sum, s) => sum + s.quantity, 0)
+      
+      return {
+        sarungSelections: newSelections,
+        totalDistributed,
+        remainingJas: jasQuantity - totalDistributed
+      }
+    })
+  }
   // Reset selection when modal opens/closes
   useEffect(() => {
     if (!isOpen) {
       setSelectedSarung(null)
+      setSarungDistribution({
+        sarungSelections: [],
+        totalDistributed: 0,
+        remainingJas: jasQuantity
+      })
       setRetryCount(0)
       setLastError(null)
       setValidationErrors([])
-      setSelectionCount(0)
+    } else {
+      // Reset distribution state when modal opens
+      setSarungDistribution({
+        sarungSelections: [],
+        totalDistributed: 0,
+        remainingJas: jasQuantity
+      })
     }
-  }, [isOpen])
+  }, [isOpen, jasQuantity])
 
   // Task 11: Enhanced sarung selection with comprehensive validation and real-time stock checking
   // Task 12: Added comprehensive input validation and security measures
+  // Task 18: Enhanced for quantity distribution
   const handleSarungSelection = (product: Product, quantity: number, productSizeId?: string) => {
     try {
       // Task 12: Rate limiting check
@@ -172,6 +251,19 @@ export function SarungSelectionModal({
           'Terlalu Banyak Percobaan',
           `Silakan tunggu sebelum mencoba lagi. Sisa: ${remaining}`,
         )
+        return
+      }
+
+      // Task 18: Enhanced quantity validation for distribution
+      const currentSelected = getSelectedSarungQuantity(product.id, productSizeId)
+      const quantityDifference = quantity - currentSelected
+      const newTotalDistributed = sarungDistribution.totalDistributed + quantityDifference
+      
+      // Validate total distribution doesn't exceed jas quantity
+      if (newTotalDistributed > jasQuantity) {
+        const maxAllowed = jasQuantity - (sarungDistribution.totalDistributed - currentSelected)
+        setValidationErrors([`Maksimal ${maxAllowed} sarung dapat dipilih (sisa jas: ${sarungDistribution.remainingJas + currentSelected})`])
+        toast.error('Jumlah Melebihi Batas', `Maksimal ${maxAllowed} sarung dapat dipilih`)
         return
       }
 
@@ -188,8 +280,8 @@ export function SarungSelectionModal({
         return
       }
 
-      // Task 12: Product data validation
-      const productValidation = validateProductData(product)
+      // Task 12: Product data validation (pairing context)
+      const productValidation = validateProductData(product, true)
       if (!productValidation.isValid) {
         setValidationErrors(productValidation.errors)
         toast.error('Data Produk Tidak Valid', productValidation.errors[0])
@@ -239,25 +331,19 @@ export function SarungSelectionModal({
         return
       }
 
-      // Find the selected size info if productSizeId is provided
-      const selectedSize = productSizeId
-        ? product.sizes?.find((size) => size.id === productSizeId)
-        : undefined
-
-      setSelectedSarung({
-        product,
-        quantity,
-        productSizeId,
-        selectedSize,
-      })
+      // Task 18: Update distribution state instead of single selection
+      updateSarungDistribution(product, quantity, productSizeId)
 
       // Clear any previous errors and record successful selection
       setLastError(null)
       setValidationErrors([])
-      setSelectionCount((prev) => prev + 1)
       globalRateLimiter.recordSubmission(sessionId)
 
-      toast.success('Berhasil', `Sarung ${product.name} dipilih`)
+      if (quantity > 0) {
+        toast.success('Berhasil', `${quantity}x Sarung ${product.name} dipilih`)
+      } else {
+        toast.info('Info', `Sarung ${product.name} dihapus dari pilihan`)
+      }
     } catch (err) {
       console.error('Error in sarung selection:', err)
       const pairingError = createSarungPairingError(
@@ -277,8 +363,9 @@ export function SarungSelectionModal({
 
   // Task 11: Enhanced confirmation with error handling
   // Task 12: Added comprehensive validation before submission
+  // Task 18: Enhanced for quantity distribution
   const handleConfirmWithSarung = () => {
-    if (!selectedSarung) return
+    if (sarungDistribution.sarungSelections.length === 0) return
 
     try {
       setIsSubmitting(true)
@@ -290,51 +377,52 @@ export function SarungSelectionModal({
         return
       }
 
-      // Task 12: Comprehensive validation before submission
-      const submissionValidation = validateSarungModalSubmission(
-        jasProduct,
-        selectedSarung,
-        jasQuantity,
-        selectionCount,
-      )
+      // Task 18: Create multiple cart additions for distribution
+      const cartAdditions: Array<{
+        product: Product
+        quantity: number
+        productSizeId?: string
+        linkedSarung?: ProductSelection['linkedSarung']
+      }> = []
 
-      if (!submissionValidation.isValid) {
-        setValidationErrors(submissionValidation.errors)
-        toast.error('Validasi Gagal', submissionValidation.errors[0])
-        setIsSubmitting(false)
-        return
-      }
-
-      // Show warnings if any
-      if (submissionValidation.warnings && submissionValidation.warnings.length > 0) {
-        submissionValidation.warnings.forEach((warning) => {
-          toast.warning('Peringatan', warning)
+      // Add jas with sarung for each sarung selection
+      sarungDistribution.sarungSelections.forEach(selection => {
+        const linkedSarungData: ProductSelection['linkedSarung'] = {
+          productId: selection.product.id,
+          productSizeId: selection.productSizeId || '',
+          quantity: selection.quantity,
+          selectedSize: selection.selectedSize!,
+          // ✅ TASK 3: Include product reference for sarung code display
+          product: selection.product
+        }
+        
+        cartAdditions.push({
+          product: jasProduct,
+          quantity: selection.quantity,
+          productSizeId: jasProductSizeId, // ✅ FIXED: Use jasProductSizeId prop
+          linkedSarung: linkedSarungData
         })
-      }
+      })
 
-      // Final validation before confirmation using the pairing service
-      const finalValidationResult = sarungPairingService.validatePairingSelection(
-        jasProduct,
-        selectedSarung.product,
-        jasQuantity,
-        selectedSarung.quantity
-      )
-
-      if (!finalValidationResult.isValid) {
-        setValidationErrors([finalValidationResult.error || 'Validasi akhir gagal'])
-        toast.error('Validasi Akhir Gagal', finalValidationResult.error || 'Validasi akhir gagal')
-        setIsSubmitting(false)
-        return
+      // Add remaining jas without sarung (if any)
+      if (sarungDistribution.remainingJas > 0) {
+        cartAdditions.push({
+          product: jasProduct,
+          quantity: sarungDistribution.remainingJas,
+          productSizeId: jasProductSizeId // ✅ FIXED: Use jasProductSizeId prop
+          // No linkedSarung = tanpa sarung
+        })
       }
 
       // Record successful submission
       globalRateLimiter.recordSubmission(sessionId)
 
-      onConfirmSelection(selectedSarung)
+      // Pass array of cart additions to parent
+      onConfirmSelection(cartAdditions)
     } catch (err) {
-      console.error('Error confirming sarung selection:', err)
-      setValidationErrors(['Terjadi kesalahan saat mengkonfirmasi pilihan sarung'])
-      toast.error('Gagal Konfirmasi', 'Terjadi kesalahan saat mengkonfirmasi pilihan sarung')
+      console.error('Error confirming sarung distribution:', err)
+      setValidationErrors(['Terjadi kesalahan saat mengkonfirmasi distribusi sarung'])
+      toast.error('Gagal Konfirmasi', 'Terjadi kesalahan saat mengkonfirmasi distribusi sarung')
     } finally {
       setIsSubmitting(false)
     }
@@ -351,8 +439,8 @@ export function SarungSelectionModal({
         return
       }
 
-      // Task 12: Basic validation for jas product
-      const jasValidation = validateProductData(jasProduct)
+      // Task 12: Basic validation for jas product (pairing context)
+      const jasValidation = validateProductData(jasProduct, true)
       if (!jasValidation.isValid) {
         setValidationErrors(jasValidation.errors)
         toast.error('Data Jas Tidak Valid', jasValidation.errors[0])
@@ -387,6 +475,49 @@ export function SarungSelectionModal({
     }
   }
 
+  // Task 18: Distribution Preview Component
+  const DistributionPreview = () => {
+    if (sarungDistribution.sarungSelections.length === 0) return null
+
+    return (
+      <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+        <h4 className="font-medium text-blue-900 mb-3">Distribusi Sarung:</h4>
+        
+        {/* Selected sarung breakdown */}
+        <div className="space-y-2 mb-3">
+          {sarungDistribution.sarungSelections.map((selection, index) => (
+            <div key={`${selection.product.id}-${selection.productSizeId || 'no-size'}-${index}`} 
+                 className="flex justify-between items-center text-sm">
+              <span className="text-blue-800">
+                {selection.quantity}x {jasProduct.name}
+              </span>
+              <span className="text-green-700 font-medium">
+                → dengan {selection.product.name}
+                {selection.selectedSize && ` (${selection.selectedSize.size})`}
+              </span>
+            </div>
+          ))}
+        </div>
+        
+        {/* Remaining jas without sarung */}
+        {sarungDistribution.remainingJas > 0 && (
+          <div className="flex justify-between items-center text-sm text-gray-600 border-t border-blue-200 pt-2">
+            <span>{sarungDistribution.remainingJas}x {jasProduct.name}</span>
+            <span>→ tanpa sarung</span>
+          </div>
+        )}
+        
+        {/* Total summary */}
+        <div className="border-t border-blue-200 mt-3 pt-2 font-medium text-blue-900 text-sm">
+          Total: {jasQuantity}x {jasProduct.name} 
+          <span className="text-xs text-blue-700 ml-2">
+            ({sarungDistribution.totalDistributed} dengan sarung, {sarungDistribution.remainingJas} tanpa sarung)
+          </span>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent 
@@ -396,7 +527,7 @@ export function SarungSelectionModal({
         <DialogHeader >
           <div className="flex items-center justify-between">
         {/* Jas Product Info */}
-          <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+          <div className="bg-blue-50 rounded-lg py-2 px-4 border border-blue-200">
             <div className="flex items-center gap-3">
               <Badge className="bg-blue-100 text-blue-800">Jas Terpilih</Badge>
               <span className="font-medium text-gray-900">{jasProduct.name}</span>
@@ -419,9 +550,8 @@ export function SarungSelectionModal({
           
 
           {/* Sarung Selection */}
-          <div className="space-y-4">
+          <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <h3 className="font-medium text-gray-900">Pilih Sarung (Opsional)</h3>
               {retryCount > 0 && (
                 <Button
                   variant="outline"
@@ -439,7 +569,7 @@ export function SarungSelectionModal({
             {/* Task 11: Error display with retry information */}
             {/* Task 12: Enhanced error display with validation errors */}
             {(lastError || validationErrors.length > 0) && (
-              <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 space-y-2">
+              <div className="bg-orange-50 border border-orange-200 rounded-lg p-1 space-y-2">
                 <div className="flex items-center gap-2">
                   <AlertTriangle className="h-4 w-4 text-orange-600" />
                   <span className="text-sm font-medium text-orange-800">
@@ -516,54 +646,59 @@ export function SarungSelectionModal({
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-h-[60vh] overflow-y-auto p-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-                {sarungProducts.map((product) => (
-                  <div
-                    key={product.id}
-                    className={`relative transform transition-all duration-200 hover:scale-105 ${
-                      selectedSarung?.product.id === product.id
-                        ? 'ring-4 ring-blue-500 ring-offset-4 shadow-xl'
-                        : 'hover:shadow-lg'
-                    }`}
-                  >
-                    <ProductCard
-                      product={product}
-                      onAddToCart={handleSarungSelection}
-                      selectedQuantity={
-                        selectedSarung?.product.id === product.id ? selectedSarung.quantity : 0
-                      }
-                      onOpenHistory={onOpenHistory}
-                      className="h-full min-h-[450px] w-full"
-                      context="sarung-modal"
-                      buttonTextOverride="Pilih"
-                      showCustomBadge={{
-                        text: "GRATIS",
-                        className: "bg-green-500 text-white text-xs px-2 py-1 shadow-md"
-                      }}
-                    />
-                    {selectedSarung?.product.id === product.id && (
-                      <div className="absolute -top-2 -left-2 z-10">
-                        <Badge className="bg-blue-500 text-white shadow-lg text-sm px-3 py-1">
-                          ✓ Terpilih
-                        </Badge>
-                      </div>
-                    )}
-                    {/* Task 11: Stock warning indicator */}
-                    {product.availableQuantity !== undefined && product.availableQuantity <= 2 && (
-                      <div className="absolute -top-2 -right-2 z-10">
-                        <Badge className="bg-orange-500 text-white text-sm px-2 py-1 shadow-lg">
-                          Stok: {product.availableQuantity}
-                        </Badge>
-                      </div>
-                    )}
-                  </div>
-                ))}
+                {sarungProducts.map((product) => {
+                  const selectedQuantity = getSelectedSarungQuantity(product.id)
+                  
+                  return (
+                    <div
+                      key={product.id}
+                      className={`relative transform transition-all duration-200 hover:scale-105 ${
+                        selectedQuantity > 0
+                          ? 'ring-4 ring-blue-500 ring-offset-4 shadow-xl'
+                          : 'hover:shadow-lg'
+                      }`}
+                    >
+                      <ProductCard
+                        product={product}
+                        onAddToCart={handleSarungSelection}
+                        selectedQuantity={selectedQuantity}
+                        onOpenHistory={onOpenHistory}
+                        className="h-full min-h-[450px] w-full"
+                        context="sarung-modal"
+                        buttonTextOverride="Pilih"
+                        showCustomBadge={{
+                          text: "GRATIS",
+                          className: "bg-green-500 text-white text-xs px-2 py-1 shadow-md"
+                        }}
+                      />
+                      {selectedQuantity > 0 && (
+                        <div className="absolute -top-2 -left-2 z-10">
+                          <Badge className="bg-blue-500 text-white shadow-lg text-sm px-3 py-1">
+                            ✓ {selectedQuantity}x
+                          </Badge>
+                        </div>
+                      )}
+                      {/* Task 11: Stock warning indicator */}
+                      {product.availableQuantity !== undefined && product.availableQuantity <= 2 && (
+                        <div className="absolute -top-2 -right-2 z-10">
+                          <Badge className="bg-orange-500 text-white text-sm px-2 py-1 shadow-lg">
+                            Stok: {product.availableQuantity}
+                          </Badge>
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
               </div>
             )}
           </div>
 
-          {/* Selected Sarung Info */}
-          {selectedSarung && (
-            <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-4 border-2 border-green-200 shadow-sm">
+          {/* Task 18: Distribution Preview */}
+          <DistributionPreview />
+
+          {/* Legacy Selected Sarung Info - kept for backward compatibility */}
+          {selectedSarung && sarungDistribution.sarungSelections.length === 0 && (
+            <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-2 border-2 border-green-200 shadow-sm">
               <div className="flex items-center gap-3 flex-wrap">
                 <Badge className="bg-green-500 text-white shadow-md">✓ Sarung Terpilih</Badge>
                 <span className="font-semibold text-gray-900 text-lg">
@@ -572,11 +707,7 @@ export function SarungSelectionModal({
                 <Badge variant="outline" className="border-gray-400 text-gray-700 font-medium">
                   {selectedSarung.quantity}x
                 </Badge>
-                <Badge className="bg-yellow-400 text-gray-900 font-bold shadow-md">🎉 GRATIS</Badge>
               </div>
-              <p className="text-sm text-gray-600 mt-2">
-                Sarung ini akan diberikan gratis bersama dengan {jasProduct.name}
-              </p>
             </div>
           )}
 
@@ -592,7 +723,7 @@ export function SarungSelectionModal({
             </Button>
             <Button
               onClick={handleConfirmWithSarung}
-              disabled={!selectedSarung || isLoading || isSubmitting}
+              disabled={sarungDistribution.sarungSelections.length === 0 || isLoading || isSubmitting}
               className="flex-1 h-12 text-base bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-xl transition-all duration-200"
             >
               <ShoppingCart className="h-5 w-5 mr-2" />
@@ -602,7 +733,14 @@ export function SarungSelectionModal({
                   Memproses...
                 </>
               ) : (
-                'Konfirmasi dengan Sarung'
+                <>
+                  Konfirmasi Distribusi
+                  {sarungDistribution.totalDistributed > 0 && (
+                    <span className="ml-2 text-xs bg-blue-500 px-2 py-1 rounded">
+                      {sarungDistribution.totalDistributed}/{jasQuantity}
+                    </span>
+                  )}
+                </>
               )}
             </Button>
           </div>

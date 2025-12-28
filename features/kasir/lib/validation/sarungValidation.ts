@@ -77,8 +77,11 @@ export function validateQuantityInput(
 /**
  * Validate product data for security
  * Requirements: 10.1, 10.2 - Code quality and security
+ * 
+ * @param product - Product to validate
+ * @param validateCategoryForPairing - Whether to validate category against pairing restrictions (default: false)
  */
-export function validateProductData(product: Product): ValidationResult {
+export function validateProductData(product: Product, validateCategoryForPairing: boolean = false): ValidationResult {
   const errors: string[] = []
 
   // Sanitize and validate product ID
@@ -96,10 +99,11 @@ export function validateProductData(product: Product): ValidationResult {
     }
   }
 
-  // Validate category using configurable system
+  // Context-aware category validation
   if (!product.category || typeof product.category !== 'string') {
     errors.push('Kategori produk tidak valid')
-  } else {
+  } else if (validateCategoryForPairing) {
+    // Only validate against pairing categories when in pairing context
     const normalizedCategory = product.category.toLowerCase().trim()
     const allowedCategories = getAllowedCategories()
     const isValidCategory = allowedCategories.some(cat => 
@@ -107,9 +111,10 @@ export function validateProductData(product: Product): ValidationResult {
     )
     
     if (!isValidCategory) {
-      errors.push(`Kategori produk tidak diizinkan: ${product.category}`)
+      errors.push(`Kategori produk tidak diizinkan untuk pairing: ${product.category}`)
     }
   }
+  // For general operations, any valid string category is acceptable
 
   // Validate price
   if (typeof product.pricePerDay !== 'number' || product.pricePerDay < 0) {
@@ -143,13 +148,13 @@ export function validateSarungSelection(
   const warnings: string[] = []
 
   // Validate main product
-  const mainProductValidation = validateProductData(mainProduct)
+  const mainProductValidation = validateProductData(mainProduct, true) // Enable pairing validation for main product
   if (!mainProductValidation.isValid) {
     errors.push(...mainProductValidation.errors.map(err => `Produk utama: ${err}`))
   }
 
   // Validate sarung product
-  const sarungValidation = validateProductData(sarungProduct)
+  const sarungValidation = validateProductData(sarungProduct, true) // Enable pairing validation for sarung product
   if (!sarungValidation.isValid) {
     errors.push(...sarungValidation.errors.map(err => `Sarung: ${err}`))
   }
@@ -293,7 +298,7 @@ export function validateSarungModalSubmission(
   }
 
   // Validate main product
-  const mainProductValidation = validateProductData(mainProduct)
+  const mainProductValidation = validateProductData(mainProduct, true) // Enable pairing validation for main product
   if (!mainProductValidation.isValid) {
     errors.push(...mainProductValidation.errors.map(err => `Produk utama: ${err}`))
   }

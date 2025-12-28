@@ -241,6 +241,28 @@ export interface LinkedSarung {
   selectedSize: ProductSize
 }
 
+// Task 18: Enhanced Modal with Quantity Distribution
+export interface SarungDistribution {
+  sarungSelections: Array<{
+    product: Product
+    quantity: number
+    productSizeId?: string
+    selectedSize?: ProductSize
+  }>
+  totalDistributed: number
+  remainingJas: number
+}
+
+// Enhanced LinkedSarung with product reference for Task 3 (sarung code display)
+export interface LinkedSarung {
+  productId: string
+  productSizeId: string
+  quantity: number
+  selectedSize: ProductSize
+  // ✅ TASK 3: Add product reference for sarung code display
+  product?: Product // Optional for backward compatibility
+}
+
 export interface ProductFilters {
   category?: string
   size?: string

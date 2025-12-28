@@ -48,8 +48,8 @@ import { toast } from '@/lib/notifications'
 interface ProductSelectionStepProps {
   selectedProducts: ProductSelection[]
   onAddProduct: (product: Product, quantity: number, productSizeId?: string, linkedSarung?: ProductSelection['linkedSarung']) => void
-  onRemoveProduct: (productId: string, productSizeId?: string) => void
-  onUpdateQuantity: (productId: string, quantity: number, productSizeId?: string) => void
+  onRemoveProduct: (productId: string, productSizeId?: string, linkedSarungProductId?: string) => void
+  onUpdateQuantity: (productId: string, quantity: number, productSizeId?: string, linkedSarungProductId?: string) => void
   onNext: () => void
   canProceed: boolean
 }
@@ -150,7 +150,7 @@ export function ProductSelectionStep({
       isOpen: true,
       jasProduct,
       jasQuantity,
-      jasProductSizeId,
+      jasProductSizeId, // ✅ FIXED: Properly store the jasProductSizeId
       retryCount: 0,
       lastError: undefined,
     })
@@ -168,22 +168,61 @@ export function ProductSelectionStep({
   }
 
   // Task 11: Enhanced sarung selection with comprehensive error handling
+  // Task 18: Enhanced to handle both single selection and array of cart additions
   const handleSarungSelection = (selectedSarung?: {
     product: Product
     quantity: number
     productSizeId?: string
     selectedSize?: ProductSize
-  }) => {
+  } | Array<{
+    product: Product
+    quantity: number
+    productSizeId?: string
+    linkedSarung?: ProductSelection['linkedSarung']
+  }>) => {
     if (!sarungModal.jasProduct) return
 
     try {
+      // Task 18: Handle array of cart additions (quantity distribution)
+      if (Array.isArray(selectedSarung)) {
+        selectedSarung.forEach(cartItem => {
+          if (cartItem.linkedSarung) {
+            // Add jas with linked sarung
+            onAddProduct(cartItem.product, cartItem.quantity, cartItem.productSizeId, cartItem.linkedSarung)
+          } else {
+            // Add jas without sarung
+            onAddProduct(cartItem.product, cartItem.quantity, cartItem.productSizeId)
+          }
+        })
+        
+        const totalJas = selectedSarung.reduce((sum, item) => sum + item.quantity, 0)
+        const withSarung = selectedSarung.filter(item => item.linkedSarung).length
+        const withoutSarung = selectedSarung.filter(item => !item.linkedSarung).length
+        
+        let message = `${totalJas}x Jas ${sarungModal.jasProduct.name} ditambahkan`
+        if (withSarung > 0 && withoutSarung > 0) {
+          message += ` (${withSarung} dengan sarung, ${withoutSarung} tanpa sarung)`
+        } else if (withSarung > 0) {
+          message += ` dengan distribusi sarung`
+        } else {
+          message += ` tanpa sarung`
+        }
+        
+        toast.success('Berhasil', message)
+        closeSarungModal()
+        return
+      }
+
+      // Legacy handling for single selection (backward compatibility)
       if (selectedSarung) {
-        // FIXED: Create proper linkedSarung data structure
+        // FIXED: Create proper linkedSarung data structure with product reference
         const linkedSarungData: ProductSelection['linkedSarung'] = {
           productId: selectedSarung.product.id,
           productSizeId: selectedSarung.productSizeId || '',
           quantity: selectedSarung.quantity,
-          selectedSize: selectedSarung.selectedSize!
+          selectedSize: selectedSarung.selectedSize!,
+          // ✅ TASK 3: Include product reference for sarung code display
+          product: selectedSarung.product
         }
         
         // Add jas product with linked sarung data
@@ -541,25 +580,20 @@ export function ProductSelectionStep({
     }
   }
 
-  const handleUpdateQuantity = (productId: string, newQuantity: number, productSizeId?: string) => {
+  const handleUpdateQuantity = (productId: string, newQuantity: number, productSizeId?: string, linkedSarungProductId?: string) => {
     if (newQuantity <= 0) {
       // Check if this is a jas product with linked sarung
       const jasItem = selectedProducts.find(
         (item) =>
           item.product.id === productId &&
-          (productSizeId ? item.productSizeId === productSizeId : !item.productSizeId)
+          (productSizeId ? item.productSizeId === productSizeId : !item.productSizeId) &&
+          (linkedSarungProductId ? item.linkedSarung?.productId === linkedSarungProductId : !item.linkedSarung)
       )
       
-      // If removing a jas with linked sarung, also remove the sarung
-      if (jasItem?.linkedSarung) {
-        // Remove the linked sarung first
-        onRemoveProduct(jasItem.linkedSarung.productId, jasItem.linkedSarung.productSizeId)
-      }
-      
-      // Remove the main product
-      onRemoveProduct(productId, productSizeId)
+      // Remove the specific item (with precise targeting including linkedSarung)
+      onRemoveProduct(productId, productSizeId, linkedSarungProductId)
     } else {
-      onUpdateQuantity(productId, newQuantity, productSizeId)
+      onUpdateQuantity(productId, newQuantity, productSizeId, linkedSarungProductId)
     }
   }
 
@@ -872,9 +906,9 @@ export function ProductSelectionStep({
               <div className="space-y-3 max-h-64 overflow-y-auto" data-testid="cart-items-list">
                 {selectedProducts.map((item) => (
                   <div
-                    key={generateCartItemKey(item.product.id, item.productSizeId)}
+                    key={generateCartItemKey(item.product.id, item.productSizeId, item.linkedSarung?.productId)}
                     className="bg-gray-50 rounded-lg p-3"
-                    data-testid={`cart-item-${item.product.id}-${item.productSizeId || 'no-size'}`}
+                    data-testid={`cart-item-${item.product.id}-${item.productSizeId || 'no-size'}-${item.linkedSarung?.productId || 'no-sarung'}`}
                   >
                     <div className="flex items-start gap-3">
                       <Image
@@ -894,7 +928,7 @@ export function ProductSelectionStep({
                         {item.linkedSarung ? (
                           <SarungPairingIndicator
                             jasName={item.product.name}
-                            sarungName={`Sarung ${item.linkedSarung.selectedSize?.size || 'Universal'}`}
+                            sarungName={item.linkedSarung.product?.code || `Sarung ${item.linkedSarung.selectedSize?.size || 'Universal'}`}
                             sarungOriginalPrice={0} // Sarung is always free in pairing
                             variant="cart"
                             showPricing={false} // Don't show pricing in the indicator itself
@@ -924,7 +958,9 @@ export function ProductSelectionStep({
                         <p className="text-xs text-gray-600 mt-1">
                           {formatCurrency(item.product.pricePerDay)}/4 hari
                           {item.linkedSarung && (
-                            <span className="ml-2 text-green-600 font-medium">+ Sarung GRATIS</span>
+                            <span className="ml-2 text-green-600 font-medium">
+                              + {item.linkedSarung.product?.code || 'Sarung'} GRATIS
+                            </span>
                           )}
                         </p>
 
@@ -941,16 +977,17 @@ export function ProductSelectionStep({
                                 item.product.id,
                                 item.quantity - 1,
                                 item.productSizeId,
+                                item.linkedSarung?.productId,
                               )
                             }
                             className="h-6 w-6 p-0"
-                            data-testid={`cart-item-decrease-${item.product.id}-${item.productSizeId || 'no-size'}`}
+                            data-testid={`cart-item-decrease-${item.product.id}-${item.productSizeId || 'no-size'}-${item.linkedSarung?.productId || 'no-sarung'}`}
                           >
                             <Minus className="h-3 w-3" />
                           </Button>
                           <span
                             className="text-sm font-medium w-8 text-center"
-                            data-testid={`cart-item-quantity-${item.product.id}-${item.productSizeId || 'no-size'}`}
+                            data-testid={`cart-item-quantity-${item.product.id}-${item.productSizeId || 'no-size'}-${item.linkedSarung?.productId || 'no-sarung'}`}
                           >
                             {item.quantity}
                           </span>
@@ -962,19 +999,20 @@ export function ProductSelectionStep({
                                 item.product.id,
                                 item.quantity + 1,
                                 item.productSizeId,
+                                item.linkedSarung?.productId,
                               )
                             }
                             className="h-6 w-6 p-0"
-                            data-testid={`cart-item-increase-${item.product.id}-${item.productSizeId || 'no-size'}`}
+                            data-testid={`cart-item-increase-${item.product.id}-${item.productSizeId || 'no-size'}-${item.linkedSarung?.productId || 'no-sarung'}`}
                           >
                             <Plus className="h-3 w-3" />
                           </Button>
                           <Button
                             size="sm"
                             variant="ghost"
-                            onClick={() => onRemoveProduct(item.product.id, item.productSizeId)}
+                            onClick={() => onRemoveProduct(item.product.id, item.productSizeId, item.linkedSarung?.productId)}
                             className="h-6 w-6 p-0 text-red-500 hover:text-red-700 ml-auto"
-                            data-testid={`cart-item-remove-${item.product.id}-${item.productSizeId || 'no-size'}`}
+                            data-testid={`cart-item-remove-${item.product.id}-${item.productSizeId || 'no-size'}-${item.linkedSarung?.productId || 'no-sarung'}`}
                           >
                             <X className="h-3 w-3" />
                           </Button>
@@ -1035,6 +1073,7 @@ export function ProductSelectionStep({
           onClose={closeSarungModal}
           jasProduct={sarungModal.jasProduct}
           jasQuantity={sarungModal.jasQuantity}
+          jasProductSizeId={sarungModal.jasProductSizeId} // ✅ ADDED: Pass jasProductSizeId prop
           onConfirmSelection={handleSarungSelection}
           onOpenHistory={openHistoryPopup}
         />

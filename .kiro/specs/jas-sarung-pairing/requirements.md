@@ -39,6 +39,10 @@ Sistem pairing jas dengan sarung untuk rental pakaian tradisional yang memungkin
 5. WHEN sarung stock is zero, THE System SHALL disable that sarung option but keep others available
 6. THE Pairing_Modal SHALL allow quantity selection up to the jas quantity being added
 7. WHEN user confirms selection, THE System SHALL add both jas and linked sarung to cart
+8. THE Pairing_Modal SHALL support quantity distribution for multiple sarung types
+9. WHEN multiple jas are selected, THE System SHALL allow user to distribute sarung quantities across different sarung products
+10. THE Pairing_Modal SHALL show distribution preview indicating how many jas get sarung vs tanpa sarung
+11. WHEN total sarung quantity is less than jas quantity, THE System SHALL automatically assign remaining jas as "tanpa sarung"
 
 ### Requirement 3: Free Sarung Pricing
 
