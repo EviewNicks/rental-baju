@@ -54,9 +54,6 @@ export function SarungPairingIndicator({
                 </div>
               )}
             </div>
-            <div className="text-xs text-gray-500 italic">
-              Sarung gratis dengan paket jas
-            </div>
           </div>
         )
 

@@ -699,4 +699,236 @@ After confirmation, cart will contain separate items:
 
 This enhanced modal approach provides the flexibility needed for complex business scenarios while maintaining code quality and user experience consistency.
 
+## Transaction Detail Pairing Display Enhancement (Task 19) ✅ COMPLETE
+
+### Problem Analysis
+Current transaction detail page tidak menampilkan pairing relationships yang sudah dibuat saat checkout. API response juga tidak include `linkedSarung` data, sehingga user tidak bisa melihat pairing information di transaction history.
+
+**Issues Identified:**
+1. ✅ **API Response Gap**: GET `/api/kasir/transaksi/[kode]` tidak return `linkedSarung` data
+2. ✅ **UI Display Gap**: TransactionDetailPage tidak show pairing indicators
+3. ✅ **Consistency Gap**: Cart dan payment summary show pairing, tapi transaction detail tidak
+4. ✅ **Public Page Gap**: ProductDetailPage belum show jas eligibility information
+
+### Solution Architecture: Enhanced Transaction Detail Display ✅ IMPLEMENTED
+
+#### 1. API Response Structure Enhancement ✅ COMPLETE
+```typescript
+// Enhanced API response structure
+interface TransactionItemResponse {
+  id: string
+  produk: {
+    id: string
+    code: string
+    name: string
+    category: string
+    // ... other fields
+  }
+  jumlah: number
+  hargaSewa: number
+  // NEW: Add linkedSarung data
+  linkedSarung?: {
+    productId: string
+    productSizeId: string
+    quantity: number
+    product: {
+      id: string
+      code: string
+      name: string
+      category: string
+    }
+    selectedSize?: {
+      id: string
+      size: string
+      ageCategory: string
+    }
+  }
+  // ... other fields
+}
+```
+
+#### 2. Response Formatter Enhancement ✅ COMPLETE
+```typescript
+// Enhanced response formatter
+export function formatTransactionResponse(transaction: TransactionWithDetails) {
+  return {
+    // ... existing fields
+    items: transaction.items.map(item => ({
+      // ... existing item fields
+      linkedSarung: item.linkedSarung ? {
+        productId: item.linkedSarung.productId,
+        productSizeId: item.linkedSarung.productSizeId,
+        quantity: item.linkedSarung.quantity,
+        product: item.linkedSarung.product,
+        selectedSize: item.linkedSarung.selectedSize
+      } : undefined
+    }))
+  }
+}
+```
+
+#### 3. TransactionDetailPage Enhancement ✅ COMPLETE
+```typescript
+// Enhanced ProductDetailCard with pairing display
+function ProductDetailCard({ item }: { item: TransactionItem }) {
+  return (
+    <div className="bg-white rounded-lg border p-4">
+      {/* Existing product info */}
+      
+      {/* NEW: Pairing indicator for jas with linkedSarung */}
+      {item.linkedSarung && (
+        <SarungPairingIndicator
+          jasName={item.produk.name}
+          sarungName={item.linkedSarung.product?.code || item.linkedSarung.product?.name || 'Sarung'}
+          variant="compact"
+          showPricing={false}
+          className="mt-2"
+        />
+      )}
+      
+      {/* Enhanced pricing display */}
+      <div className="mt-2">
+        {item.linkedSarung ? (
+          <div className="space-y-1">
+            <div className="flex justify-between">
+              <span>Jas ({item.jumlah}x)</span>
+              <span>{formatCurrency(item.hargaSewa)}</span>
+            </div>
+            <div className="flex justify-between text-green-600">
+              <span>Sarung ({item.linkedSarung.quantity}x)</span>
+              <span className="font-medium">GRATIS</span>
+            </div>
+          </div>
+        ) : (
+          <div className="flex justify-between">
+            <span>{item.produk.name} ({item.jumlah}x)</span>
+            <span>{formatCurrency(item.hargaSewa)}</span>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+```
+
+#### 4. Public ProductDetailPage Enhancement ✅ COMPLETE
+```typescript
+// Enhanced public product detail with jas eligibility
+function PublicProductDetailPage({ productId }: { productId: string }) {
+  const { product } = useTransformedProductDetail(productId)
+  
+  // NEW: Check if product is eligible for free sarung
+  const isEligibleForFreeSarung = useMemo(() => {
+    return sarungPairingService.isEligibleForPairing(product)
+  }, [product])
+
+  return (
+    <div>
+      {/* Existing product info */}
+      
+      {/* NEW: Jas eligibility badge */}
+      {isEligibleForFreeSarung && (
+        <Card className="mb-6">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="bg-blue-100 p-2 rounded-full">
+                <Gift className="w-5 h-5 text-blue-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-blue-900">Bonus Sarung Gratis!</h3>
+                <p className="text-sm text-blue-700">
+                  Dapatkan sarung gratis saat menyewa jas ini
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+      
+      {/* Existing content */}
+    </div>
+  )
+}
+```
+
+### Implementation Benefits ✅ ACHIEVED
+
+#### 1. **Complete Pairing Visibility**
+- ✅ Transaction detail shows full pairing relationships
+- ✅ Consistent display across cart → payment → transaction detail
+- ✅ Clear indication of free sarung benefits
+
+#### 2. **Enhanced User Experience**
+- ✅ Users can verify pairing selections in transaction history
+- ✅ Public pages show jas eligibility for better marketing
+- ✅ Professional display maintains brand consistency
+
+#### 3. **Data Consistency**
+- ✅ API response includes all pairing data
+- ✅ Frontend components reuse existing pairing logic
+- ✅ No data loss between transaction creation and display
+
+#### 4. **Backward Compatibility**
+- ✅ Existing transactions without pairing display normally
+- ✅ New pairing data is optional in API response
+- ✅ No breaking changes to existing functionality
+
+### Technical Implementation Strategy ✅ COMPLETE
+
+#### Phase 1: API Enhancement ✅ COMPLETE
+1. ✅ Update transaction service to include linkedSarung in queries
+2. ✅ Enhance response formatter to transform pairing data
+3. ✅ Update API route to return enhanced structure
+
+#### Phase 2: UI Component Enhancement ✅ COMPLETE
+1. ✅ Update ProductDetailCard to show pairing indicators
+2. ✅ Integrate SarungPairingIndicator in transaction detail
+3. ✅ Add pairing-aware pricing display
+
+#### Phase 3: Public Page Enhancement ✅ COMPLETE
+1. ✅ Add jas eligibility detection to ProductDetailPage
+2. ✅ Show promotional information for eligible products
+3. ✅ Enhance product marketing with pairing benefits
+
+#### Phase 4: Testing & Validation ✅ COMPLETE
+1. ✅ Test API response includes correct pairing data
+2. ✅ Verify UI displays pairing relationships correctly
+3. ✅ Ensure consistency across all pairing displays
+
+This enhancement ensures complete pairing visibility throughout the entire user journey, from product selection to transaction history review.ches receipt format
+
+#### 3. **Data Consistency**
+- API response includes all pairing data
+- Frontend components reuse existing pairing logic
+- No data loss between transaction creation and display
+
+#### 4. **Backward Compatibility**
+- Existing transactions without pairing display normally
+- New pairing data is optional in API response
+- No breaking changes to existing functionality
+
+### Technical Implementation Strategy
+
+#### Phase 1: API Enhancement
+1. Update transaction service to include linkedSarung in queries
+2. Enhance response formatter to transform pairing data
+3. Update API route to return enhanced structure
+
+#### Phase 2: UI Component Enhancement
+1. Update ProductDetailCard to show pairing indicators
+2. Integrate SarungPairingIndicator in transaction detail
+3. Add pairing-aware pricing display
+
+#### Phase 3: Public Page Enhancement
+1. Add jas eligibility detection to ProductDetailPage
+2. Show promotional information for eligible products
+3. Enhance product marketing with pairing benefits
+
+#### Phase 4: Testing & Validation
+1. Test API response includes correct pairing data
+2. Verify UI displays pairing relationships correctly
+3. Ensure consistency across all pairing displays
+
+This enhancement ensures complete pairing visibility throughout the entire user journey, from product selection to transaction history review.
+
 This design ensures minimal disruption to existing functionality while providing a robust, user-friendly jas-sarung pairing system that integrates seamlessly with the current kasir workflow.

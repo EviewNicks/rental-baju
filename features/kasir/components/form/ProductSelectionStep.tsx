@@ -582,14 +582,6 @@ export function ProductSelectionStep({
 
   const handleUpdateQuantity = (productId: string, newQuantity: number, productSizeId?: string, linkedSarungProductId?: string) => {
     if (newQuantity <= 0) {
-      // Check if this is a jas product with linked sarung
-      const jasItem = selectedProducts.find(
-        (item) =>
-          item.product.id === productId &&
-          (productSizeId ? item.productSizeId === productSizeId : !item.productSizeId) &&
-          (linkedSarungProductId ? item.linkedSarung?.productId === linkedSarungProductId : !item.linkedSarung)
-      )
-      
       // Remove the specific item (with precise targeting including linkedSarung)
       onRemoveProduct(productId, productSizeId, linkedSarungProductId)
     } else {

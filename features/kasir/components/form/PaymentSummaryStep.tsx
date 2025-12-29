@@ -18,13 +18,28 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import type { TransactionFormData } from '../../types'
+import type { TransactionFormData, ProductSelection } from '../../types'
 import { formatCurrency } from '../../lib/utils/client'
 import { PriceCalculator } from '../../lib/utils/priceCalculator'
 import { DateCalculator } from '../../lib/utils/dateCalculator'
 import { SarungPairingIndicator } from '../ui/SarungPairingIndicator'
 import { isLinkedSarung } from '../../lib/utils/jasSarungUtils'
 import Image from 'next/image'
+
+// Helper function to generate unique keys for ProductSelection items
+const generateProductKey = (item: ProductSelection, index: number): string => {
+  const baseKey = `${item.product.id}-${item.productSizeId || 'default'}`
+  
+  if (item.linkedSarung) {
+    // For jas with linkedSarung, include sarung info for uniqueness
+    const sarungId = item.linkedSarung.productId
+    const sarungSizeId = item.linkedSarung.productSizeId || 'default'
+    return `${baseKey}-linked-${sarungId}-${sarungSizeId}`
+  }
+  
+  // For regular products or standalone sarung, use index as fallback
+  return `${baseKey}-${index}`
+}
 
 interface PaymentSummaryStepProps {
   formData: TransactionFormData
@@ -288,7 +303,7 @@ export function PaymentSummaryStep({
 
             return (
               <div
-                key={`${item.product.id}-${item.productSizeId || 'default'}`}
+                key={generateProductKey(item, index)}
                 className="flex items-center justify-between py-4 border-b border-gray-200 last:border-b-0"
               >
                 <div className="flex items-center gap-4">
@@ -309,7 +324,7 @@ export function PaymentSummaryStep({
                       <div className="space-y-2">
                         <SarungPairingIndicator
                           jasName={item.product.name}
-                          sarungName={`Sarung (ID: ${item.linkedSarung.productId.slice(-6)})`}
+                          sarungName={item.linkedSarung.product?.code || item.linkedSarung.product?.name || `Sarung ${item.linkedSarung.selectedSize?.size || 'Universal'}`}
                           sarungOriginalPrice={0} // Will be calculated from product data
                           variant="payment"
                           showPricing={false} // Don't show pricing here, will show in breakdown
@@ -322,9 +337,6 @@ export function PaymentSummaryStep({
                           <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full font-medium">
                             GRATIS
                           </span>
-                        </div>
-                        <div className="text-xs text-gray-500 italic">
-                          Sarung gratis dengan paket jas
                         </div>
                       </div>
                     ) : (
@@ -814,7 +826,7 @@ export function PaymentSummaryStep({
               )
 
               return (
-                <div key={`${item.product.id}-${item.productSizeId || 'default'}`} className="space-y-1">
+                <div key={generateProductKey(item, index)} className="space-y-1">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">
                       {item.product.name}

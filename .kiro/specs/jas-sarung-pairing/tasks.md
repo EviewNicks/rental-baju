@@ -221,6 +221,20 @@ This implementation plan creates a jas-sarung pairing system that allows custome
   - **Property 13: Multiple Cart Addition Accuracy**
   - **Validates: Requirements 4.1, 4.5**
 
+- [x] 19. Implement Transaction Detail Pairing Display Enhancement
+  - ✅ Update API response structure to include linkedSarung data in transaction items
+  - ✅ Enhance TransactionDetailPage to display jas-sarung pairing relationships
+  - ✅ Update ProductDetailCard component to show pairing indicators
+  - ✅ Add SarungPairingIndicator integration in transaction detail view
+  - ✅ Update response formatter to handle pairing data transformation
+  - ✅ Ensure consistency between cart, payment summary, and transaction detail displays
+  - ✅ Add pairing information to public ProductDetailPage for jas eligibility
+  - ✅ Update transaction service to include pairing data in queries
+  - ✅ Test API response includes correct linkedSarung structure
+  - ✅ Verify transaction detail shows pairing relationships correctly
+  - _Requirements: 4.1, 4.2, 5.1, 6.2, 8.4_
+  - **Checkpoint**: ✅ Run `yarn lint && yarn type-check` to ensure code quality
+
 ## Notes
 
 - Tasks marked with `*` are optional property-based tests that can be skipped for faster MVP
