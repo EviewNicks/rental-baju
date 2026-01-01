@@ -86,7 +86,7 @@
   "devDependencies": {
     "@clerk/testing": "^1.13.23",
     "@eslint/eslintrc": "^3",
-    "@playwright/test": "^1.53.1",
+    "@playwright/test": "^1.57.0",
     "@svgr/webpack": "^8.1.0",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
