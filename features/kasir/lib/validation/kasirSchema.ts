@@ -93,7 +93,27 @@ export const createTransaksiItemSchema = z.object({
   durasi: z.number().int().refine(val => val === 4 || val === 7, {
     message: 'Durasi harus 4 atau 7 hari'
   }),
-  kondisiAwal: z.string().max(500, 'Kondisi awal maksimal 500 karakter').optional()
+  kondisiAwal: z.string().max(500, 'Kondisi awal maksimal 500 karakter').optional(),
+  // TASK 22: Add linkedSarung field for jas-sarung pairing support
+  linkedSarung: z.object({
+    productId: z.string().uuid('ID produk sarung tidak valid'),
+    productSizeId: z.string().uuid('ID ukuran sarung tidak valid'),
+    quantity: z.number().int().min(1, 'Jumlah sarung minimal 1').max(100, 'Jumlah sarung maksimal 100'),
+    selectedSize: z.object({
+      id: z.string().uuid('ID ukuran tidak valid'),
+      productId: z.string().uuid('ID produk tidak valid').optional(), // Optional - not always provided by frontend
+      size: z.string().min(1, 'Ukuran tidak boleh kosong'),
+      ageCategory: z.enum(['ADULT', 'TEEN', 'CHILD'], { message: 'Kategori usia tidak valid' }),
+      quantity: z.number().int().min(0, 'Kuantitas tidak boleh negatif'),
+      availableQuantity: z.number().int().min(0, 'Kuantitas tersedia tidak boleh negatif'),
+      rentedStock: z.number().int().min(0, 'Stok tersewa tidak boleh negatif').optional(), // Optional - not always provided by frontend
+      createdAt: z.string().datetime('Format tanggal tidak valid').optional(), // Optional - frontend may not provide
+      updatedAt: z.string().datetime('Format tanggal tidak valid').optional(), // Optional - frontend may not provide
+      color: z.string().optional(), // Optional - frontend may provide this field
+      originalQuantity: z.number().int().min(0, 'Kuantitas asli tidak boleh negatif').optional(), // Optional - frontend may provide
+      rentedQuantity: z.number().int().min(0, 'Kuantitas tersewa tidak boleh negatif').optional() // Optional - frontend may provide
+    })
+  }).optional() // Optional field for non-jas products
 })
 
 // Legacy schema for backward compatibility

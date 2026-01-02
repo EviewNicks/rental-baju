@@ -269,21 +269,64 @@ export function useTransactionForm() {
         penyewaId: formData.customer?.id || '',
         kasirId: formData.kasirSelection?.kasirId || '', // Include kasirId if selected
         items: formData.products.map((product) => {
+          // 🔍 DEBUG POINT 2: Log each product before serialization
+          console.log('🔍 DEBUG POINT 2 - Product Serialization:', {
+            productId: product.product.id,
+            productName: product.product.name,
+            hasLinkedSarung: !!product.linkedSarung,
+            linkedSarungData: product.linkedSarung ? {
+              productId: product.linkedSarung.productId,
+              productSizeId: product.linkedSarung.productSizeId,
+              quantity: product.linkedSarung.quantity
+            } : null,
+            timestamp: new Date().toISOString(),
+            debugPoint: 'API_PAYLOAD_SERIALIZATION'
+          })
+
           // Base item data with dynamic duration
           const baseItem = {
             produkId: product.product.id,
             jumlah: product.quantity,
             durasi: formData.duration || 4, // Use selected duration instead of fixed
             kondisiAwal: 'baik',
+            // ✅ TASK 20 CRITICAL FIX: Include linkedSarung in API payload
+            ...(product.linkedSarung && {
+              linkedSarung: {
+                productId: product.linkedSarung.productId,
+                productSizeId: product.linkedSarung.productSizeId,
+                quantity: product.linkedSarung.quantity,
+                selectedSize: product.linkedSarung.selectedSize
+              }
+            })
           }
 
           // Add productSizeId if available (size-aware format)
           if (product.productSizeId) {
-            return {
+            const finalItem = {
               ...baseItem,
               productSizeId: product.productSizeId,
             }
+            
+            // 🔍 DEBUG POINT 2: Log final serialized item
+            console.log('🔍 DEBUG POINT 2 - Serialized Item (Size-Aware):', {
+              finalItem,
+              hasLinkedSarungInPayload: 'linkedSarung' in finalItem,
+              linkedSarungInPayload: finalItem.linkedSarung || null,
+              timestamp: new Date().toISOString(),
+              debugPoint: 'API_PAYLOAD_SERIALIZATION'
+            })
+            
+            return finalItem
           }
+
+          // 🔍 DEBUG POINT 2: Log final serialized item (legacy)
+          console.log('🔍 DEBUG POINT 2 - Serialized Item (Legacy):', {
+            baseItem,
+            hasLinkedSarungInPayload: 'linkedSarung' in baseItem,
+            linkedSarungInPayload: baseItem.linkedSarung || null,
+            timestamp: new Date().toISOString(),
+            debugPoint: 'API_PAYLOAD_SERIALIZATION'
+          })
 
           // Return legacy format if no size selected
           return baseItem
@@ -300,6 +343,15 @@ export function useTransactionForm() {
           ? formData.discountValue 
           : undefined,
       }
+
+      // 🔍 DEBUG POINT 2: Log complete API payload
+      console.log('🔍 DEBUG POINT 2 - Complete API Payload:', {
+        totalItems: createRequest.items.length,
+        itemsWithLinkedSarung: createRequest.items.filter(item => 'linkedSarung' in item).length,
+        payload: createRequest,
+        timestamp: new Date().toISOString(),
+        debugPoint: 'API_PAYLOAD_SERIALIZATION'
+      })
 
       for (const product of formData.products) {
         // Note: This is a simple warning system - full validation happens server-side

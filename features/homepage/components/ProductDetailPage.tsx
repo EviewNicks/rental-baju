@@ -1,8 +1,8 @@
 'use client'
 
-import React from 'react'
+import React, { useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Heart, ShoppingBag, Clock, Loader2, AlertCircle, Home } from 'lucide-react'
+import { ArrowLeft, Heart, ShoppingBag, Clock, Loader2, AlertCircle, Home, Gift } from 'lucide-react'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -20,6 +20,9 @@ import { formatCurrency, getStatusBadge } from '@/features/manage-product/lib/ut
 import { lightenColor, getContrastTextColor } from '@/features/manage-product/lib/utils/color'
 import { getValidImageUrl } from '@/features/manage-product/lib/utils/imageValidate'
 import { SizeDetailCard } from './SizeDetailCard'
+// ✅ TASK 20: Add jas eligibility detection
+import { sarungPairingService } from '@/features/kasir/services/pairingService'
+import type { Product } from '@/features/kasir/types'
 
 interface PublicProductDetailPageProps {
   productId: string
@@ -28,6 +31,30 @@ interface PublicProductDetailPageProps {
 export function PublicProductDetailPage({ productId }: PublicProductDetailPageProps) {
   const router = useRouter()
   const { product, isLoading, isError, error, isNotFound } = useTransformedProductDetail(productId)
+
+  // ✅ TASK 20: Check if product is eligible for free sarung
+  const isEligibleForFreeSarung = useMemo(() => {
+    if (!product) return false
+    
+    // Convert public product format to kasir product format for compatibility
+    const kasirProduct: Partial<Product> = {
+      id: product.id,
+      name: product.name,
+      code: product.code,
+      category: product.category.name,
+      // Use fallback values since public product doesn't have these fields
+      categoryType: undefined,
+      size: '',
+      color: '',
+      pricePerDay: product.currentPrice,
+      image: product.imageUrl || '',
+      available: product.status === 'AVAILABLE',
+      description: product.description,
+      availableQuantity: product.sizes.reduce((sum, size) => sum + size.quantity, 0),
+    }
+    
+    return sarungPairingService.isEligibleForPairing(kasirProduct as Product)
+  }, [product])
 
   // Loading state
   if (isLoading) {
@@ -172,6 +199,25 @@ export function PublicProductDetailPage({ productId }: PublicProductDetailPagePr
                 </Badge>
               )}
             </div>
+
+            {/* ✅ TASK 20: Jas eligibility badge */}
+            {isEligibleForFreeSarung && (
+              <Card className="mb-6">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-blue-100 p-2 rounded-full">
+                      <Gift className="w-5 h-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-blue-900">Bonus Sarung Gratis!</h3>
+                      <p className="text-sm text-blue-700">
+                        Dapatkan sarung gratis saat menyewa jas ini
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Rental Pricing */}
             <Card>

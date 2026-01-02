@@ -13,6 +13,7 @@ import {
   type TransaksiItemWithReturns 
 } from '../../lib/utils/partialReturnHelpers'
 import { ReturnProgressIndicator } from '../ui/return-progress-indicator'
+import { SarungPairingIndicator } from '../ui/SarungPairingIndicator'
 
 interface ProductDetailCardProps {
   item: {
@@ -44,6 +45,23 @@ interface ProductDetailCardProps {
     }>
     // RPK-51: kondisiAwal field for AgeSizes parsing
     kondisiAwal?: string
+    // TASK 19: Add linkedSarung data for pairing display
+    linkedSarung?: {
+      productId: string
+      productSizeId: string
+      quantity: number
+      product?: {
+        id: string
+        code: string
+        name: string
+        category: string
+      }
+      selectedSize?: {
+        id: string
+        size: string
+        ageCategory: string
+      }
+    }
   }
   // Optional explicit pickup information - if not provided, will calculate from item.jumlahDiambil
   pickupInfo?: {
@@ -124,6 +142,19 @@ export function ProductDetailCard({ item, pickupInfo }: ProductDetailCardProps) 
               <p className="text-sm text-gray-600 mt-2 leading-relaxed">
                 {item.product.description}
               </p>
+            )}
+            
+            {/* TASK 19: Display pairing indicator for jas with linkedSarung */}
+            {item.linkedSarung && (
+              <div className="mt-3">
+                <SarungPairingIndicator
+                  jasName={item.product.name}
+                  sarungName={item.linkedSarung.product?.code || item.linkedSarung.product?.name || 'Sarung'}
+                  variant="compact"
+                  showPricing={false}
+                  className="text-sm"
+                />
+              </div>
             )}
           </div>
 
@@ -368,12 +399,27 @@ export function ProductDetailCard({ item, pickupInfo }: ProductDetailCardProps) 
               <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
                 Harga/{item.duration} Hari
               </div>
-              <div
-                className="text-lg font-bold text-gray-900"
-                aria-label={`Harga per ${item.duration} hari: ${formatCurrency(adjustedPricePerDay)}`}
-              >
-                {formatCurrency(adjustedPricePerDay)}
-              </div>
+              {/* TASK 19: Enhanced pricing display for jas-sarung pairings */}
+              {item.linkedSarung ? (
+                <div className="space-y-1">
+                  <div
+                    className="text-lg font-bold text-gray-900"
+                    aria-label={`Harga jas per ${item.duration} hari: ${formatCurrency(adjustedPricePerDay)}`}
+                  >
+                    {formatCurrency(adjustedPricePerDay)}
+                  </div>
+                  <div className="text-xs text-green-600 font-medium">
+                    + Sarung GRATIS
+                  </div>
+                </div>
+              ) : (
+                <div
+                  className="text-lg font-bold text-gray-900"
+                  aria-label={`Harga per ${item.duration} hari: ${formatCurrency(adjustedPricePerDay)}`}
+                >
+                  {formatCurrency(adjustedPricePerDay)}
+                </div>
+              )}
               {/* Show base price if different from adjusted price */}
               {durationMultiplier !== 1.0 && (
                 <div className="text-xs text-gray-500 mt-1">
@@ -402,6 +448,12 @@ export function ProductDetailCard({ item, pickupInfo }: ProductDetailCardProps) 
               >
                 {formatCurrency(item.subtotal)}
               </div>
+              {/* TASK 19: Show pairing benefit in subtotal */}
+              {item.linkedSarung && (
+                <div className="text-xs text-green-600 mt-1">
+                  (Sarung {item.linkedSarung.quantity}x gratis)
+                </div>
+              )}
             </div>
           </div>
         </div>

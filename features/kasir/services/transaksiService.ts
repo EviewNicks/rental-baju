@@ -11,7 +11,7 @@ import {
   UpdateTransaksiRequest,
   TransaksiQueryParams,
 } from '../lib/validation/kasirSchema'
-import type { ProductSelection } from '../types'
+import type { ProductSelection, CreateTransaksiItemSizeAware } from '../types'
 import type { LinkedSarung, ProductSize } from '../types'
 import { TransactionCodeGenerator } from '../lib/utils/codeGenerator'
 import { PriceCalculator } from '../lib/utils/server'
@@ -78,6 +78,19 @@ export interface TransaksiWithDetails extends Transaksi {
       createdAt: Date
       createdBy: string
     }>
+    // TASK 19: Jas-sarung pairing support
+    linkedSarung?: {
+      productId: string
+      productSizeId: string
+      quantity: number
+      selectedSize: ProductSize
+      product?: {
+        id: string
+        code: string
+        name: string
+        category: string
+      }
+    }
   }>
   pembayaran: Array<{
     id: string
@@ -313,6 +326,10 @@ export class TransaksiService {
                 },
               },
             },
+            // TASK 19: Order items to group jas-sarung pairs together
+            orderBy: [
+              { id: 'asc' }, // Use id instead of createdAt for consistent ordering
+            ],
           },
           pembayaran: {
             orderBy: { createdAt: 'desc' },
@@ -342,7 +359,7 @@ export class TransaksiService {
           },
         })
         // Set kasir to null for graceful degradation
-        transaksi.kasir = null
+        ;(transaksi as TransaksiWithDetails).kasir = null
       }
 
       const enhancedStatus = calculateEnhancedStatus(
@@ -359,7 +376,24 @@ export class TransaksiService {
         items: this.transformItemsWithMultiCondition(transaksi.items as any),
       }
 
-      return enhancedTransaksi as TransaksiWithDetails
+      // TASK 19: Transform items with pairing relationships
+      const itemsWithPairing = this.transformItemsWithPairing(enhancedTransaksi.items)
+      
+      // Type-safe transformation to match TransaksiWithDetails interface
+      const result: TransaksiWithDetails = {
+        ...enhancedTransaksi,
+        items: itemsWithPairing,
+        aktivitas: enhancedTransaksi.aktivitas.map(activity => ({
+          id: activity.id,
+          tipe: activity.tipe,
+          deskripsi: activity.deskripsi,
+          data: activity.data as Record<string, unknown> | undefined,
+          createdBy: activity.createdBy,
+          createdAt: activity.createdAt,
+        })),
+      }
+      
+      return result
     } catch (error) {
       // Handle database query failures with comprehensive error logging
       if (error instanceof Error) {
@@ -408,6 +442,29 @@ export class TransaksiService {
     let priceCalculation: ReturnType<typeof PriceCalculator.calculateTransactionTotalWithEnhancements> | null = null
 
     try {
+      // 🔍 DEBUG POINT 3: Log incoming API payload for linkedSarung analysis
+      console.log('🔍 DEBUG POINT 3 - Backend API Payload Analysis:', {
+        totalItems: data.items.length,
+        items: data.items.map((item, index) => {
+          // Type-safe access to linkedSarung
+          const itemWithLinkedSarung = item as CreateTransaksiItemSizeAware
+          return {
+            index: index + 1,
+            produkId: item.produkId,
+            hasLinkedSarung: 'linkedSarung' in item && !!(itemWithLinkedSarung.linkedSarung),
+            linkedSarungData: itemWithLinkedSarung.linkedSarung ? {
+              productId: itemWithLinkedSarung.linkedSarung.productId,
+              productSizeId: itemWithLinkedSarung.linkedSarung.productSizeId,
+              quantity: itemWithLinkedSarung.linkedSarung.quantity,
+              hasSelectedSize: !!itemWithLinkedSarung.linkedSarung.selectedSize
+            } : null
+          }
+        }),
+        timestamp: new Date().toISOString(),
+        source: 'TransaksiService.createTransaksiSizeAware',
+        debugPoint: 'BACKEND_PROCESSING'
+      })
+
       const penyewa = await this.prisma.penyewa.findUnique({
         where: { id: data.penyewaId },
       })
@@ -416,9 +473,48 @@ export class TransaksiService {
         throw new Error('Penyewa tidak ditemukan')
       }
 
-      // Get product data for enhanced pricing
-      const productSizeIds = data.items.map((item) => item.productSizeId)
+      // ✅ CRITICAL FIX: Get product data for enhanced pricing including linkedSarung productSizeIds
+      const productSizeIds: string[] = []
+      
+      // Collect all productSizeIds (main items + linkedSarung items)
+      data.items.forEach((item) => {
+        // Add main item productSizeId
+        productSizeIds.push(item.productSizeId)
+        
+        // ✅ CRITICAL FIX: Add linkedSarung productSizeId if exists
+        if ('linkedSarung' in item && item.linkedSarung) {
+          const linkedSarungData = item.linkedSarung as {
+            productId: string
+            productSizeId: string
+            quantity: number
+            selectedSize: ProductSize
+          }
+          productSizeIds.push(linkedSarungData.productSizeId)
+        }
+      })
+      
       const uniqueSizeIds = [...new Set(productSizeIds)]
+
+      // 🔍 DEBUG: Log productSizeIds collection for troubleshooting
+      console.log('🔍 DEBUG - ProductSizeIds Collection:', {
+        totalItems: data.items.length,
+        mainProductSizeIds: data.items.map(item => item.productSizeId),
+        linkedSarungProductSizeIds: data.items
+          .filter(item => 'linkedSarung' in item && item.linkedSarung)
+          .map(item => {
+            const linkedSarungData = item.linkedSarung as {
+              productId: string
+              productSizeId: string
+              quantity: number
+              selectedSize: ProductSize
+            }
+            return linkedSarungData.productSizeId
+          }),
+        allProductSizeIds: productSizeIds,
+        uniqueProductSizeIds: uniqueSizeIds,
+        timestamp: new Date().toISOString(),
+        debugPoint: 'PRODUCT_SIZE_COLLECTION'
+      })
 
       const productSizes = await this.prisma.productSize.findMany({
         where: {
@@ -435,6 +531,16 @@ export class TransaksiService {
             },
           },
         },
+      })
+
+      // 🔍 DEBUG: Log productSizes query results
+      console.log('🔍 DEBUG - ProductSizes Query Results:', {
+        requestedSizeIds: uniqueSizeIds.length,
+        foundSizes: productSizes.length,
+        foundSizeIds: productSizes.map(ps => ps.id),
+        missingSizeIds: uniqueSizeIds.filter(id => !productSizes.find(ps => ps.id === id)),
+        timestamp: new Date().toISOString(),
+        debugPoint: 'PRODUCT_SIZE_QUERY'
       })
 
       // Get duration from first item (all items should have same duration in UI)
@@ -576,6 +682,68 @@ export class TransaksiService {
             const calculation = priceCalculation!.itemCalculations[index]
             const productSize = productSizes.find((ps) => ps.id === item.productSizeId)!
             
+            // ✅ FIX: Store linkedSarung data in kondisiAwal as JSON metadata
+            const kondisiAwalData = {
+              productSizeId: item.productSizeId,
+              size: productSize.size,
+              ageCategory: productSize.ageCategory,
+              condition: item.kondisiAwal || '',
+              linkedSarung: null as LinkedSarung | null
+            }
+            
+            // ✅ CRITICAL FIX: Enhanced linkedSarung detection and storage
+            const itemWithLinkedSarung = item as CreateTransaksiItemSizeAware
+            if (itemWithLinkedSarung.linkedSarung && typeof itemWithLinkedSarung.linkedSarung === 'object') {
+              const linkedSarungData = itemWithLinkedSarung.linkedSarung as {
+                productId: string
+                productSizeId: string
+                quantity: number
+                selectedSize: ProductSize
+              }
+              
+              // ✅ DEBUG: Log linkedSarung processing for troubleshooting
+              console.log('🔍 Processing linkedSarung data:', {
+                itemId: item.produkId,
+                hasLinkedSarung: !!itemWithLinkedSarung.linkedSarung,
+                linkedSarungProductId: linkedSarungData.productId,
+                linkedSarungQuantity: linkedSarungData.quantity,
+                timestamp: new Date().toISOString()
+              })
+              
+              kondisiAwalData.linkedSarung = {
+                productId: linkedSarungData.productId,
+                productSizeId: linkedSarungData.productSizeId,
+                quantity: linkedSarungData.quantity,
+                selectedSize: {
+                  id: linkedSarungData.selectedSize.id,
+                  productId: linkedSarungData.productId,
+                  size: linkedSarungData.selectedSize.size,
+                  ageCategory: linkedSarungData.selectedSize.ageCategory,
+                  quantity: linkedSarungData.quantity,
+                  availableQuantity: 0,
+                  rentedStock: 0,
+                  createdAt: new Date().toISOString(),
+                  updatedAt: new Date().toISOString()
+                }
+              }
+              
+              // ✅ DEBUG: Confirm linkedSarung data stored
+              console.log('✅ LinkedSarung data stored in kondisiAwal:', {
+                itemId: item.produkId,
+                storedLinkedSarung: kondisiAwalData.linkedSarung,
+                timestamp: new Date().toISOString()
+              })
+            } else {
+              // ✅ DEBUG: Log when no linkedSarung detected
+              console.log('ℹ️ No linkedSarung detected for item:', {
+                itemId: item.produkId,
+                hasLinkedSarungField: 'linkedSarung' in item,
+                linkedSarungValue: itemWithLinkedSarung.linkedSarung,
+                linkedSarungType: typeof itemWithLinkedSarung.linkedSarung,
+                timestamp: new Date().toISOString()
+              })
+            }
+            
             // Create main item (jas or regular product)
             const mainItemData = {
               transaksiId: createdTransaksi.id,
@@ -584,8 +752,20 @@ export class TransaksiService {
               hargaSewa: new Decimal(calculation.adjustedPrice).div(item.jumlah), // Price per unit after duration multiplier
               durasi: duration, // ENHANCED: Use actual duration from form
               subtotal: calculation.adjustedPrice,
-              kondisiAwal: `${item.productSizeId}|${productSize.size}|${productSize.ageCategory}|${item.kondisiAwal || ''}`,
+              kondisiAwal: JSON.stringify(kondisiAwalData), // ✅ FIX: Store as JSON with linkedSarung data
             }
+            
+            // 🔍 DEBUG POINT 4: Log kondisiAwal JSON before storage
+            console.log('🔍 DEBUG POINT 4 - KondisiAwal JSON Storage:', {
+              itemIndex: index + 1,
+              produkId: item.produkId,
+              kondisiAwalJSON: JSON.stringify(kondisiAwalData),
+              hasLinkedSarungInData: !!kondisiAwalData.linkedSarung,
+              linkedSarungProductId: kondisiAwalData.linkedSarung?.productId || null,
+              timestamp: new Date().toISOString(),
+              debugPoint: 'DATABASE_STORAGE'
+            })
+            
             allItemsData.push(mainItemData)
             
             // TASK 9: Create linked sarung item if exists
@@ -604,12 +784,23 @@ export class TransaksiService {
                     select: {
                       id: true,
                       name: true,
+                      code: true,
                     },
                   },
                 },
               })
               
               if (sarungProductSize) {
+                // ✅ FIX: Store sarung metadata with reference to parent jas
+                const sarungKondisiAwalData = {
+                  productSizeId: linkedSarungData.productSizeId,
+                  size: sarungProductSize.size,
+                  ageCategory: sarungProductSize.ageCategory,
+                  condition: item.kondisiAwal || '',
+                  isPairedSarung: true,
+                  parentJasProductId: item.produkId // Reference to parent jas
+                }
+                
                 const sarungItemData = {
                   transaksiId: createdTransaksi.id,
                   produkId: linkedSarungData.productId,
@@ -617,7 +808,7 @@ export class TransaksiService {
                   hargaSewa: new Decimal(0), // Sarung is free when paired
                   durasi: duration,
                   subtotal: new Decimal(0), // Sarung subtotal is 0
-                  kondisiAwal: `${linkedSarungData.productSizeId}|${sarungProductSize.size}|${sarungProductSize.ageCategory}|${item.kondisiAwal || ''}`,
+                  kondisiAwal: JSON.stringify(sarungKondisiAwalData), // ✅ FIX: Store as JSON with pairing metadata
                 }
                 allItemsData.push(sarungItemData)
               }
@@ -1424,5 +1615,132 @@ export class TransaksiService {
     }
 
     return activityMap[status] || 'diperbarui'
+  }
+
+  /**
+   * TASK 19: Transform transaction items to include linkedSarung relationships
+   * Reconstructs jas-sarung pairing data from kondisiAwal JSON metadata
+   */
+  private transformItemsWithPairing(items: TransaksiWithDetails['items']): TransaksiWithDetails['items'] {
+    const transformedItems: TransaksiWithDetails['items'] = []
+    const processedSarungIds = new Set<string>()
+    
+    // 🔍 DEBUG POINT 5: Log transformation process
+    console.log('🔍 DEBUG POINT 5 - Items Transformation Start:', {
+      totalItems: items.length,
+      items: items.map(item => ({
+        id: item.id,
+        produkId: item.produkId,
+        kondisiAwal: item.kondisiAwal,
+        hasKondisiAwal: !!item.kondisiAwal
+      })),
+      timestamp: new Date().toISOString(),
+      debugPoint: 'DATA_RETRIEVAL_TRANSFORMATION'
+    })
+    
+    for (const item of items) {
+      // Parse kondisiAwal JSON metadata
+      let kondisiAwalData: Record<string, unknown> | null = null
+      try {
+        if (typeof item.kondisiAwal === 'string' && item.kondisiAwal.startsWith('{')) {
+          kondisiAwalData = JSON.parse(item.kondisiAwal)
+          
+          // 🔍 DEBUG POINT 5: Log parsed kondisiAwal data
+          console.log('🔍 DEBUG POINT 5 - KondisiAwal Parsed Successfully:', {
+            itemId: item.id,
+            produkId: item.produkId,
+            parsedData: kondisiAwalData,
+            hasLinkedSarung: kondisiAwalData && 'linkedSarung' in kondisiAwalData,
+            linkedSarungValue: kondisiAwalData?.linkedSarung,
+            linkedSarungIsNull: kondisiAwalData?.linkedSarung === null,
+            timestamp: new Date().toISOString(),
+            debugPoint: 'DATA_RETRIEVAL_TRANSFORMATION'
+          })
+        }
+      } catch (error) {
+        // Handle legacy format or invalid JSON
+        console.warn('Failed to parse kondisiAwal JSON', { itemId: item.id, error })
+      }
+      
+      // Skip sarung items that are paired (they'll be included as linkedSarung data)
+      if (kondisiAwalData && typeof kondisiAwalData === 'object' && 'isPairedSarung' in kondisiAwalData && kondisiAwalData.isPairedSarung) {
+        processedSarungIds.add(item.id)
+        console.log('🔍 Skipping paired sarung item:', { itemId: item.id, produkId: item.produkId })
+        continue
+      }
+      
+      // Transform main item (jas or regular product)
+      let transformedItem = { ...item }
+      
+      // Add linkedSarung data if this item has pairing
+      if (kondisiAwalData && 
+          typeof kondisiAwalData === 'object' && 
+          'linkedSarung' in kondisiAwalData && 
+          kondisiAwalData.linkedSarung) {
+        
+        const linkedSarungData = kondisiAwalData.linkedSarung as Record<string, unknown>
+        const sarungProduct = this.findSarungProductDetails(items, linkedSarungData.productId as string)
+        
+        transformedItem = {
+          ...transformedItem,
+          linkedSarung: {
+            productId: linkedSarungData.productId as string,
+            productSizeId: linkedSarungData.productSizeId as string,
+            quantity: linkedSarungData.quantity as number,
+            selectedSize: linkedSarungData.selectedSize as ProductSize,
+            product: sarungProduct
+          }
+        }
+        
+        // ✅ CRITICAL DEBUG: Log successful pairing reconstruction
+        console.log('✅ CRITICAL DEBUG - Pairing Reconstructed:', {
+          jasItemId: item.id,
+          jasProductId: item.produkId,
+          sarungProductId: linkedSarungData.productId,
+          sarungQuantity: linkedSarungData.quantity,
+          sarungProductFound: !!sarungProduct,
+          timestamp: new Date().toISOString()
+        })
+      }
+      
+      transformedItems.push(transformedItem)
+    }
+    
+    // 🔍 DEBUG POINT 5: Log transformation results
+    console.log('🔍 DEBUG POINT 5 - Transformation Complete:', {
+      originalItemsCount: items.length,
+      transformedItemsCount: transformedItems.length,
+      itemsWithPairing: transformedItems.filter(item => !!item.linkedSarung).length,
+      processedSarungIds: Array.from(processedSarungIds),
+      timestamp: new Date().toISOString()
+    })
+    
+    return transformedItems
+  }
+  
+  /**
+   * TASK 19: Helper method to find sarung product details from transaction items
+   */
+  private findSarungProductDetails(items: TransaksiWithDetails['items'], sarungProductId: string): {
+    id: string
+    code: string
+    name: string
+    category: string
+  } | undefined {
+    const sarungItem = items.find(item => 
+      item.produkId === sarungProductId && 
+      item.kondisiAwal?.includes('isPairedSarung')
+    )
+    
+    if (sarungItem?.produk) {
+      return {
+        id: sarungItem.produk.id,
+        code: sarungItem.produk.code,
+        name: sarungItem.produk.name,
+        category: sarungItem.produk.category?.name || 'sarung'
+      }
+    }
+    
+    return undefined
   }
 }

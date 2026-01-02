@@ -189,14 +189,18 @@ export interface ProductWithStock extends ProductCore {
 // ProductSize interface for size-aware inventory (RPK-51)
 export interface ProductSize {
   id: string
-  productId: string
+  productId?: string // Optional - not always provided by frontend
   ageCategory: 'ADULT' | 'TEEN' | 'CHILD'
   size: string // 'S', 'M', 'L', 'XL', etc.
   quantity: number
   availableQuantity: number // Size-specific available stock
-  rentedStock: number
-  createdAt: string
-  updatedAt: string
+  rentedStock?: number // Optional - not always provided by frontend
+  createdAt?: string // Optional - frontend may not provide
+  updatedAt?: string // Optional - frontend may not provide
+  // Additional optional fields that frontend may provide
+  color?: string
+  originalQuantity?: number
+  rentedQuantity?: number
 }
 
 // Legacy Product interface for backward compatibility
@@ -558,7 +562,7 @@ export interface CreateTransaksiItemSizeAware {
   jumlah: number
   durasi: number // dalam hari
   kondisiAwal?: string
-  // TASK 9: Add linked sarung support for jas-sarung pairing
+  // ✅ TASK 20: Add linked sarung support for jas-sarung pairing
   linkedSarung?: {
     productId: string
     productSizeId: string
@@ -573,6 +577,13 @@ export interface CreateTransaksiItemLegacy {
   jumlah: number
   durasi: number // dalam hari
   kondisiAwal?: string
+  // ✅ TASK 20: Add linked sarung support for backward compatibility
+  linkedSarung?: {
+    productId: string
+    productSizeId: string
+    quantity: number
+    selectedSize: ProductSize
+  }
 }
 
 // Type guard to detect size-aware items
