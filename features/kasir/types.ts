@@ -643,6 +643,7 @@ export interface UpdateTransaksiRequest {
   status?: TransactionStatus
   tglKembali?: string // ISO date string
   catatan?: string
+  kasirId?: string // ✅ NEW: For manual kasir selection in refund processing
   items?: Array<{
     id: string
     kondisiAkhir?: string
@@ -1401,3 +1402,70 @@ export const PENALTY_RATES = {
   'rusak berat': 50000,
   hilang: 'modal_awal',
 } as const
+
+// ==========================================
+// REFUND PROCESSING TYPES - Task 6
+// ==========================================
+
+/**
+ * Enhanced Activity Log Data Structure for Cancel Transaction Refund
+ * Extends existing activity data with refund tracking fields
+ */
+export interface CancelActivityData {
+  // Existing fields
+  previousStatus: string
+  newStatus: 'cancelled'
+  reason: string | null
+  totalAmount: string
+  amountPaid: string
+  remainingAmount: string
+  itemsCount: number
+  stockRestored: boolean
+  cancelledAt: string
+  
+  // ✅ NEW: Refund tracking fields
+  needsRefund: boolean // false when refund processed, true when pending
+  refundProcessed?: boolean // true when refund completed
+  refundAmount?: number // actual refund amount
+  expenseRecordCreated?: boolean // true when expense record created
+  refundCategory?: string // 'Refund Pembatalan Transaksi'
+  refundError?: string // error message if refund failed
+}
+
+/**
+ * Refund Status Types
+ */
+export type RefundStatus = 'pending' | 'completed' | 'failed'
+
+/**
+ * Refund Activity Data - Subset of CancelActivityData for refund-specific operations
+ */
+export interface RefundActivityData {
+  refundProcessed: boolean
+  refundAmount?: number
+  expenseRecordCreated?: boolean
+  refundError?: string
+}
+
+/**
+ * Refund Expense Record Structure
+ */
+export interface RefundExpenseRecord {
+  kasirId: string // Processing kasir
+  harga: number // Positive refund amount (Decimal converted to number for UI)
+  kategori: 'Refund Pembatalan Transaksi' // Fixed category
+  deskripsi: string // "Refund pembatalan transaksi #[code] - [customer]"
+  createdBy: string // User who processed cancellation
+  isActive: true // Always active for refunds
+}
+
+/**
+ * Refund Payment Record Structure
+ */
+export interface RefundPaymentRecord {
+  transaksiId: string // Original transaction
+  jumlah: number // Negative amount (refund) - Decimal converted to number for UI
+  metode: 'refund' // Fixed method
+  catatan: string // "Refund pembatalan transaksi: [reason]"
+  createdBy: string // User who processed cancellation
+}

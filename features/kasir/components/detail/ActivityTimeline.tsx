@@ -446,17 +446,38 @@ const CancelledActivityDisplay: React.FC<CancelledActivityProps> = ({ activity }
                 </div>
               )}
               
-              {activity.details.needsRefund && (
-                <div className="mt-3 pt-3 border-t border-gray-300">
+              {/* ✅ ENHANCED: Refund Status Display */}
+              {activity.details.refundProcessed ? (
+                <div className="mt-3 pt-3 border-t border-green-300">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-green-700">Status Refund:</span>
+                    <span className="text-sm font-bold text-green-700">✅ Selesai</span>
+                  </div>
+                  <div className="text-xs text-green-600 mt-1">
+                    Refund {formatCurrency(activity.details.refundAmount || 0)} telah diproses
+                  </div>
+                  {activity.details.expenseRecordCreated && (
+                    <div className="text-xs text-green-600">
+                      Record pengeluaran kasir telah dibuat
+                    </div>
+                  )}
+                </div>
+              ) : activity.details.needsRefund ? (
+                <div className="mt-3 pt-3 border-t border-orange-300">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium text-orange-700">Status Refund:</span>
-                    <span className="text-sm font-bold text-orange-700">Perlu Diproses</span>
+                    <span className="text-sm font-bold text-orange-700">⏳ Perlu Diproses</span>
                   </div>
                   <div className="text-xs text-orange-600 mt-1">
                     Customer telah membayar {formatCurrency(Number(activity.details.amountPaid))} dan perlu refund
                   </div>
+                  {activity.details.refundError && (
+                    <div className="text-xs text-red-600 mt-1">
+                      Error: {activity.details.refundError}
+                    </div>
+                  )}
                 </div>
-              )}
+              ) : null}
             </div>
           </div>
         )}

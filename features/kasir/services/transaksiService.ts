@@ -249,6 +249,7 @@ export class TransaksiService {
   constructor(
     private prisma: PrismaClient,
     private userId: string,
+    private kasirId?: string, // ✅ NEW: Optional kasirId for refund processing
   ) {
     this.codeGenerator = new TransactionCodeGenerator(prisma)
   }
@@ -1339,6 +1340,41 @@ export class TransaksiService {
             where: { transaksiId: id },
           })
 
+          // Get customer info for refund processing
+          const customerInfo = await tx.penyewa.findUnique({
+            where: { id: existingTransaksi.penyewaId },
+            select: { nama: true },
+          })
+
+          // ✅ NEW: Process automatic refund if payment was made
+          const refundAmount = existingTransaksi.jumlahBayar.toNumber()
+          let refundProcessed = false
+          let refundError: string | null = null
+
+          if (refundAmount > 0) {
+            try {
+              await this.processAutomaticRefund(tx, {
+                transaksiId: id,
+                transactionCode: existingTransaksi.kode,
+                refundAmount,
+                customerName: customerInfo?.nama || 'Unknown Customer',
+                cancellationReason: data.catatan || 'Tanpa alasan',
+              })
+              refundProcessed = true
+            } catch (error) {
+              // Log error but don't fail the cancellation
+              refundError = error instanceof Error ? error.message : 'Unknown refund error'
+              console.error('Automatic refund processing failed', {
+                transactionId: id,
+                transactionCode: existingTransaksi.kode,
+                refundAmount,
+                kasirId: this.kasirId,
+                error: refundError,
+                timestamp: new Date().toISOString(),
+              })
+            }
+          }
+
           await tx.aktivitasTransaksi.create({
             data: {
               transaksiId: id,
@@ -1354,7 +1390,13 @@ export class TransaksiService {
                 itemsCount: itemsCount,
                 stockRestored: false,  // ✅ UPDATED: No stock restoration for cancelled transactions
                 cancelledAt: new Date().toISOString(),
-                needsRefund: existingTransaksi.jumlahBayar.gt(0),
+                // ✅ ENHANCED: Refund processing status
+                needsRefund: refundAmount > 0 && !refundProcessed,
+                refundProcessed: refundProcessed,
+                refundAmount: refundAmount > 0 ? refundAmount : undefined,
+                expenseRecordCreated: refundProcessed,
+                refundCategory: refundProcessed ? 'Refund Pembatalan Transaksi' : undefined,
+                refundError: refundError,
               },
               createdBy: this.userId,
             },
@@ -1565,6 +1607,67 @@ export class TransaksiService {
     }
 
     return activityMap[status] || 'diperbarui'
+  }
+
+  /**
+   * ✅ NEW: Process automatic refund for cancelled transactions
+   * Follows the same pattern as Lost Item Resolution system
+   * @private
+   */
+  private async processAutomaticRefund(
+    //eslint-disable-next-line
+    tx: any,
+    params: {
+      transaksiId: string
+      transactionCode: string
+      refundAmount: number
+      customerName: string
+      cancellationReason: string
+    }
+  ): Promise<void> {
+    // Step 1: Validate kasir exists (required for expense tracking)
+    if (!this.kasirId) {
+      throw new Error('KasirId diperlukan untuk pemrosesan refund')
+    }
+
+    const kasirExists = await tx.kasir.findUnique({
+      where: { id: this.kasirId },
+    })
+    
+    if (!kasirExists) {
+      throw new Error('Kasir tidak ditemukan untuk pemrosesan refund')
+    }
+
+    // Step 2: Create refund payment record (negative amount)
+    await tx.pembayaran.create({
+      data: {
+        transaksiId: params.transaksiId,
+        jumlah: new Decimal(-params.refundAmount),
+        metode: 'refund',
+        catatan: `Refund pembatalan transaksi: ${params.cancellationReason}`,
+        createdBy: this.userId,
+      },
+    })
+
+    // Step 3: Create expense record (positive amount)
+    await tx.pengeluaranKasir.create({
+      data: {
+        kasirId: this.kasirId,
+        harga: new Decimal(params.refundAmount),
+        kategori: 'Refund Pembatalan Transaksi',
+        deskripsi: `Refund pembatalan transaksi #${params.transactionCode} - ${params.customerName}`,
+        createdBy: this.userId,
+        isActive: true,
+      },
+    })
+
+    console.log('✅ Automatic refund processed successfully', {
+      transactionId: params.transaksiId,
+      transactionCode: params.transactionCode,
+      refundAmount: params.refundAmount,
+      kasirId: this.kasirId,
+      timestamp: new Date().toISOString(),
+    })
   }
 
   /**

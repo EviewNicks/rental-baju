@@ -229,6 +229,7 @@ export const updateTransaksiSchema = z.object({
   status: z.enum(['active', 'diambil', 'selesai', 'terlambat', 'cancelled', 'pending_resolution']).optional(),
   tglKembali: z.string().datetime('Format tanggal kembali tidak valid (ISO 8601)').optional(),
   catatan: z.string().max(1000, 'Catatan maksimal 1000 karakter').optional(),
+  kasirId: z.string().uuid('Format kasir ID tidak valid').optional(), // ✅ NEW: For manual kasir selection
   items: z.array(updateTransaksiItemSchema).optional()
 })
 
