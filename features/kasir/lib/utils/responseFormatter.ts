@@ -363,6 +363,7 @@ export function formatTransactionResponse(
             code: item.linkedSarung.product.code,
             name: item.linkedSarung.product.name,
             category: item.linkedSarung.product.category || 'sarung',
+            //eslint-disable-next-line @typescript-eslint/no-explicit-any
             imageUrl: (item.linkedSarung.product as any).imageUrl || null, // ✅ TASK 24: Add imageUrl field
           } : undefined,
           selectedSize: item.linkedSarung.selectedSize ? {

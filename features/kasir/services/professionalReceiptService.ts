@@ -10,7 +10,6 @@ import type { TransaksiWithDetails } from './transaksiService'
 import { Decimal } from '@prisma/client/runtime/library'
 import fs from 'fs'
 import path from 'path'
-import { sarungPairingService } from './pairingService'
 
 /**
  * Transaction Detail interface for professional receipt
@@ -45,13 +44,12 @@ export class ProfessionalReceiptService {
   // Table column configuration for professional layout - UPDATED FOR JAS-SARUNG PAIRING
   private readonly TABLE_COLUMNS: TableColumn[] = [
     { header: 'No', width: 12, align: 'center' },
-    { header: 'Kode Jas', width: 30, align: 'left' },        // NEW: Jas product code
-    { header: 'Kode Sarung', width: 30, align: 'left' },     // NEW: Sarung product code
-    // { header: 'Nama Barang', width: 50, align: 'left' },     // Reduced width
-    { header: 'Size', width: 25, align: 'center' },          // Reduced width
+    { header: 'Kode Product', width: 30, align: 'left' },    // Universal product code for all products
+    { header: 'Kode Sarung', width: 30, align: 'left' },     // Sarung product code from linkedSarung
+    { header: 'Size', width: 25, align: 'center' },          // Size display
     { header: 'Qty', width: 15, align: 'center' },
-    { header: '@Harga', width: 20, align: 'right' },         // Reduced width
-    { header: 'Total Harga', width: 20, align: 'right' }     // Reduced width
+    { header: '@Harga', width: 20, align: 'right' },         
+    { header: 'Total Harga', width: 20, align: 'right' }     
   ]
 
   /**
@@ -256,24 +254,26 @@ export class ProfessionalReceiptService {
     for (let index = 0; index < items.length; index++) {
       const item = items[index]
       
-      // Extract jas and sarung codes based on pairing logic
-      const jasCode = this.extractJasCode(item)
+      // Extract product and sarung codes based on pairing logic
+      const productCode = this.extractProductCode(item)
       const sarungCode = this.extractSarungCode(item)
       
-      // Extract category type and format size display (with type assertion)
-      const categoryType = (item.produk.category as { type?: string })?.type || 'clothing'
+      // Get category type from category name mapping
+      const categoryName = typeof item.produk.category === 'string' 
+        ? item.produk.category 
+        : item.produk.category?.name || 'unknown'
+      const categoryType = this.getCategoryTypeFromName(categoryName)
       const formattedSize = this.formatSizeDisplay(item.kondisiAwal || '', categoryType)
       
       // Format currency amounts (without Rp prefix for professional format)
       const unitPrice = this.formatCurrency(item.hargaSewa)
       const totalPrice = this.formatCurrency(item.subtotal)
       
-      // Create table row with increment number (1, 2, 3, ...)
+      // Create table row with increment number (1, 2, 3, ...) - REMOVED "Nama Barang" column
       const row = [
         (index + 1).toString(),    // No (increment number: 1, 2, 3, ...)
-        jasCode,                   // Kode Jas (product code if jas, "-" if not)
+        productCode,               // Kode Product (universal product code)
         sarungCode,                // Kode Sarung (linked sarung code if paired, "-" if not)
-        item.produk.name,          // Nama Barang
         formattedSize || '-',      // Size (context-aware format)
         item.jumlah.toString(),    // Qty
         unitPrice,                 // @Harga
@@ -744,141 +744,160 @@ export class ProfessionalReceiptService {
 
   /**
    * Format size display based on category type and product size information
-   * @param kondisiAwal - Format: "uuid|SIZE|TYPE|condition" or size info
+   * Updated to handle JSON format kondisiAwal data
+   * @param kondisiAwal - JSON string format: "{\"size\":\"M\",\"ageCategory\":\"ADULT\",\"condition\":\"baik\",...}"
    * @param categoryType - Category type from product.category.type
    * @returns Formatted size string
    */
   private formatSizeDisplay(kondisiAwal: string, categoryType: string): string {
     if (!kondisiAwal) return '-'
 
-    const parts = kondisiAwal.split('|')
-    if (parts.length < 2) return '-'
+    try {
+      // Parse JSON string to get size data
+      const kondisiData = JSON.parse(kondisiAwal)
+      const size = kondisiData.size || ''
+      const ageCategory = kondisiData.ageCategory || ''
 
-    const size = parts[1] // SIZE from kondisiAwal
-    const ageCategory = parts.length >= 3 ? parts[2] : '' // TYPE/AgeCategory from kondisiAwal
+      // Debug logging (remove in production)
+      console.log('formatSizeDisplay Debug:', {
+        kondisiAwal,
+        categoryType,
+        size,
+        ageCategory,
+        kondisiData
+      })
 
-    // Debug logging (remove in production)
-    console.log('formatSizeDisplay Debug:', {
-      kondisiAwal,
-      categoryType,
-      size,
-      ageCategory,
-      parts
-    })
+      // Handle different category types
+      switch (categoryType) {
+        case 'clothing':
+          // Format: SIZE(AgeCategory) - e.g., M(D), L(A)
+          // Special handling: if size is UNIVERSAL, treat as accessories_age_based
+          if (size === 'UNIVERSAL') {
+            return ageCategory === 'ADULT' ? 'D' : 
+                   ageCategory === 'CHILD' ? 'A' : 'U'
+          }
+          if (ageCategory) {
+            const ageCode = ageCategory === 'ADULT' ? 'D' : 
+                           ageCategory === 'CHILD' ? 'A' : 'U'
+            return `${size}(${ageCode})`
+          }
+          return size
 
-    // Handle different category types
-    switch (categoryType) {
-      case 'clothing':
-        // Format: SIZE(AgeCategory) - e.g., M(D), L(A)
-        // Special handling: if size is UNIVERSAL, treat as accessories_age_based
-        if (size === 'UNIVERSAL') {
-          return ageCategory === 'ADULT' ? 'D' : 
-                 ageCategory === 'CHILD' ? 'A' : 'U'
-        }
+        case 'accessories_universal':
+          // Format: U (always universal)
+          return 'U'
+
+        case 'accessories_age_based':
+          // Format: AgeCategory only - e.g., D, A (no size enum needed)
+          if (ageCategory) {
+            return ageCategory === 'ADULT' ? 'D' : 
+                   ageCategory === 'CHILD' ? 'A' : 'U'
+          }
+          // If no age category, try to infer from size enum as fallback
+          if (size === 'UNIVERSAL') {
+            return 'U'
+          }
+          return '-'
+
+        default:
+          // Fallback to original size
+          return size || '-'
+      }
+    } catch (error) {
+      console.warn('Failed to parse kondisiAwal JSON:', { kondisiAwal, error })
+      
+      // Fallback: try old pipe-separated format for backward compatibility
+      const parts = kondisiAwal.split('|')
+      if (parts.length >= 2) {
+        const size = parts[1]
+        const ageCategory = parts.length >= 3 ? parts[2] : ''
+        
         if (ageCategory) {
           const ageCode = ageCategory === 'ADULT' ? 'D' : 
                          ageCategory === 'CHILD' ? 'A' : 'U'
           return `${size}(${ageCode})`
         }
         return size
-
-      case 'accessories_universal':
-        // Format: U (always universal)
-        return 'U'
-
-      case 'accessories_age_based':
-        // Format: AgeCategory only - e.g., D, A (no size enum needed)
-        if (ageCategory) {
-          return ageCategory === 'ADULT' ? 'D' : 
-                 ageCategory === 'CHILD' ? 'A' : 'U'
-        }
-        // If no age category, try to infer from size enum as fallback
-        if (size === 'UNIVERSAL') {
-          return 'U'
-        }
-        return '-'
-
-      default:
-        // Fallback to original size
-        return size || '-'
+      }
+      
+      return '-'
     }
   }
 
   /**
-   * Extract size from kondisiAwal field (legacy method - kept for compatibility)
-   * @param kondisiAwal - Format: "uuid|SIZE|TYPE|condition"
+   * Extract size from kondisiAwal field (updated for JSON format)
+   * @param kondisiAwal - JSON string format: "{\"size\":\"M\",\"ageCategory\":\"ADULT\",...}"
    * @returns Size string (e.g., "M", "L")
    */
   private extractSize(kondisiAwal: string): string {
     if (!kondisiAwal) return ''
 
-    const parts = kondisiAwal.split('|')
-    return parts.length >= 2 ? parts[1] : ''
+    try {
+      // Parse JSON string to get size data
+      const kondisiData = JSON.parse(kondisiAwal)
+      return kondisiData.size || ''
+    } catch  {
+      // Fallback: try old pipe-separated format for backward compatibility
+      const parts = kondisiAwal.split('|')
+      return parts.length >= 2 ? parts[1] : ''
+    }
   }
 
   /**
-   * Extract jas code from transaction item
-   * Returns product code if item is a jas product, "-" otherwise
-   * @param item - Transaction item
-   * @returns Jas product code or "-"
+   * Get category type from category name
+   * Maps category names to their corresponding types for size formatting
+   * @param categoryName - Category name from API (e.g., "jas-polos", "bando-besar")
+   * @returns Category type for size formatting
    */
-  private extractJasCode(item: TransaksiWithDetails['items'][0]): string {
-    // Check if this item is eligible for sarung pairing using configurable system
-    const isEligible = sarungPairingService.isEligibleForPairing({
-      id: item.produk.id,
-      name: item.produk.name,
-      category: item.produk.category?.name || '',
-      pricePerDay: 0, // Not needed for detection
-      size: '',
-      color: '',
-      image: '',
-      available: true,
-    })
-    
-    if (isEligible) {
-      return item.produk.code || '-'
+  private getCategoryTypeFromName(categoryName: string): string {
+    // Category name to type mapping based on business logic
+    const categoryTypeMapping: Record<string, string> = {
+      // Clothing categories (size + age category)
+      'jas-polos': 'clothing',
+      'jas-batik': 'clothing',
+      'jas-songket': 'clothing',
+      'kemeja': 'clothing',
+      'celana': 'clothing',
+      
+      // Accessories with age categories
+      'sarung': 'accessories_age_based',
+      'songket': 'accessories_age_based',
+      'selendang': 'accessories_age_based',
+      
+      // Universal accessories (no size/age distinction)
+      'bando-besar': 'accessories_universal',
+      'bando-kecil': 'accessories_universal',
+      'anting': 'accessories_universal',
+      'kalung': 'accessories_universal',
+      'gelang': 'accessories_universal',
     }
-    return '-'
+    
+    return categoryTypeMapping[categoryName] || 'clothing' // Default to clothing
+  }
+
+  /**
+   * Extract product code from transaction item
+   * Returns product code for ALL products (universal)
+   * @param item - Transaction item
+   * @returns Product code
+   */
+  private extractProductCode(item: TransaksiWithDetails['items'][0]): string {
+    return item.produk.code || '-'
   }
 
   /**
    * Extract sarung code from transaction item
-   * For jas products: returns linked sarung code if paired, "-" if not paired
-   * For sarung products: returns product code if rented separately, "-" if linked to jas
-   * For other products: returns "-"
+   * Returns linked sarung product code if available, "-" otherwise
    * @param item - Transaction item
    * @returns Sarung product code or "-"
    */
   private extractSarungCode(item: TransaksiWithDetails['items'][0]): string {
-    // Check if this is a product eligible for sarung pairing using configurable system
-    const isEligible = sarungPairingService.isEligibleForPairing({
-      id: item.produk.id,
-      name: item.produk.name,
-      category: item.produk.category?.name || '',
-      pricePerDay: 0, // Not needed for detection
-      size: '',
-      color: '',
-      image: '',
-      available: true,
-    })
-    
-    if (isEligible) {
-      // For eligible products, check if there's a linked sarung in the pairing data
-      // Note: In the current implementation, pairing data is stored in ProductSelection
-      // but TransactionItem doesn't have linkedSarung field yet.
-      // For now, we'll return "-" and this will be enhanced when pairing data is stored in transaction
-      return '-' // TODO: Extract from pairing data when available
+    // Check if item has linkedSarung data from API response
+    if (item.linkedSarung && item.linkedSarung.product && item.linkedSarung.product.code) {
+      return item.linkedSarung.product.code
     }
     
-    // Check if this is a sarung product rented separately (not linked to jas)
-    const categoryName = item.produk.category?.name
-    if (categoryName === 'sarung') {
-      // If sarung is rented separately (not as part of pairing), show its code
-      // TODO: Add logic to detect if sarung is linked to jas or rented separately
-      return item.produk.code || '-'
-    }
-    
-    // For all other products, no sarung code
+    // No linked sarung found
     return '-'
   }
 
