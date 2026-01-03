@@ -49,6 +49,7 @@ interface TransactionItem {
       code: string
       name: string
       category: string
+      imageUrl?: string // ✅ TASK 24: Add imageUrl field
     }
     selectedSize?: {
       id: string
@@ -195,6 +196,7 @@ export interface FormattedTransactionResponse {
         code: string
         name: string
         category: string
+        imageUrl?: string | null // ✅ TASK 24: Add imageUrl field
       }
       selectedSize?: {
         id: string
@@ -350,6 +352,7 @@ export function formatTransactionResponse(
       statusKembali: item.statusKembali,
 
       // TASK 19: Include linkedSarung data for pairing display
+      // TASK 24: Include imageUrl for sarung product display
       ...(item.linkedSarung && {
         linkedSarung: {
           productId: item.linkedSarung.productId,
@@ -360,6 +363,7 @@ export function formatTransactionResponse(
             code: item.linkedSarung.product.code,
             name: item.linkedSarung.product.name,
             category: item.linkedSarung.product.category || 'sarung',
+            imageUrl: (item.linkedSarung.product as any).imageUrl || null, // ✅ TASK 24: Add imageUrl field
           } : undefined,
           selectedSize: item.linkedSarung.selectedSize ? {
             id: item.linkedSarung.selectedSize.id,

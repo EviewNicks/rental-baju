@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import type { TransactionStatus } from '../../types'
 import { useTransactions } from '../../hooks/useTransactions'
@@ -11,9 +12,20 @@ import { AuthenticationControls } from '@/features/auth/components/Authenticatio
 import { Plus, Shirt, Wallet } from 'lucide-react'
 
 export function TransactionsDashboard() {
+  const searchParams = useSearchParams()
   const [activeTab, setActiveTab] = useState<TransactionStatus | 'all'>('all')
   const { transactions, filters, updateFilters, isLoading, counts, error, refreshTransactions } =
     useTransactions()
+
+  // Check for refresh parameter and trigger refresh if needed
+  useEffect(() => {
+    const shouldRefresh = searchParams.get('refresh')
+    if (shouldRefresh === 'true') {
+      refreshTransactions()
+      // Clean up URL by removing the refresh parameter
+      window.history.replaceState({}, '', '/dashboard')
+    }
+  }, [searchParams, refreshTransactions])
 
   const handleTabChange = (tab: TransactionStatus | 'all') => {
     setActiveTab(tab)

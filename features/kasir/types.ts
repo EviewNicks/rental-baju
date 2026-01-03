@@ -469,6 +469,27 @@ export interface TransactionDetail extends Transaction {
       createdAt?: string
       createdBy?: string
     }>
+    // RPK-51: Add kondisiAwal for AgeSizes parsing
+    kondisiAwal?: string
+    // TASK 23: Add linkedSarung data for separate sarung display
+    linkedSarung?: {
+      productId: string
+      productSizeId: string
+      quantity: number
+      product?: {
+        id: string
+        code: string
+        name: string
+        category: string
+        image?: string
+        imageUrl?: string
+      }
+      selectedSize?: {
+        id: string
+        size: string
+        ageCategory: string
+      }
+    }
   }>
   timeline: ActivityLog[]
   penalties?: Penalty[]

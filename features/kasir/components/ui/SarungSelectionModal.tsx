@@ -6,6 +6,7 @@ import {
   Dialog,
   DialogContent,
   DialogHeader,
+  DialogTitle,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -524,16 +525,10 @@ export function SarungSelectionModal({
         className="min-w-[60vw] w-[95vw]  max-h-[95vh]  overflow-hidden z-50 "
         showCloseButton={false}
       >
-        <DialogHeader >
+        <DialogHeader>
           <div className="flex items-center justify-between">
-        {/* Jas Product Info */}
-          <div className="bg-blue-50 rounded-lg py-2 px-4 border border-blue-200">
-            <div className="flex items-center gap-3">
-              <Badge className="bg-blue-100 text-blue-800">Jas Terpilih</Badge>
-              <span className="font-medium text-gray-900">{jasProduct.name}</span>
-              <Badge variant="outline">{jasQuantity}x</Badge>
-            </div>
-          </div>
+          <DialogTitle>Pilih Sarung untuk {jasProduct.name}</DialogTitle>
+          
             <Button
               variant="ghost"
               size="sm"

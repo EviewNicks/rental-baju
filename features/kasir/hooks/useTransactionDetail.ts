@@ -316,6 +316,14 @@ async function transformApiToUI(apiData: TransaksiResponse): Promise<Transaction
         statusKembali: item.statusKembali,
         // RPK-51: Add kondisiAwal for AgeSizes parsing
         kondisiAwal: item.kondisiAwal,
+        // TASK 23: Add linkedSarung data for separate sarung display
+        linkedSarung: item.linkedSarung ? {
+          productId: item.linkedSarung.productId,
+          productSizeId: item.linkedSarung.productSizeId,
+          quantity: item.linkedSarung.quantity,
+          product: item.linkedSarung.product,
+          selectedSize: item.linkedSarung.selectedSize
+        } : undefined,
         // Handle optional return fields that may not exist in TypeScript interface
         ...('totalReturnPenalty' in item && item.totalReturnPenalty !== undefined
           ? {

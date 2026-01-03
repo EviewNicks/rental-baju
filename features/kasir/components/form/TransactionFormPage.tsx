@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import { ArrowLeft } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { useQueryClient } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
 import { Stepper } from '../ui/stepper'
 import { TransactionSuccessScreen } from '../ui/TransactionSuccessScreen'
@@ -16,9 +17,11 @@ import { getStepValidationMessage } from '../../lib/constants/stepValidationMess
 import type { ProductSelection } from '../../types'
 import { transactionFormSteps } from '../../lib/constants/workflowConfig'
 import { TransactionLogger } from '../../lib/logger/transactionLogger'
+import { queryKeys } from '@/lib/react-query'
 
 export function TransactionFormPage() {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const [showSuccess, setShowSuccess] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
@@ -135,9 +138,15 @@ export function TransactionFormPage() {
 
     if (success) {
       setShowSuccess(true)
-      // Redirect after showing success message
+      
+      // Invalidate transaction list cache to ensure fresh data on dashboard
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.kasir.transaksi.lists()
+      })
+      
+      // Redirect after showing success message with refresh parameter
       setTimeout(() => {
-        router.push('/dashboard')
+        router.push('/dashboard?refresh=true')
       }, 2000)
     } else {
       // 🔍 LOG: Transaction failure

@@ -682,7 +682,7 @@ export class TransaksiService {
             const calculation = priceCalculation!.itemCalculations[index]
             const productSize = productSizes.find((ps) => ps.id === item.productSizeId)!
             
-            // ✅ FIX: Store linkedSarung data in kondisiAwal as JSON metadata
+            // ✅ SIMPLIFIED: Store only essential data in kondisiAwal (no linkedSarung duplication)
             const kondisiAwalData = {
               productSizeId: item.productSizeId,
               size: productSize.size,
@@ -702,13 +702,13 @@ export class TransaksiService {
               }
               
               // ✅ DEBUG: Log linkedSarung processing for troubleshooting
-              console.log('🔍 Processing linkedSarung data:', {
-                itemId: item.produkId,
-                hasLinkedSarung: !!itemWithLinkedSarung.linkedSarung,
-                linkedSarungProductId: linkedSarungData.productId,
-                linkedSarungQuantity: linkedSarungData.quantity,
-                timestamp: new Date().toISOString()
-              })
+              // console.log('🔍 Processing linkedSarung data:', {
+              //   itemId: item.produkId,
+              //   hasLinkedSarung: !!itemWithLinkedSarung.linkedSarung,
+              //   linkedSarungProductId: linkedSarungData.productId,
+              //   linkedSarungQuantity: linkedSarungData.quantity,
+              //   timestamp: new Date().toISOString()
+              // })
               
               kondisiAwalData.linkedSarung = {
                 productId: linkedSarungData.productId,
@@ -728,11 +728,11 @@ export class TransaksiService {
               }
               
               // ✅ DEBUG: Confirm linkedSarung data stored
-              console.log('✅ LinkedSarung data stored in kondisiAwal:', {
-                itemId: item.produkId,
-                storedLinkedSarung: kondisiAwalData.linkedSarung,
-                timestamp: new Date().toISOString()
-              })
+              // console.log('✅ LinkedSarung data stored in kondisiAwal:', {
+              //   itemId: item.produkId,
+              //   storedLinkedSarung: kondisiAwalData.linkedSarung,
+              //   timestamp: new Date().toISOString()
+              // })
             } else {
               // ✅ DEBUG: Log when no linkedSarung detected
               console.log('ℹ️ No linkedSarung detected for item:', {
@@ -752,18 +752,16 @@ export class TransaksiService {
               hargaSewa: new Decimal(calculation.adjustedPrice).div(item.jumlah), // Price per unit after duration multiplier
               durasi: duration, // ENHANCED: Use actual duration from form
               subtotal: calculation.adjustedPrice,
-              kondisiAwal: JSON.stringify(kondisiAwalData), // ✅ FIX: Store as JSON with linkedSarung data
+              kondisiAwal: JSON.stringify(kondisiAwalData), // ✅ SIMPLIFIED: Store only essential data
             }
             
-            // 🔍 DEBUG POINT 4: Log kondisiAwal JSON before storage
-            console.log('🔍 DEBUG POINT 4 - KondisiAwal JSON Storage:', {
+            // 🔍 DEBUG: Log kondisiAwal JSON (simplified)
+            console.log('🔍 DEBUG - Simplified KondisiAwal Storage:', {
               itemIndex: index + 1,
               produkId: item.produkId,
               kondisiAwalJSON: JSON.stringify(kondisiAwalData),
-              hasLinkedSarungInData: !!kondisiAwalData.linkedSarung,
-              linkedSarungProductId: kondisiAwalData.linkedSarung?.productId || null,
               timestamp: new Date().toISOString(),
-              debugPoint: 'DATABASE_STORAGE'
+              debugPoint: 'SIMPLIFIED_STORAGE'
             })
             
             allItemsData.push(mainItemData)
@@ -791,12 +789,12 @@ export class TransaksiService {
               })
               
               if (sarungProductSize) {
-                // ✅ FIX: Store sarung metadata with reference to parent jas
+                // ✅ SIMPLIFIED: Store sarung metadata with reference to parent jas (no duplication)
                 const sarungKondisiAwalData = {
                   productSizeId: linkedSarungData.productSizeId,
                   size: sarungProductSize.size,
                   ageCategory: sarungProductSize.ageCategory,
-                  condition: item.kondisiAwal || '',
+                  condition: item.kondisiAwal || 'baik',
                   isPairedSarung: true,
                   parentJasProductId: item.produkId // Reference to parent jas
                 }
@@ -808,7 +806,7 @@ export class TransaksiService {
                   hargaSewa: new Decimal(0), // Sarung is free when paired
                   durasi: duration,
                   subtotal: new Decimal(0), // Sarung subtotal is 0
-                  kondisiAwal: JSON.stringify(sarungKondisiAwalData), // ✅ FIX: Store as JSON with pairing metadata
+                  kondisiAwal: JSON.stringify(sarungKondisiAwalData), // ✅ SIMPLIFIED: Store as JSON with pairing metadata only
                 }
                 allItemsData.push(sarungItemData)
               }
@@ -879,7 +877,7 @@ export class TransaksiService {
           }
         },
         {
-          timeout: 10000, // 10 seconds timeout (reduced from 30s after optimization)
+          timeout: 20000, // 20 seconds timeout (increased for jas-sarung pairing complexity)
         },
       )
 
@@ -1619,43 +1617,23 @@ export class TransaksiService {
 
   /**
    * TASK 19: Transform transaction items to include linkedSarung relationships
-   * Reconstructs jas-sarung pairing data from kondisiAwal JSON metadata
+   * ✅ BACKWARD COMPATIBLE: Handles both old and new data formats
    */
   private transformItemsWithPairing(items: TransaksiWithDetails['items']): TransaksiWithDetails['items'] {
     const transformedItems: TransaksiWithDetails['items'] = []
-    const processedSarungIds = new Set<string>()
     
-    // 🔍 DEBUG POINT 5: Log transformation process
-    console.log('🔍 DEBUG POINT 5 - Items Transformation Start:', {
+    console.log('🔍 DEBUG - Items Transformation (Backward Compatible):', {
       totalItems: items.length,
-      items: items.map(item => ({
-        id: item.id,
-        produkId: item.produkId,
-        kondisiAwal: item.kondisiAwal,
-        hasKondisiAwal: !!item.kondisiAwal
-      })),
       timestamp: new Date().toISOString(),
-      debugPoint: 'DATA_RETRIEVAL_TRANSFORMATION'
+      debugPoint: 'BACKWARD_COMPATIBLE_TRANSFORMATION'
     })
     
     for (const item of items) {
-      // Parse kondisiAwal JSON metadata
+      // Parse kondisiAwal to check if this is a paired sarung
       let kondisiAwalData: Record<string, unknown> | null = null
       try {
         if (typeof item.kondisiAwal === 'string' && item.kondisiAwal.startsWith('{')) {
           kondisiAwalData = JSON.parse(item.kondisiAwal)
-          
-          // 🔍 DEBUG POINT 5: Log parsed kondisiAwal data
-          console.log('🔍 DEBUG POINT 5 - KondisiAwal Parsed Successfully:', {
-            itemId: item.id,
-            produkId: item.produkId,
-            parsedData: kondisiAwalData,
-            hasLinkedSarung: kondisiAwalData && 'linkedSarung' in kondisiAwalData,
-            linkedSarungValue: kondisiAwalData?.linkedSarung,
-            linkedSarungIsNull: kondisiAwalData?.linkedSarung === null,
-            timestamp: new Date().toISOString(),
-            debugPoint: 'DATA_RETRIEVAL_TRANSFORMATION'
-          })
         }
       } catch (error) {
         // Handle legacy format or invalid JSON
@@ -1664,7 +1642,6 @@ export class TransaksiService {
       
       // Skip sarung items that are paired (they'll be included as linkedSarung data)
       if (kondisiAwalData && typeof kondisiAwalData === 'object' && 'isPairedSarung' in kondisiAwalData && kondisiAwalData.isPairedSarung) {
-        processedSarungIds.add(item.id)
         console.log('🔍 Skipping paired sarung item:', { itemId: item.id, produkId: item.produkId })
         continue
       }
@@ -1672,14 +1649,16 @@ export class TransaksiService {
       // Transform main item (jas or regular product)
       let transformedItem = { ...item }
       
-      // Add linkedSarung data if this item has pairing
-      if (kondisiAwalData && 
+      // ✅ BACKWARD COMPATIBILITY: Handle both old and new linkedSarung data formats
+      if (!item.linkedSarung && kondisiAwalData && 
           typeof kondisiAwalData === 'object' && 
           'linkedSarung' in kondisiAwalData && 
           kondisiAwalData.linkedSarung) {
         
+        // OLD FORMAT: linkedSarung data is in kondisiAwal JSON
         const linkedSarungData = kondisiAwalData.linkedSarung as Record<string, unknown>
-        const sarungProduct = this.findSarungProductDetails(items, linkedSarungData.productId as string)
+        const sarungProduct = this.findSarungProductDetailsFromKondisiAwal(items, linkedSarungData.productId as string)
+        
         
         transformedItem = {
           ...transformedItem,
@@ -1692,8 +1671,7 @@ export class TransaksiService {
           }
         }
         
-        // ✅ CRITICAL DEBUG: Log successful pairing reconstruction
-        console.log('✅ CRITICAL DEBUG - Pairing Reconstructed:', {
+        console.log('✅ DEBUG - Pairing Reconstructed (Old Format):', {
           jasItemId: item.id,
           jasProductId: item.produkId,
           sarungProductId: linkedSarungData.productId,
@@ -1702,30 +1680,23 @@ export class TransaksiService {
           timestamp: new Date().toISOString()
         })
       }
+      // NEW FORMAT: linkedSarung data is already at item level (no need to do anything)
       
       transformedItems.push(transformedItem)
     }
-    
-    // 🔍 DEBUG POINT 5: Log transformation results
-    console.log('🔍 DEBUG POINT 5 - Transformation Complete:', {
-      originalItemsCount: items.length,
-      transformedItemsCount: transformedItems.length,
-      itemsWithPairing: transformedItems.filter(item => !!item.linkedSarung).length,
-      processedSarungIds: Array.from(processedSarungIds),
-      timestamp: new Date().toISOString()
-    })
-    
     return transformedItems
   }
   
   /**
-   * TASK 19: Helper method to find sarung product details from transaction items
+   * TASK 19: Helper method to find sarung product details from kondisiAwal (for backward compatibility)
+   * TASK 24: Include imageUrl field for proper sarung image display
    */
-  private findSarungProductDetails(items: TransaksiWithDetails['items'], sarungProductId: string): {
+  private findSarungProductDetailsFromKondisiAwal(items: TransaksiWithDetails['items'], sarungProductId: string): {
     id: string
     code: string
     name: string
     category: string
+    imageUrl?: string
   } | undefined {
     const sarungItem = items.find(item => 
       item.produkId === sarungProductId && 
@@ -1733,13 +1704,16 @@ export class TransaksiService {
     )
     
     if (sarungItem?.produk) {
+      
       return {
         id: sarungItem.produk.id,
         code: sarungItem.produk.code,
         name: sarungItem.produk.name,
-        category: sarungItem.produk.category?.name || 'sarung'
+        category: sarungItem.produk.category?.name || 'sarung',
+        imageUrl: sarungItem.produk.imageUrl || undefined
       }
     }
+    
     
     return undefined
   }
