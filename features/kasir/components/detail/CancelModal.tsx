@@ -82,7 +82,7 @@ export function CancelModal({ isOpen, onClose, transaction }: CancelModalProps) 
             </p>
             <div className="bg-green-50 border border-green-200 rounded-lg p-3">
               <div className="text-sm">
-                <p className="text-green-900 font-medium">Stock telah dikembalikan</p>
+                <p className="text-green-900 font-medium">Transaksi berhasil dibatalkan</p>
                 <p className="text-green-700 mt-1">
                   Alasan: {reason.length > 50 ? `${reason.substring(0, 50)}...` : reason}
                 </p>
@@ -177,8 +177,8 @@ export function CancelModal({ isOpen, onClose, transaction }: CancelModalProps) 
               </p>
               <ul className="text-xs text-red-600 mt-2 space-y-1 ml-4 list-disc">
                 <li>Status transaksi akan diubah menjadi DIBATALKAN</li>
-                <li>Stock produk akan dikembalikan ke inventory</li>
                 <li>Transaksi tidak akan dihitung dalam revenue</li>
+                <li>Jika ada pembayaran, mungkin perlu proses refund manual</li>
               </ul>
             </div>
 

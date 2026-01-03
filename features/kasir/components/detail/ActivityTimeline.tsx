@@ -1,4 +1,4 @@
-import { Clock, Loader2, Package, AlertTriangle } from 'lucide-react'
+import { Clock, Loader2, Package, AlertTriangle, XCircle } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/react-query'
@@ -389,6 +389,82 @@ const PenaltyActivityDisplay: React.FC<PenaltyActivityProps> = ({ activity }) =>
   )
 }
 
+// ✅ NEW: Cancelled Activity Display Component
+interface CancelledActivityProps {
+  activity: ActivityLog
+}
+
+const CancelledActivityDisplay: React.FC<CancelledActivityProps> = ({ activity }) => {
+  const Icon = actionIcons[activity.action] || XCircle
+  const colorClass = actionColors[activity.action] || 'text-gray-600 bg-gray-100'
+
+  return (
+    <div className="flex items-start gap-4">
+      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${colorClass}`}>
+        <Icon className="h-5 w-5" />
+      </div>
+
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center justify-between">
+          <h4 className="text-sm font-medium text-gray-900">Transaksi Dibatalkan</h4>
+          <time className="text-xs text-gray-500">{formatDate(activity.timestamp)}</time>
+        </div>
+
+        <p className="text-sm text-gray-600 mt-1">{activity.description}</p>
+        <div className="text-xs text-gray-600 mt-1">Oleh: {activity.performedBy}</div>
+
+        {/* Cancellation Details */}
+        {activity.details && (
+          <div className="mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+            <div className="text-sm font-medium text-gray-900 mb-2">
+              Informasi Pembatalan
+            </div>
+            
+            <div className="space-y-2 text-sm">
+              {activity.details.reason && (
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Alasan:</span>
+                  <span className="font-medium text-gray-900">{activity.details.reason}</span>
+                </div>
+              )}
+              
+              {activity.details.totalAmount && (
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Total Transaksi:</span>
+                  <span className="font-medium text-gray-900">
+                    {formatCurrency(Number(activity.details.totalAmount))}
+                  </span>
+                </div>
+              )}
+              
+              {activity.details.amountPaid && (
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Sudah Dibayar:</span>
+                  <span className="font-medium text-gray-900">
+                    {formatCurrency(Number(activity.details.amountPaid))}
+                  </span>
+                </div>
+              )}
+              
+              {activity.details.needsRefund && (
+                <div className="mt-3 pt-3 border-t border-gray-300">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-orange-700">Status Refund:</span>
+                    <span className="text-sm font-bold text-orange-700">Perlu Diproses</span>
+                  </div>
+                  <div className="text-xs text-orange-600 mt-1">
+                    Customer telah membayar {formatCurrency(Number(activity.details.amountPaid))} dan perlu refund
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export function ActivityTimeline({
   timeline,
   transactionCode,
@@ -580,6 +656,18 @@ export function ActivityTimeline({
             return (
               <div key={activity.id} className="relative pb-6">
                 <PenaltyActivityDisplay activity={activity} />
+                {index < deduplicatedTimeline.length - 1 && (
+                  <div className="absolute left-5 mt-4 w-0.5 h-6 bg-gray-200"></div>
+                )}
+              </div>
+            )
+          }
+
+          // ✅ NEW: Special handling for cancelled activities
+          if (activity.action === 'cancelled') {
+            return (
+              <div key={activity.id} className="relative pb-6">
+                <CancelledActivityDisplay activity={activity} />
                 {index < deduplicatedTimeline.length - 1 && (
                   <div className="absolute left-5 mt-4 w-0.5 h-6 bg-gray-200"></div>
                 )}

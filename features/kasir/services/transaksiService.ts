@@ -442,28 +442,7 @@ export class TransaksiService {
     let priceCalculation: ReturnType<typeof PriceCalculator.calculateTransactionTotalWithEnhancements> | null = null
 
     try {
-      // 🔍 DEBUG POINT 3: Log incoming API payload for linkedSarung analysis
-      console.log('🔍 DEBUG POINT 3 - Backend API Payload Analysis:', {
-        totalItems: data.items.length,
-        items: data.items.map((item, index) => {
-          // Type-safe access to linkedSarung
-          const itemWithLinkedSarung = item as CreateTransaksiItemSizeAware
-          return {
-            index: index + 1,
-            produkId: item.produkId,
-            hasLinkedSarung: 'linkedSarung' in item && !!(itemWithLinkedSarung.linkedSarung),
-            linkedSarungData: itemWithLinkedSarung.linkedSarung ? {
-              productId: itemWithLinkedSarung.linkedSarung.productId,
-              productSizeId: itemWithLinkedSarung.linkedSarung.productSizeId,
-              quantity: itemWithLinkedSarung.linkedSarung.quantity,
-              hasSelectedSize: !!itemWithLinkedSarung.linkedSarung.selectedSize
-            } : null
-          }
-        }),
-        timestamp: new Date().toISOString(),
-        source: 'TransaksiService.createTransaksiSizeAware',
-        debugPoint: 'BACKEND_PROCESSING'
-      })
+
 
       const penyewa = await this.prisma.penyewa.findUnique({
         where: { id: data.penyewaId },
@@ -495,26 +474,7 @@ export class TransaksiService {
       
       const uniqueSizeIds = [...new Set(productSizeIds)]
 
-      // 🔍 DEBUG: Log productSizeIds collection for troubleshooting
-      console.log('🔍 DEBUG - ProductSizeIds Collection:', {
-        totalItems: data.items.length,
-        mainProductSizeIds: data.items.map(item => item.productSizeId),
-        linkedSarungProductSizeIds: data.items
-          .filter(item => 'linkedSarung' in item && item.linkedSarung)
-          .map(item => {
-            const linkedSarungData = item.linkedSarung as {
-              productId: string
-              productSizeId: string
-              quantity: number
-              selectedSize: ProductSize
-            }
-            return linkedSarungData.productSizeId
-          }),
-        allProductSizeIds: productSizeIds,
-        uniqueProductSizeIds: uniqueSizeIds,
-        timestamp: new Date().toISOString(),
-        debugPoint: 'PRODUCT_SIZE_COLLECTION'
-      })
+
 
       const productSizes = await this.prisma.productSize.findMany({
         where: {
@@ -534,14 +494,7 @@ export class TransaksiService {
       })
 
       // 🔍 DEBUG: Log productSizes query results
-      console.log('🔍 DEBUG - ProductSizes Query Results:', {
-        requestedSizeIds: uniqueSizeIds.length,
-        foundSizes: productSizes.length,
-        foundSizeIds: productSizes.map(ps => ps.id),
-        missingSizeIds: uniqueSizeIds.filter(id => !productSizes.find(ps => ps.id === id)),
-        timestamp: new Date().toISOString(),
-        debugPoint: 'PRODUCT_SIZE_QUERY'
-      })
+
 
       // Get duration from first item (all items should have same duration in UI)
       const duration = data.items[0]?.durasi as 4 | 7 || 4
@@ -701,14 +654,7 @@ export class TransaksiService {
                 selectedSize: ProductSize
               }
               
-              // ✅ DEBUG: Log linkedSarung processing for troubleshooting
-              // console.log('🔍 Processing linkedSarung data:', {
-              //   itemId: item.produkId,
-              //   hasLinkedSarung: !!itemWithLinkedSarung.linkedSarung,
-              //   linkedSarungProductId: linkedSarungData.productId,
-              //   linkedSarungQuantity: linkedSarungData.quantity,
-              //   timestamp: new Date().toISOString()
-              // })
+
               
               kondisiAwalData.linkedSarung = {
                 productId: linkedSarungData.productId,
@@ -727,12 +673,7 @@ export class TransaksiService {
                 }
               }
               
-              // ✅ DEBUG: Confirm linkedSarung data stored
-              // console.log('✅ LinkedSarung data stored in kondisiAwal:', {
-              //   itemId: item.produkId,
-              //   storedLinkedSarung: kondisiAwalData.linkedSarung,
-              //   timestamp: new Date().toISOString()
-              // })
+
             } else {
               // ✅ DEBUG: Log when no linkedSarung detected
               console.log('ℹ️ No linkedSarung detected for item:', {
@@ -1363,13 +1304,24 @@ export class TransaksiService {
           await Promise.all(
             //eslint-disable-next-line
             transaksiItems.map(async (item: any) => {
-              const quantityToRestore =
-                data.status === 'cancelled' ? item.jumlah : item.jumlah - (item.jumlahDiambil || 0)
+              // ✅ SIMPLE FIX: No stock restoration for cancelled transactions (pickup-based system)
+              const quantityToRestore = data.status === 'cancelled' 
+                ? 0  // ❌ NO restoration for cancelled transactions
+                : item.jumlah - (item.jumlahDiambil || 0)  // ✅ Keep existing logic for 'selesai'
 
               if (quantityToRestore > 0 && item.kondisiAwal) {
-                // Parse productSizeId from kondisiAwal field format: "productSizeId|size|ageCategory|condition"
-                const kondisiParts = item.kondisiAwal.split('|')
-                const productSizeId = kondisiParts[0]
+                // Parse productSizeId from kondisiAwal field (support both JSON and legacy formats)
+                let productSizeId: string | null = null
+                
+                try {
+                  // Try parsing as JSON first (new format)
+                  const kondisiData = JSON.parse(item.kondisiAwal)
+                  productSizeId = kondisiData.productSizeId
+                } catch {
+                  // Fallback to legacy format: "productSizeId|size|ageCategory|condition"
+                  const kondisiParts = item.kondisiAwal.split('|')
+                  productSizeId = kondisiParts[0]
+                }
 
                 if (productSizeId) {
                   // Use InventoryService for consistent stock management
@@ -1400,7 +1352,7 @@ export class TransaksiService {
                 amountPaid: existingTransaksi.jumlahBayar.toString(),
                 remainingAmount: existingTransaksi.sisaBayar.toString(),
                 itemsCount: itemsCount,
-                stockRestored: true,
+                stockRestored: false,  // ✅ UPDATED: No stock restoration for cancelled transactions
                 cancelledAt: new Date().toISOString(),
                 needsRefund: existingTransaksi.jumlahBayar.gt(0),
               },
@@ -1622,11 +1574,6 @@ export class TransaksiService {
   private transformItemsWithPairing(items: TransaksiWithDetails['items']): TransaksiWithDetails['items'] {
     const transformedItems: TransaksiWithDetails['items'] = []
     
-    console.log('🔍 DEBUG - Items Transformation (Backward Compatible):', {
-      totalItems: items.length,
-      timestamp: new Date().toISOString(),
-      debugPoint: 'BACKWARD_COMPATIBLE_TRANSFORMATION'
-    })
     
     for (const item of items) {
       // Parse kondisiAwal to check if this is a paired sarung
@@ -1671,14 +1618,7 @@ export class TransaksiService {
           }
         }
         
-        console.log('✅ DEBUG - Pairing Reconstructed (Old Format):', {
-          jasItemId: item.id,
-          jasProductId: item.produkId,
-          sarungProductId: linkedSarungData.productId,
-          sarungQuantity: linkedSarungData.quantity,
-          sarungProductFound: !!sarungProduct,
-          timestamp: new Date().toISOString()
-        })
+
       }
       // NEW FORMAT: linkedSarung data is already at item level (no need to do anything)
       

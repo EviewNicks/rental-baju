@@ -403,6 +403,7 @@ export interface ActivityLog {
     | 'overdue'
     | 'reminder_sent'
     | 'penalty_added'
+    | 'cancelled'  // ✅ ADDED: Support for cancelled activities
   description: string
   performedBy: string
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

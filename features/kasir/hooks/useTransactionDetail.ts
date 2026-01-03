@@ -384,10 +384,10 @@ async function transformApiToUI(apiData: TransaksiResponse): Promise<Transaction
  */
 function mapActivityTypeToAction(
   activityType: string,
-): 'created' | 'paid' | 'picked_up' | 'returned' | 'overdue' | 'reminder_sent' | 'penalty_added' {
+): 'created' | 'paid' | 'picked_up' | 'returned' | 'overdue' | 'reminder_sent' | 'penalty_added' | 'cancelled' {
   const mapping: Record<
     string,
-    'created' | 'paid' | 'picked_up' | 'returned' | 'overdue' | 'reminder_sent' | 'penalty_added'
+    'created' | 'paid' | 'picked_up' | 'returned' | 'overdue' | 'reminder_sent' | 'penalty_added' | 'cancelled'
   > = {
     dibuat: 'created',
     dibayar: 'paid',
@@ -397,7 +397,7 @@ function mapActivityTypeToAction(
     penalty_added: 'penalty_added', // NEW: Penalty activity mapping
     penalty_diterapkan: 'penalty_added', // NEW: Penalty alias mapping
     terlambat: 'overdue',
-    dibatalkan: 'penalty_added', // Map cancelled to penalty for now
+    dibatalkan: 'cancelled', // ✅ FIXED: Map cancelled to cancelled action (not penalty)
   }
 
   return mapping[activityType] || 'created' // Default to 'created' for unknown types
