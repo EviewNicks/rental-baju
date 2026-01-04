@@ -163,7 +163,7 @@ export class ProfessionalReceiptService {
 
     // RIGHT SIDE: Transaction Information (aligned with logo top)
     const rightX = this.PDF_WIDTH_MM - this.MARGIN - 5 // Almost at right margin
-    let rightY = currentY + 4 // Align with logo top
+    const rightY = currentY + 4 // Align with logo top
 
     // Set font for transaction info (no more "PENAWARAN PENJUALAN" title)
     doc.setFont(this.FONT_FAMILY, 'normal')

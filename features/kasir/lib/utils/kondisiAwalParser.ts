@@ -13,6 +13,19 @@ export interface ParsedKondisiAwal {
   isLegacyFormat: boolean
 }
 
+// Enhanced interface for pairing integration
+export interface EnhancedKondisiAwalData extends ParsedKondisiAwal {
+  linkedSarung?: {
+    productId: string
+    productSizeId: string
+    quantity: number
+    product?: {
+      name: string
+      code: string
+    }
+  }
+}
+
 /**
  * Parse kondisiAwal string into structured data
  * Supports both new format (with productSizeId) and legacy format
@@ -83,6 +96,61 @@ function isValidUUID(str: string): boolean {
   return uuidRegex.test(str)
 }
 
+/**
+ * Enhanced parseKondisiAwal function with JSON format support for pairing integration
+ * Supports both new JSON format (with linkedSarung) and legacy pipe format
+ */
+export function parseKondisiAwalEnhanced(kondisiAwal?: string | null): EnhancedKondisiAwalData {
+  // Default return for empty/null values
+  if (!kondisiAwal) {
+    return {
+      isLegacyFormat: true,
+    }
+  }
+
+  // Try JSON format first (pairing system)
+  try {
+    const jsonData = JSON.parse(kondisiAwal)
+    if (jsonData.productSizeId) {
+      return {
+        productSizeId: jsonData.productSizeId,
+        size: jsonData.size || undefined,
+        ageCategory: (jsonData.ageCategory as 'ADULT' | 'CHILD' | 'TODDLER') || undefined,
+        condition: jsonData.condition || undefined,
+        linkedSarung: jsonData.linkedSarung,
+        isLegacyFormat: false,
+      }
+    }
+  } catch (error) {
+    // Not JSON, continue to pipe format
+  }
+
+  // Fallback to existing pipe-separated format logic
+  const parts = kondisiAwal.split('|')
+  if (parts.length >= 4 && isValidUUID(parts[0])) {
+    return {
+      productSizeId: parts[0],
+      size: parts[1] || undefined,
+      ageCategory: (parts[2] as 'ADULT' | 'CHILD' | 'TODDLER') || undefined,
+      condition: parts.slice(3).join('|') || undefined,
+      isLegacyFormat: false,
+    }
+  }
+
+  // Legacy format: plain text condition
+  return {
+    condition: kondisiAwal,
+    isLegacyFormat: true,
+  }
+}
+
+/**
+ * Utility function for pickup service to extract productSizeId
+ */
+export function extractProductSizeIdEnhanced(kondisiAwal: string | null): string | null {
+  const parsed = parseKondisiAwalEnhanced(kondisiAwal)
+  return parsed?.productSizeId || null
+}
 /**
  * Extract product size information for display
  */

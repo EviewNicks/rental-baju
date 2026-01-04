@@ -44,6 +44,7 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^6.36.2",
+    "@fast-check/jest": "^2.1.1",
     "@hookform/resolvers": "^5.1.1",
     "@prisma/client": "6.11.1",
     "@radix-ui/react-alert-dialog": "^1.1.14",

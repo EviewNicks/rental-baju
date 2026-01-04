@@ -442,6 +442,7 @@ export interface TransactionDetail extends Transaction {
     duration: number
     subtotal: number
     sizeInfo?: string // Size information for display
+    kondisiAwal?: string | null // Condition data for pairing integration
     // ✅ Multi-condition summary for lost item resolution
     multiConditionSummary?: {
       totalPenalty: number

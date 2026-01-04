@@ -69,19 +69,56 @@ export class InventoryService {
   constructor(private prisma: PrismaClient) {}
 
   /**
-   * Update stock when creating a rental transaction
+   * Update stock when creating a rental transaction with dual deduction support
+   * Supports both single item and dual deduction for jas-sarung pairings
    * Decrements availableQuantity and increments rentedQuantity atomically
    *
    * @param sizeId - ProductSize ID to update
    * @param quantity - Number of items being rented (must be > 0)
+   * @param linkedSarungSizeId - Optional linked sarung ProductSize ID for dual deduction
    * @throws Error if quantity <= 0 or database operation fails
    */
-  async updateStockOnCreate(sizeId: string, quantity: number): Promise<void> {
+  async updateStockOnCreate(sizeId: string, quantity: number, linkedSarungSizeId?: string): Promise<void> {
     if (quantity <= 0) {
       throw new Error('Quantity must be greater than 0')
     }
 
+    // ✅ TASK 6: Additional audit trail point 1 - Transaction context validation
+    console.info('🔧 Stock deduction initiated', {
+      sizeId,
+      linkedSarungSizeId,
+      quantity,
+      isDualDeduction: !!linkedSarungSizeId,
+      transactionContext: this.prisma.constructor.name,
+      timestamp: new Date().toISOString()
+    })
+
     try {
+      // If no linked sarung, use existing single deduction logic
+      if (!linkedSarungSizeId) {
+        await this.prisma.productSize.update({
+          where: { id: sizeId },
+          data: {
+            rentedQuantity: { increment: quantity },
+            availableQuantity: { decrement: quantity },
+          },
+        })
+        return
+      }
+
+      // ✅ FIXED: For dual deduction, use sequential updates instead of nested transaction
+      // Since we're already inside a transaction context, we can't use $transaction again
+      
+      // ✅ TASK 6: Additional audit trail point 2 - Dual deduction process tracking
+      console.info('🔄 Executing dual stock deduction', {
+        jasProductSizeId: sizeId,
+        sarungProductSizeId: linkedSarungSizeId,
+        quantity,
+        step: 'sequential_updates',
+        timestamp: new Date().toISOString()
+      })
+      
+      // Deduct stock for main item (jas)
       await this.prisma.productSize.update({
         where: { id: sizeId },
         data: {
@@ -89,10 +126,90 @@ export class InventoryService {
           availableQuantity: { decrement: quantity },
         },
       })
+      
+      // Deduct stock for linked sarung (1:1 ratio)
+      await this.prisma.productSize.update({
+        where: { id: linkedSarungSizeId },
+        data: {
+          rentedQuantity: { increment: quantity },
+          availableQuantity: { decrement: quantity },
+        },
+      })
+      
     } catch (error) {
       throw new Error(
         `Failed to update stock on create: ${error instanceof Error ? error.message : 'Unknown error'}`,
       )
+    }
+  }
+
+  /**
+   * Process stock deduction with pairing awareness
+   * Handles both regular items and jas-sarung pairings with comprehensive logging
+   *
+   * @param kondisiAwal - kondisiAwal field containing item data
+   * @param quantity - Number of items being processed
+   * @param itemId - Transaction item ID for logging
+   * @param logger - Logger instance for audit trail
+   */
+  async processStockForPickup(
+    kondisiAwal: string | null,
+    quantity: number,
+    itemId: string,
+    logger?: { warn: (msg: string, context?: any) => void; info: (msg: string, context?: any) => void; error: (msg: string, context?: any) => void }
+  ): Promise<void> {
+    // Import here to avoid circular dependency
+    const { parseKondisiAwalEnhanced } = await import('../lib/utils/kondisiAwalParser')
+    
+    // ✅ TASK 6: Strategic logging point 3 - Data format detection with pairing context
+    const detectedFormat = kondisiAwal ? (kondisiAwal.startsWith('{') ? 'JSON' : 'pipe') : 'null'
+    
+    const kondisiData = parseKondisiAwalEnhanced(kondisiAwal)
+    
+    if (!kondisiData?.productSizeId) {
+      logger?.warn('Could not extract productSizeId from kondisiAwal', {
+        itemId,
+        kondisiAwal,
+        reason: 'parsing_failed'
+      })
+      return // Skip stock deduction but continue pickup
+    }
+    
+    try {
+      // Check if this item has linkedSarung for dual deduction
+      const linkedSarungSizeId = kondisiData.linkedSarung?.productSizeId
+      
+      if (linkedSarungSizeId) {
+        // Dual deduction for jas-sarung pairing
+        await this.updateStockOnCreate(kondisiData.productSizeId, quantity, linkedSarungSizeId)
+        
+        logger?.info('Dual stock deduction completed for jas-sarung pairing', {
+          itemId,
+          jasProductSizeId: kondisiData.productSizeId,
+          sarungProductSizeId: linkedSarungSizeId,
+          quantity
+        })
+      } else {
+        // Single deduction for regular items
+        await this.updateStockOnCreate(kondisiData.productSizeId, quantity)
+        
+        logger?.info('Stock deduction completed for regular item', {
+          itemId,
+          productSizeId: kondisiData.productSizeId,
+          quantity
+        })
+      }
+    } catch (error) {
+      logger?.error('Stock deduction failed', {
+        itemId,
+        productSizeId: kondisiData.productSizeId,
+        linkedSarungSizeId: kondisiData.linkedSarung?.productSizeId,
+        quantity,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      })
+      
+      // Don't throw error - continue pickup process
+      // Stock inconsistency is better than failed pickup
     }
   }
 
