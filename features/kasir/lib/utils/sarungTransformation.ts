@@ -33,7 +33,7 @@ interface TransactionItem {
     createdAt?: string
     createdBy?: string
   }>
-  kondisiAwal?: string
+  kondisiAwal?: string | null
   linkedSarung?: {
     productId: string
     productSizeId: string
@@ -80,7 +80,7 @@ interface SarungDisplayItem {
     createdAt?: string
     createdBy?: string
   }>
-  kondisiAwal?: string
+  kondisiAwal?: string | null
   // Special sarung identification
   isSarungGratis: boolean
   pairedWithJas: string

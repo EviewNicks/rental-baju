@@ -41,17 +41,18 @@ Sistem integrasi antara jas-sarung pairing system dan pickup system untuk mengat
 4. THE System SHALL identify paired items using linkedSarung data in kondisiAwal JSON format
 5. WHEN stock deduction fails for any reason, THE System SHALL log error but continue pickup process
 
-### Requirement 3: Item Filtering Compatibility
+### Requirement 3: Item Filtering and UI Display Compatibility
 
-**User Story:** As a kasir, I want to pickup all available items from a transaction, so that customers can collect their rentals completely.
+**User Story:** As a kasir, I want to pickup all available items from a transaction and see clear pairing information, so that customers can collect their rentals completely and understand what they're receiving.
 
 #### Acceptance Criteria
 
 1. WHEN displaying transaction items for pickup, THE System SHALL include all items that can be picked up
-2. WHEN an item is a paired sarung, THE System SHALL exclude it from pickup UI but allow jas pickup
+2. WHEN an item is a jas with linked sarung, THE System SHALL display it as "Jas Name + Sarung Name" format in pickup UI
 3. WHEN filtering items for pickup, THE System SHALL use consistent logic between frontend and backend
 4. THE System SHALL prevent pickup attempts on items that are filtered out
-5. WHEN item filtering logic changes, THE System SHALL update both display and processing logic
+5. WHEN displaying pickup modal, THE System SHALL show linkedSarung information clearly to indicate pairing
+6. WHEN item filtering logic changes, THE System SHALL update both display and processing logic
 
 ### Requirement 4: Error Handling Enhancement
 

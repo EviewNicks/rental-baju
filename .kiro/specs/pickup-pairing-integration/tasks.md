@@ -6,77 +6,83 @@ This implementation plan addresses the critical compatibility issues between the
 
 ## Tasks
 
-- [ ] 1. Create core integration utilities
+- [x] 1. Create core integration utilities
   - Create KondisiAwalParser utility class for dual format support
   - Implement format detection and parsing logic for both JSON and pipe formats
   - Add comprehensive error handling and logging for parsing operations
   - _Requirements: 1.1, 1.2, 1.3, 1.4_
 
-- [ ]* 1.1 Write property tests for KondisiAwalParser
+- [x] 1.1 Write property tests for KondisiAwalParser
   - **Property 1: Format compatibility parsing**
   - **Validates: Requirements 1.1, 1.2, 1.3**
 
-- [ ]* 1.2 Write property tests for parsing failure handling
+- [x] 1.2 Write property tests for parsing failure handling
   - **Property 2: Graceful parsing failure handling**
   - **Validates: Requirements 1.4, 5.1, 5.4**
 
-- [ ] 2. Implement pairing-aware stock management
-  - Create PairingAwareStockManager class for intelligent stock handling
-  - Implement logic to skip stock deduction for paired sarung items
+- [x] 2. Implement pairing-aware stock management
+  - Create PairingAwareStockManager class for dual stock deduction (jas + sarung)
+  - Implement logic to deduct stock for BOTH jas and linked sarung items using 1:1 ratio
   - Add comprehensive logging for stock operation decisions
   - Integrate with existing InventoryService for stock operations
   - _Requirements: 2.1, 2.2, 2.3_
 
-- [ ]* 2.1 Write property tests for pairing-aware stock management
-  - **Property 3: Pairing-aware stock management**
+- [x] 2.1 Write property tests for dual stock management
+  - **Property 3: Dual stock management for pairings**
   - **Validates: Requirements 2.1, 2.2**
 
-- [ ]* 2.2 Write property tests for backward compatibility
+- [x] 2.2 Write property tests for backward compatibility
   - **Property 4: Backward compatibility stock management**
   - **Validates: Requirements 2.3, 9.1**
 
-- [ ] 3. Enhance PickupService with integration layer
+- [x] 3. Enhance PickupService with integration layer
   - Update processPickup method to use KondisiAwalParser
   - Replace direct kondisiAwal parsing with new integration utilities
   - Integrate PairingAwareStockManager for stock operations
   - Add enhanced error handling with pairing context
+  - **COMPLETED**: Fixed status update issue by filtering paired sarung items from status check
+  - **FIXED**: Status now updates to 'diambil' when all pickupable items are picked up
   - _Requirements: 1.1, 2.1, 4.1, 5.4_
 
-- [ ]* 3.1 Write property tests for pickup service integration
+- [x]* 3.1 Write property tests for pickup service integration
   - **Property 10: Dual format support**
   - **Validates: Requirements 9.1, 9.2**
 
-- [ ] 4. Implement contextual error handling
+- [x] 4. Implement contextual error handling
   - Create PairingErrorHandler for error classification and recovery
   - Implement contextual error messages with pairing information
   - Add error recovery strategies for different failure types
   - Update error logging to include pairing context
   - _Requirements: 4.1, 4.4, 5.1, 5.4_
 
-- [ ]* 4.1 Write property tests for error handling
+- [x]* 4.1 Write property tests for error handling
   - **Property 6: Contextual error messaging**
   - **Validates: Requirements 4.1, 4.4**
 
-- [ ] 5. Update item filtering logic for pickup UI
-  - Review and update frontend item filtering to exclude paired sarung items
+- [x] 5. Update item filtering logic and UI display for pickup
+  - Create PairingDisplayFormatter for "Jas Name + Sarung Name" format display
+  - Update frontend item display to show pairing information clearly
   - Ensure consistent filtering logic between frontend and backend
   - Update pickup availability calculations to consider only pickupable items
   - Add validation to prevent pickup attempts on filtered items
-  - _Requirements: 3.1, 3.2, 6.1, 6.2_
+  - Implement linkedSarung display in pickup modal
+  - _Requirements: 3.1, 3.2, 3.5, 6.1, 6.2_
 
-- [ ]* 5.1 Write property tests for item filtering
-  - **Property 5: Item filtering consistency**
-  - **Validates: Requirements 3.1, 3.2**
+- [x]* 5.1 Write property tests for UI display formatting
+  - **Property 5: Item filtering consistency and display formatting**
+  - **Validates: Requirements 3.1, 3.2, 3.5**
 
-- [ ]* 5.2 Write property tests for pickup availability
+- [x]* 5.2 Write property tests for pickup availability
   - **Property 7: Pickup availability calculation**
   - **Validates: Requirements 6.1, 6.2**
 
-- [ ] 6. Enhance audit logging and monitoring
+- [x] 6. Enhance audit logging and monitoring
   - Add comprehensive logging for pairing-related pickup operations
   - Implement data format detection logging
   - Add stock operation decision logging with reasons
   - Create performance monitoring for pickup operations with pairing data
+  - **COMPLETED**: Added 2 additional audit trail points for transaction context debugging
+  - **FIXED**: Resolved nested transaction error by using sequential updates in dual deduction
   - _Requirements: 7.1, 7.2, 8.1, 8.5_
 
 - [ ]* 6.1 Write property tests for audit logging

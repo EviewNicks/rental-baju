@@ -44,7 +44,7 @@ interface ProductDetailCardProps {
       createdBy?: string
     }>
     // RPK-51: kondisiAwal field for AgeSizes parsing
-    kondisiAwal?: string
+    kondisiAwal?: string | null
     // TASK 19: Add linkedSarung data for pairing display (DEPRECATED - use separate cards)
     linkedSarung?: {
       productId: string

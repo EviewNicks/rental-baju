@@ -6,7 +6,7 @@
  */
 
 import fc from 'fast-check'
-import { PairingErrorHandler, ErrorType, PairingErrorContext, StockContext } from '../../../../../features/kasir/lib/errors/pairingErrorHandler'
+import { PairingErrorHandler, ErrorType } from '../../../../../features/kasir/lib/errors/pairingErrorHandler'
 
 describe('PairingErrorHandler Property Tests', () => {
   // Generators for test data

@@ -471,8 +471,8 @@ export interface TransactionDetail extends Transaction {
       createdAt?: string
       createdBy?: string
     }>
-    // RPK-51: Add kondisiAwal for AgeSizes parsing
-    kondisiAwal?: string
+    // RPK-51: Add kondisiAwal for AgeSizes parsing - REMOVED: Duplicate declaration
+    // kondisiAwal is already declared above with proper pairing integration support
     // TASK 23: Add linkedSarung data for separate sarung display
     linkedSarung?: {
       productId: string

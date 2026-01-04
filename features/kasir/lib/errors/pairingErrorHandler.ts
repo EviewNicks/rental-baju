@@ -184,6 +184,7 @@ export class PairingErrorHandler {
   static logErrorWithContext(
     error: unknown,
     context: PairingErrorContext,
+    //eslint-disable-next-line @typescript-eslint/no-explicit-any
     logger?: { error: (msg: string, context?: any) => void }
   ): void {
     const errorInfo = {

@@ -34,9 +34,14 @@ PickupService (Enhanced)
 │   ├── parsePipeFormat()
 │   └── extractProductSizeId()
 ├── PairingAwareStockManager (NEW)
-│   ├── shouldSkipStockDeduction()
-│   ├── processStockForItem()
+│   ├── processStockForPickup()
+│   ├── deductJasStock()
+│   ├── deductLinkedSarungStock()
 │   └── logStockOperation()
+├── PairingDisplayFormatter (NEW)
+│   ├── formatItemDisplayName()
+│   ├── extractPairingInfo()
+│   └── generatePickupDescription()
 ├── Enhanced Error Handling
 │   ├── PairingErrorClassifier
 │   └── ContextualErrorMessages
@@ -47,67 +52,81 @@ PickupService (Enhanced)
 
 ## Components and Interfaces
 
-### KondisiAwalParser
+### Enhanced KondisiAwalParser (REFACTOR EXISTING)
 
-**Purpose**: Handle both JSON and pipe-separated formats for kondisiAwal field parsing.
+**Purpose**: Enhance existing `parseKondisiAwal()` utility to support JSON format with linkedSarung data.
+
+**REFACTOR APPROACH**: Instead of creating new class, we enhance the existing utility at `features/kasir/lib/utils/kondisiAwalParser.ts`
 
 ```typescript
-interface KondisiAwalData {
-  productSizeId: string
-  size: string
-  ageCategory: string
-  condition: string
+// Enhanced interface extending existing ParsedKondisiAwal
+export interface EnhancedKondisiAwalData extends ParsedKondisiAwal {
   linkedSarung?: {
     productId: string
     productSizeId: string
     quantity: number
+    product?: {
+      name: string
+      code: string
+    }
   }
 }
 
-class KondisiAwalParser {
-  static parse(kondisiAwal: string | null): KondisiAwalData | null {
-    if (!kondisiAwal) return null
-    
-    // Try JSON format first (pairing system)
-    try {
-      const jsonData = JSON.parse(kondisiAwal)
-      if (jsonData.productSizeId) {
-        return {
-          productSizeId: jsonData.productSizeId,
-          size: jsonData.size || 'UNKNOWN',
-          ageCategory: jsonData.ageCategory || 'ADULT',
-          condition: jsonData.condition || 'baik',
-          linkedSarung: jsonData.linkedSarung
-        }
-      }
-    } catch (error) {
-      // Not JSON, continue to pipe format
+// Enhanced parseKondisiAwal function (EXTENDS EXISTING)
+export function parseKondisiAwalEnhanced(kondisiAwal?: string | null): EnhancedKondisiAwalData {
+  // Default return for empty/null values
+  if (!kondisiAwal) {
+    return {
+      isLegacyFormat: true,
     }
-    
-    // Fallback to pipe-separated format (legacy)
-    const parts = kondisiAwal.split('|')
-    if (parts.length >= 4) {
+  }
+
+  // Try JSON format first (pairing system)
+  try {
+    const jsonData = JSON.parse(kondisiAwal)
+    if (jsonData.productSizeId) {
       return {
-        productSizeId: parts[0],
-        size: parts[1],
-        ageCategory: parts[2],
-        condition: parts[3]
+        productSizeId: jsonData.productSizeId,
+        size: jsonData.size || undefined,
+        ageCategory: jsonData.ageCategory || undefined,
+        condition: jsonData.condition || undefined,
+        linkedSarung: jsonData.linkedSarung,
+        isLegacyFormat: false,
       }
     }
-    
-    return null
+  } catch (error) {
+    // Not JSON, continue to pipe format
   }
-  
-  static extractProductSizeId(kondisiAwal: string | null): string | null {
-    const parsed = this.parse(kondisiAwal)
-    return parsed?.productSizeId || null
+
+  // Fallback to existing pipe-separated format logic
+  const parts = kondisiAwal.split('|')
+  if (parts.length >= 4 && isValidUUID(parts[0])) {
+    return {
+      productSizeId: parts[0],
+      size: parts[1] || undefined,
+      ageCategory: (parts[2] as 'ADULT' | 'CHILD' | 'TODDLER') || undefined,
+      condition: parts.slice(3).join('|') || undefined,
+      isLegacyFormat: false,
+    }
   }
+
+  // Legacy format: plain text condition
+  return {
+    condition: kondisiAwal,
+    isLegacyFormat: true,
+  }
+}
+
+// Utility function for pickup service
+export function extractProductSizeIdEnhanced(kondisiAwal: string | null): string | null {
+  const parsed = parseKondisiAwalEnhanced(kondisiAwal)
+  return parsed?.productSizeId || null
 }
 ```
 
 ### PairingAwareStockManager
 
-**Purpose**: Handle stock management with awareness of pairing relationships.
+**Purpose**: Handle stock management with awareness of pairing relationships, deducting stock for both jas and linked sarung items.
 
 ```typescript
 class PairingAwareStockManager {
@@ -131,30 +150,20 @@ class PairingAwareStockManager {
       return // Skip stock deduction but continue pickup
     }
     
-    // Check if this is a paired sarung item (should skip stock deduction)
-    if (this.isPairedSarungItem(transactionItem, kondisiData)) {
-      this.logger.info('Skipping stock deduction for paired sarung item', {
-        itemId: transactionItem.id,
-        productId: transactionItem.produkId,
-        reason: 'paired_sarung'
-      })
-      return
-    }
-    
-    // Process stock deduction for regular items and jas items
+    // Process stock deduction for the main item (jas)
     try {
       await this.inventoryService.updateStockOnCreate(
         kondisiData.productSizeId,
         pickupQuantity
       )
       
-      this.logger.info('Stock deducted successfully', {
+      this.logger.info('Stock deducted for main item', {
         itemId: transactionItem.id,
         productSizeId: kondisiData.productSizeId,
         quantity: pickupQuantity
       })
     } catch (error) {
-      this.logger.error('Stock deduction failed', {
+      this.logger.error('Main item stock deduction failed', {
         itemId: transactionItem.id,
         productSizeId: kondisiData.productSizeId,
         quantity: pickupQuantity,
@@ -164,23 +173,97 @@ class PairingAwareStockManager {
       // Don't throw error - continue pickup process
       // Stock inconsistency is better than failed pickup
     }
+    
+    // If this item has linkedSarung, also deduct stock for the sarung
+    if (kondisiData.linkedSarung?.productSizeId) {
+      try {
+        await this.inventoryService.updateStockOnCreate(
+          kondisiData.linkedSarung.productSizeId,
+          pickupQuantity // Use same quantity (1:1 ratio)
+        )
+        
+        this.logger.info('Stock deducted for linked sarung', {
+          itemId: transactionItem.id,
+          jasProductSizeId: kondisiData.productSizeId,
+          sarungProductSizeId: kondisiData.linkedSarung.productSizeId,
+          quantity: pickupQuantity
+        })
+      } catch (error) {
+        this.logger.error('Linked sarung stock deduction failed', {
+          itemId: transactionItem.id,
+          sarungProductSizeId: kondisiData.linkedSarung.productSizeId,
+          quantity: pickupQuantity,
+          error: error instanceof Error ? error.message : 'Unknown error'
+        })
+        
+        // Don't throw error - continue pickup process
+        // Stock inconsistency is better than failed pickup
+      }
+    }
+  }
+}
+```
+```
+
+### PairingDisplayFormatter
+
+**Purpose**: Format item display names and descriptions to show pairing information clearly in pickup UI.
+
+```typescript
+interface PairingDisplayInfo {
+  displayName: string
+  isPaired: boolean
+  pairingDescription?: string
+  linkedSarungName?: string
+}
+
+class PairingDisplayFormatter {
+  static formatItemDisplayName(
+    jasName: string,
+    kondisiAwal: string | null
+  ): PairingDisplayInfo {
+    const kondisiData = KondisiAwalParser.parse(kondisiAwal)
+    
+    if (!kondisiData?.linkedSarung) {
+      return {
+        displayName: jasName,
+        isPaired: false
+      }
+    }
+    
+    // For paired items, show "Jas Name + Sarung Name" format
+    const sarungName = kondisiData.linkedSarung.product?.name || 'Sarung'
+    const displayName = `${jasName} + ${sarungName}`
+    
+    return {
+      displayName,
+      isPaired: true,
+      pairingDescription: `Paket jas dengan sarung gratis`,
+      linkedSarungName: sarungName
+    }
   }
   
-  private isPairedSarungItem(
-    transactionItem: TransactionItem,
-    kondisiData: KondisiAwalData
-  ): boolean {
-    // Check if this item has linkedSarung data indicating it's a paired sarung
-    // This would be determined by business logic - for now, we'll use a simple check
-    return kondisiData.linkedSarung !== undefined && 
-           transactionItem.produk?.category === 'sarung'
+  static generatePickupDescription(
+    items: Array<{
+      jasName: string
+      kondisiAwal: string | null
+      quantity: number
+    }>
+  ): string {
+    const descriptions = items.map(item => {
+      const displayInfo = this.formatItemDisplayName(item.jasName, item.kondisiAwal)
+      const quantityText = item.quantity > 1 ? ` (${item.quantity} unit)` : ''
+      return `${displayInfo.displayName}${quantityText}`
+    })
+    
+    return descriptions.join(', ')
   }
 }
 ```
 
 ### Enhanced PickupService Integration
 
-**Modified processPickup method**:
+**Modified processPickup method with UI display support**:
 
 ```typescript
 async processPickup(
@@ -195,24 +278,41 @@ async processPickup(
       async (tx) => {
         // ... existing transaction item fetching ...
         
-        // Enhanced stock management with pairing awareness
-        const stockManager = new PairingAwareStockManager(
-          createInventoryService(tx as any),
-          console // Use console as logger for now
-        )
+        // ✅ CRITICAL: Transaction Context Handling for Dual Stock Deduction
+        // The InventoryService receives the transaction context (tx) which is a 
+        // PrismaTransactionClient, not the full PrismaClient. This means:
+        // 1. tx does NOT have the $transaction method (nested transactions not allowed)
+        // 2. All database operations must use the tx context directly
+        // 3. For dual deduction (jas + sarung), we use sequential updates instead of nested transactions
+        
+        const txInventoryService = createInventoryService(tx as any) // Type assertion for transaction context
         
         for (const pickupItem of items) {
           // ... existing pickup quantity update logic ...
           
-          // Enhanced stock processing with pairing awareness
+          // Enhanced stock processing with pairing awareness and transaction context
           const transactionItem = allTransactionItems.find(ti => ti.id === pickupItem.id)
           if (transactionItem) {
-            await stockManager.processStockForPickup(
-              transactionItem,
-              pickupItem.jumlahDiambil
+            await txInventoryService.processStockForPickup(
+              transactionItem.kondisiAwal,
+              pickupItem.jumlahDiambil,
+              pickupItem.id,
+              console // Use console as logger
             )
           }
         }
+        
+        // Enhanced activity log with pairing display information
+        const itemsDescription = PairingDisplayFormatter.generatePickupDescription(
+          items.map(item => {
+            const transactionItem = allTransactionItems.find(ti => ti.id === item.id)
+            return {
+              jasName: transactionItem?.produk?.name || 'Unknown Product',
+              kondisiAwal: transactionItem?.kondisiAwal || null,
+              quantity: item.jumlahDiambil
+            }
+          })
+        )
         
         // ... rest of existing logic ...
       },
@@ -228,6 +328,7 @@ async processPickup(
     throw new Error(this.generateContextualErrorMessage(error))
   }
 }
+```
 
 private createPairingErrorContext(
   error: unknown,
@@ -269,6 +370,71 @@ private generateContextualErrorMessage(error: unknown): string {
 }
 ```
 
+## Transaction Context Handling
+
+### Critical Issue: Nested Transaction Problem
+
+The core issue causing the `this.prisma.$transaction is not a function` error was related to nested transaction handling:
+
+**Problem**: 
+- `PickupService.processPickup()` runs inside a `$transaction()` context
+- `InventoryService.updateStockOnCreate()` was attempting to create another `$transaction()` for dual deduction
+- Transaction contexts (`tx`) don't have the `$transaction` method - only the main PrismaClient does
+
+**Solution**:
+- Use sequential updates within the existing transaction context instead of nested transactions
+- Pass the transaction context (`tx`) to `InventoryService` via `createInventoryService(tx)`
+- Perform dual deduction (jas + sarung) using sequential `update()` calls within the same transaction
+
+### Transaction Context Flow
+
+```
+PickupService.processPickup()
+├── this.prisma.$transaction(async (tx) => {
+│   ├── createInventoryService(tx) // Pass transaction context
+│   ├── txInventoryService.processStockForPickup()
+│   │   └── updateStockOnCreate() // Uses tx context, NOT this.prisma.$transaction
+│   │       ├── tx.productSize.update() // Jas stock deduction
+│   │       └── tx.productSize.update() // Sarung stock deduction (sequential)
+│   └── tx.aktivitasTransaksi.create() // Activity logging
+└── })
+```
+
+### Key Implementation Details
+
+1. **Transaction Context Passing**: `createInventoryService(tx as any)` passes the transaction context
+2. **Sequential Updates**: Dual deduction uses two sequential `update()` calls instead of nested `$transaction()`
+3. **Error Handling**: Errors in stock deduction are logged but don't fail the entire pickup process
+4. **Audit Trail**: Additional logging points track transaction context validation and dual deduction process
+
+### Audit Trail Enhancements
+
+Two additional audit trail points were added to debug transaction context issues:
+
+1. **Transaction Context Validation**: Logs transaction context type and dual deduction status
+2. **Dual Deduction Process Tracking**: Logs the sequential update process for paired items
+
+```typescript
+// Audit point 1: Transaction context validation
+console.info('🔧 Stock deduction initiated', {
+  sizeId,
+  linkedSarungSizeId,
+  quantity,
+  isDualDeduction: !!linkedSarungSizeId,
+  transactionContext: this.prisma.constructor.name,
+  timestamp: new Date().toISOString()
+})
+
+// Audit point 2: Dual deduction process tracking
+console.info('🔄 Executing dual stock deduction', {
+  jasProductSizeId: sizeId,
+  sarungProductSizeId: linkedSarungSizeId,
+  quantity,
+  step: 'sequential_updates',
+  timestamp: new Date().toISOString()
+})
+```
+
 ## Data Models
 
 ### Enhanced kondisiAwal Format Support
@@ -297,11 +463,12 @@ private generateContextualErrorMessage(error: unknown): string {
 
 | Item Type | Has linkedSarung | Action |
 |-----------|------------------|--------|
-| Jas | Yes | Deduct stock for jas only |
+| Jas | Yes | Deduct stock for jas AND linked sarung (1:1 ratio) |
 | Jas | No | Deduct stock normally |
-| Sarung (paired) | N/A | Skip stock deduction |
 | Sarung (standalone) | No | Deduct stock normally |
 | Other items | No | Deduct stock normally |
+
+**Note**: Paired sarung items are not displayed separately in pickup UI - they are handled automatically when their paired jas is picked up.
 
 ## Error Handling
 
@@ -377,8 +544,8 @@ Property 2: Graceful parsing failure handling
 *For any* invalid or malformed kondisiAwal data, the system should log a warning and continue pickup processing without stock deduction
 **Validates: Requirements 1.4, 5.1, 5.4**
 
-Property 3: Pairing-aware stock management
-*For any* jas item with linkedSarung data, stock deduction should occur only for the jas item and not for the linked sarung item
+Property 3: Dual stock management for pairings
+*For any* jas item with linkedSarung data, stock deduction should occur for BOTH the jas item AND the linked sarung item using 1:1 ratio
 **Validates: Requirements 2.1, 2.2**
 
 Property 4: Backward compatibility stock management

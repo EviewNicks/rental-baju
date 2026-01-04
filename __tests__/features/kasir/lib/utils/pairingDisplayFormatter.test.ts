@@ -6,7 +6,7 @@
  */
 
 import fc from 'fast-check'
-import { PairingDisplayFormatter, PairingDisplayInfo, PickupDisplayItem } from '../../../../../features/kasir/lib/utils/pairingDisplayFormatter'
+import { PairingDisplayFormatter } from '../../../../../features/kasir/lib/utils/pairingDisplayFormatter'
 
 describe('PairingDisplayFormatter Property Tests', () => {
   // Generators for test data

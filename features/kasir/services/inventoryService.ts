@@ -156,14 +156,11 @@ export class InventoryService {
     kondisiAwal: string | null,
     quantity: number,
     itemId: string,
+    //eslint-disable-next-line @typescript-eslint/no-explicit-any
     logger?: { warn: (msg: string, context?: any) => void; info: (msg: string, context?: any) => void; error: (msg: string, context?: any) => void }
   ): Promise<void> {
     // Import here to avoid circular dependency
     const { parseKondisiAwalEnhanced } = await import('../lib/utils/kondisiAwalParser')
-    
-    // ✅ TASK 6: Strategic logging point 3 - Data format detection with pairing context
-    const detectedFormat = kondisiAwal ? (kondisiAwal.startsWith('{') ? 'JSON' : 'pipe') : 'null'
-    
     const kondisiData = parseKondisiAwalEnhanced(kondisiAwal)
     
     if (!kondisiData?.productSizeId) {

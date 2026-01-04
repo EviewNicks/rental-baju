@@ -13,25 +13,29 @@ const generateCondition = () => ['baik', 'rusak', 'hilang'][Math.floor(Math.rand
 
 // Generate valid JSON kondisiAwal with optional linkedSarung
 const generateJsonKondisiAwal = (withLinkedSarung = Math.random() > 0.5) => {
+  //eslint-disable-next-line @typescript-eslint/no-explicit-any
   const data: any = {
     productSizeId: generateUuid(),
     size: generateSize(),
     ageCategory: generateAgeCategory(),
     condition: generateCondition(),
   }
-  
+
   if (withLinkedSarung) {
     data.linkedSarung = {
       productId: generateUuid(),
       productSizeId: generateUuid(),
       quantity: Math.floor(Math.random() * 5) + 1,
-      product: Math.random() > 0.5 ? {
-        name: `Sarung ${Math.floor(Math.random() * 100)}`,
-        code: `SAR${Math.floor(Math.random() * 1000)}`
-      } : undefined
+      product:
+        Math.random() > 0.5
+          ? {
+              name: `Sarung ${Math.floor(Math.random() * 100)}`,
+              code: `SAR${Math.floor(Math.random() * 1000)}`,
+            }
+          : undefined,
     }
   }
-  
+
   return data
 }
 
@@ -52,7 +56,7 @@ describe('KondisiAwalParser Property Tests - Pickup-Pairing Integration', () => 
         const kondisiData = generateJsonKondisiAwal()
         const jsonString = JSON.stringify(kondisiData)
         const result = parseKondisiAwalEnhanced(jsonString)
-        
+
         // Should successfully parse and extract data
         expect(result).toBeTruthy()
         expect(result.productSizeId).toBe(kondisiData.productSizeId)
@@ -60,7 +64,7 @@ describe('KondisiAwalParser Property Tests - Pickup-Pairing Integration', () => 
         expect(result.ageCategory).toBe(kondisiData.ageCategory)
         expect(result.condition).toBe(kondisiData.condition)
         expect(result.isLegacyFormat).toBe(false)
-        
+
         // Should preserve linkedSarung data if present
         if (kondisiData.linkedSarung) {
           expect(result.linkedSarung).toEqual(kondisiData.linkedSarung)
@@ -76,7 +80,7 @@ describe('KondisiAwalParser Property Tests - Pickup-Pairing Integration', () => 
         const pipeString = generatePipeKondisiAwal()
         const result = parseKondisiAwalEnhanced(pipeString)
         const parts = pipeString.split('|')
-        
+
         // Should successfully parse pipe format
         expect(result).toBeTruthy()
         expect(result.productSizeId).toBe(parts[0])
@@ -96,7 +100,7 @@ describe('KondisiAwalParser Property Tests - Pickup-Pairing Integration', () => 
         const result = extractProductSizeIdEnhanced(jsonString)
         expect(result).toBe(data.productSizeId)
       }
-      
+
       // Test pipe format
       for (let i = 0; i < 25; i++) {
         const pipeString = generatePipeKondisiAwal()
@@ -116,20 +120,21 @@ describe('KondisiAwalParser Property Tests - Pickup-Pairing Integration', () => 
         'not-uuid|M|ADULT|baik', // pipe format with invalid UUID
         'partial|data', // incomplete pipe format
         null, // null value
-        undefined // undefined value
+        undefined, // undefined value
       ]
 
-      invalidInputs.forEach(invalidData => {
+      invalidInputs.forEach((invalidData) => {
         // Should not throw errors for any invalid input
+        //eslint-disable-next-line @typescript-eslint/no-explicit-any
         expect(() => parseKondisiAwalEnhanced(invalidData as any)).not.toThrow()
-        
+        //eslint-disable-next-line @typescript-eslint/no-explicit-any
         const result = parseKondisiAwalEnhanced(invalidData as any)
-        
+
         // Should return valid result object
         expect(result).toBeTruthy()
         expect(typeof result).toBe('object')
         expect(result).toHaveProperty('isLegacyFormat')
-        
+
         // For null/undefined/empty, should return legacy format
         if (!invalidData) {
           expect(result.isLegacyFormat).toBe(true)
@@ -140,16 +145,22 @@ describe('KondisiAwalParser Property Tests - Pickup-Pairing Integration', () => 
 
     test('extractProductSizeIdEnhanced returns null for invalid data', () => {
       const invalidInputs = [
-        '', 'invalid-json', '{"incomplete": true}', 
-        'not-uuid|M|ADULT|baik', 'partial|data', null, undefined
+        '',
+        'invalid-json',
+        '{"incomplete": true}',
+        'not-uuid|M|ADULT|baik',
+        'partial|data',
+        null,
+        undefined,
       ]
 
-      invalidInputs.forEach(invalidData => {
+      invalidInputs.forEach((invalidData) => {
         // Should not throw errors for any invalid input
+        //eslint-disable-next-line @typescript-eslint/no-explicit-any
         expect(() => extractProductSizeIdEnhanced(invalidData as any)).not.toThrow()
-        
+        //eslint-disable-next-line @typescript-eslint/no-explicit-any
         const result = extractProductSizeIdEnhanced(invalidData as any)
-        
+
         // Should return null for invalid data
         expect(result).toBeNull()
       })
@@ -161,15 +172,15 @@ describe('KondisiAwalParser Property Tests - Pickup-Pairing Integration', () => 
         '{invalid: json}',
         '{"productSizeId": }',
         '[not an object]',
-        'just a string'
+        'just a string',
       ]
 
-      malformedJsonInputs.forEach(malformedJson => {
+      malformedJsonInputs.forEach((malformedJson) => {
         // Should not throw for malformed JSON
         expect(() => parseKondisiAwalEnhanced(malformedJson)).not.toThrow()
-        
+
         const result = parseKondisiAwalEnhanced(malformedJson)
-        
+
         // Should fallback to pipe format parsing or legacy format
         expect(result).toBeTruthy()
         expect(typeof result.isLegacyFormat).toBe('boolean')
@@ -186,7 +197,7 @@ describe('KondisiAwalParser Property Tests - Pickup-Pairing Integration', () => 
         '{"productSizeId": null}', // JSON with null productSizeId
       ]
 
-      edgeCases.forEach(edgeCase => {
+      edgeCases.forEach((edgeCase) => {
         expect(() => parseKondisiAwalEnhanced(edgeCase)).not.toThrow()
         const result = parseKondisiAwalEnhanced(edgeCase)
         expect(result).toBeTruthy()
@@ -201,16 +212,16 @@ describe('KondisiAwalParser Property Tests - Pickup-Pairing Integration', () => 
       for (let i = 0; i < 30; i++) {
         const kondisiData = generateJsonKondisiAwal(true) // Force linkedSarung
         if (!kondisiData.linkedSarung) continue // Skip if randomly didn't get linkedSarung
-        
+
         const jsonString = JSON.stringify(kondisiData)
         const result = parseKondisiAwalEnhanced(jsonString)
-        
+
         // Should preserve all linkedSarung properties
         expect(result.linkedSarung).toBeTruthy()
         expect(result.linkedSarung?.productId).toBe(kondisiData.linkedSarung?.productId)
         expect(result.linkedSarung?.productSizeId).toBe(kondisiData.linkedSarung?.productSizeId)
         expect(result.linkedSarung?.quantity).toBe(kondisiData.linkedSarung?.quantity)
-        
+
         if (kondisiData.linkedSarung?.product) {
           expect(result.linkedSarung?.product).toEqual(kondisiData.linkedSarung.product)
         }
@@ -222,7 +233,7 @@ describe('KondisiAwalParser Property Tests - Pickup-Pairing Integration', () => 
       for (let i = 0; i < 30; i++) {
         const pipeString = generatePipeKondisiAwal()
         const result = parseKondisiAwalEnhanced(pipeString)
-        
+
         // Pipe format should never have linkedSarung
         expect(result.linkedSarung).toBeUndefined()
       }
@@ -232,14 +243,18 @@ describe('KondisiAwalParser Property Tests - Pickup-Pairing Integration', () => 
   describe('Property 4: Backward compatibility', () => {
     test('legacy format detection works correctly', () => {
       const legacyStrings = [
-        'baik', 'rusak', 'hilang', 'kondisi lama',
-        'text without pipes', 'legacy|but|not|enough|parts',
-        'not-uuid|size|age' // incomplete pipe format
+        'baik',
+        'rusak',
+        'hilang',
+        'kondisi lama',
+        'text without pipes',
+        'legacy|but|not|enough|parts',
+        'not-uuid|size|age', // incomplete pipe format
       ]
 
-      legacyStrings.forEach(legacyString => {
+      legacyStrings.forEach((legacyString) => {
         const result = parseKondisiAwalEnhanced(legacyString)
-        
+
         // Should be detected as legacy format for non-JSON, non-valid-pipe strings
         if (!legacyString.includes('|') || legacyString.split('|').length < 4) {
           expect(result.isLegacyFormat).toBe(true)

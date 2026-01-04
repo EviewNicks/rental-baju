@@ -121,7 +121,8 @@ export function parseKondisiAwalEnhanced(kondisiAwal?: string | null): EnhancedK
         isLegacyFormat: false,
       }
     }
-  } catch (error) {
+  } catch (e) {
+    console.error('Error parsing JSON kondisiAwal data:', e)
     // Not JSON, continue to pipe format
   }
 

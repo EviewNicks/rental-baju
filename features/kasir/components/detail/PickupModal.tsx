@@ -13,11 +13,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { CheckCircle, Package, AlertCircle, Minus, Plus, Loader2 } from 'lucide-react'
-import {
-  usePickupProcess,
-  usePickupValidation,
-  getPickupErrorMessage,
-} from '../../hooks/usePickupProcess'
+import { usePickupProcess, usePickupValidation } from '../../hooks/usePickupProcess'
 import type { PickupItemRequest } from '../../hooks/usePickupProcess'
 import type { TransactionDetail } from '../../types'
 import { PairingErrorHandler } from '../../lib/errors/pairingErrorHandler'
@@ -44,10 +40,16 @@ function getEnhancedErrorMessage(error: unknown): string {
   return PairingErrorHandler.generateContextualErrorMessage(error)
 }
 
-function getErrorActionButtons(error: unknown, onRetry: () => void, onRefresh: () => void, onCancel: () => void) {
-  const errorType = PairingErrorHandler.classifyError(error instanceof Error ? error : new Error(String(error)))
-  const shouldFail = PairingErrorHandler.shouldFailPickup(error instanceof Error ? error : new Error(String(error)))
-  
+function getErrorActionButtons(
+  error: unknown,
+  onRetry: () => void,
+  onRefresh: () => void,
+  onCancel: () => void,
+) {
+  const shouldFail = PairingErrorHandler.shouldFailPickup(
+    error instanceof Error ? error : new Error(String(error)),
+  )
+
   const buttons = [
     <Button
       key="retry"
@@ -58,7 +60,7 @@ function getErrorActionButtons(error: unknown, onRetry: () => void, onRefresh: (
     >
       <Package className="h-3 w-3 mr-1" />
       Coba Lagi
-    </Button>
+    </Button>,
   ]
 
   // Add refresh button for recoverable errors
@@ -72,7 +74,7 @@ function getErrorActionButtons(error: unknown, onRetry: () => void, onRefresh: (
         className="text-orange-700 border-orange-300 hover:bg-orange-100"
       >
         Refresh Halaman
-      </Button>
+      </Button>,
     )
   }
 
@@ -85,7 +87,7 @@ function getErrorActionButtons(error: unknown, onRetry: () => void, onRefresh: (
       className="text-gray-600 hover:bg-gray-100"
     >
       Batal
-    </Button>
+    </Button>,
   )
 
   return buttons
@@ -137,7 +139,7 @@ export function PickupModal({ isOpen, onClose, transaction }: PickupModalProps) 
       // This ensures the detail page shows updated data immediately after modal closes
       const closeTimer = setTimeout(() => {
         handleClose()
-      }, 4000)  // Changed from 1500 to 4000
+      }, 4000) // Changed from 1500 to 4000
 
       return () => clearTimeout(closeTimer)
     }
@@ -277,13 +279,14 @@ export function PickupModal({ isOpen, onClose, transaction }: PickupModalProps) 
             <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-gray-900 mb-2">Pickup Berhasil!</h3>
             <p className="text-sm text-gray-600 mb-4">
-              {data?.message || PairingDisplayFormatter.generatePickupDescription(
-                getSelectedItems().map(item => ({
-                  jasName: item.productName,
-                  kondisiAwal: item.kondisiAwal || null,
-                  quantity: item.jumlahDiambil
-                }))
-              )}
+              {data?.message ||
+                PairingDisplayFormatter.generatePickupDescription(
+                  getSelectedItems().map((item) => ({
+                    jasName: item.productName,
+                    kondisiAwal: item.kondisiAwal || null,
+                    quantity: item.jumlahDiambil,
+                  })),
+                )}
             </p>
 
             {/* Cache sync status indicator */}
@@ -377,7 +380,10 @@ export function PickupModal({ isOpen, onClose, transaction }: PickupModalProps) 
             <div className="space-y-2 mb-4">
               <h5 className="font-medium text-gray-900">Item yang akan diambil:</h5>
               {selectedItems.map((item) => {
-                const displayInfo = PairingDisplayFormatter.formatItemDisplayName(item.productName, item.kondisiAwal || null)
+                const displayInfo = PairingDisplayFormatter.formatItemDisplayName(
+                  item.productName,
+                  item.kondisiAwal || null,
+                )
                 return (
                   <div
                     key={item.id}
@@ -497,7 +503,7 @@ export function PickupModal({ isOpen, onClose, transaction }: PickupModalProps) 
                       error,
                       () => reset(),
                       () => window.location.reload(),
-                      () => setShowConfirmation(false)
+                      () => setShowConfirmation(false),
                     )}
                   </div>
                 </div>
@@ -509,9 +515,11 @@ export function PickupModal({ isOpen, onClose, transaction }: PickupModalProps) 
           <div className="space-y-3 mb-6">
             <h5 className="font-medium text-gray-900">Pilih Item untuk Pickup</h5>
             {pickupItems.map((item) => {
-              const displayInfo = PairingDisplayFormatter.formatItemDisplayName(item.productName, item.kondisiAwal || null)
-              const modalInfo = PairingDisplayFormatter.formatPairingInfoForModal(item.productName, item.kondisiAwal || null)
-              
+              const modalInfo = PairingDisplayFormatter.formatPairingInfoForModal(
+                item.productName,
+                item.kondisiAwal || null,
+              )
+
               return (
                 <div key={item.id} className="border border-gray-200 rounded-lg p-4">
                   <div className="flex items-start justify-between mb-3">
@@ -519,11 +527,15 @@ export function PickupModal({ isOpen, onClose, transaction }: PickupModalProps) 
                       <div className="flex items-center gap-2 mb-1">
                         <h6 className="font-medium text-gray-900">{modalInfo.title}</h6>
                         {modalInfo.badge && (
-                          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                            modalInfo.badge.variant === 'success' ? 'bg-green-100 text-green-800' :
-                            modalInfo.badge.variant === 'info' ? 'bg-blue-100 text-blue-800' :
-                            'bg-yellow-100 text-yellow-800'
-                          }`}>
+                          <span
+                            className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                              modalInfo.badge.variant === 'success'
+                                ? 'bg-green-100 text-green-800'
+                                : modalInfo.badge.variant === 'info'
+                                  ? 'bg-blue-100 text-blue-800'
+                                  : 'bg-yellow-100 text-yellow-800'
+                            }`}
+                          >
                             {modalInfo.badge.text}
                           </span>
                         )}
@@ -532,8 +544,8 @@ export function PickupModal({ isOpen, onClose, transaction }: PickupModalProps) 
                         <div className="text-xs text-green-600 mb-2">{modalInfo.subtitle}</div>
                       )}
                       <div className="text-sm text-gray-600">
-                        Total: {item.totalQuantity} pcs • Sudah diambil: {item.alreadyPickedUp} pcs •
-                        Sisa: {item.remainingQuantity} pcs
+                        Total: {item.totalQuantity} pcs • Sudah diambil: {item.alreadyPickedUp} pcs
+                        • Sisa: {item.remainingQuantity} pcs
                       </div>
                     </div>
                   </div>
@@ -603,11 +615,11 @@ export function PickupModal({ isOpen, onClose, transaction }: PickupModalProps) 
                 </div>
               ) : (
                 PairingDisplayFormatter.generatePickupButtonText(
-                  getSelectedItems().map(item => ({
+                  getSelectedItems().map((item) => ({
                     jasName: item.productName,
                     kondisiAwal: item.kondisiAwal || null,
-                    quantity: item.jumlahDiambil
-                  }))
+                    quantity: item.jumlahDiambil,
+                  })),
                 )
               )}
             </Button>
