@@ -24,24 +24,36 @@ import { ReturnRequest, UnifiedValidationError } from '../lib/validation/ReturnS
 import { PenaltyCalculator, PenaltyCalculationResult } from '../lib/utils/penaltyCalculator'
 import { TransaksiService, TransaksiWithDetails, TransaksiForValidation } from './transaksiService'
 import { createAuditService, AuditService } from './auditService'
-import { ConditionCategory, TransaksiDetail, TransactionStatus, PaymentMethod, ReturnStatus } from '../types'
+import {
+  ConditionCategory,
+  TransaksiDetail,
+  TransactionStatus,
+  PaymentMethod,
+  ReturnStatus,
+} from '../types'
 import { kasirLogger } from '../lib/logger'
-import { parseKondisiAwal, parseKondisiAwalEnhanced } from '../lib/utils/kondisiAwalParser'
+import { parseKondisiAwalEnhanced } from '../lib/utils/kondisiAwalParser'
 import { createInventoryService } from './inventoryService'
-import { PairingReturnValidator, type ReturnItem, type TransactionItem } from '../lib/validation/pairingReturnValidation'
-import { 
-  calculateRemainingQuantities, 
-  validatePartialReturnQuantities, 
+import {
+  PairingReturnValidator,
+  type ReturnItem,
+  type TransactionItem,
+} from '../lib/validation/pairingReturnValidation'
+import {
+  calculateRemainingQuantities,
+  validatePartialReturnQuantities,
   calculateNextSessionNumber,
   buildPartialReturnState,
-  type PartialReturnState
+  type PartialReturnState,
 } from '../lib/utils/partialReturnHelpers'
 
 // ✅ REFACTOR: Helper function to reduce code duplication
 /**
  * Helper function to calculate non-HILANG quantity for an item
  */
-const calculateNonHilangQuantity = (conditions: Array<{ conditionCategory?: string; jumlahKembali: number }>) => {
+const calculateNonHilangQuantity = (
+  conditions: Array<{ conditionCategory?: string; jumlahKembali: number }>,
+) => {
   return conditions
     .filter((c) => c.conditionCategory !== 'HILANG')
     .reduce((sum, c) => sum + c.jumlahKembali, 0)
@@ -248,29 +260,29 @@ export class UnifiedReturnService {
       tglSelesai: transaction.tglSelesai?.toISOString(), // Convert Date to string
       createdAt: transaction.createdAt.toISOString(), // Convert Date to string
       updatedAt: transaction.updatedAt.toISOString(), // Convert Date to string
-      
+
       // Customer information from TransaksiWithCustomer
       penyewa: transaction.penyewa,
       kasir: undefined, // Not available in validation type
-      
+
       // TransaksiDetail specific fields
-      items: transaction.items.map(item => ({
+      items: transaction.items.map((item) => ({
         ...item,
         produk: {
           ...item.produk,
-          modalAwal: Number(item.produk.modalAwal) // Convert Decimal to number
+          modalAwal: Number(item.produk.modalAwal), // Convert Decimal to number
         },
         hargaSewa: Number(item.hargaSewa), // Convert Decimal to number
         subtotal: Number(item.subtotal), // Convert Decimal to number
         kondisiAwal: item.kondisiAwal || undefined, // Convert null to undefined
-        statusKembali: item.statusKembali as ReturnStatus // Cast to ReturnStatus
+        statusKembali: item.statusKembali as ReturnStatus, // Cast to ReturnStatus
       })),
       pembayaran: [], // Empty for validation
       aktivitas: [], // Empty for validation
       metodeBayar: 'cash' as PaymentMethod, // Default fallback
       catatan: undefined, // Not available in validation type
       createdBy: this.userId, // Use current user ID as fallback
-      tglKembali: undefined // Not available in validation type
+      tglKembali: undefined, // Not available in validation type
     }
   }
 
@@ -278,7 +290,7 @@ export class UnifiedReturnService {
    * ✅ TASK 8: Enhanced validation for partial returns with data consistency protection
    * OPTIMIZED: Batch validation request with single database query
    * Performance improvement: Reduces database round trips from 5-6 to 1-2
-   * 
+   *
    * Requirements: 1.1, 1.3, 5.1, 6.1, 6.2, 8.2, 8.3, 8.4
    */
   private async validateReturnRequest(
@@ -347,10 +359,10 @@ export class UnifiedReturnService {
       const [products, productSizes, existingReturnRecords] = await Promise.all([
         productIds.length > 0
           ? this.prisma.product.findMany({
-              where: { 
+              where: {
                 id: { in: productIds },
                 // ✅ TASK 8: Ensure products are still active
-                isActive: true
+                isActive: true,
               },
               include: {
                 sizes: {
@@ -364,10 +376,10 @@ export class UnifiedReturnService {
           : Promise.resolve([]),
         productSizeIds.length > 0
           ? this.prisma.productSize.findMany({
-              where: { 
+              where: {
                 id: { in: productSizeIds },
                 // ✅ TASK 8: Ensure product sizes are still active
-                isActive: true
+                isActive: true,
               },
               select: { id: true, size: true, productId: true },
             })
@@ -376,20 +388,20 @@ export class UnifiedReturnService {
         this.prisma.transaksiItemReturn.findMany({
           where: {
             transaksiItem: {
-              transaksiId: transaksiId
-            }
+              transaksiId: transaksiId,
+            },
           },
           select: {
             id: true,
             transaksiItemId: true,
             jumlahKembali: true,
             kondisiAkhir: true,
-            createdAt: true
+            createdAt: true,
           },
           orderBy: {
-            createdAt: 'desc'
-          }
-        })
+            createdAt: 'desc',
+          },
+        }),
       ])
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -447,28 +459,34 @@ export class UnifiedReturnService {
       // ✅ TASK 8: Enhanced partial return validation against current database state
       // Calculate remaining quantities using the latest return records from database
       const adaptedTransaction = this.adaptTransactionForPartialReturn(transaction)
-      
+
       // ✅ TASK 8: Recalculate remaining quantities using fresh database data
       // This prevents over-returns due to stale data or concurrent operations
       const currentRemainingQuantities: Record<string, number> = {}
-      
+
       for (const item of adaptedTransaction.items) {
-        const itemReturnRecords = existingReturnRecords.filter(record => record.transaksiItemId === item.id)
-        const totalAlreadyReturned = itemReturnRecords.reduce((sum, record) => sum + record.jumlahKembali, 0)
+        const itemReturnRecords = existingReturnRecords.filter(
+          (record) => record.transaksiItemId === item.id,
+        )
+        const totalAlreadyReturned = itemReturnRecords.reduce(
+          (sum, record) => sum + record.jumlahKembali,
+          0,
+        )
         const remainingQuantity = Math.max(0, (item.jumlahDiambil || 0) - totalAlreadyReturned)
         currentRemainingQuantities[item.id] = remainingQuantity
       }
 
-      const hasReturnableItems = Object.values(currentRemainingQuantities).some(qty => qty > 0)
+      const hasReturnableItems = Object.values(currentRemainingQuantities).some((qty) => qty > 0)
 
       if (!hasReturnableItems) {
         return {
           isValid: false,
-          error: 'Tidak ada barang yang dapat dikembalikan pada transaksi ini (berdasarkan data terkini)',
-          details: { 
-            hasReturnableItems: false, 
+          error:
+            'Tidak ada barang yang dapat dikembalikan pada transaksi ini (berdasarkan data terkini)',
+          details: {
+            hasReturnableItems: false,
             currentRemainingQuantities,
-            validationType: 'current_database_state'
+            validationType: 'current_database_state',
           },
         }
       }
@@ -476,7 +494,7 @@ export class UnifiedReturnService {
       // ✅ TASK 8: Enhanced validation using current database state
       // Build requested quantities map for validation
       const requestedQuantities: Record<string, number> = {}
-      
+
       for (const returnItem of request.items) {
         const transactionItem = transaction.items.find((item) => item.id === returnItem.itemId)
 
@@ -531,10 +549,13 @@ export class UnifiedReturnService {
       }
 
       // ✅ TASK 8: Use enhanced partial return validation with current database state
-      const partialValidation = validatePartialReturnQuantities(requestedQuantities, currentRemainingQuantities)
-      
+      const partialValidation = validatePartialReturnQuantities(
+        requestedQuantities,
+        currentRemainingQuantities,
+      )
+
       if (!partialValidation.isValid) {
-        partialValidation.errors.forEach(error => {
+        partialValidation.errors.forEach((error) => {
           errors.push({
             field: 'partialReturn',
             message: error,
@@ -560,69 +581,86 @@ export class UnifiedReturnService {
       // Requirements: 6.1, 6.2, 6.3, 6.4, 6.5
       try {
         // ✅ AUDIT TRAIL 1: Log pairing validation start with detailed context
-        kasirLogger.returnProcess.info('validateReturnRequest', '🔍 AUDIT: Pairing validation initiated', {
-          transaksiId,
-          totalReturnItems: request.items.length,
-          returnItemsData: request.items.map(item => ({
-            itemId: item.itemId,
-            conditionsCount: item.conditions.length,
-            totalQuantity: item.conditions.reduce((sum, c) => sum + c.jumlahKembali, 0)
-          })),
-          transactionItemsCount: transaction.items.length,
-          validationStep: 'format_conversion_start',
-          timestamp: new Date().toISOString()
-        })
+        kasirLogger.returnProcess.info(
+          'validateReturnRequest',
+          '🔍 AUDIT: Pairing validation initiated',
+          {
+            transaksiId,
+            totalReturnItems: request.items.length,
+            returnItemsData: request.items.map((item) => ({
+              itemId: item.itemId,
+              conditionsCount: item.conditions.length,
+              totalQuantity: item.conditions.reduce((sum, c) => sum + c.jumlahKembali, 0),
+            })),
+            transactionItemsCount: transaction.items.length,
+            validationStep: 'format_conversion_start',
+            timestamp: new Date().toISOString(),
+          },
+        )
 
         // Convert request format to pairing validator format
-        const returnItems: ReturnItem[] = request.items.map(item => ({
+        const returnItems: ReturnItem[] = request.items.map((item) => ({
           itemId: item.itemId,
-          kondisiAwal: transaction.items.find(ti => ti.id === item.itemId)?.kondisiAwal || null,
-          conditions: item.conditions.map(condition => ({
+          kondisiAwal: transaction.items.find((ti) => ti.id === item.itemId)?.kondisiAwal || null,
+          conditions: item.conditions.map((condition) => ({
             kondisiAkhir: condition.kondisiAkhir,
             jumlahKembali: condition.jumlahKembali,
-            conditionCategory: condition.conditionCategory
-          }))
+            conditionCategory: condition.conditionCategory,
+          })),
         }))
 
-        const transactionItems: TransactionItem[] = transaction.items.map(item => ({
+        const transactionItems: TransactionItem[] = transaction.items.map((item) => ({
           id: item.id,
           kondisiAwal: item.kondisiAwal || null,
           jumlahDiambil: item.jumlahDiambil || 0,
           produk: {
             id: item.produk.id,
             name: item.produk.name,
-            code: item.produk.code || ''
-          }
+            code: item.produk.code || '',
+          },
         }))
 
         // ✅ AUDIT TRAIL 2: Log format conversion results and pairing detection
-        const pairingDetection = returnItems.map(item => {
-          const transactionItem = transactionItems.find(ti => ti.id === item.itemId)
-          const isPaired = transactionItem ? PairingReturnValidator.isItemPaired(item.itemId, [transactionItem]) : false
+        const pairingDetection = returnItems.map((item) => {
+          const transactionItem = transactionItems.find((ti) => ti.id === item.itemId)
+          const isPaired = transactionItem
+            ? PairingReturnValidator.isItemPaired(item.itemId, [transactionItem])
+            : false
           return {
             itemId: item.itemId,
             isPaired,
-            kondisiAwalFormat: item.kondisiAwal ? (item.kondisiAwal.startsWith('{') ? 'JSON' : 'PIPE') : 'NULL'
+            kondisiAwalFormat: item.kondisiAwal
+              ? item.kondisiAwal.startsWith('{')
+                ? 'JSON'
+                : 'PIPE'
+              : 'NULL',
           }
         })
 
-        kasirLogger.returnProcess.info('validateReturnRequest', '🔄 AUDIT: Format conversion and pairing detection completed', {
-          transaksiId,
-          pairingDetection,
-          totalPairedItems: pairingDetection.filter(p => p.isPaired).length,
-          formatDistribution: {
-            json: pairingDetection.filter(p => p.kondisiAwalFormat === 'JSON').length,
-            pipe: pairingDetection.filter(p => p.kondisiAwalFormat === 'PIPE').length,
-            null: pairingDetection.filter(p => p.kondisiAwalFormat === 'NULL').length
+        kasirLogger.returnProcess.info(
+          'validateReturnRequest',
+          '🔄 AUDIT: Format conversion and pairing detection completed',
+          {
+            transaksiId,
+            pairingDetection,
+            totalPairedItems: pairingDetection.filter((p) => p.isPaired).length,
+            formatDistribution: {
+              json: pairingDetection.filter((p) => p.kondisiAwalFormat === 'JSON').length,
+              pipe: pairingDetection.filter((p) => p.kondisiAwalFormat === 'PIPE').length,
+              null: pairingDetection.filter((p) => p.kondisiAwalFormat === 'NULL').length,
+            },
+            validationStep: 'pairing_validation_start',
+            timestamp: new Date().toISOString(),
           },
-          validationStep: 'pairing_validation_start',
-          timestamp: new Date().toISOString()
-        })
+        )
 
-        const pairingValidation = PairingReturnValidator.validatePairedReturn(returnItems, transactionItems)
-        
+        const pairingValidation = PairingReturnValidator.validatePairedReturn(
+          returnItems,
+          transactionItems,
+        )
+
         if (!pairingValidation.isValid) {
-          pairingValidation.errors.forEach(error => {
+          pairingValidation.errors.forEach((error) => {
             errors.push({
               field: 'pairing',
               message: error,
@@ -638,49 +676,60 @@ export class UnifiedReturnService {
             isValid: pairingValidation.isValid,
             errorsCount: pairingValidation.errors.length,
             warningsCount: pairingValidation.warnings.length,
-            hasPairingInfo: !!pairingValidation.pairingInfo
-          }
+            hasPairingInfo: !!pairingValidation.pairingInfo,
+          },
         })
 
         // ✅ AUDIT TRAIL 3: Detailed pairing validation results with error analysis
-        kasirLogger.returnProcess.info('validateReturnRequest', '✅ AUDIT: Pairing validation results detailed analysis', {
-          transaksiId,
-          validationResult: {
-            isValid: pairingValidation.isValid,
-            errorsCount: pairingValidation.errors.length,
-            warningsCount: pairingValidation.warnings.length,
-            hasPairingInfo: !!pairingValidation.pairingInfo,
-            pairingInfo: pairingValidation.pairingInfo ? {
-              jasItemId: pairingValidation.pairingInfo.jasItemId,
-              sarungItemId: pairingValidation.pairingInfo.sarungItemId,
-              requiredRatio: pairingValidation.pairingInfo.requiredRatio
-            } : null
+        kasirLogger.returnProcess.info(
+          'validateReturnRequest',
+          '✅ AUDIT: Pairing validation results detailed analysis',
+          {
+            transaksiId,
+            validationResult: {
+              isValid: pairingValidation.isValid,
+              errorsCount: pairingValidation.errors.length,
+              warningsCount: pairingValidation.warnings.length,
+              hasPairingInfo: !!pairingValidation.pairingInfo,
+              pairingInfo: pairingValidation.pairingInfo
+                ? {
+                    jasItemId: pairingValidation.pairingInfo.jasItemId,
+                    sarungItemId: pairingValidation.pairingInfo.sarungItemId,
+                    requiredRatio: pairingValidation.pairingInfo.requiredRatio,
+                  }
+                : null,
+            },
+            errorDetails:
+              pairingValidation.errors.length > 0
+                ? pairingValidation.errors.map((error, index) => ({
+                    errorIndex: index + 1,
+                    errorMessage: error,
+                    errorType: error.includes('tidak dapat dikembalikan tanpa')
+                      ? 'MISSING_PAIRED_ITEM'
+                      : error.includes('Jumlah pengembalian tidak sesuai')
+                        ? 'QUANTITY_MISMATCH'
+                        : 'OTHER',
+                  }))
+                : [],
+            warningDetails: pairingValidation.warnings.length > 0 ? pairingValidation.warnings : [],
+            validationStep: 'pairing_validation_complete',
+            timestamp: new Date().toISOString(),
           },
-          errorDetails: pairingValidation.errors.length > 0 ? pairingValidation.errors.map((error, index) => ({
-            errorIndex: index + 1,
-            errorMessage: error,
-            errorType: error.includes('tidak dapat dikembalikan tanpa') ? 'MISSING_PAIRED_ITEM' : 
-                       error.includes('Jumlah pengembalian tidak sesuai') ? 'QUANTITY_MISMATCH' : 'OTHER'
-          })) : [],
-          warningDetails: pairingValidation.warnings.length > 0 ? pairingValidation.warnings : [],
-          validationStep: 'pairing_validation_complete',
-          timestamp: new Date().toISOString()
-        })
-
+        )
 
         // Log warnings (non-blocking)
         if (pairingValidation.warnings.length > 0) {
           kasirLogger.returnProcess.warn('validateReturnRequest', 'Pairing validation warnings', {
             transaksiId,
-            warnings: pairingValidation.warnings
+            warnings: pairingValidation.warnings,
           })
         }
       } catch (pairingError) {
         kasirLogger.returnProcess.error('validateReturnRequest', 'Pairing validation failed', {
           transaksiId,
-          error: pairingError instanceof Error ? pairingError.message : 'Unknown pairing error'
+          error: pairingError instanceof Error ? pairingError.message : 'Unknown pairing error',
         })
-        
+
         errors.push({
           field: 'pairing',
           message: `Pairing validation error: ${pairingError instanceof Error ? pairingError.message : 'Unknown error'}`,
@@ -689,27 +738,31 @@ export class UnifiedReturnService {
       }
 
       const validationDuration = Date.now() - validationStart
-      kasirLogger.returnProcess.info('validateReturnRequest', 'Enhanced partial return validation with data consistency completed', {
-        transaksiId,
-        duration: validationDuration,
-        itemsValidated: request.items.length,
-        isValid: errors.length === 0,
-        currentRemainingQuantities,
-        requestedQuantities,
-        partialValidationResult: partialValidation,
-        existingReturnRecords: existingReturnRecords.length,
-        validationType: 'enhanced_with_data_consistency'
-      })
+      kasirLogger.returnProcess.info(
+        'validateReturnRequest',
+        'Enhanced partial return validation with data consistency completed',
+        {
+          transaksiId,
+          duration: validationDuration,
+          itemsValidated: request.items.length,
+          isValid: errors.length === 0,
+          currentRemainingQuantities,
+          requestedQuantities,
+          partialValidationResult: partialValidation,
+          existingReturnRecords: existingReturnRecords.length,
+          validationType: 'enhanced_with_data_consistency',
+        },
+      )
 
       if (errors.length > 0) {
         return {
           isValid: false,
           error: `Validasi gagal: ${errors.map((e) => e.message).join(', ')}`,
-          details: { 
-            errors, 
-            currentRemainingQuantities, 
+          details: {
+            errors,
+            currentRemainingQuantities,
             requestedQuantities,
-            validationType: 'enhanced_with_data_consistency'
+            validationType: 'enhanced_with_data_consistency',
           },
         }
       }
@@ -723,10 +776,14 @@ export class UnifiedReturnService {
         productSizes: sizeMap as Map<string, any>,
       }
     } catch (error) {
-      kasirLogger.returnProcess.error('validateReturnRequest', 'Enhanced partial return validation with data consistency failed', {
-        transaksiId,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      })
+      kasirLogger.returnProcess.error(
+        'validateReturnRequest',
+        'Enhanced partial return validation with data consistency failed',
+        {
+          transaksiId,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        },
+      )
 
       return {
         isValid: false,
@@ -767,8 +824,9 @@ export class UnifiedReturnService {
       // ✅ TASK 7: Check for pairing items to use pairing-aware penalty calculation
       // Requirements: 5.1, 5.2, 5.3, 5.4, 5.5
       // Use the cached transaction (TransaksiForValidation) which has all required fields
-      const fullTransaction = cachedTransaction || (await this.transaksiService.getTransaksiForValidation(transaksiId))
-      
+      const fullTransaction =
+        cachedTransaction || (await this.transaksiService.getTransaksiForValidation(transaksiId))
+
       const hasPairingItems = request.items.some((returnItem) => {
         const transactionItem = fullTransaction.items.find(
           //eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -784,8 +842,8 @@ export class UnifiedReturnService {
           produk: {
             id: transactionItem.produk.id,
             name: transactionItem.produk.name,
-            code: transactionItem.produk.code || ''
-          }
+            code: transactionItem.produk.code || '',
+          },
         }
 
         return PairingReturnValidator.isItemPaired(returnItem.itemId, [transactionItemForPairing])
@@ -793,13 +851,18 @@ export class UnifiedReturnService {
 
       // ✅ TASK 7: Use pairing-aware penalty calculation if pairing items detected
       if (hasPairingItems) {
-        kasirLogger.returnProcess.info('calculateBasicPenalties', 'Using pairing-aware penalty calculation', {
-          transaksiId,
-          itemCount: request.items.length,
-        })
+        kasirLogger.returnProcess.info(
+          'calculateBasicPenalties',
+          'Using pairing-aware penalty calculation',
+          {
+            transaksiId,
+            itemCount: request.items.length,
+          },
+        )
 
         // Use the cached transaction (TransaksiForValidation) which has all required fields
-        const fullTransaction = cachedTransaction || (await this.transaksiService.getTransaksiForValidation(transaksiId))
+        const fullTransaction =
+          cachedTransaction || (await this.transaksiService.getTransaksiForValidation(transaksiId))
 
         const itemsForPairingCalculation = request.items.flatMap((returnItem) => {
           const transactionItem = fullTransaction.items.find(
@@ -835,25 +898,27 @@ export class UnifiedReturnService {
         return {
           totalPenalty: pairingResult.totalPenalty,
           totalLateDays: pairingResult.itemPenalties[0]?.lateDays || 0,
-          itemPenalties: pairingResult.itemPenalties.map((penalty: ReturnType<typeof PenaltyCalculator.calculatePairingPenalty>) => {
-            // Find the corresponding transaction item to get productName
-            const correspondingItem = itemsForPairingCalculation.find(item => 
-              item.itemId === penalty.jasItemId
-            )
-            
-            return {
-              itemId: penalty.jasItemId,
-              productName: correspondingItem?.productName || 'Unknown Product',
-              expectedReturnDate: fullTransaction.tglSelesai || new Date(),
-              actualReturnDate,
-              lateDays: penalty.lateDays,
-              dailyPenaltyRate: 20000,
-              modalAwal: correspondingItem?.modalAwal || 0,
-              totalPenalty: penalty.totalPenalty,
-              reasonCode: penalty.isLate ? 'late' : 'on_time',
-              description: penalty.description,
-            }
-          }),
+          itemPenalties: pairingResult.itemPenalties.map(
+            (penalty: ReturnType<typeof PenaltyCalculator.calculatePairingPenalty>) => {
+              // Find the corresponding transaction item to get productName
+              const correspondingItem = itemsForPairingCalculation.find(
+                (item) => item.itemId === penalty.jasItemId,
+              )
+
+              return {
+                itemId: penalty.jasItemId,
+                productName: correspondingItem?.productName || 'Unknown Product',
+                expectedReturnDate: fullTransaction.tglSelesai || new Date(),
+                actualReturnDate,
+                lateDays: penalty.lateDays,
+                dailyPenaltyRate: 20000,
+                modalAwal: correspondingItem?.modalAwal || 0,
+                totalPenalty: penalty.totalPenalty,
+                reasonCode: penalty.isLate ? 'late' : 'on_time',
+                description: penalty.description,
+              }
+            },
+          ),
           summary: {
             onTimeItems: pairingResult.summary.onTimeItems,
             lateItems: pairingResult.summary.lateItems,
@@ -1093,7 +1158,10 @@ export class UnifiedReturnService {
       // ✅ TASK 8: Build requested quantities map for final validation
       const requestedQuantities: Record<string, number> = {}
       for (const item of request.items) {
-        const totalQuantity = item.conditions.reduce((sum, condition) => sum + condition.jumlahKembali, 0)
+        const totalQuantity = item.conditions.reduce(
+          (sum, condition) => sum + condition.jumlahKembali,
+          0,
+        )
         requestedQuantities[item.itemId] = totalQuantity
       }
 
@@ -1114,8 +1182,11 @@ export class UnifiedReturnService {
         async (tx: any) => {
           // ✅ TASK 8: Re-validate against current database state within transaction
           // This ensures no concurrent modifications occurred between initial validation and processing
-          const finalValidation = await this.validateAgainstCurrentDatabaseState(transaksiId, requestedQuantities)
-          
+          const finalValidation = await this.validateAgainstCurrentDatabaseState(
+            transaksiId,
+            requestedQuantities,
+          )
+
           if (!finalValidation.isValid) {
             throw new Error(`Final validation failed: ${finalValidation.errors.join(', ')}`)
           }
@@ -1227,21 +1298,29 @@ export class UnifiedReturnService {
               if (nonHilangReturned > 0) {
                 const currentSizeStock = sizeUpdates.get(parsedKondisi.productSizeId) || 0
                 sizeUpdates.set(parsedKondisi.productSizeId, currentSizeStock + nonHilangReturned)
-                
+
                 // ✅ TASK 7: Handle dual stock restoration for jas-sarung pairings
                 // If this item has linkedSarung, also restore sarung stock
                 if (parsedKondisi.linkedSarung?.productSizeId) {
-                  const currentSarungStock = sizeUpdates.get(parsedKondisi.linkedSarung.productSizeId) || 0
-                  sizeUpdates.set(parsedKondisi.linkedSarung.productSizeId, currentSarungStock + nonHilangReturned)
-                  
-                  kasirLogger.returnProcess.info('processUnifiedReturn', 'Dual stock restoration prepared for jas-sarung pairing', {
-                    transaksiId,
-                    itemId: item.itemId,
-                    jasProductSizeId: parsedKondisi.productSizeId,
-                    sarungProductSizeId: parsedKondisi.linkedSarung.productSizeId,
-                    quantity: nonHilangReturned,
-                    restorationMode: 'DUAL_RESTORATION'
-                  })
+                  const currentSarungStock =
+                    sizeUpdates.get(parsedKondisi.linkedSarung.productSizeId) || 0
+                  sizeUpdates.set(
+                    parsedKondisi.linkedSarung.productSizeId,
+                    currentSarungStock + nonHilangReturned,
+                  )
+
+                  kasirLogger.returnProcess.info(
+                    'processUnifiedReturn',
+                    'Dual stock restoration prepared for jas-sarung pairing',
+                    {
+                      transaksiId,
+                      itemId: item.itemId,
+                      jasProductSizeId: parsedKondisi.productSizeId,
+                      sarungProductSizeId: parsedKondisi.linkedSarung.productSizeId,
+                      quantity: nonHilangReturned,
+                      restorationMode: 'DUAL_RESTORATION',
+                    },
+                  )
                 }
               }
             }
@@ -1298,36 +1377,43 @@ export class UnifiedReturnService {
             const txInventoryService = createInventoryService(tx as any as PrismaClient)
 
             // ✅ AUDIT TRAIL 4: Log stock restoration process start with detailed context
-            kasirLogger.returnProcess.info('processUnifiedReturn', '📦 AUDIT: Stock restoration process initiated', {
-              transaksiId,
-              totalItemsToProcess: request.items.length,
-              sizeUpdatesCount: sizeUpdates.size,
-              stockRestorationContext: {
-                transactionScope: 'INSIDE_TRANSACTION',
-                inventoryServiceType: 'PAIRING_AWARE',
-                atomicOperation: true
+            kasirLogger.returnProcess.info(
+              'processUnifiedReturn',
+              '📦 AUDIT: Stock restoration process initiated',
+              {
+                transaksiId,
+                totalItemsToProcess: request.items.length,
+                sizeUpdatesCount: sizeUpdates.size,
+                stockRestorationContext: {
+                  transactionScope: 'INSIDE_TRANSACTION',
+                  inventoryServiceType: 'PAIRING_AWARE',
+                  atomicOperation: true,
+                },
+                itemsProcessingPlan: request.items.map((item) => {
+                  const transactionItem = validation.transaction!.transaction.items.find(
+                    //eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    (ti: any) => ti.id === item.itemId,
+                  )
+                  const nonHilangQuantity = item.conditions
+                    .filter((c) => c.conditionCategory !== 'HILANG')
+                    .reduce((sum, c) => sum + c.jumlahKembali, 0)
+
+                  return {
+                    itemId: item.itemId,
+                    productName: transactionItem?.produk?.name || 'Unknown',
+                    nonHilangQuantity,
+                    willProcessStock: nonHilangQuantity > 0,
+                    kondisiAwalFormat: transactionItem?.kondisiAwal
+                      ? transactionItem.kondisiAwal.startsWith('{')
+                        ? 'JSON'
+                        : 'PIPE'
+                      : 'NULL',
+                  }
+                }),
+                processingStep: 'stock_restoration_start',
+                timestamp: new Date().toISOString(),
               },
-              itemsProcessingPlan: request.items.map(item => {
-                const transactionItem = validation.transaction!.transaction.items.find(
-                  //eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  (ti: any) => ti.id === item.itemId,
-                )
-                const nonHilangQuantity = item.conditions
-                  .filter((c) => c.conditionCategory !== 'HILANG')
-                  .reduce((sum, c) => sum + c.jumlahKembali, 0)
-                
-                return {
-                  itemId: item.itemId,
-                  productName: transactionItem?.produk?.name || 'Unknown',
-                  nonHilangQuantity,
-                  willProcessStock: nonHilangQuantity > 0,
-                  kondisiAwalFormat: transactionItem?.kondisiAwal ? 
-                    (transactionItem.kondisiAwal.startsWith('{') ? 'JSON' : 'PIPE') : 'NULL'
-                }
-              }),
-              processingStep: 'stock_restoration_start',
-              timestamp: new Date().toISOString()
-            })
+            )
 
             // ✅ TASK 7: Use pairing-aware stock restoration instead of simple updateStockOnReturn
             // This handles both regular items and jas-sarung pairings with dual restoration
@@ -1350,7 +1436,7 @@ export class UnifiedReturnService {
                       transactionItem.kondisiAwal || null,
                       nonHilangQuantity,
                       item.itemId,
-                      kasirLogger.returnProcess
+                      kasirLogger.returnProcess,
                     )
                   } catch (error) {
                     // Throw error to trigger transaction rollback
@@ -1363,32 +1449,36 @@ export class UnifiedReturnService {
             )
 
             // ✅ AUDIT TRAIL 5: Log stock restoration completion with success summary
-            kasirLogger.returnProcess.info('processUnifiedReturn', '✅ AUDIT: Stock restoration process completed successfully', {
-              transaksiId,
-              restorationSummary: {
-                totalItemsProcessed: request.items.length,
-                itemsWithStockRestoration: request.items.filter(item => {
-                  const nonHilangQuantity = item.conditions
-                    .filter((c) => c.conditionCategory !== 'HILANG')
-                    .reduce((sum, c) => sum + c.jumlahKembali, 0)
-                  return nonHilangQuantity > 0
-                }).length,
-                itemsSkipped: request.items.filter(item => {
-                  const nonHilangQuantity = item.conditions
-                    .filter((c) => c.conditionCategory !== 'HILANG')
-                    .reduce((sum, c) => sum + c.jumlahKembali, 0)
-                  return nonHilangQuantity === 0
-                }).length,
-                totalQuantityRestored: request.items.reduce((total, item) => {
-                  const nonHilangQuantity = item.conditions
-                    .filter((c) => c.conditionCategory !== 'HILANG')
-                    .reduce((sum, c) => sum + c.jumlahKembali, 0)
-                  return total + nonHilangQuantity
-                }, 0)
+            kasirLogger.returnProcess.info(
+              'processUnifiedReturn',
+              '✅ AUDIT: Stock restoration process completed successfully',
+              {
+                transaksiId,
+                restorationSummary: {
+                  totalItemsProcessed: request.items.length,
+                  itemsWithStockRestoration: request.items.filter((item) => {
+                    const nonHilangQuantity = item.conditions
+                      .filter((c) => c.conditionCategory !== 'HILANG')
+                      .reduce((sum, c) => sum + c.jumlahKembali, 0)
+                    return nonHilangQuantity > 0
+                  }).length,
+                  itemsSkipped: request.items.filter((item) => {
+                    const nonHilangQuantity = item.conditions
+                      .filter((c) => c.conditionCategory !== 'HILANG')
+                      .reduce((sum, c) => sum + c.jumlahKembali, 0)
+                    return nonHilangQuantity === 0
+                  }).length,
+                  totalQuantityRestored: request.items.reduce((total, item) => {
+                    const nonHilangQuantity = item.conditions
+                      .filter((c) => c.conditionCategory !== 'HILANG')
+                      .reduce((sum, c) => sum + c.jumlahKembali, 0)
+                    return total + nonHilangQuantity
+                  }, 0),
+                },
+                processingStep: 'stock_restoration_complete',
+                timestamp: new Date().toISOString(),
               },
-              processingStep: 'stock_restoration_complete',
-              timestamp: new Date().toISOString()
-            })
+            )
           }
 
           // ✅ NEW: Create penalty payment record (Task 3.2: Integrate payment creation)
@@ -1509,7 +1599,7 @@ export class UnifiedReturnService {
    * ✅ TASK 4: Enhanced activity data builder with session information
    * Build unified activity data with comprehensive breakdown
    * Task 2.1: Create UnifiedActivityData builder
-   * 
+   *
    * Requirements: 5.1, 5.2, 5.3
    */
   private buildUnifiedActivityData(
@@ -1547,18 +1637,21 @@ export class UnifiedReturnService {
 
       // ✅ TASK 7: Add pairing information to activity data
       // Requirements: 9.1, 9.2, 9.3, 9.4
-      const allTransactionItems: TransactionItem[] = transaction.items.map(ti => ({
+      const allTransactionItems: TransactionItem[] = transaction.items.map((ti) => ({
         id: ti.id,
         kondisiAwal: ti.kondisiAwal || null,
         jumlahDiambil: ti.jumlahDiambil || 0,
         produk: {
           id: ti.produk.id,
           name: ti.produk.name,
-          code: ti.produk.code || ''
-        }
+          code: ti.produk.code || '',
+        },
       }))
 
-      const pairingInfo = PairingReturnValidator.getPairingInfo(processedItem.itemId, allTransactionItems)
+      const pairingInfo = PairingReturnValidator.getPairingInfo(
+        processedItem.itemId,
+        allTransactionItems,
+      )
 
       return {
         itemId: processedItem.itemId,
@@ -1567,15 +1660,17 @@ export class UnifiedReturnService {
         sizeInfo,
         totalItemPenalty: processedItem.penalty,
         // ✅ TASK 7: Include pairing information in activity data
-        pairingInfo: pairingInfo.isPaired ? {
-          isPaired: true,
-          role: pairingInfo.role,
-          pairedItemId: pairingInfo.pairedItemId,
-          pairedProductSizeId: pairingInfo.pairedProductSizeId,
-          dualStockRestoration: pairingInfo.role === 'jas' // Only jas triggers dual restoration
-        } : {
-          isPaired: false
-        },
+        pairingInfo: pairingInfo.isPaired
+          ? {
+              isPaired: true,
+              role: pairingInfo.role,
+              pairedItemId: pairingInfo.pairedItemId,
+              pairedProductSizeId: pairingInfo.pairedProductSizeId,
+              dualStockRestoration: pairingInfo.role === 'jas', // Only jas triggers dual restoration
+            }
+          : {
+              isPaired: false,
+            },
         conditions: requestItem.conditions.map((condition, index) => ({
           kondisiAkhir: condition.kondisiAkhir,
           jumlahKembali: condition.jumlahKembali,
@@ -1592,24 +1687,31 @@ export class UnifiedReturnService {
     })
 
     // ✅ TASK 7: Add pairing summary to activity metadata
-    const pairingItems = items.filter(item => item.pairingInfo.isPaired)
-    const pairingSummary = pairingItems.length > 0 ? {
-      hasPairings: true,
-      totalPairings: pairingItems.filter(item => item.pairingInfo.role === 'jas').length,
-      jasItems: pairingItems.filter(item => item.pairingInfo.role === 'jas').map(item => ({
-        itemId: item.itemId,
-        productName: item.productName,
-        pairedItemId: item.pairingInfo.pairedItemId
-      })),
-      sarungItems: pairingItems.filter(item => item.pairingInfo.role === 'sarung').map(item => ({
-        itemId: item.itemId,
-        productName: item.productName,
-        pairedItemId: item.pairingInfo.pairedItemId
-      }))
-    } : {
-      hasPairings: false,
-      totalPairings: 0
-    }
+    const pairingItems = items.filter((item) => item.pairingInfo.isPaired)
+    const pairingSummary =
+      pairingItems.length > 0
+        ? {
+            hasPairings: true,
+            totalPairings: pairingItems.filter((item) => item.pairingInfo.role === 'jas').length,
+            jasItems: pairingItems
+              .filter((item) => item.pairingInfo.role === 'jas')
+              .map((item) => ({
+                itemId: item.itemId,
+                productName: item.productName,
+                pairedItemId: item.pairingInfo.pairedItemId,
+              })),
+            sarungItems: pairingItems
+              .filter((item) => item.pairingInfo.role === 'sarung')
+              .map((item) => ({
+                itemId: item.itemId,
+                productName: item.productName,
+                pairedItemId: item.pairingInfo.pairedItemId,
+              })),
+          }
+        : {
+            hasPairings: false,
+            totalPairings: 0,
+          }
 
     // ✅ FIX: Determine correct target status based on lost items
     const hasUnresolvedLostItems = request.items.some((item) =>
@@ -1757,19 +1859,33 @@ export class UnifiedReturnService {
       const freshTransaction = await this.transaksiService.getTransaksiForValidation(transaksiId)
       const adaptedTransaction = this.adaptTransactionForPartialReturn(freshTransaction)
       const currentRemainingQuantities = calculateRemainingQuantities(adaptedTransaction)
-      
+
       // Since we're using fresh transaction data, currentRemainingQuantities already reflects
       // the state AFTER the current return session
-      const allItemsFullyReturned = Object.values(currentRemainingQuantities).every(qty => qty === 0)
+      // ✅ SIMPLE FIX: Enhanced completion check - ensure we have items and ALL are returned
+      const allItemsFullyReturned = Object.keys(currentRemainingQuantities).length > 0 && 
+        Object.values(currentRemainingQuantities).every((qty) => qty === 0)
 
-      let newStatus: 'active' | 'terlambat' | 'diambil' | 'pending_resolution' | 'selesai' | 'cancelled'
+      let newStatus:
+        | 'active'
+        | 'terlambat'
+        | 'diambil'
+        | 'pending_resolution'
+        | 'selesai'
+        | 'cancelled'
       if (hasUnresolvedLostItems) {
         newStatus = 'pending_resolution'
       } else if (allItemsFullyReturned) {
-        newStatus = 'selesai'
+        newStatus = 'selesai' // ✅ FIXED: Always set to selesai when all items returned
       } else {
-        // ✅ TASK 4: Maintain current status for partial returns (Requirements: 6.2, 6.4)
-        newStatus = freshTransaction.status as 'active' | 'terlambat' | 'diambil' | 'pending_resolution' | 'selesai' | 'cancelled'
+        // Maintain current status for partial returns
+        newStatus = freshTransaction.status as
+          | 'active'
+          | 'terlambat'
+          | 'diambil'
+          | 'pending_resolution'
+          | 'selesai'
+          | 'cancelled'
       }
 
       kasirLogger.returnProcess.info(
@@ -1782,10 +1898,16 @@ export class UnifiedReturnService {
           currentStatus: freshTransaction.status,
           newStatus,
           remainingQuantities: currentRemainingQuantities,
-          currentReturnQuantities: request.items.reduce((acc, item) => {
-            acc[item.itemId] = item.conditions.reduce((sum, condition) => sum + condition.jumlahKembali, 0)
-            return acc
-          }, {} as Record<string, number>),
+          currentReturnQuantities: request.items.reduce(
+            (acc, item) => {
+              acc[item.itemId] = item.conditions.reduce(
+                (sum, condition) => sum + condition.jumlahKembali,
+                0,
+              )
+              return acc
+            },
+            {} as Record<string, number>,
+          ),
           itemsWithHilang: request.items
             .filter((item) =>
               item.conditions.some(
@@ -1821,7 +1943,11 @@ export class UnifiedReturnService {
             transaksiId,
             fromStatus: freshTransaction.status,
             toStatus: newStatus,
-            reason: hasUnresolvedLostItems ? 'unresolved_lost_items' : allItemsFullyReturned ? 'all_items_returned' : 'partial_return_complete',
+            reason: hasUnresolvedLostItems
+              ? 'unresolved_lost_items'
+              : allItemsFullyReturned
+                ? 'all_items_returned'
+                : 'partial_return_complete',
           },
         )
       } else {
@@ -1859,14 +1985,16 @@ export class UnifiedReturnService {
 
       // ✅ TASK 4: Session-based activity description format
       // Requirements: 5.2 - "Return Session X: Item A (returned/total), Item B (returned/total)"
-      const itemDescriptions = activityData.items.map(item => {
-        const totalReturned = item.conditions.reduce((sum, c) => sum + c.jumlahKembali, 0)
-        // Get total picked up from transaction data
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const transactionItem = transaction.items.find((ti: any) => ti.id === item.itemId)
-        const totalPickedUp = transactionItem?.jumlahDiambil || 0
-        return `${item.productName} (${totalReturned}/${totalPickedUp})`
-      }).join(', ')
+      const itemDescriptions = activityData.items
+        .map((item) => {
+          const totalReturned = item.conditions.reduce((sum, c) => sum + c.jumlahKembali, 0)
+          // Get total picked up from transaction data
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const transactionItem = transaction.items.find((ti: any) => ti.id === item.itemId)
+          const totalPickedUp = transactionItem?.jumlahDiambil || 0
+          return `${item.productName} (${totalReturned}/${totalPickedUp})`
+        })
+        .join(', ')
 
       const sessionDescription = `Return Session ${sessionNumber}: ${itemDescriptions}${penaltyDesc}`
 
@@ -1912,10 +2040,14 @@ export class UnifiedReturnService {
       const adaptedTransaction = this.adaptTransactionForPartialReturn(transaction)
       return buildPartialReturnState(adaptedTransaction)
     } catch (error) {
-      kasirLogger.returnProcess.error('getPartialReturnState', 'Failed to get partial return state', {
-        transaksiId,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      })
+      kasirLogger.returnProcess.error(
+        'getPartialReturnState',
+        'Failed to get partial return state',
+        {
+          transaksiId,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        },
+      )
 
       throw new Error(
         `Gagal mendapatkan status pengembalian parsial: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -1929,23 +2061,29 @@ export class UnifiedReturnService {
    */
   async validatePartialReturnQuantities(
     transaksiId: string,
-    requestedQuantities: Record<string, number>
+    requestedQuantities: Record<string, number>,
   ): Promise<{ isValid: boolean; errors: string[] }> {
     try {
       const transaction = await this.transaksiService.getTransaksiForValidation(transaksiId)
       const adaptedTransaction = this.adaptTransactionForPartialReturn(transaction)
       const remainingQuantities = calculateRemainingQuantities(adaptedTransaction)
-      
+
       return validatePartialReturnQuantities(requestedQuantities, remainingQuantities)
     } catch (error) {
-      kasirLogger.returnProcess.error('validatePartialReturnQuantities', 'Failed to validate partial return quantities', {
-        transaksiId,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      })
+      kasirLogger.returnProcess.error(
+        'validatePartialReturnQuantities',
+        'Failed to validate partial return quantities',
+        {
+          transaksiId,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        },
+      )
 
       return {
         isValid: false,
-        errors: [`Gagal validasi kuantitas: ${error instanceof Error ? error.message : 'Unknown error'}`]
+        errors: [
+          `Gagal validasi kuantitas: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        ],
       }
     }
   }
@@ -1960,10 +2098,14 @@ export class UnifiedReturnService {
       const adaptedTransaction = this.adaptTransactionForPartialReturn(transaction)
       return calculateNextSessionNumber(adaptedTransaction)
     } catch (error) {
-      kasirLogger.returnProcess.error('calculateSessionNumber', 'Failed to calculate session number', {
-        transaksiId,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      })
+      kasirLogger.returnProcess.error(
+        'calculateSessionNumber',
+        'Failed to calculate session number',
+        {
+          transaksiId,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        },
+      )
 
       // Return 1 as fallback for first session
       return 1
@@ -2474,17 +2616,20 @@ export class UnifiedReturnService {
     }
   }
 
-
   /**
    * ✅ TASK 8: Validate against current database state to prevent over-returns
    * Recalculates remaining quantities from fresh database data
-   * 
+   *
    * Requirements: 8.2
    */
   private async validateAgainstCurrentDatabaseState(
     transaksiId: string,
-    requestedQuantities: Record<string, number>
-  ): Promise<{ isValid: boolean; errors: string[]; currentRemainingQuantities: Record<string, number> }> {
+    requestedQuantities: Record<string, number>,
+  ): Promise<{
+    isValid: boolean
+    errors: string[]
+    currentRemainingQuantities: Record<string, number>
+  }> {
     const errors: string[] = []
 
     try {
@@ -2498,15 +2643,15 @@ export class UnifiedReturnService {
                 select: {
                   id: true,
                   jumlahKembali: true,
-                  createdAt: true
+                  createdAt: true,
                 },
                 orderBy: {
-                  createdAt: 'desc'
-                }
-              }
-            }
-          }
-        }
+                  createdAt: 'desc',
+                },
+              },
+            },
+          },
+        },
       })
 
       if (!transactionWithReturns) {
@@ -2518,7 +2663,11 @@ export class UnifiedReturnService {
       const currentRemainingQuantities: Record<string, number> = {}
 
       for (const item of transactionWithReturns.items) {
-        const totalReturned = item.returnConditions.reduce((sum: number, returnRecord: { jumlahKembali: number }) => sum + returnRecord.jumlahKembali, 0)
+        const totalReturned = item.returnConditions.reduce(
+          (sum: number, returnRecord: { jumlahKembali: number }) =>
+            sum + returnRecord.jumlahKembali,
+          0,
+        )
         const remainingQuantity = Math.max(0, (item.jumlahDiambil || 0) - totalReturned)
         currentRemainingQuantities[item.id] = remainingQuantity
       }
@@ -2529,7 +2678,7 @@ export class UnifiedReturnService {
 
         if (requestedQty > currentRemaining) {
           errors.push(
-            `Item ${itemId}: Requested quantity (${requestedQty}) exceeds current remaining quantity (${currentRemaining})`
+            `Item ${itemId}: Requested quantity (${requestedQty}) exceeds current remaining quantity (${currentRemaining})`,
           )
         }
 
@@ -2538,31 +2687,39 @@ export class UnifiedReturnService {
         }
       }
 
-      kasirLogger.returnProcess.info('validateAgainstCurrentDatabaseState', 'Database state validation completed', {
-        transaksiId,
-        currentRemainingQuantities,
-        requestedQuantities,
-        isValid: errors.length === 0,
-        errorsCount: errors.length
-      })
+      kasirLogger.returnProcess.info(
+        'validateAgainstCurrentDatabaseState',
+        'Database state validation completed',
+        {
+          transaksiId,
+          currentRemainingQuantities,
+          requestedQuantities,
+          isValid: errors.length === 0,
+          errorsCount: errors.length,
+        },
+      )
 
       return {
         isValid: errors.length === 0,
         errors,
-        currentRemainingQuantities
+        currentRemainingQuantities,
       }
     } catch (error) {
-      kasirLogger.returnProcess.error('validateAgainstCurrentDatabaseState', 'Database state validation failed', {
-        transaksiId,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      })
+      kasirLogger.returnProcess.error(
+        'validateAgainstCurrentDatabaseState',
+        'Database state validation failed',
+        {
+          transaksiId,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        },
+      )
 
-      errors.push(`Database state validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      errors.push(
+        `Database state validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      )
       return { isValid: false, errors, currentRemainingQuantities: {} }
     }
   }
-
-
 }
 
 /**

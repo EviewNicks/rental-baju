@@ -1,8 +1,8 @@
 {
     "success": true,
     "data": {
-        "id": "0f1a28b2-e52a-4e1c-ace5-e1b77b3fa30f",
-        "kode": "TXN-20260104-003",
+        "id": "d0af57ad-f385-42d2-a477-68605d993cd7",
+        "kode": "TXN-20260105-004",
         "penyewa": {
             "id": "0e665799-38bb-4054-9d29-72522bcf8673",
             "nama": "muhawal",
@@ -12,58 +12,58 @@
             "email": "arif4rd222@gmail.com"
         },
         "kasir": {
-            "id": "c91c9a25-bb32-4790-a617-317a284574b2",
-            "nama": "Tiara",
+            "id": "92e1b3c5-538e-4cf1-abc1-749cd3a4bed0",
+            "nama": "Inaya",
             "isActive": true,
-            "createdAt": "2025-12-18T16:16:04.676Z",
-            "updatedAt": "2025-12-18T16:16:04.676Z"
+            "createdAt": "2025-12-19T07:24:52.394Z",
+            "updatedAt": "2025-12-19T07:24:52.394Z"
         },
         "status": "active",
-        "totalHarga": 450000,
-        "jumlahBayar": 450000,
+        "totalHarga": 280000,
+        "jumlahBayar": 280000,
         "sisaBayar": 0,
         "tglMulai": "2026-01-10T00:00:00.000Z",
         "tglSelesai": "2026-01-13T00:00:00.000Z",
         "tglKembali": null,
         "metodeBayar": "tunai",
         "catatan": null,
-        "discountType": "percent",
-        "discountValue": 10,
+        "discountType": null,
+        "discountValue": null,
         "createdBy": "user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH",
-        "createdAt": "2026-01-04T13:38:06.314Z",
-        "updatedAt": "2026-01-04T13:38:14.401Z",
+        "createdAt": "2026-01-04T19:18:25.891Z",
+        "updatedAt": "2026-01-04T19:18:32.987Z",
         "items": [
             {
-                "id": "305272d0-581e-4994-8f87-b23682ed105b",
+                "id": "5012f644-caa0-443b-aaf3-bc40a3785d27",
                 "produk": {
-                    "id": "e12fbfc1-8299-4540-a922-5ebc3800e73a",
-                    "code": "JJT02",
-                    "name": "Jas Jaguar Turkis",
-                    "modalAwal": 150000,
-                    "imageUrl": "https://pmjxdencfgkbjuyjndbp.supabase.co/storage/v1/object/public/products/products/JJT02/1766067706021.jpg",
+                    "id": "c60ed5f3-e532-4372-8467-603bec103299",
+                    "code": "JLD09",
+                    "name": "Jas Polos Datuk",
+                    "modalAwal": 125000,
+                    "imageUrl": "https://pmjxdencfgkbjuyjndbp.supabase.co/storage/v1/object/public/products/products/JLD09/1766068006882.jpg",
                     "size": null,
-                    "category": "jas-jaguar"
+                    "category": "jas-polos"
                 },
                 "jumlah": 1,
                 "jumlahDiambil": 1,
-                "hargaSewa": 150000,
+                "hargaSewa": 125000,
                 "durasi": 4,
-                "subtotal": 150000,
-                "kondisiAwal": "{\"productSizeId\":\"5f73c8ad-9c61-4642-8c54-a9078f1392e4\",\"size\":\"M\",\"ageCategory\":\"ADULT\",\"condition\":\"baik\",\"linkedSarung\":{\"productId\":\"ca786f53-6116-4c57-ba96-f5572abc0d02\",\"productSizeId\":\"21af8409-5bb4-48d4-b816-c02d0d48e6d0\",\"quantity\":1,\"selectedSize\":{\"id\":\"21af8409-5bb4-48d4-b816-c02d0d48e6d0\",\"productId\":\"ca786f53-6116-4c57-ba96-f5572abc0d02\",\"size\":\"UNIVERSAL\",\"ageCategory\":\"ADULT\",\"quantity\":1,\"availableQuantity\":0,\"rentedStock\":0,\"createdAt\":\"2026-01-04T13:38:08.275Z\",\"updatedAt\":\"2026-01-04T13:38:08.276Z\"}}}",
+                "subtotal": 125000,
+                "kondisiAwal": "{\"productSizeId\":\"d5a4e0a1-2ca8-4a0d-a23b-3b27784d8a62\",\"size\":\"XXL\",\"ageCategory\":\"ADULT\",\"condition\":\"baik\",\"linkedSarung\":{\"productId\":\"de9a6c09-4952-4346-a4ae-a996715ab77f\",\"productSizeId\":\"308fa829-76cf-4687-8678-98cbed9ff8b1\",\"quantity\":1,\"selectedSize\":{\"id\":\"308fa829-76cf-4687-8678-98cbed9ff8b1\",\"productId\":\"de9a6c09-4952-4346-a4ae-a996715ab77f\",\"size\":\"UNIVERSAL\",\"ageCategory\":\"ADULT\",\"quantity\":1,\"availableQuantity\":0,\"rentedStock\":0,\"createdAt\":\"2026-01-04T19:18:27.592Z\",\"updatedAt\":\"2026-01-04T19:18:27.592Z\"}}}",
                 "statusKembali": "belum",
                 "linkedSarung": {
-                    "productId": "ca786f53-6116-4c57-ba96-f5572abc0d02",
-                    "productSizeId": "21af8409-5bb4-48d4-b816-c02d0d48e6d0",
+                    "productId": "de9a6c09-4952-4346-a4ae-a996715ab77f",
+                    "productSizeId": "308fa829-76cf-4687-8678-98cbed9ff8b1",
                     "quantity": 1,
                     "product": {
-                        "id": "ca786f53-6116-4c57-ba96-f5572abc0d02",
-                        "code": "SH08",
-                        "name": "Sarung Hijau Datuk/Teracota",
+                        "id": "de9a6c09-4952-4346-a4ae-a996715ab77f",
+                        "code": "SA06",
+                        "name": "Sarung Abu/Pink",
                         "category": "sarung",
                         "imageUrl": "/products/image.png"
                     },
                     "selectedSize": {
-                        "id": "21af8409-5bb4-48d4-b816-c02d0d48e6d0",
+                        "id": "308fa829-76cf-4687-8678-98cbed9ff8b1",
                         "size": "UNIVERSAL",
                         "ageCategory": "ADULT"
                     }
@@ -71,163 +71,147 @@
                 "totalReturnPenalty": 0
             },
             {
-                "id": "5124d11c-f564-4904-b056-224d60502a44",
+                "id": "75336428-0389-46c4-b309-21d5189c57d9",
                 "produk": {
-                    "id": "4ff9edbd-8028-4a76-ab21-c76d580d67e1",
-                    "code": "BD04",
-                    "name": "Bando Bunga Lengkung",
-                    "modalAwal": 50000,
-                    "imageUrl": "https://pmjxdencfgkbjuyjndbp.supabase.co/storage/v1/object/public/products/products/BD04/1766070487514.jpg",
+                    "id": "c60ed5f3-e532-4372-8467-603bec103299",
+                    "code": "JLD09",
+                    "name": "Jas Polos Datuk",
+                    "modalAwal": 125000,
+                    "imageUrl": "https://pmjxdencfgkbjuyjndbp.supabase.co/storage/v1/object/public/products/products/JLD09/1766068006882.jpg",
                     "size": null,
-                    "category": "bando-besar"
+                    "category": "jas-polos"
                 },
                 "jumlah": 1,
                 "jumlahDiambil": 1,
-                "hargaSewa": 50000,
+                "hargaSewa": 125000,
                 "durasi": 4,
-                "subtotal": 50000,
-                "kondisiAwal": "{\"productSizeId\":\"12091dd3-a1d2-43a0-84bc-94ff2efed8ae\",\"size\":\"UNIVERSAL\",\"ageCategory\":\"UNIVERSAL\",\"condition\":\"baik\",\"linkedSarung\":null}",
-                "statusKembali": "belum",
-                "totalReturnPenalty": 0
-            },
-            {
-                "id": "e6a7d2db-129e-46e9-b6c7-884a11957122",
-                "produk": {
-                    "id": "e12fbfc1-8299-4540-a922-5ebc3800e73a",
-                    "code": "JJT02",
-                    "name": "Jas Jaguar Turkis",
-                    "modalAwal": 150000,
-                    "imageUrl": "https://pmjxdencfgkbjuyjndbp.supabase.co/storage/v1/object/public/products/products/JJT02/1766067706021.jpg",
-                    "size": null,
-                    "category": "jas-jaguar"
-                },
-                "jumlah": 2,
-                "jumlahDiambil": 2,
-                "hargaSewa": 150000,
-                "durasi": 4,
-                "subtotal": 300000,
-                "kondisiAwal": "{\"productSizeId\":\"5f73c8ad-9c61-4642-8c54-a9078f1392e4\",\"size\":\"M\",\"ageCategory\":\"ADULT\",\"condition\":\"baik\",\"linkedSarung\":{\"productId\":\"0367ba92-5407-4d73-98d7-4f5a1a017833\",\"productSizeId\":\"a0f4e9c8-9708-4668-88bb-fccb398d7343\",\"quantity\":2,\"selectedSize\":{\"id\":\"a0f4e9c8-9708-4668-88bb-fccb398d7343\",\"productId\":\"0367ba92-5407-4d73-98d7-4f5a1a017833\",\"size\":\"UNIVERSAL\",\"ageCategory\":\"ADULT\",\"quantity\":2,\"availableQuantity\":0,\"rentedStock\":0,\"createdAt\":\"2026-01-04T13:38:07.594Z\",\"updatedAt\":\"2026-01-04T13:38:07.594Z\"}}}",
+                "subtotal": 125000,
+                "kondisiAwal": "{\"productSizeId\":\"d5a4e0a1-2ca8-4a0d-a23b-3b27784d8a62\",\"size\":\"XXL\",\"ageCategory\":\"ADULT\",\"condition\":\"baik\",\"linkedSarung\":{\"productId\":\"c861ab71-27a8-4968-9472-64a3395ed78a\",\"productSizeId\":\"b49b8e48-5578-40f5-a7bf-58b4047b3cc0\",\"quantity\":1,\"selectedSize\":{\"id\":\"b49b8e48-5578-40f5-a7bf-58b4047b3cc0\",\"productId\":\"c861ab71-27a8-4968-9472-64a3395ed78a\",\"size\":\"UNIVERSAL\",\"ageCategory\":\"ADULT\",\"quantity\":1,\"availableQuantity\":0,\"rentedStock\":0,\"createdAt\":\"2026-01-04T19:18:27.025Z\",\"updatedAt\":\"2026-01-04T19:18:27.025Z\"}}}",
                 "statusKembali": "belum",
                 "linkedSarung": {
-                    "productId": "0367ba92-5407-4d73-98d7-4f5a1a017833",
-                    "productSizeId": "a0f4e9c8-9708-4668-88bb-fccb398d7343",
-                    "quantity": 2,
+                    "productId": "c861ab71-27a8-4968-9472-64a3395ed78a",
+                    "productSizeId": "b49b8e48-5578-40f5-a7bf-58b4047b3cc0",
+                    "quantity": 1,
                     "product": {
-                        "id": "0367ba92-5407-4d73-98d7-4f5a1a017833",
-                        "code": "SC29",
-                        "name": "Sarung Coklat/Salem",
+                        "id": "c861ab71-27a8-4968-9472-64a3395ed78a",
+                        "code": "SA28",
+                        "name": "Sarung Abu/Cream",
                         "category": "sarung",
                         "imageUrl": "/products/image.png"
                     },
                     "selectedSize": {
-                        "id": "a0f4e9c8-9708-4668-88bb-fccb398d7343",
+                        "id": "b49b8e48-5578-40f5-a7bf-58b4047b3cc0",
                         "size": "UNIVERSAL",
                         "ageCategory": "ADULT"
                     }
                 },
+                "totalReturnPenalty": 0
+            },
+            {
+                "id": "e0d29f85-6aea-473e-a504-516b4e3339cb",
+                "produk": {
+                    "id": "683ee614-77bb-4c99-a7b4-6dfed5f1f495",
+                    "code": "AMP01",
+                    "name": "Anting Mutiara Putih",
+                    "modalAwal": 30000,
+                    "imageUrl": "https://pmjxdencfgkbjuyjndbp.supabase.co/storage/v1/object/public/products/products/AMP01/1766069051292.jpg",
+                    "size": null,
+                    "category": "anting"
+                },
+                "jumlah": 1,
+                "jumlahDiambil": 1,
+                "hargaSewa": 30000,
+                "durasi": 4,
+                "subtotal": 30000,
+                "kondisiAwal": "{\"productSizeId\":\"e7ff3651-f9c5-435d-be0c-c51550e1f435\",\"size\":\"UNIVERSAL\",\"ageCategory\":\"UNIVERSAL\",\"condition\":\"baik\",\"linkedSarung\":null}",
+                "statusKembali": "belum",
                 "totalReturnPenalty": 0
             }
         ],
         "pembayaran": [
             {
-                "id": "b4e9aeca-39da-4675-a97a-4eb02dc89abd",
-                "jumlah": 450000,
+                "id": "06420bc0-c1ce-4bd7-8700-eb34db9c9aa2",
+                "jumlah": 280000,
                 "metode": "tunai",
                 "referensi": null,
                 "catatan": "Pembayaran awal transaksi",
                 "createdBy": "user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH",
-                "createdAt": "2026-01-04T13:38:14.053Z"
+                "createdAt": "2026-01-04T19:18:32.689Z"
             }
         ],
         "aktivitas": [
             {
-                "id": "978ac244-4af8-40a2-890b-1d04306f142f",
+                "id": "e53ed69c-e95b-4e15-91e3-38e67024823a",
                 "tipe": "diambil",
-                "deskripsi": "Pickup: Jas Jaguar Turkis + Sarung (2 unit) - custoemr KYP telah di simpan :731040101234434",
+                "deskripsi": "Pickup: Jas Polos Datuk + Sarung, Jas Polos Datuk + Sarung, Anting Mutiara Putih",
                 "data": {
                     "items": [
                         {
-                            "itemId": "e6a7d2db-129e-46e9-b6c7-884a11957122",
-                            "kondisiAwal": "{\"productSizeId\":\"5f73c8ad-9c61-4642-8c54-a9078f1392e4\",\"size\":\"M\",\"ageCategory\":\"ADULT\",\"condition\":\"baik\",\"linkedSarung\":{\"productId\":\"0367ba92-5407-4d73-98d7-4f5a1a017833\",\"productSizeId\":\"a0f4e9c8-9708-4668-88bb-fccb398d7343\",\"quantity\":2,\"selectedSize\":{\"id\":\"a0f4e9c8-9708-4668-88bb-fccb398d7343\",\"productId\":\"0367ba92-5407-4d73-98d7-4f5a1a017833\",\"size\":\"UNIVERSAL\",\"ageCategory\":\"ADULT\",\"quantity\":2,\"availableQuantity\":0,\"rentedStock\":0,\"createdAt\":\"2026-01-04T13:38:07.594Z\",\"updatedAt\":\"2026-01-04T13:38:07.594Z\"}}}",
-                            "productCode": "JJT02",
-                            "productName": "Jas Jaguar Turkis",
-                            "jumlahDiambil": 2
-                        }
-                    ],
-                    "catatan": "custoemr KYP telah di simpan :731040101234434",
-                    "timestamp": "2026-01-04T13:45:02.347Z",
-                    "processedBy": "user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH",
-                    "processedByName": "Tiara"
-                },
-                "createdBy": "user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH",
-                "createdAt": "2026-01-04T13:45:02.354Z"
-            },
-            {
-                "id": "bf3f6d81-ff01-418d-9e95-8ce1442abebb",
-                "tipe": "diambil",
-                "deskripsi": "Pickup: Jas Jaguar Turkis + Sarung, Bando Bunga Lengkung - custoemr KYP telah di simpan :731040101234434",
-                "data": {
-                    "items": [
-                        {
-                            "itemId": "305272d0-581e-4994-8f87-b23682ed105b",
-                            "kondisiAwal": "{\"productSizeId\":\"5f73c8ad-9c61-4642-8c54-a9078f1392e4\",\"size\":\"M\",\"ageCategory\":\"ADULT\",\"condition\":\"baik\",\"linkedSarung\":{\"productId\":\"ca786f53-6116-4c57-ba96-f5572abc0d02\",\"productSizeId\":\"21af8409-5bb4-48d4-b816-c02d0d48e6d0\",\"quantity\":1,\"selectedSize\":{\"id\":\"21af8409-5bb4-48d4-b816-c02d0d48e6d0\",\"productId\":\"ca786f53-6116-4c57-ba96-f5572abc0d02\",\"size\":\"UNIVERSAL\",\"ageCategory\":\"ADULT\",\"quantity\":1,\"availableQuantity\":0,\"rentedStock\":0,\"createdAt\":\"2026-01-04T13:38:08.275Z\",\"updatedAt\":\"2026-01-04T13:38:08.276Z\"}}}",
-                            "productCode": "JJT02",
-                            "productName": "Jas Jaguar Turkis",
+                            "itemId": "5012f644-caa0-443b-aaf3-bc40a3785d27",
+                            "kondisiAwal": "{\"productSizeId\":\"d5a4e0a1-2ca8-4a0d-a23b-3b27784d8a62\",\"size\":\"XXL\",\"ageCategory\":\"ADULT\",\"condition\":\"baik\",\"linkedSarung\":{\"productId\":\"de9a6c09-4952-4346-a4ae-a996715ab77f\",\"productSizeId\":\"308fa829-76cf-4687-8678-98cbed9ff8b1\",\"quantity\":1,\"selectedSize\":{\"id\":\"308fa829-76cf-4687-8678-98cbed9ff8b1\",\"productId\":\"de9a6c09-4952-4346-a4ae-a996715ab77f\",\"size\":\"UNIVERSAL\",\"ageCategory\":\"ADULT\",\"quantity\":1,\"availableQuantity\":0,\"rentedStock\":0,\"createdAt\":\"2026-01-04T19:18:27.592Z\",\"updatedAt\":\"2026-01-04T19:18:27.592Z\"}}}",
+                            "productCode": "JLD09",
+                            "productName": "Jas Polos Datuk",
                             "jumlahDiambil": 1
                         },
                         {
-                            "itemId": "5124d11c-f564-4904-b056-224d60502a44",
-                            "kondisiAwal": "{\"productSizeId\":\"12091dd3-a1d2-43a0-84bc-94ff2efed8ae\",\"size\":\"UNIVERSAL\",\"ageCategory\":\"UNIVERSAL\",\"condition\":\"baik\",\"linkedSarung\":null}",
-                            "productCode": "BD04",
-                            "productName": "Bando Bunga Lengkung",
+                            "itemId": "75336428-0389-46c4-b309-21d5189c57d9",
+                            "kondisiAwal": "{\"productSizeId\":\"d5a4e0a1-2ca8-4a0d-a23b-3b27784d8a62\",\"size\":\"XXL\",\"ageCategory\":\"ADULT\",\"condition\":\"baik\",\"linkedSarung\":{\"productId\":\"c861ab71-27a8-4968-9472-64a3395ed78a\",\"productSizeId\":\"b49b8e48-5578-40f5-a7bf-58b4047b3cc0\",\"quantity\":1,\"selectedSize\":{\"id\":\"b49b8e48-5578-40f5-a7bf-58b4047b3cc0\",\"productId\":\"c861ab71-27a8-4968-9472-64a3395ed78a\",\"size\":\"UNIVERSAL\",\"ageCategory\":\"ADULT\",\"quantity\":1,\"availableQuantity\":0,\"rentedStock\":0,\"createdAt\":\"2026-01-04T19:18:27.025Z\",\"updatedAt\":\"2026-01-04T19:18:27.025Z\"}}}",
+                            "productCode": "JLD09",
+                            "productName": "Jas Polos Datuk",
+                            "jumlahDiambil": 1
+                        },
+                        {
+                            "itemId": "e0d29f85-6aea-473e-a504-516b4e3339cb",
+                            "kondisiAwal": "{\"productSizeId\":\"e7ff3651-f9c5-435d-be0c-c51550e1f435\",\"size\":\"UNIVERSAL\",\"ageCategory\":\"UNIVERSAL\",\"condition\":\"baik\",\"linkedSarung\":null}",
+                            "productCode": "AMP01",
+                            "productName": "Anting Mutiara Putih",
                             "jumlahDiambil": 1
                         }
                     ],
-                    "catatan": "custoemr KYP telah di simpan :731040101234434",
-                    "timestamp": "2026-01-04T13:40:54.515Z",
+                    "timestamp": "2026-01-04T19:20:06.898Z",
                     "processedBy": "user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH",
-                    "processedByName": "Tiara"
+                    "processedByName": "Inaya"
                 },
                 "createdBy": "user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH",
-                "createdAt": "2026-01-04T13:40:54.517Z"
+                "createdAt": "2026-01-04T19:20:06.900Z"
             },
             {
-                "id": "b8246d50-3100-4e42-8bfa-a0830d09c1d4",
+                "id": "3847438f-657e-4232-9482-ac986ff71564",
                 "tipe": "dibayar",
-                "deskripsi": "Pembayaran tunai sebesar Rp 450.000",
+                "deskripsi": "Pembayaran tunai sebesar Rp 280.000",
                 "data": {
-                    "amount": 450000,
+                    "amount": 280000,
                     "method": "tunai",
-                    "newTotal": "450000",
-                    "paymentId": "b4e9aeca-39da-4675-a97a-4eb02dc89abd",
+                    "newTotal": "280000",
+                    "paymentId": "06420bc0-c1ce-4bd7-8700-eb34db9c9aa2",
                     "remaining": "0"
                 },
                 "createdBy": "user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH",
-                "createdAt": "2026-01-04T13:38:14.738Z"
+                "createdAt": "2026-01-04T19:18:33.289Z"
             },
             {
-                "id": "fc4c4d19-81ff-4e7e-9054-c5da8f7b8667",
+                "id": "278fbe8c-5ebb-4d77-9849-31dbdcb15807",
                 "tipe": "dibuat",
-                "deskripsi": "Transaksi TXN-20260104-003 dibuat dengan kasir ter assign dengan diskon percent dengan 2 pairing jas-sarung",
+                "deskripsi": "Transaksi TXN-20260105-004 dibuat dengan kasir ter assign dengan 2 pairing jas-sarung",
                 "data": {
                     "items": 3,
-                    "kasirId": "c91c9a25-bb32-4790-a617-317a284574b2",
+                    "kasirId": "92e1b3c5-538e-4cf1-abc1-749cd3a4bed0",
                     "duration": 4,
-                    "subtotal": "500000",
+                    "subtotal": "280000",
                     "sizeAware": true,
-                    "totalHarga": "450000",
-                    "discountType": "percent",
-                    "discountValue": 10,
-                    "discountAmount": "50000",
+                    "totalHarga": "280000",
+                    "discountType": null,
+                    "discountValue": null,
+                    "discountAmount": "0",
                     "enhancedSystem": true,
                     "pairingSupport": true,
                     "jasSarungPairings": 2,
                     "durationMultiplier": 1,
-                    "transactionDuration": 10730,
+                    "transactionDuration": 10181,
                     "totalItemsIncludingSarung": 5
                 },
                 "createdBy": "user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH",
-                "createdAt": "2026-01-04T13:38:11.436Z"
+                "createdAt": "2026-01-04T19:18:30.413Z"
             }
         ]
     },

@@ -36,23 +36,26 @@ export function UnifiedConditionForm({
   disabled = false,
   isLoading = false,
   remainingQuantity, // Add remaining quantity prop
-  pairingInfo, // ✅ TASK 6: Add pairing information prop
 }: UnifiedConditionFormProps) {
   // ✅ SMART DEFAULT: Use remaining quantity as helpful default, but allow zero for partial return
   // This provides the best UX: auto-fill with remaining quantity, but user can adjust to 0 if needed
-  const getSmartDefaultQuantity = (item: TransaksiItemResponse, existingValue?: EnhancedItemCondition | null, remainingQty?: number) => {
+  const getSmartDefaultQuantity = (
+    item: TransaksiItemResponse,
+    existingValue?: EnhancedItemCondition | null,
+    remainingQty?: number,
+  ) => {
     // If there's an existing value, use it (form already initialized)
     if (existingValue?.conditions?.[0]?.jumlahKembali !== undefined) {
       return existingValue.conditions[0].jumlahKembali
     }
-    
+
     // ✅ FIX: Use remaining quantity if provided, otherwise fall back to jumlahDiambil
     // This fixes the issue where form shows total picked up instead of remaining quantity
-    return remainingQty !== undefined ? remainingQty : (item.jumlahDiambil || 0)
+    return remainingQty !== undefined ? remainingQty : item.jumlahDiambil || 0
   }
 
   const smartDefaultQuantity = getSmartDefaultQuantity(item, value, remainingQuantity)
-  
+
   const initialCondition: EnhancedItemCondition = value || {
     itemId: item.id,
     mode: 'single', // Internal mode tracking (simplified)
@@ -66,9 +69,13 @@ export function UnifiedConditionForm({
       },
     ],
     // ✅ Smart validation: valid if quantity > 0, but allow 0 for partial return scenarios
-    isValid: smartDefaultQuantity > 0, 
+    isValid: smartDefaultQuantity > 0,
     totalQuantity: remainingQuantity !== undefined ? remainingQuantity : item.jumlahDiambil, // ✅ Use remaining quantity for accurate total
-    remainingQuantity: Math.max(0, (remainingQuantity !== undefined ? remainingQuantity : item.jumlahDiambil) - smartDefaultQuantity),
+    remainingQuantity: Math.max(
+      0,
+      (remainingQuantity !== undefined ? remainingQuantity : item.jumlahDiambil) -
+        smartDefaultQuantity,
+    ),
   }
 
   const [currentCondition, setCurrentCondition] = useState<EnhancedItemCondition>(initialCondition)
@@ -242,7 +249,7 @@ export function UnifiedConditionForm({
     // Show suggestion when user has entered some quantity but hasn't allocated all items
     // Allow suggestion even when totalReturned = 0 (user might want to add conditions without returning in current session)
     const shouldShow =
-      validation.remaining > 0 && 
+      validation.remaining > 0 &&
       validation.remaining < currentCondition.totalQuantity &&
       validation.totalReturned >= 0 // ✅ Allow 0 or positive (was > 0)
 
@@ -360,8 +367,6 @@ export function UnifiedConditionForm({
     [item.id, currentCondition.conditions],
   )
 
-
-
   // Get card styling based on validation state
   const getCardStyling = () => {
     if (validation.error) {
@@ -391,14 +396,15 @@ export function UnifiedConditionForm({
                 {item.linkedSarung ? (
                   <span className="text-purple-800">
                     {item.produk?.name || 'Unknown Product'}
-                    <span className="text-purple-600 font-normal"> + {item.linkedSarung.product?.code || 'Sarung'}</span>
+                    <span className="text-purple-600 font-normal">
+                      {' '}
+                      + {item.linkedSarung.product?.code || 'Sarung'}
+                    </span>
                   </span>
                 ) : (
-                  <span>
-                    {item.produk?.name || 'Unknown Product'}
-                  </span>
+                  <span>{item.produk?.name || 'Unknown Product'}</span>
                 )}
-                
+
                 {/* ✅ Enhanced: Always show size badge for all items when size info is available */}
                 {sizeInfo.hasSizeInfo && (
                   <Badge
@@ -408,12 +414,11 @@ export function UnifiedConditionForm({
                     {sizeInfo.size} | {sizeInfo.ageCategory}
                   </Badge>
                 )}
-                
+
                 <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-200">
                   {item.jumlahDiambil} unit
                 </Badge>
-                
-                
+
                 {currentCondition.conditions.length > 1 && (
                   <Badge
                     variant="outline"
@@ -481,7 +486,6 @@ export function UnifiedConditionForm({
             </AlertDescription>
           </Alert>
         )}
-
       </CardHeader>
 
       <CardContent>

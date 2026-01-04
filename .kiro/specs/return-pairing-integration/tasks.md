@@ -82,6 +82,7 @@ This implementation plan addresses the critical compatibility issues between the
   - Filter out paired sarung items from direct selection
   - Update return confirmation to show complete pairing information
   - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6_
+  - **COMPLETED: Updated SimpleReturnForm and UnifiedConditionForm to use new AutoSelectionManager interface with linkedSarungData. Simplified implementation since sarung is metadata, not separate items. All type checking and linting passes.**
 
 - [ ]* 6.1 Write property tests for pairing display format
   - **Property 5: Pairing display format consistency**
@@ -107,7 +108,7 @@ This implementation plan addresses the critical compatibility issues between the
   - **Property 12: Fallback behavior for invalid data**
   - **Validates: Requirements 8.1, 8.2, 11.4**
 
-- [ ] 8. Enhance audit logging for pairing operations
+- [x] 8. Enhance audit logging for pairing operations
   - Update activity logging to include pairing context in return operations
   - Add logging for dual stock restoration (both jas and sarung changes)
   - Include kondisiAwal parsing decisions and pairing data in logs
@@ -121,7 +122,7 @@ This implementation plan addresses the critical compatibility issues between the
 - [ ] 9. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 10. Integration testing and validation
+- [x] 10. Integration testing and validation
   - Create end-to-end tests for return with jas-sarung pairing
   - Test auto-selection behavior in return UI
   - Test dual stock restoration functionality

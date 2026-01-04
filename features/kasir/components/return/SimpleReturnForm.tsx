@@ -44,12 +44,12 @@ import { kasirLogger } from '../../lib/logger'
 import { PenaltyCalculator } from '../../lib/utils/penaltyCalculator'
 import { AutoSelectionManager } from '../../lib/utils/autoSelectionManager'
 import { parseKondisiAwalEnhanced } from '../../lib/utils/kondisiAwalParser'
-import { 
-  getItemsWithRemainingQuantity, 
-  calculateRemainingQuantity, 
+import {
+  getItemsWithRemainingQuantity,
+  calculateRemainingQuantity,
   buildPartialReturnState,
   validatePartialReturnQuantities,
-  type TransaksiItemWithReturns // ✅ Updated with linkedSarung property via inheritance
+  type TransaksiItemWithReturns, // ✅ Updated with linkedSarung property via inheritance
 } from '../../lib/utils/partialReturnHelpers'
 
 interface SimpleReturnFormProps {
@@ -105,19 +105,19 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
       // Safe wrapper to handle optional items
       const safeTransaction = {
         ...transaction,
-        items: transaction.items || []
+        items: transaction.items || [],
       }
-      
+
       // Use partial return utilities to get items with remaining quantities
       const returnableItems = getItemsWithRemainingQuantity(safeTransaction)
 
       // ✅ TASK 6.1: Initialize AutoSelectionManager for pairing behavior with linkedSarung data
       const autoSelectionManager = new AutoSelectionManager(
-        returnableItems.map(item => ({
+        returnableItems.map((item) => ({
           id: item.id,
           kondisiAwal: item.kondisiAwal || null, // Convert undefined to null
-          linkedSarung: item.linkedSarung || null // ✅ Pass linkedSarung data from API response
-        }))
+          linkedSarung: item.linkedSarung || null, // ✅ Pass linkedSarung data from API response
+        })),
       )
 
       // ✅ TASK 6.2: All items are selectable since sarung is metadata, not separate items
@@ -128,7 +128,7 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
       selectableItems.forEach((item) => {
         // Calculate remaining quantity for this item
         const remainingQuantityResult = calculateRemainingQuantity(item)
-        
+
         initialConditions[item.id] = {
           itemId: item.id,
           mode: 'single',
@@ -168,74 +168,86 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
             selectableItemCount: selectableItems.length,
             totalConditions: Object.keys(initialConditions).length,
             hasPairedItems: autoSelectionManager.hasPairedItems(),
-            pairingCount: autoSelectionManager.getAllPairings().length
+            pairingCount: autoSelectionManager.getAllPairings().length,
           },
-          detailedItemAnalysis: returnableItems.map(item => {
+          detailedItemAnalysis: returnableItems.map((item) => {
             const kondisiData = parseKondisiAwalEnhanced(item.kondisiAwal)
             const remainingResult = calculateRemainingQuantity(item)
-            
+
             return {
               itemId: item.id,
               productInfo: {
                 name: item.produk?.name,
                 code: item.produk?.code,
-                category: item.produk?.category
+                category: item.produk?.category,
               },
               quantityInfo: {
                 jumlahDiambil: remainingResult.jumlahDiambil,
                 totalReturned: remainingResult.totalReturned,
-                remainingToReturn: remainingResult.remainingToReturn
+                remainingToReturn: remainingResult.remainingToReturn,
               },
               kondisiAwalAnalysis: {
-                format: item.kondisiAwal ? (item.kondisiAwal.startsWith('{') ? 'JSON' : 'PIPE') : 'NULL',
+                format: item.kondisiAwal
+                  ? item.kondisiAwal.startsWith('{')
+                    ? 'JSON'
+                    : 'PIPE'
+                  : 'NULL',
                 rawData: item.kondisiAwal,
                 parsedData: {
                   productSizeId: kondisiData?.productSizeId,
                   size: kondisiData?.size,
                   ageCategory: kondisiData?.ageCategory,
                   hasLinkedSarung: !!kondisiData?.linkedSarung?.productSizeId,
-                  linkedSarungProductSizeId: kondisiData?.linkedSarung?.productSizeId
-                }
+                  linkedSarungProductSizeId: kondisiData?.linkedSarung?.productSizeId,
+                },
               },
-              apiLinkedSarungData: item.linkedSarung ? {
-                productId: item.linkedSarung.productId,
-                productSizeId: item.linkedSarung.productSizeId,
-                quantity: item.linkedSarung.quantity,
-                productInfo: item.linkedSarung.product ? {
-                  code: item.linkedSarung.product.code,
-                  name: item.linkedSarung.product.name,
-                  category: item.linkedSarung.product.category
-                } : null,
-                selectedSizeInfo: item.linkedSarung.selectedSize ? {
-                  size: item.linkedSarung.selectedSize.size,
-                  ageCategory: item.linkedSarung.selectedSize.ageCategory
-                } : null
-              } : null,
-              initialCondition: initialConditions[item.id] ? {
-                mode: initialConditions[item.id].mode,
-                totalQuantity: initialConditions[item.id].totalQuantity,
-                remainingQuantity: initialConditions[item.id].remainingQuantity,
-                isValid: initialConditions[item.id].isValid,
-                conditionsCount: initialConditions[item.id].conditions.length
-              } : null
+              apiLinkedSarungData: item.linkedSarung
+                ? {
+                    productId: item.linkedSarung.productId,
+                    productSizeId: item.linkedSarung.productSizeId,
+                    quantity: item.linkedSarung.quantity,
+                    productInfo: item.linkedSarung.product
+                      ? {
+                          code: item.linkedSarung.product.code,
+                          name: item.linkedSarung.product.name,
+                          category: item.linkedSarung.product.category,
+                        }
+                      : null,
+                    selectedSizeInfo: item.linkedSarung.selectedSize
+                      ? {
+                          size: item.linkedSarung.selectedSize.size,
+                          ageCategory: item.linkedSarung.selectedSize.ageCategory,
+                        }
+                      : null,
+                  }
+                : null,
+              initialCondition: initialConditions[item.id]
+                ? {
+                    mode: initialConditions[item.id].mode,
+                    totalQuantity: initialConditions[item.id].totalQuantity,
+                    remainingQuantity: initialConditions[item.id].remainingQuantity,
+                    isValid: initialConditions[item.id].isValid,
+                    conditionsCount: initialConditions[item.id].conditions.length,
+                  }
+                : null,
             }
           }),
           autoSelectionManagerAnalysis: {
             hasPairedItems: autoSelectionManager.hasPairedItems(),
-            allPairings: autoSelectionManager.getAllPairings().map(pairing => ({
+            allPairings: autoSelectionManager.getAllPairings().map((pairing) => ({
               jasId: pairing.jasId,
               linkedSarungData: {
                 productId: pairing.linkedSarungData.productId,
                 productSizeId: pairing.linkedSarungData.productSizeId,
                 quantity: pairing.linkedSarungData.quantity,
                 productCode: pairing.linkedSarungData.product?.code,
-                productName: pairing.linkedSarungData.product?.name
-              }
-            }))
+                productName: pairing.linkedSarungData.product?.name,
+              },
+            })),
           },
           partialReturnState: buildPartialReturnState(safeTransaction),
           auditStep: 'transaction_initialization_complete',
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         },
       )
     }
@@ -270,8 +282,11 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
 
       // Only calculate penalty for items being returned (quantity > 0)
       Object.entries(formState.itemConditions).forEach(([itemId, condition]) => {
-        const totalItemQuantity = condition.conditions.reduce((sum, c) => sum + (c.jumlahKembali || 0), 0)
-        
+        const totalItemQuantity = condition.conditions.reduce(
+          (sum, c) => sum + (c.jumlahKembali || 0),
+          0,
+        )
+
         // Skip items with 0 quantity (not being returned in this session)
         if (totalItemQuantity === 0) {
           return
@@ -282,15 +297,17 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
         // Get item name and size info from transaction data
         const item = transaction.items?.find((i) => i.id === itemId)
         const itemName = item?.produk?.name || 'Unknown Product'
-        
+
         // Extract size information from kondisiAwal
-        const sizeInfo = item?.kondisiAwal ? (() => {
-          const parts = item.kondisiAwal.split('|')
-          if (parts.length >= 4) {
-            return ` (${parts[1]} | ${parts[2]})`
-          }
-          return ''
-        })() : ''
+        const sizeInfo = item?.kondisiAwal
+          ? (() => {
+              const parts = item.kondisiAwal.split('|')
+              if (parts.length >= 4) {
+                return ` (${parts[1]} | ${parts[2]})`
+              }
+              return ''
+            })()
+          : ''
 
         // Calculate penalty for each condition within this item
         condition.conditions.forEach((c) => {
@@ -405,7 +422,7 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
     // Safe wrapper to handle optional items
     const safeTransaction = {
       ...transaction,
-      items: transaction.items || []
+      items: transaction.items || [],
     }
 
     // ✅ TASK 3.1: Use partial return utilities to get returnable items
@@ -426,7 +443,8 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
     if (itemsBeingReturned.length === 0) {
       setFormState((prev) => ({
         ...prev,
-        error: 'Minimal harus mengembalikan 1 item. Pilih item yang ingin dikembalikan di sesi ini.',
+        error:
+          'Minimal harus mengembalikan 1 item. Pilih item yang ingin dikembalikan di sesi ini.',
       }))
       return false
     }
@@ -448,19 +466,25 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
     const remainingQuantities: Record<string, number> = {}
 
     itemsBeingReturned.forEach((condition) => {
-      const totalRequested = condition.conditions.reduce((sum: number, c) => sum + (c.jumlahKembali || 0), 0)
+      const totalRequested = condition.conditions.reduce(
+        (sum: number, c) => sum + (c.jumlahKembali || 0),
+        0,
+      )
       requestedQuantities[condition.itemId] = totalRequested
 
       // Get remaining quantity for this item
-      const item = selectableItems.find(i => i.id === condition.itemId)
+      const item = selectableItems.find((i) => i.id === condition.itemId)
       if (item) {
         const remainingResult = calculateRemainingQuantity(item)
         remainingQuantities[condition.itemId] = remainingResult.remainingToReturn
       }
     })
 
-    const quantityValidation = validatePartialReturnQuantities(requestedQuantities, remainingQuantities)
-    
+    const quantityValidation = validatePartialReturnQuantities(
+      requestedQuantities,
+      remainingQuantities,
+    )
+
     if (!quantityValidation.isValid) {
       setFormState((prev) => ({
         ...prev,
@@ -545,105 +569,133 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
 
     try {
       // ✅ ENHANCED AUDIT TRAIL: Pre-submission analysis
-      kasirLogger.returnProcess.info('SimpleReturnForm', '🔄 AUDIT: Pre-submission form state analysis', {
-        transactionId: kode,
-        formStateAnalysis: {
-          totalItemsInForm: Object.keys(formState.itemConditions).length,
-          itemConditionsDetails: Object.entries(formState.itemConditions).map(([itemId, condition]) => {
-            const totalQuantity = condition.conditions.reduce((sum, c) => sum + (c.jumlahKembali || 0), 0)
-            const item = selectableItems.find(i => i.id === itemId)
-            const kondisiData = parseKondisiAwalEnhanced(item?.kondisiAwal)
-            
-            return {
-              itemId,
-              productName: item?.produk?.name,
-              isValid: condition.isValid,
-              mode: condition.mode,
-              totalQuantity: condition.totalQuantity,
-              remainingQuantity: condition.remainingQuantity,
-              conditionsCount: condition.conditions.length,
-              conditionsDetails: condition.conditions.map(c => ({
-                kondisiAkhir: c.kondisiAkhir,
-                jumlahKembali: c.jumlahKembali,
-                conditionCategory: c.conditionCategory,
-                useManualPricing: c.useManualPricing,
-                manualPrice: c.manualPrice
-              })),
-              calculatedTotalQuantity: totalQuantity,
-              willBeIncluded: totalQuantity > 0,
-              pairingInfo: {
-                hasLinkedSarung: !!kondisiData?.linkedSarung?.productSizeId,
-                linkedSarungProductSizeId: kondisiData?.linkedSarung?.productSizeId,
-                apiLinkedSarungProductSizeId: item?.linkedSarung?.productSizeId
-              }
-            }
-          }),
-          catatan: formState.catatan,
-          hasError: !!formState.error,
-          error: formState.error
+      kasirLogger.returnProcess.info(
+        'SimpleReturnForm',
+        '🔄 AUDIT: Pre-submission form state analysis',
+        {
+          transactionId: kode,
+          formStateAnalysis: {
+            totalItemsInForm: Object.keys(formState.itemConditions).length,
+            itemConditionsDetails: Object.entries(formState.itemConditions).map(
+              ([itemId, condition]) => {
+                const totalQuantity = condition.conditions.reduce(
+                  (sum, c) => sum + (c.jumlahKembali || 0),
+                  0,
+                )
+                const item = selectableItems.find((i) => i.id === itemId)
+                const kondisiData = parseKondisiAwalEnhanced(item?.kondisiAwal)
+
+                return {
+                  itemId,
+                  productName: item?.produk?.name,
+                  isValid: condition.isValid,
+                  mode: condition.mode,
+                  totalQuantity: condition.totalQuantity,
+                  remainingQuantity: condition.remainingQuantity,
+                  conditionsCount: condition.conditions.length,
+                  conditionsDetails: condition.conditions.map((c) => ({
+                    kondisiAkhir: c.kondisiAkhir,
+                    jumlahKembali: c.jumlahKembali,
+                    conditionCategory: c.conditionCategory,
+                    useManualPricing: c.useManualPricing,
+                    manualPrice: c.manualPrice,
+                  })),
+                  calculatedTotalQuantity: totalQuantity,
+                  willBeIncluded: totalQuantity > 0,
+                  pairingInfo: {
+                    hasLinkedSarung: !!kondisiData?.linkedSarung?.productSizeId,
+                    linkedSarungProductSizeId: kondisiData?.linkedSarung?.productSizeId,
+                    apiLinkedSarungProductSizeId: item?.linkedSarung?.productSizeId,
+                  },
+                }
+              },
+            ),
+            catatan: formState.catatan,
+            hasError: !!formState.error,
+            error: formState.error,
+          },
+          auditStep: 'pre_submission_analysis',
+          timestamp: new Date().toISOString(),
         },
-        auditStep: 'pre_submission_analysis',
-        timestamp: new Date().toISOString()
-      })
+      )
 
       // ✅ PARTIAL RETURN FIX: Convert to API request format (unified)
       // Only include items that are actually being returned (quantity > 0)
-      const itemsBeingReturned = Object.entries(formState.itemConditions).filter(([, condition]) => {
-        const totalQuantity = condition.conditions.reduce((sum, c) => sum + (c.jumlahKembali || 0), 0)
-        return totalQuantity > 0
-      })
+      const itemsBeingReturned = Object.entries(formState.itemConditions).filter(
+        ([, condition]) => {
+          const totalQuantity = condition.conditions.reduce(
+            (sum, c) => sum + (c.jumlahKembali || 0),
+            0,
+          )
+          return totalQuantity > 0
+        },
+      )
 
       // ✅ ENHANCED AUDIT TRAIL: Items filtering analysis
-      kasirLogger.returnProcess.info('SimpleReturnForm', '🔍 AUDIT: Items filtering for return processing', {
-        transactionId: kode,
-        filteringAnalysis: {
-          totalItemsInForm: Object.keys(formState.itemConditions).length,
-          itemsBeingReturnedCount: itemsBeingReturned.length,
-          itemsSkippedCount: Object.keys(formState.itemConditions).length - itemsBeingReturned.length,
-          itemsBeingReturnedDetails: itemsBeingReturned.map(([itemId, condition]) => {
-            const totalQuantity = condition.conditions.reduce((sum, c) => sum + (c.jumlahKembali || 0), 0)
-            const item = selectableItems.find(i => i.id === itemId)
-            const kondisiData = parseKondisiAwalEnhanced(item?.kondisiAwal)
-            
-            return {
-              itemId,
-              productName: item?.produk?.name,
-              productCode: item?.produk?.code,
-              totalQuantity,
-              conditionsCount: condition.conditions.length,
-              pairingInfo: {
-                hasLinkedSarung: !!kondisiData?.linkedSarung?.productSizeId,
-                jasProductSizeId: kondisiData?.productSizeId,
-                linkedSarungProductSizeId: kondisiData?.linkedSarung?.productSizeId,
-                apiLinkedSarungProductSizeId: item?.linkedSarung?.productSizeId,
-                expectedDualRestoration: !!kondisiData?.linkedSarung?.productSizeId
-              }
-            }
-          }),
-          itemsSkippedDetails: Object.entries(formState.itemConditions)
-            .filter(([, condition]) => {
-              const totalQuantity = condition.conditions.reduce((sum, c) => sum + (c.jumlahKembali || 0), 0)
-              return totalQuantity === 0
-            })
-            .map(([itemId, condition]) => {
-              const item = selectableItems.find(i => i.id === itemId)
+      kasirLogger.returnProcess.info(
+        'SimpleReturnForm',
+        '🔍 AUDIT: Items filtering for return processing',
+        {
+          transactionId: kode,
+          filteringAnalysis: {
+            totalItemsInForm: Object.keys(formState.itemConditions).length,
+            itemsBeingReturnedCount: itemsBeingReturned.length,
+            itemsSkippedCount:
+              Object.keys(formState.itemConditions).length - itemsBeingReturned.length,
+            itemsBeingReturnedDetails: itemsBeingReturned.map(([itemId, condition]) => {
+              const totalQuantity = condition.conditions.reduce(
+                (sum, c) => sum + (c.jumlahKembali || 0),
+                0,
+              )
+              const item = selectableItems.find((i) => i.id === itemId)
+              const kondisiData = parseKondisiAwalEnhanced(item?.kondisiAwal)
+
               return {
                 itemId,
                 productName: item?.produk?.name,
-                reason: 'zero_quantity',
-                totalQuantity: condition.conditions.reduce((sum, c) => sum + (c.jumlahKembali || 0), 0)
+                productCode: item?.produk?.code,
+                totalQuantity,
+                conditionsCount: condition.conditions.length,
+                pairingInfo: {
+                  hasLinkedSarung: !!kondisiData?.linkedSarung?.productSizeId,
+                  jasProductSizeId: kondisiData?.productSizeId,
+                  linkedSarungProductSizeId: kondisiData?.linkedSarung?.productSizeId,
+                  apiLinkedSarungProductSizeId: item?.linkedSarung?.productSizeId,
+                  expectedDualRestoration: !!kondisiData?.linkedSarung?.productSizeId,
+                },
               }
-            })
+            }),
+            itemsSkippedDetails: Object.entries(formState.itemConditions)
+              .filter(([, condition]) => {
+                const totalQuantity = condition.conditions.reduce(
+                  (sum, c) => sum + (c.jumlahKembali || 0),
+                  0,
+                )
+                return totalQuantity === 0
+              })
+              .map(([itemId, condition]) => {
+                const item = selectableItems.find((i) => i.id === itemId)
+                return {
+                  itemId,
+                  productName: item?.produk?.name,
+                  reason: 'zero_quantity',
+                  totalQuantity: condition.conditions.reduce(
+                    (sum, c) => sum + (c.jumlahKembali || 0),
+                    0,
+                  ),
+                }
+              }),
+          },
+          auditStep: 'items_filtering_complete',
+          timestamp: new Date().toISOString(),
         },
-        auditStep: 'items_filtering_complete',
-        timestamp: new Date().toISOString()
-      })
+      )
 
       const apiRequest = {
         items: itemsBeingReturned.map(([itemId, condition]) => ({
           itemId,
           conditions: condition.conditions
-            .filter(c => (c.jumlahKembali || 0) > 0) // ✅ Only include conditions with quantity > 0
+            .filter((c) => (c.jumlahKembali || 0) > 0) // ✅ Only include conditions with quantity > 0
             .map((c) => ({
               kondisiAkhir: c.kondisiAkhir,
               jumlahKembali: c.jumlahKembali,
@@ -655,7 +707,6 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
         catatan: formState.catatan || undefined,
         tglKembali: new Date().toISOString(),
       }
-
 
       await processReturnMutation.mutateAsync({
         ...apiRequest,
@@ -679,9 +730,11 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
   }, [onClose, router])
 
   // ✅ TASK 6: Get selectable items (all items since sarung is metadata)
-  const returnableItems = transaction && transaction.items ? 
-    getItemsWithRemainingQuantity({ ...transaction, items: transaction.items }) : []
-  
+  const returnableItems =
+    transaction && transaction.items
+      ? getItemsWithRemainingQuantity({ ...transaction, items: transaction.items })
+      : []
+
   const selectableItems = returnableItems // All items are selectable since sarung is metadata
 
   // ✅ PARTIAL RETURN FIX: Check if form is valid for submission
@@ -785,8 +838,6 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
           </CardContent>
         </Card>
 
-        
-
         {/* ✅ TASK 3: Partial Return Information */}
         {transaction && (
           <Card className="mb-6 border-blue-200 bg-blue-50">
@@ -804,7 +855,8 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
                     {selectableItems.length} item total
                     {formState.autoSelectionManager?.hasPairedItems() && (
                       <span className="text-xs ml-1">
-                        (termasuk {formState.autoSelectionManager.getAllPairings().length} jas dengan sarung)
+                        (termasuk {formState.autoSelectionManager.getAllPairings().length} jas
+                        dengan sarung)
                       </span>
                     )}
                   </p>
@@ -812,10 +864,13 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
                 <div>
                   <span className="font-medium text-blue-700">Session pengembalian:</span>
                   <p className="text-blue-600">
-                    {transaction.items?.some(item => 
-                      (item as TransaksiItemWithReturns).conditionBreakdown && 
-                      (item as TransaksiItemWithReturns).conditionBreakdown!.length > 0
-                    ) ? 'Lanjutan' : 'Pertama'}
+                    {transaction.items?.some(
+                      (item) =>
+                        (item as TransaksiItemWithReturns).conditionBreakdown &&
+                        (item as TransaksiItemWithReturns).conditionBreakdown!.length > 0,
+                    )
+                      ? 'Lanjutan'
+                      : 'Pertama'}
                   </p>
                 </div>
               </div>
@@ -824,23 +879,22 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
                   <div className="text-xs text-blue-600 space-y-1">
                     {selectableItems.map((item) => {
                       const remainingResult = calculateRemainingQuantity(item)
-                      const pairingInfo = formState.autoSelectionManager?.getPairingInfo(item.id)
-                      
+
                       // ✅ TASK 6.5: Implement pairing display format using linkedSarung from API response
                       let displayName = item.produk?.name || 'Unknown Product'
-                      
+
                       if (item.linkedSarung) {
                         // Extract size info for jas
                         const jasKondisi = parseKondisiAwalEnhanced(item.kondisiAwal)
                         const jasSize = jasKondisi?.size || 'Unknown'
                         const jasAge = jasKondisi?.ageCategory || 'Unknown'
-                        
+
                         // ✅ Use linkedSarung from API response for sarung code
                         const sarungCode = item.linkedSarung.product?.code || 'Sarung'
-                        
+
                         displayName = `${item.produk?.name || 'Jas'} (${jasAge} ${jasSize}) + ${sarungCode}`
                       }
-                      
+
                       return (
                         <div key={item.id} className="flex justify-between">
                           <span className={item.linkedSarung ? 'font-medium text-purple-700' : ''}>
@@ -852,7 +906,8 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
                             )}
                           </span>
                           <span className="font-medium">
-                            Sisa: {remainingResult.remainingToReturn}/{remainingResult.jumlahDiambil}
+                            Sisa: {remainingResult.remainingToReturn}/
+                            {remainingResult.jumlahDiambil}
                           </span>
                         </div>
                       )
@@ -875,7 +930,7 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
             // ✅ Calculate remaining quantity for this specific item
             const remainingResult = calculateRemainingQuantity(item)
             const pairingInfo = formState.autoSelectionManager?.getPairingInfo(item.id)
-            
+
             return (
               <UnifiedConditionForm
                 key={item.id}
