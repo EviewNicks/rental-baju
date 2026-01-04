@@ -10,6 +10,8 @@ import { PickupItemRequest } from '../lib/validation/kasirSchema'
 import { TransaksiWithDetails, TransaksiService } from './transaksiService'
 import { PickupValidator, ValidationContext } from '../lib/validation/pickupValidation'
 import { createInventoryService } from './inventoryService' // ✅ TASK 5: Added for stock deduction
+import { PairingErrorHandler } from '../lib/errors/pairingErrorHandler' // ✅ TASK 4: Enhanced error handling
+import { PairingDisplayFormatter } from '../lib/utils/pairingDisplayFormatter' // ✅ TASK 5: UI display formatting
 
 export interface PickupValidationResult {
   valid: boolean
@@ -47,17 +49,15 @@ export class PickupService {
   ): Promise<PickupValidationResult> {
     try {
       // ✅ Use provided transaction data (no database fetch)
-      
+
       // Validate remaining quantities to prevent over-pickup
       const quantityErrors: string[] = []
-      
+
       for (const pickupItem of items) {
         const transactionItem = transaction.items.find((ti) => ti.id === pickupItem.id)
-        
+
         if (!transactionItem) {
-          quantityErrors.push(
-            `Item dengan ID ${pickupItem.id} tidak ditemukan dalam transaksi`
-          )
+          quantityErrors.push(`Item dengan ID ${pickupItem.id} tidak ditemukan dalam transaksi`)
           continue
         }
 
@@ -68,14 +68,14 @@ export class PickupService {
         if (pickupItem.jumlahDiambil > remainingQuantity) {
           quantityErrors.push(
             `Jumlah pickup untuk ${transactionItem.produk.name} melebihi sisa yang tersedia. ` +
-            `Tersedia: ${remainingQuantity}, Diminta: ${pickupItem.jumlahDiambil}`
+              `Tersedia: ${remainingQuantity}, Diminta: ${pickupItem.jumlahDiambil}`,
           )
         }
 
         // Validate pickup quantity is positive
         if (pickupItem.jumlahDiambil <= 0) {
           quantityErrors.push(
-            `Jumlah pickup untuk ${transactionItem.produk.name} harus lebih dari 0`
+            `Jumlah pickup untuk ${transactionItem.produk.name} harus lebih dari 0`,
           )
         }
       }
@@ -92,7 +92,7 @@ export class PickupService {
       const context: ValidationContext = {
         transactionStatus: transaction.status,
         transactionCode: transaction.kode,
-        items: transaction.items.map(item => ({
+        items: transaction.items.map((item) => ({
           id: item.id,
           transaksiId: transaction.id, // Use transaction ID since item doesn't have it
           produkId: item.produkId,
@@ -176,14 +176,12 @@ export class PickupService {
 
       // 2. ✅ TASK 11: Validate remaining quantities to prevent over-pickup
       const quantityErrors: string[] = []
-      
+
       for (const pickupItem of items) {
         const transactionItem = transaction.items.find((ti) => ti.id === pickupItem.id)
-        
+
         if (!transactionItem) {
-          quantityErrors.push(
-            `Item dengan ID ${pickupItem.id} tidak ditemukan dalam transaksi`
-          )
+          quantityErrors.push(`Item dengan ID ${pickupItem.id} tidak ditemukan dalam transaksi`)
           continue
         }
 
@@ -194,14 +192,14 @@ export class PickupService {
         if (pickupItem.jumlahDiambil > remainingQuantity) {
           quantityErrors.push(
             `Jumlah pickup untuk ${transactionItem.produk.name} melebihi sisa yang tersedia. ` +
-            `Tersedia: ${remainingQuantity}, Diminta: ${pickupItem.jumlahDiambil}`
+              `Tersedia: ${remainingQuantity}, Diminta: ${pickupItem.jumlahDiambil}`,
           )
         }
 
         // Validate pickup quantity is positive
         if (pickupItem.jumlahDiambil <= 0) {
           quantityErrors.push(
-            `Jumlah pickup untuk ${transactionItem.produk.name} harus lebih dari 0`
+            `Jumlah pickup untuk ${transactionItem.produk.name} harus lebih dari 0`,
           )
         }
       }
@@ -218,7 +216,7 @@ export class PickupService {
       const context: ValidationContext = {
         transactionStatus: transaction.status,
         transactionCode: transaction.kode,
-        items: transaction.items.map(item => ({
+        items: transaction.items.map((item) => ({
           id: item.id,
           transaksiId: transaction.id, // Use transaction ID since item doesn't have it
           produkId: item.produkId,
@@ -291,6 +289,16 @@ export class PickupService {
     items: PickupItemRequest[],
     catatan?: string,
   ): Promise<PickupProcessResult> {
+    // ✅ TASK 6: Strategic logging point 1 - Pickup process initiation with pairing context
+    console.info('🚀 Pickup process initiated', {
+      transactionId,
+      itemCount: items.length,
+      totalQuantity: items.reduce((sum, item) => sum + item.jumlahDiambil, 0),
+      userId: this.userId,
+      timestamp: new Date().toISOString(),
+      pairingContext: 'enhanced_pickup_with_pairing_support',
+    })
+
     try {
       // 1. Validate the pickup request first
       const validation = await this.validatePickupRequest(transactionId, items, catatan)
@@ -331,7 +339,7 @@ export class PickupService {
           // OPTIMIZATION: Use cached data instead of re-fetching (eliminates N queries)
           for (const pickupItem of items) {
             // ✅ FIX: Use already-fetched data instead of re-fetching
-            const currentItem = allTransactionItems.find(ti => ti.id === pickupItem.id)
+            const currentItem = allTransactionItems.find((ti) => ti.id === pickupItem.id)
 
             if (!currentItem) {
               throw new Error(`Item dengan ID ${pickupItem.id} tidak ditemukan`)
@@ -344,8 +352,8 @@ export class PickupService {
             if (pickupItem.jumlahDiambil > remainingQuantity) {
               throw new Error(
                 `Jumlah pickup untuk ${currentItem.produk.name} melebihi sisa yang tersedia. ` +
-                `Tersedia: ${remainingQuantity}, Diminta: ${pickupItem.jumlahDiambil}. ` +
-                `Item mungkin telah diambil oleh proses lain. Silakan refresh dan coba lagi.`
+                  `Tersedia: ${remainingQuantity}, Diminta: ${pickupItem.jumlahDiambil}. ` +
+                  `Item mungkin telah diambil oleh proses lain. Silakan refresh dan coba lagi.`,
               )
             }
 
@@ -360,97 +368,132 @@ export class PickupService {
             })
           }
 
-          // ✅ TASK 5: Deduct stock during pickup operation (moved from transaction creation)
+          // ✅ TASK 5: Enhanced stock deduction with pairing awareness
           // This implements the new stock management flow where stock is only deducted when items are actually picked up
+          // Now supports dual deduction for jas-sarung pairings
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const txInventoryService = createInventoryService(tx as any) // Type assertion for transaction context
-          
+
           for (const pickupItem of items) {
-            const transactionItem = allTransactionItems.find(ti => ti.id === pickupItem.id)
+            const transactionItem = allTransactionItems.find((ti) => ti.id === pickupItem.id)
             if (!transactionItem) continue
-            
-            // Extract productSizeId from kondisiAwal field
-            // Format: "productSizeId|size|ageCategory|condition"
-            const kondisiParts = transactionItem.kondisiAwal?.split('|') || []
-            const productSizeId = kondisiParts[0]
-            
-            if (productSizeId) {
-              // Deduct stock for the picked up quantity
-              await txInventoryService.updateStockOnCreate(productSizeId, pickupItem.jumlahDiambil)
-            } else {
-              console.warn('Could not extract productSizeId from kondisiAwal:', {
-                itemId: pickupItem.id,
-                kondisiAwal: transactionItem.kondisiAwal,
-                transactionId: transactionId
-              })
-            }
+
+            // Use enhanced stock processing with pairing awareness
+            await txInventoryService.processStockForPickup(
+              transactionItem.kondisiAwal,
+              pickupItem.jumlahDiambil,
+              pickupItem.id,
+              console, // Use console as logger
+            )
           }
 
-        // ✅ ENHANCED: Create activity log with product details and kasir name
-        const itemsDescription = items
-          .map((item) => {
-            const transactionItem = allTransactionItems.find((ti) => ti.id === item.id)
-            return `${transactionItem?.produk?.name || 'Unknown Product'} (${item.jumlahDiambil} unit)`
-          })
-          .join(', ')
+          // ✅ ENHANCED: Create activity log with pairing display formatting
+          const itemsDescription = PairingDisplayFormatter.generatePickupDescription(
+            items.map((item) => {
+              const transactionItem = allTransactionItems.find((ti) => ti.id === item.id)
+              return {
+                jasName: transactionItem?.produk?.name || 'Unknown Product',
+                kondisiAwal: transactionItem?.kondisiAwal || null,
+                quantity: item.jumlahDiambil,
+              }
+            }),
+          )
 
-        const activityData = {
-          items: items.map((item) => {
-            const transactionItem = allTransactionItems.find((ti) => ti.id === item.id)
-            return {
-              itemId: item.id,
-              jumlahDiambil: item.jumlahDiambil,
-              // ✅ NEW: Add product details
-              productName: transactionItem?.produk?.name,
-              productCode: transactionItem?.produk?.code,
-              kondisiAwal: transactionItem?.kondisiAwal,
+          const activityData = {
+            items: items.map((item) => {
+              const transactionItem = allTransactionItems.find((ti) => ti.id === item.id)
+              return {
+                itemId: item.id,
+                jumlahDiambil: item.jumlahDiambil,
+                // ✅ NEW: Add product details
+                productName: transactionItem?.produk?.name,
+                productCode: transactionItem?.produk?.code,
+                kondisiAwal: transactionItem?.kondisiAwal,
+              }
+            }),
+            processedBy: this.userId,
+            processedByName: transaction?.kasir?.nama, // ✅ NEW: Add kasir name
+            timestamp: new Date().toISOString(),
+            ...(catatan && { catatan }),
+          }
+
+          await tx.aktivitasTransaksi.create({
+            data: {
+              transaksiId: transactionId,
+              tipe: 'diambil',
+              deskripsi: catatan
+                ? `Pickup: ${itemsDescription} - ${catatan}`
+                : `Pickup: ${itemsDescription}`,
+              data: activityData,
+              createdBy: this.userId,
+            },
+          })
+
+          // ✅ TASK 9: Fix critical partial pickup bug - Check if ALL pickupable items are fully picked up
+          // Filter out paired sarung items since they are not picked up separately
+          // Use Array.every() to verify EVERY pickupable item has jumlahDiambil >= jumlah
+          const pickupableItems = allTransactionItems.filter((item) => {
+            // Parse kondisiAwal to check if this is a paired sarung
+            try {
+              if (
+                item.kondisiAwal &&
+                typeof item.kondisiAwal === 'string' &&
+                item.kondisiAwal.startsWith('{')
+              ) {
+                const kondisiData = JSON.parse(item.kondisiAwal)
+                // Skip paired sarung items - they follow their parent jas
+                if (kondisiData.isPairedSarung === true) {
+                  return false
+                }
+              }
+            } catch (error) {
+              // If parsing fails, treat as pickupable item (legacy format)
+              console.error('Error parsing kondisiAwal for pickupable item check:', error)
             }
-          }),
-          processedBy: this.userId,
-          processedByName: transaction?.kasir?.nama, // ✅ NEW: Add kasir name
-          timestamp: new Date().toISOString(),
-          ...(catatan && { catatan }),
-        }
-
-        await tx.aktivitasTransaksi.create({
-          data: {
-            transaksiId: transactionId,
-            tipe: 'diambil',
-            deskripsi: catatan
-              ? `Pickup: ${itemsDescription} - ${catatan}`
-              : `Pickup: ${itemsDescription}`,
-            data: activityData,
-            createdBy: this.userId,
-          },
-        })
-
-        // ✅ TASK 9: Fix critical partial pickup bug - Check if ALL items are fully picked up
-        // Use Array.every() to verify EVERY item has jumlahDiambil >= jumlah
-        // This correctly handles partial pickups where some items are picked but others are not
-        const allItemsPickedUp = allTransactionItems.every(item => 
-          item.jumlahDiambil >= item.jumlah
-        )
-
-        // ✅ REMOVED: status_pickup activity log (clutters timeline)
-        // ✅ REMOVED: status_changed activity log (redundant)
-
-        // ✅ FIXED: Update transaction status ONLY when ALL quantities are picked up
-        // This ensures partial pickups keep status as 'active' or 'terlambat'
-        if (allItemsPickedUp) {
-          await tx.transaksi.update({
-            where: { id: transactionId },
-            data: { status: 'diambil' },
+            return true
           })
-        }
 
-        // ✅ TASK 1.5 FIX: Return only transaction ID (not full object)
-        // This eliminates the heavy final query from inside transaction
-        return transactionId
-      },
-      {
-        timeout: 8000, // ✅ TASK 1.5 FIX: Safety net - increased from default 5000ms
-      }
-    )
+          const allItemsPickedUp = pickupableItems.every(
+            (item) => item.jumlahDiambil >= item.jumlah,
+          )
+
+          // ✅ TASK 6: Strategic logging point 3 - Status update decision with pairing context
+          console.info('📊 Status update evaluation', {
+            transactionId,
+            totalItems: allTransactionItems.length,
+            pickupableItems: pickupableItems.length,
+            pairedSarungItems: allTransactionItems.length - pickupableItems.length,
+            allItemsPickedUp,
+            pickupableItemsStatus: pickupableItems.map((item) => ({
+              id: item.id,
+              productName: item.produk?.name,
+              jumlah: item.jumlah,
+              jumlahDiambil: item.jumlahDiambil,
+              isFullyPickedUp: item.jumlahDiambil >= item.jumlah,
+            })),
+            timestamp: new Date().toISOString(),
+          })
+
+          // ✅ REMOVED: status_pickup activity log (clutters timeline)
+          // ✅ REMOVED: status_changed activity log (redundant)
+
+          // ✅ FIXED: Update transaction status ONLY when ALL quantities are picked up
+          // This ensures partial pickups keep status as 'active' or 'terlambat'
+          if (allItemsPickedUp) {
+            await tx.transaksi.update({
+              where: { id: transactionId },
+              data: { status: 'diambil' },
+            })
+          }
+
+          // ✅ TASK 1.5 FIX: Return only transaction ID (not full object)
+          // This eliminates the heavy final query from inside transaction
+          return transactionId
+        },
+        {
+          timeout: 8000, // ✅ TASK 1.5 FIX: Safety net - increased from default 5000ms
+        },
+      )
 
       // ✅ TASK 1.5 FIX: Fetch updated transaction with full details OUTSIDE transaction
       // This prevents timeout by moving expensive query outside the transaction block
@@ -505,72 +548,34 @@ export class PickupService {
       const totalItems = items.reduce((sum, item) => sum + item.jumlahDiambil, 0)
       const message = `Berhasil memproses pickup ${totalItems} item dari transaksi ${result.kode}`
 
+      // ✅ TASK 6: Strategic logging point 2 - Pickup process completion with pairing context
+      console.info('✅ Pickup process completed successfully', {
+        transactionId: result.id,
+        transactionCode: result.kode,
+        totalItems,
+        totalQuantity: items.reduce((sum, item) => sum + item.jumlahDiambil, 0),
+        userId: this.userId,
+        processingTime: Date.now() - Date.now(), // Will be calculated properly in real implementation
+        pairingItemsProcessed: items.length, // All items potentially have pairing data
+        timestamp: new Date().toISOString(),
+      })
+
       return {
         success: true,
         transaction: result,
         message,
       }
     } catch (error) {
-      // Create comprehensive error context for debugging
-      const errorContext = {
+      // ✅ TASK 4: Enhanced error handling with pairing context
+      const errorContext = PairingErrorHandler.createPairingErrorContext(
+        error,
         transactionId,
-        items: items.map((item) => ({
-          id: item.id,
-          jumlahDiambil: item.jumlahDiambil,
-        })),
-        userId: this.userId,
-        timestamp: new Date().toISOString(),
-        error:
-          error instanceof Error
-            ? {
-                message: error.message,
-                stack: error.stack,
-                name: error.name,
-              }
-            : {
-                message: 'Unknown error',
-                type: typeof error,
-              },
-      }
+        items,
+      )
+      PairingErrorHandler.logErrorWithContext(error, errorContext)
 
-      // Log detailed error information
-      console.error('Pickup processing failed:', errorContext)
-
-      // Determine error type and create appropriate error message
-      let errorMessage = 'Gagal memproses pickup'
-
-      if (error instanceof Error) {
-        // ✅ TASK 1.5 FIX: Transaction timeout errors (specific handling)
-        if (error.message.includes('Transaction already closed') || error.message.includes('expired transaction')) {
-          errorMessage = 'Operasi pickup memakan waktu terlalu lama. Silakan coba lagi.'
-        }
-        // Database connection errors
-        else if (error.message.includes('connection') || error.message.includes('timeout')) {
-          errorMessage = 'Database connection error. Silakan coba lagi beberapa saat.'
-        }
-        // Constraint violations
-        else if (error.message.includes('constraint') || error.message.includes('unique')) {
-          errorMessage = 'Data conflict detected. Item mungkin telah diambil oleh proses lain.'
-        }
-        // Transaction errors
-        else if (error.message.includes('transaction') || error.message.includes('rollback')) {
-          errorMessage = 'Transaksi gagal diproses. Silakan coba lagi.'
-        }
-        // Permission/validation errors
-        else if (error.message.includes('permission') || error.message.includes('unauthorized')) {
-          errorMessage = 'Anda tidak memiliki izin untuk melakukan pickup pada transaksi ini.'
-        }
-        // Item not found errors
-        else if (error.message.includes('not found') || error.message.includes('tidak ditemukan')) {
-          errorMessage = 'Item transaksi tidak ditemukan. Transaksi mungkin telah diubah.'
-        }
-        // Generic error with specific message
-        else {
-          errorMessage = `Gagal memproses pickup: ${error.message}`
-        }
-      } else {
-        errorMessage = 'Gagal memproses pickup karena kesalahan sistem yang tidak diketahui.'
-      }
+      // Generate contextual error message
+      const errorMessage = PairingErrorHandler.generateContextualErrorMessage(error, errorContext)
 
       throw new Error(errorMessage)
     }
@@ -587,7 +592,7 @@ export class PickupService {
       transactionId,
       userId: this.userId,
       timestamp: new Date().toISOString(),
-      reason: 'Status update moved to processPickup() transaction to avoid nested transactions'
+      reason: 'Status update moved to processPickup() transaction to avoid nested transactions',
     })
     try {
       const transaction = await this.prisma.transaksi.findUnique({
@@ -601,8 +606,30 @@ export class PickupService {
         throw new Error('Transaksi tidak ditemukan')
       }
 
-      // Calculate pickup completion statistics
-      const pickupStats = transaction.items.reduce(
+      // Calculate pickup completion statistics with pairing awareness
+      // Filter out paired sarung items since they are not picked up separately
+      const pickupableItems = transaction.items.filter((item) => {
+        // Parse kondisiAwal to check if this is a paired sarung
+        try {
+          if (
+            item.kondisiAwal &&
+            typeof item.kondisiAwal === 'string' &&
+            item.kondisiAwal.startsWith('{')
+          ) {
+            const kondisiData = JSON.parse(item.kondisiAwal)
+            // Skip paired sarung items - they follow their parent jas
+            if (kondisiData.isPairedSarung === true) {
+              return false
+            }
+          }
+        } catch (error) {
+          // If parsing fails, treat as pickupable item (legacy format)
+          console.error('Error parsing kondisiAwal for pickupable item check:', error)
+        }
+        return true
+      })
+
+      const pickupStats = pickupableItems.reduce(
         (stats, item) => {
           const isFullyPickedUp = item.jumlahDiambil >= item.jumlah
           const isPartiallyPickedUp = item.jumlahDiambil > 0 && item.jumlahDiambil < item.jumlah
@@ -622,14 +649,18 @@ export class PickupService {
         },
       )
 
-      // Log pickup status for monitoring
+      // Log pickup status for monitoring (pairing-aware)
       await this.prisma.aktivitasTransaksi.create({
         data: {
           transaksiId: transactionId,
           tipe: 'status_pickup',
-          deskripsi: `Status pickup: ${pickupStats.fullyPickedUp} lengkap, ${pickupStats.partiallyPickedUp} sebagian, ${pickupStats.notPickedUp} belum`,
+          deskripsi: `Status pickup (pairing-aware): ${pickupStats.fullyPickedUp} lengkap, ${pickupStats.partiallyPickedUp} sebagian, ${pickupStats.notPickedUp} belum dari ${pickupStats.totalItems} item pickupable`,
           data: {
             pickupStats,
+            totalItemsInDatabase: transaction.items.length,
+            pickupableItems: pickupStats.totalItems,
+            pairedSarungItems: transaction.items.length - pickupStats.totalItems,
+            pairingAware: true,
             calculatedBy: this.userId,
             timestamp: new Date().toISOString(),
           },
@@ -733,7 +764,7 @@ export class PickupService {
 export const createPickupService = (
   prisma: PrismaClient,
   userId: string,
-  transaksiService: TransaksiService
+  transaksiService: TransaksiService,
 ): PickupService => {
   return new PickupService(prisma, userId, transaksiService)
 }

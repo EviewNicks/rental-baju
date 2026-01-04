@@ -21,11 +21,12 @@ export function useCancelTransaction(
   const { onSuccess, onError } = options
 
   const cancelMutation = useMutation({
-    mutationFn: async (reason: string) => {
-      // Update transaction status to cancelled with cancellation reason
+    mutationFn: async ({ reason, kasirId }: { reason: string; kasirId?: string }) => {
+      // Update transaction status to cancelled with cancellation reason and kasirId
       return kasirApi.transaksi.update(transactionCode, {
         status: 'cancelled',
         catatan: reason,
+        kasirId, // ✅ NEW: Pass kasirId for refund processing
       })
     },
     onSuccess: async () => {
@@ -108,7 +109,8 @@ export function useCancelTransaction(
   })
 
   return {
-    cancelTransaction: cancelMutation.mutate,
+    cancelTransaction: (reason: string, kasirId?: string) => 
+      cancelMutation.mutate({ reason, kasirId }),
     isProcessing: cancelMutation.isPending,
     error: cancelMutation.error,
     isError: cancelMutation.isError,

@@ -52,14 +52,12 @@ export function PaymentModal({ isOpen, onClose, transaction }: PaymentModalProps
 
   const handleSubmit = (formData: {
     jumlah: number
-    metode: 'tunai' | 'transfer' | 'kartu'
-    referensi?: string
+    metode: 'tunai' | 'bca' | 'bri' | 'mandiri' | 'qris'
     catatan?: string
   }) => {
     processPayment({
       jumlah: formData.jumlah,
       metode: formData.metode,
-      referensi: formData.referensi || undefined,
       catatan: formData.catatan || undefined,
     })
   }
@@ -82,12 +80,6 @@ export function PaymentModal({ isOpen, onClose, transaction }: PaymentModalProps
                   <span className="text-gray-600">Metode:</span>
                   <span className="font-medium capitalize">{data.metode}</span>
                 </div>
-                {data.referensi && (
-                  <div className="flex justify-between mt-1">
-                    <span className="text-gray-600">Referensi:</span>
-                    <span className="font-medium">{data.referensi}</span>
-                  </div>
-                )}
                 <div className="flex justify-between mt-1">
                   <span className="text-gray-600">Waktu:</span>
                   <span className="font-medium">

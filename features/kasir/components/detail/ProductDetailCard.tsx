@@ -8,6 +8,12 @@ import {
   formatSizeWithAge,
   extractSizeInfo,
 } from '../../lib/utils/kondisiAwalParser'
+import { 
+  calculateReturnProgress, 
+  type TransaksiItemWithReturns 
+} from '../../lib/utils/partialReturnHelpers'
+import { ReturnProgressIndicator } from '../ui/return-progress-indicator'
+// TASK 23: Remove unused SarungPairingIndicator import (now using separate cards)
 
 interface ProductDetailCardProps {
   item: {
@@ -38,7 +44,29 @@ interface ProductDetailCardProps {
       createdBy?: string
     }>
     // RPK-51: kondisiAwal field for AgeSizes parsing
-    kondisiAwal?: string
+    kondisiAwal?: string | null
+    // TASK 19: Add linkedSarung data for pairing display (DEPRECATED - use separate cards)
+    linkedSarung?: {
+      productId: string
+      productSizeId: string
+      quantity: number
+      product?: {
+        id: string
+        code: string
+        name: string
+        category: string
+        imageUrl?: string // ✅ TASK 24: Add imageUrl field
+      }
+      selectedSize?: {
+        id: string
+        size: string
+        ageCategory: string
+      }
+    }
+    // TASK 23: Sarung gratis identification
+    isSarungGratis?: boolean
+    pairedWithJas?: string
+    pairedWithJasId?: string
   }
   // Optional explicit pickup information - if not provided, will calculate from item.jumlahDiambil
   pickupInfo?: {
@@ -83,6 +111,17 @@ export function ProductDetailCard({ item, pickupInfo }: ProductDetailCardProps) 
       !isNaN(item.totalReturnPenalty),
   )
 
+  // ✅ TASK 7: Calculate return progress for this item (Requirements: 4.1, 4.5)
+  const returnProgress = calculateReturnProgress({
+    id: item.product.id,
+    jumlahDiambil: actualJumlahDiambil,
+    conditionBreakdown: item.conditionBreakdown,
+  } as TransaksiItemWithReturns)
+
+  // ✅ TASK 7: Show return progress when items have been picked up (Requirements: 4.2, 4.3)
+  // ✅ TASK 23: Hide return progress for linkedSarung items (sarung is metadata, not separately returned)
+  const shouldShowReturnProgress = actualJumlahDiambil > 0 && !item.isSarungGratis
+
   return (
     <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-6 shadow-lg shadow-gray-900/5 transition-all duration-200">
       <div className="flex items-start gap-4">
@@ -105,15 +144,23 @@ export function ProductDetailCard({ item, pickupInfo }: ProductDetailCardProps) 
             <h3 className="text-xl font-semibold text-gray-900 leading-tight">
               {item.product.name}
             </h3>
-            {item.product.description && (
-              <p className="text-sm text-gray-600 mt-2 leading-relaxed">
-                {item.product.description}
-              </p>
-            )}
           </div>
 
           <div className="flex flex-wrap gap-2">
-            {item.product.category && (
+            {/* TASK 23: Enhanced category badge for sarung gratis */}
+            {item.isSarungGratis ? (
+              <Badge
+                variant="outline"
+                className={cn(
+                  'text-xs font-medium border-green-200 bg-green-50 text-green-700 hover:bg-green-100',
+                  'transition-colors duration-200',
+                )}
+                aria-label={`Sarung gratis dari: ${item.pairedWithJas}`}
+              >
+                <Tag className="h-3 w-3 mr-1.5" aria-hidden="true" />
+                Sarung Gratis
+              </Badge>
+            ) : item.product.category && (
               <Badge
                 variant="outline"
                 className={cn(
@@ -182,6 +229,49 @@ export function ProductDetailCard({ item, pickupInfo }: ProductDetailCardProps) 
               </Badge>
             )}
           </div>
+
+          {/* ✅ TASK 7: Return Progress Section (Requirements: 4.1, 4.2, 4.3, 4.5) */}
+          {/* ✅ TASK 23: Hide return progress for linkedSarung - sarung progress follows jas automatically */}
+          {shouldShowReturnProgress && (
+            <div className="p-3 rounded-lg border bg-blue-50 border-blue-200">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-blue-900">Progress Pengembalian</span>
+                <span className="text-xs text-blue-700">
+                  {returnProgress.status === 'complete' ? 'Selesai' : 
+                   returnProgress.status === 'partial' ? 'Sebagian' : 'Belum Dimulai'}
+                </span>
+              </div>
+              
+              <ReturnProgressIndicator
+                progress={returnProgress}
+                size="sm"
+                showPercentage={true}
+                data-testid={`return-progress-${item.product.id}`}
+              />
+              
+              {returnProgress.status === 'partial' && (
+                <div className="mt-2 text-xs text-blue-600">
+                  Sisa {returnProgress.total - returnProgress.returned} item belum dikembalikan
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ✅ TASK 23: Special status indicator for linkedSarung items */}
+          {item.isSarungGratis && actualJumlahDiambil > 0 && (
+            <div className="p-3 rounded-lg border bg-green-50 border-green-200">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-600" />
+                  <span className="text-sm font-medium text-green-900">Status Pengembalian</span>
+                </div>
+                <span className="text-xs text-green-700">
+                  Mengikuti {item.pairedWithJas}
+                </span>
+              </div>
+            
+            </div>
+          )}
 
           {/* Return Status Section - Enhanced with penalty breakdown */}
           {hasReturnData && (
@@ -327,14 +417,38 @@ export function ProductDetailCard({ item, pickupInfo }: ProductDetailCardProps) 
               <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
                 Harga/{item.duration} Hari
               </div>
-              <div
-                className="text-lg font-bold text-gray-900"
-                aria-label={`Harga per ${item.duration} hari: ${formatCurrency(adjustedPricePerDay)}`}
-              >
-                {formatCurrency(adjustedPricePerDay)}
-              </div>
+              {/* TASK 23: Enhanced pricing display for sarung gratis */}
+              {item.isSarungGratis ? (
+                <div className="space-y-1">
+                  <div
+                    className="text-lg font-bold text-green-600"
+                    aria-label={`Sarung gratis dari ${item.pairedWithJas}`}
+                  >
+                    GRATIS
+                  </div>
+                </div>
+              ) : item.linkedSarung ? (
+                <div className="space-y-1">
+                  <div
+                    className="text-lg font-bold text-gray-900"
+                    aria-label={`Harga jas per ${item.duration} hari: ${formatCurrency(adjustedPricePerDay)}`}
+                  >
+                    {formatCurrency(adjustedPricePerDay)}
+                  </div>
+                  <div className="text-xs text-green-600 font-medium">
+                    + Sarung GRATIS
+                  </div>
+                </div>
+              ) : (
+                <div
+                  className="text-lg font-bold text-gray-900"
+                  aria-label={`Harga per ${item.duration} hari: ${formatCurrency(adjustedPricePerDay)}`}
+                >
+                  {formatCurrency(adjustedPricePerDay)}
+                </div>
+              )}
               {/* Show base price if different from adjusted price */}
-              {durationMultiplier !== 1.0 && (
+              {durationMultiplier !== 1.0 && !item.isSarungGratis && (
                 <div className="text-xs text-gray-500 mt-1">
                   Base: {formatCurrency(basePricePerDay)}
                 </div>
@@ -356,11 +470,17 @@ export function ProductDetailCard({ item, pickupInfo }: ProductDetailCardProps) 
                 Subtotal
               </div>
               <div
-                className="text-lg font-bold text-yellow-600"
+                className={`text-lg font-bold ${item.isSarungGratis ? 'text-green-600' : 'text-yellow-600'}`}
                 aria-label={`Subtotal: ${formatCurrency(item.subtotal)}`}
               >
-                {formatCurrency(item.subtotal)}
+                {item.isSarungGratis ? 'GRATIS' : formatCurrency(item.subtotal)}
               </div>
+              {/* TASK 19: Show pairing benefit in subtotal (deprecated - using separate cards) */}
+              {item.linkedSarung && (
+                <div className="text-xs text-green-600 mt-1">
+                  (Sarung {item.linkedSarung.quantity}x gratis)
+                </div>
+              )}
             </div>
           </div>
         </div>

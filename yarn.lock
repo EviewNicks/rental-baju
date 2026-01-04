@@ -1341,6 +1341,13 @@
     "@eslint/core" "^0.15.2"
     levn "^0.4.1"
 
+"@fast-check/jest@^2.1.1":
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/@fast-check/jest/-/jest-2.1.1.tgz#0c0959f8f37f4155c5de7a19888c398542240be9"
+  integrity sha512-t9m3u3tikj/+Ph+gRLGb7fFS/aqnIafsAc6qhXIFJytkqOFRSF70Y5yUUyTtR0idcb6Ald7AnC0AChLCLxv2Tg==
+  dependencies:
+    fast-check "^3.0.0 || ^4.0.0"
+
 "@floating-ui/core@^1.7.3":
   version "1.7.3"
   resolved "https://registry.yarnpkg.com/@floating-ui/core/-/core-1.7.3.tgz#462d722f001e23e46d86fd2bd0d21b7693ccb8b7"
@@ -4726,6 +4733,13 @@ exsolve@^1.0.7:
   version "1.0.7"
   resolved "https://registry.yarnpkg.com/exsolve/-/exsolve-1.0.7.tgz#3b74e4c7ca5c5f9a19c3626ca857309fa99f9e9e"
   integrity sha512-VO5fQUzZtI6C+vx4w/4BWJpg3s/5l+6pRQEHzFRM8WFi4XffSP1Z+4qi7GbjWbvRQEbdIco5mIMq+zX4rPuLrw==
+
+"fast-check@^3.0.0 || ^4.0.0":
+  version "4.5.3"
+  resolved "https://registry.yarnpkg.com/fast-check/-/fast-check-4.5.3.tgz#55c0d2e9649499ad1aa03b897f48e4f9bcdca2ad"
+  integrity sha512-IE9csY7lnhxBnA8g/WI5eg/hygA6MGWJMSNfFRrBlXUciADEhS1EDB0SIsMSvzubzIlOBbVITSsypCsW717poA==
+  dependencies:
+    pure-rand "^7.0.0"
 
 fast-check@^3.23.1:
   version "3.23.2"

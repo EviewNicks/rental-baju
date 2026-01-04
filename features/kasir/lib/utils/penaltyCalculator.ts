@@ -9,6 +9,7 @@
 // import type { TransaksiItem } from '@/features/kasir/types'
 
 import { ConditionSplit } from '../../types'
+import { parseKondisiAwalEnhanced } from '../utils/kondisiAwalParser'
 
 export interface PenaltyDetails {
   itemId: string
@@ -640,6 +641,310 @@ export class PenaltyCalculator {
   }
 
   /**
+   * ✅ TASK 5: Calculate session-based late penalty for partial returns
+   * Requirements: 7.2, 7.3, 7.4
+   * 
+   * For partial returns, late penalty is calculated based on current return date
+   * regardless of previous return sessions. Each session is evaluated independently.
+   */
+  static calculateSessionBasedLatePenalty(
+    expectedDate: Date,
+    currentReturnDate: Date,
+    itemsBeingReturnedCount: number,
+    customAmount?: number
+  ): {
+    isLate: boolean
+    penalty: number
+    lateDays: number
+    penaltyPerItem: number
+    sessionDescription: string
+  } {
+    // ✅ FIX: Normalize to date only (remove hours/minutes/seconds)
+    const expectedDay = new Date(
+      expectedDate.getFullYear(), 
+      expectedDate.getMonth(), 
+      expectedDate.getDate()
+    )
+    const currentDay = new Date(
+      currentReturnDate.getFullYear(), 
+      currentReturnDate.getMonth(), 
+      currentReturnDate.getDate()
+    )
+    
+    const timeDiff = currentDay.getTime() - expectedDay.getTime()
+    const lateDays = Math.max(0, Math.floor(timeDiff / (1000 * 60 * 60 * 24)))
+    const isLate = lateDays > 0
+
+    const penaltyPerItem = isLate ? (customAmount || this.FLAT_LATE_PENALTY) : 0
+    const totalPenalty = penaltyPerItem * itemsBeingReturnedCount
+
+    const sessionDescription = isLate 
+      ? `Session penalty: ${lateDays} hari terlambat, ${itemsBeingReturnedCount} item @ ${this.formatPenaltyAmount(penaltyPerItem)}`
+      : `Session penalty: Tepat waktu, tidak ada penalty`
+
+    return {
+      isLate,
+      penalty: totalPenalty,
+      lateDays,
+      penaltyPerItem,
+      sessionDescription
+    }
+  }
+
+  /**
+   * ✅ TASK 5: Calculate enhanced penalty for partial return session
+   * Requirements: 7.1, 7.2, 7.3, 7.4, 7.5
+   * 
+   * This method calculates penalties only for items being returned in the current session,
+   * ignoring previous return sessions. Late penalty is based on current return date.
+   */
+  static calculatePartialReturnSessionPenalty(
+    sessionItems: Array<{
+      id: string
+      productName: string
+      expectedReturnDate: Date
+      currentReturnDate: Date
+      conditionCategory?: string
+      manualPrice?: number
+      quantity: number
+      useManualPricing?: boolean
+      modalAwal?: number
+    }>,
+    settings?: {
+      applyFlatLatePenalty?: boolean
+      customLatePenalty?: number
+      sessionNumber?: number
+    }
+  ): {
+    sessionNumber: number
+    totalPenalty: number
+    sessionLatePenalty: number
+    sessionConditionPenalty: number
+    isLateSession: boolean
+    lateDays: number
+    itemPenalties: Array<{
+      itemId: string
+      productName: string
+      quantity: number
+      latePenalty: number
+      conditionPenalty: number
+      totalItemPenalty: number
+      isLate: boolean
+      description: string
+    }>
+    sessionSummary: {
+      totalItems: number
+      totalQuantity: number
+      lateItems: number
+      onTimeItems: number
+      manuallyPricedItems: number
+      avgPenaltyPerItem: number
+      avgPenaltyPerUnit: number
+    }
+    sessionDescription: string
+  } {
+    const { 
+      applyFlatLatePenalty = true, 
+      customLatePenalty,
+      sessionNumber = 1
+    } = settings || {}
+
+    if (sessionItems.length === 0) {
+      return {
+        sessionNumber,
+        totalPenalty: 0,
+        sessionLatePenalty: 0,
+        sessionConditionPenalty: 0,
+        isLateSession: false,
+        lateDays: 0,
+        itemPenalties: [],
+        sessionSummary: {
+          totalItems: 0,
+          totalQuantity: 0,
+          lateItems: 0,
+          onTimeItems: 0,
+          manuallyPricedItems: 0,
+          avgPenaltyPerItem: 0,
+          avgPenaltyPerUnit: 0
+        },
+        sessionDescription: `Session ${sessionNumber}: Tidak ada item`
+      }
+    }
+
+    // Use the first item's dates for session-level late penalty calculation
+    // All items in a session have the same expected and actual return dates
+    const firstItem = sessionItems[0]
+    const totalQuantity = sessionItems.reduce((sum, item) => sum + item.quantity, 0)
+
+    // Calculate session-based late penalty
+    const sessionLatePenaltyResult = this.calculateSessionBasedLatePenalty(
+      firstItem.expectedReturnDate,
+      firstItem.currentReturnDate,
+      totalQuantity, // Apply to all items being returned in this session
+      customLatePenalty
+    )
+
+    const sessionLatePenalty = applyFlatLatePenalty ? sessionLatePenaltyResult.penalty : 0
+
+    // Calculate condition penalties for each item
+    const itemPenalties = sessionItems.map(item => {
+      // Calculate manual pricing penalty for this item
+      const manualPricingResult = this.calculateManualPricingPenalty(
+        item.conditionCategory || 'BAIK',
+        item.manualPrice || 0,
+        item.quantity,
+        item.useManualPricing
+      )
+
+      // Late penalty is distributed across all items in the session
+      const itemLatePenalty = sessionLatePenalty > 0 
+        ? (sessionLatePenaltyResult.penaltyPerItem * item.quantity)
+        : 0
+
+      const totalItemPenalty = itemLatePenalty + manualPricingResult.penalty
+
+      // Generate item description
+      let description = ''
+      if (itemLatePenalty > 0 && manualPricingResult.penalty > 0) {
+        description = `Kombinasi penalty keterlambatan (${this.formatPenaltyAmount(itemLatePenalty)}) dan ${manualPricingResult.description.toLowerCase()}`
+      } else if (itemLatePenalty > 0) {
+        description = `Penalty keterlambatan session: ${sessionLatePenaltyResult.lateDays} hari`
+      } else if (manualPricingResult.penalty > 0) {
+        description = manualPricingResult.description
+      } else {
+        description = 'Tidak ada penalty - dikembalikan tepat waktu dalam kondisi baik'
+      }
+
+      return {
+        itemId: item.id,
+        productName: item.productName,
+        quantity: item.quantity,
+        latePenalty: itemLatePenalty,
+        conditionPenalty: manualPricingResult.penalty,
+        totalItemPenalty,
+        isLate: sessionLatePenaltyResult.isLate,
+        description
+      }
+    })
+
+    const sessionConditionPenalty = itemPenalties.reduce((sum, item) => sum + item.conditionPenalty, 0)
+    const totalPenalty = sessionLatePenalty + sessionConditionPenalty
+
+    // Calculate session summary
+    const lateItems = sessionLatePenaltyResult.isLate ? sessionItems.length : 0
+    const manuallyPricedItems = itemPenalties.filter(item => item.conditionPenalty > 0).length
+    const avgPenaltyPerItem = sessionItems.length > 0 ? totalPenalty / sessionItems.length : 0
+    const avgPenaltyPerUnit = totalQuantity > 0 ? totalPenalty / totalQuantity : 0
+
+    // Generate session description
+    const itemDescriptions = itemPenalties.map(item => 
+      `${item.productName} (${item.quantity})`
+    ).join(', ')
+
+    const penaltyDesc = totalPenalty > 0 
+      ? `, Penalty: ${this.formatPenaltyAmount(totalPenalty)}${sessionLatePenaltyResult.isLate ? ` (Terlambat ${sessionLatePenaltyResult.lateDays} hari)` : ''}`
+      : ''
+
+    const sessionDescription = `Session ${sessionNumber}: ${itemDescriptions}${penaltyDesc}`
+
+    return {
+      sessionNumber,
+      totalPenalty,
+      sessionLatePenalty,
+      sessionConditionPenalty,
+      isLateSession: sessionLatePenaltyResult.isLate,
+      lateDays: sessionLatePenaltyResult.lateDays,
+      itemPenalties,
+      sessionSummary: {
+        totalItems: sessionItems.length,
+        totalQuantity,
+        lateItems,
+        onTimeItems: sessionItems.length - lateItems,
+        manuallyPricedItems,
+        avgPenaltyPerItem,
+        avgPenaltyPerUnit
+      },
+      sessionDescription
+    }
+  }
+
+  /**
+   * ✅ TASK 5: Generate penalty preview for partial return session
+   * Requirements: 7.5
+   * 
+   * This method provides real-time penalty calculation for the current session
+   * without considering previous sessions. Used for penalty preview in forms.
+   */
+  static generatePartialReturnPenaltyPreview(
+    sessionItems: Array<{
+      id: string
+      productName: string
+      expectedReturnDate: Date
+      currentReturnDate: Date
+      conditionCategory?: string
+      manualPrice?: number
+      quantity: number
+      useManualPricing?: boolean
+    }>,
+    sessionNumber: number = 1
+  ): {
+    totalPenalty: number
+    isLateReturn: boolean
+    lateDays: number
+    flatLatePenalty: number
+    conditionPenalty: number
+    itemBreakdown: Array<{
+      itemId: string
+      itemName: string
+      quantity: number
+      penalty: number
+      isLate: boolean
+      description: string
+    }>
+    previewDescription: string
+  } {
+    if (sessionItems.length === 0) {
+      return {
+        totalPenalty: 0,
+        isLateReturn: false,
+        lateDays: 0,
+        flatLatePenalty: 0,
+        conditionPenalty: 0,
+        itemBreakdown: [],
+        previewDescription: 'Tidak ada item untuk dihitung penalty'
+      }
+    }
+
+    const sessionResult = this.calculatePartialReturnSessionPenalty(sessionItems, {
+      applyFlatLatePenalty: true,
+      sessionNumber
+    })
+
+    const itemBreakdown = sessionResult.itemPenalties.map(item => ({
+      itemId: item.itemId,
+      itemName: item.productName,
+      quantity: item.quantity,
+      penalty: item.totalItemPenalty,
+      isLate: item.isLate,
+      description: item.description
+    }))
+
+    const previewDescription = sessionResult.totalPenalty > 0
+      ? `Preview penalty session ${sessionNumber}: ${this.formatPenaltyAmount(sessionResult.totalPenalty)}${sessionResult.isLateSession ? ` (Terlambat ${sessionResult.lateDays} hari)` : ''}`
+      : `Preview session ${sessionNumber}: Tidak ada penalty`
+
+    return {
+      totalPenalty: sessionResult.totalPenalty,
+      isLateReturn: sessionResult.isLateSession,
+      lateDays: sessionResult.lateDays,
+      flatLatePenalty: sessionResult.sessionLatePenalty,
+      conditionPenalty: sessionResult.sessionConditionPenalty,
+      itemBreakdown,
+      previewDescription
+    }
+  }
+
+  /**
    * Calculate flat penalty for late return transactions
    * NEW: Flat 20k penalty system instead of per-day calculation
    * ✅ FIX: Normalize dates to compare only date (not time) to prevent same-day returns from being charged
@@ -849,6 +1154,314 @@ export class PenaltyCalculator {
   }
 
   /**
+   * ✅ TASK 4: Calculate penalty for jas-sarung pairing (jas only, sarung free)
+   * Requirements: 5.1, 5.2, 5.3, 5.4, 5.5
+   * 
+   * This method ensures penalty calculation only applies to jas items in pairings,
+   * with sarung items having zero penalty since sarung is free in pairing.
+   */
+  static calculatePairingPenalty(
+    jasItem: {
+      itemId: string
+      kondisiAwal: string | null
+      expectedReturnDate: Date
+      actualReturnDate: Date
+      conditionCategory?: string
+      manualPrice?: number
+      quantity: number
+      useManualPricing?: boolean
+      modalAwal?: number
+    },
+    settings?: {
+      applyFlatLatePenalty?: boolean
+      customLatePenalty?: number
+    }
+  ): {
+    jasItemId: string
+    jasPenalty: number
+    sarungItemId?: string
+    sarungPenalty: number // Always 0 for paired sarung
+    totalPenalty: number
+    pairingApplied: boolean
+    isLate: boolean
+    lateDays: number
+    description: string
+    breakdown: {
+      jasLatePenalty: number
+      jasConditionPenalty: number
+      sarungLatePenalty: number // Always 0
+      sarungConditionPenalty: number // Always 0
+    }
+  } {
+    const kondisiData = parseKondisiAwalEnhanced(jasItem.kondisiAwal)
+    
+    // Calculate penalty for jas item using enhanced penalty system
+    // Transform jasItem to match calculateEnhancedPenalty interface
+    const enhancedPenaltyItem = {
+      id: jasItem.itemId,
+      productName: kondisiData?.linkedSarung?.product?.name || 'Unknown Product',
+      expectedReturnDate: jasItem.expectedReturnDate,
+      actualReturnDate: jasItem.actualReturnDate,
+      conditionCategory: jasItem.conditionCategory,
+      manualPrice: jasItem.manualPrice,
+      quantity: jasItem.quantity,
+      useManualPricing: jasItem.useManualPricing,
+      modalAwal: jasItem.modalAwal
+    }
+    
+    const jasResult = this.calculateEnhancedPenalty(
+      enhancedPenaltyItem,
+      settings?.applyFlatLatePenalty !== false,
+      settings?.customLatePenalty
+    )
+    
+    if (!kondisiData?.linkedSarung) {
+      // Not a paired item, return normal penalty calculation
+      return {
+        jasItemId: jasItem.itemId,
+        jasPenalty: jasResult.totalPenalty,
+        sarungPenalty: 0,
+        totalPenalty: jasResult.totalPenalty,
+        pairingApplied: false,
+        isLate: jasResult.isLate,
+        lateDays: jasResult.lateDays,
+        description: jasResult.description,
+        breakdown: {
+          jasLatePenalty: jasResult.flatLatePenalty,
+          jasConditionPenalty: jasResult.conditionPenalty,
+          sarungLatePenalty: 0,
+          sarungConditionPenalty: 0
+        }
+      }
+    }
+    
+    // Paired item - penalty only for jas, sarung is free
+    const pairingDescription = `Pairing jas-sarung: ${jasResult.description} (sarung gratis - tidak ada penalty)`
+    
+    return {
+      jasItemId: jasItem.itemId,
+      jasPenalty: jasResult.totalPenalty,
+      sarungItemId: kondisiData.linkedSarung.productSizeId,
+      sarungPenalty: 0, // Sarung is always free in pairing
+      totalPenalty: jasResult.totalPenalty, // Only jas penalty counts
+      pairingApplied: true,
+      isLate: jasResult.isLate,
+      lateDays: jasResult.lateDays,
+      description: pairingDescription,
+      breakdown: {
+        jasLatePenalty: jasResult.flatLatePenalty,
+        jasConditionPenalty: jasResult.conditionPenalty,
+        sarungLatePenalty: 0, // Always 0 for sarung in pairing
+        sarungConditionPenalty: 0 // Always 0 for sarung in pairing
+      }
+    }
+  }
+
+  /**
+   * ✅ TASK 4: Check if penalty calculation should use pairing logic
+   * Requirements: 5.1, 5.4
+   * 
+   * Helper method to detect if an item is part of a jas-sarung pairing
+   * and should use pairing-specific penalty calculation.
+   */
+  static isPairingPenaltyApplicable(kondisiAwal: string | null): {
+    isPairing: boolean
+    linkedSarungId?: string
+    pairingType?: 'jas-sarung'
+  } {
+    const kondisiData = parseKondisiAwalEnhanced(kondisiAwal)
+    
+    if (!kondisiData?.linkedSarung) {
+      return {
+        isPairing: false
+      }
+    }
+    
+    return {
+      isPairing: true,
+      linkedSarungId: kondisiData.linkedSarung.productSizeId,
+      pairingType: 'jas-sarung'
+    }
+  }
+
+  /**
+   * ✅ TASK 4: Calculate penalties for multiple items with pairing awareness
+   * Requirements: 5.1, 5.2, 5.3, 5.4, 5.5
+   * 
+   * Enhanced version of calculateEnhancedTransactionPenalties that handles
+   * jas-sarung pairings by applying penalty only to jas items.
+   */
+  static calculatePairingAwareTransactionPenalties(
+    items: Array<{
+      id: string
+      productName: string
+      kondisiAwal: string | null
+      expectedReturnDate: Date
+      actualReturnDate: Date
+      conditionCategory?: string
+      manualPrice?: number
+      quantity: number
+      useManualPricing?: boolean
+      modalAwal?: number
+    }>,
+    settings?: {
+      applyFlatLatePenalty?: boolean
+      customLatePenalty?: number
+    }
+  ): {
+    totalPenalty: number
+    totalLatePenalty: number
+    totalConditionPenalty: number
+    isLateReturn: boolean
+    itemPenalties: Array<ReturnType<typeof PenaltyCalculator.calculatePairingPenalty>>
+    summary: {
+      totalItems: number
+      pairedItems: number
+      regularItems: number
+      lateItems: number
+      onTimeItems: number
+      jasOnlyPenalties: number
+      sarungSkippedPenalties: number
+      totalJasPenalties: number
+      totalSarungPenalties: number // Always 0
+    }
+  } {
+    const itemPenalties = items.map(item =>
+      this.calculatePairingPenalty({
+        itemId: item.id,
+        kondisiAwal: item.kondisiAwal,
+        expectedReturnDate: item.expectedReturnDate,
+        actualReturnDate: item.actualReturnDate,
+        conditionCategory: item.conditionCategory,
+        manualPrice: item.manualPrice,
+        quantity: item.quantity,
+        useManualPricing: item.useManualPricing,
+        modalAwal: item.modalAwal
+      }, settings)
+    )
+
+    const totalPenalty = itemPenalties.reduce((sum, penalty) => sum + penalty.totalPenalty, 0)
+    const totalLatePenalty = itemPenalties.reduce((sum, penalty) => sum + penalty.breakdown.jasLatePenalty, 0)
+    const totalConditionPenalty = itemPenalties.reduce((sum, penalty) => sum + penalty.breakdown.jasConditionPenalty, 0)
+
+    const isLateReturn = itemPenalties.some(penalty => penalty.isLate)
+    const pairedItems = itemPenalties.filter(penalty => penalty.pairingApplied).length
+    const regularItems = itemPenalties.length - pairedItems
+    const lateItems = itemPenalties.filter(penalty => penalty.isLate).length
+    const jasOnlyPenalties = itemPenalties.filter(penalty => penalty.pairingApplied && penalty.jasPenalty > 0).length
+    const sarungSkippedPenalties = itemPenalties.filter(penalty => penalty.pairingApplied).length
+    const totalJasPenalties = itemPenalties.reduce((sum, penalty) => sum + penalty.jasPenalty, 0)
+    const totalSarungPenalties = 0 // Always 0 since sarung is free in pairing
+
+    return {
+      totalPenalty,
+      totalLatePenalty,
+      totalConditionPenalty,
+      isLateReturn,
+      itemPenalties,
+      summary: {
+        totalItems: itemPenalties.length,
+        pairedItems,
+        regularItems,
+        lateItems,
+        onTimeItems: itemPenalties.length - lateItems,
+        jasOnlyPenalties,
+        sarungSkippedPenalties,
+        totalJasPenalties,
+        totalSarungPenalties
+      }
+    }
+  }
+
+  /**
+   * ✅ TASK 4: Format pairing penalty description for display
+   * Requirements: 5.5
+   * 
+   * Generates user-friendly description for pairing penalty breakdown
+   * that clearly shows jas penalty and sarung exemption.
+   */
+  static formatPairingPenaltyDescription(penalty: ReturnType<typeof PenaltyCalculator.calculatePairingPenalty>): string {
+    if (penalty.totalPenalty === 0) {
+      if (penalty.pairingApplied) {
+        return 'Tidak ada penalty - pairing jas-sarung dikembalikan tepat waktu dalam kondisi baik'
+      } else {
+        return 'Tidak ada penalty - barang dikembalikan tepat waktu dalam kondisi baik'
+      }
+    }
+
+    const formattedAmount = this.formatPenaltyAmount(penalty.totalPenalty)
+    
+    if (penalty.pairingApplied) {
+      return `${formattedAmount} - Penalty untuk jas dalam pairing (sarung gratis)`
+    } else {
+      return `${formattedAmount} - ${penalty.description}`
+    }
+  }
+
+  /**
+   * ✅ TASK 4: Generate detailed pairing penalty breakdown for transparency
+   * Requirements: 5.5
+   * 
+   * Provides comprehensive breakdown of penalty calculation for paired items
+   * showing exactly why sarung has zero penalty.
+   */
+  static generatePairingPenaltyBreakdown(penalty: ReturnType<typeof PenaltyCalculator.calculatePairingPenalty>): {
+    jasBreakdown: {
+      latePenalty: number
+      conditionPenalty: number
+      totalPenalty: number
+      description: string
+    }
+    sarungBreakdown: {
+      latePenalty: number // Always 0
+      conditionPenalty: number // Always 0
+      totalPenalty: number // Always 0
+      description: string
+    }
+    pairingInfo: {
+      isPaired: boolean
+      pairingType?: string
+      exemptionReason?: string
+    }
+    totalPenalty: number
+    formattedTotal: string
+  } {
+    const jasBreakdown = {
+      latePenalty: penalty.breakdown.jasLatePenalty,
+      conditionPenalty: penalty.breakdown.jasConditionPenalty,
+      totalPenalty: penalty.jasPenalty,
+      description: penalty.isLate 
+        ? `Jas: ${penalty.lateDays} hari terlambat + kondisi`
+        : 'Jas: Penalty kondisi saja'
+    }
+
+    const sarungBreakdown = {
+      latePenalty: 0,
+      conditionPenalty: 0,
+      totalPenalty: 0,
+      description: penalty.pairingApplied 
+        ? 'Sarung: Gratis dalam pairing - tidak ada penalty'
+        : 'Sarung: Tidak ada dalam transaksi ini'
+    }
+
+    const pairingInfo = {
+      isPaired: penalty.pairingApplied,
+      pairingType: penalty.pairingApplied ? 'jas-sarung' : undefined,
+      exemptionReason: penalty.pairingApplied 
+        ? 'Sarung adalah item gratis dalam pairing jas-sarung'
+        : undefined
+    }
+
+    return {
+      jasBreakdown,
+      sarungBreakdown,
+      pairingInfo,
+      totalPenalty: penalty.totalPenalty,
+      formattedTotal: this.formatPenaltyAmount(penalty.totalPenalty)
+    }
+  }
+
+  /**
    * Get penalty business rules configuration
    */
   static getBusinessRules() {
@@ -883,7 +1496,14 @@ export class PenaltyCalculator {
         'RUSAK_RINGAN',
         'RUSAK_BERAT',
         'HILANG'
-      ]
+      ],
+      // ✅ TASK 4: Pairing-specific business rules
+      pairingRules: {
+        jasOnlyPenalty: true, // Only jas items are charged penalty in pairing
+        sarungFreeInPairing: true, // Sarung is always free in jas-sarung pairing
+        supportedPairingTypes: ['jas-sarung'],
+        pairingPenaltyDescription: 'Penalty hanya berlaku untuk jas, sarung gratis dalam pairing'
+      }
     }
   }
 }

@@ -1,313 +1,219 @@
 {
-    "id": "c0690c6a-fad1-4077-81df-7b2d61241f9e",
-    "code": "JJA01",
-    "name": "Jas Jaguar Abu",
-    "description": "Jas Jaguar warna abu-abu modern",
-    "categoryId": "302f2581-9de3-40ff-abce-e9a97c79b7d4",
-    "category": {
-        "id": "302f2581-9de3-40ff-abce-e9a97c79b7d4",
-        "name": "jas-jaguar",
-        "color": "#1F2937",
-        "type": "clothing",
-        "products": [],
-        "createdAt": "2025-10-25T10:00:00.000Z",
-        "updatedAt": "2025-10-25T10:00:00.000Z",
-        "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
-    },
-    "modalAwal": "150000",
-    "currentPrice": "150000",
-    "materialId": null,
-    "materialCost": null,
-    "materialQuantity": null,
-    "status": "AVAILABLE",
-    "imageUrl": "https://pmjxdencfgkbjuyjndbp.supabase.co/storage/v1/object/public/products/products/JJA01/1766067732477.jpg",
-    "sizes": [
-        {
-            "id": "56f8448a-11e2-4bdd-932e-b3687ed32eb0",
-            "productId": "c0690c6a-fad1-4077-81df-7b2d61241f9e",
-            "ageCategory": "ADULT",
-            "size": "S",
-            "quantity": 2,
-            "originalQuantity": 2,
-            "rentedQuantity": 0,
-            "lostQuantity": 0,
-            "availableQuantity": 2,
-            "isActive": true,
-            "createdAt": "2025-12-18T14:22:19.042Z",
-            "updatedAt": "2025-12-18T14:22:19.042Z",
-            "createdBy": "system_import",
-            "product": {}
+    "success": true,
+    "data": {
+        "id": "d0af57ad-f385-42d2-a477-68605d993cd7",
+        "kode": "TXN-20260105-004",
+        "penyewa": {
+            "id": "0e665799-38bb-4054-9d29-72522bcf8673",
+            "nama": "muhawal",
+            "telepon": "089567896322",
+            "alamat": "jl.ompinen no.08 kembali",
+            "nik": null,
+            "email": "arif4rd222@gmail.com"
         },
-        {
-            "id": "6df6b1be-dae2-4a4a-812d-75b5b240cb06",
-            "productId": "c0690c6a-fad1-4077-81df-7b2d61241f9e",
-            "ageCategory": "ADULT",
-            "size": "M",
-            "quantity": 4,
-            "originalQuantity": 4,
-            "rentedQuantity": 0,
-            "lostQuantity": 0,
-            "availableQuantity": 4,
+        "kasir": {
+            "id": "92e1b3c5-538e-4cf1-abc1-749cd3a4bed0",
+            "nama": "Inaya",
             "isActive": true,
-            "createdAt": "2025-12-18T14:22:19.042Z",
-            "updatedAt": "2025-12-18T14:22:19.042Z",
-            "createdBy": "system_import",
-            "product": {}
+            "createdAt": "2025-12-19T07:24:52.394Z",
+            "updatedAt": "2025-12-19T07:24:52.394Z"
         },
-        {
-            "id": "0206dfc7-b840-4900-96c4-97e3eef7543c",
-            "productId": "c0690c6a-fad1-4077-81df-7b2d61241f9e",
-            "ageCategory": "ADULT",
-            "size": "L",
-            "quantity": 4,
-            "originalQuantity": 4,
-            "rentedQuantity": 0,
-            "lostQuantity": 0,
-            "availableQuantity": 4,
-            "isActive": true,
-            "createdAt": "2025-12-18T14:22:19.042Z",
-            "updatedAt": "2025-12-18T14:22:19.042Z",
-            "createdBy": "system_import",
-            "product": {}
-        },
-        {
-            "id": "fe38981c-80e8-48e4-8c82-adf025e8efb1",
-            "productId": "c0690c6a-fad1-4077-81df-7b2d61241f9e",
-            "ageCategory": "ADULT",
-            "size": "XL",
-            "quantity": 2,
-            "originalQuantity": 2,
-            "rentedQuantity": 0,
-            "lostQuantity": 0,
-            "availableQuantity": 2,
-            "isActive": true,
-            "createdAt": "2025-12-18T14:22:19.042Z",
-            "updatedAt": "2025-12-18T14:22:19.042Z",
-            "createdBy": "system_import",
-            "product": {}
-        },
-        {
-            "id": "26e7959c-1005-4215-a7e4-f304a0cb9290",
-            "productId": "c0690c6a-fad1-4077-81df-7b2d61241f9e",
-            "ageCategory": "ADULT",
-            "size": "XXL",
-            "quantity": 1,
-            "originalQuantity": 1,
-            "rentedQuantity": 0,
-            "lostQuantity": 0,
-            "availableQuantity": 1,
-            "isActive": true,
-            "createdAt": "2025-12-18T14:22:19.042Z",
-            "updatedAt": "2025-12-18T14:22:19.042Z",
-            "createdBy": "system_import",
-            "product": {}
-        },
-        {
-            "id": "ea6919f1-5e9b-4b59-93ec-ef7b3597a1f0",
-            "productId": "c0690c6a-fad1-4077-81df-7b2d61241f9e",
-            "ageCategory": "CHILD",
-            "size": "S",
-            "quantity": 2,
-            "originalQuantity": 2,
-            "rentedQuantity": 0,
-            "lostQuantity": 0,
-            "availableQuantity": 2,
-            "isActive": true,
-            "createdAt": "2025-12-18T14:22:19.042Z",
-            "updatedAt": "2025-12-18T14:22:19.042Z",
-            "createdBy": "system_import",
-            "product": {}
-        },
-        {
-            "id": "cc82a459-0525-4a8d-8eda-d29849f661ad",
-            "productId": "c0690c6a-fad1-4077-81df-7b2d61241f9e",
-            "ageCategory": "CHILD",
-            "size": "M",
-            "quantity": 2,
-            "originalQuantity": 2,
-            "rentedQuantity": 0,
-            "lostQuantity": 0,
-            "availableQuantity": 2,
-            "isActive": true,
-            "createdAt": "2025-12-18T14:22:19.042Z",
-            "updatedAt": "2025-12-18T14:22:19.042Z",
-            "createdBy": "system_import",
-            "product": {}
-        },
-        {
-            "id": "165ed534-2ed1-4233-b3cc-fe79b4fc77ff",
-            "productId": "c0690c6a-fad1-4077-81df-7b2d61241f9e",
-            "ageCategory": "CHILD",
-            "size": "L",
-            "quantity": 2,
-            "originalQuantity": 2,
-            "rentedQuantity": 0,
-            "lostQuantity": 0,
-            "availableQuantity": 2,
-            "isActive": true,
-            "createdAt": "2025-12-18T14:22:19.042Z",
-            "updatedAt": "2025-12-18T14:22:19.042Z",
-            "createdBy": "system_import",
-            "product": {}
-        }
-    ],
-    "isActive": true,
-    "createdAt": "2025-12-18T14:22:18.272Z",
-    "updatedAt": "2025-12-18T14:22:18.272Z",
-    "createdBy": "system_import",
-    "aggregation": {
-        "productId": "c0690c6a-fad1-4077-81df-7b2d61241f9e",
-        "totalQuantity": 19,
-        "aggregatedSizes": [
+        "status": "active",
+        "totalHarga": 280000,
+        "jumlahBayar": 280000,
+        "sisaBayar": 0,
+        "tglMulai": "2026-01-10T00:00:00.000Z",
+        "tglSelesai": "2026-01-13T00:00:00.000Z",
+        "tglKembali": null,
+        "metodeBayar": "tunai",
+        "catatan": null,
+        "discountType": null,
+        "discountValue": null,
+        "createdBy": "user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH",
+        "createdAt": "2026-01-04T19:18:25.891Z",
+        "updatedAt": "2026-01-04T19:18:32.987Z",
+        "items": [
             {
-                "size": "S",
-                "totalQuantity": 4,
-                "breakdown": {
-                    "adult": 2,
-                    "child": 2
+                "id": "5012f644-caa0-443b-aaf3-bc40a3785d27",
+                "produk": {
+                    "id": "c60ed5f3-e532-4372-8467-603bec103299",
+                    "code": "JLD09",
+                    "name": "Jas Polos Datuk",
+                    "modalAwal": 125000,
+                    "imageUrl": "https://pmjxdencfgkbjuyjndbp.supabase.co/storage/v1/object/public/products/products/JLD09/1766068006882.jpg",
+                    "size": null,
+                    "category": "jas-polos"
                 },
-                "hasMultipleCategories": true
+                "jumlah": 1,
+                "jumlahDiambil": 1,
+                "hargaSewa": 125000,
+                "durasi": 4,
+                "subtotal": 125000,
+                "kondisiAwal": "{\"productSizeId\":\"d5a4e0a1-2ca8-4a0d-a23b-3b27784d8a62\",\"size\":\"XXL\",\"ageCategory\":\"ADULT\",\"condition\":\"baik\",\"linkedSarung\":{\"productId\":\"de9a6c09-4952-4346-a4ae-a996715ab77f\",\"productSizeId\":\"308fa829-76cf-4687-8678-98cbed9ff8b1\",\"quantity\":1,\"selectedSize\":{\"id\":\"308fa829-76cf-4687-8678-98cbed9ff8b1\",\"productId\":\"de9a6c09-4952-4346-a4ae-a996715ab77f\",\"size\":\"UNIVERSAL\",\"ageCategory\":\"ADULT\",\"quantity\":1,\"availableQuantity\":0,\"rentedStock\":0,\"createdAt\":\"2026-01-04T19:18:27.592Z\",\"updatedAt\":\"2026-01-04T19:18:27.592Z\"}}}",
+                "statusKembali": "belum",
+                "linkedSarung": {
+                    "productId": "de9a6c09-4952-4346-a4ae-a996715ab77f",
+                    "productSizeId": "308fa829-76cf-4687-8678-98cbed9ff8b1",
+                    "quantity": 1,
+                    "product": {
+                        "id": "de9a6c09-4952-4346-a4ae-a996715ab77f",
+                        "code": "SA06",
+                        "name": "Sarung Abu/Pink",
+                        "category": "sarung",
+                        "imageUrl": "/products/image.png"
+                    },
+                    "selectedSize": {
+                        "id": "308fa829-76cf-4687-8678-98cbed9ff8b1",
+                        "size": "UNIVERSAL",
+                        "ageCategory": "ADULT"
+                    }
+                },
+                "totalReturnPenalty": 0
             },
             {
-                "size": "M",
-                "totalQuantity": 6,
-                "breakdown": {
-                    "adult": 4,
-                    "child": 2
+                "id": "75336428-0389-46c4-b309-21d5189c57d9",
+                "produk": {
+                    "id": "c60ed5f3-e532-4372-8467-603bec103299",
+                    "code": "JLD09",
+                    "name": "Jas Polos Datuk",
+                    "modalAwal": 125000,
+                    "imageUrl": "https://pmjxdencfgkbjuyjndbp.supabase.co/storage/v1/object/public/products/products/JLD09/1766068006882.jpg",
+                    "size": null,
+                    "category": "jas-polos"
                 },
-                "hasMultipleCategories": true
+                "jumlah": 1,
+                "jumlahDiambil": 1,
+                "hargaSewa": 125000,
+                "durasi": 4,
+                "subtotal": 125000,
+                "kondisiAwal": "{\"productSizeId\":\"d5a4e0a1-2ca8-4a0d-a23b-3b27784d8a62\",\"size\":\"XXL\",\"ageCategory\":\"ADULT\",\"condition\":\"baik\",\"linkedSarung\":{\"productId\":\"c861ab71-27a8-4968-9472-64a3395ed78a\",\"productSizeId\":\"b49b8e48-5578-40f5-a7bf-58b4047b3cc0\",\"quantity\":1,\"selectedSize\":{\"id\":\"b49b8e48-5578-40f5-a7bf-58b4047b3cc0\",\"productId\":\"c861ab71-27a8-4968-9472-64a3395ed78a\",\"size\":\"UNIVERSAL\",\"ageCategory\":\"ADULT\",\"quantity\":1,\"availableQuantity\":0,\"rentedStock\":0,\"createdAt\":\"2026-01-04T19:18:27.025Z\",\"updatedAt\":\"2026-01-04T19:18:27.025Z\"}}}",
+                "statusKembali": "belum",
+                "linkedSarung": {
+                    "productId": "c861ab71-27a8-4968-9472-64a3395ed78a",
+                    "productSizeId": "b49b8e48-5578-40f5-a7bf-58b4047b3cc0",
+                    "quantity": 1,
+                    "product": {
+                        "id": "c861ab71-27a8-4968-9472-64a3395ed78a",
+                        "code": "SA28",
+                        "name": "Sarung Abu/Cream",
+                        "category": "sarung",
+                        "imageUrl": "/products/image.png"
+                    },
+                    "selectedSize": {
+                        "id": "b49b8e48-5578-40f5-a7bf-58b4047b3cc0",
+                        "size": "UNIVERSAL",
+                        "ageCategory": "ADULT"
+                    }
+                },
+                "totalReturnPenalty": 0
             },
             {
-                "size": "L",
-                "totalQuantity": 6,
-                "breakdown": {
-                    "adult": 4,
-                    "child": 2
+                "id": "e0d29f85-6aea-473e-a504-516b4e3339cb",
+                "produk": {
+                    "id": "683ee614-77bb-4c99-a7b4-6dfed5f1f495",
+                    "code": "AMP01",
+                    "name": "Anting Mutiara Putih",
+                    "modalAwal": 30000,
+                    "imageUrl": "https://pmjxdencfgkbjuyjndbp.supabase.co/storage/v1/object/public/products/products/AMP01/1766069051292.jpg",
+                    "size": null,
+                    "category": "anting"
                 },
-                "hasMultipleCategories": true
-            },
-            {
-                "size": "XL",
-                "totalQuantity": 2,
-                "breakdown": {
-                    "adult": 2
-                },
-                "hasMultipleCategories": false
-            },
-            {
-                "size": "XXL",
-                "totalQuantity": 1,
-                "breakdown": {
-                    "adult": 1
-                },
-                "hasMultipleCategories": false
+                "jumlah": 1,
+                "jumlahDiambil": 1,
+                "hargaSewa": 30000,
+                "durasi": 4,
+                "subtotal": 30000,
+                "kondisiAwal": "{\"productSizeId\":\"e7ff3651-f9c5-435d-be0c-c51550e1f435\",\"size\":\"UNIVERSAL\",\"ageCategory\":\"UNIVERSAL\",\"condition\":\"baik\",\"linkedSarung\":null}",
+                "statusKembali": "belum",
+                "totalReturnPenalty": 0
             }
         ],
-        "hasAdvancedSizing": true,
-        "categoryBreakdown": {
-            "adult": 13,
-            "child": 6,
-            "universal": 0,
-            "total": 19
-        },
-        "lastCalculated": "2025-12-22T08:11:38.208Z"
+        "pembayaran": [
+            {
+                "id": "06420bc0-c1ce-4bd7-8700-eb34db9c9aa2",
+                "jumlah": 280000,
+                "metode": "tunai",
+                "referensi": null,
+                "catatan": "Pembayaran awal transaksi",
+                "createdBy": "user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH",
+                "createdAt": "2026-01-04T19:18:32.689Z"
+            }
+        ],
+        "aktivitas": [
+            {
+                "id": "e53ed69c-e95b-4e15-91e3-38e67024823a",
+                "tipe": "diambil",
+                "deskripsi": "Pickup: Jas Polos Datuk + Sarung, Jas Polos Datuk + Sarung, Anting Mutiara Putih",
+                "data": {
+                    "items": [
+                        {
+                            "itemId": "5012f644-caa0-443b-aaf3-bc40a3785d27",
+                            "kondisiAwal": "{\"productSizeId\":\"d5a4e0a1-2ca8-4a0d-a23b-3b27784d8a62\",\"size\":\"XXL\",\"ageCategory\":\"ADULT\",\"condition\":\"baik\",\"linkedSarung\":{\"productId\":\"de9a6c09-4952-4346-a4ae-a996715ab77f\",\"productSizeId\":\"308fa829-76cf-4687-8678-98cbed9ff8b1\",\"quantity\":1,\"selectedSize\":{\"id\":\"308fa829-76cf-4687-8678-98cbed9ff8b1\",\"productId\":\"de9a6c09-4952-4346-a4ae-a996715ab77f\",\"size\":\"UNIVERSAL\",\"ageCategory\":\"ADULT\",\"quantity\":1,\"availableQuantity\":0,\"rentedStock\":0,\"createdAt\":\"2026-01-04T19:18:27.592Z\",\"updatedAt\":\"2026-01-04T19:18:27.592Z\"}}}",
+                            "productCode": "JLD09",
+                            "productName": "Jas Polos Datuk",
+                            "jumlahDiambil": 1
+                        },
+                        {
+                            "itemId": "75336428-0389-46c4-b309-21d5189c57d9",
+                            "kondisiAwal": "{\"productSizeId\":\"d5a4e0a1-2ca8-4a0d-a23b-3b27784d8a62\",\"size\":\"XXL\",\"ageCategory\":\"ADULT\",\"condition\":\"baik\",\"linkedSarung\":{\"productId\":\"c861ab71-27a8-4968-9472-64a3395ed78a\",\"productSizeId\":\"b49b8e48-5578-40f5-a7bf-58b4047b3cc0\",\"quantity\":1,\"selectedSize\":{\"id\":\"b49b8e48-5578-40f5-a7bf-58b4047b3cc0\",\"productId\":\"c861ab71-27a8-4968-9472-64a3395ed78a\",\"size\":\"UNIVERSAL\",\"ageCategory\":\"ADULT\",\"quantity\":1,\"availableQuantity\":0,\"rentedStock\":0,\"createdAt\":\"2026-01-04T19:18:27.025Z\",\"updatedAt\":\"2026-01-04T19:18:27.025Z\"}}}",
+                            "productCode": "JLD09",
+                            "productName": "Jas Polos Datuk",
+                            "jumlahDiambil": 1
+                        },
+                        {
+                            "itemId": "e0d29f85-6aea-473e-a504-516b4e3339cb",
+                            "kondisiAwal": "{\"productSizeId\":\"e7ff3651-f9c5-435d-be0c-c51550e1f435\",\"size\":\"UNIVERSAL\",\"ageCategory\":\"UNIVERSAL\",\"condition\":\"baik\",\"linkedSarung\":null}",
+                            "productCode": "AMP01",
+                            "productName": "Anting Mutiara Putih",
+                            "jumlahDiambil": 1
+                        }
+                    ],
+                    "timestamp": "2026-01-04T19:20:06.898Z",
+                    "processedBy": "user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH",
+                    "processedByName": "Inaya"
+                },
+                "createdBy": "user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH",
+                "createdAt": "2026-01-04T19:20:06.900Z"
+            },
+            {
+                "id": "3847438f-657e-4232-9482-ac986ff71564",
+                "tipe": "dibayar",
+                "deskripsi": "Pembayaran tunai sebesar Rp 280.000",
+                "data": {
+                    "amount": 280000,
+                    "method": "tunai",
+                    "newTotal": "280000",
+                    "paymentId": "06420bc0-c1ce-4bd7-8700-eb34db9c9aa2",
+                    "remaining": "0"
+                },
+                "createdBy": "user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH",
+                "createdAt": "2026-01-04T19:18:33.289Z"
+            },
+            {
+                "id": "278fbe8c-5ebb-4d77-9849-31dbdcb15807",
+                "tipe": "dibuat",
+                "deskripsi": "Transaksi TXN-20260105-004 dibuat dengan kasir ter assign dengan 2 pairing jas-sarung",
+                "data": {
+                    "items": 3,
+                    "kasirId": "92e1b3c5-538e-4cf1-abc1-749cd3a4bed0",
+                    "duration": 4,
+                    "subtotal": "280000",
+                    "sizeAware": true,
+                    "totalHarga": "280000",
+                    "discountType": null,
+                    "discountValue": null,
+                    "discountAmount": "0",
+                    "enhancedSystem": true,
+                    "pairingSupport": true,
+                    "jasSarungPairings": 2,
+                    "durationMultiplier": 1,
+                    "transactionDuration": 10181,
+                    "totalItemsIncludingSarung": 5
+                },
+                "createdBy": "user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH",
+                "createdAt": "2026-01-04T19:18:30.413Z"
+            }
+        ]
     },
-    "inventoryStatus": {
-        "totalOriginal": 19,
-        "totalAvailable": 19,
-        "totalRented": 0,
-        "totalLost": 0,
-        "utilizationRate": 0,
-        "isHealthy": true
-    },
-    "sizeDetails": [
-        {
-            "id": "56f8448a-11e2-4bdd-932e-b3687ed32eb0",
-            "ageCategory": "ADULT",
-            "size": "S",
-            "originalQuantity": 2,
-            "availableQuantity": 2,
-            "rentedQuantity": 0,
-            "lostQuantity": 0,
-            "utilizationRate": 0,
-            "isAvailable": true
-        },
-        {
-            "id": "6df6b1be-dae2-4a4a-812d-75b5b240cb06",
-            "ageCategory": "ADULT",
-            "size": "M",
-            "originalQuantity": 4,
-            "availableQuantity": 4,
-            "rentedQuantity": 0,
-            "lostQuantity": 0,
-            "utilizationRate": 0,
-            "isAvailable": true
-        },
-        {
-            "id": "0206dfc7-b840-4900-96c4-97e3eef7543c",
-            "ageCategory": "ADULT",
-            "size": "L",
-            "originalQuantity": 4,
-            "availableQuantity": 4,
-            "rentedQuantity": 0,
-            "lostQuantity": 0,
-            "utilizationRate": 0,
-            "isAvailable": true
-        },
-        {
-            "id": "fe38981c-80e8-48e4-8c82-adf025e8efb1",
-            "ageCategory": "ADULT",
-            "size": "XL",
-            "originalQuantity": 2,
-            "availableQuantity": 2,
-            "rentedQuantity": 0,
-            "lostQuantity": 0,
-            "utilizationRate": 0,
-            "isAvailable": true
-        },
-        {
-            "id": "26e7959c-1005-4215-a7e4-f304a0cb9290",
-            "ageCategory": "ADULT",
-            "size": "XXL",
-            "originalQuantity": 1,
-            "availableQuantity": 1,
-            "rentedQuantity": 0,
-            "lostQuantity": 0,
-            "utilizationRate": 0,
-            "isAvailable": true
-        },
-        {
-            "id": "ea6919f1-5e9b-4b59-93ec-ef7b3597a1f0",
-            "ageCategory": "CHILD",
-            "size": "S",
-            "originalQuantity": 2,
-            "availableQuantity": 2,
-            "rentedQuantity": 0,
-            "lostQuantity": 0,
-            "utilizationRate": 0,
-            "isAvailable": true
-        },
-        {
-            "id": "cc82a459-0525-4a8d-8eda-d29849f661ad",
-            "ageCategory": "CHILD",
-            "size": "M",
-            "originalQuantity": 2,
-            "availableQuantity": 2,
-            "rentedQuantity": 0,
-            "lostQuantity": 0,
-            "utilizationRate": 0,
-            "isAvailable": true
-        },
-        {
-            "id": "165ed534-2ed1-4233-b3cc-fe79b4fc77ff",
-            "ageCategory": "CHILD",
-            "size": "L",
-            "originalQuantity": 2,
-            "availableQuantity": 2,
-            "rentedQuantity": 0,
-            "lostQuantity": 0,
-            "utilizationRate": 0,
-            "isAvailable": true
-        }
-    ]
+    "message": "Detail transaksi berhasil diambil"
 }

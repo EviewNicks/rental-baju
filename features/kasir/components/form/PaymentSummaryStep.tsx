@@ -18,11 +18,28 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import type { TransactionFormData } from '../../types'
+import type { TransactionFormData, ProductSelection } from '../../types'
 import { formatCurrency } from '../../lib/utils/client'
 import { PriceCalculator } from '../../lib/utils/priceCalculator'
 import { DateCalculator } from '../../lib/utils/dateCalculator'
+import { SarungPairingIndicator } from '../ui/SarungPairingIndicator'
+import { isLinkedSarung } from '../../lib/utils/jasSarungUtils'
 import Image from 'next/image'
+
+// Helper function to generate unique keys for ProductSelection items
+const generateProductKey = (item: ProductSelection, index: number): string => {
+  const baseKey = `${item.product.id}-${item.productSizeId || 'default'}`
+  
+  if (item.linkedSarung) {
+    // For jas with linkedSarung, include sarung info for uniqueness
+    const sarungId = item.linkedSarung.productId
+    const sarungSizeId = item.linkedSarung.productSizeId || 'default'
+    return `${baseKey}-linked-${sarungId}-${sarungSizeId}`
+  }
+  
+  // For regular products or standalone sarung, use index as fallback
+  return `${baseKey}-${index}`
+}
 
 interface PaymentSummaryStepProps {
   formData: TransactionFormData
@@ -42,8 +59,42 @@ export function PaymentSummaryStep({
   const [paymentDisplayValue, setPaymentDisplayValue] = useState('')
   // ✅ FIX: Add local submission state to prevent multiple API calls
   const [isSubmittingLocal, setIsSubmittingLocal] = useState(false)
+  // ✅ FIX: Add local state for primary payment method selection
+  const [primaryPaymentMethod, setPrimaryPaymentMethod] = useState<'tunai' | 'bank'>(() => {
+    if (formData.paymentMethod === 'tunai') return 'tunai'
+    if (['bca', 'bri', 'mandiri', 'qris'].includes(formData.paymentMethod)) return 'bank'
+    return 'tunai' // default
+  })
 
-  // Calculate enhanced pricing with duration and discount
+  // ✅ FIX: Add handler for primary payment method change
+  const handlePrimaryPaymentMethodChange = useCallback(
+    (value: 'tunai' | 'bank') => {
+      setPrimaryPaymentMethod(value)
+      
+      if (value === 'tunai') {
+        // Direct selection for cash
+        onUpdateFormData({ paymentMethod: 'tunai' })
+      } else if (value === 'bank') {
+        // For bank, set a default bank method to show options, or keep current if already bank
+        const currentMethod = formData.paymentMethod
+        if (!['bca', 'bri', 'mandiri', 'qris'].includes(currentMethod)) {
+          // Set default bank method to show the options
+          onUpdateFormData({ paymentMethod: 'bca' })
+        }
+        // If already a bank method, keep it as is
+      }
+    },
+    [formData.paymentMethod, onUpdateFormData],
+  )
+
+  // ✅ FIX: Sync local state with form data changes
+  useEffect(() => {
+    if (formData.paymentMethod === 'tunai') {
+      setPrimaryPaymentMethod('tunai')
+    } else if (['bca', 'bri', 'mandiri', 'qris'].includes(formData.paymentMethod)) {
+      setPrimaryPaymentMethod('bank')
+    }
+  }, [formData.paymentMethod])
   const priceCalculation = useMemo(() => {
     return PriceCalculator.calculateTransactionTotalWithEnhancements({
       items: formData.products,
@@ -111,21 +162,33 @@ export function PaymentSummaryStep({
     [formData.pickupDate, onUpdateFormData],
   )
 
-  // Handle discount change with validation
-  const handleDiscountChange = useCallback(
-    (type: 'percent' | 'nominal' | null, value: number | null) => {
-      // If value is 0 or null, reset both type and value to null
-      if (!value || value === 0) {
+  // ✅ FIX: Separate discount type selection from value input
+  const handleDiscountTypeChange = useCallback(
+    (type: 'percent' | 'nominal' | null) => {
+      if (type === null) {
+        // Explicit reset when "none" selected
         onUpdateFormData({
           discountType: null,
           discountValue: null,
         })
       } else {
+        // Just set type, keep existing value if valid, otherwise null
         onUpdateFormData({
           discountType: type,
-          discountValue: value,
+          discountValue: formData.discountValue || null,
         })
       }
+    },
+    [onUpdateFormData, formData.discountValue],
+  )
+
+  // ✅ FIX: Separate function for discount value changes
+  const handleDiscountValueChange = useCallback(
+    (value: number) => {
+      // Only update value, keep existing type
+      onUpdateFormData({
+        discountValue: value || null,
+      })
     },
     [onUpdateFormData],
   )
@@ -231,9 +294,16 @@ export function PaymentSummaryStep({
             const adjustedPrice = itemCalculation?.adjustedPrice || basePrice
             const duration = formData.duration || 4
 
+            // Check if this is a linked sarung (should be free)
+            const isItemLinkedSarung = isLinkedSarung(
+              item.product.id,
+              item.productSizeId,
+              formData.products
+            )
+
             return (
               <div
-                key={`${item.product.id}-${item.productSizeId || 'default'}`}
+                key={generateProductKey(item, index)}
                 className="flex items-center justify-between py-4 border-b border-gray-200 last:border-b-0"
               >
                 <div className="flex items-center gap-4">
@@ -249,7 +319,29 @@ export function PaymentSummaryStep({
                     className="w-16 h-16 object-cover rounded-lg"
                   />
                   <div className="flex-1">
-                    <div className="font-semibold text-gray-900">{item.product.name}</div>
+                    {/* Show pairing indicator for jas products with linked sarung */}
+                    {item.linkedSarung ? (
+                      <div className="space-y-2">
+                        <SarungPairingIndicator
+                          jasName={item.product.name}
+                          sarungName={item.linkedSarung.product?.code || item.linkedSarung.product?.name || `Sarung ${item.linkedSarung.selectedSize?.size || 'Universal'}`}
+                          sarungOriginalPrice={0} // Will be calculated from product data
+                          variant="payment"
+                          showPricing={false} // Don't show pricing here, will show in breakdown
+                        />
+                      </div>
+                    ) : isItemLinkedSarung ? (
+                      <div className="space-y-1">
+                        <div className="font-semibold text-gray-900 flex items-center gap-2">
+                          {item.product.name}
+                          <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full font-medium">
+                            GRATIS
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="font-semibold text-gray-900">{item.product.name}</div>
+                    )}
                     <div className="text-sm text-gray-600">
                       {selectedSize ? (
                         <>
@@ -260,23 +352,43 @@ export function PaymentSummaryStep({
                           {item.product.size} • {item.product.color} •{' '}
                         </>
                       )}
-                      {formatCurrency(item.product.pricePerDay)}/{duration} hari
-                      {duration === 7 && (
-                        <span className="text-orange-600 font-medium"> (+50%)</span>
+                      {!isItemLinkedSarung && (
+                        <>
+                          {formatCurrency(item.product.pricePerDay)}/{duration} hari
+                          {duration === 7 && (
+                            <span className="text-orange-600 font-medium"> (+50%)</span>
+                          )}
+                        </>
+                      )}
+                      {isItemLinkedSarung && (
+                        <span className="text-green-600 font-medium">Gratis dengan jas</span>
                       )}
                     </div>
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="font-semibold text-gray-900">
-                    {formatCurrency(adjustedPrice)}
-                  </div>
-                  <div className="text-sm text-gray-600">
-                    {item.quantity}x × {duration} hari
-                  </div>
-                  {duration === 7 && basePrice !== adjustedPrice && (
-                    <div className="text-xs text-orange-600">
-                      Base: {formatCurrency(basePrice)}
+                  {isItemLinkedSarung ? (
+                    <div className="space-y-1">
+                      <div className="font-semibold text-green-600">
+                        GRATIS
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        {item.quantity}x × {duration} hari
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      <div className="font-semibold text-gray-900">
+                        {formatCurrency(adjustedPrice)}
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        {item.quantity}x × {duration} hari
+                      </div>
+                      {duration === 7 && basePrice !== adjustedPrice && (
+                        <div className="text-xs text-orange-600">
+                          Base: {formatCurrency(basePrice)}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -382,9 +494,9 @@ export function PaymentSummaryStep({
             value={formData.discountType || 'none'}
             onValueChange={(value) => {
               if (value === 'none') {
-                handleDiscountChange(null, null)
+                handleDiscountTypeChange(null)
               } else {
-                handleDiscountChange(value as 'percent' | 'nominal', formData.discountValue || 0)
+                handleDiscountTypeChange(value as 'percent' | 'nominal')
               }
             }}
             className="grid grid-cols-1 md:grid-cols-3 gap-4"
@@ -437,7 +549,7 @@ export function PaymentSummaryStep({
                   value={formData.discountValue || ''}
                   onChange={(e) => {
                     const inputValue = Number(e.target.value) || 0
-                    handleDiscountChange(formData.discountType, inputValue)
+                    handleDiscountValueChange(inputValue)
                   }}
                   max={formData.discountType === 'percent' ? 100 : subtotal}
                   min={0}
@@ -493,56 +605,96 @@ export function PaymentSummaryStep({
         </div>
       </div>
 
-      {/* Payment Method */}
+      {/* Payment Method - 2-Level Selection */}
       <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-6 space-y-6">
         <div className="flex items-center gap-2 text-xl font-bold text-gray-900">
           <CreditCard className="h-6 w-6" />
           Metode Pembayaran
         </div>
 
-        <RadioGroup
-          value={formData.paymentMethod}
-          onValueChange={(value: 'cash' | 'qris' | 'transfer') =>
-            onUpdateFormData({ paymentMethod: value })
-          }
-          className="grid grid-cols-1 md:grid-cols-3 gap-4"
-          data-testid="payment-method-selection"
-        >
-          <div
-            className="flex items-center space-x-3 border border-gray-200 rounded-lg p-4"
-            data-testid="payment-method-cash"
+        {/* Primary Level Selection */}
+        <div className="space-y-4">
+          <Label className="text-sm font-medium text-gray-700">
+            Pilih Kategori Pembayaran
+          </Label>
+          <RadioGroup
+            value={primaryPaymentMethod}
+            onValueChange={handlePrimaryPaymentMethodChange}
+            className="grid grid-cols-1 md:grid-cols-2 gap-4"
+            data-testid="primary-payment-method-selection"
           >
-            <RadioGroupItem value="cash" id="cash" data-testid="payment-method-cash-radio" />
-            <Label htmlFor="cash" className="flex items-center gap-2 cursor-pointer">
-              <Banknote className="h-5 w-5" />
-              Tunai
+            <div className="flex items-center space-x-3 border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+              <RadioGroupItem value="tunai" id="primary-tunai-summary" />
+              <Label htmlFor="primary-tunai-summary" className="flex items-center gap-2 cursor-pointer flex-1">
+                <Banknote className="h-5 w-5 text-green-600" />
+                <div>
+                  <div className="font-medium text-gray-900"> Tunai</div>
+                  <div className="text-xs text-gray-500">Pembayaran cash langsung</div>
+                </div>
+              </Label>
+            </div>
+            
+            <div className="flex items-center space-x-3 border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+              <RadioGroupItem value="bank" id="primary-bank-summary" />
+              <Label htmlFor="primary-bank-summary" className="flex items-center gap-2 cursor-pointer flex-1">
+                <CreditCard className="h-5 w-5 text-blue-600" />
+                <div>
+                  <div className="font-medium text-gray-900"> Bank/Transfer</div>
+                  <div className="text-xs text-gray-500">Transfer bank atau QRIS</div>
+                </div>
+              </Label>
+            </div>
+          </RadioGroup>
+        </div>
+
+        {/* Secondary Level Selection - Bank Options */}
+        {primaryPaymentMethod === 'bank' && (
+          <div className="space-y-4 pl-4 border-l-2 border-blue-200 bg-blue-50/30 rounded-r-lg py-4 pr-4">
+            <Label className="text-sm font-medium text-blue-700">
+              Pilih Bank atau QRIS
             </Label>
+            <RadioGroup
+              value={formData.paymentMethod}
+              onValueChange={(value: 'bca' | 'bri' | 'mandiri' | 'qris') =>
+                onUpdateFormData({ paymentMethod: value })
+              }
+              className="grid grid-cols-1 md:grid-cols-2 gap-3"
+              data-testid="bank-payment-method-selection"
+            >
+              <div className="flex items-center space-x-3 border border-blue-200 rounded-lg p-3 hover:bg-blue-50 transition-colors bg-white">
+                <RadioGroupItem value="bca" id="bank-bca-summary" />
+                <Label htmlFor="bank-bca-summary" className="flex items-center gap-2 cursor-pointer flex-1">
+                  <CreditCard className="h-4 w-4 text-blue-600" />
+                  <span className="font-medium text-gray-900">BCA</span>
+                </Label>
+              </div>
+              
+              <div className="flex items-center space-x-3 border border-blue-200 rounded-lg p-3 hover:bg-blue-50 transition-colors bg-white">
+                <RadioGroupItem value="bri" id="bank-bri-summary" />
+                <Label htmlFor="bank-bri-summary" className="flex items-center gap-2 cursor-pointer flex-1">
+                  <CreditCard className="h-4 w-4 text-blue-600" />
+                  <span className="font-medium text-gray-900">BRI</span>
+                </Label>
+              </div>
+              
+              <div className="flex items-center space-x-3 border border-blue-200 rounded-lg p-3 hover:bg-blue-50 transition-colors bg-white">
+                <RadioGroupItem value="mandiri" id="bank-mandiri-summary" />
+                <Label htmlFor="bank-mandiri-summary" className="flex items-center gap-2 cursor-pointer flex-1">
+                  <CreditCard className="h-4 w-4 text-blue-600" />
+                  <span className="font-medium text-gray-900">Mandiri</span>
+                </Label>
+              </div>
+              
+              <div className="flex items-center space-x-3 border border-blue-200 rounded-lg p-3 hover:bg-blue-50 transition-colors bg-white">
+                <RadioGroupItem value="qris" id="bank-qris-summary" />
+                <Label htmlFor="bank-qris-summary" className="flex items-center gap-2 cursor-pointer flex-1">
+                  <Smartphone className="h-4 w-4 text-purple-600" />
+                  <span className="font-medium text-gray-900">QRIS</span>
+                </Label>
+              </div>
+            </RadioGroup>
           </div>
-          <div
-            className="flex items-center space-x-3 border border-gray-200 rounded-lg p-4"
-            data-testid="payment-method-qris"
-          >
-            <RadioGroupItem value="qris" id="qris" data-testid="payment-method-qris-radio" />
-            <Label htmlFor="qris" className="flex items-center gap-2 cursor-pointer">
-              <Smartphone className="h-5 w-5" />
-              QRIS
-            </Label>
-          </div>
-          <div
-            className="flex items-center space-x-3 border border-gray-200 rounded-lg p-4"
-            data-testid="payment-method-transfer"
-          >
-            <RadioGroupItem
-              value="transfer"
-              id="transfer"
-              data-testid="payment-method-transfer-radio"
-            />
-            <Label htmlFor="transfer" className="flex items-center gap-2 cursor-pointer">
-              <CreditCard className="h-5 w-5" />
-              Transfer Bank
-            </Label>
-          </div>
-        </RadioGroup>
+        )}
 
         {/* Payment Amount */}
         <div className="space-y-6">
@@ -666,18 +818,28 @@ export function PaymentSummaryStep({
               const basePrice = item.product.pricePerDay * item.quantity
               const adjustedPrice = itemCalculation?.adjustedPrice || basePrice
 
+              // Check if this is a linked sarung (should be free)
+              const isItemLinkedSarung = isLinkedSarung(
+                item.product.id,
+                item.productSizeId,
+                formData.products
+              )
+
               return (
-                <div key={`${item.product.id}-${item.productSizeId || 'default'}`} className="space-y-1">
+                <div key={generateProductKey(item, index)} className="space-y-1">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">
                       {item.product.name}
                       {selectedSize && ` (${selectedSize.ageCategory} - ${selectedSize.size})`} × {item.quantity}
+                      {isItemLinkedSarung && (
+                        <span className="ml-2 text-green-600 font-medium text-xs">• GRATIS dengan jas</span>
+                      )}
                     </span>
-                    <span className="font-medium">
-                      {formatCurrency(basePrice)}
+                    <span className={`font-medium ${isItemLinkedSarung ? 'text-green-600' : ''}`}>
+                      {isItemLinkedSarung ? 'GRATIS' : formatCurrency(basePrice)}
                     </span>
                   </div>
-                  {formData.duration === 7 && (
+                  {formData.duration === 7 && !isItemLinkedSarung && (
                     <div className="flex justify-between text-xs text-orange-600 ml-4">
                       <span>↳ Paket 7 hari (+50%)</span>
                       <span>+ {formatCurrency(adjustedPrice - basePrice)}</span>

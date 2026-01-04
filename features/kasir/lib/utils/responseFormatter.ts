@@ -39,6 +39,24 @@ interface TransactionItem {
   isMultiCondition?: boolean
   multiConditionSummary?: Record<string, unknown> | null
   totalReturnPenalty?: Decimal | string | number
+  // TASK 19: Add linkedSarung data for pairing relationships
+  linkedSarung?: {
+    productId: string
+    productSizeId: string
+    quantity: number
+    product?: {
+      id: string
+      code: string
+      name: string
+      category: string
+      imageUrl?: string // ✅ TASK 24: Add imageUrl field
+    }
+    selectedSize?: {
+      id: string
+      size: string
+      ageCategory: string
+    }
+  }
   returnConditions?: Array<{
     id: string
     kondisiAkhir: string
@@ -168,6 +186,24 @@ export interface FormattedTransactionResponse {
     isMultiCondition?: boolean
     multiConditionSummary?: Record<string, unknown> | null
     totalReturnPenalty?: number
+    // TASK 19: Add linkedSarung data for pairing display
+    linkedSarung?: {
+      productId: string
+      productSizeId: string
+      quantity: number
+      product?: {
+        id: string
+        code: string
+        name: string
+        category: string
+        imageUrl?: string | null // ✅ TASK 24: Add imageUrl field
+      }
+      selectedSize?: {
+        id: string
+        size: string
+        ageCategory: string
+      }
+    }
     conditionBreakdown?: Array<{
       id: string
       kondisiAkhir: string
@@ -314,6 +350,29 @@ export function formatTransactionResponse(
       kondisiAwal: item.kondisiAwal,
       kondisiAkhir: item.kondisiAkhir,
       statusKembali: item.statusKembali,
+
+      // TASK 19: Include linkedSarung data for pairing display
+      // TASK 24: Include imageUrl for sarung product display
+      ...(item.linkedSarung && {
+        linkedSarung: {
+          productId: item.linkedSarung.productId,
+          productSizeId: item.linkedSarung.productSizeId,
+          quantity: item.linkedSarung.quantity,
+          product: item.linkedSarung.product ? {
+            id: item.linkedSarung.product.id,
+            code: item.linkedSarung.product.code,
+            name: item.linkedSarung.product.name,
+            category: item.linkedSarung.product.category || 'sarung',
+            //eslint-disable-next-line @typescript-eslint/no-explicit-any
+            imageUrl: (item.linkedSarung.product as any).imageUrl || null, // ✅ TASK 24: Add imageUrl field
+          } : undefined,
+          selectedSize: item.linkedSarung.selectedSize ? {
+            id: item.linkedSarung.selectedSize.id,
+            size: item.linkedSarung.selectedSize.size,
+            ageCategory: item.linkedSarung.selectedSize.ageCategory,
+          } : undefined,
+        },
+      }),
 
       // TSK-24: Multi-condition return enhancements
       ...(item.isMultiCondition && {

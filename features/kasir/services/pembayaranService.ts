@@ -98,7 +98,6 @@ export class PembayaranService {
           transaksiId: transaksi.id, // Use the found transaction's ID
           jumlah: new Decimal(data.jumlah),
           metode: data.metode,
-          referensi: data.referensi || null,
           catatan: data.catatan || null,
           createdBy: this.userId
         }
@@ -129,7 +128,6 @@ export class PembayaranService {
             paymentId: pembayaran.id,
             amount: data.jumlah,
             method: data.metode,
-            reference: data.referensi,
             newTotal: newJumlahBayar.toString(),
             remaining: newSisaBayar.toString()
           },

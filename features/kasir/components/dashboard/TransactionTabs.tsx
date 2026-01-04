@@ -4,8 +4,9 @@ import type { TransactionStatus } from '../../types'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
-import { Search } from 'lucide-react'
+import { Search, Loader2 } from 'lucide-react'
 import { statusConfig } from '../../lib/constants/uiConfig'
+import { useSearchDebounce } from '../../hooks/optimization/useDebounce'
 
 interface TransactionTabsProps {
   activeTab: TransactionStatus | 'all'
@@ -75,17 +76,50 @@ function SearchInput({
   placeholder = 'Cari transaksi...',
   className,
 }: SearchInputProps) {
+  const { isPending, handleKeyPress, handleClear } = useSearchDebounce(
+    value,
+    onChange,
+    300 // Use 300ms as specified in requirements (not 1200ms)
+  )
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value
+    onChange(newValue)
+  }
+
+  const handleClearClick = () => {
+    handleClear()
+  }
+
   return (
     <div className={cn('relative', className)}>
-      <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
+      {isPending ? (
+        <Loader2 className="absolute left-3 top-1/2 -translate-y-1/2 text-yellow-500 h-4 w-4 animate-spin" />
+      ) : (
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
+      )}
       <Input
         type="text"
         placeholder={placeholder}
         value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="pl-10 bg-white/80 backdrop-blur-sm border-gray-200 focus:border-yellow-400 focus:ring-yellow-400/20"
+        onChange={handleInputChange}
+        onKeyPress={handleKeyPress}
+        className={cn(
+          "pl-10 bg-white/80 backdrop-blur-sm border-gray-200 focus:border-yellow-400 focus:ring-yellow-400/20",
+          isPending && "pr-10" // Add padding for clear button when typing
+        )}
         data-testid="search-input"
       />
+      {value && (
+        <button
+          onClick={handleClearClick}
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 h-4 w-4 flex items-center justify-center"
+          data-testid="search-clear-button"
+          aria-label="Clear search"
+        >
+          ×
+        </button>
+      )}
     </div>
   )
 }

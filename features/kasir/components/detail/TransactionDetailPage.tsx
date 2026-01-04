@@ -10,10 +10,20 @@ import { ProductDetailCard } from './ProductDetailCard'
 import { PaymentSummaryCard } from './PaymentSummaryCard'
 import { ActivityTimeline } from './ActivityTimeline'
 import { ActionButtonsPanel } from './ActionButtonPanel'
+import { TransactionProgressSummary } from '../ui/return-progress-indicator'
 import { useTransactionDetail } from '../../hooks/useTransactionDetail'
 import { useReceiptPrint } from '../../hooks/useReceiptPrint'
 import { formatDate } from '../../lib/utils/client'
 import { detectTransactionError } from '../../lib/utils/errorDetector'
+import { 
+  calculateTransactionProgress, 
+  type TransaksiItemWithReturns 
+} from '../../lib/utils/partialReturnHelpers'
+// TASK 23: Import sarung transformation utilities
+import { 
+  processTransactionItemsWithSeparateSarung,
+  type SarungDisplayItem 
+} from '../../lib/utils/sarungTransformation'
 
 interface TransactionDetailPageProps {
   transactionId: string
@@ -97,6 +107,41 @@ export function TransactionDetailPage({ transactionId }: TransactionDetailPagePr
       </div>
     )
   }
+
+  // ✅ TASK 7: Calculate transaction progress for display (Requirements: 4.1, 4.4, 4.5)
+  const transactionProgress = calculateTransactionProgress({
+    id: transaction.id,
+    kode: transaction.transactionCode,
+    tglMulai: transaction.startDate,
+    tglSelesai: transaction.endDate,
+    status: transaction.status,
+    totalHarga: transaction.totalAmount || 0,
+    jumlahBayar: 0,
+    sisaBayar: 0,
+    createdAt: transaction.createdAt || new Date().toISOString(),
+    updatedAt: transaction.updatedAt || new Date().toISOString(),
+    penyewa: {
+      id: transaction.customer?.id || '',
+      nama: transaction.customer?.name || '',
+      telepon: transaction.customer?.phone || '',
+      alamat: transaction.customer?.address || '',
+    },
+    kasir: transaction.kasir ? {
+      id: transaction.kasir.id,
+      nama: transaction.kasir.nama,
+      isActive: transaction.kasir.isActive || true,
+    } : undefined,
+    metodeBayar: 'tunai' as const,
+    createdBy: transaction.kasir?.id || '',
+    items: transaction.products?.map(product => ({
+      id: product.id,
+      jumlahDiambil: product.jumlahDiambil || 0,
+      conditionBreakdown: product.conditionBreakdown,
+    })) as TransaksiItemWithReturns[] || []
+  })
+
+  // ✅ TASK 7: Show progress summary only if items have been picked up
+  const shouldShowProgressSummary = transaction.products?.some(p => (p.jumlahDiambil || 0) > 0)
 
   return (
     <div
@@ -200,12 +245,58 @@ export function TransactionDetailPage({ transactionId }: TransactionDetailPagePr
               onCustomerUpdated={updateCustomerInTransaction}
             />
 
+            {/* ✅ TASK 7: Return Progress Summary (Requirements: 4.1, 4.4, 4.5) */}
+            {shouldShowProgressSummary && (
+              <TransactionProgressSummary
+                progress={transactionProgress}
+                totalItems={transaction.products?.length || 0}
+                data-testid="transaction-progress-summary"
+              />
+            )}
+
             {/* Products */}
             <div data-testid="product-detail-card" className="space-y-4">
               <h2 className="text-lg font-semibold text-gray-900">Produk yang Disewa</h2>
-              {transaction.products.map((item, index) => (
-                <ProductDetailCard key={index} item={item} />
-              ))}
+              {(() => {
+                // TASK 23: Process transaction items to include separate sarung cards
+                console.log('🔍 TASK 23 DEBUG - Raw transaction.products:', transaction.products)
+                const allDisplayItems = processTransactionItemsWithSeparateSarung(transaction.products)
+                console.log('🔍 TASK 23 DEBUG - Processed display items:', allDisplayItems)
+                
+                return allDisplayItems.map((item, index) => {
+                  // Transform item data to match ProductDetailCard interface
+                  const transformedItem = {
+                    product: {
+                      id: item.product?.id || '',
+                      name: item.product?.name || '',
+                      category: item.product?.category || '',
+                      size: item.product?.size || '',
+                      color: item.product?.color || '',
+                      image: (item.product as { imageUrl?: string })?.imageUrl || item.product?.image || '', // Fix: use imageUrl from API
+                      description: item.product?.description
+                    },
+                    quantity: item.quantity || 0,
+                    jumlahDiambil: item.jumlahDiambil,
+                    pricePerDay: item.pricePerDay || 0,
+                    duration: item.duration || 0,
+                    subtotal: item.subtotal || 0,
+                    statusKembali: item.statusKembali,
+                    totalReturnPenalty: item.totalReturnPenalty,
+                    conditionBreakdown: item.conditionBreakdown,
+                    kondisiAwal: item.kondisiAwal,
+                    // TASK 23: Add sarung gratis identification
+                    isSarungGratis: (item as SarungDisplayItem).isSarungGratis,
+                    pairedWithJas: (item as SarungDisplayItem).pairedWithJas,
+                    pairedWithJasId: (item as SarungDisplayItem).pairedWithJasId,
+                    // Keep linkedSarung for backward compatibility (will be ignored in display)
+                    linkedSarung: 'linkedSarung' in item ? item.linkedSarung : undefined
+                  }
+                  
+                  return (
+                    <ProductDetailCard key={`${item.product?.id}-${index}`} item={transformedItem} />
+                  )
+                })
+              })()}
             </div>
 
             {/* Activity Timeline */}

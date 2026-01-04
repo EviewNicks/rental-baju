@@ -16,7 +16,9 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ProductCard } from '../ui/product-card'
 import { KasirFilterBar } from '../ui/KasirFilterBar'
-import type { Product, ProductSelection, KasirFilters } from '../../types'
+import { SarungSelectionModal } from '../ui/SarungSelectionModal'
+import { SarungPairingIndicator } from '../ui/SarungPairingIndicator'
+import type { Product, ProductSelection, KasirFilters, ProductSize } from '../../types'
 import { useAvailableProducts } from '../../hooks/useProduk'
 import { formatCurrency } from '../../lib/utils/client'
 import { generateCartItemKey } from '../../lib/utils/keyGeneration'
@@ -28,12 +30,26 @@ import {
   type AvailabilityError 
 } from '../../lib/errors/availabilityErrors'
 import { ProductHistoryPopup } from '../ui/ProductHistoryPopup'
+import { isEligibleForFreeSarung, isLinkedSarung } from '../../lib/utils/jasSarungUtils'
+import { 
+  createSarungPairingError, 
+  executeFallbackAction,
+  SarungPairingErrorType,
+  type SarungPairingError
+} from '../../lib/errors/sarungPairingErrors'
+import {
+  validateQuantityInput,
+  validateProductData,
+  validateProductSizeSelection,
+  globalRateLimiter
+} from '../../lib/validation/sarungValidation'
+import { toast } from '@/lib/notifications'
 
 interface ProductSelectionStepProps {
   selectedProducts: ProductSelection[]
-  onAddProduct: (product: Product, quantity: number, productSizeId?: string) => void
-  onRemoveProduct: (productId: string, productSizeId?: string) => void
-  onUpdateQuantity: (productId: string, quantity: number, productSizeId?: string) => void
+  onAddProduct: (product: Product, quantity: number, productSizeId?: string, linkedSarung?: ProductSelection['linkedSarung']) => void
+  onRemoveProduct: (productId: string, productSizeId?: string, linkedSarungProductId?: string) => void
+  onUpdateQuantity: (productId: string, quantity: number, productSizeId?: string, linkedSarungProductId?: string) => void
   onNext: () => void
   canProceed: boolean
 }
@@ -61,6 +77,7 @@ export function ProductSelectionStep({
   const [pageSize, setPageSize] = useState(12)
   // Enhanced error handling for availability checks
   const [availabilityErrors, setAvailabilityErrors] = useState<Map<string, AvailabilityError>>(new Map())
+  const [validationErrors, setValidationErrors] = useState<Map<string, string[]>>(new Map())
   
   // History popup state management
   const [historyPopup, setHistoryPopup] = useState<{
@@ -75,6 +92,23 @@ export function ProductSelectionStep({
     productName: '',
     size: '',
     ageCategory: '',
+  })
+
+  // Sarung selection modal state management
+  const [sarungModal, setSarungModal] = useState<{
+    isOpen: boolean
+    jasProduct: Product | null
+    jasQuantity: number
+    jasProductSizeId?: string
+    retryCount: number
+    lastError?: SarungPairingError
+  }>({
+    isOpen: false,
+    jasProduct: null,
+    jasQuantity: 0,
+    jasProductSizeId: undefined,
+    retryCount: 0,
+    lastError: undefined,
   })
 
   // Helper function to safely render error details
@@ -108,6 +142,157 @@ export function ProductSelectionStep({
       size: '',
       ageCategory: '',
     })
+  }
+
+  // Sarung modal handlers with enhanced error handling
+  const openSarungModal = (jasProduct: Product, jasQuantity: number, jasProductSizeId?: string) => {
+    setSarungModal({
+      isOpen: true,
+      jasProduct,
+      jasQuantity,
+      jasProductSizeId, // ✅ FIXED: Properly store the jasProductSizeId
+      retryCount: 0,
+      lastError: undefined,
+    })
+  }
+
+  const closeSarungModal = () => {
+    setSarungModal({
+      isOpen: false,
+      jasProduct: null,
+      jasQuantity: 0,
+      jasProductSizeId: undefined,
+      retryCount: 0,
+      lastError: undefined,
+    })
+  }
+
+  // Task 11: Enhanced sarung selection with comprehensive error handling
+  // Task 18: Enhanced to handle both single selection and array of cart additions
+  const handleSarungSelection = (selectedSarung?: {
+    product: Product
+    quantity: number
+    productSizeId?: string
+    selectedSize?: ProductSize
+  } | Array<{
+    product: Product
+    quantity: number
+    productSizeId?: string
+    linkedSarung?: ProductSelection['linkedSarung']
+  }>) => {
+    if (!sarungModal.jasProduct) return
+
+    try {
+      // Task 18: Handle array of cart additions (quantity distribution)
+      if (Array.isArray(selectedSarung)) {
+        selectedSarung.forEach(cartItem => {
+          if (cartItem.linkedSarung) {
+            // Add jas with linked sarung
+            onAddProduct(cartItem.product, cartItem.quantity, cartItem.productSizeId, cartItem.linkedSarung)
+          } else {
+            // Add jas without sarung
+            onAddProduct(cartItem.product, cartItem.quantity, cartItem.productSizeId)
+          }
+        })
+        
+        const totalJas = selectedSarung.reduce((sum, item) => sum + item.quantity, 0)
+        const withSarung = selectedSarung.filter(item => item.linkedSarung).length
+        const withoutSarung = selectedSarung.filter(item => !item.linkedSarung).length
+        
+        let message = `${totalJas}x Jas ${sarungModal.jasProduct.name} ditambahkan`
+        if (withSarung > 0 && withoutSarung > 0) {
+          message += ` (${withSarung} dengan sarung, ${withoutSarung} tanpa sarung)`
+        } else if (withSarung > 0) {
+          message += ` dengan distribusi sarung`
+        } else {
+          message += ` tanpa sarung`
+        }
+        
+        toast.success('Berhasil', message)
+        closeSarungModal()
+        return
+      }
+
+      // Legacy handling for single selection (backward compatibility)
+      if (selectedSarung) {
+        // FIXED: Create proper linkedSarung data structure with product reference
+        const linkedSarungData: ProductSelection['linkedSarung'] = {
+          productId: selectedSarung.product.id,
+          productSizeId: selectedSarung.productSizeId || '',
+          quantity: selectedSarung.quantity,
+          selectedSize: selectedSarung.selectedSize!,
+          // ✅ TASK 3: Include product reference for sarung code display
+          product: selectedSarung.product
+        }
+        
+        // Add jas product with linked sarung data
+        onAddProduct(sarungModal.jasProduct, sarungModal.jasQuantity, sarungModal.jasProductSizeId, linkedSarungData)
+        
+        toast.success('Berhasil', `Jas ${sarungModal.jasProduct.name} dengan sarung ${selectedSarung.product.name} ditambahkan ke keranjang`)
+      } else {
+        // Add jas product without sarung (Tanpa Sarung option)
+        onAddProduct(sarungModal.jasProduct, sarungModal.jasQuantity, sarungModal.jasProductSizeId)
+        
+        toast.success('Berhasil', `Jas ${sarungModal.jasProduct.name} ditambahkan ke keranjang tanpa sarung`)
+      }
+      
+      // Close the modal on success
+      closeSarungModal()
+      
+    } catch (err) {
+      console.error('Error processing sarung selection:', err)
+      
+      // Create pairing error
+      const pairingError = createSarungPairingError(
+        SarungPairingErrorType.PAIRING_VALIDATION_FAILED,
+        {
+          jasProductId: sarungModal.jasProduct.id,
+          reason: err instanceof Error ? err.message : 'Unknown error during pairing'
+        }
+      )
+      
+      // Execute fallback action
+      executeFallbackAction(pairingError, {
+        jasProduct: {
+          id: sarungModal.jasProduct.id,
+          name: sarungModal.jasProduct.name,
+          category: sarungModal.jasProduct.category
+        },
+        jasQuantity: sarungModal.jasQuantity,
+        jasProductSizeId: sarungModal.jasProductSizeId,
+        onAddJasOnly: (fallbackProduct, quantity, productSizeId) => {
+          try {
+            // Use original product for addition
+            onAddProduct(sarungModal.jasProduct!, quantity, productSizeId)
+            toast.warning('Peringatan', 'Jas ditambahkan tanpa sarung karena terjadi kesalahan')
+            closeSarungModal()
+          } catch (fallbackErr) {
+            console.error('Fallback also failed:', fallbackErr)
+            toast.error('Gagal', 'Tidak dapat menambahkan jas ke keranjang')
+            closeSarungModal()
+          }
+        },
+        onRetryModal: () => {
+          // Update retry count and error
+          setSarungModal(prev => ({
+            ...prev,
+            retryCount: prev.retryCount + 1,
+            lastError: pairingError
+          }))
+          toast.info('Info', 'Silakan coba pilih sarung lagi')
+        },
+        onRefreshData: () => {
+          // Refresh products data
+          refetch()
+          toast.info('Info', 'Data produk diperbarui, silakan coba lagi')
+        },
+        onContactAdmin: (error) => {
+          toast.error('Kesalahan Serius', 'Silakan hubungi admin untuk bantuan')
+          console.error('Admin contact required:', error)
+          closeSarungModal()
+        }
+      })
+    }
   }
 
   // Dynamic page size calculation based on current data
@@ -186,35 +371,159 @@ export function ProductSelectionStep({
   const getTotalPrice = () => {
     return selectedProducts.reduce((total, item) => {
       // Fixed 4-day package pricing - no duration multiplication
-      return total + item.product.pricePerDay * item.quantity
+      const itemPrice = item.product.pricePerDay * item.quantity
+      
+      // Check if this is a linked sarung (should be free)
+      const isItemLinkedSarung = isLinkedSarung(
+        item.product.id,
+        item.productSizeId,
+        selectedProducts
+      )
+      
+      // Exclude linked sarung prices from total
+      return total + (isItemLinkedSarung ? 0 : itemPrice)
     }, 0)
   }
 
   const handleAddProduct = (product: Product, quantity: number, productSizeId?: string) => {
     try {
-      // Clear any previous availability errors for this product
+      // Task 12: Generate session ID for rate limiting
+      const sessionId = `product-selection-${Date.now()}`
+      
+      // Task 12: Rate limiting check
+      if (!globalRateLimiter.canSubmit(sessionId)) {
+        const remaining = globalRateLimiter.getRemainingSubmissions(sessionId)
+        toast.error('Terlalu Banyak Percobaan', `Silakan tunggu sebelum mencoba lagi. Sisa: ${remaining}`)
+        return
+      }
+
+      // Task 12: Input validation
+      const productValidation = validateProductData(product)
+      if (!productValidation.isValid) {
+        const errorKey = `${product.id}-validation`
+        const newErrors = new Map(validationErrors)
+        newErrors.set(errorKey, productValidation.errors)
+        setValidationErrors(newErrors)
+        toast.error('Data Produk Tidak Valid', productValidation.errors[0])
+        return
+      }
+
+      // Task 12: Quantity validation
+      const quantityValidation = validateQuantityInput(
+        quantity,
+        product.availableQuantity || 0,
+        quantity // For non-jas products, jas quantity equals selected quantity
+      )
+      
+      if (!quantityValidation.isValid) {
+        const errorKey = `${product.id}-quantity`
+        const newErrors = new Map(validationErrors)
+        newErrors.set(errorKey, quantityValidation.errors)
+        setValidationErrors(newErrors)
+        toast.error('Jumlah Tidak Valid', quantityValidation.errors[0])
+        return
+      }
+
+      // Task 12: Size validation if applicable
+      if (productSizeId) {
+        const selectedSize = product.sizes?.find(size => size.id === productSizeId)
+        const sizeValidation = validateProductSizeSelection(product, productSizeId, selectedSize)
+        
+        if (!sizeValidation.isValid) {
+          const errorKey = `${product.id}-size`
+          const newErrors = new Map(validationErrors)
+          newErrors.set(errorKey, sizeValidation.errors)
+          setValidationErrors(newErrors)
+          toast.error('Ukuran Tidak Valid', sizeValidation.errors[0])
+          return
+        }
+      }
+
+      // Clear any previous validation errors for this product
       const errorKey = `${product.id}-${productSizeId || 'no-size'}`
+      if (validationErrors.has(errorKey)) {
+        const newErrors = new Map(validationErrors)
+        newErrors.delete(errorKey)
+        setValidationErrors(newErrors)
+      }
+
+      // Clear any previous availability errors for this product
       if (availabilityErrors.has(errorKey)) {
         const newErrors = new Map(availabilityErrors)
         newErrors.delete(errorKey)
         setAvailabilityErrors(newErrors)
       }
 
-      // Enhanced duplicate detection: Check if product with same size is already in cart
-      const existingProductIndex = selectedProducts.findIndex(
-        (item) =>
-          item.product.id === product.id &&
-          (productSizeId ? item.productSizeId === productSizeId : !item.productSizeId),
-      )
-
-      if (existingProductIndex >= 0) {
-        // Update quantity of existing size-specific item
-        const existingProduct = selectedProducts[existingProductIndex]
-        onUpdateQuantity(product.id, existingProduct.quantity + quantity, productSizeId)
-      } else {
-        // Add new product (with optional productSizeId)
-        onAddProduct(product, quantity, productSizeId)
+      // Task 11: Enhanced product detection with error handling for free sarung eligibility
+      if (isEligibleForFreeSarung(product)) {
+        try {
+          // Validate jas product before opening modal
+          if (!product.availableQuantity || product.availableQuantity < quantity) {
+            const pairingError = createSarungPairingError(
+              SarungPairingErrorType.SARUNG_INSUFFICIENT_STOCK,
+              {
+                available: product.availableQuantity || 0,
+                requested: quantity,
+                sarungName: product.name,
+                jasProductId: product.id
+              }
+            )
+            
+            toast.error('Stok Tidak Cukup', pairingError.userMessage)
+            return
+          }
+          
+          // Record successful selection attempt
+          globalRateLimiter.recordSubmission(sessionId)
+          
+          openSarungModal(product, quantity, productSizeId)
+          return // Don't add to cart yet, wait for sarung selection
+          
+        } catch (modalErr) {
+          console.error('Error opening sarung modal:', modalErr)
+          
+          const pairingError = createSarungPairingError(
+            SarungPairingErrorType.MODAL_LOAD_FAILED,
+            {
+              jasProductId: product.id,
+              error: modalErr instanceof Error ? modalErr.message : 'Modal failed to open'
+            }
+          )
+          
+          // Execute fallback: add jas without sarung
+          executeFallbackAction(pairingError, {
+            jasProduct: {
+              id: product.id,
+              name: product.name,
+              category: product.category
+            },
+            jasQuantity: quantity,
+            jasProductSizeId: productSizeId,
+            onAddJasOnly: (fallbackProduct, fallbackQuantity, fallbackProductSizeId) => {
+              // Proceed with normal product addition using original product
+              handleNormalProductAddition(product, fallbackQuantity, fallbackProductSizeId)
+            },
+            onRetryModal: () => {
+              toast.info('Info', 'Silakan coba lagi untuk memilih sarung')
+            },
+            onRefreshData: () => {
+              refetch()
+            },
+            onContactAdmin: () => {
+              toast.error('Kesalahan Serius', 'Silakan hubungi admin')
+            }
+          })
+          
+          return
+        }
       }
+
+      // Handle normal product addition (non-jas products)
+      // Record successful selection
+      globalRateLimiter.recordSubmission(sessionId)
+      
+      handleNormalProductAddition(product, quantity, productSizeId)
+      
     } catch (err) {
       // Handle availability errors when adding products
       console.error('Error adding product:', {
@@ -239,14 +548,44 @@ export function ProductSelectionStep({
       const newErrors = new Map(availabilityErrors)
       newErrors.set(errorKey, availabilityError)
       setAvailabilityErrors(newErrors)
+      
+      // Show user-friendly error message
+      toast.error('Gagal Menambahkan Produk', availabilityError.userMessage)
     }
   }
 
-  const handleUpdateQuantity = (productId: string, newQuantity: number, productSizeId?: string) => {
+  // Task 11: Separate function for normal product addition with error handling
+  const handleNormalProductAddition = (product: Product, quantity: number, productSizeId?: string) => {
+    try {
+      // Enhanced duplicate detection: Check if product with same size is already in cart
+      const existingProductIndex = selectedProducts.findIndex(
+        (item) =>
+          item.product.id === product.id &&
+          (productSizeId ? item.productSizeId === productSizeId : !item.productSizeId),
+      )
+
+      if (existingProductIndex >= 0) {
+        // Update quantity of existing size-specific item
+        const existingProduct = selectedProducts[existingProductIndex]
+        onUpdateQuantity(product.id, existingProduct.quantity + quantity, productSizeId)
+        toast.success('Berhasil', `Jumlah ${product.name} diperbarui`)
+      } else {
+        // Add new product (with optional productSizeId, no linkedSarung for normal products)
+        onAddProduct(product, quantity, productSizeId)
+        toast.success('Berhasil', `${product.name} ditambahkan ke keranjang`)
+      }
+    } catch (err) {
+      console.error('Error in normal product addition:', err)
+      throw err // Re-throw to be handled by parent function
+    }
+  }
+
+  const handleUpdateQuantity = (productId: string, newQuantity: number, productSizeId?: string, linkedSarungProductId?: string) => {
     if (newQuantity <= 0) {
-      onRemoveProduct(productId, productSizeId)
+      // Remove the specific item (with precise targeting including linkedSarung)
+      onRemoveProduct(productId, productSizeId, linkedSarungProductId)
     } else {
-      onUpdateQuantity(productId, newQuantity, productSizeId)
+      onUpdateQuantity(productId, newQuantity, productSizeId, linkedSarungProductId)
     }
   }
 
@@ -285,15 +624,43 @@ export function ProductSelectionStep({
         />
 
         {/* Availability Errors Display - Task 7.2: Integrate error handling */}
-        {availabilityErrors.size > 0 && (
+        {/* Task 12: Enhanced error display with validation errors */}
+        {(availabilityErrors.size > 0 || validationErrors.size > 0) && (
           <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 space-y-3">
             <div className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-orange-600" />
-              <h3 className="font-medium text-orange-900">Peringatan Ketersediaan</h3>
+              <h3 className="font-medium text-orange-900">
+                {validationErrors.size > 0 ? 'Peringatan Validasi & Ketersediaan' : 'Peringatan Ketersediaan'}
+              </h3>
             </div>
             <div className="space-y-2">
+              {/* Display validation errors */}
+              {Array.from(validationErrors.entries()).map(([key, errors]) => (
+                <div key={`validation-${key}`} className="bg-white rounded-lg p-3 border border-orange-200">
+                  <div className="text-sm font-medium text-orange-900 mb-1">Kesalahan Validasi:</div>
+                  {errors.map((error, index) => (
+                    <p key={index} className="text-sm text-orange-800">• {error}</p>
+                  ))}
+                  <Button
+                    onClick={() => {
+                      const newErrors = new Map(validationErrors)
+                      newErrors.delete(key)
+                      setValidationErrors(newErrors)
+                    }}
+                    variant="ghost"
+                    size="sm"
+                    className="text-orange-600 hover:text-orange-700 p-0 h-auto mt-2"
+                  >
+                    <X className="h-4 w-4 mr-1" />
+                    Tutup
+                  </Button>
+                </div>
+              ))}
+              
+              {/* Display availability errors */}
               {Array.from(availabilityErrors.entries()).map(([key, error]) => (
-                <div key={key} className="bg-white rounded-lg p-3 border border-orange-200">
+                <div key={`availability-${key}`} className="bg-white rounded-lg p-3 border border-orange-200">
+                  <div className="text-sm font-medium text-orange-900 mb-1">Ketersediaan Produk:</div>
                   <p className="text-sm text-orange-800">{error.userMessage}</p>
                   {renderErrorDetails(error)}
                   <Button
@@ -531,9 +898,9 @@ export function ProductSelectionStep({
               <div className="space-y-3 max-h-64 overflow-y-auto" data-testid="cart-items-list">
                 {selectedProducts.map((item) => (
                   <div
-                    key={generateCartItemKey(item.product.id, item.productSizeId)}
+                    key={generateCartItemKey(item.product.id, item.productSizeId, item.linkedSarung?.productId)}
                     className="bg-gray-50 rounded-lg p-3"
-                    data-testid={`cart-item-${item.product.id}-${item.productSizeId || 'no-size'}`}
+                    data-testid={`cart-item-${item.product.id}-${item.productSizeId || 'no-size'}-${item.linkedSarung?.productId || 'no-sarung'}`}
                   >
                     <div className="flex items-start gap-3">
                       <Image
@@ -549,14 +916,26 @@ export function ProductSelectionStep({
                         className="w-12 h-12 object-cover rounded-md"
                       />
                       <div className="flex-1 min-w-0">
-                        <h4 className="text-sm font-medium text-gray-900 truncate">
-                          {item.product.name}
-                        </h4>
-                        <p className="text-xs text-gray-600">
-                          {item.product.size} •{' '}
+                        {/* Clean product name display - pairing indicated by green text below */}
+                        {item.linkedSarung ? (
+                          <SarungPairingIndicator
+                            jasName={item.product.name}
+                            sarungName={item.linkedSarung.product?.code || `Sarung ${item.linkedSarung.selectedSize?.size || 'Universal'}`}
+                            sarungOriginalPrice={0} // Sarung is always free in pairing
+                            variant="cart"
+                            showPricing={false} // Don't show pricing in the indicator itself
+                          />
+                        ) : (
+                          <h4 className="text-sm font-medium text-gray-900 truncate">
+                            {item.product.name}
+                          </h4>
+                        )}
+                        
+                        {/* Product details */}
+                        <p className="text-xs text-gray-600 mt-1">
                           {item.productSizeId && item.selectedSize && (
                             <span className="ml-1 font-medium text-yellow-700">
-                              • Size: {item.selectedSize.size} ({item.selectedSize.ageCategory})
+                            • Size: {item.selectedSize.size} ({item.selectedSize.ageCategory})
                             </span>
                           )}
                           {/* Fallback: Show size info if selectedSize is missing but productSizeId exists */}
@@ -566,8 +945,15 @@ export function ProductSelectionStep({
                             </span>
                           )}
                         </p>
-                        <p className="text-xs text-gray-600">
+                        
+                        {/* Price with clean pairing indication */}
+                        <p className="text-xs text-gray-600 mt-1">
                           {formatCurrency(item.product.pricePerDay)}/4 hari
+                          {item.linkedSarung && (
+                            <span className="ml-2 text-green-600 font-medium">
+                              + {item.linkedSarung.product?.code || 'Sarung'} GRATIS
+                            </span>
+                          )}
                         </p>
 
                         {/* Quantity Controls */}
@@ -583,16 +969,17 @@ export function ProductSelectionStep({
                                 item.product.id,
                                 item.quantity - 1,
                                 item.productSizeId,
+                                item.linkedSarung?.productId,
                               )
                             }
                             className="h-6 w-6 p-0"
-                            data-testid={`cart-item-decrease-${item.product.id}-${item.productSizeId || 'no-size'}`}
+                            data-testid={`cart-item-decrease-${item.product.id}-${item.productSizeId || 'no-size'}-${item.linkedSarung?.productId || 'no-sarung'}`}
                           >
                             <Minus className="h-3 w-3" />
                           </Button>
                           <span
                             className="text-sm font-medium w-8 text-center"
-                            data-testid={`cart-item-quantity-${item.product.id}-${item.productSizeId || 'no-size'}`}
+                            data-testid={`cart-item-quantity-${item.product.id}-${item.productSizeId || 'no-size'}-${item.linkedSarung?.productId || 'no-sarung'}`}
                           >
                             {item.quantity}
                           </span>
@@ -604,19 +991,20 @@ export function ProductSelectionStep({
                                 item.product.id,
                                 item.quantity + 1,
                                 item.productSizeId,
+                                item.linkedSarung?.productId,
                               )
                             }
                             className="h-6 w-6 p-0"
-                            data-testid={`cart-item-increase-${item.product.id}-${item.productSizeId || 'no-size'}`}
+                            data-testid={`cart-item-increase-${item.product.id}-${item.productSizeId || 'no-size'}-${item.linkedSarung?.productId || 'no-sarung'}`}
                           >
                             <Plus className="h-3 w-3" />
                           </Button>
                           <Button
                             size="sm"
                             variant="ghost"
-                            onClick={() => onRemoveProduct(item.product.id, item.productSizeId)}
+                            onClick={() => onRemoveProduct(item.product.id, item.productSizeId, item.linkedSarung?.productId)}
                             className="h-6 w-6 p-0 text-red-500 hover:text-red-700 ml-auto"
-                            data-testid={`cart-item-remove-${item.product.id}-${item.productSizeId || 'no-size'}`}
+                            data-testid={`cart-item-remove-${item.product.id}-${item.productSizeId || 'no-size'}-${item.linkedSarung?.productId || 'no-sarung'}`}
                           >
                             <X className="h-3 w-3" />
                           </Button>
@@ -669,6 +1057,19 @@ export function ProductSelectionStep({
         isOpen={historyPopup.isOpen}
         onClose={closeHistoryPopup}
       />
+
+      {/* Sarung Selection Modal */}
+      {sarungModal.jasProduct && (
+        <SarungSelectionModal
+          isOpen={sarungModal.isOpen}
+          onClose={closeSarungModal}
+          jasProduct={sarungModal.jasProduct}
+          jasQuantity={sarungModal.jasQuantity}
+          jasProductSizeId={sarungModal.jasProductSizeId} // ✅ ADDED: Pass jasProductSizeId prop
+          onConfirmSelection={handleSarungSelection}
+          onOpenHistory={openHistoryPopup}
+        />
+      )}
     </div>
   )
 }

@@ -93,7 +93,27 @@ export const createTransaksiItemSchema = z.object({
   durasi: z.number().int().refine(val => val === 4 || val === 7, {
     message: 'Durasi harus 4 atau 7 hari'
   }),
-  kondisiAwal: z.string().max(500, 'Kondisi awal maksimal 500 karakter').optional()
+  kondisiAwal: z.string().max(500, 'Kondisi awal maksimal 500 karakter').optional(),
+  // TASK 22: Add linkedSarung field for jas-sarung pairing support
+  linkedSarung: z.object({
+    productId: z.string().uuid('ID produk sarung tidak valid'),
+    productSizeId: z.string().uuid('ID ukuran sarung tidak valid'),
+    quantity: z.number().int().min(1, 'Jumlah sarung minimal 1').max(100, 'Jumlah sarung maksimal 100'),
+    selectedSize: z.object({
+      id: z.string().uuid('ID ukuran tidak valid'),
+      productId: z.string().uuid('ID produk tidak valid').optional(), // Optional - not always provided by frontend
+      size: z.string().min(1, 'Ukuran tidak boleh kosong'),
+      ageCategory: z.enum(['ADULT', 'TEEN', 'CHILD'], { message: 'Kategori usia tidak valid' }),
+      quantity: z.number().int().min(0, 'Kuantitas tidak boleh negatif'),
+      availableQuantity: z.number().int().min(0, 'Kuantitas tersedia tidak boleh negatif'),
+      rentedStock: z.number().int().min(0, 'Stok tersewa tidak boleh negatif').optional(), // Optional - not always provided by frontend
+      createdAt: z.string().datetime('Format tanggal tidak valid').optional(), // Optional - frontend may not provide
+      updatedAt: z.string().datetime('Format tanggal tidak valid').optional(), // Optional - frontend may not provide
+      color: z.string().optional(), // Optional - frontend may provide this field
+      originalQuantity: z.number().int().min(0, 'Kuantitas asli tidak boleh negatif').optional(), // Optional - frontend may provide
+      rentedQuantity: z.number().int().min(0, 'Kuantitas tersewa tidak boleh negatif').optional() // Optional - frontend may provide
+    })
+  }).optional() // Optional field for non-jas products
 })
 
 // Legacy schema for backward compatibility
@@ -126,7 +146,7 @@ export const createTransaksiSchema = z.object({
     .string()
     .datetime('Format tanggal selesai tidak valid (ISO 8601)')
     .optional(),
-  metodeBayar: z.enum(['tunai', 'transfer', 'kartu']).default('tunai'),
+  metodeBayar: z.enum(['tunai', 'bca', 'bri', 'mandiri', 'qris']).default('tunai'),
   catatan: z.string().max(1000, 'Catatan maksimal 1000 karakter').optional(),
   // New fields for discount system
   discountType: z.enum(['percent', 'nominal']).optional().nullable(),
@@ -187,7 +207,7 @@ export const createTransaksiLegacySchema = z.object({
     .string()
     .datetime('Format tanggal selesai tidak valid (ISO 8601)')
     .optional(),
-  metodeBayar: z.enum(['tunai', 'transfer', 'kartu']).default('tunai'),
+  metodeBayar: z.enum(['tunai', 'bca', 'bri', 'mandiri', 'qris']).default('tunai'),
   catatan: z.string().max(1000, 'Catatan maksimal 1000 karakter').optional()
 }).refine((data) => {
   if (data.tglSelesai) {
@@ -209,6 +229,7 @@ export const updateTransaksiSchema = z.object({
   status: z.enum(['active', 'diambil', 'selesai', 'terlambat', 'cancelled', 'pending_resolution']).optional(),
   tglKembali: z.string().datetime('Format tanggal kembali tidak valid (ISO 8601)').optional(),
   catatan: z.string().max(1000, 'Catatan maksimal 1000 karakter').optional(),
+  kasirId: z.string().uuid('Format kasir ID tidak valid').optional(), // ✅ NEW: For manual kasir selection
   items: z.array(updateTransaksiItemSchema).optional()
 })
 
@@ -234,8 +255,7 @@ export const transaksiQuerySchema = z.object({
 export const createPembayaranSchema = z.object({
   transaksiKode: z.string().min(1, 'Kode transaksi tidak boleh kosong'),
   jumlah: z.number().positive('Jumlah pembayaran harus lebih dari 0'),
-  metode: z.enum(['tunai', 'transfer', 'kartu']),
-  referensi: z.string().max(100, 'Referensi maksimal 100 karakter').optional(),
+  metode: z.enum(['tunai', 'bca', 'bri', 'mandiri', 'qris']),
   catatan: z.string().max(500, 'Catatan maksimal 500 karakter').optional()
 })
 
@@ -327,7 +347,7 @@ export const transactionFormSchema = z.object({
     }, {
       message: 'Tanggal mulai tidak boleh di masa lalu'
     }),
-  metodeBayar: z.enum(['tunai', 'transfer', 'kartu']).default('tunai'),
+  metodeBayar: z.enum(['tunai', 'bca', 'bri', 'mandiri', 'qris']).default('tunai'),
   catatan: z.string().max(1000, 'Catatan maksimal 1000 karakter').optional(),
   // UI-specific fields for form state management
   duration: z.number().refine(val => val === 4 || val === 7, {

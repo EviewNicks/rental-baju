@@ -10,6 +10,10 @@
 // CORE TYPES & ENUMS
 // ==========================================
 
+// UI-specific types for 2-level payment method selection
+export type PrimaryPaymentMethod = 'tunai' | 'bank'
+export type BankPaymentMethod = 'bca' | 'bri' | 'mandiri' | 'qris'
+
 export type TransactionStatus =
   | 'active'
   | 'diambil'
@@ -17,7 +21,7 @@ export type TransactionStatus =
   | 'terlambat'
   | 'cancelled'
   | 'pending_resolution'
-export type PaymentMethod = 'tunai' | 'transfer' | 'kartu' | 'penalty'
+export type PaymentMethod = 'tunai' | 'bca' | 'bri' | 'mandiri' | 'qris' | 'penalty'
 export type ActivityType = 'dibuat' | 'dibayar' | 'diambil' | 'selesai' | 'terlambat' | 'dibatalkan'
 export type ReturnStatus = 'belum' | 'sebagian' | 'lengkap'
 export type TransactionStep = 1 | 2 | 3 | 4
@@ -185,14 +189,18 @@ export interface ProductWithStock extends ProductCore {
 // ProductSize interface for size-aware inventory (RPK-51)
 export interface ProductSize {
   id: string
-  productId: string
+  productId?: string // Optional - not always provided by frontend
   ageCategory: 'ADULT' | 'TEEN' | 'CHILD'
   size: string // 'S', 'M', 'L', 'XL', etc.
   quantity: number
   availableQuantity: number // Size-specific available stock
-  rentedStock: number
-  createdAt: string
-  updatedAt: string
+  rentedStock?: number // Optional - not always provided by frontend
+  createdAt?: string // Optional - frontend may not provide
+  updatedAt?: string // Optional - frontend may not provide
+  // Additional optional fields that frontend may provide
+  color?: string
+  originalQuantity?: number
+  rentedQuantity?: number
 }
 
 // Legacy Product interface for backward compatibility
@@ -224,6 +232,39 @@ export interface ProductSelection {
   // Size-aware fields (RPK-51) - Optional for backward compatibility
   productSizeId?: string // Selected size ID for API request
   selectedSize?: ProductSize // Full size info for UI display
+
+  // Jas-Sarung pairing fields - Optional for backward compatibility
+  linkedSarung?: LinkedSarung // Sarung linked to jas product
+}
+
+// Jas-Sarung pairing types
+export interface LinkedSarung {
+  productId: string
+  productSizeId: string
+  quantity: number
+  selectedSize: ProductSize
+}
+
+// Task 18: Enhanced Modal with Quantity Distribution
+export interface SarungDistribution {
+  sarungSelections: Array<{
+    product: Product
+    quantity: number
+    productSizeId?: string
+    selectedSize?: ProductSize
+  }>
+  totalDistributed: number
+  remainingJas: number
+}
+
+// Enhanced LinkedSarung with product reference for Task 3 (sarung code display)
+export interface LinkedSarung {
+  productId: string
+  productSizeId: string
+  quantity: number
+  selectedSize: ProductSize
+  // ✅ TASK 3: Add product reference for sarung code display
+  product?: Product // Optional for backward compatibility
 }
 
 export interface ProductFilters {
@@ -362,6 +403,7 @@ export interface ActivityLog {
     | 'overdue'
     | 'reminder_sent'
     | 'penalty_added'
+    | 'cancelled'  // ✅ ADDED: Support for cancelled activities
   description: string
   performedBy: string
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -380,7 +422,7 @@ export interface Penalty {
 export interface Payment {
   id: string
   amount: number
-  method: 'cash' | 'qris' | 'transfer' | 'penalty'
+  method: 'tunai' | 'bca' | 'bri' | 'mandiri' | 'qris' | 'penalty'
   timestamp: string
   type: 'rental' | 'penalty' | 'deposit'
   reference?: string
@@ -400,6 +442,7 @@ export interface TransactionDetail extends Transaction {
     duration: number
     subtotal: number
     sizeInfo?: string // Size information for display
+    kondisiAwal?: string | null // Condition data for pairing integration
     // ✅ Multi-condition summary for lost item resolution
     multiConditionSummary?: {
       totalPenalty: number
@@ -428,6 +471,27 @@ export interface TransactionDetail extends Transaction {
       createdAt?: string
       createdBy?: string
     }>
+    // RPK-51: Add kondisiAwal for AgeSizes parsing - REMOVED: Duplicate declaration
+    // kondisiAwal is already declared above with proper pairing integration support
+    // TASK 23: Add linkedSarung data for separate sarung display
+    linkedSarung?: {
+      productId: string
+      productSizeId: string
+      quantity: number
+      product?: {
+        id: string
+        code: string
+        name: string
+        category: string
+        image?: string
+        imageUrl?: string
+      }
+      selectedSize?: {
+        id: string
+        size: string
+        ageCategory: string
+      }
+    }
   }>
   timeline: ActivityLog[]
   penalties?: Penalty[]
@@ -443,7 +507,7 @@ export interface TransactionFormData {
   products: ProductSelection[]
   pickupDate: string
   returnDate: string
-  paymentMethod: 'cash' | 'qris' | 'transfer'
+  paymentMethod: 'tunai' | 'bca' | 'bri' | 'mandiri' | 'qris'
   paymentAmount: number
   paymentStatus: 'paid' | 'unpaid'
   notes?: string
@@ -521,6 +585,13 @@ export interface CreateTransaksiItemSizeAware {
   jumlah: number
   durasi: number // dalam hari
   kondisiAwal?: string
+  // ✅ TASK 20: Add linked sarung support for jas-sarung pairing
+  linkedSarung?: {
+    productId: string
+    productSizeId: string
+    quantity: number
+    selectedSize: ProductSize
+  }
 }
 
 // Legacy transaction item format (backward compatibility)
@@ -529,6 +600,13 @@ export interface CreateTransaksiItemLegacy {
   jumlah: number
   durasi: number // dalam hari
   kondisiAwal?: string
+  // ✅ TASK 20: Add linked sarung support for backward compatibility
+  linkedSarung?: {
+    productId: string
+    productSizeId: string
+    quantity: number
+    selectedSize: ProductSize
+  }
 }
 
 // Type guard to detect size-aware items
@@ -566,6 +644,7 @@ export interface UpdateTransaksiRequest {
   status?: TransactionStatus
   tglKembali?: string // ISO date string
   catatan?: string
+  kasirId?: string // ✅ NEW: For manual kasir selection in refund processing
   items?: Array<{
     id: string
     kondisiAkhir?: string
@@ -594,6 +673,24 @@ export interface TransaksiItemResponse {
   kondisiAwal?: string
   kondisiAkhir?: string
   statusKembali: ReturnStatus
+  // ✅ TASK 6: Add linkedSarung property for jas-sarung pairing integration
+  linkedSarung?: {
+    productId: string
+    productSizeId: string
+    quantity: number
+    product?: {
+      id: string
+      code: string
+      name: string
+      category?: string
+      imageUrl?: string
+    }
+    selectedSize?: {
+      id: string
+      size: string
+      ageCategory: string
+    }
+  }
 }
 
 export interface PembayaranResponse {
@@ -871,7 +968,7 @@ export function sanitizePenyewaInput(input: Record<string, unknown>): Record<str
  * Sanitize general text input
  * Removes HTML tags, normalizes whitespace, and trims
  */
-function sanitizeTextInput(input: string): string {
+export function sanitizeTextInput(input: string): string {
   return input
     .replace(/<[^>]*>/g, '') // Remove HTML tags
     .replace(/[<>'"&]/g, '') // Remove potentially dangerous characters
@@ -1311,6 +1408,21 @@ export interface UnifiedConditionFormProps {
   onChange: (condition: EnhancedItemCondition) => void
   disabled?: boolean
   isLoading?: boolean
+  remainingQuantity?: number // Add remaining quantity prop for accurate default calculation
+  pairingInfo?: {
+    isPaired: boolean
+    isJas: boolean
+    linkedSarungData?: {
+      productId: string
+      productSizeId: string
+      quantity: number
+      product?: {
+        name: string
+        code: string
+      }
+    }
+    displayName?: string
+  } // Add pairing information for UI display
 }
 
 export type ReturnProcessingResult = EnhancedReturnProcessingResult
@@ -1323,3 +1435,70 @@ export const PENALTY_RATES = {
   'rusak berat': 50000,
   hilang: 'modal_awal',
 } as const
+
+// ==========================================
+// REFUND PROCESSING TYPES - Task 6
+// ==========================================
+
+/**
+ * Enhanced Activity Log Data Structure for Cancel Transaction Refund
+ * Extends existing activity data with refund tracking fields
+ */
+export interface CancelActivityData {
+  // Existing fields
+  previousStatus: string
+  newStatus: 'cancelled'
+  reason: string | null
+  totalAmount: string
+  amountPaid: string
+  remainingAmount: string
+  itemsCount: number
+  stockRestored: boolean
+  cancelledAt: string
+  
+  // ✅ NEW: Refund tracking fields
+  needsRefund: boolean // false when refund processed, true when pending
+  refundProcessed?: boolean // true when refund completed
+  refundAmount?: number // actual refund amount
+  expenseRecordCreated?: boolean // true when expense record created
+  refundCategory?: string // 'Refund Pembatalan Transaksi'
+  refundError?: string // error message if refund failed
+}
+
+/**
+ * Refund Status Types
+ */
+export type RefundStatus = 'pending' | 'completed' | 'failed'
+
+/**
+ * Refund Activity Data - Subset of CancelActivityData for refund-specific operations
+ */
+export interface RefundActivityData {
+  refundProcessed: boolean
+  refundAmount?: number
+  expenseRecordCreated?: boolean
+  refundError?: string
+}
+
+/**
+ * Refund Expense Record Structure
+ */
+export interface RefundExpenseRecord {
+  kasirId: string // Processing kasir
+  harga: number // Positive refund amount (Decimal converted to number for UI)
+  kategori: 'Refund Pembatalan Transaksi' // Fixed category
+  deskripsi: string // "Refund pembatalan transaksi #[code] - [customer]"
+  createdBy: string // User who processed cancellation
+  isActive: true // Always active for refunds
+}
+
+/**
+ * Refund Payment Record Structure
+ */
+export interface RefundPaymentRecord {
+  transaksiId: string // Original transaction
+  jumlah: number // Negative amount (refund) - Decimal converted to number for UI
+  metode: 'refund' // Fixed method
+  catatan: string // "Refund pembatalan transaksi: [reason]"
+  createdBy: string // User who processed cancellation
+}

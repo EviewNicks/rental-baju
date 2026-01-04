@@ -94,7 +94,7 @@ export const mockTransactionDetail: Record<string, TransactionDetail> = {
       {
         id: '1',
         amount: 250000,
-        method: 'cash',
+        method: 'tunai',
         timestamp: '2024-12-01T09:15:00Z',
         type: 'rental',
       },

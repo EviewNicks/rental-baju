@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { X, Package, AlertCircle, Loader2, History, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -64,6 +64,12 @@ export function ProductHistoryPopup({
   const [error, setError] = useState<AvailabilityError | null>(null)
   const [retryCount, setRetryCount] = useState(0)
   const [isRetrying, setIsRetrying] = useState(false)
+
+  // Debug wrapper for onClose
+  const handleClose = useCallback(() => {
+    console.log('ProductHistoryPopup handleClose called')
+    onClose()
+  }, [onClose])
 
   // Helper function to safely render suggestions
   const renderSuggestions = (error: AvailabilityError) => {
@@ -168,13 +174,8 @@ export function ProductHistoryPopup({
         endDate: new Date(item.endDate)
       }))
 
-      console.log('ProductHistoryPopup: Parsed data:', {
-        productSizeId,
-        rawData: result.data,
-        parsedData,
-        totalResults: result.metadata?.totalResults
-      })
-
+      // Debug logging removed for production
+      
       setHistoryData(parsedData)
       setRetryCount(0) // Reset retry count on success
       setIsRetrying(false)
@@ -223,6 +224,25 @@ export function ProductHistoryPopup({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, productSizeId])
 
+  // Handle ESC key to close modal
+  useEffect(() => {
+    const handleEscKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && isOpen) {
+        console.log('ProductHistoryPopup ESC key pressed') // Debug log
+        event.preventDefault()
+        event.stopPropagation()
+        handleClose()
+      }
+    }
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscKey, true) // Use capture phase
+      return () => {
+        document.removeEventListener('keydown', handleEscKey, true)
+      }
+    }
+  }, [isOpen, handleClose])
+
   // Enhanced retry with exponential backoff and proper error handling
   const handleRetry = async () => {
     if (!error || !shouldRetry(error, retryCount + 1)) {
@@ -263,8 +283,23 @@ export function ProductHistoryPopup({
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
+    <div 
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
+      onClick={(e) => {
+        console.log('ProductHistoryPopup backdrop clicked', e.target === e.currentTarget) // Debug log
+        // Only close if clicking the backdrop, not the modal content
+        if (e.target === e.currentTarget) {
+          handleClose()
+        }
+      }}
+    >
+      <div 
+        className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden"
+        onClick={(e) => {
+          // Prevent backdrop click when clicking inside modal
+          e.stopPropagation()
+        }}
+      >
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
           <div className="flex items-center gap-3">
@@ -281,8 +316,14 @@ export function ProductHistoryPopup({
           <Button
             variant="ghost"
             size="sm"
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
+            onClick={(e) => {
+              console.log('ProductHistoryPopup close button clicked') // Debug log
+              e.preventDefault()
+              e.stopPropagation()
+              handleClose()
+            }}
+            className="text-gray-500 hover:text-gray-700 z-10 relative pointer-events-auto"
+            style={{ pointerEvents: 'auto' }}
           >
             <X className="h-5 w-5" />
           </Button>
@@ -373,10 +414,15 @@ export function ProductHistoryPopup({
                   {!error.retryable && (
                     <div className="space-y-2">
                       <Button
-                        onClick={onClose}
+                        onClick={(e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          handleClose()
+                        }}
                         variant="outline"
                         size="sm"
-                        className="text-gray-600 border-gray-200 hover:bg-gray-50"
+                        className="text-gray-600 border-gray-200 hover:bg-gray-50 z-10 relative pointer-events-auto"
+                        style={{ pointerEvents: 'auto' }}
                       >
                         Tutup
                       </Button>
@@ -458,10 +504,16 @@ export function ProductHistoryPopup({
         <div className="border-t border-gray-200 p-4 bg-gray-50">
           <div className="flex items-center text-xs text-gray-500">
             <Button
-              onClick={onClose}
+              onClick={(e) => {
+                console.log('ProductHistoryPopup footer close button clicked') // Debug log
+                e.preventDefault()
+                e.stopPropagation()
+                handleClose()
+              }}
               variant="outline"
               size="sm"
-              className="text-gray-600"
+              className="text-gray-600 z-10 relative pointer-events-auto"
+              style={{ pointerEvents: 'auto' }}
             >
               Tutup
             </Button>

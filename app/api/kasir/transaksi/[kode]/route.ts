@@ -186,8 +186,39 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       )
     }
 
-    // Initialize transaksi service
-    const transaksiService = new TransaksiService(prisma, user.id)
+    // Initialize transaksi service with kasir from request body
+    // ✅ UPDATED: Get kasirId from request body (manual selection)
+    const kasirId = validatedData.kasirId || null
+    
+    // ✅ UPDATED: Add validation for paid transactions requiring kasir
+    if (validatedData.status === 'cancelled') {
+      const existingTransaksi = await prisma.transaksi.findUnique({
+        where: paramType === 'uuid' ? { id: kode } : { kode },
+        select: { jumlahBayar: true },
+      })
+      
+      const isPaidTransaction = existingTransaksi && existingTransaksi.jumlahBayar.toNumber() > 0
+      
+      if (isPaidTransaction && !kasirId) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              message: 'Kasir selection is required for paid transaction cancellation',
+              code: 'KASIR_REQUIRED'
+            }
+          },
+          { status: 400 }
+        )
+      }
+    }
+    
+    // Create service with kasirId from request (needed for refund processing)
+    const transaksiService = new TransaksiService(
+      prisma, 
+      user.id, 
+      kasirId || undefined // Convert null to undefined for TypeScript
+    )
 
     // Get current transaction using appropriate method
     const currentTransaksi = paramType === 'uuid' 
@@ -263,6 +294,21 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
             }
           },
           { status: 409 }
+        )
+      }
+
+      // ✅ NEW: Kasir-related errors for refund processing
+      if (error.message.includes('KasirId diperlukan') || 
+          error.message.includes('Kasir tidak ditemukan')) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              message: 'Kasir information required for refund processing. Please ensure you are logged in as an active kasir.',
+              code: 'KASIR_REQUIRED'
+            }
+          },
+          { status: 400 }
         )
       }
 

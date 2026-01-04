@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -9,7 +9,10 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { CheckCircle, XCircle, AlertTriangle } from 'lucide-react'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Label } from '@/components/ui/label'
+import { CheckCircle, XCircle, AlertTriangle, Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
 import { CancelForm } from './CancelForm'
 import { useCancelTransaction } from '../../hooks/useCancelTransaction'
 import { formatCurrency } from '../../lib/utils/client'
@@ -23,9 +26,18 @@ interface CancelModalProps {
 
 type ModalStep = 'input' | 'confirm' | 'success' | 'error'
 
+interface Kasir {
+  id: string
+  nama: string
+  isActive: boolean
+}
+
 export function CancelModal({ isOpen, onClose, transaction }: CancelModalProps) {
   const [step, setStep] = useState<ModalStep>('input')
   const [reason, setReason] = useState('')
+  const [kasirId, setKasirId] = useState<string>('')
+  const [kasirList, setKasirList] = useState<Kasir[]>([])
+  const [isLoadingKasir, setIsLoadingKasir] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
 
   const { cancelTransaction, isProcessing, error, isSuccess, reset } = useCancelTransaction(
@@ -45,10 +57,42 @@ export function CancelModal({ isOpen, onClose, transaction }: CancelModalProps) 
     },
   )
 
+  // ✅ NEW: Fetch kasir list when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      fetchKasirList()
+    }
+  }, [isOpen])
+
+  const fetchKasirList = async () => {
+    setIsLoadingKasir(true)
+    try {
+      const response = await fetch('/api/kasir/kasir?limit=100&isActive=true')
+      if (!response.ok) {
+        throw new Error('Gagal mengambil daftar kasir')
+      }
+      const result = await response.json()
+      
+      // API returns: { success: true, data: { data: [...], pagination: {...}, summary: {...} } }
+      const kasirData = result.data?.data || []
+      
+      // Filter only active kasirs
+      const activeKasirs = kasirData.filter((kasir: Kasir) => kasir.isActive)
+      
+      setKasirList(activeKasirs)
+    } catch (error) {
+      console.error('Error fetching kasir list:', error)
+      toast.error('Gagal mengambil daftar kasir')
+    } finally {
+      setIsLoadingKasir(false)
+    }
+  }
+
   const handleClose = () => {
     setShowSuccess(false)
     setStep('input')
     setReason('')
+    setKasirId('')
     reset()
     onClose()
   }
@@ -59,7 +103,16 @@ export function CancelModal({ isOpen, onClose, transaction }: CancelModalProps) 
   }
 
   const handleConfirmCancel = () => {
-    cancelTransaction(reason)
+    // ✅ NEW: Validate kasir selection for paid transactions
+    const isPaidTransaction = transaction.amountPaid > 0
+    
+    if (isPaidTransaction && !kasirId) {
+      toast.error('Pilih kasir terlebih dahulu untuk transaksi yang sudah dibayar')
+      return
+    }
+    
+    // Pass kasirId to cancellation request
+    cancelTransaction(reason, kasirId)
   }
 
   const handleBack = () => {
@@ -82,7 +135,7 @@ export function CancelModal({ isOpen, onClose, transaction }: CancelModalProps) 
             </p>
             <div className="bg-green-50 border border-green-200 rounded-lg p-3">
               <div className="text-sm">
-                <p className="text-green-900 font-medium">Stock telah dikembalikan</p>
+                <p className="text-green-900 font-medium">Transaksi berhasil dibatalkan</p>
                 <p className="text-green-700 mt-1">
                   Alasan: {reason.length > 50 ? `${reason.substring(0, 50)}...` : reason}
                 </p>
@@ -170,6 +223,41 @@ export function CancelModal({ isOpen, onClose, transaction }: CancelModalProps) 
               <p className="text-sm text-yellow-700">{reason}</p>
             </div>
 
+            {/* ✅ NEW: Kasir Selection for Paid Transactions */}
+            {transaction.amountPaid > 0 && (
+              <div className="space-y-2">
+                <Label htmlFor="kasir" className="text-sm font-semibold text-gray-900">
+                  Pilih Kasir untuk Refund <span className="text-red-500">*</span>
+                </Label>
+                {isLoadingKasir ? (
+                  <div className="flex items-center gap-2 p-3 border rounded-lg bg-gray-50">
+                    <Loader2 className="h-4 w-4 animate-spin text-gray-500" />
+                    <span className="text-sm text-gray-600">Memuat daftar kasir...</span>
+                  </div>
+                ) : (
+                  <Select value={kasirId} onValueChange={setKasirId}>
+                    <SelectTrigger id="kasir" className="w-full">
+                      <SelectValue placeholder="Pilih kasir untuk expense tracking" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {kasirList.length === 0 ? (
+                        <div className="p-2 text-sm text-gray-500">Tidak ada kasir aktif</div>
+                      ) : (
+                        kasirList.map((kasir) => (
+                          <SelectItem key={kasir.id} value={kasir.id}>
+                            {kasir.nama}
+                          </SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                )}
+                <p className="text-xs text-gray-500">
+                  Kasir yang dipilih akan digunakan untuk mencatat pengeluaran refund
+                </p>
+              </div>
+            )}
+
             {/* Warning */}
             <div className="bg-red-50 border border-red-200 rounded-lg p-3">
               <p className="text-sm text-red-700 font-medium">
@@ -177,8 +265,10 @@ export function CancelModal({ isOpen, onClose, transaction }: CancelModalProps) 
               </p>
               <ul className="text-xs text-red-600 mt-2 space-y-1 ml-4 list-disc">
                 <li>Status transaksi akan diubah menjadi DIBATALKAN</li>
-                <li>Stock produk akan dikembalikan ke inventory</li>
                 <li>Transaksi tidak akan dihitung dalam revenue</li>
+                {transaction.amountPaid > 0 && (
+                  <li>Refund akan diproses otomatis jika kasir dipilih</li>
+                )}
               </ul>
             </div>
 

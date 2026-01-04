@@ -23,10 +23,13 @@ export function generateProductKey(
  * Generate cart item key for React list rendering
  * @param productId - Product ID
  * @param productSizeId - Optional ProductSize ID
+ * @param linkedSarungProductId - Optional LinkedSarung Product ID for differentiation
  * @returns Unique cart item key
  */
-export function generateCartItemKey(productId: string, productSizeId?: string): string {
-  return generateProductKey(productId, productSizeId, 'cart')
+export function generateCartItemKey(productId: string, productSizeId?: string, linkedSarungProductId?: string): string {
+  const baseKey = productSizeId ? `${productId}-${productSizeId}` : `${productId}-no-size`
+  const sarungKey = linkedSarungProductId ? `-sarung-${linkedSarungProductId}` : '-no-sarung'
+  return `${baseKey}${sarungKey}-cart`
 }
 
 /**

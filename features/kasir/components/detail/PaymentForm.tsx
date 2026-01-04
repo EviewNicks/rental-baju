@@ -1,50 +1,29 @@
 'use client'
 
 import { useForm } from 'react-hook-form'
-import { useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Loader2, AlertTriangle, Info } from 'lucide-react'
-import { usePaymentMethods } from '../../hooks/usePaymentProcessing'
+import { Loader2, AlertTriangle, Banknote, CreditCard, Smartphone } from 'lucide-react'
 import { formatCurrency } from '../../lib/utils/client'
+import type { PrimaryPaymentMethod, BankPaymentMethod } from '../../types'
 
 // Payment form validation schema
-const paymentFormSchema = z
-  .object({
-    jumlah: z
-      .number()
-      .positive('Jumlah pembayaran harus lebih dari 0')
-      .min(1000, 'Jumlah pembayaran minimal Rp 1.000'),
-    metode: z.enum(['tunai', 'transfer', 'kartu'], {
-      message: 'Pilih metode pembayaran',
-    }),
-    referensi: z.string().optional(),
-    catatan: z.string().max(500, 'Catatan maksimal 500 karakter').optional(),
-  })
-  .refine(
-    (data) => {
-      // Reference is required for transfer and kartu methods
-      if ((data.metode === 'transfer' || data.metode === 'kartu') && !data.referensi?.trim()) {
-        return false
-      }
-      return true
-    },
-    {
-      message: 'Nomor referensi wajib diisi untuk metode transfer dan QRIS/Kartu',
-      path: ['referensi'],
-    },
-  )
+const paymentFormSchema = z.object({
+  jumlah: z
+    .number()
+    .positive('Jumlah pembayaran harus lebih dari 0')
+    .min(1000, 'Jumlah pembayaran minimal Rp 1.000'),
+  metode: z.enum(['tunai', 'bca', 'bri', 'mandiri', 'qris'], {
+    message: 'Pilih metode pembayaran',
+  }),
+  catatan: z.string().max(500, 'Catatan maksimal 500 karakter').optional(),
+})
 
 type PaymentFormData = z.infer<typeof paymentFormSchema>
 
@@ -63,45 +42,64 @@ export function PaymentForm({
   onSubmit,
   onCancel,
 }: PaymentFormProps) {
-  const { paymentMethods } = usePaymentMethods()
+  // 2-level selection state
+  const [primaryMethod, setPrimaryMethod] = useState<PrimaryPaymentMethod>('tunai')
+  const [bankMethod, setBankMethod] = useState<BankPaymentMethod>()
 
   const form = useForm<PaymentFormData>({
     resolver: zodResolver(paymentFormSchema),
     defaultValues: {
       jumlah: remainingAmount,
       metode: 'tunai',
-      referensi: '',
       catatan: '',
     },
   })
 
-  const selectedMethod = form.watch('metode')
-  const selectedMethodInfo = paymentMethods.find((m) => m.value === selectedMethod)
-  const referensiInputRef = useRef<HTMLInputElement>(null)
-
-  // Reset referensi field when switching to tunai method
-  useEffect(() => {
-    if (selectedMethod === 'tunai') {
-      form.setValue('referensi', '', { shouldValidate: true })
-      form.clearErrors('referensi')
+  // Handle primary method change
+  const handlePrimaryMethodChange = (value: PrimaryPaymentMethod) => {
+    setPrimaryMethod(value)
+    
+    if (value === 'tunai') {
+      // If tunai selected, set form value directly
+      form.setValue('metode', 'tunai')
+      setBankMethod(undefined)
+    } else {
+      // If bank selected, wait for bank method selection
+      // Don't set form value yet
     }
-  }, [selectedMethod, form])
+  }
 
-  // Focus management and screen reader announcements
+  // Handle bank method change
+  const handleBankMethodChange = (value: BankPaymentMethod) => {
+    setBankMethod(value)
+    form.setValue('metode', value)
+  }
+
+  // Initialize UI state from form value
   useEffect(() => {
-    if (selectedMethodInfo?.requiresReference && referensiInputRef.current) {
-      // Focus on referensi field when it becomes required
-      setTimeout(() => {
-        referensiInputRef.current?.focus()
-      }, 300) // Wait for transition to complete
+    const currentMethod = form.watch('metode')
+    if (currentMethod === 'tunai') {
+      setPrimaryMethod('tunai')
+      setBankMethod(undefined)
+    } else if (['bca', 'bri', 'mandiri', 'qris'].includes(currentMethod)) {
+      setPrimaryMethod('bank')
+      setBankMethod(currentMethod as BankPaymentMethod)
     }
-  }, [selectedMethodInfo?.requiresReference])
+  }, [form])
 
   const handleSubmit = (data: PaymentFormData) => {
     // Additional validation for amount
     if (data.jumlah > remainingAmount) {
       form.setError('jumlah', {
         message: `Jumlah pembayaran tidak boleh melebihi sisa tagihan (${formatCurrency(remainingAmount)})`,
+      })
+      return
+    }
+
+    // Validate payment method selection
+    if (primaryMethod === 'bank' && !bankMethod) {
+      form.setError('metode', {
+        message: 'Pilih bank atau QRIS untuk pembayaran non-tunai',
       })
       return
     }
@@ -146,83 +144,100 @@ export function PaymentForm({
         </div>
       </div>
 
-      {/* Payment Method */}
-      <div className="space-y-2">
-        <Label htmlFor="metode">Metode Pembayaran</Label>
-        <Select
-          value={selectedMethod}
-          onValueChange={(value) => {
-            form.setValue('metode', value as 'tunai' | 'transfer' | 'kartu')
-            // Clear referensi when switching to tunai
-            if (value === 'tunai') {
-              form.setValue('referensi', '')
-              form.clearErrors('referensi')
-            }
-          }}
-        >
-          <SelectTrigger aria-label="Pilih metode pembayaran">
-            <SelectValue placeholder="Pilih metode pembayaran" />
-          </SelectTrigger>
-          <SelectContent>
-            {paymentMethods.map((method) => (
-              <SelectItem
-                key={method.value}
-                value={method.value}
-                aria-label={`${method.label}${method.requiresReference ? ', memerlukan nomor referensi' : ''}`}
-              >
-                <div className="flex items-center justify-between w-full">
-                  <span>{method.label}</span>
-                  {method.requiresReference && (
-                    <span className="text-xs text-gray-500 ml-2">*Referensi</span>
-                  )}
-                </div>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      {/* Payment Method - 2-Level Selection */}
+      <div className="space-y-4">
+        <Label className="text-sm font-medium text-gray-700">Metode Pembayaran</Label>
+        
+        {/* Primary Level Selection */}
+        <div className="space-y-3">
+          <Label className="text-xs font-medium text-gray-600 uppercase tracking-wide">
+            Pilih Kategori Pembayaran
+          </Label>
+          <RadioGroup
+            value={primaryMethod}
+            onValueChange={handlePrimaryMethodChange}
+            className="grid grid-cols-1 md:grid-cols-2 gap-3"
+          >
+            <div className="flex items-center space-x-3 border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+              <RadioGroupItem value="tunai" id="primary-tunai" />
+              <Label htmlFor="primary-tunai" className="flex items-center gap-2 cursor-pointer flex-1">
+                <Banknote className="h-5 w-5 text-green-600" />
+                  <div className="font-medium text-gray-900">Tunai</div>
+              </Label>
+            </div>
+            
+            <div className="flex items-center space-x-3 border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+              <RadioGroupItem value="bank" id="primary-bank" />
+              <Label htmlFor="primary-bank" className="flex items-center gap-2 cursor-pointer flex-1">
+                <CreditCard className="h-5 w-5 text-blue-600" />
+                  <div className="font-medium text-gray-900">Bank/Transfer</div>
+              </Label>
+            </div>
+          </RadioGroup>
+        </div>
+
+        {/* Secondary Level Selection - Bank Options */}
+        {primaryMethod === 'bank' && (
+          <div className="space-y-3 pl-4 border-l-2 border-blue-200 bg-blue-50/30 rounded-r-lg py-3 pr-4">
+            <Label className="text-xs font-medium text-blue-700 uppercase tracking-wide">
+              Pilih Bank atau QRIS
+            </Label>
+            <RadioGroup
+              value={bankMethod || ''}
+              onValueChange={handleBankMethodChange}
+              className="grid grid-cols-1 md:grid-cols-2 gap-3"
+            >
+              <div className="flex items-center space-x-3 border border-blue-200 rounded-lg p-3 hover:bg-blue-50 transition-colors bg-white">
+                <RadioGroupItem value="bca" id="bank-bca" />
+                <Label htmlFor="bank-bca" className="flex items-center gap-2 cursor-pointer flex-1">
+                  <CreditCard className="h-4 w-4 text-blue-600" />
+                  <span className="font-medium text-gray-900">BCA</span>
+                </Label>
+              </div>
+              
+              <div className="flex items-center space-x-3 border border-blue-200 rounded-lg p-3 hover:bg-blue-50 transition-colors bg-white">
+                <RadioGroupItem value="bri" id="bank-bri" />
+                <Label htmlFor="bank-bri" className="flex items-center gap-2 cursor-pointer flex-1">
+                  <CreditCard className="h-4 w-4 text-blue-600" />
+                  <span className="font-medium text-gray-900">BRI</span>
+                </Label>
+              </div>
+              
+              <div className="flex items-center space-x-3 border border-blue-200 rounded-lg p-3 hover:bg-blue-50 transition-colors bg-white">
+                <RadioGroupItem value="mandiri" id="bank-mandiri" />
+                <Label htmlFor="bank-mandiri" className="flex items-center gap-2 cursor-pointer flex-1">
+                  <CreditCard className="h-4 w-4 text-blue-600" />
+                  <span className="font-medium text-gray-900">Mandiri</span>
+                </Label>
+              </div>
+              
+              <div className="flex items-center space-x-3 border border-blue-200 rounded-lg p-3 hover:bg-blue-50 transition-colors bg-white">
+                <RadioGroupItem value="qris" id="bank-qris" />
+                <Label htmlFor="bank-qris" className="flex items-center gap-2 cursor-pointer flex-1">
+                  <Smartphone className="h-4 w-4 text-purple-600" />
+                  <span className="font-medium text-gray-900">QRIS</span>
+                </Label>
+              </div>
+            </RadioGroup>
+            
+            {/* Bank selection validation error */}
+            {primaryMethod === 'bank' && !bankMethod && (
+              <p className="text-sm text-orange-600 bg-orange-50 p-2 rounded border border-orange-200">
+                💡 Pilih salah satu opsi bank atau QRIS untuk melanjutkan
+              </p>
+            )}
+          </div>
+        )}
+        
+        {/* Form validation error */}
         {form.formState.errors.metode && (
           <p className="text-sm text-red-600">{form.formState.errors.metode.message}</p>
         )}
-        <p className="text-sm text-gray-600">
-          {selectedMethodInfo?.requiresReference
-            ? 'Metode ini memerlukan nomor referensi'
-            : 'Pembayaran langsung tanpa referensi'}
+        
+        {/* Help text */}
+        <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-200">
+          ℹ️ Semua metode pembayaran tidak memerlukan nomor referensi
         </p>
-      </div>
-
-      {/* Reference Number (conditional) */}
-      <div
-        className={`transition-all duration-300 ${selectedMethodInfo?.requiresReference ? 'opacity-100 max-h-32' : 'opacity-0 max-h-0 overflow-hidden'}`}
-      >
-        {selectedMethodInfo?.requiresReference && (
-          <div className="space-y-2">
-            <Label htmlFor="referensi">
-              Nomor Referensi
-              <span className="text-red-500 ml-1">*</span>
-            </Label>
-            <Input
-              id="referensi"
-              placeholder={
-                selectedMethod === 'transfer'
-                  ? 'Nomor referensi transfer bank'
-                  : 'Nomor referensi QRIS/Kartu'
-              }
-              {...form.register('referensi')}
-              className="transition-all duration-200"
-            />
-            {form.formState.errors.referensi && (
-              <p className="text-sm text-red-600 animate-fade-in">
-                {form.formState.errors.referensi.message}
-              </p>
-            )}
-            <p className="text-sm text-gray-600 flex items-center gap-1">
-              <Info className="h-3 w-3" />
-              {selectedMethod === 'transfer'
-                ? 'Masukkan nomor referensi dari slip transfer bank'
-                : 'Masukkan nomor referensi dari QRIS atau struk kartu'}
-            </p>
-          </div>
-        )}
       </div>
 
       {/* Error Display */}
@@ -248,14 +263,21 @@ export function PaymentForm({
         </Button>
         <Button
           type="submit"
-          disabled={isProcessing || !form.formState.isValid || form.getValues('jumlah') <= 0}
+          disabled={
+            isProcessing || 
+            !form.formState.isValid || 
+            form.getValues('jumlah') <= 0 ||
+            (primaryMethod === 'bank' && !bankMethod)
+          }
           className="flex-1 transition-all duration-200"
           title={
             !form.formState.isValid
               ? 'Periksa kembali form pembayaran'
               : form.getValues('jumlah') <= 0
                 ? 'Masukkan jumlah pembayaran yang valid'
-                : undefined
+                : primaryMethod === 'bank' && !bankMethod
+                  ? 'Pilih bank atau QRIS untuk pembayaran non-tunai'
+                  : undefined
           }
         >
           {isProcessing ? (

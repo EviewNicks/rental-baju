@@ -165,13 +165,28 @@ export function usePaymentProcessing(
 
 /**
  * Hook for getting payment method options
+ * Updated for 2-level selection UI with helper functions
  */
 export function usePaymentMethods() {
   const paymentMethods = [
     { value: 'tunai', label: 'Tunai', requiresReference: false },
-    { value: 'transfer', label: 'Transfer Bank', requiresReference: true },
-    { value: 'kartu', label: 'QRIS/Kartu', requiresReference: true },
+    { value: 'bca', label: 'BCA', requiresReference: false },
+    { value: 'bri', label: 'BRI', requiresReference: false },
+    { value: 'mandiri', label: 'Mandiri', requiresReference: false },
+    { value: 'qris', label: 'QRIS', requiresReference: false },
   ] as const
 
-  return { paymentMethods }
+  // Helper functions within existing hook (avoid separate exports)
+  const getPrimaryMethods = () => [
+    { value: 'tunai', label: 'Tunai', icon: '💵' },
+    { value: 'bank', label: 'Bank/Transfer', icon: '🏦' }
+  ]
+
+  const getBankMethods = () => paymentMethods.filter(m => m.value !== 'tunai')
+
+  return { 
+    paymentMethods,
+    getPrimaryMethods,
+    getBankMethods
+  }
 }

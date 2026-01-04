@@ -316,6 +316,14 @@ async function transformApiToUI(apiData: TransaksiResponse): Promise<Transaction
         statusKembali: item.statusKembali,
         // RPK-51: Add kondisiAwal for AgeSizes parsing
         kondisiAwal: item.kondisiAwal,
+        // TASK 23: Add linkedSarung data for separate sarung display
+        linkedSarung: item.linkedSarung ? {
+          productId: item.linkedSarung.productId,
+          productSizeId: item.linkedSarung.productSizeId,
+          quantity: item.linkedSarung.quantity,
+          product: item.linkedSarung.product,
+          selectedSize: item.linkedSarung.selectedSize
+        } : undefined,
         // Handle optional return fields that may not exist in TypeScript interface
         ...('totalReturnPenalty' in item && item.totalReturnPenalty !== undefined
           ? {
@@ -376,10 +384,10 @@ async function transformApiToUI(apiData: TransaksiResponse): Promise<Transaction
  */
 function mapActivityTypeToAction(
   activityType: string,
-): 'created' | 'paid' | 'picked_up' | 'returned' | 'overdue' | 'reminder_sent' | 'penalty_added' {
+): 'created' | 'paid' | 'picked_up' | 'returned' | 'overdue' | 'reminder_sent' | 'penalty_added' | 'cancelled' {
   const mapping: Record<
     string,
-    'created' | 'paid' | 'picked_up' | 'returned' | 'overdue' | 'reminder_sent' | 'penalty_added'
+    'created' | 'paid' | 'picked_up' | 'returned' | 'overdue' | 'reminder_sent' | 'penalty_added' | 'cancelled'
   > = {
     dibuat: 'created',
     dibayar: 'paid',
@@ -389,7 +397,7 @@ function mapActivityTypeToAction(
     penalty_added: 'penalty_added', // NEW: Penalty activity mapping
     penalty_diterapkan: 'penalty_added', // NEW: Penalty alias mapping
     terlambat: 'overdue',
-    dibatalkan: 'penalty_added', // Map cancelled to penalty for now
+    dibatalkan: 'cancelled', // ✅ FIXED: Map cancelled to cancelled action (not penalty)
   }
 
   return mapping[activityType] || 'created' // Default to 'created' for unknown types
@@ -398,12 +406,17 @@ function mapActivityTypeToAction(
 /**
  * Map API payment method to UI payment method types
  */
-function mapPaymentMethod(apiMethod: string): 'cash' | 'qris' | 'transfer' {
-  const mapping: Record<string, 'cash' | 'qris' | 'transfer'> = {
-    tunai: 'cash',
-    transfer: 'transfer',
-    kartu: 'qris', // Map kartu to qris for UI consistency
+function mapPaymentMethod(apiMethod: string): 'tunai' | 'bca' | 'bri' | 'mandiri' | 'qris' {
+  const mapping: Record<string, 'tunai' | 'bca' | 'bri' | 'mandiri' | 'qris'> = {
+    tunai: 'tunai',
+    bca: 'bca',
+    bri: 'bri',
+    mandiri: 'mandiri',
+    qris: 'qris',
+    // Legacy backward compatibility
+    transfer: 'bca', // Default legacy transfers to BCA
+    kartu: 'qris'    // Map legacy card to QRIS
   }
 
-  return mapping[apiMethod] || 'cash'
+  return mapping[apiMethod] || 'tunai'
 }

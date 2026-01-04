@@ -81,7 +81,8 @@
       "Bash(npx tsx:*)",
       "Bash(yarn lint:fix:*)",
       "WebFetch(domain:clerk.com)",
-      "mcp__tavily__tavily-search"
+      "mcp__tavily__tavily-search",
+      "mcp__serena__list_dir"
     ],
     "deny": []
   },
