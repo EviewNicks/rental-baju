@@ -161,7 +161,8 @@ export function extractSizeInfo(item: any): {
   ageCategory: string
   hasSizeInfo: boolean
 } {
-  const parsed = parseKondisiAwal(item.kondisiAwal)
+  // ✅ FIX: Use enhanced parser to handle JSON format kondisiAwal
+  const parsed = parseKondisiAwalEnhanced(item.kondisiAwal)
 
   // Try to get size from parsed data first, then fallback to product.size
   const size = parsed.size || item.product?.size

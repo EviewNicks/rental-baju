@@ -9,6 +9,7 @@
 // import type { TransaksiItem } from '@/features/kasir/types'
 
 import { ConditionSplit } from '../../types'
+import { parseKondisiAwalEnhanced } from '../utils/kondisiAwalParser'
 
 export interface PenaltyDetails {
   itemId: string
@@ -1153,6 +1154,314 @@ export class PenaltyCalculator {
   }
 
   /**
+   * ✅ TASK 4: Calculate penalty for jas-sarung pairing (jas only, sarung free)
+   * Requirements: 5.1, 5.2, 5.3, 5.4, 5.5
+   * 
+   * This method ensures penalty calculation only applies to jas items in pairings,
+   * with sarung items having zero penalty since sarung is free in pairing.
+   */
+  static calculatePairingPenalty(
+    jasItem: {
+      itemId: string
+      kondisiAwal: string | null
+      expectedReturnDate: Date
+      actualReturnDate: Date
+      conditionCategory?: string
+      manualPrice?: number
+      quantity: number
+      useManualPricing?: boolean
+      modalAwal?: number
+    },
+    settings?: {
+      applyFlatLatePenalty?: boolean
+      customLatePenalty?: number
+    }
+  ): {
+    jasItemId: string
+    jasPenalty: number
+    sarungItemId?: string
+    sarungPenalty: number // Always 0 for paired sarung
+    totalPenalty: number
+    pairingApplied: boolean
+    isLate: boolean
+    lateDays: number
+    description: string
+    breakdown: {
+      jasLatePenalty: number
+      jasConditionPenalty: number
+      sarungLatePenalty: number // Always 0
+      sarungConditionPenalty: number // Always 0
+    }
+  } {
+    const kondisiData = parseKondisiAwalEnhanced(jasItem.kondisiAwal)
+    
+    // Calculate penalty for jas item using enhanced penalty system
+    // Transform jasItem to match calculateEnhancedPenalty interface
+    const enhancedPenaltyItem = {
+      id: jasItem.itemId,
+      productName: kondisiData?.linkedSarung?.product?.name || 'Unknown Product',
+      expectedReturnDate: jasItem.expectedReturnDate,
+      actualReturnDate: jasItem.actualReturnDate,
+      conditionCategory: jasItem.conditionCategory,
+      manualPrice: jasItem.manualPrice,
+      quantity: jasItem.quantity,
+      useManualPricing: jasItem.useManualPricing,
+      modalAwal: jasItem.modalAwal
+    }
+    
+    const jasResult = this.calculateEnhancedPenalty(
+      enhancedPenaltyItem,
+      settings?.applyFlatLatePenalty !== false,
+      settings?.customLatePenalty
+    )
+    
+    if (!kondisiData?.linkedSarung) {
+      // Not a paired item, return normal penalty calculation
+      return {
+        jasItemId: jasItem.itemId,
+        jasPenalty: jasResult.totalPenalty,
+        sarungPenalty: 0,
+        totalPenalty: jasResult.totalPenalty,
+        pairingApplied: false,
+        isLate: jasResult.isLate,
+        lateDays: jasResult.lateDays,
+        description: jasResult.description,
+        breakdown: {
+          jasLatePenalty: jasResult.flatLatePenalty,
+          jasConditionPenalty: jasResult.conditionPenalty,
+          sarungLatePenalty: 0,
+          sarungConditionPenalty: 0
+        }
+      }
+    }
+    
+    // Paired item - penalty only for jas, sarung is free
+    const pairingDescription = `Pairing jas-sarung: ${jasResult.description} (sarung gratis - tidak ada penalty)`
+    
+    return {
+      jasItemId: jasItem.itemId,
+      jasPenalty: jasResult.totalPenalty,
+      sarungItemId: kondisiData.linkedSarung.productSizeId,
+      sarungPenalty: 0, // Sarung is always free in pairing
+      totalPenalty: jasResult.totalPenalty, // Only jas penalty counts
+      pairingApplied: true,
+      isLate: jasResult.isLate,
+      lateDays: jasResult.lateDays,
+      description: pairingDescription,
+      breakdown: {
+        jasLatePenalty: jasResult.flatLatePenalty,
+        jasConditionPenalty: jasResult.conditionPenalty,
+        sarungLatePenalty: 0, // Always 0 for sarung in pairing
+        sarungConditionPenalty: 0 // Always 0 for sarung in pairing
+      }
+    }
+  }
+
+  /**
+   * ✅ TASK 4: Check if penalty calculation should use pairing logic
+   * Requirements: 5.1, 5.4
+   * 
+   * Helper method to detect if an item is part of a jas-sarung pairing
+   * and should use pairing-specific penalty calculation.
+   */
+  static isPairingPenaltyApplicable(kondisiAwal: string | null): {
+    isPairing: boolean
+    linkedSarungId?: string
+    pairingType?: 'jas-sarung'
+  } {
+    const kondisiData = parseKondisiAwalEnhanced(kondisiAwal)
+    
+    if (!kondisiData?.linkedSarung) {
+      return {
+        isPairing: false
+      }
+    }
+    
+    return {
+      isPairing: true,
+      linkedSarungId: kondisiData.linkedSarung.productSizeId,
+      pairingType: 'jas-sarung'
+    }
+  }
+
+  /**
+   * ✅ TASK 4: Calculate penalties for multiple items with pairing awareness
+   * Requirements: 5.1, 5.2, 5.3, 5.4, 5.5
+   * 
+   * Enhanced version of calculateEnhancedTransactionPenalties that handles
+   * jas-sarung pairings by applying penalty only to jas items.
+   */
+  static calculatePairingAwareTransactionPenalties(
+    items: Array<{
+      id: string
+      productName: string
+      kondisiAwal: string | null
+      expectedReturnDate: Date
+      actualReturnDate: Date
+      conditionCategory?: string
+      manualPrice?: number
+      quantity: number
+      useManualPricing?: boolean
+      modalAwal?: number
+    }>,
+    settings?: {
+      applyFlatLatePenalty?: boolean
+      customLatePenalty?: number
+    }
+  ): {
+    totalPenalty: number
+    totalLatePenalty: number
+    totalConditionPenalty: number
+    isLateReturn: boolean
+    itemPenalties: Array<ReturnType<typeof PenaltyCalculator.calculatePairingPenalty>>
+    summary: {
+      totalItems: number
+      pairedItems: number
+      regularItems: number
+      lateItems: number
+      onTimeItems: number
+      jasOnlyPenalties: number
+      sarungSkippedPenalties: number
+      totalJasPenalties: number
+      totalSarungPenalties: number // Always 0
+    }
+  } {
+    const itemPenalties = items.map(item =>
+      this.calculatePairingPenalty({
+        itemId: item.id,
+        kondisiAwal: item.kondisiAwal,
+        expectedReturnDate: item.expectedReturnDate,
+        actualReturnDate: item.actualReturnDate,
+        conditionCategory: item.conditionCategory,
+        manualPrice: item.manualPrice,
+        quantity: item.quantity,
+        useManualPricing: item.useManualPricing,
+        modalAwal: item.modalAwal
+      }, settings)
+    )
+
+    const totalPenalty = itemPenalties.reduce((sum, penalty) => sum + penalty.totalPenalty, 0)
+    const totalLatePenalty = itemPenalties.reduce((sum, penalty) => sum + penalty.breakdown.jasLatePenalty, 0)
+    const totalConditionPenalty = itemPenalties.reduce((sum, penalty) => sum + penalty.breakdown.jasConditionPenalty, 0)
+
+    const isLateReturn = itemPenalties.some(penalty => penalty.isLate)
+    const pairedItems = itemPenalties.filter(penalty => penalty.pairingApplied).length
+    const regularItems = itemPenalties.length - pairedItems
+    const lateItems = itemPenalties.filter(penalty => penalty.isLate).length
+    const jasOnlyPenalties = itemPenalties.filter(penalty => penalty.pairingApplied && penalty.jasPenalty > 0).length
+    const sarungSkippedPenalties = itemPenalties.filter(penalty => penalty.pairingApplied).length
+    const totalJasPenalties = itemPenalties.reduce((sum, penalty) => sum + penalty.jasPenalty, 0)
+    const totalSarungPenalties = 0 // Always 0 since sarung is free in pairing
+
+    return {
+      totalPenalty,
+      totalLatePenalty,
+      totalConditionPenalty,
+      isLateReturn,
+      itemPenalties,
+      summary: {
+        totalItems: itemPenalties.length,
+        pairedItems,
+        regularItems,
+        lateItems,
+        onTimeItems: itemPenalties.length - lateItems,
+        jasOnlyPenalties,
+        sarungSkippedPenalties,
+        totalJasPenalties,
+        totalSarungPenalties
+      }
+    }
+  }
+
+  /**
+   * ✅ TASK 4: Format pairing penalty description for display
+   * Requirements: 5.5
+   * 
+   * Generates user-friendly description for pairing penalty breakdown
+   * that clearly shows jas penalty and sarung exemption.
+   */
+  static formatPairingPenaltyDescription(penalty: ReturnType<typeof PenaltyCalculator.calculatePairingPenalty>): string {
+    if (penalty.totalPenalty === 0) {
+      if (penalty.pairingApplied) {
+        return 'Tidak ada penalty - pairing jas-sarung dikembalikan tepat waktu dalam kondisi baik'
+      } else {
+        return 'Tidak ada penalty - barang dikembalikan tepat waktu dalam kondisi baik'
+      }
+    }
+
+    const formattedAmount = this.formatPenaltyAmount(penalty.totalPenalty)
+    
+    if (penalty.pairingApplied) {
+      return `${formattedAmount} - Penalty untuk jas dalam pairing (sarung gratis)`
+    } else {
+      return `${formattedAmount} - ${penalty.description}`
+    }
+  }
+
+  /**
+   * ✅ TASK 4: Generate detailed pairing penalty breakdown for transparency
+   * Requirements: 5.5
+   * 
+   * Provides comprehensive breakdown of penalty calculation for paired items
+   * showing exactly why sarung has zero penalty.
+   */
+  static generatePairingPenaltyBreakdown(penalty: ReturnType<typeof PenaltyCalculator.calculatePairingPenalty>): {
+    jasBreakdown: {
+      latePenalty: number
+      conditionPenalty: number
+      totalPenalty: number
+      description: string
+    }
+    sarungBreakdown: {
+      latePenalty: number // Always 0
+      conditionPenalty: number // Always 0
+      totalPenalty: number // Always 0
+      description: string
+    }
+    pairingInfo: {
+      isPaired: boolean
+      pairingType?: string
+      exemptionReason?: string
+    }
+    totalPenalty: number
+    formattedTotal: string
+  } {
+    const jasBreakdown = {
+      latePenalty: penalty.breakdown.jasLatePenalty,
+      conditionPenalty: penalty.breakdown.jasConditionPenalty,
+      totalPenalty: penalty.jasPenalty,
+      description: penalty.isLate 
+        ? `Jas: ${penalty.lateDays} hari terlambat + kondisi`
+        : 'Jas: Penalty kondisi saja'
+    }
+
+    const sarungBreakdown = {
+      latePenalty: 0,
+      conditionPenalty: 0,
+      totalPenalty: 0,
+      description: penalty.pairingApplied 
+        ? 'Sarung: Gratis dalam pairing - tidak ada penalty'
+        : 'Sarung: Tidak ada dalam transaksi ini'
+    }
+
+    const pairingInfo = {
+      isPaired: penalty.pairingApplied,
+      pairingType: penalty.pairingApplied ? 'jas-sarung' : undefined,
+      exemptionReason: penalty.pairingApplied 
+        ? 'Sarung adalah item gratis dalam pairing jas-sarung'
+        : undefined
+    }
+
+    return {
+      jasBreakdown,
+      sarungBreakdown,
+      pairingInfo,
+      totalPenalty: penalty.totalPenalty,
+      formattedTotal: this.formatPenaltyAmount(penalty.totalPenalty)
+    }
+  }
+
+  /**
    * Get penalty business rules configuration
    */
   static getBusinessRules() {
@@ -1187,7 +1496,14 @@ export class PenaltyCalculator {
         'RUSAK_RINGAN',
         'RUSAK_BERAT',
         'HILANG'
-      ]
+      ],
+      // ✅ TASK 4: Pairing-specific business rules
+      pairingRules: {
+        jasOnlyPenalty: true, // Only jas items are charged penalty in pairing
+        sarungFreeInPairing: true, // Sarung is always free in jas-sarung pairing
+        supportedPairingTypes: ['jas-sarung'],
+        pairingPenaltyDescription: 'Penalty hanya berlaku untuk jas, sarung gratis dalam pairing'
+      }
     }
   }
 }

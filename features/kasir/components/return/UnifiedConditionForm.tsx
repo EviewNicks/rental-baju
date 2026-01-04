@@ -13,7 +13,7 @@ import type {
   ConditionSplit,
   ConditionValidationResult,
   ConditionCategory,
-  TransaksiItemResponse,
+  TransaksiItemResponse, // ✅ Updated with linkedSarung property
 } from '../../types'
 import { kasirLogger } from '../../lib/logger'
 import { extractSizeInfo } from '../../lib/utils/kondisiAwalParser'
@@ -36,6 +36,7 @@ export function UnifiedConditionForm({
   disabled = false,
   isLoading = false,
   remainingQuantity, // Add remaining quantity prop
+  pairingInfo, // ✅ TASK 6: Add pairing information prop
 }: UnifiedConditionFormProps) {
   // ✅ SMART DEFAULT: Use remaining quantity as helpful default, but allow zero for partial return
   // This provides the best UX: auto-fill with remaining quantity, but user can adjust to 0 if needed
@@ -386,7 +387,19 @@ export function UnifiedConditionForm({
             </div>
             <div>
               <CardTitle className="text-lg flex items-center gap-2">
-                {item.produk?.name || 'Unknown Product'}
+                {/* ✅ Enhanced: Display product name with pairing info using linkedSarung from item */}
+                {item.linkedSarung ? (
+                  <span className="text-purple-800">
+                    {item.produk?.name || 'Unknown Product'}
+                    <span className="text-purple-600 font-normal"> + {item.linkedSarung.product?.code || 'Sarung'}</span>
+                  </span>
+                ) : (
+                  <span>
+                    {item.produk?.name || 'Unknown Product'}
+                  </span>
+                )}
+                
+                {/* ✅ Enhanced: Always show size badge for all items when size info is available */}
                 {sizeInfo.hasSizeInfo && (
                   <Badge
                     variant="outline"
@@ -395,9 +408,12 @@ export function UnifiedConditionForm({
                     {sizeInfo.size} | {sizeInfo.ageCategory}
                   </Badge>
                 )}
+                
                 <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-200">
                   {item.jumlahDiambil} unit
                 </Badge>
+                
+                
                 {currentCondition.conditions.length > 1 && (
                   <Badge
                     variant="outline"
@@ -465,6 +481,7 @@ export function UnifiedConditionForm({
             </AlertDescription>
           </Alert>
         )}
+
       </CardHeader>
 
       <CardContent>

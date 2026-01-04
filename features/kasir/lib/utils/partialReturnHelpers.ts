@@ -49,6 +49,7 @@ export interface TransaksiItemWithReturns extends TransaksiItemResponse {
     createdAt?: string
     createdBy?: string
   }>
+  // ✅ TASK 6: linkedSarung property is inherited from TransaksiItemResponse
 }
 
 /**

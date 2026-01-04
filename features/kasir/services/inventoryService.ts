@@ -144,6 +144,115 @@ export class InventoryService {
   }
 
   /**
+   * Process stock restoration with pairing awareness
+   * Handles both regular items and jas-sarung pairings with comprehensive logging
+   *
+   * @param kondisiAwal - kondisiAwal field containing item data
+   * @param quantity - Number of items being processed
+   * @param itemId - Transaction item ID for logging
+   * @param logger - Logger instance for audit trail
+   */
+  async processStockForReturn(
+    kondisiAwal: string | null,
+    quantity: number,
+    itemId: string,
+    //eslint-disable-next-line @typescript-eslint/no-explicit-any
+    logger?: { warn: (msg: string, context?: any) => void; info: (msg: string, context?: any) => void; error: (msg: string, context?: any) => void }
+  ): Promise<void> {
+    // ✅ AUDIT TRAIL 1: Pre-processing - Item detection and pairing analysis
+    logger?.info('🔍 AUDIT: Stock restoration pre-processing initiated', {
+      itemId,
+      quantity,
+      kondisiAwalPresent: !!kondisiAwal,
+      kondisiAwalFormat: kondisiAwal ? (kondisiAwal.startsWith('{') ? 'JSON' : 'PIPE') : 'NULL',
+      processingStep: 'pre_processing_analysis',
+      timestamp: new Date().toISOString()
+    })
+
+    // Import here to avoid circular dependency
+    const { parseKondisiAwalEnhanced } = await import('../lib/utils/kondisiAwalParser')
+    const kondisiData = parseKondisiAwalEnhanced(kondisiAwal)
+    
+    // ✅ AUDIT TRAIL 2: During-processing - Pairing detection and decision making
+    const hasPairing = !!(kondisiData?.linkedSarung?.productSizeId)
+    logger?.info('🔄 AUDIT: Pairing detection and restoration decision', {
+      itemId,
+      quantity,
+      parsingSuccess: !!kondisiData?.productSizeId,
+      hasPairing,
+      jasProductSizeId: kondisiData?.productSizeId || null,
+      sarungProductSizeId: kondisiData?.linkedSarung?.productSizeId || null,
+      restorationStrategy: hasPairing ? 'DUAL_RESTORATION' : 'SINGLE_RESTORATION',
+      processingStep: 'pairing_detection_complete',
+      timestamp: new Date().toISOString()
+    })
+    
+    if (!kondisiData?.productSizeId) {
+      logger?.warn('Could not extract productSizeId from kondisiAwal', {
+        itemId,
+        kondisiAwal,
+        reason: 'parsing_failed'
+      })
+      return // Skip stock restoration but continue return
+    }
+    
+    try {
+      // Check if this item has linkedSarung for dual restoration
+      const linkedSarungSizeId = kondisiData.linkedSarung?.productSizeId
+      
+      if (linkedSarungSizeId) {
+        // Dual restoration for jas-sarung pairing
+        await this.updateStockOnReturn(kondisiData.productSizeId, quantity, linkedSarungSizeId)
+        
+        // ✅ AUDIT TRAIL 3: Post-processing - Dual restoration completion status
+        logger?.info('✅ AUDIT: Dual stock restoration completed successfully', {
+          itemId,
+          jasProductSizeId: kondisiData.productSizeId,
+          sarungProductSizeId: linkedSarungSizeId,
+          quantity,
+          restorationMode: 'DUAL_RESTORATION_SUCCESS',
+          stockChanges: {
+            jasStock: { rentedQuantity: 'decremented', availableQuantity: 'incremented' },
+            sarungStock: { rentedQuantity: 'decremented', availableQuantity: 'incremented' }
+          },
+          processingStep: 'dual_restoration_complete',
+          timestamp: new Date().toISOString()
+        })
+      } else {
+        // Single restoration for regular items
+        await this.updateStockOnReturn(kondisiData.productSizeId, quantity)
+        
+        // ✅ AUDIT TRAIL 3: Post-processing - Single restoration completion status
+        logger?.info('✅ AUDIT: Single stock restoration completed successfully', {
+          itemId,
+          productSizeId: kondisiData.productSizeId,
+          quantity,
+          restorationMode: 'SINGLE_RESTORATION_SUCCESS',
+          stockChanges: {
+            mainStock: { rentedQuantity: 'decremented', availableQuantity: 'incremented' }
+          },
+          processingStep: 'single_restoration_complete',
+          timestamp: new Date().toISOString()
+        })
+      }
+    } catch (error) {
+      logger?.error('❌ AUDIT: Stock restoration failed with error', {
+        itemId,
+        productSizeId: kondisiData.productSizeId,
+        linkedSarungSizeId: kondisiData.linkedSarung?.productSizeId,
+        quantity,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        restorationMode: kondisiData.linkedSarung?.productSizeId ? 'DUAL_RESTORATION_FAILED' : 'SINGLE_RESTORATION_FAILED',
+        processingStep: 'restoration_error',
+        timestamp: new Date().toISOString()
+      })
+      
+      // Don't throw error - continue return process
+      // Stock inconsistency is better than failed return
+    }
+  }
+
+  /**
    * Process stock deduction with pairing awareness
    * Handles both regular items and jas-sarung pairings with comprehensive logging
    *
@@ -211,19 +320,56 @@ export class InventoryService {
   }
 
   /**
-   * Update stock when processing a return
+   * Update stock when processing a return with dual restoration support
+   * Supports both single item and dual restoration for jas-sarung pairings
    * Increments availableQuantity and decrements rentedQuantity atomically
    *
    * @param sizeId - ProductSize ID to update
    * @param quantity - Number of items being returned (must be > 0)
+   * @param linkedSarungSizeId - Optional linked sarung ProductSize ID for dual restoration
    * @throws Error if quantity <= 0 or database operation fails
    */
-  async updateStockOnReturn(sizeId: string, quantity: number): Promise<void> {
+  async updateStockOnReturn(sizeId: string, quantity: number, linkedSarungSizeId?: string): Promise<void> {
     if (quantity <= 0) {
       throw new Error('Quantity must be greater than 0')
     }
 
+    // ✅ TASK 1: Additional audit trail point 1 - Return context validation
+    console.info('🔧 Stock restoration initiated', {
+      sizeId,
+      linkedSarungSizeId,
+      quantity,
+      isDualRestoration: !!linkedSarungSizeId,
+      transactionContext: this.prisma.constructor.name,
+      timestamp: new Date().toISOString()
+    })
+
     try {
+      // If no linked sarung, use existing single restoration logic
+      if (!linkedSarungSizeId) {
+        await this.prisma.productSize.update({
+          where: { id: sizeId },
+          data: {
+            rentedQuantity: { decrement: quantity },
+            availableQuantity: { increment: quantity },
+          },
+        })
+        return
+      }
+
+      // ✅ TASK 1: For dual restoration, use sequential updates instead of nested transaction
+      // Since we're already inside a transaction context, we can't use $transaction again
+      
+      // ✅ TASK 1: Additional audit trail point 2 - Dual restoration process tracking
+      console.info('🔄 Executing dual stock restoration', {
+        jasProductSizeId: sizeId,
+        sarungProductSizeId: linkedSarungSizeId,
+        quantity,
+        step: 'sequential_updates',
+        timestamp: new Date().toISOString()
+      })
+      
+      // Restore stock for main item (jas)
       await this.prisma.productSize.update({
         where: { id: sizeId },
         data: {
@@ -231,6 +377,16 @@ export class InventoryService {
           availableQuantity: { increment: quantity },
         },
       })
+      
+      // Restore stock for linked sarung (1:1 ratio)
+      await this.prisma.productSize.update({
+        where: { id: linkedSarungSizeId },
+        data: {
+          rentedQuantity: { decrement: quantity },
+          availableQuantity: { increment: quantity },
+        },
+      })
+      
     } catch (error) {
       throw new Error(
         `Failed to update stock on return: ${error instanceof Error ? error.message : 'Unknown error'}`,

@@ -119,7 +119,8 @@ export function ProductDetailCard({ item, pickupInfo }: ProductDetailCardProps) 
   } as TransaksiItemWithReturns)
 
   // ✅ TASK 7: Show return progress when items have been picked up (Requirements: 4.2, 4.3)
-  const shouldShowReturnProgress = actualJumlahDiambil > 0
+  // ✅ TASK 23: Hide return progress for linkedSarung items (sarung is metadata, not separately returned)
+  const shouldShowReturnProgress = actualJumlahDiambil > 0 && !item.isSarungGratis
 
   return (
     <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-6 shadow-lg shadow-gray-900/5 transition-all duration-200">
@@ -230,6 +231,7 @@ export function ProductDetailCard({ item, pickupInfo }: ProductDetailCardProps) 
           </div>
 
           {/* ✅ TASK 7: Return Progress Section (Requirements: 4.1, 4.2, 4.3, 4.5) */}
+          {/* ✅ TASK 23: Hide return progress for linkedSarung - sarung progress follows jas automatically */}
           {shouldShowReturnProgress && (
             <div className="p-3 rounded-lg border bg-blue-50 border-blue-200">
               <div className="flex items-center justify-between mb-2">
@@ -252,6 +254,22 @@ export function ProductDetailCard({ item, pickupInfo }: ProductDetailCardProps) 
                   Sisa {returnProgress.total - returnProgress.returned} item belum dikembalikan
                 </div>
               )}
+            </div>
+          )}
+
+          {/* ✅ TASK 23: Special status indicator for linkedSarung items */}
+          {item.isSarungGratis && actualJumlahDiambil > 0 && (
+            <div className="p-3 rounded-lg border bg-green-50 border-green-200">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-600" />
+                  <span className="text-sm font-medium text-green-900">Status Pengembalian</span>
+                </div>
+                <span className="text-xs text-green-700">
+                  Mengikuti {item.pairedWithJas}
+                </span>
+              </div>
+            
             </div>
           )}
 

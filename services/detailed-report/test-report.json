@@ -1,10 +1,10 @@
 {
-  "numTotalTests": 10,
-  "numPassedTests": 10,
+  "numTotalTests": 19,
+  "numPassedTests": 19,
   "numFailedTests": 0,
   "numPendingTests": 0,
-  "startTime": "2026-01-04T13:29:41.496Z",
-  "endTime": "2026-01-04T13:29:43.915Z",
+  "startTime": "2026-01-04T19:02:14.178Z",
+  "endTime": "2026-01-04T19:02:16.200Z",
   "testResults": [
     {
       "testFilePath": "D:\\.work\\rental-software\\__tests__\\unit\\kasir\\inventory-service-pairing.test.ts",
@@ -18,7 +18,7 @@
           "status": "passed",
           "title": "should update stock for single item without linkedSarung",
           "failureMessages": [],
-          "duration": 50
+          "duration": 46
         },
         {
           "ancestorTitles": [
@@ -29,7 +29,7 @@
           "status": "passed",
           "title": "should throw error for invalid quantity",
           "failureMessages": [],
-          "duration": 15
+          "duration": 18
         },
         {
           "ancestorTitles": [
@@ -40,7 +40,7 @@
           "status": "passed",
           "title": "should perform dual stock deduction for jas-sarung pairing",
           "failureMessages": [],
-          "duration": 9
+          "duration": 5
         },
         {
           "ancestorTitles": [
@@ -51,7 +51,7 @@
           "status": "passed",
           "title": "should handle dual deduction with multiple quantities",
           "failureMessages": [],
-          "duration": 6
+          "duration": 7
         },
         {
           "ancestorTitles": [
@@ -62,7 +62,7 @@
           "status": "passed",
           "title": "should handle database errors gracefully in dual deduction",
           "failureMessages": [],
-          "duration": 5
+          "duration": 4
         },
         {
           "ancestorTitles": [
@@ -73,7 +73,7 @@
           "status": "passed",
           "title": "should process stock for pickup with JSON kondisiAwal format",
           "failureMessages": [],
-          "duration": 13
+          "duration": 11
         },
         {
           "ancestorTitles": [
@@ -84,7 +84,7 @@
           "status": "passed",
           "title": "should process stock for pickup with regular item (no pairing)",
           "failureMessages": [],
-          "duration": 7
+          "duration": 2
         },
         {
           "ancestorTitles": [
@@ -95,7 +95,7 @@
           "status": "passed",
           "title": "should handle invalid kondisiAwal gracefully",
           "failureMessages": [],
-          "duration": 3
+          "duration": 1
         },
         {
           "ancestorTitles": [
@@ -106,7 +106,7 @@
           "status": "passed",
           "title": "should continue pickup process even if stock deduction fails",
           "failureMessages": [],
-          "duration": 5
+          "duration": 3
         },
         {
           "ancestorTitles": [
@@ -117,7 +117,106 @@
           "status": "passed",
           "title": "should work with transaction context (no nested $transaction calls)",
           "failureMessages": [],
+          "duration": 5
+        },
+        {
+          "ancestorTitles": [
+            "InventoryService - Pairing Integration",
+            "updateStockOnReturn - Single Item"
+          ],
+          "fullName": "InventoryService - Pairing Integration updateStockOnReturn - Single Item should update stock for single item return without linkedSarung",
+          "status": "passed",
+          "title": "should update stock for single item return without linkedSarung",
+          "failureMessages": [],
+          "duration": 2
+        },
+        {
+          "ancestorTitles": [
+            "InventoryService - Pairing Integration",
+            "updateStockOnReturn - Single Item"
+          ],
+          "fullName": "InventoryService - Pairing Integration updateStockOnReturn - Single Item should throw error for invalid quantity on return",
+          "status": "passed",
+          "title": "should throw error for invalid quantity on return",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "InventoryService - Pairing Integration",
+            "updateStockOnReturn - Dual Restoration (Jas + Sarung)"
+          ],
+          "fullName": "InventoryService - Pairing Integration updateStockOnReturn - Dual Restoration (Jas + Sarung) should perform dual stock restoration for jas-sarung pairing",
+          "status": "passed",
+          "title": "should perform dual stock restoration for jas-sarung pairing",
+          "failureMessages": [],
           "duration": 8
+        },
+        {
+          "ancestorTitles": [
+            "InventoryService - Pairing Integration",
+            "updateStockOnReturn - Dual Restoration (Jas + Sarung)"
+          ],
+          "fullName": "InventoryService - Pairing Integration updateStockOnReturn - Dual Restoration (Jas + Sarung) should handle dual restoration with multiple quantities",
+          "status": "passed",
+          "title": "should handle dual restoration with multiple quantities",
+          "failureMessages": [],
+          "duration": 8
+        },
+        {
+          "ancestorTitles": [
+            "InventoryService - Pairing Integration",
+            "updateStockOnReturn - Dual Restoration (Jas + Sarung)"
+          ],
+          "fullName": "InventoryService - Pairing Integration updateStockOnReturn - Dual Restoration (Jas + Sarung) should handle database errors gracefully in dual restoration",
+          "status": "passed",
+          "title": "should handle database errors gracefully in dual restoration",
+          "failureMessages": [],
+          "duration": 7
+        },
+        {
+          "ancestorTitles": [
+            "InventoryService - Pairing Integration",
+            "processStockForReturn - Integration Test"
+          ],
+          "fullName": "InventoryService - Pairing Integration processStockForReturn - Integration Test should process stock for return with JSON kondisiAwal format",
+          "status": "passed",
+          "title": "should process stock for return with JSON kondisiAwal format",
+          "failureMessages": [],
+          "duration": 5
+        },
+        {
+          "ancestorTitles": [
+            "InventoryService - Pairing Integration",
+            "processStockForReturn - Integration Test"
+          ],
+          "fullName": "InventoryService - Pairing Integration processStockForReturn - Integration Test should process stock for return with regular item (no pairing)",
+          "status": "passed",
+          "title": "should process stock for return with regular item (no pairing)",
+          "failureMessages": [],
+          "duration": 3
+        },
+        {
+          "ancestorTitles": [
+            "InventoryService - Pairing Integration",
+            "processStockForReturn - Integration Test"
+          ],
+          "fullName": "InventoryService - Pairing Integration processStockForReturn - Integration Test should handle invalid kondisiAwal gracefully on return",
+          "status": "passed",
+          "title": "should handle invalid kondisiAwal gracefully on return",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "InventoryService - Pairing Integration",
+            "processStockForReturn - Integration Test"
+          ],
+          "fullName": "InventoryService - Pairing Integration processStockForReturn - Integration Test should continue return process even if stock restoration fails",
+          "status": "passed",
+          "title": "should continue return process even if stock restoration fails",
+          "failureMessages": [],
+          "duration": 6
         }
       ],
       "failureMessage": null

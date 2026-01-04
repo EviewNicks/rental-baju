@@ -26,8 +26,9 @@ import { TransaksiService, TransaksiWithDetails, TransaksiForValidation } from '
 import { createAuditService, AuditService } from './auditService'
 import { ConditionCategory, TransaksiDetail, TransactionStatus, PaymentMethod, ReturnStatus } from '../types'
 import { kasirLogger } from '../lib/logger'
-import { parseKondisiAwal } from '../lib/utils/kondisiAwalParser'
+import { parseKondisiAwal, parseKondisiAwalEnhanced } from '../lib/utils/kondisiAwalParser'
 import { createInventoryService } from './inventoryService'
+import { PairingReturnValidator, type ReturnItem, type TransactionItem } from '../lib/validation/pairingReturnValidation'
 import { 
   calculateRemainingQuantities, 
   validatePartialReturnQuantities, 
@@ -35,6 +36,16 @@ import {
   buildPartialReturnState,
   type PartialReturnState
 } from '../lib/utils/partialReturnHelpers'
+
+// ✅ REFACTOR: Helper function to reduce code duplication
+/**
+ * Helper function to calculate non-HILANG quantity for an item
+ */
+const calculateNonHilangQuantity = (conditions: Array<{ conditionCategory?: string; jumlahKembali: number }>) => {
+  return conditions
+    .filter((c) => c.conditionCategory !== 'HILANG')
+    .reduce((sum, c) => sum + c.jumlahKembali, 0)
+}
 
 // Unified return request interface - treats all returns as multi-condition
 interface UnifiedReturnRequest {
@@ -110,6 +121,14 @@ interface UnifiedActivityData {
     productName: string
     sizeInfo: string
     totalItemPenalty: number
+    // ✅ TASK 7: Add pairing information to activity data
+    pairingInfo: {
+      isPaired: boolean
+      role?: 'jas' | 'sarung'
+      pairedItemId?: string
+      pairedProductSizeId?: string
+      dualStockRestoration?: boolean
+    }
     conditions: Array<{
       kondisiAkhir: string
       jumlahKembali: number
@@ -126,6 +145,21 @@ interface UnifiedActivityData {
     statusChange: {
       from: string
       to: string
+    }
+    // ✅ TASK 7: Add pairing summary to metadata
+    pairingSummary: {
+      hasPairings: boolean
+      totalPairings: number
+      jasItems?: Array<{
+        itemId: string
+        productName: string
+        pairedItemId?: string
+      }>
+      sarungItems?: Array<{
+        itemId: string
+        productName: string
+        pairedItemId?: string
+      }>
     }
   }
 }
@@ -303,7 +337,7 @@ export class UnifiedReturnService {
       const productSizeIds = [
         ...new Set(
           transaction.items
-            .map((item) => parseKondisiAwal(item.kondisiAwal))
+            .map((item) => parseKondisiAwalEnhanced(item.kondisiAwal))
             .filter((parsed) => parsed.productSizeId && !parsed.isLegacyFormat)
             .map((parsed) => parsed.productSizeId!), // ← Type assertion: productSizeId is guaranteed to be string here
         ),
@@ -456,7 +490,7 @@ export class UnifiedReturnService {
         }
 
         // ✅ TASK 8: Enhanced product size validation with referential integrity
-        const parsedKondisiAwal = parseKondisiAwal(transactionItem.kondisiAwal)
+        const parsedKondisiAwal = parseKondisiAwalEnhanced(transactionItem.kondisiAwal)
         if (parsedKondisiAwal.productSizeId && !parsedKondisiAwal.isLegacyFormat) {
           const sizeExists = sizeMap.has(parsedKondisiAwal.productSizeId)
           if (!sizeExists) {
@@ -520,6 +554,138 @@ export class UnifiedReturnService {
             code: 'DATA_CONSISTENCY_VIOLATION',
           })
         }
+      }
+
+      // ✅ TASK 7: Pairing validation for return requests
+      // Requirements: 6.1, 6.2, 6.3, 6.4, 6.5
+      try {
+        // ✅ AUDIT TRAIL 1: Log pairing validation start with detailed context
+        kasirLogger.returnProcess.info('validateReturnRequest', '🔍 AUDIT: Pairing validation initiated', {
+          transaksiId,
+          totalReturnItems: request.items.length,
+          returnItemsData: request.items.map(item => ({
+            itemId: item.itemId,
+            conditionsCount: item.conditions.length,
+            totalQuantity: item.conditions.reduce((sum, c) => sum + c.jumlahKembali, 0)
+          })),
+          transactionItemsCount: transaction.items.length,
+          validationStep: 'format_conversion_start',
+          timestamp: new Date().toISOString()
+        })
+
+        // Convert request format to pairing validator format
+        const returnItems: ReturnItem[] = request.items.map(item => ({
+          itemId: item.itemId,
+          kondisiAwal: transaction.items.find(ti => ti.id === item.itemId)?.kondisiAwal || null,
+          conditions: item.conditions.map(condition => ({
+            kondisiAkhir: condition.kondisiAkhir,
+            jumlahKembali: condition.jumlahKembali,
+            conditionCategory: condition.conditionCategory
+          }))
+        }))
+
+        const transactionItems: TransactionItem[] = transaction.items.map(item => ({
+          id: item.id,
+          kondisiAwal: item.kondisiAwal || null,
+          jumlahDiambil: item.jumlahDiambil || 0,
+          produk: {
+            id: item.produk.id,
+            name: item.produk.name,
+            code: item.produk.code || ''
+          }
+        }))
+
+        // ✅ AUDIT TRAIL 2: Log format conversion results and pairing detection
+        const pairingDetection = returnItems.map(item => {
+          const transactionItem = transactionItems.find(ti => ti.id === item.itemId)
+          const isPaired = transactionItem ? PairingReturnValidator.isItemPaired(item.itemId, [transactionItem]) : false
+          return {
+            itemId: item.itemId,
+            isPaired,
+            kondisiAwalFormat: item.kondisiAwal ? (item.kondisiAwal.startsWith('{') ? 'JSON' : 'PIPE') : 'NULL'
+          }
+        })
+
+        kasirLogger.returnProcess.info('validateReturnRequest', '🔄 AUDIT: Format conversion and pairing detection completed', {
+          transaksiId,
+          pairingDetection,
+          totalPairedItems: pairingDetection.filter(p => p.isPaired).length,
+          formatDistribution: {
+            json: pairingDetection.filter(p => p.kondisiAwalFormat === 'JSON').length,
+            pipe: pairingDetection.filter(p => p.kondisiAwalFormat === 'PIPE').length,
+            null: pairingDetection.filter(p => p.kondisiAwalFormat === 'NULL').length
+          },
+          validationStep: 'pairing_validation_start',
+          timestamp: new Date().toISOString()
+        })
+
+        const pairingValidation = PairingReturnValidator.validatePairedReturn(returnItems, transactionItems)
+        
+        if (!pairingValidation.isValid) {
+          pairingValidation.errors.forEach(error => {
+            errors.push({
+              field: 'pairing',
+              message: error,
+              code: 'PAIRING_VALIDATION_ERROR',
+            })
+          })
+        }
+
+        // Log pairing validation results
+        kasirLogger.returnProcess.info('validateReturnRequest', 'Pairing validation completed', {
+          transaksiId,
+          pairingValidationResult: {
+            isValid: pairingValidation.isValid,
+            errorsCount: pairingValidation.errors.length,
+            warningsCount: pairingValidation.warnings.length,
+            hasPairingInfo: !!pairingValidation.pairingInfo
+          }
+        })
+
+        // ✅ AUDIT TRAIL 3: Detailed pairing validation results with error analysis
+        kasirLogger.returnProcess.info('validateReturnRequest', '✅ AUDIT: Pairing validation results detailed analysis', {
+          transaksiId,
+          validationResult: {
+            isValid: pairingValidation.isValid,
+            errorsCount: pairingValidation.errors.length,
+            warningsCount: pairingValidation.warnings.length,
+            hasPairingInfo: !!pairingValidation.pairingInfo,
+            pairingInfo: pairingValidation.pairingInfo ? {
+              jasItemId: pairingValidation.pairingInfo.jasItemId,
+              sarungItemId: pairingValidation.pairingInfo.sarungItemId,
+              requiredRatio: pairingValidation.pairingInfo.requiredRatio
+            } : null
+          },
+          errorDetails: pairingValidation.errors.length > 0 ? pairingValidation.errors.map((error, index) => ({
+            errorIndex: index + 1,
+            errorMessage: error,
+            errorType: error.includes('tidak dapat dikembalikan tanpa') ? 'MISSING_PAIRED_ITEM' : 
+                       error.includes('Jumlah pengembalian tidak sesuai') ? 'QUANTITY_MISMATCH' : 'OTHER'
+          })) : [],
+          warningDetails: pairingValidation.warnings.length > 0 ? pairingValidation.warnings : [],
+          validationStep: 'pairing_validation_complete',
+          timestamp: new Date().toISOString()
+        })
+
+
+        // Log warnings (non-blocking)
+        if (pairingValidation.warnings.length > 0) {
+          kasirLogger.returnProcess.warn('validateReturnRequest', 'Pairing validation warnings', {
+            transaksiId,
+            warnings: pairingValidation.warnings
+          })
+        }
+      } catch (pairingError) {
+        kasirLogger.returnProcess.error('validateReturnRequest', 'Pairing validation failed', {
+          transaksiId,
+          error: pairingError instanceof Error ? pairingError.message : 'Unknown pairing error'
+        })
+        
+        errors.push({
+          field: 'pairing',
+          message: `Pairing validation error: ${pairingError instanceof Error ? pairingError.message : 'Unknown error'}`,
+          code: 'PAIRING_VALIDATION_SYSTEM_ERROR',
+        })
       }
 
       const validationDuration = Date.now() - validationStart
@@ -597,6 +763,105 @@ export class UnifiedReturnService {
       const transaction =
         cachedTransaction ||
         (await this.transaksiService.getTransaksiForPenaltyCalculation(transaksiId))
+
+      // ✅ TASK 7: Check for pairing items to use pairing-aware penalty calculation
+      // Requirements: 5.1, 5.2, 5.3, 5.4, 5.5
+      // Use the cached transaction (TransaksiForValidation) which has all required fields
+      const fullTransaction = cachedTransaction || (await this.transaksiService.getTransaksiForValidation(transaksiId))
+      
+      const hasPairingItems = request.items.some((returnItem) => {
+        const transactionItem = fullTransaction.items.find(
+          //eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (item: any) => item.id === returnItem.itemId,
+        )
+        if (!transactionItem) return false
+
+        // Convert to TransactionItem format for pairing check
+        const transactionItemForPairing: TransactionItem = {
+          id: transactionItem.id,
+          kondisiAwal: transactionItem.kondisiAwal || null,
+          jumlahDiambil: transactionItem.jumlahDiambil || 0,
+          produk: {
+            id: transactionItem.produk.id,
+            name: transactionItem.produk.name,
+            code: transactionItem.produk.code || ''
+          }
+        }
+
+        return PairingReturnValidator.isItemPaired(returnItem.itemId, [transactionItemForPairing])
+      })
+
+      // ✅ TASK 7: Use pairing-aware penalty calculation if pairing items detected
+      if (hasPairingItems) {
+        kasirLogger.returnProcess.info('calculateBasicPenalties', 'Using pairing-aware penalty calculation', {
+          transaksiId,
+          itemCount: request.items.length,
+        })
+
+        // Use the cached transaction (TransaksiForValidation) which has all required fields
+        const fullTransaction = cachedTransaction || (await this.transaksiService.getTransaksiForValidation(transaksiId))
+
+        const itemsForPairingCalculation = request.items.flatMap((returnItem) => {
+          const transactionItem = fullTransaction.items.find(
+            //eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (item: any) => item.id === returnItem.itemId,
+          )
+          if (!transactionItem) {
+            throw new Error(`Item dengan ID ${returnItem.itemId} tidak ditemukan`)
+          }
+
+          return returnItem.conditions.map((condition) => ({
+            id: `${returnItem.itemId}-${condition.kondisiAkhir}`,
+            itemId: returnItem.itemId,
+            kondisiAwal: transactionItem.kondisiAwal || null,
+            productName: transactionItem.produk.name,
+            expectedReturnDate: fullTransaction.tglSelesai || new Date(),
+            actualReturnDate,
+            kondisiAkhir: condition.kondisiAkhir,
+            quantity: condition.jumlahKembali,
+            modalAwal: condition.modalAwal || Number(transactionItem.produk.modalAwal),
+            penaltyRate: 0.1, // 10% default penalty rate
+          }))
+        })
+
+        const pairingResult = PenaltyCalculator.calculatePairingAwareTransactionPenalties(
+          itemsForPairingCalculation,
+          {
+            applyFlatLatePenalty: request.applyFlatLatePenalty !== false,
+            customLatePenalty: request.customLatePenalty,
+          },
+        )
+
+        return {
+          totalPenalty: pairingResult.totalPenalty,
+          totalLateDays: pairingResult.itemPenalties[0]?.lateDays || 0,
+          itemPenalties: pairingResult.itemPenalties.map((penalty: ReturnType<typeof PenaltyCalculator.calculatePairingPenalty>) => {
+            // Find the corresponding transaction item to get productName
+            const correspondingItem = itemsForPairingCalculation.find(item => 
+              item.itemId === penalty.jasItemId
+            )
+            
+            return {
+              itemId: penalty.jasItemId,
+              productName: correspondingItem?.productName || 'Unknown Product',
+              expectedReturnDate: fullTransaction.tglSelesai || new Date(),
+              actualReturnDate,
+              lateDays: penalty.lateDays,
+              dailyPenaltyRate: 20000,
+              modalAwal: correspondingItem?.modalAwal || 0,
+              totalPenalty: penalty.totalPenalty,
+              reasonCode: penalty.isLate ? 'late' : 'on_time',
+              description: penalty.description,
+            }
+          }),
+          summary: {
+            onTimeItems: pairingResult.summary.onTimeItems,
+            lateItems: pairingResult.summary.lateItems,
+            damagedItems: pairingResult.summary.pairedItems, // Map pairedItems to damagedItems for compatibility
+            lostItems: 0, // Not available in pairing summary
+          },
+        }
+      }
 
       // Check if request has manual pricing
       const hasManualPricing = request.items.some((item) =>
@@ -947,9 +1212,7 @@ export class UnifiedReturnService {
             // Prepare stock updates (SKIP HILANG items)
             // ✅ FIX: Only count non-HILANG items for stock update
             // HILANG items should NOT update stock until resolution
-            const nonHilangReturned = item.conditions
-              .filter((c) => c.conditionCategory !== 'HILANG')
-              .reduce((sum, c) => sum + c.jumlahKembali, 0)
+            const nonHilangReturned = calculateNonHilangQuantity(item.conditions)
 
             if (nonHilangReturned > 0) {
               const currentStock = stockUpdates.get(transactionItem.produkId) || 0
@@ -957,13 +1220,29 @@ export class UnifiedReturnService {
             }
 
             // Prepare size updates if applicable (SKIP HILANG items)
-            const parsedKondisi = parseKondisiAwal(transactionItem.kondisiAwal)
+            const parsedKondisi = parseKondisiAwalEnhanced(transactionItem.kondisiAwal)
             if (parsedKondisi?.productSizeId && !parsedKondisi.isLegacyFormat) {
               // ✅ FIX: Only count non-HILANG items for stock update
               // HILANG items should NOT update stock until resolution
               if (nonHilangReturned > 0) {
                 const currentSizeStock = sizeUpdates.get(parsedKondisi.productSizeId) || 0
                 sizeUpdates.set(parsedKondisi.productSizeId, currentSizeStock + nonHilangReturned)
+                
+                // ✅ TASK 7: Handle dual stock restoration for jas-sarung pairings
+                // If this item has linkedSarung, also restore sarung stock
+                if (parsedKondisi.linkedSarung?.productSizeId) {
+                  const currentSarungStock = sizeUpdates.get(parsedKondisi.linkedSarung.productSizeId) || 0
+                  sizeUpdates.set(parsedKondisi.linkedSarung.productSizeId, currentSarungStock + nonHilangReturned)
+                  
+                  kasirLogger.returnProcess.info('processUnifiedReturn', 'Dual stock restoration prepared for jas-sarung pairing', {
+                    transaksiId,
+                    itemId: item.itemId,
+                    jasProductSizeId: parsedKondisi.productSizeId,
+                    sarungProductSizeId: parsedKondisi.linkedSarung.productSizeId,
+                    quantity: nonHilangReturned,
+                    restorationMode: 'DUAL_RESTORATION'
+                  })
+                }
               }
             }
 
@@ -1010,6 +1289,7 @@ export class UnifiedReturnService {
           ])
 
           // ✅ CRITICAL FIX: Move stock updates INSIDE transaction for atomicity
+          // ✅ TASK 7: Use pairing-aware stock restoration for return operations
           // ✅ PERFORMANCE FIX: Use transaction-scoped inventory service to avoid connection pool exhaustion
           // This ensures that if stock update fails, the entire return is rolled back
           // Prevents data inconsistency between return records and inventory
@@ -1017,20 +1297,98 @@ export class UnifiedReturnService {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const txInventoryService = createInventoryService(tx as any as PrismaClient)
 
+            // ✅ AUDIT TRAIL 4: Log stock restoration process start with detailed context
+            kasirLogger.returnProcess.info('processUnifiedReturn', '📦 AUDIT: Stock restoration process initiated', {
+              transaksiId,
+              totalItemsToProcess: request.items.length,
+              sizeUpdatesCount: sizeUpdates.size,
+              stockRestorationContext: {
+                transactionScope: 'INSIDE_TRANSACTION',
+                inventoryServiceType: 'PAIRING_AWARE',
+                atomicOperation: true
+              },
+              itemsProcessingPlan: request.items.map(item => {
+                const transactionItem = validation.transaction!.transaction.items.find(
+                  //eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  (ti: any) => ti.id === item.itemId,
+                )
+                const nonHilangQuantity = item.conditions
+                  .filter((c) => c.conditionCategory !== 'HILANG')
+                  .reduce((sum, c) => sum + c.jumlahKembali, 0)
+                
+                return {
+                  itemId: item.itemId,
+                  productName: transactionItem?.produk?.name || 'Unknown',
+                  nonHilangQuantity,
+                  willProcessStock: nonHilangQuantity > 0,
+                  kondisiAwalFormat: transactionItem?.kondisiAwal ? 
+                    (transactionItem.kondisiAwal.startsWith('{') ? 'JSON' : 'PIPE') : 'NULL'
+                }
+              }),
+              processingStep: 'stock_restoration_start',
+              timestamp: new Date().toISOString()
+            })
+
+            // ✅ TASK 7: Use pairing-aware stock restoration instead of simple updateStockOnReturn
+            // This handles both regular items and jas-sarung pairings with dual restoration
+            // Requirements: 2.1, 2.2, 2.3
             await Promise.all(
-              Array.from(sizeUpdates.entries()).map(async ([sizeId, quantity]) => {
-                try {
-                  // Update stock atomically within transaction
-                  // rentedQuantity--, availableQuantity++
-                  await txInventoryService.updateStockOnReturn(sizeId, quantity)
-                } catch (error) {
-                  // Throw error to trigger transaction rollback
-                  throw new Error(
-                    `Stock update failed for size ${sizeId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
-                  )
+              request.items.map(async (item) => {
+                const transactionItem = validation.transaction!.transaction.items.find(
+                  //eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  (ti: any) => ti.id === item.itemId,
+                )
+                if (!transactionItem) return
+
+                // Calculate total non-HILANG quantity for this item
+                const nonHilangQuantity = calculateNonHilangQuantity(item.conditions)
+
+                if (nonHilangQuantity > 0) {
+                  try {
+                    // Use pairing-aware stock restoration
+                    await txInventoryService.processStockForReturn(
+                      transactionItem.kondisiAwal || null,
+                      nonHilangQuantity,
+                      item.itemId,
+                      kasirLogger.returnProcess
+                    )
+                  } catch (error) {
+                    // Throw error to trigger transaction rollback
+                    throw new Error(
+                      `Pairing-aware stock restoration failed for item ${item.itemId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+                    )
+                  }
                 }
               }),
             )
+
+            // ✅ AUDIT TRAIL 5: Log stock restoration completion with success summary
+            kasirLogger.returnProcess.info('processUnifiedReturn', '✅ AUDIT: Stock restoration process completed successfully', {
+              transaksiId,
+              restorationSummary: {
+                totalItemsProcessed: request.items.length,
+                itemsWithStockRestoration: request.items.filter(item => {
+                  const nonHilangQuantity = item.conditions
+                    .filter((c) => c.conditionCategory !== 'HILANG')
+                    .reduce((sum, c) => sum + c.jumlahKembali, 0)
+                  return nonHilangQuantity > 0
+                }).length,
+                itemsSkipped: request.items.filter(item => {
+                  const nonHilangQuantity = item.conditions
+                    .filter((c) => c.conditionCategory !== 'HILANG')
+                    .reduce((sum, c) => sum + c.jumlahKembali, 0)
+                  return nonHilangQuantity === 0
+                }).length,
+                totalQuantityRestored: request.items.reduce((total, item) => {
+                  const nonHilangQuantity = item.conditions
+                    .filter((c) => c.conditionCategory !== 'HILANG')
+                    .reduce((sum, c) => sum + c.jumlahKembali, 0)
+                  return total + nonHilangQuantity
+                }, 0)
+              },
+              processingStep: 'stock_restoration_complete',
+              timestamp: new Date().toISOString()
+            })
           }
 
           // ✅ NEW: Create penalty payment record (Task 3.2: Integrate payment creation)
@@ -1181,11 +1539,26 @@ export class UnifiedReturnService {
       }
 
       // Extract size info from kondisiAwal
-      const parsedKondisi = parseKondisiAwal(transactionItem.kondisiAwal)
+      const parsedKondisi = parseKondisiAwalEnhanced(transactionItem.kondisiAwal)
       const sizeInfo =
         parsedKondisi.productSizeId && !parsedKondisi.isLegacyFormat
           ? `${parsedKondisi.size} | ${parsedKondisi.ageCategory}`
           : 'N/A'
+
+      // ✅ TASK 7: Add pairing information to activity data
+      // Requirements: 9.1, 9.2, 9.3, 9.4
+      const allTransactionItems: TransactionItem[] = transaction.items.map(ti => ({
+        id: ti.id,
+        kondisiAwal: ti.kondisiAwal || null,
+        jumlahDiambil: ti.jumlahDiambil || 0,
+        produk: {
+          id: ti.produk.id,
+          name: ti.produk.name,
+          code: ti.produk.code || ''
+        }
+      }))
+
+      const pairingInfo = PairingReturnValidator.getPairingInfo(processedItem.itemId, allTransactionItems)
 
       return {
         itemId: processedItem.itemId,
@@ -1193,6 +1566,16 @@ export class UnifiedReturnService {
         productName: transactionItem.produk.name,
         sizeInfo,
         totalItemPenalty: processedItem.penalty,
+        // ✅ TASK 7: Include pairing information in activity data
+        pairingInfo: pairingInfo.isPaired ? {
+          isPaired: true,
+          role: pairingInfo.role,
+          pairedItemId: pairingInfo.pairedItemId,
+          pairedProductSizeId: pairingInfo.pairedProductSizeId,
+          dualStockRestoration: pairingInfo.role === 'jas' // Only jas triggers dual restoration
+        } : {
+          isPaired: false
+        },
         conditions: requestItem.conditions.map((condition, index) => ({
           kondisiAkhir: condition.kondisiAkhir,
           jumlahKembali: condition.jumlahKembali,
@@ -1207,6 +1590,26 @@ export class UnifiedReturnService {
         })),
       }
     })
+
+    // ✅ TASK 7: Add pairing summary to activity metadata
+    const pairingItems = items.filter(item => item.pairingInfo.isPaired)
+    const pairingSummary = pairingItems.length > 0 ? {
+      hasPairings: true,
+      totalPairings: pairingItems.filter(item => item.pairingInfo.role === 'jas').length,
+      jasItems: pairingItems.filter(item => item.pairingInfo.role === 'jas').map(item => ({
+        itemId: item.itemId,
+        productName: item.productName,
+        pairedItemId: item.pairingInfo.pairedItemId
+      })),
+      sarungItems: pairingItems.filter(item => item.pairingInfo.role === 'sarung').map(item => ({
+        itemId: item.itemId,
+        productName: item.productName,
+        pairedItemId: item.pairingInfo.pairedItemId
+      }))
+    } : {
+      hasPairings: false,
+      totalPairings: 0
+    }
 
     // ✅ FIX: Determine correct target status based on lost items
     const hasUnresolvedLostItems = request.items.some((item) =>
@@ -1237,6 +1640,9 @@ export class UnifiedReturnService {
           from: transaction.status,
           to: targetStatus,
         },
+        // ✅ TASK 7: Add pairing information to metadata
+        // Requirements: 9.1, 9.2, 9.3, 9.4
+        pairingSummary,
       },
     }
   }
@@ -1269,7 +1675,7 @@ export class UnifiedReturnService {
       }
 
       // Extract size info
-      const parsedKondisi = parseKondisiAwal(transactionItem.kondisiAwal)
+      const parsedKondisi = parseKondisiAwalEnhanced(transactionItem.kondisiAwal)
       const sizeInfo =
         parsedKondisi.productSizeId && !parsedKondisi.isLegacyFormat
           ? `${parsedKondisi.size} | ${parsedKondisi.ageCategory}`
@@ -1738,7 +2144,7 @@ export class UnifiedReturnService {
       }
 
       // Parse kondisiAwal to get sizeId
-      const kondisiAwal = parseKondisiAwal(returnRecord.transaksiItem.kondisiAwal)
+      const kondisiAwal = parseKondisiAwalEnhanced(returnRecord.transaksiItem.kondisiAwal)
       if (!kondisiAwal.productSizeId) {
         throw new Error('Cannot resolve: Product size ID not found in kondisiAwal')
       }

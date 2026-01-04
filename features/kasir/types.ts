@@ -673,6 +673,24 @@ export interface TransaksiItemResponse {
   kondisiAwal?: string
   kondisiAkhir?: string
   statusKembali: ReturnStatus
+  // ✅ TASK 6: Add linkedSarung property for jas-sarung pairing integration
+  linkedSarung?: {
+    productId: string
+    productSizeId: string
+    quantity: number
+    product?: {
+      id: string
+      code: string
+      name: string
+      category?: string
+      imageUrl?: string
+    }
+    selectedSize?: {
+      id: string
+      size: string
+      ageCategory: string
+    }
+  }
 }
 
 export interface PembayaranResponse {
@@ -1391,6 +1409,20 @@ export interface UnifiedConditionFormProps {
   disabled?: boolean
   isLoading?: boolean
   remainingQuantity?: number // Add remaining quantity prop for accurate default calculation
+  pairingInfo?: {
+    isPaired: boolean
+    isJas: boolean
+    linkedSarungData?: {
+      productId: string
+      productSizeId: string
+      quantity: number
+      product?: {
+        name: string
+        code: string
+      }
+    }
+    displayName?: string
+  } // Add pairing information for UI display
 }
 
 export type ReturnProcessingResult = EnhancedReturnProcessingResult
