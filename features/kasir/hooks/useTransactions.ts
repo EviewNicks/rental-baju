@@ -10,7 +10,6 @@ import {
   useCacheManager, 
   generateTransactionCacheKey, 
   generateInvalidationPattern,
-  useDebounce,
   useAutoRefresh
 } from './optimization'
 
@@ -22,7 +21,6 @@ interface UseTransactionsOptions {
 export function useTransactions(options: UseTransactionsOptions = {}) {
   const { enabled = true, refetchInterval = 60000 } = options // Increased from 30s to 60s
   const [filters, setFilters] = useState<TransactionFilters>({})
-  const [isTyping, setIsTyping] = useState(false)
   
   // Initialize cache manager
   const cacheManager = useCacheManager({
@@ -31,21 +29,65 @@ export function useTransactions(options: UseTransactionsOptions = {}) {
     enablePersistence: true
   })
 
-  // Debounce search input to reduce API calls
-  const { debouncedValue: debouncedSearch } = useDebounce(
-    filters.search || '',
-    {
-      delay: 300,
-      onPending: setIsTyping
+  // Simplified debounce for search - direct implementation
+  const [debouncedSearch, setDebouncedSearch] = useState(filters.search || '')
+  const [isSearching, setIsSearching] = useState(false)
+
+  useEffect(() => {
+    const searchValue = filters.search || ''
+    
+    // If empty, clear immediately
+    if (!searchValue) {
+      setDebouncedSearch('')
+      setIsSearching(false)
+      return
     }
-  )
+
+    setIsSearching(true)
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchValue)
+      setIsSearching(false)
+    }, 500)
+
+    return () => {
+      clearTimeout(timer)
+    }
+  }, [filters.search])
+
+  // Simplified debounce for date filter - direct implementation
+  const [debouncedDateFilter, setDebouncedDateFilter] = useState(filters.dateFilter || '')
+  const [isDateFiltering, setIsDateFiltering] = useState(false)
+
+  useEffect(() => {
+    const dateValue = filters.dateFilter || ''
+    
+    // If empty, clear immediately
+    if (!dateValue) {
+      setDebouncedDateFilter('')
+      setIsDateFiltering(false)
+      return
+    }
+
+    setIsDateFiltering(true)
+    const timer = setTimeout(() => {
+      setDebouncedDateFilter(dateValue)
+      setIsDateFiltering(false)
+    }, 500)
+
+    return () => {
+      clearTimeout(timer)
+    }
+  }, [filters.dateFilter])
 
   // Initialize simplified auto-refresh
   const autoRefresh = useAutoRefresh({
     interval: refetchInterval,
   })
 
-  // Build query parameters from filters with debounced search
+  // Combined typing state for auto-refresh control
+  const isTyping = isSearching || isDateFiltering
+
+  // Build query parameters from filters with debounced search and date filter
   const queryParams = useMemo((): TransaksiQueryParams => {
     const params: TransaksiQueryParams = {
       page: 1,
@@ -60,32 +102,34 @@ export function useTransactions(options: UseTransactionsOptions = {}) {
       params.search = debouncedSearch
     }
 
-    return params
-  }, [filters.status, debouncedSearch])
+    // Add date filter parameter (Task 3.1)
+    if (debouncedDateFilter) {
+      params.tglMulai = debouncedDateFilter
+    }
 
-  // Generate cache key for current query
+    return params
+  }, [filters.status, debouncedSearch, debouncedDateFilter])
+
+  // Generate cache key for current query (including date filter)
   const cacheKey = useMemo(() => {
     return generateTransactionCacheKey({
       search: queryParams.search,
       status: queryParams.status,
       page: queryParams.page,
-      limit: queryParams.limit
+      limit: queryParams.limit,
+      tglMulai: queryParams.tglMulai, // Include date filter in cache key
     })
   }, [queryParams])
 
-  // Custom query function with cache integration
+  // Custom query function with simplified cache integration
   const queryFn = useCallback(async (): Promise<TransaksiListResponse> => {
-    // Try cache first
-    const cachedData = await cacheManager.get(cacheKey)
-    if (cachedData) {
-      return cachedData as TransaksiListResponse
-    }
-
-    // Fetch from API if not in cache
+    // Always fetch fresh data for date filter queries to ensure accuracy
     const apiData = await kasirApi.transaksi.getAll(queryParams)
     
-    // Cache the result
-    await cacheManager.set(cacheKey, apiData)
+    // Cache the result only for non-date queries to avoid stale data
+    if (!queryParams.tglMulai && !queryParams.search) {
+      await cacheManager.set(cacheKey, apiData)
+    }
     
     return apiData
   }, [cacheManager, cacheKey, queryParams])
@@ -101,11 +145,13 @@ export function useTransactions(options: UseTransactionsOptions = {}) {
     queryFn,
     enabled,
     refetchInterval: false, // Disable React Query's auto-refresh, use our custom one
-    staleTime: 2 * 60 * 1000, // Reduced from 5 minutes to 2 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
-    // Implement stale-while-revalidate pattern
+    staleTime: 0, // Always consider data stale for date filter queries
+    gcTime: 5 * 60 * 1000, // 5 minutes garbage collection
+    // Simplified configuration for better reliability
     refetchOnWindowFocus: false, // Prevent excessive refetches
     refetchOnReconnect: true, // Refetch when network reconnects
+    retry: 1, // Reduce retry attempts for faster failure handling
+    retryDelay: 500, // 500ms retry delay
   })
 
   // Store autoRefresh in ref to avoid dependency issues
@@ -231,6 +277,18 @@ export function useTransactions(options: UseTransactionsOptions = {}) {
     })
   }, []) // Empty dependency array - this function should be stable
 
+  // Reset all filters function (Task 3.1)
+  const resetAllFilters = useCallback(() => {
+    setFilters({})
+  }, [])
+
+  // Check if any filters are active (Task 3.1)
+  const hasActiveFilters = useMemo(() => {
+    return !!(filters.status && filters.status !== 'all') || 
+           !!(filters.search && filters.search.trim()) || 
+           !!(filters.dateFilter && filters.dateFilter.trim())
+  }, [filters.status, filters.search, filters.dateFilter])
+
   // Helper function to manually refresh data with cache invalidation
   const refreshTransactions = useCallback(async () => {
     // Invalidate cache for current query
@@ -254,6 +312,8 @@ export function useTransactions(options: UseTransactionsOptions = {}) {
     transactions,
     filters,
     updateFilters,
+    resetAllFilters, // New: Reset all filters function
+    hasActiveFilters, // New: Check if any filters are active
     isLoading: isLoading && !transactionData, // Only show loading if no data yet
     error,
     counts,
@@ -265,7 +325,9 @@ export function useTransactions(options: UseTransactionsOptions = {}) {
     summary: transactionData?.summary,
     // Cache and performance info
     cacheStats: cacheManager.getStats(),
-    isTyping,
+    isTyping, // Combined typing state
+    isSearching, // Separate search loading state
+    isDateFiltering, // Separate date filter loading state
     // Auto-refresh status
     autoRefreshStatus: {
       isActive: autoRefresh.isActive,

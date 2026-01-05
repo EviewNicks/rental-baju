@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import type { TransactionStatus } from '../../types'
 import { useTransactions } from '../../hooks/useTransactions'
+import { useURLFilters } from '../../hooks/useURLFilters'
 import { TransactionTabs } from './TransactionTabs'
 import { TransactionTable } from './TransactionsTable'
 import { Button } from '@/components/ui/button'
@@ -14,8 +15,44 @@ import { Plus, Shirt, Wallet } from 'lucide-react'
 export function TransactionsDashboard() {
   const searchParams = useSearchParams()
   const [activeTab, setActiveTab] = useState<TransactionStatus | 'all'>('all')
-  const { transactions, filters, updateFilters, isLoading, counts, error, refreshTransactions } =
-    useTransactions()
+  const { 
+    transactions, 
+    filters, 
+    updateFilters, 
+    resetAllFilters, 
+    hasActiveFilters, 
+    isLoading, 
+    counts, 
+    error, 
+    refreshTransactions,
+    isDateFiltering,
+    isSearching
+  } = useTransactions()
+
+  // Initialize URL filters hook for state persistence
+  const { parseFiltersFromURL, updateURL } = useURLFilters()
+
+  // Initialize filters from URL on component mount
+  useEffect(() => {
+    const urlFilters = parseFiltersFromURL()
+    
+    // Set active tab from URL status parameter
+    if (urlFilters.status) {
+      setActiveTab(urlFilters.status)
+    } else {
+      setActiveTab('all')
+    }
+    
+    // Update filters from URL parameters
+    if (Object.keys(urlFilters).length > 0) {
+      updateFilters(urlFilters)
+    }
+  }, [parseFiltersFromURL, updateFilters])
+
+  // Update URL when filters or active tab change
+  useEffect(() => {
+    updateURL(filters, activeTab)
+  }, [filters, activeTab, updateURL])
 
   // Check for refresh parameter and trigger refresh if needed
   useEffect(() => {
@@ -36,6 +73,15 @@ export function TransactionsDashboard() {
 
   const handleSearchChange = (search: string) => {
     updateFilters({ search })
+  }
+
+  const handleDateChange = (dateFilter: string | null) => {
+    updateFilters({ dateFilter: dateFilter || undefined })
+  }
+
+  const handleResetFilters = () => {
+    setActiveTab('all')
+    resetAllFilters()
   }
 
   // Handle error state
@@ -194,7 +240,13 @@ export function TransactionsDashboard() {
           onTabChange={handleTabChange}
           searchValue={filters.search || ''}
           onSearchChange={handleSearchChange}
+          dateValue={filters.dateFilter || null}
+          onDateChange={handleDateChange}
+          onResetFilters={handleResetFilters}
+          hasActiveFilters={hasActiveFilters}
           counts={counts}
+          isLoading={isDateFiltering}
+          isSearchLoading={isSearching}
         />
 
           {/* Transactions Table */}

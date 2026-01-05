@@ -1153,7 +1153,7 @@ export class TransaksiService {
    * Applies status enhancement and filtering on enhanced status for accurate results
    */
   async getTransaksiList(params: TransaksiQueryParams): Promise<TransaksiListResponse> {
-    const { page, limit, status, search, penyewaId, dateStart, dateEnd } = params
+    const { page, limit, status, search, penyewaId, dateStart, dateEnd, tglMulai } = params
 
     // Build where clause for database filtering (exclude status for now - we'll filter by enhanced status)
     const whereClause: Record<string, unknown> = {}
@@ -1162,10 +1162,25 @@ export class TransaksiService {
       whereClause.penyewaId = penyewaId
     }
 
+    // Handle date range filtering (existing functionality)
     if (dateStart || dateEnd) {
       whereClause.createdAt = {}
       if (dateStart) (whereClause.createdAt as Record<string, Date>).gte = new Date(dateStart)
       if (dateEnd) (whereClause.createdAt as Record<string, Date>).lte = new Date(dateEnd)
+    }
+
+    // Handle single date filtering for tglMulai (new functionality)
+    if (tglMulai) {
+      // Convert YYYY-MM-DD to date range for exact day matching
+      // Handle timezone properly for Indonesian context (UTC+7)
+      const filterDate = new Date(tglMulai)
+      const startOfDay = new Date(filterDate.getFullYear(), filterDate.getMonth(), filterDate.getDate(), 0, 0, 0, 0)
+      const endOfDay = new Date(filterDate.getFullYear(), filterDate.getMonth(), filterDate.getDate(), 23, 59, 59, 999)
+      
+      whereClause.tglMulai = {
+        gte: startOfDay,
+        lte: endOfDay,
+      }
     }
 
     if (search) {

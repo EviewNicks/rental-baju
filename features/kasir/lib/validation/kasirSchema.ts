@@ -240,7 +240,8 @@ export const transaksiQuerySchema = z.object({
   search: z.string().optional(),
   penyewaId: z.string().uuid().optional(),
   dateStart: z.string().datetime().optional(),
-  dateEnd: z.string().datetime().optional()
+  dateEnd: z.string().datetime().optional(),
+  tglMulai: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Format tanggal harus YYYY-MM-DD').optional(), // New: Single date filter
 }).refine((data) => {
   if (data.dateStart && data.dateEnd) {
     return new Date(data.dateEnd) >= new Date(data.dateStart)

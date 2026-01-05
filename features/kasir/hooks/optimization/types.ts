@@ -61,6 +61,7 @@ export interface SearchParams {
   status?: string
   dateFrom?: string
   dateTo?: string
+  tglMulai?: string // New: Single date filter for rental start date
   page?: number
   limit?: number
   sortBy?: string

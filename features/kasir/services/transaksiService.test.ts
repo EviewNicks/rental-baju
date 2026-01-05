@@ -395,6 +395,40 @@ describe('TransaksiService', () => {
         include: expect.any(Object)
       })
     })
+
+    it('should filter transactions by tglMulai date', async () => {
+      const queryParams = {
+        page: 1,
+        limit: 10,
+        tglMulai: '2024-01-15' // YYYY-MM-DD format
+      }
+
+      mockPrisma.transaksi.findMany.mockResolvedValue([
+        mockTransaksiList[0]
+      ] as never)
+
+      await transaksiService.getTransaksiList(queryParams)
+
+      // Verify that the date filtering is applied correctly
+      const expectedCall = mockPrisma.transaksi.findMany.mock.calls[0][0]
+      expect(expectedCall.where.tglMulai).toBeDefined()
+      expect(expectedCall.where.tglMulai.gte).toBeInstanceOf(Date)
+      expect(expectedCall.where.tglMulai.lte).toBeInstanceOf(Date)
+      
+      // Verify the date range covers the full day
+      const startOfDay = expectedCall.where.tglMulai.gte
+      const endOfDay = expectedCall.where.tglMulai.lte
+      
+      expect(startOfDay.getHours()).toBe(0)
+      expect(startOfDay.getMinutes()).toBe(0)
+      expect(startOfDay.getSeconds()).toBe(0)
+      expect(startOfDay.getMilliseconds()).toBe(0)
+      
+      expect(endOfDay.getHours()).toBe(23)
+      expect(endOfDay.getMinutes()).toBe(59)
+      expect(endOfDay.getSeconds()).toBe(59)
+      expect(endOfDay.getMilliseconds()).toBe(999)
+    })
   })
 
   describe('updateTransaksiStatus', () => {
