@@ -120,10 +120,7 @@ export class PengeluaranService {
       throw new Error('Expense not found or has been deleted')
     }
 
-    // Check if user owns this expense (kasirId must match)
-    if (existing.kasirId !== this.kasirId) {
-      throw new Error('Not authorized to update this expense')
-    }
+    // Authorization handled at API route level - kasir role can edit any expense
 
     // NEW: Validate kasirId if provided
     if (validatedData.kasirId) {
@@ -197,10 +194,7 @@ export class PengeluaranService {
       throw new Error('Expense not found or already deleted')
     }
 
-    // Check if user owns this expense
-    if (existing.kasirId !== this.kasirId) {
-      throw new Error('Not authorized to delete this expense')
-    }
+    // Authorization handled at API route level - kasir role can delete any expense
 
     // Soft delete by setting isActive to false
     await this.prisma.pengeluaranKasir.update({

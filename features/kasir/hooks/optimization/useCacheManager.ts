@@ -15,6 +15,7 @@ export function generateTransactionCacheKey(params: SearchParams): string {
     status = '',
     dateFrom = '',
     dateTo = '',
+    tglMulai = '', // New: Single date filter
     page = 1,
     limit = 20,
     sortBy = 'createdAt',
@@ -29,6 +30,7 @@ export function generateTransactionCacheKey(params: SearchParams): string {
     status ? `status:${status}` : '',
     dateFrom ? `from:${dateFrom}` : '',
     dateTo ? `to:${dateTo}` : '',
+    tglMulai ? `tglMulai:${tglMulai}` : '', // New: Include single date filter in cache key
     `page:${page}`,
     `limit:${limit}`,
     `sort:${sortBy}:${sortOrder}`

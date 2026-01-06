@@ -7,6 +7,8 @@ import { cn } from '@/lib/utils'
 import { Search, Loader2 } from 'lucide-react'
 import { statusConfig } from '../../lib/constants/uiConfig'
 import { useSearchDebounce } from '../../hooks/optimization/useDebounce'
+import { DateFilter } from '../ui/DateFilter'
+import { ResetButton } from '../ui/ResetButton'
 
 interface TransactionTabsProps {
   activeTab: TransactionStatus | 'all'
@@ -21,6 +23,13 @@ interface TransactionTabsProps {
     cancelled: number
     total: number
   }
+  // New date filter props
+  dateValue: string | null
+  onDateChange: (date: string | null) => void
+  onResetFilters: () => void
+  hasActiveFilters: boolean
+  isLoading?: boolean
+  isSearchLoading?: boolean
 }
 
 interface SearchInputProps {
@@ -28,6 +37,7 @@ interface SearchInputProps {
   onChange: (value: string) => void
   placeholder?: string
   className?: string
+  isLoading?: boolean
 }
 
 // Dynamic tab configuration based on statusConfig
@@ -75,12 +85,16 @@ function SearchInput({
   onChange,
   placeholder = 'Cari transaksi...',
   className,
+  isLoading = false,
 }: SearchInputProps) {
   const { isPending, handleKeyPress, handleClear } = useSearchDebounce(
     value,
     onChange,
-    300 // Use 300ms as specified in requirements (not 1200ms)
+    500 // Increased from 300ms to 500ms for better performance
   )
+
+  // Use external loading state if provided, otherwise use internal pending state
+  const showLoading = isLoading || isPending
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value
@@ -93,7 +107,7 @@ function SearchInput({
 
   return (
     <div className={cn('relative', className)}>
-      {isPending ? (
+      {showLoading ? (
         <Loader2 className="absolute left-3 top-1/2 -translate-y-1/2 text-yellow-500 h-4 w-4 animate-spin" />
       ) : (
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
@@ -106,7 +120,7 @@ function SearchInput({
         onKeyPress={handleKeyPress}
         className={cn(
           "pl-10 bg-white/80 backdrop-blur-sm border-gray-200 focus:border-yellow-400 focus:ring-yellow-400/20",
-          isPending && "pr-10" // Add padding for clear button when typing
+          showLoading && "pr-10" // Add padding for clear button when typing
         )}
         data-testid="search-input"
       />
@@ -130,6 +144,12 @@ export function TransactionTabs({
   searchValue,
   onSearchChange,
   counts,
+  dateValue,
+  onDateChange,
+  onResetFilters,
+  hasActiveFilters,
+  isLoading = false,
+  isSearchLoading = false,
 }: TransactionTabsProps) {
   const tabConfigs = getTabConfiguration()
 
@@ -153,12 +173,29 @@ export function TransactionTabs({
             ))}
           </TabsList>
         </Tabs>
-        <SearchInput
-          value={searchValue}
-          onChange={onSearchChange}
-          placeholder="Cari transaksi..."
-          className="w-full sm:w-80"
-        />
+        
+        {/* Filter Controls */}
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+          <SearchInput
+            value={searchValue}
+            onChange={onSearchChange}
+            placeholder="Cari transaksi..."
+            className="w-full sm:w-80"
+            isLoading={isSearchLoading}
+          />
+          <DateFilter
+            value={dateValue}
+            onChange={onDateChange}
+            placeholder="Filter tanggal..."
+            className="w-full sm:w-48"
+            isLoading={isLoading}
+          />
+          <ResetButton
+            onReset={onResetFilters}
+            hasActiveFilters={hasActiveFilters}
+            className="w-full sm:w-auto"
+          />
+        </div>
       </div>
     </div>
   )

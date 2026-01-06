@@ -496,6 +496,14 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
     return true
   }, [transaction, formState.itemConditions])
 
+  // ✅ TASK 6: Get selectable items (all items since sarung is metadata)
+  const returnableItems =
+    transaction && transaction.items
+      ? getItemsWithRemainingQuantity({ ...transaction, items: transaction.items })
+      : []
+
+  const selectableItems = returnableItems // All items are selectable since sarung is metadata
+
   // Process return mutation
   const processReturnMutation = useMutation({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -718,7 +726,7 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
     } finally {
       setFormState((prev) => ({ ...prev, isProcessing: false }))
     }
-  }, [validateForm, formState, processReturnMutation, kode])
+  }, [validateForm, formState, processReturnMutation, kode, selectableItems])
 
   // Handle close/back navigation
   const handleClose = useCallback(() => {
@@ -728,14 +736,6 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
       router.back()
     }
   }, [onClose, router])
-
-  // ✅ TASK 6: Get selectable items (all items since sarung is metadata)
-  const returnableItems =
-    transaction && transaction.items
-      ? getItemsWithRemainingQuantity({ ...transaction, items: transaction.items })
-      : []
-
-  const selectableItems = returnableItems // All items are selectable since sarung is metadata
 
   // ✅ PARTIAL RETURN FIX: Check if form is valid for submission
   // At least one item must be being returned (quantity > 0) and all returned items must be valid

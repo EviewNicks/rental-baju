@@ -73,6 +73,7 @@ export async function GET(request: NextRequest) {
       penyewaId: searchParams.get('penyewaId') || undefined,
       dateStart: searchParams.get('dateStart') || undefined,
       dateEnd: searchParams.get('dateEnd') || undefined,
+      tglMulai: searchParams.get('tglMulai') || undefined, // New: Single date filter for rental start date
     }
 
     const validatedQuery = transaksiQuerySchema.parse(queryParams)

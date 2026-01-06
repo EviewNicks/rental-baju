@@ -159,7 +159,22 @@ export class ProfessionalReceiptService {
     doc.text(STORE_CONFIG.phone, storeInfoX, logoMiddleY + 7)
     doc.text('Instagram: erlima.mode', storeInfoX, logoMiddleY + 11)
 
-    // Add customer and cashier info below store info (left side) - REMOVED, moved to right side
+    // Add transaction code and cashier info at left margin, vertically aligned with logo
+    const leftMarginX = this.MARGIN // Align with left margin (same as logo)
+    const leftInfoStartY = logoMiddleY + 15 // Start below logo area
+    doc.setFont(this.FONT_FAMILY, 'normal')
+    doc.setFontSize(this.FONT_SIZE)
+    
+    // Kasir (left margin, first line) - with null check
+    let currentLeftY = leftInfoStartY
+    if (transactionData.kasir) {
+      doc.text(`Kasir: ${transactionData.kasir.nama}`, leftMarginX, currentLeftY)
+      currentLeftY += 4
+    }
+
+    // Kode Transaksi (left margin, below kasir)
+    doc.text(`Kode Transaksi: ${transactionData.kode}`, leftMarginX, currentLeftY)
+    const kasirY = currentLeftY + 4
 
     // RIGHT SIDE: Transaction Information (aligned with logo top)
     const rightX = this.PDF_WIDTH_MM - this.MARGIN - 5 // Almost at right margin
@@ -169,7 +184,7 @@ export class ProfessionalReceiptService {
     doc.setFont(this.FONT_FAMILY, 'normal')
     doc.setFontSize(this.FONT_SIZE)
 
-    // Create complete table for transaction details + customer info (dates, payment, customer, kasir)
+    // Create table for transaction details + customer info (dates, payment, customer) - REMOVED kode transaksi and kasir
     const tableData = []
     
     // Tanggal (transaction date - date only)
@@ -193,13 +208,8 @@ export class ProfessionalReceiptService {
       tableData.push(['Pembayaran:', this.formatPaymentMethodDisplay(transactionData.metodeBayar)])
     }
 
-    // Kepada Yth (customer name) - moved from left to right
+    // Kepada Yth (customer name)
     tableData.push(['Kepada Yth:', transactionData.penyewa.nama])
-    
-    // Kasir (cashier name) - moved from left to right, with null check
-    if (transactionData.kasir) {
-      tableData.push(['Kasir:', transactionData.kasir.nama])
-    }
 
     // Table configuration for transaction info (invisible borders) - RIGHT ALIGNED
     const labelWidth = 35 // Width for labels
@@ -225,7 +235,7 @@ export class ProfessionalReceiptService {
     }
 
     // Calculate final Y position (use the maximum of left and right sides)
-    const leftFinalY = logoMiddleY + 15 // Store info final position (no more customer info on left)
+    const leftFinalY = kasirY + 5 // Left side final position (after transaction code and kasir)
     const rightFinalY = rightY + (tableData.length * rowHeight) + 5 // Add spacing after transaction table
     
     return Math.max(leftFinalY, rightFinalY)

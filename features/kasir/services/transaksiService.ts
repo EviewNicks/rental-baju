@@ -1153,7 +1153,7 @@ export class TransaksiService {
    * Applies status enhancement and filtering on enhanced status for accurate results
    */
   async getTransaksiList(params: TransaksiQueryParams): Promise<TransaksiListResponse> {
-    const { page, limit, status, search, penyewaId, dateStart, dateEnd } = params
+    const { page, limit, status, search, penyewaId, dateStart, dateEnd, tglMulai } = params
 
     // Build where clause for database filtering (exclude status for now - we'll filter by enhanced status)
     const whereClause: Record<string, unknown> = {}
@@ -1162,10 +1162,25 @@ export class TransaksiService {
       whereClause.penyewaId = penyewaId
     }
 
+    // Handle date range filtering (existing functionality)
     if (dateStart || dateEnd) {
       whereClause.createdAt = {}
       if (dateStart) (whereClause.createdAt as Record<string, Date>).gte = new Date(dateStart)
       if (dateEnd) (whereClause.createdAt as Record<string, Date>).lte = new Date(dateEnd)
+    }
+
+    // Handle single date filtering for tglMulai (new functionality)
+    if (tglMulai) {
+      // Convert YYYY-MM-DD to date range for exact day matching
+      // Handle timezone properly for Indonesian context (UTC+7)
+      const filterDate = new Date(tglMulai)
+      const startOfDay = new Date(filterDate.getFullYear(), filterDate.getMonth(), filterDate.getDate(), 0, 0, 0, 0)
+      const endOfDay = new Date(filterDate.getFullYear(), filterDate.getMonth(), filterDate.getDate(), 23, 59, 59, 999)
+      
+      whereClause.tglMulai = {
+        gte: startOfDay,
+        lte: endOfDay,
+      }
     }
 
     if (search) {
@@ -1346,21 +1361,28 @@ export class TransaksiService {
             select: { nama: true },
           })
 
-          // ✅ NEW: Process automatic refund if payment was made
+          // ✅ NEW: Process automatic refund with policy calculation if payment was made
           const refundAmount = existingTransaksi.jumlahBayar.toNumber()
           let refundProcessed = false
           let refundError: string | null = null
+          let actualRefundAmount = 0
 
           if (refundAmount > 0) {
             try {
+              // ✅ NEW: Get refund data from request if provided
+              const refundData = data.refundData || null
+              
               await this.processAutomaticRefund(tx, {
                 transaksiId: id,
                 transactionCode: existingTransaksi.kode,
                 refundAmount,
                 customerName: customerInfo?.nama || 'Unknown Customer',
                 cancellationReason: data.catatan || 'Tanpa alasan',
+                refundData, // ✅ NEW: Pass refund calculation data
               })
-              refundProcessed = true
+              
+              actualRefundAmount = refundData?.isEligible ? refundData.refundAmount : 0
+              refundProcessed = actualRefundAmount > 0
             } catch (error) {
               // Log error but don't fail the cancellation
               refundError = error instanceof Error ? error.message : 'Unknown refund error'
@@ -1390,10 +1412,17 @@ export class TransaksiService {
                 itemsCount: itemsCount,
                 stockRestored: false,  // ✅ UPDATED: No stock restoration for cancelled transactions
                 cancelledAt: new Date().toISOString(),
-                // ✅ ENHANCED: Refund processing status
+                // ✅ ENHANCED: Refund processing status with policy data
                 needsRefund: refundAmount > 0 && !refundProcessed,
                 refundProcessed: refundProcessed,
                 refundAmount: refundAmount > 0 ? refundAmount : undefined,
+                actualRefundAmount: actualRefundAmount > 0 ? actualRefundAmount : undefined,
+                refundPolicy: data.refundData ? {
+                  isEligible: data.refundData.isEligible,
+                  refundPercentage: data.refundData.refundPercentage,
+                  daysUntilPickup: data.refundData.daysUntilPickup,
+                  calculationDate: new Date().toISOString(),
+                } : undefined,
                 expenseRecordCreated: refundProcessed,
                 refundCategory: refundProcessed ? 'Refund Pembatalan Transaksi' : undefined,
                 refundError: refundError,
@@ -1623,6 +1652,12 @@ export class TransaksiService {
       refundAmount: number
       customerName: string
       cancellationReason: string
+      refundData?: {
+        refundAmount: number
+        refundPercentage: number
+        isEligible: boolean
+        daysUntilPickup: number
+      } | null
     }
   ): Promise<void> {
     // Step 1: Validate kasir exists (required for expense tracking)
@@ -1638,37 +1673,58 @@ export class TransaksiService {
       throw new Error('Kasir tidak ditemukan untuk pemrosesan refund')
     }
 
-    // Step 2: Create refund payment record (negative amount)
-    await tx.pembayaran.create({
-      data: {
-        transaksiId: params.transaksiId,
-        jumlah: new Decimal(-params.refundAmount),
-        metode: 'refund',
-        catatan: `Refund pembatalan transaksi: ${params.cancellationReason}`,
-        createdBy: this.userId,
-      },
-    })
+    // ✅ NEW: Calculate actual refund amount based on policy
+    const actualRefundAmount = params.refundData?.isEligible 
+      ? params.refundData.refundAmount 
+      : 0
 
-    // Step 3: Create expense record (positive amount)
-    await tx.pengeluaranKasir.create({
-      data: {
+    // Only process refund if eligible and amount > 0
+    if (actualRefundAmount > 0) {
+      // Step 2: Create refund payment record (negative amount)
+      await tx.pembayaran.create({
+        data: {
+          transaksiId: params.transaksiId,
+          jumlah: new Decimal(-actualRefundAmount),
+          metode: 'refund',
+          catatan: `Refund pembatalan transaksi (${params.refundData?.refundPercentage}%): ${params.cancellationReason}`,
+          createdBy: this.userId,
+        },
+      })
+
+      // Step 3: Create expense record (positive amount)
+      await tx.pengeluaranKasir.create({
+        data: {
+          kasirId: this.kasirId,
+          harga: new Decimal(actualRefundAmount),
+          kategori: 'Refund Pembatalan Transaksi',
+          deskripsi: `Refund pembatalan transaksi #${params.transactionCode} - ${params.customerName} (${params.refundData?.refundPercentage}% dari Rp ${params.refundAmount.toLocaleString('id-ID')})`,
+          createdBy: this.userId,
+          isActive: true,
+        },
+      })
+
+      console.log('✅ Policy-based refund processed successfully', {
+        transactionId: params.transaksiId,
+        transactionCode: params.transactionCode,
+        originalAmount: params.refundAmount,
+        actualRefundAmount,
+        refundPercentage: params.refundData?.refundPercentage,
+        daysUntilPickup: params.refundData?.daysUntilPickup,
         kasirId: this.kasirId,
-        harga: new Decimal(params.refundAmount),
-        kategori: 'Refund Pembatalan Transaksi',
-        deskripsi: `Refund pembatalan transaksi #${params.transactionCode} - ${params.customerName}`,
-        createdBy: this.userId,
-        isActive: true,
-      },
-    })
-
-    console.log('✅ Automatic refund processed successfully', {
-      transactionId: params.transaksiId,
-      transactionCode: params.transactionCode,
-      refundAmount: params.refundAmount,
-      kasirId: this.kasirId,
-      timestamp: new Date().toISOString(),
-    })
+        timestamp: new Date().toISOString(),
+      })
+    } else {
+      console.log('ℹ️ No refund processed - not eligible or zero amount', {
+        transactionId: params.transaksiId,
+        transactionCode: params.transactionCode,
+        originalAmount: params.refundAmount,
+        isEligible: params.refundData?.isEligible || false,
+        daysUntilPickup: params.refundData?.daysUntilPickup || 0,
+        timestamp: new Date().toISOString(),
+      })
+    }
   }
+  
 
   /**
    * TASK 19: Transform transaction items to include linkedSarung relationships

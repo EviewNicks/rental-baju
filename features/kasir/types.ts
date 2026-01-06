@@ -390,6 +390,47 @@ export interface TransactionFilters {
     start: string
     end: string
   }
+  dateFilter?: string // New: Single date filter for tglMulai (YYYY-MM-DD format)
+}
+
+// Enhanced useTransactions Hook Return Type for Date Filter Feature
+export interface UseTransactionsReturn {
+  // Existing returns
+  transactions: Transaction[]
+  filters: TransactionFilters
+  updateFilters: (filters: Partial<TransactionFilters>) => void
+  isLoading: boolean
+  error: Error | null
+  counts: {
+    active: number
+    diambil: number
+    completed: number
+    overdue: number
+    cancelled: number
+    total: number
+  }
+  
+  // New date filter returns
+  resetAllFilters: () => void
+  hasActiveFilters: boolean
+  
+  // Additional metadata (existing)
+  pagination?: {
+    page: number
+    limit: number
+    total: number
+    totalPages: number
+  }
+  summary?: {
+    totalActive: number
+    totalDiambil: number
+    totalSelesai: number
+    totalTerlambat: number
+    totalCancelled: number
+  }
+  refreshTransactions: () => Promise<void>
+  clearError: () => void
+  invalidateCache: (type?: 'all' | 'search' | 'detail') => Promise<void>
 }
 
 export interface ActivityLog {
@@ -644,12 +685,19 @@ export interface UpdateTransaksiRequest {
   status?: TransactionStatus
   tglKembali?: string // ISO date string
   catatan?: string
-  kasirId?: string // ✅ NEW: For manual kasir selection in refund processing
+  kasirId?: string // ✅ EXISTING: For manual kasir selection in refund processing
   items?: Array<{
     id: string
     kondisiAkhir?: string
     statusKembali?: ReturnStatus
   }>
+  // ✅ NEW: Refund data for cancellation with policy calculation
+  refundData?: {
+    refundAmount: number
+    refundPercentage: number
+    isEligible: boolean
+    daysUntilPickup: number
+  } | null
 }
 
 export interface TransaksiItemResponse {
@@ -813,6 +861,7 @@ export interface TransaksiQueryParams {
     end: string
   }
   penyewaId?: string
+  tglMulai?: string // New: Single date filter for rental start date (YYYY-MM-DD format)
   [key: string]: unknown
 }
 
@@ -1316,6 +1365,44 @@ export interface TransaksiItemReturnData {
 // ==========================================
 // UI TYPES
 // ==========================================
+
+// Enhanced TransactionTabs Component Props for Date Filter Feature
+export interface TransactionTabsProps {
+  // Existing props
+  activeTab: TransactionStatus | 'all'
+  onTabChange: (tab: TransactionStatus | 'all') => void
+  searchValue: string
+  onSearchChange: (value: string) => void
+  counts: {
+    active: number
+    diambil: number
+    completed: number
+    overdue: number
+    cancelled: number
+    total: number
+  }
+  
+  // New date filter props
+  dateValue: string | null
+  onDateChange: (date: string | null) => void
+  onResetFilters: () => void
+  hasActiveFilters: boolean
+}
+
+// Date Filter Component Props
+export interface DateFilterProps {
+  value: string | null
+  onChange: (date: string | null) => void
+  placeholder?: string
+  className?: string
+}
+
+// Reset Button Component Props
+export interface ResetButtonProps {
+  onReset: () => void
+  hasActiveFilters: boolean
+  className?: string
+}
 
 export interface TransactionSuccessProps {
   transactionCode?: string
