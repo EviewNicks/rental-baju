@@ -429,9 +429,8 @@ export class PickupService {
             },
           })
 
-          // ✅ TASK 9: Fix critical partial pickup bug - Check if ALL pickupable items are fully picked up
+          // ✅ FIXED: Update status logic - Change to "diambil" when ANY item is picked up
           // Filter out paired sarung items since they are not picked up separately
-          // Use Array.every() to verify EVERY pickupable item has jumlahDiambil >= jumlah
           const pickupableItems = allTransactionItems.filter((item) => {
             // Parse kondisiAwal to check if this is a paired sarung
             try {
@@ -453,6 +452,11 @@ export class PickupService {
             return true
           })
 
+          // ✅ NEW LOGIC: Check if ANY item has been picked up (not all items)
+          const hasAnyPickup = pickupableItems.some(
+            (item) => item.jumlahDiambil > 0,
+          )
+
           const allItemsPickedUp = pickupableItems.every(
             (item) => item.jumlahDiambil >= item.jumlah,
           )
@@ -463,6 +467,7 @@ export class PickupService {
             totalItems: allTransactionItems.length,
             pickupableItems: pickupableItems.length,
             pairedSarungItems: allTransactionItems.length - pickupableItems.length,
+            hasAnyPickup,
             allItemsPickedUp,
             pickupableItemsStatus: pickupableItems.map((item) => ({
               id: item.id,
@@ -470,16 +475,14 @@ export class PickupService {
               jumlah: item.jumlah,
               jumlahDiambil: item.jumlahDiambil,
               isFullyPickedUp: item.jumlahDiambil >= item.jumlah,
+              hasPickup: item.jumlahDiambil > 0,
             })),
             timestamp: new Date().toISOString(),
           })
 
-          // ✅ REMOVED: status_pickup activity log (clutters timeline)
-          // ✅ REMOVED: status_changed activity log (redundant)
-
-          // ✅ FIXED: Update transaction status ONLY when ALL quantities are picked up
-          // This ensures partial pickups keep status as 'active' or 'terlambat'
-          if (allItemsPickedUp) {
+          // ✅ FIXED: Update transaction status when ANY item is picked up
+          // This supports partial pickups and ensures status reflects actual pickup activity
+          if (hasAnyPickup) {
             await tx.transaksi.update({
               where: { id: transactionId },
               data: { status: 'diambil' },
@@ -668,8 +671,11 @@ export class PickupService {
         },
       })
 
-      // Update transaction status to 'diambil' if all items are fully picked up
-      if (pickupStats.fullyPickedUp === pickupStats.totalItems && pickupStats.notPickedUp === 0) {
+      // Update transaction status to 'diambil' if ANY items are picked up (not all)
+      // ✅ FIXED: Changed from requiring all items to requiring any items
+      const hasAnyPickup = pickupableItems.some(item => item.jumlahDiambil > 0)
+      
+      if (hasAnyPickup) {
         await this.transaksiService.updateTransaksiStatus(transactionId, { status: 'diambil' })
       }
     } catch (error) {

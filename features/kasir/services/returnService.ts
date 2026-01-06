@@ -1862,8 +1862,11 @@ export class UnifiedReturnService {
 
       // Since we're using fresh transaction data, currentRemainingQuantities already reflects
       // the state AFTER the current return session
-      // ✅ SIMPLE FIX: Enhanced completion check - ensure we have items and ALL are returned
-      const allItemsFullyReturned = Object.keys(currentRemainingQuantities).length > 0 && 
+      // ✅ FIXED: Enhanced completion check - handle both empty and populated remaining quantities
+      // Case 1: No remaining quantities (all items returned) -> true
+      // Case 2: Has remaining quantities but all are 0 -> true  
+      // Case 3: Has remaining quantities with some > 0 -> false
+      const allItemsFullyReturned = Object.keys(currentRemainingQuantities).length === 0 || 
         Object.values(currentRemainingQuantities).every((qty) => qty === 0)
 
       let newStatus:

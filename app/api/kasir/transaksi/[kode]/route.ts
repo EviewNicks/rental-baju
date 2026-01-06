@@ -22,6 +22,190 @@ interface RouteParams {
   }>
 }
 
+/**
+ * ✅ AUTO-CORRECT STATUS: Automatically fix transaction status based on actual pickup state
+ * This ensures status is always accurate regardless of backend pickup service issues
+ */
+async function autoCorrectTransactionStatus(
+  transaksi: any,
+  transaksiService: TransaksiService
+): Promise<any> {
+  try {
+    // ✅ PICKUP AUTO-CORRECTION: active/terlambat → diambil
+    const pickupCorrected = await autoCorrectPickupStatus(transaksi, transaksiService)
+    
+    // ✅ RETURN AUTO-CORRECTION: diambil/pending_resolution → selesai/pending_resolution
+    const returnCorrected = await autoCorrectReturnStatus(pickupCorrected, transaksiService)
+    
+    return returnCorrected
+  } catch (error) {
+    console.error('❌ AUTO-CORRECT: Failed to auto-correct transaction status', {
+      transactionId: transaksi.id,
+      transactionCode: transaksi.kode,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    })
+    
+    // Return original transaction if auto-correct fails
+    return transaksi
+  }
+}
+
+/**
+ * ✅ PICKUP AUTO-CORRECTION: Fix pickup status based on jumlahDiambil
+ */
+async function autoCorrectPickupStatus(
+  transaksi: any,
+  transaksiService: TransaksiService
+): Promise<any> {
+  try {
+    // Only auto-correct for 'active' status (NOT 'terlambat')
+    // 'terlambat' is a visual badge for overdue dates and should remain until return
+    if (transaksi.status !== 'active') {
+      return transaksi
+    }
+
+    // Check if any items have been picked up
+    const hasAnyPickup = transaksi.items.some((item: any) => (item.jumlahDiambil || 0) > 0)
+
+    // If items have been picked up but status is still 'active', update to 'diambil'
+    if (hasAnyPickup && transaksi.status === 'active') {
+      console.info('🔧 AUTO-CORRECT PICKUP: Updating transaction status from pickup state', {
+        transactionId: transaksi.id,
+        transactionCode: transaksi.kode,
+        currentStatus: transaksi.status,
+        newStatus: 'diambil',
+        itemsWithPickup: transaksi.items.filter((item: any) => (item.jumlahDiambil || 0) > 0).length,
+        totalItems: transaksi.items.length,
+        reason: 'auto_correct_pickup_status'
+      })
+
+      // Update status in database
+      await transaksiService.updateTransaksiStatus(transaksi.id, { 
+        status: 'diambil' 
+      })
+
+      // Return updated transaction object
+      return {
+        ...transaksi,
+        status: 'diambil'
+      }
+    }
+
+    return transaksi
+  } catch (error) {
+    console.error('❌ AUTO-CORRECT PICKUP: Failed to auto-correct pickup status', {
+      transactionId: transaksi.id,
+      transactionCode: transaksi.kode,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    })
+    
+    return transaksi
+  }
+}
+
+/**
+ * ✅ RETURN AUTO-CORRECTION: Fix return status based on return records and lost items
+ */
+async function autoCorrectReturnStatus(
+  transaksi: any,
+  transaksiService: TransaksiService
+): Promise<any> {
+  try {
+    // Only auto-correct for 'diambil' and 'pending_resolution' status
+    if (transaksi.status !== 'diambil' && transaksi.status !== 'pending_resolution') {
+      return transaksi
+    }
+
+    // Check for unresolved lost items
+    const hasUnresolvedLostItems = transaksi.items.some((item: any) => {
+      return item.conditionBreakdown?.some((condition: any) => {
+        const isLostItem = condition.kondisiAkhir?.toLowerCase().includes('hilang')
+        const isUnresolved = !condition.resolutionStatus
+        return isLostItem && isUnresolved
+      })
+    })
+
+    // Check if all items are fully returned
+    const allItemsReturned = transaksi.items.every((item: any) => {
+      const isPickedUp = (item.jumlahDiambil || 0) > 0
+      const isReturned = item.statusKembali === 'lengkap'
+      
+      // If item was picked up, it must be returned
+      if (isPickedUp) {
+        return isReturned
+      }
+      
+      // If item was not picked up, it doesn't need to be returned
+      return true
+    })
+
+    // Determine correct status based on return state
+    let correctStatus = transaksi.status
+    let correctionReason = ''
+
+    if (hasUnresolvedLostItems) {
+      // Priority 1: If there are unresolved lost items → pending_resolution
+      if (transaksi.status !== 'pending_resolution') {
+        correctStatus = 'pending_resolution'
+        correctionReason = 'has_unresolved_lost_items'
+      }
+    } else if (allItemsReturned) {
+      // Priority 2: If all items returned and no lost items → selesai
+      if (transaksi.status !== 'selesai') {
+        correctStatus = 'selesai'
+        correctionReason = 'all_items_returned'
+      }
+    }
+
+    // Apply correction if needed
+    if (correctStatus !== transaksi.status) {
+      console.info('🔧 AUTO-CORRECT RETURN: Updating transaction status from return state', {
+        transactionId: transaksi.id,
+        transactionCode: transaksi.kode,
+        currentStatus: transaksi.status,
+        newStatus: correctStatus,
+        reason: correctionReason,
+        returnAnalysis: {
+          hasUnresolvedLostItems,
+          allItemsReturned,
+          itemsAnalysis: transaksi.items.map((item: any) => ({
+            itemId: item.id,
+            productName: item.produk?.name,
+            jumlahDiambil: item.jumlahDiambil,
+            statusKembali: item.statusKembali,
+            hasLostItems: item.conditionBreakdown?.some((c: any) => 
+              c.kondisiAkhir?.toLowerCase().includes('hilang') && !c.resolutionStatus
+            ) || false
+          }))
+        }
+      })
+
+      // Update status in database
+      await transaksiService.updateTransaksiStatus(transaksi.id, { 
+        status: correctStatus,
+        tglKembali: correctStatus === 'selesai' ? new Date().toISOString() : undefined
+      })
+
+      // Return updated transaction object
+      return {
+        ...transaksi,
+        status: correctStatus,
+        tglKembali: correctStatus === 'selesai' ? new Date().toISOString() : transaksi.tglKembali
+      }
+    }
+
+    return transaksi
+  } catch (error) {
+    console.error('❌ AUTO-CORRECT RETURN: Failed to auto-correct return status', {
+      transactionId: transaksi.id,
+      transactionCode: transaksi.kode,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    })
+    
+    return transaksi
+  }
+}
+
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     // Rate limiting check
@@ -64,9 +248,13 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       ? await transaksiService.getTransaksiById(kode)
       : await transaksiService.getTransaksiByCode(kode)
 
+    // ✅ AUTO-CORRECT STATUS: Update status based on actual pickup state
+    // This ensures status is always accurate regardless of backend pickup service issues
+    const correctedTransaksi = await autoCorrectTransactionStatus(transaksi, transaksiService)
+
     // Format response data using shared formatter (eliminates ~82 lines duplicate code)
     // Kasir information is now included directly from database (no Clerk API call needed)
-    const formattedData = formatTransactionResponse(transaksi)
+    const formattedData = formatTransactionResponse(correctedTransaksi)
 
     return NextResponse.json(
       {
