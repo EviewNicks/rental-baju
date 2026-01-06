@@ -11,11 +11,17 @@ import {
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
-import { CheckCircle, XCircle, AlertTriangle, Loader2 } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { CheckCircle, XCircle, AlertTriangle, Loader2, Calendar, DollarSign } from 'lucide-react'
 import { toast } from 'sonner'
 import { CancelForm } from './CancelForm'
 import { useCancelTransaction } from '../../hooks/useCancelTransaction'
 import { formatCurrency } from '../../lib/utils/client'
+import { 
+  calculateRefundEligibility, 
+  formatRefundInfo, 
+  type RefundCalculation 
+} from '../../lib/utils/refundCalculator'
 import type { TransactionDetail } from '../../types'
 
 interface CancelModalProps {
@@ -39,6 +45,7 @@ export function CancelModal({ isOpen, onClose, transaction }: CancelModalProps) 
   const [kasirList, setKasirList] = useState<Kasir[]>([])
   const [isLoadingKasir, setIsLoadingKasir] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
+  const [refundCalculation, setRefundCalculation] = useState<RefundCalculation | null>(null)
 
   const { cancelTransaction, isProcessing, error, isSuccess, reset } = useCancelTransaction(
     transaction.transactionCode,
@@ -57,7 +64,18 @@ export function CancelModal({ isOpen, onClose, transaction }: CancelModalProps) 
     },
   )
 
-  // ✅ NEW: Fetch kasir list when modal opens
+  // ✅ NEW: Calculate refund eligibility when modal opens
+  useEffect(() => {
+    if (isOpen && transaction.amountPaid > 0) {
+      const calculation = calculateRefundEligibility(
+        transaction.startDate, // tglMulai
+        transaction.amountPaid
+      )
+      setRefundCalculation(calculation)
+    }
+  }, [isOpen, transaction.startDate, transaction.amountPaid])
+
+  // ✅ EXISTING: Fetch kasir list when modal opens
   useEffect(() => {
     if (isOpen) {
       fetchKasirList()
@@ -93,6 +111,7 @@ export function CancelModal({ isOpen, onClose, transaction }: CancelModalProps) 
     setStep('input')
     setReason('')
     setKasirId('')
+    setRefundCalculation(null)
     reset()
     onClose()
   }
@@ -103,7 +122,7 @@ export function CancelModal({ isOpen, onClose, transaction }: CancelModalProps) 
   }
 
   const handleConfirmCancel = () => {
-    // ✅ NEW: Validate kasir selection for paid transactions
+    // ✅ EXISTING: Validate kasir selection for paid transactions
     const isPaidTransaction = transaction.amountPaid > 0
     
     if (isPaidTransaction && !kasirId) {
@@ -111,8 +130,16 @@ export function CancelModal({ isOpen, onClose, transaction }: CancelModalProps) 
       return
     }
     
-    // Pass kasirId to cancellation request
-    cancelTransaction(reason, kasirId)
+    // ✅ NEW: Pass refund calculation to cancellation request
+    const refundData = refundCalculation ? {
+      refundAmount: refundCalculation.refundAmount,
+      refundPercentage: refundCalculation.refundPercentage,
+      isEligible: refundCalculation.isEligible,
+      daysUntilPickup: refundCalculation.daysUntilPickup
+    } : null
+    
+    // Pass kasirId and refund data to cancellation request
+    cancelTransaction(reason, kasirId, refundData)
   }
 
   const handleBack = () => {
@@ -139,6 +166,11 @@ export function CancelModal({ isOpen, onClose, transaction }: CancelModalProps) 
                 <p className="text-green-700 mt-1">
                   Alasan: {reason.length > 50 ? `${reason.substring(0, 50)}...` : reason}
                 </p>
+                {refundCalculation?.isEligible && (
+                  <p className="text-green-700 mt-1">
+                    Refund: {formatCurrency(refundCalculation.refundAmount)} ({refundCalculation.refundPercentage}%)
+                  </p>
+                )}
               </div>
             </div>
           </div>
@@ -191,37 +223,64 @@ export function CancelModal({ isOpen, onClose, transaction }: CancelModalProps) 
           </DialogHeader>
 
           <div className="space-y-4">
-            {/* Transaction Info */}
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Kode Transaksi:</span>
-                  <span className="font-medium text-gray-900">{transaction.transactionCode}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Customer:</span>
-                  <span className="font-medium text-gray-900">{transaction.customer.name}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Total Transaksi:</span>
-                  <span className="font-medium text-gray-900">
-                    {formatCurrency(transaction.totalAmount)}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Sudah Dibayar:</span>
-                  <span className="font-medium text-gray-900">
-                    {formatCurrency(transaction.amountPaid)}
-                  </span>
-                </div>
-              </div>
+
+            <div className="bg-yellow-50 border text-xs border-yellow-200 rounded-lg p-2">
+              <p className=" font-medium text-yellow-900 mb-1">Alasan Pembatalan:</p>
+              <p className=" text-yellow-700">{reason}</p>
             </div>
 
-            {/* Cancellation Reason */}
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-              <p className="text-sm font-medium text-yellow-900 mb-1">Alasan Pembatalan:</p>
-              <p className="text-sm text-yellow-700">{reason}</p>
-            </div>
+            {/* ✅ NEW: Refund Information Display */}
+            {transaction.amountPaid > 0 && refundCalculation && (
+              <div className="space-y-3">
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-sm font-semibold text-blue-900 flex items-center gap-2">
+                      <DollarSign className="h-4 w-4" />
+                      Informasi Refund
+                    </h4>
+                    <Badge 
+                      variant="outline" 
+                      className={formatRefundInfo(refundCalculation).eligibilityBadge.className}
+                    >
+                      {formatRefundInfo(refundCalculation).eligibilityBadge.text}
+                    </Badge>
+                  </div>
+                  
+                
+                  
+                  <div className="space-y-2 text-xs">
+
+                     
+                    <div className="flex justify-between">
+                      <span className="text-blue-700">Jumlah Dibayar:</span>
+                      <span className="font-medium  text-blue-900">
+                        {formatCurrency(transaction.amountPaid)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-blue-700">Jumlah Refund:</span>
+                      <span className="font-medium text-blue-900">
+                        {formatRefundInfo(refundCalculation).amountDisplay}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center pt-2 border-t border-blue-200">
+                      <span className="text-blue-700 flex items-center gap-1">
+                        <Calendar className="h-3 w-3" />
+                        Waktu Pembatalan:
+                      </span>
+                      <span className="font-medium text-blue-900">
+                        {formatRefundInfo(refundCalculation).daysText}
+                      </span>
+                    </div>
+                    <div className="pt-1">
+                      <p className="text-xs text-blue-600">
+                        {formatRefundInfo(refundCalculation).reasonText}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* ✅ NEW: Kasir Selection for Paid Transactions */}
             {transaction.amountPaid > 0 && (
@@ -266,8 +325,11 @@ export function CancelModal({ isOpen, onClose, transaction }: CancelModalProps) 
               <ul className="text-xs text-red-600 mt-2 space-y-1 ml-4 list-disc">
                 <li>Status transaksi akan diubah menjadi DIBATALKAN</li>
                 <li>Transaksi tidak akan dihitung dalam revenue</li>
-                {transaction.amountPaid > 0 && (
-                  <li>Refund akan diproses otomatis jika kasir dipilih</li>
+                {transaction.amountPaid > 0 && refundCalculation?.isEligible && (
+                  <li>Refund {refundCalculation.refundPercentage}% akan diproses otomatis</li>
+                )}
+                {transaction.amountPaid > 0 && !refundCalculation?.isEligible && (
+                  <li>Tidak ada refund karena pembatalan kurang dari 7 hari</li>
                 )}
               </ul>
             </div>

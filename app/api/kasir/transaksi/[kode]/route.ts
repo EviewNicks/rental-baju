@@ -1,9 +1,9 @@
 /**
  * API Route: Individual Transaksi Management - RPK-26
- * 
+ *
  * GET /api/kasir/transaksi/[kode] - Get transaksi by code with full details
  * PUT /api/kasir/transaksi/[kode] - Update transaksi status and details
- * 
+ *
  * Authentication: Clerk (admin/kasir roles only)
  */
 
@@ -27,24 +27,26 @@ interface RouteParams {
  * This ensures status is always accurate regardless of backend pickup service issues
  */
 async function autoCorrectTransactionStatus(
+  //eslint-disable-next-line @typescript-eslint/no-explicit-any
   transaksi: any,
-  transaksiService: TransaksiService
+  transaksiService: TransaksiService,
+  //eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<any> {
   try {
     // ✅ PICKUP AUTO-CORRECTION: active/terlambat → diambil
     const pickupCorrected = await autoCorrectPickupStatus(transaksi, transaksiService)
-    
+
     // ✅ RETURN AUTO-CORRECTION: diambil/pending_resolution → selesai/pending_resolution
     const returnCorrected = await autoCorrectReturnStatus(pickupCorrected, transaksiService)
-    
+
     return returnCorrected
   } catch (error) {
     console.error('❌ AUTO-CORRECT: Failed to auto-correct transaction status', {
       transactionId: transaksi.id,
       transactionCode: transaksi.kode,
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
     })
-    
+
     // Return original transaction if auto-correct fails
     return transaksi
   }
@@ -54,8 +56,10 @@ async function autoCorrectTransactionStatus(
  * ✅ PICKUP AUTO-CORRECTION: Fix pickup status based on jumlahDiambil
  */
 async function autoCorrectPickupStatus(
+  //eslint-disable-next-line @typescript-eslint/no-explicit-any
   transaksi: any,
-  transaksiService: TransaksiService
+  transaksiService: TransaksiService,
+  //eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<any> {
   try {
     // Only auto-correct for 'active' status (NOT 'terlambat')
@@ -64,7 +68,7 @@ async function autoCorrectPickupStatus(
       return transaksi
     }
 
-    // Check if any items have been picked up
+    //eslint-disable-next-line @typescript-eslint/no-explicit-any
     const hasAnyPickup = transaksi.items.some((item: any) => (item.jumlahDiambil || 0) > 0)
 
     // If items have been picked up but status is still 'active', update to 'diambil'
@@ -74,20 +78,22 @@ async function autoCorrectPickupStatus(
         transactionCode: transaksi.kode,
         currentStatus: transaksi.status,
         newStatus: 'diambil',
-        itemsWithPickup: transaksi.items.filter((item: any) => (item.jumlahDiambil || 0) > 0).length,
+        //eslint-disable-next-line @typescript-eslint/no-explicit-any
+        itemsWithPickup: transaksi.items.filter((item: any) => (item.jumlahDiambil || 0) > 0)
+          .length,
         totalItems: transaksi.items.length,
-        reason: 'auto_correct_pickup_status'
+        reason: 'auto_correct_pickup_status',
       })
 
       // Update status in database
-      await transaksiService.updateTransaksiStatus(transaksi.id, { 
-        status: 'diambil' 
+      await transaksiService.updateTransaksiStatus(transaksi.id, {
+        status: 'diambil',
       })
 
       // Return updated transaction object
       return {
         ...transaksi,
-        status: 'diambil'
+        status: 'diambil',
       }
     }
 
@@ -96,9 +102,9 @@ async function autoCorrectPickupStatus(
     console.error('❌ AUTO-CORRECT PICKUP: Failed to auto-correct pickup status', {
       transactionId: transaksi.id,
       transactionCode: transaksi.kode,
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
     })
-    
+
     return transaksi
   }
 }
@@ -107,8 +113,10 @@ async function autoCorrectPickupStatus(
  * ✅ RETURN AUTO-CORRECTION: Fix return status based on return records and lost items
  */
 async function autoCorrectReturnStatus(
+  //eslint-disable-next-line @typescript-eslint/no-explicit-any
   transaksi: any,
-  transaksiService: TransaksiService
+  transaksiService: TransaksiService,
+  //eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<any> {
   try {
     // Only auto-correct for 'diambil' and 'pending_resolution' status
@@ -117,7 +125,9 @@ async function autoCorrectReturnStatus(
     }
 
     // Check for unresolved lost items
+    //eslint-disable-next-line @typescript-eslint/no-explicit-any
     const hasUnresolvedLostItems = transaksi.items.some((item: any) => {
+      //eslint-disable-next-line @typescript-eslint/no-explicit-any
       return item.conditionBreakdown?.some((condition: any) => {
         const isLostItem = condition.kondisiAkhir?.toLowerCase().includes('hilang')
         const isUnresolved = !condition.resolutionStatus
@@ -126,15 +136,16 @@ async function autoCorrectReturnStatus(
     })
 
     // Check if all items are fully returned
+    //eslint-disable-next-line @typescript-eslint/no-explicit-any
     const allItemsReturned = transaksi.items.every((item: any) => {
       const isPickedUp = (item.jumlahDiambil || 0) > 0
       const isReturned = item.statusKembali === 'lengkap'
-      
+
       // If item was picked up, it must be returned
       if (isPickedUp) {
         return isReturned
       }
-      
+
       // If item was not picked up, it doesn't need to be returned
       return true
     })
@@ -168,29 +179,32 @@ async function autoCorrectReturnStatus(
         returnAnalysis: {
           hasUnresolvedLostItems,
           allItemsReturned,
+          //eslint-disable-next-line @typescript-eslint/no-explicit-any
           itemsAnalysis: transaksi.items.map((item: any) => ({
             itemId: item.id,
             productName: item.produk?.name,
             jumlahDiambil: item.jumlahDiambil,
             statusKembali: item.statusKembali,
-            hasLostItems: item.conditionBreakdown?.some((c: any) => 
-              c.kondisiAkhir?.toLowerCase().includes('hilang') && !c.resolutionStatus
-            ) || false
-          }))
-        }
+            hasLostItems:
+              item.conditionBreakdown?.some(
+                //eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (c: any) => c.kondisiAkhir?.toLowerCase().includes('hilang') && !c.resolutionStatus,
+              ) || false,
+          })),
+        },
       })
 
       // Update status in database
-      await transaksiService.updateTransaksiStatus(transaksi.id, { 
+      await transaksiService.updateTransaksiStatus(transaksi.id, {
         status: correctStatus,
-        tglKembali: correctStatus === 'selesai' ? new Date().toISOString() : undefined
+        tglKembali: correctStatus === 'selesai' ? new Date().toISOString() : undefined,
       })
 
       // Return updated transaction object
       return {
         ...transaksi,
         status: correctStatus,
-        tglKembali: correctStatus === 'selesai' ? new Date().toISOString() : transaksi.tglKembali
+        tglKembali: correctStatus === 'selesai' ? new Date().toISOString() : transaksi.tglKembali,
       }
     }
 
@@ -199,9 +213,8 @@ async function autoCorrectReturnStatus(
     console.error('❌ AUTO-CORRECT RETURN: Failed to auto-correct return status', {
       transactionId: transaksi.id,
       transactionCode: transaksi.kode,
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
     })
-    
     return transaksi
   }
 }
@@ -226,17 +239,18 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     // Detect parameter type (UUID or transaction code)
     const paramType = TransactionCodeGenerator.detectParameterType(kode)
-    
+
     if (paramType === 'invalid') {
       return NextResponse.json(
         {
           success: false,
           error: {
-            message: 'Parameter harus berupa kode transaksi (contoh: TXN-20250726-001) atau ID transaksi',
-            code: 'VALIDATION_ERROR'
-          }
+            message:
+              'Parameter harus berupa kode transaksi (contoh: TXN-20250726-001) atau ID transaksi',
+            code: 'VALIDATION_ERROR',
+          },
         },
-        { status: 400 }
+        { status: 400 },
       )
     }
 
@@ -244,9 +258,10 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const transaksiService = new TransaksiService(prisma, user.id)
 
     // Get transaksi using appropriate method based on parameter type
-    const transaksi = paramType === 'uuid' 
-      ? await transaksiService.getTransaksiById(kode)
-      : await transaksiService.getTransaksiByCode(kode)
+    const transaksi =
+      paramType === 'uuid'
+        ? await transaksiService.getTransaksiById(kode)
+        : await transaksiService.getTransaksiByCode(kode)
 
     // ✅ AUTO-CORRECT STATUS: Update status based on actual pickup state
     // This ensures status is always accurate regardless of backend pickup service issues
@@ -260,13 +275,13 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       {
         success: true,
         data: formattedData,
-        message: 'Detail transaksi berhasil diambil'
+        message: 'Detail transaksi berhasil diambil',
       },
-      { status: 200 }
+      { status: 200 },
     )
   } catch (error) {
     const { kode } = await params
-    
+
     // Comprehensive error logging with transaction context
     console.error('Transaction retrieval error', {
       level: 'error',
@@ -284,25 +299,30 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
           success: false,
           error: {
             message: 'Transaksi tidak ditemukan',
-            code: 'NOT_FOUND'
-          }
+            code: 'NOT_FOUND',
+          },
         },
-        { status: 404 }
+        { status: 404 },
       )
     }
 
     // Handle database connection errors (no Clerk API fallback)
-    if (error && typeof error === 'object' && 'message' in error && 
-        typeof error.message === 'string' && error.message.includes('connection pool')) {
+    if (
+      error &&
+      typeof error === 'object' &&
+      'message' in error &&
+      typeof error.message === 'string' &&
+      error.message.includes('connection pool')
+    ) {
       return NextResponse.json(
         {
           success: false,
           error: {
             message: 'Database connection timeout. Please try again.',
-            code: 'CONNECTION_ERROR'
-          }
+            code: 'CONNECTION_ERROR',
+          },
         },
-        { status: 503 }
+        { status: 503 },
       )
     }
 
@@ -312,10 +332,10 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         success: false,
         error: {
           message: 'Internal server error',
-          code: 'INTERNAL_ERROR'
-        }
+          code: 'INTERNAL_ERROR',
+        },
       },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }
@@ -340,17 +360,18 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
     // Detect parameter type (UUID or transaction code)
     const paramType = TransactionCodeGenerator.detectParameterType(kode)
-    
+
     if (paramType === 'invalid') {
       return NextResponse.json(
         {
           success: false,
           error: {
-            message: 'Parameter harus berupa kode transaksi (contoh: TXN-20250726-001) atau ID transaksi',
-            code: 'VALIDATION_ERROR'
-          }
+            message:
+              'Parameter harus berupa kode transaksi (contoh: TXN-20250726-001) atau ID transaksi',
+            code: 'VALIDATION_ERROR',
+          },
         },
-        { status: 400 }
+        { status: 400 },
       )
     }
 
@@ -367,71 +388,105 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
           success: false,
           error: {
             message: 'Tidak ada data untuk diperbarui',
-            code: 'VALIDATION_ERROR'
-          }
+            code: 'VALIDATION_ERROR',
+          },
         },
-        { status: 400 }
+        { status: 400 },
       )
     }
 
     // Initialize transaksi service with kasir from request body
     // ✅ UPDATED: Get kasirId from request body (manual selection)
     const kasirId = validatedData.kasirId || null
-    
-    // ✅ UPDATED: Add validation for paid transactions requiring kasir
+
+    // ✅ UPDATED: Add validation for paid transactions requiring kasir and refund calculation
     if (validatedData.status === 'cancelled') {
       const existingTransaksi = await prisma.transaksi.findUnique({
         where: paramType === 'uuid' ? { id: kode } : { kode },
-        select: { jumlahBayar: true },
+        select: {
+          jumlahBayar: true,
+          tglMulai: true, // ✅ NEW: Need pickup date for refund calculation
+        },
       })
-      
+
       const isPaidTransaction = existingTransaksi && existingTransaksi.jumlahBayar.toNumber() > 0
-      
+
       if (isPaidTransaction && !kasirId) {
         return NextResponse.json(
           {
             success: false,
             error: {
               message: 'Kasir selection is required for paid transaction cancellation',
-              code: 'KASIR_REQUIRED'
-            }
+              code: 'KASIR_REQUIRED',
+            },
           },
-          { status: 400 }
+          { status: 400 },
         )
       }
+
+      // ✅ NEW: Validate refund data if provided
+      if (validatedData.refundData && isPaidTransaction) {
+        // Import refund calculator for server-side validation
+        const { calculateRefundEligibility } = await import(
+          '@/features/kasir/lib/utils/refundCalculator'
+        )
+
+        // Recalculate refund on server side for security
+        const serverRefundCalculation = calculateRefundEligibility(
+          existingTransaksi.tglMulai,
+          existingTransaksi.jumlahBayar.toNumber(),
+        )
+
+        // Validate client calculation matches server calculation
+        const clientRefund = validatedData.refundData
+        if (
+          clientRefund.isEligible !== serverRefundCalculation.isEligible ||
+          Math.abs(clientRefund.refundAmount - serverRefundCalculation.refundAmount) > 1 || // Allow 1 rupiah difference for rounding
+          clientRefund.refundPercentage !== serverRefundCalculation.refundPercentage
+        ) {
+          return NextResponse.json(
+            {
+              success: false,
+              error: {
+                message: 'Refund calculation mismatch. Please refresh and try again.',
+                code: 'REFUND_CALCULATION_ERROR',
+              },
+            },
+            { status: 400 },
+          )
+        }
+      }
     }
-    
+
     // Create service with kasirId from request (needed for refund processing)
     const transaksiService = new TransaksiService(
-      prisma, 
-      user.id, 
-      kasirId || undefined // Convert null to undefined for TypeScript
+      prisma,
+      user.id,
+      kasirId || undefined, // Convert null to undefined for TypeScript
     )
 
     // Get current transaction using appropriate method
-    const currentTransaksi = paramType === 'uuid' 
-      ? await transaksiService.getTransaksiById(kode)
-      : await transaksiService.getTransaksiByCode(kode)
+    const currentTransaksi =
+      paramType === 'uuid'
+        ? await transaksiService.getTransaksiById(kode)
+        : await transaksiService.getTransaksiByCode(kode)
 
     // Update transaksi status
-    await transaksiService.updateTransaksiStatus(
-      currentTransaksi.id, 
-      validatedData
-    )
+    await transaksiService.updateTransaksiStatus(currentTransaksi.id, validatedData)
 
     // Get updated transaction with full details
     const fullTransaksi = await transaksiService.getTransaksiById(currentTransaksi.id)
 
-  // Format response data using shared formatter (eliminates ~82 lines duplicate code)
+    // Format response data using shared formatter (eliminates ~82 lines duplicate code)
     const formattedData = formatTransactionResponse(fullTransaksi)
 
     return NextResponse.json(
       {
         success: true,
         data: formattedData,
-        message: `Transaksi ${kode} berhasil diperbarui`
+        message: `Transaksi ${kode} berhasil diperbarui`,
       },
-      { status: 200 }
+      { status: 200 },
     )
   } catch (error) {
     const { kode } = await params
@@ -447,11 +502,11 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
             code: 'VALIDATION_ERROR',
             details: error.issues.map((err) => ({
               field: err.path.join('.'),
-              message: err.message
-            }))
-          }
+              message: err.message,
+            })),
+          },
         },
-        { status: 400 }
+        { status: 400 },
       )
     }
 
@@ -464,10 +519,10 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
             success: false,
             error: {
               message: 'Transaksi tidak ditemukan',
-              code: 'NOT_FOUND'
-            }
+              code: 'NOT_FOUND',
+            },
           },
-          { status: 404 }
+          { status: 404 },
         )
       }
 
@@ -478,25 +533,28 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
             success: false,
             error: {
               message: error.message,
-              code: 'INVALID_STATUS_TRANSITION'
-            }
+              code: 'INVALID_STATUS_TRANSITION',
+            },
           },
-          { status: 409 }
+          { status: 409 },
         )
       }
 
       // ✅ NEW: Kasir-related errors for refund processing
-      if (error.message.includes('KasirId diperlukan') || 
-          error.message.includes('Kasir tidak ditemukan')) {
+      if (
+        error.message.includes('KasirId diperlukan') ||
+        error.message.includes('Kasir tidak ditemukan')
+      ) {
         return NextResponse.json(
           {
             success: false,
             error: {
-              message: 'Kasir information required for refund processing. Please ensure you are logged in as an active kasir.',
-              code: 'KASIR_REQUIRED'
-            }
+              message:
+                'Kasir information required for refund processing. Please ensure you are logged in as an active kasir.',
+              code: 'KASIR_REQUIRED',
+            },
           },
-          { status: 400 }
+          { status: 400 },
         )
       }
 
@@ -506,25 +564,30 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
           success: false,
           error: {
             message: error.message,
-            code: 'BUSINESS_ERROR'
-          }
+            code: 'BUSINESS_ERROR',
+          },
         },
-        { status: 400 }
+        { status: 400 },
       )
     }
 
     // Handle database connection errors
-    if (error && typeof error === 'object' && 'message' in error && 
-        typeof error.message === 'string' && error.message.includes('connection pool')) {
+    if (
+      error &&
+      typeof error === 'object' &&
+      'message' in error &&
+      typeof error.message === 'string' &&
+      error.message.includes('connection pool')
+    ) {
       return NextResponse.json(
         {
           success: false,
           error: {
             message: 'Database connection timeout. Please try again.',
-            code: 'CONNECTION_ERROR'
-          }
+            code: 'CONNECTION_ERROR',
+          },
         },
-        { status: 503 }
+        { status: 503 },
       )
     }
 
@@ -534,10 +597,10 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         success: false,
         error: {
           message: 'Internal server error',
-          code: 'INTERNAL_ERROR'
-        }
+          code: 'INTERNAL_ERROR',
+        },
       },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }

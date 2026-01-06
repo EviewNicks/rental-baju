@@ -685,12 +685,19 @@ export interface UpdateTransaksiRequest {
   status?: TransactionStatus
   tglKembali?: string // ISO date string
   catatan?: string
-  kasirId?: string // ✅ NEW: For manual kasir selection in refund processing
+  kasirId?: string // ✅ EXISTING: For manual kasir selection in refund processing
   items?: Array<{
     id: string
     kondisiAkhir?: string
     statusKembali?: ReturnStatus
   }>
+  // ✅ NEW: Refund data for cancellation with policy calculation
+  refundData?: {
+    refundAmount: number
+    refundPercentage: number
+    isEligible: boolean
+    daysUntilPickup: number
+  } | null
 }
 
 export interface TransaksiItemResponse {

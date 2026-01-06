@@ -3,13 +3,7 @@
   "numPassedTests": 0,
   "numFailedTests": 0,
   "numPendingTests": 0,
-  "startTime": "2026-01-05T12:41:01.502Z",
-  "endTime": "2026-01-05T12:41:07.398Z",
-  "testResults": [
-    {
-      "testFilePath": "D:\\.work\\rental-software\\features\\kasir\\components\\ui\\__tests__\\DateFilter.test.tsx",
-      "testFileResults": [],
-      "failureMessage": "  \u001b[1m● \u001b[22mTest suite failed to run\n\n    Cannot find module '@testing-library/user-event' from 'features/kasir/components/ui/__tests__/DateFilter.test.tsx'\n\n    \u001b[0m \u001b[90m 14 |\u001b[39m \u001b[36mimport\u001b[39m { \u001b[33mDateFilter\u001b[39m } \u001b[36mfrom\u001b[39m \u001b[32m'../DateFilter'\u001b[39m\n     \u001b[90m 15 |\u001b[39m\n    \u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 16 |\u001b[39m describe(\u001b[32m'DateFilter Component'\u001b[39m\u001b[33m,\u001b[39m () \u001b[33m=>\u001b[39m {\n     \u001b[90m    |\u001b[39m                                                           \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n     \u001b[90m 17 |\u001b[39m   \u001b[36mconst\u001b[39m mockOnChange \u001b[33m=\u001b[39m jest\u001b[33m.\u001b[39mfn()\n     \u001b[90m 18 |\u001b[39m\n     \u001b[90m 19 |\u001b[39m   beforeEach(() \u001b[33m=>\u001b[39m {\u001b[0m\n\n      \u001b[2mat Resolver._throwModNotFoundError (\u001b[22mnode_modules/jest-resolve/build/index.js\u001b[2m:863:11)\u001b[22m\n      \u001b[2mat Object.<anonymous> (\u001b[22m\u001b[0m\u001b[36mfeatures/kasir/components/ui/__tests__/DateFilter.test.tsx\u001b[39m\u001b[0m\u001b[2m:16:59)\u001b[22m\n"
-    }
-  ]
+  "startTime": "2026-01-06T14:32:23.149Z",
+  "endTime": "2026-01-06T14:32:23.164Z",
+  "testResults": []
 }

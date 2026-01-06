@@ -229,8 +229,15 @@ export const updateTransaksiSchema = z.object({
   status: z.enum(['active', 'diambil', 'selesai', 'terlambat', 'cancelled', 'pending_resolution']).optional(),
   tglKembali: z.string().datetime('Format tanggal kembali tidak valid (ISO 8601)').optional(),
   catatan: z.string().max(1000, 'Catatan maksimal 1000 karakter').optional(),
-  kasirId: z.string().uuid('Format kasir ID tidak valid').optional(), // ✅ NEW: For manual kasir selection
-  items: z.array(updateTransaksiItemSchema).optional()
+  kasirId: z.string().uuid('Format kasir ID tidak valid').optional(), // ✅ EXISTING: For manual kasir selection
+  items: z.array(updateTransaksiItemSchema).optional(),
+  // ✅ NEW: Refund data for cancellation
+  refundData: z.object({
+    refundAmount: z.number().min(0, 'Jumlah refund tidak boleh negatif'),
+    refundPercentage: z.number().min(0).max(100, 'Persentase refund harus antara 0-100'),
+    isEligible: z.boolean(),
+    daysUntilPickup: z.number().int('Hari sampai pickup harus bilangan bulat')
+  }).optional()
 })
 
 export const transaksiQuerySchema = z.object({

@@ -9,9 +9,16 @@ interface CancelTransactionOptions {
   onError?: (error: Error) => void
 }
 
+interface RefundData {
+  refundAmount: number
+  refundPercentage: number
+  isEligible: boolean
+  daysUntilPickup: number
+}
+
 /**
  * Custom hook for canceling transactions
- * Provides mutation for updating transaction status to cancelled with enhanced error handling
+ * Provides mutation for updating transaction status to cancelled with enhanced error handling and refund processing
  */
 export function useCancelTransaction(
   transactionCode: string,
@@ -21,12 +28,21 @@ export function useCancelTransaction(
   const { onSuccess, onError } = options
 
   const cancelMutation = useMutation({
-    mutationFn: async ({ reason, kasirId }: { reason: string; kasirId?: string }) => {
-      // Update transaction status to cancelled with cancellation reason and kasirId
+    mutationFn: async ({ 
+      reason, 
+      kasirId, 
+      refundData 
+    }: { 
+      reason: string; 
+      kasirId?: string; 
+      refundData?: RefundData | null 
+    }) => {
+      // Update transaction status to cancelled with cancellation reason, kasirId, and refund data
       return kasirApi.transaksi.update(transactionCode, {
         status: 'cancelled',
         catatan: reason,
-        kasirId, // ✅ NEW: Pass kasirId for refund processing
+        kasirId, // ✅ EXISTING: Pass kasirId for refund processing
+        refundData, // ✅ NEW: Pass refund calculation data
       })
     },
     onSuccess: async () => {
@@ -109,8 +125,8 @@ export function useCancelTransaction(
   })
 
   return {
-    cancelTransaction: (reason: string, kasirId?: string) => 
-      cancelMutation.mutate({ reason, kasirId }),
+    cancelTransaction: (reason: string, kasirId?: string, refundData?: RefundData | null) => 
+      cancelMutation.mutate({ reason, kasirId, refundData }),
     isProcessing: cancelMutation.isPending,
     error: cancelMutation.error,
     isError: cancelMutation.isError,
