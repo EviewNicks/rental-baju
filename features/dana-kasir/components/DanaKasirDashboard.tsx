@@ -3,14 +3,16 @@
 /**
  * Dana Kasir Dashboard Component
  * 
- * Main dashboard component that orchestrates all sub-components
- * Manages state and data fetching for the entire dashboard
+ * Main dashboard component with role-based expense visibility
+ * - Kasir: Only see expenses from other kasir (not Owner)
+ * - Owner: See all expenses with optional kasir filter
  * 
  * Requirements: 6.1, 6.3, 7.1, 7.2
  */
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useAuth } from '@clerk/nextjs'
 import { DateNavigation } from './DateNavigation'
 import { SummaryCards } from './SummaryCards'
 import { IncomeList } from './IncomeList'
@@ -24,11 +26,12 @@ import { PengeluaranKasir } from '../types'
 
 interface DanaKasirDashboardProps {
   initialDate: Date
-  userRole: string
+  userRole: 'kasir' | 'owner'
 }
 
 export function DanaKasirDashboard({ initialDate, userRole }: DanaKasirDashboardProps) {
   const router = useRouter()
+  const { userId } = useAuth()
   const [selectedDate, setSelectedDate] = useState(initialDate)
   const [selectedKasirId, setSelectedKasirId] = useState<string | null>(null)
   const [showExpenseForm, setShowExpenseForm] = useState(false)
@@ -37,35 +40,36 @@ export function DanaKasirDashboard({ initialDate, userRole }: DanaKasirDashboard
   const [editingExpense, setEditingExpense] = useState<PengeluaranKasir | null>(null)
   const [deletingExpense, setDeletingExpense] = useState<PengeluaranKasir | null>(null)
 
-  // Fetch dashboard data with kasir filter
-  const { data, isLoading, error, refetch } = useDanaSummary(selectedDate, selectedKasirId)
+  // Fetch dashboard data with role-based filtering
+  const { data, isLoading, error, refetch } = useDanaSummary(
+    selectedDate, 
+    selectedKasirId || undefined
+  )
 
-  // Handle date change (keep kasir filter)
+  // Handle date change (keep kasir filter, reset role filter for kasir users)
   const handleDateChange = (newDate: Date) => {
     setSelectedDate(newDate)
     // selectedKasirId remains the same
+    // Role filter persists for owner, resets for kasir (though kasir doesn't have role filter)
     const dateStr = formatWITADate(newDate)
     router.push(`/dana-kasir?date=${dateStr}`)
   }
 
-  // Handle kasir change
+  // Handle kasir change (SIMPLIFIED)
   const handleKasirChange = (kasirId: string | null) => {
     setSelectedKasirId(kasirId)
     // Note: No URL update as per requirements
   }
 
-  // Get selected kasir name for display
-  const selectedKasirName = selectedKasirId 
-    ? [...(data?.income || []), ...(data?.expenses || [])]
-        .find(item => 
-          ('kasirId' in item && item.kasirId === selectedKasirId) ||
-          ('kasir' in item && item.kasir?.id === selectedKasirId)
-        )?.kasirName || 
-      data?.expenses.find(expense => expense.kasir?.id === selectedKasirId)?.kasir?.nama
+  // Get selected kasir name for display (SIMPLIFIED)
+  const selectedKasirName = selectedKasirId && data
+    ? data.income.find(item => item.kasirId === selectedKasirId)?.kasirName || 
+      data.expenses.find(expense => expense.kasir?.id === selectedKasirId)?.kasir?.nama
     : null
 
   // Determine if user can write (create/edit/delete expenses)
-  const canWrite = userRole === 'kasir'
+  // Both kasir and owner can create expenses
+  const canWrite = userRole === 'kasir' || userRole === 'owner'
   const canExport = userRole === 'owner'
 
   // Handle add expense
@@ -146,6 +150,7 @@ export function DanaKasirDashboard({ initialDate, userRole }: DanaKasirDashboard
           selectedKasirId={selectedKasirId}
           onKasirChange={handleKasirChange}
           isLoading={isLoading}
+          userRole={userRole}
         />
       </div>
 
@@ -192,6 +197,8 @@ export function DanaKasirDashboard({ initialDate, userRole }: DanaKasirDashboard
           onDelete={handleDeleteExpense}
           onRefresh={refetch}
           selectedKasirName={selectedKasirName}
+          userRole={userRole}
+          currentUserId={userId || undefined}
         />
       </div>
 
@@ -212,6 +219,7 @@ export function DanaKasirDashboard({ initialDate, userRole }: DanaKasirDashboard
         onClose={handleExpenseFormClose}
         initialData={editingExpense}
         onSuccess={handleExpenseFormSuccess}
+        userRole={userRole}
       />
 
       {/* Delete Confirmation Dialog */}

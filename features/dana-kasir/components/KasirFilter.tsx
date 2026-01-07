@@ -18,6 +18,7 @@ interface KasirFilterProps {
   selectedKasirId: string | null
   onKasirChange: (kasirId: string | null) => void
   isLoading?: boolean
+  userRole: 'kasir' | 'owner' // Add user role for filtering
 }
 
 export function KasirFilter({ 
@@ -25,15 +26,21 @@ export function KasirFilter({
   expenses, 
   selectedKasirId, 
   onKasirChange,
-  isLoading 
+  isLoading,
+  userRole
 }: KasirFilterProps) {
-  // Extract unique kasir from income and expenses
+  // Extract unique kasir from income and expenses with role-based filtering
   const kasirOptions = useMemo(() => {
     const kasirMap = new Map<string, KasirOption>()
     
     // From income
     income.forEach(item => {
       if (item.kasirId && item.kasirName) {
+        // Role-based filtering: Kasir users don't see Owner option
+        if (userRole === 'kasir' && item.kasirId === 'owner-system') {
+          return // Skip Owner for Kasir users
+        }
+        
         kasirMap.set(item.kasirId, {
           id: item.kasirId,
           nama: item.kasirName
@@ -44,6 +51,11 @@ export function KasirFilter({
     // From expenses
     expenses.forEach(expense => {
       if (expense.kasir) {
+        // Role-based filtering: Kasir users don't see Owner option
+        if (userRole === 'kasir' && expense.kasir.id === 'owner-system') {
+          return // Skip Owner for Kasir users
+        }
+        
         kasirMap.set(expense.kasir.id, {
           id: expense.kasir.id,
           nama: expense.kasir.nama
@@ -51,8 +63,14 @@ export function KasirFilter({
       }
     })
     
-    return Array.from(kasirMap.values()).sort((a, b) => a.nama.localeCompare(b.nama))
-  }, [income, expenses])
+    // Sort options: Owner first (if visible), then alphabetically
+    return Array.from(kasirMap.values()).sort((a, b) => {
+      // Owner always comes first for Owner users
+      if (a.id === 'owner-system') return -1
+      if (b.id === 'owner-system') return 1
+      return a.nama.localeCompare(b.nama)
+    })
+  }, [income, expenses, userRole])
 
   return (
     <div className="flex items-center gap-2">
@@ -65,7 +83,9 @@ export function KasirFilter({
         disabled={isLoading}
         className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100"
       >
-        <option value="">Semua Kasir</option>
+        <option value="">
+          {userRole === 'owner' ? 'Semua' : 'Semua Kasir'}
+        </option>
         {kasirOptions.map(kasir => (
           <option key={kasir.id} value={kasir.id}>
             {kasir.nama}

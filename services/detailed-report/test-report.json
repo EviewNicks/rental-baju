@@ -1,9 +1,220 @@
 {
-  "numTotalTests": 0,
-  "numPassedTests": 0,
+  "numTotalTests": 17,
+  "numPassedTests": 17,
   "numFailedTests": 0,
   "numPendingTests": 0,
-  "startTime": "2026-01-06T14:32:23.149Z",
-  "endTime": "2026-01-06T14:32:23.164Z",
-  "testResults": []
+  "startTime": "2026-01-07T03:44:00.188Z",
+  "endTime": "2026-01-07T03:44:02.081Z",
+  "testResults": [
+    {
+      "testFilePath": "D:\\.work\\rental-software\\features\\dana-kasir\\utils\\__tests__\\roleDetection.test.ts",
+      "testFileResults": [
+        {
+          "ancestorTitles": [
+            "Role Detection Utilities",
+            "Property 11: API Role Detection",
+            "getUserRole"
+          ],
+          "fullName": "Role Detection Utilities Property 11: API Role Detection getUserRole should extract kasir role from Clerk metadata correctly",
+          "status": "passed",
+          "title": "should extract kasir role from Clerk metadata correctly",
+          "failureMessages": [],
+          "duration": 7
+        },
+        {
+          "ancestorTitles": [
+            "Role Detection Utilities",
+            "Property 11: API Role Detection",
+            "getUserRole"
+          ],
+          "fullName": "Role Detection Utilities Property 11: API Role Detection getUserRole should extract owner role from Clerk metadata correctly",
+          "status": "passed",
+          "title": "should extract owner role from Clerk metadata correctly",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "Role Detection Utilities",
+            "Property 11: API Role Detection",
+            "getUserRole"
+          ],
+          "fullName": "Role Detection Utilities Property 11: API Role Detection getUserRole should use username as fallback when firstName is not available",
+          "status": "passed",
+          "title": "should use username as fallback when firstName is not available",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "Role Detection Utilities",
+            "Property 11: API Role Detection",
+            "getUserRole"
+          ],
+          "fullName": "Role Detection Utilities Property 11: API Role Detection getUserRole should use \"Unknown\" as fallback when both firstName and username are not available",
+          "status": "passed",
+          "title": "should use \"Unknown\" as fallback when both firstName and username are not available",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "Role Detection Utilities",
+            "Property 11: API Role Detection",
+            "getUserRole"
+          ],
+          "fullName": "Role Detection Utilities Property 11: API Role Detection getUserRole should throw error for invalid role",
+          "status": "passed",
+          "title": "should throw error for invalid role",
+          "failureMessages": [],
+          "duration": 12
+        },
+        {
+          "ancestorTitles": [
+            "Role Detection Utilities",
+            "Property 11: API Role Detection",
+            "getUserRole"
+          ],
+          "fullName": "Role Detection Utilities Property 11: API Role Detection getUserRole should throw error for missing role",
+          "status": "passed",
+          "title": "should throw error for missing role",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "Role Detection Utilities",
+            "Property 11: API Role Detection",
+            "getUserRole"
+          ],
+          "fullName": "Role Detection Utilities Property 11: API Role Detection getUserRole should handle Clerk API errors gracefully",
+          "status": "passed",
+          "title": "should handle Clerk API errors gracefully",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "Role Detection Utilities",
+            "Property 11: API Role Detection",
+            "getUsersByRole"
+          ],
+          "fullName": "Role Detection Utilities Property 11: API Role Detection getUsersByRole should return kasir user IDs correctly",
+          "status": "passed",
+          "title": "should return kasir user IDs correctly",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "Role Detection Utilities",
+            "Property 11: API Role Detection",
+            "getUsersByRole"
+          ],
+          "fullName": "Role Detection Utilities Property 11: API Role Detection getUsersByRole should return owner user IDs correctly",
+          "status": "passed",
+          "title": "should return owner user IDs correctly",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "Role Detection Utilities",
+            "Property 11: API Role Detection",
+            "getUsersByRole"
+          ],
+          "fullName": "Role Detection Utilities Property 11: API Role Detection getUsersByRole should return empty array when no users have the specified role",
+          "status": "passed",
+          "title": "should return empty array when no users have the specified role",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "Role Detection Utilities",
+            "Property 11: API Role Detection",
+            "getUsersByRole"
+          ],
+          "fullName": "Role Detection Utilities Property 11: API Role Detection getUsersByRole should handle Clerk API errors gracefully",
+          "status": "passed",
+          "title": "should handle Clerk API errors gracefully",
+          "failureMessages": [],
+          "duration": 5
+        },
+        {
+          "ancestorTitles": [
+            "Role Detection Utilities",
+            "Property 11: API Role Detection",
+            "validateUserRole"
+          ],
+          "fullName": "Role Detection Utilities Property 11: API Role Detection validateUserRole should return true for matching role",
+          "status": "passed",
+          "title": "should return true for matching role",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "Role Detection Utilities",
+            "Property 11: API Role Detection",
+            "validateUserRole"
+          ],
+          "fullName": "Role Detection Utilities Property 11: API Role Detection validateUserRole should return false for non-matching role",
+          "status": "passed",
+          "title": "should return false for non-matching role",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "Role Detection Utilities",
+            "Property 11: API Role Detection",
+            "validateUserRole"
+          ],
+          "fullName": "Role Detection Utilities Property 11: API Role Detection validateUserRole should return false for invalid role",
+          "status": "passed",
+          "title": "should return false for invalid role",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "Role Detection Utilities",
+            "Property 11: API Role Detection",
+            "validateUserRole"
+          ],
+          "fullName": "Role Detection Utilities Property 11: API Role Detection validateUserRole should handle errors gracefully",
+          "status": "passed",
+          "title": "should handle errors gracefully",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "Role Detection Utilities",
+            "Property 11: API Role Detection",
+            "getRoleBasedUserIds"
+          ],
+          "fullName": "Role Detection Utilities Property 11: API Role Detection getRoleBasedUserIds should return both kasir and owner user IDs",
+          "status": "passed",
+          "title": "should return both kasir and owner user IDs",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "Role Detection Utilities",
+            "Property 11: API Role Detection",
+            "getRoleBasedUserIds"
+          ],
+          "fullName": "Role Detection Utilities Property 11: API Role Detection getRoleBasedUserIds should handle errors gracefully",
+          "status": "passed",
+          "title": "should handle errors gracefully",
+          "failureMessages": [],
+          "duration": 0
+        }
+      ],
+      "failureMessage": null
+    }
+  ]
 }

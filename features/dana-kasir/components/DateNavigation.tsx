@@ -29,6 +29,7 @@ interface DateNavigationProps {
   selectedKasirId: string | null
   onKasirChange: (kasirId: string | null) => void
   isLoading?: boolean
+  userRole: 'kasir' | 'owner' // Add user role
 }
 
 export function DateNavigation({ 
@@ -40,7 +41,8 @@ export function DateNavigation({
   expenses,
   selectedKasirId,
   onKasirChange,
-  isLoading
+  isLoading,
+  userRole
 }: DateNavigationProps) {
   const [showDatePicker, setShowDatePicker] = useState(false)
 
@@ -151,6 +153,7 @@ export function DateNavigation({
           selectedKasirId={selectedKasirId}
           onKasirChange={onKasirChange}
           isLoading={isLoading}
+          userRole={userRole}
         />
       </div>
 

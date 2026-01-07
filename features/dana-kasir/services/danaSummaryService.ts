@@ -310,9 +310,211 @@ export class DanaSummaryService {
   }
 
   /**
-   * Get complete daily data (summary + income list + expense list)
+   * Get complete daily data with role-based filtering
+   * 
+   * Role-based visibility:
+   * - Kasir: Only see expenses from other kasir (kasirId != "owner-system")
+   * - Owner: See all expenses with optional kasir filter
    *
-   * Convenience method that combines all three queries
+   * @param date - Date to query data for
+   * @param userRole - User's role (kasir or owner)
+   * @param userKasirId - User's kasirId
+   * @param filterKasirId - Optional kasir filter from query params
+   * @returns Object with summary, income, and expenses
+   */
+  async getDailyDataWithRoleFilter(
+    date: Date, 
+    userRole: 'kasir' | 'owner',
+    userKasirId: string,
+    filterKasirId?: string
+  ) {
+    // Determine visibility filter based on role
+    let visibilityKasirId: string | undefined
+    
+    if (userRole === 'kasir') {
+      // Kasir users: Only see expenses from other kasir (not Owner)
+      // If filterKasirId is provided and it's not "owner-system", use it
+      // Otherwise, show all kasir expenses (exclude owner-system)
+      if (filterKasirId && filterKasirId !== 'owner-system') {
+        visibilityKasirId = filterKasirId
+      } else {
+        // We'll handle this in the service methods with special logic
+        visibilityKasirId = 'exclude-owner'
+      }
+    } else {
+      // Owner users: See all expenses, optionally filtered by kasirId
+      visibilityKasirId = filterKasirId
+    }
+
+    const [summary, income, expenses] = await Promise.all([
+      this.getDailySummaryWithRoleFilter(date, userRole, visibilityKasirId),
+      this.getIncomeListWithRoleFilter(date, userRole, visibilityKasirId),
+      this.getExpenseListWithRoleFilter(date, userRole, visibilityKasirId),
+    ])
+
+    return {
+      summary,
+      income,
+      expenses,
+    }
+  }
+
+  /**
+   * Get daily summary with role-based filtering
+   */
+  async getDailySummaryWithRoleFilter(
+    date: Date, 
+    userRole: 'kasir' | 'owner',
+    visibilityKasirId?: string
+  ): Promise<DailySummary> {
+    const { start, end } = getWITADayRange(date)
+
+    // Build expense filter based on role
+    let expenseWhereClause: any = {
+      isActive: true,
+      createdAt: { gte: start, lte: end },
+    }
+
+    if (userRole === 'kasir') {
+      if (visibilityKasirId === 'exclude-owner') {
+        // Kasir: exclude Owner expenses
+        expenseWhereClause.kasirId = { not: 'owner-system' }
+      } else if (visibilityKasirId) {
+        // Kasir: specific kasir filter (already validated to not be owner-system)
+        expenseWhereClause.kasirId = visibilityKasirId
+      } else {
+        expenseWhereClause.kasirId = { not: 'owner-system' }
+      }
+    } else {
+      // Owner: optional kasir filter
+      if (visibilityKasirId) {
+        expenseWhereClause.kasirId = visibilityKasirId
+      }
+    }
+
+    // Income calculations (same for both roles - no role-based filtering needed)
+    const incomeResult = await this.prisma.transaksi.aggregate({
+      where: {
+        createdAt: { gte: start, lte: end },
+      },
+      _sum: {
+        jumlahBayar: true,
+        flatLatePenalty: true,
+      },
+    })
+
+    const penaltyResult = await this.prisma.transaksiItem.aggregate({
+      where: {
+        transaksi: {
+          tglKembali: { gte: start, lte: end },
+        },
+        totalReturnPenalty: { gt: 0 },
+      },
+      _sum: {
+        totalReturnPenalty: true,
+      },
+    })
+
+    // Expense calculation with role-based filtering
+    const expenseResult = await this.prisma.pengeluaranKasir.aggregate({
+      where: expenseWhereClause,
+      _sum: {
+        harga: true,
+      },
+    })
+
+    const totalIncome =
+      (incomeResult._sum.jumlahBayar?.toNumber() || 0) +
+      (incomeResult._sum.flatLatePenalty?.toNumber() || 0) +
+      (penaltyResult._sum.totalReturnPenalty?.toNumber() || 0)
+
+    const totalExpense = expenseResult._sum.harga?.toNumber() || 0
+    const netBalance = totalIncome - totalExpense
+
+    return {
+      totalIncome,
+      totalExpense,
+      netBalance,
+      date: formatWITADate(date),
+    }
+  }
+
+  /**
+   * Get income list with role-based filtering (same for both roles)
+   */
+  async getIncomeListWithRoleFilter(
+    date: Date, 
+    userRole: 'kasir' | 'owner',
+    visibilityKasirId?: string
+  ): Promise<IncomeItem[]> {
+    // Income is not role-filtered, same logic as original
+    return this.getIncomeList(date, visibilityKasirId === 'exclude-owner' ? undefined : visibilityKasirId)
+  }
+
+  /**
+   * Get expense list with role-based filtering
+   */
+  async getExpenseListWithRoleFilter(
+    date: Date, 
+    userRole: 'kasir' | 'owner',
+    visibilityKasirId?: string
+  ): Promise<PengeluaranKasir[]> {
+    const { start, end } = getWITADayRange(date)
+
+    // Build where clause based on role
+    let whereClause: any = {
+      isActive: true,
+      createdAt: { gte: start, lte: end },
+    }
+
+    if (userRole === 'kasir') {
+      if (visibilityKasirId === 'exclude-owner') {
+        // Kasir: exclude Owner expenses
+        whereClause.kasirId = { not: 'owner-system' }
+      } else if (visibilityKasirId) {
+        // Kasir: specific kasir filter
+        whereClause.kasirId = visibilityKasirId
+      } else {
+        whereClause.kasirId = { not: 'owner-system' }
+      }
+    } else {
+      // Owner: optional kasir filter
+      if (visibilityKasirId) {
+        whereClause.kasirId = visibilityKasirId
+      }
+    }
+
+    const expenses = await this.prisma.pengeluaranKasir.findMany({
+      where: whereClause,
+      include: {
+        kasir: {
+          select: {
+            id: true,
+            nama: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    })
+
+    return expenses.map((expense) => ({
+      id: expense.id,
+      kasirId: expense.kasirId,
+      harga: expense.harga.toNumber(),
+      kategori: expense.kategori as any,
+      deskripsi: expense.deskripsi || undefined,
+      isActive: expense.isActive,
+      createdAt: expense.createdAt,
+      updatedAt: expense.updatedAt,
+      createdBy: expense.createdBy,
+      kasir: expense.kasir,
+    }))
+  }
+
+  /**
+   * Get complete daily data (original method - kept for backward compatibility)
    *
    * @param date - Date to query data for
    * @param kasirId - Optional kasir filter

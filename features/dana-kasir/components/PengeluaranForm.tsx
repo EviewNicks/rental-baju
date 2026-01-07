@@ -34,11 +34,15 @@ import { useUpdatePengeluaran } from '../hooks/useUpdatePengeluaran'
 import { PengeluaranKasir, EXPENSE_CATEGORIES, ExpenseCategory } from '../types'
 import { formatRupiah } from '../utils/currency'
 
+// Owner kasir ID constant
+const OWNER_KASIR_ID = 'owner-system'
+
 interface PengeluaranFormProps {
   isOpen: boolean
   onClose: () => void
   initialData?: PengeluaranKasir | null
   onSuccess?: () => void
+  userRole?: 'kasir' | 'owner' // NEW: Current user's role for display
 }
 
 interface FormData {
@@ -65,7 +69,8 @@ export function PengeluaranForm({
   isOpen, 
   onClose, 
   initialData, 
-  onSuccess 
+  onSuccess,
+  userRole = 'kasir' // NEW: Default to kasir for backward compatibility
 }: PengeluaranFormProps) {
   const isEditMode = !!initialData
   
@@ -90,12 +95,12 @@ export function PengeluaranForm({
   
   const isLoading = createMutation.isPending || updateMutation.isPending
 
-  // NEW: Fetch kasir list when modal opens
+  // NEW: Fetch kasir list when modal opens (skip for Owner)
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && userRole !== 'owner') {
       fetchKasirList()
     }
-  }, [isOpen])
+  }, [isOpen, userRole])
 
   // Reset form when modal opens/closes or initialData changes
   useEffect(() => {
@@ -103,7 +108,7 @@ export function PengeluaranForm({
       if (initialData) {
         // Edit mode - populate form
         setFormData({
-          kasirId: initialData.kasirId,  // NEW
+          kasirId: userRole === 'owner' ? OWNER_KASIR_ID : initialData.kasirId,  // Auto-set for Owner
           harga: initialData.harga,
           kategori: initialData.kategori,
           deskripsi: initialData.deskripsi || '',
@@ -112,7 +117,7 @@ export function PengeluaranForm({
       } else {
         // Create mode - reset form
         setFormData({
-          kasirId: '',  // NEW
+          kasirId: userRole === 'owner' ? OWNER_KASIR_ID : '',  // Auto-set for Owner
           harga: 0,
           kategori: '',
           deskripsi: ''
@@ -121,7 +126,7 @@ export function PengeluaranForm({
       }
       setErrors({})
     }
-  }, [isOpen, initialData])
+  }, [isOpen, initialData, userRole])
 
   // NEW: Fetch kasir list from API
   const fetchKasirList = async () => {
@@ -268,7 +273,12 @@ export function PengeluaranForm({
   // Handle close
   const handleClose = () => {
     if (isLoading) return // Prevent closing while loading
-    setFormData({ kasirId: '', harga: 0, kategori: '', deskripsi: '' })  // NEW: Reset kasirId
+    setFormData({ 
+      kasirId: userRole === 'owner' ? OWNER_KASIR_ID : '', // Auto-set for Owner
+      harga: 0, 
+      kategori: '', 
+      deskripsi: '' 
+    })
     setAmountInput('')
     setErrors({})
     onClose()
@@ -279,7 +289,17 @@ export function PengeluaranForm({
       <DialogContent className="sm:max-w-md" showCloseButton={false}>
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
-            {isEditMode ? 'Edit Pengeluaran' : 'Tambah Pengeluaran'}
+            <div className="flex items-center gap-3">
+              <span>{isEditMode ? 'Edit Pengeluaran' : 'Tambah Pengeluaran'}</span>
+              {/* NEW: Role indicator */}
+              <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                userRole === 'owner' 
+                  ? 'bg-blue-100 text-blue-700' 
+                  : 'bg-green-100 text-green-700'
+              }`}>
+                {userRole === 'owner' ? 'Owner' : 'Kasir'}
+              </span>
+            </div>
             <Button
               variant="ghost"
               size="icon"
@@ -293,35 +313,37 @@ export function PengeluaranForm({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* NEW: Kasir Selection Field */}
-          <div className="space-y-2">
-            <Label htmlFor="kasirId">
-              Kasir <span className="text-red-500">*</span>
-            </Label>
-            <Select
-              value={formData.kasirId}
-              onValueChange={handleKasirChange}
-              disabled={isLoading || isLoadingKasir}
-            >
-              <SelectTrigger 
-                id="kasirId"
-                className="w-full"
-                aria-invalid={!!errors.kasirId}
+          {/* Kasir Selection Field - Hidden for Owner */}
+          {userRole !== 'owner' && (
+            <div className="space-y-2">
+              <Label htmlFor="kasirId">
+                Kasir <span className="text-red-500">*</span>
+              </Label>
+              <Select
+                value={formData.kasirId}
+                onValueChange={handleKasirChange}
+                disabled={isLoading || isLoadingKasir}
               >
-                <SelectValue placeholder={isLoadingKasir ? "Memuat..." : "Pilih kasir"} />
-              </SelectTrigger>
-              <SelectContent>
-                {kasirList.map((kasir) => (
-                  <SelectItem key={kasir.id} value={kasir.id}>
-                    {kasir.nama}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors.kasirId && (
-              <p className="text-sm text-red-600">{errors.kasirId}</p>
-            )}
-          </div>
+                <SelectTrigger 
+                  id="kasirId"
+                  className="w-full"
+                  aria-invalid={!!errors.kasirId}
+                >
+                  <SelectValue placeholder={isLoadingKasir ? "Memuat..." : "Pilih kasir"} />
+                </SelectTrigger>
+                <SelectContent>
+                  {kasirList.map((kasir) => (
+                    <SelectItem key={kasir.id} value={kasir.id}>
+                      {kasir.nama}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.kasirId && (
+                <p className="text-sm text-red-600">{errors.kasirId}</p>
+              )}
+            </div>
+          )}
 
           {/* Amount Field */}
           <div className="space-y-2">

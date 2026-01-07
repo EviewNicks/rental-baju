@@ -6,6 +6,9 @@ import { CreatePengeluaranRequest, UpdatePengeluaranRequest, PengeluaranKasir } 
 import { createPengeluaranSchema, updatePengeluaranSchema } from '../validation'
 import { getWITADayRange } from '../utils/timezone'
 
+// Owner kasir ID constant
+const OWNER_KASIR_ID = 'owner-system'
+
 /**
  * PengeluaranService - Handles all expense-related operations
  *
@@ -47,7 +50,7 @@ export class PengeluaranService {
 
     const validatedData = validationResult.data
 
-    // NEW: Validate kasirId exists in Kasir table
+    // Validate kasirId exists in Kasir table (including Owner)
     const kasirExists = await this.prisma.kasir.findUnique({
       where: { id: validatedData.kasirId },
     })
@@ -57,10 +60,10 @@ export class PengeluaranService {
     }
 
     // Create expense with audit fields
-    // NEW: Use kasirId from request data (not from authenticated user)
+    // Use kasirId from request data (supports both regular kasir and Owner)
     const expense = await this.prisma.pengeluaranKasir.create({
       data: {
-        kasirId: validatedData.kasirId, // NEW: From request data
+        kasirId: validatedData.kasirId, // From request data
         harga: new Prisma.Decimal(validatedData.harga),
         kategori: validatedData.kategori,
         deskripsi: validatedData.deskripsi,
@@ -122,7 +125,7 @@ export class PengeluaranService {
 
     // Authorization handled at API route level - kasir role can edit any expense
 
-    // NEW: Validate kasirId if provided
+    // Validate kasirId if provided (including Owner)
     if (validatedData.kasirId) {
       const kasirExists = await this.prisma.kasir.findUnique({
         where: { id: validatedData.kasirId },
@@ -136,7 +139,7 @@ export class PengeluaranService {
     // Prepare update data (only allowed fields)
     const updateData: Prisma.PengeluaranKasirUpdateInput = {}
 
-    // NEW: Allow kasirId update
+    // Allow kasirId update (supports both regular kasir and Owner)
     if (validatedData.kasirId !== undefined) {
       updateData.kasir = {
         connect: { id: validatedData.kasirId },
@@ -278,15 +281,18 @@ export class PengeluaranService {
   /**
    * Get list of active kasir for dropdown
    *
-   * NEW: Returns all active kasir with id and nama only
+   * Returns all active kasir with id and nama only, excluding Owner
    * Used for kasir selection dropdown in expense form
    *
-   * @returns Array of active kasir with id and nama
+   * @returns Array of active kasir with id and nama (excluding Owner)
    */
   async getActiveKasirList(): Promise<Array<{ id: string; nama: string }>> {
     const kasirList = await this.prisma.kasir.findMany({
       where: {
         isActive: true,
+        id: {
+          not: OWNER_KASIR_ID, // Exclude Owner from dropdown
+        },
       },
       select: {
         id: true,

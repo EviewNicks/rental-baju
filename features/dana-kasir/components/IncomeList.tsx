@@ -15,7 +15,7 @@
  * Requirements: 1.1, 1.2, 1.3, 1.5
  */
 
-import { Receipt, User, Clock, AlertCircle, TrendingDown } from 'lucide-react'
+import { Receipt, User, AlertCircle, TrendingDown } from 'lucide-react'
 import { IncomeItem } from '../types'
 import { formatRupiah } from '../utils/currency'
 
@@ -126,6 +126,14 @@ export function IncomeList({ income, isLoading, selectedKasirName }: IncomeListP
                         Penalty
                       </span>
                     )}
+                     {/* Kasir Badge with role-based colors */}
+                  <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                    item.kasirName === 'Owner' 
+                      ? 'bg-yellow-100 text-yellow-800' // Gold for Owner
+                      : 'bg-blue-100 text-blue-700'    // Blue for Kasir
+                  }`}>
+                    {item.kasirName}
+                  </span>
                   </div>
                   <span className={`text-xs px-2 py-1 rounded-full ${
                     item.status === 'completed' || item.status === 'selesai'
@@ -194,11 +202,6 @@ export function IncomeList({ income, isLoading, selectedKasirName }: IncomeListP
                   </div>
                 </div>
 
-                {/* Kasir Info */}
-                <div className="flex items-center gap-2 text-xs text-gray-500">
-                  <Clock className="w-3 h-3" />
-                  <span>Kasir: {item.kasirName}</span>
-                </div>
               </div>
             )
           })}

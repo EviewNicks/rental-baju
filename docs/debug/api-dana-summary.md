@@ -1,1 +1,59 @@
-{"success":true,"data":{"summary":{"totalIncome":3417000,"totalExpense":250000,"netBalance":3167000,"date":"2026-01-05"},"income":[{"type":"rental","transaksiKode":"TXN-20260105-009","customerName":"nayaa","rentalAmount":450000,"penaltyAmount":0,"status":"active","kasirId":"92e1b3c5-538e-4cf1-abc1-749cd3a4bed0","kasirName":"Inaya","createdAt":"2026-01-05T06:38:10.084Z"},{"type":"rental","transaksiKode":"TXN-20260105-008","customerName":"muhawal","rentalAmount":550000,"penaltyAmount":0,"status":"cancelled","kasirId":"92e1b3c5-538e-4cf1-abc1-749cd3a4bed0","kasirName":"Inaya","createdAt":"2026-01-05T05:17:52.896Z"},{"type":"rental","transaksiKode":"TXN-20260105-007","customerName":"muhawal","rentalAmount":350000,"penaltyAmount":0,"status":"selesai","kasirId":"92e1b3c5-538e-4cf1-abc1-749cd3a4bed0","kasirName":"Inaya","createdAt":"2026-01-05T05:15:24.907Z"},{"type":"rental","transaksiKode":"TXN-20260105-006","customerName":"Arunggah","rentalAmount":432000,"penaltyAmount":0,"status":"diambil","kasirId":"92e1b3c5-538e-4cf1-abc1-749cd3a4bed0","kasirName":"Inaya","createdAt":"2026-01-05T04:55:06.709Z"},{"type":"rental","transaksiKode":"TXN-20260105-005","customerName":"Ardiansyah","rentalAmount":400000,"penaltyAmount":0,"status":"selesai","kasirId":"f90cf9e8-d26f-49f5-ae03-90af7806f6a1","kasirName":"Naya","createdAt":"2026-01-04T19:38:05.312Z"},{"type":"rental","transaksiKode":"TXN-20260105-004","customerName":"muhawal","rentalAmount":280000,"penaltyAmount":0,"status":"selesai","kasirId":"92e1b3c5-538e-4cf1-abc1-749cd3a4bed0","kasirName":"Inaya","createdAt":"2026-01-04T19:18:25.891Z"},{"type":"rental","transaksiKode":"TXN-20260105-003","customerName":"muhawal","rentalAmount":155000,"penaltyAmount":0,"status":"cancelled","kasirId":"92e1b3c5-538e-4cf1-abc1-749cd3a4bed0","kasirName":"Inaya","createdAt":"2026-01-04T19:12:25.364Z"},{"type":"rental","transaksiKode":"TXN-20260105-002","customerName":"muhawal","rentalAmount":250000,"penaltyAmount":0,"status":"active","kasirId":"c91c9a25-bb32-4790-a617-317a284574b2","kasirName":"Tiara","createdAt":"2026-01-04T18:58:24.975Z"},{"type":"rental","transaksiKode":"TXN-20260105-001","customerName":"muhawal","rentalAmount":550000,"penaltyAmount":0,"status":"active","kasirId":"f90cf9e8-d26f-49f5-ae03-90af7806f6a1","kasirName":"Naya","createdAt":"2026-01-04T17:15:55.287Z"}],"expenses":[{"id":"d91212c9-19f2-48e4-87c5-c5b38a246421","kasirId":"f90cf9e8-d26f-49f5-ae03-90af7806f6a1","harga":250000,"kategori":"Operasional","deskripsi":"Refund pembatalan transaksi #TXN-20260105-008 - muhawal","isActive":true,"createdAt":"2026-01-05T05:34:03.973Z","updatedAt":"2026-01-05T06:49:05.353Z","createdBy":"user_2zqMR8BytXixaDKNlvkF8Hm7pOp","kasir":{"id":"f90cf9e8-d26f-49f5-ae03-90af7806f6a1","nama":"Naya"}}]}}
+{
+    "success": true,
+    "data": {
+        "summary": {
+            "totalIncome": 0,
+            "totalExpense": 5430400,
+            "netBalance": -5430400,
+            "date": "2026-01-07"
+        },
+        "income": [],
+        "expenses": [
+            {
+                "id": "b0e75e2f-52a7-4db8-8385-69eac80bbe9a",
+                "kasirId": "owner-system",
+                "harga": 5030400,
+                "kategori": "Transport",
+                "deskripsi": "pengantara pakett",
+                "isActive": true,
+                "createdAt": "2026-01-07T13:01:34.757Z",
+                "updatedAt": "2026-01-07T13:01:34.757Z",
+                "createdBy": "user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH",
+                "kasir": {
+                    "id": "owner-system",
+                    "nama": "Owner"
+                }
+            },
+            {
+                "id": "21dd736b-bbb7-4ccf-850e-81e3824f1912",
+                "kasirId": "owner-system",
+                "harga": 200000,
+                "kategori": "Maintenance",
+                "deskripsi": "dibelikan sesuatuu",
+                "isActive": true,
+                "createdAt": "2026-01-07T13:00:32.410Z",
+                "updatedAt": "2026-01-07T13:00:32.410Z",
+                "createdBy": "user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH",
+                "kasir": {
+                    "id": "owner-system",
+                    "nama": "Owner"
+                }
+            },
+            {
+                "id": "3482d84c-4796-4f46-b582-816e9dec89e2",
+                "kasirId": "92e1b3c5-538e-4cf1-abc1-749cd3a4bed0",
+                "harga": 200000,
+                "kategori": "Maintenance",
+                "deskripsi": "askmkascmkmc",
+                "isActive": true,
+                "createdAt": "2026-01-07T12:52:47.185Z",
+                "updatedAt": "2026-01-07T12:52:47.185Z",
+                "createdBy": "user_2zqMR8BytXixaDKNlvkF8Hm7pOp",
+                "kasir": {
+                    "id": "92e1b3c5-538e-4cf1-abc1-749cd3a4bed0",
+                    "nama": "Inaya"
+                }
+            }
+        ]
+    }
+}

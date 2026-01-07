@@ -8,8 +8,11 @@ import { EXPENSE_CATEGORIES } from './types'
 export const createPengeluaranSchema = z.object({
   kasirId: z
     .string({ message: 'Kasir harus dipilih' })
-    .uuid('Kasir ID tidak valid')
-    .min(1, 'Kasir harus dipilih'),  // NEW: Validate kasir selection
+    .min(1, 'Kasir harus dipilih')
+    .refine((val) => {
+      // Allow 'owner-system' or valid UUID
+      return val === 'owner-system' || /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val)
+    }, 'Kasir ID tidak valid'),
     
   harga: z
     .number({ message: 'Jumlah harus berupa angka' })
@@ -37,7 +40,10 @@ export const createPengeluaranSchema = z.object({
 export const updatePengeluaranSchema = z.object({
   kasirId: z
     .string()
-    .uuid('Kasir ID tidak valid')
+    .refine((val) => {
+      // Allow 'owner-system' or valid UUID
+      return val === 'owner-system' || /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val)
+    }, 'Kasir ID tidak valid')
     .optional(),  // NEW: Can update kasir assignment
     
   harga: z

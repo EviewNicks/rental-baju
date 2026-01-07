@@ -14,9 +14,15 @@ import { DanaSummaryResponse } from '../types'
 import { formatWITADate } from '../utils/timezone'
 
 /**
- * Fetch dana summary from API
+ * Fetch dana summary from API with role-based filtering
+ * 
+ * User role is determined by API from Clerk authentication
+ * Role-based visibility is handled server-side
  */
-async function fetchDanaSummary(date: Date, kasirId?: string): Promise<DanaSummaryResponse> {
+async function fetchDanaSummary(
+  date: Date, 
+  kasirId?: string
+): Promise<DanaSummaryResponse> {
   const dateStr = formatWITADate(date)
   const params = new URLSearchParams({ date: dateStr })
   if (kasirId) params.append('kasirId', kasirId)
@@ -25,7 +31,10 @@ async function fetchDanaSummary(date: Date, kasirId?: string): Promise<DanaSumma
 
   if (!response.ok) {
     const error = await response.json()
-    throw new Error(error.error?.message || 'Failed to fetch dana summary')
+    // Provide more detailed error information for debugging
+    const errorMessage = error.error?.message || 'Failed to fetch dana summary'
+    const errorCode = error.error?.code || 'UNKNOWN_ERROR'
+    throw new Error(`${errorMessage} (Code: ${errorCode})`)
   }
 
   const result = await response.json()
@@ -33,13 +42,27 @@ async function fetchDanaSummary(date: Date, kasirId?: string): Promise<DanaSumma
 }
 
 /**
- * Hook for fetching dana summary
+ * Hook for fetching dana summary with role-based filtering
+ * 
+ * @param date - Date to fetch summary for
+ * @param kasirId - Optional kasir filter
+ * 
+ * Role-based visibility is automatically handled server-side:
+ * - Kasir users: Only see expenses from other kasir (not Owner)
+ * - Owner users: See all expenses with optional kasir filter
  */
-export function useDanaSummary(date: Date, kasirId?: string) {
+export function useDanaSummary(
+  date: Date, 
+  kasirId?: string
+) {
   const dateStr = formatWITADate(date)
-  const queryKey = kasirId 
-    ? ['dana-summary', dateStr, kasirId]
-    : ['dana-summary', dateStr]
+  
+  // Build query key (simplified - no roleFilter needed)
+  const queryKey = [
+    'dana-summary', 
+    dateStr,
+    ...(kasirId ? [kasirId] : [])
+  ]
 
   return useQuery({
     queryKey,
@@ -48,5 +71,13 @@ export function useDanaSummary(date: Date, kasirId?: string) {
     gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
     refetchOnWindowFocus: false,
     refetchOnReconnect: true,
+    retry: (failureCount, error) => {
+      // Don't retry on authentication/authorization errors
+      if (error.message.includes('UNAUTHORIZED') || error.message.includes('KASIR_NOT_FOUND')) {
+        return false
+      }
+      // Retry up to 3 times for other errors
+      return failureCount < 3
+    },
   })
 }
