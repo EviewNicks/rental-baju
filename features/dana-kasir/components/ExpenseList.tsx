@@ -26,6 +26,7 @@ interface ExpenseListProps {
   onEdit?: (expense: PengeluaranKasir) => void
   onDelete?: (expense: PengeluaranKasir) => void
   onRefresh?: () => void
+  selectedKasirName?: string | null
 }
 
 export function ExpenseList({
@@ -35,6 +36,7 @@ export function ExpenseList({
   onAdd, // NEW
   onEdit,
   onDelete,
+  selectedKasirName,
 }: ExpenseListProps) {
   if (isLoading) {
     return (
@@ -76,7 +78,20 @@ export function ExpenseList({
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
             <ShoppingCart className="w-8 h-8 text-gray-400" />
           </div>
-          <p className="text-gray-500 text-sm">Belum ada pengeluaran hari ini</p>
+          {selectedKasirName ? (
+            <div>
+              <p className="text-gray-500 text-sm mb-1">
+                Tidak ada data pengeluaran untuk kasir <strong>{selectedKasirName}</strong>
+              </p>
+              <p className="text-gray-400 text-xs">
+                pada tanggal yang dipilih
+              </p>
+            </div>
+          ) : (
+            <p className="text-gray-500 text-sm">
+              Belum ada pengeluaran hari ini
+            </p>
+          )}
         </div>
       </div>
     )

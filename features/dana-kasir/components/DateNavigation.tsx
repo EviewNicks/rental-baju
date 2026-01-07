@@ -15,19 +15,32 @@
 import { useState } from 'react'
 import { ChevronLeft, ChevronRight, Calendar, Download } from 'lucide-react'
 import { formatWITADate, getCurrentWITADate } from '../utils/timezone'
+import { KasirFilter } from './KasirFilter'
+import { IncomeItem, PengeluaranKasir } from '../types'
 
 interface DateNavigationProps {
   selectedDate: Date
   onDateChange: (date: Date) => void
   canExport?: boolean
   onExport?: () => void
+  // New props for kasir filter
+  income: IncomeItem[]
+  expenses: PengeluaranKasir[]
+  selectedKasirId: string | null
+  onKasirChange: (kasirId: string | null) => void
+  isLoading?: boolean
 }
 
 export function DateNavigation({ 
   selectedDate, 
   onDateChange,
   canExport = false,
-  onExport
+  onExport,
+  income,
+  expenses,
+  selectedKasirId,
+  onKasirChange,
+  isLoading
 }: DateNavigationProps) {
   const [showDatePicker, setShowDatePicker] = useState(false)
 
@@ -72,61 +85,73 @@ export function DateNavigation({
   return (
     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
       {/* Date Navigation Controls */}
-      <div className="flex items-center gap-2">
-        {/* Previous Day Button */}
-        <button
-          onClick={handlePrevDay}
-          className="p-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
-          title="Hari Sebelumnya"
-        >
-          <ChevronLeft className="w-5 h-5 text-gray-600" />
-        </button>
-
-        {/* Date Display / Picker */}
-        <div className="relative">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+        {/* Date Controls */}
+        <div className="flex items-center gap-2">
+          {/* Previous Day Button */}
           <button
-            onClick={() => setShowDatePicker(!showDatePicker)}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors min-w-[280px]"
+            onClick={handlePrevDay}
+            className="p-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
+            title="Hari Sebelumnya"
           >
-            <Calendar className="w-5 h-5 text-gray-600" />
-            <span className="text-sm font-medium text-gray-900">
-              {displayDate}
-            </span>
+            <ChevronLeft className="w-5 h-5 text-gray-600" />
           </button>
 
-          {/* Date Picker Input */}
-          {showDatePicker && (
-            <div className="absolute top-full mt-2 left-0 z-10 bg-white rounded-lg shadow-lg border border-gray-200 p-4">
-              <input
-                type="date"
-                value={formatWITADate(selectedDate)}
-                onChange={handleDatePickerChange}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                max={formatWITADate(getCurrentWITADate())}
-              />
-            </div>
+          {/* Date Display / Picker */}
+          <div className="relative">
+            <button
+              onClick={() => setShowDatePicker(!showDatePicker)}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors min-w-[280px]"
+            >
+              <Calendar className="w-5 h-5 text-gray-600" />
+              <span className="text-sm font-medium text-gray-900">
+                {displayDate}
+              </span>
+            </button>
+
+            {/* Date Picker Input */}
+            {showDatePicker && (
+              <div className="absolute top-full mt-2 left-0 z-10 bg-white rounded-lg shadow-lg border border-gray-200 p-4">
+                <input
+                  type="date"
+                  value={formatWITADate(selectedDate)}
+                  onChange={handleDatePickerChange}
+                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  max={formatWITADate(getCurrentWITADate())}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Next Day Button */}
+          <button
+            onClick={handleNextDay}
+            disabled={isToday}
+            className="p-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Hari Berikutnya"
+          >
+            <ChevronRight className="w-5 h-5 text-gray-600" />
+          </button>
+
+          {/* Today Button */}
+          {!isToday && (
+            <button
+              onClick={handleToday}
+              className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors text-sm font-medium"
+            >
+              Hari Ini
+            </button>
           )}
         </div>
 
-        {/* Next Day Button */}
-        <button
-          onClick={handleNextDay}
-          disabled={isToday}
-          className="p-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          title="Hari Berikutnya"
-        >
-          <ChevronRight className="w-5 h-5 text-gray-600" />
-        </button>
-
-        {/* Today Button */}
-        {!isToday && (
-          <button
-            onClick={handleToday}
-            className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors text-sm font-medium"
-          >
-            Hari Ini
-          </button>
-        )}
+        {/* Kasir Filter */}
+        <KasirFilter
+          income={income}
+          expenses={expenses}
+          selectedKasirId={selectedKasirId}
+          onKasirChange={onKasirChange}
+          isLoading={isLoading}
+        />
       </div>
 
       {/* Export Button (Owner only) */}

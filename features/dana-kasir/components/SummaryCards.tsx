@@ -18,9 +18,10 @@ import { formatRupiah } from '../utils/currency'
 interface SummaryCardsProps {
   summary?: DailySummary
   isLoading?: boolean
+  selectedKasirName?: string | null
 }
 
-export function SummaryCards({ summary, isLoading }: SummaryCardsProps) {
+export function SummaryCards({ summary, isLoading, selectedKasirName }: SummaryCardsProps) {
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -42,6 +43,17 @@ export function SummaryCards({ summary, isLoading }: SummaryCardsProps) {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* Kasir Filter Info */}
+      {selectedKasirName && (
+        <div className="col-span-full mb-4">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <p className="text-sm text-blue-800">
+              Menampilkan data untuk: <strong>{selectedKasirName}</strong>
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Total Income Card */}
       <div className="bg-white rounded-lg shadow hover:shadow-md transition-shadow p-6 border-l-4 border-green-500">
         <div className="flex items-center justify-between mb-4">

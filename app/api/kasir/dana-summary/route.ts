@@ -38,6 +38,7 @@ export async function GET(request: NextRequest) {
     // Parse query parameters
     const { searchParams } = new URL(request.url)
     const dateParam = searchParams.get('date')
+    const kasirIdParam = searchParams.get('kasirId')
 
     // Validate and parse date
     let queryDate: Date
@@ -70,7 +71,7 @@ export async function GET(request: NextRequest) {
     const danaSummaryService = new DanaSummaryService(prisma)
 
     // Get complete daily data (summary + income + expenses)
-    const dailyData = await danaSummaryService.getDailyData(queryDate)
+    const dailyData = await danaSummaryService.getDailyData(queryDate, kasirIdParam)
 
     return NextResponse.json({
       success: true,

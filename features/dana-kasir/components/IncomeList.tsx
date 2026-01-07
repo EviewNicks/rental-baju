@@ -22,9 +22,10 @@ import { formatRupiah } from '../utils/currency'
 interface IncomeListProps {
   income: IncomeItem[]
   isLoading?: boolean
+  selectedKasirName?: string | null
 }
 
-export function IncomeList({ income, isLoading }: IncomeListProps) {
+export function IncomeList({ income, isLoading, selectedKasirName }: IncomeListProps) {
   if (isLoading) {
     return (
       <div className="bg-white rounded-lg shadow p-6">
@@ -56,9 +57,20 @@ export function IncomeList({ income, isLoading }: IncomeListProps) {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
             <Receipt className="w-8 h-8 text-gray-400" />
           </div>
-          <p className="text-gray-500 text-sm">
-            Belum ada pendapatan hari ini
-          </p>
+          {selectedKasirName ? (
+            <div>
+              <p className="text-gray-500 text-sm mb-1">
+                Tidak ada data pendapatan untuk kasir <strong>{selectedKasirName}</strong>
+              </p>
+              <p className="text-gray-400 text-xs">
+                pada tanggal yang dipilih
+              </p>
+            </div>
+          ) : (
+            <p className="text-gray-500 text-sm">
+              Belum ada pendapatan hari ini
+            </p>
+          )}
         </div>
       </div>
     )

@@ -30,22 +30,39 @@ interface DanaKasirDashboardProps {
 export function DanaKasirDashboard({ initialDate, userRole }: DanaKasirDashboardProps) {
   const router = useRouter()
   const [selectedDate, setSelectedDate] = useState(initialDate)
+  const [selectedKasirId, setSelectedKasirId] = useState<string | null>(null)
   const [showExpenseForm, setShowExpenseForm] = useState(false)
   const [showExportDialog, setShowExportDialog] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [editingExpense, setEditingExpense] = useState<PengeluaranKasir | null>(null)
   const [deletingExpense, setDeletingExpense] = useState<PengeluaranKasir | null>(null)
 
-  // Fetch dashboard data
-  const { data, isLoading, error, refetch } = useDanaSummary(selectedDate)
+  // Fetch dashboard data with kasir filter
+  const { data, isLoading, error, refetch } = useDanaSummary(selectedDate, selectedKasirId)
 
-  // Handle date change
+  // Handle date change (keep kasir filter)
   const handleDateChange = (newDate: Date) => {
     setSelectedDate(newDate)
-    // Update URL with new date
+    // selectedKasirId remains the same
     const dateStr = formatWITADate(newDate)
     router.push(`/dana-kasir?date=${dateStr}`)
   }
+
+  // Handle kasir change
+  const handleKasirChange = (kasirId: string | null) => {
+    setSelectedKasirId(kasirId)
+    // Note: No URL update as per requirements
+  }
+
+  // Get selected kasir name for display
+  const selectedKasirName = selectedKasirId 
+    ? [...(data?.income || []), ...(data?.expenses || [])]
+        .find(item => 
+          ('kasirId' in item && item.kasirId === selectedKasirId) ||
+          ('kasir' in item && item.kasir?.id === selectedKasirId)
+        )?.kasirName || 
+      data?.expenses.find(expense => expense.kasir?.id === selectedKasirId)?.kasir?.nama
+    : null
 
   // Determine if user can write (create/edit/delete expenses)
   const canWrite = userRole === 'kasir'
@@ -117,13 +134,18 @@ export function DanaKasirDashboard({ initialDate, userRole }: DanaKasirDashboard
         </p>
       </div>
 
-      {/* Date Navigation */}
+      {/* Date Navigation with Kasir Filter */}
       <div className="mb-6">
         <DateNavigation
           selectedDate={selectedDate}
           onDateChange={handleDateChange}
           canExport={canExport}
           onExport={handleExport}
+          income={data?.income || []}
+          expenses={data?.expenses || []}
+          selectedKasirId={selectedKasirId}
+          onKasirChange={handleKasirChange}
+          isLoading={isLoading}
         />
       </div>
 
@@ -147,6 +169,7 @@ export function DanaKasirDashboard({ initialDate, userRole }: DanaKasirDashboard
         <SummaryCards
           summary={data?.summary}
           isLoading={isLoading}
+          selectedKasirName={selectedKasirName}
         />
       </div>
 
@@ -156,6 +179,7 @@ export function DanaKasirDashboard({ initialDate, userRole }: DanaKasirDashboard
         <IncomeList
           income={data?.income || []}
           isLoading={isLoading}
+          selectedKasirName={selectedKasirName}
         />
 
         {/* Expense List */}
@@ -167,6 +191,7 @@ export function DanaKasirDashboard({ initialDate, userRole }: DanaKasirDashboard
           onEdit={handleEditExpense}
           onDelete={handleDeleteExpense}
           onRefresh={refetch}
+          selectedKasirName={selectedKasirName}
         />
       </div>
 

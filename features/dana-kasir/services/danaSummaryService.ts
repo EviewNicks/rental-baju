@@ -30,9 +30,10 @@ export class DanaSummaryService {
    * Requirements: 3.1, 3.2, 3.7
    *
    * @param date - Date to calculate summary for
+   * @param kasirId - Optional kasir filter
    * @returns Daily summary object
    */
-  async getDailySummary(date: Date): Promise<DailySummary> {
+  async getDailySummary(date: Date, kasirId?: string): Promise<DailySummary> {
     const { start, end } = getWITADayRange(date)
 
     // Calculate total income from transactions (rental + flat late penalty)
@@ -42,6 +43,7 @@ export class DanaSummaryService {
           gte: start,
           lte: end,
         },
+        ...(kasirId && { kasirId }),
       },
       _sum: {
         jumlahBayar: true,
@@ -58,6 +60,7 @@ export class DanaSummaryService {
             gte: start,
             lte: end,
           },
+          ...(kasirId && { kasirId }),
         },
         totalReturnPenalty: {
           gt: 0,
@@ -76,6 +79,7 @@ export class DanaSummaryService {
           gte: start,
           lte: end,
         },
+        ...(kasirId && { kasirId }),
       },
       _sum: {
         harga: true,
@@ -113,9 +117,10 @@ export class DanaSummaryService {
    * - Penalty payments (type='penalty') with breakdown
    *
    * @param date - Date to query income for
+   * @param kasirId - Optional kasir filter
    * @returns Array of income items sorted by date
    */
-  async getIncomeList(date: Date): Promise<IncomeItem[]> {
+  async getIncomeList(date: Date, kasirId?: string): Promise<IncomeItem[]> {
     const { start, end } = getWITADayRange(date)
 
     // Get rental transactions
@@ -125,6 +130,7 @@ export class DanaSummaryService {
           gte: start,
           lte: end,
         },
+        ...(kasirId && { kasirId }),
       },
       include: {
         penyewa: {
@@ -152,6 +158,7 @@ export class DanaSummaryService {
           gte: start,
           lte: end,
         },
+        ...(kasirId && { kasirId }),
         items: {
           some: {
             totalReturnPenalty: {
@@ -256,11 +263,13 @@ export class DanaSummaryService {
    * Filters:
    * - Only active expenses (isActive = true)
    * - Date range in WITA timezone
+   * - Optional kasir filter
    *
    * @param date - Date to query expenses for
+   * @param kasirId - Optional kasir filter
    * @returns Array of expense records
    */
-  async getExpenseList(date: Date): Promise<PengeluaranKasir[]> {
+  async getExpenseList(date: Date, kasirId?: string): Promise<PengeluaranKasir[]> {
     const { start, end } = getWITADayRange(date)
 
     const expenses = await this.prisma.pengeluaranKasir.findMany({
@@ -270,6 +279,7 @@ export class DanaSummaryService {
           gte: start,
           lte: end,
         },
+        ...(kasirId && { kasirId }),
       },
       include: {
         kasir: {
@@ -305,13 +315,14 @@ export class DanaSummaryService {
    * Convenience method that combines all three queries
    *
    * @param date - Date to query data for
+   * @param kasirId - Optional kasir filter
    * @returns Object with summary, income, and expenses
    */
-  async getDailyData(date: Date) {
+  async getDailyData(date: Date, kasirId?: string) {
     const [summary, income, expenses] = await Promise.all([
-      this.getDailySummary(date),
-      this.getIncomeList(date),
-      this.getExpenseList(date),
+      this.getDailySummary(date, kasirId),
+      this.getIncomeList(date, kasirId),
+      this.getExpenseList(date, kasirId),
     ])
 
     return {
