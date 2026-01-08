@@ -229,6 +229,50 @@ export class ProductCostService {
   }
 
   /**
+   * Add multiple cost items to a product (bulk operation)
+   */
+  async addProductCosts(productId: string, costs: Array<{ costItemId: string; amount: number; notes?: string }>): Promise<ProductCost[]> {
+    const results: ProductCost[] = []
+    
+    for (const cost of costs) {
+      const result = await this.addProductCost(productId, cost)
+      results.push(result)
+    }
+    
+    return results
+  }
+
+  /**
+   * Replace all product costs with new ones
+   */
+  async replaceProductCosts(productId: string, costs: Array<{ costItemId: string; amount: number; notes?: string }>): Promise<ProductCost[]> {
+    // Remove all existing costs
+    await this.removeAllProductCosts(productId)
+    
+    // Add new costs
+    if (costs.length > 0) {
+      return this.addProductCosts(productId, costs)
+    }
+    
+    return []
+  }
+
+  /**
+   * Remove all product costs for a product
+   */
+  async removeAllProductCosts(productId: string): Promise<boolean> {
+    // Validate input
+    const { id: validatedProductId } = costItemParamsSchema.parse({ id: productId })
+
+    // Remove all product costs
+    await this.prisma.productCost.deleteMany({
+      where: { productId: validatedProductId },
+    })
+
+    return true
+  }
+
+  /**
    * Get product with total production cost
    */
   async getProductWithCosts(productId: string): Promise<{

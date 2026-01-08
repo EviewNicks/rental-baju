@@ -18,10 +18,10 @@ import { ProductInfoSection } from './ProductInfoSection'
 import { ProductActionButtons } from './ProductActionButton'
 import { ProductHistoryCard } from './ProductHistoryCard'
 import { AdminSizeInventoryCard } from './AdminSizeInventoryCard'
-import { BreakEvenBadge } from '../shared/BreakEvenBadge'
 import { BreakEvenProgress } from './BreakEvenProgress'
 import { useProduct, useDeleteProduct } from '@/features/manage-product/hooks/useProducts'
 import { showSuccess, showError } from '@/lib/notifications'
+import { useUserRole } from '@/features/auth/hooks/useUserRole'
 import type { Product, ProductSize } from '@/features/manage-product/types'
 
 interface ProductDetailPageProps {
@@ -36,6 +36,7 @@ export function ProductDetailPage({
   breadcrumbItems,
 }: ProductDetailPageProps) {
   const router = useRouter()
+  const { isOwner } = useUserRole()
 
   // Use real API data through hooks - RPK-MODAL: Include break-even status
   const {
@@ -82,7 +83,8 @@ export function ProductDetailPage({
   }
 
   const handleBack = () => {
-    router.back()
+    // Always navigate to product list page instead of browser back
+    router.push('/producer/manage-product')
   }
 
   const handleRetry = () => {
@@ -109,7 +111,7 @@ export function ProductDetailPage({
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white border-b border-gray-200">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between mb-4">
             <Button variant="ghost" onClick={handleBack} className="flex items-center gap-2">
               <ArrowLeft className="w-4 h-4" />
@@ -117,54 +119,46 @@ export function ProductDetailPage({
             </Button>
           </div>
 
-          <Breadcrumb className="mb-4">
-            <BreadcrumbList>
-              {(breadcrumbItems || defaultBreadcrumbItems).map((item, index) => (
-                <React.Fragment key={index}>
-                  <BreadcrumbItem>
-                    {item.current ? (
-                      <BreadcrumbPage>{item.label}</BreadcrumbPage>
-                    ) : (
-                      <BreadcrumbLink href={item.href || '#'}>{item.label}</BreadcrumbLink>
-                    )}
-                  </BreadcrumbItem>
-                  {index < (breadcrumbItems || defaultBreadcrumbItems).length - 1 && (
-                    <BreadcrumbSeparator />
-                  )}
-                </React.Fragment>
-              ))}
-            </BreadcrumbList>
-          </Breadcrumb>
-
           <div className="flex flex-row  justify-between">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-1 h-8 bg-yellow-400 rounded-full"></div>
-              <h1 className="text-xl font-bold text-gray-900">Detail Produk</h1>
+            <div className="space-y-2">
+              <Breadcrumb>
+                <BreadcrumbList>
+                  {(breadcrumbItems || defaultBreadcrumbItems).map((item, index) => (
+                    <React.Fragment key={index}>
+                      <BreadcrumbItem>
+                        {item.current ? (
+                          <BreadcrumbPage>{item.label}</BreadcrumbPage>
+                        ) : (
+                          <BreadcrumbLink href={item.href || '#'}>{item.label}</BreadcrumbLink>
+                        )}
+                      </BreadcrumbItem>
+                      {index < (breadcrumbItems || defaultBreadcrumbItems).length - 1 && (
+                        <BreadcrumbSeparator />
+                      )}
+                    </React.Fragment>
+                  ))}
+                </BreadcrumbList>
+              </Breadcrumb>
 
-              {/* RPK-MODAL: Break-Even Badge in Header */}
-              {product.breakEvenStatus?.isBreakEven && (
-                <BreakEvenBadge
-                  modalAwal={product.breakEvenStatus.modalAwal}
-                  totalRevenue={product.breakEvenStatus.totalRevenue}
-                  transactionCount={product.breakEvenStatus.transactionCount}
-                  size="lg"
-                  showTooltip={true}
-                />
-              )}
-
-              <p className="text-3xl font-semibold text-gray-900 mt-1">{product.name}</p>
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-1 h-8 bg-yellow-400 rounded-full"></div>
+                <h1 className="text-xl font-bold text-gray-900">Detail Produk</h1>
+                <p className="text-2xl font-semibold text-gold-800 mt-1">{product.name}</p>
+              </div>
             </div>
 
-            {/* RPK-MODAL: Break-Even Progress in Header */}
-            {product.breakEvenStatus && (
-              <div className="mt-4 max-w-2xl min-w-80">
-                <BreakEvenProgress
-                  modalAwal={product.breakEvenStatus.modalAwal}
-                  totalRevenue={product.breakEvenStatus.totalRevenue}
-                  transactionCount={product.breakEvenStatus.transactionCount}
-                />
-              </div>
-            )}
+            <div>
+              {/* RPK-MODAL: Break-Even Progress in Header - Only visible to Owner */}
+              {isOwner && product.breakEvenStatus && (
+                <div className=" max-w-2xl min-w-80">
+                  <BreakEvenProgress
+                    modalAwal={product.breakEvenStatus.modalAwal}
+                    totalRevenue={product.breakEvenStatus.totalRevenue}
+                    transactionCount={product.breakEvenStatus.transactionCount}
+                  />
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

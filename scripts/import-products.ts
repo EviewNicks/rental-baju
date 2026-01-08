@@ -364,9 +364,6 @@ async function importProducts(): Promise<ImportResult> {
           quantity: product.quantity,
           categoryId: product.categoryId,
           imageUrl: finalImageUrl,
-          // Material fields (only supported fields)
-          materialId: product.materialId,
-          materialQuantity: product.materialQuantity,
           sizes: product.sizes.map(size => ({
             ...size,
             // Set proper quantity fields for new schema

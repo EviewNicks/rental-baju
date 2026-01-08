@@ -1,10 +1,10 @@
 {
-  "numTotalTests": 53,
-  "numPassedTests": 53,
+  "numTotalTests": 18,
+  "numPassedTests": 18,
   "numFailedTests": 0,
   "numPendingTests": 0,
-  "startTime": "2026-01-08T04:39:26.812Z",
-  "endTime": "2026-01-08T04:39:31.188Z",
+  "startTime": "2026-01-08T08:10:13.986Z",
+  "endTime": "2026-01-08T08:10:16.184Z",
   "testResults": [
     {
       "testFilePath": "D:\\.work\\rental-software\\features\\manage-product\\services\\__tests__\\productCostService.test.ts",
@@ -18,7 +18,7 @@
           "status": "passed",
           "title": "should add cost item to product successfully",
           "failureMessages": [],
-          "duration": 9
+          "duration": 14
         },
         {
           "ancestorTitles": [
@@ -29,7 +29,7 @@
           "status": "passed",
           "title": "should throw NotFoundError when product does not exist",
           "failureMessages": [],
-          "duration": 14
+          "duration": 28
         },
         {
           "ancestorTitles": [
@@ -40,7 +40,7 @@
           "status": "passed",
           "title": "should throw NotFoundError when cost item does not exist",
           "failureMessages": [],
-          "duration": 1
+          "duration": 3
         },
         {
           "ancestorTitles": [
@@ -51,7 +51,7 @@
           "status": "passed",
           "title": "should throw ConflictError when cost item already assigned to product",
           "failureMessages": [],
-          "duration": 1
+          "duration": 3
         },
         {
           "ancestorTitles": [
@@ -62,7 +62,7 @@
           "status": "passed",
           "title": "should update product cost successfully",
           "failureMessages": [],
-          "duration": 2
+          "duration": 4
         },
         {
           "ancestorTitles": [
@@ -73,7 +73,7 @@
           "status": "passed",
           "title": "should throw NotFoundError when product cost does not exist",
           "failureMessages": [],
-          "duration": 1
+          "duration": 2
         },
         {
           "ancestorTitles": [
@@ -84,7 +84,7 @@
           "status": "passed",
           "title": "should remove product cost successfully",
           "failureMessages": [],
-          "duration": 1
+          "duration": 2
         },
         {
           "ancestorTitles": [
@@ -95,7 +95,7 @@
           "status": "passed",
           "title": "should throw NotFoundError when product cost does not exist",
           "failureMessages": [],
-          "duration": 1
+          "duration": 2
         },
         {
           "ancestorTitles": [
@@ -106,7 +106,7 @@
           "status": "passed",
           "title": "should return all product costs for a product",
           "failureMessages": [],
-          "duration": 1
+          "duration": 13
         },
         {
           "ancestorTitles": [
@@ -117,7 +117,7 @@
           "status": "passed",
           "title": "should throw NotFoundError when product does not exist",
           "failureMessages": [],
-          "duration": 0
+          "duration": 5
         },
         {
           "ancestorTitles": [
@@ -128,7 +128,7 @@
           "status": "passed",
           "title": "should calculate modal awal as sum of all product costs",
           "failureMessages": [],
-          "duration": 0
+          "duration": 2
         },
         {
           "ancestorTitles": [
@@ -139,7 +139,7 @@
           "status": "passed",
           "title": "should return 0 when product has no costs",
           "failureMessages": [],
-          "duration": 1
+          "duration": 6
         },
         {
           "ancestorTitles": [
@@ -150,7 +150,7 @@
           "status": "passed",
           "title": "should handle multiple cost items correctly",
           "failureMessages": [],
-          "duration": 0
+          "duration": 1
         },
         {
           "ancestorTitles": [
@@ -172,7 +172,7 @@
           "status": "passed",
           "title": "should return product with costs and total production cost",
           "failureMessages": [],
-          "duration": 0
+          "duration": 2
         },
         {
           "ancestorTitles": [
@@ -194,7 +194,7 @@
           "status": "passed",
           "title": "should maintain consistency: modal awal equals sum of all cost amounts",
           "failureMessages": [],
-          "duration": 1
+          "duration": 5
         },
         {
           "ancestorTitles": [
@@ -205,410 +205,7 @@
           "status": "passed",
           "title": "should automatically recalculate modal awal when costs change",
           "failureMessages": [],
-          "duration": 1
-        }
-      ],
-      "failureMessage": null
-    },
-    {
-      "testFilePath": "D:\\.work\\rental-software\\features\\manage-product\\services\\__tests__\\productService.rental-state-preservation.test.ts",
-      "testFileResults": [
-        {
-          "ancestorTitles": [
-            "ProductService - Rental State Preservation",
-            "updateProduct with rental state preservation"
-          ],
-          "fullName": "ProductService - Rental State Preservation updateProduct with rental state preservation should preserve rentedQuantity when updating quantity",
-          "status": "passed",
-          "title": "should preserve rentedQuantity when updating quantity",
-          "failureMessages": [],
-          "duration": 17
-        },
-        {
-          "ancestorTitles": [
-            "ProductService - Rental State Preservation",
-            "updateProduct with rental state preservation"
-          ],
-          "fullName": "ProductService - Rental State Preservation updateProduct with rental state preservation should reject quantity reduction below rented + lost items",
-          "status": "passed",
-          "title": "should reject quantity reduction below rented + lost items",
-          "failureMessages": [],
-          "duration": 24
-        },
-        {
-          "ancestorTitles": [
-            "ProductService - Rental State Preservation",
-            "updateProduct with rental state preservation"
-          ],
-          "fullName": "ProductService - Rental State Preservation updateProduct with rental state preservation should handle new sizes without rental state",
-          "status": "passed",
-          "title": "should handle new sizes without rental state",
-          "failureMessages": [],
-          "duration": 2
-        }
-      ],
-      "failureMessage": null
-    },
-    {
-      "testFilePath": "D:\\.work\\rental-software\\features\\manage-product\\services\\__tests__\\materialService.test.ts",
-      "testFileResults": [
-        {
-          "ancestorTitles": [
-            "MaterialService",
-            "createMaterial"
-          ],
-          "fullName": "MaterialService createMaterial should create material successfully dengan valid data",
-          "status": "passed",
-          "title": "should create material successfully dengan valid data",
-          "failureMessages": [],
-          "duration": 8
-        },
-        {
-          "ancestorTitles": [
-            "MaterialService",
-            "createMaterial"
-          ],
-          "fullName": "MaterialService createMaterial should throw ConflictError jika material name sudah ada",
-          "status": "passed",
-          "title": "should throw ConflictError jika material name sudah ada",
-          "failureMessages": [],
-          "duration": 16
-        },
-        {
-          "ancestorTitles": [
-            "MaterialService",
-            "createMaterial"
-          ],
-          "fullName": "MaterialService createMaterial should validate input dan throw error untuk invalid data",
-          "status": "passed",
-          "title": "should validate input dan throw error untuk invalid data",
-          "failureMessages": [],
-          "duration": 9
-        },
-        {
-          "ancestorTitles": [
-            "MaterialService",
-            "updateMaterial"
-          ],
-          "fullName": "MaterialService updateMaterial should update material successfully dengan valid data",
-          "status": "passed",
-          "title": "should update material successfully dengan valid data",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "MaterialService",
-            "updateMaterial"
-          ],
-          "fullName": "MaterialService updateMaterial should throw NotFoundError jika material tidak ada",
-          "status": "passed",
-          "title": "should throw NotFoundError jika material tidak ada",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "MaterialService",
-            "updateMaterial"
-          ],
-          "fullName": "MaterialService updateMaterial should throw ConflictError jika new name sudah digunakan",
-          "status": "passed",
-          "title": "should throw ConflictError jika new name sudah digunakan",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "MaterialService",
-            "getMaterialById"
-          ],
-          "fullName": "MaterialService getMaterialById should return material jika ada",
-          "status": "passed",
-          "title": "should return material jika ada",
-          "failureMessages": [],
-          "duration": 0
-        },
-        {
-          "ancestorTitles": [
-            "MaterialService",
-            "getMaterialById"
-          ],
-          "fullName": "MaterialService getMaterialById should throw NotFoundError jika material tidak ada",
-          "status": "passed",
-          "title": "should throw NotFoundError jika material tidak ada",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "MaterialService",
-            "deleteMaterial"
-          ],
-          "fullName": "MaterialService deleteMaterial should delete material successfully jika tidak digunakan",
-          "status": "passed",
-          "title": "should delete material successfully jika tidak digunakan",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "MaterialService",
-            "deleteMaterial"
-          ],
-          "fullName": "MaterialService deleteMaterial should throw ConflictError jika material sedang digunakan",
-          "status": "passed",
-          "title": "should throw ConflictError jika material sedang digunakan",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "MaterialService",
-            "deleteMaterial"
-          ],
-          "fullName": "MaterialService deleteMaterial should throw NotFoundError jika material tidak ada",
-          "status": "passed",
-          "title": "should throw NotFoundError jika material tidak ada",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "MaterialService",
-            "getMaterials"
-          ],
-          "fullName": "MaterialService getMaterials should return paginated materials dengan default parameters",
-          "status": "passed",
-          "title": "should return paginated materials dengan default parameters",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "MaterialService",
-            "getMaterials"
-          ],
-          "fullName": "MaterialService getMaterials should apply search filter correctly",
-          "status": "passed",
-          "title": "should apply search filter correctly",
-          "failureMessages": [],
-          "duration": 0
-        },
-        {
-          "ancestorTitles": [
-            "MaterialService",
-            "getActiveMaterials"
-          ],
-          "fullName": "MaterialService getActiveMaterials should return only active materials ordered by name",
-          "status": "passed",
-          "title": "should return only active materials ordered by name",
-          "failureMessages": [],
-          "duration": 0
-        }
-      ],
-      "failureMessage": null
-    },
-    {
-      "testFilePath": "D:\\.work\\rental-software\\features\\manage-product\\services\\__tests__\\costItemService.test.ts",
-      "testFileResults": [
-        {
-          "ancestorTitles": [
-            "CostItemService",
-            "createCostItem"
-          ],
-          "fullName": "CostItemService createCostItem should create cost item successfully with valid data",
-          "status": "passed",
-          "title": "should create cost item successfully with valid data",
-          "failureMessages": [],
-          "duration": 10
-        },
-        {
-          "ancestorTitles": [
-            "CostItemService",
-            "createCostItem"
-          ],
-          "fullName": "CostItemService createCostItem should throw ConflictError when cost item name already exists",
-          "status": "passed",
-          "title": "should throw ConflictError when cost item name already exists",
-          "failureMessages": [],
-          "duration": 21
-        },
-        {
-          "ancestorTitles": [
-            "CostItemService",
-            "createCostItem"
-          ],
-          "fullName": "CostItemService createCostItem should handle case-insensitive name checking",
-          "status": "passed",
-          "title": "should handle case-insensitive name checking",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "CostItemService",
-            "createCostItem"
-          ],
-          "fullName": "CostItemService createCostItem should reject empty name",
-          "status": "passed",
-          "title": "should reject empty name",
-          "failureMessages": [],
-          "duration": 6
-        },
-        {
-          "ancestorTitles": [
-            "CostItemService",
-            "createCostItem"
-          ],
-          "fullName": "CostItemService createCostItem should reject whitespace-only name",
-          "status": "passed",
-          "title": "should reject whitespace-only name",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "CostItemService",
-            "createCostItem"
-          ],
-          "fullName": "CostItemService createCostItem should reject name exceeding maximum length",
-          "status": "passed",
-          "title": "should reject name exceeding maximum length",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "CostItemService",
-            "updateCostItem"
-          ],
-          "fullName": "CostItemService updateCostItem should update cost item successfully",
-          "status": "passed",
-          "title": "should update cost item successfully",
-          "failureMessages": [],
-          "duration": 13
-        },
-        {
-          "ancestorTitles": [
-            "CostItemService",
-            "updateCostItem"
-          ],
-          "fullName": "CostItemService updateCostItem should throw NotFoundError when cost item does not exist",
-          "status": "passed",
-          "title": "should throw NotFoundError when cost item does not exist",
-          "failureMessages": [],
           "duration": 3
-        },
-        {
-          "ancestorTitles": [
-            "CostItemService",
-            "updateCostItem"
-          ],
-          "fullName": "CostItemService updateCostItem should throw ConflictError when updated name conflicts with existing cost item",
-          "status": "passed",
-          "title": "should throw ConflictError when updated name conflicts with existing cost item",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "CostItemService",
-            "getCostItems"
-          ],
-          "fullName": "CostItemService getCostItems should return paginated cost items with search",
-          "status": "passed",
-          "title": "should return paginated cost items with search",
-          "failureMessages": [],
-          "duration": 5
-        },
-        {
-          "ancestorTitles": [
-            "CostItemService",
-            "getCostItems"
-          ],
-          "fullName": "CostItemService getCostItems should handle pagination correctly",
-          "status": "passed",
-          "title": "should handle pagination correctly",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "CostItemService",
-            "getCostItemById"
-          ],
-          "fullName": "CostItemService getCostItemById should return cost item when found",
-          "status": "passed",
-          "title": "should return cost item when found",
-          "failureMessages": [],
-          "duration": 0
-        },
-        {
-          "ancestorTitles": [
-            "CostItemService",
-            "getCostItemById"
-          ],
-          "fullName": "CostItemService getCostItemById should throw NotFoundError when cost item not found",
-          "status": "passed",
-          "title": "should throw NotFoundError when cost item not found",
-          "failureMessages": [],
-          "duration": 0
-        },
-        {
-          "ancestorTitles": [
-            "CostItemService",
-            "deleteCostItem"
-          ],
-          "fullName": "CostItemService deleteCostItem should delete cost item successfully when not in use",
-          "status": "passed",
-          "title": "should delete cost item successfully when not in use",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "CostItemService",
-            "deleteCostItem"
-          ],
-          "fullName": "CostItemService deleteCostItem should throw NotFoundError when cost item does not exist",
-          "status": "passed",
-          "title": "should throw NotFoundError when cost item does not exist",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "CostItemService",
-            "deleteCostItem"
-          ],
-          "fullName": "CostItemService deleteCostItem should throw ConflictError when cost item is in use by products",
-          "status": "passed",
-          "title": "should throw ConflictError when cost item is in use by products",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "CostItemService",
-            "getActiveCostItems"
-          ],
-          "fullName": "CostItemService getActiveCostItems should return all cost items ordered by name",
-          "status": "passed",
-          "title": "should return all cost items ordered by name",
-          "failureMessages": [],
-          "duration": 0
-        },
-        {
-          "ancestorTitles": [
-            "CostItemService",
-            "getCostItemUsage"
-          ],
-          "fullName": "CostItemService getCostItemUsage should return cost item with usage statistics",
-          "status": "passed",
-          "title": "should return cost item with usage statistics",
-          "failureMessages": [],
-          "duration": 1
         }
       ],
       "failureMessage": null

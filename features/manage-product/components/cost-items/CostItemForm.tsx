@@ -81,7 +81,7 @@ export function CostItemForm({ costItemId }: CostItemFormProps) {
       } catch (error) {
         console.error('Error loading cost item:', error)
         toast.error('Gagal memuat data cost item')
-        router.push('/cost-items')
+        router.push('/producer/manage-product/kelola-data')
       } finally {
         setIsLoadingData(false)
       }
@@ -112,7 +112,7 @@ export function CostItemForm({ costItemId }: CostItemFormProps) {
 
       toast.success(`Cost item berhasil ${isEditing ? 'diperbarui' : 'dibuat'}`)
 
-      router.push('/cost-items')
+      router.push('/producer/manage-product/kelola-data')
     } catch (error) {
       console.error('Error saving cost item:', error)
       toast.error(error instanceof Error ? error.message : 'Gagal menyimpan cost item')
@@ -158,7 +158,7 @@ export function CostItemForm({ costItemId }: CostItemFormProps) {
         <Button
           type="button"
           variant="outline"
-          onClick={() => router.push('/cost-items')}
+          onClick={() => router.push('/producer/manage-product/kelola-data')}
           disabled={isLoading}
         >
           Batal

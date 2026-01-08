@@ -4,14 +4,14 @@ import type React from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { TrendingUp, Wallet } from 'lucide-react'
+import { TrendingUp, Wallet, Receipt } from 'lucide-react'
 import {
   getStatusBadge,
   getCategoryBadge,
   formatCurrency,
 } from '@/features/manage-product/lib/utils/product'
-import { MaterialCostDisplay } from '@/features/manage-product/components/material/MaterialCostDisplay'
 import { ProductSizeTransformer } from '@/features/manage-product/utils/ProductSizeTransformer'
+import { useUserRole } from '@/features/auth/hooks/useUserRole'
 import type { Product } from '@/features/manage-product/types'
 
 interface InfoFieldProps {
@@ -115,6 +115,7 @@ interface EnhancedBasicInfoCardProps {
 export function EnhancedBasicInfoCard({ product }: EnhancedBasicInfoCardProps) {
   const modalAwal = Number(product.modalAwal)
   const hargaSewa = Number(product.currentPrice)
+  const { isOwner } = useUserRole()
 
   return (
     <Card className="h-fit hover:shadow-xl transition-all duration-300">
@@ -188,52 +189,83 @@ export function EnhancedBasicInfoCard({ product }: EnhancedBasicInfoCardProps) {
           </div>
         </div>
 
-        {/* Pricing Information */}
-        <div className="space-y-4">
-          <div className="text-lg font-semibold text-gray-900">Informasi Harga</div>
+        {/* Pricing Information - Only visible to Owner */}
+        {isOwner && (
+          <div className="space-y-4">
 
-          {/* Modal Awal */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-500">Modal Awal</label>
-              <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                <div className="flex items-center gap-3">
-                  <Wallet className="w-5 h-5 text-gray-600" />
-                  <div>
-                    <p className="text-2xl font-bold text-gray-900">{formatCurrency(modalAwal)}</p>
+            {/* Modal Awal */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-500">Modal Awal</label>
+                <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                  <div className="flex items-center gap-3">
+                    <Wallet className="w-5 h-5 text-gray-600" />
+                    <div>
+                      <p className="text-2xl font-bold text-gray-900">{formatCurrency(modalAwal)}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Harga Sewa */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-500">Harga Sewa</label>
+                <div className="p-4 bg-gradient-to-r from-yellow-50 to-yellow-100 rounded-lg border border-yellow-200">
+                  <div className="flex items-center gap-1">
+                    <TrendingUp className="w-5 h-5 text-yellow-600" />
+                    <div>
+                      <p className="text-xl font-bold  text-yellow-700">
+                        {formatCurrency(hargaSewa)}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Harga Sewa */}
+            {/* Cost Items Breakdown - Only visible to Owner */}
+            {product.simplifiedCosts && product.simplifiedCosts.length > 0 && (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Receipt className="w-5 h-5 text-gray-600" />
+                  <label className="text-sm font-medium text-gray-500">Rincian Biaya</label>
+                </div>
+                <div className="bg-gray-50 rounded-lg border border-gray-200 px-4 py-3">
+                  <ul className="space-y-2">
+                    {product.simplifiedCosts.map((cost, index) => (
+                      <li key={index} className="flex justify-between items-center">
+                        <span className="text-sm text-gray-700">{cost.name}</span>
+                        <span className="text-sm font-semibold text-gray-900">
+                          {formatCurrency(cost.amount)}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Harga Sewa - Always visible to all roles */}
+        {!isOwner && (
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-500">Harga Sewa</label>
-              <div className="p-4 bg-gradient-to-r from-yellow-50 to-yellow-100 rounded-lg border border-yellow-200">
+              <div className="p-2 bg-gradient-to-r from-yellow-50 to-yellow-100 rounded-lg border border-yellow-200">
                 <div className="flex items-center gap-3">
                   <TrendingUp className="w-5 h-5 text-yellow-600" />
                   <div>
-                    <p className="text-3xl font-bold text-yellow-700">
+                    <p className="text-xl font-bold text-yellow-700">
                       {formatCurrency(hargaSewa)}
                     </p>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-
-        {/* Material Information */}
-        {product.material && (
-          <div className="space-y-4">
-            <div className="text-lg font-semibold text-gray-900">Informasi Material</div>
-            <MaterialCostDisplay
-              selectedMaterial={product.material}
-              materialQuantity={product.materialQuantity || 0}
-              materialCost={product.materialCost || 0}
-            />
-          </div>
         )}
+
+        {/* Cost Items Information - Placeholder for future implementation */}
+        {/* TODO: Add cost items display when needed */}
 
         {/* Description */}
         {product.description && (

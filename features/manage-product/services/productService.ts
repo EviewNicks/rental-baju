@@ -49,12 +49,26 @@ import {
   migrateLegacySizeToAdvanced,
 } from '../lib/utils/sizeManagementUtils'
 import { ProductSizeAggregationService } from './productSizeAggregationService'
+import { ProductCostService } from './productCostService'
 
 export class ProductService {
+  private readonly productCostService: ProductCostService
+
   constructor(
     private readonly prisma: PrismaClient,
     private readonly userId: string,
-  ) {}
+  ) {
+    // Initialize ProductCostService for cost item management
+    this.productCostService = new ProductCostService(this.prisma, this.userId)
+  }
+
+  /**
+   * Get ProductCostService instance for cost item operations
+   */
+  private getProductCostService(): ProductCostService {
+    return this.productCostService
+  }
+  
 
   
   /**
@@ -106,11 +120,16 @@ export class ProductService {
         where,
         include: {
           category: true,
-            material: true, // Include material relation - RPK-45
           sizes: {
             where: { isActive: true },
             orderBy: [{ ageCategory: 'asc' }, { size: 'asc' }],
           }, // Include product sizes
+          productCosts: {
+            include: {
+              costItem: true,
+            },
+            orderBy: { createdAt: 'desc' },
+          }, // Include cost items
           // transaksiItems include REMOVED - causing TimeoutError
           // Performance optimization: Don't load transaction history in product listing
         },
@@ -153,11 +172,16 @@ export class ProductService {
       },
       include: {
         category: true,
-        material: true, // Include material relation - RPK-45
         sizes: {
           where: { isActive: true },
           orderBy: [{ ageCategory: 'asc' }, { size: 'asc' }],
         }, // Include product sizes
+        productCosts: {
+          include: {
+            costItem: true,
+          },
+          orderBy: { createdAt: 'desc' },
+        }, // Include cost items
         // transaksiItems include REMOVED - causing TimeoutError
         // Performance optimization: Don't load transaction history in product listing
       },
@@ -240,7 +264,6 @@ export class ProductService {
       },
       include: {
         category: true,
-        material: true, // Include material relation - RPK-45
       },
     })
 
@@ -252,8 +275,18 @@ export class ProductService {
   /**
    * Create a new product (advanced-only architecture)
    * All products now require sizes - no legacy single-size support
+   * ENHANCED: Integrated with Cost Item Management System
    */
   async createProduct(request: CreateProductWithSizesRequest): Promise<Product> {
+    // AUDIT TRAIL 1: Product Creation Start
+    console.log('[AUDIT] ProductService.createProduct - START', {
+      userId: this.userId,
+      productCode: request.code,
+      hasCostItems: request.selectedCosts && request.selectedCosts.length > 0,
+      costItemsCount: request.selectedCosts?.length || 0,
+      timestamp: new Date().toISOString(),
+    })
+
     // Validate input
     const validatedData = createProductSchema.parse(request)
 
@@ -266,6 +299,13 @@ export class ProductService {
     })
 
     if (existingProduct) {
+      // AUDIT TRAIL 2: Product Code Conflict
+      console.error('[AUDIT] ProductService.createProduct - CODE_CONFLICT', {
+        userId: this.userId,
+        attemptedCode: validatedData.code,
+        existingProductId: existingProduct.id,
+        timestamp: new Date().toISOString(),
+      })
       throw new ConflictError(`Kode produk ${validatedData.code} sudah digunakan`)
     }
 
@@ -282,57 +322,123 @@ export class ProductService {
       ? this.processSizesByCategoryType(validatedData.sizes, category.type)
       : []
 
-    // Validate material if provided
-    let materialCost: Decimal | undefined
-    if (validatedData.materialId) {
-      materialCost = await this.validateAndCalculateMaterialCost(
-        validatedData.materialId,
-        validatedData.materialQuantity,
-      )
+    // Calculate modal awal from cost items (replaces material cost calculation)
+    // ✅ ENHANCED: Support producer flow with modalAwal = 0
+    let calculatedModalAwal = validatedData.modalAwal ?? 0 // ✅ FIXED: Fallback to 0 for producer
+    if (validatedData.selectedCosts && validatedData.selectedCosts.length > 0) {
+      calculatedModalAwal = validatedData.selectedCosts.reduce((total, cost) => total + cost.amount, 0)
+      
+      // AUDIT TRAIL 3: Modal Awal Calculation from Cost Items (OWNER FLOW)
+      console.log('[AUDIT] ProductService.createProduct - MODAL_AWAL_CALCULATED', {
+        userId: this.userId,
+        productCode: validatedData.code,
+        userFlow: 'OWNER', // ✅ NEW: Distinguish user flow
+        originalModalAwal: validatedData.modalAwal ?? 0,
+        calculatedModalAwal,
+        costItemsBreakdown: validatedData.selectedCosts.map(cost => ({
+          costItemId: cost.costItemId,
+          amount: cost.amount,
+        })),
+        timestamp: new Date().toISOString(),
+      })
+    } else if (calculatedModalAwal === 0) {
+      // ✅ NEW: PRODUCER FLOW - No cost items, modalAwal = 0
+      console.log('[AUDIT] ProductService.createProduct - PRODUCER_FLOW', {
+        userId: this.userId,
+        productCode: validatedData.code,
+        userFlow: 'PRODUCER', // ✅ NEW: Producer flow identification
+        modalAwal: 0,
+        message: 'Product created without cost information - awaiting owner review',
+        timestamp: new Date().toISOString(),
+      })
+    } else {
+      // ✅ NEW: OWNER FLOW - Manual modalAwal input
+      console.log('[AUDIT] ProductService.createProduct - MANUAL_MODAL_AWAL', {
+        userId: this.userId,
+        productCode: validatedData.code,
+        userFlow: 'OWNER', // ✅ NEW: Owner manual input flow
+        modalAwal: calculatedModalAwal,
+        message: 'Manual modal awal input by owner',
+        timestamp: new Date().toISOString(),
+      })
     }
 
-    // Create product with sizes in transaction
+    // Create product with sizes and cost items in transaction
     const result = await this.prisma.$transaction(async (tx) => {
-      // Create the product first
-      const product = await tx.product.create({
-        data: {
-          code: validatedData.code,
-          name: validatedData.name,
-          description: validatedData.description,
-          modalAwal: new Decimal(validatedData.modalAwal),
-          currentPrice: new Decimal(validatedData.currentPrice),
-                            categoryId: validatedData.categoryId,
-          // Note: size field kept for backward compatibility with legacy systems
-          size: validatedData.size,
-          materialId: validatedData.materialId || undefined,
-          materialCost: materialCost || undefined,
-          materialQuantity: validatedData.materialQuantity || undefined,
-          imageUrl: request.imageUrl || undefined,
-          status: 'AVAILABLE',
-          isActive: true,
-          createdBy: this.userId,
-        },
-      })
-
-      // Create sizes - REQUIRED for all products in advanced-only architecture
-      if (processedSizes && processedSizes.length > 0) {
-        await tx.productSize.createMany({
-          data: processedSizes.map((size) => ({
-            productId: product.id,
-            ageCategory: size.ageCategory,
-            size: size.size,
-            quantity: size.quantity,
-            // Enhanced ProductSize fields
-            originalQuantity: size.originalQuantity || size.quantity,
-            availableQuantity: size.availableQuantity || size.quantity,
-            rentedQuantity: size.rentedQuantity || 0,
-            isActive: size.isActive ?? true,
+      try {
+        // Create the product first
+        const product = await tx.product.create({
+          data: {
+            code: validatedData.code,
+            name: validatedData.name,
+            description: validatedData.description,
+            modalAwal: new Decimal(calculatedModalAwal), // Use calculated modal awal
+            currentPrice: new Decimal(validatedData.currentPrice),
+            categoryId: validatedData.categoryId,
+            // Note: size field kept for backward compatibility with legacy systems
+            size: validatedData.size,
+            imageUrl: request.imageUrl || undefined,
+            status: 'AVAILABLE',
+            isActive: true,
             createdBy: this.userId,
-          })),
+          },
         })
-      }
 
-      return product
+        // Create sizes - REQUIRED for all products in advanced-only architecture
+        if (processedSizes && processedSizes.length > 0) {
+          await tx.productSize.createMany({
+            data: processedSizes.map((size) => ({
+              productId: product.id,
+              ageCategory: size.ageCategory,
+              size: size.size,
+              quantity: size.quantity,
+              // Enhanced ProductSize fields
+              originalQuantity: size.originalQuantity || size.quantity,
+              availableQuantity: size.availableQuantity || size.quantity,
+              rentedQuantity: size.rentedQuantity || 0,
+              isActive: size.isActive ?? true,
+              createdBy: this.userId,
+            })),
+          })
+        }
+
+        // Create cost items if provided
+        if (validatedData.selectedCosts && validatedData.selectedCosts.length > 0) {
+          // Create cost items individually within the transaction
+          for (const cost of validatedData.selectedCosts) {
+            await tx.productCost.create({
+              data: {
+                productId: product.id,
+                costItemId: cost.costItemId,
+                amount: new Decimal(cost.amount),
+                notes: cost.notes || undefined,
+              },
+            })
+          }
+
+          // AUDIT TRAIL 4: Cost Items Created Successfully
+          console.log('[AUDIT] ProductService.createProduct - COST_ITEMS_CREATED', {
+            userId: this.userId,
+            productId: product.id,
+            productCode: validatedData.code,
+            costItemsCreated: validatedData.selectedCosts.length,
+            totalModalAwal: calculatedModalAwal,
+            timestamp: new Date().toISOString(),
+          })
+        }
+
+        return product
+      } catch (error) {
+        // AUDIT TRAIL 5: Transaction Error
+        console.error('[AUDIT] ProductService.createProduct - TRANSACTION_ERROR', {
+          userId: this.userId,
+          productCode: validatedData.code,
+          error: error instanceof Error ? error.message : String(error),
+          hasCostItems: validatedData.selectedCosts && validatedData.selectedCosts.length > 0,
+          timestamp: new Date().toISOString(),
+        })
+        throw error
+      }
     })
 
     // Fetch complete product with relationships
@@ -343,8 +449,18 @@ export class ProductService {
    * Update an existing product (advanced-only architecture)
    * All products now support sizes - no legacy single-size support
    * FIXED: Preserves rental state and lost item tracking during quantity updates
+   * ENHANCED: Integrated with Cost Item Management System with Producer/Owner Flow Support
    */
   async updateProduct(id: string, request: UpdateProductWithSizesRequest): Promise<Product> {
+    // AUDIT TRAIL 1: Product Update Start
+    console.log('[AUDIT] ProductService.updateProduct - START', {
+      userId: this.userId,
+      productId: id,
+      hasCostItems: request.selectedCosts && request.selectedCosts.length > 0,
+      costItemsCount: request.selectedCosts?.length || 0,
+      timestamp: new Date().toISOString(),
+    })
+
     // Validate input
     const { id: validatedId } = productParamsSchema.parse({ id })
     const validatedData = updateProductSchema.parse(request)
@@ -357,6 +473,11 @@ export class ProductService {
       },
       include: {
         sizes: true,
+        productCosts: {
+          include: {
+            costItem: true,
+          },
+        },
       },
     })
 
@@ -387,20 +508,76 @@ export class ProductService {
       }
     }
 
-    let materialCost: Decimal | undefined
-    if (validatedData.materialId && validatedData.materialId !== existingProduct.materialId) {
-      materialCost = await this.validateAndCalculateMaterialCost(
-        validatedData.materialId,
-        validatedData.materialQuantity,
-      )
+    // ✅ ENHANCED: Calculate modal awal with Producer/Owner flow logic
+    let calculatedModalAwal = validatedData.modalAwal
+    const currentModalAwal = Number(existingProduct.modalAwal)
+    const hasExistingCosts = existingProduct.productCosts && existingProduct.productCosts.length > 0
+    
+    if (validatedData.selectedCosts && validatedData.selectedCosts.length > 0) {
+      // OWNER FLOW: Calculate from cost items
+      calculatedModalAwal = validatedData.selectedCosts.reduce((total, cost) => total + cost.amount, 0)
+      
+      // AUDIT TRAIL 2: Modal Awal Recalculation from Cost Items (OWNER FLOW)
+      console.log('[AUDIT] ProductService.updateProduct - MODAL_AWAL_RECALCULATED', {
+        userId: this.userId,
+        productId: validatedId,
+        userFlow: 'OWNER', // ✅ NEW: Distinguish user flow
+        previousModalAwal: currentModalAwal,
+        originalModalAwal: validatedData.modalAwal,
+        calculatedModalAwal,
+        costItemsBreakdown: validatedData.selectedCosts.map(cost => ({
+          costItemId: cost.costItemId,
+          amount: cost.amount,
+        })),
+        flowTransition: currentModalAwal === 0 ? 'PRODUCER_TO_OWNER' : 'OWNER_UPDATE',
+        timestamp: new Date().toISOString(),
+      })
+    } else if (validatedData.selectedCosts !== undefined && validatedData.selectedCosts.length === 0) {
+      // ✅ NEW: Explicit removal of cost items - reset to producer flow
+      calculatedModalAwal = 0
+      
+      console.log('[AUDIT] ProductService.updateProduct - RESET_TO_PRODUCER_FLOW', {
+        userId: this.userId,
+        productId: validatedId,
+        userFlow: 'RESET_TO_PRODUCER', // ✅ NEW: Reset flow identification
+        previousModalAwal: currentModalAwal,
+        newModalAwal: 0,
+        message: 'Cost items removed - product reset to producer flow',
+        timestamp: new Date().toISOString(),
+      })
+    } else if (calculatedModalAwal !== undefined && calculatedModalAwal !== currentModalAwal) {
+      // ✅ NEW: Manual modalAwal update by owner
+      console.log('[AUDIT] ProductService.updateProduct - MANUAL_MODAL_AWAL_UPDATE', {
+        userId: this.userId,
+        productId: validatedId,
+        userFlow: 'OWNER_MANUAL', // ✅ NEW: Manual owner update flow
+        previousModalAwal: currentModalAwal,
+        newModalAwal: calculatedModalAwal,
+        hasExistingCosts,
+        message: 'Manual modal awal update by owner',
+        timestamp: new Date().toISOString(),
+      })
+    } else if (calculatedModalAwal === undefined && currentModalAwal === 0 && !hasExistingCosts) {
+      // ✅ NEW: Producer flow maintenance - keep modalAwal = 0
+      calculatedModalAwal = 0
+      
+      console.log('[AUDIT] ProductService.updateProduct - PRODUCER_FLOW_MAINTAINED', {
+        userId: this.userId,
+        productId: validatedId,
+        userFlow: 'PRODUCER', // ✅ NEW: Producer flow maintenance
+        modalAwal: 0,
+        message: 'Producer flow maintained - no cost information provided',
+        timestamp: new Date().toISOString(),
+      })
     }
 
-    // Update product with sizes in transaction
+    // Update product with sizes and cost items in transaction
     await this.prisma.$transaction(async (tx) => {
-      // Update the product
-      const updateData: Record<string, unknown> = {
-        updatedAt: new Date(),
-      }
+      try {
+        // Update the product
+        const updateData: Record<string, unknown> = {
+          updatedAt: new Date(),
+        }
 
       // Add fields with proper type conversion
       if (validatedData.name !== undefined) updateData.name = validatedData.name
@@ -408,16 +585,14 @@ export class ProductService {
         updateData.description = validatedData.description
       if (validatedData.categoryId !== undefined) updateData.categoryId = validatedData.categoryId
       if (validatedData.size !== undefined) updateData.size = validatedData.size
-      if (validatedData.materialId !== undefined) updateData.materialId = validatedData.materialId
-      if (validatedData.materialQuantity !== undefined)
-        updateData.materialQuantity = validatedData.materialQuantity
-      if (materialCost !== undefined) updateData.materialCost = materialCost
 
       if ('imageUrl' in request && request.imageUrl !== undefined) {
         updateData.imageUrl = request.imageUrl
       }
 
-      if (validatedData.modalAwal !== undefined) {
+      if (calculatedModalAwal !== undefined) {
+        updateData.modalAwal = new Decimal(calculatedModalAwal) // Use calculated modal awal
+      } else if (validatedData.modalAwal !== undefined) {
         updateData.modalAwal = new Decimal(validatedData.modalAwal)
       }
       if (validatedData.currentPrice !== undefined) {
@@ -428,6 +603,50 @@ export class ProductService {
         where: { id: validatedId },
         data: updateData,
       })
+
+      // Update cost items if provided
+      if (validatedData.selectedCosts !== undefined) {
+        // Remove existing cost items
+        await tx.productCost.deleteMany({
+          where: { productId: validatedId },
+        })
+        
+        // Add new cost items
+        if (validatedData.selectedCosts.length > 0) {
+          for (const cost of validatedData.selectedCosts) {
+            await tx.productCost.create({
+              data: {
+                productId: validatedId,
+                costItemId: cost.costItemId,
+                amount: new Decimal(cost.amount),
+                notes: cost.notes || undefined,
+              },
+            })
+          }
+
+          // AUDIT TRAIL 3: Cost Items Updated Successfully (OWNER FLOW)
+          console.log('[AUDIT] ProductService.updateProduct - COST_ITEMS_UPDATED', {
+            userId: this.userId,
+            productId: validatedId,
+            userFlow: 'OWNER', // ✅ NEW: Owner flow with cost items
+            costItemsUpdated: validatedData.selectedCosts.length,
+            totalModalAwal: calculatedModalAwal,
+            flowTransition: currentModalAwal === 0 ? 'PRODUCER_TO_OWNER' : 'OWNER_UPDATE',
+            timestamp: new Date().toISOString(),
+          })
+        } else {
+          // ✅ NEW: Cost items explicitly removed - reset to producer flow
+          console.log('[AUDIT] ProductService.updateProduct - COST_ITEMS_REMOVED', {
+            userId: this.userId,
+            productId: validatedId,
+            userFlow: 'RESET_TO_PRODUCER', // ✅ NEW: Reset to producer flow
+            previousCostItemsCount: hasExistingCosts ? existingProduct.productCosts.length : 0,
+            newModalAwal: 0,
+            message: 'All cost items removed - product reset to producer flow',
+            timestamp: new Date().toISOString(),
+          })
+        }
+      }
 
       // FIXED: Handle sizes update - PRESERVE RENTAL STATE
       if (processedSizes !== undefined) {
@@ -517,10 +736,36 @@ export class ProductService {
           })
         }
       }
+      } catch (error) {
+        // AUDIT TRAIL 4: Update Transaction Error
+        console.error('[AUDIT] ProductService.updateProduct - TRANSACTION_ERROR', {
+          userId: this.userId,
+          productId: validatedId,
+          error: error instanceof Error ? error.message : String(error),
+          hasCostItems: validatedData.selectedCosts && validatedData.selectedCosts.length > 0,
+          previousModalAwal: currentModalAwal,
+          attemptedModalAwal: calculatedModalAwal,
+          flowContext: currentModalAwal === 0 ? 'PRODUCER_FLOW' : 'OWNER_FLOW',
+          timestamp: new Date().toISOString(),
+        })
+        throw error
+      }
     })
 
     // Clear aggregation cache since sizes were potentially updated
     this.clearProductAggregationCache(validatedId)
+
+    // AUDIT TRAIL 5: Product Update Success
+    console.log('[AUDIT] ProductService.updateProduct - SUCCESS', {
+      userId: this.userId,
+      productId: validatedId,
+      finalModalAwal: calculatedModalAwal,
+      flowResult: calculatedModalAwal === 0 ? 'PRODUCER_FLOW' : 'OWNER_FLOW',
+      hasCostItems: validatedData.selectedCosts && validatedData.selectedCosts.length > 0,
+      sizesUpdated: processedSizes !== undefined,
+      message: 'Product update completed successfully with enhanced producer/owner flow support',
+      timestamp: new Date().toISOString(),
+    })
 
     // Fetch updated product with relationships
     return this.getProductById(validatedId)
@@ -1197,6 +1442,64 @@ export class ProductService {
     })
   }
 
+  /**
+   * Get product costs for a specific product
+   */
+  async getProductCosts(productId: string): Promise<Array<{
+    costItemId: string
+    amount: number
+    notes?: string
+    costItem: {
+      id: string
+      name: string
+    }
+  }>> {
+    const { id: validatedId } = productParamsSchema.parse({ id: productId })
+
+    // Validate product exists
+    await this.getProductById(validatedId)
+
+    const productCostService = this.getProductCostService()
+    const costs = await productCostService.getProductCosts(validatedId)
+    
+    // Transform to the expected format
+    return costs.map(cost => ({
+      costItemId: cost.costItemId,
+      amount: cost.amount,
+      notes: cost.notes,
+      costItem: {
+        id: cost.costItem?.id || cost.costItemId,
+        name: cost.costItem?.name || 'Unknown Cost Item',
+      }
+    }))
+  }
+
+  /**
+   * Update product costs
+   */
+  async updateProductCosts(
+    productId: string,
+    costs: Array<{ costItemId: string; amount: number; notes?: string }>
+  ): Promise<void> {
+    const { id: validatedId } = productParamsSchema.parse({ id: productId })
+
+    // Validate product exists
+    await this.getProductById(validatedId)
+
+    const productCostService = this.getProductCostService()
+    await productCostService.replaceProductCosts(validatedId, costs)
+  }
+
+  /**
+   * Calculate modal awal from product costs
+   */
+  async calculateProductModalAwal(productId: string): Promise<number> {
+    const { id: validatedId } = productParamsSchema.parse({ id: productId })
+
+    const productCostService = this.getProductCostService()
+    return productCostService.calculateModalAwal(validatedId)
+  }
+
   // ============== HELPER METHODS ==============
 
   /**
@@ -1536,28 +1839,6 @@ export class ProductService {
   }
 
   /**
-   * Helper method to validate material and calculate cost
-   */
-  private async validateAndCalculateMaterialCost(
-    materialId: string,
-    materialQuantity?: number,
-  ): Promise<Decimal | undefined> {
-    const materialExists = await this.prisma.material.findUnique({
-      where: { id: materialId },
-    })
-
-    if (!materialExists) {
-      throw new NotFoundError(`Material dengan ID ${materialId} tidak ditemukan`)
-    }
-
-    if (materialQuantity && materialQuantity > 0) {
-      return new Decimal(materialExists.pricePerUnit).mul(materialQuantity)
-    }
-
-    return undefined
-  }
-
-  /**
    * Convert Prisma ProductSize to application ProductSize type
    */
   private convertPrismaProductSizeToProductSize(prismaSize: Record<string, unknown>): ProductSize {
@@ -1611,24 +1892,11 @@ export class ProductService {
         : ({} as Category),
       modalAwal: prismaProduct.modalAwal as Decimal,
       currentPrice: prismaProduct.currentPrice as Decimal, // ✅ Fixed: return currentPrice instead of hargaSewa
-            // Material Management fields - RPK-45
-      materialId: prismaProduct.materialId as string | undefined,
-      materialCost: prismaProduct.materialCost as Decimal | undefined,
-      materialQuantity: prismaProduct.materialQuantity as number | undefined,
-      material: prismaProduct.material
-        ? {
-            id: (prismaProduct.material as Record<string, unknown>).id as string,
-            name: (prismaProduct.material as Record<string, unknown>).name as string,
-            pricePerUnit: (prismaProduct.material as Record<string, unknown>)
-              .pricePerUnit as Decimal,
-            unit: (prismaProduct.material as Record<string, unknown>).unit as string,
-            isActive: (prismaProduct.material as Record<string, unknown>).isActive as boolean,
-            products: [], // Avoid circular reference in conversion
-            createdAt: (prismaProduct.material as Record<string, unknown>).createdAt as Date,
-            updatedAt: (prismaProduct.material as Record<string, unknown>).updatedAt as Date,
-            createdBy: (prismaProduct.material as Record<string, unknown>).createdBy as string,
-          }
-        : undefined,
+      // Simplified cost items for display (only name and amount)
+      simplifiedCosts: (prismaProduct.productCosts as Array<Record<string, unknown>>)?.map((cost) => ({
+        name: (cost.costItem as Record<string, unknown>)?.name as string || 'Unknown',
+        amount: Number(cost.amount as Decimal),
+      })) || [],
       status: prismaProduct.status as ProductStatus,
       imageUrl: prismaProduct.imageUrl as string | undefined,
       // totalPendapatan removed - performance optimization

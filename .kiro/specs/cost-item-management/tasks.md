@@ -117,10 +117,12 @@ This implementation plan transforms the Material system into a flexible Cost Ite
   - [x] Create CostItemManagement wrapper component
   - [x] Update ProductManagementPage to use CostItemManagement
   - [x] Create new route for cost-items management
+  - [x] Improve UX with modal-based create/edit instead of separate pages
+  - [x] Update route structure to use generic 'kelola-data' path
   - _Requirements: 3.3, 3.4_
 
-- [ ] 10. Product Form Integration
-  - [ ] 10.1 Update ProductForm to use CostItemSelector
+- [x] 10. Product Form Integration
+  - [x] 10.1 Update ProductForm to use CostItemSelector
     - Replace MaterialSelector with CostItemSelector
     - Integrate modal awal auto-calculation
     - Update form validation and submission
@@ -131,7 +133,7 @@ This implementation plan transforms the Material system into a flexible Cost Ite
     - **Property 7: Decimal Amount Acceptance**
     - **Validates: Requirements 2.1, 2.2**
 
-  - [ ] 10.3 Update ProductService integration
+  - [x] 10.3 Update ProductService integration
     - Modify product creation/update to handle cost items
     - Ensure modal awal calculation in product operations
     - _Requirements: 2.1, 2.4_
