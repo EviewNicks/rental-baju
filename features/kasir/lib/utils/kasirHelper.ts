@@ -83,15 +83,6 @@ export async function getKasirFromUser(
       return kasir
     }
 
-    // No kasir found with any strategy
-    const duration = Date.now() - startTime
-    
-    // Debug: Show all kasir in database
-    const allKasir = await prisma.kasir.findMany({
-      select: { id: true, nama: true, createdBy: true, isActive: true },
-      take: 10
-    })
-
     return null
   } catch (error) {
     const duration = Date.now() - startTime

@@ -2,13 +2,13 @@
 
 /**
  * Date Navigation Component
- * 
+ *
  * Provides date selection controls:
  * - Date picker for selecting specific date
  * - "Today" quick button
  * - Previous/Next day navigation
  * - Export CSV button (Owner only)
- * 
+ *
  * Requirements: 5.1, 5.2, 5.4
  */
 
@@ -32,8 +32,8 @@ interface DateNavigationProps {
   userRole: 'kasir' | 'owner' // Add user role
 }
 
-export function DateNavigation({ 
-  selectedDate, 
+export function DateNavigation({
+  selectedDate,
   onDateChange,
   canExport = false,
   onExport,
@@ -42,7 +42,7 @@ export function DateNavigation({
   selectedKasirId,
   onKasirChange,
   isLoading,
-  userRole
+  userRole,
 }: DateNavigationProps) {
   const [showDatePicker, setShowDatePicker] = useState(false)
 
@@ -78,7 +78,7 @@ export function DateNavigation({
     year: 'numeric',
     month: 'long',
     day: 'numeric',
-    timeZone: 'Asia/Makassar' // WITA timezone
+    timeZone: 'Asia/Makassar', // WITA timezone
   })
 
   // Check if selected date is today
@@ -106,15 +106,14 @@ export function DateNavigation({
               className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors min-w-[280px]"
             >
               <Calendar className="w-5 h-5 text-gray-600" />
-              <span className="text-sm font-medium text-gray-900">
-                {displayDate}
-              </span>
+              <span className="text-sm font-medium text-gray-900">{displayDate}</span>
             </button>
 
             {/* Date Picker Input */}
             {showDatePicker && (
               <div className="absolute top-full mt-2 left-0 z-10 bg-white rounded-lg shadow-lg border border-gray-200 p-4">
                 <input
+                  title="input value"
                   type="date"
                   value={formatWITADate(selectedDate)}
                   onChange={handleDatePickerChange}

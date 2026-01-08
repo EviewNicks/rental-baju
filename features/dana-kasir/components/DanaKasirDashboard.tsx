@@ -2,15 +2,15 @@
 
 /**
  * Dana Kasir Dashboard Component
- * 
+ *
  * Main dashboard component with role-based expense visibility
  * - Kasir: Only see expenses from other kasir (not Owner)
  * - Owner: See all expenses with optional kasir filter
- * 
+ *
  * Requirements: 6.1, 6.3, 7.1, 7.2
  */
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@clerk/nextjs'
 import { DateNavigation } from './DateNavigation'
@@ -42,8 +42,8 @@ export function DanaKasirDashboard({ initialDate, userRole }: DanaKasirDashboard
 
   // Fetch dashboard data with role-based filtering
   const { data, isLoading, error, refetch } = useDanaSummary(
-    selectedDate, 
-    selectedKasirId || undefined
+    selectedDate,
+    selectedKasirId || undefined,
   )
 
   // Handle date change (keep kasir filter, reset role filter for kasir users)
@@ -62,10 +62,11 @@ export function DanaKasirDashboard({ initialDate, userRole }: DanaKasirDashboard
   }
 
   // Get selected kasir name for display (SIMPLIFIED)
-  const selectedKasirName = selectedKasirId && data
-    ? data.income.find(item => item.kasirId === selectedKasirId)?.kasirName || 
-      data.expenses.find(expense => expense.kasir?.id === selectedKasirId)?.kasir?.nama
-    : null
+  const selectedKasirName =
+    selectedKasirId && data
+      ? data.income.find((item) => item.kasirId === selectedKasirId)?.kasirName ||
+        data.expenses.find((expense) => expense.kasir?.id === selectedKasirId)?.kasir?.nama
+      : null
 
   // Determine if user can write (create/edit/delete expenses)
   // Both kasir and owner can create expenses
@@ -130,12 +131,8 @@ export function DanaKasirDashboard({ initialDate, userRole }: DanaKasirDashboard
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          Dana Kasir
-        </h1>
-        <p className="text-gray-600">
-          Kelola pendapatan dan pengeluaran harian
-        </p>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Dana Kasir</h1>
+        <p className="text-gray-600">Kelola pendapatan dan pengeluaran harian</p>
       </div>
 
       {/* Date Navigation with Kasir Filter */}
@@ -157,9 +154,7 @@ export function DanaKasirDashboard({ initialDate, userRole }: DanaKasirDashboard
       {/* Error State */}
       {error && (
         <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
-          <p className="text-red-800">
-            Gagal memuat data. Silakan coba lagi.
-          </p>
+          <p className="text-red-800">Gagal memuat data. Silakan coba lagi.</p>
           <button
             onClick={() => refetch()}
             className="mt-2 text-sm text-red-600 hover:text-red-800 underline"
@@ -231,10 +226,7 @@ export function DanaKasirDashboard({ initialDate, userRole }: DanaKasirDashboard
       />
 
       {/* Export Dialog */}
-      <ExportDialog
-        isOpen={showExportDialog}
-        onClose={handleExportDialogClose}
-      />
+      <ExportDialog isOpen={showExportDialog} onClose={handleExportDialogClose} />
     </div>
   )
 }

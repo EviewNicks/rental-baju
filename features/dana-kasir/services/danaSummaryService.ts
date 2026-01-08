@@ -311,7 +311,7 @@ export class DanaSummaryService {
 
   /**
    * Get complete daily data with role-based filtering
-   * 
+   *
    * Role-based visibility:
    * - Kasir: Only see expenses from other kasir (kasirId != "owner-system")
    * - Owner: See all expenses with optional kasir filter
@@ -323,14 +323,14 @@ export class DanaSummaryService {
    * @returns Object with summary, income, and expenses
    */
   async getDailyDataWithRoleFilter(
-    date: Date, 
+    date: Date,
     userRole: 'kasir' | 'owner',
     userKasirId: string,
-    filterKasirId?: string
+    filterKasirId?: string,
   ) {
     // Determine visibility filter based on role
     let visibilityKasirId: string | undefined
-    
+
     if (userRole === 'kasir') {
       // Kasir users: Only see expenses from other kasir (not Owner)
       // If filterKasirId is provided and it's not "owner-system", use it
@@ -363,14 +363,15 @@ export class DanaSummaryService {
    * Get daily summary with role-based filtering
    */
   async getDailySummaryWithRoleFilter(
-    date: Date, 
+    date: Date,
     userRole: 'kasir' | 'owner',
-    visibilityKasirId?: string
+    visibilityKasirId?: string,
   ): Promise<DailySummary> {
     const { start, end } = getWITADayRange(date)
 
     // Build expense filter based on role
-    let expenseWhereClause: any = {
+    //eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const expenseWhereClause: any = {
       isActive: true,
       createdAt: { gte: start, lte: end },
     }
@@ -443,26 +444,30 @@ export class DanaSummaryService {
    * Get income list with role-based filtering (same for both roles)
    */
   async getIncomeListWithRoleFilter(
-    date: Date, 
+    date: Date,
     userRole: 'kasir' | 'owner',
-    visibilityKasirId?: string
+    visibilityKasirId?: string,
   ): Promise<IncomeItem[]> {
     // Income is not role-filtered, same logic as original
-    return this.getIncomeList(date, visibilityKasirId === 'exclude-owner' ? undefined : visibilityKasirId)
+    return this.getIncomeList(
+      date,
+      visibilityKasirId === 'exclude-owner' ? undefined : visibilityKasirId,
+    )
   }
 
   /**
    * Get expense list with role-based filtering
    */
   async getExpenseListWithRoleFilter(
-    date: Date, 
+    date: Date,
     userRole: 'kasir' | 'owner',
-    visibilityKasirId?: string
+    visibilityKasirId?: string,
   ): Promise<PengeluaranKasir[]> {
     const { start, end } = getWITADayRange(date)
 
     // Build where clause based on role
-    let whereClause: any = {
+    //eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const whereClause: any = {
       isActive: true,
       createdAt: { gte: start, lte: end },
     }
@@ -503,6 +508,7 @@ export class DanaSummaryService {
       id: expense.id,
       kasirId: expense.kasirId,
       harga: expense.harga.toNumber(),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       kategori: expense.kategori as any,
       deskripsi: expense.deskripsi || undefined,
       isActive: expense.isActive,

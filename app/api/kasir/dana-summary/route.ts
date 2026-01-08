@@ -17,8 +17,8 @@ const prisma = new PrismaClient()
  * Role-based expense visibility system:
  * - Kasir: Can only see expenses from other kasir (kasirId != "owner-system")
  * - Owner: Can see all expenses with optional kasir filter
- * 
- * Query params: 
+ *
+ * Query params:
  *   - date (optional, defaults to today)
  *   - kasirId (optional, filter by specific kasir)
  * Auth: Any authenticated user with kasir/owner role
@@ -32,7 +32,8 @@ const prisma = new PrismaClient()
  */
 export async function GET(request: NextRequest) {
   const startTime = Date.now()
-  let auditData: any = {
+  //eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const auditData: any = {
     endpoint: '/api/kasir/dana-summary',
     method: 'GET',
     timestamp: new Date().toISOString(),
@@ -43,7 +44,7 @@ export async function GET(request: NextRequest) {
   try {
     const { userId } = await auth()
     auditData.userId = userId
-    
+
     if (!userId) {
       auditData.error = 'No userId from auth()'
       auditData.duration = Date.now() - startTime
@@ -55,48 +56,49 @@ export async function GET(request: NextRequest) {
     const client = await clerkClient()
     const user = await client.users.getUser(userId)
     const userRole = (user.publicMetadata.role as string) || 'kasir'
-    
+
     auditData.userRole = userRole
     auditData.userEmail = user.emailAddresses[0]?.emailAddress
-   
+
     // Determine user's kasirId with detailed logging
     let userKasirId: string
     if (userRole === 'owner') {
       userKasirId = 'owner-system'
       auditData.kasirId = userKasirId
       auditData.kasirSource = 'owner-role'
-      
     } else {
-      
-      
       try {
         const kasirInfo = await getKasirFromUser(prisma, userId)
         auditData.kasirLookupResult = kasirInfo
-        
+
         if (!kasirInfo) {
           auditData.error = 'Kasir not found in database'
           auditData.duration = Date.now() - startTime
           console.error('❌ [AUDIT] Kasir not found for user:', auditData)
-          
+
           return NextResponse.json(
-            { success: false, error: { message: 'Kasir not found for user', code: 'KASIR_NOT_FOUND' } },
+            {
+              success: false,
+              error: { message: 'Kasir not found for user', code: 'KASIR_NOT_FOUND' },
+            },
             { status: 403 },
           )
         }
-        
+
         userKasirId = kasirInfo.id
         auditData.kasirId = userKasirId
         auditData.kasirName = kasirInfo.nama
         auditData.kasirSource = 'database-lookup'
-        
       } catch (kasirError) {
         auditData.error = 'Database error during kasir lookup'
         auditData.kasirError = kasirError instanceof Error ? kasirError.message : String(kasirError)
         auditData.duration = Date.now() - startTime
-       
-        
+
         return NextResponse.json(
-          { success: false, error: { message: 'Database error during kasir lookup', code: 'DATABASE_ERROR' } },
+          {
+            success: false,
+            error: { message: 'Database error during kasir lookup', code: 'DATABASE_ERROR' },
+          },
           { status: 500 },
         )
       }
@@ -106,9 +108,8 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const dateParam = searchParams.get('date')
     const kasirIdParam = searchParams.get('kasirId')
-    
+
     auditData.queryParams = { date: dateParam, kasirId: kasirIdParam }
-    
 
     // Validate and parse date
     let queryDate: Date
@@ -118,8 +119,7 @@ export async function GET(request: NextRequest) {
         auditData.error = 'Invalid date format'
         auditData.validationErrors = dateValidation.error?.issues
         auditData.duration = Date.now() - startTime
-        
-        
+
         return NextResponse.json(
           {
             success: false,
@@ -142,17 +142,16 @@ export async function GET(request: NextRequest) {
     }
 
     auditData.processedDate = queryDate.toISOString()
-   
 
     // Create service instance and fetch data
     const danaSummaryService = new DanaSummaryService(prisma)
 
     const serviceStartTime = Date.now()
     const dailyData = await danaSummaryService.getDailyDataWithRoleFilter(
-      queryDate, 
+      queryDate,
       userRole as 'kasir' | 'owner',
       userKasirId,
-      kasirIdParam || undefined
+      kasirIdParam || undefined,
     )
     const serviceEndTime = Date.now()
 
@@ -165,8 +164,6 @@ export async function GET(request: NextRequest) {
     }
     auditData.duration = Date.now() - startTime
     auditData.success = true
-
-   
 
     return NextResponse.json({
       success: true,
@@ -181,7 +178,7 @@ export async function GET(request: NextRequest) {
     auditData.errorDetails = error instanceof Error ? error.message : String(error)
     auditData.errorStack = error instanceof Error ? error.stack : undefined
     auditData.duration = Date.now() - startTime
-    
+
     console.error('💥 [AUDIT] Unexpected error occurred:', auditData)
     console.error('Error details:', error)
 
