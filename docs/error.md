@@ -1,109 +1,100 @@
-ET /dana-kasir?date=2026-01-07 200 in 127ms (compile: 10ms, proxy.ts: 21ms, render: 95ms)
- POST /dana-kasir?date=2026-01-07 200 in 45ms (compile: 10ms, proxy.ts: 20ms, render: 15ms)
-🔐 [AUDIT] Starting authentication check...
-✅ [AUDIT] User authenticated: user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH
-👤 [AUDIT] Fetching user role from Clerk...
-✅ [AUDIT] User role detected: owner
-✅ [AUDIT] Owner role - using owner-system kasirId
-📋 [AUDIT] Query parameters: { date: '2026-01-07', kasirId: null }
-📅 [AUDIT] Date processed: 2026-01-07T00:00:00.000Z
-🔄 [AUDIT] Creating service and fetching data...
-✅ [AUDIT] Request completed successfully: {
-  endpoint: '/api/kasir/dana-summary',
-  method: 'GET',
-  timestamp: '2026-01-07T14:34:22.765Z',
-  userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36',
-  ip: '::1',
-  userId: 'user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH',
-  userRole: 'owner',
-  userEmail: 'owner+clerk_test@example.com',
-  kasirId: 'owner-system',
-  kasirSource: 'owner-role',
-  queryParams: { date: '2026-01-07', kasirId: null },
-  processedDate: '2026-01-07T00:00:00.000Z',
-  serviceCallDuration: 1604,
-  resultCounts: {
-    incomeItems: 0,
-    expenseItems: 3,
-    totalIncome: 0,
-    totalExpense: 5430400
+ GET /producer/manage-product/materials 200 in 776ms (compile: 20ms, proxy.ts: 44ms, render: 711ms)
+D:\.work\rental-software\.next\dev\server\chunks\[root-of-the-server]__8d6e9ff5._.js: Invalid source map. Only conformant source maps can be used to find the original code. Caus
+
+
+
+
+
+
+
+                                                                                                                                                                                se: Error: sourceMapURL could not be parsed
+D:\.work\rental-software\node_modules\next\dist\compiled\next-server\app-route-turbo.runtime.dev.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+D:\.work\rental-software\.next\dev\server\chunks\node_modules_next_32230fbe._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+D:\.work\rental-software\node_modules\next\dist\server\base-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+D:\.work\rental-software\node_modules\next\dist\server\next-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+D:\.work\rental-software\node_modules\next\dist\server\dev\next-dev-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+D:\.work\rental-software\node_modules\next\dist\trace\trace.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+D:\.work\rental-software\node_modules\next\dist\server\lib\router-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+D:\.work\rental-software\node_modules\next\dist\server\lib\start-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+GET /api/cost-items error: Error [ZodError]: [
+  {
+    "expected": "string",
+    "code": "invalid_type",
+    "path": [
+      "page"
+    ],
+    "message": "Invalid input: expected string, received number"
   },
-  duration: 2194,
-  success: true
-}
- GET /api/kasir/dana-summary?date=2026-01-07 200 in 2.2s (compile: 6ms, proxy.ts: 16ms, render: 2.2s)
- GET /dana-kasir?date=2026-01-07 200 in 183ms (compile: 12ms, proxy.ts: 35ms, render: 136ms)
- POST /dana-kasir?date=2026-01-07 200 in 46ms (compile: 11ms, proxy.ts: 19ms, render: 16ms)
-🔐 [AUDIT] Starting authentication check...
-✅ [AUDIT] User authenticated: user_2zqMR8BytXixaDKNlvkF8Hm7pOp
-👤 [AUDIT] Fetching user role from Clerk...
-✅ [AUDIT] User role detected: kasir
-🔍 [AUDIT] Looking up kasir in database for user: user_2zqMR8BytXixaDKNlvkF8Hm7pOp
-🔍 [KASIR-HELPER] Starting kasir lookup for userId: user_2zqMR8BytXixaDKNlvkF8Hm7pOp
-📋 [KASIR-HELPER] Strategy 1: Querying by createdBy...
-📋 [KASIR-HELPER] Strategy 2: Querying by userId as kasirId...
-📋 [KASIR-HELPER] Strategy 3: Finding any active kasir as fallback...
-⚠️ [KASIR-HELPER] Strategy 3 fallback - using default kasir: { id: '3736c6a1-0d87-45fb-8818-3aef983d2c8d', nama: 'Ina' }
-🔧 [KASIR-HELPER] Consider creating proper kasir mapping for userId: user_2zqMR8BytXixaDKNlvkF8Hm7pOp
-✅ [AUDIT] Kasir found: { id: '3736c6a1-0d87-45fb-8818-3aef983d2c8d', nama: 'Ina' }
-📋 [AUDIT] Query parameters: { date: '2026-01-07', kasirId: null }
-📅 [AUDIT] Date processed: 2026-01-07T00:00:00.000Z
-🔄 [AUDIT] Creating service and fetching data...
-✅ [AUDIT] Request completed successfully: {
-  endpoint: '/api/kasir/dana-summary',
-  method: 'GET',
-  timestamp: '2026-01-07T14:34:32.293Z',
-  userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36',
-  ip: '::1',
-  userId: 'user_2zqMR8BytXixaDKNlvkF8Hm7pOp',
-  userRole: 'kasir',
-  userEmail: 'kasir+clerk_test@example.com',
-  kasirLookupResult: { id: '3736c6a1-0d87-45fb-8818-3aef983d2c8d', nama: 'Ina' },
-  kasirId: '3736c6a1-0d87-45fb-8818-3aef983d2c8d',
-  kasirName: 'Ina',
-  kasirSource: 'database-lookup',
-  queryParams: { date: '2026-01-07', kasirId: null },
-  processedDate: '2026-01-07T00:00:00.000Z',
-  serviceCallDuration: 1643,
-  resultCounts: {
-    incomeItems: 0,
-    expenseItems: 1,
-    totalIncome: 0,
-    totalExpense: 200000
+  {
+    "expected": "string",
+    "code": "invalid_type",
+    "path": [
+      "limit"
+    ],
+    "message": "Invalid input: expected string, received number"
+  }
+]
+    at CostItemService.getCostItems (D:\.work\rental-software\.next\dev\server\chunks\[root-of-the-server]__8d6e9ff5._.js:390:222)
+    at GET (D:\.work\rental-software\.next\dev\server\chunks\[root-of-the-server]__8d6e9ff5._.js:611:46)
+ GET /api/cost-items?page=1&limit=10 400 in 377ms (compile: 237ms, proxy.ts: 25ms, render: 115ms)
+ POST /producer/manage-product/materials 200 in 410ms (compile: 28ms, proxy.ts: 356ms, render: 26ms)
+D:\.work\rental-software\.next\dev\server\chunks\[root-of-the-server]__8d6e9ff5._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+D:\.work\rental-software\node_modules\next\dist\compiled\next-server\app-route-turbo.runtime.dev.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+D:\.work\rental-software\.next\dev\server\chunks\node_modules_next_32230fbe._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+D:\.work\rental-software\node_modules\next\dist\server\base-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+D:\.work\rental-software\node_modules\next\dist\server\next-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+D:\.work\rental-software\node_modules\next\dist\server\dev\next-dev-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+D:\.work\rental-software\node_modules\next\dist\trace\trace.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+D:\.work\rental-software\node_modules\next\dist\server\lib\router-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+D:\.work\rental-software\node_modules\next\dist\server\lib\start-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+GET /api/cost-items error: Error [ZodError]: [
+  {
+    "expected": "string",
+    "code": "invalid_type",
+    "path": [
+      "page"
+    ],
+    "message": "Invalid input: expected string, received number"
   },
-  duration: 4167,
-  success: true
-}
- GET /api/kasir/dana-summary?date=2026-01-07 200 in 4.3s (compile: 17ms, proxy.ts: 38ms, render: 4.2s)
-🔐 [AUDIT] Starting authentication check...
-✅ [AUDIT] User authenticated: user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH
-👤 [AUDIT] Fetching user role from Clerk...
-✅ [AUDIT] User role detected: owner
-✅ [AUDIT] Owner role - using owner-system kasirId
-📋 [AUDIT] Query parameters: { date: '2026-01-07', kasirId: 'owner-system' }
-📅 [AUDIT] Date processed: 2026-01-07T00:00:00.000Z
-🔄 [AUDIT] Creating service and fetching data...
-✅ [AUDIT] Request completed successfully: {
-  endpoint: '/api/kasir/dana-summary',
-  method: 'GET',
-  timestamp: '2026-01-07T14:34:45.887Z',
-  userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36',
-  ip: '::1',
-  userId: 'user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH',
-  userRole: 'owner',
-  userEmail: 'owner+clerk_test@example.com',
-  kasirId: 'owner-system',
-  kasirSource: 'owner-role',
-  queryParams: { date: '2026-01-07', kasirId: 'owner-system' },
-  processedDate: '2026-01-07T00:00:00.000Z',
-  serviceCallDuration: 1592,
-  resultCounts: {
-    incomeItems: 0,
-    expenseItems: 2,
-    totalIncome: 0,
-    totalExpense: 5230400
+  {
+    "expected": "string",
+    "code": "invalid_type",
+    "path": [
+      "limit"
+    ],
+    "message": "Invalid input: expected string, received number"
+  }
+]
+    at CostItemService.getCostItems (D:\.work\rental-software\.next\dev\server\chunks\[root-of-the-server]__8d6e9ff5._.js:390:222)
+    at GET (D:\.work\rental-software\.next\dev\server\chunks\[root-of-the-server]__8d6e9ff5._.js:611:46)
+ GET /api/cost-items?page=1&limit=10 400 in 51ms (compile: 6ms, proxy.ts: 15ms, render: 31ms)
+D:\.work\rental-software\.next\dev\server\chunks\[root-of-the-server]__8d6e9ff5._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+D:\.work\rental-software\node_modules\next\dist\compiled\next-server\app-route-turbo.runtime.dev.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+D:\.work\rental-software\.next\dev\server\chunks\node_modules_next_32230fbe._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+D:\.work\rental-software\node_modules\next\dist\server\base-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+D:\.work\rental-software\node_modules\next\dist\server\next-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+D:\.work\rental-software\node_modules\next\dist\server\dev\next-dev-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+D:\.work\rental-software\node_modules\next\dist\trace\trace.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+D:\.work\rental-software\node_modules\next\dist\server\lib\router-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+D:\.work\rental-software\node_modules\next\dist\server\lib\start-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+GET /api/cost-items error: Error [ZodError]: [
+  {
+    "expected": "string",
+    "code": "invalid_type",
+    "path": [
+      "page"
+    ],
+    "message": "Invalid input: expected string, received number"
   },
-  duration: 2013,
-  success: true
-}
- GET /api/kasir/dana-summary?date=2026-01-07&kasirId=owner-system 200 in 2.1s (compile: 7ms, proxy.ts: 17ms, render: 2.1s)
+  {
+    "expected": "string",
+    "code": "invalid_type",
+    "path": [
+      "limit"
+    ],
+    "message": "Invalid input: expected string, received number"
+  }
+]
+    at CostItemService.getCostItems (D:\.work\rental-software\.next\dev\server\chunks\[root-of-the-server]__8d6e9ff5._.js:390:222)
+    at GET (D:\.work\rental-software\.next\dev\server\chunks\[root-of-the-server]__8d6e9ff5._.js:611:46)
+ GET /api/cost-items?page=1&limit=10 400 in 70ms (compile: 9ms, proxy.ts: 19ms, render: 42ms)

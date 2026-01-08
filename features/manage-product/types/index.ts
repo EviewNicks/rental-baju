@@ -3,6 +3,9 @@
  *
  */
 
+// Cost Item Management Types
+export * from './costItem'
+
 // Note: Decimal type is only used on server-side
 // Frontend uses regular numbers for all monetary values
 

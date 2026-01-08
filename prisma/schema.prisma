@@ -36,6 +36,7 @@ model Product {
   material         Material?       @relation(fields: [materialId], references: [id])
   sizes            ProductSize[]
   transaksiItems   TransaksiItem[]
+  productCosts     ProductCost[]
 
   @@index([isActive])
   @@index([categoryId])
@@ -327,4 +328,35 @@ model PengeluaranKasir {
   @@index([isActive])
   @@index([createdAt])
   @@map("pengeluaran_kasir")
+}
+
+model CostItem {
+  id           String        @id @default(uuid())
+  name         String        @unique
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  createdBy    String
+  productCosts ProductCost[]
+
+  @@index([name])
+  @@index([createdBy])
+  @@map("cost_items")
+}
+
+model ProductCost {
+  id         String   @id @default(uuid())
+  productId  String
+  costItemId String
+  amount     Decimal  @db.Decimal(12, 2)
+  notes      String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  
+  product  Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  costItem CostItem @relation(fields: [costItemId], references: [id], onDelete: Restrict)
+
+  @@unique([productId, costItemId])
+  @@index([productId])
+  @@index([costItemId])
+  @@map("product_costs")
 }

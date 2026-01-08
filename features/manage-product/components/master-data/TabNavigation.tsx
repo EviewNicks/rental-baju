@@ -8,7 +8,7 @@ import { logger } from '@/services/logger'
 // Component-specific logger for tab navigation
 const navLogger = logger.child('TabNavigation')
 
-export type TabValue = 'material' | 'category'
+export type TabValue = 'cost-item' | 'category'
 
 interface TabNavigationProps {
   activeTab: TabValue
@@ -19,9 +19,9 @@ export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
   return (
     <Tabs value={activeTab} onValueChange={(value) => onTabChange(value as TabValue)} className="w-full">
       <TabsList className="grid w-full grid-cols-2">
-        <TabsTrigger value="material" className="flex items-center gap-2">
+        <TabsTrigger value="cost-item" className="flex items-center gap-2">
           <Package className="w-4 h-4" />
-          Kelola Material
+          Kelola Cost Item
         </TabsTrigger>
         <TabsTrigger value="category" className="flex items-center gap-2">
           <Tag className="w-4 h-4" />
@@ -34,17 +34,17 @@ export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
 
 // Hook for hash routing functionality
 export function useTabNavigation() {
-  const [activeTab, setActiveTab] = useState<TabValue>('material')
+  const [activeTab, setActiveTab] = useState<TabValue>('cost-item')
 
   useEffect(() => {
     // Read hash on mount
     const hash = window.location.hash.slice(1) as TabValue
-    const validTabs = ['material', 'category']
+    const validTabs = ['cost-item', 'category']
 
     navLogger.debug('hashRouting', 'Initializing tab from URL hash', {
       currentHash: hash,
       isValidTab: validTabs.includes(hash),
-      defaultTab: 'material'
+      defaultTab: 'cost-item'
     })
 
     if (validTabs.includes(hash)) {
@@ -55,7 +55,7 @@ export function useTabNavigation() {
     } else {
       navLogger.debug('hashRouting', 'Using default tab (invalid or empty hash)', {
         hash,
-        defaultTab: 'material'
+        defaultTab: 'cost-item'
       })
     }
   }, [])

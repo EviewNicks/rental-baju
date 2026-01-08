@@ -32,6 +32,8 @@
     "import:categories:dry": "cross-env DRY_RUN=true tsx scripts/import-categories.ts",
     "import:kasir": "tsx scripts/import-kasir.ts",
     "import:kasir:dry": "cross-env DRY_RUN=true tsx scripts/import-kasir.ts",
+    "import:item-cost": "tsx scripts/import-cost-item.ts",
+    "import:item-cost:dry": "cross-env DRY_RUN=true tsx scripts/import-cost-item.ts",
     "cleanup:db": "tsx scripts/cleanup-database.ts",
     "cleanup:db:dry": "cross-env DRY_RUN=true tsx scripts/cleanup-database.ts",
     "migrate:full": "npm run cleanup:db && npm run import:categories && npm run import:kasir",
