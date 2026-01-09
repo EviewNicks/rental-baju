@@ -98,7 +98,7 @@ interface ProductFormPageProps {
 // Simple validation helper functions
 const validateProductCode = (code: string): string | null => {
   if (!code.trim()) return 'Kode produk wajib diisi'
-  if (!/^[A-Za-z0-9]{3,10}$/.test(code)) return 'Kode harus 3-10 digit alfanumerik'
+  if (!/^[A-Z0-9]{4,5}$/.test(code)) return 'Kode harus 4-5 digit alfanumerik uppercase (contoh: PRD1, DRESS)'
   return null
 }
 
@@ -212,7 +212,6 @@ export function ProductFormPage({
         isLoadingCostItemsRef.current = true
 
         try {
-          console.log('[COST ITEMS] Loading existing cost items for product:', product.id)
           const response = await fetch(`/api/products/${product.id}/costs`)
 
           if (response.ok) {
@@ -233,15 +232,9 @@ export function ProductFormPage({
 
             // Mark as loaded to prevent future API calls
             costItemsLoadedRef.current = true
-            console.log('[COST ITEMS] Successfully loaded existing cost items:', existingCosts)
-          } else {
-            console.warn(
-              '[COST ITEMS] Failed to load cost items, response not ok:',
-              response.status,
-            )
           }
         } catch (error) {
-          console.error('[COST ITEMS] Failed to load existing cost items:', error)
+          console.error('Failed to load existing cost items:', error)
         } finally {
           isLoadingCostItemsRef.current = false
         }
@@ -281,9 +274,6 @@ export function ProductFormPage({
           // Initialize strategy sizes
           const transformedSizes = strategy.getInitialSizes(formData)
           setStrategySizes(transformedSizes)
-
-          console.log('Edit mode: Initialized category form data:', formData)
-          console.log('Edit mode: Initialized strategy sizes:', transformedSizes)
         }
       } catch (error) {
         console.error('Failed to initialize edit form data:', error)
@@ -341,6 +331,41 @@ export function ProductFormPage({
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
+
+  // Real-time form validation for button state
+  const isFormValid = useMemo(() => {
+    // Check required fields
+    const hasRequiredFields = 
+      formData.code.trim() !== '' &&
+      formData.name.trim() !== '' &&
+      formData.categoryId.trim() !== '' &&
+      formData.currentPrice > 0
+
+    // Check if has valid sizes
+    let hasValidSizes = false
+    if (strategySizes.length > 0) {
+      hasValidSizes = strategySizes.length > 0
+    } else if (formData.simplifiedSizes && formData.simplifiedSizes.length > 0) {
+      hasValidSizes = formData.simplifiedSizes.length > 0
+    } else if (formData.aggregatedSizes && formData.aggregatedSizes.length > 0) {
+      hasValidSizes = formData.aggregatedSizes.some((size) => size.totalQuantity > 0)
+    }
+
+    // Check for validation errors
+    const hasNoErrors = Object.keys(errors).length === 0 || 
+      Object.values(errors).every(error => !error || error === '')
+
+    return hasRequiredFields && hasValidSizes && hasNoErrors
+  }, [
+    formData.code,
+    formData.name, 
+    formData.categoryId,
+    formData.currentPrice,
+    strategySizes,
+    formData.simplifiedSizes,
+    formData.aggregatedSizes,
+    errors
+  ])
 
   const validateSingleField = (name: string, value: string | number | File | null): void => {
     let error = ''
@@ -488,6 +513,22 @@ export function ProductFormPage({
     // Prevent multiple submissions
     if (isSubmitting) return
 
+    // Early validation check - prevent API call if form is invalid
+    if (!isFormValid) {
+      setTouched({
+        code: true,
+        name: true,
+        categoryId: true,
+        sizes: true,
+        selectedCosts: true,
+        modalAwal: true,
+        currentPrice: true,
+        quantity: true,
+        description: true,
+      })
+      return
+    }
+
     setIsSubmitting(true)
 
     if (!validateForm()) {
@@ -507,11 +548,31 @@ export function ProductFormPage({
     }
 
     // Transform sizes to backend format with strategy data priority using ProductSizeTransformer
-    const { data: sizesData } = ProductSizeTransformer.transformToBackendFormat(
+    const { data: sizesData, source } = ProductSizeTransformer.transformToBackendFormat(
       strategySizes,
       formData.simplifiedSizes || [],
       formData.aggregatedSizes || [],
     )
+
+    console.log('[DEBUG] Size transformation:', {
+      source,
+      strategySizes,
+      simplifiedSizes: formData.simplifiedSizes,
+      aggregatedSizes: formData.aggregatedSizes,
+      sizesData,
+    })
+
+    // Validate sizes data before API call
+    if (!sizesData || sizesData === '[]' || sizesData === 'null') {
+      console.error('[DEBUG] Invalid sizes data:', sizesData)
+      setErrors((prev) => ({ 
+        ...prev, 
+        sizes: 'Data ukuran tidak valid. Pastikan minimal satu ukuran telah ditambahkan.' 
+      }))
+      setTouched((prev) => ({ ...prev, sizes: true }))
+      setIsSubmitting(false)
+      return
+    }
 
     try {
       if (mode === 'add') {
@@ -530,17 +591,6 @@ export function ProductFormPage({
           imageUrl: formData.imageUrl || undefined,
         }
 
-        // Frontend Audit Trail - Log create data preparation
-        console.log('[FRONTEND AUDIT] Create product data prepared:', {
-          hasSelectedCosts: !!createData.selectedCosts,
-          costItemsCount: createData.selectedCosts?.length || 0,
-          modalAwalValue: createData.modalAwal,
-          costItemsData: createData.selectedCosts,
-          createDataKeys: Object.keys(createData),
-          timestamp: new Date().toISOString(),
-          action: 'CREATE_DATA_PREPARED',
-        })
-
         // Convert to FormData for proper API handling
         const formDataToSend = new FormData()
         Object.entries(createData).forEach(([key, value]) => {
@@ -556,19 +606,9 @@ export function ProductFormPage({
           }
         })
 
-        // Frontend Audit Trail - Log FormData contents before API call
-        console.log('[FRONTEND AUDIT] FormData prepared for API call:', {
-          formDataEntries: Array.from(formDataToSend.entries()).map(([key, value]) => ({
-            key,
-            valueType: typeof value,
-            isFile: value instanceof File,
-            stringValue:
-              value instanceof File ? `[File: ${value.name}]` : String(value).substring(0, 100),
-          })),
-          hasSelectedCostsField: formDataToSend.has('selectedCosts'),
-          selectedCostsValue: formDataToSend.get('selectedCosts'),
-          timestamp: new Date().toISOString(),
-          action: 'FORM_DATA_PREPARED_FOR_API',
+        console.log('[DEBUG] FormData being sent:', {
+          createData,
+          formDataEntries: Array.from(formDataToSend.entries()),
         })
 
         const createdProduct = await createProductMutation.mutateAsync(formDataToSend)
@@ -578,11 +618,9 @@ export function ProductFormPage({
           // For create mode: redirect to the newly created product detail
           // The mutation returns the created product with ID
           if (createdProduct?.id) {
-            console.log('[FRONTEND] Redirecting to new product detail:', createdProduct.id)
             router.push(`/producer/manage-product/${createdProduct.id}`)
           } else {
             // Fallback to product list if no product ID available
-            console.warn('[FRONTEND] No product ID returned from create, redirecting to list')
             router.push('/producer/manage-product')
           }
         }
@@ -605,18 +643,6 @@ export function ProductFormPage({
           imageUrl: formData.imageUrl || undefined,
         }
 
-        // Frontend Audit Trail - Log update data preparation
-        console.log('[FRONTEND AUDIT] Update product data prepared:', {
-          productId: product.id,
-          hasSelectedCosts: !!updateData.selectedCosts,
-          costItemsCount: updateData.selectedCosts?.length || 0,
-          modalAwalValue: updateData.modalAwal,
-          costItemsData: updateData.selectedCosts,
-          updateDataKeys: Object.keys(updateData),
-          timestamp: new Date().toISOString(),
-          action: 'UPDATE_DATA_PREPARED',
-        })
-
         // Convert to FormData for proper API handling
         const formDataToSend = new FormData()
         Object.entries(updateData).forEach(([key, value]) => {
@@ -632,38 +658,25 @@ export function ProductFormPage({
           }
         })
 
-        // Frontend Audit Trail - Log FormData contents before API call
-        console.log('[FRONTEND AUDIT] Update FormData prepared for API call:', {
-          productId: product.id,
-          formDataEntries: Array.from(formDataToSend.entries()).map(([key, value]) => ({
-            key,
-            valueType: typeof value,
-            isFile: value instanceof File,
-            stringValue:
-              value instanceof File ? `[File: ${value.name}]` : String(value).substring(0, 100),
-          })),
-          hasSelectedCostsField: formDataToSend.has('selectedCosts'),
-          selectedCostsValue: formDataToSend.get('selectedCosts'),
-          timestamp: new Date().toISOString(),
-          action: 'UPDATE_FORM_DATA_PREPARED_FOR_API',
+        // FIXED: Call the update mutation
+        const updatedProduct = await updateProductMutation.mutateAsync({
+          id: product.id,
+          data: formDataToSend,
         })
-      }
 
-      // Success - redirect based on mode for better UX
-      if (mode === 'add') {
-        // Create mode redirect logic handled above in the if block
-      } else {
-        // For edit mode: redirect to the updated product detail
-        // Use the product ID from the original product (more reliable than response)
-        if (product?.id) {
-          console.log('[FRONTEND] Redirecting to updated product detail:', product.id)
+        // Success - redirect to the updated product detail
+        if (updatedProduct?.id) {
+          router.push(`/producer/manage-product/${updatedProduct.id}`)
+        } else if (product?.id) {
+          // Fallback to original product ID
           router.push(`/producer/manage-product/${product.id}`)
         } else {
-          // Fallback to product list if no product ID available
-          console.warn('[FRONTEND] No product ID available for edit mode, redirecting to list')
+          // Final fallback to product list
           router.push('/producer/manage-product')
         }
       }
+
+      // Success redirect for create mode (handled above in the if block)
     } catch (error) {
       console.error(`[DEBUG] Error ${mode === 'add' ? 'creating' : 'updating'} product:`, {
         error: error,
@@ -680,8 +693,14 @@ export function ProductFormPage({
   }
 
   const handleSaveDraft = () => {
-    localStorage.setItem('product-draft', JSON.stringify(formData))
-    // Show toast notification
+    try {
+      localStorage.setItem('product-draft', JSON.stringify(formData))
+      // TODO: Add toast notification for better UX
+      console.log('Draft saved successfully')
+    } catch (error) {
+      console.error('Failed to save draft:', error)
+      // TODO: Add error toast notification
+    }
   }
 
   const formatCurrency = (value: string) => {
@@ -732,7 +751,6 @@ export function ProductFormPage({
         className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
         data-testid="product-form-content"
       >
-        {/* Show errors */}
         {(categoriesError || createProductMutation.error || updateProductMutation.error) && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md">
             <div className="flex items-start">
@@ -1073,6 +1091,7 @@ export function ProductFormPage({
               type="button"
               variant="secondary"
               onClick={handleSaveDraft}
+              disabled={isSubmitting || createProductMutation.isPending || updateProductMutation.isPending}
               data-testid="save-draft-button"
             >
               <Save className="w-4 h-4 mr-2" />
@@ -1081,12 +1100,17 @@ export function ProductFormPage({
             <Button
               type="submit"
               disabled={
+                !isFormValid ||
                 isSubmitting ||
                 createProductMutation.isPending ||
                 updateProductMutation.isPending ||
                 isLoadingCategories
               }
-              className="bg-yellow-400 hover:bg-yellow-500 text-black"
+              className={`${
+                isFormValid 
+                  ? 'bg-yellow-400 hover:bg-yellow-500 text-black' 
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              } transition-colors duration-200`}
               data-testid="submit-button"
             >
               {isSubmitting ||
@@ -1100,6 +1124,11 @@ export function ProductFormPage({
                 <>
                   <div className="w-4 h-4 mr-2 animate-spin rounded-full border-2 border-black border-t-transparent" />
                   Memuat kategori...
+                </>
+              ) : !isFormValid ? (
+                <>
+                  <X className="w-4 h-4 mr-2" />
+                  {mode === 'add' ? 'Lengkapi Data Wajib' : 'Lengkapi Data Wajib'}
                 </>
               ) : (
                 <>

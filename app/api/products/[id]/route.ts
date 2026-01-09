@@ -50,61 +50,12 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     // Get product by ID
     const product = await productService.getProductById(id)
 
-    // Backend Audit Trail - Log product retrieval with detailed cost items info
-    console.log('[BACKEND AUDIT] Product retrieved for GET request:', {
-      productId: id,
-      hasProduct: !!product,
-      hasCosts: Array.isArray(product.costs) && product.costs.length > 0,
-      costsCount: Array.isArray(product.costs) ? product.costs.length : 0,
-      hasSimplifiedCosts: Array.isArray(product.simplifiedCosts) && product.simplifiedCosts.length > 0,
-      simplifiedCostsCount: Array.isArray(product.simplifiedCosts) ? product.simplifiedCosts.length : 0,
-      modalAwal: product.modalAwal,
-      costItemsDetails: Array.isArray(product.costs) ? product.costs.map(cost => ({
-        costItemId: cost.costItemId,
-        amount: cost.amount,
-        costItemName: cost.costItem?.name || 'Unknown'
-      })) : [],
-      simplifiedCostsDetails: Array.isArray(product.simplifiedCosts) ? product.simplifiedCosts : [],
-      calculatedModalAwal: Array.isArray(product.costs) ? 
-        product.costs.reduce((total, cost) => total + cost.amount, 0) : 0,
-      modalAwalMatch: Array.isArray(product.costs) ? 
-        Number(product.modalAwal) === product.costs.reduce((total, cost) => total + cost.amount, 0) : 
-        Number(product.modalAwal) === 0,
-      timestamp: new Date().toISOString(),
-      action: 'PRODUCT_RETRIEVED'
-    })
-
     // Prepare response object
     let responseData: Record<string, unknown> = { ...product }
-
-    // Backend Audit Trail - Log response data preparation
-    console.log('[BACKEND AUDIT] Response data prepared:', {
-      productId: id,
-      responseDataKeys: Object.keys(responseData),
-      hasCostsInResponse: 'costs' in responseData && Array.isArray(responseData.costs),
-      costsCountInResponse: Array.isArray(responseData.costs) ? responseData.costs.length : 0,
-      hasSimplifiedCostsInResponse: 'simplifiedCosts' in responseData && Array.isArray(responseData.simplifiedCosts),
-      simplifiedCostsCountInResponse: Array.isArray(responseData.simplifiedCosts) ? responseData.simplifiedCosts.length : 0,
-      modalAwalInResponse: responseData.modalAwal,
-      includeCostsParam: includeCosts,
-      timestamp: new Date().toISOString(),
-      action: 'RESPONSE_DATA_PREPARED'
-    })
 
     // Ensure cost items are included in response (they should already be from ProductService)
     if (includeCosts && product.costs) {
       responseData.costs = product.costs
-      console.log('[BACKEND AUDIT] Cost items explicitly included in response:', {
-        productId: id,
-        costItemsCount: product.costs.length,
-        costItems: product.costs.map(cost => ({
-          costItemId: cost.costItemId,
-          amount: cost.amount,
-          costItemName: cost.costItem?.name || 'Unknown'
-        })),
-        timestamp: new Date().toISOString(),
-        action: 'COST_ITEMS_INCLUDED_IN_RESPONSE'
-      })
     }
 
     // Add aggregation data if requested
@@ -162,22 +113,6 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       }
     }
 
-    // Backend Audit Trail - Log final response before sending
-    console.log('[BACKEND AUDIT] Final response ready to send:', {
-      productId: id,
-      finalResponseKeys: Object.keys(responseData),
-      hasCostsInFinalResponse: 'costs' in responseData && Array.isArray(responseData.costs),
-      costsCountInFinalResponse: Array.isArray(responseData.costs) ? responseData.costs.length : 0,
-      hasSimplifiedCostsInFinalResponse: 'simplifiedCosts' in responseData && Array.isArray(responseData.simplifiedCosts),
-      simplifiedCostsCountInFinalResponse: Array.isArray(responseData.simplifiedCosts) ? responseData.simplifiedCosts.length : 0,
-      modalAwalInFinalResponse: responseData.modalAwal,
-      hasAggregation: 'aggregation' in responseData,
-      hasInventoryStatus: 'inventoryStatus' in responseData,
-      hasBreakEvenStatus: 'breakEvenStatus' in responseData,
-      timestamp: new Date().toISOString(),
-      action: 'FINAL_RESPONSE_READY'
-    })
-
     return NextResponse.json(responseData, { status: 200 })
   } catch (error) {
     if (error instanceof NotFoundError) {
@@ -230,19 +165,6 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     // Parse multipart form data
     const formData = await request.formData()
 
-    // Frontend Audit Trail - Log all received form data for update
-    console.log('[BACKEND AUDIT] PUT /api/products/[id] - Form data received:', {
-      productId: id,
-      allFormFields: Array.from(formData.entries()).map(([key, value]) => ({
-        key,
-        valueType: typeof value,
-        valueSize: value instanceof File ? value.size : String(value).length,
-        isFile: value instanceof File
-      })),
-      timestamp: new Date().toISOString(),
-      action: 'UPDATE_FORM_DATA_RECEIVED'
-    })
-
     // Extract form fields
     const name = (formData.get('name') as string) || undefined
     const description = (formData.get('description') as string) || undefined
@@ -272,83 +194,31 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       name?: string
     }> = []
 
-    // Enhanced audit trail for cost items parsing
-    console.log('[BACKEND AUDIT] Cost items field extraction:', {
-      productId: id,
-      hasSelectedCostsField: selectedCostsStr !== null,
-      selectedCostsFieldType: typeof selectedCostsStr,
-      selectedCostsFieldValue: selectedCostsStr,
-      selectedCostsFieldLength: selectedCostsStr ? selectedCostsStr.length : 0,
-      isEmptyString: selectedCostsStr === '',
-      isNullValue: selectedCostsStr === null,
-      isUndefinedValue: selectedCostsStr === undefined,
-      timestamp: new Date().toISOString(),
-      action: 'COST_ITEMS_FIELD_EXTRACTION'
-    })
-
     // Parse cost items if provided
     if (selectedCostsStr !== null && selectedCostsStr !== undefined) {
       if (selectedCostsStr === '') {
         // Empty string case - should be treated as removal
         selectedCosts = []
-        console.log('[BACKEND AUDIT] Empty cost items string detected - treating as removal:', {
-          productId: id,
-          selectedCostsStr: selectedCostsStr,
-          resultingArray: selectedCosts,
-          shouldTriggerRemoval: true,
-          timestamp: new Date().toISOString(),
-          action: 'EMPTY_COST_ITEMS_STRING_DETECTED'
-        })
       } else {
         try {
           selectedCosts = JSON.parse(selectedCostsStr)
-          console.log('[BACKEND AUDIT] Cost items parsed for update:', {
-            productId: id,
-            costItemsCount: selectedCosts.length,
-            costItems: selectedCosts,
-            isEmptyArray: selectedCosts.length === 0,
-            shouldTriggerRemoval: selectedCosts.length === 0,
-            timestamp: new Date().toISOString(),
-            action: 'UPDATE_COST_ITEMS_PARSED'
-          })
-        } catch (parseError) {
-          console.error('[BACKEND AUDIT] Failed to parse cost items for update:', {
-            productId: id,
-            error: parseError,
-            selectedCostsStr,
-            timestamp: new Date().toISOString(),
-            action: 'UPDATE_COST_ITEMS_PARSE_ERROR'
-          })
+        } catch {
           return NextResponse.json(
             { error: { message: 'Format data cost items tidak valid', code: 'VALIDATION_ERROR' } },
             { status: 400 },
           )
         }
       }
-    } else {
-      // Field not provided - should not trigger cost items update
-      console.log('[BACKEND AUDIT] Cost items field not provided - no update:', {
-        productId: id,
-        selectedCostsStr,
-        willUpdateCostItems: false,
-        timestamp: new Date().toISOString(),
-        action: 'COST_ITEMS_FIELD_NOT_PROVIDED'
-      })
     }
 
-    // Backend Audit Trail - Log parsed form data for update
-    console.log('[BACKEND AUDIT] Update form fields parsed:', {
-      productId: id,
-      hasName: !!name,
-      hasModalAwal: modalAwal !== undefined,
-      hasCurrentPrice: currentPrice !== undefined,
-      hasCostItems: selectedCosts.length > 0,
-      costItemsCount: selectedCosts.length,
-      modalAwalValue: modalAwal,
-      costItemsData: selectedCosts,
-      timestamp: new Date().toISOString(),
-      action: 'UPDATE_FORM_FIELDS_PARSED'
-    })
+    // Prepare update data
+    const updateData: Record<string, unknown> = {}
+
+    // NEW: Cost Items Management - Add cost items to update data
+    const shouldUpdateCostItems = selectedCostsStr !== null && selectedCostsStr !== undefined
+    if (shouldUpdateCostItems) {
+      updateData.selectedCosts = selectedCosts
+    }
 
     // Validate image format and size if new image is provided
     if (image && image.size > 0) {
@@ -419,28 +289,18 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
             { status: 400 },
           )
         }
-      } catch (parseError) {
-        console.error(`[API Route] Failed to parse sizes:`, {
-          error: parseError,
-          sizesStr: sizesStr,
-          timestamp: new Date().toISOString(),
-        })
+      } catch {
         return NextResponse.json(
           { error: { message: 'Format data ukuran tidak valid', code: 'VALIDATION_ERROR' } },
           { status: 400 },
         )
       }
-    } else {
-      console.log(`[API Route] No sizes string provided`)
     }
-
-    // Prepare update data
-    const updateData: Record<string, unknown> = {}
 
     if (name !== undefined) updateData.name = name
     if (description !== undefined) updateData.description = description
     if (modalAwal !== undefined) updateData.modalAwal = modalAwal
-    if (currentPrice !== undefined) updateData.currentPrice = currentPrice // ✅ Fixed: use currentPrice instead of hargaSewa
+    if (currentPrice !== undefined) updateData.currentPrice = currentPrice
     if (quantity !== undefined) updateData.quantity = quantity
     if (categoryId !== undefined) updateData.categoryId = categoryId
     if (size !== undefined) updateData.size = size
@@ -451,46 +311,11 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     // Size Management fields - Enhanced ProductSize fields processed in service layer
     if (sizes.length > 0) {
       updateData.sizes = sizes // Pass raw data to service layer
-    } else {
-      console.log(`[API Route] No sizes to add to updateData`)
     }
     // NEW: Cost Items Management - Add cost items to update data
-    const shouldUpdateCostItems = selectedCostsStr !== null && selectedCostsStr !== undefined
     if (shouldUpdateCostItems) {
       updateData.selectedCosts = selectedCosts
-      console.log('[BACKEND AUDIT] Cost items added to update data:', {
-        productId: id,
-        costItemsCount: selectedCosts.length,
-        costItems: selectedCosts,
-        isRemovalAction: selectedCosts.length === 0,
-        shouldResetModalAwal: selectedCosts.length === 0,
-        timestamp: new Date().toISOString(),
-        action: 'COST_ITEMS_ADDED_TO_UPDATE_DATA'
-      })
-    } else {
-      console.log('[BACKEND AUDIT] Cost items not included in update data:', {
-        productId: id,
-        reason: 'selectedCosts field not provided in form data',
-        willPreserveCostItems: true,
-        timestamp: new Date().toISOString(),
-        action: 'COST_ITEMS_NOT_INCLUDED_IN_UPDATE'
-      })
     }
-
-    // Backend Audit Trail - Log prepared update data
-    console.log('[BACKEND AUDIT] Update data prepared:', {
-      productId: id,
-      updateDataKeys: Object.keys(updateData),
-      hasSelectedCosts: 'selectedCosts' in updateData,
-      costItemsCount: Array.isArray(updateData.selectedCosts) ? updateData.selectedCosts.length : 0,
-      modalAwalValue: updateData.modalAwal,
-      costItemsData: updateData.selectedCosts,
-      shouldUpdateCostItems,
-      costItemsFieldProvided: selectedCostsStr !== null && selectedCostsStr !== undefined,
-      isRemovalAction: Array.isArray(updateData.selectedCosts) && updateData.selectedCosts.length === 0,
-      timestamp: new Date().toISOString(),
-      action: 'UPDATE_DATA_PREPARED'
-    })
 
     // Validate materialQuantity if provided
     if (materialQuantityStr && (isNaN(materialQuantity!) || materialQuantity! <= 0)) {
@@ -630,7 +455,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     return NextResponse.json(product, { status: 200 })
   } catch (error) {
     // Generate request ID for debugging
-    const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    const requestId = `req_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`
 
     // Handle known error types
     if (error instanceof NotFoundError) {
@@ -651,7 +476,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 }
 
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
@@ -678,7 +503,7 @@ export async function DELETE(
     )
   } catch (error) {
     // Generate request ID for debugging
-    const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    const requestId = `req_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`
 
     // Handle known error types
     if (error instanceof NotFoundError) {

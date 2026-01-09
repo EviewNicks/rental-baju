@@ -8,8 +8,6 @@ import { ImageUpload } from '@/features/manage-product/components/products/Image
 import { CostItemSelector } from '@/features/manage-product/components/cost-items/CostItemSelector'
 
 import { SizeManagementPlaceholder } from '@/features/manage-product/components/form-product/SizeManagementPlaceholder'
-import { useAggregatedSizes } from '@/features/manage-product/hooks/useAggregatedSizes'
-import { getProductSizeMode } from '@/features/manage-product/lib/utils/sizeManagementUtils'
 import type { CategoryFormData as CategoryFormData } from '@/features/manage-product/lib/strategies/CategoryFormStrategy'
 import type {
   ClientCategory,
@@ -19,13 +17,9 @@ import type {
   CreateProductSizeRequest,
 } from '@/features/manage-product/types'
 import type { ProductCostFormData } from '@/features/manage-product/types/costItem'
-import { logger } from '@/services/logger'
 import { useEffect, useCallback, useRef } from 'react'
 import { useProductFormStrategy } from '../../hooks/useProductFormStrategy'
 import { useUserRole } from '@/features/auth'
-
-// Component-specific logger for product form
-const formLogger = logger.child('ProductForm')
 
 interface ProductFormData {
   code: string
@@ -99,27 +93,7 @@ export function ProductForm({
   onModalAwalChange,
 }: ProductFormProps) {
   // Get user role from Clerk session
-  const { role, isProducer } = useUserRole()
-
-  // Frontend Audit Trail - Cost Items Integration
-  useEffect(() => {
-    formLogger.info('costItemsAudit', 'Cost items state in ProductForm', {
-      selectedCostsCount: formData.selectedCosts.length,
-      modalAwal: formData.modalAwal,
-      costItems: formData.selectedCosts.map((cost) => ({
-        costItemId: cost.costItemId,
-        amount: cost.amount,
-      })),
-      isProducer,
-      userRole: role,
-      timestamp: new Date().toISOString(),
-      action: 'COST_ITEMS_STATE_AUDIT',
-    })
-  }, [formData.selectedCosts, formData.modalAwal, isProducer, role])
-
-  // Size mode detection and state management
-  const sizeMode = product ? getProductSizeMode(product) : 'none'
-  const productId = product?.id
+  const { isProducer } = useUserRole()
 
   // Use ProductFormStrategy hook for centralized strategy management
   const {
@@ -138,115 +112,8 @@ export function ProductForm({
   // Use external categoryFormData as single source of truth
   const categoryFormData = externalCategoryFormData
 
-  // Fetch aggregated sizes for existing products with advanced sizing
-  const {
-    data: aggregatedSizes,
-    isLoading: isLoadingAggregatedSizes,
-    error: aggregatedSizesError,
-  } = useAggregatedSizes(productId, {
-    enabled: !!productId, // Always enabled in edit mode to load size data
-    includeBreakdown: true,
-  })
-
-  // Log component mount and form data initialization
-  useEffect(() => {
-    formLogger.debug('componentMount', 'ProductForm component mounted', {
-      hasFormData: !!formData,
-      categoriesCount: categories.length,
-      hasCostItems: formData.selectedCosts.length > 0,
-      modalAwal: formData.modalAwal,
-      formDataKeys: Object.keys(formData),
-      sizeMode,
-      productId,
-      hasAggregatedSizes: aggregatedSizes.length > 0,
-    })
-  }, [formData, categories.length, sizeMode, productId, aggregatedSizes.length])
-
-  // Log size mode detection and data loading
-  useEffect(() => {
-    if (product) {
-      formLogger.info('sizeMode', 'Size mode detected for product', {
-        productId: product.id,
-        sizeMode,
-        hasAdvancedSizes: product.sizes?.length > 0,
-        aggregatedSizesCount: aggregatedSizes.length,
-      })
-    }
-  }, [product, sizeMode, aggregatedSizes.length])
-
-  // Log aggregated sizes loading state
-  useEffect(() => {
-    if (sizeMode === 'advanced') {
-      if (isLoadingAggregatedSizes) {
-        formLogger.debug('aggregatedSizesLoading', 'Loading aggregated sizes for product form')
-      } else if (aggregatedSizesError) {
-        formLogger.error(
-          'aggregatedSizesLoadError',
-          'Failed to load aggregated sizes',
-          aggregatedSizesError,
-        )
-      } else if (aggregatedSizes.length > 0) {
-        formLogger.info('aggregatedSizesLoaded', 'Aggregated sizes loaded successfully', {
-          sizesCount: aggregatedSizes.length,
-          totalQuantity: aggregatedSizes.reduce((sum, size) => sum + size.totalQuantity, 0),
-        })
-      }
-    }
-  }, [sizeMode, isLoadingAggregatedSizes, aggregatedSizesError, aggregatedSizes])
-
-  // Log cost items integration state changes
-  useEffect(() => {
-    if (formData.selectedCosts.length > 0) {
-      formLogger.info('costItemIntegration', 'Cost items selected in product form', {
-        costItemsCount: formData.selectedCosts.length,
-        totalModalAwal: formData.modalAwal,
-        costItems: formData.selectedCosts.map((cost) => ({
-          costItemId: cost.costItemId,
-          amount: cost.amount,
-        })),
-      })
-    }
-  }, [formData.selectedCosts, formData.modalAwal])
-
-  // Frontend Audit Trail - Form Submission Preparation
-  const auditFormSubmission = useCallback((submissionData: Record<string, unknown>) => {
-    formLogger.info('formSubmissionAudit', 'Form data prepared for submission', {
-      hasName: !!submissionData.name,
-      hasModalAwal: !!submissionData.modalAwal,
-      hasCostItems:
-        Array.isArray(submissionData.selectedCosts) && submissionData.selectedCosts.length > 0,
-      costItemsCount: Array.isArray(submissionData.selectedCosts)
-        ? submissionData.selectedCosts.length
-        : 0,
-      modalAwalValue: submissionData.modalAwal,
-      costItemsData: Array.isArray(submissionData.selectedCosts)
-        ? submissionData.selectedCosts
-        : [],
-      formDataKeys: Object.keys(submissionData),
-      timestamp: new Date().toISOString(),
-      action: 'FORM_SUBMISSION_PREPARED',
-    })
-  }, [])
-
-  // Expose audit function for parent components
-  useEffect(() => {
-    // Store audit function in a way parent can access it
-    if (typeof window !== 'undefined') {
-      //eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ;(window as any).__productFormAudit = auditFormSubmission
-    }
-  }, [auditFormSubmission])
-
-  // Log role-based visibility for debugging
-  useEffect(() => {
-    formLogger.debug('roleBasedVisibility', 'Role-based form visibility', {
-      userRole: role,
-      isProducer,
-      shouldShowCostItems: !isProducer,
-      modalAwal: formData.modalAwal,
-      selectedCostsCount: formData.selectedCosts.length,
-    })
-  }, [role, isProducer, formData.modalAwal, formData.selectedCosts.length])
+  // Note: Aggregated sizes hook removed as it's not used in current implementation
+  // Can be re-enabled if needed for advanced size management features
 
   // ============== DYNAMIC FORM STRATEGY LOGIC ==============
 
@@ -323,11 +190,7 @@ export function ProductForm({
           const totalQuantity = calculateTotalQuantity(updatedData)
           onInputChange('quantity', totalQuantity)
         } catch (error) {
-          formLogger.error(
-            'strategy',
-            'Failed to transform form data',
-            error instanceof Error ? error : new Error(String(error)),
-          )
+          console.error('Failed to transform form data:', error)
         } finally {
           // Reset transformation flag after completion
           setTimeout(() => {
@@ -365,11 +228,7 @@ export function ProductForm({
           onStrategySizesChange(transformedSizes)
         }
       } catch (error) {
-        formLogger.error(
-          'strategySync',
-          'Failed to sync form data with strategy',
-          error instanceof Error ? error : new Error(String(error)),
-        )
+        console.error('Failed to sync form data with strategy:', error)
       } finally {
         setTimeout(() => {
           transformingRef.current = false
@@ -377,25 +236,6 @@ export function ProductForm({
       }
     }
   }, [product, currentStrategy, categoryFormData, onStrategySizesChange])
-
-  // Log form validation errors for debugging
-  useEffect(() => {
-    const errorKeys = Object.keys(errors).filter((key) => errors[key])
-    if (errorKeys.length > 0) {
-      formLogger.warn('formValidationErrors', 'Form validation errors detected', {
-        errorFields: errorKeys,
-        errorCount: errorKeys.length,
-        hasCostItemErrors: errorKeys.some((key) => key.includes('selectedCosts')),
-        formSection: {
-          basicInfo: errorKeys.some((key) =>
-            ['code', 'name', 'categoryId', 'quantity'].includes(key),
-          ),
-          costItems: errorKeys.some((key) => ['selectedCosts', 'modalAwal'].includes(key)),
-          price: errorKeys.some((key) => ['modalAwal', 'currentPrice'].includes(key)),
-        },
-      })
-    }
-  }, [errors, formData.aggregatedSizes])
 
   // Transform categories for select options
   // Defensive: categories fallback ke array kosong jika undefined/null
@@ -422,12 +262,12 @@ export function ProductForm({
                   onInputChange('code', typeof value === 'string' ? value.toUpperCase() : value)
                 }
                 onBlur={(value) => onBlur('code', value)}
-                placeholder="PRD001"
-                maxLength={10}
+                placeholder="PRD1"
+                maxLength={5}
                 error={errors.code}
                 touched={touched.code}
                 required
-                helpText="Masukkan 3-10 digit kode alfanumerik (contoh: PRD001, DRESS001, JKT2025)"
+                helpText="Masukkan 4-5 digit kode alfanumerik uppercase (contoh: PRD1, DRESS, JKT25)"
                 data-testid="product-code-field"
               />
 
@@ -492,9 +332,9 @@ export function ProductForm({
             </div>
           </FormSection>
 
-          {/* Cost Item Selection (Optional) - Hidden for Producer Role */}
+          {/* Cost Item Selection  - Hidden for Producer Role */}
           {!isProducer && (
-            <FormSection title="Item Biaya (Opsional)" data-testid="cost-items-section">
+            <FormSection title="Item Biaya" data-testid="cost-items-section">
               <CostItemSelector
                 selectedCosts={formData.selectedCosts}
                 onCostsChange={onCostsChange}

@@ -20,7 +20,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import type { Product } from '@/features/manage-product/types'
-import { getStatusBadge, formatCurrency } from '@/features/manage-product/lib/utils/product'
+import { formatCurrency } from '@/features/manage-product/lib/utils/product'
 import { BreakEvenBadge } from '../shared/BreakEvenBadge'
 import { lightenColor } from '../../lib/utils/color'
 import { getContrastTextColor } from '../../lib/utils/color'
@@ -167,13 +167,6 @@ export function ProductTable({
                   {isOwner && (
                     <TableCell className="text-center" data-testid={`product-${product.code}-status`}>
                       <div className="flex items-center justify-center gap-2">
-                        <Badge
-                          variant="outline"
-                          className={getStatusBadge(product.status)}
-                          data-testid={`product-${product.code}-status-badge`}
-                        >
-                          {product.status}
-                        </Badge>
                         
                         {/* Break-Even Badge - Integrated with Status Column */}
                         {product.breakEvenStatus?.isBreakEven && (

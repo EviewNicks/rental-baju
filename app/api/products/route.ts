@@ -59,22 +59,6 @@ export async function GET(request: NextRequest) {
     // Get products
     const result = await productService.getProducts(query)
 
-    // Backend Audit Trail - Log products list retrieval with cost items info
-    console.log('[BACKEND AUDIT] Products list retrieved:', {
-      productsCount: result.products.length,
-      productsWithCosts: result.products.filter(p => p.costs && p.costs.length > 0).length,
-      totalCostItems: result.products.reduce((total, p) => total + (p.costs?.length || 0), 0),
-      sampleProductCosts: result.products.slice(0, 3).map(p => ({
-        productId: p.id,
-        productName: p.name,
-        modalAwal: p.modalAwal,
-        costsCount: p.costs?.length || 0,
-        hasCosts: p.costs && p.costs.length > 0
-      })),
-      timestamp: new Date().toISOString(),
-      action: 'PRODUCTS_LIST_RETRIEVED'
-    })
-
     // Add aggregation data if requested
     if (includeAggregation && result.products.length > 0) {
       const aggregationService = new ProductSizeAggregationService(prisma, {
@@ -174,18 +158,6 @@ export async function POST(request: NextRequest) {
     // Parse multipart form data
     const formData = await request.formData()
 
-    // Frontend Audit Trail - Log all received form data
-    console.log('[BACKEND AUDIT] POST /api/products - Form data received:', {
-      allFormFields: Array.from(formData.entries()).map(([key, value]) => ({
-        key,
-        valueType: typeof value,
-        valueSize: value instanceof File ? value.size : String(value).length,
-        isFile: value instanceof File
-      })),
-      timestamp: new Date().toISOString(),
-      action: 'FORM_DATA_RECEIVED'
-    })
-
     // Extract form fields
     const code = formData.get('code') as string
     const name = formData.get('name') as string
@@ -214,39 +186,13 @@ export async function POST(request: NextRequest) {
     if (selectedCostsStr) {
       try {
         selectedCosts = JSON.parse(selectedCostsStr)
-        console.log('[BACKEND AUDIT] Cost items parsed successfully:', {
-          costItemsCount: selectedCosts.length,
-          costItems: selectedCosts,
-          timestamp: new Date().toISOString(),
-          action: 'COST_ITEMS_PARSED'
-        })
       } catch (parseError) {
-        console.error('[BACKEND AUDIT] Failed to parse cost items:', {
-          error: parseError,
-          selectedCostsStr,
-          timestamp: new Date().toISOString(),
-          action: 'COST_ITEMS_PARSE_ERROR'
-        })
         return NextResponse.json(
           { error: { message: 'Format data cost items tidak valid', code: 'VALIDATION_ERROR' } },
           { status: 400 },
         )
       }
     }
-
-    // Backend Audit Trail - Log parsed form data
-    console.log('[BACKEND AUDIT] Form fields parsed:', {
-      hasCode: !!code,
-      hasName: !!name,
-      hasModalAwal: !!modalAwalStr,
-      hasCurrentPrice: !!currentPriceStr,
-      hasCostItems: selectedCosts.length > 0,
-      costItemsCount: selectedCosts.length,
-      modalAwalRaw: modalAwalStr,
-      costItemsData: selectedCosts,
-      timestamp: new Date().toISOString(),
-      action: 'FORM_FIELDS_PARSED'
-    })
 
     // Validate image format and size if image is provided
     if (image && image.size > 0) {
@@ -329,9 +275,8 @@ export async function POST(request: NextRequest) {
 
     // Convert string to numbers
     const modalAwal = parseFloat(modalAwalStr)
-    const currentPrice = parseFloat(currentPriceStr) // ✅ Fixed: use currentPrice instead of hargaSewa
+    const currentPrice = parseFloat(currentPriceStr)
     const quantity = parseInt(quantityStr)
-    // REMOVED: rentedStock field parsing - doesn't exist in Product model
     // Material Management - RPK-45
     const materialQuantity = materialQuantityStr ? parseInt(materialQuantityStr) : undefined
 
@@ -399,17 +344,6 @@ export async function POST(request: NextRequest) {
       image,
     }
 
-    // Backend Audit Trail - Log request data before validation
-    console.log('[BACKEND AUDIT] Create request prepared:', {
-      hasSelectedCosts: Array.isArray(createRequest.selectedCosts) && createRequest.selectedCosts.length > 0,
-      costItemsCount: Array.isArray(createRequest.selectedCosts) ? createRequest.selectedCosts.length : 0,
-      modalAwalValue: createRequest.modalAwal,
-      costItemsData: createRequest.selectedCosts,
-      requestKeys: Object.keys(createRequest),
-      timestamp: new Date().toISOString(),
-      action: 'CREATE_REQUEST_PREPARED'
-    })
-
     // Validate with advanced-only schema (all products require sizes)
     let validatedData
     try {
@@ -461,24 +395,13 @@ export async function POST(request: NextRequest) {
       imageUrl, // Add uploaded image URL
     }
 
-    // Backend Audit Trail - Log final product data before service call
-    console.log('[BACKEND AUDIT] Final product data for service:', {
-      hasSelectedCosts: Array.isArray(productData.selectedCosts) && productData.selectedCosts.length > 0,
-      costItemsCount: Array.isArray(productData.selectedCosts) ? productData.selectedCosts.length : 0,
-      modalAwalValue: productData.modalAwal,
-      costItemsData: productData.selectedCosts,
-      productDataKeys: Object.keys(productData),
-      timestamp: new Date().toISOString(),
-      action: 'FINAL_PRODUCT_DATA_PREPARED'
-    })
-
     // Create product using advanced-only architecture
     const product = await productService.createProduct(productData)
 
     return NextResponse.json(product, { status: 201 })
   } catch (error) {
     // Generate request ID for debugging
-    const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    const requestId = `req_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`
 
     // Handle known error types
     if (error instanceof ConflictError) {

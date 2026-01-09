@@ -278,15 +278,6 @@ export class ProductService {
    * ENHANCED: Integrated with Cost Item Management System
    */
   async createProduct(request: CreateProductWithSizesRequest): Promise<Product> {
-    // AUDIT TRAIL 1: Product Creation Start
-    console.log('[AUDIT] ProductService.createProduct - START', {
-      userId: this.userId,
-      productCode: request.code,
-      hasCostItems: request.selectedCosts && request.selectedCosts.length > 0,
-      costItemsCount: request.selectedCosts?.length || 0,
-      timestamp: new Date().toISOString(),
-    })
-
     // Validate input
     const validatedData = createProductSchema.parse(request)
 
@@ -299,13 +290,6 @@ export class ProductService {
     })
 
     if (existingProduct) {
-      // AUDIT TRAIL 2: Product Code Conflict
-      console.error('[AUDIT] ProductService.createProduct - CODE_CONFLICT', {
-        userId: this.userId,
-        attemptedCode: validatedData.code,
-        existingProductId: existingProduct.id,
-        timestamp: new Date().toISOString(),
-      })
       throw new ConflictError(`Kode produk ${validatedData.code} sudah digunakan`)
     }
 
@@ -323,44 +307,10 @@ export class ProductService {
       : []
 
     // Calculate modal awal from cost items (replaces material cost calculation)
-    // ✅ ENHANCED: Support producer flow with modalAwal = 0
-    let calculatedModalAwal = validatedData.modalAwal ?? 0 // ✅ FIXED: Fallback to 0 for producer
+    // Support producer flow with modalAwal = 0
+    let calculatedModalAwal = validatedData.modalAwal ?? 0 // Fallback to 0 for producer
     if (validatedData.selectedCosts && validatedData.selectedCosts.length > 0) {
       calculatedModalAwal = validatedData.selectedCosts.reduce((total, cost) => total + cost.amount, 0)
-      
-      // AUDIT TRAIL 3: Modal Awal Calculation from Cost Items (OWNER FLOW)
-      console.log('[AUDIT] ProductService.createProduct - MODAL_AWAL_CALCULATED', {
-        userId: this.userId,
-        productCode: validatedData.code,
-        userFlow: 'OWNER', // ✅ NEW: Distinguish user flow
-        originalModalAwal: validatedData.modalAwal ?? 0,
-        calculatedModalAwal,
-        costItemsBreakdown: validatedData.selectedCosts.map(cost => ({
-          costItemId: cost.costItemId,
-          amount: cost.amount,
-        })),
-        timestamp: new Date().toISOString(),
-      })
-    } else if (calculatedModalAwal === 0) {
-      // ✅ NEW: PRODUCER FLOW - No cost items, modalAwal = 0
-      console.log('[AUDIT] ProductService.createProduct - PRODUCER_FLOW', {
-        userId: this.userId,
-        productCode: validatedData.code,
-        userFlow: 'PRODUCER', // ✅ NEW: Producer flow identification
-        modalAwal: 0,
-        message: 'Product created without cost information - awaiting owner review',
-        timestamp: new Date().toISOString(),
-      })
-    } else {
-      // ✅ NEW: OWNER FLOW - Manual modalAwal input
-      console.log('[AUDIT] ProductService.createProduct - MANUAL_MODAL_AWAL', {
-        userId: this.userId,
-        productCode: validatedData.code,
-        userFlow: 'OWNER', // ✅ NEW: Owner manual input flow
-        modalAwal: calculatedModalAwal,
-        message: 'Manual modal awal input by owner',
-        timestamp: new Date().toISOString(),
-      })
     }
 
     // Create product with sizes and cost items in transaction
@@ -415,28 +365,10 @@ export class ProductService {
               },
             })
           }
-
-          // AUDIT TRAIL 4: Cost Items Created Successfully
-          console.log('[AUDIT] ProductService.createProduct - COST_ITEMS_CREATED', {
-            userId: this.userId,
-            productId: product.id,
-            productCode: validatedData.code,
-            costItemsCreated: validatedData.selectedCosts.length,
-            totalModalAwal: calculatedModalAwal,
-            timestamp: new Date().toISOString(),
-          })
         }
 
         return product
       } catch (error) {
-        // AUDIT TRAIL 5: Transaction Error
-        console.error('[AUDIT] ProductService.createProduct - TRANSACTION_ERROR', {
-          userId: this.userId,
-          productCode: validatedData.code,
-          error: error instanceof Error ? error.message : String(error),
-          hasCostItems: validatedData.selectedCosts && validatedData.selectedCosts.length > 0,
-          timestamp: new Date().toISOString(),
-        })
         throw error
       }
     })
@@ -452,14 +384,6 @@ export class ProductService {
    * ENHANCED: Integrated with Cost Item Management System with Producer/Owner Flow Support
    */
   async updateProduct(id: string, request: UpdateProductWithSizesRequest): Promise<Product> {
-    // AUDIT TRAIL 1: Product Update Start
-    console.log('[AUDIT] ProductService.updateProduct - START', {
-      userId: this.userId,
-      productId: id,
-      hasCostItems: request.selectedCosts && request.selectedCosts.length > 0,
-      costItemsCount: request.selectedCosts?.length || 0,
-      timestamp: new Date().toISOString(),
-    })
 
     // Validate input
     const { id: validatedId } = productParamsSchema.parse({ id })
@@ -508,7 +432,7 @@ export class ProductService {
       }
     }
 
-    // ✅ ENHANCED: Calculate modal awal with Producer/Owner flow logic
+    // Enhanced: Calculate modal awal with Producer/Owner flow logic
     let calculatedModalAwal = validatedData.modalAwal
     const currentModalAwal = Number(existingProduct.modalAwal)
     const hasExistingCosts = existingProduct.productCosts && existingProduct.productCosts.length > 0
@@ -516,59 +440,12 @@ export class ProductService {
     if (validatedData.selectedCosts && validatedData.selectedCosts.length > 0) {
       // OWNER FLOW: Calculate from cost items
       calculatedModalAwal = validatedData.selectedCosts.reduce((total, cost) => total + cost.amount, 0)
-      
-      // AUDIT TRAIL 2: Modal Awal Recalculation from Cost Items (OWNER FLOW)
-      console.log('[AUDIT] ProductService.updateProduct - MODAL_AWAL_RECALCULATED', {
-        userId: this.userId,
-        productId: validatedId,
-        userFlow: 'OWNER', // ✅ NEW: Distinguish user flow
-        previousModalAwal: currentModalAwal,
-        originalModalAwal: validatedData.modalAwal,
-        calculatedModalAwal,
-        costItemsBreakdown: validatedData.selectedCosts.map(cost => ({
-          costItemId: cost.costItemId,
-          amount: cost.amount,
-        })),
-        flowTransition: currentModalAwal === 0 ? 'PRODUCER_TO_OWNER' : 'OWNER_UPDATE',
-        timestamp: new Date().toISOString(),
-      })
     } else if (validatedData.selectedCosts !== undefined && validatedData.selectedCosts.length === 0) {
-      // ✅ NEW: Explicit removal of cost items - reset to producer flow
+      // Explicit removal of cost items - reset to producer flow
       calculatedModalAwal = 0
-      
-      console.log('[AUDIT] ProductService.updateProduct - RESET_TO_PRODUCER_FLOW', {
-        userId: this.userId,
-        productId: validatedId,
-        userFlow: 'RESET_TO_PRODUCER', // ✅ NEW: Reset flow identification
-        previousModalAwal: currentModalAwal,
-        newModalAwal: 0,
-        message: 'Cost items removed - product reset to producer flow',
-        timestamp: new Date().toISOString(),
-      })
-    } else if (calculatedModalAwal !== undefined && calculatedModalAwal !== currentModalAwal) {
-      // ✅ NEW: Manual modalAwal update by owner
-      console.log('[AUDIT] ProductService.updateProduct - MANUAL_MODAL_AWAL_UPDATE', {
-        userId: this.userId,
-        productId: validatedId,
-        userFlow: 'OWNER_MANUAL', // ✅ NEW: Manual owner update flow
-        previousModalAwal: currentModalAwal,
-        newModalAwal: calculatedModalAwal,
-        hasExistingCosts,
-        message: 'Manual modal awal update by owner',
-        timestamp: new Date().toISOString(),
-      })
     } else if (calculatedModalAwal === undefined && currentModalAwal === 0 && !hasExistingCosts) {
-      // ✅ NEW: Producer flow maintenance - keep modalAwal = 0
+      // Producer flow maintenance - keep modalAwal = 0
       calculatedModalAwal = 0
-      
-      console.log('[AUDIT] ProductService.updateProduct - PRODUCER_FLOW_MAINTAINED', {
-        userId: this.userId,
-        productId: validatedId,
-        userFlow: 'PRODUCER', // ✅ NEW: Producer flow maintenance
-        modalAwal: 0,
-        message: 'Producer flow maintained - no cost information provided',
-        timestamp: new Date().toISOString(),
-      })
     }
 
     // Update product with sizes and cost items in transaction
@@ -623,28 +500,6 @@ export class ProductService {
               },
             })
           }
-
-          // AUDIT TRAIL 3: Cost Items Updated Successfully (OWNER FLOW)
-          console.log('[AUDIT] ProductService.updateProduct - COST_ITEMS_UPDATED', {
-            userId: this.userId,
-            productId: validatedId,
-            userFlow: 'OWNER', // ✅ NEW: Owner flow with cost items
-            costItemsUpdated: validatedData.selectedCosts.length,
-            totalModalAwal: calculatedModalAwal,
-            flowTransition: currentModalAwal === 0 ? 'PRODUCER_TO_OWNER' : 'OWNER_UPDATE',
-            timestamp: new Date().toISOString(),
-          })
-        } else {
-          // ✅ NEW: Cost items explicitly removed - reset to producer flow
-          console.log('[AUDIT] ProductService.updateProduct - COST_ITEMS_REMOVED', {
-            userId: this.userId,
-            productId: validatedId,
-            userFlow: 'RESET_TO_PRODUCER', // ✅ NEW: Reset to producer flow
-            previousCostItemsCount: hasExistingCosts ? existingProduct.productCosts.length : 0,
-            newModalAwal: 0,
-            message: 'All cost items removed - product reset to producer flow',
-            timestamp: new Date().toISOString(),
-          })
         }
       }
 
@@ -737,35 +592,12 @@ export class ProductService {
         }
       }
       } catch (error) {
-        // AUDIT TRAIL 4: Update Transaction Error
-        console.error('[AUDIT] ProductService.updateProduct - TRANSACTION_ERROR', {
-          userId: this.userId,
-          productId: validatedId,
-          error: error instanceof Error ? error.message : String(error),
-          hasCostItems: validatedData.selectedCosts && validatedData.selectedCosts.length > 0,
-          previousModalAwal: currentModalAwal,
-          attemptedModalAwal: calculatedModalAwal,
-          flowContext: currentModalAwal === 0 ? 'PRODUCER_FLOW' : 'OWNER_FLOW',
-          timestamp: new Date().toISOString(),
-        })
         throw error
       }
     })
 
     // Clear aggregation cache since sizes were potentially updated
     this.clearProductAggregationCache(validatedId)
-
-    // AUDIT TRAIL 5: Product Update Success
-    console.log('[AUDIT] ProductService.updateProduct - SUCCESS', {
-      userId: this.userId,
-      productId: validatedId,
-      finalModalAwal: calculatedModalAwal,
-      flowResult: calculatedModalAwal === 0 ? 'PRODUCER_FLOW' : 'OWNER_FLOW',
-      hasCostItems: validatedData.selectedCosts && validatedData.selectedCosts.length > 0,
-      sizesUpdated: processedSizes !== undefined,
-      message: 'Product update completed successfully with enhanced producer/owner flow support',
-      timestamp: new Date().toISOString(),
-    })
 
     // Fetch updated product with relationships
     return this.getProductById(validatedId)
