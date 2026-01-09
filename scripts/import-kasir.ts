@@ -15,6 +15,7 @@ const isDryRun = process.env.DRY_RUN === 'true'
 const DEFAULT_USER_ID = process.env.IMPORT_USER_ID || 'system_import'
 
 interface KasirData {
+  id?: string // Optional ID for special accounts like Owner
   nama: string
   isActive: boolean
   createdBy: string
@@ -34,31 +35,37 @@ interface ImportResult {
 
 const KASIR_ACCOUNTS: KasirData[] = [
   {
-    nama: 'Ina',
+    id: 'owner-system', // Special ID for Owner
+    nama: 'Owner',
     isActive: true,
-    createdBy: DEFAULT_USER_ID
+    createdBy: 'system',
   },
   {
-    nama: 'Naya', 
+    nama: 'Ina',
     isActive: true,
-    createdBy: DEFAULT_USER_ID
+    createdBy: DEFAULT_USER_ID,
+  },
+  {
+    nama: 'Naya',
+    isActive: true,
+    createdBy: DEFAULT_USER_ID,
   },
   {
     nama: 'Tiara',
     isActive: true,
-    createdBy: DEFAULT_USER_ID
-  }
+    createdBy: DEFAULT_USER_ID,
+  },
 ]
 
 async function checkExistingKasir(kasirList: KasirData[]): Promise<string[]> {
-  const names = kasirList.map(k => k.nama)
+  const names = kasirList.map((k) => k.nama)
   const existingKasir = await prisma.kasir.findMany({
     where: {
       nama: { in: names },
     },
     select: { nama: true },
   })
-  return existingKasir.map(k => k.nama)
+  return existingKasir.map((k) => k.nama)
 }
 
 async function importKasir(): Promise<ImportResult> {
@@ -68,7 +75,7 @@ async function importKasir(): Promise<ImportResult> {
     imported: 0,
     skipped: 0,
     failed: 0,
-    errors: []
+    errors: [],
   }
 
   try {
@@ -125,14 +132,24 @@ async function importKasir(): Promise<ImportResult> {
           continue
         }
 
-        console.log(`👤 ${progress} Creating kasir account: ${kasir.nama}`)
+        console.log(
+          `👤 ${progress} Creating kasir account: ${kasir.nama}${kasir.id ? ` (ID: ${kasir.id})` : ''}`,
+        )
+
+        //eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const createData: any = {
+          nama: kasir.nama,
+          isActive: kasir.isActive,
+          createdBy: kasir.createdBy,
+        }
+
+        // Add custom ID if specified (for Owner)
+        if (kasir.id) {
+          createData.id = kasir.id
+        }
 
         await prisma.kasir.create({
-          data: {
-            nama: kasir.nama,
-            isActive: kasir.isActive,
-            createdBy: kasir.createdBy
-          }
+          data: createData,
         })
 
         console.log(`   ✅ Success - ${kasir.nama} account created`)
@@ -143,7 +160,7 @@ async function importKasir(): Promise<ImportResult> {
         result.failed++
         result.errors.push({
           nama: kasir.nama,
-          error: errorMsg
+          error: errorMsg,
         })
       }
     }
@@ -156,20 +173,21 @@ async function importKasir(): Promise<ImportResult> {
     console.log('🔍 Verifying kasir accounts...')
     const finalKasir = await prisma.kasir.findMany({
       where: {
-        nama: { in: KASIR_ACCOUNTS.map(k => k.nama) }
+        nama: { in: KASIR_ACCOUNTS.map((k) => k.nama) },
       },
-      select: { nama: true, isActive: true, createdAt: true }
+      select: { nama: true, isActive: true, createdAt: true },
     })
 
     console.log(`✅ Found ${finalKasir.length} kasir accounts in database:`)
-    finalKasir.forEach(kasir => {
-      console.log(`   - ${kasir.nama} (Active: ${kasir.isActive}, Created: ${kasir.createdAt.toISOString()})`)
+    finalKasir.forEach((kasir) => {
+      console.log(
+        `   - ${kasir.nama} (Active: ${kasir.isActive}, Created: ${kasir.createdAt.toISOString()})`,
+      )
     })
 
     if (finalKasir.length !== KASIR_ACCOUNTS.length) {
       console.log(`⚠️  Expected ${KASIR_ACCOUNTS.length} accounts, found ${finalKasir.length}`)
     }
-
   } catch (error) {
     console.error('')
     console.error('❌ KASIR IMPORT FAILED')

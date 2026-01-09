@@ -76,9 +76,16 @@ export function useCreateProduct() {
   
   return useMutation({
     mutationFn: productApi.createProduct,
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.products.all })
       // RPK-MODAL: No need to invalidate break-even data for new products (no transactions yet)
+      
+      // Log successful creation with product ID for debugging
+      console.log('[HOOK] Product created successfully:', {
+        productId: data?.id,
+        productName: data?.name,
+        timestamp: new Date().toISOString()
+      })
     },
   })
 }
@@ -90,7 +97,7 @@ export function useUpdateProduct() {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: FormData | Record<string, string | number | boolean | File | null> }) =>
       productApi.updateProduct(id, data),
-    onSuccess: (_, { id }) => {
+    onSuccess: (data, { id }) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.products.all })
       queryClient.invalidateQueries({ queryKey: queryKeys.products.detail(id) })
       // RPK-MODAL: Invalidate specific product detail to refresh break-even data
@@ -100,6 +107,13 @@ export function useUpdateProduct() {
           const options = query.queryKey[3] as { includeBreakEven?: boolean } | undefined
           return options?.includeBreakEven === true
         }
+      })
+      
+      // Log successful update with product ID for debugging
+      console.log('[HOOK] Product updated successfully:', {
+        productId: data?.id || id,
+        productName: data?.name,
+        timestamp: new Date().toISOString()
       })
     },
   })

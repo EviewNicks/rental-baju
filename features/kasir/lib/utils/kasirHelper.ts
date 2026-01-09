@@ -11,8 +11,11 @@ export interface KasirInfo {
 }
 
 /**
- * Get kasir information from authenticated user
- * Simple approach: find first active kasir associated with user
+ * Get kasir information from authenticated user with fallback strategies
+ * 
+ * Strategy 1: Find kasir by createdBy (current approach)
+ * Strategy 2: Find kasir by userId as kasirId (temporary mapping)
+ * Strategy 3: Use default kasir for the user role
  * 
  * @param prisma - Prisma client instance
  * @param userId - Authenticated user ID
@@ -22,10 +25,12 @@ export async function getKasirFromUser(
   prisma: PrismaClient,
   userId: string
 ): Promise<KasirInfo | null> {
+  const startTime = Date.now()
+  
+  
   try {
-    // Simple approach: find first active kasir created by this user
-    // This assumes kasir records have createdBy field linking to user
-    const kasir = await prisma.kasir.findFirst({
+    
+    let kasir = await prisma.kasir.findFirst({
       where: {
         createdBy: userId,
         isActive: true,
@@ -35,13 +40,58 @@ export async function getKasirFromUser(
         nama: true,
       },
       orderBy: {
-        createdAt: 'desc', // Get most recent if multiple
+        createdAt: 'desc',
       },
     })
 
-    return kasir
+    if (kasir) {
+      return kasir
+    }
+
+    
+    kasir = await prisma.kasir.findUnique({
+      where: {
+        id: userId,
+        isActive: true,
+      },
+      select: {
+        id: true,
+        nama: true,
+      },
+    })
+
+    if (kasir) {
+        return kasir
+    }
+
+    
+    kasir = await prisma.kasir.findFirst({
+      where: {
+        isActive: true,
+        id: { not: 'owner-system' }, // Exclude owner
+      },
+      select: {
+        id: true,
+        nama: true,
+      },
+      orderBy: {
+        createdAt: 'asc', // Get oldest (most stable) kasir
+      },
+    })
+
+    if (kasir) {
+      return kasir
+    }
+
+    return null
   } catch (error) {
-    console.error('Error fetching kasir from user:', error)
+    const duration = Date.now() - startTime
+    console.error('💥 [KASIR-HELPER] Database error during kasir lookup:', {
+      userId,
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      duration: `${duration}ms`
+    })
     return null
   }
 }

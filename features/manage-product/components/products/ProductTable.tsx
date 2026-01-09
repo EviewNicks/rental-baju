@@ -20,11 +20,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import type { Product } from '@/features/manage-product/types'
-import { getStatusBadge, formatCurrency } from '@/features/manage-product/lib/utils/product'
+import { formatCurrency } from '@/features/manage-product/lib/utils/product'
 import { BreakEvenBadge } from '../shared/BreakEvenBadge'
 import { lightenColor } from '../../lib/utils/color'
 import { getContrastTextColor } from '../../lib/utils/color'
 import { getValidImageUrl } from '../../lib/utils/imageValidate'
+import { useUserRole } from '@/features/auth/hooks/useUserRole'
 
 interface ProductTableProps {
   products: Product[]
@@ -40,6 +41,8 @@ export function ProductTable({
   onEditProduct,
   onDeleteProduct,
 }: ProductTableProps) {
+  const { isOwner } = useUserRole()
+
   return (
     <Card className="shadow-sm py-2 " data-testid="product-table-container">
       <CardContent className="p-0">
@@ -65,15 +68,21 @@ export function ProductTable({
                 <TableHead className="w-24 text-center" data-testid="header-size">
                   Ukuran
                 </TableHead>
-                <TableHead className="w-32 text-right" data-testid="header-modal">
-                  Modal Awal
-                </TableHead>
+                {/* Modal Awal - Only visible to Owner */}
+                {isOwner && (
+                  <TableHead className="w-32 text-right" data-testid="header-modal">
+                    Modal Awal
+                  </TableHead>
+                )}
                 <TableHead className="w-32 text-right" data-testid="header-price">
                   Harga Sewa
                 </TableHead>
-                <TableHead className="w-32 text-center" data-testid="header-status">
-                  Status
-                </TableHead>
+                {/* Status Column - Only visible to Owner */}
+                {isOwner && (
+                  <TableHead className="w-32 text-center" data-testid="header-status">
+                    Status
+                  </TableHead>
+                )}
                 <TableHead className="w-36 text-center" data-testid="header-revenue">
                   Aksi
                 </TableHead>
@@ -145,34 +154,33 @@ export function ProductTable({
                       <span className="text-gray-400">-</span>
                     )}
                   </TableCell>
-                  <TableCell className="text-right" data-testid={`product-${product.code}-modal`}>
-                    {formatCurrency(Number(product.modalAwal))}
-                  </TableCell>
+                  {/* Modal Awal - Only visible to Owner */}
+                  {isOwner && (
+                    <TableCell className="text-right" data-testid={`product-${product.code}-modal`}>
+                      {formatCurrency(Number(product.modalAwal))}
+                    </TableCell>
+                  )}
                   <TableCell className="text-right" data-testid={`product-${product.code}-price`}>
                     {formatCurrency(Number(product.currentPrice))}
                   </TableCell>
-                  <TableCell className="text-center" data-testid={`product-${product.code}-status`}>
-                    <div className="flex items-center justify-center gap-2">
-                      <Badge
-                        variant="outline"
-                        className={getStatusBadge(product.status)}
-                        data-testid={`product-${product.code}-status-badge`}
-                      >
-                        {product.status}
-                      </Badge>
-                      
-                      {/* RPK-MODAL: Break-Even Badge */}
-                      {product.breakEvenStatus?.isBreakEven && (
-                        <BreakEvenBadge
-                          modalAwal={product.breakEvenStatus.modalAwal}
-                          totalRevenue={product.breakEvenStatus.totalRevenue}
-                          transactionCount={product.breakEvenStatus.transactionCount}
-                          size="sm"
-                          showTooltip={true}
-                        />
-                      )}
-                    </div>
-                  </TableCell>
+                  {/* Status Column - Only visible to Owner */}
+                  {isOwner && (
+                    <TableCell className="text-center" data-testid={`product-${product.code}-status`}>
+                      <div className="flex items-center justify-center gap-2">
+                        
+                        {/* Break-Even Badge - Integrated with Status Column */}
+                        {product.breakEvenStatus?.isBreakEven && (
+                          <BreakEvenBadge
+                            modalAwal={product.breakEvenStatus.modalAwal}
+                            totalRevenue={product.breakEvenStatus.totalRevenue}
+                            transactionCount={product.breakEvenStatus.transactionCount}
+                            size="sm"
+                            showTooltip={true}
+                          />
+                        )}
+                      </div>
+                    </TableCell>
+                  )}
                   <TableCell
                     className="text-center"
                     data-testid={`product-${product.code}-actions`}

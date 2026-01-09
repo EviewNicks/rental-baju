@@ -2,15 +2,17 @@
 
 /**
  * Dana Kasir Dashboard Component
- * 
- * Main dashboard component that orchestrates all sub-components
- * Manages state and data fetching for the entire dashboard
- * 
+ *
+ * Main dashboard component with role-based expense visibility
+ * - Kasir: Only see expenses from other kasir (not Owner)
+ * - Owner: See all expenses with optional kasir filter
+ *
  * Requirements: 6.1, 6.3, 7.1, 7.2
  */
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useAuth } from '@clerk/nextjs'
 import { DateNavigation } from './DateNavigation'
 import { SummaryCards } from './SummaryCards'
 import { IncomeList } from './IncomeList'
@@ -24,31 +26,51 @@ import { PengeluaranKasir } from '../types'
 
 interface DanaKasirDashboardProps {
   initialDate: Date
-  userRole: string
+  userRole: 'kasir' | 'owner'
 }
 
 export function DanaKasirDashboard({ initialDate, userRole }: DanaKasirDashboardProps) {
   const router = useRouter()
+  const { userId } = useAuth()
   const [selectedDate, setSelectedDate] = useState(initialDate)
+  const [selectedKasirId, setSelectedKasirId] = useState<string | null>(null)
   const [showExpenseForm, setShowExpenseForm] = useState(false)
   const [showExportDialog, setShowExportDialog] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [editingExpense, setEditingExpense] = useState<PengeluaranKasir | null>(null)
   const [deletingExpense, setDeletingExpense] = useState<PengeluaranKasir | null>(null)
 
-  // Fetch dashboard data
-  const { data, isLoading, error, refetch } = useDanaSummary(selectedDate)
+  // Fetch dashboard data with role-based filtering
+  const { data, isLoading, error, refetch } = useDanaSummary(
+    selectedDate,
+    selectedKasirId || undefined,
+  )
 
-  // Handle date change
+  // Handle date change (keep kasir filter, reset role filter for kasir users)
   const handleDateChange = (newDate: Date) => {
     setSelectedDate(newDate)
-    // Update URL with new date
+    // selectedKasirId remains the same
+    // Role filter persists for owner, resets for kasir (though kasir doesn't have role filter)
     const dateStr = formatWITADate(newDate)
     router.push(`/dana-kasir?date=${dateStr}`)
   }
 
+  // Handle kasir change (SIMPLIFIED)
+  const handleKasirChange = (kasirId: string | null) => {
+    setSelectedKasirId(kasirId)
+    // Note: No URL update as per requirements
+  }
+
+  // Get selected kasir name for display (SIMPLIFIED)
+  const selectedKasirName =
+    selectedKasirId && data
+      ? data.income.find((item) => item.kasirId === selectedKasirId)?.kasirName ||
+        data.expenses.find((expense) => expense.kasir?.id === selectedKasirId)?.kasir?.nama
+      : null
+
   // Determine if user can write (create/edit/delete expenses)
-  const canWrite = userRole === 'kasir'
+  // Both kasir and owner can create expenses
+  const canWrite = userRole === 'kasir' || userRole === 'owner'
   const canExport = userRole === 'owner'
 
   // Handle add expense
@@ -109,30 +131,30 @@ export function DanaKasirDashboard({ initialDate, userRole }: DanaKasirDashboard
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          Dana Kasir
-        </h1>
-        <p className="text-gray-600">
-          Kelola pendapatan dan pengeluaran harian
-        </p>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Dana Kasir</h1>
+        <p className="text-gray-600">Kelola pendapatan dan pengeluaran harian</p>
       </div>
 
-      {/* Date Navigation */}
+      {/* Date Navigation with Kasir Filter */}
       <div className="mb-6">
         <DateNavigation
           selectedDate={selectedDate}
           onDateChange={handleDateChange}
           canExport={canExport}
           onExport={handleExport}
+          income={data?.income || []}
+          expenses={data?.expenses || []}
+          selectedKasirId={selectedKasirId}
+          onKasirChange={handleKasirChange}
+          isLoading={isLoading}
+          userRole={userRole}
         />
       </div>
 
       {/* Error State */}
       {error && (
         <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
-          <p className="text-red-800">
-            Gagal memuat data. Silakan coba lagi.
-          </p>
+          <p className="text-red-800">Gagal memuat data. Silakan coba lagi.</p>
           <button
             onClick={() => refetch()}
             className="mt-2 text-sm text-red-600 hover:text-red-800 underline"
@@ -147,6 +169,7 @@ export function DanaKasirDashboard({ initialDate, userRole }: DanaKasirDashboard
         <SummaryCards
           summary={data?.summary}
           isLoading={isLoading}
+          selectedKasirName={selectedKasirName}
         />
       </div>
 
@@ -156,6 +179,7 @@ export function DanaKasirDashboard({ initialDate, userRole }: DanaKasirDashboard
         <IncomeList
           income={data?.income || []}
           isLoading={isLoading}
+          selectedKasirName={selectedKasirName}
         />
 
         {/* Expense List */}
@@ -167,6 +191,9 @@ export function DanaKasirDashboard({ initialDate, userRole }: DanaKasirDashboard
           onEdit={handleEditExpense}
           onDelete={handleDeleteExpense}
           onRefresh={refetch}
+          selectedKasirName={selectedKasirName}
+          userRole={userRole}
+          currentUserId={userId || undefined}
         />
       </div>
 
@@ -187,6 +214,7 @@ export function DanaKasirDashboard({ initialDate, userRole }: DanaKasirDashboard
         onClose={handleExpenseFormClose}
         initialData={editingExpense}
         onSuccess={handleExpenseFormSuccess}
+        userRole={userRole}
       />
 
       {/* Delete Confirmation Dialog */}
@@ -198,10 +226,7 @@ export function DanaKasirDashboard({ initialDate, userRole }: DanaKasirDashboard
       />
 
       {/* Export Dialog */}
-      <ExportDialog
-        isOpen={showExportDialog}
-        onClose={handleExportDialogClose}
-      />
+      <ExportDialog isOpen={showExportDialog} onClose={handleExportDialogClose} />
     </div>
   )
 }

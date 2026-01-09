@@ -70,7 +70,7 @@ export function ProductHeader({ onAddProduct }: ProductHeaderProps) {
               <Button
                 variant="outline"
                 className="flex items-center gap-2 bg-transparent"
-                onClick={() => router.push('/producer/manage-product/materials')}
+                onClick={() => router.push('/producer/manage-product/kelola-data')}
                 data-testid="manage-data-master-button"
               >
                 <Settings className="w-4 h-4" />

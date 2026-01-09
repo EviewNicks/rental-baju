@@ -15,16 +15,17 @@
  * Requirements: 1.1, 1.2, 1.3, 1.5
  */
 
-import { Receipt, User, Clock, AlertCircle, TrendingDown } from 'lucide-react'
+import { Receipt, User, AlertCircle, TrendingDown } from 'lucide-react'
 import { IncomeItem } from '../types'
 import { formatRupiah } from '../utils/currency'
 
 interface IncomeListProps {
   income: IncomeItem[]
   isLoading?: boolean
+  selectedKasirName?: string | null
 }
 
-export function IncomeList({ income, isLoading }: IncomeListProps) {
+export function IncomeList({ income, isLoading, selectedKasirName }: IncomeListProps) {
   if (isLoading) {
     return (
       <div className="bg-white rounded-lg shadow p-6">
@@ -56,9 +57,20 @@ export function IncomeList({ income, isLoading }: IncomeListProps) {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
             <Receipt className="w-8 h-8 text-gray-400" />
           </div>
-          <p className="text-gray-500 text-sm">
-            Belum ada pendapatan hari ini
-          </p>
+          {selectedKasirName ? (
+            <div>
+              <p className="text-gray-500 text-sm mb-1">
+                Tidak ada data pendapatan untuk kasir <strong>{selectedKasirName}</strong>
+              </p>
+              <p className="text-gray-400 text-xs">
+                pada tanggal yang dipilih
+              </p>
+            </div>
+          ) : (
+            <p className="text-gray-500 text-sm">
+              Belum ada pendapatan hari ini
+            </p>
+          )}
         </div>
       </div>
     )
@@ -114,6 +126,14 @@ export function IncomeList({ income, isLoading }: IncomeListProps) {
                         Penalty
                       </span>
                     )}
+                     {/* Kasir Badge with role-based colors */}
+                  <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                    item.kasirName === 'Owner' 
+                      ? 'bg-yellow-100 text-yellow-800' // Gold for Owner
+                      : 'bg-blue-100 text-blue-700'    // Blue for Kasir
+                  }`}>
+                    {item.kasirName}
+                  </span>
                   </div>
                   <span className={`text-xs px-2 py-1 rounded-full ${
                     item.status === 'completed' || item.status === 'selesai'
@@ -182,11 +202,6 @@ export function IncomeList({ income, isLoading }: IncomeListProps) {
                   </div>
                 </div>
 
-                {/* Kasir Info */}
-                <div className="flex items-center gap-2 text-xs text-gray-500">
-                  <Clock className="w-3 h-3" />
-                  <span>Kasir: {item.kasirName}</span>
-                </div>
               </div>
             )
           })}

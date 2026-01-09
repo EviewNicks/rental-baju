@@ -62,7 +62,7 @@ function DashboardContent() {
   return (
     <DanaKasirDashboard 
       initialDate={selectedDate}
-      userRole={role}
+      userRole={role === 'producer' ? 'owner' : role as 'kasir' | 'owner'}
     />
   )
 }

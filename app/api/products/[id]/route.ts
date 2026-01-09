@@ -42,6 +42,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const includeAggregation = searchParams.get('includeAggregation') === 'true'
     const includeBreakdown = searchParams.get('includeBreakdown') !== 'false' // default true
     const includeBreakEven = searchParams.get('includeBreakEven') === 'true' // RPK-MODAL
+    const includeCosts = searchParams.get('includeCosts') !== 'false' // default true - NEW: Cost items always included by default
 
     // Initialize service
     const productService = new ProductService(prisma, userId)
@@ -51,6 +52,11 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     // Prepare response object
     let responseData: Record<string, unknown> = { ...product }
+
+    // Ensure cost items are included in response (they should already be from ProductService)
+    if (includeCosts && product.costs) {
+      responseData.costs = product.costs
+    }
 
     // Add aggregation data if requested
     if (includeAggregation) {
@@ -180,6 +186,40 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const materialQuantity = materialQuantityStr ? parseInt(materialQuantityStr) : undefined
     const image = formData.get('image') as File | null
 
+    // NEW: Cost Items Management - Extract cost items data for update
+    const selectedCostsStr = formData.get('selectedCosts') as string
+    let selectedCosts: Array<{
+      costItemId: string
+      amount: number
+      name?: string
+    }> = []
+
+    // Parse cost items if provided
+    if (selectedCostsStr !== null && selectedCostsStr !== undefined) {
+      if (selectedCostsStr === '') {
+        // Empty string case - should be treated as removal
+        selectedCosts = []
+      } else {
+        try {
+          selectedCosts = JSON.parse(selectedCostsStr)
+        } catch {
+          return NextResponse.json(
+            { error: { message: 'Format data cost items tidak valid', code: 'VALIDATION_ERROR' } },
+            { status: 400 },
+          )
+        }
+      }
+    }
+
+    // Prepare update data
+    const updateData: Record<string, unknown> = {}
+
+    // NEW: Cost Items Management - Add cost items to update data
+    const shouldUpdateCostItems = selectedCostsStr !== null && selectedCostsStr !== undefined
+    if (shouldUpdateCostItems) {
+      updateData.selectedCosts = selectedCosts
+    }
+
     // Validate image format and size if new image is provided
     if (image && image.size > 0) {
       // Supported image formats
@@ -249,28 +289,18 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
             { status: 400 },
           )
         }
-      } catch (parseError) {
-        console.error(`[API Route] Failed to parse sizes:`, {
-          error: parseError,
-          sizesStr: sizesStr,
-          timestamp: new Date().toISOString(),
-        })
+      } catch {
         return NextResponse.json(
           { error: { message: 'Format data ukuran tidak valid', code: 'VALIDATION_ERROR' } },
           { status: 400 },
         )
       }
-    } else {
-      console.log(`[API Route] No sizes string provided`)
     }
-
-    // Prepare update data
-    const updateData: Record<string, unknown> = {}
 
     if (name !== undefined) updateData.name = name
     if (description !== undefined) updateData.description = description
     if (modalAwal !== undefined) updateData.modalAwal = modalAwal
-    if (currentPrice !== undefined) updateData.currentPrice = currentPrice // ✅ Fixed: use currentPrice instead of hargaSewa
+    if (currentPrice !== undefined) updateData.currentPrice = currentPrice
     if (quantity !== undefined) updateData.quantity = quantity
     if (categoryId !== undefined) updateData.categoryId = categoryId
     if (size !== undefined) updateData.size = size
@@ -281,8 +311,10 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     // Size Management fields - Enhanced ProductSize fields processed in service layer
     if (sizes.length > 0) {
       updateData.sizes = sizes // Pass raw data to service layer
-    } else {
-      console.log(`[API Route] No sizes to add to updateData`)
+    }
+    // NEW: Cost Items Management - Add cost items to update data
+    if (shouldUpdateCostItems) {
+      updateData.selectedCosts = selectedCosts
     }
 
     // Validate materialQuantity if provided
@@ -423,7 +455,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     return NextResponse.json(product, { status: 200 })
   } catch (error) {
     // Generate request ID for debugging
-    const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    const requestId = `req_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`
 
     // Handle known error types
     if (error instanceof NotFoundError) {
@@ -444,7 +476,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 }
 
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
@@ -471,7 +503,7 @@ export async function DELETE(
     )
   } catch (error) {
     // Generate request ID for debugging
-    const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    const requestId = `req_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`
 
     // Handle known error types
     if (error instanceof NotFoundError) {

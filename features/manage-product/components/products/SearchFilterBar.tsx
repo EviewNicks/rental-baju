@@ -1,6 +1,6 @@
 'use client'
 
-import { Search, Filter, Table, Grid3X3, Ruler } from 'lucide-react'
+import { Search, Filter, Table, Grid3X3 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
 import {
@@ -11,9 +11,12 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
-import { STATUSES } from '@/features/manage-product/lib/constants'
 import { useCategories } from '@/features/manage-product/hooks/useCategories'
-import type { ViewMode, CategoryFilterValue, StatusFilterValue } from '@/features/manage-product/types'
+import type {
+  ViewMode,
+  CategoryFilterValue,
+  StatusFilterValue,
+} from '@/features/manage-product/types'
 
 interface SearchFilterBarProps {
   searchTerm: string
@@ -37,10 +40,6 @@ export function SearchFilterBar({
   onSearchSubmit,
   selectedCategory,
   onCategoryChange,
-  selectedStatus,
-  onStatusChange,
-  selectedSize,
-  onSizeChange,
   viewMode,
   onViewModeChange,
   isLoading = false,
@@ -51,21 +50,7 @@ export function SearchFilterBar({
   const categories = categoriesData?.categories || []
 
   // Create category options with "Semua" option
-  const categoryOptions = [
-    { id: 'all', name: 'Semua' },
-    ...categories
-  ]
-
-  // Size options with "Semua" option
-  const sizeOptions = [
-    { value: 'all', label: 'Semua' },
-    { value: 'XS', label: 'XS' },
-    { value: 'S', label: 'S' },
-    { value: 'M', label: 'M' },
-    { value: 'L', label: 'L' },
-    { value: 'XL', label: 'XL' },
-    { value: 'XXL', label: 'XXL' },
-  ]
+  const categoryOptions = [{ id: 'all', name: 'Semua' }, ...categories]
 
   // Handle keyboard events for search input
   const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -90,7 +75,10 @@ export function SearchFilterBar({
                 data-testid="search-input"
               />
               {isSearchPending && (
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2" data-testid="search-pending-indicator">
+                <div
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                  data-testid="search-pending-indicator"
+                >
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary opacity-50"></div>
                 </div>
               )}
@@ -105,8 +93,8 @@ export function SearchFilterBar({
           <div className="flex flex-wrap gap-3 items-center" data-testid="filter-controls">
             <div className="flex items-center gap-2" data-testid="category-filter-section">
               <Filter className="w-4 h-4 text-muted-foreground" />
-              <Select 
-                value={selectedCategory || 'all'} 
+              <Select
+                value={selectedCategory || 'all'}
                 onValueChange={(value) => onCategoryChange(value === 'all' ? '' : value)}
                 disabled={isLoading || isLoadingCategories}
                 data-testid="category-filter"
@@ -121,7 +109,11 @@ export function SearchFilterBar({
                     </SelectItem>
                   ) : (
                     categoryOptions.map((category) => (
-                      <SelectItem key={category.id} value={category.id} data-testid={`category-option-${category.id}`}>
+                      <SelectItem
+                        key={category.id}
+                        value={category.id}
+                        data-testid={`category-option-${category.id}`}
+                      >
                         {category.name}
                       </SelectItem>
                     ))
@@ -130,46 +122,6 @@ export function SearchFilterBar({
               </Select>
             </div>
 
-            <Select 
-              value={selectedStatus || 'Semua'} 
-              onValueChange={(value) => onStatusChange(value === 'Semua' ? undefined : value as StatusFilterValue)}
-              disabled={isLoading}
-              data-testid="status-filter"
-            >
-              <SelectTrigger className="w-32" data-testid="status-filter-trigger">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent data-testid="status-filter-content">
-                {STATUSES.map((status) => (
-                  <SelectItem key={status} value={status} data-testid={`status-option-${status.toLowerCase().replace(/\s+/g, '-')}`}>
-                    {status}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <div className="flex items-center gap-2" data-testid="size-filter-section">
-              <Ruler className="w-4 h-4 text-muted-foreground" />
-              <Select 
-                value={selectedSize || 'all'} 
-                onValueChange={(value) => onSizeChange(value === 'all' ? undefined : value)}
-                disabled={isLoading}
-                data-testid="size-filter"
-              >
-                <SelectTrigger className="w-24" data-testid="size-filter-trigger">
-                  <SelectValue placeholder="Size" />
-                </SelectTrigger>
-                <SelectContent data-testid="size-filter-content">
-                  {sizeOptions.map((size) => (
-                    <SelectItem key={size.value} value={size.value} data-testid={`size-option-${size.value}`}>
-                      {size.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-  
             <ToggleGroup
               type="single"
               value={viewMode}
@@ -177,7 +129,11 @@ export function SearchFilterBar({
               disabled={isLoading}
               data-testid="view-mode-toggle"
             >
-              <ToggleGroupItem value="table" aria-label="Table view" data-testid="table-view-toggle">
+              <ToggleGroupItem
+                value="table"
+                aria-label="Table view"
+                data-testid="table-view-toggle"
+              >
                 <Table className="w-4 h-4" />
               </ToggleGroupItem>
               <ToggleGroupItem value="card" aria-label="Card view" data-testid="card-view-toggle">

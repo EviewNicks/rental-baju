@@ -3,6 +3,10 @@
  *
  */
 
+// Cost Item Management Types
+export * from './costItem'
+import type { ProductCostFormData, ProductCost } from './costItem'
+
 // Note: Decimal type is only used on server-side
 // Frontend uses regular numbers for all monetary values
 
@@ -18,11 +22,6 @@ export interface BaseProduct {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   currentPrice: any // Prisma Decimal (server-side only)
   // NOTE: quantity and rentedStock fields removed - now using Enhanced ProductSize fields
-  // Material Management fields - RPK-45 (NULLABLE untuk backward compatibility)
-  materialId?: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  materialCost?: any // Prisma Decimal (server-side only)
-  materialQuantity?: number
   status: ProductStatus
   imageUrl?: string
   // totalPendapatan removed - performance optimization
@@ -49,6 +48,11 @@ export interface BaseProduct {
     utilizationRate: number
     isHealthy: boolean
   }
+  // Simplified cost items for display (only name and amount)
+  simplifiedCosts?: Array<{
+    name: string
+    amount: number
+  }>
 }
 
 export interface BaseCategory {
@@ -72,10 +76,6 @@ export interface ClientProduct {
   modalAwal: number
   currentPrice: number
   // NOTE: quantity and rentedStock fields removed - now using Enhanced ProductSize fields
-  // Material Management fields - RPK-45 (client-safe numbers)
-  materialId?: string
-  materialCost?: number
-  materialQuantity?: number
   status: ProductStatus
   imageUrl?: string
   // totalPendapatan removed - performance optimization
@@ -84,7 +84,6 @@ export interface ClientProduct {
   updatedAt: Date | string
   createdBy: string
   category: ClientCategory
-  material?: ClientMaterial
   sizes: ClientProductSize[]
   // RPK-MODAL: Break-even status (optional, only when includeBreakEven=true)
   breakEvenStatus?: BreakEvenStatus
@@ -174,8 +173,8 @@ export interface ProductSize extends BaseProductSize {
 // Full types with relationships
 export interface Product extends BaseProduct {
   category: Category
-  material?: Material
   sizes: ProductSize[]
+  costs?: ProductCost[] // Cost Items Support - NEW
   // RPK-MODAL: Break-even status (optional, only when includeBreakEven=true)
   breakEvenStatus?: BreakEvenStatus
 }
@@ -257,9 +256,8 @@ export interface CreateProductRequest {
   quantity: number
   categoryId: string
   sizes: string // JSON string format required by backend - Advanced-only architecture
-  // Material Management fields - RPK-45
-  materialId?: string
-  materialQuantity?: number
+  // Cost Item Management - replaces Material Management
+  selectedCosts?: ProductCostFormData[]
   image?: File
   imageUrl?: string
 }
@@ -272,9 +270,8 @@ export interface UpdateProductRequest {
   quantity?: number
   categoryId?: string
   sizes: string // JSON string format required by backend - Advanced-only architecture
-  // Material Management fields - RPK-45
-  materialId?: string
-  materialQuantity?: number
+  // Cost Item Management - replaces Material Management
+  selectedCosts?: ProductCostFormData[]
   image?: File
   imageUrl?: string
 }

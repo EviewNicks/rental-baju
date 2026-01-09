@@ -1,7 +1,7 @@
 'use client'
 
 import type React from 'react'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, Save, Check, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -22,6 +22,7 @@ import type {
   CreateProductSizeRequest,
 } from '@/features/manage-product/types'
 import type { CategoryFormData } from '@/features/manage-product/lib/strategies/CategoryFormStrategy'
+import type { ProductCostFormData } from '@/features/manage-product/types/costItem'
 import { FormStrategyFactory } from '@/features/manage-product/lib/strategies/StrategyFactory'
 import { RentalStateWarning, extractRentalStateDetails } from './RentalStateWarning'
 
@@ -33,10 +34,12 @@ interface ProductFormData {
   code: string
   name: string
   categoryId: string
-  materialId?: string | undefined
-  materialQuantity?: number | undefined
+  // Remove material fields - replaced with cost items
+  // materialId?: string | undefined
+  // materialQuantity?: number | undefined
+  selectedCosts: ProductCostFormData[] // New: multiple cost items
   quantity: number
-  modalAwal: number
+  modalAwal: number // Auto-calculated from selectedCosts
   currentPrice: number
   description: string
   imageUrl: string | null
@@ -58,8 +61,10 @@ interface CreateProductRequest {
   quantity: number
   categoryId: string
   sizes: string // JSON string format required by backend
-  materialId?: string
-  materialQuantity?: number
+  // Remove material fields - replaced with cost items
+  // materialId?: string
+  // materialQuantity?: number
+  selectedCosts?: ProductCostFormData[] // New: cost items data
   image?: File
   imageUrl?: string
 }
@@ -72,8 +77,10 @@ interface UpdateProductRequest {
   quantity: number
   categoryId: string
   sizes: string // JSON string format required by backend
-  materialId?: string
-  materialQuantity?: number
+  // Remove material fields - replaced with cost items
+  // materialId?: string
+  // materialQuantity?: number
+  selectedCosts?: ProductCostFormData[] // New: cost items data
   image?: File
   imageUrl?: string
 }
@@ -91,7 +98,7 @@ interface ProductFormPageProps {
 // Simple validation helper functions
 const validateProductCode = (code: string): string | null => {
   if (!code.trim()) return 'Kode produk wajib diisi'
-  if (!/^[A-Za-z0-9]{3,10}$/.test(code)) return 'Kode harus 3-10 digit alfanumerik'
+  if (!/^[A-Z0-9]{4,5}$/.test(code)) return 'Kode harus 4-5 digit alfanumerik uppercase (contoh: PRD1, DRESS)'
   return null
 }
 
@@ -152,16 +159,17 @@ export function ProductFormPage({
   const createProductMutation = useCreateProduct()
   const updateProductMutation = useUpdateProduct()
 
-  const categories = categoriesData?.categories ?? []
+  const categories = useMemo(() => categoriesData?.categories ?? [], [categoriesData?.categories])
 
   const [formData, setFormData] = useState<ProductFormData>({
     code: product?.code || '',
     name: product?.name || '',
     categoryId: product?.categoryId || '',
-    // Fix: Initialize optional fields with undefined instead of empty strings to prevent Select.Item errors
-    materialId: product?.materialId || undefined,
-    materialQuantity: product?.materialQuantity || undefined,
-    quantity: product?.sizes ? ProductSizeTransformer.calculateTotalQuantity(product.sizes, 'simplified') : 1,
+    // Initialize selectedCosts as empty array - will be loaded in edit mode
+    selectedCosts: [],
+    quantity: product?.sizes
+      ? ProductSizeTransformer.calculateTotalQuantity(product.sizes, 'simplified')
+      : 1,
     modalAwal: product?.modalAwal ? Number(product.modalAwal) : 0,
     currentPrice: product?.currentPrice ? Number(product.currentPrice) : 0,
     description: product?.description || '',
@@ -186,12 +194,65 @@ export function ProductFormPage({
   const [touched, setTouched] = useState<Record<string, boolean>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // Prevent re-initialization flag
+  // Prevent re-initialization flags
   const isInitializedRef = useRef<boolean>(false)
+  const costItemsLoadedRef = useRef<boolean>(false)
+  const isLoadingCostItemsRef = useRef<boolean>(false)
+
+  // Load existing cost items in edit mode - FIXED: Remove infinite loop
+  useEffect(() => {
+    const loadExistingCostItems = async () => {
+      // Prevent multiple simultaneous API calls and infinite loops
+      if (
+        mode === 'edit' &&
+        product?.id &&
+        !costItemsLoadedRef.current &&
+        !isLoadingCostItemsRef.current
+      ) {
+        isLoadingCostItemsRef.current = true
+
+        try {
+          const response = await fetch(`/api/products/${product.id}/costs`)
+
+          if (response.ok) {
+            const data = await response.json()
+            const existingCosts: ProductCostFormData[] = data.costs.map(
+              (cost: { costItemId: string; amount: number; notes?: string }) => ({
+                costItemId: cost.costItemId,
+                amount: cost.amount,
+                notes: cost.notes || '',
+              }),
+            )
+
+            // Update form data with loaded cost items
+            setFormData((prev) => ({
+              ...prev,
+              selectedCosts: existingCosts,
+            }))
+
+            // Mark as loaded to prevent future API calls
+            costItemsLoadedRef.current = true
+          }
+        } catch (error) {
+          console.error('Failed to load existing cost items:', error)
+        } finally {
+          isLoadingCostItemsRef.current = false
+        }
+      }
+    }
+
+    loadExistingCostItems()
+  }, [mode, product?.id]) // FIXED: Remove formData.selectedCosts.length from dependencies
 
   // Initialize category form data from existing product in edit mode
   useEffect(() => {
-    if (mode === 'edit' && product && product.categoryId && categories.length > 0 && !isInitializedRef.current) {
+    if (
+      mode === 'edit' &&
+      product &&
+      product.categoryId &&
+      categories.length > 0 &&
+      !isInitializedRef.current
+    ) {
       isInitializedRef.current = true
       try {
         //eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -213,9 +274,6 @@ export function ProductFormPage({
           // Initialize strategy sizes
           const transformedSizes = strategy.getInitialSizes(formData)
           setStrategySizes(transformedSizes)
-
-          console.log('Edit mode: Initialized category form data:', formData)
-          console.log('Edit mode: Initialized strategy sizes:', transformedSizes)
         }
       } catch (error) {
         console.error('Failed to initialize edit form data:', error)
@@ -224,9 +282,7 @@ export function ProductFormPage({
         setStrategySizes([])
       }
     }
-  }, [mode, product?.id, categories.length]) // eslint-disable-line react-hooks/exhaustive-deps
-  // Selective dependencies for optimal performance - isInitializedRef prevents double initialization
-  // Using product?.id and categories.length instead of full objects prevents unnecessary re-renders
+  }, [mode, product, categories])
 
   // Simple validation function
   const validateForm = (): boolean => {
@@ -276,6 +332,41 @@ export function ProductFormPage({
     return Object.keys(newErrors).length === 0
   }
 
+  // Real-time form validation for button state
+  const isFormValid = useMemo(() => {
+    // Check required fields
+    const hasRequiredFields = 
+      formData.code.trim() !== '' &&
+      formData.name.trim() !== '' &&
+      formData.categoryId.trim() !== '' &&
+      formData.currentPrice > 0
+
+    // Check if has valid sizes
+    let hasValidSizes = false
+    if (strategySizes.length > 0) {
+      hasValidSizes = strategySizes.length > 0
+    } else if (formData.simplifiedSizes && formData.simplifiedSizes.length > 0) {
+      hasValidSizes = formData.simplifiedSizes.length > 0
+    } else if (formData.aggregatedSizes && formData.aggregatedSizes.length > 0) {
+      hasValidSizes = formData.aggregatedSizes.some((size) => size.totalQuantity > 0)
+    }
+
+    // Check for validation errors
+    const hasNoErrors = Object.keys(errors).length === 0 || 
+      Object.values(errors).every(error => !error || error === '')
+
+    return hasRequiredFields && hasValidSizes && hasNoErrors
+  }, [
+    formData.code,
+    formData.name, 
+    formData.categoryId,
+    formData.currentPrice,
+    strategySizes,
+    formData.simplifiedSizes,
+    formData.aggregatedSizes,
+    errors
+  ])
+
   const validateSingleField = (name: string, value: string | number | File | null): void => {
     let error = ''
 
@@ -289,12 +380,8 @@ export function ProductFormPage({
       case 'categoryId':
         error = validateCategoryId(typeof value === 'string' ? value : '') || ''
         break
-      case 'materialId':
-        // MaterialId is optional, no validation needed
-        error = ''
-        break
-      case 'materialQuantity':
-        // MaterialQuantity is optional, no validation needed
+      case 'selectedCosts':
+        // Cost items are optional, no validation needed
         error = ''
         break
       case 'modalAwal':
@@ -390,11 +477,57 @@ export function ProductFormPage({
     setCategoryFormData(data)
   }
 
+  // Cost item management handlers
+  const handleCostsChange = (costs: ProductCostFormData[]) => {
+    setFormData((prev) => ({ ...prev, selectedCosts: costs }))
+    // Clear any existing cost validation error
+    if (errors.selectedCosts) {
+      setErrors((prev) => ({ ...prev, selectedCosts: '' }))
+    }
+  }
+
+  const handleModalAwalChange = useCallback(
+    (amount: number) => {
+      setFormData((prev) => ({ ...prev, modalAwal: amount }))
+      // Clear any existing modal awal validation error
+      if (errors.modalAwal) {
+        setErrors((prev) => ({ ...prev, modalAwal: '' }))
+      }
+    },
+    [errors.modalAwal],
+  ) // FIXED: Add useCallback to prevent recreation
+
+  // Cleanup effect for component unmount
+  useEffect(() => {
+    return () => {
+      // Reset refs on unmount to prevent stale state
+      isInitializedRef.current = false
+      costItemsLoadedRef.current = false
+      isLoadingCostItemsRef.current = false
+    }
+  }, [])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     // Prevent multiple submissions
     if (isSubmitting) return
+
+    // Early validation check - prevent API call if form is invalid
+    if (!isFormValid) {
+      setTouched({
+        code: true,
+        name: true,
+        categoryId: true,
+        sizes: true,
+        selectedCosts: true,
+        modalAwal: true,
+        currentPrice: true,
+        quantity: true,
+        description: true,
+      })
+      return
+    }
 
     setIsSubmitting(true)
 
@@ -404,8 +537,7 @@ export function ProductFormPage({
         name: true,
         categoryId: true,
         sizes: true, // Replace legacy size with sizes validation
-        materialId: true,
-        materialQuantity: true,
+        selectedCosts: true,
         modalAwal: true,
         currentPrice: true,
         quantity: true,
@@ -416,11 +548,31 @@ export function ProductFormPage({
     }
 
     // Transform sizes to backend format with strategy data priority using ProductSizeTransformer
-    const { data: sizesData } = ProductSizeTransformer.transformToBackendFormat(
+    const { data: sizesData, source } = ProductSizeTransformer.transformToBackendFormat(
       strategySizes,
       formData.simplifiedSizes || [],
       formData.aggregatedSizes || [],
     )
+
+    console.log('[DEBUG] Size transformation:', {
+      source,
+      strategySizes,
+      simplifiedSizes: formData.simplifiedSizes,
+      aggregatedSizes: formData.aggregatedSizes,
+      sizesData,
+    })
+
+    // Validate sizes data before API call
+    if (!sizesData || sizesData === '[]' || sizesData === 'null') {
+      console.error('[DEBUG] Invalid sizes data:', sizesData)
+      setErrors((prev) => ({ 
+        ...prev, 
+        sizes: 'Data ukuran tidak valid. Pastikan minimal satu ukuran telah ditambahkan.' 
+      }))
+      setTouched((prev) => ({ ...prev, sizes: true }))
+      setIsSubmitting(false)
+      return
+    }
 
     try {
       if (mode === 'add') {
@@ -434,8 +586,7 @@ export function ProductFormPage({
           quantity: formData.quantity,
           categoryId: formData.categoryId,
           sizes: sizesData, // Use transformed sizes array
-          materialId: formData.materialId || undefined,
-          materialQuantity: formData.materialQuantity || undefined,
+          selectedCosts: formData.selectedCosts.length > 0 ? formData.selectedCosts : undefined,
           image: formData.image || undefined,
           imageUrl: formData.imageUrl || undefined,
         }
@@ -447,7 +598,7 @@ export function ProductFormPage({
             if (value instanceof File) {
               formDataToSend.append(key, value)
             } else if (typeof value === 'object') {
-              // Handle complex objects like sizes array
+              // Handle complex objects like sizes array and selectedCosts
               formDataToSend.append(key, JSON.stringify(value))
             } else {
               formDataToSend.append(key, String(value))
@@ -455,7 +606,24 @@ export function ProductFormPage({
           }
         })
 
-        await createProductMutation.mutateAsync(formDataToSend)
+        console.log('[DEBUG] FormData being sent:', {
+          createData,
+          formDataEntries: Array.from(formDataToSend.entries()),
+        })
+
+        const createdProduct = await createProductMutation.mutateAsync(formDataToSend)
+
+        // Success - redirect based on mode for better UX
+        if (mode === 'add') {
+          // For create mode: redirect to the newly created product detail
+          // The mutation returns the created product with ID
+          if (createdProduct?.id) {
+            router.push(`/producer/manage-product/${createdProduct.id}`)
+          } else {
+            // Fallback to product list if no product ID available
+            router.push('/producer/manage-product')
+          }
+        }
       } else {
         // Update existing product
         if (!product?.id) {
@@ -470,8 +638,7 @@ export function ProductFormPage({
           quantity: formData.quantity,
           categoryId: formData.categoryId,
           sizes: sizesData, // Use transformed sizes array
-          materialId: formData.materialId || undefined,
-          materialQuantity: formData.materialQuantity || undefined,
+          selectedCosts: formData.selectedCosts.length > 0 ? formData.selectedCosts : undefined,
           image: formData.image || undefined,
           imageUrl: formData.imageUrl || undefined,
         }
@@ -483,7 +650,7 @@ export function ProductFormPage({
             if (value instanceof File) {
               formDataToSend.append(key, value)
             } else if (typeof value === 'object') {
-              // Handle complex objects like sizes array
+              // Handle complex objects like sizes array and selectedCosts
               formDataToSend.append(key, JSON.stringify(value))
             } else {
               formDataToSend.append(key, String(value))
@@ -491,14 +658,25 @@ export function ProductFormPage({
           }
         })
 
-        await updateProductMutation.mutateAsync({
+        // FIXED: Call the update mutation
+        const updatedProduct = await updateProductMutation.mutateAsync({
           id: product.id,
           data: formDataToSend,
         })
+
+        // Success - redirect to the updated product detail
+        if (updatedProduct?.id) {
+          router.push(`/producer/manage-product/${updatedProduct.id}`)
+        } else if (product?.id) {
+          // Fallback to original product ID
+          router.push(`/producer/manage-product/${product.id}`)
+        } else {
+          // Final fallback to product list
+          router.push('/producer/manage-product')
+        }
       }
 
-      // Success - redirect to product list
-      router.push('/producer/manage-product')
+      // Success redirect for create mode (handled above in the if block)
     } catch (error) {
       console.error(`[DEBUG] Error ${mode === 'add' ? 'creating' : 'updating'} product:`, {
         error: error,
@@ -515,8 +693,14 @@ export function ProductFormPage({
   }
 
   const handleSaveDraft = () => {
-    localStorage.setItem('product-draft', JSON.stringify(formData))
-    // Show toast notification
+    try {
+      localStorage.setItem('product-draft', JSON.stringify(formData))
+      // TODO: Add toast notification for better UX
+      console.log('Draft saved successfully')
+    } catch (error) {
+      console.error('Failed to save draft:', error)
+      // TODO: Add error toast notification
+    }
   }
 
   const formatCurrency = (value: string) => {
@@ -567,7 +751,6 @@ export function ProductFormPage({
         className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
         data-testid="product-form-content"
       >
-        {/* Show errors */}
         {(categoriesError || createProductMutation.error || updateProductMutation.error) && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md">
             <div className="flex items-start">
@@ -591,7 +774,20 @@ export function ProductFormPage({
                     <p>
                       {(() => {
                         // Check if error has structured response (new enhanced format from API client)
-                        const errorData = (createProductMutation.error as Error & { cause?: { response?: { error?: { code: string; message?: string; details?: string; validationErrors?: Array<{ field: string; message: string }> } } } })?.cause?.response?.error
+                        const errorData = (
+                          createProductMutation.error as Error & {
+                            cause?: {
+                              response?: {
+                                error?: {
+                                  code: string
+                                  message?: string
+                                  details?: string
+                                  validationErrors?: Array<{ field: string; message: string }>
+                                }
+                              }
+                            }
+                          }
+                        )?.cause?.response?.error
 
                         if (errorData?.code) {
                           switch (errorData.code) {
@@ -601,10 +797,7 @@ export function ProductFormPage({
                                 'Format gambar tidak didukung. Gunakan JPG, PNG, atau WebP.'
                               )
                             case 'IMAGE_SIZE_ERROR':
-                              return (
-                                errorData.details ||
-                                'Ukuran file terlalu besar. Maksimal 5MB.'
-                              )
+                              return errorData.details || 'Ukuran file terlalu besar. Maksimal 5MB.'
                             case 'IMAGE_UPLOAD_ERROR':
                               return (
                                 errorData.details || 'Gagal mengunggah gambar. Silakan coba lagi.'
@@ -616,21 +809,23 @@ export function ProductFormPage({
                               )
                             case 'QUANTITY_VALIDATION_ERROR':
                               // Handle rental state validation errors with enhanced component
-                              const rentalDetails = extractRentalStateDetails(createProductMutation.error)
+                              const rentalDetails = extractRentalStateDetails(
+                                createProductMutation.error,
+                              )
                               if (rentalDetails) {
                                 // Set field-specific error for sizes
-                                setErrors(prev => ({ 
-                                  ...prev, 
-                                  sizes: `Konflik rental: Ukuran ${rentalDetails.ageCategory}-${rentalDetails.size} memiliki ${rentalDetails.currentRented} item dirental + ${rentalDetails.currentLost} hilang`
+                                setErrors((prev) => ({
+                                  ...prev,
+                                  sizes: `Konflik rental: Ukuran ${rentalDetails.ageCategory}-${rentalDetails.size} memiliki ${rentalDetails.currentRented} item dirental + ${rentalDetails.currentLost} hilang`,
                                 }))
-                                setTouched(prev => ({ ...prev, sizes: true }))
+                                setTouched((prev) => ({ ...prev, sizes: true }))
 
                                 return (
-                                  <RentalStateWarning 
+                                  <RentalStateWarning
                                     details={rentalDetails}
                                     onClose={() => {
                                       createProductMutation.reset()
-                                      setErrors(prev => {
+                                      setErrors((prev) => {
                                         const updated = { ...prev }
                                         delete updated.sizes
                                         return updated
@@ -639,25 +834,35 @@ export function ProductFormPage({
                                   />
                                 )
                               }
-                              return errorData.message || 'Tidak dapat mengurangi quantity karena ada item yang sedang dirental.'
+                              return (
+                                errorData.message ||
+                                'Tidak dapat mengurangi quantity karena ada item yang sedang dirental.'
+                              )
                             case 'VALIDATION_ERROR':
                               // Handle field-level validation errors
-                              if (errorData.validationErrors && Array.isArray(errorData.validationErrors)) {
+                              if (
+                                errorData.validationErrors &&
+                                Array.isArray(errorData.validationErrors)
+                              ) {
                                 // Update form field errors individually
                                 const fieldErrors: Record<string, string> = {}
                                 const fieldTouched: Record<string, boolean> = {}
 
-                                errorData.validationErrors.forEach((fieldError: { field: string; message: string }) => {
-                                  fieldErrors[fieldError.field] = fieldError.message
-                                  fieldTouched[fieldError.field] = true
-                                })
+                                errorData.validationErrors.forEach(
+                                  (fieldError: { field: string; message: string }) => {
+                                    fieldErrors[fieldError.field] = fieldError.message
+                                    fieldTouched[fieldError.field] = true
+                                  },
+                                )
 
-                                setErrors(prev => ({ ...prev, ...fieldErrors }))
-                                setTouched(prev => ({ ...prev, ...fieldTouched }))
+                                setErrors((prev) => ({ ...prev, ...fieldErrors }))
+                                setTouched((prev) => ({ ...prev, ...fieldTouched }))
 
                                 return `Ada ${errorData.validationErrors.length} field yang perlu diperbaiki.`
                               }
-                              return errorData.details || 'Data tidak valid. Silakan periksa kembali.'
+                              return (
+                                errorData.details || 'Data tidak valid. Silakan periksa kembali.'
+                              )
                             default:
                               return errorData.message || createProductMutation.error.message
                           }
@@ -681,7 +886,20 @@ export function ProductFormPage({
                     <p>
                       {(() => {
                         // Check if error has structured response (new enhanced format from API client)
-                        const errorData = (updateProductMutation.error as Error & { cause?: { response?: { error?: { code: string; message?: string; details?: string; validationErrors?: Array<{ field: string; message: string }> } } } })?.cause?.response?.error
+                        const errorData = (
+                          updateProductMutation.error as Error & {
+                            cause?: {
+                              response?: {
+                                error?: {
+                                  code: string
+                                  message?: string
+                                  details?: string
+                                  validationErrors?: Array<{ field: string; message: string }>
+                                }
+                              }
+                            }
+                          }
+                        )?.cause?.response?.error
 
                         if (errorData?.code) {
                           switch (errorData.code) {
@@ -691,10 +909,7 @@ export function ProductFormPage({
                                 'Format gambar tidak didukung. Gunakan JPG, PNG, atau WebP.'
                               )
                             case 'IMAGE_SIZE_ERROR':
-                              return (
-                                errorData.details ||
-                                'Ukuran file terlalu besar. Maksimal 5MB.'
-                              )
+                              return errorData.details || 'Ukuran file terlalu besar. Maksimal 5MB.'
                             case 'IMAGE_UPLOAD_ERROR':
                               return (
                                 errorData.details || 'Gagal mengunggah gambar. Silakan coba lagi.'
@@ -706,21 +921,23 @@ export function ProductFormPage({
                               )
                             case 'QUANTITY_VALIDATION_ERROR':
                               // Handle rental state validation errors with enhanced component
-                              const rentalDetails = extractRentalStateDetails(updateProductMutation.error)
+                              const rentalDetails = extractRentalStateDetails(
+                                updateProductMutation.error,
+                              )
                               if (rentalDetails) {
                                 // Set field-specific error for sizes
-                                setErrors(prev => ({ 
-                                  ...prev, 
-                                  sizes: `Konflik rental: Ukuran ${rentalDetails.ageCategory}-${rentalDetails.size} memiliki ${rentalDetails.currentRented} item dirental + ${rentalDetails.currentLost} hilang`
+                                setErrors((prev) => ({
+                                  ...prev,
+                                  sizes: `Konflik rental: Ukuran ${rentalDetails.ageCategory}-${rentalDetails.size} memiliki ${rentalDetails.currentRented} item dirental + ${rentalDetails.currentLost} hilang`,
                                 }))
-                                setTouched(prev => ({ ...prev, sizes: true }))
+                                setTouched((prev) => ({ ...prev, sizes: true }))
 
                                 return (
-                                  <RentalStateWarning 
+                                  <RentalStateWarning
                                     details={rentalDetails}
                                     onClose={() => {
                                       updateProductMutation.reset()
-                                      setErrors(prev => {
+                                      setErrors((prev) => {
                                         const updated = { ...prev }
                                         delete updated.sizes
                                         return updated
@@ -729,25 +946,35 @@ export function ProductFormPage({
                                   />
                                 )
                               }
-                              return errorData.message || 'Tidak dapat mengurangi quantity karena ada item yang sedang dirental.'
+                              return (
+                                errorData.message ||
+                                'Tidak dapat mengurangi quantity karena ada item yang sedang dirental.'
+                              )
                             case 'VALIDATION_ERROR':
                               // Handle field-level validation errors
-                              if (errorData.validationErrors && Array.isArray(errorData.validationErrors)) {
+                              if (
+                                errorData.validationErrors &&
+                                Array.isArray(errorData.validationErrors)
+                              ) {
                                 // Update form field errors individually
                                 const fieldErrors: Record<string, string> = {}
                                 const fieldTouched: Record<string, boolean> = {}
 
-                                errorData.validationErrors.forEach((fieldError: { field: string; message: string }) => {
-                                  fieldErrors[fieldError.field] = fieldError.message
-                                  fieldTouched[fieldError.field] = true
-                                })
+                                errorData.validationErrors.forEach(
+                                  (fieldError: { field: string; message: string }) => {
+                                    fieldErrors[fieldError.field] = fieldError.message
+                                    fieldTouched[fieldError.field] = true
+                                  },
+                                )
 
-                                setErrors(prev => ({ ...prev, ...fieldErrors }))
-                                setTouched(prev => ({ ...prev, ...fieldTouched }))
+                                setErrors((prev) => ({ ...prev, ...fieldErrors }))
+                                setTouched((prev) => ({ ...prev, ...fieldTouched }))
 
                                 return `Ada ${errorData.validationErrors.length} field yang perlu diperbaiki.`
                               }
-                              return errorData.details || 'Data tidak valid. Silakan periksa kembali.'
+                              return (
+                                errorData.details || 'Data tidak valid. Silakan periksa kembali.'
+                              )
                             default:
                               return errorData.message || updateProductMutation.error.message
                           }
@@ -769,7 +996,7 @@ export function ProductFormPage({
                         createProductMutation.reset()
                         updateProductMutation.reset()
                         // Clear image-related field errors when closing error banner
-                        setErrors(prev => {
+                        setErrors((prev) => {
                           const updatedErrors: Record<string, string> = { ...prev }
 
                           // Clear image and sizes errors
@@ -777,16 +1004,38 @@ export function ProductFormPage({
                           delete updatedErrors.sizes
 
                           // Clear validation errors from createProductMutation
-                          const createErrorData = (createProductMutation.error as Error & { cause?: { response?: { error?: { validationErrors?: Array<{ field: string }> } } } })?.cause?.response?.error
-                          if (createErrorData?.validationErrors && Array.isArray(createErrorData.validationErrors)) {
+                          const createErrorData = (
+                            createProductMutation.error as Error & {
+                              cause?: {
+                                response?: {
+                                  error?: { validationErrors?: Array<{ field: string }> }
+                                }
+                              }
+                            }
+                          )?.cause?.response?.error
+                          if (
+                            createErrorData?.validationErrors &&
+                            Array.isArray(createErrorData.validationErrors)
+                          ) {
                             createErrorData.validationErrors.forEach((err) => {
                               if (err.field) delete updatedErrors[err.field]
                             })
                           }
 
                           // Clear validation errors from updateProductMutation
-                          const updateErrorData = (updateProductMutation.error as Error & { cause?: { response?: { error?: { validationErrors?: Array<{ field: string }> } } } })?.cause?.response?.error
-                          if (updateErrorData?.validationErrors && Array.isArray(updateErrorData.validationErrors)) {
+                          const updateErrorData = (
+                            updateProductMutation.error as Error & {
+                              cause?: {
+                                response?: {
+                                  error?: { validationErrors?: Array<{ field: string }> }
+                                }
+                              }
+                            }
+                          )?.cause?.response?.error
+                          if (
+                            updateErrorData?.validationErrors &&
+                            Array.isArray(updateErrorData.validationErrors)
+                          ) {
                             updateErrorData.validationErrors.forEach((err) => {
                               if (err.field) delete updatedErrors[err.field]
                             })
@@ -822,6 +1071,9 @@ export function ProductFormPage({
             onStrategySizesChange={handleStrategySizesChange}
             onCategoryFormDataChange={handleCategoryFormDataChange}
             categoryFormData={categoryFormData}
+            // Cost item handlers
+            onCostsChange={handleCostsChange}
+            onModalAwalChange={handleModalAwalChange}
           />
 
           {/* Action Buttons */}
@@ -839,6 +1091,7 @@ export function ProductFormPage({
               type="button"
               variant="secondary"
               onClick={handleSaveDraft}
+              disabled={isSubmitting || createProductMutation.isPending || updateProductMutation.isPending}
               data-testid="save-draft-button"
             >
               <Save className="w-4 h-4 mr-2" />
@@ -847,12 +1100,17 @@ export function ProductFormPage({
             <Button
               type="submit"
               disabled={
+                !isFormValid ||
                 isSubmitting ||
                 createProductMutation.isPending ||
                 updateProductMutation.isPending ||
                 isLoadingCategories
               }
-              className="bg-yellow-400 hover:bg-yellow-500 text-black"
+              className={`${
+                isFormValid 
+                  ? 'bg-yellow-400 hover:bg-yellow-500 text-black' 
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              } transition-colors duration-200`}
               data-testid="submit-button"
             >
               {isSubmitting ||
@@ -866,6 +1124,11 @@ export function ProductFormPage({
                 <>
                   <div className="w-4 h-4 mr-2 animate-spin rounded-full border-2 border-black border-t-transparent" />
                   Memuat kategori...
+                </>
+              ) : !isFormValid ? (
+                <>
+                  <X className="w-4 h-4 mr-2" />
+                  {mode === 'add' ? 'Lengkapi Data Wajib' : 'Lengkapi Data Wajib'}
                 </>
               ) : (
                 <>

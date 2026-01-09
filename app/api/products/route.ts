@@ -174,6 +174,26 @@ export async function POST(request: NextRequest) {
     const materialQuantityStr = (formData.get('materialQuantity') as string) || undefined
     const image = formData.get('image') as File | null
 
+    // NEW: Cost Items Management - Extract cost items data
+    const selectedCostsStr = formData.get('selectedCosts') as string
+    let selectedCosts: Array<{
+      costItemId: string
+      amount: number
+      name?: string
+    }> = []
+
+    // Parse cost items if provided
+    if (selectedCostsStr) {
+      try {
+        selectedCosts = JSON.parse(selectedCostsStr)
+      } catch (parseError) {
+        return NextResponse.json(
+          { error: { message: 'Format data cost items tidak valid', code: 'VALIDATION_ERROR' } },
+          { status: 400 },
+        )
+      }
+    }
+
     // Validate image format and size if image is provided
     if (image && image.size > 0) {
       // Check file format
@@ -255,9 +275,8 @@ export async function POST(request: NextRequest) {
 
     // Convert string to numbers
     const modalAwal = parseFloat(modalAwalStr)
-    const currentPrice = parseFloat(currentPriceStr) // ✅ Fixed: use currentPrice instead of hargaSewa
+    const currentPrice = parseFloat(currentPriceStr)
     const quantity = parseInt(quantityStr)
-    // REMOVED: rentedStock field parsing - doesn't exist in Product model
     // Material Management - RPK-45
     const materialQuantity = materialQuantityStr ? parseInt(materialQuantityStr) : undefined
 
@@ -321,6 +340,7 @@ export async function POST(request: NextRequest) {
       materialId,
       materialQuantity,
       sizes,
+      selectedCosts, // NEW: Include cost items in request
       image,
     }
 
@@ -381,7 +401,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(product, { status: 201 })
   } catch (error) {
     // Generate request ID for debugging
-    const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    const requestId = `req_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`
 
     // Handle known error types
     if (error instanceof ConflictError) {

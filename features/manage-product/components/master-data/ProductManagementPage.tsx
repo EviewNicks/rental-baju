@@ -1,7 +1,7 @@
 'use client'
 
 import { TabNavigation, useTabNavigation, type TabValue } from './TabNavigation'
-import { MaterialManagement } from '../material/MaterialManagement'
+import { CostItemManagement } from '../cost-items/CostItemManagement'
 import { CategoryManagement } from '../category/CategoryManagement'
 import { PageNavigation } from '../shared/PageNavigation'
 import { logger } from '@/services/logger'
@@ -52,7 +52,7 @@ export function ProductManagementPage() {
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Kelola Data Master Produk</h1>
         <p className="text-sm text-gray-600 mt-1">
-          Atur material dan kategori produk untuk organisasi inventaris yang lebih baik
+          Atur cost item dan kategori produk untuk organisasi inventaris yang lebih baik
         </p>
       </div>
 
@@ -61,9 +61,9 @@ export function ProductManagementPage() {
 
       {/* Tab Content */}
       <div className="mt-6">
-        {activeTab === 'material' && (
+        {activeTab === 'cost-item' && (
           <div className="space-y-6">
-            <MaterialManagement />
+            <CostItemManagement />
           </div>
         )}
         

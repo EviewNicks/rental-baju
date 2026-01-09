@@ -16,8 +16,10 @@ export const productBaseSchema = z.object({
   description: z.string().max(500, 'Deskripsi maksimal 500 karakter').optional(),
   modalAwal: z
     .number()
-    .positive('Modal awal harus positif')
-    .max(999999999, 'Modal maksimal 999,999,999'),
+    .min(0, 'Modal awal tidak boleh negatif') // ✅ FIXED: Allow 0 for producer flow
+    .max(999999999, 'Modal maksimal 999,999,999')
+    .optional() // ✅ FIXED: Make optional
+    .default(0), // ✅ FIXED: Default 0 for producer
   currentPrice: z
     .number()
     .positive('Harga sewa harus positif')
@@ -26,14 +28,12 @@ export const productBaseSchema = z.object({
   rentedStock: z.number().int().min(0, 'Stok tersewa minimal 0').optional().default(0),
   categoryId: z.string().uuid('ID kategori tidak valid'),
   size: z.string().max(10, 'Ukuran maksimal 10 karakter').optional(),
-  // Material Management fields - RPK-45 (optional untuk backward compatibility)
-  materialId: z.string().uuid('ID material tidak valid').optional(),
-  materialQuantity: z
-    .number()
-    .int('Jumlah material harus berupa bilangan bulat')
-    .min(1, 'Jumlah material minimal 1')
-    .max(99999, 'Jumlah material maksimal 99,999')
-    .optional(),
+  // Cost Item Management - replaces Material Management
+  selectedCosts: z.array(z.object({
+    costItemId: z.string().uuid('ID cost item tidak valid'),
+    amount: z.number().positive('Jumlah biaya harus positif'),
+    notes: z.string().optional(),
+  })).optional().default([]),
 })
 
 /**

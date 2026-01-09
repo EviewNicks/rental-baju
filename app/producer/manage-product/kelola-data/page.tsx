@@ -2,6 +2,6 @@
 
 import { ProductManagementPage } from '@/features/manage-product/components/master-data/ProductManagementPage'
 
-export default function MaterialsManagementPage() {
+export default function KelolaDataMasterPage() {
   return <ProductManagementPage />
 }

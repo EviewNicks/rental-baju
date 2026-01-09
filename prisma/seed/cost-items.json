@@ -1,0 +1,144 @@
+{
+  "costItems": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440001",
+      "name": "Kain Katun Premium",
+      "createdAt": "2024-01-15T08:00:00.000Z",
+      "updatedAt": "2024-01-15T08:00:00.000Z",
+      "createdBy": "system"
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440002",
+      "name": "Kain Satin Berkualitas",
+      "createdAt": "2024-01-15T08:05:00.000Z",
+      "updatedAt": "2024-01-15T08:05:00.000Z",
+      "createdBy": "system"
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440003",
+      "name": "Kain Brokat Mewah",
+      "createdAt": "2024-01-15T08:10:00.000Z",
+      "updatedAt": "2024-01-15T08:10:00.000Z",
+      "createdBy": "system"
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440004",
+      "name": "Kain Organza",
+      "createdAt": "2024-01-15T08:15:00.000Z",
+      "updatedAt": "2024-01-15T08:15:00.000Z",
+      "createdBy": "system"
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440005",
+      "name": "Transport Jakarta Pusat",
+      "createdAt": "2024-01-15T08:20:00.000Z",
+      "updatedAt": "2024-01-15T08:20:00.000Z",
+      "createdBy": "system"
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440006",
+      "name": "Transport Jakarta Selatan",
+      "createdAt": "2024-01-15T08:25:00.000Z",
+      "updatedAt": "2024-01-15T08:25:00.000Z",
+      "createdBy": "system"
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440007",
+      "name": "Transport Jakarta Utara",
+      "createdAt": "2024-01-15T08:30:00.000Z",
+      "updatedAt": "2024-01-15T08:30:00.000Z",
+      "createdBy": "system"
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440008",
+      "name": "Penjahit Budi Specialist Kebaya",
+      "createdAt": "2024-01-15T08:35:00.000Z",
+      "updatedAt": "2024-01-15T08:35:00.000Z",
+      "createdBy": "system"
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440009",
+      "name": "Penjahit Sari Specialist Gaun",
+      "createdAt": "2024-01-15T08:40:00.000Z",
+      "updatedAt": "2024-01-15T08:40:00.000Z",
+      "createdBy": "system"
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440010",
+      "name": "Penjahit Andi Specialist Jas",
+      "createdAt": "2024-01-15T08:45:00.000Z",
+      "updatedAt": "2024-01-15T08:45:00.000Z",
+      "createdBy": "system"
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440011",
+      "name": "Catering Paket A",
+      "createdAt": "2024-01-15T08:50:00.000Z",
+      "updatedAt": "2024-01-15T08:50:00.000Z",
+      "createdBy": "system"
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440012",
+      "name": "Catering Paket Premium",
+      "createdAt": "2024-01-15T08:55:00.000Z",
+      "updatedAt": "2024-01-15T08:55:00.000Z",
+      "createdBy": "system"
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440013",
+      "name": "Aksesoris Manik-manik",
+      "createdAt": "2024-01-15T09:00:00.000Z",
+      "updatedAt": "2024-01-15T09:00:00.000Z",
+      "createdBy": "system"
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440014",
+      "name": "Aksesoris Payet Premium",
+      "createdAt": "2024-01-15T09:05:00.000Z",
+      "updatedAt": "2024-01-15T09:05:00.000Z",
+      "createdBy": "system"
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440015",
+      "name": "Benang Bordir Emas",
+      "createdAt": "2024-01-15T09:10:00.000Z",
+      "updatedAt": "2024-01-15T09:10:00.000Z",
+      "createdBy": "system"
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440016",
+      "name": "Resleting Premium",
+      "createdAt": "2024-01-15T09:15:00.000Z",
+      "updatedAt": "2024-01-15T09:15:00.000Z",
+      "createdBy": "system"
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440017",
+      "name": "Kancing Mutiara",
+      "createdAt": "2024-01-15T09:20:00.000Z",
+      "updatedAt": "2024-01-15T09:20:00.000Z",
+      "createdBy": "system"
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440018",
+      "name": "Biaya Cuci Setrika",
+      "createdAt": "2024-01-15T09:25:00.000Z",
+      "updatedAt": "2024-01-15T09:25:00.000Z",
+      "createdBy": "system"
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440019",
+      "name": "Biaya Packaging Premium",
+      "createdAt": "2024-01-15T09:30:00.000Z",
+      "updatedAt": "2024-01-15T09:30:00.000Z",
+      "createdBy": "system"
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440020",
+      "name": "Biaya Administrasi",
+      "createdAt": "2024-01-15T09:35:00.000Z",
+      "updatedAt": "2024-01-15T09:35:00.000Z",
+      "createdBy": "system"
+    }
+  ]
+}

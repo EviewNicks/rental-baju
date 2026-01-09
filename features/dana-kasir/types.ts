@@ -93,6 +93,12 @@ export interface KasirListItem {
   nama: string
 }
 
+// Kasir filter option (NEW)
+export interface KasirOption {
+  id: string
+  nama: string
+}
+
 // API response wrapper
 export interface ApiResponse<T> {
   success: boolean
