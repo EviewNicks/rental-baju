@@ -1,7 +1,7 @@
 KODE;NAMA;HARGA;JUMLAH
-GAA 01;Gamis anak abu;Rp 75,000;Xs:1
-GAC 02;Gamis anak cream;Rp 75,000;Xs:1
-GAS 03;Gamis anak sage;Rp 50,000;Xs:1
+GAA01;Gamis anak abu;Rp 75,000;Xs:1
+GAC02;Gamis anak cream;Rp 75,000;Xs:1
+GAS03;Gamis anak sage;Rp 50,000;Xs:1
 GAB 04;Gamis anak biru;Rp 50,000;Xs:1
 GAM 05;Gamis anak mauve;Rp 75,000;M:1
 GAG 06;Gamis anak gold;Rp 50,000;Xs:1
