@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react'
 import { ShoppingBag } from 'lucide-react'
-import type { TransactionFormData, ProductSelection, Customer } from '../../../types'
+import type { ProductSelection, Customer } from '../../../types'
 import { formatCurrency } from '../../../lib/utils/client'
 import { PriceCalculator } from '../../../lib/utils/priceCalculator'
 import { SarungPairingIndicator } from '../../ui/SarungPairingIndicator'
@@ -40,7 +40,7 @@ export function OrderSummarySection({
   const priceCalculation = useMemo(() => {
     return PriceCalculator.calculateTransactionTotalWithEnhancements({
       items: products,
-      duration: duration || 4,
+      duration: (duration || 4) as 4 | 7,
       discountType: discountType,
       discountValue: discountValue,
     })
