@@ -235,6 +235,14 @@ export interface ProductSelection {
 
   // Jas-Sarung pairing fields - Optional for backward compatibility
   linkedSarung?: LinkedSarung // Sarung linked to jas product
+
+  // Manual Price Adjustment - UPDATED: Changed to adjustment model
+  manualPriceAdjustment?: {
+    isManuallyAdjusted: boolean
+    originalPrice: number
+    adjustmentAmount: number // NEW: Amount to add/subtract from original price
+    lastModified: string // ISO timestamp
+  }
 }
 
 // Jas-Sarung pairing types
@@ -626,6 +634,13 @@ export interface CreateTransaksiItemSizeAware {
   jumlah: number
   durasi: number // dalam hari
   kondisiAwal?: string
+  // ✅ NEW: Manual price adjustment support
+  manualPriceAdjustment?: {
+    isManuallyAdjusted: boolean
+    originalPrice: number
+    adjustmentAmount: number
+    lastModified: string
+  }
   // ✅ TASK 20: Add linked sarung support for jas-sarung pairing
   linkedSarung?: {
     productId: string
@@ -641,6 +656,13 @@ export interface CreateTransaksiItemLegacy {
   jumlah: number
   durasi: number // dalam hari
   kondisiAwal?: string
+  // ✅ NEW: Manual price adjustment support
+  manualPriceAdjustment?: {
+    isManuallyAdjusted: boolean
+    originalPrice: number
+    adjustmentAmount: number
+    lastModified: string
+  }
   // ✅ TASK 20: Add linked sarung support for backward compatibility
   linkedSarung?: {
     productId: string

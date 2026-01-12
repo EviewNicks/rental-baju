@@ -186,7 +186,7 @@ export async function POST(request: NextRequest) {
     if (selectedCostsStr) {
       try {
         selectedCosts = JSON.parse(selectedCostsStr)
-      } catch (parseError) {
+      } catch {
         return NextResponse.json(
           { error: { message: 'Format data cost items tidak valid', code: 'VALIDATION_ERROR' } },
           { status: 400 },

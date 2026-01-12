@@ -1,244 +1,263 @@
-# Task: Role-Based Expense Visibility & Permission System
+# Manual Price Adjustment Feature - Transaction Form
 
-## Overview
-Implementasi sistem role-based untuk visibility dan permission pengeluaran pada Dana Kasir dengan 2 role utama: Kasir dan Owner. Sistem ini memisahkan akses berdasarkan kasirId tanpa mengubah database schema.
+## 📋 Overview
 
-## 🎯 Tujuan Utama
-Memisahkan visibility dan permission pengeluaran antara Kasir dan Owner menggunakan kasirId sebagai role identifier.
+Implementasi fitur manual price adjustment untuk item di transaction form, memungkinkan kasir untuk mengedit harga item secara manual untuk mengakomodasi item tambahan seperti songket, bando, gelang, songkok yang tidak ada di sistem inventory.
 
-## 🔧 Konsep Teknis
-- **Owner** = special kasir account dengan `kasirId: "owner-system"`
-- **Filtering**: berdasarkan kasirId (bukan createdBy)
-- **Permissions**: kombinasi kasirId + createdBy
+## 🎯 Business Requirements
 
-## 👥 Role Behavior
+### Problem Statement
+- Sistem jas-sarung pairing sudah berjalan baik (jas + sarung = harga jas)
+- Harga otomatis hanya berdasarkan harga produk utama
+- Tidak ada cara untuk menambahkan item tambahan yang tidak ada di inventory
+- Kasir perlu flexibility untuk adjust harga total per item
 
-### Kasir User:
-- ✅ **Lihat**: pengeluaran dengan `kasirId != "owner-system"`
-- ✅ **Edit/Delete**: hanya pengeluaran sendiri (`createdBy` match)
-- ❌ **Tidak bisa lihat**: pengeluaran Owner
+### Solution
+Manual price adjustment dengan inline editing di Payment Summary Step untuk semua item di cart.
 
-### Owner User:
-- ✅ **Lihat**: semua pengeluaran (termasuk `kasirId = "owner-system"`)
-- ✅ **Filter**: dropdown "Semua/Kasir/Owner"
-- ✅ **Edit/Delete**: hanya pengeluaran Owner sendiri
-- ✅ **Create**: otomatis pakai `kasirId = "owner-system"`
+**Contoh Use Case:**
+- Jas + Sarung = 200k (otomatis)
+- Tambahan songket & bando = 55k (manual adjustment)
+- Total item menjadi = 255k
 
-## Implementation Plan
+## 🏗️ Technical Implementation Plan
 
-### 1. API Backend Changes
-- [x] Modify `/api/kasir/dana-summary` route untuk role-based filtering
-- [x] Update DanaSummaryService dengan visibility logic
-- [x] Implement permission checks untuk edit/delete operations
-- [x] Add role detection dari user session
+### Phase 1: Data Structure Enhancement
 
-### 2. Frontend Dashboard Changes
-- [x] Update DanaKasirDashboard dengan role-based state management
-- [x] Modify ExpenseList untuk conditional visibility
-- [x] Update kasir filter logic untuk Owner role
-- [x] Implement permission-based UI controls
+#### 1.1 Update ProductSelection Type
+**File:** `features/kasir/types.ts`
 
-### 3. Service Layer Updates
-- [x] Update pengeluaranService dengan role-based queries
-- [x] Implement visibility filters berdasarkan user role
-- [x] Add permission validation untuk CRUD operations
-- [x] Update kasir list filtering logic
-
-### 4. UI/UX Enhancements
-- [x] Add role indicators di UI components
-- [x] Update filter dropdown behavior untuk Owner
-- [x] Implement conditional rendering untuk action buttons
-- [x] Add contextual messages untuk empty states
-
-### 5. Testing & Validation
-- [ ] Test Kasir user visibility (tidak lihat Owner expenses)
-- [ ] Test Owner user visibility (lihat semua expenses)
-- [ ] Test permission controls (edit/delete restrictions)
-- [ ] Test filter functionality untuk Owner role
-- [ ] Validate summary calculations dengan filtered data
-
-## Technical Implementation Details
-
-### Role Detection Logic
 ```typescript
-// Detect user role from kasirId
-const isOwnerRole = userKasirId === 'owner-system'
-const isKasirRole = userKasirId !== 'owner-system'
-```
-
-### Visibility Filters
-```typescript
-// Kasir User: Hide Owner expenses
-const kasirVisibilityFilter = {
-  kasirId: { not: 'owner-system' }
+interface ProductSelection {
+  // ... existing fields
+  manualPriceAdjustment?: {
+    isManuallyAdjusted: boolean
+    originalPrice: number
+    adjustedPrice: number
+    lastModified: string // ISO timestamp
+  }
 }
-
-// Owner User: Show all (with optional filter)
-const ownerVisibilityFilter = selectedKasirId 
-  ? { kasirId: selectedKasirId }
-  : {} // Show all
 ```
 
-### Permission Checks
+#### 1.2 Update TransactionFormData Type
+**File:** `features/kasir/types.ts`
+
+Ensure form persistence includes manual adjustments in localStorage.
+
+### Phase 2: Price Calculator Enhancement
+
+#### 2.1 Update PriceCalculator Logic
+**File:** `features/kasir/lib/utils/priceCalculator.ts`
+
 ```typescript
-// Edit/Delete permission logic
-const canModifyExpense = (expense, currentUserId, userRole) => {
-  const isOwner = expense.createdBy === currentUserId
-  const isCorrectRole = userRole === 'owner' 
-    ? expense.kasirId === 'owner-system'
-    : expense.kasirId !== 'owner-system'
+// Priority logic:
+// 1. Manual adjustment (if exists) -> use adjustedPrice
+// 2. Automatic calculation (fallback)
+
+calculateItemPrice(item: ProductSelection): number {
+  if (item.manualPriceAdjustment?.isManuallyAdjusted) {
+    return item.manualPriceAdjustment.adjustedPrice
+  }
   
-  return isOwner && isCorrectRole
+  // Fallback to automatic calculation
+  return item.product.pricePerDay * item.quantity * durationMultiplier
 }
 ```
 
-## Files to Modify
+#### 2.2 Discount Calculation Integration
+- Discount calculation berdasarkan formatCurrency yang sudah di-adjust manual
+- Manual adjustment mempengaruhi base amount untuk discount calculation
 
-### Backend Files:
-1. `app/api/kasir/dana-summary/route.ts` - Add role-based filtering
-2. `features/dana-kasir/services/danaSummaryService.ts` - Update visibility logic
-3. `features/dana-kasir/services/pengeluaranService.ts` - Add permission checks
+### Phase 3: UI Implementation
 
-### Frontend Files:
-1. `features/dana-kasir/components/DanaKasirDashboard.tsx` - Role state management
-2. `features/dana-kasir/components/ExpenseList.tsx` - Conditional rendering
-3. `features/dana-kasir/hooks/useDanaSummary.ts` - Role-aware data fetching
+#### 3.1 Inline Price Editor Component
+**File:** `features/kasir/components/form/PaymentSummary/InlinePriceEditor.tsx`
 
-## Expected Behavior
+**Features:**
+- Inline editing dengan +/- buttons
+- Input field untuk direct entry
+- Auto-format currency saat typing
+- Validation (minimum = original price)
+- Visual indicator jika harga sudah di-adjust
 
-### For Kasir Role:
-- Dashboard shows only kasir expenses (tidak ada Owner expenses)
-- Kasir filter dropdown shows kasir lain (exclude Owner)
-- Edit/delete hanya expense sendiri
-- Summary calculation exclude Owner expenses
-
-### For Owner Role:
-- Dashboard shows semua expenses (Owner + semua Kasir)
-- Kasir filter dropdown: "Semua/Owner/Kasir X"
-- Edit/delete hanya Owner expenses sendiri
-- Summary calculation include semua (sesuai filter)
-
-## Implementation Priority
-
-### Phase 1: Core Visibility (High Priority)
-- [ ] API route role detection
-- [ ] Basic visibility filtering
-- [ ] Dashboard role-based rendering
-
-### Phase 2: Permission System (Medium Priority)
-- [ ] Edit/delete permission checks
-- [ ] UI action button controls
-- [ ] Error handling untuk unauthorized actions
-
-### Phase 3: UX Enhancements (Low Priority)
-- [ ] Role indicators
-- [ ] Contextual empty states
-- [ ] Filter behavior optimization
-
-## ✅ Implementation Summary
-
-### **Phase 1: Core Visibility (COMPLETED)**
-
-#### **Backend Implementation:**
-1. **API Route Enhancement** (`app/api/kasir/dana-summary/route.ts`)
-   - Added role detection from Clerk authentication
-   - Implemented user kasirId mapping (Owner = 'owner-system', Kasir = from database)
-   - Added role-based filtering logic
-
-2. **Service Layer Updates** (`features/dana-kasir/services/danaSummaryService.ts`)
-   - Added `getDailyDataWithRoleFilter()` method
-   - Implemented role-based visibility filters:
-     - Kasir: `kasirId != "owner-system"` (exclude Owner expenses)
-     - Owner: No restrictions (see all expenses)
-   - Added separate methods for summary, income, and expense filtering
-
-#### **Frontend Implementation:**
-1. **Hook Updates** (`features/dana-kasir/hooks/useDanaSummary.ts`)
-   - Simplified API calls (role detection server-side)
-   - Updated error handling for new error codes
-
-2. **Dashboard Component** (`features/dana-kasir/components/DanaKasirDashboard.tsx`)
-   - Added `useAuth` for currentUserId
-   - Pass role and userId to child components
-   - Updated comments for role-based behavior
-
-3. **ExpenseList Component** (`features/dana-kasir/components/ExpenseList.tsx`)
-   - Implemented granular permission checks:
-     - Kasir: Edit/delete own expenses (exclude Owner expenses)
-     - Owner: Edit/delete own Owner expenses only
-   - Added role-based empty state messages
-   - Enhanced UI with contextual help text
-
-4. **Filter Components** (`features/dana-kasir/components/KasirFilter.tsx`)
-   - Role-based filter options:
-     - Kasir: Only see other kasir (no Owner option)
-     - Owner: See all including Owner (Owner listed first)
-   - Updated dropdown labels based on role
-
-5. **DateNavigation Component** (`features/dana-kasir/components/DateNavigation.tsx`)
-   - Pass userRole to KasirFilter
-   - Maintain existing functionality
-
-### **Key Features Implemented:**
-
-#### **🔒 Role-Based Visibility:**
-- **Kasir Users**: Only see expenses from other kasir (kasirId != "owner-system")
-- **Owner Users**: See all expenses with optional kasir filter
-
-#### **🛡️ Permission System:**
-- **Edit/Delete Logic**: Users can only modify expenses they created within their role scope
-- **Kasir**: Can edit/delete own kasir expenses (not Owner expenses)
-- **Owner**: Can edit/delete own Owner expenses only
-
-#### **🎨 UI/UX Enhancements:**
-- **Role Indicators**: Visual badges for Owner vs Kasir expenses
-- **Contextual Messages**: Different empty states based on role and filter
-- **Smart Filtering**: Owner option hidden from Kasir users
-- **Permission-based Actions**: Edit/delete buttons only show when allowed
-
-#### **⚡ Performance Optimizations:**
-- **Server-side Filtering**: Role detection and filtering at database level
-- **Conditional Queries**: Efficient WHERE clauses based on role
-- **Separate Cache Keys**: React Query caching per kasir filter
-
-### **🎯 Expected Behavior:**
-
-#### **For Kasir Role:**
-✅ Dashboard shows only kasir expenses (no Owner expenses)  
-✅ Kasir filter dropdown excludes Owner option  
-✅ Edit/delete only own expenses  
-✅ Summary calculation excludes Owner expenses  
-✅ Contextual empty state messages  
-
-#### **For Owner Role:**
-✅ Dashboard shows all expenses (Owner + all Kasir)  
-✅ Kasir filter dropdown includes "Owner" option (listed first)  
-✅ Edit/delete only own Owner expenses  
-✅ Summary calculation includes all (based on selected filter)  
-✅ "Semua" instead of "Semua Kasir" in filter dropdown  
-
-### **🔧 Technical Architecture:**
-
-```typescript
-// Role Detection Flow
-User Login → Clerk Auth → Role from publicMetadata → KasirId Mapping
-                                    ↓
-                    Owner → 'owner-system'
-                    Kasir → Database lookup via getKasirFromUser()
-
-// Visibility Filter Flow  
-API Request → Role Detection → Build WHERE Clause → Database Query
-                                    ↓
-            Kasir: { kasirId: { not: 'owner-system' } }
-            Owner: { /* optional kasirId filter */ }
-
-// Permission Check Flow
-Action Request → Check createdBy + Role Scope → Allow/Deny
-                                    ↓
-        Kasir: createdBy === userId && kasirId !== 'owner-system'
-        Owner: createdBy === userId && kasirId === 'owner-system'
+**UI Design:**
+```
+[Product Name]                    [Edit Mode: ON/OFF]
+Size • Color • 50k/4 hari        [- 50,000 +] [Reset]
+                                  ↑ Inline editor
 ```
 
-### **🚀 Ready for Testing**
+#### 3.2 Update OrderSummarySection
+**File:** `features/kasir/components/form/PaymentSummary/OrderSummarySection.tsx`
 
-The role-based expense visibility and permission system is now fully implemented and ready for comprehensive testing. All core functionality has been completed according to the requirements.
+**Enhancements:**
+- Integrate InlinePriceEditor untuk setiap item
+- Show original vs adjusted price
+- Visual indicator untuk manually adjusted items
+- Handle quantity changes (reset manual adjustment atau proportional adjustment)
+
+#### 3.3 Price Display Logic
+```typescript
+// Display priority:
+// 1. Manual adjusted price (with indicator)
+// 2. Automatic calculated price
+// 3. Show "Adjusted from: Rp X" if manually adjusted
+```
+
+### Phase 4: Form State Management
+
+#### 4.1 Update useTransactionForm Hook
+**File:** `features/kasir/hooks/useTransactionForm.ts`
+
+**New Functions:**
+```typescript
+const updateItemManualPrice = (itemIndex: number, newPrice: number) => {
+  // Update specific item's manual price adjustment
+}
+
+const resetItemManualPrice = (itemIndex: number) => {
+  // Reset to automatic calculation
+}
+
+const handleQuantityChangeWithManualPrice = (itemIndex: number, newQuantity: number) => {
+  // Handle quantity change:
+  // Option 1: Reset manual adjustment
+  // Option 2: Proportional adjustment (recommended)
+}
+```
+
+#### 4.2 Form Persistence Enhancement
+**File:** `features/kasir/hooks/useTransactionFormPersistence.ts`
+
+- Include manualPriceAdjustment in localStorage save/restore
+- Validation saat restore (ensure data integrity)
+
+### Phase 5: Integration & Testing
+
+#### 5.1 PaymentSummaryStep Integration
+**File:** `features/kasir/components/form/PaymentSummaryStep.tsx`
+
+- Pass manual adjustment functions to child components
+- Update total calculation logic
+- Handle form submission dengan manual adjustments
+
+#### 5.2 API Integration
+**File:** `app/api/kasir/transaksi/route.ts`
+
+- Ensure manual adjustments are properly sent to backend
+- Validation di server side (optional, bisa di-skip untuk MVP)
+
+## 🎨 UI/UX Specifications
+
+### Inline Editor Design
+```
+┌─────────────────────────────────────────────────────────┐
+│ [Product Image] Product Name                    [Edit]  │
+│                 Size • Color • Details                  │
+│                                                         │
+│ Edit Mode (when active):                                │
+│ ┌─────────────────────────────────────────────────────┐ │
+│ │      [    255,000    ]   [Reset] [✓] [✗]           │ │
+│ │     ↑ Currency formatted input                      │ │
+│ └─────────────────────────────────────────────────────┘ │
+│                                                         │
+│ Display Mode:                                           │
+│ Rp 255,000 (Adjusted from: Rp 200,000) 🔧             │
+└─────────────────────────────────────────────────────────┘
+```
+
+### Visual Indicators
+- 🔧 Icon untuk manually adjusted items
+- Different background color untuk adjusted items
+- "Adjusted from: Rp X" text untuk transparency
+
+## 📝 Implementation Checklist
+
+### Phase 1: Foundation
+- [ ] Update ProductSelection type dengan manualPriceAdjustment
+- [ ] Update TransactionFormData type
+- [ ] Update form persistence untuk include manual adjustments
+
+### Phase 2: Price Logic
+- [ ] Update PriceCalculator untuk handle manual adjustments
+- [ ] Implement priority logic (manual > automatic)
+- [ ] Update discount calculation integration
+- [ ] Add validation logic (minimum price, etc.)
+
+### Phase 3: UI Components
+- [ ] Create InlinePriceEditor component
+- [ ] Implement +/- buttons functionality
+- [ ] Add currency formatting
+- [ ] Add validation & error states
+- [ ] Create visual indicators untuk adjusted items
+
+### Phase 4: Integration
+- [ ] Update OrderSummarySection dengan inline editor
+- [ ] Update useTransactionForm hook dengan manual price functions
+- [ ] Handle quantity changes dengan manual adjustments
+- [ ] Update PaymentSummaryStep integration
+
+### Phase 5: Testing & Polish
+- [ ] Test form persistence (save/restore manual adjustments)
+- [ ] Test discount calculation dengan manual prices
+- [ ] Test quantity changes behavior
+- [ ] Test edge cases (reset, validation, etc.)
+- [ ] UI/UX polish dan accessibility
+
+## 🔍 Technical Considerations
+
+### Data Flow
+```
+User clicks [Edit] → InlinePriceEditor active → 
+User adjusts price → updateItemManualPrice() → 
+FormData updated → PriceCalculator recalculates → 
+UI re-renders dengan new totals
+```
+
+### Validation Rules
+- Minimum price = original calculated price (tidak boleh kurang)
+- Maximum price = reasonable limit (misal 10x original price)
+- Currency formatting validation
+- Number input validation
+
+### Edge Cases
+1. **Quantity Change After Manual Adjustment:**
+   - Proportional adjustment (recommended)
+   - Reset to automatic (alternative)
+
+2. **Discount Application:**
+   - Apply discount to manually adjusted price
+   - Clear indication di UI
+
+3. **Form Persistence:**
+   - Save manual adjustments di localStorage
+   - Restore dengan validation
+   - Handle corrupted data gracefully
+
+## 🚀 Success Criteria
+
+### Functional Requirements
+- ✅ Kasir dapat edit harga item secara manual
+- ✅ Manual adjustment mempengaruhi total calculation
+- ✅ Discount calculation berdasarkan adjusted price
+- ✅ Form persistence include manual adjustments
+- ✅ Visual indication untuk adjusted items
+
+### Non-Functional Requirements
+- ✅ Responsive design (mobile-friendly)
+- ✅ Accessible (keyboard navigation, screen readers)
+- ✅ Performance (no lag saat editing)
+- ✅ Data integrity (validation, error handling)
+
+### User Experience
+- ✅ Intuitive inline editing
+- ✅ Clear visual feedback
+- ✅ Easy reset functionality
+- ✅ Transparent pricing (show original vs adjusted)
+
+---
+
+**Priority:** High
+**Estimated Effort:** 2-3 days
+**Dependencies:** Existing jas-sarung pairing system
+**Risk Level:** Low (additive feature, tidak mengubah existing logic)

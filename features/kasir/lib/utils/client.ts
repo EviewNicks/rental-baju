@@ -6,7 +6,7 @@
  */
 
 // Browser-safe utilities (formatting, basic helpers)
-export { cn, formatCurrency, formatDate, getDaysOverdue } from './common'
+export { cn, formatCurrency, parseCurrency, formatDate, getDaysOverdue } from './common'
 
 // Transaction code generation (browser-safe)
 export { TransactionCodeGenerator } from './codeGenerator'

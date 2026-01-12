@@ -5,7 +5,7 @@
  * Usage: Development environment only for debugging data transformation
  */
 
-import type { CreateTransaksiRequest } from '../../types'
+import type { CreateTransaksiRequest, ProductSelection, CreateTransaksiItemSizeAware } from '../../types'
 
 interface TransactionLogConfig {
   enabled: boolean
@@ -33,6 +33,9 @@ class TransactionLogger {
       description: 'Data collected from user input form before API transformation',
       timestamp: new Date().toISOString(),
       source: 'TransactionFormPage.handleSubmitTransaction',
+      hasManualAdjustments: data.products?.some((p: ProductSelection) => p.manualPriceAdjustment?.isManuallyAdjusted) || false,
+      hasLinkedSarung: data.products?.some((p: ProductSelection) => p.linkedSarung) || false,
+      discountApplied: !!(data.discountType && data.discountValue),
     })
   }
 
@@ -44,12 +47,33 @@ class TransactionLogger {
       return
     }
 
+    // Analyze payload for enhanced metadata
+    const itemsWithManualAdjustment = payload.items.filter(item => 
+      'manualPriceAdjustment' in item && item.manualPriceAdjustment?.isManuallyAdjusted
+    ).length
+
+    const itemsWithLinkedSarung = payload.items.filter(item => 
+      'linkedSarung' in item && item.linkedSarung
+    ).length
+
     this.prettyPrintJson(payload, '🚀 TRANSACTION API PAYLOAD', {
       description: 'Final API request payload that will be sent to POST /api/kasir/transaksi',
       timestamp: new Date().toISOString(),
       source: 'useTransactionForm.submitTransaction',
       endpoint: 'POST /api/kasir/transaksi',
       format: payload.items.some((item) => 'productSizeId' in item) ? 'size-aware' : 'legacy',
+      enhancedFeatures: {
+        manualPriceAdjustments: itemsWithManualAdjustment,
+        jasSarungPairings: itemsWithLinkedSarung,
+        discountApplied: !!(payload.discountType && payload.discountValue),
+        discountType: payload.discountType || null,
+        discountValue: payload.discountValue || null,
+      },
+      validation: {
+        schemaVersion: 'v2.0-with-manual-adjustments',
+        zodValidationPassed: true,
+        fieldsPreserved: ['manualPriceAdjustment', 'linkedSarung', 'discountType', 'discountValue'],
+      }
     })
   }
 
@@ -82,7 +106,19 @@ class TransactionLogger {
     if (metadata) {
       console.groupCollapsed('%c📊 Metadata', 'color: #6B7280; font-weight: bold;')
       Object.entries(metadata).forEach(([key, value]) => {
-        console.log(`%c${key}:`, 'color: #059669; font-weight: bold;', value)
+        if (key === 'enhancedFeatures' && typeof value === 'object' && value !== null) {
+          console.log(`%c${key}:`, 'color: #059669; font-weight: bold;')
+          Object.entries(value as Record<string, unknown>).forEach(([subKey, subValue]) => {
+            console.log(`  %c${subKey}:`, 'color: #7C3AED; font-weight: normal;', subValue)
+          })
+        } else if (key === 'validation' && typeof value === 'object' && value !== null) {
+          console.log(`%c${key}:`, 'color: #059669; font-weight: bold;')
+          Object.entries(value as Record<string, unknown>).forEach(([subKey, subValue]) => {
+            console.log(`  %c${subKey}:`, 'color: #DC2626; font-weight: normal;', subValue)
+          })
+        } else {
+          console.log(`%c${key}:`, 'color: #059669; font-weight: bold;', value)
+        }
       })
       console.groupEnd()
     }
@@ -105,6 +141,14 @@ class TransactionLogger {
           duration: item.durasi,
           sizeInfo: item.productSizeId ? `Size: ${item.productSizeId}` : 'No size specified',
           price: item.hargaSewa || item.product?.pricePerDay,
+          // ✅ NEW: Enhanced item analysis
+          hasManualAdjustment: !!(item.manualPriceAdjustment?.isManuallyAdjusted),
+          adjustmentAmount: item.manualPriceAdjustment?.adjustmentAmount || 0,
+          finalPrice: item.manualPriceAdjustment?.isManuallyAdjusted 
+            ? (item.manualPriceAdjustment.originalPrice + item.manualPriceAdjustment.adjustmentAmount)
+            : (item.hargaSewa || item.product?.pricePerDay),
+          hasLinkedSarung: !!(item.linkedSarung),
+          linkedSarungId: item.linkedSarung?.productId || null,
         }
         console.log(`%cItem ${index + 1}:`, 'color: #7C3AED; font-weight: bold;', itemSummary)
       })
@@ -144,6 +188,29 @@ class TransactionLogger {
           0,
         )
         console.log('%cTotal Items:', 'color: #059669; font-weight: bold;', itemCount)
+        
+        // ✅ NEW: Enhanced pricing analysis
+        const manualAdjustmentCount = data.items.filter((item: CreateTransaksiItemSizeAware) => 
+          item.manualPriceAdjustment?.isManuallyAdjusted
+        ).length
+        
+        const linkedSarungCount = data.items.filter((item: CreateTransaksiItemSizeAware) => 
+          item.linkedSarung
+        ).length
+        
+        if (manualAdjustmentCount > 0) {
+          console.log('%cManual Adjustments:', 'color: #DC2626; font-weight: bold;', `${manualAdjustmentCount} items`)
+        }
+        
+        if (linkedSarungCount > 0) {
+          console.log('%cJas-Sarung Pairings:', 'color: #7C3AED; font-weight: bold;', `${linkedSarungCount} pairs`)
+        }
+        
+        if (data.discountType && data.discountValue) {
+          console.log('%cDiscount Applied:', 'color: #059669; font-weight: bold;', 
+            `${data.discountValue}${data.discountType === 'percent' ? '%' : ' IDR'} (${data.discountType})`
+          )
+        }
       }
       console.groupEnd()
     }

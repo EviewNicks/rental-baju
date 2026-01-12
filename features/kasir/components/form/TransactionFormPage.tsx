@@ -49,6 +49,10 @@ export function TransactionFormPage() {
     updateFormData,
     createError,
     clearFormData,
+    // Manual Price Adjustment Functions - available but not used in this component
+    // updateItemManualPrice,
+    // resetItemManualPrice,
+    // handleQuantityChangeWithManualPrice,
   } = useTransactionForm()
 
   // Add local state for restoration notification control
