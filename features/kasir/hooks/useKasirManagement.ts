@@ -122,11 +122,16 @@ export function useKasirManagement(options: UseKasirManagementOptions = {}) {
     })
   }
 
+  // Filter out system kasir (owner-system) from available kasirs for transaction selection
+  const filteredAvailableKasirs = (availableKasirQuery.data || []).filter(
+    kasir => kasir.id !== 'owner-system'
+  )
+
   return {
     // Query data
     kasirs: kasirListQuery.data || [],
     kasirsPaginated: kasirListPaginatedQuery.data,
-    availableKasirs: availableKasirQuery.data || [],
+    availableKasirs: filteredAvailableKasirs,
 
     // Loading states
     isLoadingKasirs: kasirListQuery.isLoading,
