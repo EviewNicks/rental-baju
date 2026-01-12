@@ -18,7 +18,7 @@
             "createdAt": "2025-12-19T07:24:52.394Z",
             "updatedAt": "2025-12-19T07:24:52.394Z"
         },
-        "status": "active",
+        "status": "diambil",
         "totalHarga": 720000,
         "jumlahBayar": 720000,
         "sisaBayar": 0,
@@ -31,7 +31,7 @@
         "discountValue": 10,
         "createdBy": "user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH",
         "createdAt": "2026-01-12T14:53:03.218Z",
-        "updatedAt": "2026-01-12T14:53:12.078Z",
+        "updatedAt": "2026-01-12T15:10:35.486Z",
         "items": [
             {
                 "id": "292da870-683a-4758-be45-8cfd19218e25",
@@ -45,7 +45,7 @@
                     "category": "jas-jaguar"
                 },
                 "jumlah": 1,
-                "jumlahDiambil": 0,
+                "jumlahDiambil": 1,
                 "hargaSewa": 200000,
                 "durasi": 4,
                 "subtotal": 200000,
@@ -82,7 +82,7 @@
                     "category": "jas-jaguar"
                 },
                 "jumlah": 2,
-                "jumlahDiambil": 0,
+                "jumlahDiambil": 2,
                 "hargaSewa": 225000,
                 "durasi": 4,
                 "subtotal": 450000,
@@ -119,7 +119,7 @@
                     "category": "jas-jaguar"
                 },
                 "jumlah": 1,
-                "jumlahDiambil": 0,
+                "jumlahDiambil": 1,
                 "hargaSewa": 150000,
                 "durasi": 4,
                 "subtotal": 150000,
@@ -140,6 +140,53 @@
             }
         ],
         "aktivitas": [
+            {
+                "id": "96fe68e5-619e-41ec-b8d5-fafc62796a66",
+                "tipe": "diperbarui",
+                "deskripsi": "Status transaksi diubah menjadi diambil",
+                "data": {
+                    "newStatus": "diambil",
+                    "previousStatus": "active"
+                },
+                "createdBy": "user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH",
+                "createdAt": "2026-01-12T15:10:35.731Z"
+            },
+            {
+                "id": "1b9e189e-83dc-4f0e-8cbf-0759b9585763",
+                "tipe": "diambil",
+                "deskripsi": "Pickup: Jas Jaguar Peach + Sarung, Jas Jaguar Peach + Sarung (2 unit), Jas Jaguar Peach - di ambil atas nama : ariian KTP = 73110000000",
+                "data": {
+                    "items": [
+                        {
+                            "itemId": "292da870-683a-4758-be45-8cfd19218e25",
+                            "kondisiAwal": "{\"productSizeId\":\"ad975073-0f95-4158-bf1b-061acfc3ffa5\",\"size\":\"M\",\"ageCategory\":\"ADULT\",\"condition\":\"baik\",\"linkedSarung\":{\"productId\":\"2b4674e4-42cd-40a8-847e-6d1fed399bf1\",\"productSizeId\":\"9f362506-8ad3-41dd-953c-8f80ce842673\",\"quantity\":1,\"selectedSize\":{\"id\":\"9f362506-8ad3-41dd-953c-8f80ce842673\",\"productId\":\"2b4674e4-42cd-40a8-847e-6d1fed399bf1\",\"size\":\"UNIVERSAL\",\"ageCategory\":\"ADULT\",\"quantity\":1,\"availableQuantity\":0,\"rentedStock\":0,\"createdAt\":\"2026-01-12T14:53:05.360Z\",\"updatedAt\":\"2026-01-12T14:53:05.360Z\"}}}",
+                            "productCode": "JJP03",
+                            "productName": "Jas Jaguar Peach",
+                            "jumlahDiambil": 1
+                        },
+                        {
+                            "itemId": "2a9e7ef5-69d9-4e2c-9c9f-13f9e260fca6",
+                            "kondisiAwal": "{\"productSizeId\":\"ad975073-0f95-4158-bf1b-061acfc3ffa5\",\"size\":\"M\",\"ageCategory\":\"ADULT\",\"condition\":\"baik\",\"linkedSarung\":{\"productId\":\"48608648-cfb6-42fe-9635-905222865019\",\"productSizeId\":\"28f6437e-0602-4da2-a93f-e9be23b8b419\",\"quantity\":2,\"selectedSize\":{\"id\":\"28f6437e-0602-4da2-a93f-e9be23b8b419\",\"productId\":\"48608648-cfb6-42fe-9635-905222865019\",\"size\":\"UNIVERSAL\",\"ageCategory\":\"ADULT\",\"quantity\":2,\"availableQuantity\":0,\"rentedStock\":0,\"createdAt\":\"2026-01-12T14:53:04.798Z\",\"updatedAt\":\"2026-01-12T14:53:04.798Z\"}}}",
+                            "productCode": "JJP03",
+                            "productName": "Jas Jaguar Peach",
+                            "jumlahDiambil": 2
+                        },
+                        {
+                            "itemId": "a20e9f0f-4384-4152-8299-fabe8cff0c3d",
+                            "kondisiAwal": "{\"productSizeId\":\"ad975073-0f95-4158-bf1b-061acfc3ffa5\",\"size\":\"M\",\"ageCategory\":\"ADULT\",\"condition\":\"baik\",\"linkedSarung\":null}",
+                            "productCode": "JJP03",
+                            "productName": "Jas Jaguar Peach",
+                            "jumlahDiambil": 1
+                        }
+                    ],
+                    "catatan": "di ambil atas nama : ariian KTP = 73110000000",
+                    "timestamp": "2026-01-12T15:10:29.375Z",
+                    "processedBy": "user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH",
+                    "processedByName": "Inaya"
+                },
+                "createdBy": "user_2zqN9kdtZsIFcQcH4Iwc1DrtKoH",
+                "createdAt": "2026-01-12T15:10:29.378Z"
+            },
             {
                 "id": "ed435558-0a92-48a8-a35a-d7350894a67a",
                 "tipe": "dibayar",

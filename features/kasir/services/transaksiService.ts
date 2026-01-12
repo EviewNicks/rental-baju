@@ -19,7 +19,6 @@ import { createAvailabilityService } from './availabilityService'
 import { createInventoryService } from './inventoryService'
 import type { TransactionStatus } from '../types'
 import { DateCalculator } from '../lib/utils/dateCalculator'
-import { TransactionLogger } from '../lib/logger/transactionLogger'
 import { sarungPairingService } from './pairingService'
 
 
@@ -1774,7 +1773,6 @@ export class TransaksiService {
       
       // Skip sarung items that are paired (they'll be included as linkedSarung data)
       if (kondisiAwalData && typeof kondisiAwalData === 'object' && 'isPairedSarung' in kondisiAwalData && kondisiAwalData.isPairedSarung) {
-        console.log('🔍 Skipping paired sarung item:', { itemId: item.id, produkId: item.produkId })
         continue
       }
       

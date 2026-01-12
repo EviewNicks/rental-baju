@@ -135,7 +135,7 @@ export function InlinePriceEditor({
     setIsEditing(false)
     setError(null)
     setInputValue('')
-  }, [inputValue, totalAdjustment, originalPrice, itemIndex, onCumulativeAdjustment, parseAdjustmentInput, item.product.id, item.product.name])
+  }, [inputValue, totalAdjustment, originalPrice, itemIndex, onCumulativeAdjustment, parseAdjustmentInput])
 
   const handlePriceReset = useCallback(() => {
     onPriceReset(itemIndex)

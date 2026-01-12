@@ -90,7 +90,7 @@ export class ProfessionalReceiptService {
       // Horizontal alignment: Keterangan (left) and Financial Summary (right) on same level
       // Store the Y position after table for both sections to use the same starting point
       const afterTableY = y // Add consistent spacing after table for both sections
-      const keteranganY = this.addKeteranganSection(doc, afterTableY)
+      const keteranganY = this.addKeteranganSection(doc, transactionData, afterTableY)
       const financialY = this.addFinancialSummary(doc, transactionData, afterTableY)
       // Use the maximum Y position from both sections
       y = Math.max(keteranganY, financialY)
@@ -380,14 +380,30 @@ export class ProfessionalReceiptService {
   }
 
   /**
-   * Add keterangan section (left side footer)
+   * Add keterangan section (left side footer) with optional note and pickup info sections
    * @param doc - jsPDF document instance
+   * @param transactionData - Transaction data for note content and pickup info
    * @param y - Current Y position
    * @returns New Y position after keterangan section
    */
-  private addKeteranganSection(doc: jsPDF, y: number): number {
+  private addKeteranganSection(doc: jsPDF, transactionData: TransactionDetail, y: number): number {
     let currentY = y // Start at same Y as financial summary (no extra spacing)
     const leftX = this.MARGIN
+
+    // Add note section first if catatan exists
+    if (transactionData.catatan && transactionData.catatan.trim()) {
+      // Get pickup info to append to catatan
+      const pickupInfo = this.extractPickupInfo(transactionData)
+      currentY = this.addNoteSection(doc, transactionData.catatan, leftX, currentY, pickupInfo)
+      currentY += 5 // Add spacing between note and keterangan
+    } else {
+      // If no catatan but has pickup info, show pickup info only
+      const pickupInfo = this.extractPickupInfo(transactionData)
+      if (pickupInfo) {
+        currentY = this.addNoteSection(doc, '', leftX, currentY, pickupInfo)
+        currentY += 5 // Add spacing between pickup info and keterangan
+      }
+    }
 
     // Set font for keterangan
     doc.setFont(this.FONT_FAMILY, 'bold')
@@ -405,11 +421,11 @@ export class ProfessionalReceiptService {
       '* Barang yang sudah di booking tidak dapat di cancel',
       '* Penukaran maksimal 3 hari sebelum pengambilan',
       '* Pengembalian barang wajib sertakan nota',
-      '* Pengembalian lewat tanggal dikenakan denda 20rb per hari per baju'
+      '* Pengembalian lewat tanggal dikenakan denda 20rb per h/baju'
     ]
 
     // Draw each bullet point with proper spacing and text wrapping
-    const maxWidth = 85 // Increased width to prevent unnecessary wrapping
+    const maxWidth = 125 // Expanded width to utilize more left area space (was 85)
     const lineSpacing = 4 // Spacing between bullet points
 
     for (const point of keteranganPoints) {
@@ -437,6 +453,92 @@ export class ProfessionalReceiptService {
     return currentY + 3 // Reduced final spacing
   }
 
+  /**
+   * Add note section from transaction catatan with optional pickup info
+   * @param doc - jsPDF document instance
+   * @param catatan - Transaction note content
+   * @param leftX - Left X position
+   * @param y - Current Y position
+   * @param pickupInfo - Optional pickup info to append
+   * @returns New Y position after note section
+   */
+  private addNoteSection(doc: jsPDF, catatan: string, leftX: number, y: number, pickupInfo?: string | null): number {
+    let currentY = y
+
+    // Set font for note title
+    doc.setFont(this.FONT_FAMILY, 'bold')
+    doc.setFontSize(this.FONT_SIZE)
+    
+    // Note title
+    doc.text('Catatan:', leftX, currentY)
+    
+    // Set normal font for note content
+    doc.setFont(this.FONT_FAMILY, 'normal')
+    currentY += 5
+
+    // Combine catatan and pickup info
+    const allNoteContent = []
+    
+    // Add catatan lines if exists
+    if (catatan && catatan.trim()) {
+      const noteLines = catatan.split('\n').filter(line => line.trim())
+      allNoteContent.push(...noteLines)
+    }
+    
+    // Add pickup info if exists (no title, just append)
+    if (pickupInfo && pickupInfo.trim()) {
+      const pickupLines = pickupInfo.split('\n').filter(line => line.trim())
+      allNoteContent.push(...pickupLines)
+    }
+
+    // Process all content together
+    const maxWidth = 110 // Expanded width to utilize more left area space
+    const lineSpacing = 3.5 // Spacing between note lines
+
+    for (const contentLine of allNoteContent) {
+      // Handle text wrapping for long note lines
+      const wrappedLines = doc.splitTextToSize(contentLine.trim(), maxWidth)
+      
+      if (Array.isArray(wrappedLines)) {
+        for (let i = 0; i < wrappedLines.length; i++) {
+          const line = wrappedLines[i]
+          // First line starts at leftX, subsequent lines indented
+          const xPosition = i === 0 ? leftX : leftX + 3 // 3mm indent for wrapped lines
+          doc.text(line, xPosition, currentY)
+          currentY += lineSpacing
+        }
+      } else {
+        // Single line
+        doc.text(wrappedLines, leftX, currentY)
+        currentY += lineSpacing
+      }
+    }
+    
+    return currentY // Return position after note content
+  }
+
+  /**
+   * Extract pickup info from transaction activities
+   * @param transactionData - Transaction data with activities
+   * @returns Pickup catatan string or null if not found
+   */
+  private extractPickupInfo(transactionData: TransactionDetail): string | null {
+    // Find aktivitas with tipe "diambil"
+    const pickupActivity = transactionData.aktivitas?.find(activity => activity.tipe === 'diambil')
+    
+    if (!pickupActivity || !pickupActivity.data) {
+      return null
+    }
+
+    // Type guard for data.catatan
+    const data = pickupActivity.data as { catatan?: string } // More specific type for aktivitas data
+    if (!data.catatan || typeof data.catatan !== 'string') {
+      return null
+    }
+
+    const catatan = data.catatan.trim()
+    return catatan || null
+  }
 
   /**
    * Add bottom note (centered at bottom)

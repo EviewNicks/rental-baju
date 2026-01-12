@@ -5,7 +5,7 @@
  * Usage: Development environment only for debugging data transformation
  */
 
-import type { CreateTransaksiRequest } from '../../types'
+import type { CreateTransaksiRequest, ProductSelection, CreateTransaksiItemSizeAware } from '../../types'
 
 interface TransactionLogConfig {
   enabled: boolean
@@ -33,8 +33,8 @@ class TransactionLogger {
       description: 'Data collected from user input form before API transformation',
       timestamp: new Date().toISOString(),
       source: 'TransactionFormPage.handleSubmitTransaction',
-      hasManualAdjustments: data.products?.some((p: any) => p.manualPriceAdjustment?.isManuallyAdjusted) || false,
-      hasLinkedSarung: data.products?.some((p: any) => p.linkedSarung) || false,
+      hasManualAdjustments: data.products?.some((p: ProductSelection) => p.manualPriceAdjustment?.isManuallyAdjusted) || false,
+      hasLinkedSarung: data.products?.some((p: ProductSelection) => p.linkedSarung) || false,
       discountApplied: !!(data.discountType && data.discountValue),
     })
   }
@@ -190,11 +190,11 @@ class TransactionLogger {
         console.log('%cTotal Items:', 'color: #059669; font-weight: bold;', itemCount)
         
         // ✅ NEW: Enhanced pricing analysis
-        const manualAdjustmentCount = data.items.filter((item: any) => 
+        const manualAdjustmentCount = data.items.filter((item: CreateTransaksiItemSizeAware) => 
           item.manualPriceAdjustment?.isManuallyAdjusted
         ).length
         
-        const linkedSarungCount = data.items.filter((item: any) => 
+        const linkedSarungCount = data.items.filter((item: CreateTransaksiItemSizeAware) => 
           item.linkedSarung
         ).length
         
