@@ -18,7 +18,7 @@ export interface PriceCalculationResult {
     jumlah: number
     durasi: 4 | 7
     basePrice: number
-    adjustedPrice: number
+    finalPrice: number // UPDATED: Changed from adjustedPrice to finalPrice
     isEligibleForFreeSarung: boolean
     linkedSarungPrice: number // Always 0 for linked sarung
   }>
@@ -55,6 +55,7 @@ export class PriceCalculator {
   /**
    * Calculate transaction total with duration multipliers, discounts, and jas-sarung pairing
    * Frontend version for real-time calculations
+   * ENHANCED: Now supports manual price adjustments with priority logic
    */
   static calculateTransactionTotalWithEnhancements(params: PriceCalculationParams): PriceCalculationResult {
     const { items, duration, discountType, discountValue } = params
@@ -67,11 +68,23 @@ export class PriceCalculator {
     let totalLinkedSarung = 0
     let totalSarungSavings = 0
     
-    // Calculate item totals with duration multiplier and pairing logic
+    // Calculate item totals with duration multiplier, pairing logic, and manual adjustments
     const itemCalculations = items.map(item => {
       const isEligibleForSarung = isEligibleForFreeSarung(item.product)
-      const basePrice = item.product.pricePerDay * item.quantity
-      const adjustedPrice = basePrice * durationMultiplier
+      
+      // ✅ UPDATED: Manual price adjustment priority logic with adjustment model
+      let finalPrice: number
+      let basePrice: number
+      
+      if (item.manualPriceAdjustment?.isManuallyAdjusted) {
+        // Priority 1: Use manual adjustment if exists
+        basePrice = item.manualPriceAdjustment.originalPrice
+        finalPrice = basePrice + item.manualPriceAdjustment.adjustmentAmount
+      } else {
+        // Priority 2: Use automatic calculation (existing logic)
+        basePrice = item.product.pricePerDay * item.quantity
+        finalPrice = basePrice * durationMultiplier
+      }
       
       // Track eligible items
       if (isEligibleForSarung) {
@@ -95,16 +108,16 @@ export class PriceCalculator {
         jumlah: item.quantity,
         durasi: duration,
         basePrice,
-        adjustedPrice,
+        finalPrice,
         isEligibleForFreeSarung: isEligibleForSarung,
         linkedSarungPrice
       }
     })
     
     // Calculate subtotal (excluding linked sarung prices)
-    const subtotal = itemCalculations.reduce((sum, item) => sum + item.adjustedPrice + item.linkedSarungPrice, 0)
+    const subtotal = itemCalculations.reduce((sum, item) => sum + item.finalPrice + item.linkedSarungPrice, 0)
     
-    // Calculate discount amount
+    // Calculate discount amount (based on manually adjusted prices)
     let discountAmount = 0
     if (discountType && discountValue && discountValue > 0) {
       if (discountType === 'percent') {
@@ -134,8 +147,56 @@ export class PriceCalculator {
   }
   
   /**
-   * Validate discount input
+   * Validate manual price adjustment
+   * NEW: Validation for manual price adjustments
    */
+  static validateManualPriceAdjustment(
+    originalPrice: number,
+    adjustedPrice: number,
+    maxMultiplier: number = 10
+  ): { isValid: boolean; error?: string } {
+    if (adjustedPrice < 0) {
+      return { isValid: false, error: 'Harga tidak boleh negatif' }
+    }
+    
+    if (adjustedPrice < originalPrice) {
+      return { isValid: false, error: 'Harga tidak boleh kurang dari harga asli' }
+    }
+    
+    if (adjustedPrice > originalPrice * maxMultiplier) {
+      return { isValid: false, error: `Harga tidak boleh lebih dari ${maxMultiplier}x harga asli` }
+    }
+    
+    return { isValid: true }
+  }
+
+  /**
+   * Calculate original price for manual adjustment
+   * NEW: Helper to get the original automatic price
+   */
+  static calculateOriginalPrice(item: ProductSelection, duration: 4 | 7): number {
+    const durationMultiplier = duration === 7 ? 1.5 : 1.0
+    return item.product.pricePerDay * item.quantity * durationMultiplier
+  }
+
+  /**
+   * Format currency for display
+   * Enhanced with manual adjustment indicator
+   */
+  static formatPriceWithAdjustment(
+    currentPrice: number,
+    originalPrice?: number,
+    isManuallyAdjusted?: boolean
+  ): string {
+    const formattedPrice = this.formatToRupiah(currentPrice)
+    
+    if (isManuallyAdjusted && originalPrice && originalPrice !== currentPrice) {
+      const formattedOriginal = this.formatToRupiah(originalPrice)
+      return `${formattedPrice} (Adjusted from: ${formattedOriginal})`
+    }
+    
+    return formattedPrice
+  }
   static validateDiscount(
     discountType: 'percent' | 'nominal' | null,
     discountValue: number | null,

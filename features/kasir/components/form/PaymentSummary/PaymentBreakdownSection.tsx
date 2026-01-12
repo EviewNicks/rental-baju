@@ -62,7 +62,7 @@ export function PaymentBreakdownSection({
             
             const itemCalculation = priceCalculation.itemCalculations[index]
             const basePrice = item.product.pricePerDay * item.quantity
-            const adjustedPrice = itemCalculation?.adjustedPrice || basePrice
+            const finalPrice = itemCalculation?.finalPrice || basePrice
 
             // Check if this is a linked sarung (should be free)
             const isItemLinkedSarung = isLinkedSarung(
@@ -88,7 +88,7 @@ export function PaymentBreakdownSection({
                 {formData.duration === 7 && !isItemLinkedSarung && (
                   <div className="flex justify-between text-xs text-orange-600 ml-4">
                     <span>↳ Paket 7 hari (+50%)</span>
-                    <span>+ {formatCurrency(adjustedPrice - basePrice)}</span>
+                    <span>+ {formatCurrency(finalPrice - basePrice)}</span>
                   </div>
                 )}
               </div>

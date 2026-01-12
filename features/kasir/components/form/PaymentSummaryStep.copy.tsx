@@ -291,7 +291,8 @@ export function PaymentSummaryStep({
 
             const itemCalculation = priceCalculation.itemCalculations[index]
             const basePrice = item.product.pricePerDay * item.quantity
-            const adjustedPrice = itemCalculation?.adjustedPrice || basePrice
+            const finalPrice = itemCalculation?.finalPrice || basePrice
+            const adjustedPrice = finalPrice // For backward compatibility
             const duration = formData.duration || 4
 
             // Check if this is a linked sarung (should be free)
@@ -816,7 +817,8 @@ export function PaymentSummaryStep({
               
               const itemCalculation = priceCalculation.itemCalculations[index]
               const basePrice = item.product.pricePerDay * item.quantity
-              const adjustedPrice = itemCalculation?.adjustedPrice || basePrice
+              const finalPrice = itemCalculation?.finalPrice || basePrice
+              const adjustedPrice = finalPrice // For backward compatibility
 
               // Check if this is a linked sarung (should be free)
               const isItemLinkedSarung = isLinkedSarung(

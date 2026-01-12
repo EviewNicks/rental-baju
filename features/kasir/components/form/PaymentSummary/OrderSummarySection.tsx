@@ -1,12 +1,11 @@
 'use client'
 
-import { useMemo } from 'react'
 import { ShoppingBag } from 'lucide-react'
 import type { ProductSelection, Customer } from '../../../types'
 import { formatCurrency } from '../../../lib/utils/client'
-import { PriceCalculator } from '../../../lib/utils/priceCalculator'
 import { SarungPairingIndicator } from '../../ui/SarungPairingIndicator'
 import { isLinkedSarung } from '../../../lib/utils/jasSarungUtils'
+import { InlinePriceEditor } from './InlinePriceEditor'
 import Image from 'next/image'
 
 // Helper function to generate unique keys for ProductSelection items
@@ -26,25 +25,32 @@ interface OrderSummarySectionProps {
   customer: Customer | null
   products: ProductSelection[]
   duration: number
-  discountType: 'percent' | 'nominal' | null
-  discountValue: number | null
+  // Discount props kept for future use but marked as optional
+  discountType?: 'percent' | 'nominal' | null
+  discountValue?: number | null
+  // NEW: Manual price adjustment handlers
+  onCumulativeAdjustment?: (itemIndex: number, adjustmentAmount: number) => void
+  onResetItemPrice?: (itemIndex: number) => void
 }
 
 export function OrderSummarySection({
   customer,
   products,
   duration,
-  discountType,
-  discountValue,
+  // discountType and discountValue kept for interface compatibility
+  // but not used in this component (handled by PaymentBreakdownSection)
+  onCumulativeAdjustment,
+  onResetItemPrice,
 }: OrderSummarySectionProps) {
-  const priceCalculation = useMemo(() => {
-    return PriceCalculator.calculateTransactionTotalWithEnhancements({
-      items: products,
-      duration: (duration || 4) as 4 | 7,
-      discountType: discountType,
-      discountValue: discountValue,
-    })
-  }, [products, duration, discountType, discountValue])
+  // Price calculation is now handled by individual InlinePriceEditor components
+  // const priceCalculation = useMemo(() => {
+  //   return PriceCalculator.calculateTransactionTotalWithEnhancements({
+  //     items: products,
+  //     duration: (duration || 4) as 4 | 7,
+  //     discountType: discountType,
+  //     discountValue: discountValue,
+  //   })
+  // }, [products, duration, discountType, discountValue])
 
   return (
     <div
@@ -74,10 +80,6 @@ export function OrderSummarySection({
             ? item.product.sizes?.find((s) => s.id === item.productSizeId)
             : null
 
-          const itemCalculation = priceCalculation.itemCalculations[index]
-          const basePrice = item.product.pricePerDay * item.quantity
-          const adjustedPrice = itemCalculation?.adjustedPrice || basePrice
-
           // Check if this is a linked sarung (should be free)
           const isItemLinkedSarung = isLinkedSarung(
             item.product.id,
@@ -88,7 +90,9 @@ export function OrderSummarySection({
           return (
             <div
               key={generateProductKey(item, index)}
-              className="flex items-center justify-between py-4 border-b border-gray-200 last:border-b-0"
+              className={`group flex items-center justify-between py-4 border-b border-gray-200 last:border-b-0 ${
+                item.manualPriceAdjustment?.isManuallyAdjusted ? 'bg-blue-50/50 rounded-lg px-3' : ''
+              }`}
             >
               <div className="flex items-center gap-4">
                 <Image
@@ -150,7 +154,9 @@ export function OrderSummarySection({
                   </div>
                 </div>
               </div>
-              <div className="text-right">
+              
+              {/* Price Display with Inline Editor */}
+              <div className="text-right min-w-[120px]">
                 {isItemLinkedSarung ? (
                   <div className="space-y-1">
                     <div className="font-semibold text-green-600">
@@ -161,19 +167,14 @@ export function OrderSummarySection({
                     </div>
                   </div>
                 ) : (
-                  <div>
-                    <div className="font-semibold text-gray-900">
-                      {formatCurrency(adjustedPrice)}
-                    </div>
-                    <div className="text-sm text-gray-600">
-                      {item.quantity}x × {duration} hari
-                    </div>
-                    {duration === 7 && basePrice !== adjustedPrice && (
-                      <div className="text-xs text-orange-600">
-                        Base: {formatCurrency(basePrice)}
-                      </div>
-                    )}
-                  </div>
+                  <InlinePriceEditor
+                    item={item}
+                    itemIndex={index}
+                    duration={duration as 4 | 7}
+                    onCumulativeAdjustment={onCumulativeAdjustment || (() => {})}
+                    onPriceReset={onResetItemPrice || (() => {})}
+                    disabled={!onCumulativeAdjustment || !onResetItemPrice}
+                  />
                 )}
               </div>
             </div>

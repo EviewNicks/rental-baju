@@ -157,7 +157,7 @@ const handleQuantityChangeWithManualPrice = (itemIndex: number, newQuantity: num
 │                                                         │
 │ Edit Mode (when active):                                │
 │ ┌─────────────────────────────────────────────────────┐ │
-│ │ [-] [    255,000    ] [+]  [Reset] [✓] [✗]        │ │
+│ │      [    255,000    ]   [Reset] [✓] [✗]           │ │
 │ │     ↑ Currency formatted input                      │ │
 │ └─────────────────────────────────────────────────────┘ │
 │                                                         │

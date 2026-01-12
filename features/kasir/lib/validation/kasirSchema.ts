@@ -94,6 +94,13 @@ export const createTransaksiItemSchema = z.object({
     message: 'Durasi harus 4 atau 7 hari'
   }),
   kondisiAwal: z.string().max(500, 'Kondisi awal maksimal 500 karakter').optional(),
+  // ✅ FIX: Add manualPriceAdjustment validation to prevent Zod from dropping the field
+  manualPriceAdjustment: z.object({
+    isManuallyAdjusted: z.boolean(),
+    originalPrice: z.number().min(0, 'Harga original tidak boleh negatif'),
+    adjustmentAmount: z.number(), // Can be positive or negative
+    lastModified: z.string().datetime('Format timestamp tidak valid')
+  }).optional(),
   // TASK 22: Add linkedSarung field for jas-sarung pairing support
   linkedSarung: z.object({
     productId: z.string().uuid('ID produk sarung tidak valid'),
@@ -121,7 +128,14 @@ export const createTransaksiItemLegacySchema = z.object({
   produkId: z.string().uuid('ID produk tidak valid'),
   jumlah: z.number().int().min(1, 'Jumlah minimal 1').max(100, 'Jumlah maksimal 100'),
   durasi: z.number().int().min(1, 'Durasi minimal 1 hari').max(365, 'Durasi maksimal 365 hari'),
-  kondisiAwal: z.string().max(500, 'Kondisi awal maksimal 500 karakter').optional()
+  kondisiAwal: z.string().max(500, 'Kondisi awal maksimal 500 karakter').optional(),
+  // ✅ FIX: Add manualPriceAdjustment validation for legacy compatibility
+  manualPriceAdjustment: z.object({
+    isManuallyAdjusted: z.boolean(),
+    originalPrice: z.number().min(0, 'Harga original tidak boleh negatif'),
+    adjustmentAmount: z.number(), // Can be positive or negative
+    lastModified: z.string().datetime('Format timestamp tidak valid')
+  }).optional()
 })
 
 export const createTransaksiSchema = z.object({

@@ -19,7 +19,6 @@ import {
   calculateTransactionProgress, 
   type TransaksiItemWithReturns 
 } from '../../lib/utils/partialReturnHelpers'
-// TASK 23: Import sarung transformation utilities
 import { 
   processTransactionItemsWithSeparateSarung,
   type SarungDisplayItem 
@@ -258,10 +257,7 @@ export function TransactionDetailPage({ transactionId }: TransactionDetailPagePr
             <div data-testid="product-detail-card" className="space-y-4">
               <h2 className="text-lg font-semibold text-gray-900">Produk yang Disewa</h2>
               {(() => {
-                // TASK 23: Process transaction items to include separate sarung cards
-                console.log('🔍 TASK 23 DEBUG - Raw transaction.products:', transaction.products)
                 const allDisplayItems = processTransactionItemsWithSeparateSarung(transaction.products)
-                console.log('🔍 TASK 23 DEBUG - Processed display items:', allDisplayItems)
                 
                 return allDisplayItems.map((item, index) => {
                   // Transform item data to match ProductDetailCard interface
@@ -284,7 +280,6 @@ export function TransactionDetailPage({ transactionId }: TransactionDetailPagePr
                     totalReturnPenalty: item.totalReturnPenalty,
                     conditionBreakdown: item.conditionBreakdown,
                     kondisiAwal: item.kondisiAwal,
-                    // TASK 23: Add sarung gratis identification
                     isSarungGratis: (item as SarungDisplayItem).isSarungGratis,
                     pairedWithJas: (item as SarungDisplayItem).pairedWithJas,
                     pairedWithJasId: (item as SarungDisplayItem).pairedWithJasId,

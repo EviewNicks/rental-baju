@@ -398,7 +398,6 @@ export class TransaksiService {
     } catch (error) {
       // Handle database query failures with comprehensive error logging
       if (error instanceof Error) {
-        // Log error with full context for debugging
         console.error('Failed to retrieve transaction with kasir information', {
           level: 'error',
           message: error.message,
@@ -586,16 +585,54 @@ export class TransaksiService {
             new Date(returnDate)     // Calculated end date
           )
 
-          // ENHANCED: Create main transaction with discount fields
+          // ✅ NEW: Calculate total with manual adjustments
+          let totalWithManualAdjustments = 0
+          let hasManualAdjustments = false
+          
+          for (let index = 0; index < data.items.length; index++) {
+            const item = data.items[index]
+            const calculation = priceCalculation!.itemCalculations[index]
+            
+            // ✅ FIX: Properly access manualPriceAdjustment from size-aware item
+            const itemWithManualAdjustment = item as CreateTransaksiItemSizeAware & {
+              manualPriceAdjustment?: {
+                isManuallyAdjusted: boolean
+                originalPrice: number
+                adjustmentAmount: number
+                lastModified: string
+              }
+            }
+            
+            if (itemWithManualAdjustment.manualPriceAdjustment?.isManuallyAdjusted) {
+              const manualAdjustment = itemWithManualAdjustment.manualPriceAdjustment
+              const adjustedPrice = manualAdjustment.originalPrice + manualAdjustment.adjustmentAmount
+              totalWithManualAdjustments += adjustedPrice
+              hasManualAdjustments = true
+            } else {
+              totalWithManualAdjustments += calculation.finalPrice
+            }
+          }
+          
+          // Apply discount to the manually adjusted total
+          let finalTotalWithAdjustments = totalWithManualAdjustments
+          if (data.discountType && data.discountValue && data.discountValue > 0) {
+            if (data.discountType === 'percent') {
+              finalTotalWithAdjustments = totalWithManualAdjustments * (1 - data.discountValue / 100)
+            } else if (data.discountType === 'nominal') {
+              finalTotalWithAdjustments = Math.max(0, totalWithManualAdjustments - data.discountValue)
+            }
+          }
+
+          // ENHANCED: Create main transaction with discount fields and manual adjustments
           const createdTransaksi = await tx.transaksi.create({
             data: {
               kode,
               penyewaId: data.penyewaId,
               kasirId: data.kasirId || null,
               status: 'active',
-              totalHarga: priceCalculation!.finalTotal,
+              totalHarga: hasManualAdjustments ? finalTotalWithAdjustments : priceCalculation!.finalTotal,
               jumlahBayar: new Decimal(0),
-              sisaBayar: priceCalculation!.finalTotal,
+              sisaBayar: hasManualAdjustments ? finalTotalWithAdjustments : priceCalculation!.finalTotal,
               tglMulai: new Date(data.tglMulai),
               tglSelesai: new Date(returnDate), // ENHANCED: Use calculated return date
               metodeBayar: data.metodeBayar || 'tunai',
@@ -636,6 +673,27 @@ export class TransaksiService {
             const calculation = priceCalculation!.itemCalculations[index]
             const productSize = productSizes.find((ps) => ps.id === item.productSizeId)!
             
+            // ✅ FIX: Properly access manualPriceAdjustment from size-aware item
+            const itemWithManualAdjustment = item as CreateTransaksiItemSizeAware & {
+              manualPriceAdjustment?: {
+                isManuallyAdjusted: boolean
+                originalPrice: number
+                adjustmentAmount: number
+                lastModified: string
+              }
+            }
+            
+            // ✅ NEW: Process manual price adjustment if exists
+            let finalSubtotal = calculation.finalPrice
+            let finalPricePerUnit = new Decimal(calculation.finalPrice).div(item.jumlah)
+            
+            if (itemWithManualAdjustment.manualPriceAdjustment?.isManuallyAdjusted) {
+              const manualAdjustment = itemWithManualAdjustment.manualPriceAdjustment
+              const adjustedTotalPrice = manualAdjustment.originalPrice + manualAdjustment.adjustmentAmount
+              finalSubtotal = adjustedTotalPrice
+              finalPricePerUnit = new Decimal(adjustedTotalPrice).div(item.jumlah)
+            }
+            
             // ✅ SIMPLIFIED: Store only essential data in kondisiAwal (no linkedSarung duplication)
             const kondisiAwalData = {
               productSizeId: item.productSizeId,
@@ -675,15 +733,6 @@ export class TransaksiService {
               }
               
 
-            } else {
-              // ✅ DEBUG: Log when no linkedSarung detected
-              console.log('ℹ️ No linkedSarung detected for item:', {
-                itemId: item.produkId,
-                hasLinkedSarungField: 'linkedSarung' in item,
-                linkedSarungValue: itemWithLinkedSarung.linkedSarung,
-                linkedSarungType: typeof itemWithLinkedSarung.linkedSarung,
-                timestamp: new Date().toISOString()
-              })
             }
             
             // Create main item (jas or regular product)
@@ -691,20 +740,11 @@ export class TransaksiService {
               transaksiId: createdTransaksi.id,
               produkId: item.produkId,
               jumlah: item.jumlah,
-              hargaSewa: new Decimal(calculation.adjustedPrice).div(item.jumlah), // Price per unit after duration multiplier
+              hargaSewa: finalPricePerUnit, // ✅ UPDATED: Use manually adjusted price if exists
               durasi: duration, // ENHANCED: Use actual duration from form
-              subtotal: calculation.adjustedPrice,
+              subtotal: finalSubtotal, // ✅ UPDATED: Use manually adjusted subtotal if exists
               kondisiAwal: JSON.stringify(kondisiAwalData), // ✅ SIMPLIFIED: Store only essential data
             }
-            
-            // 🔍 DEBUG: Log kondisiAwal JSON (simplified)
-            console.log('🔍 DEBUG - Simplified KondisiAwal Storage:', {
-              itemIndex: index + 1,
-              produkId: item.produkId,
-              kondisiAwalJSON: JSON.stringify(kondisiAwalData),
-              timestamp: new Date().toISOString(),
-              debugPoint: 'SIMPLIFIED_STORAGE'
-            })
             
             allItemsData.push(mainItemData)
             
@@ -835,19 +875,6 @@ export class TransaksiService {
         console.error('Failed to create enhanced activity log:', err)
       })
 
-      // 🔍 DEBUG: Log transaction creation success with kasir assignment
-      TransactionLogger.logKasirDebug({
-        transactionCode: transaksi.kode,
-        transactionId: transaksi.id,
-        kasirId: data.kasirId,
-        success: 'transaction_created_with_enhancements',
-        discountType: data.discountType,
-        discountValue: data.discountValue,
-        duration,
-        timestamp: new Date().toISOString(),
-        source: 'TransaksiService.createTransaksiSizeAware',
-      })
-
       // Apply enhanced status calculation
       const enhancedStatus = calculateEnhancedStatus(
         transaksi.status as TransactionStatus,
@@ -865,7 +892,6 @@ export class TransaksiService {
 
       return enhancedTransaksi as TransaksiWithDetails
     } catch (error) {
-      // Enhanced error logging for debugging
       if (error instanceof Error) {
         console.error('🚨 [ERROR] Enhanced Transaction Creation Failed:', {
           message: error.message,

@@ -117,6 +117,22 @@ function validateFormData(data: unknown): TransactionFormData | null {
       if (!product.product?.id || !product.quantity || product.quantity <= 0) {
         return null
       }
+      
+      // Validate manual price adjustment if present
+      if (product.manualPriceAdjustment) {
+        const adjustment = product.manualPriceAdjustment
+        if (
+          typeof adjustment.isManuallyAdjusted !== 'boolean' ||
+          typeof adjustment.originalPrice !== 'number' ||
+          typeof adjustment.adjustedPrice !== 'number' ||
+          typeof adjustment.lastModified !== 'string' ||
+          adjustment.originalPrice < 0 ||
+          adjustment.adjustedPrice < 0
+        ) {
+          // Invalid manual adjustment - remove it but keep the product
+          delete product.manualPriceAdjustment
+        }
+      }
     }
 
     // Validate customer data if present

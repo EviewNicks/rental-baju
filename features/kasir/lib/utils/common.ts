@@ -13,6 +13,17 @@ export function formatCurrency(amount: number): string {
   }).format(amount)
 }
 
+export function parseCurrency(value: string): number {
+  // Remove currency symbols, spaces, and dots (thousand separators)
+  const cleanValue = value
+    .replace(/[Rp\s]/g, '') // Remove Rp and spaces
+    .replace(/\./g, '') // Remove dots (thousand separators)
+    .replace(/,/g, '.') // Convert comma to dot for decimal
+  
+  const parsed = parseFloat(cleanValue)
+  return isNaN(parsed) ? 0 : parsed
+}
+
 export function formatDate(dateString: string): string {
   if (!dateString) {
     return 'Tanggal tidak tersedia'

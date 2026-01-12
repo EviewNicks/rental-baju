@@ -26,6 +26,53 @@ export function PaymentSummaryStep({
   // Use calculated total instead of passed totalAmount
   const finalTotal = 0 // Will be calculated in child components
 
+  // ✅ UPDATED: Cumulative adjustment handler
+  const handleCumulativeAdjustment = useCallback((itemIndex: number, adjustmentAmount: number) => {
+    // Get current products array
+    const currentProducts = [...formData.products]
+    
+    if (itemIndex >= 0 && itemIndex < currentProducts.length) {
+      const item = currentProducts[itemIndex]
+      const originalPrice = item.product.pricePerDay * item.quantity * (formData.duration === 7 ? 1.5 : 1.0)
+      
+      // Get current total adjustment or start from 0
+      const currentTotalAdjustment = item.manualPriceAdjustment?.adjustmentAmount || 0
+      const newTotalAdjustment = currentTotalAdjustment + adjustmentAmount
+
+      // Update the specific item with cumulative adjustment
+      currentProducts[itemIndex] = {
+        ...item,
+        manualPriceAdjustment: {
+          isManuallyAdjusted: true,
+          originalPrice,
+          adjustmentAmount: newTotalAdjustment,
+          lastModified: new Date().toISOString()
+        }
+      }
+      
+      // Update form data
+      onUpdateFormData({ products: currentProducts })
+    }
+  }, [formData.products, formData.duration, onUpdateFormData])
+
+  const handleResetItemPrice = useCallback((itemIndex: number) => {
+    // Get current products array
+    const currentProducts = [...formData.products]
+    
+    if (itemIndex >= 0 && itemIndex < currentProducts.length) {
+      const item = currentProducts[itemIndex]
+      
+      // Remove manual price adjustment
+      currentProducts[itemIndex] = {
+        ...item,
+        manualPriceAdjustment: undefined
+      }
+      
+      // Update form data
+      onUpdateFormData({ products: currentProducts })
+    }
+  }, [formData.products, onUpdateFormData])
+
   // Handle duration change with automatic return date calculation
   const handleDurationChange = useCallback(
     (newDuration: 4 | 7) => {
@@ -112,6 +159,8 @@ export function PaymentSummaryStep({
         duration={formData.duration || 4}
         discountType={formData.discountType}
         discountValue={formData.discountValue}
+        onCumulativeAdjustment={handleCumulativeAdjustment}
+        onResetItemPrice={handleResetItemPrice}
       />
 
       {/* Rental Duration & Dates */}

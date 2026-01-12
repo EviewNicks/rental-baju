@@ -129,21 +129,6 @@ export function createSarungDisplayItem(jasItem: TransactionItem): SarungDisplay
 export function processTransactionItemsWithSeparateSarung(items: TransactionItem[]): Array<TransactionItem | SarungDisplayItem> {
   const processedItems: Array<TransactionItem | SarungDisplayItem> = []
 
-  console.log('🔍 TASK 23 DEBUG - Processing items:', {
-    totalItems: items.length,
-    itemsWithLinkedSarung: items.filter(item => item.linkedSarung).length,
-    items: items.map(item => ({
-      id: item.product?.id,
-      name: item.product?.name,
-      hasLinkedSarung: !!item.linkedSarung,
-      linkedSarungData: item.linkedSarung ? {
-        productId: item.linkedSarung.productId,
-        productName: item.linkedSarung.product?.name,
-        quantity: item.linkedSarung.quantity
-      } : null
-    }))
-  })
-
   items.forEach(item => {
     // Add the main item (jas or other product)
     // Remove linkedSarung from display to avoid duplication
@@ -157,23 +142,10 @@ export function processTransactionItemsWithSeparateSarung(items: TransactionItem
     if (item.linkedSarung) {
       const sarungItem = createSarungDisplayItem(item)
       if (sarungItem) {
-        console.log('🔍 TASK 23 DEBUG - Created sarung item:', {
-          jasName: item.product?.name,
-          sarungName: sarungItem.product.name,
-          sarungId: sarungItem.product.id,
-          isSarungGratis: sarungItem.isSarungGratis,
-          pairedWithJas: sarungItem.pairedWithJas
-        })
         processedItems.push(sarungItem)
       }
     }
   })
-
-  console.log('🔍 TASK 23 DEBUG - Final processed items:', {
-    totalProcessedItems: processedItems.length,
-    sarungItems: processedItems.filter(item => (item as SarungDisplayItem).isSarungGratis).length
-  })
-
   return processedItems
 }
 
