@@ -18,6 +18,9 @@ export const SARUNG_GRATIS_ELIGIBLE_CATEGORIES = [
   'renda',
   'renda-premium',
   
+  // Organza categories
+  'organza', // Added: Organza products eligible for free sarung
+  
   // Add future categories here:
   // 'gamis-anak',
   // 'gamis-tanggung', 
@@ -29,7 +32,7 @@ export type SarungGratisCategory = typeof SARUNG_GRATIS_ELIGIBLE_CATEGORIES[numb
 
 // Sarung pairing display configuration
 export const SARUNG_PAIRING_DISPLAY = {
-  badgeText: 'Jas + Sarung Gratis',
+  badgeText: 'Produk + Sarung Gratis', // Updated: Generic text for all eligible categories (jas, renda, organza)
   buttonText: 'Pilih dengan Sarung',
   freeItemCategory: 'sarung',
   freeItemCategoryType: 'accessories_age_based'

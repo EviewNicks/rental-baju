@@ -1,7 +1,7 @@
 {
   "categories": [
     {
-      "name": "Dress",
+      "name": "dress",
       "color": "#FF5733",
       "type": "clothing",
       "createdAt": "2025-09-22T22:35:46.170Z",
@@ -9,7 +9,7 @@
       "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
     },
     {
-      "name": "Organza",
+      "name": "organza",
       "color": "#F59E0B",
       "type": "clothing",
       "createdAt": "2025-09-25T02:14:05.912Z",
