@@ -1,0 +1,134 @@
+[
+  {
+    "code": "PR01",
+    "name": "Putih Corak Pelangi",
+    "description": "Sarung premium putih corak pelangi - Universal size",
+    "modalAwal": 0,
+    "currentPrice": 75000,
+    "quantity": 1,
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "products/sarung-premium/PR01.jpg",
+    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 1 }]
+  },
+  {
+    "code": "PR02",
+    "name": "Maroon Gold",
+    "description": "Sarung premium maroon gold - Universal size",
+    "modalAwal": 0,
+    "currentPrice": 75000,
+    "quantity": 4,
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/PR02.jpg",
+    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 4 }]
+  },
+  {
+    "code": "PR03",
+    "name": "Kotak Navy Ungu",
+    "description": "Sarung premium kotak navy ungu - Universal size",
+    "modalAwal": 0,
+    "currentPrice": 75000,
+    "quantity": 2,
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/PR03.jpg",
+    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 2 }]
+  },
+  {
+    "code": "PR04",
+    "name": "Sage Abu",
+    "description": "Sarung premium sage abu - Universal size",
+    "modalAwal": 0,
+    "currentPrice": 75000,
+    "quantity": 1,
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/PR04.jpg",
+    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 1 }]
+  },
+  {
+    "code": "PR05",
+    "name": "Kotak Warna Warni",
+    "description": "Sarung premium kotak warna warni - Universal size",
+    "modalAwal": 0,
+    "currentPrice": 75000,
+    "quantity": 4,
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/PR05.jpg",
+    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 4 }]
+  },
+  {
+    "code": "PR06",
+    "name": "Kotak Pink Sage",
+    "description": "Sarung premium kotak pink sage - Universal size",
+    "modalAwal": 0,
+    "currentPrice": 75000,
+    "quantity": 2,
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/PR06.jpg",
+    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 2 }]
+  },
+  {
+    "code": "PR07",
+    "name": "Hitam Putih",
+    "description": "Sarung premium hitam putih - Universal size",
+    "modalAwal": 0,
+    "currentPrice": 75000,
+    "quantity": 2,
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/PR07.jpg",
+    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 2 }]
+  },
+  {
+    "code": "PR08",
+    "name": "Burgundy Rosegold",
+    "description": "Sarung premium burgundy rosegold - Universal size",
+    "modalAwal": 0,
+    "currentPrice": 75000,
+    "quantity": 2,
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/PR08.jpg",
+    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 2 }]
+  },
+  {
+    "code": "PR09",
+    "name": "Abu Gold",
+    "description": "Sarung premium abu gold - Universal size",
+    "modalAwal": 0,
+    "currentPrice": 75000,
+    "quantity": 4,
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/PR09.jpg",
+    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 4 }]
+  },
+  {
+    "code": "PR10",
+    "name": "Kotak Biru Ungu",
+    "description": "Sarung premium kotak biru ungu - Universal size",
+    "modalAwal": 0,
+    "currentPrice": 75000,
+    "quantity": 5,
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/PR10.jpg",
+    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 5 }]
+  },
+  {
+    "code": "PR11",
+    "name": "Kotak Navy Biru",
+    "description": "Sarung premium kotak navy biru - Universal size",
+    "modalAwal": 0,
+    "currentPrice": 75000,
+    "quantity": 2,
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/PR11.jpg",
+    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 2 }]
+  },
+  {
+    "code": "PR12",
+    "name": "Hijau Merah Kuning",
+    "description": "Sarung premium hijau merah kuning - Universal size",
+    "modalAwal": 0,
+    "currentPrice": 75000,
+    "quantity": 4,
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/accesories.png",
+    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 4 }]
+  }
+]

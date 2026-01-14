@@ -9,14 +9,6 @@
       "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
     },
     {
-      "name": "organic",
-      "color": "#EC4899",
-      "type": "clothing",
-      "createdAt": "2025-09-25T13:11:13.130Z",
-      "updatedAt": "2025-09-25T13:11:13.130Z",
-      "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
-    },
-    {
       "name": "Organza",
       "color": "#F59E0B",
       "type": "clothing",
@@ -104,50 +96,10 @@
       "updatedAt": "2025-10-25T10:00:00.000Z",
       "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
     },
-    {
-      "name": "songket",
-      "color": "#DC2626",
+     {
+      "name": "sarung-premium",
+      "color": "#EA580C",
       "type": "accessories_age_based",
-      "createdAt": "2025-10-25T10:00:00.000Z",
-      "updatedAt": "2025-10-25T10:00:00.000Z",
-      "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
-    },
-    {
-      "name": "bando-besar",
-      "color": "#F59E0B",
-      "type": "accessories_universal",
-      "createdAt": "2025-10-25T10:00:00.000Z",
-      "updatedAt": "2025-10-25T10:00:00.000Z",
-      "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
-    },
-    {
-      "name": "bando-kecil",
-      "color": "#F97316",
-      "type": "accessories_universal",
-      "createdAt": "2025-10-25T10:00:00.000Z",
-      "updatedAt": "2025-10-25T10:00:00.000Z",
-      "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
-    },
-    {
-      "name": "gelang",
-      "color": "#CA8A04",
-      "type": "accessories_universal",
-      "createdAt": "2025-10-25T10:00:00.000Z",
-      "updatedAt": "2025-10-25T10:00:00.000Z",
-      "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
-    },
-    {
-      "name": "kalung",
-      "color": "#16A34A",
-      "type": "accessories_universal",
-      "createdAt": "2025-10-25T10:00:00.000Z",
-      "updatedAt": "2025-10-25T10:00:00.000Z",
-      "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
-    },
-    {
-      "name": "anting",
-      "color": "#9333EA",
-      "type": "accessories_universal",
       "createdAt": "2025-10-25T10:00:00.000Z",
       "updatedAt": "2025-10-25T10:00:00.000Z",
       "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"

@@ -1,353 +1,603 @@
 [
   {
-    "code": "SM01",
+    "code": "SMO01",
     "name": "Sarung Maroon",
     "description": "Sarung maroon elegan - Universal size",
-    "modalAwal": 30000,
+    "modalAwal": 0,
     "currentPrice": 30000,
     "quantity": 6,
-    "categoryId": "d50fbc08-26f9-499f-bce1-189c7e18a171",
-    "imageUrl": "/products/accesories.png",
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/SMO01.jpg",
     "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 6 }]
   },
   {
-    "code": "SM02",
+    "code": "SMM01",
     "name": "Sarung Magenta",
     "description": "Sarung magenta menarik - Universal size",
-    "modalAwal": 30000,
+    "modalAwal": 0,
     "currentPrice": 30000,
-    "quantity": 6,
-    "categoryId": "d50fbc08-26f9-499f-bce1-189c7e18a171",
-    "imageUrl": "/products/accesories.png",
-    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 6 }]
+    "quantity": 5,
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/SMM01.jpg",
+    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 5 }]
+  },
+  {
+    "code": "SU02",
+    "name": "Sarung Ungu",
+    "description": "Sarung ungu royal - Universal size",
+    "modalAwal": 0,
+    "currentPrice": 30000,
+    "quantity": 7,
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/SU02.jpg",
+    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 7 }]
   },
   {
     "code": "SL03",
     "name": "Sarung Lime",
     "description": "Sarung warna lime segar - Universal size",
-    "modalAwal": 30000,
+    "modalAwal": 0,
     "currentPrice": 30000,
     "quantity": 16,
-    "categoryId": "d50fbc08-26f9-499f-bce1-189c7e18a171",
-    "imageUrl": "/products/accesories.png",
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/SL03.jpg",
     "sizes": [
       { "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 12 },
       { "ageCategory": "CHILD", "size": "UNIVERSAL", "quantity": 4 }
+    ]
+  },
+  {
+    "code": "SN04",
+    "name": "Sarung Navy",
+    "description": "Sarung navy profesional - Universal size",
+    "modalAwal": 0,
+    "currentPrice": 30000,
+    "quantity": 19,
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/accesories.png",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 14 },
+      { "ageCategory": "CHILD", "size": "UNIVERSAL", "quantity": 5 }
     ]
   },
   {
     "code": "SM05",
     "name": "Sarung Maroon Premium",
     "description": "Sarung maroon kualitas premium - Universal size",
-    "modalAwal": 30000,
+    "modalAwal": 0,
     "currentPrice": 30000,
-    "quantity": 12,
-    "categoryId": "d50fbc08-26f9-499f-bce1-189c7e18a171",
-    "imageUrl": "/products/accesories.png",
-    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 12 }]
+    "quantity": 17,
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/SM05.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 12 },
+      { "ageCategory": "CHILD", "size": "UNIVERSAL", "quantity": 5 }
+    ]
+  },
+  {
+    "code": "SAO6",
+    "name": "Sarung Abu",
+    "description": "Sarung abu-abu netral - Universal size",
+    "modalAwal": 0,
+    "currentPrice": 30000,
+    "quantity": 16,
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/SA06.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 12 },
+      { "ageCategory": "CHILD", "size": "UNIVERSAL", "quantity": 4 }
+    ]
   },
   {
     "code": "SL07",
     "name": "Sarung Lilac",
     "description": "Sarung lilac lembut - Universal size",
-    "modalAwal": 30000,
+    "modalAwal": 0,
     "currentPrice": 30000,
     "quantity": 12,
-    "categoryId": "d50fbc08-26f9-499f-bce1-189c7e18a171",
-    "imageUrl": "/products/accesories.png",
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/SL07.jpg",
+    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 12 }]
+  },
+  {
+    "code": "SH08",
+    "name": "Sarung Hijau Datuk/Teracota",
+    "description": "Sarung datuk teracota classic - Universal size",
+    "modalAwal": 0,
+    "currentPrice": 30000,
+    "quantity": 12,
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/SH08.jpg",
     "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 12 }]
   },
   {
     "code": "SM09",
     "name": "Sarung Mocha",
     "description": "Sarung mocha klasik - Universal size",
-    "modalAwal": 30000,
+    "modalAwal": 0,
     "currentPrice": 30000,
     "quantity": 12,
-    "categoryId": "d50fbc08-26f9-499f-bce1-189c7e18a171",
-    "imageUrl": "/products/accesories.png",
-    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 12 }]
-  },
-  {
-    "code": "SP11",
-    "name": "Sarung Peach",
-    "description": "Sarung peach cerah - Universal size",
-    "modalAwal": 30000,
-    "currentPrice": 30000,
-    "quantity": 24,
-    "categoryId": "d50fbc08-26f9-499f-bce1-189c7e18a171",
-    "imageUrl": "/products/accesories.png",
-    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 24 }]
-  },
-  {
-    "code": "ST13",
-    "name": "Sarung Teracota",
-    "description": "Sarung teracota earthy - Universal size",
-    "modalAwal": 30000,
-    "currentPrice": 30000,
-    "quantity": 12,
-    "categoryId": "d50fbc08-26f9-499f-bce1-189c7e18a171",
-    "imageUrl": "/products/accesories.png",
-    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 12 }]
-  },
-  {
-    "code": "ST15",
-    "name": "Sarung Terracotta Premium",
-    "description": "Sarung terracotta premium - Universal size",
-    "modalAwal": 30000,
-    "currentPrice": 30000,
-    "quantity": 15,
-    "categoryId": "d50fbc08-26f9-499f-bce1-189c7e18a171",
-    "imageUrl": "/products/accesories.png",
-    "sizes": [
-      { "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 13 },
-      { "ageCategory": "CHILD", "size": "UNIVERSAL", "quantity": 2 }
-    ]
-  },
-  {
-    "code": "SH17",
-    "name": "Sarung Hijau/Maroon",
-    "description": "Sarung kombinasi hijau maroon - Universal size",
-    "modalAwal": 30000,
-    "currentPrice": 30000,
-    "quantity": 12,
-    "categoryId": "d50fbc08-26f9-499f-bce1-189c7e18a171",
-    "imageUrl": "/products/accesories.png",
-    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 12 }]
-  },
-  {
-    "code": "SG19",
-    "name": "Sarung Green",
-    "description": "Sarung hijau segar - Universal size",
-    "modalAwal": 30000,
-    "currentPrice": 30000,
-    "quantity": 14,
-    "categoryId": "d50fbc08-26f9-499f-bce1-189c7e18a171",
-    "imageUrl": "/products/accesories.png",
-    "sizes": [
-      { "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 12 },
-      { "ageCategory": "CHILD", "size": "UNIVERSAL", "quantity": 2 }
-    ]
-  },
-  {
-    "code": "SH21",
-    "name": "Sarung Hijau/Orange",
-    "description": "Sarung kombinasi hijau orange - Universal size",
-    "modalAwal": 30000,
-    "currentPrice": 30000,
-    "quantity": 12,
-    "categoryId": "d50fbc08-26f9-499f-bce1-189c7e18a171",
-    "imageUrl": "/products/accesories.png",
-    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 12 }]
-  },
-  {
-    "code": "ST23",
-    "name": "Sarung Turkish",
-    "description": "Sarung turkish style - Universal size",
-    "modalAwal": 30000,
-    "currentPrice": 30000,
-    "quantity": 15,
-    "categoryId": "d50fbc08-26f9-499f-bce1-189c7e18a171",
-    "imageUrl": "/products/accesories.png",
-    "sizes": [
-      { "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 13 },
-      { "ageCategory": "CHILD", "size": "UNIVERSAL", "quantity": 2 }
-    ]
-  },
-  {
-    "code": "SH25",
-    "name": "Sarung Hijau/Maroon Classic",
-    "description": "Sarung klasik hijau maroon - Universal size",
-    "modalAwal": 30000,
-    "currentPrice": 30000,
-    "quantity": 5,
-    "categoryId": "d50fbc08-26f9-499f-bce1-189c7e18a171",
-    "imageUrl": "/products/accesories.png",
-    "sizes": [
-      { "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 4 },
-      { "ageCategory": "CHILD", "size": "UNIVERSAL", "quantity": 1 }
-    ]
-  },
-  {
-    "code": "SM27",
-    "name": "Sarung Burgundy",
-    "description": "Sarung burgundy elegan - Universal size",
-    "modalAwal": 30000,
-    "currentPrice": 30000,
-    "quantity": 24,
-    "categoryId": "d50fbc08-26f9-499f-bce1-189c7e18a171",
-    "imageUrl": "/products/accesories.png",
-    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 24 }]
-  },
-  {
-    "code": "SC29",
-    "name": "Sarung Coklat/Salem",
-    "description": "Sarung coklat salem - Universal size",
-    "modalAwal": 30000,
-    "currentPrice": 30000,
-    "quantity": 24,
-    "categoryId": "d50fbc08-26f9-499f-bce1-189c7e18a171",
-    "imageUrl": "/products/accesories.png",
-    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 24 }]
-  },
-  {
-    "code": "SU02",
-    "name": "Sarung Ungu",
-    "description": "Sarung ungu royal - Universal size",
-    "modalAwal": 30000,
-    "currentPrice": 30000,
-    "quantity": 7,
-    "categoryId": "d50fbc08-26f9-499f-bce1-189c7e18a171",
-    "imageUrl": "/products/accesories.png",
-    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 7 }]
-  },
-  {
-    "code": "SN04",
-    "name": "Sarung Navy",
-    "description": "Sarung navy profesional - Universal size",
-    "modalAwal": 30000,
-    "currentPrice": 30000,
-    "quantity": 14,
-    "categoryId": "d50fbc08-26f9-499f-bce1-189c7e18a171",
-    "imageUrl": "/products/accesories.png",
-    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 14 }]
-  },
-  {
-    "code": "SA06",
-    "name": "Sarung Abu/Pink",
-    "description": "Sarung kombinasi abu pink - Universal size",
-    "modalAwal": 30000,
-    "currentPrice": 30000,
-    "quantity": 16,
-    "categoryId": "d50fbc08-26f9-499f-bce1-189c7e18a171",
-    "imageUrl": "/products/accesories.png",
-    "sizes": [
-      { "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 12 },
-      { "ageCategory": "CHILD", "size": "UNIVERSAL", "quantity": 4 }
-    ]
-  },
-  {
-    "code": "SH08",
-    "name": "Sarung Hijau Datuk/Teracota",
-    "description": "Sarung datuk teracota classic - Universal size",
-    "modalAwal": 30000,
-    "currentPrice": 30000,
-    "quantity": 12,
-    "categoryId": "d50fbc08-26f9-499f-bce1-189c7e18a171",
-    "imageUrl": "/products/accesories.png",
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/SM09.jpg",
     "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 12 }]
   },
   {
     "code": "SS10",
     "name": "Sarung Salem",
     "description": "Sarung salem lembut - Universal size",
-    "modalAwal": 30000,
+    "modalAwal": 0,
     "currentPrice": 30000,
     "quantity": 12,
-    "categoryId": "d50fbc08-26f9-499f-bce1-189c7e18a171",
-    "imageUrl": "/products/accesories.png",
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/SS10.jpg",
     "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 12 }]
+  },
+  {
+    "code": "SP11",
+    "name": "Sarung Peach",
+    "description": "Sarung peach cerah - Universal size",
+    "modalAwal": 0,
+    "currentPrice": 30000,
+    "quantity": 24,
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/SP11.jpg",
+    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 24 }]
   },
   {
     "code": "SP12",
     "name": "Sarung Pink/Biru Kotak",
     "description": "Sarung pink biru kotak - Universal size",
-    "modalAwal": 30000,
+    "modalAwal": 0,
     "currentPrice": 30000,
     "quantity": 25,
-    "categoryId": "d50fbc08-26f9-499f-bce1-189c7e18a171",
-    "imageUrl": "/products/accesories.png",
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/SP12.jpg",
     "sizes": [
       { "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 21 },
       { "ageCategory": "CHILD", "size": "UNIVERSAL", "quantity": 4 }
     ]
   },
   {
+    "code": "ST13",
+    "name": "Sarung Teracota",
+    "description": "Sarung teracota earthy - Universal size",
+    "modalAwal": 0,
+    "currentPrice": 30000,
+    "quantity": 12,
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/ST13.jpg",
+    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 12 }]
+  },
+  {
     "code": "SD14",
     "name": "Sarung Datuk/Lime",
     "description": "Sarung datuk lime - Universal size",
-    "modalAwal": 30000,
+    "modalAwal": 0,
     "currentPrice": 30000,
-    "quantity": 12,
-    "categoryId": "d50fbc08-26f9-499f-bce1-189c7e18a171",
-    "imageUrl": "/products/accesories.png",
-    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 12 }]
+    "quantity": 17,
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/SD14.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 12 },
+      { "ageCategory": "CHILD", "size": "UNIVERSAL", "quantity": 5 }
+    ]
+  },
+  {
+    "code": "ST15",
+    "name": "Sarung Terracota/Pink",
+    "description": "Sarung terracota pink premium - Universal size",
+    "modalAwal": 0,
+    "currentPrice": 30000,
+    "quantity": 17,
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/ST15.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 15 },
+      { "ageCategory": "CHILD", "size": "UNIVERSAL", "quantity": 2 }
+    ]
   },
   {
     "code": "SB16",
     "name": "Sarung Biru/Silver",
     "description": "Sarung biru silver modern - Universal size",
-    "modalAwal": 30000,
+    "modalAwal": 0,
     "currentPrice": 30000,
     "quantity": 12,
-    "categoryId": "d50fbc08-26f9-499f-bce1-189c7e18a171",
-    "imageUrl": "/products/accesories.png",
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/SB16.jpg",
     "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 12 }]
+  },
+  {
+    "code": "SH17",
+    "name": "Sarung Hijau/Maroon",
+    "description": "Sarung kombinasi hijau maroon - Universal size",
+    "modalAwal": 0,
+    "currentPrice": 30000,
+    "quantity": 22,
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/SH17.jpg",
+    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 22 }]
   },
   {
     "code": "SI18",
     "name": "Sarung Hitam Gold",
     "description": "Sarung hitam gold mewah - Universal size",
-    "modalAwal": 30000,
+    "modalAwal": 0,
     "currentPrice": 30000,
     "quantity": 12,
-    "categoryId": "d50fbc08-26f9-499f-bce1-189c7e18a171",
-    "imageUrl": "/products/accesories.png",
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/SI18.jpg",
     "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 12 }]
+  },
+  {
+    "code": "SG19",
+    "name": "Sarung Green",
+    "description": "Sarung hijau segar - Universal size",
+    "modalAwal": 0,
+    "currentPrice": 30000,
+    "quantity": 14,
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/SG19.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 12 },
+      { "ageCategory": "CHILD", "size": "UNIVERSAL", "quantity": 2 }
+    ]
   },
   {
     "code": "SU20",
     "name": "Sarung Ungu Premium",
     "description": "Sarung ungu premium - Universal size",
-    "modalAwal": 30000,
+    "modalAwal": 0,
     "currentPrice": 30000,
     "quantity": 8,
-    "categoryId": "d50fbc08-26f9-499f-bce1-189c7e18a171",
-    "imageUrl": "/products/accesories.png",
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/SU20.jpg",
     "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 8 }]
+  },
+  {
+    "code": "SH21",
+    "name": "Sarung Hijau/Orange",
+    "description": "Sarung kombinasi hijau orange - Universal size",
+    "modalAwal": 0,
+    "currentPrice": 30000,
+    "quantity": 12,
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/SH21.jpg",
+    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 12 }]
   },
   {
     "code": "SM22",
     "name": "Sarung Maroon Hitam",
     "description": "Sarung maroon hitam elegan - Universal size",
-    "modalAwal": 30000,
+    "modalAwal": 0,
     "currentPrice": 30000,
-    "quantity": 13,
-    "categoryId": "d50fbc08-26f9-499f-bce1-189c7e18a171",
-    "imageUrl": "/products/accesories.png",
-    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 13 }]
+    "quantity": 18,
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/SM22.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 13 },
+      { "ageCategory": "CHILD", "size": "UNIVERSAL", "quantity": 5 }
+    ]
+  },
+  {
+    "code": "ST23",
+    "name": "Sarung Turkish",
+    "description": "Sarung turkish style - Universal size",
+    "modalAwal": 0,
+    "currentPrice": 30000,
+    "quantity": 15,
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/ST23.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 13 },
+      { "ageCategory": "CHILD", "size": "UNIVERSAL", "quantity": 2 }
+    ]
   },
   {
     "code": "SA24",
     "name": "Sarung Abu Abu/Hitam",
     "description": "Sarung abu-abu hitam - Universal size",
-    "modalAwal": 30000,
+    "modalAwal": 0,
     "currentPrice": 30000,
     "quantity": 8,
-    "categoryId": "d50fbc08-26f9-499f-bce1-189c7e18a171",
-    "imageUrl": "/products/accesories.png",
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/SA24.jpg",
     "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 8 }]
+  },
+  {
+    "code": "SH25",
+    "name": "Sarung Hijau/Maroon Classic",
+    "description": "Sarung klasik hijau maroon - Universal size",
+    "modalAwal": 0,
+    "currentPrice": 30000,
+    "quantity": 6,
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/SH25.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 4 },
+      { "ageCategory": "CHILD", "size": "UNIVERSAL", "quantity": 2 }
+    ]
   },
   {
     "code": "ST26",
     "name": "Sarung Taro",
     "description": "Sarung taro unik - Universal size",
-    "modalAwal": 30000,
+    "modalAwal": 0,
     "currentPrice": 30000,
     "quantity": 12,
-    "categoryId": "d50fbc08-26f9-499f-bce1-189c7e18a171",
-    "imageUrl": "/products/accesories.png",
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/ST26.jpg",
     "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 12 }]
+  },
+  {
+    "code": "SM27",
+    "name": "Sarung Burgundy",
+    "description": "Sarung burgundy elegan - Universal size",
+    "modalAwal": 0,
+    "currentPrice": 30000,
+    "quantity": 29,
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/SM 27.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 24 },
+      { "ageCategory": "CHILD", "size": "UNIVERSAL", "quantity": 5 }
+    ]
   },
   {
     "code": "SA28",
     "name": "Sarung Abu/Cream",
     "description": "Sarung abu cream - Universal size",
-    "modalAwal": 30000,
+    "modalAwal": 0,
+    "currentPrice": 30000,
+    "quantity": 17,
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/SA28.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 12 },
+      { "ageCategory": "CHILD", "size": "UNIVERSAL", "quantity": 5 }
+    ]
+  },
+  {
+    "code": "SC29",
+    "name": "Sarung Coklat/Salem",
+    "description": "Sarung coklat salem - Universal size",
+    "modalAwal": 0,
+    "currentPrice": 30000,
+    "quantity": 29,
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/SC29.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 24 },
+      { "ageCategory": "CHILD", "size": "UNIVERSAL", "quantity": 5 }
+    ]
+  },
+  {
+    "code": "SW30",
+    "name": "Sarung Wardah",
+    "description": "Sarung wardah premium - Universal size",
+    "modalAwal": 0,
+    "currentPrice": 30000,
+    "quantity": 26,
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/accesories.png",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 21 },
+      { "ageCategory": "CHILD", "size": "UNIVERSAL", "quantity": 5 }
+    ]
+  },
+  {
+    "code": "STA31",
+    "name": "Sarung Terracota/Abu",
+    "description": "Sarung terracota abu - Universal size",
+    "modalAwal": 0,
+    "currentPrice": 30000,
+    "quantity": 14,
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/accesories.png",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 9 },
+      { "ageCategory": "CHILD", "size": "UNIVERSAL", "quantity": 5 }
+    ]
+  },
+  {
+    "code": "SBK32",
+    "name": "Sarung Biru Kuning",
+    "description": "Sarung biru kuning - Universal size",
+    "modalAwal": 0,
+    "currentPrice": 30000,
+    "quantity": 17,
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/accesories.png",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 12 },
+      { "ageCategory": "CHILD", "size": "UNIVERSAL", "quantity": 5 }
+    ]
+  },
+  {
+    "code": "SCR01",
+    "name": "Sarung CR",
+    "description": "Sarung CR premium - Universal size",
+    "modalAwal": 0,
+    "currentPrice": 30000,
+    "quantity": 11,
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/SCR01.jpg",
+    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 11 }]
+  },
+  {
+    "code": "SBR02",
+    "name": "Sarung BR",
+    "description": "Sarung BR premium - Universal size",
+    "modalAwal": 0,
+    "currentPrice": 30000,
+    "quantity": 9,
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/SBR02.jpg",
+    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 9 }]
+  },
+  {
+    "code": "SPR03",
+    "name": "Sarung PR",
+    "description": "Sarung PR premium - Universal size",
+    "modalAwal": 0,
+    "currentPrice": 30000,
+    "quantity": 10,
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/SPR03.jpg",
+    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 10 }]
+  },
+  {
+    "code": "SBR04",
+    "name": "Sarung BR Premium",
+    "description": "Sarung BR premium quality - Universal size",
+    "modalAwal": 0,
+    "currentPrice": 30000,
+    "quantity": 7,
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/SBR04.jpg",
+    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 7 }]
+  },
+  {
+    "code": "SOR05",
+    "name": "Sarung OR",
+    "description": "Sarung OR premium - Universal size",
+    "modalAwal": 0,
+    "currentPrice": 30000,
+    "quantity": 5,
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/SOR05.jpg",
+    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 5 }]
+  },
+  {
+    "code": "SMR06",
+    "name": "Sarung MR",
+    "description": "Sarung MR premium - Universal size",
+    "modalAwal": 0,
+    "currentPrice": 30000,
+    "quantity": 9,
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/SMR06.jpg",
+    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 9 }]
+  },
+  {
+    "code": "SGR07",
+    "name": "Sarung Green Premium",
+    "description": "Sarung green premium quality - Universal size",
+    "modalAwal": 0,
+    "currentPrice": 30000,
+    "quantity": 24,
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/SGR07.jpg",
+    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 24 }]
+  },
+  {
+    "code": "SKR08",
+    "name": "Sarung KR",
+    "description": "Sarung KR premium - Universal size",
+    "modalAwal": 0,
+    "currentPrice": 30000,
+    "quantity": 10,
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/SKR08.jpg",
+    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 10 }]
+  },
+  {
+    "code": "SMR09",
+    "name": "Sarung MR9",
+    "description": "Sarung MR9 premium - Universal size",
+    "modalAwal": 0,
+    "currentPrice": 30000,
+    "quantity": 7,
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/SMR09.jpg",
+    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 7 }]
+  },
+  {
+    "code": "SOR10",
+    "name": "Sarung SOR",
+    "description": "Sarung SOR premium - Universal size",
+    "modalAwal": 0,
+    "currentPrice": 30000,
+    "quantity": 9,
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/SOR10.jpg",
+    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 9 }]
+  },
+  {
+    "code": "SHR11",
+    "name": "Sarung SHR11",
+    "description": "Sarung SHR11 premium - Universal size",
+    "modalAwal": 0,
     "currentPrice": 30000,
     "quantity": 12,
-    "categoryId": "d50fbc08-26f9-499f-bce1-189c7e18a171",
-    "imageUrl": "/products/accesories.png",
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/SHR11.jpg",
     "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 12 }]
+  },
+  {
+    "code": "SHR12",
+    "name": "Sarung SHR12",
+    "description": "Sarung SHR12 premium - Universal size",
+    "modalAwal": 0,
+    "currentPrice": 30000,
+    "quantity": 16,
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/SHR12.jpg",
+    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 16 }]
+  },
+  {
+    "code": "SGR13",
+    "name": "Sarung SGR13",
+    "description": "Sarung SGR13 premium - Universal size",
+    "modalAwal": 0,
+    "currentPrice": 30000,
+    "quantity": 10,
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/SGR13.jpg",
+    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 10 }]
+  },
+  {
+    "code": "SUR14",
+    "name": "Sarung SUR14",
+    "description": "Sarung SUR14 premium - Universal size",
+    "modalAwal": 0,
+    "currentPrice": 30000,
+    "quantity": 9,
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/SUR14.jpg",
+    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 9 }]
+  },
+  {
+    "code": "SPH15",
+    "name": "Sarung SPH15",
+    "description": "Sarung SPH15 premium - Universal size",
+    "modalAwal": 0,
+    "currentPrice": 30000,
+    "quantity": 10,
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/SPH15.jpg",
+    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 10 }]
+  },
+  {
+    "code": "SPT16",
+    "name": "Sarung SPT16",
+    "description": "Sarung SPT16 premium - Universal size",
+    "modalAwal": 0,
+    "currentPrice": 30000,
+    "quantity": 13,
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/SPT16.jpg",
+    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 13 }]
+  },
+  {
+    "code": "SHI17",
+    "name": "Sarung SHI17",
+    "description": "Sarung SHI17 premium - Universal size",
+    "modalAwal": 0,
+    "currentPrice": 30000,
+    "quantity": 9,
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/SHI17.jpg",
+    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 9 }]
   }
 ]

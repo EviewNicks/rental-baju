@@ -6,7 +6,7 @@
     "modalAwal": 250000,
     "currentPrice": 250000,
     "quantity": 2,
-    "categoryId": "eaeaedfe-da62-4f6a-b739-aa62641ef6b9",
+    "categoryId": "0c68ee49-da4e-4974-adea-3f7f83a31b33",
     "imageUrl": "/products/jas-premium/JPH01.jpg",
     "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 2 }]
   },
@@ -17,7 +17,7 @@
     "modalAwal": 250000,
     "currentPrice": 250000,
     "quantity": 1,
-    "categoryId": "eaeaedfe-da62-4f6a-b739-aa62641ef6b9",
+    "categoryId": "0c68ee49-da4e-4974-adea-3f7f83a31b33",
     "imageUrl": "/products/jas-premium/JPS03.jpg",
     "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 1 }]
   },
@@ -28,7 +28,7 @@
     "modalAwal": 250000,
     "currentPrice": 250000,
     "quantity": 1,
-    "categoryId": "eaeaedfe-da62-4f6a-b739-aa62641ef6b9",
+    "categoryId": "0c68ee49-da4e-4974-adea-3f7f83a31b33",
     "imageUrl": "/products/jas-premium/JPB05.jpg",
     "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 1 }]
   },
@@ -39,7 +39,7 @@
     "modalAwal": 250000,
     "currentPrice": 250000,
     "quantity": 1,
-    "categoryId": "eaeaedfe-da62-4f6a-b739-aa62641ef6b9",
+    "categoryId": "0c68ee49-da4e-4974-adea-3f7f83a31b33",
     "imageUrl": "/products/jas-premium/JJP02.jpg",
     "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 1 }]
   },
@@ -50,7 +50,7 @@
     "modalAwal": 250000,
     "currentPrice": 250000,
     "quantity": 2,
-    "categoryId": "eaeaedfe-da62-4f6a-b739-aa62641ef6b9",
+    "categoryId": "0c68ee49-da4e-4974-adea-3f7f83a31b33",
     "imageUrl": "/products/jas-premium/JPM04.jpg",
     "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 2 }]
   },
@@ -61,7 +61,7 @@
     "modalAwal": 250000,
     "currentPrice": 250000,
     "quantity": 2,
-    "categoryId": "eaeaedfe-da62-4f6a-b739-aa62641ef6b9",
+    "categoryId": "0c68ee49-da4e-4974-adea-3f7f83a31b33",
     "imageUrl": "/products/jas-premium/JPO01.jpg",
     "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 2 }]
   },
@@ -72,7 +72,7 @@
     "modalAwal": 250000,
     "currentPrice": 250000,
     "quantity": 2,
-    "categoryId": "eaeaedfe-da62-4f6a-b739-aa62641ef6b9",
+    "categoryId": "0c68ee49-da4e-4974-adea-3f7f83a31b33",
     "imageUrl": "/products/jas-premium/JPO02.jpg",
     "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 2 }]
   },
@@ -83,7 +83,7 @@
     "modalAwal": 250000,
     "currentPrice": 250000,
     "quantity": 1,
-    "categoryId": "eaeaedfe-da62-4f6a-b739-aa62641ef6b9",
+    "categoryId": "0c68ee49-da4e-4974-adea-3f7f83a31b33",
     "imageUrl": "/products/jas-premium/JPD05.jpg",
     "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 1 }]
   }

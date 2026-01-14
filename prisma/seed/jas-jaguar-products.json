@@ -6,7 +6,7 @@
     "modalAwal": 150000,
     "currentPrice": 150000,
     "quantity": 12,
-    "categoryId": "302f2581-9de3-40ff-abce-e9a97c79b7d4",
+    "categoryId": "284bd4d3-ec18-4512-99cf-00d088e04a4a",
     "imageUrl": "/products/jas-jaguar/JJH01.jpg",
     "sizes": [
       { "ageCategory": "ADULT", "size": "S", "quantity": 1 },
@@ -25,7 +25,7 @@
     "modalAwal": 150000,
     "currentPrice": 150000,
     "quantity": 9,
-    "categoryId": "302f2581-9de3-40ff-abce-e9a97c79b7d4",
+    "categoryId": "284bd4d3-ec18-4512-99cf-00d088e04a4a",
     "imageUrl": "/products/jas-jaguar/JJK03.jpg",
     "sizes": [
       { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
@@ -43,7 +43,7 @@
     "modalAwal": 150000,
     "currentPrice": 150000,
     "quantity": 13,
-    "categoryId": "302f2581-9de3-40ff-abce-e9a97c79b7d4",
+    "categoryId": "284bd4d3-ec18-4512-99cf-00d088e04a4a",
     "imageUrl": "/products/jas-jaguar/JJP03.jpg",
     "sizes": [
       { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
@@ -64,7 +64,7 @@
     "modalAwal": 150000,
     "currentPrice": 150000,
     "quantity": 11,
-    "categoryId": "302f2581-9de3-40ff-abce-e9a97c79b7d4",
+    "categoryId": "284bd4d3-ec18-4512-99cf-00d088e04a4a",
     "imageUrl": "/products/jas-jaguar/JJT02.jpg",
     "sizes": [
       { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
@@ -84,7 +84,7 @@
     "modalAwal": 150000,
     "currentPrice": 150000,
     "quantity": 8,
-    "categoryId": "302f2581-9de3-40ff-abce-e9a97c79b7d4",
+    "categoryId": "284bd4d3-ec18-4512-99cf-00d088e04a4a",
     "imageUrl": "/products/jas-jaguar/JJD04.jpg",
     "sizes": [
       { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
@@ -102,7 +102,7 @@
     "modalAwal": 150000,
     "currentPrice": 150000,
     "quantity": 12,
-    "categoryId": "302f2581-9de3-40ff-abce-e9a97c79b7d4",
+    "categoryId": "284bd4d3-ec18-4512-99cf-00d088e04a4a",
     "imageUrl": "/products/jas-jaguar/JJA01.jpg",
     "sizes": [
       { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
