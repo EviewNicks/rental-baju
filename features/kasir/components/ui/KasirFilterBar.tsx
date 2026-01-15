@@ -191,11 +191,6 @@ export function KasirFilterBar({
                       >
                         <div className="flex items-center justify-between w-full">
                           <span>{category.name}</span>
-                          {category.id !== 'all' && (
-                            <Badge variant="secondary" className="ml-2 text-xs">
-                              {productCount}+
-                            </Badge>
-                          )}
                         </div>
                       </SelectItem>
                     ))
