@@ -371,6 +371,8 @@ export class ProductService {
       } catch (error) {
         throw error
       }
+    }, {
+      timeout: 15000, // Increase timeout to 15 seconds for image upload operations
     })
 
     // Fetch complete product with relationships

@@ -6,7 +6,7 @@
     "modalAwal": 50000,
     "currentPrice": 50000,
     "quantity": 1,
-    "categoryId": "e2509c38-6a10-4c24-bec2-f2b3031d732b",
+    "categoryId": "e2e708cb-006b-42fa-af5a-56347134e600",
     "imageUrl": "/products/gamis-anak/GAA01.jpg",
     "sizes": [{ "ageCategory": "CHILD", "size": "XS", "quantity": 1 }]
   },
@@ -17,7 +17,7 @@
     "modalAwal": 75000,
     "currentPrice": 75000,
     "quantity": 1,
-    "categoryId": "e2509c38-6a10-4c24-bec2-f2b3031d732b",
+    "categoryId": "e2e708cb-006b-42fa-af5a-56347134e600",
     "imageUrl": "/products/gamis-anak/GAC02.jpg",
     "sizes": [{ "ageCategory": "CHILD", "size": "XS", "quantity": 1 }]
   },
@@ -28,7 +28,7 @@
     "modalAwal": 50000,
     "currentPrice": 50000,
     "quantity": 1,
-    "categoryId": "e2509c38-6a10-4c24-bec2-f2b3031d732b",
+    "categoryId": "e2e708cb-006b-42fa-af5a-56347134e600",
     "imageUrl": "/products/gamis-anak/GAS03.jpg",
     "sizes": [{ "ageCategory": "CHILD", "size": "XS", "quantity": 1 }]
   },
@@ -39,7 +39,7 @@
     "modalAwal": 50000,
     "currentPrice": 50000,
     "quantity": 1,
-    "categoryId": "e2509c38-6a10-4c24-bec2-f2b3031d732b",
+    "categoryId": "e2e708cb-006b-42fa-af5a-56347134e600",
     "imageUrl": "/products/gamis-anak/GAB04.jpg",
     "sizes": [{ "ageCategory": "CHILD", "size": "XS", "quantity": 1 }]
   }

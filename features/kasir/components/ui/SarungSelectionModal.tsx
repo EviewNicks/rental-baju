@@ -527,7 +527,7 @@ export function SarungSelectionModal({
       >
         <DialogHeader>
           <div className="flex items-center justify-between">
-          <DialogTitle>Pilih Sarung untuk {jasProduct.name}</DialogTitle>
+          <DialogTitle>Pilih Sarung</DialogTitle>
           
             <Button
               variant="ghost"
