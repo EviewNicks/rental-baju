@@ -15,6 +15,7 @@ import type { ProductSelection, CreateTransaksiItemSizeAware } from '../types'
 import type { LinkedSarung, ProductSize } from '../types'
 import { TransactionCodeGenerator } from '../lib/utils/codeGenerator'
 import { PriceCalculator } from '../lib/utils/server'
+import { createAvailabilityService } from './availabilityService'
 import { createInventoryService } from './inventoryService'
 import type { TransactionStatus } from '../types'
 import { DateCalculator } from '../lib/utils/dateCalculator'
@@ -494,6 +495,8 @@ export class TransaksiService {
       
       const uniqueSizeIds = [...new Set(productSizeIds)]
 
+
+
       const productSizes = await this.prisma.productSize.findMany({
         where: {
           id: { in: uniqueSizeIds },
@@ -510,6 +513,9 @@ export class TransaksiService {
           },
         },
       })
+
+      // 🔍 DEBUG: Log productSizes query results
+
 
       // Get duration from first item (all items should have same duration in UI)
       const duration = data.items[0]?.durasi as 4 | 7 || 4
@@ -586,24 +592,19 @@ export class TransaksiService {
       const kode = await this.codeGenerator.generateTransactionCode()
 
       // STEP 3: Create transaction with OPTIMIZED operations INSIDE transaction
-      // TASK 2: Start database timing
-      timer.startDatabase()
+      const transactionStartTime = Date.now()
 
       const transaksi = await this.prisma.$transaction(
         async (tx) => {
           // TASK 4.1: Validate stock availability with date-aware checking
           // TASK 9: Include linked sarung validation
-          // TASK 2: Start stock check timing
-          timer.startStockCheck()
           await this.validateStockAvailabilityInTransaction(
-            tx,
-            data.items,
+            tx, 
+            data.items, 
             productSizes,
             new Date(data.tglMulai), // Start date from form
             new Date(returnDate)     // Calculated end date
           )
-          // TASK 2: End stock check timing
-          timer.endStockCheck()
 
           // ✅ NEW: Calculate total with manual adjustments
           let totalWithManualAdjustments = 0
@@ -883,9 +884,6 @@ export class TransaksiService {
         },
       )
 
-      // TASK 2: End database timing
-      timer.endDatabase()
-
       // ENHANCED: Create enhanced activity log AFTER transaction (async, non-blocking)
       this.createEnhancedActivityLogAsync(
         transaksi.id,
@@ -893,6 +891,7 @@ export class TransaksiService {
         data,
         priceCalculation,
         duration,
+        transactionStartTime,
       ).catch((err: Error) => {
         console.error('Failed to create enhanced activity log:', err)
       })
@@ -942,7 +941,7 @@ export class TransaksiService {
 
   /**
    * Validate stock availability INSIDE transaction (single source of truth)
-   * OPTIMIZED: Uses stockValidationService for bulk validation to eliminate N+1 queries
+   * OPTIMIZED: Validates once inside transaction to prevent race conditions
    * ENHANCED: Now supports date-aware availability validation using tglMulai and tglSelesai
    * TASK 9: Now supports linked sarung validation for jas-sarung pairing
    * @private
@@ -956,21 +955,21 @@ export class TransaksiService {
     startDate?: Date, // TASK 4.1: Added for date-aware validation
     endDate?: Date    // TASK 4.1: Added for date-aware validation
   ): Promise<void> {
-    // TASK 2: Import stockValidationService for bulk validation
-    const { createStockValidationService } = await import('./stockValidationService')
-    const stockService = createStockValidationService(tx)
+    const txInventoryService = createInventoryService(tx)
+    const txAvailabilityService = createAvailabilityService(tx)
 
     // TASK 9: Collect all items to validate (main items + linked sarung)
-    const allItemsToValidate: Array<{ productSizeId: string; quantity: number; isLinkedSarung: boolean }> = []
-
+    const allItemsToValidate = []
+    
     for (const item of items) {
       // Add main item
       allItemsToValidate.push({
         productSizeId: item.productSizeId,
         quantity: item.jumlah,
         isLinkedSarung: false,
+        parentItem: item,
       })
-
+      
       // TASK 9: Add linked sarung if exists
       if ('linkedSarung' in item && item.linkedSarung) {
         const linkedSarungData = item.linkedSarung as {
@@ -979,62 +978,50 @@ export class TransaksiService {
           quantity: number
           selectedSize: ProductSize
         }
-
+        
         allItemsToValidate.push({
           productSizeId: linkedSarungData.productSizeId,
           quantity: linkedSarungData.quantity,
           isLinkedSarung: true,
+          parentItem: item,
         })
       }
     }
 
-    // ✅ VALIDATION 1: Check if all sizes exist
     for (const validationItem of allItemsToValidate) {
       const productSize = productSizes.find((ps) => ps.id === validationItem.productSizeId)
 
+      // ✅ VALIDATION 1: Check if size exists
       // If size is inactive, it won't be in productSizes array (filtered by query)
       if (!productSize) {
         const itemType = validationItem.isLinkedSarung ? 'sarung' : 'produk'
         throw new Error(`Ukuran ${itemType} tidak ditemukan untuk item ${validationItem.productSizeId}`)
       }
-    }
 
-    // ✅ VALIDATION 2: Use date-aware bulk availability checking if dates are provided
-    if (startDate && endDate) {
-      // TASK 2: Use stockValidationService for bulk validation (replaces N+1 pattern)
-      const validation = await stockService.validateBulkStockAvailability(
-        allItemsToValidate.map(item => ({
-          productSizeId: item.productSizeId,
-          quantity: item.quantity,
-        })),
-        startDate,
-        endDate
-      )
+      // ✅ VALIDATION 2: Use date-aware availability checking if dates are provided
+      if (startDate && endDate) {
+        // TASK 4.1 FIX: Use productSizeId instead of productId for size-aware validation
+        const availabilityCheck = await txAvailabilityService.checkDateRangeAvailability(
+          [{ productSizeId: validationItem.productSizeId, quantity: validationItem.quantity }],
+          startDate,
+          endDate
+        )
 
-      // Check validation results and throw detailed errors
-      if (!validation.valid) {
-        const errors = validation.items
-          .filter(i => !i.isValid)
-          .map(invalidItem => {
-            const itemMeta = allItemsToValidate.find(x => x.productSizeId === invalidItem.productSizeId)
-            const itemType = itemMeta?.isLinkedSarung ? 'Sarung' : 'Produk'
-            const overlapping = invalidItem.overlappingTransactions && invalidItem.overlappingTransactions.length > 0
-              ? `Konflik dengan transaksi: ${invalidItem.overlappingTransactions.map(t => t.transactionCode).join(', ')}`
-              : ''
-
-            return `${itemType} size ${invalidItem.size} (${invalidItem.ageCategory}) untuk ${invalidItem.productName}: shortage ${invalidItem.shortage}. ${overlapping}`
-          })
-          .join('; ')
-
-        throw new Error(`Stok tidak mencukupi: ${errors}`)
-      }
-    } else {
-      // Legacy validation: Check current stock availability using InventoryService
-      const txInventoryService = createInventoryService(tx)
-
-      for (const validationItem of allItemsToValidate) {
-        const productSize = productSizes.find((ps) => ps.id === validationItem.productSizeId)
-
+        if (!availabilityCheck.available) {
+          const conflict = availabilityCheck.conflicts[0]
+          const overlappingTransactions = conflict.overlappingTransactions
+            .map(t => t.transactionCode)
+            .join(', ')
+          
+          const itemType = validationItem.isLinkedSarung ? 'Sarung' : 'Produk'
+          throw new Error(
+            `${itemType} size ${productSize.size} (${productSize.ageCategory}) untuk ${productSize.product.name} tidak tersedia untuk periode ${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}. ` +
+            `Tersedia: ${conflict.available}, Diminta: ${conflict.requested}. ` +
+            `Konflik dengan transaksi: ${overlappingTransactions}`
+          )
+        }
+      } else {
+        // Legacy validation: Check current stock availability using InventoryService
         const isAvailable = await txInventoryService.checkAvailability(
           validationItem.productSizeId,
           validationItem.quantity,
@@ -1062,12 +1049,13 @@ export class TransaksiService {
     data: CreateTransaksiRequest,
     priceCalculation: ReturnType<typeof PriceCalculator.calculateTransactionTotalWithEnhancements>,
     duration: 4 | 7,
+    transactionStartTime: number,
   ): Promise<void> {
     try {
       // TASK 9: Count jas-sarung pairings
       const pairingCount = data.items.filter(item => 'linkedSarung' in item && item.linkedSarung).length
       const totalItems = data.items.length + data.items.filter(item => 'linkedSarung' in item && item.linkedSarung).length // Main items + linked sarung
-
+      
       await this.prisma.aktivitasTransaksi.create({
         data: {
           transaksiId,
@@ -1088,6 +1076,7 @@ export class TransaksiService {
             sizeAware: true,
             enhancedSystem: true,
             pairingSupport: true, // TASK 9: Flag for pairing support
+            transactionDuration: Date.now() - transactionStartTime,
           },
           createdBy: this.userId,
         },

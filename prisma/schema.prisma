@@ -101,6 +101,9 @@ model ProductSize {
   @@index([originalQuantity])
   @@index([rentedQuantity])
   @@index([availableQuantity])
+  // TASK 2: Performance optimization indexes
+  @@index([productId, isActive, availableQuantity], map: "idx_product_size_active_availability")
+  @@index([productId, ageCategory, isActive], map: "idx_product_size_category_filter")
   @@map("product_sizes")
 }
 
@@ -175,6 +178,9 @@ model Transaksi {
   @@index([id, tglSelesai, status], map: "idx_transaksi_penalty_dates")
   @@index([isLateReturn], map: "idx_transaksi_late_penalty")
   @@index([discountType])  // New index for discount queries
+  // TASK 2: Performance optimization indexes for date-aware queries
+  @@index([tglMulai, tglSelesai, status], map: "idx_transaksi_date_range_status")
+  @@index([penyewaId, status, createdAt], map: "idx_transaksi_customer_history")
   @@map("transaksi")
 }
 
@@ -262,6 +268,8 @@ model AktivitasTransaksi {
   @@index([transaksiId])
   @@index([tipe])
   @@index([createdAt])
+  // TASK 2: Performance optimization index for activity log filtering
+  @@index([tipe, createdAt], map: "idx_aktivitas_type_created")
   @@map("aktivitas_transaksi")
 }
 
