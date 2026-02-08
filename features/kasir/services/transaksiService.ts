@@ -25,6 +25,8 @@ import {
   createTransactionTimer,
   type QueryPerformanceMonitor,
 } from '../lib/utils/performanceMonitor'
+// TASK 3: Retry handler for database operations
+import { RetryHandler } from '../lib/resilience/RetryHandler'
 
 
 export interface TransaksiWithDetails extends Transaksi {
@@ -251,6 +253,8 @@ export class TransaksiService {
   private codeGenerator: TransactionCodeGenerator
   // TASK 2: Performance monitoring for tracking query execution times
   private performanceMonitor: QueryPerformanceMonitor
+  // TASK 3: Retry handler for database operations
+  private retryHandler: RetryHandler
 
   constructor(
     private prisma: PrismaClient,
@@ -263,6 +267,8 @@ export class TransaksiService {
       enabled: process.env.ENABLE_PERFORMANCE_MONITORING === 'true',
       slowQueryThreshold: 3000, // Log queries > 3 seconds
     })
+    // TASK 3: Initialize retry handler with 3 max attempts
+    this.retryHandler = new RetryHandler({ maxAttempts: 3 })
   }
 
 
@@ -464,9 +470,17 @@ export class TransaksiService {
     try {
 
 
-      const penyewa = await this.prisma.penyewa.findUnique({
-        where: { id: data.penyewaId },
-      })
+      // TASK 3: Retry wrapper for penyewa query - retry on connection/timeout errors
+      const penyewa = await this.retryHandler.execute(
+        async () => await this.prisma.penyewa.findUnique({
+          where: { id: data.penyewaId },
+        }),
+        (error) => {
+          // Only retry connection/timeout errors, not "not found" business errors
+          const msg = error.message.toLowerCase()
+          return msg.includes('timeout') || msg.includes('connection') || msg.includes('database')
+        }
+      )
 
       if (!penyewa) {
         throw new Error('Penyewa tidak ditemukan')
@@ -494,22 +508,30 @@ export class TransaksiService {
       
       const uniqueSizeIds = [...new Set(productSizeIds)]
 
-      const productSizes = await this.prisma.productSize.findMany({
-        where: {
-          id: { in: uniqueSizeIds },
-          isActive: true,
-        },
-        include: {
-          product: {
-            select: {
-              id: true,
-              name: true,
-              currentPrice: true,
-              category: true, // TASK 9: Add category for jas detection
+      // TASK 3: Retry wrapper for productSizes query - retry on connection/timeout errors
+      const productSizes = await this.retryHandler.execute(
+        async () => await this.prisma.productSize.findMany({
+          where: {
+            id: { in: uniqueSizeIds },
+            isActive: true,
+          },
+          include: {
+            product: {
+              select: {
+                id: true,
+                name: true,
+                currentPrice: true,
+                category: true, // TASK 9: Add category for jas detection
+              },
             },
           },
-        },
-      })
+        }),
+        (error) => {
+          // Only retry connection/timeout errors, not "product not found" business errors
+          const msg = error.message.toLowerCase()
+          return msg.includes('timeout') || msg.includes('connection') || msg.includes('database')
+        }
+      )
 
       // Get duration from first item (all items should have same duration in UI)
       const duration = data.items[0]?.durasi as 4 | 7 || 4
@@ -582,8 +604,15 @@ export class TransaksiService {
       // ENHANCED: Calculate return date using DateCalculator
       const returnDate = DateCalculator.calculateReturnDate(data.tglMulai, duration)
 
-      // Generate transaction code
-      const kode = await this.codeGenerator.generateTransactionCode()
+      // TASK 3: Retry wrapper for transaction code generation - retry on race condition (unique constraint violation)
+      const kode = await this.retryHandler.execute(
+        async () => await this.codeGenerator.generateTransactionCode(),
+        (error) => {
+          // Retry on race condition (unique constraint violation)
+          const msg = error.message.toLowerCase()
+          return msg.includes('unique') || msg.includes('constraint') || msg.includes('race')
+        }
+      )
 
       // STEP 3: Create transaction with OPTIMIZED operations INSIDE transaction
       // TASK 2: Start database timing

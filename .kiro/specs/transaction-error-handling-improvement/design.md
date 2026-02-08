@@ -241,7 +241,7 @@ interface NotificationComponent {
 
 interface NotificationAction {
   label: string
-  onClick: () => void
+onClick: () => void
   variant: 'primary' | 'secondary' | 'danger'
   disabled?: boolean
 }
@@ -1377,3 +1377,117 @@ services:
 ```
 
 The testing strategy ensures comprehensive coverage of all error scenarios while maintaining performance targets and accessibility standards. The deployment architecture provides production-ready monitoring and observability for the error handling system.
+
+---
+
+## Implementation Notes (Updated: 2024-02-08)
+
+### Phase 1 Simplification Decision
+
+**Status**: Simplified implementation approach adopted for MVP delivery
+
+**Context**:
+- Original design included full Circuit Breaker pattern with state persistence
+- Current architecture: Single-server, no distributed system requirements
+- Business priority: MVP delivery with essential error handling features
+
+**Simplifications Applied**:
+
+#### 1. Circuit Breaker Pattern (DEFERRED)
+- Original design: Full Circuit Breaker with CLOSED/OPEN/HALF_OPEN states
+- Current implementation: **DEFERRED to Phase 2**
+- Rationale: Not justified for single-server architecture
+- Trigger conditions for future implementation:
+  - Multiple server instances with load balancer
+  - External service dependencies with unreliable availability
+  - Cascading failure prevention requirements
+  - Service-level degradation requirements
+
+#### 2. Retry Handler (SIMPLIFIED)
+- Original design: Circuit Breaker + Retry Handler with jitter
+- Current implementation: Simplified RetryHandler only
+- Scope reduction:
+  - Single file implementation: `features/kasir/lib/resilience/RetryHandler.ts`
+  - Focus: Database query retry for transient errors only
+  - Max attempts: 3 (hardcoded, no complex config)
+  - Backoff strategy: Simple exponential (100ms → 200ms → 400ms)
+  - No jitter implementation (deferred to Phase 2)
+  - No circuit breaker coordination (deferred to Phase 2)
+
+**Retryable Operations**:
+| Operation | Error Types | Max Attempts |
+|-----------|-------------|-------------|
+| `penyewa.findUnique()` | Connection timeout, Lock timeout | 3 |
+| `productSize.findMany()` | Connection timeout, Lock timeout | 3 |
+| `generateTransactionCode()` | Race condition on unique constraint | 3 |
+| `$transaction()` | Deadlock, Lock timeout | 3 |
+
+**Non-Retryable Operations**:
+- Business logic errors (stock insufficient, invalid data)
+- Validation errors (missing required fields)
+- Authorization errors (user not authorized)
+
+### Architecture Impact
+
+**Component Changes**:
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                     REVISED ARCHITECTURE (Phase 1)                │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  Frontend Layer                                                    │
+│  ├── Error Handler (retained)                                     │
+│  ├── Visual Notifications (retained)                              │
+│  └── ~~Circuit Breaker Client~~ (REMOVED - defer to Phase 2)      │
+│                                                                     │
+│  API Layer                                                          │
+│  ├── Transaction API (retained)                                   │
+│  ├── Error Mapper (retained)                                      │
+│  └── Validation Layer (retained)                                  │
+│                                                                     │
+│  Service Layer                                                      │
+│  ├── Transaction Service (retained)                               │
+│  ├── Error Service (✅ COMPLETE - Task 1)                        │
+│  ├── Performance Monitor (✅ COMPLETE - Task 2)                   │
+│  ├── RetryHandler (🔄 SIMPLIFIED - Task 3.2)                      │
+│  └── ~~Circuit Breaker Backend~~ (DEFERRED - Phase 2)              │
+│                                                                     │
+│  Data Layer                                                        │
+│  ├── Database (with performance indexes ✅ COMPLETE - Task 2.1)   │
+│  ├── Stock Validation Service (✅ COMPLETE - Task 2.3)             │
+│  └── Error Logs (planned - Task 7.3)                              │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### Phase 2 Enhancements (Future)
+
+When system scales to distributed architecture, consider:
+
+**Circuit Breaker Re-implementation**:
+- Add state persistence (Redis etcd)
+- Implement distributed state coordination
+- Add service discovery integration
+- Implement cascading failure prevention
+
+**Retry Handler Enhancements**:
+- Add jitter for thundering herd prevention
+- Implement deadline-based retry budgets
+- Add distributed retry coordination
+- Implement adaptive retry policies
+
+**Monitoring Enhancements**:
+- Circuit breaker state metrics
+- Distributed tracing integration
+- Service dependency mapping
+- Real-time anomaly detection
+
+### Reference Documentation
+
+Original design specifications preserved for:
+- Future Phase 2 implementation reference
+- Architecture decision documentation
+- Requirements traceability
+- Testing scenario definitions
+
+All original interface definitions and data models remain valid for Phase 2 implementation.
