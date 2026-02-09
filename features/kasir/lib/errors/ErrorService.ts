@@ -15,7 +15,7 @@ import {
   ErrorResponse,
   ErrorContext,
 } from './errorTypes'
-import { getErrorTemplate, isRetryable, getRetryConfig, calculateRetryDelay } from './errorTemplates'
+import { getErrorTemplate, isRetryable, getRetryConfig, calculateRetryDelay, generateErrorMessage } from './errorTemplates'
 
 // Re-export ErrorCode and types for convenience
 export { ErrorCode }
