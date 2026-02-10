@@ -118,7 +118,7 @@ export const createTransaksiItemSchema = z.object({
       updatedAt: z.string().datetime('Format tanggal tidak valid').optional(), // Optional - frontend may not provide
       color: z.string().optional(), // Optional - frontend may provide this field
       originalQuantity: z.number().int().min(0, 'Kuantitas asli tidak boleh negatif').optional(), // Optional - frontend may provide
-      rentedQuantity: z.number().int().min(0, 'Kuantitas tersewa tidak boleh negatif').optional() // Optional - frontend may provide
+      rentedQuantity: z.number().int().optional(), // Optional - informational only, can be negative due to race conditions in availability tracking
     })
   }).optional() // Optional field for non-jas products
 })

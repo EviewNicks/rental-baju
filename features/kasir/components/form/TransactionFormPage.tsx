@@ -261,36 +261,6 @@ export function TransactionFormPage() {
           />
         </div>
 
-        {/* Data Restoration Notification */}
-        {showDataRestored && (
-          <NotificationBanner
-            type="info"
-            title="Data Form Dipulihkan"
-            message="Data transaksi sebelumnya telah dipulihkan. Anda dapat melanjutkan dari langkah terakhir."
-            helpText="Data akan tersimpan otomatis saat Anda mengisi form."
-            onDismiss={() => setShowDataRestored(false)}
-            data-testid="data-restoration-notification"
-          />
-        )}
-
-        {/* Progress Indicators */}
-        {!canProceed &&
-          (() => {
-            const validationMessage = getStepValidationMessage(currentStep)
-            if (!validationMessage) return null
-
-            return (
-              <NotificationBanner
-                type="warning"
-                title={validationMessage.title}
-                message={validationMessage.message}
-                helpText={validationMessage.helpText}
-                dismissible={false}
-                data-testid="step-validation-notification"
-              />
-            )
-          })()}
-
         {/* Content */}
         <div className="space-y-6" data-testid="transaction-form-content">
           {currentStep === 1 && (
@@ -342,6 +312,7 @@ export function TransactionFormPage() {
                 onSubmit={handleSubmitTransaction}
                 onPrev={prevStep}
                 isSubmitting={isSubmitting}
+                canProceed={validateStep(currentStep)}
               />
             </div>
           )}

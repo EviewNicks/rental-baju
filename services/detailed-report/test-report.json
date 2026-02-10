@@ -1,211 +1,431 @@
 {
-  "numTotalTests": 18,
-  "numPassedTests": 18,
+  "numTotalTests": 38,
+  "numPassedTests": 38,
   "numFailedTests": 0,
   "numPendingTests": 0,
-  "startTime": "2026-01-08T08:10:13.986Z",
-  "endTime": "2026-01-08T08:10:16.184Z",
+  "startTime": "2026-02-09T03:42:41.125Z",
+  "endTime": "2026-02-09T03:42:43.979Z",
   "testResults": [
     {
-      "testFilePath": "D:\\.work\\rental-software\\features\\manage-product\\services\\__tests__\\productCostService.test.ts",
+      "testFilePath": "D:\\.work\\rental-software\\features\\kasir\\services\\transaksiService.errorhandle.test.ts",
       "testFileResults": [
         {
           "ancestorTitles": [
-            "ProductCostService",
-            "addProductCost"
+            "RetryHandler - Error Handling",
+            "should not retry non-transient errors"
           ],
-          "fullName": "ProductCostService addProductCost should add cost item to product successfully",
+          "fullName": "RetryHandler - Error Handling should not retry non-transient errors should fail immediately on validation errors",
           "status": "passed",
-          "title": "should add cost item to product successfully",
-          "failureMessages": [],
-          "duration": 14
-        },
-        {
-          "ancestorTitles": [
-            "ProductCostService",
-            "addProductCost"
-          ],
-          "fullName": "ProductCostService addProductCost should throw NotFoundError when product does not exist",
-          "status": "passed",
-          "title": "should throw NotFoundError when product does not exist",
+          "title": "should fail immediately on validation errors",
           "failureMessages": [],
           "duration": 28
         },
         {
           "ancestorTitles": [
-            "ProductCostService",
-            "addProductCost"
+            "RetryHandler - Error Handling",
+            "should not retry non-transient errors"
           ],
-          "fullName": "ProductCostService addProductCost should throw NotFoundError when cost item does not exist",
+          "fullName": "RetryHandler - Error Handling should not retry non-transient errors should fail immediately on business logic errors",
           "status": "passed",
-          "title": "should throw NotFoundError when cost item does not exist",
+          "title": "should fail immediately on business logic errors",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "RetryHandler - Error Handling",
+            "should not retry non-transient errors"
+          ],
+          "fullName": "RetryHandler - Error Handling should not retry non-transient errors should fail immediately on not found errors",
+          "status": "passed",
+          "title": "should fail immediately on not found errors",
+          "failureMessages": [],
+          "duration": 2
+        },
+        {
+          "ancestorTitles": [
+            "RetryHandler - Error Handling",
+            "should retry transient database errors"
+          ],
+          "fullName": "RetryHandler - Error Handling should retry transient database errors should retry on connection timeout",
+          "status": "passed",
+          "title": "should retry on connection timeout",
+          "failureMessages": [],
+          "duration": 91
+        },
+        {
+          "ancestorTitles": [
+            "RetryHandler - Error Handling",
+            "should retry transient database errors"
+          ],
+          "fullName": "RetryHandler - Error Handling should retry transient database errors should retry on database lock errors",
+          "status": "passed",
+          "title": "should retry on database lock errors",
+          "failureMessages": [],
+          "duration": 24
+        },
+        {
+          "ancestorTitles": [
+            "RetryHandler - Error Handling",
+            "should retry transient database errors"
+          ],
+          "fullName": "RetryHandler - Error Handling should retry transient database errors should retry on network errors",
+          "status": "passed",
+          "title": "should retry on network errors",
+          "failureMessages": [],
+          "duration": 14
+        },
+        {
+          "ancestorTitles": [
+            "RetryHandler - Error Handling",
+            "should retry transient database errors"
+          ],
+          "fullName": "RetryHandler - Error Handling should retry transient database errors should retry on deadlock errors",
+          "status": "passed",
+          "title": "should retry on deadlock errors",
+          "failureMessages": [],
+          "duration": 16
+        },
+        {
+          "ancestorTitles": [
+            "RetryHandler - Error Handling",
+            "should fail after max attempts"
+          ],
+          "fullName": "RetryHandler - Error Handling should fail after max attempts should fail after 3 attempts with persistent timeout error",
+          "status": "passed",
+          "title": "should fail after 3 attempts with persistent timeout error",
+          "failureMessages": [],
+          "duration": 47
+        },
+        {
+          "ancestorTitles": [
+            "RetryHandler - Error Handling",
+            "should return first successful result"
+          ],
+          "fullName": "RetryHandler - Error Handling should return first successful result should succeed on second attempt after initial failure",
+          "status": "passed",
+          "title": "should succeed on second attempt after initial failure",
+          "failureMessages": [],
+          "duration": 17
+        },
+        {
+          "ancestorTitles": [
+            "RetryHandler - Error Handling",
+            "should respect custom isRetryable function"
+          ],
+          "fullName": "RetryHandler - Error Handling should respect custom isRetryable function should use custom retry logic for specific error types",
+          "status": "passed",
+          "title": "should use custom retry logic for specific error types",
+          "failureMessages": [],
+          "duration": 14
+        },
+        {
+          "ancestorTitles": [
+            "RetryHandler - Error Handling",
+            "should respect custom isRetryable function"
+          ],
+          "fullName": "RetryHandler - Error Handling should respect custom isRetryable function should not retry when custom function returns false",
+          "status": "passed",
+          "title": "should not retry when custom function returns false",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "RetryHandler - Error Handling",
+            "should classify errors correctly"
+          ],
+          "fullName": "RetryHandler - Error Handling should classify errors correctly should classify \"timeout\" as retryable",
+          "status": "passed",
+          "title": "should classify \"timeout\" as retryable",
+          "failureMessages": [],
+          "duration": 15
+        },
+        {
+          "ancestorTitles": [
+            "RetryHandler - Error Handling",
+            "should classify errors correctly"
+          ],
+          "fullName": "RetryHandler - Error Handling should classify errors correctly should classify \"connection\" as retryable",
+          "status": "passed",
+          "title": "should classify \"connection\" as retryable",
+          "failureMessages": [],
+          "duration": 16
+        },
+        {
+          "ancestorTitles": [
+            "RetryHandler - Error Handling",
+            "should classify errors correctly"
+          ],
+          "fullName": "RetryHandler - Error Handling should classify errors correctly should classify \"database\" as retryable",
+          "status": "passed",
+          "title": "should classify \"database\" as retryable",
+          "failureMessages": [],
+          "duration": 15
+        },
+        {
+          "ancestorTitles": [
+            "RetryHandler - Error Handling",
+            "should classify errors correctly"
+          ],
+          "fullName": "RetryHandler - Error Handling should classify errors correctly should classify \"network\" as retryable",
+          "status": "passed",
+          "title": "should classify \"network\" as retryable",
+          "failureMessages": [],
+          "duration": 16
+        },
+        {
+          "ancestorTitles": [
+            "RetryHandler - Error Handling",
+            "should classify errors correctly"
+          ],
+          "fullName": "RetryHandler - Error Handling should classify errors correctly should classify \"temporarily\" as retryable",
+          "status": "passed",
+          "title": "should classify \"temporarily\" as retryable",
+          "failureMessages": [],
+          "duration": 15
+        },
+        {
+          "ancestorTitles": [
+            "RetryHandler - Error Handling",
+            "should classify errors correctly"
+          ],
+          "fullName": "RetryHandler - Error Handling should classify errors correctly should classify \"unavailable\" as retryable",
+          "status": "passed",
+          "title": "should classify \"unavailable\" as retryable",
+          "failureMessages": [],
+          "duration": 15
+        },
+        {
+          "ancestorTitles": [
+            "RetryHandler - Error Handling",
+            "should classify errors correctly"
+          ],
+          "fullName": "RetryHandler - Error Handling should classify errors correctly should classify \"lock\" as retryable",
+          "status": "passed",
+          "title": "should classify \"lock\" as retryable",
+          "failureMessages": [],
+          "duration": 17
+        },
+        {
+          "ancestorTitles": [
+            "RetryHandler - Error Handling",
+            "should classify errors correctly"
+          ],
+          "fullName": "RetryHandler - Error Handling should classify errors correctly should classify \"deadlock\" as retryable",
+          "status": "passed",
+          "title": "should classify \"deadlock\" as retryable",
+          "failureMessages": [],
+          "duration": 14
+        },
+        {
+          "ancestorTitles": [
+            "RetryHandler - Error Handling",
+            "should classify errors correctly"
+          ],
+          "fullName": "RetryHandler - Error Handling should classify errors correctly should not retry on validation/business errors",
+          "status": "passed",
+          "title": "should not retry on validation/business errors",
           "failureMessages": [],
           "duration": 3
         },
         {
           "ancestorTitles": [
-            "ProductCostService",
-            "addProductCost"
+            "RetryHandler - Error Handling",
+            "should handle retry with context tracking"
           ],
-          "fullName": "ProductCostService addProductCost should throw ConflictError when cost item already assigned to product",
+          "fullName": "RetryHandler - Error Handling should handle retry with context tracking should track retry attempts and delays",
           "status": "passed",
-          "title": "should throw ConflictError when cost item already assigned to product",
+          "title": "should track retry attempts and delays",
           "failureMessages": [],
-          "duration": 3
+          "duration": 60
         },
         {
           "ancestorTitles": [
-            "ProductCostService",
-            "updateProductCost"
+            "PerformanceMonitor - Error Handling",
+            "should detect slow queries"
           ],
-          "fullName": "ProductCostService updateProductCost should update product cost successfully",
+          "fullName": "PerformanceMonitor - Error Handling should detect slow queries should log as slow query when exceeding threshold",
           "status": "passed",
-          "title": "should update product cost successfully",
-          "failureMessages": [],
-          "duration": 4
-        },
-        {
-          "ancestorTitles": [
-            "ProductCostService",
-            "updateProductCost"
-          ],
-          "fullName": "ProductCostService updateProductCost should throw NotFoundError when product cost does not exist",
-          "status": "passed",
-          "title": "should throw NotFoundError when product cost does not exist",
+          "title": "should log as slow query when exceeding threshold",
           "failureMessages": [],
           "duration": 2
         },
         {
           "ancestorTitles": [
-            "ProductCostService",
-            "removeProductCost"
+            "PerformanceMonitor - Error Handling",
+            "should handle query execution errors"
           ],
-          "fullName": "ProductCostService removeProductCost should remove product cost successfully",
+          "fullName": "PerformanceMonitor - Error Handling should handle query execution errors should record error timing and rethrow",
           "status": "passed",
-          "title": "should remove product cost successfully",
+          "title": "should record error timing and rethrow",
           "failureMessages": [],
-          "duration": 2
+          "duration": 1
         },
         {
           "ancestorTitles": [
-            "ProductCostService",
-            "removeProductCost"
+            "PerformanceMonitor - Error Handling",
+            "should track individual operation timings"
           ],
-          "fullName": "ProductCostService removeProductCost should throw NotFoundError when product cost does not exist",
+          "fullName": "PerformanceMonitor - Error Handling should track individual operation timings should track multiple operations independently",
           "status": "passed",
-          "title": "should throw NotFoundError when product cost does not exist",
+          "title": "should track multiple operations independently",
           "failureMessages": [],
-          "duration": 2
+          "duration": 0
         },
         {
           "ancestorTitles": [
-            "ProductCostService",
-            "getProductCosts"
+            "PerformanceMonitor - Error Handling",
+            "should calculate transaction duration correctly"
           ],
-          "fullName": "ProductCostService getProductCosts should return all product costs for a product",
+          "fullName": "PerformanceMonitor - Error Handling should calculate transaction duration correctly should sum individual operation times",
           "status": "passed",
-          "title": "should return all product costs for a product",
+          "title": "should sum individual operation times",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "PerformanceMonitor - Error Handling",
+            "should handle missing start time"
+          ],
+          "fullName": "PerformanceMonitor - Error Handling should handle missing start time should handle endQuery without startQuery gracefully",
+          "status": "passed",
+          "title": "should handle endQuery without startQuery gracefully",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PerformanceMonitor - Error Handling",
+            "should handle missing start time"
+          ],
+          "fullName": "PerformanceMonitor - Error Handling should handle missing start time should handle endOperation without startOperation gracefully",
+          "status": "passed",
+          "title": "should handle endOperation without startOperation gracefully",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "PerformanceMonitor - Error Handling",
+            "should handle disabled monitor gracefully"
+          ],
+          "fullName": "PerformanceMonitor - Error Handling should handle disabled monitor gracefully should return zero duration when disabled",
+          "status": "passed",
+          "title": "should return zero duration when disabled",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "PerformanceMonitor - Error Handling",
+            "should handle disabled monitor gracefully"
+          ],
+          "fullName": "PerformanceMonitor - Error Handling should handle disabled monitor gracefully should return isEnabled false when disabled",
+          "status": "passed",
+          "title": "should return isEnabled false when disabled",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "PerformanceMonitor - Error Handling",
+            "should track slow query counts"
+          ],
+          "fullName": "PerformanceMonitor - Error Handling should track slow query counts should increment slow query count for queries exceeding threshold",
+          "status": "passed",
+          "title": "should increment slow query count for queries exceeding threshold",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "PerformanceMonitor - Error Handling",
+            "should reset metrics between tests"
+          ],
+          "fullName": "PerformanceMonitor - Error Handling should reset metrics between tests should have clean state after clear",
+          "status": "passed",
+          "title": "should have clean state after clear",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PerformanceMonitor - Error Handling",
+            "should export metrics in correct format"
+          ],
+          "fullName": "PerformanceMonitor - Error Handling should export metrics in correct format should generate Prometheus-compatible stats",
+          "status": "passed",
+          "title": "should generate Prometheus-compatible stats",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "PerformanceMonitor - Error Handling",
+            "should handle concurrent operation tracking"
+          ],
+          "fullName": "PerformanceMonitor - Error Handling should handle concurrent operation tracking should isolate timing per transaction",
+          "status": "passed",
+          "title": "should isolate timing per transaction",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService - Error Handling Integration",
+            "should use RetryHandler for penyewa lookup"
+          ],
+          "fullName": "TransaksiService - Error Handling Integration should use RetryHandler for penyewa lookup should retry on database connection errors during penyewa lookup",
+          "status": "passed",
+          "title": "should retry on database connection errors during penyewa lookup",
+          "failureMessages": [],
+          "duration": 333
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService - Error Handling Integration",
+            "should use RetryHandler for penyewa lookup"
+          ],
+          "fullName": "TransaksiService - Error Handling Integration should use RetryHandler for penyewa lookup should not retry on penyewa not found error",
+          "status": "passed",
+          "title": "should not retry on penyewa not found error",
           "failureMessages": [],
           "duration": 13
         },
         {
           "ancestorTitles": [
-            "ProductCostService",
-            "getProductCosts"
+            "TransaksiService - Error Handling Integration",
+            "should use RetryHandler for productSizes lookup"
           ],
-          "fullName": "ProductCostService getProductCosts should throw NotFoundError when product does not exist",
+          "fullName": "TransaksiService - Error Handling Integration should use RetryHandler for productSizes lookup should retry on database lock during productSizes query",
           "status": "passed",
-          "title": "should throw NotFoundError when product does not exist",
+          "title": "should retry on database lock during productSizes query",
           "failureMessages": [],
-          "duration": 5
+          "duration": 104
         },
         {
           "ancestorTitles": [
-            "ProductCostService",
-            "calculateModalAwal"
+            "TransaksiService - Error Handling Integration",
+            "should not retry on validation errors"
           ],
-          "fullName": "ProductCostService calculateModalAwal should calculate modal awal as sum of all product costs",
+          "fullName": "TransaksiService - Error Handling Integration should not retry on validation errors should fail immediately on invalid input data",
           "status": "passed",
-          "title": "should calculate modal awal as sum of all product costs",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "ProductCostService",
-            "calculateModalAwal"
-          ],
-          "fullName": "ProductCostService calculateModalAwal should return 0 when product has no costs",
-          "status": "passed",
-          "title": "should return 0 when product has no costs",
-          "failureMessages": [],
-          "duration": 6
-        },
-        {
-          "ancestorTitles": [
-            "ProductCostService",
-            "calculateModalAwal"
-          ],
-          "fullName": "ProductCostService calculateModalAwal should handle multiple cost items correctly",
-          "status": "passed",
-          "title": "should handle multiple cost items correctly",
+          "title": "should fail immediately on invalid input data",
           "failureMessages": [],
           "duration": 1
         },
         {
           "ancestorTitles": [
-            "ProductCostService",
-            "recalculateModalAwal"
+            "TransaksiService - Error Handling Integration",
+            "should track performance for all operations"
           ],
-          "fullName": "ProductCostService recalculateModalAwal should recalculate and update product modal awal",
+          "fullName": "TransaksiService - Error Handling Integration should track performance for all operations should track all database operations",
           "status": "passed",
-          "title": "should recalculate and update product modal awal",
+          "title": "should track all database operations",
           "failureMessages": [],
           "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "ProductCostService",
-            "getProductWithCosts"
-          ],
-          "fullName": "ProductCostService getProductWithCosts should return product with costs and total production cost",
-          "status": "passed",
-          "title": "should return product with costs and total production cost",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "ProductCostService",
-            "getProductWithCosts"
-          ],
-          "fullName": "ProductCostService getProductWithCosts should throw NotFoundError when product does not exist",
-          "status": "passed",
-          "title": "should throw NotFoundError when product does not exist",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "ProductCostService",
-            "Modal Awal Calculation Properties"
-          ],
-          "fullName": "ProductCostService Modal Awal Calculation Properties should maintain consistency: modal awal equals sum of all cost amounts",
-          "status": "passed",
-          "title": "should maintain consistency: modal awal equals sum of all cost amounts",
-          "failureMessages": [],
-          "duration": 5
-        },
-        {
-          "ancestorTitles": [
-            "ProductCostService",
-            "Modal Awal Calculation Properties"
-          ],
-          "fullName": "ProductCostService Modal Awal Calculation Properties should automatically recalculate modal awal when costs change",
-          "status": "passed",
-          "title": "should automatically recalculate modal awal when costs change",
-          "failureMessages": [],
-          "duration": 3
         }
       ],
       "failureMessage": null

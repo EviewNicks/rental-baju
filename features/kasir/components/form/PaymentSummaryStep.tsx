@@ -11,6 +11,7 @@ interface PaymentSummaryStepProps {
   onSubmit: () => Promise<boolean>
   onPrev: () => void
   isSubmitting: boolean
+  canProceed?: boolean  // Validation flag to enable/disable submit button
 }
 
 export function PaymentSummaryStep({
@@ -19,6 +20,7 @@ export function PaymentSummaryStep({
   onSubmit,
   onPrev,
   isSubmitting,
+  canProceed = false,  // Default false - button disabled until validation passes
 }: PaymentSummaryStepProps) {
   // ✅ FIX: Add local submission state to prevent multiple API calls
   const [isSubmittingLocal, setIsSubmittingLocal] = useState(false)
@@ -191,11 +193,12 @@ export function PaymentSummaryStep({
       />
 
       {/* Total Breakdown & Submit */}
-      <PaymentBreakdownSection 
+      <PaymentBreakdownSection
         formData={formData}
         onPrev={onPrev}
         onSubmit={handleSubmit}
         isSubmitting={isSubmitting || isSubmittingLocal}
+        canProceed={canProceed}
       />
     </div>
   )

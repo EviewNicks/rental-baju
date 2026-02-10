@@ -107,10 +107,24 @@ export async function GET(request: NextRequest) {
     const availabilityService = createEnhancedAvailabilityService(prisma)
 
     // Get transaction history using ItemHistoryService (proper architecture)
+    console.log('[ProductHistoryAPI] Calling history service:', {
+      productSizeId,
+      statuses,
+      limit,
+      sortBy,
+      timestamp: new Date().toISOString()
+    })
+
     const historyData = await historyService.getProductSizeHistory(
       productSizeId,
       { statuses, limit, sortBy }
     )
+
+    console.log('[ProductHistoryAPI] History service returned:', {
+      productSizeId,
+      resultsCount: historyData.length,
+      timestamp: new Date().toISOString()
+    })
 
     // Store in cache (Task 2.3: 5-minute caching)
     const now = new Date()

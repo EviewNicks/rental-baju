@@ -208,6 +208,7 @@ model TransaksiItem {
   @@index([produkId, transaksiId, statusKembali], map: "idx_transaksi_item_product_join")
   @@index([id, statusKembali, conditionCount], map: "idx_transaksi_item_unified_processing")
   @@index([migratedFromSingleMode, conditionCount], map: "idx_transaksi_item_migration_history")
+  @@index([kondisiAwal], map: "idx_transaksi_item_kondisi_awal_prefix", type: Hash)
   @@map("transaksi_item")
 }
 
