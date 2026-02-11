@@ -208,13 +208,14 @@ export class StockValidationService {
 
     // SINGLE QUERY: Get all overlapping transaction items in one query
     // Uses idx_transaksi_date_range_status for date overlap filtering
-    // Uses idx_transaksi_item_product_created via kondisiAwal LIKE filter
+    // ✅ FIX: Use contains instead of startsWith to properly search JSON in kondisiAwal
     const overlappingItems = await this.prisma.transaksiItem.findMany({
       where: {
-        // Filter by product sizes using kondisiAwal field (contains productSizeId)
+        // ✅ FIX: Search for exact JSON key-value pair in kondisiAwal field
+        // Format: {"productSizeId":"uuid-123",...} - search for the key-value pair
         OR: productSizeIds.map((id) => ({
           kondisiAwal: {
-            startsWith: id,
+            contains: `"productSizeId":"${id}"`,
           },
         })),
         transaksi: {

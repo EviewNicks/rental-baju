@@ -104,6 +104,8 @@ model ProductSize {
   // TASK 2: Performance optimization indexes
   @@index([productId, isActive, availableQuantity], map: "idx_product_size_active_availability")
   @@index([productId, ageCategory, isActive], map: "idx_product_size_category_filter")
+  // ✅ PERFORMANCE FIX: Active product lookup with price info
+  @@index([isActive, productId], map: "idx_product_size_active_with_product")
   @@map("product_sizes")
 }
 
@@ -208,7 +210,12 @@ model TransaksiItem {
   @@index([produkId, transaksiId, statusKembali], map: "idx_transaksi_item_product_join")
   @@index([id, statusKembali, conditionCount], map: "idx_transaksi_item_unified_processing")
   @@index([migratedFromSingleMode, conditionCount], map: "idx_transaksi_item_migration_history")
-  @@index([kondisiAwal], map: "idx_transaksi_item_kondisi_awal_prefix", type: Hash)
+  // ❌ REMOVED: Hash index on kondisiAwal was ineffective for contains/startsWith queries
+  // PostgreSQL Hash indexes don't support pattern matching operations
+  // The stockValidationService now uses 'contains' to search JSON, which doesn't use this index
+  // ✅ PERFORMANCE FIX: Add new indexes for transaction item performance
+  @@index([transaksiId, produkId], map: "idx_transaksi_item_product_join_fast")
+  @@index([transaksiId, statusKembali, jumlahDiambil], map: "idx_transaksi_item_pickup")
   @@map("transaksi_item")
 }
 
