@@ -4,6 +4,7 @@ import { ThemeProvider } from 'next-themes'
 import { ClerkProvider } from '@clerk/nextjs'
 import { UserRoleProvider } from '../features/auth'
 import { QueryProvider } from '../components/providers/QueryProvider'
+import { Toaster } from '../components/ui/sonner'
 import '../styles/globals.css'
 
 // Load Google Fonts via next/font/google
@@ -60,7 +61,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 enableSessionStorage: process.env.NEXT_PUBLIC_ENABLE_ROLE_CACHE !== 'false',
               }}
             >
-              <QueryProvider>{children}</QueryProvider>
+              <QueryProvider>
+                {children}
+                <Toaster position="top-center" richColors />
+              </QueryProvider>
             </UserRoleProvider>
           </ClerkProvider>
         </ThemeProvider>

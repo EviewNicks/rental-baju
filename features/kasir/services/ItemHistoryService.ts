@@ -56,8 +56,27 @@ export class TransactionHistoryService {
       sortBy = 'date_proximity'
     } = options
 
+    // Debug logging for troubleshooting
+    console.log('[ItemHistoryService] Fetching transaction history:', {
+      productSizeId,
+      statuses,
+      limit,
+      sortBy,
+      timestamp: new Date().toISOString()
+    })
+
     try {
       // Query transactions that use this product size
+      // Format kondisiAwal: JSON string with productSizeId field
+      // Example: {"productSizeId":"81335d70-ba9d-4c40-8a30-8efed664beaf","size":"M","ageCategory":"ADULT","condition":"Baik","linkedSarung":null}
+      const jsonSearchPattern = `"productSizeId":"${productSizeId}"`
+
+      console.log('[ItemHistoryService] Query pattern:', {
+        productSizeId,
+        jsonSearchPattern,
+        expectedFormat: '{"productSizeId":"uuid","size":"M","ageCategory":"ADULT","condition":"Baik","linkedSarung":null}'
+      })
+
       const transactions = await this.prisma.transaksi.findMany({
         where: {
           status: {
@@ -66,9 +85,9 @@ export class TransactionHistoryService {
           items: {
             some: {
               // Find transactions that have items with this productSizeId
-              // We need to check the kondisiAwal field which contains productSizeId
+              // Using string_contains to match JSON field in kondisiAwal
               kondisiAwal: {
-                startsWith: productSizeId
+                contains: jsonSearchPattern
               }
             }
           }
@@ -77,7 +96,7 @@ export class TransactionHistoryService {
           items: {
             where: {
               kondisiAwal: {
-                startsWith: productSizeId
+                contains: jsonSearchPattern
               }
             },
             include: {
@@ -90,12 +109,41 @@ export class TransactionHistoryService {
           }
         },
         take: limit,
-        orderBy: sortBy === 'date_proximity' 
+        orderBy: sortBy === 'date_proximity'
           ? { tglMulai: 'desc' } // Closest to current date first
           : sortBy === 'date_asc'
           ? { tglMulai: 'asc' }
           : { tglMulai: 'desc' }
       })
+
+      // Debug: Log query results
+      console.log('[ItemHistoryService] Query results:', {
+        productSizeId,
+        transactionsFound: transactions.length,
+        transactionCodes: transactions.map(t => t.kode),
+        timestamp: new Date().toISOString()
+      })
+
+      // Debug: Log sample kondisiAwal values for verification
+      if (transactions.length > 0) {
+        const sampleItems = transactions.flatMap(t => t.items)
+        console.log('[ItemHistoryService] Sample kondisiAwal values:', {
+          productSizeId,
+          sampleCount: Math.min(3, sampleItems.length),
+          samples: sampleItems.slice(0, 3).map(item => ({
+            itemId: item.id,
+            kondisiAwal: item.kondisiAwal,
+            parsedKondisiAwal: item.kondisiAwal ? (() => {
+              try {
+                return JSON.parse(item.kondisiAwal)
+              } catch {
+                return 'PARSE_FAILED'
+              }
+            })() : null
+          })),
+          timestamp: new Date().toISOString()
+        })
+      }
 
       // Transform to TransactionHistoryItem format
       const historyItems: TransactionHistoryItem[] = []
@@ -132,10 +180,13 @@ export class TransactionHistoryService {
       return historyItems
 
     } catch (error) {
-      console.error('Failed to fetch transaction history:', {
+      console.error('[ItemHistoryService] Failed to fetch transaction history:', {
         productSizeId,
         options,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        jsonSearchPattern: `"productSizeId":"${productSizeId}"`,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+        timestamp: new Date().toISOString()
       })
       return []
     }

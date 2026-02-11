@@ -26,6 +26,7 @@ interface PaymentBreakdownSectionProps {
   onPrev: () => void
   onSubmit: () => Promise<boolean>
   isSubmitting: boolean
+  canProceed?: boolean  // Validation flag to enable/disable submit button
 }
 
 export function PaymentBreakdownSection({
@@ -33,6 +34,7 @@ export function PaymentBreakdownSection({
   onPrev,
   onSubmit,
   isSubmitting,
+  canProceed = false,  // Default false - button disabled until validation passes
 }: PaymentBreakdownSectionProps) {
   const priceCalculation = useMemo(() => {
     return PriceCalculator.calculateTransactionTotalWithEnhancements({
@@ -172,7 +174,7 @@ export function PaymentBreakdownSection({
 
         <Button
           onClick={onSubmit}
-          disabled={isSubmitting || !formData.pickupDate || !formData.paymentMethod}
+          disabled={isSubmitting || !canProceed}
           className="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-semibold px-8 py-3 shadow-lg transition-all duration-200"
           size="lg"
           data-testid="submit-transaction-button"

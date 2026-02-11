@@ -18,12 +18,12 @@ import type { ProductSelection } from '../../types'
 import { transactionFormSteps } from '../../lib/constants/workflowConfig'
 import { TransactionLogger } from '../../lib/logger/transactionLogger'
 import { queryKeys } from '@/lib/react-query'
+import { showApiError, showSuccess as showSuccessToast } from '../../lib/toastHelper'
 
 export function TransactionFormPage() {
   const router = useRouter()
   const queryClient = useQueryClient()
   const [showSuccess, setShowSuccess] = useState(false)
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   // 🔍 Initialize logger for this component
   // const logger = useLogger('TransactionFormPage')
@@ -114,8 +114,6 @@ export function TransactionFormPage() {
   }
 
   const handleSubmitTransaction = async () => {
-    setErrorMessage(null) // Clear previous errors
-
     // 🔍 LOG: Transaction submission start
     const transactionData = {
       productCount: formData.products.length,
@@ -138,61 +136,71 @@ export function TransactionFormPage() {
     // 🔍 LOG: Log form data before API submission
     TransactionLogger.logFormData(transactionData)
 
-    const success = await submitTransaction()
+    // Use toast.promise for progressive loading feedback
+    try {
+      // First submit the transaction
+      const success = await submitTransaction()
 
-    if (success) {
-      setShowSuccess(true)
-      
-      // Invalidate transaction list cache to ensure fresh data on dashboard
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.kasir.transaksi.lists()
-      })
-      
-      // Redirect after showing success message with refresh parameter
-      setTimeout(() => {
-        router.push('/dashboard?refresh=true')
-      }, 2000)
-    } else {
-      // 🔍 LOG: Transaction failure
+      // Then show appropriate toast based on result
+      if (success) {
+        setShowSuccess(true)
+
+        // Invalidate transaction list cache to ensure fresh data on dashboard
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.kasir.transaksi.lists(),
+        })
+
+        // Show success toast
+        showSuccessToast('Transaksi berhasil dibuat!')
+
+        // Redirect after showing success message with refresh parameter
+        setTimeout(() => {
+          router.push('/dashboard?refresh=true')
+        }, 2000)
+
+        return true
+      } else {
+        // 🔍 LOG: Transaction failure
+        const errorDetails = {
+          ...transactionData,
+          result: 'FAILURE',
+          error: createError?.message || 'Unknown error',
+          errorCode: createError?.code || 'UNKNOWN_ERROR',
+          timestamp: new Date().toISOString(),
+        }
+
+        console.error('❌ Transaction submission failed', errorDetails)
+
+        // Show error toast using backend error response
+        showApiError(createError)
+
+        return false
+      }
+    } catch (error) {
+      // 🔍 LOG: Unexpected error
       const errorDetails = {
         ...transactionData,
         result: 'FAILURE',
-        error: createError?.message || 'Unknown error',
-        errorCode: createError?.code || 'UNKNOWN_ERROR',
+        error: error instanceof Error ? error.message : 'Unknown error',
+        errorCode: 'UNEXPECTED_ERROR',
         timestamp: new Date().toISOString(),
       }
 
-      console.error('❌ Transaction submission failed', errorDetails)
+      console.error('❌ Unexpected error during transaction submission', errorDetails)
 
-      // Show error message based on the type of error
-      if (createError) {
-        // ✅ FIX: Extract detailed error message from mutation error
-        let userFriendlyMessage = createError.message || 'Terjadi kesalahan saat membuat transaksi'
+      // Show fallback error toast
+      showApiError({
+        success: false,
+        error: {
+          code: 'UNEXPECTED_ERROR',
+          message: 'Terjadi kesalahan tidak terduga. Silakan coba lagi.',
+          category: 'CRITICAL',
+          timestamp: new Date().toISOString(),
+        },
+      })
 
-        // ✅ FIX: Enhanced error mapping for availability conflicts
-        if (createError.code === 'NOT_FOUND' && createError.message?.includes('tidak ditemukan')) {
-          userFriendlyMessage =
-            'Ukuran produk yang dipilih tidak tersedia. Silakan pilih ukuran lain atau refresh halaman.'
-        } else if (
-          (createError.code === 'AVAILABILITY_ERROR' || createError.code === 'VALIDATION_ERROR') &&
-          (createError.message?.includes('tidak mencukupi') || createError.message?.includes('tidak tersedia'))
-        ) {
-          // ✅ FIX: Use the detailed server message for availability conflicts
-          userFriendlyMessage = createError.message
-        } else if (createError.message?.includes('Konflik dengan transaksi')) {
-          // ✅ FIX: Handle date overlap conflicts with detailed message
-          userFriendlyMessage = createError.message
-        }
-
-        setErrorMessage(userFriendlyMessage)
-      } else {
-        setErrorMessage('Terjadi kesalahan tidak terduga. Silakan coba lagi.')
-      }
-
-      // Error message will be dismissed by user action
-      // Removed auto-hide setTimeout for better UX control
+      return false
     }
-    return success
   }
 
   if (showSuccess) {
@@ -253,48 +261,6 @@ export function TransactionFormPage() {
           />
         </div>
 
-        {/* Data Restoration Notification */}
-        {showDataRestored && (
-          <NotificationBanner
-            type="info"
-            title="Data Form Dipulihkan"
-            message="Data transaksi sebelumnya telah dipulihkan. Anda dapat melanjutkan dari langkah terakhir."
-            helpText="Data akan tersimpan otomatis saat Anda mengisi form."
-            onDismiss={() => setShowDataRestored(false)}
-            data-testid="data-restoration-notification"
-          />
-        )}
-
-        {/* Error Message */}
-        {errorMessage && (
-          <NotificationBanner
-            type="error"
-            title="Gagal Membuat Transaksi"
-            message={errorMessage}
-            helpText="Periksa kembali data yang telah diisi dan coba lagi."
-            onDismiss={() => setErrorMessage(null)}
-            data-testid="transaction-error-notification"
-          />
-        )}
-
-        {/* Progress Indicators */}
-        {!canProceed &&
-          (() => {
-            const validationMessage = getStepValidationMessage(currentStep)
-            if (!validationMessage) return null
-
-            return (
-              <NotificationBanner
-                type="warning"
-                title={validationMessage.title}
-                message={validationMessage.message}
-                helpText={validationMessage.helpText}
-                dismissible={false}
-                data-testid="step-validation-notification"
-              />
-            )
-          })()}
-
         {/* Content */}
         <div className="space-y-6" data-testid="transaction-form-content">
           {currentStep === 1 && (
@@ -346,6 +312,7 @@ export function TransactionFormPage() {
                 onSubmit={handleSubmitTransaction}
                 onPrev={prevStep}
                 isSubmitting={isSubmitting}
+                canProceed={validateStep(currentStep)}
               />
             </div>
           )}

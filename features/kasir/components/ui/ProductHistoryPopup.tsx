@@ -41,6 +41,7 @@ interface ApiResponse {
     statuses: string[]
     totalResults: number
     cacheExpiresAt: string
+    serviceUsed?: string
   }
   error?: string
   userMessage?: string
@@ -64,6 +65,8 @@ export function ProductHistoryPopup({
   const [error, setError] = useState<AvailabilityError | null>(null)
   const [retryCount, setRetryCount] = useState(0)
   const [isRetrying, setIsRetrying] = useState(false)
+  const [isCached, setIsCached] = useState(false)
+  const [cachedAt, setCachedAt] = useState<string | null>(null)
 
   // Debug wrapper for onClose
   const handleClose = useCallback(() => {
@@ -153,6 +156,19 @@ export function ProductHistoryPopup({
 
       const result: ApiResponse = await response.json()
 
+      // Handle cache information for better UX
+      if (result.cached) {
+        setIsCached(true)
+        setCachedAt(result.cachedAt || null)
+        console.log('[ProductHistoryPopup] Using cached data:', {
+          cachedAt: result.cachedAt,
+          cacheExpiresAt: result.metadata?.cacheExpiresAt
+        })
+      } else {
+        setIsCached(false)
+        setCachedAt(null)
+      }
+
       if (!result.success) {
         // Use API-provided error information with enhanced user messages
         const errorType = result.errorType || determineErrorType(new Error(result.error || 'Failed to fetch'))
@@ -179,6 +195,15 @@ export function ProductHistoryPopup({
       setHistoryData(parsedData)
       setRetryCount(0) // Reset retry count on success
       setIsRetrying(false)
+
+      // Log API metadata for debugging
+      if (result.metadata) {
+        console.log('[ProductHistoryPopup] API metadata:', {
+          serviceUsed: result.metadata.serviceUsed,
+          totalResults: result.metadata.totalResults,
+          productSizeId: result.metadata.productSizeId
+        })
+      }
     } catch (err) {
       console.error('Failed to fetch transaction history:', {
         error: err,
@@ -220,6 +245,8 @@ export function ProductHistoryPopup({
       setError(null)
       setRetryCount(0)
       setIsRetrying(false)
+      setIsCached(false)
+      setCachedAt(null)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, productSizeId])
@@ -439,15 +466,23 @@ export function ProductHistoryPopup({
           {/* Empty State */}
           {!isLoading && !error && historyData.length === 0 && (
             <div className="flex items-center justify-center py-12">
-              <div className="text-center space-y-3">
-                <div className="p-3 bg-gray-50 rounded-full w-fit mx-auto">
-                  <Package className="h-8 w-8 text-gray-400" />
+              <div className="text-center space-y-4 max-w-sm">
+                <div className="p-3 bg-blue-50 rounded-full w-fit mx-auto">
+                  <Package className="h-8 w-8 text-blue-400" />
                 </div>
                 <div>
-                  <h3 className="font-medium text-gray-900">Belum Ada Transaksi</h3>
-                  <p className="text-sm text-gray-600">
-                    Produk ini belum pernah disewa atau semua transaksi sudah selesai
+                  <h3 className="font-medium text-gray-900 mb-1">Tidak Ada Transaksi Aktif</h3>
+                  <p className="text-sm text-gray-600 mb-3">
+                    {productName} ({size} - {ageCategory}) tidak memiliki transaksi dengan status <span className="font-medium text-blue-600">Aktif</span> atau <span className="font-medium text-green-600">Diambil</span>
                   </p>
+                  <div className="text-xs text-gray-500 bg-gray-50 rounded-lg p-3">
+                    <p className="font-medium mb-1">💡 Informasi:</p>
+                    <ul className="text-left space-y-1">
+                      <li>• Produk ini tersedia untuk disewa</li>
+                      <li>• Tidak ada penyewaan yang sedang berlangsung</li>
+                      <li>• Riwayat transaksi selesai tidak ditampilkan di sini</li>
+                    </ul>
+                  </div>
                 </div>
               </div>
             </div>
@@ -457,9 +492,30 @@ export function ProductHistoryPopup({
           {!isLoading && !error && historyData.length > 0 && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="font-medium text-gray-900">
-                  Ditemukan {historyData.length} transaksi aktif
-                </h3>
+                <div>
+                  <h3 className="font-medium text-gray-900">
+                    Ditemukan {historyData.length} transaksi aktif
+                  </h3>
+                  {isCached && cachedAt && (
+                    <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
+                      <span className="inline-block w-2 h-2 bg-green-400 rounded-full"></span>
+                      Data tersimpan (cache) sejak {new Date(cachedAt).toLocaleTimeString('id-ID')}
+                    </p>
+                  )}
+                </div>
+                <Button
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    fetchHistory()
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className="text-gray-600 hover:text-blue-600 border-gray-200 hover:border-blue-200 z-10 relative"
+                >
+                  <RefreshCw className="h-4 w-4 mr-1" />
+                  Refresh
+                </Button>
               </div>
 
               <div className="space-y-3">

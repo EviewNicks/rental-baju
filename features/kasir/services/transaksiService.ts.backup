@@ -15,6 +15,7 @@ import type { ProductSelection, CreateTransaksiItemSizeAware } from '../types'
 import type { LinkedSarung, ProductSize } from '../types'
 import { TransactionCodeGenerator } from '../lib/utils/codeGenerator'
 import { PriceCalculator } from '../lib/utils/server'
+import { createAvailabilityService } from './availabilityService'
 import { createInventoryService } from './inventoryService'
 import type { TransactionStatus } from '../types'
 import { DateCalculator } from '../lib/utils/dateCalculator'
@@ -25,8 +26,6 @@ import {
   createTransactionTimer,
   type QueryPerformanceMonitor,
 } from '../lib/utils/performanceMonitor'
-// TASK 3: Retry handler for database operations
-import { RetryHandler } from '../lib/resilience/RetryHandler'
 
 
 export interface TransaksiWithDetails extends Transaksi {
@@ -253,8 +252,6 @@ export class TransaksiService {
   private codeGenerator: TransactionCodeGenerator
   // TASK 2: Performance monitoring for tracking query execution times
   private performanceMonitor: QueryPerformanceMonitor
-  // TASK 3: Retry handler for database operations
-  private retryHandler: RetryHandler
 
   constructor(
     private prisma: PrismaClient,
@@ -267,8 +264,6 @@ export class TransaksiService {
       enabled: process.env.ENABLE_PERFORMANCE_MONITORING === 'true',
       slowQueryThreshold: 3000, // Log queries > 3 seconds
     })
-    // TASK 3: Initialize retry handler with 3 max attempts
-    this.retryHandler = new RetryHandler({ maxAttempts: 3 })
   }
 
 
@@ -469,14 +464,23 @@ export class TransaksiService {
 
     try {
 
-      // ✅ CRITICAL FIX: Collect productSizeIds first (needed for parallel query)
-      const productSizeIds: string[] = []
 
+      const penyewa = await this.prisma.penyewa.findUnique({
+        where: { id: data.penyewaId },
+      })
+
+      if (!penyewa) {
+        throw new Error('Penyewa tidak ditemukan')
+      }
+
+      // ✅ CRITICAL FIX: Get product data for enhanced pricing including linkedSarung productSizeIds
+      const productSizeIds: string[] = []
+      
       // Collect all productSizeIds (main items + linkedSarung items)
       data.items.forEach((item) => {
         // Add main item productSizeId
         productSizeIds.push(item.productSizeId)
-
+        
         // ✅ CRITICAL FIX: Add linkedSarung productSizeId if exists
         if ('linkedSarung' in item && item.linkedSarung) {
           const linkedSarungData = item.linkedSarung as {
@@ -488,69 +492,37 @@ export class TransaksiService {
           productSizeIds.push(linkedSarungData.productSizeId)
         }
       })
-
+      
       const uniqueSizeIds = [...new Set(productSizeIds)]
 
-      // ✅ PERFORMANCE FIX: Run penyewa and productSizes queries in parallel
-      // Independent queries run simultaneously (~1 second savings)
-      const [penyewa, productSizes] = await Promise.all([
-        // TASK 3: Retry wrapper for penyewa query - retry on connection/timeout errors
-        this.retryHandler.execute(
-          async () => await this.prisma.penyewa.findUnique({
-            where: { id: data.penyewaId },
-          }),
-          (error) => {
-            // Only retry connection/timeout errors, not "not found" business errors
-            const msg = error.message.toLowerCase()
-            return msg.includes('timeout') || msg.includes('connection') || msg.includes('database')
-          }
-        ),
-        // TASK 3: Retry wrapper for productSizes query - retry on connection/timeout errors
-        this.retryHandler.execute(
-          async () => await this.prisma.productSize.findMany({
-            where: {
-              id: { in: uniqueSizeIds },
-              isActive: true,
-            },
-            include: {
-              product: {
-                select: {
-                  id: true,
-                  name: true,
-                  currentPrice: true,
-                  category: true, // TASK 9: Add category for jas detection
-                },
-              },
-            },
-          }),
-          (error) => {
-            // Only retry connection/timeout errors, not "product not found" business errors
-            const msg = error.message.toLowerCase()
-            return msg.includes('timeout') || msg.includes('connection') || msg.includes('database')
-          }
-        ),
-      ])
 
-      if (!penyewa) {
-        throw new Error('Penyewa tidak ditemukan')
-      }
 
-      // ✅ PERFORMANCE FIX: Create O(1) lookup map for productSizes
-      // Replaces O(n²) find() calls with O(1) map lookups throughout the code
-      const productSizeMap = new Map(
-        productSizes.map(ps => [ps.id, ps])
-      )
+      const productSizes = await this.prisma.productSize.findMany({
+        where: {
+          id: { in: uniqueSizeIds },
+          isActive: true,
+        },
+        include: {
+          product: {
+            select: {
+              id: true,
+              name: true,
+              currentPrice: true,
+              category: true, // TASK 9: Add category for jas detection
+            },
+          },
+        },
+      })
+
+      // 🔍 DEBUG: Log productSizes query results
+
 
       // Get duration from first item (all items should have same duration in UI)
       const duration = data.items[0]?.durasi as 4 | 7 || 4
 
       // TASK 9: Prepare items for enhanced price calculation with pairing support
       const itemsForCalculation: ProductSelection[] = data.items.map((item) => {
-        // ✅ PERFORMANCE FIX: Use O(1) map lookup instead of O(n) find()
-        const productSize = productSizeMap.get(item.productSizeId)
-        if (!productSize) {
-          throw new Error(`Product size not found: ${item.productSizeId}`)
-        }
+        const productSize = productSizes.find((ps) => ps.id === item.productSizeId)!
         
         // TASK 9: Check if this is a product eligible for free sarung using configurable system
         const isEligibleForSarung = sarungPairingService.isEligibleForPairing({
@@ -616,37 +588,23 @@ export class TransaksiService {
       // ENHANCED: Calculate return date using DateCalculator
       const returnDate = DateCalculator.calculateReturnDate(data.tglMulai, duration)
 
-      // TASK 3: Retry wrapper for transaction code generation - retry on race condition (unique constraint violation)
-      const kode = await this.retryHandler.execute(
-        async () => await this.codeGenerator.generateTransactionCode(),
-        (error) => {
-          // Retry on race condition (unique constraint violation)
-          const msg = error.message.toLowerCase()
-          return msg.includes('unique') || msg.includes('constraint') || msg.includes('race')
-        }
-      )
+      // Generate transaction code
+      const kode = await this.codeGenerator.generateTransactionCode()
 
       // STEP 3: Create transaction with OPTIMIZED operations INSIDE transaction
-      // TASK 2: Start database timing
-      timer.startDatabase()
+      const transactionStartTime = Date.now()
 
-      // ✅ PERFORMANCE FIX: Transaction ONLY contains create operations (minimal lock time)
-      // Fetch operations moved OUTSIDE transaction to reduce lock time (~2 seconds savings)
-      const transactionResult = await this.prisma.$transaction(
+      const transaksi = await this.prisma.$transaction(
         async (tx) => {
           // TASK 4.1: Validate stock availability with date-aware checking
           // TASK 9: Include linked sarung validation
-          // TASK 2: Start stock check timing
-          timer.startStockCheck()
           await this.validateStockAvailabilityInTransaction(
-            tx,
-            data.items,
-            productSizeMap, // ✅ PERFORMANCE FIX: Pass Map instead of array
+            tx, 
+            data.items, 
+            productSizes,
             new Date(data.tglMulai), // Start date from form
             new Date(returnDate)     // Calculated end date
           )
-          // TASK 2: End stock check timing
-          timer.endStockCheck()
 
           // ✅ NEW: Calculate total with manual adjustments
           let totalWithManualAdjustments = 0
@@ -730,46 +688,11 @@ export class TransaksiService {
 
           // TASK 9: Create transaction items with pairing support
           const allItemsData = []
-
-          // ✅ PERFORMANCE FIX: Batch query ALL linkedSarung product sizes BEFORE loop
-          // This eliminates N+1 query problem (-8 seconds impact)
-          const allLinkedSarungIds: string[] = []
-          for (const item of data.items) {
-            if ('linkedSarung' in item && item.linkedSarung) {
-              const linkedSarungData = item.linkedSarung as any
-              allLinkedSarungIds.push(linkedSarungData.productSizeId)
-            }
-          }
-
-          // Single batch query for all sarung product sizes
-          const allSarungProductSizes = allLinkedSarungIds.length > 0
-            ? await tx.productSize.findMany({
-                where: { id: { in: allLinkedSarungIds } },
-                include: {
-                  product: {
-                    select: {
-                      id: true,
-                      name: true,
-                      code: true,
-                    },
-                  },
-                },
-              })
-            : []
-
-          // Create O(1) lookup map for sarung product sizes
-          const sarungMap = new Map(
-            allSarungProductSizes.map((ps: any) => [ps.id, ps])
-          )
-
+          
           for (let index = 0; index < data.items.length; index++) {
             const item = data.items[index]
             const calculation = priceCalculation!.itemCalculations[index]
-            // ✅ PERFORMANCE FIX: Use O(1) map lookup instead of O(n) find()
-            const productSize = productSizeMap.get(item.productSizeId)
-            if (!productSize) {
-              throw new Error(`Product size not found: ${item.productSizeId}`)
-            }
+            const productSize = productSizes.find((ps) => ps.id === item.productSizeId)!
             
             // ✅ FIX: Properly access manualPriceAdjustment from size-aware item
             const itemWithManualAdjustment = item as CreateTransaksiItemSizeAware & {
@@ -854,16 +777,26 @@ export class TransaksiService {
                 quantity: number
                 selectedSize: ProductSize
               }
-
-              // ✅ PERFORMANCE FIX: Use O(1) map lookup instead of findUnique query
-              const sarungProductSize = sarungMap.get(linkedSarungData.productSizeId)
-
+              
+              const sarungProductSize = await tx.productSize.findUnique({
+                where: { id: linkedSarungData.productSizeId },
+                include: {
+                  product: {
+                    select: {
+                      id: true,
+                      name: true,
+                      code: true,
+                    },
+                  },
+                },
+              })
+              
               if (sarungProductSize) {
                 // ✅ SIMPLIFIED: Store sarung metadata with reference to parent jas (no duplication)
                 const sarungKondisiAwalData = {
                   productSizeId: linkedSarungData.productSizeId,
-                  size: (sarungProductSize as any).size,
-                  ageCategory: (sarungProductSize as any).ageCategory,
+                  size: sarungProductSize.size,
+                  ageCategory: sarungProductSize.ageCategory,
                   condition: item.kondisiAwal || 'baik',
                   isPairedSarung: true,
                   parentJasProductId: item.produkId // Reference to parent jas
@@ -893,11 +826,57 @@ export class TransaksiService {
           // Date-aware validation (Task 4.1) prevents overbooking by checking overlapping periods
           // await this.updateProductSizeQuantitiesWithoutValidation(tx, data.items) // REMOVED
 
-          // ✅ PERFORMANCE FIX: Return only transaction ID and kode (minimal lock time)
-          // Full data fetch happens OUTSIDE transaction
+          // Fetch items with full product details
+          const items = await tx.transaksiItem.findMany({
+            where: { transaksiId: createdTransaksi.id },
+            include: {
+              produk: {
+                select: {
+                  id: true,
+                  code: true,
+                  name: true,
+                  modalAwal: true,
+                  imageUrl: true,
+                  size: true,
+                  category: {
+                    select: {
+                      id: true,
+                      name: true,
+                    },
+                  },
+                },
+              },
+              returnConditions: {
+                orderBy: { createdAt: 'asc' },
+                select: {
+                  id: true,
+                  kondisiAkhir: true,
+                  jumlahKembali: true,
+                  penaltyAmount: true,
+                  modalAwalUsed: true,
+                  createdAt: true,
+                  createdBy: true,
+                },
+              },
+            },
+          })
+
+          // Fetch pembayaran and aktivitas
+          const pembayaran = await tx.pembayaran.findMany({
+            where: { transaksiId: createdTransaksi.id },
+            orderBy: { createdAt: 'desc' },
+          })
+
+          const aktivitas = await tx.aktivitasTransaksi.findMany({
+            where: { transaksiId: createdTransaksi.id },
+            orderBy: { createdAt: 'desc' },
+          })
+
           return {
-            transaksiId: createdTransaksi.id,
-            kode,
+            ...createdTransaksi,
+            items,
+            pembayaran,
+            aktivitas,
           }
         },
         {
@@ -905,111 +884,31 @@ export class TransaksiService {
         },
       )
 
-      // ✅ PERFORMANCE FIX: Fetch full data OUTSIDE transaction (no locks)
-      // Run all fetch operations in parallel for maximum speed
-      const [items, pembayaran, aktivitas, transaksi] = await Promise.all([
-        this.prisma.transaksiItem.findMany({
-          where: { transaksiId: transactionResult.transaksiId },
-          include: {
-            produk: {
-              select: {
-                id: true,
-                code: true,
-                name: true,
-                modalAwal: true,
-                imageUrl: true,
-                size: true,
-                category: {
-                  select: {
-                    id: true,
-                    name: true,
-                  },
-                },
-              },
-            },
-            returnConditions: {
-              orderBy: { createdAt: 'asc' },
-              select: {
-                id: true,
-                kondisiAkhir: true,
-                jumlahKembali: true,
-                penaltyAmount: true,
-                modalAwalUsed: true,
-                createdAt: true,
-                createdBy: true,
-              },
-            },
-          },
-        }),
-        this.prisma.pembayaran.findMany({
-          where: { transaksiId: transactionResult.transaksiId },
-          orderBy: { createdAt: 'desc' },
-        }),
-        this.prisma.aktivitasTransaksi.findMany({
-          where: { transaksiId: transactionResult.transaksiId },
-          orderBy: { createdAt: 'desc' },
-        }),
-        this.prisma.transaksi.findUnique({
-          where: { id: transactionResult.transaksiId },
-          include: {
-            penyewa: {
-              select: {
-                id: true,
-                nama: true,
-                telepon: true,
-                alamat: true,
-                nik: true,
-                email: true,
-              },
-            },
-            kasir: {
-              select: {
-                id: true,
-                nama: true,
-                isActive: true,
-                createdAt: true,
-                updatedAt: true,
-              },
-            },
-          },
-        }),
-      ])
-
-      // Combine fetched data with transaction
-      const fullTransaksi = {
-        ...(transaksi || {}),
-        items,
-        pembayaran,
-        aktivitas,
-      }
-
-      // TASK 2: End database timing
-      timer.endDatabase()
-
       // ENHANCED: Create enhanced activity log AFTER transaction (async, non-blocking)
       this.createEnhancedActivityLogAsync(
-        fullTransaksi.id || transactionResult.transaksiId,
+        transaksi.id,
         kode,
         data,
         priceCalculation,
         duration,
+        transactionStartTime,
       ).catch((err: Error) => {
         console.error('Failed to create enhanced activity log:', err)
       })
 
       // Apply enhanced status calculation
       const enhancedStatus = calculateEnhancedStatus(
-        fullTransaksi.status as TransactionStatus,
-        fullTransaksi.items,
-        fullTransaksi.tglSelesai?.toISOString(),
+        transaksi.status as TransactionStatus,
+        transaksi.items,
+        transaksi.tglSelesai?.toISOString(),
       )
 
       // Transform items with multi-condition return data
       const enhancedTransaksi = {
-        ...fullTransaksi,
+        ...transaksi,
         status: enhancedStatus,
         //eslint-disable-next-line
-        items: this.transformItemsWithMultiCondition(fullTransaksi.items as any),
+        items: this.transformItemsWithMultiCondition(transaksi.items as any),
       }
 
       return enhancedTransaksi as TransaksiWithDetails
@@ -1042,7 +941,7 @@ export class TransaksiService {
 
   /**
    * Validate stock availability INSIDE transaction (single source of truth)
-   * OPTIMIZED: Uses stockValidationService for bulk validation to eliminate N+1 queries
+   * OPTIMIZED: Validates once inside transaction to prevent race conditions
    * ENHANCED: Now supports date-aware availability validation using tglMulai and tglSelesai
    * TASK 9: Now supports linked sarung validation for jas-sarung pairing
    * @private
@@ -1052,25 +951,25 @@ export class TransaksiService {
     tx: any,
     items: CreateTransaksiRequest['items'],
     //eslint-disable-next-line
-    productSizeMap: Map<string, any>, // ✅ PERFORMANCE FIX: Changed to Map for O(1) lookups
+    productSizes: any[],
     startDate?: Date, // TASK 4.1: Added for date-aware validation
     endDate?: Date    // TASK 4.1: Added for date-aware validation
   ): Promise<void> {
-    // TASK 2: Import stockValidationService for bulk validation
-    const { createStockValidationService } = await import('./stockValidationService')
-    const stockService = createStockValidationService(tx)
+    const txInventoryService = createInventoryService(tx)
+    const txAvailabilityService = createAvailabilityService(tx)
 
     // TASK 9: Collect all items to validate (main items + linked sarung)
-    const allItemsToValidate: Array<{ productSizeId: string; quantity: number; isLinkedSarung: boolean }> = []
-
+    const allItemsToValidate = []
+    
     for (const item of items) {
       // Add main item
       allItemsToValidate.push({
         productSizeId: item.productSizeId,
         quantity: item.jumlah,
         isLinkedSarung: false,
+        parentItem: item,
       })
-
+      
       // TASK 9: Add linked sarung if exists
       if ('linkedSarung' in item && item.linkedSarung) {
         const linkedSarungData = item.linkedSarung as {
@@ -1079,68 +978,50 @@ export class TransaksiService {
           quantity: number
           selectedSize: ProductSize
         }
-
+        
         allItemsToValidate.push({
           productSizeId: linkedSarungData.productSizeId,
           quantity: linkedSarungData.quantity,
           isLinkedSarung: true,
+          parentItem: item,
         })
       }
     }
 
-    // ✅ VALIDATION 1: Check if all sizes exist
     for (const validationItem of allItemsToValidate) {
-      // ✅ PERFORMANCE FIX: Use O(1) map lookup instead of O(n) find()
-      const productSize = productSizeMap.get(validationItem.productSizeId)
+      const productSize = productSizes.find((ps) => ps.id === validationItem.productSizeId)
 
+      // ✅ VALIDATION 1: Check if size exists
       // If size is inactive, it won't be in productSizes array (filtered by query)
       if (!productSize) {
         const itemType = validationItem.isLinkedSarung ? 'sarung' : 'produk'
         throw new Error(`Ukuran ${itemType} tidak ditemukan untuk item ${validationItem.productSizeId}`)
       }
-    }
 
-    // ✅ VALIDATION 2: Use date-aware bulk availability checking if dates are provided
-    if (startDate && endDate) {
-      // TASK 2: Use stockValidationService for bulk validation (replaces N+1 pattern)
-      const validation = await stockService.validateBulkStockAvailability(
-        allItemsToValidate.map(item => ({
-          productSizeId: item.productSizeId,
-          quantity: item.quantity,
-        })),
-        startDate,
-        endDate
-      )
+      // ✅ VALIDATION 2: Use date-aware availability checking if dates are provided
+      if (startDate && endDate) {
+        // TASK 4.1 FIX: Use productSizeId instead of productId for size-aware validation
+        const availabilityCheck = await txAvailabilityService.checkDateRangeAvailability(
+          [{ productSizeId: validationItem.productSizeId, quantity: validationItem.quantity }],
+          startDate,
+          endDate
+        )
 
-      // Check validation results and throw detailed errors
-      if (!validation.valid) {
-        const errors = validation.items
-          .filter(i => !i.isValid)
-          .map(invalidItem => {
-            const itemMeta = allItemsToValidate.find(x => x.productSizeId === invalidItem.productSizeId)
-            const itemType = itemMeta?.isLinkedSarung ? 'Sarung' : 'Produk'
-            const overlapping = invalidItem.overlappingTransactions && invalidItem.overlappingTransactions.length > 0
-              ? `Konflik dengan transaksi: ${invalidItem.overlappingTransactions.map(t => t.transactionCode).join(', ')}`
-              : ''
-
-            return `${itemType} size ${invalidItem.size} (${invalidItem.ageCategory}) untuk ${invalidItem.productName}: shortage ${invalidItem.shortage}. ${overlapping}`
-          })
-          .join('; ')
-
-        throw new Error(`Stok tidak mencukupi: ${errors}`)
-      }
-    } else {
-      // Legacy validation: Check current stock availability using InventoryService
-      const txInventoryService = createInventoryService(tx)
-
-      for (const validationItem of allItemsToValidate) {
-        // ✅ PERFORMANCE FIX: Use O(1) map lookup instead of O(n) find()
-        const productSize = productSizeMap.get(validationItem.productSizeId)
-        if (!productSize) {
-          const itemType = validationItem.isLinkedSarung ? 'sarung' : 'produk'
-          throw new Error(`Ukuran ${itemType} tidak ditemukan untuk item ${validationItem.productSizeId}`)
+        if (!availabilityCheck.available) {
+          const conflict = availabilityCheck.conflicts[0]
+          const overlappingTransactions = conflict.overlappingTransactions
+            .map(t => t.transactionCode)
+            .join(', ')
+          
+          const itemType = validationItem.isLinkedSarung ? 'Sarung' : 'Produk'
+          throw new Error(
+            `${itemType} size ${productSize.size} (${productSize.ageCategory}) untuk ${productSize.product.name} tidak tersedia untuk periode ${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}. ` +
+            `Tersedia: ${conflict.available}, Diminta: ${conflict.requested}. ` +
+            `Konflik dengan transaksi: ${overlappingTransactions}`
+          )
         }
-
+      } else {
+        // Legacy validation: Check current stock availability using InventoryService
         const isAvailable = await txInventoryService.checkAvailability(
           validationItem.productSizeId,
           validationItem.quantity,
@@ -1168,12 +1049,13 @@ export class TransaksiService {
     data: CreateTransaksiRequest,
     priceCalculation: ReturnType<typeof PriceCalculator.calculateTransactionTotalWithEnhancements>,
     duration: 4 | 7,
+    transactionStartTime: number,
   ): Promise<void> {
     try {
       // TASK 9: Count jas-sarung pairings
       const pairingCount = data.items.filter(item => 'linkedSarung' in item && item.linkedSarung).length
       const totalItems = data.items.length + data.items.filter(item => 'linkedSarung' in item && item.linkedSarung).length // Main items + linked sarung
-
+      
       await this.prisma.aktivitasTransaksi.create({
         data: {
           transaksiId,
@@ -1194,6 +1076,7 @@ export class TransaksiService {
             sizeAware: true,
             enhancedSystem: true,
             pairingSupport: true, // TASK 9: Flag for pairing support
+            transactionDuration: Date.now() - transactionStartTime,
           },
           createdBy: this.userId,
         },
