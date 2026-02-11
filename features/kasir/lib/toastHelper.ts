@@ -70,8 +70,39 @@ export function showApiError(errorResponse: ApiErrorResponse | unknown): void {
   // Handle KasirApiError or other error objects
   if ('message' in errorResponse) {
     const errorMessage = String(errorResponse.message)
+
+    // ✅ FIX: Extract additional error details for better UX
+    const error = errorResponse as any
+    let description: string | undefined
+
+    // Try to get detailed error information
+    if (error.details) {
+      // Backend error with details object
+      if (typeof error.details === 'string') {
+        description = error.details
+      } else if (error.details.errorDetails) {
+        description = error.details.errorDetails
+      } else if (Array.isArray(error.validationErrors)) {
+        // Validation errors array
+        description = error.validationErrors
+          .map((e: { field: string; message: string }) => `• ${e.field}: ${e.message}`)
+          .join('\n')
+      } else if (error.details.context) {
+        description = error.details.context
+      }
+    } else if (error.context) {
+      description = error.context
+    }
+
+    // ✅ FIX: Use Infinity duration for manual close - toast stays until user clicks close
+    // ✅ FIX: Add action button for manual dismissal
     toast.error(errorMessage, {
-      duration: 10000,
+      description: description || 'Klik tombol tutup untuk menutup pesan ini',
+      duration: Infinity, // Toast stays visible until manually closed
+      action: {
+        label: 'Tutup',
+        onClick: () => {}, // Dismiss toast when clicked
+      },
     })
     return
   }
