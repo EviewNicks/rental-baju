@@ -1,143 +1,369 @@
-🚨 [ERROR] Enhanced Transaction Creation Failed: {
-  message: 'Stok tidak mencukupi: Produk size L (ADULT) untuk Jas Jaguar Abu: shortage 2. Konflik dengan transaksi: TXN-20260209-002, TXN-20260210-003, TXN-20260210-004',
-  itemCount: 1,
-  penyewaId: '3704d273-299c-4ebc-800b-faed79ed332c',
-  discountType: undefined,
-  discountValue: undefined,
-  totalAmount: '300000'
+ ○ Compiling /api/kasir/receipt/[transaksiId]/pdf ...
+formatSizeDisplay Debug: {
+  kondisiAwal: '{"productSizeId":"ccd69248-8c67-47ca-bc56-c54e487db1d6","size":"M","ageCategory":"ADULT","condition":"baik","linkedSarung":{"productId":"d2556a0c-05a7-41ba-9235-354ec5fab8f7","productSizeId":"4fb26839-a3e2-4c9b-b7a8-e6134dff1b61","quantity":1,"selectedSize":{"id":"4fb26839-a3e2-4c9b-b7a8-e6134dff1b61","productId":"d2556a0c-05a7-41ba-9235-354ec5fab8f7","size":"UNIVERSAL","ageCategory":"ADULT","quantity":1,"availableQuantity":0,"rentedStock":0,"createdAt":"2026-02-13T06:09:20.501Z","updatedAt":"2026-02-13T06:09:20.501Z"}}}',
+  categoryType: 'clothing',
+  size: 'M',
+  ageCategory: 'ADULT',
+  kondisiData: {
+    productSizeId: 'ccd69248-8c67-47ca-bc56-c54e487db1d6',
+    size: 'M',
+    ageCategory: 'ADULT',
+    condition: 'baik',
+    linkedSarung: {
+      productId: 'd2556a0c-05a7-41ba-9235-354ec5fab8f7',
+      productSizeId: '4fb26839-a3e2-4c9b-b7a8-e6134dff1b61',
+      quantity: 1,
+      selectedSize: [Object]
+    }
+  }
 }
- POST /api/kasir/transaksi 409 in 18.4s (compile: 21ms, proxy.ts: 65ms, render: 18.3s)
-
-
-
-## Error Type
-Console Error
-
-## Error Message
-Failed to create transaksi: "Stok Produk tidak mencukupi. Tersedia: 0, Diminta: 0."
-
-
-    at useCreateTransaksi.useMutation [as onError] (features/kasir/hooks/useTransaksi.ts:101:15)
-    at async useTransactionForm.useCallback[submitTransaction] (features/kasir/hooks/useTransactionForm.ts:403:34)
-    at async handleSubmitTransaction (features/kasir/components/form/TransactionFormPage.tsx:142:23)
-    at async PaymentSummaryStep.useCallback[handleSubmit] (features/kasir/components/form/PaymentSummaryStep.tsx:144:23)
-
-## Code Frame
-   99 |     onError: (error: KasirApiError) => {
-  100 |       // ✅ FIX: Enhanced error logging with detailed message preservation
-> 101 |       console.error('Failed to create transaksi:', error.message)
-      |               ^
-  102 |       
-  103 |       // Enhanced error logging for cache-related issues
-  104 |       if (error.message.includes('tidak mencukupi') || error.message.includes('Tersedia')) {
-
-Next.js version: 16.0.10 (Turbopack)
-
-
-## Error Type
-Console Error
-
-## Error Message
-[useTransaksi] Detailed error information: {}
-
-
-    at useCreateTransaksi.useMutation [as onError] (features/kasir/hooks/useTransaksi.ts:121:15)
-    at async useTransactionForm.useCallback[submitTransaction] (features/kasir/hooks/useTransactionForm.ts:403:34)
-    at async handleSubmitTransaction (features/kasir/components/form/TransactionFormPage.tsx:142:23)
-    at async PaymentSummaryStep.useCallback[handleSubmit] (features/kasir/components/form/PaymentSummaryStep.tsx:144:23)
-
-## Code Frame
-  119 |
-  120 |       // ✅ FIX: Log detailed error information for debugging
-> 121 |       console.error('[useTransaksi] Detailed error information:', {
-      |               ^
-  122 |         code: error.code,
-  123 |         message: error.message,
-  124 |         details: error.details,
-
-Next.js version: 16.0.10 (Turbopack)
-
-
-## Error Type
-Console Error
-
-## Error Message
-❌ Transaction creation failed! {} "useTransactionForm"
-
-
-    at useTransactionForm.useCallback[submitTransaction] (features/kasir/hooks/useTransactionForm.ts:495:17)
-    at async handleSubmitTransaction (features/kasir/components/form/TransactionFormPage.tsx:142:23)
-    at async PaymentSummaryStep.useCallback[handleSubmit] (features/kasir/components/form/PaymentSummaryStep.tsx:144:23)
-
-## Code Frame
-  493 |         )
-  494 |       } else {
-> 495 |         console.error(
-      |                 ^
-  496 |           '❌ Transaction creation failed!',
-  497 |           {
-  498 |             errorType: 'TRANSACTION_FAILURE',
-
-Next.js version: 16.0.10 (Turbopack)
-
-
-## Error Type
-Console KasirApiError
-
-## Error Message
-Stok Produk tidak mencukupi. Tersedia: 0, Diminta: 0.
-
-
-    at apiRequest (features/kasir/api.ts:332:13)
-
-## Code Frame
-  330 |       }
-  331 |
-> 332 |       throw new KasirApiError(
-      |             ^
-  333 |         error.code,
-  334 |         error.message,
-  335 |         error.details,
-
-Next.js version: 16.0.10 (Turbopack)
-
-## Error Type
-Console KasirApiError
-
-## Error Message
-Stok Produk tidak mencukupi. Tersedia: 0, Diminta: 0.
-
-
-    at apiRequest (features/kasir/api.ts:332:13)
-
-## Code Frame
-  330 |       }
-  331 |
-> 332 |       throw new KasirApiError(
-      |             ^
-  333 |         error.code,
-  334 |         error.message,
-  335 |         error.details,
-
-Next.js version: 16.0.10 (Turbopack)
-
-## Error Type
-Console Error
-
-## Error Message
-❌ Transaction submission failed {}
-
-
-    at handleSubmitTransaction (features/kasir/components/form/TransactionFormPage.tsx:172:17)
-    at async PaymentSummaryStep.useCallback[handleSubmit] (features/kasir/components/form/PaymentSummaryStep.tsx:144:23)
-
-## Code Frame
-  170 |         }
-  171 |
-> 172 |         console.error('❌ Transaction submission failed', errorDetails)
-      |                 ^
-  173 |
-  174 |         // Show error toast using backend error response
-  175 |         showApiError(createError)
-
-Next.js version: 16.0.10 (Turbopack)
+formatSizeDisplay Debug: {
+  kondisiAwal: '{"productSizeId":"14e7f4ff-3811-4ea0-af8b-71589d4109d0","size":"L","ageCategory":"ADULT","condition":"baik","linkedSarung":{"productId":"ae977406-347d-4bc1-a3f5-a06fecd57a78","productSizeId":"0582ca12-0d04-4e76-b31c-69505efc4455","quantity":1,"selectedSize":{"id":"0582ca12-0d04-4e76-b31c-69505efc4455","productId":"ae977406-347d-4bc1-a3f5-a06fecd57a78","size":"UNIVERSAL","ageCategory":"ADULT","quantity":1,"availableQuantity":0,"rentedStock":0,"createdAt":"2026-02-13T06:09:20.502Z","updatedAt":"2026-02-13T06:09:20.502Z"}}}',
+  categoryType: 'clothing',
+  size: 'L',
+  ageCategory: 'ADULT',
+  kondisiData: {
+    productSizeId: '14e7f4ff-3811-4ea0-af8b-71589d4109d0',
+    size: 'L',
+    ageCategory: 'ADULT',
+    condition: 'baik',
+    linkedSarung: {
+      productId: 'ae977406-347d-4bc1-a3f5-a06fecd57a78',
+      productSizeId: '0582ca12-0d04-4e76-b31c-69505efc4455',
+      quantity: 1,
+      selectedSize: [Object]
+    }
+  }
+}
+formatSizeDisplay Debug: {
+  kondisiAwal: '{"productSizeId":"203b1dca-6fbc-4a10-83e2-519fd89c7c9e","size":"XL","ageCategory":"ADULT","condition":"baik","linkedSarung":{"productId":"68f8b761-dd4b-4c30-92b8-2377c8f16ad2","productSizeId":"da88521a-33f9-4221-9613-91261bfcb2aa","quantity":1,"selectedSize":{"id":"da88521a-33f9-4221-9613-91261bfcb2aa","productId":"68f8b761-dd4b-4c30-92b8-2377c8f16ad2","size":"UNIVERSAL","ageCategory":"ADULT","quantity":1,"availableQuantity":0,"rentedStock":0,"createdAt":"2026-02-13T06:09:20.502Z","updatedAt":"2026-02-13T06:09:20.502Z"}}}',
+  categoryType: 'clothing',
+  size: 'XL',
+  ageCategory: 'ADULT',
+  kondisiData: {
+    productSizeId: '203b1dca-6fbc-4a10-83e2-519fd89c7c9e',
+    size: 'XL',
+    ageCategory: 'ADULT',
+    condition: 'baik',
+    linkedSarung: {
+      productId: '68f8b761-dd4b-4c30-92b8-2377c8f16ad2',
+      productSizeId: 'da88521a-33f9-4221-9613-91261bfcb2aa',
+      quantity: 1,
+      selectedSize: [Object]
+    }
+  }
+}
+formatSizeDisplay Debug: {
+  kondisiAwal: '{"productSizeId":"7f8b7e49-c1a3-46be-a677-ee166e0e4159","size":"XL","ageCategory":"ADULT","condition":"baik","linkedSarung":{"productId":"d2556a0c-05a7-41ba-9235-354ec5fab8f7","productSizeId":"4fb26839-a3e2-4c9b-b7a8-e6134dff1b61","quantity":1,"selectedSize":{"id":"4fb26839-a3e2-4c9b-b7a8-e6134dff1b61","productId":"d2556a0c-05a7-41ba-9235-354ec5fab8f7","size":"UNIVERSAL","ageCategory":"ADULT","quantity":1,"availableQuantity":0,"rentedStock":0,"createdAt":"2026-02-13T06:09:20.501Z","updatedAt":"2026-02-13T06:09:20.501Z"}}}',
+  categoryType: 'clothing',
+  size: 'XL',
+  ageCategory: 'ADULT',
+  kondisiData: {
+    productSizeId: '7f8b7e49-c1a3-46be-a677-ee166e0e4159',
+    size: 'XL',
+    ageCategory: 'ADULT',
+    condition: 'baik',
+    linkedSarung: {
+      productId: 'd2556a0c-05a7-41ba-9235-354ec5fab8f7',
+      productSizeId: '4fb26839-a3e2-4c9b-b7a8-e6134dff1b61',
+      quantity: 1,
+      selectedSize: [Object]
+    }
+  }
+}
+formatSizeDisplay Debug: {
+  kondisiAwal: '{"productSizeId":"e8954c46-639c-4f9b-88b2-17f924a7c89b","size":"M","ageCategory":"ADULT","condition":"baik","linkedSarung":{"productId":"ae977406-347d-4bc1-a3f5-a06fecd57a78","productSizeId":"0582ca12-0d04-4e76-b31c-69505efc4455","quantity":1,"selectedSize":{"id":"0582ca12-0d04-4e76-b31c-69505efc4455","productId":"ae977406-347d-4bc1-a3f5-a06fecd57a78","size":"UNIVERSAL","ageCategory":"ADULT","quantity":1,"availableQuantity":0,"rentedStock":0,"createdAt":"2026-02-13T06:09:20.501Z","updatedAt":"2026-02-13T06:09:20.501Z"}}}',
+  categoryType: 'clothing',
+  size: 'M',
+  ageCategory: 'ADULT',
+  kondisiData: {
+    productSizeId: 'e8954c46-639c-4f9b-88b2-17f924a7c89b',
+    size: 'M',
+    ageCategory: 'ADULT',
+    condition: 'baik',
+    linkedSarung: {
+      productId: 'ae977406-347d-4bc1-a3f5-a06fecd57a78',
+      productSizeId: '0582ca12-0d04-4e76-b31c-69505efc4455',
+      quantity: 1,
+      selectedSize: [Object]
+    }
+  }
+}
+formatSizeDisplay Debug: {
+  kondisiAwal: '{"productSizeId":"a49472e0-464b-4e48-92d8-2cd84c8bcf68","size":"L","ageCategory":"ADULT","condition":"baik","linkedSarung":{"productId":"d2556a0c-05a7-41ba-9235-354ec5fab8f7","productSizeId":"4fb26839-a3e2-4c9b-b7a8-e6134dff1b61","quantity":2,"selectedSize":{"id":"4fb26839-a3e2-4c9b-b7a8-e6134dff1b61","productId":"d2556a0c-05a7-41ba-9235-354ec5fab8f7","size":"UNIVERSAL","ageCategory":"ADULT","quantity":2,"availableQuantity":0,"rentedStock":0,"createdAt":"2026-02-13T06:09:20.501Z","updatedAt":"2026-02-13T06:09:20.501Z"}}}',
+  categoryType: 'clothing',
+  size: 'L',
+  ageCategory: 'ADULT',
+  kondisiData: {
+    productSizeId: 'a49472e0-464b-4e48-92d8-2cd84c8bcf68',
+    size: 'L',
+    ageCategory: 'ADULT',
+    condition: 'baik',
+    linkedSarung: {
+      productId: 'd2556a0c-05a7-41ba-9235-354ec5fab8f7',
+      productSizeId: '4fb26839-a3e2-4c9b-b7a8-e6134dff1b61',
+      quantity: 2,
+      selectedSize: [Object]
+    }
+  }
+}
+formatSizeDisplay Debug: {
+  kondisiAwal: '{"productSizeId":"29a490a6-e200-4cf3-8a18-070a6f1841fe","size":"M","ageCategory":"ADULT","condition":"baik","linkedSarung":{"productId":"68f8b761-dd4b-4c30-92b8-2377c8f16ad2","productSizeId":"da88521a-33f9-4221-9613-91261bfcb2aa","quantity":3,"selectedSize":{"id":"da88521a-33f9-4221-9613-91261bfcb2aa","productId":"68f8b761-dd4b-4c30-92b8-2377c8f16ad2","size":"UNIVERSAL","ageCategory":"ADULT","quantity":3,"availableQuantity":0,"rentedStock":0,"createdAt":"2026-02-13T06:09:20.502Z","updatedAt":"2026-02-13T06:09:20.502Z"}}}',
+  categoryType: 'clothing',
+  size: 'M',
+  ageCategory: 'ADULT',
+  kondisiData: {
+    productSizeId: '29a490a6-e200-4cf3-8a18-070a6f1841fe',
+    size: 'M',
+    ageCategory: 'ADULT',
+    condition: 'baik',
+    linkedSarung: {
+      productId: '68f8b761-dd4b-4c30-92b8-2377c8f16ad2',
+      productSizeId: 'da88521a-33f9-4221-9613-91261bfcb2aa',
+      quantity: 3,
+      selectedSize: [Object]
+    }
+  }
+}
+formatSizeDisplay Debug: {
+  kondisiAwal: '{"productSizeId":"42c40325-d519-4342-a415-0823b6312daa","size":"XL","ageCategory":"ADULT","condition":"baik","linkedSarung":{"productId":"ae977406-347d-4bc1-a3f5-a06fecd57a78","productSizeId":"0582ca12-0d04-4e76-b31c-69505efc4455","quantity":4,"selectedSize":{"id":"0582ca12-0d04-4e76-b31c-69505efc4455","productId":"ae977406-347d-4bc1-a3f5-a06fecd57a78","size":"UNIVERSAL","ageCategory":"ADULT","quantity":4,"availableQuantity":0,"rentedStock":0,"createdAt":"2026-02-13T06:09:20.502Z","updatedAt":"2026-02-13T06:09:20.502Z"}}}',
+  categoryType: 'clothing',
+  size: 'XL',
+  ageCategory: 'ADULT',
+  kondisiData: {
+    productSizeId: '42c40325-d519-4342-a415-0823b6312daa',
+    size: 'XL',
+    ageCategory: 'ADULT',
+    condition: 'baik',
+    linkedSarung: {
+      productId: 'ae977406-347d-4bc1-a3f5-a06fecd57a78',
+      productSizeId: '0582ca12-0d04-4e76-b31c-69505efc4455',
+      quantity: 4,
+      selectedSize: [Object]
+    }
+  }
+}
+formatSizeDisplay Debug: {
+  kondisiAwal: '{"productSizeId":"ae1e9010-0882-4865-bc34-e44e293ca171","size":"S","ageCategory":"ADULT","condition":"baik","linkedSarung":{"productId":"d2556a0c-05a7-41ba-9235-354ec5fab8f7","productSizeId":"4fb26839-a3e2-4c9b-b7a8-e6134dff1b61","quantity":2,"selectedSize":{"id":"4fb26839-a3e2-4c9b-b7a8-e6134dff1b61","productId":"d2556a0c-05a7-41ba-9235-354ec5fab8f7","size":"UNIVERSAL","ageCategory":"ADULT","quantity":2,"availableQuantity":0,"rentedStock":0,"createdAt":"2026-02-13T06:09:20.501Z","updatedAt":"2026-02-13T06:09:20.501Z"}}}',
+  categoryType: 'clothing',
+  size: 'S',
+  ageCategory: 'ADULT',
+  kondisiData: {
+    productSizeId: 'ae1e9010-0882-4865-bc34-e44e293ca171',
+    size: 'S',
+    ageCategory: 'ADULT',
+    condition: 'baik',
+    linkedSarung: {
+      productId: 'd2556a0c-05a7-41ba-9235-354ec5fab8f7',
+      productSizeId: '4fb26839-a3e2-4c9b-b7a8-e6134dff1b61',
+      quantity: 2,
+      selectedSize: [Object]
+    }
+  }
+}
+formatSizeDisplay Debug: {
+  kondisiAwal: '{"productSizeId":"727aa7ce-b9e7-4f4b-8894-b18feaf41371","size":"L","ageCategory":"ADULT","condition":"baik","linkedSarung":{"productId":"68f8b761-dd4b-4c30-92b8-2377c8f16ad2","productSizeId":"da88521a-33f9-4221-9613-91261bfcb2aa","quantity":4,"selectedSize":{"id":"da88521a-33f9-4221-9613-91261bfcb2aa","productId":"68f8b761-dd4b-4c30-92b8-2377c8f16ad2","size":"UNIVERSAL","ageCategory":"ADULT","quantity":4,"availableQuantity":0,"rentedStock":0,"createdAt":"2026-02-13T06:09:20.502Z","updatedAt":"2026-02-13T06:09:20.502Z"}}}',
+  categoryType: 'clothing',
+  size: 'L',
+  ageCategory: 'ADULT',
+  kondisiData: {
+    productSizeId: '727aa7ce-b9e7-4f4b-8894-b18feaf41371',
+    size: 'L',
+    ageCategory: 'ADULT',
+    condition: 'baik',
+    linkedSarung: {
+      productId: '68f8b761-dd4b-4c30-92b8-2377c8f16ad2',
+      productSizeId: 'da88521a-33f9-4221-9613-91261bfcb2aa',
+      quantity: 4,
+      selectedSize: [Object]
+    }
+  }
+}
+formatSizeDisplay Debug: {
+  kondisiAwal: '{"productSizeId":"ccd69248-8c67-47ca-bc56-c54e487db1d6","size":"M","ageCategory":"ADULT","condition":"baik","linkedSarung":{"productId":"d2556a0c-05a7-41ba-9235-354ec5fab8f7","productSizeId":"4fb26839-a3e2-4c9b-b7a8-e6134dff1b61","quantity":1,"selectedSize":{"id":"4fb26839-a3e2-4c9b-b7a8-e6134dff1b61","productId":"d2556a0c-05a7-41ba-9235-354ec5fab8f7","size":"UNIVERSAL","ageCategory":"ADULT","quantity":1,"availableQuantity":0,"rentedStock":0,"createdAt":"2026-02-13T06:09:20.501Z","updatedAt":"2026-02-13T06:09:20.501Z"}}}',
+  categoryType: 'clothing',
+  size: 'M',
+  ageCategory: 'ADULT',
+  kondisiData: {
+    productSizeId: 'ccd69248-8c67-47ca-bc56-c54e487db1d6',
+    size: 'M',
+    ageCategory: 'ADULT',
+    condition: 'baik',
+    linkedSarung: {
+      productId: 'd2556a0c-05a7-41ba-9235-354ec5fab8f7',
+      productSizeId: '4fb26839-a3e2-4c9b-b7a8-e6134dff1b61',
+      quantity: 1,
+      selectedSize: [Object]
+    }
+  }
+}
+formatSizeDisplay Debug: {
+  kondisiAwal: '{"productSizeId":"14e7f4ff-3811-4ea0-af8b-71589d4109d0","size":"L","ageCategory":"ADULT","condition":"baik","linkedSarung":{"productId":"ae977406-347d-4bc1-a3f5-a06fecd57a78","productSizeId":"0582ca12-0d04-4e76-b31c-69505efc4455","quantity":1,"selectedSize":{"id":"0582ca12-0d04-4e76-b31c-69505efc4455","productId":"ae977406-347d-4bc1-a3f5-a06fecd57a78","size":"UNIVERSAL","ageCategory":"ADULT","quantity":1,"availableQuantity":0,"rentedStock":0,"createdAt":"2026-02-13T06:09:20.502Z","updatedAt":"2026-02-13T06:09:20.502Z"}}}',
+  categoryType: 'clothing',
+  size: 'L',
+  ageCategory: 'ADULT',
+  kondisiData: {
+    productSizeId: '14e7f4ff-3811-4ea0-af8b-71589d4109d0',
+    size: 'L',
+    ageCategory: 'ADULT',
+    condition: 'baik',
+    linkedSarung: {
+      productId: 'ae977406-347d-4bc1-a3f5-a06fecd57a78',
+      productSizeId: '0582ca12-0d04-4e76-b31c-69505efc4455',
+      quantity: 1,
+      selectedSize: [Object]
+    }
+  }
+}
+formatSizeDisplay Debug: {
+  kondisiAwal: '{"productSizeId":"203b1dca-6fbc-4a10-83e2-519fd89c7c9e","size":"XL","ageCategory":"ADULT","condition":"baik","linkedSarung":{"productId":"68f8b761-dd4b-4c30-92b8-2377c8f16ad2","productSizeId":"da88521a-33f9-4221-9613-91261bfcb2aa","quantity":1,"selectedSize":{"id":"da88521a-33f9-4221-9613-91261bfcb2aa","productId":"68f8b761-dd4b-4c30-92b8-2377c8f16ad2","size":"UNIVERSAL","ageCategory":"ADULT","quantity":1,"availableQuantity":0,"rentedStock":0,"createdAt":"2026-02-13T06:09:20.502Z","updatedAt":"2026-02-13T06:09:20.502Z"}}}',
+  categoryType: 'clothing',
+  size: 'XL',
+  ageCategory: 'ADULT',
+  kondisiData: {
+    productSizeId: '203b1dca-6fbc-4a10-83e2-519fd89c7c9e',
+    size: 'XL',
+    ageCategory: 'ADULT',
+    condition: 'baik',
+    linkedSarung: {
+      productId: '68f8b761-dd4b-4c30-92b8-2377c8f16ad2',
+      productSizeId: 'da88521a-33f9-4221-9613-91261bfcb2aa',
+      quantity: 1,
+      selectedSize: [Object]
+    }
+  }
+}
+formatSizeDisplay Debug: {
+  kondisiAwal: '{"productSizeId":"7f8b7e49-c1a3-46be-a677-ee166e0e4159","size":"XL","ageCategory":"ADULT","condition":"baik","linkedSarung":{"productId":"d2556a0c-05a7-41ba-9235-354ec5fab8f7","productSizeId":"4fb26839-a3e2-4c9b-b7a8-e6134dff1b61","quantity":1,"selectedSize":{"id":"4fb26839-a3e2-4c9b-b7a8-e6134dff1b61","productId":"d2556a0c-05a7-41ba-9235-354ec5fab8f7","size":"UNIVERSAL","ageCategory":"ADULT","quantity":1,"availableQuantity":0,"rentedStock":0,"createdAt":"2026-02-13T06:09:20.501Z","updatedAt":"2026-02-13T06:09:20.501Z"}}}',
+  categoryType: 'clothing',
+  size: 'XL',
+  ageCategory: 'ADULT',
+  kondisiData: {
+    productSizeId: '7f8b7e49-c1a3-46be-a677-ee166e0e4159',
+    size: 'XL',
+    ageCategory: 'ADULT',
+    condition: 'baik',
+    linkedSarung: {
+      productId: 'd2556a0c-05a7-41ba-9235-354ec5fab8f7',
+      productSizeId: '4fb26839-a3e2-4c9b-b7a8-e6134dff1b61',
+      quantity: 1,
+      selectedSize: [Object]
+    }
+  }
+}
+formatSizeDisplay Debug: {
+  kondisiAwal: '{"productSizeId":"e8954c46-639c-4f9b-88b2-17f924a7c89b","size":"M","ageCategory":"ADULT","condition":"baik","linkedSarung":{"productId":"ae977406-347d-4bc1-a3f5-a06fecd57a78","productSizeId":"0582ca12-0d04-4e76-b31c-69505efc4455","quantity":1,"selectedSize":{"id":"0582ca12-0d04-4e76-b31c-69505efc4455","productId":"ae977406-347d-4bc1-a3f5-a06fecd57a78","size":"UNIVERSAL","ageCategory":"ADULT","quantity":1,"availableQuantity":0,"rentedStock":0,"createdAt":"2026-02-13T06:09:20.501Z","updatedAt":"2026-02-13T06:09:20.501Z"}}}',
+  categoryType: 'clothing',
+  size: 'M',
+  ageCategory: 'ADULT',
+  kondisiData: {
+    productSizeId: 'e8954c46-639c-4f9b-88b2-17f924a7c89b',
+    size: 'M',
+    ageCategory: 'ADULT',
+    condition: 'baik',
+    linkedSarung: {
+      productId: 'ae977406-347d-4bc1-a3f5-a06fecd57a78',
+      productSizeId: '0582ca12-0d04-4e76-b31c-69505efc4455',
+      quantity: 1,
+      selectedSize: [Object]
+    }
+  }
+}
+formatSizeDisplay Debug: {
+  kondisiAwal: '{"productSizeId":"a49472e0-464b-4e48-92d8-2cd84c8bcf68","size":"L","ageCategory":"ADULT","condition":"baik","linkedSarung":{"productId":"d2556a0c-05a7-41ba-9235-354ec5fab8f7","productSizeId":"4fb26839-a3e2-4c9b-b7a8-e6134dff1b61","quantity":2,"selectedSize":{"id":"4fb26839-a3e2-4c9b-b7a8-e6134dff1b61","productId":"d2556a0c-05a7-41ba-9235-354ec5fab8f7","size":"UNIVERSAL","ageCategory":"ADULT","quantity":2,"availableQuantity":0,"rentedStock":0,"createdAt":"2026-02-13T06:09:20.501Z","updatedAt":"2026-02-13T06:09:20.501Z"}}}',
+  categoryType: 'clothing',
+  size: 'L',
+  ageCategory: 'ADULT',
+  kondisiData: {
+    productSizeId: 'a49472e0-464b-4e48-92d8-2cd84c8bcf68',
+    size: 'L',
+    ageCategory: 'ADULT',
+    condition: 'baik',
+    linkedSarung: {
+      productId: 'd2556a0c-05a7-41ba-9235-354ec5fab8f7',
+      productSizeId: '4fb26839-a3e2-4c9b-b7a8-e6134dff1b61',
+      quantity: 2,
+      selectedSize: [Object]
+    }
+  }
+}
+formatSizeDisplay Debug: {
+  kondisiAwal: '{"productSizeId":"29a490a6-e200-4cf3-8a18-070a6f1841fe","size":"M","ageCategory":"ADULT","condition":"baik","linkedSarung":{"productId":"68f8b761-dd4b-4c30-92b8-2377c8f16ad2","productSizeId":"da88521a-33f9-4221-9613-91261bfcb2aa","quantity":3,"selectedSize":{"id":"da88521a-33f9-4221-9613-91261bfcb2aa","productId":"68f8b761-dd4b-4c30-92b8-2377c8f16ad2","size":"UNIVERSAL","ageCategory":"ADULT","quantity":3,"availableQuantity":0,"rentedStock":0,"createdAt":"2026-02-13T06:09:20.502Z","updatedAt":"2026-02-13T06:09:20.502Z"}}}',
+  categoryType: 'clothing',
+  size: 'M',
+  ageCategory: 'ADULT',
+  kondisiData: {
+    productSizeId: '29a490a6-e200-4cf3-8a18-070a6f1841fe',
+    size: 'M',
+    ageCategory: 'ADULT',
+    condition: 'baik',
+    linkedSarung: {
+      productId: '68f8b761-dd4b-4c30-92b8-2377c8f16ad2',
+      productSizeId: 'da88521a-33f9-4221-9613-91261bfcb2aa',
+      quantity: 3,
+      selectedSize: [Object]
+    }
+  }
+}
+formatSizeDisplay Debug: {
+  kondisiAwal: '{"productSizeId":"42c40325-d519-4342-a415-0823b6312daa","size":"XL","ageCategory":"ADULT","condition":"baik","linkedSarung":{"productId":"ae977406-347d-4bc1-a3f5-a06fecd57a78","productSizeId":"0582ca12-0d04-4e76-b31c-69505efc4455","quantity":4,"selectedSize":{"id":"0582ca12-0d04-4e76-b31c-69505efc4455","productId":"ae977406-347d-4bc1-a3f5-a06fecd57a78","size":"UNIVERSAL","ageCategory":"ADULT","quantity":4,"availableQuantity":0,"rentedStock":0,"createdAt":"2026-02-13T06:09:20.502Z","updatedAt":"2026-02-13T06:09:20.502Z"}}}',
+  categoryType: 'clothing',
+  size: 'XL',
+  ageCategory: 'ADULT',
+  kondisiData: {
+    productSizeId: '42c40325-d519-4342-a415-0823b6312daa',
+    size: 'XL',
+    ageCategory: 'ADULT',
+    condition: 'baik',
+    linkedSarung: {
+      productId: 'ae977406-347d-4bc1-a3f5-a06fecd57a78',
+      productSizeId: '0582ca12-0d04-4e76-b31c-69505efc4455',
+      quantity: 4,
+      selectedSize: [Object]
+    }
+  }
+}
+formatSizeDisplay Debug: {
+  kondisiAwal: '{"productSizeId":"ae1e9010-0882-4865-bc34-e44e293ca171","size":"S","ageCategory":"ADULT","condition":"baik","linkedSarung":{"productId":"d2556a0c-05a7-41ba-9235-354ec5fab8f7","productSizeId":"4fb26839-a3e2-4c9b-b7a8-e6134dff1b61","quantity":2,"selectedSize":{"id":"4fb26839-a3e2-4c9b-b7a8-e6134dff1b61","productId":"d2556a0c-05a7-41ba-9235-354ec5fab8f7","size":"UNIVERSAL","ageCategory":"ADULT","quantity":2,"availableQuantity":0,"rentedStock":0,"createdAt":"2026-02-13T06:09:20.501Z","updatedAt":"2026-02-13T06:09:20.501Z"}}}',
+  categoryType: 'clothing',
+  size: 'S',
+  ageCategory: 'ADULT',
+  kondisiData: {
+    productSizeId: 'ae1e9010-0882-4865-bc34-e44e293ca171',
+    size: 'S',
+    ageCategory: 'ADULT',
+    condition: 'baik',
+    linkedSarung: {
+      productId: 'd2556a0c-05a7-41ba-9235-354ec5fab8f7',
+      productSizeId: '4fb26839-a3e2-4c9b-b7a8-e6134dff1b61',
+      quantity: 2,
+      selectedSize: [Object]
+    }
+  }
+}
+formatSizeDisplay Debug: {
+  kondisiAwal: '{"productSizeId":"727aa7ce-b9e7-4f4b-8894-b18feaf41371","size":"L","ageCategory":"ADULT","condition":"baik","linkedSarung":{"productId":"68f8b761-dd4b-4c30-92b8-2377c8f16ad2","productSizeId":"da88521a-33f9-4221-9613-91261bfcb2aa","quantity":4,"selectedSize":{"id":"da88521a-33f9-4221-9613-91261bfcb2aa","productId":"68f8b761-dd4b-4c30-92b8-2377c8f16ad2","size":"UNIVERSAL","ageCategory":"ADULT","quantity":4,"availableQuantity":0,"rentedStock":0,"createdAt":"2026-02-13T06:09:20.502Z","updatedAt":"2026-02-13T06:09:20.502Z"}}}',
+  categoryType: 'clothing',
+  size: 'L',
+  ageCategory: 'ADULT',
+  kondisiData: {
+    productSizeId: '727aa7ce-b9e7-4f4b-8894-b18feaf41371',
+    size: 'L',
+    ageCategory: 'ADULT',
+    condition: 'baik',
+    linkedSarung: {
+      productId: '68f8b761-dd4b-4c30-92b8-2377c8f16ad2',
+      productSizeId: 'da88521a-33f9-4221-9613-91261bfcb2aa',
+      quantity: 4,
+      selectedSize: [Object]
+    }
+  }
+}
+Professional PDF generated successfully: {
+  transactionCode: 'TXN-20260213-001',
+  bufferSize: 62143,
+  itemCount: 10,
+  groupedItemCount: 3,
+  dimensions: '200x140mm'
+}
+ GET /api/kasir/receipt/TXN-20260213-001/pdf 200 in 66s (compile: 12.1s, proxy.ts: 29ms, render: 54s)
