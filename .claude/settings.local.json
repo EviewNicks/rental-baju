@@ -83,7 +83,8 @@
       "WebFetch(domain:clerk.com)",
       "mcp__tavily__tavily-search",
       "mcp__serena__list_dir",
-      "Bash(yarn jest features/kasir/services/transaksiService.errorhandle.test.ts)"
+      "Bash(yarn jest features/kasir/services/transaksiService.errorhandle.test.ts)",
+      "mcp__plugin_context7_context7__resolve-library-id"
     ],
     "deny": []
   },

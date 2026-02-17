@@ -27,6 +27,22 @@ interface TableColumn {
 }
 
 /**
+ * Grouped Item interface for smart grouping
+ * Groups items by product code + sarung code combination
+ */
+interface GroupedItem {
+  productCode: string
+  productName: string
+  sarungCode: string
+  sarungName: string
+  sizeQuantities: Array<{ size: string; quantity: number }>
+  unitPrice: number
+  totalQuantity: number
+  totalPrice: number
+  categoryType: string
+}
+
+/**
  * Professional Receipt Service Class
  * Generates professional PDF receipts with table layout, logo, and comprehensive transaction details
  */
@@ -40,18 +56,19 @@ export class ProfessionalReceiptService {
   private readonly FONT_SIZE = 9
   private readonly HEADER_FONT_SIZE = 12
   private readonly TITLE_FONT_SIZE = 14
+  private readonly BOTTOM_MARGIN = 10 // Space reserved at bottom of page
+  private readonly MAX_Y = 130 // Maximum Y position before adding new page (PDF_HEIGHT_MM - BOTTOM_MARGIN)
 
   // Font configuration - SINGLE SOURCE OF TRUTH
   // Options: 'helvetica', 'times', 'courier'
   private readonly FONT_FAMILY = 'courier' // Easy to change for different fonts
 
-  // Table column configuration for professional layout - UPDATED FOR JAS-SARUNG PAIRING
+  // Table column configuration for professional layout - UPDATED FOR SMART GROUPING
   private readonly TABLE_COLUMNS: TableColumn[] = [
     { header: 'No', width: 12, align: 'center' },
     { header: 'Kode Product', width: 30, align: 'left' },    // Universal product code for all products
     { header: 'Kode Sarung', width: 30, align: 'left' },     // Sarung product code from linkedSarung
-    { header: 'Size', width: 30, align: 'center' },          // Size display
-    { header: 'Qty', width: 20, align: 'center' },
+    { header: 'Size & Qty', width: 50, align: 'left' },      // UPDATED: Combined size and quantity (e.g., "M(1), L(2)")
     { header: '@Harga', width: 25, align: 'right' },         
     { header: 'Total Harga', width: 28, align: 'right' }     
   ]
@@ -104,7 +121,9 @@ export class ProfessionalReceiptService {
         transactionCode: transactionData.kode,
         bufferSize: buffer.length,
         itemCount: transactionData.items.length,
+        groupedItemCount: this.groupItemsByProductAndSarung(transactionData.items).length,
         dimensions: `${this.PDF_WIDTH_MM}x${this.PDF_HEIGHT_MM}mm`,
+        pageCount: doc.getNumberOfPages(), // Show total pages generated
       })
 
       return buffer
@@ -242,8 +261,109 @@ export class ProfessionalReceiptService {
   }
 
   /**
+   * Group transaction items by product code + sarung code combination
+   * Aggregates sizes and quantities for items with same product and sarung
+   * @param items - Transaction items to group
+   * @returns Array of grouped items with aggregated size/quantity data
+   */
+  private groupItemsByProductAndSarung(items: TransaksiWithDetails['items']): GroupedItem[] {
+    // Create a map to group items by productCode-sarungCode key
+    const groupMap = new Map<string, GroupedItem>()
+
+    for (const item of items) {
+      // Extract product and sarung codes
+      const productCode = this.extractProductCode(item)
+      const sarungCode = this.extractSarungCode(item)
+      
+      // Create unique group key: "PRODUCTCODE-SARUNGCODE"
+      const groupKey = `${productCode}-${sarungCode}`
+
+      // Get category type for size formatting
+      const categoryName = typeof item.produk.category === 'string' 
+        ? item.produk.category 
+        : item.produk.category?.name || 'unknown'
+      const categoryType = this.getCategoryTypeFromName(categoryName)
+      
+      // Extract size from kondisiAwal
+      const formattedSize = this.formatSizeDisplay(item.kondisiAwal || '', categoryType)
+
+      // Get or create group
+      if (!groupMap.has(groupKey)) {
+        // Create new group
+        const unitPrice = typeof item.hargaSewa === 'number' 
+          ? item.hargaSewa 
+          : item.hargaSewa.toNumber()
+
+        groupMap.set(groupKey, {
+          productCode,
+          productName: item.produk.name,
+          sarungCode,
+          sarungName: item.linkedSarung?.product?.name || '-',
+          sizeQuantities: [],
+          unitPrice,
+          totalQuantity: 0,
+          totalPrice: 0,
+          categoryType
+        })
+      }
+
+      // Add size and quantity to group
+      const group = groupMap.get(groupKey)!
+      
+      // Check if this size already exists in the group
+      const existingSizeIndex = group.sizeQuantities.findIndex(sq => sq.size === formattedSize)
+      
+      if (existingSizeIndex >= 0) {
+        // Size exists, add to quantity
+        group.sizeQuantities[existingSizeIndex].quantity += item.jumlah
+      } else {
+        // New size, add to array
+        group.sizeQuantities.push({
+          size: formattedSize,
+          quantity: item.jumlah
+        })
+      }
+
+      // Update totals
+      group.totalQuantity += item.jumlah
+      const itemSubtotal = typeof item.subtotal === 'number' 
+        ? item.subtotal 
+        : item.subtotal.toNumber()
+      group.totalPrice += itemSubtotal
+    }
+
+    // Convert map to array and sort size quantities alphabetically
+    const groupedItems = Array.from(groupMap.values())
+    
+    // Sort sizes within each group alphabetically
+    groupedItems.forEach(group => {
+      group.sizeQuantities.sort((a, b) => a.size.localeCompare(b.size))
+    })
+
+    return groupedItems
+  }
+
+  /**
+   * Format size quantities for display in receipt
+   * Creates a comma-separated list like "M(1), L(2), XL(3)"
+   * @param sizeQuantities - Array of size and quantity pairs
+   * @returns Formatted string
+   */
+  private formatSizeQuantities(sizeQuantities: Array<{ size: string; quantity: number }>): string {
+    if (!sizeQuantities || sizeQuantities.length === 0) {
+      return '-'
+    }
+
+    // Format each size-quantity pair as "SIZE(QTY)"
+    const formatted = sizeQuantities.map(sq => `${sq.size}(${sq.quantity})`).join(', ')
+    
+    return formatted
+  }
+
+  /**
    * Add items table with borders and proper formatting
-   * Updated to support jas-sarung pairing with separate code columns
+   * Updated to support smart grouping by product + sarung combination
+   * NOW WITH MULTI-PAGE SUPPORT: Automatically adds new pages when content exceeds page height
    * @param doc - jsPDF document instance
    * @param items - Transaction items
    * @param transactionCode - Transaction code for "No" column
@@ -252,46 +372,40 @@ export class ProfessionalReceiptService {
    */
   private addItemsTable(doc: jsPDF, items: TransaksiWithDetails['items'], transactionCode: string, y: number): number {
     const startX = this.MARGIN
-    const currentY = y - 8 // Reduced spacing before table (was +10, now +5)
+    let currentY = y - 8 // Reduced spacing before table (was +10, now +5)
 
-    // Prepare table data with jas-sarung pairing support
+    // STEP 1: Group items by product + sarung combination
+    const groupedItems = this.groupItemsByProductAndSarung(items)
+
+    // STEP 2: Prepare table data with grouped items
     const tableData: string[][] = []
     
-    // Process each item with increment number
-    for (let index = 0; index < items.length; index++) {
-      const item = items[index]
+    // Process each grouped item with increment number
+    for (let index = 0; index < groupedItems.length; index++) {
+      const group = groupedItems[index]
       
-      // Extract product and sarung codes based on pairing logic
-      const productCode = this.extractProductCode(item)
-      const sarungCode = this.extractSarungCode(item)
-      
-      // Get category type from category name mapping
-      const categoryName = typeof item.produk.category === 'string' 
-        ? item.produk.category 
-        : item.produk.category?.name || 'unknown'
-      const categoryType = this.getCategoryTypeFromName(categoryName)
-      const formattedSize = this.formatSizeDisplay(item.kondisiAwal || '', categoryType)
+      // Format size & quantity column (e.g., "M(1), L(2), XL(3)")
+      const sizeQtyDisplay = this.formatSizeQuantities(group.sizeQuantities)
       
       // Format currency amounts (without Rp prefix for professional format)
-      const unitPrice = this.formatCurrency(item.hargaSewa)
-      const totalPrice = this.formatCurrency(item.subtotal)
+      const unitPrice = this.formatCurrency(group.unitPrice)
+      const totalPrice = this.formatCurrency(group.totalPrice)
       
-      // Create table row with increment number (1, 2, 3, ...) - REMOVED "Nama Barang" column
+      // Create table row with increment number (1, 2, 3, ...)
       const row = [
         (index + 1).toString(),    // No (increment number: 1, 2, 3, ...)
-        productCode,               // Kode Product (universal product code)
-        sarungCode,                // Kode Sarung (linked sarung code if paired, "-" if not)
-        formattedSize || '-',      // Size (context-aware format)
-        item.jumlah.toString(),    // Qty
-        unitPrice,                 // @Harga
-        totalPrice                 // Total Harga
+        group.productCode,         // Kode Product (universal product code)
+        group.sarungCode,          // Kode Sarung (linked sarung code if paired, "-" if not)
+        sizeQtyDisplay,            // Size & Qty (e.g., "M(1), L(2), XL(3)")
+        unitPrice,                 // @Harga (unit price)
+        totalPrice                 // Total Harga (total for all quantities)
       ]
       
       tableData.push(row)
     }
 
-    // Create the bordered table with full width
-    const endY = this.createBorderedTable(doc, this.TABLE_COLUMNS, tableData, startX, currentY)
+    // STEP 3: Create the bordered table with full width and multi-page support
+    const endY = this.createBorderedTableWithPagination(doc, this.TABLE_COLUMNS, tableData, startX, currentY)
     
     return endY + 5 // Add spacing after table
   }
@@ -637,11 +751,11 @@ export class ProfessionalReceiptService {
         if (Array.isArray(lines) && lines.length > 1) {
           // Multi-line text
           for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
-            doc.text(lines[lineIndex], textX, currentY + rowHeight - 2 + (lineIndex * 3), { align: column.align })
+            doc.text(lines[lineIndex], textX, currentY + rowHeight - 4   + (lineIndex * 3), { align: column.align })
           }
         } else {
           // Single line text
-          doc.text(cellData, textX, currentY + rowHeight - 2, { align: column.align })
+          doc.text(cellData, textX, currentY + rowHeight - 4 , { align: column.align })
         }
 
         currentX += column.width
@@ -654,6 +768,122 @@ export class ProfessionalReceiptService {
     this.drawTableBorders(doc, startX, startY, columns, data.length + 1) // +1 for header
 
     return currentY + 5 // Add some spacing after table
+  }
+
+  /**
+   * Create bordered table with automatic pagination support
+   * Splits table across multiple pages when content exceeds page height
+   * @param doc - jsPDF document instance
+   * @param columns - Table column configuration
+   * @param data - Table data (2D array)
+   * @param startX - Starting X position
+   * @param startY - Starting Y position
+   * @returns New Y position after table
+   */
+  private createBorderedTableWithPagination(
+    doc: jsPDF, 
+    columns: TableColumn[], 
+    data: string[][], 
+    startX: number, 
+    startY: number
+  ): number {
+    const headerHeight = this.TABLE_ROW_HEIGHT
+    const rowHeight = this.TABLE_ROW_HEIGHT
+    let currentY = startY
+    let currentPage = 1
+
+    // Helper function to draw table header
+    const drawTableHeader = (y: number) => {
+      let currentX = startX
+      doc.setFont(this.FONT_FAMILY, 'bold')
+      doc.setFontSize(this.FONT_SIZE)
+      
+      for (let i = 0; i < columns.length; i++) {
+        const column = columns[i]
+        
+        let textX = currentX
+        if (column.align === 'center') {
+          textX = currentX + column.width / 2
+        } else if (column.align === 'right') {
+          textX = currentX + column.width - 2
+        } else {
+          textX = currentX + 2
+        }
+
+        doc.text(column.header, textX, y + headerHeight - 2, { align: column.align })
+        currentX += column.width
+      }
+      
+      return y + headerHeight
+    }
+
+    // Draw initial header
+    currentY = drawTableHeader(currentY)
+    const tableStartY = startY // Remember where table started for border drawing
+    let currentTableStartY = startY // Track start of current page's table section
+
+    // Draw table data rows with pagination
+    doc.setFont(this.FONT_FAMILY, 'normal')
+    const rowsOnCurrentPage: number[] = [] // Track which rows are on current page
+    
+    for (let rowIndex = 0; rowIndex < data.length; rowIndex++) {
+      const row = data[rowIndex]
+      
+      // Check if we need a new page (before drawing the row)
+      if (currentY + rowHeight > this.MAX_Y) {
+        // Draw borders for current page's table section
+        this.drawTableBorders(doc, startX, currentTableStartY, columns, rowsOnCurrentPage.length + 1)
+        
+        // Add new page
+        doc.addPage()
+        currentPage++
+        console.log(`Added page ${currentPage} for table continuation`)
+        
+        // Reset Y position and draw header on new page
+        currentY = this.MARGIN
+        currentY = drawTableHeader(currentY)
+        currentTableStartY = this.MARGIN
+        rowsOnCurrentPage.length = 0 // Reset row tracking
+      }
+
+      // Draw row data
+      let currentX = startX
+      for (let colIndex = 0; colIndex < columns.length && colIndex < row.length; colIndex++) {
+        const column = columns[colIndex]
+        const cellData = row[colIndex] || ''
+
+        let textX = currentX
+        if (column.align === 'center') {
+          textX = currentX + column.width / 2
+        } else if (column.align === 'right') {
+          textX = currentX + column.width - 2
+        } else {
+          textX = currentX + 2
+        }
+
+        // Handle text wrapping
+        const maxWidth = column.width - 4
+        const lines = doc.splitTextToSize(cellData, maxWidth)
+        
+        if (Array.isArray(lines) && lines.length > 1) {
+          for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
+            doc.text(lines[lineIndex], textX, currentY + rowHeight - 4 + (lineIndex * 3), { align: column.align })
+          }
+        } else {
+          doc.text(cellData, textX, currentY + rowHeight - 4, { align: column.align })
+        }
+
+        currentX += column.width
+      }
+
+      rowsOnCurrentPage.push(rowIndex)
+      currentY += rowHeight
+    }
+
+    // Draw borders for final page's table section
+    this.drawTableBorders(doc, startX, currentTableStartY, columns, rowsOnCurrentPage.length + 1)
+
+    return currentY + 5
   }
 
   /**
