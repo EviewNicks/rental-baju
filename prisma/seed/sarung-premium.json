@@ -6,7 +6,7 @@
     "modalAwal": 0,
     "currentPrice": 75000,
     "quantity": 1,
-    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "categoryId": "e03f730b-5290-4281-af43-f37bca6cb32e",
     "imageUrl": "products/sarung-premium/PR01.jpg",
     "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 1 }]
   },
@@ -17,7 +17,7 @@
     "modalAwal": 0,
     "currentPrice": 75000,
     "quantity": 4,
-    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "categoryId": "e03f730b-5290-4281-af43-f37bca6cb32e",
     "imageUrl": "/products/sarung/PR02.jpg",
     "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 4 }]
   },
@@ -28,7 +28,7 @@
     "modalAwal": 0,
     "currentPrice": 75000,
     "quantity": 2,
-    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "categoryId": "e03f730b-5290-4281-af43-f37bca6cb32e",
     "imageUrl": "/products/sarung/PR03.jpg",
     "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 2 }]
   },
@@ -39,7 +39,7 @@
     "modalAwal": 0,
     "currentPrice": 75000,
     "quantity": 1,
-    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "categoryId": "e03f730b-5290-4281-af43-f37bca6cb32e",
     "imageUrl": "/products/sarung/PR04.jpg",
     "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 1 }]
   },
@@ -50,7 +50,7 @@
     "modalAwal": 0,
     "currentPrice": 75000,
     "quantity": 4,
-    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "categoryId": "e03f730b-5290-4281-af43-f37bca6cb32e",
     "imageUrl": "/products/sarung/PR05.jpg",
     "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 4 }]
   },
@@ -61,7 +61,7 @@
     "modalAwal": 0,
     "currentPrice": 75000,
     "quantity": 2,
-    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "categoryId": "e03f730b-5290-4281-af43-f37bca6cb32e",
     "imageUrl": "/products/sarung/PR06.jpg",
     "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 2 }]
   },
@@ -72,7 +72,7 @@
     "modalAwal": 0,
     "currentPrice": 75000,
     "quantity": 2,
-    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "categoryId": "e03f730b-5290-4281-af43-f37bca6cb32e",
     "imageUrl": "/products/sarung/PR07.jpg",
     "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 2 }]
   },
@@ -83,7 +83,7 @@
     "modalAwal": 0,
     "currentPrice": 75000,
     "quantity": 2,
-    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "categoryId": "e03f730b-5290-4281-af43-f37bca6cb32e",
     "imageUrl": "/products/sarung/PR08.jpg",
     "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 2 }]
   },
@@ -94,7 +94,7 @@
     "modalAwal": 0,
     "currentPrice": 75000,
     "quantity": 4,
-    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "categoryId": "e03f730b-5290-4281-af43-f37bca6cb32e",
     "imageUrl": "/products/sarung/PR09.jpg",
     "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 4 }]
   },
@@ -105,7 +105,7 @@
     "modalAwal": 0,
     "currentPrice": 75000,
     "quantity": 5,
-    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "categoryId": "e03f730b-5290-4281-af43-f37bca6cb32e",
     "imageUrl": "/products/sarung/PR10.jpg",
     "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 5 }]
   },
@@ -116,7 +116,7 @@
     "modalAwal": 0,
     "currentPrice": 75000,
     "quantity": 2,
-    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "categoryId": "e03f730b-5290-4281-af43-f37bca6cb32e",
     "imageUrl": "/products/sarung/PR11.jpg",
     "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 2 }]
   },
@@ -127,7 +127,7 @@
     "modalAwal": 0,
     "currentPrice": 75000,
     "quantity": 4,
-    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "categoryId": "e03f730b-5290-4281-af43-f37bca6cb32e",
     "imageUrl": "/products/sarung/accesories.png",
     "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 4 }]
   }

@@ -6,7 +6,7 @@
     "modalAwal": 75000,
     "currentPrice": 75000,
     "quantity": 3,
-    "categoryId": "dc748c61-f4e4-47d1-a1e8-3fa780569bc7",
+    "categoryId": "1bb6ca63-8227-4fd8-90ea-5398074b1bb7",
     "imageUrl": "/products/organza/OLL01.jpg",
     "sizes": [{ "ageCategory": "CHILD", "size": "S", "quantity": 3 }]
   },
@@ -17,7 +17,7 @@
     "modalAwal": 75000,
     "currentPrice": 75000,
     "quantity": 18,
-    "categoryId": "dc748c61-f4e4-47d1-a1e8-3fa780569bc7",
+    "categoryId": "1bb6ca63-8227-4fd8-90ea-5398074b1bb7",
     "imageUrl": "/products/organza/OPS02.jpg",
     "sizes": [
       { "ageCategory": "ADULT", "size": "M", "quantity": 6 },
@@ -34,7 +34,7 @@
     "modalAwal": 75000,
     "currentPrice": 75000,
     "quantity": 13,
-    "categoryId": "dc748c61-f4e4-47d1-a1e8-3fa780569bc7",
+    "categoryId": "1bb6ca63-8227-4fd8-90ea-5398074b1bb7",
     "imageUrl": "/products/organza/OLM03.jpg",
     "sizes": [
       { "ageCategory": "ADULT", "size": "S", "quantity": 1 },
@@ -51,7 +51,7 @@
     "modalAwal": 75000,
     "currentPrice": 75000,
     "quantity": 13,
-    "categoryId": "dc748c61-f4e4-47d1-a1e8-3fa780569bc7",
+    "categoryId": "1bb6ca63-8227-4fd8-90ea-5398074b1bb7",
     "imageUrl": "/products/organza/OHS04.jpg",
     "sizes": [
       { "ageCategory": "ADULT", "size": "M", "quantity": 3 },
@@ -67,7 +67,7 @@
     "modalAwal": 75000,
     "currentPrice": 75000,
     "quantity": 12,
-    "categoryId": "dc748c61-f4e4-47d1-a1e8-3fa780569bc7",
+    "categoryId": "1bb6ca63-8227-4fd8-90ea-5398074b1bb7",
     "imageUrl": "/products/organza/OTR05.jpg",
     "sizes": [
       { "ageCategory": "ADULT", "size": "M", "quantity": 4 },
@@ -82,7 +82,7 @@
     "modalAwal": 75000,
     "currentPrice": 75000,
     "quantity": 16,
-    "categoryId": "dc748c61-f4e4-47d1-a1e8-3fa780569bc7",
+    "categoryId": "1bb6ca63-8227-4fd8-90ea-5398074b1bb7",
     "imageUrl": "/products/organza/OHD06.jpg",
     "sizes": [
       { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
@@ -100,7 +100,7 @@
     "modalAwal": 75000,
     "currentPrice": 75000,
     "quantity": 15,
-    "categoryId": "dc748c61-f4e4-47d1-a1e8-3fa780569bc7",
+    "categoryId": "1bb6ca63-8227-4fd8-90ea-5398074b1bb7",
     "imageUrl": "/products/organza/OMR07.png",
     "sizes": [
       { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
@@ -118,7 +118,7 @@
     "modalAwal": 75000,
     "currentPrice": 75000,
     "quantity": 13,
-    "categoryId": "dc748c61-f4e4-47d1-a1e8-3fa780569bc7",
+    "categoryId": "1bb6ca63-8227-4fd8-90ea-5398074b1bb7",
     "imageUrl": "/products/organza/OHD08.jpg",
     "sizes": [
       { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
@@ -135,7 +135,7 @@
     "modalAwal": 75000,
     "currentPrice": 75000,
     "quantity": 14,
-    "categoryId": "dc748c61-f4e4-47d1-a1e8-3fa780569bc7",
+    "categoryId": "1bb6ca63-8227-4fd8-90ea-5398074b1bb7",
     "imageUrl": "/products/organza/OTK09.jpg",
     "sizes": [
       { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
@@ -152,7 +152,7 @@
     "modalAwal": 75000,
     "currentPrice": 75000,
     "quantity": 15,
-    "categoryId": "dc748c61-f4e4-47d1-a1e8-3fa780569bc7",
+    "categoryId": "1bb6ca63-8227-4fd8-90ea-5398074b1bb7",
     "imageUrl": "/products/organza/OPT10.jpg",
     "sizes": [
       { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
@@ -169,7 +169,7 @@
     "modalAwal": 75000,
     "currentPrice": 75000,
     "quantity": 4,
-    "categoryId": "dc748c61-f4e4-47d1-a1e8-3fa780569bc7",
+    "categoryId": "1bb6ca63-8227-4fd8-90ea-5398074b1bb7",
     "imageUrl": "/products/organza/OTS01.jpg",
     "sizes": [
       { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
@@ -184,7 +184,7 @@
     "modalAwal": 75000,
     "currentPrice": 75000,
     "quantity": 2,
-    "categoryId": "dc748c61-f4e4-47d1-a1e8-3fa780569bc7",
+    "categoryId": "1bb6ca63-8227-4fd8-90ea-5398074b1bb7",
     "imageUrl": "/products/organza/OTO02.jpg",
     "sizes": [{ "ageCategory": "ADULT", "size": "M", "quantity": 2 }]
   },
@@ -195,7 +195,7 @@
     "modalAwal": 75000,
     "currentPrice": 75000,
     "quantity": 3,
-    "categoryId": "dc748c61-f4e4-47d1-a1e8-3fa780569bc7",
+    "categoryId": "1bb6ca63-8227-4fd8-90ea-5398074b1bb7",
     "imageUrl": "/products/organza/OTP03.png",
     "sizes": [
       { "ageCategory": "ADULT", "size": "S", "quantity": 1 },
@@ -209,7 +209,7 @@
     "modalAwal": 75000,
     "currentPrice": 75000,
     "quantity": 3,
-    "categoryId": "dc748c61-f4e4-47d1-a1e8-3fa780569bc7",
+    "categoryId": "1bb6ca63-8227-4fd8-90ea-5398074b1bb7",
     "imageUrl": "/products/organza/OTC04.png",
     "sizes": [
       { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
