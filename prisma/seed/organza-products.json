@@ -215,5 +215,43 @@
       { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
       { "ageCategory": "ADULT", "size": "M", "quantity": 1 }
     ]
+  },
+  {
+    "code": "OTB1",
+    "name": "ORGANZA TURKISH BARU",
+    "description": "",
+    "modalAwal": 0,
+    "currentPrice": 100000,
+    "quantity": 21,
+    "categoryId": "dc748c61-f4e4-47d1-a1e8-3fa780569bc7",
+    "imageUrl": "/products/organza/OTB1.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "M", "quantity": 5 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 5 },
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "XXL", "quantity": 1 },
+      { "ageCategory": "CHILD", "size": "S", "quantity": 2 },
+      { "ageCategory": "CHILD", "size": "M", "quantity": 2 },
+      { "ageCategory": "CHILD", "size": "L", "quantity": 2 }
+    ]
+  },
+  {
+    "code": "OAC2",
+    "name": "ORGANZA ABU CAPPA",
+    "description": "",
+    "modalAwal": 0,
+    "currentPrice": 100000,
+    "quantity": 17,
+    "categoryId": "dc748c61-f4e4-47d1-a1e8-3fa780569bc7",
+    "imageUrl": "/products/organza/OAC2.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "M", "quantity": 5 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 5 },
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "XXL", "quantity": 1 },
+      { "ageCategory": "CHILD", "size": "M", "quantity": 4 }
+    ]
   }
 ]

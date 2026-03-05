@@ -599,5 +599,64 @@
     "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
     "imageUrl": "/products/sarung/SHI17.jpg",
     "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 9 }]
+  },
+  {
+    "code": "SKB33",
+    "name": "SARUNG KOTAK BIRU",
+    "description": "",
+    "modalAwal": 0,
+    "currentPrice": 30000,
+    "quantity": 27,
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/SKB33.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 22 },
+      { "ageCategory": "CHILD", "size": "S", "quantity": 1 },
+      { "ageCategory": "CHILD", "size": "M", "quantity": 2 },
+      { "ageCategory": "CHILD", "size": "L", "quantity": 2 }
+    ]
+  },
+  {
+    "code": "SBG34",
+    "name": "SARUNG BURGUNDY GOLD",
+    "description": "",
+    "modalAwal": 0,
+    "currentPrice": 30000,
+    "quantity": 21,
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/SBG34.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 16 },
+      { "ageCategory": "CHILD", "size": "S", "quantity": 1 },
+      { "ageCategory": "CHILD", "size": "M", "quantity": 2 },
+      { "ageCategory": "CHILD", "size": "L", "quantity": 2 }
+    ]
+  },
+  {
+    "code": "SMH35",
+    "name": "SARUNG MARON HITAM BIRU",
+    "description": "",
+    "modalAwal": 0,
+    "currentPrice": 30000,
+    "quantity": 26,
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/SMH35.jpg",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 21 },
+      { "ageCategory": "CHILD", "size": "S", "quantity": 1 },
+      { "ageCategory": "CHILD", "size": "M", "quantity": 2 },
+      { "ageCategory": "CHILD", "size": "L", "quantity": 2 }
+    ]
+  },
+  {
+    "code": "SHG36",
+    "name": "SARUNG HITAM GOLD",
+    "description": "",
+    "modalAwal": 0,
+    "currentPrice": 30000,
+    "quantity": 7,
+    "categoryId": "f0354a8b-af40-4356-9b68-11e3ba97afee",
+    "imageUrl": "/products/sarung/SHG36.jpg",
+    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 7 }]
   }
 ]

@@ -6,7 +6,7 @@
     "modalAwal": 100000,
     "currentPrice": 100000,
     "quantity": 8,
-    "categoryId": "2750678c-7777-4aff-b2f3-e119884c8c16",
+    "categoryId": "80c9cc6c-7091-4a2d-af22-e50824a278a0",
     "imageUrl": "/products/renda/RUT01.jpg",
     "sizes": [
       { "ageCategory": "ADULT", "size": "S", "quantity": 1 },
@@ -22,7 +22,7 @@
     "modalAwal": 100000,
     "currentPrice": 100000,
     "quantity": 12,
-    "categoryId": "2750678c-7777-4aff-b2f3-e119884c8c16",
+    "categoryId": "80c9cc6c-7091-4a2d-af22-e50824a278a0",
     "imageUrl": "/products/renda/RPS02.JPG",
     "sizes": [
       { "ageCategory": "CHILD", "size": "S", "quantity": 2 },
@@ -39,7 +39,7 @@
     "modalAwal": 100000,
     "currentPrice": 100000,
     "quantity": 7,
-    "categoryId": "2750678c-7777-4aff-b2f3-e119884c8c16",
+    "categoryId": "80c9cc6c-7091-4a2d-af22-e50824a278a0",
     "imageUrl": "/products/renda/RCM03.jpg",
     "sizes": [
       { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
@@ -56,7 +56,7 @@
     "modalAwal": 100000,
     "currentPrice": 100000,
     "quantity": 6,
-    "categoryId": "2750678c-7777-4aff-b2f3-e119884c8c16",
+    "categoryId": "80c9cc6c-7091-4a2d-af22-e50824a278a0",
     "imageUrl": "/products/renda/RBM04.png",
     "sizes": [
       { "ageCategory": "ADULT", "size": "M", "quantity": 3 },
@@ -70,7 +70,7 @@
     "modalAwal": 100000,
     "currentPrice": 100000,
     "quantity": 14,
-    "categoryId": "2750678c-7777-4aff-b2f3-e119884c8c16",
+    "categoryId": "80c9cc6c-7091-4a2d-af22-e50824a278a0",
     "imageUrl": "/products/renda/RTR05.jpg",
     "sizes": [
       { "ageCategory": "CHILD", "size": "S", "quantity": 1 },
@@ -87,7 +87,7 @@
     "modalAwal": 125000,
     "currentPrice": 125000,
     "quantity": 2,
-    "categoryId": "2750678c-7777-4aff-b2f3-e119884c8c16",
+    "categoryId": "80c9cc6c-7091-4a2d-af22-e50824a278a0",
     "imageUrl": "/products/renda/RLM06.jpg",
     "sizes": [{ "ageCategory": "ADULT", "size": "M", "quantity": 2 }]
   },
@@ -98,7 +98,7 @@
     "modalAwal": 125000,
     "currentPrice": 125000,
     "quantity": 13,
-    "categoryId": "2750678c-7777-4aff-b2f3-e119884c8c16",
+    "categoryId": "80c9cc6c-7091-4a2d-af22-e50824a278a0",
     "imageUrl": "/products/renda/RBG07.jpg",
     "sizes": [
       { "ageCategory": "ADULT", "size": "S", "quantity": 1 },
@@ -115,7 +115,7 @@
     "modalAwal": 125000,
     "currentPrice": 125000,
     "quantity": 8,
-    "categoryId": "2750678c-7777-4aff-b2f3-e119884c8c16",
+    "categoryId": "80c9cc6c-7091-4a2d-af22-e50824a278a0",
     "imageUrl": "/products/renda/RBL01.jpg",
     "sizes": [
       { "ageCategory": "ADULT", "size": "S", "quantity": 1 },
@@ -130,7 +130,7 @@
     "modalAwal": 125000,
     "currentPrice": 125000,
     "quantity": 8,
-    "categoryId": "2750678c-7777-4aff-b2f3-e119884c8c16",
+    "categoryId": "80c9cc6c-7091-4a2d-af22-e50824a278a0",
     "imageUrl": "/products/renda/RBF02.jpg",
     "sizes": [
       { "ageCategory": "ADULT", "size": "S", "quantity": 1 },
@@ -145,7 +145,7 @@
     "modalAwal": 125000,
     "currentPrice": 125000,
     "quantity": 10,
-    "categoryId": "2750678c-7777-4aff-b2f3-e119884c8c16",
+    "categoryId": "80c9cc6c-7091-4a2d-af22-e50824a278a0",
     "imageUrl": "/products/renda/RBB03.jpg",
     "sizes": [
       { "ageCategory": "ADULT", "size": "M", "quantity": 2 },
@@ -161,7 +161,7 @@
     "modalAwal": 100000,
     "currentPrice": 100000,
     "quantity": 6,
-    "categoryId": "2750678c-7777-4aff-b2f3-e119884c8c16",
+    "categoryId": "80c9cc6c-7091-4a2d-af22-e50824a278a0",
     "imageUrl": "/products/renda/RBK04.jpg",
     "sizes": [
       { "ageCategory": "ADULT", "size": "S", "quantity": 1 },
@@ -177,7 +177,7 @@
     "modalAwal": 150000,
     "currentPrice": 150000,
     "quantity": 6,
-    "categoryId": "2750678c-7777-4aff-b2f3-e119884c8c16",
+    "categoryId": "80c9cc6c-7091-4a2d-af22-e50824a278a0",
     "imageUrl": "/products/renda/ROH01.jpg",
     "sizes": [
       { "ageCategory": "ADULT", "size": "S", "quantity": 3 },
@@ -192,7 +192,7 @@
     "modalAwal": 150000,
     "currentPrice": 150000,
     "quantity": 6,
-    "categoryId": "2750678c-7777-4aff-b2f3-e119884c8c16",
+    "categoryId": "80c9cc6c-7091-4a2d-af22-e50824a278a0",
     "imageUrl": "/products/renda/RTM02.jpg",
     "sizes": [
       { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
@@ -208,7 +208,7 @@
     "modalAwal": 150000,
     "currentPrice": 150000,
     "quantity": 13,
-    "categoryId": "2750678c-7777-4aff-b2f3-e119884c8c16",
+    "categoryId": "80c9cc6c-7091-4a2d-af22-e50824a278a0",
     "imageUrl": "/products/renda/RHS03.jpg",
     "sizes": [
       { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
@@ -225,7 +225,7 @@
     "modalAwal": 150000,
     "currentPrice": 150000,
     "quantity": 1,
-    "categoryId": "2750678c-7777-4aff-b2f3-e119884c8c16",
+    "categoryId": "80c9cc6c-7091-4a2d-af22-e50824a278a0",
     "imageUrl": "/products/renda/RTR04.png",
     "sizes": [{ "ageCategory": "ADULT", "size": "XS", "quantity": 1 }]
   },
@@ -236,7 +236,7 @@
     "modalAwal": 150000,
     "currentPrice": 150000,
     "quantity": 14,
-    "categoryId": "2750678c-7777-4aff-b2f3-e119884c8c16",
+    "categoryId": "80c9cc6c-7091-4a2d-af22-e50824a278a0",
     "imageUrl": "/products/renda/RUD05.jpg",
     "sizes": [
       { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
@@ -253,7 +253,7 @@
     "modalAwal": 150000,
     "currentPrice": 150000,
     "quantity": 14,
-    "categoryId": "2750678c-7777-4aff-b2f3-e119884c8c16",
+    "categoryId": "80c9cc6c-7091-4a2d-af22-e50824a278a0",
     "imageUrl": "/products/renda/RCK06.jpg",
     "sizes": [
       { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
@@ -270,7 +270,7 @@
     "modalAwal": 150000,
     "currentPrice": 150000,
     "quantity": 10,
-    "categoryId": "2750678c-7777-4aff-b2f3-e119884c8c16",
+    "categoryId": "80c9cc6c-7091-4a2d-af22-e50824a278a0",
     "imageUrl": "/products/renda/RBB07.jpg",
     "sizes": [
       { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
@@ -286,7 +286,7 @@
     "modalAwal": 180000,
     "currentPrice": 180000,
     "quantity": 13,
-    "categoryId": "2750678c-7777-4aff-b2f3-e119884c8c16",
+    "categoryId": "80c9cc6c-7091-4a2d-af22-e50824a278a0",
     "imageUrl": "/products/renda/RKR01.jpg",
     "sizes": [
       { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
@@ -303,7 +303,7 @@
     "modalAwal": 180000,
     "currentPrice": 180000,
     "quantity": 13,
-    "categoryId": "2750678c-7777-4aff-b2f3-e119884c8c16",
+    "categoryId": "80c9cc6c-7091-4a2d-af22-e50824a278a0",
     "imageUrl": "/products/renda/RMR02.jpg",
     "sizes": [
       { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
@@ -321,7 +321,7 @@
     "modalAwal": 180000,
     "currentPrice": 180000,
     "quantity": 0,
-    "categoryId": "2750678c-7777-4aff-b2f3-e119884c8c16",
+    "categoryId": "80c9cc6c-7091-4a2d-af22-e50824a278a0",
     "imageUrl": "/products/renda/RMG03.jpg",
     "sizes": [
       { "ageCategory": "ADULT", "size": "M", "quantity": 3 },
@@ -335,7 +335,7 @@
     "modalAwal": 180000,
     "currentPrice": 180000,
     "quantity": 4,
-    "categoryId": "2750678c-7777-4aff-b2f3-e119884c8c16",
+    "categoryId": "80c9cc6c-7091-4a2d-af22-e50824a278a0",
     "imageUrl": "/products/renda/RMD04.jpg",
     "sizes": [
       { "ageCategory": "ADULT", "size": "S", "quantity": 1 },
@@ -351,7 +351,7 @@
     "modalAwal": 180000,
     "currentPrice": 180000,
     "quantity": 2,
-    "categoryId": "2750678c-7777-4aff-b2f3-e119884c8c16",
+    "categoryId": "80c9cc6c-7091-4a2d-af22-e50824a278a0",
     "imageUrl": "/products/renda/RUT05.png",
     "sizes": [{ "ageCategory": "ADULT", "size": "M", "quantity": 2 }]
   },
@@ -362,7 +362,7 @@
     "modalAwal": 180000,
     "currentPrice": 180000,
     "quantity": 15,
-    "categoryId": "2750678c-7777-4aff-b2f3-e119884c8c16",
+    "categoryId": "80c9cc6c-7091-4a2d-af22-e50824a278a0",
     "imageUrl": "/products/renda/TMG06.jpg",
     "sizes": [
       { "ageCategory": "ADULT", "size": "L", "quantity": 9 },
@@ -376,7 +376,7 @@
     "modalAwal": 180000,
     "currentPrice": 180000,
     "quantity": 18,
-    "categoryId": "2750678c-7777-4aff-b2f3-e119884c8c16",
+    "categoryId": "80c9cc6c-7091-4a2d-af22-e50824a278a0",
     "imageUrl": "/products/renda/TKR07.jpg",
     "sizes": [
       { "ageCategory": "ADULT", "size": "L", "quantity": 11 },
@@ -390,7 +390,7 @@
     "modalAwal": 180000,
     "currentPrice": 180000,
     "quantity": 9,
-    "categoryId": "2750678c-7777-4aff-b2f3-e119884c8c16",
+    "categoryId": "80c9cc6c-7091-4a2d-af22-e50824a278a0",
     "imageUrl": "/products/renda/TKR08.jpg",
     "sizes": [
       { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
@@ -398,6 +398,170 @@
       { "ageCategory": "ADULT", "size": "L", "quantity": 4 },
       { "ageCategory": "ADULT", "size": "XL", "quantity": 2 },
       { "ageCategory": "ADULT", "size": "XXL", "quantity": 1 }
+    ]
+  },
+  {
+    "code": "RHD05",
+    "name": "Renda Hijau Datuk",
+    "description": "",
+    "modalAwal": 0,
+    "currentPrice": 125000,
+    "quantity": 16,
+    "categoryId": "80c9cc6c-7091-4a2d-af22-e50824a278a0",
+    "imageUrl": "/products/renda/RHD05.png",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "M", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "XXL", "quantity": 1 },
+      { "ageCategory": "CHILD", "size": "S", "quantity": 1 },
+      { "ageCategory": "CHILD", "size": "M", "quantity": 2 }
+    ]
+  },
+  {
+    "code": "ROH08",
+    "name": "Renda Organza Hitam Baru",
+    "description": "",
+    "modalAwal": 0,
+    "currentPrice": 150000,
+    "quantity": 15,
+    "categoryId": "80c9cc6c-7091-4a2d-af22-e50824a278a0",
+    "imageUrl": "/products/renda/ROH08.png",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "M", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "XXL", "quantity": 1 },
+      { "ageCategory": "CHILD", "size": "M", "quantity": 2 }
+    ]
+  },
+  {
+    "code": "RBO09",
+    "name": "Renda Biru Orange",
+    "description": "",
+    "modalAwal": 0,
+    "currentPrice": 150000,
+    "quantity": 13,
+    "categoryId": "80c9cc6c-7091-4a2d-af22-e50824a278a0",
+    "imageUrl": "/products/renda/RBO09.png",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "S", "quantity": 3 },
+      { "ageCategory": "ADULT", "size": "M", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 1 },
+      { "ageCategory": "ADULT", "size": "XXL", "quantity": 1 }
+    ]
+  },
+  {
+    "code": "RMB10",
+    "name": "Renda Mahogany Bru",
+    "description": "",
+    "modalAwal": 0,
+    "currentPrice": 150000,
+    "quantity": 18,
+    "categoryId": "80c9cc6c-7091-4a2d-af22-e50824a278a0",
+    "imageUrl": "/products/renda/RMB10.png",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "M", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 5 },
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "XXL", "quantity": 1 },
+      { "ageCategory": "CHILD", "size": "S", "quantity": 1 },
+      { "ageCategory": "CHILD", "size": "M", "quantity": 3 }
+    ]
+  },
+  {
+    "code": "KBJ11",
+    "name": "Kebaya Janggan",
+    "description": "",
+    "modalAwal": 0,
+    "currentPrice": 150000,
+    "quantity": 8,
+    "categoryId": "80c9cc6c-7091-4a2d-af22-e50824a278a0",
+    "imageUrl": "/products/renda/KBJ11.png",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "M", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 2 },
+      { "ageCategory": "CHILD", "size": "M", "quantity": 2 }
+    ]
+  },
+  {
+    "code": "TTC8",
+    "name": "Tokko Terracota",
+    "description": "",
+    "modalAwal": 0,
+    "currentPrice": 180000,
+    "quantity": 19,
+    "categoryId": "80c9cc6c-7091-4a2d-af22-e50824a278a0",
+    "imageUrl": "/products/renda/TTC8.png",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "L", "quantity": 5 },
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 8 },
+      { "ageCategory": "CHILD", "size": "M", "quantity": 2 },
+      { "ageCategory": "CHILD", "size": "L", "quantity": 2 },
+      { "ageCategory": "CHILD", "size": "XL", "quantity": 2 }
+    ]
+  },
+  {
+    "code": "RBW08",
+    "name": "Renda Biru Wardah",
+    "description": "",
+    "modalAwal": 0,
+    "currentPrice": 180000,
+    "quantity": 16,
+    "categoryId": "80c9cc6c-7091-4a2d-af22-e50824a278a0",
+    "imageUrl": "/products/renda/RBW08.png",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "M", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "XXL", "quantity": 1 },
+      { "ageCategory": "CHILD", "size": "S", "quantity": 2 },
+      { "ageCategory": "CHILD", "size": "M", "quantity": 1 }
+    ]
+  },
+  {
+    "code": "RMH09",
+    "name": "Renda Mahogany",
+    "description": "",
+    "modalAwal": 0,
+    "currentPrice": 180000,
+    "quantity": 16,
+    "categoryId": "80c9cc6c-7091-4a2d-af22-e50824a278a0",
+    "imageUrl": "/products/renda/RMH09.png",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "M", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "XXL", "quantity": 1 },
+      { "ageCategory": "CHILD", "size": "S", "quantity": 1 },
+      { "ageCategory": "CHILD", "size": "M", "quantity": 2 }
+    ]
+  },
+  {
+    "code": "RBN10",
+    "name": "Renda Biru Navy",
+    "description": "",
+    "modalAwal": 0,
+    "currentPrice": 180000,
+    "quantity": 17,
+    "categoryId": "80c9cc6c-7091-4a2d-af22-e50824a278a0",
+    "imageUrl": "/products/renda/RBN10.png",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "M", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "XXL", "quantity": 1 },
+      { "ageCategory": "CHILD", "size": "S", "quantity": 1 },
+      { "ageCategory": "CHILD", "size": "M", "quantity": 1 },
+      { "ageCategory": "CHILD", "size": "L", "quantity": 1 }
     ]
   }
 ]
