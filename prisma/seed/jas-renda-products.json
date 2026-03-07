@@ -6,7 +6,7 @@
     "modalAwal": 100000,
     "currentPrice": 100000,
     "quantity": 15,
-    "categoryId": "587b9898-dbb4-4d64-a29c-fb3f4af19c37",
+    "categoryId": "6ee9d93e-2515-4ba6-80cd-6b6361c95190",
     "imageUrl": "/products/jas-renda/JRC01.jpg",
     "sizes": [
       { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
@@ -25,7 +25,7 @@
     "modalAwal": 100000,
     "currentPrice": 100000,
     "quantity": 7,
-    "categoryId": "587b9898-dbb4-4d64-a29c-fb3f4af19c37",
+    "categoryId": "6ee9d93e-2515-4ba6-80cd-6b6361c95190",
     "imageUrl": "/products/jas-renda/JRS04.jpg",
     "sizes": [
       { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
@@ -46,7 +46,7 @@
     "modalAwal": 100000,
     "currentPrice": 100000,
     "quantity": 9,
-    "categoryId": "587b9898-dbb4-4d64-a29c-fb3f4af19c37",
+    "categoryId": "6ee9d93e-2515-4ba6-80cd-6b6361c95190",
     "imageUrl": "/products/jas-renda/JRP02.jpg",
     "sizes": [
       { "ageCategory": "ADULT", "size": "S", "quantity": 1 },
@@ -63,7 +63,7 @@
     "modalAwal": 100000,
     "currentPrice": 100000,
     "quantity": 8,
-    "categoryId": "587b9898-dbb4-4d64-a29c-fb3f4af19c37",
+    "categoryId": "6ee9d93e-2515-4ba6-80cd-6b6361c95190",
     "imageUrl": "/products/jas-renda/JRB05.jpg",
     "sizes": [
       { "ageCategory": "ADULT", "size": "S", "quantity": 1 },
@@ -79,7 +79,7 @@
     "modalAwal": 100000,
     "currentPrice": 100000,
     "quantity": 2,
-    "categoryId": "587b9898-dbb4-4d64-a29c-fb3f4af19c37",
+    "categoryId": "6ee9d93e-2515-4ba6-80cd-6b6361c95190",
     "imageUrl": "/products/jas-renda/JRS03.jpg",
     "sizes": [{ "ageCategory": "ADULT", "size": "XXL", "quantity": 2 }]
   },
@@ -90,7 +90,7 @@
     "modalAwal": 0,
     "currentPrice": 125000,
     "quantity": 20,
-    "categoryId": "587b9898-dbb4-4d64-a29c-fb3f4af19c37",
+    "categoryId": "6ee9d93e-2515-4ba6-80cd-6b6361c95190",
     "imageUrl": "/products/jas-renda/JRW6.jpg",
     "sizes": [
       { "ageCategory": "ADULT", "size": "S", "quantity": 2 },
@@ -109,7 +109,7 @@
     "modalAwal": 0,
     "currentPrice": 100000,
     "quantity": 1,
-    "categoryId": "587b9898-dbb4-4d64-a29c-fb3f4af19c37",
+    "categoryId": "6ee9d93e-2515-4ba6-80cd-6b6361c95190",
     "imageUrl": "/products/jas-renda/JK01.jpg",
     "sizes": [{ "ageCategory": "ADULT", "size": "M", "quantity": 1 }]
   }

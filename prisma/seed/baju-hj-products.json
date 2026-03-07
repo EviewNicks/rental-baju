@@ -1,253 +1,506 @@
 [
   {
-    "code": "BHJ4",
-    "name": "JAS HOTMAN PARIS HJ",
+    "code": "JARHJ",
+    "name": "Jas Abu rokok",
     "description": "",
     "modalAwal": 0,
     "currentPrice": 125000,
-    "quantity": 1,
+    "quantity": 12,
     "categoryId": "187231b4-2adf-451b-8b9d-0f86d97c5648",
-    "imageUrl": "/products/baju-hj/BHJ4.jpg",
-    "sizes": [{ "ageCategory": "ADULT", "size": "XL", "quantity": 1 }]
-  },
-  {
-    "code": "BHJ5",
-    "name": "JAS FORMAL GARIS TANGGUNG HJ",
-    "description": "",
-    "modalAwal": 0,
-    "currentPrice": 125000,
-    "quantity": 1,
-    "categoryId": "187231b4-2adf-451b-8b9d-0f86d97c5648",
-    "imageUrl": "/products/baju-hj/BHJ5.jpg",
-    "sizes": [{ "ageCategory": "ADULT", "size": "L", "quantity": 1 }]
-  },
-  {
-    "code": "BHJ6",
-    "name": "JAS FORMAL HITAM KANCING 3 HJ",
-    "description": "",
-    "modalAwal": 0,
-    "currentPrice": 125000,
-    "quantity": 1,
-    "categoryId": "187231b4-2adf-451b-8b9d-0f86d97c5648",
-    "imageUrl": "/products/baju-hj/BHJ6.jpg",
-    "sizes": [{ "ageCategory": "ADULT", "size": "M", "quantity": 1 }]
-  },
-  {
-    "code": "BHJ7",
-    "name": "JAS PINK BORDIR GOLD HJ",
-    "description": "",
-    "modalAwal": 0,
-    "currentPrice": 125000,
-    "quantity": 1,
-    "categoryId": "187231b4-2adf-451b-8b9d-0f86d97c5648",
-    "imageUrl": "/products/baju-hj/BHJ7.jpg",
-    "sizes": [{ "ageCategory": "ADULT", "size": "M", "quantity": 1 }]
-  },
-  {
-    "code": "BHJ9",
-    "name": "JAS FORMAL HITAM POLOS HJ",
-    "description": "",
-    "modalAwal": 0,
-    "currentPrice": 125000,
-    "quantity": 1,
-    "categoryId": "187231b4-2adf-451b-8b9d-0f86d97c5648",
-    "imageUrl": "/products/baju-hj/BHJ9.jpg",
-    "sizes": [{ "ageCategory": "ADULT", "size": "M", "quantity": 1 }]
-  },
-  {
-    "code": "BHJ10",
-    "name": "JAS FORMAL HITAM PINGGIRAN PUTIH",
-    "description": "",
-    "modalAwal": 0,
-    "currentPrice": 125000,
-    "quantity": 1,
-    "categoryId": "187231b4-2adf-451b-8b9d-0f86d97c5648",
-    "imageUrl": "/products/baju-hj/BHJ10.jpg",
-    "sizes": [{ "ageCategory": "ADULT", "size": "XL", "quantity": 1 }]
-  },
-  {
-    "code": "BHJ11",
-    "name": "JAS FORMAL NAVY PINGGIRAN PUTIH",
-    "description": "",
-    "modalAwal": 0,
-    "currentPrice": 125000,
-    "quantity": 1,
-    "categoryId": "187231b4-2adf-451b-8b9d-0f86d97c5648",
-    "imageUrl": "/products/baju-hj/BHJ11.jpg",
-    "sizes": [{ "ageCategory": "ADULT", "size": "M", "quantity": 1 }]
-  },
-  {
-    "code": "BHJ12",
-    "name": "JAS FORMAL CREAM",
-    "description": "",
-    "modalAwal": 0,
-    "currentPrice": 125000,
-    "quantity": 1,
-    "categoryId": "187231b4-2adf-451b-8b9d-0f86d97c5648",
-    "imageUrl": "/products/baju-hj/BHJ12.jpg",
-    "sizes": [{ "ageCategory": "ADULT", "size": "XL", "quantity": 1 }]
-  },
-  {
-    "code": "BHJ13",
-    "name": "JAS FORMAL PINK",
-    "description": "",
-    "modalAwal": 0,
-    "currentPrice": 125000,
-    "quantity": 1,
-    "categoryId": "187231b4-2adf-451b-8b9d-0f86d97c5648",
-    "imageUrl": "/products/baju-hj/BHJ13.jpg",
-    "sizes": [{ "ageCategory": "ADULT", "size": "S", "quantity": 1 }]
-  },
-  {
-    "code": "BHJ14",
-    "name": "JAS FORMAL GOLD",
-    "description": "",
-    "modalAwal": 0,
-    "currentPrice": 125000,
-    "quantity": 2,
-    "categoryId": "187231b4-2adf-451b-8b9d-0f86d97c5648",
-    "imageUrl": "/products/baju-hj/BHJ14.jpg",
+    "imageUrl": "/products/baju-hj/JARHJ.png",
     "sizes": [
-      { "ageCategory": "ADULT", "size": "S", "quantity": 1 },
-      { "ageCategory": "ADULT", "size": "L", "quantity": 1 }
+      { "ageCategory": "ADULT", "size": "M", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 5 },
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 3 }
     ]
   },
   {
-    "code": "BHJ15",
-    "name": "JAS FORMAL KHAKI",
-    "description": "",
-    "modalAwal": 0,
-    "currentPrice": 125000,
-    "quantity": 2,
-    "categoryId": "187231b4-2adf-451b-8b9d-0f86d97c5648",
-    "imageUrl": "/products/baju-hj/BHJ15.jpg",
-    "sizes": [
-      { "ageCategory": "ADULT", "size": "XL", "quantity": 1 },
-      { "ageCategory": "ADULT", "size": "M", "quantity": 1 }
-    ]
-  },
-  {
-    "code": "BHJ16",
-    "name": "JAS FORMAL ABU HITAM",
-    "description": "",
-    "modalAwal": 0,
-    "currentPrice": 125000,
-    "quantity": 1,
-    "categoryId": "187231b4-2adf-451b-8b9d-0f86d97c5648",
-    "imageUrl": "/products/baju-hj/BHJ16.jpg",
-    "sizes": [{ "ageCategory": "ADULT", "size": "L", "quantity": 1 }]
-  },
-  {
-    "code": "BHJ17",
-    "name": "JAS FORMAL BURGUNDY",
-    "description": "",
-    "modalAwal": 0,
-    "currentPrice": 125000,
-    "quantity": 1,
-    "categoryId": "187231b4-2adf-451b-8b9d-0f86d97c5648",
-    "imageUrl": "/products/baju-hj/BHJ17.jpg",
-    "sizes": [{ "ageCategory": "ADULT", "size": "XL", "quantity": 1 }]
-  },
-  {
-    "code": "BHJ18",
-    "name": "JAS FORMAL ABU BASAH",
-    "description": "",
-    "modalAwal": 0,
-    "currentPrice": 125000,
-    "quantity": 1,
-    "categoryId": "187231b4-2adf-451b-8b9d-0f86d97c5648",
-    "imageUrl": "/products/baju-hj/BHJ18.jpg",
-    "sizes": [{ "ageCategory": "ADULT", "size": "M", "quantity": 1 }]
-  },
-  {
-    "code": "BHJ19",
-    "name": "JAS FORMAL MAROON A",
-    "description": "",
-    "modalAwal": 0,
-    "currentPrice": 125000,
-    "quantity": 1,
-    "categoryId": "187231b4-2adf-451b-8b9d-0f86d97c5648",
-    "imageUrl": "/products/baju-hj/BHJ19.jpg",
-    "sizes": [{ "ageCategory": "ADULT", "size": "M", "quantity": 1 }]
-  },
-  {
-    "code": "BHJ20",
-    "name": "JAS FORMAL KHAKI GARIS",
-    "description": "",
-    "modalAwal": 0,
-    "currentPrice": 125000,
-    "quantity": 1,
-    "categoryId": "187231b4-2adf-451b-8b9d-0f86d97c5648",
-    "imageUrl": "/products/baju-hj/BHJ20.jpg",
-    "sizes": [{ "ageCategory": "ADULT", "size": "M", "quantity": 1 }]
-  },
-  {
-    "code": "BHJ21",
-    "name": "JAS FORMAL MAROON B",
-    "description": "",
-    "modalAwal": 0,
-    "currentPrice": 125000,
-    "quantity": 1,
-    "categoryId": "187231b4-2adf-451b-8b9d-0f86d97c5648",
-    "imageUrl": "/products/baju-hj/BHJ21.jpg",
-    "sizes": [{ "ageCategory": "ADULT", "size": "M", "quantity": 1 }]
-  },
-  {
-    "code": "BHJ22",
-    "name": "JAS FORMAL UNGU",
-    "description": "",
-    "modalAwal": 0,
-    "currentPrice": 125000,
-    "quantity": 1,
-    "categoryId": "187231b4-2adf-451b-8b9d-0f86d97c5648",
-    "imageUrl": "/products/baju-hj/BHJ22.jpg",
-    "sizes": [{ "ageCategory": "ADULT", "size": "M", "quantity": 1 }]
-  },
-  {
-    "code": "BHJ23",
-    "name": "JAS FORMAL SILVER",
+    "code": "JGDHJ",
+    "name": "Jas gold",
     "description": "",
     "modalAwal": 0,
     "currentPrice": 125000,
     "quantity": 3,
     "categoryId": "187231b4-2adf-451b-8b9d-0f86d97c5648",
-    "imageUrl": "/products/baju-hj/BHJ23.jpg",
+    "imageUrl": "/products/baju-hj/JGDHJ.png",
     "sizes": [
       { "ageCategory": "ADULT", "size": "S", "quantity": 1 },
-      { "ageCategory": "ADULT", "size": "XL", "quantity": 2 }
+      { "ageCategory": "ADULT", "size": "L", "quantity": 1 },
+      { "ageCategory": "ADULT", "size": "XXL", "quantity": 1 }
     ]
   },
   {
-    "code": "BHJ24",
-    "name": "JAS FORMAL MOCCA",
+    "code": "JHLHJ",
+    "name": "Jas Hijau lime",
+    "description": "",
+    "modalAwal": 0,
+    "currentPrice": 125000,
+    "quantity": 12,
+    "categoryId": "187231b4-2adf-451b-8b9d-0f86d97c5648",
+    "imageUrl": "/products/baju-hj/JHLHJ.png",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "M", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 6 }
+    ]
+  },
+  {
+    "code": "JKKHJ",
+    "name": "Jas khaki",
+    "description": "",
+    "modalAwal": 0,
+    "currentPrice": 125000,
+    "quantity": 6,
+    "categoryId": "187231b4-2adf-451b-8b9d-0f86d97c5648",
+    "imageUrl": "/products/baju-hj/JKKHJ.png",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "L", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 4 }
+    ]
+  },
+  {
+    "code": "JKMHJ",
+    "name": "Jas krem muda",
     "description": "",
     "modalAwal": 0,
     "currentPrice": 125000,
     "quantity": 2,
     "categoryId": "187231b4-2adf-451b-8b9d-0f86d97c5648",
-    "imageUrl": "/products/baju-hj/BHJ24.jpg",
-    "sizes": [{ "ageCategory": "ADULT", "size": "M", "quantity": 2 }]
+    "imageUrl": "/products/baju-hj/JKMHJ.png",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "L", "quantity": 2 }
+    ]
   },
   {
-    "code": "BHJ25",
-    "name": "JAS FORMAL DENIM",
+    "code": "JKNHJ",
+    "name": "Jas kuning",
     "description": "",
     "modalAwal": 0,
     "currentPrice": 125000,
     "quantity": 1,
     "categoryId": "187231b4-2adf-451b-8b9d-0f86d97c5648",
-    "imageUrl": "/products/baju-hj/BHJ25.jpg",
-    "sizes": [{ "ageCategory": "ADULT", "size": "S", "quantity": 1 }]
+    "imageUrl": "/products/baju-hj/JKNHJ.png",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 1 }
+    ]
   },
   {
-    "code": "BHJ26",
-    "name": "KEMEJA NAVY BATIK",
+    "code": "JMCHJ",
+    "name": "Jas merah cabe",
+    "description": "",
+    "modalAwal": 0,
+    "currentPrice": 125000,
+    "quantity": 11,
+    "categoryId": "187231b4-2adf-451b-8b9d-0f86d97c5648",
+    "imageUrl": "/products/baju-hj/JMCHJ.png",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "M", "quantity": 1 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 5 },
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 4 },
+      { "ageCategory": "ADULT", "size": "XXL", "quantity": 1 }
+    ]
+  },
+  {
+    "code": "JRGHJ",
+    "name": "Jas rosegold",
+    "description": "",
+    "modalAwal": 0,
+    "currentPrice": 125000,
+    "quantity": 7,
+    "categoryId": "187231b4-2adf-451b-8b9d-0f86d97c5648",
+    "imageUrl": "/products/baju-hj/JRGHJ.png",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "M", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "XXL", "quantity": 1 }
+    ]
+  },
+  {
+    "code": "JTKHJ",
+    "name": "Jas krem",
+    "description": "",
+    "modalAwal": 0,
+    "currentPrice": 125000,
+    "quantity": 12,
+    "categoryId": "187231b4-2adf-451b-8b9d-0f86d97c5648",
+    "imageUrl": "/products/baju-hj/JTKHJ.png",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "M", "quantity": 1 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 3 },
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 8 }
+    ]
+  },
+  {
+    "code": "JMRHJ",
+    "name": "Jas maroon",
+    "description": "",
+    "modalAwal": 0,
+    "currentPrice": 125000,
+    "quantity": 7,
+    "categoryId": "187231b4-2adf-451b-8b9d-0f86d97c5648",
+    "imageUrl": "/products/baju-hj/JMRHJ.png",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "M", "quantity": 3 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 1 },
+      { "ageCategory": "ADULT", "size": "XXL", "quantity": 1 }
+    ]
+  },
+  {
+    "code": "JHTHJ",
+    "name": "Jas tosca",
+    "description": "",
+    "modalAwal": 0,
+    "currentPrice": 125000,
+    "quantity": 3,
+    "categoryId": "187231b4-2adf-451b-8b9d-0f86d97c5648",
+    "imageUrl": "/products/baju-hj/JHTHJ.png",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "M", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 1 }
+    ]
+  },
+  {
+    "code": "JMGHJ",
+    "name": "Jas magenta",
+    "description": "",
+    "modalAwal": 0,
+    "currentPrice": 125000,
+    "quantity": 4,
+    "categoryId": "187231b4-2adf-451b-8b9d-0f86d97c5648",
+    "imageUrl": "/products/baju-hj/JMGHJ.png",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "L", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 2 }
+    ]
+  },
+  {
+    "code": "JGTHJ",
+    "name": "Jas gliter terracota",
+    "description": "",
+    "modalAwal": 0,
+    "currentPrice": 150000,
+    "quantity": 1,
+    "categoryId": "187231b4-2adf-451b-8b9d-0f86d97c5648",
+    "imageUrl": "/products/baju-hj/JGTHJ.png",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 1 }
+    ]
+  },
+  {
+    "code": "JTOHJ",
+    "name": "Jas orange",
+    "description": "",
+    "modalAwal": 0,
+    "currentPrice": 125000,
+    "quantity": 10,
+    "categoryId": "187231b4-2adf-451b-8b9d-0f86d97c5648",
+    "imageUrl": "/products/baju-hj/JTOHJ.png",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "M", "quantity": 7 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 3 }
+    ]
+  },
+  {
+    "code": "JHHHJ",
+    "name": "Jas hitam polos",
+    "description": "",
+    "modalAwal": 0,
+    "currentPrice": 125000,
+    "quantity": 5,
+    "categoryId": "187231b4-2adf-451b-8b9d-0f86d97c5648",
+    "imageUrl": "/products/baju-hj/JHHHJ.png",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "M", "quantity": 1 },
+      { "ageCategory": "ADULT", "size": "L", "quantity": 2 },
+      { "ageCategory": "ADULT", "size": "XL", "quantity": 2 }
+    ]
+  },
+  {
+    "code": "RABHJ",
+    "name": "Renda abu manset",
+    "description": "",
+    "modalAwal": 0,
+    "currentPrice": 350000,
+    "quantity": 1,
+    "categoryId": "187231b4-2adf-451b-8b9d-0f86d97c5648",
+    "imageUrl": "/products/baju-hj/RABHJ.png",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "S", "quantity": 1 }
+    ]
+  },
+  {
+    "code": "RBDHJ",
+    "name": "Renda biru denim manset",
+    "description": "",
+    "modalAwal": 0,
+    "currentPrice": 350000,
+    "quantity": 1,
+    "categoryId": "187231b4-2adf-451b-8b9d-0f86d97c5648",
+    "imageUrl": "/products/baju-hj/RBDHJ.png",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "S", "quantity": 1 }
+    ]
+  },
+  {
+    "code": "RBNHJ",
+    "name": "Renda bodo kuning panjang",
+    "description": "",
+    "modalAwal": 0,
+    "currentPrice": 125000,
+    "quantity": 12,
+    "categoryId": "187231b4-2adf-451b-8b9d-0f86d97c5648",
+    "imageUrl": "/products/baju-hj/RBNHJ.png",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "L", "quantity": 12 }
+    ]
+  },
+  {
+    "code": "RBPHJ",
+    "name": "Renda bordir pink",
+    "description": "",
+    "modalAwal": 0,
+    "currentPrice": 350000,
+    "quantity": 1,
+    "categoryId": "187231b4-2adf-451b-8b9d-0f86d97c5648",
+    "imageUrl": "/products/baju-hj/RBPHJ.png",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "M", "quantity": 1 }
+    ]
+  },
+  {
+    "code": "RBTHJ",
+    "name": "Renda bordir taro",
+    "description": "",
+    "modalAwal": 0,
+    "currentPrice": 125000,
+    "quantity": 6,
+    "categoryId": "187231b4-2adf-451b-8b9d-0f86d97c5648",
+    "imageUrl": "/products/baju-hj/RBTHJ.png",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "L", "quantity": 6 }
+    ]
+  },
+  {
+    "code": "RHGHJ",
+    "name": "Renda hitam gold",
     "description": "",
     "modalAwal": 0,
     "currentPrice": 125000,
     "quantity": 1,
     "categoryId": "187231b4-2adf-451b-8b9d-0f86d97c5648",
-    "imageUrl": "/products/baju-hj/BHJ26.jpg",
-    "sizes": [{ "ageCategory": "ADULT", "size": "M", "quantity": 1 }]
+    "imageUrl": "/products/baju-hj/RHGHJ.png",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "M", "quantity": 1 }
+    ]
+  },
+  {
+    "code": "RHJHJ",
+    "name": "Renda hijau",
+    "description": "",
+    "modalAwal": 0,
+    "currentPrice": 150000,
+    "quantity": 5,
+    "categoryId": "187231b4-2adf-451b-8b9d-0f86d97c5648",
+    "imageUrl": "/products/baju-hj/RHJHJ.png",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "M", "quantity": 5 }
+    ]
+  },
+  {
+    "code": "RHOHJ",
+    "name": "Renda hijau olive",
+    "description": "",
+    "modalAwal": 0,
+    "currentPrice": 350000,
+    "quantity": 1,
+    "categoryId": "187231b4-2adf-451b-8b9d-0f86d97c5648",
+    "imageUrl": "/products/baju-hj/RHOHJ.png",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "M", "quantity": 1 }
+    ]
+  },
+  {
+    "code": "RHSHJ",
+    "name": "Renda hijau sage",
+    "description": "",
+    "modalAwal": 0,
+    "currentPrice": 350000,
+    "quantity": 1,
+    "categoryId": "187231b4-2adf-451b-8b9d-0f86d97c5648",
+    "imageUrl": "/products/baju-hj/RHSHJ.png",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "M", "quantity": 1 }
+    ]
+  },
+  {
+    "code": "RMGHJ",
+    "name": "Renda merah gold",
+    "description": "",
+    "modalAwal": 0,
+    "currentPrice": 150000,
+    "quantity": 7,
+    "categoryId": "187231b4-2adf-451b-8b9d-0f86d97c5648",
+    "imageUrl": "/products/baju-hj/RMGHJ.png",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "M", "quantity": 7 }
+    ]
+  },
+  {
+    "code": "RNVHJ",
+    "name": "Renda navy",
+    "description": "",
+    "modalAwal": 0,
+    "currentPrice": 350000,
+    "quantity": 1,
+    "categoryId": "187231b4-2adf-451b-8b9d-0f86d97c5648",
+    "imageUrl": "/products/baju-hj/RNVHJ.png",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "S", "quantity": 1 }
+    ]
+  },
+  {
+    "code": "RSGHJ",
+    "name": "Renda rosegold",
+    "description": "",
+    "modalAwal": 0,
+    "currentPrice": 350000,
+    "quantity": 1,
+    "categoryId": "187231b4-2adf-451b-8b9d-0f86d97c5648",
+    "imageUrl": "/products/baju-hj/RSGHJ.png",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "S", "quantity": 1 }
+    ]
+  },
+  {
+    "code": "RSHHJ",
+    "name": "Renda silver",
+    "description": "",
+    "modalAwal": 0,
+    "currentPrice": 250000,
+    "quantity": 1,
+    "categoryId": "187231b4-2adf-451b-8b9d-0f86d97c5648",
+    "imageUrl": "/products/baju-hj/RSHHJ.png",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "S", "quantity": 1 }
+    ]
+  },
+  {
+    "code": "RSPHJ",
+    "name": "Renda sabrina pink",
+    "description": "",
+    "modalAwal": 0,
+    "currentPrice": 350000,
+    "quantity": 1,
+    "categoryId": "187231b4-2adf-451b-8b9d-0f86d97c5648",
+    "imageUrl": "/products/baju-hj/RSPHJ.png",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "M", "quantity": 1 }
+    ]
+  },
+  {
+    "code": "RTBHJ",
+    "name": "Renda tunik biru",
+    "description": "",
+    "modalAwal": 0,
+    "currentPrice": 150000,
+    "quantity": 4,
+    "categoryId": "187231b4-2adf-451b-8b9d-0f86d97c5648",
+    "imageUrl": "/products/baju-hj/RTBHJ.png",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "M", "quantity": 4 }
+    ]
+  },
+  {
+    "code": "RTEHJ",
+    "name": "Tokko krem",
+    "description": "",
+    "modalAwal": 0,
+    "currentPrice": 125000,
+    "quantity": 12,
+    "categoryId": "187231b4-2adf-451b-8b9d-0f86d97c5648",
+    "imageUrl": "/products/baju-hj/RTEHJ.png",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "L", "quantity": 12 }
+    ]
+  },
+  {
+    "code": "RTHHJ",
+    "name": "Tokko sage",
+    "description": "",
+    "modalAwal": 0,
+    "currentPrice": 125000,
+    "quantity": 11,
+    "categoryId": "187231b4-2adf-451b-8b9d-0f86d97c5648",
+    "imageUrl": "/products/baju-hj/RTHHJ.png",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "L", "quantity": 11 }
+    ]
+  },
+  {
+    "code": "RTKHJ",
+    "name": "Tokko kuning",
+    "description": "",
+    "modalAwal": 0,
+    "currentPrice": 125000,
+    "quantity": 16,
+    "categoryId": "187231b4-2adf-451b-8b9d-0f86d97c5648",
+    "imageUrl": "/products/baju-hj/RTKHJ.png",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "L", "quantity": 16 }
+    ]
+  },
+  {
+    "code": "RTMHJ",
+    "name": "Tokko magenta",
+    "description": "",
+    "modalAwal": 0,
+    "currentPrice": 125000,
+    "quantity": 11,
+    "categoryId": "187231b4-2adf-451b-8b9d-0f86d97c5648",
+    "imageUrl": "/products/baju-hj/RTMHJ.png",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "L", "quantity": 11 }
+    ]
+  },
+  {
+    "code": "RTPHJ",
+    "name": "Tokko pink panjang",
+    "description": "",
+    "modalAwal": 0,
+    "currentPrice": 125000,
+    "quantity": 16,
+    "categoryId": "187231b4-2adf-451b-8b9d-0f86d97c5648",
+    "imageUrl": "/products/baju-hj/RTPHJ.png",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "L", "quantity": 16 }
+    ]
+  },
+  {
+    "code": "RTTHJ",
+    "name": "Renda terracota",
+    "description": "",
+    "modalAwal": 0,
+    "currentPrice": 150000,
+    "quantity": 6,
+    "categoryId": "187231b4-2adf-451b-8b9d-0f86d97c5648",
+    "imageUrl": "/products/baju-hj/RTTHJ.png",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "L", "quantity": 6 }
+    ]
+  },
+  {
+    "code": "RUNHJ",
+    "name": "Renda ungu",
+    "description": "",
+    "modalAwal": 0,
+    "currentPrice": 350000,
+    "quantity": 1,
+    "categoryId": "187231b4-2adf-451b-8b9d-0f86d97c5648",
+    "imageUrl": "/products/baju-hj/RUNHJ.png",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "M", "quantity": 1 }
+    ]
   }
 ]
