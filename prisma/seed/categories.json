@@ -103,6 +103,22 @@
       "createdAt": "2025-10-25T10:00:00.000Z",
       "updatedAt": "2025-10-25T10:00:00.000Z",
       "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
+    },
+    {
+      "name": "jas-hj",
+      "color": "#8B4513",
+      "type": "clothing",
+      "createdAt": "2025-10-25T10:00:00.000Z",
+      "updatedAt": "2025-10-25T10:00:00.000Z",
+      "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
+    },
+    {
+      "name": "baju-hj",
+      "color": "#DC2626",
+      "type": "clothing",
+      "createdAt": "2025-10-25T10:00:00.000Z",
+      "updatedAt": "2025-10-25T10:00:00.000Z",
+      "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
     }
   ]
 }
