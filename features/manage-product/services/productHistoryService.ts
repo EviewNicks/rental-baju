@@ -255,9 +255,6 @@ export class ProductHistoryService {
     } catch (error) {
       console.error('[ProductHistoryService] Query execution error:', error)
       
-      // Graceful fallback: Try query without activities if join fails
-      console.warn('[ProductHistoryService] Falling back to basic query without activities')
-      
       try {
         const orderBy =
           query.sorting.field === 'revenue'

@@ -112,6 +112,12 @@ export function ProductForm({
   // Use external categoryFormData as single source of truth
   const categoryFormData = externalCategoryFormData
 
+  // Keep a ref to always have the latest categoryFormData in callbacks without stale closure
+  const categoryFormDataRef = useRef(externalCategoryFormData)
+  useEffect(() => {
+    categoryFormDataRef.current = externalCategoryFormData
+  })
+
   // Note: Aggregated sizes hook removed as it's not used in current implementation
   // Can be re-enabled if needed for advanced size management features
 
@@ -140,26 +146,21 @@ export function ProductForm({
     [onInputChange, initializeStrategy],
   )
 
-  // Track transformation to prevent infinite loops
-  const transformingRef = useRef<boolean>(false)
-
   // Handle strategy form data changes
   const handleCategoryFormDataChange = useCallback(
     (fieldName: string, value: unknown) => {
-      // Skip transformation if already in progress
-      if (transformingRef.current) {
-        return
-      }
+      // Use ref to always get latest categoryFormData — avoids stale closure bug
+      const latestFormData = categoryFormDataRef.current
 
       let updatedData = {
-        ...categoryFormData,
+        ...latestFormData,
         [fieldName]: value,
       }
 
       // Special handling for size selection changes
       if (fieldName === 'sizes' && Array.isArray(value)) {
         const selectedSizes = value as string[]
-        const previousSizes = Array.isArray(categoryFormData.sizes) ? categoryFormData.sizes : []
+        const previousSizes = Array.isArray(latestFormData.sizes) ? latestFormData.sizes : []
 
         // Clear quantity values for unchecked sizes
         const uncheckedSizes = previousSizes.filter((size) => !selectedSizes.includes(size))
@@ -179,7 +180,6 @@ export function ProductForm({
 
       // Transform to ProductSize and notify using hook methods
       if (currentStrategy && fieldName !== 'categoryId') {
-        transformingRef.current = true
         try {
           const transformedSizes = transformFormDataToSizes(updatedData)
           if (onStrategySizesChange) {
@@ -191,23 +191,11 @@ export function ProductForm({
           onInputChange('quantity', totalQuantity)
         } catch (error) {
           console.error('Failed to transform form data:', error)
-        } finally {
-          // Reset transformation flag after completion
-          setTimeout(() => {
-            transformingRef.current = false
-          }, 200) // FIXED: Increase timeout to prevent race conditions
         }
       }
     },
-    [
-      categoryFormData,
-      currentStrategy,
-      transformFormDataToSizes,
-      calculateTotalQuantity,
-      onCategoryFormDataChange,
-      onStrategySizesChange,
-      onInputChange,
-    ],
+    // Remove categoryFormData from deps — use ref instead to avoid stale closure
+    [currentStrategy, transformFormDataToSizes, calculateTotalQuantity, onCategoryFormDataChange, onStrategySizesChange, onInputChange],
   )
 
   // Initialize strategy on component mount and when category changes (with prevention)
@@ -216,26 +204,6 @@ export function ProductForm({
       initializeStrategy(formData.categoryId)
     }
   }, [formData.categoryId, categories.length, initializeStrategy])
-
-  // Sync form data with strategy in edit mode (with prevention)
-  useEffect(() => {
-    if (product && currentStrategy && categoryFormData.categoryId && !transformingRef.current) {
-      // In edit mode, ensure strategy sizes are synchronized with form data
-      transformingRef.current = true
-      try {
-        const transformedSizes = currentStrategy.transformToProductSizes(categoryFormData)
-        if (onStrategySizesChange) {
-          onStrategySizesChange(transformedSizes)
-        }
-      } catch (error) {
-        console.error('Failed to sync form data with strategy:', error)
-      } finally {
-        setTimeout(() => {
-          transformingRef.current = false
-        }, 200) // FIXED: Increase timeout to prevent race conditions
-      }
-    }
-  }, [product, currentStrategy, categoryFormData, onStrategySizesChange])
 
   // Transform categories for select options
   // Defensive: categories fallback ke array kosong jika undefined/null

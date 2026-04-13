@@ -203,7 +203,9 @@ export class ClothingStrategy implements CategoryFormStrategy {
       const sizeAgeCombination = `${size.size}_${ageSuffix}`
 
       // Check if this combination exists in our size options
-      if (this.sizeOptions.some(opt => opt.value === sizeAgeCombination)) {
+      const isValid = this.sizeOptions.some(opt => opt.value === sizeAgeCombination)
+
+      if (isValid) {
         selectedSizes.push(sizeAgeCombination)
         const quantityKey = `quantity_${sizeAgeCombination}`
         formData[quantityKey] = size.quantity

@@ -118,6 +118,12 @@ export const productApi = {
         }
       })
     }
+
+    // DEBUG: Log what is actually being sent to the API
+    console.log('[DEBUG][API] updateProduct FormData entries:')
+    for (const [key, value] of formData.entries()) {
+      console.log(`  ${key}:`, value)
+    }
     
     const response = await fetch(`${API_BASE_URL}/products/${id}`, {
       method: 'PUT',

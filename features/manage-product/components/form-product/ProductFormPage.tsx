@@ -554,11 +554,12 @@ export function ProductFormPage({
       formData.aggregatedSizes || [],
     )
 
-    console.log('[DEBUG] Size transformation:', {
+    console.log('[PRODUCTFOMPAGE] Size transformation result:', {
       source,
-      strategySizes,
-      simplifiedSizes: formData.simplifiedSizes,
-      aggregatedSizes: formData.aggregatedSizes,
+      strategySizesCount: strategySizes.length,
+      strategySizes: JSON.stringify(strategySizes),
+      simplifiedSizesCount: formData.simplifiedSizes?.length ?? 0,
+      simplifiedSizes: JSON.stringify(formData.simplifiedSizes),
       sizesData,
     })
 

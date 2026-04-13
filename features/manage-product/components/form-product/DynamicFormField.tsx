@@ -7,7 +7,6 @@
 
 'use client'
 
-import { useState } from 'react'
 import { Check, Plus, Minus } from 'lucide-react'
 import type { FormFieldConfig } from '../../lib/strategies/CategoryFormStrategy'
 import type { CategoryFormData } from '../../lib/strategies/CategoryFormStrategy'
@@ -33,31 +32,25 @@ export function DynamicFormField({
   touched,
   formData,
 }: DynamicFormFieldProps) {
-  const [localValue, setLocalValue] = useState<unknown>(value || field.defaultValue || '')
-
   // Check if field should be visible based on condition
-  const isVisible = formData ? ConditionEvaluator.isFieldVisible(field.condition, formData) : true // Default to visible if no formData provided
+  const isVisible = formData ? ConditionEvaluator.isFieldVisible(field.condition, formData) : true
 
   // Don't render if field is not visible
   if (!isVisible) {
     return null
   }
 
-  // Sync local value dengan props
-  const handleChange = (newValue: unknown) => {
-    setLocalValue(newValue)
-    onChange(newValue)
-  }
-
-  const handleBlur = (newValue: unknown) => {
-    setLocalValue(newValue)
-    onBlur(newValue)
-  }
+  // Normalize value for non-number fields
+  const localValue = value
+  const handleChange = onChange
+  const handleBlur = onBlur
 
   // Render field berdasarkan type
   const renderField = () => {
     switch (field.type) {
-      case 'number':
+      case 'number': {
+        // Derive display value directly from props — no local state to avoid stale "04" issue
+        const numericValue = typeof value === 'number' ? value : (Number(value) || 0)
         return (
           <div className="space-y-2">
             <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
@@ -65,16 +58,23 @@ export function DynamicFormField({
               {field.required && <span className="text-red-500">*</span>}
             </label>
             <input
-              type="number"
-              value={
-                typeof localValue === 'string' || typeof localValue === 'number' ? localValue : ''
-              }
-              onChange={(e) => handleChange(Number(e.target.value) || 0)}
-              onBlur={(e) => handleBlur(Number(e.target.value) || 0)}
-              placeholder={field.placeholder}
-              min={field.min}
-              max={field.max}
-              step={field.step || 1}
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              value={numericValue === 0 ? '' : String(numericValue)}
+              onChange={(e) => {
+                const raw = e.target.value.replace(/\D/g, '')
+                const num = raw === '' ? 0 : Number(raw)
+                const clamped = field.max !== undefined ? Math.min(field.max, num) : num
+                onChange(clamped)
+              }}
+              onBlur={(e) => {
+                const raw = e.target.value.replace(/\D/g, '')
+                const num = raw === '' ? 0 : Number(raw)
+                const clamped = field.max !== undefined ? Math.min(field.max, num) : num
+                onBlur(clamped)
+              }}
+              placeholder={field.placeholder || '0'}
               className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
                 error && touched ? 'border-red-500' : 'border-gray-300'
               }`}
@@ -89,6 +89,7 @@ export function DynamicFormField({
             )}
           </div>
         )
+      }
 
       case 'select':
         return (

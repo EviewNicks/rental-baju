@@ -428,10 +428,12 @@ export class ProductService {
         await this.validateSizesForCategoryType(validatedData.sizes, category!.type)
         // Process sizes based on category type
         processedSizes = this.processSizesByCategoryType(validatedData.sizes, category!.type)
-      } else {
+     } else {
         // Empty array means remove all sizes
         processedSizes = []
       }
+    } else {
+      console.error('SERVICE] updateProduct - sizes is undefined, skipping size update')
     }
 
     // Enhanced: Calculate modal awal with Producer/Owner flow logic
@@ -516,12 +518,16 @@ export class ProductService {
             size: true,
             rentedQuantity: true,
             lostQuantity: true,
+            isActive: true,
           },
         })
 
-        // Create a map for quick lookup
+        // Create a map for quick lookup - ONLY active sizes
+        // Inactive sizes should be treated as non-existing (will be re-created)
         const existingSizeMap = new Map(
-          existingSizes.map(s => [`${s.ageCategory}-${s.size}`, s])
+          existingSizes
+            .filter(s => s.isActive)
+            .map(s => [`${s.ageCategory}-${s.size}`, s])
         )
 
         for (const newSize of processedSizes) {
@@ -550,8 +556,6 @@ export class ProductService {
                 quantity: newSize.quantity,
                 originalQuantity: newOriginalQty,
                 availableQuantity: newAvailable,
-                // rentedQuantity: PRESERVED (not updated)
-                // lostQuantity: PRESERVED (not updated)
                 updatedAt: new Date(),
               },
             })
@@ -559,27 +563,48 @@ export class ProductService {
             // Remove from map (processed)
             existingSizeMap.delete(key)
           } else {
-            // CREATE new size
-            await tx.productSize.create({
-              data: {
-                productId: validatedId,
-                ageCategory: newSize.ageCategory,
-                size: newSize.size,
-                quantity: newSize.quantity,
-                originalQuantity: newSize.originalQuantity || newSize.quantity,
-                availableQuantity: newSize.availableQuantity || newSize.quantity,
-                rentedQuantity: 0,
-                lostQuantity: 0,
-                isActive: true,
-                createdBy: this.userId,
-              },
-            })
+            // CREATE new size — but check if a soft-deleted record exists first
+            const softDeleted = existingSizes.find(
+              s => !s.isActive && s.ageCategory === newSize.ageCategory && s.size === newSize.size
+            )
+
+            if (softDeleted) {
+              // Re-activate the soft-deleted size
+              await tx.productSize.update({
+                where: { id: softDeleted.id },
+                data: {
+                  quantity: newSize.quantity,
+                  originalQuantity: newSize.originalQuantity || newSize.quantity,
+                  availableQuantity: newSize.availableQuantity || newSize.quantity,
+                  rentedQuantity: 0,
+                  lostQuantity: 0,
+                  isActive: true,
+                  updatedAt: new Date(),
+                },
+              })
+            } else {
+              // CREATE brand new size
+              await tx.productSize.create({
+                data: {
+                  productId: validatedId,
+                  ageCategory: newSize.ageCategory,
+                  size: newSize.size,
+                  quantity: newSize.quantity,
+                  originalQuantity: newSize.originalQuantity || newSize.quantity,
+                  availableQuantity: newSize.availableQuantity || newSize.quantity,
+                  rentedQuantity: 0,
+                  lostQuantity: 0,
+                  isActive: true,
+                  createdBy: this.userId,
+                },
+              })
+            }
           }
         }
 
         // Soft-delete sizes that were removed (if any remain in map)
         const sizesToDelete = Array.from(existingSizeMap.values())
-        for (const size of sizesToDelete) {
+          for (const size of sizesToDelete) {
           // Validate: cannot delete size with active rentals or lost items
           if (size.rentedQuantity > 0 || (size.lostQuantity && size.lostQuantity > 0)) {
             throw new ConflictError(
@@ -591,7 +616,7 @@ export class ProductService {
             where: { id: size.id },
             data: { isActive: false },
           })
-        }
+          }
       }
       } catch (error) {
         throw error
