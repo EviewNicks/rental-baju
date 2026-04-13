@@ -119,6 +119,14 @@
       "createdAt": "2025-10-25T10:00:00.000Z",
       "updatedAt": "2025-10-25T10:00:00.000Z",
       "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
+    },
+    {
+      "name": "songket",
+      "color": "#DC2626",
+      "type": "accessories_age_based",
+      "createdAt": "2025-10-25T10:00:00.000Z",
+      "updatedAt": "2025-10-25T10:00:00.000Z",
+      "createdBy": "user_2zqMz12Mqg2OSWBunmkffp7r5Ek"
     }
   ]
 }

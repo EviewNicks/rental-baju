@@ -1,27 +1,27 @@
 [
   {
     "code": "TH01",
-    "name": "Songket Coklat Muda",
-    "description": "Songket coklat muda - Universal size",
+    "name": "Songket Coklat",
+    "description": "Songket coklat - Universal size",
     "modalAwal": 30000,
     "currentPrice": 30000,
-    "quantity": 18,
-    "categoryId": "d25ddd0e-5fe1-4dd0-ba18-26b918421798",
-    "imageUrl": "/products/accesories.png",
+    "quantity": 20,
+    "categoryId": "e03f730b-5290-4281-af43-f37bca6cb32e",
+    "imageUrl": "/products/songket/TH01.png",
     "sizes": [
       { "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 12 },
-      { "ageCategory": "CHILD", "size": "UNIVERSAL", "quantity": 6 }
+      { "ageCategory": "CHILD", "size": "UNIVERSAL", "quantity": 8 }
     ]
   },
   {
     "code": "TM03",
     "name": "Songket Hijau Mint",
-    "description": "Songket hijau mint segar - Universal size",
+    "description": "Songket hijau mint - Universal size",
     "modalAwal": 30000,
     "currentPrice": 30000,
     "quantity": 2,
-    "categoryId": "d25ddd0e-5fe1-4dd0-ba18-26b918421798",
-    "imageUrl": "/products/accesories.png",
+    "categoryId": "e03f730b-5290-4281-af43-f37bca6cb32e",
+    "imageUrl": "/products/songket/TM03.png",
     "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 2 }]
   },
   {
@@ -31,30 +31,111 @@
     "modalAwal": 30000,
     "currentPrice": 30000,
     "quantity": 12,
-    "categoryId": "d25ddd0e-5fe1-4dd0-ba18-26b918421798",
-    "imageUrl": "/products/accesories.png",
+    "categoryId": "e03f730b-5290-4281-af43-f37bca6cb32e",
+    "imageUrl": "/products/songket/TB06.png",
     "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 12 }]
   },
   {
-    "code": "RK01",
-    "name": "Songket Rok Krem",
-    "description": "Songket rok krem klasik - Universal size",
+    "code": "RK04",
+    "name": "Rok Krem",
+    "description": "Rok krem klasik - Universal size",
     "modalAwal": 30000,
     "currentPrice": 30000,
     "quantity": 1,
-    "categoryId": "d25ddd0e-5fe1-4dd0-ba18-26b918421798",
-    "imageUrl": "/products/accesories.png",
+    "categoryId": "e03f730b-5290-4281-af43-f37bca6cb32e",
+    "imageUrl": "/products/songket/RK04.png",
     "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 1 }]
   },
   {
+    "code": "TP05",
+    "name": "Songket Pink",
+    "description": "Songket pink - Universal size",
+    "modalAwal": 30000,
+    "currentPrice": 30000,
+    "quantity": 6,
+    "categoryId": "e03f730b-5290-4281-af43-f37bca6cb32e",
+    "imageUrl": "/products/songket/TP05.png",
+    "sizes": [{ "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 6 }]
+  },
+  {
+    "code": "TK07",
+    "name": "Songket Kuning",
+    "description": "Songket kuning - Universal size",
+    "modalAwal": 30000,
+    "currentPrice": 30000,
+    "quantity": 18,
+    "categoryId": "e03f730b-5290-4281-af43-f37bca6cb32e",
+    "imageUrl": "/products/songket/TK07.png",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 12 },
+      { "ageCategory": "CHILD", "size": "UNIVERSAL", "quantity": 6 }
+    ]
+  },
+  {
+    "code": "TG08",
+    "name": "Songket Mahogany",
+    "description": "Songket mahogany - Universal size",
+    "modalAwal": 30000,
+    "currentPrice": 30000,
+    "quantity": 17,
+    "categoryId": "e03f730b-5290-4281-af43-f37bca6cb32e",
+    "imageUrl": "/products/songket/TG08.png",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 14 },
+      { "ageCategory": "CHILD", "size": "UNIVERSAL", "quantity": 3 }
+    ]
+  },
+  {
+    "code": "TPS09",
+    "name": "Songket Silver Putih",
+    "description": "Songket silver putih - Universal size",
+    "modalAwal": 30000,
+    "currentPrice": 30000,
+    "quantity": 15,
+    "categoryId": "e03f730b-5290-4281-af43-f37bca6cb32e",
+    "imageUrl": "/products/songket/TPS09.png",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 13 },
+      { "ageCategory": "CHILD", "size": "UNIVERSAL", "quantity": 2 }
+    ]
+  },
+  {
+    "code": "TBP10",
+    "name": "Songket Baby Pink",
+    "description": "Songket baby pink - Universal size",
+    "modalAwal": 30000,
+    "currentPrice": 30000,
+    "quantity": 6,
+    "categoryId": "e03f730b-5290-4281-af43-f37bca6cb32e",
+    "imageUrl": "/products/songket/TBP10.png",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 4 },
+      { "ageCategory": "CHILD", "size": "UNIVERSAL", "quantity": 2 }
+    ]
+  },
+  {
+    "code": "TBB11",
+    "name": "Songket Baby Blue",
+    "description": "Songket baby blue - Universal size",
+    "modalAwal": 30000,
+    "currentPrice": 30000,
+    "quantity": 6,
+    "categoryId": "e03f730b-5290-4281-af43-f37bca6cb32e",
+    "imageUrl": "/products/songket/TBB11.png",
+    "sizes": [
+      { "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 4 },
+      { "ageCategory": "CHILD", "size": "UNIVERSAL", "quantity": 2 }
+    ]
+  },
+  {
     "code": "TC02",
-    "name": "Songket Hijau Sage",
-    "description": "Songket hijau sage earthy - Universal size",
+    "name": "Songket Sage",
+    "description": "Songket sage - Universal size",
     "modalAwal": 30000,
     "currentPrice": 30000,
     "quantity": 14,
-    "categoryId": "d25ddd0e-5fe1-4dd0-ba18-26b918421798",
-    "imageUrl": "/products/accesories.png",
+    "categoryId": "e03f730b-5290-4281-af43-f37bca6cb32e",
+    "imageUrl": "/products/songket/TC02.png",
     "sizes": [
       { "ageCategory": "ADULT", "size": "UNIVERSAL", "quantity": 10 },
       { "ageCategory": "CHILD", "size": "UNIVERSAL", "quantity": 4 }

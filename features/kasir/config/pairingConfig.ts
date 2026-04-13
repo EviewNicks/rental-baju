@@ -19,12 +19,19 @@ export const SARUNG_GRATIS_ELIGIBLE_CATEGORIES = [
   'renda-premium',
   
   // Organza categories
-  'organza', // Added: Organza products eligible for free sarung
-  
-  // Add future categories here:
-  // 'gamis-anak',
-  // 'gamis-tanggung', 
-  // 'gamis-dewasa',
+  'organza',
+
+  // Gamis categories
+  'gamis-anak',
+  'gamis-tanggung',
+  'gamis-dewasa',
+
+  // Jas Haji & Baju Haji categories
+  'jas-hj',
+  'baju-hj',
+
+  // Dress categories
+  'dress',
 ] as const
 
 // Type for eligible categories

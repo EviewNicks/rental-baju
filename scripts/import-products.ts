@@ -214,7 +214,7 @@ async function importProducts(): Promise<ImportResult> {
     console.log('')
 
     // Validate product type
-    const validProductTypes = ['organza', 'renda-premium', 'renda', 'jas-jaguar', 'jas-polos', 'jas-premium', 'jas-renda', 'jas-hj', 'baju-hj', 'gamis-anak', 'gamis-dewasa', 'gamis-tanggung', 'gamis-dewasa', 'anting', 'bando-besar', 'bando-kecil', 'gelang', 'kalung', 'sarung', 'sarung-premium', 'songket']
+    const validProductTypes = ['organza', 'renda-premium', 'renda', 'jas-jaguar', 'jas-polos', 'jas-premium', 'jas-renda', 'jas-hj', 'baju-hj', 'gamis-anak', 'gamis-dewasa', 'gamis-tanggung', 'songket','gamis-dewasa', 'anting', 'bando-besar', 'bando-kecil', 'gelang', 'kalung', 'sarung', 'sarung-premium', 'songket']
     if (!validProductTypes.includes(productType)) {
       throw new Error(
         `Invalid PRODUCT_TYPE: ${productType}. Valid types: ${validProductTypes.join(', ')}`,
@@ -265,8 +265,8 @@ async function importProducts(): Promise<ImportResult> {
                               ? 'gamis-tanggung-products.json'
                               : productType === 'gamis-dewasa'
                                 ? 'gamis-dewasa-products.json'
-                                // : productType === 'anting'
-                                  // ? 'anting.json'
+                                : productType === 'songket'
+                                  ? 'songket.json'
                                   // : productType === 'bando-besar'
                                     // ? 'bando-besar.json'
                                     // : productType === 'bando-kecil'

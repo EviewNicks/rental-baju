@@ -109,7 +109,8 @@ export function useProductFormStrategy({ categories, product }: UseProductFormSt
       }
 
       try {
-        return currentStrategy.transformToProductSizes(categoryFormData)
+        const result = currentStrategy.transformToProductSizes(categoryFormData)
+        return result
       } catch (error) {
         console.error('Failed to transform form data to sizes:', error)
         return []
