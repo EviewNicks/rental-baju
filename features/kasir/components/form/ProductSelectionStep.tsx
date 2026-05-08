@@ -29,7 +29,6 @@ import {
   determineErrorType, 
   type AvailabilityError 
 } from '../../lib/errors/availabilityErrors'
-import { ProductHistoryPopup } from '../ui/ProductHistoryPopup'
 import { isEligibleForFreeSarung, isLinkedSarung } from '../../lib/utils/jasSarungUtils'
 import { 
   createSarungPairingError, 
@@ -78,21 +77,6 @@ export function ProductSelectionStep({
   // Enhanced error handling for availability checks
   const [availabilityErrors, setAvailabilityErrors] = useState<Map<string, AvailabilityError>>(new Map())
   const [validationErrors, setValidationErrors] = useState<Map<string, string[]>>(new Map())
-  
-  // History popup state management
-  const [historyPopup, setHistoryPopup] = useState<{
-    isOpen: boolean
-    productSizeId: string
-    productName: string
-    size: string
-    ageCategory: string
-  }>({
-    isOpen: false,
-    productSizeId: '',
-    productName: '',
-    size: '',
-    ageCategory: '',
-  })
 
   // Sarung selection modal state management
   const [sarungModal, setSarungModal] = useState<{
@@ -121,27 +105,6 @@ export function ProductSelectionStep({
         Produk ID: {productId}
       </p>
     )
-  }
-
-  // History popup handlers
-  const openHistoryPopup = (productSizeId: string, productName: string, size: string, ageCategory: string) => {
-    setHistoryPopup({
-      isOpen: true,
-      productSizeId,
-      productName,
-      size,
-      ageCategory,
-    })
-  }
-
-  const closeHistoryPopup = () => {
-    setHistoryPopup({
-      isOpen: false,
-      productSizeId: '',
-      productName: '',
-      size: '',
-      ageCategory: '',
-    })
   }
 
   // Sarung modal handlers with enhanced error handling
@@ -774,7 +737,6 @@ export function ProductSelectionStep({
                         product={product}
                         onAddToCart={handleAddProduct}
                         selectedQuantity={getSelectedQuantity(product.id)}
-                        onOpenHistory={openHistoryPopup}
                       />
                     </div>
                   ))}
@@ -1048,16 +1010,6 @@ export function ProductSelectionStep({
         </div>
       </div>
 
-      {/* Product History Popup - Moved to ProductSelectionStep for better display */}
-      <ProductHistoryPopup
-        productSizeId={historyPopup.productSizeId}
-        productName={historyPopup.productName}
-        size={historyPopup.size}
-        ageCategory={historyPopup.ageCategory}
-        isOpen={historyPopup.isOpen}
-        onClose={closeHistoryPopup}
-      />
-
       {/* Sarung Selection Modal */}
       {sarungModal.jasProduct && (
         <SarungSelectionModal
@@ -1065,9 +1017,8 @@ export function ProductSelectionStep({
           onClose={closeSarungModal}
           jasProduct={sarungModal.jasProduct}
           jasQuantity={sarungModal.jasQuantity}
-          jasProductSizeId={sarungModal.jasProductSizeId} // ✅ ADDED: Pass jasProductSizeId prop
+          jasProductSizeId={sarungModal.jasProductSizeId}
           onConfirmSelection={handleSarungSelection}
-          onOpenHistory={openHistoryPopup}
         />
       )}
     </div>

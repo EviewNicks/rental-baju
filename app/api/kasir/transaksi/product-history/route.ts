@@ -1,29 +1,16 @@
 /**
- * Product History API Endpoint - Task 2.2 (CORRECTED)
+ * Product History API Endpoint - Task 2.2 (SIMPLIFIED)
  * GET /api/kasir/transaksi/product-history
- * Returns transaction history for a specific product size with caching
+ * Returns transaction history for a specific product size
  * 
- * ARCHITECTURE FIX:
- * - Uses ItemHistoryService (dedicated service for transaction history)
- * - Uses SizeAvailabilityService (for future availability checks)
- * - Removes duplicate code from TransaksiService
+ * CACHING REMOVED: Direct database queries for accurate real-time data
+ * PHASE 2: Aggregate all items by transaction code (no pairing separation)
  */
 
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { prisma } from '@/lib/prisma'
 import { createTransactionHistoryService } from '@/features/kasir/services/ItemHistoryService'
-import { createEnhancedAvailabilityService } from '@/features/kasir/services/SizeAvailabilityService'
-
-// In-memory cache for 5-minute caching (Task 2.3)
-const cache = new Map<string, {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  data: any[]
-  cachedAt: Date
-  expiresAt: Date
-}>()
-
-const CACHE_TTL_MS = 5 * 60 * 1000 // 5 minutes
 
 export async function GET(request: NextRequest) {
   let productSizeId: string | null = null
@@ -82,32 +69,16 @@ export async function GET(request: NextRequest) {
     // Parse optional parameters
     const statuses: ('active' | 'diambil')[] = statusesParam 
       ? (statusesParam.split(',').filter(s => ['active', 'diambil'].includes(s)) as ('active' | 'diambil')[])
-      : ['active', 'diambil'] // REVISED: Default to active and diambil only
+      : ['active', 'diambil']
 
     const limit = limitParam ? parseInt(limitParam, 10) : 50
     const sortBy = (sortByParam as 'date_proximity' | 'date_asc' | 'date_desc') || 'date_proximity'
 
-    // Generate cache key
-    const cacheKey = `${productSizeId}:${JSON.stringify({ statuses, limit, sortBy })}`
-
-    // Check cache first (Task 2.3: 5-minute caching)
-    const cached = cache.get(cacheKey)
-    if (cached && new Date() <= cached.expiresAt) {
-      return NextResponse.json({
-        success: true,
-        data: cached.data,
-        cached: true,
-        cachedAt: cached.cachedAt.toISOString()
-      })
-    }
-
-    // CORRECTED: Use dedicated services from Task 1
+    // Create service instance (no caching, fresh instance per request)
     const historyService = createTransactionHistoryService(prisma)
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const availabilityService = createEnhancedAvailabilityService(prisma)
 
-    // Get transaction history using ItemHistoryService (proper architecture)
-    console.log('[ProductHistoryAPI] Calling history service:', {
+    // Get transaction history (no caching)
+    console.log('[ProductHistoryAPI] Calling history service (no cache):', {
       productSizeId,
       statuses,
       limit,
@@ -126,18 +97,6 @@ export async function GET(request: NextRequest) {
       timestamp: new Date().toISOString()
     })
 
-    // Store in cache (Task 2.3: 5-minute caching)
-    const now = new Date()
-    const expiresAt = new Date(now.getTime() + CACHE_TTL_MS)
-    cache.set(cacheKey, {
-      data: historyData,
-      cachedAt: now,
-      expiresAt
-    })
-
-    // Clean up expired cache entries periodically
-    cleanupExpiredCache()
-
     return NextResponse.json({
       success: true,
       data: historyData,
@@ -148,8 +107,8 @@ export async function GET(request: NextRequest) {
         limit,
         sortBy,
         totalResults: historyData.length,
-        cacheExpiresAt: expiresAt.toISOString(),
-        serviceUsed: 'ItemHistoryService' // For debugging
+        serviceUsed: 'ItemHistoryService',
+        phase: 'Phase 2 - Aggregate by transaction code'
       }
     })
 
@@ -201,16 +160,6 @@ export async function GET(request: NextRequest) {
           'Refresh halaman dan mulai dari awal',
           'Pastikan produk masih tersedia'
         ]
-      } else if (message.includes('cache')) {
-        statusCode = 503
-        errorMessage = 'Layanan penyimpanan sementara bermasalah'
-        userFriendlyMessage = 'Sistem penyimpanan data sementara sedang bermasalah. Data mungkin perlu dimuat ulang.'
-        errorType = 'CACHE_ERROR'
-        suggestions = [
-          'Refresh halaman untuk memuat data terbaru',
-          'Coba lagi dalam 1-2 menit',
-          'Bersihkan cache browser jika masalah berlanjut'
-        ]
       } else if (message.includes('database') || message.includes('connection')) {
         statusCode = 503
         errorMessage = 'Koneksi database bermasalah'
@@ -242,7 +191,7 @@ export async function GET(request: NextRequest) {
         errorType,
         suggestions,
         details: error instanceof Error ? error.message : 'Unknown error',
-        retryable: ['API_ERROR', 'NETWORK_TIMEOUT', 'CACHE_ERROR', 'DATABASE_ERROR'].includes(errorType),
+        retryable: ['API_ERROR', 'NETWORK_TIMEOUT', 'DATABASE_ERROR'].includes(errorType),
         timestamp: new Date().toISOString(),
         helpText: errorType === 'NETWORK_TIMEOUT' 
           ? 'Jika masalah berlanjut, periksa koneksi internet atau hubungi admin.'
@@ -252,37 +201,5 @@ export async function GET(request: NextRequest) {
       },
       { status: statusCode }
     )
-  }
-}
-
-/**
- * Clean up expired cache entries to prevent memory leaks
- * Task 2.3: Cache management
- */
-function cleanupExpiredCache() {
-  const now = new Date()
-  const keysToDelete: string[] = []
-
-  for (const [key, cached] of cache.entries()) {
-    if (now > cached.expiresAt) {
-      keysToDelete.push(key)
-    }
-  }
-
-  keysToDelete.forEach(key => cache.delete(key))
-}
-
-/**
- * Clear cache for specific product size (for cache invalidation)
- * This can be called when transactions are updated
- */
-export function clearProductHistoryCache(productSizeId?: string) {
-  if (productSizeId) {
-    const keysToDelete = Array.from(cache.keys()).filter(key => 
-      key.startsWith(productSizeId)
-    )
-    keysToDelete.forEach(key => cache.delete(key))
-  } else {
-    cache.clear()
   }
 }

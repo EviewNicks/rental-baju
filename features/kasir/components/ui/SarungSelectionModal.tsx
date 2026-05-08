@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import { X, ShoppingCart, RefreshCw, AlertTriangle } from 'lucide-react'
+import { X, ShoppingCart, RefreshCw, AlertTriangle, Search } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
 import { ProductCard } from './product-card'
 import { sarungPairingService } from '../../services/pairingService'
 import { getSarungCategoryId } from '../../lib/utils/jasSarungUtils'
@@ -80,6 +81,7 @@ export function SarungSelectionModal({
   const [retryCount, setRetryCount] = useState(0)
   const [lastError, setLastError] = useState<string | null>(null)
   const [validationErrors, setValidationErrors] = useState<string[]>([])
+  const [searchQuery, setSearchQuery] = useState('') // Search state
 
   // Task 12: Generate session ID for rate limiting
   const sessionId = `sarung-modal-${jasProduct.id}-${Date.now()}`
@@ -152,6 +154,24 @@ export function SarungSelectionModal({
 
     return validatedProducts
   }, [sarungProductsResponse])
+
+  // Client-side search filtering
+  const filteredSarungProducts = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return sarungProducts
+    }
+
+    const query = searchQuery.toLowerCase().trim()
+    
+    return sarungProducts.filter((product) => {
+      // Search in: name, code, color
+      const matchesName = product.name.toLowerCase().includes(query)
+      const matchesCode = product.code?.toLowerCase().includes(query) || false
+      const matchesColor = product.color.toLowerCase().includes(query)
+      
+      return matchesName || matchesCode || matchesColor
+    })
+  }, [sarungProducts, searchQuery])
 
   // Handle API errors
   useEffect(() => {
@@ -230,6 +250,7 @@ export function SarungSelectionModal({
       setRetryCount(0)
       setLastError(null)
       setValidationErrors([])
+      setSearchQuery('') // Reset search query
     } else {
       // Reset distribution state when modal opens
       setSarungDistribution({
@@ -237,6 +258,7 @@ export function SarungSelectionModal({
         totalDistributed: 0,
         remainingJas: jasQuantity
       })
+      setSearchQuery('') // Reset search query on open
     }
   }, [isOpen, jasQuantity])
 
@@ -546,6 +568,30 @@ export function SarungSelectionModal({
 
           {/* Sarung Selection */}
           <div className="space-y-2">
+            {/* Search Bar */}
+            {!isLoading && sarungProducts.length > 0 && (
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                <Input
+                  type="text"
+                  placeholder="Cari sarung (nama, kode, warna)..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 pr-10 h-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                  disabled={isLoading || isSubmitting}
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                    aria-label="Clear search"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+            )}
+
             <div className="flex items-center justify-between">
               {retryCount > 0 && (
                 <Button
@@ -558,6 +604,12 @@ export function SarungSelectionModal({
                   <RefreshCw className="h-4 w-4 mr-1" />
                   Coba Lagi
                 </Button>
+              )}
+              {/* Search results count */}
+              {searchQuery && !isLoading && (
+                <span className="text-sm text-gray-600">
+                  {filteredSarungProducts.length} dari {sarungProducts.length} sarung
+                </span>
               )}
             </div>
 
@@ -603,6 +655,22 @@ export function SarungSelectionModal({
                   {retryCount > 0 ? `Mencoba lagi... (${retryCount + 1}/3)` : 'Memuat sarung...'}
                 </p>
               </div>
+            ) : filteredSarungProducts.length === 0 && searchQuery ? (
+              <div className="text-center py-12">
+                <div className="text-gray-500 space-y-3">
+                  <Search className="h-12 w-12 text-gray-300 mx-auto" />
+                  <p className="text-lg font-medium">Tidak ada hasil untuk "{searchQuery}"</p>
+                  <p className="text-sm text-gray-400">
+                    Coba kata kunci lain atau{' '}
+                    <button
+                      onClick={() => setSearchQuery('')}
+                      className="text-blue-600 hover:text-blue-700 underline"
+                    >
+                      hapus pencarian
+                    </button>
+                  </p>
+                </div>
+              </div>
             ) : sarungProducts.length === 0 ? (
               <div className="text-center py-8">
                 <div className="text-gray-500 space-y-2">
@@ -641,7 +709,7 @@ export function SarungSelectionModal({
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-h-[60vh] overflow-y-auto p-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-                {sarungProducts.map((product) => {
+                {filteredSarungProducts.map((product) => {
                   const selectedQuantity = getSelectedSarungQuantity(product.id)
                   
                   return (

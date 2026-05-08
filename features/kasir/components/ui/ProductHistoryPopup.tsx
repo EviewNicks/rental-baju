@@ -1,3 +1,32 @@
+/**
+ * @deprecated This modal component is deprecated in favor of ProductHistoryPage.
+ * 
+ * **Migration Path:**
+ * Instead of using this modal, product history now opens in a new tab/page for better UX:
+ * - No scroll issues with nested modals
+ * - Full screen space for viewing transaction history
+ * - Shareable URLs
+ * - Native browser scroll
+ * 
+ * **How to migrate:**
+ * Replace the onOpenHistory callback with direct window.open() call:
+ * 
+ * ```typescript
+ * // Old approach (deprecated):
+ * onOpenHistory(productSizeId, productName, size, ageCategory)
+ * 
+ * // New approach:
+ * const params = new URLSearchParams({
+ *   productSizeId, productName, size, ageCategory
+ * })
+ * window.open(`/product-history?${params.toString()}`, '_blank')
+ * ```
+ * 
+ * This component is kept for backward compatibility but will be removed in future versions.
+ * 
+ * @see ProductHistoryPage - The new full-page component
+ * @see /product-history - The new route for product history
+ */
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'

@@ -1,62 +1,54 @@
 /**
  * TransactionHistoryService - Availability Product View
- * Service layer for transaction history retrieval and caching
- * Supports 5-minute caching per product size for optimal performance
+ * Service layer for transaction history retrieval
+ * NO CACHING: Direct database queries for accurate real-time data
+ * PHASE 2: Aggregate all items by transaction code (ignore linkedSarung pairing)
  */
 
 import { PrismaClient } from '@prisma/client'
 import type { 
   TransactionHistoryItem, 
-  TransactionHistoryOptions,
-  CachedTransactionHistory 
+  TransactionHistoryOptions
 } from '../types/availability'
 
 export class TransactionHistoryService {
-  private cache = new Map<string, CachedTransactionHistory>()
-  private readonly CACHE_TTL_MS = 5 * 60 * 1000 // 5 minutes
-
   constructor(private prisma: PrismaClient) {}
 
   /**
-   * Get transaction history for a specific product size with caching
+   * Get transaction history for a specific product size
    * REVISED: Only returns 'active' and 'diambil' status transactions
+   * NO CACHING: Always fetch fresh data from database
+   * PHASE 2: Aggregate by transaction code only (no pairing separation)
    */
   async getProductSizeHistory(
     productSizeId: string,
     options: TransactionHistoryOptions = {}
   ): Promise<TransactionHistoryItem[]> {
-    const cacheKey = this.generateCacheKey(productSizeId, options)
-    
-    // Check cache first
-    const cached = this.getCachedData(cacheKey)
-    if (cached) {
-      return cached.data
-    }
+    console.log('[ItemHistoryService] Fetching fresh data from database (Phase 2 - No Pairing):', {
+      productSizeId,
+      timestamp: new Date().toISOString()
+    })
 
-    // Fetch from database
+    // Always fetch from database (no caching)
     const data = await this.fetchTransactionHistory(productSizeId, options)
-    
-    // Store in cache
-    this.setCachedData(cacheKey, data)
     
     return data
   }
 
   /**
    * Fetch transaction history from database
-   * REVISED: Filter only 'active' and 'diambil' status
+   * PHASE 2: Group by transaction code ONLY (aggregate all items regardless of linkedSarung)
    */
   private async fetchTransactionHistory(
     productSizeId: string,
     options: TransactionHistoryOptions
   ): Promise<TransactionHistoryItem[]> {
     const {
-      statuses = ['active', 'diambil'], // REVISED: Default to active and diambil only
+      statuses = ['active', 'diambil'],
       limit = 50,
       sortBy = 'date_proximity'
     } = options
 
-    // Debug logging for troubleshooting
     console.log('[ItemHistoryService] Fetching transaction history:', {
       productSizeId,
       statuses,
@@ -66,106 +58,188 @@ export class TransactionHistoryService {
     })
 
     try {
-      // Query transactions that use this product size
-      // Format kondisiAwal: JSON string with productSizeId field
-      // Example: {"productSizeId":"81335d70-ba9d-4c40-8a30-8efed664beaf","size":"M","ageCategory":"ADULT","condition":"Baik","linkedSarung":null}
+      // CRITICAL FIX: Only match productSizeId at ROOT level, not in linkedSarung
+      // Pattern: Match productSizeId at start of JSON or after comma
+      // This excludes matches inside linkedSarung object
       const jsonSearchPattern = `"productSizeId":"${productSizeId}"`
 
-      console.log('[ItemHistoryService] Query pattern:', {
-        productSizeId,
-        jsonSearchPattern,
-        expectedFormat: '{"productSizeId":"uuid","size":"M","ageCategory":"ADULT","condition":"Baik","linkedSarung":null}'
-      })
+      const orderBy = sortBy === 'date_proximity' || sortBy === 'date_desc'
+        ? { transaksi: { tglMulai: 'desc' as const } }
+        : { transaksi: { tglMulai: 'asc' as const } }
 
-      const transactions = await this.prisma.transaksi.findMany({
+      const transaksiItems = await this.prisma.transaksiItem.findMany({
         where: {
-          status: {
-            in: statuses
+          kondisiAwal: {
+            contains: jsonSearchPattern
           },
-          items: {
-            some: {
-              // Find transactions that have items with this productSizeId
-              // Using string_contains to match JSON field in kondisiAwal
-              kondisiAwal: {
-                contains: jsonSearchPattern
-              }
+          transaksi: {
+            status: {
+              in: statuses
             }
           }
         },
-        include: {
-          items: {
-            where: {
-              kondisiAwal: {
-                contains: jsonSearchPattern
-              }
-            },
-            include: {
-              produk: {
-                select: {
-                  name: true
-                }
-              }
+        select: {
+          id: true,
+          jumlah: true,
+          kondisiAwal: true,
+          transaksi: {
+            select: {
+              kode: true,
+              status: true,
+              tglMulai: true,
+              tglSelesai: true,
+            }
+          },
+          produk: {
+            select: {
+              name: true
             }
           }
         },
-        take: limit,
-        orderBy: sortBy === 'date_proximity'
-          ? { tglMulai: 'desc' } // Closest to current date first
-          : sortBy === 'date_asc'
-          ? { tglMulai: 'asc' }
-          : { tglMulai: 'desc' }
+        orderBy,
+        take: limit
       })
 
-      // Debug: Log query results
       console.log('[ItemHistoryService] Query results:', {
         productSizeId,
-        transactionsFound: transactions.length,
-        transactionCodes: transactions.map(t => t.kode),
+        itemsFound: transaksiItems.length,
+        transactionCodes: transaksiItems.map(item => item.transaksi.kode),
+        quantities: transaksiItems.map(item => item.jumlah),
         timestamp: new Date().toISOString()
       })
 
-      // Debug: Log sample kondisiAwal values for verification
-      if (transactions.length > 0) {
-        const sampleItems = transactions.flatMap(t => t.items)
-        console.log('[ItemHistoryService] Sample kondisiAwal values:', {
-          productSizeId,
-          sampleCount: Math.min(3, sampleItems.length),
-          samples: sampleItems.slice(0, 3).map(item => ({
-            itemId: item.id,
-            kondisiAwal: item.kondisiAwal,
-            parsedKondisiAwal: item.kondisiAwal ? (() => {
-              try {
-                return JSON.parse(item.kondisiAwal)
-              } catch {
-                return 'PARSE_FAILED'
-              }
-            })() : null
-          })),
-          timestamp: new Date().toISOString()
-        })
-      }
-
-      // Transform to TransactionHistoryItem format
-      const historyItems: TransactionHistoryItem[] = []
-
-      for (const transaction of transactions) {
-        for (const item of transaction.items) {
-          const historyItem: TransactionHistoryItem = {
-            transactionCode: transaction.kode,
-            quantity: item.jumlah,
-            startDate: transaction.tglMulai,
-            endDate: transaction.tglSelesai || new Date(),
-            status: transaction.status as 'active' | 'diambil',
-            displayText: this.formatTransactionDisplay(
-              transaction.kode,
-              item.jumlah,
-              transaction.tglMulai,
-              transaction.tglSelesai
-            )
+      // FILTER: Only keep items where productSizeId is at ROOT level (not in linkedSarung)
+      // This ensures we only show history for the product itself, not where it appears as linkedSarung
+      const rootLevelItems = transaksiItems.filter(item => {
+        try {
+          // Handle null kondisiAwal
+          if (!item.kondisiAwal) {
+            console.warn('[ItemHistoryService] Item has null kondisiAwal:', {
+              itemId: item.id,
+              transactionCode: item.transaksi.kode
+            })
+            return false
           }
-          historyItems.push(historyItem)
+
+          const kondisi = JSON.parse(item.kondisiAwal)
+          
+          // Check if productSizeId at root level matches
+          const isRootMatch = kondisi.productSizeId === productSizeId
+          
+          if (!isRootMatch) {
+            console.log('[ItemHistoryService] Filtering out linkedSarung match:', {
+              itemId: item.id,
+              transactionCode: item.transaksi.kode,
+              rootProductSizeId: kondisi.productSizeId,
+              searchedProductSizeId: productSizeId,
+              reason: 'productSizeId only in linkedSarung, not at root'
+            })
+          }
+          
+          return isRootMatch
+        } catch (error) {
+          console.error('[ItemHistoryService] Failed to parse kondisiAwal:', {
+            itemId: item.id,
+            error: error instanceof Error ? error.message : 'Unknown error'
+          })
+          return false
         }
-      }
+      })
+
+      console.log('[ItemHistoryService] After root-level filtering:', {
+        productSizeId,
+        originalCount: transaksiItems.length,
+        rootLevelCount: rootLevelItems.length,
+        filteredOut: transaksiItems.length - rootLevelItems.length,
+        transactionCodes: rootLevelItems.map(item => item.transaksi.kode),
+        quantities: rootLevelItems.map(item => item.jumlah),
+        timestamp: new Date().toISOString()
+      })
+
+      // DEDUPLICATION BEFORE GROUPING: Remove paired items to avoid double counting
+      // Problem: Query returns BOTH Jas (with linkedSarung) AND Sarung (isPairedSarung) from same transaction
+      // Solution: Keep only ONE item per (transactionCode + quantity) combination
+      const seenPairs = new Set<string>()
+      const deduplicatedItems = rootLevelItems.filter(item => {
+        const txnCode = item.transaksi.kode
+        const quantity = item.jumlah
+        
+        // Create unique key: transactionCode + quantity
+        // This identifies paired items (Jas + Sarung with same quantity in same transaction)
+        const pairKey = `${txnCode}::${quantity}`
+        
+        if (seenPairs.has(pairKey)) {
+          console.log('[ItemHistoryService] Removing duplicate paired item:', {
+            transactionCode: txnCode,
+            quantity: quantity,
+            itemId: item.id,
+            pairKey
+          })
+          return false // Skip this duplicate
+        }
+        
+        seenPairs.add(pairKey)
+        return true // Keep first occurrence
+      })
+
+      console.log('[ItemHistoryService] After deduplication:', {
+        productSizeId,
+        originalCount: transaksiItems.length,
+        deduplicatedCount: deduplicatedItems.length,
+        removedDuplicates: transaksiItems.length - deduplicatedItems.length,
+        transactionCodes: deduplicatedItems.map(item => item.transaksi.kode),
+        quantities: deduplicatedItems.map(item => item.jumlah),
+        timestamp: new Date().toISOString()
+      })
+
+      // PHASE 2: Group by transaction code ONLY (after deduplication)
+      // Now we aggregate items from same transaction without double counting
+      const groupedByTransaction = deduplicatedItems.reduce((acc, item) => {
+        const txnCode = item.transaksi.kode
+        const groupKey = txnCode
+        
+        if (!acc[groupKey]) {
+          // First item for this transaction
+          acc[groupKey] = {
+            transactionCode: txnCode,
+            quantity: item.jumlah,
+            startDate: item.transaksi.tglMulai,
+            endDate: item.transaksi.tglSelesai || new Date(),
+            status: item.transaksi.status as 'active' | 'diambil',
+            displayText: ''
+          }
+        } else {
+          // Additional item for same transaction - aggregate quantity
+          acc[groupKey].quantity += item.jumlah
+        }
+        
+        return acc
+      }, {} as Record<string, TransactionHistoryItem>)
+
+      console.log('[ItemHistoryService] Grouping results (Phase 2):', {
+        productSizeId,
+        totalGroups: Object.keys(groupedByTransaction).length,
+        groupKeys: Object.keys(groupedByTransaction),
+        timestamp: new Date().toISOString()
+      })
+
+      // Convert grouped object to array and set display text
+      const historyItems: TransactionHistoryItem[] = Object.values(groupedByTransaction).map(item => ({
+        ...item,
+        displayText: this.formatTransactionDisplay(
+          item.transactionCode,
+          item.quantity,
+          item.startDate,
+          item.endDate
+        )
+      }))
+
+      console.log('[ItemHistoryService] Before sorting:', {
+        productSizeId,
+        itemCount: historyItems.length,
+        transactionCodes: historyItems.map(item => item.transactionCode),
+        timestamp: new Date().toISOString()
+      })
 
       // Sort by date proximity if requested
       if (sortBy === 'date_proximity') {
@@ -177,13 +251,19 @@ export class TransactionHistoryService {
         })
       }
 
+      console.log('[ItemHistoryService] Final result (Phase 2):', {
+        productSizeId,
+        itemCount: historyItems.length,
+        transactionCodes: historyItems.map(item => item.transactionCode),
+        timestamp: new Date().toISOString()
+      })
+
       return historyItems
 
     } catch (error) {
       console.error('[ItemHistoryService] Failed to fetch transaction history:', {
         productSizeId,
         options,
-        jsonSearchPattern: `"productSizeId":"${productSizeId}"`,
         error: error instanceof Error ? error.message : 'Unknown error',
         stack: error instanceof Error ? error.stack : undefined,
         timestamp: new Date().toISOString()
@@ -218,99 +298,11 @@ export class TransactionHistoryService {
   }
 
   /**
-   * Calculate date proximity to current date (for sorting)
+   * Clear cache - No-op since caching is removed
    */
-  private calculateDateProximity(date: Date): number {
-    const now = new Date()
-    return Math.abs(date.getTime() - now.getTime())
-  }
-
-  /**
-   * Generate cache key for product size and options
-   */
-  private generateCacheKey(productSizeId: string, options: TransactionHistoryOptions): string {
-    const optionsStr = JSON.stringify(options)
-    return `${productSizeId}:${optionsStr}`
-  }
-
-  /**
-   * Get cached data if valid and not expired
-   */
-  private getCachedData(cacheKey: string): CachedTransactionHistory | null {
-    const cached = this.cache.get(cacheKey)
-    
-    if (!cached) {
-      return null
-    }
-
-    // Check if cache is expired
-    if (new Date() > cached.expiresAt) {
-      this.cache.delete(cacheKey)
-      return null
-    }
-
-    return cached
-  }
-
-  /**
-   * Store data in cache with TTL
-   */
-  private setCachedData(cacheKey: string, data: TransactionHistoryItem[]): void {
-    const now = new Date()
-    const expiresAt = new Date(now.getTime() + this.CACHE_TTL_MS)
-
-    const cached: CachedTransactionHistory = {
-      productSizeId: cacheKey.split(':')[0],
-      data,
-      cachedAt: now,
-      expiresAt,
-      version: 1
-    }
-
-    this.cache.set(cacheKey, cached)
-  }
-
-  /**
-   * Clear cache for specific product size or all cache
-   */
-  async clearCache(productSizeId?: string): Promise<void> {
-    if (productSizeId) {
-      // Clear cache for specific product size
-      const keysToDelete = Array.from(this.cache.keys()).filter(key => 
-        key.startsWith(productSizeId)
-      )
-      keysToDelete.forEach(key => this.cache.delete(key))
-    } else {
-      // Clear all cache
-      this.cache.clear()
-    }
-  }
-
-  /**
-   * Get cache statistics for monitoring
-   */
-  getCacheStats(): {
-    totalEntries: number
-    expiredEntries: number
-    validEntries: number
-  } {
-    const now = new Date()
-    let expiredEntries = 0
-    let validEntries = 0
-
-    for (const cached of this.cache.values()) {
-      if (now > cached.expiresAt) {
-        expiredEntries++
-      } else {
-        validEntries++
-      }
-    }
-
-    return {
-      totalEntries: this.cache.size,
-      expiredEntries,
-      validEntries
-    }
+  async clearCache(_productSizeId?: string): Promise<void> {
+    // No cache to clear
+    console.log('[ItemHistoryService] clearCache called (no-op - caching disabled)')
   }
 }
 

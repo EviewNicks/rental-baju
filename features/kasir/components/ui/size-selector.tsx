@@ -46,11 +46,29 @@ export function SizeSelector({
     CHILD: 'Anak',
   }
 
-  // Handle history popup
+  // Handle history popup - Open in new tab
   const handleOpenHistory = (size: ProductSize) => {
-    if (onOpenHistory) {
-      const ageCategory = ageCategoryLabels[size.ageCategory] || size.ageCategory
-      onOpenHistory(size.id, productName, size.size, ageCategory)
+    const ageCategory = ageCategoryLabels[size.ageCategory] || size.ageCategory
+    
+    // Build URL with query params
+    const params = new URLSearchParams({
+      productSizeId: size.id,
+      productName: productName,
+      size: size.size,
+      ageCategory: ageCategory
+    })
+
+    const url = `/product-history?${params.toString()}`
+    
+    // Open in new tab
+    const newWindow = window.open(url, '_blank', 'noopener,noreferrer')
+    
+    // Handle popup blocker - fallback to callback if provided
+    if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+      console.warn('[SizeSelector] Popup blocked, trying callback fallback')
+      if (onOpenHistory) {
+        onOpenHistory(size.id, productName, size.size, ageCategory)
+      }
     }
   }
 
@@ -116,26 +134,24 @@ export function SizeSelector({
                   </Button>
 
                   {/* History Button - Always visible on hover or when selected */}
-                  {onOpenHistory && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleOpenHistory(size)
-                      }}
-                      className={cn(
-                        'absolute -top-1 -right-1 w-6 h-6 p-0 bg-white border border-gray-200 shadow-sm hover:bg-gray-50 transition-all',
-                        'opacity-0 group-hover:opacity-100',
-                        isSelected && 'opacity-100',
-                        'z-10'
-                      )}
-                      title={`Lihat riwayat transaksi ${size.size}`}
-                    >
-                      <History className="h-3 w-3 text-gray-600" />
-                    </Button>
-                  )}
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleOpenHistory(size)
+                    }}
+                    className={cn(
+                      'absolute -top-1 -right-1 w-6 h-6 p-0 bg-white border border-gray-200 shadow-sm hover:bg-gray-50 transition-all',
+                      'opacity-0 group-hover:opacity-100',
+                      isSelected && 'opacity-100',
+                      'z-10'
+                    )}
+                    title={`Lihat riwayat transaksi ${size.size}`}
+                  >
+                    <History className="h-3 w-3 text-gray-600" />
+                  </Button>
                 </div>
               )
             })}
