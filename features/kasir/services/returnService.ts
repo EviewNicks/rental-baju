@@ -287,6 +287,58 @@ export class UnifiedReturnService {
   }
 
   /**
+   * ✅ STOCK-001 FIX: Helper method to detect sarung gratis items
+   *
+   * Sarung gratis adalah metadata dari jas (bonus), bukan item terpisah yang dikembalikan.
+   * Item ini harus di-skip dari stock restoration karena sudah di-handle otomatis
+   * via dual restoration logic saat jas dikembalikan.
+   *
+   * Detection Logic:
+   * 1. Primary: Check isSarungGratis flag (explicit indicator)
+   * 2. Fallback: Check subtotal = 0 AND category = 'sarung' AND no linkedSarung
+   *
+   * @param item - Return request item
+   * @param transactionItem - Original transaction item with product details
+   * @returns true if item is sarung gratis (should skip restoration)
+   */
+  private isSarungGratisItem(
+    item: UnifiedReturnRequest['items'][0],
+    //eslint-disable-next-line @typescript-eslint/no-explicit-any
+    transactionItem: any,
+  ): boolean {
+    // Parse kondisiAwal to check for linkedSarung
+    const kondisiData = parseKondisiAwalEnhanced(transactionItem.kondisiAwal)
+
+    // If item has linkedSarung, it's a jas item (not sarung gratis)
+    if (kondisiData?.linkedSarung) {
+      return false
+    }
+
+    // Check if product category is sarung
+    const isSarungCategory = transactionItem.produk?.category === 'sarung'
+
+    if (!isSarungCategory) {
+      return false
+    }
+
+    // Primary detection: Check isSarungGratis flag
+    // This flag is set during transaction creation for sarung gratis items
+    if ('isSarungGratis' in transactionItem && transactionItem.isSarungGratis === true) {
+      return true
+    }
+
+    // Fallback detection: Check subtotal = 0
+    // Sarung gratis has subtotal = 0 because it's a free bonus
+    const subtotal = Number(transactionItem.subtotal || 0)
+    if (subtotal === 0) {
+      return true
+    }
+
+    // Not a sarung gratis item
+    return false
+  }
+
+  /**
    * ✅ TASK 8: Enhanced validation for partial returns with data consistency protection
    * OPTIMIZED: Batch validation request with single database query
    * Performance improvement: Reduces database round trips from 5-6 to 1-2
@@ -1418,34 +1470,62 @@ export class UnifiedReturnService {
             // ✅ TASK 7: Use pairing-aware stock restoration instead of simple updateStockOnReturn
             // This handles both regular items and jas-sarung pairings with dual restoration
             // Requirements: 2.1, 2.2, 2.3
+            // ✅ STOCK-001 FIX: Filter out sarung gratis items to prevent double restoration
             await Promise.all(
-              request.items.map(async (item) => {
-                const transactionItem = validation.transaction!.transaction.items.find(
-                  //eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  (ti: any) => ti.id === item.itemId,
-                )
-                if (!transactionItem) return
+              request.items
+                .filter((item) => {
+                  const transactionItem = validation.transaction!.transaction.items.find(
+                    //eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    (ti: any) => ti.id === item.itemId,
+                  )
+                  if (!transactionItem) return false
 
-                // Calculate total non-HILANG quantity for this item
-                const nonHilangQuantity = calculateNonHilangQuantity(item.conditions)
+                  // ✅ STOCK-001: Check if this is a sarung gratis item
+                  const isSarungGratis = this.isSarungGratisItem(item, transactionItem)
 
-                if (nonHilangQuantity > 0) {
-                  try {
-                    // Use pairing-aware stock restoration
-                    await txInventoryService.processStockForReturn(
-                      transactionItem.kondisiAwal || null,
-                      nonHilangQuantity,
-                      item.itemId,
-                      kasirLogger.returnProcess,
-                    )
-                  } catch (error) {
-                    // Throw error to trigger transaction rollback
-                    throw new Error(
-                      `Pairing-aware stock restoration failed for item ${item.itemId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+                  if (isSarungGratis) {
+                    kasirLogger.returnProcess.info(
+                      'processUnifiedReturn',
+                      '⏭️ Skipping sarung gratis item - will be restored via jas dual restoration',
+                      {
+                        itemId: item.itemId,
+                        productName: transactionItem.produk.name,
+                        productCategory: transactionItem.produk.category,
+                        reason: 'sarung_gratis_metadata',
+                        restorationMode: 'DUAL_VIA_JAS',
+                      },
                     )
                   }
-                }
-              }),
+
+                  return !isSarungGratis // Only process non-sarung-gratis items
+                })
+                .map(async (item) => {
+                  const transactionItem = validation.transaction!.transaction.items.find(
+                    //eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    (ti: any) => ti.id === item.itemId,
+                  )
+                  if (!transactionItem) return
+
+                  // Calculate total non-HILANG quantity for this item
+                  const nonHilangQuantity = calculateNonHilangQuantity(item.conditions)
+
+                  if (nonHilangQuantity > 0) {
+                    try {
+                      // Use pairing-aware stock restoration
+                      await txInventoryService.processStockForReturn(
+                        transactionItem.kondisiAwal || null,
+                        nonHilangQuantity,
+                        item.itemId,
+                        kasirLogger.returnProcess,
+                      )
+                    } catch (error) {
+                      // Throw error to trigger transaction rollback
+                      throw new Error(
+                        `Pairing-aware stock restoration failed for item ${item.itemId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+                      )
+                    }
+                  }
+                }),
             )
 
             // ✅ AUDIT TRAIL 5: Log stock restoration completion with success summary
@@ -1864,9 +1944,10 @@ export class UnifiedReturnService {
       // the state AFTER the current return session
       // ✅ FIXED: Enhanced completion check - handle both empty and populated remaining quantities
       // Case 1: No remaining quantities (all items returned) -> true
-      // Case 2: Has remaining quantities but all are 0 -> true  
+      // Case 2: Has remaining quantities but all are 0 -> true
       // Case 3: Has remaining quantities with some > 0 -> false
-      const allItemsFullyReturned = Object.keys(currentRemainingQuantities).length === 0 || 
+      const allItemsFullyReturned =
+        Object.keys(currentRemainingQuantities).length === 0 ||
         Object.values(currentRemainingQuantities).every((qty) => qty === 0)
 
       let newStatus:

@@ -28,14 +28,14 @@ export function useCancelTransaction(
   const { onSuccess, onError } = options
 
   const cancelMutation = useMutation({
-    mutationFn: async ({ 
-      reason, 
-      kasirId, 
-      refundData 
-    }: { 
-      reason: string; 
-      kasirId?: string; 
-      refundData?: RefundData | null 
+    mutationFn: async ({
+      reason,
+      kasirId,
+      refundData,
+    }: {
+      reason: string
+      kasirId?: string
+      refundData?: RefundData | null
     }) => {
       // Update transaction status to cancelled with cancellation reason, kasirId, and refund data
       return kasirApi.transaksi.update(transactionCode, {
@@ -115,17 +115,35 @@ export function useCancelTransaction(
       onSuccess?.()
     },
     onError: (error) => {
-      console.error('Cancel transaction API call failed', {
-        transactionCode: transactionCode,
-        error: error.message,
-        errorName: error.name,
-      })
-      onError?.(error)
+      // ✅ FIX: Improved error logging to handle Zod validation errors
+      // Zod errors don't have .message property, they have .issues array
+      if (error && typeof error === 'object' && 'issues' in error) {
+        console.error('Cancel transaction validation failed', {
+          transactionCode: transactionCode,
+          validationErrors: (error as any).issues,
+          errorType: 'ZodValidationError',
+        })
+      } else {
+        console.error('Cancel transaction API call failed', {
+          transactionCode: transactionCode,
+          error: error instanceof Error ? error.message : String(error),
+          errorType: error?.constructor?.name || typeof error,
+          errorDetails: error,
+        })
+      }
+
+      // Ensure error is an Error instance for consistent handling
+      const errorInstance =
+        error instanceof Error
+          ? error
+          : new Error(typeof error === 'string' ? error : 'Cancel transaction failed')
+
+      onError?.(errorInstance)
     },
   })
 
   return {
-    cancelTransaction: (reason: string, kasirId?: string, refundData?: RefundData | null) => 
+    cancelTransaction: (reason: string, kasirId?: string, refundData?: RefundData | null) =>
       cancelMutation.mutate({ reason, kasirId, refundData }),
     isProcessing: cancelMutation.isPending,
     error: cancelMutation.error,

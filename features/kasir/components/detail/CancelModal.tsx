@@ -9,7 +9,13 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { CheckCircle, XCircle, AlertTriangle, Loader2, Calendar, DollarSign } from 'lucide-react'
@@ -17,10 +23,10 @@ import { toast } from 'sonner'
 import { CancelForm } from './CancelForm'
 import { useCancelTransaction } from '../../hooks/useCancelTransaction'
 import { formatCurrency } from '../../lib/utils/client'
-import { 
-  calculateRefundEligibility, 
-  formatRefundInfo, 
-  type RefundCalculation 
+import {
+  calculateRefundEligibility,
+  formatRefundInfo,
+  type RefundCalculation,
 } from '../../lib/utils/refundCalculator'
 import type { TransactionDetail } from '../../types'
 
@@ -69,7 +75,7 @@ export function CancelModal({ isOpen, onClose, transaction }: CancelModalProps) 
     if (isOpen && transaction.amountPaid > 0) {
       const calculation = calculateRefundEligibility(
         transaction.startDate, // tglMulai
-        transaction.amountPaid
+        transaction.amountPaid,
       )
       setRefundCalculation(calculation)
     }
@@ -90,13 +96,13 @@ export function CancelModal({ isOpen, onClose, transaction }: CancelModalProps) 
         throw new Error('Gagal mengambil daftar kasir')
       }
       const result = await response.json()
-      
+
       // API returns: { success: true, data: { data: [...], pagination: {...}, summary: {...} } }
       const kasirData = result.data?.data || []
-      
+
       // Filter only active kasirs
       const activeKasirs = kasirData.filter((kasir: Kasir) => kasir.isActive)
-      
+
       setKasirList(activeKasirs)
     } catch (error) {
       console.error('Error fetching kasir list:', error)
@@ -124,22 +130,28 @@ export function CancelModal({ isOpen, onClose, transaction }: CancelModalProps) 
   const handleConfirmCancel = () => {
     // ✅ EXISTING: Validate kasir selection for paid transactions
     const isPaidTransaction = transaction.amountPaid > 0
-    
+
     if (isPaidTransaction && !kasirId) {
       toast.error('Pilih kasir terlebih dahulu untuk transaksi yang sudah dibayar')
       return
     }
-    
-    // ✅ NEW: Pass refund calculation to cancellation request
-    const refundData = refundCalculation ? {
-      refundAmount: refundCalculation.refundAmount,
-      refundPercentage: refundCalculation.refundPercentage,
-      isEligible: refundCalculation.isEligible,
-      daysUntilPickup: refundCalculation.daysUntilPickup
-    } : null
-    
+
+    // ✅ FIX: Use undefined instead of null for optional refundData
+    // Zod schema .optional() only accepts undefined, not null
+    const refundData = refundCalculation
+      ? {
+          refundAmount: refundCalculation.refundAmount,
+          refundPercentage: refundCalculation.refundPercentage,
+          isEligible: refundCalculation.isEligible,
+          daysUntilPickup: refundCalculation.daysUntilPickup,
+        }
+      : undefined
+
+    // ✅ FIX: Convert empty string kasirId to undefined for proper validation
+    const validKasirId = kasirId || undefined
+
     // Pass kasirId and refund data to cancellation request
-    cancelTransaction(reason, kasirId, refundData)
+    cancelTransaction(reason, validKasirId, refundData)
   }
 
   const handleBack = () => {
@@ -168,7 +180,8 @@ export function CancelModal({ isOpen, onClose, transaction }: CancelModalProps) 
                 </p>
                 {refundCalculation?.isEligible && (
                   <p className="text-green-700 mt-1">
-                    Refund: {formatCurrency(refundCalculation.refundAmount)} ({refundCalculation.refundPercentage}%)
+                    Refund: {formatCurrency(refundCalculation.refundAmount)} (
+                    {refundCalculation.refundPercentage}%)
                   </p>
                 )}
               </div>
@@ -223,7 +236,6 @@ export function CancelModal({ isOpen, onClose, transaction }: CancelModalProps) 
           </DialogHeader>
 
           <div className="space-y-4">
-
             <div className="bg-yellow-50 border text-xs border-yellow-200 rounded-lg p-2">
               <p className=" font-medium text-yellow-900 mb-1">Alasan Pembatalan:</p>
               <p className=" text-yellow-700">{reason}</p>
@@ -238,19 +250,15 @@ export function CancelModal({ isOpen, onClose, transaction }: CancelModalProps) 
                       <DollarSign className="h-4 w-4" />
                       Informasi Refund
                     </h4>
-                    <Badge 
-                      variant="outline" 
+                    <Badge
+                      variant="outline"
                       className={formatRefundInfo(refundCalculation).eligibilityBadge.className}
                     >
                       {formatRefundInfo(refundCalculation).eligibilityBadge.text}
                     </Badge>
                   </div>
-                  
-                
-                  
-                  <div className="space-y-2 text-xs">
 
-                     
+                  <div className="space-y-2 text-xs">
                     <div className="flex justify-between">
                       <span className="text-blue-700">Jumlah Dibayar:</span>
                       <span className="font-medium  text-blue-900">
