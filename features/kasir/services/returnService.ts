@@ -1490,7 +1490,7 @@ export class UnifiedReturnService {
                       {
                         itemId: item.itemId,
                         productName: transactionItem.produk.name,
-                        productCategory: transactionItem.produk.category,
+                        productCategory: (transactionItem.produk as any)?.category || 'unknown',
                         reason: 'sarung_gratis_metadata',
                         restorationMode: 'DUAL_VIA_JAS',
                       },
