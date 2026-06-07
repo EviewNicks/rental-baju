@@ -6,7 +6,7 @@ import type { TransactionFilters, TransactionStatus } from '../types'
 
 /**
  * Custom hook for URL state persistence of transaction filters
- * 
+ *
  * Features:
  * - Sync filters with URL parameters
  * - Restore filters from URL on page load
@@ -18,13 +18,17 @@ export function useURLFilters() {
   const searchParams = useSearchParams()
 
   // Parse filters from URL parameters
-  const parseFiltersFromURL = useCallback((): TransactionFilters => {
-    const filters: TransactionFilters = {}
+  const parseFiltersFromURL = useCallback((): TransactionFilters & { page?: number } => {
+    const filters: TransactionFilters & { page?: number } = {}
 
     // Parse status filter
     const status = searchParams.get('status')
-    if (status && (status === 'all' || ['active', 'diambil', 'selesai', 'terlambat', 'cancelled'].includes(status))) {
-      filters.status = status === 'all' ? undefined : status as TransactionStatus
+    if (
+      status &&
+      (status === 'all' ||
+        ['active', 'diambil', 'selesai', 'terlambat', 'cancelled'].includes(status))
+    ) {
+      filters.status = status === 'all' ? undefined : (status as TransactionStatus)
     }
 
     // Parse search filter
@@ -51,44 +55,63 @@ export function useURLFilters() {
       }
     }
 
+    // Parse page parameter
+    const page = searchParams.get('page')
+    if (page && !isNaN(Number(page)) && Number(page) > 0) {
+      filters.page = Number(page)
+    }
+
     return filters
   }, [searchParams])
 
   // Update URL with current filters
-  const updateURL = useCallback((filters: TransactionFilters, activeTab: TransactionStatus | 'all') => {
-    const params = new URLSearchParams()
+  const updateURL = useCallback(
+    (filters: TransactionFilters, activeTab: TransactionStatus | 'all', page: number = 1) => {
+      const params = new URLSearchParams()
 
-    // Add status parameter
-    if (activeTab && activeTab !== 'all') {
-      params.set('status', activeTab)
-    }
+      // Add status parameter
+      if (activeTab && activeTab !== 'all') {
+        params.set('status', activeTab)
+      }
 
-    // Add search parameter
-    if (filters.search && filters.search.trim()) {
-      params.set('search', filters.search.trim())
-    }
+      // Add search parameter
+      if (filters.search && filters.search.trim()) {
+        params.set('search', filters.search.trim())
+      }
 
-    // Add date filter parameter
-    if (filters.dateFilter && filters.dateFilter.trim()) {
-      params.set('tglMulai', filters.dateFilter.trim())
-    }
+      // Add date filter parameter
+      if (filters.dateFilter && filters.dateFilter.trim()) {
+        params.set('tglMulai', filters.dateFilter.trim())
+      }
 
-    // Update URL without causing a page reload
-    const newURL = params.toString() ? `?${params.toString()}` : '/dashboard'
-    
-    // Only update if URL actually changed to avoid unnecessary history entries
-    const currentURL = window.location.search
-    const targetURL = params.toString() ? `?${params.toString()}` : ''
-    
-    if (currentURL !== targetURL) {
-      router.replace(newURL, { scroll: false })
-    }
-  }, [router])
+      // Add page parameter (only if not page 1)
+      if (page > 1) {
+        params.set('page', page.toString())
+      }
+
+      // Update URL without causing a page reload
+      const newURL = params.toString() ? `?${params.toString()}` : '/dashboard'
+
+      // Only update if URL actually changed to avoid unnecessary history entries
+      const currentURL = window.location.search
+      const targetURL = params.toString() ? `?${params.toString()}` : ''
+
+      if (currentURL !== targetURL) {
+        router.replace(newURL, { scroll: false })
+      }
+    },
+    [router],
+  )
 
   // Handle URL parameter parsing errors
   const handleURLError = useCallback((error: Error, paramName: string, paramValue: string) => {
-    console.warn(`URL parameter parsing error for ${paramName}:`, error.message, 'Value:', paramValue)
-    
+    console.warn(
+      `URL parameter parsing error for ${paramName}:`,
+      error.message,
+      'Value:',
+      paramValue,
+    )
+
     // For date filter errors, we could show a toast notification
     if (paramName === 'tglMulai') {
       // Note: We could add toast notification here if needed
@@ -121,7 +144,10 @@ export function useURLFilters() {
 
     // Validate status parameter
     const status = currentParams.get('status')
-    if (status && !['all', 'active', 'diambil', 'selesai', 'terlambat', 'cancelled'].includes(status)) {
+    if (
+      status &&
+      !['all', 'active', 'diambil', 'selesai', 'terlambat', 'cancelled'].includes(status)
+    ) {
       currentParams.delete('status')
       hasInvalidParams = true
       handleURLError(new Error('Invalid status value'), 'status', status)

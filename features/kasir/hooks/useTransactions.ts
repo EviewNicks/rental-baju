@@ -6,11 +6,11 @@ import { queryKeys } from '@/lib/react-query'
 import { kasirApi } from '../api'
 import type { TransactionFilters } from '../types'
 import type { TransactionStatus, TransaksiQueryParams, TransaksiListResponse } from '../types'
-import { 
-  useCacheManager, 
-  generateTransactionCacheKey, 
+import {
+  useCacheManager,
+  generateTransactionCacheKey,
   generateInvalidationPattern,
-  useAutoRefresh
+  useAutoRefresh,
 } from './optimization'
 
 interface UseTransactionsOptions {
@@ -21,12 +21,13 @@ interface UseTransactionsOptions {
 export function useTransactions(options: UseTransactionsOptions = {}) {
   const { enabled = true, refetchInterval = 60000 } = options // Increased from 30s to 60s
   const [filters, setFilters] = useState<TransactionFilters>({})
-  
+  const [currentPage, setCurrentPage] = useState(1)
+
   // Initialize cache manager
   const cacheManager = useCacheManager({
     maxSize: 50 * 1024 * 1024, // 50MB
     defaultTTL: 5 * 60 * 1000, // 5 minutes
-    enablePersistence: true
+    enablePersistence: true,
   })
 
   // Simplified debounce for search - direct implementation
@@ -35,7 +36,7 @@ export function useTransactions(options: UseTransactionsOptions = {}) {
 
   useEffect(() => {
     const searchValue = filters.search || ''
-    
+
     // If empty, clear immediately
     if (!searchValue) {
       setDebouncedSearch('')
@@ -60,7 +61,7 @@ export function useTransactions(options: UseTransactionsOptions = {}) {
 
   useEffect(() => {
     const dateValue = filters.dateFilter || ''
-    
+
     // If empty, clear immediately
     if (!dateValue) {
       setDebouncedDateFilter('')
@@ -90,7 +91,7 @@ export function useTransactions(options: UseTransactionsOptions = {}) {
   // Build query parameters from filters with debounced search and date filter
   const queryParams = useMemo((): TransaksiQueryParams => {
     const params: TransaksiQueryParams = {
-      page: 1,
+      page: currentPage,
       limit: 20, // Reduced from 100 to 20 for better performance
     }
 
@@ -108,7 +109,7 @@ export function useTransactions(options: UseTransactionsOptions = {}) {
     }
 
     return params
-  }, [filters.status, debouncedSearch, debouncedDateFilter])
+  }, [currentPage, filters.status, debouncedSearch, debouncedDateFilter])
 
   // Generate cache key for current query (including date filter)
   const cacheKey = useMemo(() => {
@@ -125,12 +126,12 @@ export function useTransactions(options: UseTransactionsOptions = {}) {
   const queryFn = useCallback(async (): Promise<TransaksiListResponse> => {
     // Always fetch fresh data for date filter queries to ensure accuracy
     const apiData = await kasirApi.transaksi.getAll(queryParams)
-    
+
     // Cache the result only for non-date queries to avoid stale data
     if (!queryParams.tglMulai && !queryParams.search) {
       await cacheManager.set(cacheKey, apiData)
     }
-    
+
     return apiData
   }, [cacheManager, cacheKey, queryParams])
 
@@ -167,17 +168,17 @@ export function useTransactions(options: UseTransactionsOptions = {}) {
     if (!enabled) return
 
     const refresh = autoRefreshRef.current
-    
+
     // Use callback from ref to avoid dependency issues
     const stableCallback = () => {
       if (refreshCallbackRef.current) {
         refreshCallbackRef.current()
       }
     }
-    
+
     // Only start once when enabled
     refresh.start(stableCallback)
-    
+
     return () => {
       refresh.stop()
     }
@@ -186,7 +187,7 @@ export function useTransactions(options: UseTransactionsOptions = {}) {
   // Separate effect for typing state management
   useEffect(() => {
     const refresh = autoRefreshRef.current
-    
+
     if (isTyping) {
       refresh.pause()
     } else {
@@ -211,7 +212,9 @@ export function useTransactions(options: UseTransactionsOptions = {}) {
         customerPhone: transaction.penyewa.telepon,
         customerAddress: transaction.penyewa.alamat,
         // Use the actual items array with product names from API
-        items: itemsData?.map((item) => item.produk?.name || 'Produk tidak diketahui') || ['Tidak ada item'],
+        items: itemsData?.map((item) => item.produk?.name || 'Produk tidak diketahui') || [
+          'Tidak ada item',
+        ],
         totalAmount: transaction.totalHarga,
         amountPaid: transaction.jumlahBayar,
         remainingAmount: transaction.sisaBayar,
@@ -224,13 +227,15 @@ export function useTransactions(options: UseTransactionsOptions = {}) {
         createdAt: transaction.createdAt,
         updatedAt: transaction.updatedAt,
         // FIX: Include kasir information from API response
-        kasir: transaction.kasir ? {
-          id: transaction.kasir.id,
-          nama: transaction.kasir.nama,
-          isActive: transaction.kasir.isActive,
-          createdAt: transaction.kasir.createdAt,
-          updatedAt: transaction.kasir.updatedAt,
-        } : undefined,
+        kasir: transaction.kasir
+          ? {
+              id: transaction.kasir.id,
+              nama: transaction.kasir.nama,
+              isActive: transaction.kasir.isActive,
+              createdAt: transaction.kasir.createdAt,
+              updatedAt: transaction.kasir.updatedAt,
+            }
+          : undefined,
       }
     })
   }, [transactionData])
@@ -257,36 +262,58 @@ export function useTransactions(options: UseTransactionsOptions = {}) {
       completed: summary?.totalSelesai || 0,
       overdue: summary?.totalTerlambat || 0,
       cancelled: summary?.totalCancelled || 0,
-      total: (summary?.totalActive || 0) + (summary?.totalDiambil || 0) + (summary?.totalSelesai || 0) + (summary?.totalTerlambat || 0) + (summary?.totalCancelled || 0),
+      total:
+        (summary?.totalActive || 0) +
+        (summary?.totalDiambil || 0) +
+        (summary?.totalSelesai || 0) +
+        (summary?.totalTerlambat || 0) +
+        (summary?.totalCancelled || 0),
     }
   }, [transactionData])
 
   // Stable updateFilters function to prevent circular dependencies
-  const updateFilters = useCallback((newFilters: Partial<TransactionFilters>) => {
-    setFilters((prev) => {
-      // Only update if there are actual changes
-      const hasChanges = Object.keys(newFilters).some(
-        key => prev[key as keyof TransactionFilters] !== newFilters[key as keyof TransactionFilters]
-      )
-      
-      if (!hasChanges) {
-        return prev // Return same reference if no changes
+  const updateFilters = useCallback(
+    (newFilters: Partial<TransactionFilters>, options?: { resetPage?: boolean }) => {
+      setFilters((prev) => {
+        // Only update if there are actual changes
+        const hasChanges = Object.keys(newFilters).some(
+          (key) =>
+            prev[key as keyof TransactionFilters] !== newFilters[key as keyof TransactionFilters],
+        )
+
+        if (!hasChanges) {
+          return prev // Return same reference if no changes
+        }
+
+        return { ...prev, ...newFilters }
+      })
+      // Simple logic: only reset page if explicitly requested (default true)
+      const shouldResetPage = options?.resetPage !== false
+      if (shouldResetPage) {
+        setCurrentPage(1)
       }
-      
-      return { ...prev, ...newFilters }
-    })
-  }, []) // Empty dependency array - this function should be stable
+    },
+    [],
+  ) // Empty dependency array - this function should be stable
 
   // Reset all filters function (Task 3.1)
   const resetAllFilters = useCallback(() => {
     setFilters({})
+    setCurrentPage(1)
+  }, [])
+
+  // Function to change page
+  const setPage = useCallback((page: number) => {
+    setCurrentPage(page)
   }, [])
 
   // Check if any filters are active (Task 3.1)
   const hasActiveFilters = useMemo(() => {
-    return !!(filters.status && filters.status !== 'all') || 
-           !!(filters.search && filters.search.trim()) || 
-           !!(filters.dateFilter && filters.dateFilter.trim())
+    return (
+      !!(filters.status && filters.status !== 'all') ||
+      !!(filters.search && filters.search.trim()) ||
+      !!(filters.dateFilter && filters.dateFilter.trim())
+    )
   }, [filters.status, filters.search, filters.dateFilter])
 
   // Helper function to manually refresh data with cache invalidation
@@ -304,9 +331,12 @@ export function useTransactions(options: UseTransactionsOptions = {}) {
   }, [refetch])
 
   // Cache invalidation on data mutations (to be called after create/update/delete)
-  const invalidateCache = useCallback(async (type: 'all' | 'search' | 'detail' = 'all') => {
-    await cacheManager.invalidate(generateInvalidationPattern(type))
-  }, [cacheManager])
+  const invalidateCache = useCallback(
+    async (type: 'all' | 'search' | 'detail' = 'all') => {
+      await cacheManager.invalidate(generateInvalidationPattern(type))
+    },
+    [cacheManager],
+  )
 
   return {
     transactions,
@@ -323,6 +353,9 @@ export function useTransactions(options: UseTransactionsOptions = {}) {
     // Additional metadata
     pagination: transactionData?.pagination,
     summary: transactionData?.summary,
+    // Pagination controls
+    currentPage,
+    setPage,
     // Cache and performance info
     cacheStats: cacheManager.getStats(),
     isTyping, // Combined typing state
