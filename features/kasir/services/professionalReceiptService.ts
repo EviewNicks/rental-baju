@@ -48,7 +48,7 @@ interface GroupedItem {
  */
 export class ProfessionalReceiptService {
   // PDF configuration constants for professional layout (LANDSCAPE)
-  private readonly PDF_WIDTH_MM = 200  // 20cm width (HVS paper format - landscape)
+  private readonly PDF_WIDTH_MM = 200 // 20cm width (HVS paper format - landscape)
   private readonly PDF_HEIGHT_MM = 140 // 14cm height (HVS paper format - landscape)
   private readonly MARGIN = 10
   private readonly HEADER_HEIGHT = 40
@@ -66,11 +66,11 @@ export class ProfessionalReceiptService {
   // Table column configuration for professional layout - UPDATED FOR SMART GROUPING
   private readonly TABLE_COLUMNS: TableColumn[] = [
     { header: 'No', width: 12, align: 'center' },
-    { header: 'Kode Product', width: 30, align: 'left' },    // Universal product code for all products
-    { header: 'Kode Sarung', width: 30, align: 'left' },     // Sarung product code from linkedSarung
-    { header: 'Size & Qty', width: 50, align: 'left' },      // UPDATED: Combined size and quantity (e.g., "M(1), L(2)")
-    { header: '@Harga', width: 25, align: 'right' },         
-    { header: 'Total Harga', width: 28, align: 'right' }     
+    { header: 'Kode Product', width: 30, align: 'left' }, // Universal product code for all products
+    { header: 'Kode Sarung', width: 30, align: 'left' }, // Sarung product code from linkedSarung
+    { header: 'Size & Qty', width: 50, align: 'left' }, // UPDATED: Combined size and quantity (e.g., "M(1), L(2)")
+    { header: '@Harga', width: 25, align: 'right' },
+    { header: 'Total Harga', width: 28, align: 'right' },
   ]
 
   /**
@@ -144,7 +144,11 @@ export class ProfessionalReceiptService {
    * @param y - Current Y position
    * @returns New Y position after complete header
    */
-  private async addCompleteHeader(doc: jsPDF, transactionData: TransactionDetail, y: number): Promise<number> {
+  private async addCompleteHeader(
+    doc: jsPDF,
+    transactionData: TransactionDetail,
+    y: number,
+  ): Promise<number> {
     const currentY = y + 2 // Reduced padding from top margin
 
     // LEFT SIDE: Logo and Store Information
@@ -164,13 +168,13 @@ export class ProfessionalReceiptService {
     // Store information (positioned right next to logo, vertically centered with logo)
     const storeInfoX = this.MARGIN + 25 // Position next to logo
     const logoMiddleY = currentY + 6 // Middle of logo (12mm height / 2 = 6mm)
-    
+
     doc.setFont(this.FONT_FAMILY, 'bold')
     doc.setFontSize(this.TITLE_FONT_SIZE)
-    
+
     // Store name "ERLIMA MODE" prominently - centered vertically with logo
     doc.text(STORE_CONFIG.name, storeInfoX, logoMiddleY - 2)
-    
+
     // Store address and phone (normal font, smaller) - positioned below store name
     doc.setFont(this.FONT_FAMILY, 'normal')
     doc.setFontSize(this.FONT_SIZE - 1) // Slightly smaller font
@@ -183,7 +187,7 @@ export class ProfessionalReceiptService {
     const leftInfoStartY = logoMiddleY + 15 // Start below logo area
     doc.setFont(this.FONT_FAMILY, 'normal')
     doc.setFontSize(this.FONT_SIZE)
-    
+
     // Kasir (left margin, first line) - with null check
     let currentLeftY = leftInfoStartY
     if (transactionData.kasir) {
@@ -205,20 +209,23 @@ export class ProfessionalReceiptService {
 
     // Create table for transaction details + customer info (dates, payment, customer) - REMOVED kode transaksi and kasir
     const tableData = []
-    
+
     // Tanggal (transaction date - date only)
     tableData.push(['Tanggal:', this.formatDateOnly(transactionData.createdAt.toString())])
-    
+
     // Tgl Pengambilan (pickup date - if available)
     if (transactionData.tglMulai) {
       tableData.push(['Tgl Pengambilan:', this.formatDateOnly(transactionData.tglMulai.toString())])
     }
-    
+
     // Tgl Pengembalian (return date - if available)
     if (transactionData.tglSelesai) {
-      tableData.push(['Tgl Pengembalian:', this.formatDateOnly(transactionData.tglSelesai.toString())])
+      tableData.push([
+        'Tgl Pengembalian:',
+        this.formatDateOnly(transactionData.tglSelesai.toString()),
+      ])
     }
-    
+
     // Pembayaran (payment method) - use multiple payment methods if available
     if (transactionData.pembayaran && transactionData.pembayaran.length > 0) {
       tableData.push(['Pembayaran:', this.formatMultiplePaymentMethods(transactionData.pembayaran)])
@@ -229,6 +236,11 @@ export class ProfessionalReceiptService {
 
     // Kepada Yth (customer name)
     tableData.push(['Kepada Yth:', transactionData.penyewa.nama])
+
+    // No. HP (customer phone number)
+    if (transactionData.penyewa.telepon) {
+      tableData.push(['No. HP:', transactionData.penyewa.telepon])
+    }
 
     // Table configuration for transaction info (invisible borders) - RIGHT ALIGNED
     const labelWidth = 35 // Width for labels
@@ -244,19 +256,19 @@ export class ProfessionalReceiptService {
     // Draw table rows without borders (right-aligned layout)
     for (let i = 0; i < tableData.length; i++) {
       const row = tableData[i]
-      const rowY = rightY + (i * rowHeight)
-      
+      const rowY = rightY + i * rowHeight
+
       // Label column (left-aligned within its cell)
       doc.text(row[0], tableStartX, rowY, { align: 'left' })
-      
+
       // Value column (right-aligned to the right margin)
       doc.text(row[1], rightX, rowY, { align: 'right' })
     }
 
     // Calculate final Y position (use the maximum of left and right sides)
     const leftFinalY = kasirY + 5 // Left side final position (after transaction code and kasir)
-    const rightFinalY = rightY + (tableData.length * rowHeight) + 5 // Add spacing after transaction table
-    
+    const rightFinalY = rightY + tableData.length * rowHeight + 5 // Add spacing after transaction table
+
     return Math.max(leftFinalY, rightFinalY)
   }
 
@@ -274,25 +286,25 @@ export class ProfessionalReceiptService {
       // Extract product and sarung codes
       const productCode = this.extractProductCode(item)
       const sarungCode = this.extractSarungCode(item)
-      
+
       // Create unique group key: "PRODUCTCODE-SARUNGCODE"
       const groupKey = `${productCode}-${sarungCode}`
 
       // Get category type for size formatting
-      const categoryName = typeof item.produk.category === 'string' 
-        ? item.produk.category 
-        : item.produk.category?.name || 'unknown'
+      const categoryName =
+        typeof item.produk.category === 'string'
+          ? item.produk.category
+          : item.produk.category?.name || 'unknown'
       const categoryType = this.getCategoryTypeFromName(categoryName)
-      
+
       // Extract size from kondisiAwal
       const formattedSize = this.formatSizeDisplay(item.kondisiAwal || '', categoryType)
 
       // Get or create group
       if (!groupMap.has(groupKey)) {
         // Create new group
-        const unitPrice = typeof item.hargaSewa === 'number' 
-          ? item.hargaSewa 
-          : item.hargaSewa.toNumber()
+        const unitPrice =
+          typeof item.hargaSewa === 'number' ? item.hargaSewa : item.hargaSewa.toNumber()
 
         groupMap.set(groupKey, {
           productCode,
@@ -303,16 +315,16 @@ export class ProfessionalReceiptService {
           unitPrice,
           totalQuantity: 0,
           totalPrice: 0,
-          categoryType
+          categoryType,
         })
       }
 
       // Add size and quantity to group
       const group = groupMap.get(groupKey)!
-      
+
       // Check if this size already exists in the group
-      const existingSizeIndex = group.sizeQuantities.findIndex(sq => sq.size === formattedSize)
-      
+      const existingSizeIndex = group.sizeQuantities.findIndex((sq) => sq.size === formattedSize)
+
       if (existingSizeIndex >= 0) {
         // Size exists, add to quantity
         group.sizeQuantities[existingSizeIndex].quantity += item.jumlah
@@ -320,23 +332,22 @@ export class ProfessionalReceiptService {
         // New size, add to array
         group.sizeQuantities.push({
           size: formattedSize,
-          quantity: item.jumlah
+          quantity: item.jumlah,
         })
       }
 
       // Update totals
       group.totalQuantity += item.jumlah
-      const itemSubtotal = typeof item.subtotal === 'number' 
-        ? item.subtotal 
-        : item.subtotal.toNumber()
+      const itemSubtotal =
+        typeof item.subtotal === 'number' ? item.subtotal : item.subtotal.toNumber()
       group.totalPrice += itemSubtotal
     }
 
     // Convert map to array and sort size quantities alphabetically
     const groupedItems = Array.from(groupMap.values())
-    
+
     // Sort sizes within each group alphabetically
-    groupedItems.forEach(group => {
+    groupedItems.forEach((group) => {
       group.sizeQuantities.sort((a, b) => a.size.localeCompare(b.size))
     })
 
@@ -355,8 +366,8 @@ export class ProfessionalReceiptService {
     }
 
     // Format each size-quantity pair as "SIZE(QTY)"
-    const formatted = sizeQuantities.map(sq => `${sq.size}(${sq.quantity})`).join(', ')
-    
+    const formatted = sizeQuantities.map((sq) => `${sq.size}(${sq.quantity})`).join(', ')
+
     return formatted
   }
 
@@ -370,43 +381,54 @@ export class ProfessionalReceiptService {
    * @param y - Current Y position
    * @returns New Y position after table
    */
-  private addItemsTable(doc: jsPDF, items: TransaksiWithDetails['items'], transactionCode: string, y: number): number {
+  private addItemsTable(
+    doc: jsPDF,
+    items: TransaksiWithDetails['items'],
+    transactionCode: string,
+    y: number,
+  ): number {
     const startX = this.MARGIN
-    let currentY = y - 8 // Reduced spacing before table (was +10, now +5)
+    const currentY = y - 8 // Reduced spacing before table (was +10, now +5)
 
     // STEP 1: Group items by product + sarung combination
     const groupedItems = this.groupItemsByProductAndSarung(items)
 
     // STEP 2: Prepare table data with grouped items
     const tableData: string[][] = []
-    
+
     // Process each grouped item with increment number
     for (let index = 0; index < groupedItems.length; index++) {
       const group = groupedItems[index]
-      
+
       // Format size & quantity column (e.g., "M(1), L(2), XL(3)")
       const sizeQtyDisplay = this.formatSizeQuantities(group.sizeQuantities)
-      
+
       // Format currency amounts (without Rp prefix for professional format)
       const unitPrice = this.formatCurrency(group.unitPrice)
       const totalPrice = this.formatCurrency(group.totalPrice)
-      
+
       // Create table row with increment number (1, 2, 3, ...)
       const row = [
-        (index + 1).toString(),    // No (increment number: 1, 2, 3, ...)
-        group.productCode,         // Kode Product (universal product code)
-        group.sarungCode,          // Kode Sarung (linked sarung code if paired, "-" if not)
-        sizeQtyDisplay,            // Size & Qty (e.g., "M(1), L(2), XL(3)")
-        unitPrice,                 // @Harga (unit price)
-        totalPrice                 // Total Harga (total for all quantities)
+        (index + 1).toString(), // No (increment number: 1, 2, 3, ...)
+        group.productCode, // Kode Product (universal product code)
+        group.sarungCode, // Kode Sarung (linked sarung code if paired, "-" if not)
+        sizeQtyDisplay, // Size & Qty (e.g., "M(1), L(2), XL(3)")
+        unitPrice, // @Harga (unit price)
+        totalPrice, // Total Harga (total for all quantities)
       ]
-      
+
       tableData.push(row)
     }
 
     // STEP 3: Create the bordered table with full width and multi-page support
-    const endY = this.createBorderedTableWithPagination(doc, this.TABLE_COLUMNS, tableData, startX, currentY)
-    
+    const endY = this.createBorderedTableWithPagination(
+      doc,
+      this.TABLE_COLUMNS,
+      tableData,
+      startX,
+      currentY,
+    )
+
     return endY + 5 // Add spacing after table
   }
 
@@ -427,7 +449,8 @@ export class ProfessionalReceiptService {
 
     // Calculate subtotal (sum of all item subtotals)
     const subtotal = data.items.reduce((sum, item) => {
-      const itemSubtotal = typeof item.subtotal === 'number' ? item.subtotal : item.subtotal.toNumber()
+      const itemSubtotal =
+        typeof item.subtotal === 'number' ? item.subtotal : item.subtotal.toNumber()
       return sum + itemSubtotal
     }, 0)
 
@@ -435,11 +458,14 @@ export class ProfessionalReceiptService {
     const discountAmount = this.calculateDiscount(
       subtotal,
       data.discountType || '',
-      typeof data.discountValue === 'number' ? data.discountValue : (data.discountValue?.toNumber() || 0)
+      typeof data.discountValue === 'number'
+        ? data.discountValue
+        : data.discountValue?.toNumber() || 0,
     )
 
     // Get total from transaction data
-    const totalAmount = typeof data.totalHarga === 'number' ? data.totalHarga : data.totalHarga.toNumber()
+    const totalAmount =
+      typeof data.totalHarga === 'number' ? data.totalHarga : data.totalHarga.toNumber()
 
     // Display financial breakdown with justify-between layout
     const summaryWidth = 45 // Width of the financial summary section (same as separator line)
@@ -479,13 +505,15 @@ export class ProfessionalReceiptService {
     doc.setFontSize(this.FONT_SIZE)
 
     // DP/Jumlah Bayar
-    const jumlahBayarAmount = typeof data.jumlahBayar === 'number' ? data.jumlahBayar : (data.jumlahBayar?.toNumber() || 0)
+    const jumlahBayarAmount =
+      typeof data.jumlahBayar === 'number' ? data.jumlahBayar : data.jumlahBayar?.toNumber() || 0
     doc.text('DP/Jumlah Bayar:', leftLabelX, currentY, { align: 'left' })
     doc.text(this.formatCurrency(jumlahBayarAmount), rightValueX, currentY, { align: 'right' })
     currentY += 5
 
     // Sisa Bayar
-    const sisaBayarAmount = typeof data.sisaBayar === 'number' ? data.sisaBayar : (data.sisaBayar?.toNumber() || 0)
+    const sisaBayarAmount =
+      typeof data.sisaBayar === 'number' ? data.sisaBayar : data.sisaBayar?.toNumber() || 0
     doc.text('Sisa Bayar:', leftLabelX, currentY, { align: 'left' })
     doc.text(this.formatCurrency(sisaBayarAmount), rightValueX, currentY, { align: 'right' })
     currentY += 8
@@ -522,20 +550,21 @@ export class ProfessionalReceiptService {
     // Set font for keterangan
     doc.setFont(this.FONT_FAMILY, 'bold')
     doc.setFontSize(this.FONT_SIZE)
-    
+
     // Keterangan title
     doc.text('Keterangan:', leftX, currentY)
-    
+
     // Set normal font for bullet points
     doc.setFont(this.FONT_FAMILY, 'normal')
     currentY += 5
 
     // Define keterangan bullet points (optimized for better wrapping)
     const keteranganPoints = [
+      '* Membawa KTP/SIM sebagai jaminan ',
       '* Barang yang sudah di booking tidak dapat di cancel',
-      '* Penukaran maksimal 3 hari sebelum pengambilan',
+      '* penukaran dan pembatalan maximal 7 hari sebelum pengambilan',
       '* Pengembalian barang wajib sertakan nota',
-      '* Pengembalian lewat tanggal dikenakan denda 20rb per h/baju'
+      '* lewat dari tanggal pengembalian dikenakan denda 20rb per h/item',
     ]
 
     // Draw each bullet point with proper spacing and text wrapping
@@ -545,7 +574,7 @@ export class ProfessionalReceiptService {
     for (const point of keteranganPoints) {
       // Handle text wrapping for long bullet points
       const lines = doc.splitTextToSize(point, maxWidth)
-      
+
       if (Array.isArray(lines)) {
         for (let i = 0; i < lines.length; i++) {
           const line = lines[i]
@@ -559,11 +588,11 @@ export class ProfessionalReceiptService {
         doc.text(point, leftX, currentY)
         currentY += 3.5
       }
-      
+
       // Add extra spacing between bullet points (reduced)
       currentY += lineSpacing - 3.5 // Adjust for line spacing already added
     }
-    
+
     return currentY + 3 // Reduced final spacing
   }
 
@@ -576,32 +605,38 @@ export class ProfessionalReceiptService {
    * @param pickupInfo - Optional pickup info to append
    * @returns New Y position after note section
    */
-  private addNoteSection(doc: jsPDF, catatan: string, leftX: number, y: number, pickupInfo?: string | null): number {
+  private addNoteSection(
+    doc: jsPDF,
+    catatan: string,
+    leftX: number,
+    y: number,
+    pickupInfo?: string | null,
+  ): number {
     let currentY = y
 
     // Set font for note title
     doc.setFont(this.FONT_FAMILY, 'bold')
     doc.setFontSize(this.FONT_SIZE)
-    
+
     // Note title
     doc.text('Catatan:', leftX, currentY)
-    
+
     // Set normal font for note content
     doc.setFont(this.FONT_FAMILY, 'normal')
     currentY += 5
 
     // Combine catatan and pickup info
     const allNoteContent = []
-    
+
     // Add catatan lines if exists
     if (catatan && catatan.trim()) {
-      const noteLines = catatan.split('\n').filter(line => line.trim())
+      const noteLines = catatan.split('\n').filter((line) => line.trim())
       allNoteContent.push(...noteLines)
     }
-    
+
     // Add pickup info if exists (no title, just append)
     if (pickupInfo && pickupInfo.trim()) {
-      const pickupLines = pickupInfo.split('\n').filter(line => line.trim())
+      const pickupLines = pickupInfo.split('\n').filter((line) => line.trim())
       allNoteContent.push(...pickupLines)
     }
 
@@ -612,7 +647,7 @@ export class ProfessionalReceiptService {
     for (const contentLine of allNoteContent) {
       // Handle text wrapping for long note lines
       const wrappedLines = doc.splitTextToSize(contentLine.trim(), maxWidth)
-      
+
       if (Array.isArray(wrappedLines)) {
         for (let i = 0; i < wrappedLines.length; i++) {
           const line = wrappedLines[i]
@@ -627,7 +662,7 @@ export class ProfessionalReceiptService {
         currentY += lineSpacing
       }
     }
-    
+
     return currentY // Return position after note content
   }
 
@@ -638,8 +673,10 @@ export class ProfessionalReceiptService {
    */
   private extractPickupInfo(transactionData: TransactionDetail): string | null {
     // Find aktivitas with tipe "diambil"
-    const pickupActivity = transactionData.aktivitas?.find(activity => activity.tipe === 'diambil')
-    
+    const pickupActivity = transactionData.aktivitas?.find(
+      (activity) => activity.tipe === 'diambil',
+    )
+
     if (!pickupActivity || !pickupActivity.data) {
       return null
     }
@@ -662,15 +699,15 @@ export class ProfessionalReceiptService {
    */
   private addBottomNote(doc: jsPDF, y: number): number {
     const currentY = y + 10 // Add spacing before bottom note
-    
+
     // Final note (centered at bottom)
     const noteText = 'Harga dan stok di atas dapat berubah sewaktu-waktu tanpa pemberitahuan'
     const centerX = this.PDF_WIDTH_MM / 2
-    
+
     doc.setFont(this.FONT_FAMILY, 'normal')
     doc.setFontSize(this.FONT_SIZE - 1) // Slightly smaller font
     doc.text(noteText, centerX, currentY, { align: 'center' })
-    
+
     return currentY + 5
   }
 
@@ -684,11 +721,11 @@ export class ProfessionalReceiptService {
    * @returns New Y position after table
    */
   private createBorderedTable(
-    doc: jsPDF, 
-    columns: TableColumn[], 
-    data: string[][], 
-    startX: number, 
-    startY: number
+    doc: jsPDF,
+    columns: TableColumn[],
+    data: string[][],
+    startX: number,
+    startY: number,
   ): number {
     const headerHeight = this.TABLE_ROW_HEIGHT // Same height as data rows (removed +2)
     const rowHeight = this.TABLE_ROW_HEIGHT
@@ -702,10 +739,10 @@ export class ProfessionalReceiptService {
     let currentX = startX
     for (let i = 0; i < columns.length; i++) {
       const column = columns[i]
-      
+
       // Set bold font for header
       doc.setFont(this.FONT_FAMILY, 'bold')
-      
+
       // Calculate text position based on alignment
       let textX = currentX
       if (column.align === 'center') {
@@ -718,7 +755,7 @@ export class ProfessionalReceiptService {
 
       // Draw header text
       doc.text(column.header, textX, currentY + headerHeight - 2, { align: column.align })
-      
+
       currentX += column.width
     }
 
@@ -747,15 +784,17 @@ export class ProfessionalReceiptService {
         // Handle text wrapping for long content
         const maxWidth = column.width - 4 // Account for padding
         const lines = doc.splitTextToSize(cellData, maxWidth)
-        
+
         if (Array.isArray(lines) && lines.length > 1) {
           // Multi-line text
           for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
-            doc.text(lines[lineIndex], textX, currentY + rowHeight - 4   + (lineIndex * 3), { align: column.align })
+            doc.text(lines[lineIndex], textX, currentY + rowHeight - 4 + lineIndex * 3, {
+              align: column.align,
+            })
           }
         } else {
           // Single line text
-          doc.text(cellData, textX, currentY + rowHeight - 4 , { align: column.align })
+          doc.text(cellData, textX, currentY + rowHeight - 4, { align: column.align })
         }
 
         currentX += column.width
@@ -781,11 +820,11 @@ export class ProfessionalReceiptService {
    * @returns New Y position after table
    */
   private createBorderedTableWithPagination(
-    doc: jsPDF, 
-    columns: TableColumn[], 
-    data: string[][], 
-    startX: number, 
-    startY: number
+    doc: jsPDF,
+    columns: TableColumn[],
+    data: string[][],
+    startX: number,
+    startY: number,
   ): number {
     const headerHeight = this.TABLE_ROW_HEIGHT
     const rowHeight = this.TABLE_ROW_HEIGHT
@@ -797,10 +836,10 @@ export class ProfessionalReceiptService {
       let currentX = startX
       doc.setFont(this.FONT_FAMILY, 'bold')
       doc.setFontSize(this.FONT_SIZE)
-      
+
       for (let i = 0; i < columns.length; i++) {
         const column = columns[i]
-        
+
         let textX = currentX
         if (column.align === 'center') {
           textX = currentX + column.width / 2
@@ -813,32 +852,37 @@ export class ProfessionalReceiptService {
         doc.text(column.header, textX, y + headerHeight - 2, { align: column.align })
         currentX += column.width
       }
-      
+
       return y + headerHeight
     }
 
     // Draw initial header
     currentY = drawTableHeader(currentY)
-    const tableStartY = startY // Remember where table started for border drawing
     let currentTableStartY = startY // Track start of current page's table section
 
     // Draw table data rows with pagination
     doc.setFont(this.FONT_FAMILY, 'normal')
     const rowsOnCurrentPage: number[] = [] // Track which rows are on current page
-    
+
     for (let rowIndex = 0; rowIndex < data.length; rowIndex++) {
       const row = data[rowIndex]
-      
+
       // Check if we need a new page (before drawing the row)
       if (currentY + rowHeight > this.MAX_Y) {
         // Draw borders for current page's table section
-        this.drawTableBorders(doc, startX, currentTableStartY, columns, rowsOnCurrentPage.length + 1)
-        
+        this.drawTableBorders(
+          doc,
+          startX,
+          currentTableStartY,
+          columns,
+          rowsOnCurrentPage.length + 1,
+        )
+
         // Add new page
         doc.addPage()
         currentPage++
         console.log(`Added page ${currentPage} for table continuation`)
-        
+
         // Reset Y position and draw header on new page
         currentY = this.MARGIN
         currentY = drawTableHeader(currentY)
@@ -864,10 +908,12 @@ export class ProfessionalReceiptService {
         // Handle text wrapping
         const maxWidth = column.width - 4
         const lines = doc.splitTextToSize(cellData, maxWidth)
-        
+
         if (Array.isArray(lines) && lines.length > 1) {
           for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
-            doc.text(lines[lineIndex], textX, currentY + rowHeight - 4 + (lineIndex * 3), { align: column.align })
+            doc.text(lines[lineIndex], textX, currentY + rowHeight - 4 + lineIndex * 3, {
+              align: column.align,
+            })
           }
         } else {
           doc.text(cellData, textX, currentY + rowHeight - 4, { align: column.align })
@@ -895,11 +941,11 @@ export class ProfessionalReceiptService {
    * @param rowCount - Number of rows (including header)
    */
   private drawTableBorders(
-    doc: jsPDF, 
-    startX: number, 
-    startY: number, 
-    columns: TableColumn[], 
-    rowCount: number
+    doc: jsPDF,
+    startX: number,
+    startY: number,
+    columns: TableColumn[],
+    rowCount: number,
   ): void {
     const headerHeight = this.TABLE_ROW_HEIGHT // Same height as data rows (removed +2)
     const rowHeight = this.TABLE_ROW_HEIGHT
@@ -944,7 +990,7 @@ export class ProfessionalReceiptService {
     } else if (discountType === 'nominal') {
       return discountValue
     }
-    
+
     return 0
   }
 
@@ -956,14 +1002,14 @@ export class ProfessionalReceiptService {
    */
   private formatPaymentMethodDisplay(method: string): string {
     const displayMapping: Record<string, string> = {
-      'tunai': 'Tunai',
-      'bca': 'Transfer BCA',
-      'bri': 'Transfer BRI', 
-      'mandiri': 'Transfer Mandiri',
-      'qris': 'QRIS',
+      tunai: 'Tunai',
+      bca: 'Transfer BCA',
+      bri: 'Transfer BRI',
+      mandiri: 'Transfer Mandiri',
+      qris: 'QRIS',
       // Legacy backward compatibility
-      'transfer': 'Transfer',
-      'kartu': 'Transfer'
+      transfer: 'Transfer',
+      kartu: 'Transfer',
     }
     return displayMapping[method] || method
   }
@@ -985,9 +1031,9 @@ export class ProfessionalReceiptService {
     }
 
     // Multiple payment methods - show all unique methods
-    const uniqueMethods = [...new Set(pembayaran.map(p => p.metode))]
-    const formattedMethods = uniqueMethods.map(method => this.formatPaymentMethodDisplay(method))
-    
+    const uniqueMethods = [...new Set(pembayaran.map((p) => p.metode))]
+    const formattedMethods = uniqueMethods.map((method) => this.formatPaymentMethodDisplay(method))
+
     if (formattedMethods.length <= 2) {
       return formattedMethods.join(' + ')
     } else {
@@ -1053,7 +1099,6 @@ export class ProfessionalReceiptService {
     return `${day} ${month} ${year}`
   }
 
-
   /**
    * Format size display based on category type and product size information
    * Updated to handle JSON format kondisiAwal data
@@ -1076,7 +1121,7 @@ export class ProfessionalReceiptService {
         categoryType,
         size,
         ageCategory,
-        kondisiData
+        kondisiData,
       })
 
       // Handle different category types
@@ -1085,12 +1130,10 @@ export class ProfessionalReceiptService {
           // Format: SIZE(AgeCategory) - e.g., M(D), L(A)
           // Special handling: if size is UNIVERSAL, treat as accessories_age_based
           if (size === 'UNIVERSAL') {
-            return ageCategory === 'ADULT' ? 'D' : 
-                   ageCategory === 'CHILD' ? 'A' : 'U'
+            return ageCategory === 'ADULT' ? 'D' : ageCategory === 'CHILD' ? 'A' : 'U'
           }
           if (ageCategory) {
-            const ageCode = ageCategory === 'ADULT' ? 'D' : 
-                           ageCategory === 'CHILD' ? 'A' : 'U'
+            const ageCode = ageCategory === 'ADULT' ? 'D' : ageCategory === 'CHILD' ? 'A' : 'U'
             return `${size}(${ageCode})`
           }
           return size
@@ -1102,8 +1145,7 @@ export class ProfessionalReceiptService {
         case 'accessories_age_based':
           // Format: AgeCategory only - e.g., D, A (no size enum needed)
           if (ageCategory) {
-            return ageCategory === 'ADULT' ? 'D' : 
-                   ageCategory === 'CHILD' ? 'A' : 'U'
+            return ageCategory === 'ADULT' ? 'D' : ageCategory === 'CHILD' ? 'A' : 'U'
           }
           // If no age category, try to infer from size enum as fallback
           if (size === 'UNIVERSAL') {
@@ -1117,25 +1159,23 @@ export class ProfessionalReceiptService {
       }
     } catch (error) {
       console.warn('Failed to parse kondisiAwal JSON:', { kondisiAwal, error })
-      
+
       // Fallback: try old pipe-separated format for backward compatibility
       const parts = kondisiAwal.split('|')
       if (parts.length >= 2) {
         const size = parts[1]
         const ageCategory = parts.length >= 3 ? parts[2] : ''
-        
+
         if (ageCategory) {
-          const ageCode = ageCategory === 'ADULT' ? 'D' : 
-                         ageCategory === 'CHILD' ? 'A' : 'U'
+          const ageCode = ageCategory === 'ADULT' ? 'D' : ageCategory === 'CHILD' ? 'A' : 'U'
           return `${size}(${ageCode})`
         }
         return size
       }
-      
+
       return '-'
     }
   }
-
 
   /**
    * Get category type from category name
@@ -1150,22 +1190,22 @@ export class ProfessionalReceiptService {
       'jas-polos': 'clothing',
       'jas-batik': 'clothing',
       'jas-songket': 'clothing',
-      'kemeja': 'clothing',
-      'celana': 'clothing',
-      
+      kemeja: 'clothing',
+      celana: 'clothing',
+
       // Accessories with age categories
-      'sarung': 'accessories_age_based',
-      'songket': 'accessories_age_based',
-      'selendang': 'accessories_age_based',
-      
+      sarung: 'accessories_age_based',
+      songket: 'accessories_age_based',
+      selendang: 'accessories_age_based',
+
       // Universal accessories (no size/age distinction)
       'bando-besar': 'accessories_universal',
       'bando-kecil': 'accessories_universal',
-      'anting': 'accessories_universal',
-      'kalung': 'accessories_universal',
-      'gelang': 'accessories_universal',
+      anting: 'accessories_universal',
+      kalung: 'accessories_universal',
+      gelang: 'accessories_universal',
     }
-    
+
     return categoryTypeMapping[categoryName] || 'clothing' // Default to clothing
   }
 
@@ -1190,7 +1230,7 @@ export class ProfessionalReceiptService {
     if (item.linkedSarung && item.linkedSarung.product && item.linkedSarung.product.code) {
       return item.linkedSarung.product.code
     }
-    
+
     // No linked sarung found
     return '-'
   }

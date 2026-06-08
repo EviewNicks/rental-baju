@@ -4,13 +4,13 @@
 // Expense categories (fixed)
 export const EXPENSE_CATEGORIES = [
   'Operasional',
-  'Maintenance', 
+  'Maintenance',
   'Transport',
-  'Refund Dana Jaminan',  // ✅ NEW: For lost item refunds
-  'Lainnya'
+  'Refund Dana Jaminan', // ✅ NEW: For lost item refunds
+  'Lainnya',
 ] as const
 
-export type ExpenseCategory = typeof EXPENSE_CATEGORIES[number]
+export type ExpenseCategory = (typeof EXPENSE_CATEGORIES)[number]
 
 // Core expense record interface
 export interface PengeluaranKasir {
@@ -31,14 +31,14 @@ export interface PengeluaranKasir {
 
 // API request types
 export interface CreatePengeluaranRequest {
-  kasirId: string  // NEW: Selected kasir from dropdown
+  kasirId: string // NEW: Selected kasir from dropdown
   harga: number
   kategori: ExpenseCategory
   deskripsi?: string
 }
 
 export interface UpdatePengeluaranRequest {
-  kasirId?: string  // NEW: Can update kasir assignment
+  kasirId?: string // NEW: Can update kasir assignment
   harga?: number
   kategori?: ExpenseCategory
   deskripsi?: string
@@ -46,7 +46,7 @@ export interface UpdatePengeluaranRequest {
 
 // Income item from rental transactions
 export interface IncomeItem {
-  type: 'rental' | 'penalty'  // NEW: Distinguish between rental and penalty income
+  type: 'rental' | 'penalty' // NEW: Distinguish between rental and penalty income
   transaksiKode: string
   customerName: string
   rentalAmount: number
@@ -55,7 +55,11 @@ export interface IncomeItem {
   kasirId: string
   kasirName: string
   createdAt: Date
-  
+
+  // NEW: Payment method information (dominant method from multiple payments)
+  paymentMethod?: string // e.g., 'tunai', 'qris', 'transfer', 'penalty'
+  paymentCount?: number // Number of payment records for this transaction
+
   // NEW: Penalty-specific fields (Requirements 3.4, 3.6)
   penaltyBreakdown?: {
     latePenalty: number
@@ -66,9 +70,9 @@ export interface IncomeItem {
 
 // Daily summary data
 export interface DailySummary {
-  totalIncome: number      // Sum of rental + penalty amounts
-  totalExpense: number     // Sum of expense amounts
-  netBalance: number       // totalIncome - totalExpense
+  totalIncome: number // Sum of rental + penalty amounts
+  totalExpense: number // Sum of expense amounts
+  netBalance: number // totalIncome - totalExpense
   date: string
 }
 
@@ -81,7 +85,7 @@ export interface DanaSummaryResponse {
 
 // Form data for UI components
 export interface PengeluaranFormData {
-  kasirId: string  // NEW: Selected kasir from dropdown
+  kasirId: string // NEW: Selected kasir from dropdown
   harga: number
   kategori: ExpenseCategory
   deskripsi?: string

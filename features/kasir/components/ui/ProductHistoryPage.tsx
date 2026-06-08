@@ -11,13 +11,13 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import type { TransactionHistoryItem } from '../../types/availability'
-import { 
-  createAvailabilityError, 
-  determineErrorType, 
-  shouldRetry, 
+import {
+  createAvailabilityError,
+  determineErrorType,
+  shouldRetry,
   calculateRetryDelay,
   RETRY_CONFIGS,
-  type AvailabilityError 
+  type AvailabilityError,
 } from '../../lib/errors/availabilityErrors'
 
 interface ProductHistoryPageProps {
@@ -68,12 +68,11 @@ export function ProductHistoryPage({
   const [isRetrying, setIsRetrying] = useState(false)
   const [isCached, setIsCached] = useState(false)
   const [cachedAt, setCachedAt] = useState<string | null>(null)
-  const [sortBy, setSortBy] = useState<'date_proximity' | 'date_asc' | 'date_desc'>('date_proximity')
 
   // Helper function to safely render suggestions
   const renderSuggestions = (error: AvailabilityError) => {
     if (!error.details?.suggestions || !Array.isArray(error.details.suggestions)) return null
-    
+
     return (
       <div className="mb-4">
         <p className="text-xs font-medium text-gray-700 mb-2">Saran:</p>
@@ -92,21 +91,17 @@ export function ProductHistoryPage({
   // Helper function to safely render help text
   const renderHelpText = (error: AvailabilityError) => {
     if (!error.details?.helpText || typeof error.details.helpText !== 'string') return null
-    
+
     return (
       <div className="mb-4 p-2 bg-blue-50 rounded border border-blue-200">
-        <p className="text-xs text-blue-700">
-          💡 {error.details.helpText}
-        </p>
+        <p className="text-xs text-blue-700">💡 {error.details.helpText}</p>
       </div>
     )
   }
 
   // Fetch transaction history data with enhanced error handling
-  const fetchHistory = async (customSortBy?: 'date_proximity' | 'date_asc' | 'date_desc') => {
+  const fetchHistory = async () => {
     if (!productSizeId) return
-
-    const currentSortBy = customSortBy || sortBy
 
     setIsLoading(true)
     setError(null)
@@ -116,36 +111,36 @@ export function ProductHistoryPage({
       const timeoutId = setTimeout(() => controller.abort(), 10000)
 
       const response = await fetch(
-        `/api/kasir/transaksi/product-history?productSizeId=${encodeURIComponent(productSizeId)}&statuses=active,diambil&limit=20&sortBy=${currentSortBy}`,
+        `/api/kasir/transaksi/product-history?productSizeId=${encodeURIComponent(productSizeId)}&statuses=active,diambil&limit=20`,
         {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
           },
-          signal: controller.signal
-        }
+          signal: controller.signal,
+        },
       )
 
       clearTimeout(timeoutId)
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ 
+        const errorData = await response.json().catch(() => ({
           error: 'Koneksi bermasalah',
           userMessage: 'Tidak dapat terhubung ke server. Silakan periksa koneksi internet Anda.',
           errorType: 'API_ERROR',
-          retryable: true 
+          retryable: true,
         }))
-        
+
         const errorType = errorData.errorType || determineErrorType({ status: response.status })
         const userMessage = errorData.userMessage || errorData.error || response.statusText
-        
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         throw createAvailabilityError(errorType as any, {
           statusCode: response.status,
           message: userMessage,
           retryable: errorData.retryable,
           suggestions: errorData.suggestions,
-          helpText: errorData.helpText
+          helpText: errorData.helpText,
         })
       }
 
@@ -156,7 +151,7 @@ export function ProductHistoryPage({
         setCachedAt(result.cachedAt || null)
         console.log('[ProductHistoryPage] Using cached data:', {
           cachedAt: result.cachedAt,
-          cacheExpiresAt: result.metadata?.cacheExpiresAt
+          cacheExpiresAt: result.metadata?.cacheExpiresAt,
         })
       } else {
         setIsCached(false)
@@ -164,24 +159,25 @@ export function ProductHistoryPage({
       }
 
       if (!result.success) {
-        const errorType = result.errorType || determineErrorType(new Error(result.error || 'Failed to fetch'))
+        const errorType =
+          result.errorType || determineErrorType(new Error(result.error || 'Failed to fetch'))
         const userMessage = result.userMessage || result.error || 'Gagal memuat riwayat transaksi'
-        
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         throw createAvailabilityError(errorType as any, {
           message: userMessage,
           retryable: result.retryable,
           suggestions: result.suggestions,
-          helpText: result.helpText
+          helpText: result.helpText,
         })
       }
 
-      const parsedData = (result.data || []).map(item => ({
+      const parsedData = (result.data || []).map((item) => ({
         ...item,
         startDate: new Date(item.startDate),
-        endDate: new Date(item.endDate)
+        endDate: new Date(item.endDate),
       }))
-      
+
       setHistoryData(parsedData)
       setRetryCount(0)
       setIsRetrying(false)
@@ -190,7 +186,7 @@ export function ProductHistoryPage({
         console.log('[ProductHistoryPage] API metadata:', {
           serviceUsed: result.metadata.serviceUsed,
           totalResults: result.metadata.totalResults,
-          productSizeId: result.metadata.productSizeId
+          productSizeId: result.metadata.productSizeId,
         })
       }
     } catch (err) {
@@ -198,13 +194,13 @@ export function ProductHistoryPage({
         error: err,
         productSizeId,
         retryCount,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       })
 
       if (err instanceof Error && err.name === 'AbortError') {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const timeoutError = createAvailabilityError('NETWORK_TIMEOUT' as any, {
-          message: 'Request timeout after 10 seconds'
+          message: 'Request timeout after 10 seconds',
         })
         setError(timeoutError)
       } else if (err && typeof err === 'object' && 'type' in err) {
@@ -212,7 +208,7 @@ export function ProductHistoryPage({
       } else {
         const errorType = determineErrorType(err)
         const availabilityError = createAvailabilityError(errorType, {
-          message: err instanceof Error ? err.message : 'Unknown error'
+          message: err instanceof Error ? err.message : 'Unknown error',
         })
         setError(availabilityError)
       }
@@ -221,11 +217,11 @@ export function ProductHistoryPage({
     }
   }
 
-  // Fetch data on mount and when sortBy changes
+  // Fetch data on mount
   useEffect(() => {
     fetchHistory()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [productSizeId, sortBy])
+  }, [productSizeId])
 
   // Enhanced retry with exponential backoff
   const handleRetry = async () => {
@@ -236,7 +232,7 @@ export function ProductHistoryPage({
     const newRetryCount = retryCount + 1
     setRetryCount(newRetryCount)
     setIsRetrying(true)
-    
+
     const config = RETRY_CONFIGS[error.type]
     if (!config) {
       setIsRetrying(false)
@@ -244,27 +240,34 @@ export function ProductHistoryPage({
     }
 
     const delay = calculateRetryDelay(newRetryCount, config)
-    
+
     setTimeout(async () => {
       await fetchHistory()
       setIsRetrying(false)
     }, delay)
   }
 
-  // Handle sort change
-  const handleSortChange = (newSortBy: 'date_proximity' | 'date_asc' | 'date_desc') => {
-    setSortBy(newSortBy)
-  }
-
   // Get status badge variant
   const getStatusBadge = (status: 'active' | 'diambil') => {
     switch (status) {
       case 'active':
-        return { variant: 'outline' as const, color: 'text-blue-700 bg-blue-50 border-blue-200', label: 'Aktif' }
+        return {
+          variant: 'outline' as const,
+          color: 'text-blue-700 bg-blue-50 border-blue-200',
+          label: 'Aktif',
+        }
       case 'diambil':
-        return { variant: 'outline' as const, color: 'text-green-700 bg-green-50 border-green-200', label: 'Diambil' }
+        return {
+          variant: 'outline' as const,
+          color: 'text-green-700 bg-green-50 border-green-200',
+          label: 'Diambil',
+        }
       default:
-        return { variant: 'outline' as const, color: 'text-gray-700 bg-gray-50 border-gray-200', label: status }
+        return {
+          variant: 'outline' as const,
+          color: 'text-gray-700 bg-gray-50 border-gray-200',
+          label: status,
+        }
     }
   }
 
@@ -272,7 +275,7 @@ export function ProductHistoryPage({
   const handleClose = () => {
     // Try to close the window (works if opened via window.open)
     window.close()
-    
+
     // Fallback: if window.close() doesn't work, go back in history
     setTimeout(() => {
       if (!window.closed) {
@@ -292,19 +295,13 @@ export function ProductHistoryPage({
                 <History className="h-6 w-6 text-blue-600" />
               </div>
               <div>
-                <h1 className="text-2xl font-semibold text-gray-900">
-                  Riwayat Transaksi
-                </h1>
+                <h1 className="text-2xl font-semibold text-gray-900">Riwayat Transaksi</h1>
                 <p className="text-sm text-gray-600 mt-1">
                   {productName} • {ageCategory} • {size}
                 </p>
               </div>
             </div>
-            <Button 
-              onClick={handleClose} 
-              variant="outline"
-              className="flex items-center gap-2"
-            >
+            <Button onClick={handleClose} variant="outline" className="flex items-center gap-2">
               <ArrowLeft className="h-4 w-4" />
               Kembali
             </Button>
@@ -328,30 +325,31 @@ export function ProductHistoryPage({
         {error && !isLoading && (
           <div className="flex items-center justify-center py-20">
             <div className="text-center space-y-6 max-w-lg bg-white rounded-xl shadow-lg p-8">
-              <div className={cn(
-                "p-4 rounded-full w-fit mx-auto",
-                error.retryable ? "bg-orange-50" : "bg-red-50"
-              )}>
-                <AlertCircle className={cn(
-                  "h-12 w-12",
-                  error.retryable ? "text-orange-600" : "text-red-600"
-                )} />
+              <div
+                className={cn(
+                  'p-4 rounded-full w-fit mx-auto',
+                  error.retryable ? 'bg-orange-50' : 'bg-red-50',
+                )}
+              >
+                <AlertCircle
+                  className={cn('h-12 w-12', error.retryable ? 'text-orange-600' : 'text-red-600')}
+                />
               </div>
               <div>
                 <h3 className="text-xl font-medium text-gray-900 mb-3">
                   {error.retryable ? 'Gagal Memuat Data' : 'Terjadi Kesalahan'}
                 </h3>
                 <p className="text-base text-gray-600 mb-4">{error.userMessage}</p>
-                
+
                 {process.env.NODE_ENV === 'development' && error.technicalMessage && (
                   <p className="text-xs text-gray-400 mb-4 font-mono">
                     Debug: {error.technicalMessage}
                   </p>
                 )}
-                
+
                 {renderSuggestions(error)}
                 {renderHelpText(error)}
-                
+
                 {error.retryable && (
                   <div className="space-y-3">
                     <Button
@@ -360,8 +358,8 @@ export function ProductHistoryPage({
                       size="lg"
                       disabled={!shouldRetry(error, retryCount + 1) || isRetrying}
                       className={cn(
-                        "text-blue-600 border-blue-200 hover:bg-blue-50",
-                        isRetrying && "opacity-50"
+                        'text-blue-600 border-blue-200 hover:bg-blue-50',
+                        isRetrying && 'opacity-50',
                       )}
                     >
                       {isRetrying ? (
@@ -372,13 +370,16 @@ export function ProductHistoryPage({
                       ) : shouldRetry(error, retryCount + 1) ? (
                         <>
                           <RefreshCw className="h-5 w-5 mr-2" />
-                          Coba Lagi {retryCount > 0 ? `(${retryCount}/${RETRY_CONFIGS[error.type]?.maxAttempts || 3})` : ''}
+                          Coba Lagi{' '}
+                          {retryCount > 0
+                            ? `(${retryCount}/${RETRY_CONFIGS[error.type]?.maxAttempts || 3})`
+                            : ''}
                         </>
                       ) : (
                         'Maksimal percobaan tercapai'
                       )}
                     </Button>
-                    
+
                     {retryCount > 0 && shouldRetry(error, retryCount + 1) && (
                       <p className="text-sm text-gray-500">
                         Percobaan ke-{retryCount} dari {RETRY_CONFIGS[error.type]?.maxAttempts || 3}
@@ -386,14 +387,10 @@ export function ProductHistoryPage({
                     )}
                   </div>
                 )}
-                
+
                 {!error.retryable && (
                   <div className="space-y-3">
-                    <Button
-                      onClick={handleClose}
-                      variant="outline"
-                      size="lg"
-                    >
+                    <Button onClick={handleClose} variant="outline" size="lg">
                       Kembali
                     </Button>
                     <p className="text-sm text-gray-500">
@@ -438,7 +435,7 @@ export function ProductHistoryPage({
         {/* Transaction List */}
         {!isLoading && !error && historyData.length > 0 && (
           <div className="space-y-6">
-            {/* Header with count, sort buttons, and refresh */}
+            {/* Header with count and refresh */}
             <div className="bg-white rounded-lg shadow-sm p-6">
               <div className="flex items-center justify-between flex-wrap gap-4">
                 <div>
@@ -452,62 +449,17 @@ export function ProductHistoryPage({
                     </p>
                   )}
                 </div>
-                
-                <div className="flex items-center gap-3">
-                  {/* Sort Button Group */}
-                  <div className="flex items-center gap-2 bg-gray-200 rounded-lg p-1">
-                    <Button
-                      onClick={() => handleSortChange('date_proximity')}
-                      variant={sortBy === 'date_proximity' ? 'default' : 'ghost'}
-                      size="sm"
-                      className={cn(
-                        'text-sm transition-all',
-                        sortBy === 'date_proximity' 
-                          ? 'bg-white shadow-sm hover:bg-white text-gray-600' 
-                          : 'hover:bg-gray-400'
-                      )}
-                    >
-                      Terdekat
-                    </Button>
-                    <Button
-                      onClick={() => handleSortChange('date_asc')}
-                      variant={sortBy === 'date_asc' ? 'default' : 'ghost'}
-                      size="sm"
-                      className={cn(
-                        'text-sm transition-all',
-                        sortBy === 'date_asc' 
-                          ? 'bg-white shadow-sm hover:bg-white text-gray-600' 
-                          : 'hover:bg-gray-400'
-                      )}
-                    >
-                      Terlama
-                    </Button>
-                    <Button
-                      onClick={() => handleSortChange('date_desc')}
-                      variant={sortBy === 'date_desc' ? 'default' : 'ghost'}
-                      size="sm"
-                      className={cn(
-                        'text-sm transition-all',
-                        sortBy === 'date_desc' 
-                          ? 'bg-white shadow-sm hover:bg-white text-gray-600' 
-                          : 'hover:bg-gray-400'
-                      )}
-                    >
-                      Terbaru
-                    </Button>
-                  </div>
 
-                  {/* Refresh Button */}
-                  <Button
-                    onClick={() => fetchHistory()}
-                    variant="outline"
-                    size="sm"
-                    className="text-gray-600 hover:text-blue-600 border-gray-200 hover:border-blue-200"
-                  >
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                    Refresh
-                  </Button>
-                </div>
+                {/* Refresh Button */}
+                <Button
+                  onClick={() => fetchHistory()}
+                  variant="outline"
+                  size="sm"
+                  className="text-gray-600 hover:text-blue-600 border-gray-200 hover:border-blue-200"
+                >
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Refresh
+                </Button>
               </div>
             </div>
 
@@ -515,7 +467,7 @@ export function ProductHistoryPage({
             <div className="grid gap-4">
               {historyData.map((transaction, index) => {
                 const statusBadge = getStatusBadge(transaction.status)
-                
+
                 return (
                   <div
                     key={`${transaction.transactionCode}-${index}`}
@@ -537,7 +489,7 @@ export function ProductHistoryPage({
                         {transaction.quantity} item
                       </span>
                     </div>
-                    
+
                     <div className="mt-3 text-sm text-gray-500 font-mono bg-gray-50 rounded p-3">
                       {transaction.displayText}
                     </div>

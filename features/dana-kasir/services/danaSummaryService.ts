@@ -19,6 +19,28 @@ export class DanaSummaryService {
   constructor(private prisma: PrismaClient) {}
 
   /**
+   * Task 7: Helper method to determine dominant payment method
+   *
+   * Logic:
+   * - Returns the payment method with the largest amount
+   * - If no payments exist, returns 'N/A'
+   * - Used for both rental and penalty income items
+   *
+   * @param payments - Array of payment records with metode and jumlah
+   * @returns Dominant payment method (e.g., 'tunai', 'qris', 'transfer')
+   */
+  private getDominantPaymentMethod(
+    payments: Array<{ metode: string; jumlah: { toNumber(): number } | number }>,
+  ): string {
+    if (!payments || payments.length === 0) {
+      return 'N/A'
+    }
+
+    // Already sorted by jumlah DESC from query, so first item is dominant
+    return payments[0].metode
+  }
+
+  /**
    * Get daily summary with income, expenses, and net balance
    *
    * Calculates:
@@ -110,11 +132,13 @@ export class DanaSummaryService {
    * Get list of income items (rental transactions + penalty payments) for a specific date
    *
    * Task 6: Enhanced to include penalty payment entries
+   * Task 7: Enhanced to include dominant payment method
    * Requirements: 3.3, 3.4, 3.5, 3.6
    *
    * Returns:
    * - Rental transactions (type='rental')
    * - Penalty payments (type='penalty') with breakdown
+   * - Payment method information (dominant method + count)
    *
    * @param date - Date to query income for
    * @param kasirId - Optional kasir filter
@@ -123,7 +147,7 @@ export class DanaSummaryService {
   async getIncomeList(date: Date, kasirId?: string): Promise<IncomeItem[]> {
     const { start, end } = getWITADayRange(date)
 
-    // Get rental transactions
+    // Get rental transactions with payment information
     const transactions = await this.prisma.transaksi.findMany({
       where: {
         createdAt: {
@@ -142,6 +166,16 @@ export class DanaSummaryService {
           select: {
             id: true,
             nama: true,
+          },
+        },
+        // NEW: Include payment records to determine dominant method
+        pembayaran: {
+          select: {
+            metode: true,
+            jumlah: true,
+          },
+          orderBy: {
+            jumlah: 'desc', // Order by amount to get largest payment first
           },
         },
       },
@@ -196,24 +230,42 @@ export class DanaSummaryService {
             },
           },
         },
+        // NEW: Include payment records for penalty transactions
+        pembayaran: {
+          select: {
+            metode: true,
+            jumlah: true,
+          },
+          orderBy: {
+            jumlah: 'desc',
+          },
+        },
       },
       orderBy: {
         tglKembali: 'desc',
       },
     })
 
-    // Map rental transactions to income items
-    const rentalIncome: IncomeItem[] = transactions.map((transaction) => ({
-      type: 'rental' as const,
-      transaksiKode: transaction.kode,
-      customerName: transaction.penyewa.nama,
-      rentalAmount: transaction.jumlahBayar.toNumber(),
-      penaltyAmount: transaction.flatLatePenalty.toNumber(),
-      status: transaction.status,
-      kasirId: transaction.kasirId || '',
-      kasirName: transaction.kasir?.nama || 'N/A',
-      createdAt: transaction.createdAt,
-    }))
+    // Map rental transactions to income items with payment method
+    const rentalIncome: IncomeItem[] = transactions.map((transaction) => {
+      // Task 7: Calculate dominant payment method
+      const paymentMethod = this.getDominantPaymentMethod(transaction.pembayaran)
+      const paymentCount = transaction.pembayaran.length
+
+      return {
+        type: 'rental' as const,
+        transaksiKode: transaction.kode,
+        customerName: transaction.penyewa.nama,
+        rentalAmount: transaction.jumlahBayar.toNumber(),
+        penaltyAmount: transaction.flatLatePenalty.toNumber(),
+        status: transaction.status,
+        kasirId: transaction.kasirId || '',
+        kasirName: transaction.kasir?.nama || 'N/A',
+        createdAt: transaction.createdAt,
+        paymentMethod,
+        paymentCount,
+      }
+    })
 
     // Task 6.2: Build penalty income entries (Requirements: 3.4, 3.6)
     const penaltyIncome: IncomeItem[] = penaltyPayments.map((transaction) => {
@@ -228,6 +280,10 @@ export class DanaSummaryService {
       const latePenalty = transaction.flatLatePenalty.toNumber()
       const conditionPenalty = totalPenalty - latePenalty
 
+      // Task 7: Calculate dominant payment method for penalty transactions
+      const paymentMethod = this.getDominantPaymentMethod(transaction.pembayaran)
+      const paymentCount = transaction.pembayaran.length
+
       return {
         type: 'penalty' as const,
         transaksiKode: transaction.kode,
@@ -238,6 +294,8 @@ export class DanaSummaryService {
         kasirId: transaction.kasirId || '',
         kasirName: transaction.kasir?.nama || 'N/A',
         createdAt: transaction.tglKembali || transaction.createdAt,
+        paymentMethod,
+        paymentCount,
         // Requirements 3.4, 3.6: Include penalty breakdown
         penaltyBreakdown: {
           latePenalty,
