@@ -28,7 +28,6 @@ import {
 // TASK 3: Retry handler for database operations
 import { RetryHandler } from '../lib/resilience/RetryHandler'
 
-
 export interface TransaksiWithDetails extends Transaksi {
   penyewa: {
     id: string
@@ -222,10 +221,18 @@ function calculateEnhancedStatus(
 
   // Priority 5: Check if current date is past end date (manual overdue check)
   // This runs AFTER completion check to allow completed transactions to show as 'selesai'
+  // ✅ FIX: Normalize dates to compare only date (not time) to prevent same-day returns from being marked late
   if (endDate && (baseStatus === 'active' || baseStatus === 'diambil')) {
     const now = new Date()
     const dueDate = typeof endDate === 'string' ? new Date(endDate) : endDate
-    const isOverdue = now > dueDate
+
+    // ✅ Normalize to date only (remove hours/minutes/seconds)
+    // This ensures returns on the same day are not considered late
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+    const dueDay = new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate())
+
+    // Only mark as late if current date is AFTER due date (not same day)
+    const isOverdue = today > dueDay
 
     if (isOverdue && !isNaN(dueDate.getTime())) {
       return 'terlambat'
@@ -270,8 +277,6 @@ export class TransaksiService {
     // TASK 3: Initialize retry handler with 3 max attempts
     this.retryHandler = new RetryHandler({ maxAttempts: 3 })
   }
-
-
 
   /**
    * Unified method to get transaction by ID or code
@@ -396,12 +401,12 @@ export class TransaksiService {
 
       // TASK 19: Transform items with pairing relationships
       const itemsWithPairing = this.transformItemsWithPairing(enhancedTransaksi.items)
-      
+
       // Type-safe transformation to match TransaksiWithDetails interface
       const result: TransaksiWithDetails = {
         ...enhancedTransaksi,
         items: itemsWithPairing,
-        aktivitas: enhancedTransaksi.aktivitas.map(activity => ({
+        aktivitas: enhancedTransaksi.aktivitas.map((activity) => ({
           id: activity.id,
           tipe: activity.tipe,
           deskripsi: activity.deskripsi,
@@ -410,7 +415,7 @@ export class TransaksiService {
           createdAt: activity.createdAt,
         })),
       }
-      
+
       return result
     } catch (error) {
       // Handle database query failures with comprehensive error logging
@@ -458,7 +463,9 @@ export class TransaksiService {
    * TASK 2: Added performance monitoring to track query execution times
    */
   async createTransaksiSizeAware(data: CreateTransaksiRequest): Promise<TransaksiWithDetails> {
-    let priceCalculation: ReturnType<typeof PriceCalculator.calculateTransactionTotalWithEnhancements> | null = null
+    let priceCalculation: ReturnType<
+      typeof PriceCalculator.calculateTransactionTotalWithEnhancements
+    > | null = null
 
     // TASK 2: Initialize performance tracking
     const timer = createTransactionTimer(this.performanceMonitor)
@@ -468,7 +475,6 @@ export class TransaksiService {
     })
 
     try {
-
       // ✅ CRITICAL FIX: Collect productSizeIds first (needed for parallel query)
       const productSizeIds: string[] = []
 
@@ -496,38 +502,40 @@ export class TransaksiService {
       const [penyewa, productSizes] = await Promise.all([
         // TASK 3: Retry wrapper for penyewa query - retry on connection/timeout errors
         this.retryHandler.execute(
-          async () => await this.prisma.penyewa.findUnique({
-            where: { id: data.penyewaId },
-          }),
+          async () =>
+            await this.prisma.penyewa.findUnique({
+              where: { id: data.penyewaId },
+            }),
           (error) => {
             // Only retry connection/timeout errors, not "not found" business errors
             const msg = error.message.toLowerCase()
             return msg.includes('timeout') || msg.includes('connection') || msg.includes('database')
-          }
+          },
         ),
         // TASK 3: Retry wrapper for productSizes query - retry on connection/timeout errors
         this.retryHandler.execute(
-          async () => await this.prisma.productSize.findMany({
-            where: {
-              id: { in: uniqueSizeIds },
-              isActive: true,
-            },
-            include: {
-              product: {
-                select: {
-                  id: true,
-                  name: true,
-                  currentPrice: true,
-                  category: true, // TASK 9: Add category for jas detection
+          async () =>
+            await this.prisma.productSize.findMany({
+              where: {
+                id: { in: uniqueSizeIds },
+                isActive: true,
+              },
+              include: {
+                product: {
+                  select: {
+                    id: true,
+                    name: true,
+                    currentPrice: true,
+                    category: true, // TASK 9: Add category for jas detection
+                  },
                 },
               },
-            },
-          }),
+            }),
           (error) => {
             // Only retry connection/timeout errors, not "product not found" business errors
             const msg = error.message.toLowerCase()
             return msg.includes('timeout') || msg.includes('connection') || msg.includes('database')
-          }
+          },
         ),
       ])
 
@@ -537,12 +545,10 @@ export class TransaksiService {
 
       // ✅ PERFORMANCE FIX: Create O(1) lookup map for productSizes
       // Replaces O(n²) find() calls with O(1) map lookups throughout the code
-      const productSizeMap = new Map(
-        productSizes.map(ps => [ps.id, ps])
-      )
+      const productSizeMap = new Map(productSizes.map((ps) => [ps.id, ps]))
 
       // Get duration from first item (all items should have same duration in UI)
-      const duration = data.items[0]?.durasi as 4 | 7 || 4
+      const duration = (data.items[0]?.durasi as 4 | 7) || 4
 
       // TASK 9: Prepare items for enhanced price calculation with pairing support
       const itemsForCalculation: ProductSelection[] = data.items.map((item) => {
@@ -551,7 +557,7 @@ export class TransaksiService {
         if (!productSize) {
           throw new Error(`Product size not found: ${item.productSizeId}`)
         }
-        
+
         // TASK 9: Check if this is a product eligible for free sarung using configurable system
         const isEligibleForSarung = sarungPairingService.isEligibleForPairing({
           id: item.produkId,
@@ -564,7 +570,7 @@ export class TransaksiService {
           available: true,
         })
         let linkedSarung: LinkedSarung | undefined = undefined
-        
+
         // TASK 9: Find linked sarung if this is an eligible product and item has linkedSarung
         if (isEligibleForSarung && 'linkedSarung' in item && item.linkedSarung) {
           const linkedSarungData = item.linkedSarung as {
@@ -573,7 +579,7 @@ export class TransaksiService {
             quantity: number
             selectedSize: ProductSize
           }
-          
+
           linkedSarung = {
             productId: linkedSarungData.productId,
             productSizeId: linkedSarungData.productSizeId,
@@ -623,7 +629,7 @@ export class TransaksiService {
           // Retry on race condition (unique constraint violation)
           const msg = error.message.toLowerCase()
           return msg.includes('unique') || msg.includes('constraint') || msg.includes('race')
-        }
+        },
       )
 
       // STEP 3: Create transaction with OPTIMIZED operations INSIDE transaction
@@ -643,7 +649,7 @@ export class TransaksiService {
             data.items,
             productSizeMap, // ✅ PERFORMANCE FIX: Pass Map instead of array
             new Date(data.tglMulai), // Start date from form
-            new Date(returnDate)     // Calculated end date
+            new Date(returnDate), // Calculated end date
           )
           // TASK 2: End stock check timing
           timer.endStockCheck()
@@ -651,11 +657,11 @@ export class TransaksiService {
           // ✅ NEW: Calculate total with manual adjustments
           let totalWithManualAdjustments = 0
           let hasManualAdjustments = false
-          
+
           for (let index = 0; index < data.items.length; index++) {
             const item = data.items[index]
             const calculation = priceCalculation!.itemCalculations[index]
-            
+
             // ✅ FIX: Properly access manualPriceAdjustment from size-aware item
             const itemWithManualAdjustment = item as CreateTransaksiItemSizeAware & {
               manualPriceAdjustment?: {
@@ -665,24 +671,29 @@ export class TransaksiService {
                 lastModified: string
               }
             }
-            
+
             if (itemWithManualAdjustment.manualPriceAdjustment?.isManuallyAdjusted) {
               const manualAdjustment = itemWithManualAdjustment.manualPriceAdjustment
-              const adjustedPrice = manualAdjustment.originalPrice + manualAdjustment.adjustmentAmount
+              const adjustedPrice =
+                manualAdjustment.originalPrice + manualAdjustment.adjustmentAmount
               totalWithManualAdjustments += adjustedPrice
               hasManualAdjustments = true
             } else {
               totalWithManualAdjustments += calculation.finalPrice
             }
           }
-          
+
           // Apply discount to the manually adjusted total
           let finalTotalWithAdjustments = totalWithManualAdjustments
           if (data.discountType && data.discountValue && data.discountValue > 0) {
             if (data.discountType === 'percent') {
-              finalTotalWithAdjustments = totalWithManualAdjustments * (1 - data.discountValue / 100)
+              finalTotalWithAdjustments =
+                totalWithManualAdjustments * (1 - data.discountValue / 100)
             } else if (data.discountType === 'nominal') {
-              finalTotalWithAdjustments = Math.max(0, totalWithManualAdjustments - data.discountValue)
+              finalTotalWithAdjustments = Math.max(
+                0,
+                totalWithManualAdjustments - data.discountValue,
+              )
             }
           }
 
@@ -693,9 +704,13 @@ export class TransaksiService {
               penyewaId: data.penyewaId,
               kasirId: data.kasirId || null,
               status: 'active',
-              totalHarga: hasManualAdjustments ? finalTotalWithAdjustments : priceCalculation!.finalTotal,
+              totalHarga: hasManualAdjustments
+                ? finalTotalWithAdjustments
+                : priceCalculation!.finalTotal,
               jumlahBayar: new Decimal(0),
-              sisaBayar: hasManualAdjustments ? finalTotalWithAdjustments : priceCalculation!.finalTotal,
+              sisaBayar: hasManualAdjustments
+                ? finalTotalWithAdjustments
+                : priceCalculation!.finalTotal,
               tglMulai: new Date(data.tglMulai),
               tglSelesai: new Date(returnDate), // ENHANCED: Use calculated return date
               metodeBayar: data.metodeBayar || 'tunai',
@@ -736,31 +751,32 @@ export class TransaksiService {
           const allLinkedSarungIds: string[] = []
           for (const item of data.items) {
             if ('linkedSarung' in item && item.linkedSarung) {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               const linkedSarungData = item.linkedSarung as any
               allLinkedSarungIds.push(linkedSarungData.productSizeId)
             }
           }
 
           // Single batch query for all sarung product sizes
-          const allSarungProductSizes = allLinkedSarungIds.length > 0
-            ? await tx.productSize.findMany({
-                where: { id: { in: allLinkedSarungIds } },
-                include: {
-                  product: {
-                    select: {
-                      id: true,
-                      name: true,
-                      code: true,
+          const allSarungProductSizes =
+            allLinkedSarungIds.length > 0
+              ? await tx.productSize.findMany({
+                  where: { id: { in: allLinkedSarungIds } },
+                  include: {
+                    product: {
+                      select: {
+                        id: true,
+                        name: true,
+                        code: true,
+                      },
                     },
                   },
-                },
-              })
-            : []
+                })
+              : []
 
           // Create O(1) lookup map for sarung product sizes
-          const sarungMap = new Map(
-            allSarungProductSizes.map((ps: any) => [ps.id, ps])
-          )
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const sarungMap = new Map(allSarungProductSizes.map((ps: any) => [ps.id, ps]))
 
           for (let index = 0; index < data.items.length; index++) {
             const item = data.items[index]
@@ -770,7 +786,7 @@ export class TransaksiService {
             if (!productSize) {
               throw new Error(`Product size not found: ${item.productSizeId}`)
             }
-            
+
             // ✅ FIX: Properly access manualPriceAdjustment from size-aware item
             const itemWithManualAdjustment = item as CreateTransaksiItemSizeAware & {
               manualPriceAdjustment?: {
@@ -780,39 +796,41 @@ export class TransaksiService {
                 lastModified: string
               }
             }
-            
+
             // ✅ NEW: Process manual price adjustment if exists
             let finalSubtotal = calculation.finalPrice
             let finalPricePerUnit = new Decimal(calculation.finalPrice).div(item.jumlah)
-            
+
             if (itemWithManualAdjustment.manualPriceAdjustment?.isManuallyAdjusted) {
               const manualAdjustment = itemWithManualAdjustment.manualPriceAdjustment
-              const adjustedTotalPrice = manualAdjustment.originalPrice + manualAdjustment.adjustmentAmount
+              const adjustedTotalPrice =
+                manualAdjustment.originalPrice + manualAdjustment.adjustmentAmount
               finalSubtotal = adjustedTotalPrice
               finalPricePerUnit = new Decimal(adjustedTotalPrice).div(item.jumlah)
             }
-            
+
             // ✅ SIMPLIFIED: Store only essential data in kondisiAwal (no linkedSarung duplication)
             const kondisiAwalData = {
               productSizeId: item.productSizeId,
               size: productSize.size,
               ageCategory: productSize.ageCategory,
               condition: item.kondisiAwal || '',
-              linkedSarung: null as LinkedSarung | null
+              linkedSarung: null as LinkedSarung | null,
             }
-            
+
             // ✅ CRITICAL FIX: Enhanced linkedSarung detection and storage
             const itemWithLinkedSarung = item as CreateTransaksiItemSizeAware
-            if (itemWithLinkedSarung.linkedSarung && typeof itemWithLinkedSarung.linkedSarung === 'object') {
+            if (
+              itemWithLinkedSarung.linkedSarung &&
+              typeof itemWithLinkedSarung.linkedSarung === 'object'
+            ) {
               const linkedSarungData = itemWithLinkedSarung.linkedSarung as {
                 productId: string
                 productSizeId: string
                 quantity: number
                 selectedSize: ProductSize
               }
-              
 
-              
               kondisiAwalData.linkedSarung = {
                 productId: linkedSarungData.productId,
                 productSizeId: linkedSarungData.productSizeId,
@@ -826,13 +844,11 @@ export class TransaksiService {
                   availableQuantity: 0,
                   rentedStock: 0,
                   createdAt: new Date().toISOString(),
-                  updatedAt: new Date().toISOString()
-                }
+                  updatedAt: new Date().toISOString(),
+                },
               }
-              
-
             }
-            
+
             // Create main item (jas or regular product)
             const mainItemData = {
               transaksiId: createdTransaksi.id,
@@ -843,9 +859,9 @@ export class TransaksiService {
               subtotal: finalSubtotal, // ✅ UPDATED: Use manually adjusted subtotal if exists
               kondisiAwal: JSON.stringify(kondisiAwalData), // ✅ SIMPLIFIED: Store only essential data
             }
-            
+
             allItemsData.push(mainItemData)
-            
+
             // TASK 9: Create linked sarung item if exists
             if ('linkedSarung' in item && item.linkedSarung) {
               const linkedSarungData = item.linkedSarung as {
@@ -862,13 +878,15 @@ export class TransaksiService {
                 // ✅ SIMPLIFIED: Store sarung metadata with reference to parent jas (no duplication)
                 const sarungKondisiAwalData = {
                   productSizeId: linkedSarungData.productSizeId,
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   size: (sarungProductSize as any).size,
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   ageCategory: (sarungProductSize as any).ageCategory,
                   condition: item.kondisiAwal || 'baik',
                   isPairedSarung: true,
-                  parentJasProductId: item.produkId // Reference to parent jas
+                  parentJasProductId: item.produkId, // Reference to parent jas
                 }
-                
+
                 const sarungItemData = {
                   transaksiId: createdTransaksi.id,
                   produkId: linkedSarungData.productId,
@@ -1054,14 +1072,18 @@ export class TransaksiService {
     //eslint-disable-next-line
     productSizeMap: Map<string, any>, // ✅ PERFORMANCE FIX: Changed to Map for O(1) lookups
     startDate?: Date, // TASK 4.1: Added for date-aware validation
-    endDate?: Date    // TASK 4.1: Added for date-aware validation
+    endDate?: Date, // TASK 4.1: Added for date-aware validation
   ): Promise<void> {
     // TASK 2: Import stockValidationService for bulk validation
     const { createStockValidationService } = await import('./stockValidationService')
     const stockService = createStockValidationService(tx)
 
     // TASK 9: Collect all items to validate (main items + linked sarung)
-    const allItemsToValidate: Array<{ productSizeId: string; quantity: number; isLinkedSarung: boolean }> = []
+    const allItemsToValidate: Array<{
+      productSizeId: string
+      quantity: number
+      isLinkedSarung: boolean
+    }> = []
 
     for (const item of items) {
       // Add main item
@@ -1096,7 +1118,9 @@ export class TransaksiService {
       // If size is inactive, it won't be in productSizes array (filtered by query)
       if (!productSize) {
         const itemType = validationItem.isLinkedSarung ? 'sarung' : 'produk'
-        throw new Error(`Ukuran ${itemType} tidak ditemukan untuk item ${validationItem.productSizeId}`)
+        throw new Error(
+          `Ukuran ${itemType} tidak ditemukan untuk item ${validationItem.productSizeId}`,
+        )
       }
     }
 
@@ -1104,24 +1128,27 @@ export class TransaksiService {
     if (startDate && endDate) {
       // TASK 2: Use stockValidationService for bulk validation (replaces N+1 pattern)
       const validation = await stockService.validateBulkStockAvailability(
-        allItemsToValidate.map(item => ({
+        allItemsToValidate.map((item) => ({
           productSizeId: item.productSizeId,
           quantity: item.quantity,
         })),
         startDate,
-        endDate
+        endDate,
       )
 
       // Check validation results and throw detailed errors
       if (!validation.valid) {
         const errors = validation.items
-          .filter(i => !i.isValid)
-          .map(invalidItem => {
-            const itemMeta = allItemsToValidate.find(x => x.productSizeId === invalidItem.productSizeId)
+          .filter((i) => !i.isValid)
+          .map((invalidItem) => {
+            const itemMeta = allItemsToValidate.find(
+              (x) => x.productSizeId === invalidItem.productSizeId,
+            )
             const itemType = itemMeta?.isLinkedSarung ? 'Sarung' : 'Produk'
-            const overlapping = invalidItem.overlappingTransactions && invalidItem.overlappingTransactions.length > 0
-              ? `Konflik dengan transaksi: ${invalidItem.overlappingTransactions.map(t => t.transactionCode).join(', ')}`
-              : ''
+            const overlapping =
+              invalidItem.overlappingTransactions && invalidItem.overlappingTransactions.length > 0
+                ? `Konflik dengan transaksi: ${invalidItem.overlappingTransactions.map((t) => t.transactionCode).join(', ')}`
+                : ''
 
             return `${itemType} size ${invalidItem.size} (${invalidItem.ageCategory}) untuk ${invalidItem.productName}: shortage ${invalidItem.shortage}. ${overlapping}`
           })
@@ -1138,7 +1165,9 @@ export class TransaksiService {
         const productSize = productSizeMap.get(validationItem.productSizeId)
         if (!productSize) {
           const itemType = validationItem.isLinkedSarung ? 'sarung' : 'produk'
-          throw new Error(`Ukuran ${itemType} tidak ditemukan untuk item ${validationItem.productSizeId}`)
+          throw new Error(
+            `Ukuran ${itemType} tidak ditemukan untuk item ${validationItem.productSizeId}`,
+          )
         }
 
         const isAvailable = await txInventoryService.checkAvailability(
@@ -1171,8 +1200,12 @@ export class TransaksiService {
   ): Promise<void> {
     try {
       // TASK 9: Count jas-sarung pairings
-      const pairingCount = data.items.filter(item => 'linkedSarung' in item && item.linkedSarung).length
-      const totalItems = data.items.length + data.items.filter(item => 'linkedSarung' in item && item.linkedSarung).length // Main items + linked sarung
+      const pairingCount = data.items.filter(
+        (item) => 'linkedSarung' in item && item.linkedSarung,
+      ).length
+      const totalItems =
+        data.items.length +
+        data.items.filter((item) => 'linkedSarung' in item && item.linkedSarung).length // Main items + linked sarung
 
       await this.prisma.aktivitasTransaksi.create({
         data: {
@@ -1349,9 +1382,25 @@ export class TransaksiService {
       // Convert YYYY-MM-DD to date range for exact day matching
       // Handle timezone properly for Indonesian context (UTC+7)
       const filterDate = new Date(tglMulai)
-      const startOfDay = new Date(filterDate.getFullYear(), filterDate.getMonth(), filterDate.getDate(), 0, 0, 0, 0)
-      const endOfDay = new Date(filterDate.getFullYear(), filterDate.getMonth(), filterDate.getDate(), 23, 59, 59, 999)
-      
+      const startOfDay = new Date(
+        filterDate.getFullYear(),
+        filterDate.getMonth(),
+        filterDate.getDate(),
+        0,
+        0,
+        0,
+        0,
+      )
+      const endOfDay = new Date(
+        filterDate.getFullYear(),
+        filterDate.getMonth(),
+        filterDate.getDate(),
+        23,
+        59,
+        59,
+        999,
+      )
+
       whereClause.tglMulai = {
         gte: startOfDay,
         lte: endOfDay,
@@ -1496,14 +1545,15 @@ export class TransaksiService {
             //eslint-disable-next-line
             transaksiItems.map(async (item: any) => {
               // ✅ SIMPLE FIX: No stock restoration for cancelled transactions (pickup-based system)
-              const quantityToRestore = data.status === 'cancelled' 
-                ? 0  // ❌ NO restoration for cancelled transactions
-                : item.jumlah - (item.jumlahDiambil || 0)  // ✅ Keep existing logic for 'selesai'
+              const quantityToRestore =
+                data.status === 'cancelled'
+                  ? 0 // ❌ NO restoration for cancelled transactions
+                  : item.jumlah - (item.jumlahDiambil || 0) // ✅ Keep existing logic for 'selesai'
 
               if (quantityToRestore > 0 && item.kondisiAwal) {
                 // Parse productSizeId from kondisiAwal field (support both JSON and legacy formats)
                 let productSizeId: string | null = null
-                
+
                 try {
                   // Try parsing as JSON first (new format)
                   const kondisiData = JSON.parse(item.kondisiAwal)
@@ -1546,7 +1596,7 @@ export class TransaksiService {
             try {
               // ✅ NEW: Get refund data from request if provided
               const refundData = data.refundData || null
-              
+
               await this.processAutomaticRefund(tx, {
                 transaksiId: id,
                 transactionCode: existingTransaksi.kode,
@@ -1555,7 +1605,7 @@ export class TransaksiService {
                 cancellationReason: data.catatan || 'Tanpa alasan',
                 refundData, // ✅ NEW: Pass refund calculation data
               })
-              
+
               actualRefundAmount = refundData?.isEligible ? refundData.refundAmount : 0
               refundProcessed = actualRefundAmount > 0
             } catch (error) {
@@ -1585,19 +1635,21 @@ export class TransaksiService {
                 amountPaid: existingTransaksi.jumlahBayar.toString(),
                 remainingAmount: existingTransaksi.sisaBayar.toString(),
                 itemsCount: itemsCount,
-                stockRestored: false,  // ✅ UPDATED: No stock restoration for cancelled transactions
+                stockRestored: false, // ✅ UPDATED: No stock restoration for cancelled transactions
                 cancelledAt: new Date().toISOString(),
                 // ✅ ENHANCED: Refund processing status with policy data
                 needsRefund: refundAmount > 0 && !refundProcessed,
                 refundProcessed: refundProcessed,
                 refundAmount: refundAmount > 0 ? refundAmount : undefined,
                 actualRefundAmount: actualRefundAmount > 0 ? actualRefundAmount : undefined,
-                refundPolicy: data.refundData ? {
-                  isEligible: data.refundData.isEligible,
-                  refundPercentage: data.refundData.refundPercentage,
-                  daysUntilPickup: data.refundData.daysUntilPickup,
-                  calculationDate: new Date().toISOString(),
-                } : undefined,
+                refundPolicy: data.refundData
+                  ? {
+                      isEligible: data.refundData.isEligible,
+                      refundPercentage: data.refundData.refundPercentage,
+                      daysUntilPickup: data.refundData.daysUntilPickup,
+                      calculationDate: new Date().toISOString(),
+                    }
+                  : undefined,
                 expenseRecordCreated: refundProcessed,
                 refundCategory: refundProcessed ? 'Refund Pembatalan Transaksi' : undefined,
                 refundError: refundError,
@@ -1833,7 +1885,7 @@ export class TransaksiService {
         isEligible: boolean
         daysUntilPickup: number
       } | null
-    }
+    },
   ): Promise<void> {
     // Step 1: Validate kasir exists (required for expense tracking)
     if (!this.kasirId) {
@@ -1843,15 +1895,13 @@ export class TransaksiService {
     const kasirExists = await tx.kasir.findUnique({
       where: { id: this.kasirId },
     })
-    
+
     if (!kasirExists) {
       throw new Error('Kasir tidak ditemukan untuk pemrosesan refund')
     }
 
     // ✅ NEW: Calculate actual refund amount based on policy
-    const actualRefundAmount = params.refundData?.isEligible 
-      ? params.refundData.refundAmount 
-      : 0
+    const actualRefundAmount = params.refundData?.isEligible ? params.refundData.refundAmount : 0
 
     // Only process refund if eligible and amount > 0
     if (actualRefundAmount > 0) {
@@ -1899,16 +1949,16 @@ export class TransaksiService {
       })
     }
   }
-  
 
   /**
    * TASK 19: Transform transaction items to include linkedSarung relationships
    * ✅ BACKWARD COMPATIBLE: Handles both old and new data formats
    */
-  private transformItemsWithPairing(items: TransaksiWithDetails['items']): TransaksiWithDetails['items'] {
+  private transformItemsWithPairing(
+    items: TransaksiWithDetails['items'],
+  ): TransaksiWithDetails['items'] {
     const transformedItems: TransaksiWithDetails['items'] = []
-    
-    
+
     for (const item of items) {
       // Parse kondisiAwal to check if this is a paired sarung
       let kondisiAwalData: Record<string, unknown> | null = null
@@ -1920,26 +1970,35 @@ export class TransaksiService {
         // Handle legacy format or invalid JSON
         console.warn('Failed to parse kondisiAwal JSON', { itemId: item.id, error })
       }
-      
+
       // Skip sarung items that are paired (they'll be included as linkedSarung data)
-      if (kondisiAwalData && typeof kondisiAwalData === 'object' && 'isPairedSarung' in kondisiAwalData && kondisiAwalData.isPairedSarung) {
+      if (
+        kondisiAwalData &&
+        typeof kondisiAwalData === 'object' &&
+        'isPairedSarung' in kondisiAwalData &&
+        kondisiAwalData.isPairedSarung
+      ) {
         continue
       }
-      
+
       // Transform main item (jas or regular product)
       let transformedItem = { ...item }
-      
+
       // ✅ BACKWARD COMPATIBILITY: Handle both old and new linkedSarung data formats
-      if (!item.linkedSarung && kondisiAwalData && 
-          typeof kondisiAwalData === 'object' && 
-          'linkedSarung' in kondisiAwalData && 
-          kondisiAwalData.linkedSarung) {
-        
+      if (
+        !item.linkedSarung &&
+        kondisiAwalData &&
+        typeof kondisiAwalData === 'object' &&
+        'linkedSarung' in kondisiAwalData &&
+        kondisiAwalData.linkedSarung
+      ) {
         // OLD FORMAT: linkedSarung data is in kondisiAwal JSON
         const linkedSarungData = kondisiAwalData.linkedSarung as Record<string, unknown>
-        const sarungProduct = this.findSarungProductDetailsFromKondisiAwal(items, linkedSarungData.productId as string)
-        
-        
+        const sarungProduct = this.findSarungProductDetailsFromKondisiAwal(
+          items,
+          linkedSarungData.productId as string,
+        )
+
         transformedItem = {
           ...transformedItem,
           linkedSarung: {
@@ -1947,47 +2006,47 @@ export class TransaksiService {
             productSizeId: linkedSarungData.productSizeId as string,
             quantity: linkedSarungData.quantity as number,
             selectedSize: linkedSarungData.selectedSize as ProductSize,
-            product: sarungProduct
-          }
+            product: sarungProduct,
+          },
         }
-        
-
       }
       // NEW FORMAT: linkedSarung data is already at item level (no need to do anything)
-      
+
       transformedItems.push(transformedItem)
     }
     return transformedItems
   }
-  
+
   /**
    * TASK 19: Helper method to find sarung product details from kondisiAwal (for backward compatibility)
    * TASK 24: Include imageUrl field for proper sarung image display
    */
-  private findSarungProductDetailsFromKondisiAwal(items: TransaksiWithDetails['items'], sarungProductId: string): {
-    id: string
-    code: string
-    name: string
-    category: string
-    imageUrl?: string
-  } | undefined {
-    const sarungItem = items.find(item => 
-      item.produkId === sarungProductId && 
-      item.kondisiAwal?.includes('isPairedSarung')
+  private findSarungProductDetailsFromKondisiAwal(
+    items: TransaksiWithDetails['items'],
+    sarungProductId: string,
+  ):
+    | {
+        id: string
+        code: string
+        name: string
+        category: string
+        imageUrl?: string
+      }
+    | undefined {
+    const sarungItem = items.find(
+      (item) => item.produkId === sarungProductId && item.kondisiAwal?.includes('isPairedSarung'),
     )
-    
+
     if (sarungItem?.produk) {
-      
       return {
         id: sarungItem.produk.id,
         code: sarungItem.produk.code,
         name: sarungItem.produk.name,
         category: sarungItem.produk.category?.name || 'sarung',
-        imageUrl: sarungItem.produk.imageUrl || undefined
+        imageUrl: sarungItem.produk.imageUrl || undefined,
       }
     }
-    
-    
+
     return undefined
   }
 }

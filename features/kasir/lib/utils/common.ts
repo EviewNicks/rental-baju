@@ -19,7 +19,7 @@ export function parseCurrency(value: string): number {
     .replace(/[Rp\s]/g, '') // Remove Rp and spaces
     .replace(/\./g, '') // Remove dots (thousand separators)
     .replace(/,/g, '.') // Convert comma to dot for decimal
-  
+
   const parsed = parseFloat(cleanValue)
   return isNaN(parsed) ? 0 : parsed
 }
@@ -28,13 +28,13 @@ export function formatDate(dateString: string): string {
   if (!dateString) {
     return 'Tanggal tidak tersedia'
   }
-  
+
   const date = new Date(dateString)
-  
+
   if (isNaN(date.getTime())) {
     return 'Tanggal tidak valid'
   }
-  
+
   return new Intl.DateTimeFormat('id-ID', {
     day: '2-digit',
     month: 'short',
@@ -45,7 +45,17 @@ export function formatDate(dateString: string): string {
 export function getDaysOverdue(returnDate: string): number {
   const today = new Date()
   const returnDateObj = new Date(returnDate)
-  const diffTime = today.getTime() - returnDateObj.getTime()
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+
+  // ✅ FIX: Normalize to date only (remove hours/minutes/seconds)
+  // This ensures consistent calculation with backend logic
+  const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+  const returnDay = new Date(
+    returnDateObj.getFullYear(),
+    returnDateObj.getMonth(),
+    returnDateObj.getDate(),
+  )
+
+  const diffTime = todayDate.getTime() - returnDay.getTime()
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) // Changed Math.ceil to Math.floor
   return Math.max(0, diffDays)
 }
