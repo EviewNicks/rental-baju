@@ -78,20 +78,20 @@ model Material {
 }
 
 model ProductSize {
-  id               String      @id @default(uuid())
-  productId        String
-  ageCategory      AgeCategory
-  size             SizeEnum
-  quantity         Int         // Legacy field - will be migrated to originalQuantity
-  originalQuantity Int         @default(0)  // Total stock owned
-  rentedQuantity   Int         @default(0)  // Currently rented
-  lostQuantity     Int         @default(0)  // Lost items (NEW: Task 1.1)
-  availableQuantity Int        @default(0)  // Available for rent
-  isActive         Boolean     @default(true)
-  createdAt        DateTime    @default(now())
-  updatedAt        DateTime    @updatedAt
-  createdBy        String
-  product          Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  id                String      @id @default(uuid())
+  productId         String
+  ageCategory       AgeCategory
+  size              SizeEnum
+  quantity          Int // Legacy field - will be migrated to originalQuantity
+  originalQuantity  Int         @default(0) // Total stock owned
+  rentedQuantity    Int         @default(0) // Currently rented
+  lostQuantity      Int         @default(0) // Lost items (NEW: Task 1.1)
+  availableQuantity Int         @default(0) // Available for rent
+  isActive          Boolean     @default(true)
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  createdBy         String
+  product           Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@unique([productId, ageCategory, size])
   @@index([productId])
@@ -163,7 +163,7 @@ model Transaksi {
   flatLatePenalty Decimal              @default(0) @db.Decimal(10, 2)
   isLateReturn    Boolean              @default(false)
   // New fields for discount system
-  discountType    String?              // 'percent' | 'nominal' | null
+  discountType    String? // 'percent' | 'nominal' | null
   discountValue   Decimal?             @db.Decimal(10, 2)
   aktivitas       AktivitasTransaksi[]
   pembayaran      Pembayaran[]
@@ -179,10 +179,14 @@ model Transaksi {
   @@index([status, id], map: "idx_transaksi_status_id_validation")
   @@index([id, tglSelesai, status], map: "idx_transaksi_penalty_dates")
   @@index([isLateReturn], map: "idx_transaksi_late_penalty")
-  @@index([discountType])  // New index for discount queries
+  @@index([discountType]) // New index for discount queries
   // TASK 2: Performance optimization indexes for date-aware queries
   @@index([tglMulai, tglSelesai, status], map: "idx_transaksi_date_range_status")
   @@index([penyewaId, status, createdAt], map: "idx_transaksi_customer_history")
+  // ✅ OPTIMIZATION: New indexes for list view query performance
+  @@index([status, tglMulai], map: "idx_transaksi_list_status_date")
+  @@index([status, createdAt], map: "idx_transaksi_list_status_created")
+  @@index([tglMulai], map: "idx_transaksi_list_date_filter")
   @@map("transaksi")
 }
 
@@ -232,9 +236,9 @@ model TransaksiItemReturn {
   conditionCategory  ConditionCategory @default(BAIK)
   manualPrice        Decimal?          @db.Decimal(10, 2)
   useManualPricing   Boolean           @default(false)
-  resolutionStatus   String?           // 'resolved_replaced' | 'resolved_lost' (NEW: Task 1.2)
-  resolutionDate     DateTime?         // When resolution was completed (NEW: Task 1.2)
-  resolutionNotes    String?           // Optional notes about resolution (NEW: Task 1.2)
+  resolutionStatus   String? // 'resolved_replaced' | 'resolved_lost' (NEW: Task 1.2)
+  resolutionDate     DateTime? // When resolution was completed (NEW: Task 1.2)
+  resolutionNotes    String? // Optional notes about resolution (NEW: Task 1.2)
   transaksiItem      TransaksiItem     @relation(fields: [transaksiItemId], references: [id], onDelete: Cascade)
 
   @@index([transaksiItemId, createdAt], map: "idx_transaksi_item_return_timeline")
@@ -254,12 +258,12 @@ model Pembayaran {
   catatan          String?
   createdBy        String
   createdAt        DateTime  @default(now())
-  penaltyBreakdown Json?     // NEW: Detailed penalty breakdown for metode='penalty'
+  penaltyBreakdown Json? // NEW: Detailed penalty breakdown for metode='penalty'
   transaksi        Transaksi @relation(fields: [transaksiId], references: [id], onDelete: Cascade)
 
   @@index([transaksiId])
   @@index([createdAt])
-  @@index([metode, createdAt])  // NEW: For penalty payment queries
+  @@index([metode, createdAt]) // NEW: For penalty payment queries
   @@map("pembayaran")
 }
 
@@ -331,15 +335,15 @@ model PengeluaranKasir {
   id        String   @id @default(uuid())
   kasirId   String
   harga     Decimal  @db.Decimal(12, 2)
-  kategori  String   // 'Operasional' | 'Maintenance' | 'Transport' | 'Lainnya'
+  kategori  String // 'Operasional' | 'Maintenance' | 'Transport' | 'Lainnya'
   deskripsi String?
-  isActive  Boolean  @default(true)  // For soft delete
+  isActive  Boolean  @default(true) // For soft delete
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   createdBy String
-  
-  kasir     Kasir    @relation(fields: [kasirId], references: [id])
-  
+
+  kasir Kasir @relation(fields: [kasirId], references: [id])
+
   @@index([kasirId, createdAt])
   @@index([isActive])
   @@index([createdAt])
@@ -367,7 +371,7 @@ model ProductCost {
   notes      String?
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
-  
+
   product  Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   costItem CostItem @relation(fields: [costItemId], references: [id], onDelete: Restrict)
 
