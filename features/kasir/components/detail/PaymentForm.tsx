@@ -18,7 +18,7 @@ const paymentFormSchema = z.object({
   jumlah: z
     .number()
     .positive('Jumlah pembayaran harus lebih dari 0')
-    .min(1000, 'Jumlah pembayaran minimal Rp 1.000'),
+    .min(1, 'Jumlah pembayaran minimal Rp 1'), // ✅ FIX: Allow payment from Rp 1 (e.g., Rp 500 remaining balance)
   metode: z.enum(['tunai', 'bca', 'bri', 'mandiri', 'qris'], {
     message: 'Pilih metode pembayaran',
   }),
@@ -58,7 +58,7 @@ export function PaymentForm({
   // Handle primary method change
   const handlePrimaryMethodChange = (value: PrimaryPaymentMethod) => {
     setPrimaryMethod(value)
-    
+
     if (value === 'tunai') {
       // If tunai selected, set form value directly
       form.setValue('metode', 'tunai')
@@ -116,9 +116,9 @@ export function PaymentForm({
           <Input
             id="jumlah"
             type="number"
-            min="1000"
+            min="1"
             max={remainingAmount}
-            step="1000"
+            step="1"
             placeholder="Masukkan jumlah pembayaran"
             {...form.register('jumlah', { valueAsNumber: true })}
             className="pl-12"
@@ -147,7 +147,7 @@ export function PaymentForm({
       {/* Payment Method - 2-Level Selection */}
       <div className="space-y-4">
         <Label className="text-sm font-medium text-gray-700">Metode Pembayaran</Label>
-        
+
         {/* Primary Level Selection */}
         <div className="space-y-3">
           <Label className="text-xs font-medium text-gray-600 uppercase tracking-wide">
@@ -160,17 +160,23 @@ export function PaymentForm({
           >
             <div className="flex items-center space-x-3 border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
               <RadioGroupItem value="tunai" id="primary-tunai" />
-              <Label htmlFor="primary-tunai" className="flex items-center gap-2 cursor-pointer flex-1">
+              <Label
+                htmlFor="primary-tunai"
+                className="flex items-center gap-2 cursor-pointer flex-1"
+              >
                 <Banknote className="h-5 w-5 text-green-600" />
-                  <div className="font-medium text-gray-900">Tunai</div>
+                <div className="font-medium text-gray-900">Tunai</div>
               </Label>
             </div>
-            
+
             <div className="flex items-center space-x-3 border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
               <RadioGroupItem value="bank" id="primary-bank" />
-              <Label htmlFor="primary-bank" className="flex items-center gap-2 cursor-pointer flex-1">
+              <Label
+                htmlFor="primary-bank"
+                className="flex items-center gap-2 cursor-pointer flex-1"
+              >
                 <CreditCard className="h-5 w-5 text-blue-600" />
-                  <div className="font-medium text-gray-900">Bank/Transfer</div>
+                <div className="font-medium text-gray-900">Bank/Transfer</div>
               </Label>
             </div>
           </RadioGroup>
@@ -194,7 +200,7 @@ export function PaymentForm({
                   <span className="font-medium text-gray-900">BCA</span>
                 </Label>
               </div>
-              
+
               <div className="flex items-center space-x-3 border border-blue-200 rounded-lg p-3 hover:bg-blue-50 transition-colors bg-white">
                 <RadioGroupItem value="bri" id="bank-bri" />
                 <Label htmlFor="bank-bri" className="flex items-center gap-2 cursor-pointer flex-1">
@@ -202,24 +208,30 @@ export function PaymentForm({
                   <span className="font-medium text-gray-900">BRI</span>
                 </Label>
               </div>
-              
+
               <div className="flex items-center space-x-3 border border-blue-200 rounded-lg p-3 hover:bg-blue-50 transition-colors bg-white">
                 <RadioGroupItem value="mandiri" id="bank-mandiri" />
-                <Label htmlFor="bank-mandiri" className="flex items-center gap-2 cursor-pointer flex-1">
+                <Label
+                  htmlFor="bank-mandiri"
+                  className="flex items-center gap-2 cursor-pointer flex-1"
+                >
                   <CreditCard className="h-4 w-4 text-blue-600" />
                   <span className="font-medium text-gray-900">Mandiri</span>
                 </Label>
               </div>
-              
+
               <div className="flex items-center space-x-3 border border-blue-200 rounded-lg p-3 hover:bg-blue-50 transition-colors bg-white">
                 <RadioGroupItem value="qris" id="bank-qris" />
-                <Label htmlFor="bank-qris" className="flex items-center gap-2 cursor-pointer flex-1">
+                <Label
+                  htmlFor="bank-qris"
+                  className="flex items-center gap-2 cursor-pointer flex-1"
+                >
                   <Smartphone className="h-4 w-4 text-purple-600" />
                   <span className="font-medium text-gray-900">QRIS</span>
                 </Label>
               </div>
             </RadioGroup>
-            
+
             {/* Bank selection validation error */}
             {primaryMethod === 'bank' && !bankMethod && (
               <p className="text-sm text-orange-600 bg-orange-50 p-2 rounded border border-orange-200">
@@ -228,12 +240,12 @@ export function PaymentForm({
             )}
           </div>
         )}
-        
+
         {/* Form validation error */}
         {form.formState.errors.metode && (
           <p className="text-sm text-red-600">{form.formState.errors.metode.message}</p>
         )}
-        
+
         {/* Help text */}
         <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-200">
           ℹ️ Semua metode pembayaran tidak memerlukan nomor referensi
@@ -264,16 +276,16 @@ export function PaymentForm({
         <Button
           type="submit"
           disabled={
-            isProcessing || 
-            !form.formState.isValid || 
-            form.getValues('jumlah') <= 0 ||
+            isProcessing ||
+            !form.formState.isValid ||
+            form.watch('jumlah') <= 0 ||
             (primaryMethod === 'bank' && !bankMethod)
           }
           className="flex-1 transition-all duration-200"
           title={
             !form.formState.isValid
               ? 'Periksa kembali form pembayaran'
-              : form.getValues('jumlah') <= 0
+              : form.watch('jumlah') <= 0
                 ? 'Masukkan jumlah pembayaran yang valid'
                 : primaryMethod === 'bank' && !bankMethod
                   ? 'Pilih bank atau QRIS untuk pembayaran non-tunai'
@@ -286,7 +298,7 @@ export function PaymentForm({
               Memproses...
             </>
           ) : (
-            `Bayar ${formatCurrency(form.getValues('jumlah') || 0)}`
+            `Bayar ${formatCurrency(form.watch('jumlah') || 0)}`
           )}
         </Button>
       </div>

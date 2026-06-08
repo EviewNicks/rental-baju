@@ -3,7 +3,15 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useQueryClient } from '@tanstack/react-query'
-import { CheckCircle, DollarSign, RefreshCw, AlertTriangle, Package, RotateCcw, XCircle } from 'lucide-react'
+import {
+  CheckCircle,
+  DollarSign,
+  RefreshCw,
+  AlertTriangle,
+  Package,
+  RotateCcw,
+  XCircle,
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { PaymentModal } from './PaymentModal'
@@ -12,10 +20,10 @@ import { CancelModal } from './CancelModal'
 import { LostItemResolutionModal } from './LostItemResolutionModal'
 import type { TransactionDetail } from '../../types'
 import { isPickupAvailable, calculateTransactionPickupStatus } from '../../lib/utils/client'
-import { 
-  hasReturnableItemsForActionButton, 
-  calculateTransactionProgressForActionButton, 
-  formatReturnProgress
+import {
+  hasReturnableItemsForActionButton,
+  calculateTransactionProgressForActionButton,
+  formatReturnProgress,
 } from '../../lib/utils/partialReturnHelpers'
 import { queryKeys } from '@/lib/react-query'
 import { logger } from '@/services/logger'
@@ -106,12 +114,12 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
   const returnProgress = calculateTransactionProgressForActionButton(transaction)
 
   // Use hasReturnableItemsForActionButton() to check if any items have remaining returnable quantity
-  const canReturn = (
-    transaction.status === 'active' || 
-    transaction.status === 'terlambat' || 
-    transaction.status === 'diambil' ||
-    transaction.status === 'pending_resolution'  // ✅ TASK 2: Allow returns even when waiting for lost item resolution
-  ) && hasReturnableItemsForActionButton(transaction)
+  const canReturn =
+    (transaction.status === 'active' ||
+      transaction.status === 'terlambat' ||
+      transaction.status === 'diambil' ||
+      transaction.status === 'pending_resolution') && // ✅ TASK 2: Allow returns even when waiting for lost item resolution
+    hasReturnableItemsForActionButton(transaction)
   // ✅ TASK 7.1: Detect unresolved lost items
   // FIX: Use conditionBreakdown (not multiConditionSummary.conditionBreakdown) which has resolutionStatus
   const hasUnresolvedLostItems = transaction.products?.some((p) => {
@@ -143,19 +151,21 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
 
   // Collect lost items for modal
   // FIX: Use conditionBreakdown (not multiConditionSummary.conditionBreakdown) which has resolutionStatus
-  const lostItems = transaction.products
-    ?.flatMap((p) =>
-      p.conditionBreakdown
-        ?.filter((c) => c.kondisiAkhir.toLowerCase().includes('hilang') && !c.resolutionStatus)
-        .map((c) => ({
-          returnRecordId: c.id || '',
-          itemId: p.id,
-          productName: p.product.name,
-          sizeInfo: p.sizeInfo || 'N/A',
-          depositAmount: Number(c.penaltyAmount || 0),
-        })) || [],
-    )
-    .filter((item) => item.returnRecordId) || []
+  const lostItems =
+    transaction.products
+      ?.flatMap(
+        (p) =>
+          p.conditionBreakdown
+            ?.filter((c) => c.kondisiAkhir.toLowerCase().includes('hilang') && !c.resolutionStatus)
+            .map((c) => ({
+              returnRecordId: c.id || '',
+              itemId: p.id,
+              productName: p.product.name,
+              sizeInfo: p.sizeInfo || 'N/A',
+              depositAmount: Number(c.penaltyAmount || 0),
+            })) || [],
+      )
+      .filter((item) => item.returnRecordId) || []
 
   // Debug logging for lost items
   componentLogger.debug('lostItems', 'Lost items collection', {
@@ -170,15 +180,15 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
 
   // Enhanced button visibility logic - FIXED: Allow actions for 'active', 'terlambat', and 'diambil' status
   // REMOVED: Old canReturn logic - now using enhanced partial return utilities above
-  
+
   // ✅ TASK 10: Fix partial pickup button visibility
   // Include 'diambil' status to support partial pickups across multiple visits
   // isPickupAvailable() already checks for remaining items, so we just need to allow the status
-  const canPickup = (
-    transaction.status === 'active' || 
-    transaction.status === 'terlambat' ||
-    transaction.status === 'diambil'  // Allow pickup even if status is 'diambil' (for partial pickups)
-  ) && isPickupAvailable(transaction)
+  const canPickup =
+    (transaction.status === 'active' ||
+      transaction.status === 'terlambat' ||
+      transaction.status === 'diambil') && // Allow pickup even if status is 'diambil' (for partial pickups)
+    isPickupAvailable(transaction)
   const needsPayment =
     transaction.amountPaid < transaction.totalAmount ||
     (transaction.penalties && transaction.penalties.some((p) => p.status === 'pending'))
@@ -189,9 +199,7 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
   // ✅ FIX: Lost item resolution button visibility
   // Show button for 'pending_resolution' (new status) and 'selesai' (backward compatibility)
   // Hide for 'cancelled' status
-  const canResolveLostItems = 
-    hasUnresolvedLostItems && 
-    transaction.status !== 'cancelled'
+  const canResolveLostItems = hasUnresolvedLostItems && transaction.status !== 'cancelled'
 
   // COMPREHENSIVE LOGGING for debugging button visibility
   componentLogger.debug('render', 'Button visibility calculation', {
@@ -202,16 +210,16 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
     canCancel,
     needsPayment,
     productsCount: transaction.products?.length || 0,
-    productsWithPickup: transaction.products?.map(p => ({
+    productsWithPickup: transaction.products?.map((p) => ({
       id: p.id,
       productName: p.product.name,
       quantity: p.quantity,
       jumlahDiambil: p.jumlahDiambil,
-      hasPickup: (p.jumlahDiambil || 0) > 0
+      hasPickup: (p.jumlahDiambil || 0) > 0,
     })),
     totalAmount: transaction.totalAmount,
     amountPaid: transaction.amountPaid,
-    penalties: transaction.penalties?.map(p => ({ status: p.status }))
+    penalties: transaction.penalties?.map((p) => ({ status: p.status })),
   })
 
   return (
@@ -326,14 +334,14 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
             <div className="flex items-center justify-between pt-2 border-t border-gray-100">
               <span className="text-xs text-gray-500">Progress Pengembalian:</span>
               <div className="flex items-center gap-2">
-                <Badge 
-                  variant="outline" 
+                <Badge
+                  variant="outline"
                   className={`text-xs ${
-                    returnProgress.status === 'complete' 
+                    returnProgress.status === 'complete'
                       ? 'border-green-200 text-green-700 bg-green-50'
                       : returnProgress.status === 'partial'
-                      ? 'border-yellow-200 text-yellow-700 bg-yellow-50'
-                      : 'border-gray-200 text-gray-600 bg-gray-50'
+                        ? 'border-yellow-200 text-yellow-700 bg-yellow-50'
+                        : 'border-gray-200 text-gray-600 bg-gray-50'
                   }`}
                 >
                   {formatReturnProgress(returnProgress)}
@@ -348,8 +356,20 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
       <PaymentModal
         isOpen={isPaymentModalOpen}
         onClose={() => {
+          componentLogger.info('onClose', 'Payment modal closing - triggering data refresh')
+
           setIsPaymentModalOpen(false)
           setIsProcessing(null)
+
+          // ✅ FIX: Force refresh transaction data after payment to update amountPaid and button visibility
+          queryClient.invalidateQueries({
+            queryKey: queryKeys.kasir.transaksi.detail(transaction.transactionCode),
+          })
+
+          componentLogger.debug('onClose', 'Query invalidation triggered for payment', {
+            transactionCode: transaction.transactionCode,
+            queryKey: queryKeys.kasir.transaksi.detail(transaction.transactionCode),
+          })
         }}
         transaction={transaction}
       />
@@ -370,7 +390,7 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
 
           componentLogger.debug('onClose', 'Query invalidation triggered', {
             transactionCode: transaction.transactionCode,
-            queryKey: queryKeys.kasir.transaksi.detail(transaction.transactionCode)
+            queryKey: queryKeys.kasir.transaksi.detail(transaction.transactionCode),
           })
         }}
         transaction={transaction}
@@ -392,7 +412,7 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
 
           componentLogger.debug('onClose', 'Query invalidation triggered for cancel', {
             transactionCode: transaction.transactionCode,
-            queryKey: queryKeys.kasir.transaksi.detail(transaction.transactionCode)
+            queryKey: queryKeys.kasir.transaksi.detail(transaction.transactionCode),
           })
         }}
         transaction={transaction}
@@ -412,10 +432,14 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
             queryKey: queryKeys.kasir.transaksi.detail(transaction.transactionCode),
           })
 
-          componentLogger.debug('onClose', 'Query invalidation triggered for lost item resolution', {
-            transactionCode: transaction.transactionCode,
-            queryKey: queryKeys.kasir.transaksi.detail(transaction.transactionCode)
-          })
+          componentLogger.debug(
+            'onClose',
+            'Query invalidation triggered for lost item resolution',
+            {
+              transactionCode: transaction.transactionCode,
+              queryKey: queryKeys.kasir.transaksi.detail(transaction.transactionCode),
+            },
+          )
         }}
         transaction={transaction}
         lostItems={lostItems}
