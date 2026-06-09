@@ -11,7 +11,7 @@ import { TransactionTable } from './TransactionsTable'
 import { TransactionPagination } from './TransactionPagination'
 import { Button } from '@/components/ui/button'
 import { AuthenticationControls } from '@/features/auth/components/AuthenticationControls'
-import { Plus, Shirt, Wallet } from 'lucide-react'
+import { Plus, Shirt, Wallet, RefreshCw } from 'lucide-react'
 
 export function TransactionsDashboard() {
   const searchParams = useSearchParams()
@@ -273,6 +273,21 @@ export function TransactionsDashboard() {
 
           {/* Action Buttons */}
           <div className="flex justify-end gap-3">
+            {/* ✅ PHASE 2: Manual Refresh Button */}
+            <Button
+              onClick={refreshTransactions}
+              variant="outline"
+              disabled={isLoading}
+              className="bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100 hover:border-blue-300 font-medium shadow-sm"
+              data-testid="refresh-button"
+            >
+              <RefreshCw
+                className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`}
+                aria-hidden="true"
+              />
+              {isLoading ? 'Memuat...' : 'Refresh Data'}
+            </Button>
+
             {/* Dana Kasir Button */}
             <Link href="/dana-kasir" data-testid="dana-kasir-link">
               <Button

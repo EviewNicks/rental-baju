@@ -22,9 +22,14 @@ export function unauthorizedResponse() {
   )
 }
 
-export function successResponse(data: unknown, message = 'Success', statusCode = 200) {
+export function successResponse(
+  data: unknown,
+  message = 'Success',
+  statusCode = 200,
+  headers?: HeadersInit,
+) {
   const { response, status } = createSuccessResponse(data, message, statusCode)
-  return NextResponse.json(response, { status })
+  return NextResponse.json(response, { status, headers })
 }
 
 export function validationErrorResponse(error: ZodError) {
@@ -133,7 +138,7 @@ export function handleTransaksiError(error: unknown) {
     {
       technical: structuredError.technical,
       transactionId: structuredError.transactionId,
-    }
+    },
   )
 }
 
@@ -161,7 +166,7 @@ export function handleTransaksiError(error: unknown) {
 export function errorResponse(
   code: ErrorCode,
   context: ErrorContext = {},
-  additionalContext?: { technical?: string; transactionId?: string }
+  additionalContext?: { technical?: string; transactionId?: string },
 ) {
   return ErrorService.createErrorResponse(code, context, additionalContext)
 }
@@ -185,7 +190,7 @@ export function stockInsufficientError(
   productName: string,
   size: string,
   available: number,
-  requested: number
+  requested: number,
 ) {
   return ErrorService.createErrorResponse(ErrorCode.ERR_STK_001, {
     productName,
@@ -211,7 +216,7 @@ export function customerNotFoundError(customerId?: string) {
   return ErrorService.createErrorResponse(
     ErrorCode.ERR_CUST_001,
     {},
-    { technical: customerId ? `Customer ID: ${customerId}` : undefined }
+    { technical: customerId ? `Customer ID: ${customerId}` : undefined },
   )
 }
 
@@ -273,11 +278,7 @@ export function dateConflictError(transactionCode: string, startDate: string, en
  * ```
  */
 export function fieldValidationError(field: string, message?: string) {
-  return ErrorService.createErrorResponse(
-    ErrorCode.ERR_VAL_001,
-    { field },
-    { technical: message }
-  )
+  return ErrorService.createErrorResponse(ErrorCode.ERR_VAL_001, { field }, { technical: message })
 }
 
 /**
@@ -309,10 +310,9 @@ export function missingFieldError(field: string) {
  * ```
  */
 export function productNotFoundError(productName?: string) {
-  return ErrorService.createErrorResponse(
-    ErrorCode.ERR_PROD_001,
-    { productName: productName ?? 'Produk' }
-  )
+  return ErrorService.createErrorResponse(ErrorCode.ERR_PROD_001, {
+    productName: productName ?? 'Produk',
+  })
 }
 
 /**
