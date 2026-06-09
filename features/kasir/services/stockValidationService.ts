@@ -128,9 +128,7 @@ export class StockValidationService {
    * // Returns: [{ id, productId, product: {...}, ... }]
    * ```
    */
-  async getProductSizesWithDetails(
-    productSizeIds: string[]
-  ): Promise<ProductSizeWithDetails[]> {
+  async getProductSizesWithDetails(productSizeIds: string[]): Promise<ProductSizeWithDetails[]> {
     if (productSizeIds.length === 0) {
       return []
     }
@@ -171,14 +169,18 @@ export class StockValidationService {
   }
 
   /**
-   * Check date-aware availability using CTE for overlapping rentals
+   * Check date-aware availability using REVERSE PRIORITY approach
    *
-   * PERFORMANCE: Uses a single query with CTE (Common Table Expression) to calculate
-   * overlapping rentals for all product sizes in one operation. This replaces the N+1
-   * pattern where each product size required a separate query for active rentals.
+   * ✅ FIX: Query by DATE FIRST (indexed + reliable), then parse kondisiAwal in app layer
+   * This fixes false positive issues where string matching caught non-overlapping transactions
+   *
+   * STRATEGY:
+   * 1. Query ALL active/diambil transactions that overlap with date range (indexed, fast)
+   * 2. Parse kondisiAwal JSON in application layer to filter by productSizeId
+   * 3. Calculate reserved quantities per productSizeId
+   * 4. Return accurate availability results with debug logging
    *
    * Uses index: idx_transaksi_date_range_status for date range filtering
-   * Uses index: idx_transaksi_item_product_created for product lookup
    *
    * @param productSizeIds - Array of product size IDs to check
    * @param startDate - Start of rental period
@@ -197,104 +199,165 @@ export class StockValidationService {
   async checkDateAwareAvailability(
     productSizeIds: string[],
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<AvailabilityResult[]> {
     if (productSizeIds.length === 0) {
       return []
     }
 
-    // SINGLE QUERY: Get all product sizes with current stock
+    console.log('🔍 [STOCK VALIDATION] Starting date-aware availability check', {
+      productSizeIds,
+      dateRange: { start: startDate.toISOString(), end: endDate.toISOString() },
+      timestamp: new Date().toISOString(),
+    })
+
+    // STEP 1: Get all product sizes with current stock
     const productSizes = await this.getProductSizesWithDetails(productSizeIds)
 
-    // SINGLE QUERY: Get all overlapping transaction items in one query
-    // Uses idx_transaksi_date_range_status for date overlap filtering
-    // ✅ FIX: Use contains instead of startsWith to properly search JSON in kondisiAwal
-    const overlappingItems = await this.prisma.transaksiItem.findMany({
+    // STEP 2: Query by DATE FIRST - Get ALL overlapping transactions (indexed query, fast)
+    // This is the key fix: We prioritize date filtering over kondisiAwal parsing
+    const overlappingTransactions = await this.prisma.transaksi.findMany({
       where: {
-        // ✅ FIX: Search for exact JSON key-value pair in kondisiAwal field
-        // Format: {"productSizeId":"uuid-123",...} - search for the key-value pair
-        OR: productSizeIds.map((id) => ({
-          kondisiAwal: {
-            contains: `"productSizeId":"${id}"`,
-          },
-        })),
-        transaksi: {
-          status: {
-            in: ['active', 'diambil'], // Only active or picked-up transactions
-          },
-          // Date overlap condition: (tglMulai <= endDate) AND (tglSelesai >= startDate OR tglSelesai IS NULL)
-          AND: [
-            {
-              tglMulai: { lte: endDate },
-            },
-            {
-              OR: [
-                { tglSelesai: { gte: startDate } }, // Has end date and overlaps
-                { tglSelesai: null }, // No end date (ongoing rental)
-              ],
-            },
-          ],
+        status: {
+          in: ['active', 'diambil'], // Only active or picked-up transactions
         },
+        // Date overlap condition: (tglMulai <= endDate) AND (tglSelesai >= startDate OR tglSelesai IS NULL)
+        tglMulai: { lte: endDate },
+        OR: [
+          { tglSelesai: { gte: startDate } }, // Has end date and overlaps
+          { tglSelesai: null }, // No end date (ongoing rental)
+        ],
       },
       include: {
-        transaksi: {
-          select: {
-            kode: true,
-            status: true,
-            tglMulai: true,
-            tglSelesai: true,
-          },
-        },
+        items: true, // Get all items to parse kondisiAwal
       },
     })
 
-    // Group overlapping items by productSizeId (extracted from kondisiAwal)
-    const overlappingBySize = new Map<string, typeof overlappingItems>()
+    console.log('🔍 [STOCK VALIDATION] Found overlapping transactions', {
+      count: overlappingTransactions.length,
+      transactions: overlappingTransactions.map((t) => ({
+        code: t.kode,
+        status: t.status,
+        dates: `${t.tglMulai.toISOString()} - ${t.tglSelesai?.toISOString() || 'ongoing'}`,
+        itemCount: t.items.length,
+      })),
+    })
 
-    for (const item of overlappingItems) {
-      let productSizeId: string | null = null
+    // STEP 3: Parse kondisiAwal in APPLICATION LAYER to filter by productSizeId
+    // This gives us full control and avoids string matching false positives
+    const relevantItems: Array<{
+      transaksiId: string
+      transaksiKode: string
+      transaksiStatus: string
+      transaksiStartDate: Date
+      transaksiEndDate: Date | null
+      productSizeId: string
+      quantity: number
+      kondisiAwal: string | null
+    }> = []
 
-      // Extract productSizeId from kondisiAwal
-      // Format: "productSizeId|size|ageCategory|condition" or JSON
-      try {
-        if (item.kondisiAwal?.startsWith('{')) {
-          const parsed = JSON.parse(item.kondisiAwal)
-          productSizeId = parsed.productSizeId
-        } else {
-          const parts = item.kondisiAwal?.split('|') || []
-          productSizeId = parts[0]
+    for (const transaction of overlappingTransactions) {
+      for (const item of transaction.items) {
+        let parsedSizeId: string | null = null
+
+        // Try to extract productSizeId from kondisiAwal
+        try {
+          if (item.kondisiAwal?.startsWith('{')) {
+            // JSON format: {"productSizeId":"uuid",...}
+            const parsed = JSON.parse(item.kondisiAwal)
+            parsedSizeId = parsed.productSizeId
+          } else if (item.kondisiAwal) {
+            // Legacy format: "productSizeId|size|ageCategory|condition"
+            const parts = item.kondisiAwal.split('|')
+            parsedSizeId = parts[0]
+          }
+        } catch (error) {
+          console.warn('⚠️ [STOCK VALIDATION] Failed to parse kondisiAwal', {
+            itemId: item.id,
+            kondisiAwal: item.kondisiAwal,
+            error: error instanceof Error ? error.message : 'Unknown error',
+          })
+          continue // Skip invalid kondisiAwal
         }
-      } catch {
-        // Failed to parse, skip this item
-        continue
-      }
 
-      if (productSizeId && productSizeIds.includes(productSizeId)) {
-        if (!overlappingBySize.has(productSizeId)) {
-          overlappingBySize.set(productSizeId, [])
+        // Check if this item matches our target productSizeIds
+        if (parsedSizeId && productSizeIds.includes(parsedSizeId)) {
+          relevantItems.push({
+            transaksiId: transaction.id,
+            transaksiKode: transaction.kode,
+            transaksiStatus: transaction.status,
+            transaksiStartDate: transaction.tglMulai,
+            transaksiEndDate: transaction.tglSelesai,
+            productSizeId: parsedSizeId,
+            quantity: item.jumlah,
+            kondisiAwal: item.kondisiAwal,
+          })
         }
-        overlappingBySize.get(productSizeId)!.push(item)
       }
     }
 
-    // Build availability results
+    console.log('🔍 [STOCK VALIDATION] Filtered relevant items', {
+      count: relevantItems.length,
+      items: relevantItems.map((i) => ({
+        txnCode: i.transaksiKode,
+        productSizeId: i.productSizeId,
+        quantity: i.quantity,
+        dates: `${i.transaksiStartDate.toISOString()} - ${i.transaksiEndDate?.toISOString() || 'ongoing'}`,
+      })),
+    })
+
+    // STEP 4: Group by productSizeId and calculate reserved quantities
+    const reservedBySize = new Map<string, typeof relevantItems>()
+
+    for (const item of relevantItems) {
+      if (!reservedBySize.has(item.productSizeId)) {
+        reservedBySize.set(item.productSizeId, [])
+      }
+      reservedBySize.get(item.productSizeId)!.push(item)
+    }
+
+    // STEP 5: Build availability results with detailed logging
     const results: AvailabilityResult[] = productSizes.map((size) => {
-      const overlapping = overlappingBySize.get(size.id) || []
-      const reservedQuantity = overlapping.reduce((sum, item) => sum + item.jumlah, 0)
+      const overlappingItems = reservedBySize.get(size.id) || []
+      const reservedQuantity = overlappingItems.reduce((sum, item) => sum + item.quantity, 0)
+      const availableQuantity = Math.max(0, size.originalQuantity - reservedQuantity)
+
+      console.log('📊 [STOCK VALIDATION] Calculated availability', {
+        productSizeId: size.id,
+        productName: size.product.name,
+        size: `${size.size} (${size.ageCategory})`,
+        totalStock: size.originalQuantity,
+        reservedQuantity,
+        availableQuantity,
+        overlappingTransactions: overlappingItems.map((item) => ({
+          code: item.transaksiKode,
+          quantity: item.quantity,
+          dates: `${item.transaksiStartDate.toISOString()} - ${item.transaksiEndDate?.toISOString() || 'ongoing'}`,
+        })),
+      })
 
       return {
         productSizeId: size.id,
-        availableQuantity: Math.max(0, size.availableQuantity - reservedQuantity),
+        availableQuantity,
         reservedQuantity,
         totalStock: size.originalQuantity,
-        overlappingTransactions: overlapping.map((item) => ({
-          transactionCode: item.transaksi.kode,
-          quantity: item.jumlah,
-          startDate: item.transaksi.tglMulai,
-          endDate: item.transaksi.tglSelesai,
-          status: item.transaksi.status,
+        overlappingTransactions: overlappingItems.map((item) => ({
+          transactionCode: item.transaksiKode,
+          quantity: item.quantity,
+          startDate: item.transaksiStartDate,
+          endDate: item.transaksiEndDate,
+          status: item.transaksiStatus,
         })),
       }
+    })
+
+    console.log('✅ [STOCK VALIDATION] Final results', {
+      results: results.map((r) => ({
+        productSizeId: r.productSizeId,
+        available: r.availableQuantity,
+        reserved: r.reservedQuantity,
+        total: r.totalStock,
+      })),
     })
 
     return results
@@ -337,7 +400,7 @@ export class StockValidationService {
   async validateBulkStockAvailability(
     items: StockValidationItem[],
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<StockValidationResult> {
     const startTime = Date.now()
 
@@ -351,12 +414,12 @@ export class StockValidationService {
     const availabilityResults = await this.checkDateAwareAvailability(
       productSizeIds,
       startDate,
-      endDate
+      endDate,
     )
 
     // Create lookup map for availability results
     const availabilityMap = new Map(
-      availabilityResults.map((result) => [result.productSizeId, result])
+      availabilityResults.map((result) => [result.productSizeId, result]),
     )
 
     // Build validation results for each item
@@ -413,9 +476,7 @@ export class StockValidationService {
    * @param productSizeIds - Array of product size IDs to check
    * @returns Map of productSizeId to available quantity
    */
-  async getQuickAvailability(
-    productSizeIds: string[]
-  ): Promise<Map<string, number>> {
+  async getQuickAvailability(productSizeIds: string[]): Promise<Map<string, number>> {
     if (productSizeIds.length === 0) {
       return new Map()
     }
@@ -445,8 +506,6 @@ export class StockValidationService {
  * @param prisma - Prisma client instance
  * @returns StockValidationService instance
  */
-export function createStockValidationService(
-  prisma: PrismaClient
-): StockValidationService {
+export function createStockValidationService(prisma: PrismaClient): StockValidationService {
   return new StockValidationService(prisma)
 }

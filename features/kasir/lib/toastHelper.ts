@@ -54,7 +54,8 @@ export function showApiError(errorResponse: ApiErrorResponse | unknown): void {
     const { error } = apiError
 
     // Map category to toast type
-    const toastType = error.category === 'CRITICAL' ? 'error' : error.category === 'WARNING' ? 'warning' : 'info'
+    const toastType =
+      error.category === 'CRITICAL' ? 'error' : error.category === 'WARNING' ? 'warning' : 'info'
 
     // Build description from actions if available
     const description = error.actions?.length ? error.actions.join('\n') : undefined
@@ -71,13 +72,22 @@ export function showApiError(errorResponse: ApiErrorResponse | unknown): void {
   if ('message' in errorResponse) {
     const errorMessage = String(errorResponse.message)
 
-    // ✅ FIX: Extract additional error details for better UX
+    // ✅ FIX: Check if this is a KasirApiError with category and actions
     const error = errorResponse as any
+
+    // ✅ NEW: Use category from KasirApiError if available
+    const category = error.category || 'CRITICAL' // Default to CRITICAL for safety
+    const toastType =
+      category === 'CRITICAL' ? 'error' : category === 'WARNING' ? 'warning' : 'info'
+
+    // ✅ NEW: Use actions from KasirApiError if available
     let description: string | undefined
 
-    // Try to get detailed error information
-    if (error.details) {
-      // Backend error with details object
+    if (error.actions && Array.isArray(error.actions) && error.actions.length > 0) {
+      // Use actions from backend error response
+      description = error.actions.join('\n')
+    } else if (error.details) {
+      // Fallback: Extract additional error details for better UX
       if (typeof error.details === 'string') {
         description = error.details
       } else if (error.details.errorDetails) {
@@ -94,9 +104,10 @@ export function showApiError(errorResponse: ApiErrorResponse | unknown): void {
       description = error.context
     }
 
+    // ✅ FIX: Use appropriate toast type based on category
     // ✅ FIX: Use Infinity duration for manual close - toast stays until user clicks close
     // ✅ FIX: Add action button for manual dismissal
-    toast.error(errorMessage, {
+    toast[toastType](errorMessage, {
       description: description || 'Klik tombol tutup untuk menutup pesan ini',
       duration: Infinity, // Toast stays visible until manually closed
       action: {
@@ -195,7 +206,7 @@ export function showPromiseToast<T>(
     loading: string
     success: string | ((data: T) => string)
     error: string | ((error: unknown) => string)
-  }
+  },
 ): void {
   toast.promise(promise, messages)
 }

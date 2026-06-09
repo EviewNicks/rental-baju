@@ -159,10 +159,12 @@ export class InventoryService {
     kondisiAwal: string | null,
     quantity: number,
     itemId: string,
-    //eslint-disable-next-line @typescript-eslint/no-explicit-any
     logger?: {
+      //eslint-disable-next-line @typescript-eslint/no-explicit-any
       warn: (msg: string, context?: any) => void
+      //eslint-disable-next-line @typescript-eslint/no-explicit-any
       info: (msg: string, context?: any) => void
+      //eslint-disable-next-line @typescript-eslint/no-explicit-any
       error: (msg: string, context?: any) => void
     },
   ): Promise<void> {
@@ -274,10 +276,13 @@ export class InventoryService {
     kondisiAwal: string | null,
     quantity: number,
     itemId: string,
-    //eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     logger?: {
+      //eslint-disable-next-line @typescript-eslint/no-explicit-any
       warn: (msg: string, context?: any) => void
+      //eslint-disable-next-line @typescript-eslint/no-explicit-any
       info: (msg: string, context?: any) => void
+      //eslint-disable-next-line @typescript-eslint/no-explicit-any
       error: (msg: string, context?: any) => void
     },
   ): Promise<void> {
@@ -411,9 +416,112 @@ export class InventoryService {
   }
 
   /**
-   * Check if sufficient stock is available for rental
+   * Calculate available stock for a specific date range by checking overlapping bookings
+   * DATE-AWARE VALIDATION: Prevents double-booking by calculating actual available stock
+   *
+   * @param sizeId - ProductSize ID to check
+   * @param startDate - Rental start date
+   * @param endDate - Rental end date
+   * @returns Available stock quantity for the specified date range
+   */
+  async calculateAvailableStockByDateRange(
+    sizeId: string,
+    startDate: Date,
+    endDate: Date,
+  ): Promise<number> {
+    try {
+      // Get total stock
+      const productSize = await this.prisma.productSize.findUnique({
+        where: { id: sizeId },
+        select: {
+          originalQuantity: true,
+          product: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      })
+
+      if (!productSize) {
+        return 0
+      }
+
+      const totalStock = Math.max(0, productSize.originalQuantity || 0)
+
+      // Query overlapping transactions with date-aware filtering
+      // Status: active, diambil, terlambat (exclude: selesai, cancelled)
+      const overlappingTransactions = await this.prisma.transaksi.findMany({
+        where: {
+          status: {
+            in: ['active', 'diambil', 'terlambat'],
+          },
+          // Date overlap check: existing rental overlaps with requested dates
+          AND: [
+            { tglMulai: { lte: endDate } }, // Existing start <= requested end
+            { tglSelesai: { gte: startDate } }, // Existing end >= requested start
+          ],
+        },
+        include: {
+          items: {
+            where: {
+              // ✅ FIX: kondisiAwal contains productSizeId in format "sizeId|size|age|condition"
+              kondisiAwal: {
+                contains: sizeId,
+              },
+            },
+            select: {
+              jumlah: true,
+            },
+          },
+        },
+      })
+
+      // Calculate total booked quantity for overlapping date range
+      const bookedQuantity = overlappingTransactions.reduce((total, transaction) => {
+        // ✅ FIX: Add proper typing for reduce callback
+        const itemQuantity = transaction.items.reduce(
+          (sum: number, item: { jumlah: number }) => sum + item.jumlah,
+          0,
+        )
+        return total + itemQuantity
+      }, 0)
+
+      // Calculate available stock
+      const availableStock = totalStock - bookedQuantity
+
+      // Log for debugging
+      console.info('📅 Date-aware stock calculation', {
+        productName: productSize.product.name,
+        sizeId,
+        totalStock,
+        bookedQuantity,
+        availableStock,
+        dateRange: {
+          start: startDate.toISOString().split('T')[0],
+          end: endDate.toISOString().split('T')[0],
+        },
+        overlappingTransactionsCount: overlappingTransactions.length,
+      })
+
+      return Math.max(0, availableStock)
+    } catch (error) {
+      console.error('❌ Error calculating date-aware stock availability', {
+        sizeId,
+        startDate,
+        endDate,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      })
+      // Return 0 on error to prevent overselling
+      return 0
+    }
+  }
+
+  /**
+   * Check if sufficient stock is available for rental (LEGACY - Non-date-aware)
    * Uses real-time database data for accurate validation
    *
+   * @deprecated Use checkAvailabilityWithDateRange for date-aware validation
    * @param sizeId - ProductSize ID to check
    * @param requestedQty - Quantity being requested (must be > 0)
    * @returns boolean indicating if requested quantity is available
@@ -444,6 +552,30 @@ export class InventoryService {
       // Return false on error to prevent overselling
       return false
     }
+  }
+
+  /**
+   * Check if sufficient stock is available for a specific date range
+   * DATE-AWARE VALIDATION: Prevents double-booking
+   *
+   * @param sizeId - ProductSize ID to check
+   * @param requestedQty - Quantity being requested (must be > 0)
+   * @param startDate - Rental start date
+   * @param endDate - Rental end date
+   * @returns boolean indicating if requested quantity is available for the date range
+   */
+  async checkAvailabilityWithDateRange(
+    sizeId: string,
+    requestedQty: number,
+    startDate: Date,
+    endDate: Date,
+  ): Promise<boolean> {
+    if (requestedQty <= 0) {
+      return false
+    }
+
+    const availableStock = await this.calculateAvailableStockByDateRange(sizeId, startDate, endDate)
+    return availableStock >= requestedQty
   }
 
   /**

@@ -18,12 +18,16 @@ import type { ProductSelection } from '../../types'
 import { transactionFormSteps } from '../../lib/constants/workflowConfig'
 import { TransactionLogger } from '../../lib/logger/transactionLogger'
 import { queryKeys } from '@/lib/react-query'
-import { showApiError, showSuccess as showSuccessToast } from '../../lib/toastHelper'
+import { showSuccess as showSuccessToast } from '../../lib/toastHelper'
+import { TransactionErrorModal } from './TransactionErrorModal'
+import type { KasirApiError } from '../../api'
 
 export function TransactionFormPage() {
   const router = useRouter()
   const queryClient = useQueryClient()
   const [showSuccess, setShowSuccess] = useState(false)
+  const [showErrorModal, setShowErrorModal] = useState(false)
+  const [errorDetails, setErrorDetails] = useState<KasirApiError | null>(null)
 
   // 🔍 Initialize logger for this component
   // const logger = useLogger('TransactionFormPage')
@@ -76,12 +80,12 @@ export function TransactionFormPage() {
     product: ProductSelection['product'],
     quantity: number,
     productSizeId?: string,
-    linkedSarung?: ProductSelection['linkedSarung']
+    linkedSarung?: ProductSelection['linkedSarung'],
   ) => {
     // 🔧 FIX: Resolve selectedSize from product.sizes array using productSizeId
     let selectedSize: ProductSelection['selectedSize'] | undefined
     if (productSizeId && product.sizes && product.sizes.length > 0) {
-      selectedSize = product.sizes.find(size => size.id === productSizeId)
+      selectedSize = product.sizes.find((size) => size.id === productSizeId)
     }
 
     const productSelection: ProductSelection = {
@@ -106,14 +110,16 @@ export function TransactionFormPage() {
       console.error('Failed to add product', {
         productId: product.id,
         productSizeId,
-        linkedSarung: linkedSarung ? { productId: linkedSarung.productId, quantity: linkedSarung.quantity } : null,
+        linkedSarung: linkedSarung
+          ? { productId: linkedSarung.productId, quantity: linkedSarung.quantity }
+          : null,
         error: error instanceof Error ? error.message : 'Unknown error',
         timestamp: new Date().toISOString(),
       })
     }
   }
 
-  const handleSubmitTransaction = async () => {
+  const handleSubmitTransaction = async (): Promise<boolean> => {
     // 🔍 LOG: Transaction submission start
     const transactionData = {
       productCount: formData.products.length,
@@ -136,12 +142,10 @@ export function TransactionFormPage() {
     // 🔍 LOG: Log form data before API submission
     TransactionLogger.logFormData(transactionData)
 
-    // Use toast.promise for progressive loading feedback
+    // ✅ FIX: Use try-catch to handle errors from submitTransaction
     try {
-      // First submit the transaction
       const success = await submitTransaction()
 
-      // Then show appropriate toast based on result
       if (success) {
         setShowSuccess(true)
 
@@ -159,45 +163,40 @@ export function TransactionFormPage() {
         }, 2000)
 
         return true
-      } else {
-        // 🔍 LOG: Transaction failure
-        const errorDetails = {
-          ...transactionData,
-          result: 'FAILURE',
-          error: createError?.message || 'Unknown error',
-          errorCode: createError?.code || 'UNKNOWN_ERROR',
-          timestamp: new Date().toISOString(),
-        }
-
-        console.error('❌ Transaction submission failed', errorDetails)
-
-        // Show error toast using backend error response
-        showApiError(createError)
-
-        return false
       }
+
+      // If success is false/undefined, it will be caught by mutation error
+      return false
     } catch (error) {
-      // 🔍 LOG: Unexpected error
-      const errorDetails = {
-        ...transactionData,
-        result: 'FAILURE',
-        error: error instanceof Error ? error.message : 'Unknown error',
-        errorCode: 'UNEXPECTED_ERROR',
-        timestamp: new Date().toISOString(),
-      }
+      // ✅ FIX: Error is now properly caught here with full KasirApiError details
+      console.error('❌ Transaction submission error caught:', error)
 
-      console.error('❌ Unexpected error during transaction submission', errorDetails)
-
-      // Show fallback error toast
-      showApiError({
-        success: false,
-        error: {
-          code: 'UNEXPECTED_ERROR',
-          message: 'Terjadi kesalahan tidak terduga. Silakan coba lagi.',
+      // Show error modal with full error details from createError
+      // createError is now populated by TanStack Query mutation error
+      if (createError) {
+        console.log('✅ createError available:', createError)
+        setErrorDetails(createError as KasirApiError)
+        setShowErrorModal(true)
+      } else {
+        // Fallback for when no error details available
+        console.warn('⚠️ No createError, using fallback')
+        const fallbackError: KasirApiError = {
+          name: 'KasirApiError',
+          code: 'UNKNOWN_ERROR',
+          message:
+            error instanceof Error
+              ? error.message
+              : 'Terjadi kesalahan tidak terduga. Silakan coba lagi.',
           category: 'CRITICAL',
-          timestamp: new Date().toISOString(),
-        },
-      })
+          actions: [
+            'Periksa koneksi internet Anda',
+            'Refresh halaman dan coba lagi',
+            'Hubungi admin jika masalah berlanjut',
+          ],
+        }
+        setErrorDetails(fallbackError)
+        setShowErrorModal(true)
+      }
 
       return false
     }
@@ -213,6 +212,16 @@ export function TransactionFormPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      {/* Error Modal */}
+      <TransactionErrorModal
+        isOpen={showErrorModal}
+        onClose={() => {
+          setShowErrorModal(false)
+          setErrorDetails(null)
+        }}
+        error={errorDetails}
+      />
+
       {/* Header */}
       <div
         className="bg-white/80 backdrop-blur-sm border-b border-gray-200/50 sticky top-0 z-10"
@@ -291,11 +300,13 @@ export function TransactionFormPage() {
           {currentStep === 3 && (
             <div data-testid="cashier-selection-step">
               <CashierSelectionStep
-                selectedKasir={formData.kasirSelection || {
-                  kasirId: null,
-                  kasirInfo: null,
-                  isAutoAssigned: false,
-                }}
+                selectedKasir={
+                  formData.kasirSelection || {
+                    kasirId: null,
+                    kasirInfo: null,
+                    isAutoAssigned: false,
+                  }
+                }
                 onSelectKasir={setKasirSelection}
                 onNext={nextStep}
                 onPrev={prevStep}

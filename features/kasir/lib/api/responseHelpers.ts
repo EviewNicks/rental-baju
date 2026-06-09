@@ -120,6 +120,7 @@ export function internalErrorResponse() {
  * Enhanced with ErrorService integration for standardized error responses
  * Maintains backward compatibility with existing error patterns
  *
+ * ✅ FIX: Preserve context data from StructuredError thrown by service
  * Requirements: 13.1, 13.2, 13.3, 13.4, 13.5
  */
 export function handleTransaksiError(error: unknown) {
@@ -128,7 +129,35 @@ export function handleTransaksiError(error: unknown) {
     return validationErrorResponse(error)
   }
 
-  // Convert to structured error using ErrorService
+  // ✅ CRITICAL FIX: Check if error is already a StructuredError with context
+  // If yes, use it directly to preserve context data (available, requested, productName, size)
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    'context' in error &&
+    'category' in error &&
+    'timestamp' in error
+  ) {
+    // Error is already StructuredError - preserve its context
+    const structuredError = error as {
+      code: ErrorCode
+      context: ErrorContext
+      technical?: string
+      transactionId?: string
+    }
+
+    return ErrorService.createErrorResponse(
+      structuredError.code,
+      structuredError.context, // ✅ Preserve original context
+      {
+        technical: structuredError.technical,
+        transactionId: structuredError.transactionId,
+      },
+    )
+  }
+
+  // For non-structured errors, convert using ErrorService
   const structuredError = ErrorService.fromError(error)
 
   // Return standardized error response

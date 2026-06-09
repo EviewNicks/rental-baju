@@ -27,6 +27,8 @@ import {
 } from '../lib/utils/performanceMonitor'
 // TASK 3: Retry handler for database operations
 import { RetryHandler } from '../lib/resilience/RetryHandler'
+// ✅ FIX: Import ErrorService for structured error handling
+import { ErrorService, ErrorCode } from '../lib/errors/ErrorService'
 
 export interface TransaksiWithDetails extends Transaksi {
   penyewa: {
@@ -274,8 +276,8 @@ export class TransaksiService {
       enabled: process.env.ENABLE_PERFORMANCE_MONITORING === 'true',
       slowQueryThreshold: 3000, // Log queries > 3 seconds
     })
-    // TASK 3: Initialize retry handler with 3 max attempts
-    this.retryHandler = new RetryHandler({ maxAttempts: 3 })
+    // TASK 3: Initialize retry handler with 2 max attempts (reduced from 3 for better UX)
+    this.retryHandler = new RetryHandler({ maxAttempts: 2 })
   }
 
   /**
@@ -1078,22 +1080,38 @@ export class TransaksiService {
     const { createStockValidationService } = await import('./stockValidationService')
     const stockService = createStockValidationService(tx)
 
-    // TASK 9: Collect all items to validate (main items + linked sarung)
-    const allItemsToValidate: Array<{
-      productSizeId: string
-      quantity: number
-      isLinkedSarung: boolean
-    }> = []
+    // ✅ CRITICAL FIX: Aggregate quantities by productSizeId BEFORE validation
+    // This prevents bug where multiple items with same productSizeId are validated separately
+    // Example: Item1(qty:2) + Item2(qty:1) for same productSizeId should validate as total 3, not separate 2 and 1
+    const aggregatedQuantities = new Map<string, number>()
+    const productSizeMetadata = new Map<
+      string,
+      { isLinkedSarung: boolean; itemIndices: number[] }
+    >()
 
-    for (const item of items) {
-      // Add main item
-      allItemsToValidate.push({
-        productSizeId: item.productSizeId,
-        quantity: item.jumlah,
-        isLinkedSarung: false,
-      })
+    // STEP 1: Collect and aggregate all items (main items + linked sarung)
+    console.log('🔍 [VALIDATION] Starting quantity aggregation', {
+      totalItems: items.length,
+      timestamp: new Date().toISOString(),
+    })
 
-      // TASK 9: Add linked sarung if exists
+    for (let index = 0; index < items.length; index++) {
+      const item = items[index]
+
+      // Aggregate main item quantity
+      const currentMainQty = aggregatedQuantities.get(item.productSizeId) || 0
+      aggregatedQuantities.set(item.productSizeId, currentMainQty + item.jumlah)
+
+      // Track metadata for error reporting
+      if (!productSizeMetadata.has(item.productSizeId)) {
+        productSizeMetadata.set(item.productSizeId, {
+          isLinkedSarung: false,
+          itemIndices: [],
+        })
+      }
+      productSizeMetadata.get(item.productSizeId)!.itemIndices.push(index)
+
+      // TASK 9: Aggregate linked sarung if exists
       if ('linkedSarung' in item && item.linkedSarung) {
         const linkedSarungData = item.linkedSarung as {
           productId: string
@@ -1102,13 +1120,44 @@ export class TransaksiService {
           selectedSize: ProductSize
         }
 
-        allItemsToValidate.push({
-          productSizeId: linkedSarungData.productSizeId,
-          quantity: linkedSarungData.quantity,
-          isLinkedSarung: true,
-        })
+        const currentLinkedQty = aggregatedQuantities.get(linkedSarungData.productSizeId) || 0
+        aggregatedQuantities.set(
+          linkedSarungData.productSizeId,
+          currentLinkedQty + linkedSarungData.quantity,
+        )
+
+        // Track linked sarung metadata
+        if (!productSizeMetadata.has(linkedSarungData.productSizeId)) {
+          productSizeMetadata.set(linkedSarungData.productSizeId, {
+            isLinkedSarung: true,
+            itemIndices: [],
+          })
+        }
+        productSizeMetadata.get(linkedSarungData.productSizeId)!.itemIndices.push(index)
       }
     }
+
+    // STEP 2: Convert aggregated map to validation array
+    const allItemsToValidate = Array.from(aggregatedQuantities.entries()).map(
+      ([productSizeId, quantity]) => ({
+        productSizeId,
+        quantity, // ✅ This is now the TOTAL aggregated quantity
+        isLinkedSarung: productSizeMetadata.get(productSizeId)?.isLinkedSarung || false,
+      }),
+    )
+
+    // Log aggregation summary for debugging
+    console.log('📊 [VALIDATION] Aggregation complete', {
+      rawItemCount: items.length,
+      aggregatedItemCount: allItemsToValidate.length,
+      aggregationDetails: allItemsToValidate.map((item) => ({
+        productSizeId: item.productSizeId,
+        totalQuantity: item.quantity,
+        isLinkedSarung: item.isLinkedSarung,
+        sourceItemIndices: productSizeMetadata.get(item.productSizeId)?.itemIndices || [],
+      })),
+      timestamp: new Date().toISOString(),
+    })
 
     // ✅ VALIDATION 1: Check if all sizes exist
     for (const validationItem of allItemsToValidate) {
@@ -1157,7 +1206,16 @@ export class TransaksiService {
         throw new Error(`Stok tidak mencukupi: ${errors}`)
       }
     } else {
-      // Legacy validation: Check current stock availability using InventoryService
+      // ⚠️ WARNING: Legacy non-date-aware validation (should not be used for new transactions)
+      // This path is deprecated and will be removed in future versions
+      console.warn(
+        '⚠️ Using legacy non-date-aware stock validation - this may cause double-booking',
+        {
+          itemCount: allItemsToValidate.length,
+          timestamp: new Date().toISOString(),
+        },
+      )
+
       const txInventoryService = createInventoryService(tx)
 
       for (const validationItem of allItemsToValidate) {
@@ -1178,9 +1236,21 @@ export class TransaksiService {
         if (!isAvailable) {
           const stockStatus = await txInventoryService.getStockStatus(validationItem.productSizeId)
           const itemType = validationItem.isLinkedSarung ? 'Sarung' : 'Produk'
-          throw new Error(
-            `${itemType} size ${productSize.size} (${productSize.ageCategory}) untuk ${productSize.product.name} tidak mencukupi. Tersedia: ${stockStatus.availableQuantity}, Diminta: ${validationItem.quantity}`,
+
+          // ✅ FIX: Throw StructuredError with context data for proper error modal display
+          const structuredError = ErrorService.createError(
+            ErrorCode.ERR_STK_001,
+            {
+              productName: productSize.product.name,
+              size: `${productSize.size} (${productSize.ageCategory})`,
+              available: stockStatus.availableQuantity,
+              requested: validationItem.quantity,
+            },
+            {
+              technical: `${itemType} size ${productSize.size} (${productSize.ageCategory}) untuk ${productSize.product.name} tidak mencukupi. Tersedia: ${stockStatus.availableQuantity}, Diminta: ${validationItem.quantity}`,
+            },
           )
+          throw structuredError
         }
       }
     }

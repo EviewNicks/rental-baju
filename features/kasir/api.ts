@@ -194,6 +194,8 @@ export class KasirApiError extends Error {
     message: string,
     public details?: Record<string, unknown>,
     public validationErrors?: Array<{ field: string; message: string }>,
+    public category?: 'CRITICAL' | 'WARNING' | 'INFO',
+    public actions?: string[],
   ) {
     super(message)
     this.name = 'KasirApiError'
@@ -336,6 +338,8 @@ async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promi
         Array.isArray(error.details)
           ? (error.details as Array<{ field: string; message: string }>)
           : undefined,
+        error.category, // ✅ Preserve category from backend
+        error.actions, // ✅ Preserve actions from backend
       )
     }
 
@@ -344,6 +348,9 @@ async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promi
         data.error?.code || 'API_ERROR',
         data.message || 'Terjadi kesalahan',
         data.error?.details,
+        undefined,
+        data.error?.category, // ✅ Preserve category from backend
+        data.error?.actions, // ✅ Preserve actions from backend
       )
     }
 
@@ -828,7 +835,7 @@ export class KasirApi {
     const queryParams = {
       page: 1,
       limit: 20,
-      ...params
+      ...params,
     }
     const queryString = buildQueryString(queryParams)
     const endpoint = queryString ? `/kasir?${queryString}` : '/kasir?page=1&limit=20'
@@ -848,7 +855,9 @@ export class KasirApi {
     })
   }
 
-  static async getKasirForSelection(): Promise<Array<{ id: string; nama: string; isActive: boolean }>> {
+  static async getKasirForSelection(): Promise<
+    Array<{ id: string; nama: string; isActive: boolean }>
+  > {
     return apiRequest<Array<{ id: string; nama: string; isActive: boolean }>>('/kasir/selection')
   }
 }
@@ -937,10 +946,8 @@ export const kasirApi = {
   ) => KasirApi.calculateEnhancedPenalties(transactionId, returnData),
 
   // Late fee calculation for 4-day package model
-  calculateLateFee: (
-    transactionId: string,
-    returnDate: string,
-  ) => KasirApi.calculateLateFee(transactionId, returnDate),
+  calculateLateFee: (transactionId: string, returnDate: string) =>
+    KasirApi.calculateLateFee(transactionId, returnDate),
 
   // Transaction lookup by code (for return process)
   getTransactionByCode: (code: string) => KasirApi.getTransaksiByKode(code),

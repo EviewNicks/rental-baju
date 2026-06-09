@@ -42,10 +42,7 @@ const MESSAGE_TEMPLATES: Record<ErrorCode, ErrorTemplate> = {
       return 'Validasi data gagal. Silakan periksa kembali input Anda.'
     },
     actions: (ctx: ErrorContext) => {
-      const suggestions = [
-        'Periksa kembali input data',
-        'Pastikan format data sesuai',
-      ]
+      const suggestions = ['Periksa kembali input data', 'Pastikan format data sesuai']
       if (ctx.field) {
         suggestions.push(`Perbaiki nilai untuk field: ${ctx.field}`)
       }
@@ -68,10 +65,7 @@ const MESSAGE_TEMPLATES: Record<ErrorCode, ErrorTemplate> = {
       }
       return 'Terdapat field wajib yang belum diisi. Silakan lengkapi semua data yang diperlukan.'
     },
-    actions: () => [
-      'Lengkapi semua field wajib',
-      'Periksa formulir dengan teliti',
-    ],
+    actions: () => ['Lengkapi semua field wajib', 'Periksa formulir dengan teliti'],
     category: 'WARNING',
   },
 
@@ -81,23 +75,29 @@ const MESSAGE_TEMPLATES: Record<ErrorCode, ErrorTemplate> = {
    * ERR_STK_001: Insufficient stock for requested quantity
    * Scenario: SC-001
    * Requirement: 3.2 - Include specific stock details
+   *
+   * ✅ SIMPLIFIED: User-friendly message format
    */
   [ErrorCode.ERR_STK_001]: {
     message: (ctx: ErrorContext) => {
       const productName = ctx.productName || 'Produk'
-      const size = ctx.size ? ` (Ukuran: ${ctx.size})` : ''
-      const available = ctx.available ?? 0
-      const requested = ctx.requested ?? 0
+      const size = ctx.size ? ` ukuran ${ctx.size}` : ''
 
-      return `Stok ${productName}${size} tidak mencukupi. Tersedia: ${available}, Diminta: ${requested}.`
+      return `Stok ${productName}${size} tidak mencukupi di tanggal tersebut.`
     },
     actions: (ctx: ErrorContext) => {
       const available = ctx.available ?? 0
-      return [
-        `Kurangi jumlah menjadi ${available}`,
-        'Pilih produk lain',
-        'Hubungi admin untuk penambahan stok',
-      ]
+      const suggestions = []
+
+      if (available > 0) {
+        suggestions.push(`Kurangi jumlah menjadi ${available}`)
+      }
+
+      suggestions.push('Pilih produk lain')
+      suggestions.push('Pilih tanggal lain')
+      suggestions.push('Hubungi admin untuk penambahan stok')
+
+      return suggestions
     },
     category: 'CRITICAL',
   },
@@ -164,10 +164,7 @@ const MESSAGE_TEMPLATES: Record<ErrorCode, ErrorTemplate> = {
       const productName = ctx.productName || 'produk'
       return `${size} untuk ${productName} tidak ditemukan atau sudah tidak aktif.`
     },
-    actions: () => [
-      'Pilih ukuran lain yang tersedia',
-      'Periksa ketersediaan ukuran produk',
-    ],
+    actions: () => ['Pilih ukuran lain yang tersedia', 'Periksa ketersediaan ukuran produk'],
     category: 'CRITICAL',
   },
 
@@ -292,7 +289,8 @@ const MESSAGE_TEMPLATES: Record<ErrorCode, ErrorTemplate> = {
    * Scenario: SC-007
    */
   [ErrorCode.ERR_SYS_001]: {
-    message: () => 'Terjadi kesalahan sistem internal. Tim kami telah diberitahu dan sedang menanganinya.',
+    message: () =>
+      'Terjadi kesalahan sistem internal. Tim kami telah diberitahu dan sedang menanganinya.',
     actions: () => [
       'Coba lagi dalam beberapa saat',
       'Hubungi admin jika masalah berlanjut',
@@ -324,7 +322,8 @@ const MESSAGE_TEMPLATES: Record<ErrorCode, ErrorTemplate> = {
    * Scenario: SC-010
    */
   [ErrorCode.ERR_AUTH_001]: {
-    message: () => 'Autentikasi atau otorisasi gagal. Anda tidak memiliki izin untuk melakukan operasi ini.',
+    message: () =>
+      'Autentikasi atau otorisasi gagal. Anda tidak memiliki izin untuk melakukan operasi ini.',
     actions: () => [
       'Login ulang dengan akun yang benar',
       'Hubungi admin untuk mendapatkan akses',
@@ -462,10 +461,7 @@ export function getRetryConfig(code: ErrorCode): RetryConfig | null {
  * Calculate retry delay with exponential backoff and jitter
  * Requirement: 5.1 - Exponential backoff
  */
-export function calculateRetryDelay(
-  code: ErrorCode,
-  attempt: number
-): number | null {
+export function calculateRetryDelay(code: ErrorCode, attempt: number): number | null {
   const config = RETRY_CONFIGS[code]
   if (!config) return null
 
@@ -476,7 +472,7 @@ export function calculateRetryDelay(
   const cappedDelay = Math.min(exponentialDelay, config.maxDelay)
 
   // Add jitter (±10%) to prevent thundering herd
-  const jitter = Math.random() * 0.2 * cappedDelay - (0.1 * cappedDelay)
+  const jitter = Math.random() * 0.2 * cappedDelay - 0.1 * cappedDelay
 
   return Math.floor(cappedDelay + jitter)
 }

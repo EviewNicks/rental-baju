@@ -16,9 +16,9 @@
  * Retry handler configuration
  */
 export interface RetryHandlerConfig {
-  maxAttempts?: number  // Default: 3
-  baseDelay?: number    // Default: 100ms
-  maxDelay?: number     // Default: 1000ms
+  maxAttempts?: number // Default: 2 (reduced from 3 for better UX)
+  baseDelay?: number // Default: 100ms
+  maxDelay?: number // Default: 1000ms
 }
 
 /**
@@ -38,7 +38,7 @@ export class RetryError extends Error {
     message: string,
     public readonly attempts: number,
     public readonly lastError: Error,
-    public readonly totalDelay: number
+    public readonly totalDelay: number,
   ) {
     super(message)
     this.name = 'RetryError'
@@ -59,7 +59,7 @@ export class RetryHandler {
   private readonly maxDelay: number
 
   constructor(config: RetryHandlerConfig = {}) {
-    this.maxAttempts = config.maxAttempts ?? 3
+    this.maxAttempts = config.maxAttempts ?? 2 // Reduced from 3 for better UX
     this.baseDelay = config.baseDelay ?? 100
     this.maxDelay = config.maxDelay ?? 1000
   }
@@ -74,7 +74,7 @@ export class RetryHandler {
    */
   async execute<T>(
     operation: () => Promise<T>,
-    isRetryableFn?: (error: Error) => boolean
+    isRetryableFn?: (error: Error) => boolean,
   ): Promise<T> {
     let lastError: Error | null = null
     let totalDelay = 0
@@ -131,7 +131,7 @@ export class RetryHandler {
       `Operation failed after ${this.maxAttempts} attempts`,
       this.maxAttempts,
       lastError!,
-      totalDelay
+      totalDelay,
     )
   }
 

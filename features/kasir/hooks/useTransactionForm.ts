@@ -111,7 +111,7 @@ export function useTransactionForm() {
           p.product.id === product.product.id &&
           (product.productSizeId ? p.productSizeId === product.productSizeId : !p.productSizeId) &&
           // ✅ FIX: Include linkedSarung in duplicate detection to allow separate cart items
-          (product.linkedSarung?.productId === p.linkedSarung?.productId)
+          product.linkedSarung?.productId === p.linkedSarung?.productId,
       )
 
       if (existingIndex >= 0) {
@@ -129,30 +129,42 @@ export function useTransactionForm() {
     })
   }, [])
 
-  const removeProduct = useCallback((productId: string, productSizeId?: string, linkedSarungProductId?: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      products: prev.products.filter(
-        (p) =>
-          !(
-            p.product.id === productId &&
-            (productSizeId ? p.productSizeId === productSizeId : !p.productSizeId) &&
-            // ✅ FIX: Include linkedSarung in removal logic for precise targeting
-            (linkedSarungProductId ? p.linkedSarung?.productId === linkedSarungProductId : !p.linkedSarung)
-          ),
-      ),
-    }))
-  }, [])
+  const removeProduct = useCallback(
+    (productId: string, productSizeId?: string, linkedSarungProductId?: string) => {
+      setFormData((prev) => ({
+        ...prev,
+        products: prev.products.filter(
+          (p) =>
+            !(
+              p.product.id === productId &&
+              (productSizeId ? p.productSizeId === productSizeId : !p.productSizeId) &&
+              // ✅ FIX: Include linkedSarung in removal logic for precise targeting
+              (linkedSarungProductId
+                ? p.linkedSarung?.productId === linkedSarungProductId
+                : !p.linkedSarung)
+            ),
+        ),
+      }))
+    },
+    [],
+  )
 
   const updateProductQuantity = useCallback(
-    (productId: string, quantity: number, productSizeId?: string, linkedSarungProductId?: string) => {
+    (
+      productId: string,
+      quantity: number,
+      productSizeId?: string,
+      linkedSarungProductId?: string,
+    ) => {
       setFormData((prev) => ({
         ...prev,
         products: prev.products.map((p) =>
           p.product.id === productId &&
           (productSizeId ? p.productSizeId === productSizeId : !p.productSizeId) &&
           // ✅ FIX: Include linkedSarung in quantity update logic for precise targeting
-          (linkedSarungProductId ? p.linkedSarung?.productId === linkedSarungProductId : !p.linkedSarung)
+          (linkedSarungProductId
+            ? p.linkedSarung?.productId === linkedSarungProductId
+            : !p.linkedSarung)
             ? { ...p, quantity }
             : p,
         ),
@@ -176,9 +188,9 @@ export function useTransactionForm() {
     setFormData((prev) => {
       const updatedProducts = [...prev.products]
       const item = updatedProducts[itemIndex]
-      
+
       if (!item) return prev
-      
+
       return { ...prev, products: updatedProducts }
     })
   }, [])
@@ -187,37 +199,45 @@ export function useTransactionForm() {
     setFormData((prev) => {
       const updatedProducts = [...prev.products]
       const item = updatedProducts[itemIndex]
-      
+
       if (!item) return prev
-      
+
       // Remove manual price adjustment
       updatedProducts[itemIndex] = {
         ...item,
-        manualPriceAdjustment: undefined
+        manualPriceAdjustment: undefined,
       }
-      
+
       return { ...prev, products: updatedProducts }
     })
   }, [])
 
   const handleQuantityChangeWithManualPrice = useCallback(
-    (productId: string, quantity: number, productSizeId?: string, linkedSarungProductId?: string) => {
+    (
+      productId: string,
+      quantity: number,
+      productSizeId?: string,
+      linkedSarungProductId?: string,
+    ) => {
       setFormData((prev) => ({
         ...prev,
         products: prev.products.map((p) => {
-          const isTargetProduct = p.product.id === productId &&
+          const isTargetProduct =
+            p.product.id === productId &&
             (productSizeId ? p.productSizeId === productSizeId : !p.productSizeId) &&
-            (linkedSarungProductId ? p.linkedSarung?.productId === linkedSarungProductId : !p.linkedSarung)
-          
+            (linkedSarungProductId
+              ? p.linkedSarung?.productId === linkedSarungProductId
+              : !p.linkedSarung)
+
           if (!isTargetProduct) return p
-          
+
           // Handle manual price adjustment when quantity changes
           const updatedManualAdjustment = p.manualPriceAdjustment
-          
-          return { 
-            ...p, 
+
+          return {
+            ...p,
             quantity,
-            manualPriceAdjustment: updatedManualAdjustment
+            manualPriceAdjustment: updatedManualAdjustment,
           }
         }),
       }))
@@ -233,7 +253,7 @@ export function useTransactionForm() {
       discountType: formData.discountType,
       discountValue: formData.discountValue,
     })
-    
+
     return calculation.finalTotal
   }, [formData.products, formData.duration, formData.discountType, formData.discountValue])
 
@@ -345,7 +365,7 @@ export function useTransactionForm() {
             jumlah: product.quantity,
             durasi: formData.duration || 4,
             kondisiAwal: 'baik',
-            productSizeId: product.productSizeId || ''
+            productSizeId: product.productSizeId || '',
           }
 
           // ✅ FIX: Directly assign manual price adjustment to baseItem
@@ -354,7 +374,7 @@ export function useTransactionForm() {
               isManuallyAdjusted: product.manualPriceAdjustment.isManuallyAdjusted,
               originalPrice: product.manualPriceAdjustment.originalPrice,
               adjustmentAmount: product.manualPriceAdjustment.adjustmentAmount,
-              lastModified: product.manualPriceAdjustment.lastModified
+              lastModified: product.manualPriceAdjustment.lastModified,
             }
           }
 
@@ -364,7 +384,7 @@ export function useTransactionForm() {
               productId: product.linkedSarung.productId,
               productSizeId: product.linkedSarung.productSizeId,
               quantity: product.linkedSarung.quantity,
-              selectedSize: product.linkedSarung.selectedSize
+              selectedSize: product.linkedSarung.selectedSize,
             }
           }
           return baseItem as CreateTransaksiItemSizeAware
@@ -374,12 +394,14 @@ export function useTransactionForm() {
         metodeBayar: formData.paymentMethod,
         catatan: formData.notes || undefined,
         // Task 4: Add discount fields to API request - only send if both type and value exist
-        discountType: formData.discountType && formData.discountValue && formData.discountValue > 0 
-          ? formData.discountType 
-          : undefined,
-        discountValue: formData.discountType && formData.discountValue && formData.discountValue > 0 
-          ? formData.discountValue 
-          : undefined,
+        discountType:
+          formData.discountType && formData.discountValue && formData.discountValue > 0
+            ? formData.discountType
+            : undefined,
+        discountValue:
+          formData.discountType && formData.discountValue && formData.discountValue > 0
+            ? formData.discountValue
+            : undefined,
       }
 
       for (const product of formData.products) {
@@ -399,7 +421,8 @@ export function useTransactionForm() {
       // 🔍 LOG: Log final API payload before submission
       TransactionLogger.logApiPayload(createRequest)
 
-      // Create transaction via API
+      // ✅ FIX: Don't catch error here - let it bubble up to createTransaksiMutation.error
+      // This way TransactionFormPage can access the full KasirApiError with category and actions
       const createdTransaction = await createTransaksiMutation.mutateAsync(createRequest)
 
       // Create payment record with rollback mechanism
@@ -461,63 +484,6 @@ export function useTransactionForm() {
       clearFormData()
 
       return true
-    } catch (error) {
-      // Enhanced error handling - distinguish between transaction and payment failures
-      const errorMessage = error instanceof Error ? error.message : String(error)
-      const isPaymentError =
-        errorMessage.includes('Pembayaran gagal') || errorMessage.includes('payment')
-      const isRollbackError = errorMessage.includes('tidak dapat dibatalkan')
-
-      if (isPaymentError && isRollbackError) {
-        console.error(
-          '🚨 CRITICAL: Payment failed AND rollback failed!',
-          {
-            errorType: 'PAYMENT_ROLLBACK_FAILURE',
-            errorMessage: errorMessage,
-            createTransaksiError: createTransaksiMutation.error?.message,
-            createPembayaranError: createPembayaranMutation.error?.message,
-            updateTransaksiError: updateTransaksiMutation.error?.message,
-          },
-          'useTransactionForm',
-        )
-      } else if (isPaymentError) {
-        console.error(
-          '💳 Payment creation failed - transaction rolled back',
-          {
-            errorType: 'PAYMENT_FAILURE',
-            errorMessage: errorMessage,
-            createPembayaranError: createPembayaranMutation.error?.message,
-            rollbackSuccess: true,
-          },
-          'useTransactionForm',
-        )
-      } else {
-        console.error(
-          '❌ Transaction creation failed!',
-          {
-            errorType: 'TRANSACTION_FAILURE',
-            errorMessage: errorMessage,
-            createTransaksiError: createTransaksiMutation.error?.message,
-            createTransaksiErrorCode: createTransaksiMutation.error?.code,
-            createTransaksiErrorDetails: createTransaksiMutation.error?.details,
-          },
-          'useTransactionForm',
-        )
-      }
-
-      if (error instanceof Error) {
-        console.error(
-          '💬 Detailed error information',
-          {
-            message: error.message,
-            stack: error.stack,
-            name: error.name,
-          },
-          'useTransactionForm',
-        )
-      }
-
-      return false
     } finally {
       setIsSubmitting(false)
     }

@@ -417,11 +417,11 @@ export interface UseTransactionsReturn {
     cancelled: number
     total: number
   }
-  
+
   // New date filter returns
   resetAllFilters: () => void
   hasActiveFilters: boolean
-  
+
   // Additional metadata (existing)
   pagination?: {
     page: number
@@ -452,7 +452,7 @@ export interface ActivityLog {
     | 'overdue'
     | 'reminder_sent'
     | 'penalty_added'
-    | 'cancelled'  // ✅ ADDED: Support for cancelled activities
+    | 'cancelled' // ✅ ADDED: Support for cancelled activities
   description: string
   performedBy: string
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -562,7 +562,7 @@ export interface TransactionFormData {
   notes?: string
   currentStep?: TransactionStep // For persistence
   kasirSelection?: KasirSelectionData // Cashier selection data
-  
+
   // Task 4: New fields for transaction enhancements
   duration: 4 | 7 // Duration package selection (4-day or 7-day)
   discountType: 'percent' | 'nominal' | null // Discount type selection
@@ -907,6 +907,9 @@ export interface ApiResponse<T = unknown> {
     code: string
     message: string
     details?: Record<string, unknown>
+    category?: 'CRITICAL' | 'WARNING' | 'INFO' // ✅ Added for error severity
+    actions?: string[] // ✅ Added for suggested user actions
+    timestamp?: string // ✅ Added for error tracking
   }
 }
 
@@ -1403,7 +1406,7 @@ export interface TransactionTabsProps {
     cancelled: number
     total: number
   }
-  
+
   // New date filter props
   dateValue: string | null
   onDateChange: (date: string | null) => void
@@ -1564,7 +1567,7 @@ export interface CancelActivityData {
   itemsCount: number
   stockRestored: boolean
   cancelledAt: string
-  
+
   // ✅ NEW: Refund tracking fields
   needsRefund: boolean // false when refund processed, true when pending
   refundProcessed?: boolean // true when refund completed
