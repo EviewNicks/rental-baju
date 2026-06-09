@@ -295,7 +295,7 @@ export function ProductHistoryPage({
                 <History className="h-6 w-6 text-blue-600" />
               </div>
               <div>
-                <h1 className="text-2xl font-semibold text-gray-900">Riwayat Transaksi</h1>
+                <h1 className="text-2xl font-semibold text-gray-900">Riwayat Product Transaksi</h1>
                 <p className="text-sm text-gray-600 mt-1">
                   {productName} • {ageCategory} • {size}
                 </p>

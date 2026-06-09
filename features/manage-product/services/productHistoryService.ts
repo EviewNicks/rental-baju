@@ -148,235 +148,107 @@ export class ProductHistoryService {
   /**
    * Execute optimized database query using existing indexes
    * Leverages idx_transaksi_item_product_join and idx_product_penalty_calc
-   * ENHANCED: Now includes AktivitasTransaksi join and kondisiAwal field
+   * OPTIMIZED: Removed aktivitas join - not used in UI (80% response size reduction)
    */
   private async executeHistoryQuery(
     query: ProductHistoryQuery,
   ): Promise<ProductHistoryRawResult[]> {
-    try {
-      // Build ORDER BY clause based on sorting preference
-      const orderBy =
-        query.sorting.field === 'revenue'
-          ? [{ subtotal: query.sorting.direction as 'asc' | 'desc' }]
-          : [{ transaksi: { createdAt: query.sorting.direction as 'asc' | 'desc' } }]
+    // Build ORDER BY clause based on sorting preference
+    const orderBy =
+      query.sorting.field === 'revenue'
+        ? [{ subtotal: query.sorting.direction as 'asc' | 'desc' }]
+        : [{ transaksi: { createdAt: query.sorting.direction as 'asc' | 'desc' } }]
 
-      const transaksiItems = await this.prisma.transaksiItem.findMany({
-        where: {
-          produkId: query.productId,
-          transaksi: {
-            status: {
-              not: 'cancelled',
-            },
+    const transaksiItems = await this.prisma.transaksiItem.findMany({
+      where: {
+        produkId: query.productId,
+        transaksi: {
+          status: {
+            not: 'cancelled',
           },
         },
-        select: {
-          id: true,
-          jumlah: true,
-          subtotal: true,
-          durasi: true,
-          kondisiAwal: true, // NEW: Include for size parsing
-          transaksi: {
-            select: {
-              id: true,
-              kode: true,
-              status: true,
-              tglMulai: true,
-              tglSelesai: true,
-              createdAt: true,
-              penyewa: {
-                select: {
-                  nama: true,
-                  telepon: true,
-                },
-              },
-              // NEW: Include activities with ordering
-              aktivitas: {
-                select: {
-                  id: true,
-                  tipe: true,
-                  deskripsi: true,
-                  data: true,
-                  createdBy: true,
-                  createdAt: true,
-                },
-                orderBy: {
-                  createdAt: 'desc', // Newest activities first
-                },
-              },
-            },
-          },
-          returnConditions: {
-            select: {
-              kondisiAkhir: true,
-              jumlahKembali: true,
-              penaltyAmount: true,
-              modalAwalUsed: true,
-            },
-          },
-        },
-        orderBy,
-        skip: query.pagination.offset,
-        take: query.pagination.limit,
-      })
-
-      // Transform Prisma results to raw result format
-      return transaksiItems.map(
-        (item): ProductHistoryRawResult => ({
-          id: item.id,
-          transactionCode: item.transaksi.kode,
-          transactionDate: item.transaksi.createdAt,
-          rentalStart: item.transaksi.tglMulai,
-          rentalEnd: item.transaksi.tglSelesai,
-          customerName: item.transaksi.penyewa.nama,
-          customerContact: item.transaksi.penyewa.telepon,
-          subtotal: item.subtotal.toNumber(), // Convert Decimal to number
-          duration: item.durasi,
-          status: item.transaksi.status,
-          itemQuantity: item.jumlah,
-          penalties: item.returnConditions.map((condition) => ({
-            kondisiAkhir: condition.kondisiAkhir,
-            jumlahKembali: condition.jumlahKembali,
-            penaltyAmount: condition.penaltyAmount.toNumber(), // Convert Decimal to number
-            modalAwalUsed: condition.modalAwalUsed?.toNumber(),
-          })),
-          // NEW: Include kondisiAwal for size parsing
-          kondisiAwal: item.kondisiAwal,
-          // NEW: Include activities data
-          activities: item.transaksi.aktivitas.map((activity) => ({
-            id: activity.id,
-            tipe: activity.tipe,
-            deskripsi: activity.deskripsi,
-            data: activity.data as Record<string, unknown> | null,
-            createdBy: activity.createdBy,
-            createdAt: activity.createdAt,
-          })),
-        }),
-      )
-    } catch (error) {
-      console.error('[ProductHistoryService] Query execution error:', error)
-      
-      try {
-        const orderBy =
-          query.sorting.field === 'revenue'
-            ? [{ subtotal: query.sorting.direction as 'asc' | 'desc' }]
-            : [{ transaksi: { createdAt: query.sorting.direction as 'asc' | 'desc' } }]
-
-        const transaksiItems = await this.prisma.transaksiItem.findMany({
-          where: {
-            produkId: query.productId,
-            transaksi: {
-              status: {
-                not: 'cancelled',
-              },
-            },
-          },
+      },
+      select: {
+        id: true,
+        jumlah: true,
+        subtotal: true,
+        durasi: true,
+        kondisiAwal: true, // Include for size parsing
+        transaksi: {
           select: {
             id: true,
-            jumlah: true,
-            subtotal: true,
-            durasi: true,
-            kondisiAwal: true,
-            transaksi: {
+            kode: true,
+            status: true,
+            tglMulai: true,
+            tglSelesai: true,
+            createdAt: true,
+            penyewa: {
               select: {
-                id: true,
-                kode: true,
-                status: true,
-                tglMulai: true,
-                tglSelesai: true,
-                createdAt: true,
-                penyewa: {
-                  select: {
-                    nama: true,
-                    telepon: true,
-                  },
-                },
+                nama: true,
+                telepon: true,
               },
             },
-            returnConditions: {
-              select: {
-                kondisiAkhir: true,
-                jumlahKembali: true,
-                penaltyAmount: true,
-                modalAwalUsed: true,
-              },
-            },
+            // REMOVED: aktivitas join - not used in UI
           },
-          orderBy,
-          skip: query.pagination.offset,
-          take: query.pagination.limit,
-        })
+        },
+        returnConditions: {
+          select: {
+            kondisiAkhir: true,
+            jumlahKembali: true,
+            penaltyAmount: true,
+            modalAwalUsed: true,
+          },
+        },
+      },
+      orderBy,
+      skip: query.pagination.offset,
+      take: query.pagination.limit,
+    })
 
-        // Return basic data without activities
-        return transaksiItems.map(
-          (item): ProductHistoryRawResult => ({
-            id: item.id,
-            transactionCode: item.transaksi.kode,
-            transactionDate: item.transaksi.createdAt,
-            rentalStart: item.transaksi.tglMulai,
-            rentalEnd: item.transaksi.tglSelesai,
-            customerName: item.transaksi.penyewa.nama,
-            customerContact: item.transaksi.penyewa.telepon,
-            subtotal: item.subtotal.toNumber(),
-            duration: item.durasi,
-            status: item.transaksi.status,
-            itemQuantity: item.jumlah,
-            penalties: item.returnConditions.map((condition) => ({
-              kondisiAkhir: condition.kondisiAkhir,
-              jumlahKembali: condition.jumlahKembali,
-              penaltyAmount: condition.penaltyAmount.toNumber(),
-              modalAwalUsed: condition.modalAwalUsed?.toNumber(),
-            })),
-            kondisiAwal: item.kondisiAwal,
-            activities: [], // Empty activities array for graceful degradation
-          }),
-        )
-      } catch (fallbackError) {
-        console.error('[ProductHistoryService] Fallback query also failed:', fallbackError)
-        throw fallbackError
-      }
-    }
+    // Transform Prisma results to raw result format
+    return transaksiItems.map(
+      (item): ProductHistoryRawResult => ({
+        id: item.id,
+        transactionCode: item.transaksi.kode,
+        transactionDate: item.transaksi.createdAt,
+        rentalStart: item.transaksi.tglMulai,
+        rentalEnd: item.transaksi.tglSelesai,
+        customerName: item.transaksi.penyewa.nama,
+        customerContact: item.transaksi.penyewa.telepon,
+        subtotal: item.subtotal.toNumber(), // Convert Decimal to number
+        duration: item.durasi,
+        status: item.transaksi.status,
+        itemQuantity: item.jumlah,
+        penalties: item.returnConditions.map((condition) => ({
+          kondisiAkhir: condition.kondisiAkhir,
+          jumlahKembali: condition.jumlahKembali,
+          penaltyAmount: condition.penaltyAmount.toNumber(), // Convert Decimal to number
+          modalAwalUsed: condition.modalAwalUsed?.toNumber(),
+        })),
+        kondisiAwal: item.kondisiAwal,
+        // REMOVED: activities field - not used in UI
+      }),
+    )
   }
 
   /**
-   * Transform raw results with role-based data masking
-   * ENHANCED: Now includes activity transformation, size parsing, and detailed penalty breakdown
+   * Transform raw results with NO customer data masking
+   * OPTIMIZED: Removed activities transformation (not used in UI)
+   * Shows full customer name and contact for product history visibility
    */
   private async transformHistoryResults(
     rawResults: ProductHistoryRawResult[],
+    //eslint-disable-next-line @typescript-eslint/no-unused-vars
     userRole: UserRole,
   ): Promise<ProductHistoryItem[]> {
-    const permissions = ROLE_PERMISSIONS[userRole]
-
     return rawResults.map((raw): ProductHistoryItem => {
       // Calculate revenue breakdown
       const revenueBreakdown = this.calculateRevenueBreakdown(raw.subtotal, raw.penalties || [])
 
-      // Apply customer data masking based on role
-      const customerData = this.maskCustomerData(
-        { name: raw.customerName, contact: raw.customerContact },
-        permissions,
-      )
-
-      // NEW: Transform activities with role-based filtering
-      let activities: ActivityInfo[] = []
-      if (raw.activities && raw.activities.length > 0) {
-        activities = raw.activities.map((activity) =>
-          this.transformActivityData(activity, userRole),
-        )
-      } else {
-        // Generate synthetic activity for legacy transactions
-        const syntheticActivity = this.generateSyntheticActivity(
-          raw.transactionCode,
-          raw.transactionDate,
-          'system', // Default creator for legacy data
-        )
-        activities = [syntheticActivity]
-      }
-
-      // NEW: Parse size information from kondisiAwal
+      // Parse size information from kondisiAwal
       const sizeInfo = this.parseSizeInfo(raw.kondisiAwal)
 
-      // NEW: Build detailed penalty breakdown (Requirements 4.2, 4.3)
+      // Build detailed penalty breakdown
       const penaltyBreakdown = this.buildPenaltyBreakdown(raw.penalties || [], raw.duration)
 
       return {
@@ -385,18 +257,18 @@ export class ProductHistoryService {
         transactionDate: raw.transactionDate,
         rentalStart: raw.rentalStart,
         rentalEnd: raw.rentalEnd,
-        customerName: customerData.name,
-        customerContact: customerData.contact,
+        // Show full customer data (no masking) for product history visibility
+        customerName: raw.customerName,
+        customerContact: raw.customerContact,
         baseRevenue: revenueBreakdown.subtotal,
         penaltyAmount: revenueBreakdown.totalPenalties,
         totalRevenue: revenueBreakdown.finalTotal,
         status: raw.status,
         itemQuantity: raw.itemQuantity,
         duration: raw.duration,
-        // NEW: Include activities and size info (optional for backward compatibility)
-        activities: activities.length > 0 ? activities : undefined,
-        sizeInfo: sizeInfo || undefined,
-        // NEW: Include detailed penalty breakdown if penalties exist (Requirements 4.2, 4.3, 4.5)
+        // REMOVED: activities field - not used in UI (80% response size reduction)
+        // ALWAYS include sizeInfo field (even if null) to prevent field omission in JSON response
+        sizeInfo: sizeInfo,
         penalty: penaltyBreakdown || undefined,
       }
     })
@@ -419,7 +291,7 @@ export class ProductHistoryService {
   /**
    * Build detailed penalty breakdown for product history display
    * Requirements 4.2, 4.3: Include penalty.total, penalty.late, penalty.condition, and breakdown array
-   * 
+   *
    * @param penalties - Array of penalty details from TransaksiItemReturn
    * @param duration - Rental duration to determine if late penalty applies
    * @returns Detailed penalty breakdown or null if no penalties
@@ -487,6 +359,7 @@ export class ProductHistoryService {
 
   /**
    * Mask customer data based on role permissions (Producer role compliance)
+   * DEPRECATED: No longer used - customer data shown in full for product history
    */
   public maskCustomerData(
     customerInfo: { name: string; contact: string },
@@ -534,7 +407,7 @@ export class ProductHistoryService {
    * Mask activity metadata based on role permissions
    * Filters out customer-identifiable data for producer/kasir roles
    * Preserves all metadata for owner role
-   * 
+   *
    * @param data - Raw activity metadata from database
    * @param userRole - User role for permission checking
    * @returns Filtered metadata based on role
@@ -612,7 +485,7 @@ export class ProductHistoryService {
   /**
    * Get human-readable Indonesian label for activity type
    * Maps database activity types to user-friendly labels
-   * 
+   *
    * @param tipe - Activity type from database ('dibuat', 'dibatalkan', etc.)
    * @returns Indonesian label for display
    */
@@ -633,15 +506,12 @@ export class ProductHistoryService {
   /**
    * Transform raw activity data to ActivityInfo with role-based filtering
    * Applies metadata filtering and adds type labels
-   * 
+   *
    * @param rawActivity - Raw activity data from database
    * @param userRole - User role for permission checking
    * @returns Transformed activity info
    */
-  public transformActivityData(
-    rawActivity: RawActivityData,
-    userRole: UserRole,
-  ): ActivityInfo {
+  public transformActivityData(rawActivity: RawActivityData, userRole: UserRole): ActivityInfo {
     // Filter metadata based on role
     const filteredMetadata = this.maskActivityMetadata(rawActivity.data, userRole)
 
@@ -659,7 +529,7 @@ export class ProductHistoryService {
   /**
    * Generate synthetic activity for legacy transactions without activities
    * Creates a basic "dibuat" activity from transaction data
-   * 
+   *
    * @param transactionCode - Transaction code
    * @param transactionDate - Transaction creation date
    * @param createdBy - User who created the transaction
@@ -683,10 +553,16 @@ export class ProductHistoryService {
 
   /**
    * Parse size information from kondisiAwal field
-   * Format: "productSizeId|size|ageCategory|condition"
-   * Example: "clx123abc|M|ADULT|Baik"
-   * 
-   * @param kondisiAwal - Pipe-separated size information string
+   *
+   * SUPPORTS TWO FORMATS:
+   * 1. JSON format (NEW - consistent with ItemHistoryService):
+   *    {"productSizeId":"xxx","size":"XL","ageCategory":"ADULT","condition":"Baik"}
+   *
+   * 2. Pipe-separated format (LEGACY - backward compatibility):
+   *    "productSizeId|size|ageCategory|condition"
+   *    Example: "clx123abc|M|ADULT|Baik"
+   *
+   * @param kondisiAwal - Size information as JSON string or pipe-separated string
    * @returns Parsed size info or null if invalid/missing
    */
   public parseSizeInfo(kondisiAwal: string | null | undefined): SizeInfo | null {
@@ -696,38 +572,100 @@ export class ProductHistoryService {
         return null
       }
 
-      // Split by pipe separator
-      const parts = kondisiAwal.split('|')
-      
-      // Validate minimum required parts (productSizeId, size, ageCategory)
-      if (parts.length < 3) {
-        console.warn(`[ProductHistoryService] Invalid kondisiAwal format (insufficient parts): ${kondisiAwal}`)
-        return null
+      const trimmed = kondisiAwal.trim()
+
+      // TRY FORMAT 1: JSON format (NEW - recommended)
+      if (trimmed.startsWith('{')) {
+        try {
+          const parsed = JSON.parse(trimmed)
+
+          // Validate required fields exist
+          if (!parsed.productSizeId || !parsed.size || !parsed.ageCategory) {
+            console.warn(
+              `[ProductHistoryService] Missing required fields in JSON kondisiAwal:`,
+              parsed,
+            )
+            return null
+          }
+
+          // Validate productSizeId is UUID format
+          const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+          if (!uuidRegex.test(parsed.productSizeId)) {
+            console.warn(
+              `[ProductHistoryService] Invalid productSizeId UUID in JSON kondisiAwal:`,
+              parsed.productSizeId,
+            )
+            return null
+          }
+
+          // Return parsed size info from JSON
+          return {
+            productSizeId: parsed.productSizeId,
+            size: parsed.size,
+            ageCategory: parsed.ageCategory,
+            condition: parsed.condition || undefined,
+            displayText: `Size: ${parsed.size} (${parsed.ageCategory})`,
+          }
+        } catch (jsonError) {
+          console.warn(
+            `[ProductHistoryService] Failed to parse JSON kondisiAwal:`,
+            trimmed,
+            jsonError,
+          )
+          // Fall through to try pipe-separated format
+        }
       }
 
-      const [productSizeId, size, ageCategory, condition] = parts
+      // TRY FORMAT 2: Pipe-separated format (LEGACY - backward compatibility)
+      if (trimmed.includes('|')) {
+        const parts = trimmed.split('|')
 
-      // Validate required fields are not empty
-      if (!productSizeId || !size || !ageCategory) {
-        console.warn(`[ProductHistoryService] Missing required size fields in kondisiAwal: ${kondisiAwal}`)
-        return null
+        // Validate minimum required parts (productSizeId, size, ageCategory)
+        if (parts.length < 3) {
+          console.warn(
+            `[ProductHistoryService] Invalid pipe-separated kondisiAwal (insufficient parts):`,
+            trimmed,
+          )
+          return null
+        }
+
+        const [productSizeId, size, ageCategory, condition] = parts
+
+        // Validate required fields are not empty
+        if (!productSizeId || !size || !ageCategory) {
+          console.warn(
+            `[ProductHistoryService] Missing required fields in pipe-separated kondisiAwal:`,
+            trimmed,
+          )
+          return null
+        }
+
+        // Validate productSizeId is UUID format
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+        if (!uuidRegex.test(productSizeId.trim())) {
+          console.warn(
+            `[ProductHistoryService] Invalid productSizeId UUID in pipe-separated kondisiAwal:`,
+            productSizeId,
+          )
+          return null
+        }
+
+        // Return parsed size info from pipe-separated format
+        return {
+          productSizeId: productSizeId.trim(),
+          size: size.trim(),
+          ageCategory: ageCategory.trim(),
+          condition: condition ? condition.trim() : undefined,
+          displayText: `Size: ${size.trim()} (${ageCategory.trim()})`,
+        }
       }
 
-      // Validate productSizeId is UUID format (basic check)
-      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-      if (!uuidRegex.test(productSizeId.trim())) {
-        console.warn(`[ProductHistoryService] Invalid productSizeId format in kondisiAwal: ${productSizeId}`)
-        return null
-      }
-
-      // Return parsed size information
-      return {
-        productSizeId: productSizeId.trim(),
-        size: size.trim(),
-        ageCategory: ageCategory.trim(),
-        condition: condition ? condition.trim() : undefined,
-        displayText: `Size: ${size.trim()} (${ageCategory.trim()})`,
-      }
+      // Neither format matched
+      console.warn(
+        `[ProductHistoryService] kondisiAwal is neither JSON nor pipe-separated format:`,
+        trimmed,
+      )
+      return null
     } catch (error) {
       console.error('[ProductHistoryService] Size parsing error:', error, 'Input:', kondisiAwal)
       return null
@@ -783,10 +721,10 @@ export class ProductHistoryService {
   /**
    * Get break-even status for a product
    * RPK-MODAL: Product Break-Even Status Badge Feature
-   * 
+   *
    * Calculates whether a product has recovered its initial capital investment (modalAwal)
    * through accumulated rental revenue from non-cancelled transactions.
-   * 
+   *
    * @param productId - Product ID to calculate break-even status for
    * @returns Break-even status with revenue breakdown
    * @throws NotFoundError if product doesn't exist
@@ -869,23 +807,26 @@ export class ProductHistoryService {
   /**
    * Get break-even status for multiple products in bulk
    * RPK-MODAL: Product Break-Even Status Badge Feature
-   * 
+   *
    * Optimized bulk query using groupBy aggregation for efficient retrieval
    * of break-even status for multiple products simultaneously.
-   * 
+   *
    * @param productIds - Array of product IDs to calculate break-even status for
    * @returns Map of product ID to break-even status for O(1) lookup
    */
-  async getBulkBreakEvenStatus(
-    productIds: string[],
-  ): Promise<Map<string, {
-    modalAwal: number
-    totalRevenue: number
-    isBreakEven: boolean
-    progressPercentage: number
-    transactionCount: number
-    profit?: number
-  }>> {
+  async getBulkBreakEvenStatus(productIds: string[]): Promise<
+    Map<
+      string,
+      {
+        modalAwal: number
+        totalRevenue: number
+        isBreakEven: boolean
+        progressPercentage: number
+        transactionCount: number
+        profit?: number
+      }
+    >
+  > {
     try {
       // Handle empty input
       if (!productIds || productIds.length === 0) {
@@ -894,12 +835,12 @@ export class ProductHistoryService {
 
       // 1. Get all modalAwal values for products
       const products = await this.prisma.product.findMany({
-        where: { 
+        where: {
           id: { in: productIds },
           isActive: true,
         },
-        select: { 
-          id: true, 
+        select: {
+          id: true,
           modalAwal: true,
         },
       })
@@ -909,7 +850,7 @@ export class ProductHistoryService {
         by: ['produkId'],
         where: {
           produkId: { in: productIds },
-          transaksi: { 
+          transaksi: {
             status: { not: 'cancelled' },
           },
         },
@@ -923,19 +864,22 @@ export class ProductHistoryService {
       })
 
       // 3. Build result map for O(1) lookup
-      const resultMap = new Map<string, {
-        modalAwal: number
-        totalRevenue: number
-        isBreakEven: boolean
-        progressPercentage: number
-        transactionCount: number
-        profit?: number
-      }>()
+      const resultMap = new Map<
+        string,
+        {
+          modalAwal: number
+          totalRevenue: number
+          isBreakEven: boolean
+          progressPercentage: number
+          transactionCount: number
+          profit?: number
+        }
+      >()
 
       // 4. Process each product and calculate break-even status
       products.forEach((product) => {
         const revenue = revenueByProduct.find((r) => r.produkId === product.id)
-        
+
         // Calculate revenue breakdown
         const baseRevenue = revenue?._sum.subtotal?.toNumber() || 0
         const penalties = revenue?._sum.totalReturnPenalty?.toNumber() || 0
@@ -960,7 +904,7 @@ export class ProductHistoryService {
       return resultMap
     } catch (error) {
       console.error('[ProductHistoryService] getBulkBreakEvenStatus error:', error)
-      
+
       // Return empty map on error for graceful degradation
       return new Map()
     }

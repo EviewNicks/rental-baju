@@ -10,7 +10,6 @@
 import React from 'react'
 import { Calendar, User, TrendingUp, AlertCircle } from 'lucide-react'
 import { formatDate, formatCurrency } from '@/features/kasir/lib/utils/client'
-import { SizeDisplay } from './SizeDisplay'
 import { PenaltyBadge } from './PenaltyBadge'
 import type { ProductHistoryItem } from '../../types/productHistory'
 
@@ -95,16 +94,9 @@ export function TimelineItem({
             </span>
           </div>
 
-          {/* NEW: Size Information */}
-          {item.sizeInfo && (
-            <div className="mt-2">
-              <SizeDisplay sizeInfo={item.sizeInfo} compact />
-            </div>
-          )}
-
-          {/* Transaction Details */}
+          {/* Transaction Details - Now includes Size Info */}
           <div className="mt-2 p-3 bg-gray-50 rounded-lg">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
               {/* Duration */}
               <div>
                 <span className="text-gray-500">Durasi:</span>
@@ -134,6 +126,18 @@ export function TimelineItem({
                   }`}
                 >
                   {statusDisplay.label}
+                </div>
+              </div>
+
+              {/* Size Information */}
+              <div>
+                <span className="text-gray-500">Ukuran:</span>
+                <div className="font-medium text-gray-900">
+                  {item.sizeInfo ? (
+                    `${item.sizeInfo.size} (${item.sizeInfo.ageCategory})`
+                  ) : (
+                    <span className="text-gray-400 italic">N/A</span>
+                  )}
                 </div>
               </div>
             </div>
