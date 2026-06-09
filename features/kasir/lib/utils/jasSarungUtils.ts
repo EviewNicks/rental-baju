@@ -7,15 +7,15 @@
 
 import type { Product, ProductWithCategory, ProductSelection } from '../../types'
 import { sarungPairingService } from '../../services/pairingService'
-import { 
-  SARUNG_GRATIS_ELIGIBLE_CATEGORIES, 
+import {
+  SARUNG_GRATIS_ELIGIBLE_CATEGORIES,
   SARUNG_PAIRING_DISPLAY,
   getAllEligibleCategories,
-  isEligibleForSarungGratis
+  isEligibleForSarungGratis,
 } from '../../config/pairingConfig'
 
 // Re-export types for backward compatibility
-export type CategorySarungGratis = typeof SARUNG_GRATIS_ELIGIBLE_CATEGORIES[number]
+export type CategorySarungGratis = (typeof SARUNG_GRATIS_ELIGIBLE_CATEGORIES)[number]
 
 // Sarung category constants (from configuration)
 export const SARUNG_CATEGORY = SARUNG_PAIRING_DISPLAY.freeItemCategory
@@ -28,7 +28,7 @@ export const SARUNG_CATEGORY_TYPE = SARUNG_PAIRING_DISPLAY.freeItemCategoryType
 export function getSarungCategoryId(): string {
   // Based on categories.json, sarung category ID
   // In production, this should be fetched from API or config
-  return 'e03f730b-5290-4281-af43-f37bca6cb32e' // This is the categoryId from sarung.json
+  return 'd50fbc08-26f9-499f-bce1-189c7e18a171' // This is the categoryId from sarung.json
 }
 
 /**
@@ -55,13 +55,14 @@ export function getSarungProducts(products: Product[]): Product[] {
  * @param products - Array of products with category info to filter
  * @returns Array of sarung products
  */
-export function getSarungProductsWithCategory(products: ProductWithCategory[]): ProductWithCategory[] {
-  return products.filter(product => {
+export function getSarungProductsWithCategory(
+  products: ProductWithCategory[],
+): ProductWithCategory[] {
+  return products.filter((product) => {
     const categoryName = product.category.name.toLowerCase()
     const categoryType = product.category.type
 
-    return categoryName === SARUNG_CATEGORY && 
-           categoryType === SARUNG_CATEGORY_TYPE
+    return categoryName === SARUNG_CATEGORY && categoryType === SARUNG_CATEGORY_TYPE
   })
 }
 
@@ -78,19 +79,19 @@ export function validateSarungSelection(
   jasProduct: Product | ProductWithCategory,
   sarungProduct: Product | ProductWithCategory,
   jasQuantity: number,
-  sarungQuantity: number
+  sarungQuantity: number,
 ): { isValid: boolean; error?: string; userMessage?: string } {
   const result = sarungPairingService.validatePairingSelection(
     jasProduct,
     sarungProduct,
     jasQuantity,
-    sarungQuantity
+    sarungQuantity,
   )
-  
+
   return {
     isValid: result.isValid,
     error: result.error,
-    userMessage: result.error // For backward compatibility
+    userMessage: result.error, // For backward compatibility
   }
 }
 
@@ -133,11 +134,12 @@ export function extractProductCode(product: Product | ProductWithCategory): stri
 export function isLinkedSarung(
   productId: string,
   productSizeId: string | undefined,
-  products: ProductSelection[]
+  products: ProductSelection[],
 ): boolean {
-  return products.some(mainItem => 
-    mainItem.linkedSarung?.productId === productId &&
-    mainItem.linkedSarung?.productSizeId === productSizeId
+  return products.some(
+    (mainItem) =>
+      mainItem.linkedSarung?.productId === productId &&
+      mainItem.linkedSarung?.productSizeId === productSizeId,
   )
 }
 

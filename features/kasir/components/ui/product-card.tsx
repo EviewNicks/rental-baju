@@ -16,7 +16,12 @@ interface ProductCardProps {
   onAddToCart: (product: Product, quantity: number, productSizeId?: string) => void
   selectedQuantity?: number
   className?: string
-  onOpenHistory?: (productSizeId: string, productName: string, size: string, ageCategory: string) => void
+  onOpenHistory?: (
+    productSizeId: string,
+    productName: string,
+    size: string,
+    ageCategory: string,
+  ) => void
   // NEW: Context awareness for different behaviors
   context?: 'main-grid' | 'sarung-modal'
   // NEW: Override button text for specific contexts
@@ -41,25 +46,15 @@ export function ProductCard({
   // Check if product has size-aware inventory
   const hasSizes = (product.sizes?.length ?? 0) > 0
 
-  // Quantity-aware availability checking
+  // Quantity validation - check against original quantity (total physical stock)
   const isQuantityAvailable = (requestedQuantity: number) => {
     if (hasSizes && selectedSize) {
-      return selectedSize.availableQuantity >= requestedQuantity
+      return (selectedSize.originalQuantity ?? 0) >= requestedQuantity
     }
-    return (product.availableQuantity ?? 0) >= requestedQuantity
+    // For products without sizes, use first size's originalQuantity or fallback to availableQuantity
+    const totalStock = product.sizes?.[0]?.originalQuantity ?? product.availableQuantity ?? 0
+    return totalStock >= requestedQuantity
   }
-
-  const isOutOfStock = hasSizes
-    ? (product.sizes?.every((size) => size.availableQuantity === 0) ?? true)
-    : (product.availableQuantity ?? 0) === 0
-
-  const isLowStock =
-    !isOutOfStock &&
-    (hasSizes
-      ? selectedSize
-        ? selectedSize.availableQuantity > 0 && selectedSize.availableQuantity <= 2
-        : false
-      : (product.availableQuantity ?? 0) > 0 && (product.availableQuantity ?? 0) <= 2)
 
   const handleSizeSelect = (sizeId: string, size: ProductSize) => {
     setSelectedSize(size)
@@ -78,20 +73,20 @@ export function ProductCard({
 
   // Check if this is a product eligible for free sarung for special handling
   const isEligible = sarungPairingService.isEligibleForPairing(product)
-  
+
   // Get appropriate button text based on product type and context
   const getButtonText = () => {
     // Use override if provided (for specific contexts like sarung modal)
     if (buttonTextOverride) {
       return quantity === 0 ? buttonTextOverride : `${buttonTextOverride} ${quantity}`
     }
-    
+
     // Context-specific behavior
     if (context === 'sarung-modal') {
       // In sarung modal, all products should show selection text
       return quantity === 0 ? 'Pilih Sarung' : `Pilih ${quantity} Sarung`
     }
-    
+
     // Default main-grid behavior
     return sarungPairingService.getButtonText(product, quantity)
   }
@@ -113,7 +108,6 @@ export function ProductCard({
         'bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 overflow-hidden',
         'shadow-lg shadow-gray-900/5 transition-all duration-200',
         'hover:shadow-xl hover:shadow-gray-900/10 hover:-translate-y-1',
-        isOutOfStock && 'opacity-60',
         className,
       )}
     >
@@ -130,20 +124,6 @@ export function ProductCard({
           height={200}
           className="w-full h-full object-cover"
         />
-        {isOutOfStock && (
-          <div className="absolute inset-0 bg-gray-900/50 flex items-center justify-center">
-            <Badge variant="secondary" className="bg-red-500 text-white">
-              Habis
-            </Badge>
-          </div>
-        )}
-        {isLowStock && !isOutOfStock && (
-          <div className="absolute top-2 left-2">
-            <Badge variant="secondary" className="bg-orange-500 text-white text-xs">
-              Stok Terbatas
-            </Badge>
-          </div>
-        )}
         {selectedQuantity > 0 && (
           <div className="absolute top-2 right-2">
             <Badge className="bg-yellow-400 text-gray-900">{selectedQuantity}x</Badge>
@@ -152,28 +132,31 @@ export function ProductCard({
         {/* Context-aware badge display */}
         {showCustomBadge ? (
           <div className="absolute bottom-2 left-2">
-            <Badge className={showCustomBadge.className || "bg-green-500 text-white text-xs"}>
+            <Badge className={showCustomBadge.className || 'bg-green-500 text-white text-xs'}>
               {showCustomBadge.text}
             </Badge>
           </div>
-        ) : isEligible && context === 'main-grid' && (
-          <div className="absolute bottom-2 left-2">
-            <Badge className="bg-blue-500 text-white text-xs">
-              {sarungPairingService.getBadgeText()}
-            </Badge>
-          </div>
+        ) : (
+          isEligible &&
+          context === 'main-grid' && (
+            <div className="absolute bottom-2 left-2">
+              <Badge className="bg-blue-500 text-white text-xs">
+                {sarungPairingService.getBadgeText()}
+              </Badge>
+            </div>
+          )
         )}
       </div>
 
       {/* Product Info */}
-      <div className="p-4 space-y-3">
+      <div className="p-4 space-y-2">
         <div>
           <div className="flex items-start justify-between gap-2">
             <h3 className="font-semibold text-gray-900 text-sm flex-1">{product.name}</h3>
             {/* Product Code Display */}
             {product.code && (
-              <Badge 
-                variant="outline" 
+              <Badge
+                variant="outline"
                 className="text-xs font-mono bg-gray-50 text-gray-700 border-gray-300 shrink-0"
                 title={`Kode Produk: ${product.code}`}
               >
@@ -181,7 +164,9 @@ export function ProductCard({
               </Badge>
             )}
           </div>
-          <p className="text-xs text-gray-600 mt-1">{product.description}</p>
+          <div className="text-sm font-semibold text-gray-900">
+            {formatCurrency(product.pricePerDay)}/4 hari
+          </div>
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
@@ -194,15 +179,6 @@ export function ProductCard({
           <Badge variant="outline" className="text-xs capitalize">
             {product.category}
           </Badge>
-        </div>
-
-        <div className="flex items-center justify-between">
-          <div className="text-sm font-semibold text-gray-900">
-            {formatCurrency(product.pricePerDay)}/hari
-          </div>
-          <div className="text-xs text-gray-500">
-            Tersedia: {hasSizes && selectedSize ? selectedSize.availableQuantity : product.availableQuantity ?? 0}
-          </div>
         </div>
 
         {/* Size Selection - RPK-51 & RPK-52 (Category Type Aware) */}
@@ -219,7 +195,7 @@ export function ProductCard({
               sizes={product.sizes}
               selectedSizeId={selectedSize?.id}
               onSizeSelect={handleSizeSelect}
-              disabled={isOutOfStock}
+              disabled={false}
               productName={product.name}
               onOpenHistory={onOpenHistory}
             />
@@ -227,66 +203,47 @@ export function ProductCard({
         )}
 
         {/* Quantity Controls */}
-        {!isOutOfStock && (
-          <div className="space-y-2">
-            {/* Show size selection prompt if product has sizes but none selected - RPK-52 (Category Type Aware) */}
-            {hasSizes && !selectedSize && (
-              <div className="text-sm text-center text-gray-500 italic py-2">
-                {product.categoryType === 'accessories_age_based'
-                  ? 'Pilih kategori umur terlebih dahulu'
-                  : product.categoryType === 'accessories_universal'
-                    ? 'Pilih jumlah terlebih dahulu'
-                    : 'Pilih ukuran terlebih dahulu'}
-              </div>
-            )}
+        <div className="space-y-2">
 
-            {/* Show quantity controls only if no sizes OR size is selected */}
-            {(!hasSizes || selectedSize) && (
-              <>
-                <div className="flex items-center justify-center gap-3">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={decrementQuantity}
-                    disabled={quantity === 0}
-                    className="h-8 w-8 p-0 bg-transparent"
-                  >
-                    <Minus className="h-3 w-3" />
-                  </Button>
-                  <span className="text-sm font-medium w-8 text-center">{quantity}</span>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={incrementQuantity}
-                    disabled={!isQuantityAvailable(quantity + 1)}
-                    className="h-8 w-8 p-0 bg-transparent"
-                  >
-                    <Plus className="h-3 w-3" />
-                  </Button>
-                </div>
-
+          {/* Show quantity controls only if no sizes OR size is selected */}
+          {(!hasSizes || selectedSize) && (
+            <>
+              <div className="flex items-center justify-center gap-3">
                 <Button
-                  onClick={handleAddToCart}
-                  disabled={quantity === 0 || !isQuantityAvailable(quantity) || (hasSizes && !selectedSize)}
-                  className="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 text-sm"
                   size="sm"
+                  variant="outline"
+                  onClick={decrementQuantity}
+                  disabled={quantity === 0}
+                  className="h-8 w-8 p-0 bg-transparent"
                 >
-                  <ShoppingCart className="h-3 w-3 mr-2" />
-                  {getButtonText()}
+                  <Minus className="h-3 w-3" />
                 </Button>
-              </>
-            )}
-          </div>
-        )}
+                <span className="text-sm font-medium w-8 text-center">{quantity}</span>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={incrementQuantity}
+                  disabled={!isQuantityAvailable(quantity + 1)}
+                  className="h-8 w-8 p-0 bg-transparent"
+                >
+                  <Plus className="h-3 w-3" />
+                </Button>
+              </div>
 
-        {/* Out of Stock Message */}
-        {isOutOfStock && (
-          <div className="text-center py-2">
-            <Button disabled className="w-full text-sm" size="sm">
-              Habis
-            </Button>
-          </div>
-        )}
+              <Button
+                onClick={handleAddToCart}
+                disabled={
+                  quantity === 0 || !isQuantityAvailable(quantity) || (hasSizes && !selectedSize)
+                }
+                className="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 text-sm"
+                size="sm"
+              >
+                <ShoppingCart className="h-3 w-3 mr-2" />
+                {getButtonText()}
+              </Button>
+            </>
+          )}
+        </div>
       </div>
     </div>
   )

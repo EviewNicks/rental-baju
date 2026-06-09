@@ -14,7 +14,12 @@ interface SizeSelectorProps {
   disabled?: boolean
   className?: string
   productName?: string // For history popup
-  onOpenHistory?: (productSizeId: string, productName: string, size: string, ageCategory: string) => void
+  onOpenHistory?: (
+    productSizeId: string,
+    productName: string,
+    size: string,
+    ageCategory: string,
+  ) => void
 }
 
 export function SizeSelector({
@@ -49,20 +54,20 @@ export function SizeSelector({
   // Handle history popup - Open in new tab
   const handleOpenHistory = (size: ProductSize) => {
     const ageCategory = ageCategoryLabels[size.ageCategory] || size.ageCategory
-    
+
     // Build URL with query params
     const params = new URLSearchParams({
       productSizeId: size.id,
       productName: productName,
       size: size.size,
-      ageCategory: ageCategory
+      ageCategory: ageCategory,
     })
 
     const url = `/product-history?${params.toString()}`
-    
+
     // Open in new tab
     const newWindow = window.open(url, '_blank', 'noopener,noreferrer')
-    
+
     // Handle popup blocker - fallback to callback if provided
     if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
       console.warn('[SizeSelector] Popup blocked, trying callback fallback')
@@ -89,8 +94,8 @@ export function SizeSelector({
             {categorySizes.map((size) => {
               const isSelected = selectedSizeId === size.id
               const isHovered = hoveredSizeId === size.id
-              const isAvailable = size.availableQuantity > 0
-              const isDisabled = disabled || !isAvailable
+              const hasStock = (size.originalQuantity ?? 0) > 0
+              const isDisabled = disabled || !hasStock
 
               return (
                 <div key={size.id} className="relative group">
@@ -105,14 +110,14 @@ export function SizeSelector({
                     className={cn(
                       'relative min-w-[60px] transition-all pr-8',
                       isSelected && 'ring-2 ring-blue-500 ring-offset-2 py-1',
-                      !isAvailable && 'opacity-40 cursor-not-allowed',
-                      isHovered && isAvailable && !isSelected && 'border-blue-400',
+                      !hasStock && 'opacity-40 cursor-not-allowed',
+                      isHovered && hasStock && !isSelected && 'border-blue-400',
                     )}
                   >
                     <div className="flex flex-col items-center gap-0.5">
                       <span className="font-semibold">{size.size}</span>
                       <span className="text-xs text-muted-foreground">
-                        {isAvailable ? `${size.availableQuantity} pcs` : 'Habis'}
+                        {hasStock ? `${size.originalQuantity ?? 0} pcs` : 'Habis'}
                       </span>
                     </div>
 
@@ -146,7 +151,7 @@ export function SizeSelector({
                       'absolute -top-1 -right-1 w-6 h-6 p-0 bg-white border border-gray-200 shadow-sm hover:bg-gray-50 transition-all',
                       'opacity-0 group-hover:opacity-100',
                       isSelected && 'opacity-100',
-                      'z-10'
+                      'z-10',
                     )}
                     title={`Lihat riwayat transaksi ${size.size}`}
                   >
