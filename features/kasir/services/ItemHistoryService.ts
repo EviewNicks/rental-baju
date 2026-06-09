@@ -2,7 +2,7 @@
  * TransactionHistoryService - Availability Product View
  * Service layer for transaction history retrieval
  * NO CACHING: Direct database queries for accurate real-time data
- * PHASE 2: Aggregate all items by transaction code (ignore linkedSarung pairing)
+ * PHASE 2: Aggregate all items by transaction code (no deduplication - root filter is sufficient)
  */
 
 import { PrismaClient } from '@prisma/client'
@@ -29,7 +29,7 @@ export class TransactionHistoryService {
 
   /**
    * Fetch transaction history from database
-   * PHASE 2: Group by transaction code ONLY (aggregate all items regardless of linkedSarung)
+   * PHASE 2: Group by transaction code ONLY (no deduplication needed - root filter handles it)
    */
   private async fetchTransactionHistory(
     productSizeId: string,
@@ -109,29 +109,10 @@ export class TransactionHistoryService {
         }
       })
 
-      // DEDUPLICATION BEFORE GROUPING: Remove paired items to avoid double counting
-      // Problem: Query returns BOTH Jas (with linkedSarung) AND Sarung (isPairedSarung) from same transaction
-      // Solution: Keep only ONE item per (transactionCode + quantity) combination
-      const seenPairs = new Set<string>()
-      const deduplicatedItems = rootLevelItems.filter((item) => {
-        const txnCode = item.transaksi.kode
-        const quantity = item.jumlah
-
-        // Create unique key: transactionCode + quantity
-        // This identifies paired items (Jas + Sarung with same quantity in same transaction)
-        const pairKey = `${txnCode}::${quantity}`
-
-        if (seenPairs.has(pairKey)) {
-          return false // Skip this duplicate
-        }
-
-        seenPairs.add(pairKey)
-        return true // Keep first occurrence
-      })
-
-      // PHASE 2: Group by transaction code ONLY (after deduplication)
-      // Now we aggregate items from same transaction without double counting
-      const groupedByTransaction = deduplicatedItems.reduce(
+      // PHASE 2: Group by transaction code ONLY (no deduplication needed)
+      // Root level filter already ensures we only get items where this product is the main item
+      // Multiple items with same productSizeId in one transaction are legitimate and should be aggregated
+      const groupedByTransaction = rootLevelItems.reduce(
         (acc, item) => {
           const txnCode = item.transaksi.kode
           const groupKey = txnCode
