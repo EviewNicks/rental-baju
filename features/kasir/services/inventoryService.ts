@@ -369,6 +369,14 @@ export class InventoryService {
     try {
       // If no linked sarung, use existing single restoration logic
       if (!linkedSarungSizeId) {
+        // 🔍 DEBUG LOG 4: Single restoration path
+        console.info('🔍 DEBUG: Single restoration path executed', {
+          sizeId,
+          quantity,
+          operation: 'decrement_rented_increment_available',
+          timestamp: new Date().toISOString(),
+        })
+
         await this.prisma.productSize.update({
           where: { id: sizeId },
           data: {
@@ -383,11 +391,13 @@ export class InventoryService {
       // Since we're already inside a transaction context, we can't use $transaction again
 
       // ✅ TASK 1: Additional audit trail point 2 - Dual restoration process tracking
-      console.info('🔄 Executing dual stock restoration', {
+      // 🔍 DEBUG LOG 5: Dual restoration path - CRITICAL CHECKPOINT
+      console.info('🔍 DEBUG: DUAL RESTORATION PATH - Restoring JAS + SARUNG', {
         jasProductSizeId: sizeId,
         sarungProductSizeId: linkedSarungSizeId,
         quantity,
-        step: 'sequential_updates',
+        operation: 'dual_restoration_sequential',
+        warning: 'This will restore BOTH jas and sarung stock',
         timestamp: new Date().toISOString(),
       })
 
@@ -400,6 +410,11 @@ export class InventoryService {
         },
       })
 
+      console.info('🔍 DEBUG: Jas stock restored, now restoring sarung...', {
+        jasProductSizeId: sizeId,
+        sarungProductSizeId: linkedSarungSizeId,
+      })
+
       // Restore stock for linked sarung (1:1 ratio)
       await this.prisma.productSize.update({
         where: { id: linkedSarungSizeId },
@@ -407,6 +422,12 @@ export class InventoryService {
           rentedQuantity: { decrement: quantity },
           availableQuantity: { increment: quantity },
         },
+      })
+
+      console.info('🔍 DEBUG: Dual restoration completed for both jas and sarung', {
+        jasProductSizeId: sizeId,
+        sarungProductSizeId: linkedSarungSizeId,
+        restorationComplete: true,
       })
     } catch (error) {
       throw new Error(
