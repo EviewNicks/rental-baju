@@ -117,6 +117,15 @@ export function useTransactions(options: UseTransactionsOptions = {}) {
     })
   }, [queryParams])
 
+  // Check if any filters are active (needed before useQuery for conditional staleTime)
+  const hasActiveFilters = useMemo(() => {
+    return (
+      !!(filters.status && filters.status !== 'all') ||
+      !!(filters.search && filters.search.trim()) ||
+      !!(filters.dateFilter && filters.dateFilter.trim())
+    )
+  }, [filters.status, filters.search, filters.dateFilter])
+
   // Custom query function with simplified cache integration
   const queryFn = useCallback(async (): Promise<TransaksiListResponse> => {
     // Always fetch fresh data for date filter queries to ensure accuracy
@@ -141,7 +150,11 @@ export function useTransactions(options: UseTransactionsOptions = {}) {
     queryFn,
     enabled,
     refetchInterval: false, // ✅ EGRESS OPTIMIZATION: Disabled auto-refresh
-    staleTime: 10 * 60 * 1000, // ✅ PHASE 2: 10 minutes - data fresh selama 10 menit
+    // ✅ CONDITIONAL STALE TIME: Fresh data for filtered queries, cache for default view
+    // This fixes production issue where filters were not triggering API calls
+    staleTime: hasActiveFilters
+      ? 0 // Always fresh for filtered data (status/search/date active)
+      : 10 * 60 * 1000, // Cache 10 minutes for default "all" view only
     gcTime: 15 * 60 * 1000, // ✅ PHASE 2: 15 minutes - cache disimpan 15 menit
     // Simplified configuration for better reliability
     refetchOnWindowFocus: false, // Prevent excessive refetches
@@ -261,15 +274,6 @@ export function useTransactions(options: UseTransactionsOptions = {}) {
   const setPage = useCallback((page: number) => {
     setCurrentPage(page)
   }, [])
-
-  // Check if any filters are active (Task 3.1)
-  const hasActiveFilters = useMemo(() => {
-    return (
-      !!(filters.status && filters.status !== 'all') ||
-      !!(filters.search && filters.search.trim()) ||
-      !!(filters.dateFilter && filters.dateFilter.trim())
-    )
-  }, [filters.status, filters.search, filters.dateFilter])
 
   // Helper function to manually refresh data with cache invalidation
   const refreshTransactions = useCallback(async () => {
