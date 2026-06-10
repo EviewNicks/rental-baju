@@ -89,11 +89,13 @@ export async function GET(request: NextRequest) {
       summary: result.summary,
     }
 
-    // ✅ PHASE 2 OPTIMIZATION: Add Cache-Control headers (5 minutes cache)
-    // Impact: -70% database hits, faster response from cache
+    // ✅ FIX: Disable HTTP caching to prevent CDN/Browser cache conflicts with filters
+    // Caching handled by React Query on client-side (10min for default, 0 for filtered)
+    // This ensures filters always trigger fresh API calls in production
     return successResponse(formattedData, 'Data transaksi berhasil diambil', 200, {
-      'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=60',
-      // Cache for 5 minutes (300s), serve stale content for 60s while revalidating
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      Pragma: 'no-cache',
+      Expires: '0',
     })
   } catch (error) {
     return handleTransaksiError(error)
