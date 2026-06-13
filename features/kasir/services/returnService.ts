@@ -46,6 +46,11 @@ import {
   buildPartialReturnState,
   type PartialReturnState,
 } from '../lib/utils/partialReturnHelpers'
+import { getSarungCategoryId } from '../lib/utils/jasSarungUtils'
+
+// ✅ FIX: Sarung category constants for robust detection
+const SARUNG_CATEGORY_ID = getSarungCategoryId()
+const SARUNG_CATEGORY_NAME = 'sarung'
 
 // ✅ REFACTOR: Helper function to reduce code duplication
 /**
@@ -293,18 +298,24 @@ export class UnifiedReturnService {
    * Item ini harus di-skip dari stock restoration karena sudah di-handle otomatis
    * via dual restoration logic saat jas dikembalikan.
    *
-   * Detection Logic:
-   * 1. Primary: Check isSarungGratis flag (explicit indicator)
-   * 2. Fallback: Check subtotal = 0 AND category = 'sarung' AND no linkedSarung
+   * Detection Logic (Improved):
+   * 1. If item has linkedSarung → It's a JAS (not sarung gratis) ✅
+   * 2. If item category is NOT 'sarung' → Not sarung gratis ✅
+   * 3. If item has isSarungGratis flag → Sarung gratis (explicit) ✅
+   * 4. If subtotal = 0 AND category = 'sarung' → Sarung gratis (implicit) ✅
+   * 5. NEW: If ANY OTHER item in transaction has linkedSarung pointing to this item → Sarung gratis ✅
    *
    * @param item - Return request item
    * @param transactionItem - Original transaction item with product details
+   * @param allTransactionItems - All items in transaction for cross-reference checking
    * @returns true if item is sarung gratis (should skip restoration)
    */
   private isSarungGratisItem(
     item: UnifiedReturnRequest['items'][0],
     //eslint-disable-next-line @typescript-eslint/no-explicit-any
     transactionItem: any,
+    //eslint-disable-next-line @typescript-eslint/no-explicit-any
+    allTransactionItems?: any[],
   ): boolean {
     // Parse kondisiAwal to check for linkedSarung
     const kondisiData = parseKondisiAwalEnhanced(transactionItem.kondisiAwal)
@@ -314,8 +325,15 @@ export class UnifiedReturnService {
       return false
     }
 
-    // Check if product category is sarung
-    const isSarungCategory = transactionItem.produk?.category === 'sarung'
+    // ✅ FIX: Robust category detection - handle both object and string formats
+    // Category can be either:
+    // 1. Object format: {id, name, color, type, ...} (from database query with relations)
+    // 2. String format: "sarung" (legacy or simplified queries)
+    const category = transactionItem.produk?.category
+    const isSarungCategory =
+      category?.id === SARUNG_CATEGORY_ID || // Object format with ID
+      category?.name === SARUNG_CATEGORY_NAME || // Object format with name
+      category === SARUNG_CATEGORY_NAME // String format (backward compat)
 
     if (!isSarungCategory) {
       return false
@@ -327,11 +345,30 @@ export class UnifiedReturnService {
       return true
     }
 
-    // Fallback detection: Check subtotal = 0
+    // Fallback detection 1: Check subtotal = 0
     // Sarung gratis has subtotal = 0 because it's a free bonus
     const subtotal = Number(transactionItem.subtotal || 0)
     if (subtotal === 0) {
       return true
+    }
+
+    // ✅ NEW FIX: Fallback detection 2: Check if ANY OTHER item references this sarung
+    // If another item (jas) has linkedSarung.productSizeId matching this item's productSizeId,
+    // then THIS item is the sarung gratis that should be skipped
+    if (allTransactionItems && kondisiData?.productSizeId) {
+      const isReferencedBySomeItem = allTransactionItems.some((otherItem) => {
+        // Skip self
+        if (otherItem.id === transactionItem.id) return false
+
+        const otherKondisiData = parseKondisiAwalEnhanced(otherItem.kondisiAwal)
+
+        // Check if this other item (likely jas) references our sarung
+        return otherKondisiData?.linkedSarung?.productSizeId === kondisiData.productSizeId
+      })
+
+      if (isReferencedBySomeItem) {
+        return true
+      }
     }
 
     // Not a sarung gratis item
@@ -1237,30 +1274,9 @@ export class UnifiedReturnService {
             // ✅ TASK 7: Use pairing-aware stock restoration instead of simple updateStockOnReturn
             // This handles both regular items and jas-sarung pairings with dual restoration
             // Requirements: 2.1, 2.2, 2.3
-            // ✅ STOCK-001 FIX: Filter out sarung gratis items to prevent double restoration
-
-            // 🔍 DEBUG LOG 1: Log all items before filtering
-            kasirLogger.returnProcess.info(
-              'processUnifiedReturn',
-              '🔍 DEBUG: Items before sarung gratis filter',
-              {
-                transaksiId,
-                totalRequestItems: request.items.length,
-                itemsDetail: request.items.map((item) => {
-                  const transactionItem = validation.transaction!.transaction.items.find(
-                    //eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    (ti: any) => ti.id === item.itemId,
-                  )
-                  return {
-                    itemId: item.itemId,
-                    productName: transactionItem?.produk?.name || 'Unknown',
-                    //eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    productCategory: (transactionItem?.produk as any)?.category || 'unknown',
-                    subtotal: Number(transactionItem?.subtotal || 0),
-                  }
-                }),
-              },
-            )
+            // ✅ STOCK-002 FIX: Process ALL items including sarung gratis for balanced restoration
+            // Sarung gratis was deducted during pickup (dual + single deduction),
+            // so it MUST be restored during return (dual + single restoration) for balance
 
             await Promise.all(
               request.items
@@ -1269,28 +1285,8 @@ export class UnifiedReturnService {
                     //eslint-disable-next-line @typescript-eslint/no-explicit-any
                     (ti: any) => ti.id === item.itemId,
                   )
-                  if (!transactionItem) return false
-
-                  // ✅ STOCK-001: Check if this is a sarung gratis item
-                  const isSarungGratis = this.isSarungGratisItem(item, transactionItem)
-
-                  // 🔍 DEBUG LOG 2: Log sarung gratis detection result
-                  if (isSarungGratis) {
-                    kasirLogger.returnProcess.info(
-                      'processUnifiedReturn',
-                      '🔍 DEBUG: Sarung gratis detected - SKIP stock restoration',
-                      {
-                        itemId: item.itemId,
-                        productName: transactionItem.produk.name,
-                        //eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        productCategory: (transactionItem.produk as any)?.category || 'unknown',
-                        subtotal: Number(transactionItem.subtotal || 0),
-                        reason: 'sarung_gratis_will_be_restored_via_jas_dual_restoration',
-                      },
-                    )
-                  }
-
-                  return !isSarungGratis // Only process non-sarung-gratis items
+                  // Only filter out items that don't exist in transaction
+                  return !!transactionItem
                 })
                 .map(async (item) => {
                   const transactionItem = validation.transaction!.transaction.items.find(
@@ -1301,21 +1297,6 @@ export class UnifiedReturnService {
 
                   // Calculate total non-HILANG quantity for this item
                   const nonHilangQuantity = calculateNonHilangQuantity(item.conditions)
-
-                  // 🔍 DEBUG LOG 3: Log before stock restoration call
-                  kasirLogger.returnProcess.info(
-                    'processUnifiedReturn',
-                    '🔍 DEBUG: About to call processStockForReturn',
-                    {
-                      itemId: item.itemId,
-                      productName: transactionItem.produk.name,
-                      nonHilangQuantity,
-                      willProcessStock: nonHilangQuantity > 0,
-                      kondisiAwalHasLinkedSarung: !!parseKondisiAwalEnhanced(
-                        transactionItem.kondisiAwal,
-                      )?.linkedSarung,
-                    },
-                  )
 
                   if (nonHilangQuantity > 0) {
                     try {

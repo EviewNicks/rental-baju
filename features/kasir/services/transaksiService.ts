@@ -144,6 +144,7 @@ export interface TransaksiForValidation {
       code: string
       name: string
       modalAwal: Decimal
+      category?: string // ✅ FIX: Required for sarung gratis detection
     }
     jumlah: number
     jumlahDiambil: number
@@ -1089,12 +1090,6 @@ export class TransaksiService {
       { isLinkedSarung: boolean; itemIndices: number[] }
     >()
 
-    // STEP 1: Collect and aggregate all items (main items + linked sarung)
-    console.log('🔍 [VALIDATION] Starting quantity aggregation', {
-      totalItems: items.length,
-      timestamp: new Date().toISOString(),
-    })
-
     for (let index = 0; index < items.length; index++) {
       const item = items[index]
 
@@ -1145,19 +1140,6 @@ export class TransaksiService {
         isLinkedSarung: productSizeMetadata.get(productSizeId)?.isLinkedSarung || false,
       }),
     )
-
-    // Log aggregation summary for debugging
-    console.log('📊 [VALIDATION] Aggregation complete', {
-      rawItemCount: items.length,
-      aggregatedItemCount: allItemsToValidate.length,
-      aggregationDetails: allItemsToValidate.map((item) => ({
-        productSizeId: item.productSizeId,
-        totalQuantity: item.quantity,
-        isLinkedSarung: item.isLinkedSarung,
-        sourceItemIndices: productSizeMetadata.get(item.productSizeId)?.itemIndices || [],
-      })),
-      timestamp: new Date().toISOString(),
-    })
 
     // ✅ VALIDATION 1: Check if all sizes exist
     for (const validationItem of allItemsToValidate) {
@@ -1339,6 +1321,7 @@ export class TransaksiService {
                 code: true,
                 name: true,
                 modalAwal: true, // Only for penalty calculation
+                category: true, // ✅ FIX: Required for sarung gratis detection
               },
             },
             jumlah: true,
@@ -1362,11 +1345,12 @@ export class TransaksiService {
     }
 
     // Cast to TransaksiForValidation with minimal required fields
+    // Use double cast to handle type mismatch from Prisma select
     return {
       ...transaksi,
       pembayaran: [], // Not needed for validation
       aktivitas: [], // Not needed for validation
-    } as TransaksiForValidation
+    } as unknown as TransaksiForValidation
   }
 
   /**
@@ -1623,6 +1607,7 @@ export class TransaksiService {
               kondisiAwal: true,
               jumlah: true,
               jumlahDiambil: true,
+              statusKembali: true, // ✅ CRITICAL FIX: Add statusKembali to check if item already returned
             },
           })
 
@@ -1633,11 +1618,27 @@ export class TransaksiService {
           await Promise.all(
             //eslint-disable-next-line
             transaksiItems.map(async (item: any) => {
+              // ✅ CRITICAL FIX: Check if item is already returned
+              // Items with statusKembali = 'lengkap' have already been processed by return service
+              // and their stock has already been restored via dual/single restoration logic
+              const isAlreadyReturned = item.statusKembali === 'lengkap'
+
+              // ✅ NEW FIX: Check if item was never picked up (sarung gratis case)
+              // Items with jumlahDiambil = 0 are sarung gratis that were never physically taken
+              // and should NOT be restored because they were restored via dual restoration
+              const wasNeverPickedUp = (item.jumlahDiambil || 0) === 0
+
               // ✅ SIMPLE FIX: No stock restoration for cancelled transactions (pickup-based system)
+              // ✅ CRITICAL FIX: No stock restoration for already returned items (prevents double restoration)
+              // ✅ NEW FIX: No stock restoration for items never picked up (sarung gratis case)
               const quantityToRestore =
                 data.status === 'cancelled'
                   ? 0 // ❌ NO restoration for cancelled transactions
-                  : item.jumlah - (item.jumlahDiambil || 0) // ✅ Keep existing logic for 'selesai'
+                  : isAlreadyReturned
+                    ? 0 // ✅ CRITICAL FIX: Skip items already returned (prevents DOUBLE RESTORATION BUG)
+                    : wasNeverPickedUp
+                      ? 0 // ✅ NEW FIX: Skip sarung gratis (never picked up, already restored via dual restoration)
+                      : item.jumlah - (item.jumlahDiambil || 0) // ✅ Only restore unreturned items
 
               if (quantityToRestore > 0 && item.kondisiAwal) {
                 // Parse productSizeId from kondisiAwal field (support both JSON and legacy formats)
@@ -2016,19 +2017,8 @@ export class TransaksiService {
           isActive: true,
         },
       })
-
-      console.log('✅ Policy-based refund processed successfully', {
-        transactionId: params.transaksiId,
-        transactionCode: params.transactionCode,
-        originalAmount: params.refundAmount,
-        actualRefundAmount,
-        refundPercentage: params.refundData?.refundPercentage,
-        daysUntilPickup: params.refundData?.daysUntilPickup,
-        kasirId: this.kasirId,
-        timestamp: new Date().toISOString(),
-      })
     } else {
-      console.log('ℹ️ No refund processed - not eligible or zero amount', {
+      console.warn('ℹ️ No refund processed - not eligible or zero amount', {
         transactionId: params.transaksiId,
         transactionCode: params.transactionCode,
         originalAmount: params.refundAmount,
