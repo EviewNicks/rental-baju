@@ -2,15 +2,19 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { X, ShoppingCart, RefreshCw, AlertTriangle, Search } from 'lucide-react'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination'
 import { ProductCard } from './product-card'
 import { sarungPairingService } from '../../services/pairingService'
 import { getSarungCategoryId } from '../../lib/utils/jasSarungUtils'
@@ -34,17 +38,21 @@ interface SarungSelectionModalProps {
   jasProduct: Product
   jasQuantity: number
   jasProductSizeId?: string // ✅ ADDED: jasProductSizeId prop
-  onConfirmSelection: (selectedSarung?: {
-    product: Product
-    quantity: number
-    productSizeId?: string
-    selectedSize?: ProductSize
-  } | Array<{
-    product: Product
-    quantity: number
-    productSizeId?: string
-    linkedSarung?: ProductSelection['linkedSarung']
-  }>) => void
+  onConfirmSelection: (
+    selectedSarung?:
+      | {
+          product: Product
+          quantity: number
+          productSizeId?: string
+          selectedSize?: ProductSize
+        }
+      | Array<{
+          product: Product
+          quantity: number
+          productSizeId?: string
+          linkedSarung?: ProductSelection['linkedSarung']
+        }>,
+  ) => void
   onOpenHistory?: (
     productSizeId: string,
     productName: string,
@@ -66,9 +74,9 @@ export function SarungSelectionModal({
   const [sarungDistribution, setSarungDistribution] = useState<SarungDistribution>({
     sarungSelections: [],
     totalDistributed: 0,
-    remainingJas: jasQuantity
+    remainingJas: jasQuantity,
   })
-  
+
   // Legacy state for backward compatibility with simple pairing
   const [selectedSarung, setSelectedSarung] = useState<{
     product: Product
@@ -76,12 +84,16 @@ export function SarungSelectionModal({
     productSizeId?: string
     selectedSize?: ProductSize
   } | null>(null)
-  
+
   const [isSubmitting, setIsSubmitting] = useState(false) // For form submission loading
   const [retryCount, setRetryCount] = useState(0)
   const [lastError, setLastError] = useState<string | null>(null)
   const [validationErrors, setValidationErrors] = useState<string[]>([])
   const [searchQuery, setSearchQuery] = useState('') // Search state
+  const [currentPage, setCurrentPage] = useState(1) // Pagination state
+
+  // Pagination constants
+  const ITEMS_PER_PAGE = 15
 
   // Task 12: Generate session ID for rate limiting
   const sessionId = `sarung-modal-${jasProduct.id}-${Date.now()}`
@@ -94,14 +106,14 @@ export function SarungSelectionModal({
     error: apiError,
     refetch: refetchSarungProducts,
   } = useAvailableProducts({
-    search: '', // No search filter
+    search: searchQuery, // ✅ Server-side search for better performance
     categoryId: getSarungCategoryId(), // Filter specifically for sarung category
     status: undefined, // No status filter
     sortBy: 'name',
     sortOrder: 'asc',
     available: true, // Only available products
-    page: 1,
-    limit: 100, // Get all sarung products
+    page: currentPage, // ✅ Use current page state
+    limit: ITEMS_PER_PAGE, // ✅ Use pagination limit (15 items)
   })
 
   // Transform and filter sarung products from API response
@@ -155,23 +167,13 @@ export function SarungSelectionModal({
     return validatedProducts
   }, [sarungProductsResponse])
 
-  // Client-side search filtering
-  const filteredSarungProducts = useMemo(() => {
-    if (!searchQuery.trim()) {
-      return sarungProducts
-    }
+  // Get pagination data from API response
+  const paginationData = sarungProductsResponse?.pagination
+  const totalPages = paginationData?.totalPages || 1
+  const totalItems = paginationData?.total || 0
 
-    const query = searchQuery.toLowerCase().trim()
-    
-    return sarungProducts.filter((product) => {
-      // Search in: name, code, color
-      const matchesName = product.name.toLowerCase().includes(query)
-      const matchesCode = product.code?.toLowerCase().includes(query) || false
-      const matchesColor = product.color.toLowerCase().includes(query)
-      
-      return matchesName || matchesCode || matchesColor
-    })
-  }, [sarungProducts, searchQuery])
+  // No more client-side filtering - search is handled by server
+  // Use sarungProducts directly from API response
 
   // Handle API errors
   useEffect(() => {
@@ -189,25 +191,27 @@ export function SarungSelectionModal({
   // Task 18: Helper functions for quantity distribution
   const getSelectedSarungQuantity = (productId: string, productSizeId?: string) => {
     const selection = sarungDistribution.sarungSelections.find(
-      s => s.product.id === productId && 
-           (productSizeId ? s.productSizeId === productSizeId : !s.productSizeId)
+      (s) =>
+        s.product.id === productId &&
+        (productSizeId ? s.productSizeId === productSizeId : !s.productSizeId),
     )
     return selection?.quantity || 0
   }
 
   const updateSarungDistribution = (product: Product, quantity: number, productSizeId?: string) => {
-    const selectedSize = productSizeId 
-      ? product.sizes?.find(size => size.id === productSizeId)
+    const selectedSize = productSizeId
+      ? product.sizes?.find((size) => size.id === productSizeId)
       : undefined
 
-    setSarungDistribution(prev => {
+    setSarungDistribution((prev) => {
       const existingIndex = prev.sarungSelections.findIndex(
-        s => s.product.id === product.id && 
-             (productSizeId ? s.productSizeId === productSizeId : !s.productSizeId)
+        (s) =>
+          s.product.id === product.id &&
+          (productSizeId ? s.productSizeId === productSizeId : !s.productSizeId),
       )
 
       const newSelections = [...prev.sarungSelections]
-      
+
       if (quantity === 0) {
         // Remove selection if quantity is 0
         if (existingIndex >= 0) {
@@ -219,9 +223,9 @@ export function SarungSelectionModal({
           product,
           quantity,
           productSizeId,
-          selectedSize
+          selectedSize,
         }
-        
+
         if (existingIndex >= 0) {
           newSelections[existingIndex] = newSelection
         } else {
@@ -230,11 +234,11 @@ export function SarungSelectionModal({
       }
 
       const totalDistributed = newSelections.reduce((sum, s) => sum + s.quantity, 0)
-      
+
       return {
         sarungSelections: newSelections,
         totalDistributed,
-        remainingJas: jasQuantity - totalDistributed
+        remainingJas: jasQuantity - totalDistributed,
       }
     })
   }
@@ -245,22 +249,29 @@ export function SarungSelectionModal({
       setSarungDistribution({
         sarungSelections: [],
         totalDistributed: 0,
-        remainingJas: jasQuantity
+        remainingJas: jasQuantity,
       })
       setRetryCount(0)
       setLastError(null)
       setValidationErrors([])
       setSearchQuery('') // Reset search query
+      setCurrentPage(1) // ✅ Reset pagination
     } else {
       // Reset distribution state when modal opens
       setSarungDistribution({
         sarungSelections: [],
         totalDistributed: 0,
-        remainingJas: jasQuantity
+        remainingJas: jasQuantity,
       })
       setSearchQuery('') // Reset search query on open
+      setCurrentPage(1) // ✅ Reset to first page
     }
   }, [isOpen, jasQuantity])
+
+  // ✅ Reset to page 1 when search changes
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchQuery])
 
   // Task 11: Enhanced sarung selection with comprehensive validation and real-time stock checking
   // Task 12: Added comprehensive input validation and security measures
@@ -281,11 +292,13 @@ export function SarungSelectionModal({
       const currentSelected = getSelectedSarungQuantity(product.id, productSizeId)
       const quantityDifference = quantity - currentSelected
       const newTotalDistributed = sarungDistribution.totalDistributed + quantityDifference
-      
+
       // Validate total distribution doesn't exceed jas quantity
       if (newTotalDistributed > jasQuantity) {
         const maxAllowed = jasQuantity - (sarungDistribution.totalDistributed - currentSelected)
-        setValidationErrors([`Maksimal ${maxAllowed} sarung dapat dipilih (sisa jas: ${sarungDistribution.remainingJas + currentSelected})`])
+        setValidationErrors([
+          `Maksimal ${maxAllowed} sarung dapat dipilih (sisa jas: ${sarungDistribution.remainingJas + currentSelected})`,
+        ])
         toast.error('Jumlah Melebihi Batas', `Maksimal ${maxAllowed} sarung dapat dipilih`)
         return
       }
@@ -345,7 +358,7 @@ export function SarungSelectionModal({
         jasProduct,
         product,
         jasQuantity,
-        quantity
+        quantity,
       )
 
       if (!validationResult.isValid) {
@@ -409,21 +422,21 @@ export function SarungSelectionModal({
       }> = []
 
       // Add jas with sarung for each sarung selection
-      sarungDistribution.sarungSelections.forEach(selection => {
+      sarungDistribution.sarungSelections.forEach((selection) => {
         const linkedSarungData: ProductSelection['linkedSarung'] = {
           productId: selection.product.id,
           productSizeId: selection.productSizeId || '',
           quantity: selection.quantity,
           selectedSize: selection.selectedSize!,
           // ✅ TASK 3: Include product reference for sarung code display
-          product: selection.product
+          product: selection.product,
         }
-        
+
         cartAdditions.push({
           product: jasProduct,
           quantity: selection.quantity,
           productSizeId: jasProductSizeId, // ✅ FIXED: Use jasProductSizeId prop
-          linkedSarung: linkedSarungData
+          linkedSarung: linkedSarungData,
         })
       })
 
@@ -432,7 +445,7 @@ export function SarungSelectionModal({
         cartAdditions.push({
           product: jasProduct,
           quantity: sarungDistribution.remainingJas,
-          productSizeId: jasProductSizeId // ✅ FIXED: Use jasProductSizeId prop
+          productSizeId: jasProductSizeId, // ✅ FIXED: Use jasProductSizeId prop
           // No linkedSarung = tanpa sarung
         })
       }
@@ -505,12 +518,14 @@ export function SarungSelectionModal({
     return (
       <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
         <h4 className="font-medium text-blue-900 mb-3">Distribusi Sarung:</h4>
-        
+
         {/* Selected sarung breakdown */}
         <div className="space-y-2 mb-3">
           {sarungDistribution.sarungSelections.map((selection, index) => (
-            <div key={`${selection.product.id}-${selection.productSizeId || 'no-size'}-${index}`} 
-                 className="flex justify-between items-center text-sm">
+            <div
+              key={`${selection.product.id}-${selection.productSizeId || 'no-size'}-${index}`}
+              className="flex justify-between items-center text-sm"
+            >
               <span className="text-blue-800">
                 {selection.quantity}x {jasProduct.name}
               </span>
@@ -521,20 +536,23 @@ export function SarungSelectionModal({
             </div>
           ))}
         </div>
-        
+
         {/* Remaining jas without sarung */}
         {sarungDistribution.remainingJas > 0 && (
           <div className="flex justify-between items-center text-sm text-gray-600 border-t border-blue-200 pt-2">
-            <span>{sarungDistribution.remainingJas}x {jasProduct.name}</span>
+            <span>
+              {sarungDistribution.remainingJas}x {jasProduct.name}
+            </span>
             <span>→ tanpa sarung</span>
           </div>
         )}
-        
+
         {/* Total summary */}
         <div className="border-t border-blue-200 mt-3 pt-2 font-medium text-blue-900 text-sm">
-          Total: {jasQuantity}x {jasProduct.name} 
+          Total: {jasQuantity}x {jasProduct.name}
           <span className="text-xs text-blue-700 ml-2">
-            ({sarungDistribution.totalDistributed} dengan sarung, {sarungDistribution.remainingJas} tanpa sarung)
+            ({sarungDistribution.totalDistributed} dengan sarung, {sarungDistribution.remainingJas}{' '}
+            tanpa sarung)
           </span>
         </div>
       </div>
@@ -543,14 +561,14 @@ export function SarungSelectionModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent 
+      <DialogContent
         className="min-w-[60vw] w-[95vw]  max-h-[95vh]  overflow-hidden z-50 "
         showCloseButton={false}
       >
         <DialogHeader>
           <div className="flex items-center justify-between">
-          <DialogTitle>Pilih Sarung</DialogTitle>
-          
+            <DialogTitle>Pilih Sarung</DialogTitle>
+
             <Button
               variant="ghost"
               size="sm"
@@ -564,35 +582,127 @@ export function SarungSelectionModal({
         </DialogHeader>
 
         <div className="space-y-2">
-          
-
           {/* Sarung Selection */}
           <div className="space-y-2">
-            {/* Search Bar */}
+            {/* Search Bar & Pagination Row */}
             {!isLoading && sarungProducts.length > 0 && (
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
-                <Input
-                  type="text"
-                  placeholder="Cari sarung (nama, kode, warna)..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 pr-10 h-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                  disabled={isLoading || isSubmitting}
-                />
-                {searchQuery && (
-                  <button
-                    onClick={() => setSearchQuery('')}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                    aria-label="Clear search"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
+              <div className="flex flex-col sm:flex-row items-center gap-3">
+                {/* Search Bar */}
+                <div className="relative flex-1 w-full">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                  <Input
+                    type="text"
+                    placeholder="Cari sarung (nama, kode, warna)..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 pr-10 h-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                    disabled={isLoading || isSubmitting}
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery('')}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                      aria-label="Clear search"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+
+                {/* Pagination Controls */}
+                {totalPages > 1 && (
+                  <Pagination className="w-auto">
+                    <PaginationContent>
+                      <PaginationItem>
+                        <PaginationPrevious
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault()
+                            if (currentPage > 1 && !isLoading) {
+                              setCurrentPage(currentPage - 1)
+                            }
+                          }}
+                          className={
+                            currentPage === 1 || isLoading
+                              ? 'pointer-events-none opacity-50'
+                              : 'cursor-pointer'
+                          }
+                          text="Prev"
+                        />
+                      </PaginationItem>
+
+                      {/* Page numbers */}
+                      {(() => {
+                        const pages: (number | 'ellipsis')[] = []
+                        const maxVisible = 3
+
+                        if (totalPages <= maxVisible + 2) {
+                          // Show all pages
+                          for (let i = 1; i <= totalPages; i++) pages.push(i)
+                        } else {
+                          // Always show first page
+                          pages.push(1)
+
+                          let start = Math.max(2, currentPage - 1)
+                          const end = Math.min(totalPages - 1, currentPage + 1)
+
+                          if (start > 2) pages.push('ellipsis')
+                          for (let i = start; i <= end; i++) pages.push(i)
+                          if (end < totalPages - 1) pages.push('ellipsis')
+
+                          // Always show last page
+                          pages.push(totalPages)
+                        }
+
+                        return pages.map((page, idx) => (
+                          <PaginationItem key={idx}>
+                            {page === 'ellipsis' ? (
+                              <PaginationEllipsis />
+                            ) : (
+                              <PaginationLink
+                                href="#"
+                                onClick={(e) => {
+                                  e.preventDefault()
+                                  if (!isLoading && page !== currentPage) {
+                                    setCurrentPage(page)
+                                  }
+                                }}
+                                isActive={currentPage === page}
+                                className={
+                                  isLoading ? 'pointer-events-none opacity-50' : 'cursor-pointer'
+                                }
+                              >
+                                {page}
+                              </PaginationLink>
+                            )}
+                          </PaginationItem>
+                        ))
+                      })()}
+
+                      <PaginationItem>
+                        <PaginationNext
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault()
+                            if (currentPage < totalPages && !isLoading) {
+                              setCurrentPage(currentPage + 1)
+                            }
+                          }}
+                          className={
+                            currentPage === totalPages || isLoading
+                              ? 'pointer-events-none opacity-50'
+                              : 'cursor-pointer'
+                          }
+                          text="Next"
+                        />
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
                 )}
               </div>
             )}
 
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mb-2">
               {retryCount > 0 && (
                 <Button
                   variant="outline"
@@ -605,10 +715,11 @@ export function SarungSelectionModal({
                   Coba Lagi
                 </Button>
               )}
-              {/* Search results count */}
-              {searchQuery && !isLoading && (
-                <span className="text-sm text-gray-600">
-                  {filteredSarungProducts.length} dari {sarungProducts.length} sarung
+              {/* Results info */}
+              {!isLoading && totalItems > 0 && (
+                <span className="text-sm text-gray-600 ml-auto">
+                  Menampilkan {sarungProducts.length} dari {totalItems} sarung
+                  {searchQuery && ` (pencarian: "${searchQuery}")`}
                 </span>
               )}
             </div>
@@ -655,11 +766,13 @@ export function SarungSelectionModal({
                   {retryCount > 0 ? `Mencoba lagi... (${retryCount + 1}/3)` : 'Memuat sarung...'}
                 </p>
               </div>
-            ) : filteredSarungProducts.length === 0 && searchQuery ? (
+            ) : sarungProducts.length === 0 && searchQuery ? (
               <div className="text-center py-12">
                 <div className="text-gray-500 space-y-3">
                   <Search className="h-12 w-12 text-gray-300 mx-auto" />
-                  <p className="text-lg font-medium">Tidak ada hasil untuk "{searchQuery}"</p>
+                  <p className="text-lg font-medium">
+                    Tidak ada hasil untuk &quot;{searchQuery}&quot;
+                  </p>
                   <p className="text-sm text-gray-400">
                     Coba kata kunci lain atau{' '}
                     <button
@@ -709,9 +822,9 @@ export function SarungSelectionModal({
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-h-[60vh] overflow-y-auto p-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-                {filteredSarungProducts.map((product) => {
+                {sarungProducts.map((product) => {
                   const selectedQuantity = getSelectedSarungQuantity(product.id)
-                  
+
                   return (
                     <div
                       key={product.id}
@@ -730,8 +843,8 @@ export function SarungSelectionModal({
                         context="sarung-modal"
                         buttonTextOverride="Pilih"
                         showCustomBadge={{
-                          text: "GRATIS",
-                          className: "bg-green-500 text-white text-xs px-2 py-1 shadow-md"
+                          text: 'GRATIS',
+                          className: 'bg-green-500 text-white text-xs px-2 py-1 shadow-md',
                         }}
                       />
                       {selectedQuantity > 0 && (
@@ -742,13 +855,14 @@ export function SarungSelectionModal({
                         </div>
                       )}
                       {/* Task 11: Stock warning indicator */}
-                      {product.availableQuantity !== undefined && product.availableQuantity <= 2 && (
-                        <div className="absolute -top-2 -right-2 z-10">
-                          <Badge className="bg-orange-500 text-white text-sm px-2 py-1 shadow-lg">
-                            Stok: {product.availableQuantity}
-                          </Badge>
-                        </div>
-                      )}
+                      {product.availableQuantity !== undefined &&
+                        product.availableQuantity <= 2 && (
+                          <div className="absolute -top-2 -right-2 z-10">
+                            <Badge className="bg-orange-500 text-white text-sm px-2 py-1 shadow-lg">
+                              Stok: {product.availableQuantity}
+                            </Badge>
+                          </div>
+                        )}
                     </div>
                   )
                 })}
@@ -786,7 +900,9 @@ export function SarungSelectionModal({
             </Button>
             <Button
               onClick={handleConfirmWithSarung}
-              disabled={sarungDistribution.sarungSelections.length === 0 || isLoading || isSubmitting}
+              disabled={
+                sarungDistribution.sarungSelections.length === 0 || isLoading || isSubmitting
+              }
               className="flex-1 h-12 text-base bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-xl transition-all duration-200"
             >
               <ShoppingCart className="h-5 w-5 mr-2" />
