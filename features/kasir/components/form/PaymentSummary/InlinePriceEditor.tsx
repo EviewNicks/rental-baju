@@ -23,7 +23,7 @@ export function InlinePriceEditor({
   duration,
   onCumulativeAdjustment,
   onPriceReset,
-  disabled = false
+  disabled = false,
 }: InlinePriceEditorProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [inputValue, setInputValue] = useState('')
@@ -31,7 +31,7 @@ export function InlinePriceEditor({
 
   // Calculate original automatic price
   const originalPrice = PriceCalculator.calculateOriginalPrice(item, duration)
-  
+
   // Get current total adjustment and final price
   const totalAdjustment = item.manualPriceAdjustment?.adjustmentAmount || 0
   const currentPrice = originalPrice + totalAdjustment
@@ -56,57 +56,63 @@ export function InlinePriceEditor({
     setError(null)
   }, [])
 
-  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
-    setInputValue(value)
-    
-    // Clear error when user starts typing
-    if (error) {
-      setError(null)
-    }
-  }, [error])
+  const handleInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value
+      setInputValue(value)
+
+      // Clear error when user starts typing
+      if (error) {
+        setError(null)
+      }
+    },
+    [error],
+  )
 
   // Parse input with prefix detection
-  const parseAdjustmentInput = useCallback((input: string): { amount: number; isValid: boolean; error?: string } => {
-    const trimmed = input.trim()
-    
-    if (!trimmed) {
-      return { amount: 0, isValid: false, error: 'Input tidak boleh kosong' }
-    }
+  const parseAdjustmentInput = useCallback(
+    (input: string): { amount: number; isValid: boolean; error?: string } => {
+      const trimmed = input.trim()
 
-    let adjustmentAmount: number
-    let cleanValue: string
+      if (!trimmed) {
+        return { amount: 0, isValid: false, error: 'Input tidak boleh kosong' }
+      }
 
-    // Check for explicit prefix
-    if (trimmed.startsWith('+')) {
-      cleanValue = trimmed.substring(1)
-      const parsed = parseCurrency(cleanValue)
-      if (isNaN(parsed) || parsed <= 0) {
-        return { amount: 0, isValid: false, error: 'Jumlah harus berupa angka positif' }
-      }
-      adjustmentAmount = parsed
-    } else if (trimmed.startsWith('-')) {
-      cleanValue = trimmed.substring(1)
-      const parsed = parseCurrency(cleanValue)
-      if (isNaN(parsed) || parsed <= 0) {
-        return { amount: 0, isValid: false, error: 'Jumlah harus berupa angka positif' }
-      }
-      adjustmentAmount = -parsed
-    } else {
-      // No prefix - default to positive (add)
-      const parsed = parseCurrency(trimmed)
-      if (isNaN(parsed) || parsed <= 0) {
-        return { amount: 0, isValid: false, error: 'Jumlah harus berupa angka positif' }
-      }
-      adjustmentAmount = parsed
-    }
+      let adjustmentAmount: number
+      let cleanValue: string
 
-    return { amount: adjustmentAmount, isValid: true }
-  }, [])
+      // Check for explicit prefix
+      if (trimmed.startsWith('+')) {
+        cleanValue = trimmed.substring(1)
+        const parsed = parseCurrency(cleanValue)
+        if (isNaN(parsed) || parsed <= 0) {
+          return { amount: 0, isValid: false, error: 'Jumlah harus berupa angka positif' }
+        }
+        adjustmentAmount = parsed
+      } else if (trimmed.startsWith('-')) {
+        cleanValue = trimmed.substring(1)
+        const parsed = parseCurrency(cleanValue)
+        if (isNaN(parsed) || parsed <= 0) {
+          return { amount: 0, isValid: false, error: 'Jumlah harus berupa angka positif' }
+        }
+        adjustmentAmount = -parsed
+      } else {
+        // No prefix - default to positive (add)
+        const parsed = parseCurrency(trimmed)
+        if (isNaN(parsed) || parsed <= 0) {
+          return { amount: 0, isValid: false, error: 'Jumlah harus berupa angka positif' }
+        }
+        adjustmentAmount = parsed
+      }
+
+      return { amount: adjustmentAmount, isValid: true }
+    },
+    [],
+  )
 
   const handleAdjustmentConfirm = useCallback(() => {
     const parseResult = parseAdjustmentInput(inputValue)
-    
+
     if (!parseResult.isValid) {
       setError(parseResult.error || 'Input tidak valid')
       return
@@ -116,26 +122,25 @@ export function InlinePriceEditor({
     const newTotalAdjustment = totalAdjustment + adjustmentAmount
     const newTotalPrice = originalPrice + newTotalAdjustment
 
-    // Validate the new total price
+    // Validate the new total price (only check for negative)
     if (newTotalPrice < 0) {
       setError('Total harga tidak boleh negatif')
       return
     }
 
-    // Validate adjustment amount (prevent excessive adjustments)
-    const maxTotalAdjustment = originalPrice * 10 // Max 10x original price
-    if (Math.abs(newTotalAdjustment) > maxTotalAdjustment) {
-      setError(`Total adjustment tidak boleh lebih dari ${formatCurrency(maxTotalAdjustment)}`)
-      return
-    }
-
-
-    // Apply cumulative adjustment
+    // Apply cumulative adjustment (no max limit validation)
     onCumulativeAdjustment(itemIndex, adjustmentAmount)
     setIsEditing(false)
     setError(null)
     setInputValue('')
-  }, [inputValue, totalAdjustment, originalPrice, itemIndex, onCumulativeAdjustment, parseAdjustmentInput])
+  }, [
+    inputValue,
+    totalAdjustment,
+    originalPrice,
+    itemIndex,
+    onCumulativeAdjustment,
+    parseAdjustmentInput,
+  ])
 
   const handlePriceReset = useCallback(() => {
     onPriceReset(itemIndex)
@@ -143,35 +148,38 @@ export function InlinePriceEditor({
     setError(null)
   }, [itemIndex, onPriceReset])
 
-  const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleAdjustmentConfirm()
-    } else if (e.key === 'Escape') {
-      handleEditCancel()
-    }
-  }, [handleAdjustmentConfirm, handleEditCancel])
+  const handleKeyPress = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        handleAdjustmentConfirm()
+      } else if (e.key === 'Escape') {
+        handleEditCancel()
+      }
+    },
+    [handleAdjustmentConfirm, handleEditCancel],
+  )
 
   // Preview calculation for display
   const getPreviewCalculation = useCallback(() => {
     if (!inputValue.trim()) return null
-    
+
     const parseResult = parseAdjustmentInput(inputValue)
     if (!parseResult.isValid) return null
-    
+
     const adjustmentAmount = parseResult.amount
     const newTotalAdjustment = totalAdjustment + adjustmentAmount
     const newTotalPrice = originalPrice + newTotalAdjustment
-    
+
     return {
       adjustmentAmount,
       newTotalAdjustment,
-      newTotalPrice
+      newTotalPrice,
     }
   }, [inputValue, totalAdjustment, originalPrice, parseAdjustmentInput])
 
   if (isEditing) {
     const preview = getPreviewCalculation()
-    
+
     return (
       <div className="space-y-2">
         <div className="flex items-center gap-2">
@@ -198,12 +206,7 @@ export function InlinePriceEditor({
           >
             <Check className="h-4 w-4 text-green-600" />
           </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={handleEditCancel}
-            className="h-8 w-8 p-0"
-          >
+          <Button size="sm" variant="outline" onClick={handleEditCancel} className="h-8 w-8 p-0">
             <X className="h-4 w-4 text-red-600" />
           </Button>
           {isManuallyAdjusted && (
@@ -218,22 +221,23 @@ export function InlinePriceEditor({
             </Button>
           )}
         </div>
-        
-        {error && (
-          <div className="text-xs text-red-600 text-right">
-            {error}
-          </div>
-        )}
-        
+
+        {error && <div className="text-xs text-red-600 text-right">{error}</div>}
+
         {/* Price preview */}
         <div className="text-xs text-gray-600 text-right space-y-1">
           <div>Harga asli: {formatCurrency(originalPrice)}</div>
           {totalAdjustment !== 0 && (
-            <div>Total adjustment saat ini: {totalAdjustment >= 0 ? '+' : ''}{formatCurrency(totalAdjustment)}</div>
+            <div>
+              Total adjustment saat ini: {totalAdjustment >= 0 ? '+' : ''}
+              {formatCurrency(totalAdjustment)}
+            </div>
           )}
           {preview && !error && (
             <div className="font-medium text-blue-600">
-              Preview: {formatCurrency(originalPrice)} + ({totalAdjustment >= 0 ? '+' : ''}{formatCurrency(totalAdjustment)} {preview.adjustmentAmount >= 0 ? '+' : ''}{formatCurrency(preview.adjustmentAmount)}) = {formatCurrency(preview.newTotalPrice)}
+              Preview: {formatCurrency(originalPrice)} + ({totalAdjustment >= 0 ? '+' : ''}
+              {formatCurrency(totalAdjustment)} {preview.adjustmentAmount >= 0 ? '+' : ''}
+              {formatCurrency(preview.adjustmentAmount)}) = {formatCurrency(preview.newTotalPrice)}
             </div>
           )}
         </div>
@@ -245,19 +249,24 @@ export function InlinePriceEditor({
     <div className="space-y-1">
       <div className="flex items-center justify-end gap-2">
         <div className="text-right">
-          <div className={`font-semibold ${isManuallyAdjusted ? 'text-blue-600' : 'text-gray-900'}`}>
+          <div
+            className={`font-semibold ${isManuallyAdjusted ? 'text-blue-600' : 'text-gray-900'}`}
+          >
             {formatCurrency(currentPrice)}
           </div>
           {isManuallyAdjusted && (
             <div className="text-xs text-gray-500 space-y-1">
               <div>Harga asli: {formatCurrency(originalPrice)}</div>
-              <div className={`font-medium ${totalAdjustment >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                Total adjustment: {totalAdjustment >= 0 ? '+' : ''}{formatCurrency(totalAdjustment)}
+              <div
+                className={`font-medium ${totalAdjustment >= 0 ? 'text-green-600' : 'text-red-600'}`}
+              >
+                Total adjustment: {totalAdjustment >= 0 ? '+' : ''}
+                {formatCurrency(totalAdjustment)}
               </div>
             </div>
           )}
         </div>
-        
+
         {!disabled && (
           <Button
             size="sm"
@@ -270,7 +279,7 @@ export function InlinePriceEditor({
           </Button>
         )}
       </div>
-      
+
       <div className="text-xs text-gray-600 text-right">
         {item.quantity}x × {duration} hari
       </div>

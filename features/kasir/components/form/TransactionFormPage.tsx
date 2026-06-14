@@ -7,13 +7,13 @@ import { useQueryClient } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
 import { Stepper } from '../ui/stepper'
 import { TransactionSuccessScreen } from '../ui/TransactionSuccessScreen'
-import { NotificationBanner } from '../ui/NotificationBanner'
+// import { NotificationBanner } from '../ui/NotificationBanner'
 import { useTransactionForm } from '../../hooks/useTransactionForm'
 import { ProductSelectionStep } from './ProductSelectionStep'
 import { CustomerBiodataStep } from './CustomerBiodataStep'
 import { CashierSelectionStep } from './CashierSelectionStep'
 import { PaymentSummaryStep } from './PaymentSummaryStep'
-import { getStepValidationMessage } from '../../lib/constants/stepValidationMessages'
+// import { getStepValidationMessage } from '../../lib/constants/stepValidationMessages'
 import type { ProductSelection } from '../../types'
 import { transactionFormSteps } from '../../lib/constants/workflowConfig'
 import { TransactionLogger } from '../../lib/logger/transactionLogger'
@@ -37,7 +37,7 @@ export function TransactionFormPage() {
     formData,
     isSubmitting,
     FIXED_DURATION,
-    isDataRestored,
+    // isDataRestored,
     addProduct,
     removeProduct,
     updateProductQuantity,
@@ -60,15 +60,15 @@ export function TransactionFormPage() {
   } = useTransactionForm()
 
   // Add local state for restoration notification control
-  const [showDataRestored, setShowDataRestored] = useState(isDataRestored)
+  // const [showDataRestored, setShowDataRestored] = useState(isDataRestored)
 
   // Sync local state with hook state
-  React.useEffect(() => {
-    setShowDataRestored(isDataRestored)
-  }, [isDataRestored])
+  // React.useEffect(() => {
+  //   setShowDataRestored(isDataRestored)
+  // }, [isDataRestored])
 
   // Helper function to check if current step can proceed
-  const canProceed = validateStep(currentStep)
+  // const canProceed = validateStep(currentStep)
 
   // Handle back button click - clear storage when navigating away intentionally
   const handleBackButtonClick = () => {
