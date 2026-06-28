@@ -5,10 +5,22 @@
  */
 'use client'
 
-import { useState, useEffect } from 'react'
-import { ArrowLeft, Package, AlertCircle, Loader2, History, RefreshCw } from 'lucide-react'
+import { useState, useEffect, useMemo } from 'react'
+import {
+  ArrowLeft,
+  Package,
+  AlertCircle,
+  Loader2,
+  History,
+  RefreshCw,
+  CalendarIcon,
+  X,
+} from 'lucide-react'
+import { format } from 'date-fns'
+import { type DateRange } from 'react-day-picker'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { DatePickerWithRange } from '@/components/ui/range-picker'
 import { cn } from '@/lib/utils'
 import type { TransactionHistoryItem } from '../../types/availability'
 import {
@@ -68,6 +80,31 @@ export function ProductHistoryPage({
   const [isRetrying, setIsRetrying] = useState(false)
   const [isCached, setIsCached] = useState(false)
   const [cachedAt, setCachedAt] = useState<string | null>(null)
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined)
+
+  // Filter transactions by date range
+  const filteredHistoryData = useMemo(() => {
+    if (!dateRange?.from || !dateRange?.to) {
+      return historyData
+    }
+
+    return historyData.filter((transaction) => {
+      // Check if the date range overlaps with transaction date range
+      // A transaction is shown if ANY date in the filter range falls within the transaction's date range
+      const filterStart = dateRange.from!
+      const filterEnd = dateRange.to!
+      const txnStart = transaction.startDate
+      const txnEnd = transaction.endDate
+
+      // Check overlap: filter range intersects with transaction range
+      return filterStart <= txnEnd && filterEnd >= txnStart
+    })
+  }, [historyData, dateRange])
+
+  // Clear date range filter
+  const handleClearFilter = () => {
+    setDateRange(undefined)
+  }
 
   // Helper function to safely render suggestions
   const renderSuggestions = (error: AvailabilityError) => {
@@ -435,12 +472,14 @@ export function ProductHistoryPage({
         {/* Transaction List */}
         {!isLoading && !error && historyData.length > 0 && (
           <div className="space-y-6">
-            {/* Header with count and refresh */}
+            {/* Header with count, filter, and refresh */}
             <div className="bg-white rounded-lg shadow-sm p-6">
               <div className="flex items-center justify-between flex-wrap gap-4">
                 <div>
                   <h2 className="text-xl font-medium text-gray-900">
-                    Ditemukan {historyData.length} transaksi aktif
+                    {dateRange?.from && dateRange?.to
+                      ? `Ditemukan ${filteredHistoryData.length} dari ${historyData.length} transaksi`
+                      : `Ditemukan ${historyData.length} transaksi aktif`}
                   </h2>
                   {isCached && cachedAt && (
                     <p className="text-sm text-gray-500 mt-2 flex items-center gap-2">
@@ -448,55 +487,126 @@ export function ProductHistoryPage({
                       Data tersimpan (cache) sejak {new Date(cachedAt).toLocaleTimeString('id-ID')}
                     </p>
                   )}
+
+                  {/* Filter Info */}
+                  {dateRange?.from && dateRange?.to && (
+                    <p className="text-sm text-blue-600 mt-2 flex items-center gap-2">
+                      <CalendarIcon className="h-4 w-4" />
+                      Filter: {format(dateRange.from, 'dd MMM yyyy')} -{' '}
+                      {format(dateRange.to, 'dd MMM yyyy')}
+                    </p>
+                  )}
                 </div>
 
-                {/* Refresh Button */}
-                <Button
-                  onClick={() => fetchHistory()}
-                  variant="outline"
-                  size="sm"
-                  className="text-gray-600 hover:text-blue-600 border-gray-200 hover:border-blue-200"
-                >
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Refresh
-                </Button>
+                {/* Filter and Actions */}
+                <div className="flex items-center gap-2">
+                  {/* Date Range Picker using reusable component */}
+                  <DatePickerWithRange
+                    date={dateRange}
+                    onDateChange={setDateRange}
+                    placeholder="Filter Tanggal"
+                    align="end"
+                    numberOfMonths={2}
+                    dateFormat="dd MMM"
+                  />
+
+                  {/* Clear Filter Button */}
+                  {dateRange?.from && dateRange?.to && (
+                    <Button
+                      onClick={handleClearFilter}
+                      variant="ghost"
+                      size="sm"
+                      className="text-gray-600 hover:text-red-600"
+                    >
+                      <X className="h-4 w-4 mr-1" />
+                      Clear
+                    </Button>
+                  )}
+
+                  {/* Refresh Button */}
+                  <Button
+                    onClick={() => fetchHistory()}
+                    variant="outline"
+                    size="sm"
+                    className="text-gray-600 hover:text-blue-600 border-gray-200 hover:border-blue-200"
+                  >
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Refresh
+                  </Button>
+                </div>
               </div>
             </div>
 
-            {/* Transaction Cards */}
-            <div className="grid gap-4">
-              {historyData.map((transaction, index) => {
-                const statusBadge = getStatusBadge(transaction.status)
-
-                return (
-                  <div
-                    key={`${transaction.transactionCode}-${index}`}
-                    className="bg-white rounded-lg p-6 border border-gray-200 hover:shadow-md transition-shadow"
-                  >
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-3">
-                        <span className="font-mono text-lg font-medium text-gray-900">
-                          {transaction.transactionCode}
-                        </span>
-                        <Badge
-                          variant={statusBadge.variant}
-                          className={cn('text-sm px-3 py-1', statusBadge.color)}
-                        >
-                          {statusBadge.label}
-                        </Badge>
-                      </div>
-                      <span className="text-base font-medium text-gray-700">
-                        {transaction.quantity} item
-                      </span>
-                    </div>
-
-                    <div className="mt-3 text-sm text-gray-500 font-mono bg-gray-50 rounded p-3">
-                      {transaction.displayText}
-                    </div>
+            {/* Empty State when filtered */}
+            {filteredHistoryData.length === 0 && dateRange?.from && dateRange?.to && (
+              <div className="flex items-center justify-center py-20">
+                <div className="text-center space-y-6 max-w-lg bg-white rounded-xl shadow-lg p-8">
+                  <div className="p-4 bg-blue-50 rounded-full w-fit mx-auto">
+                    <CalendarIcon className="h-12 w-12 text-blue-400" />
                   </div>
-                )
-              })}
-            </div>
+                  <div>
+                    <h3 className="text-xl font-medium text-gray-900 mb-2">
+                      Tidak Ada Transaksi di Rentang Tanggal Ini
+                    </h3>
+                    <p className="text-base text-gray-600 mb-4">
+                      Tidak ditemukan transaksi antara{' '}
+                      <span className="font-medium text-blue-600">
+                        {format(dateRange.from, 'dd MMM yyyy')}
+                      </span>{' '}
+                      sampai{' '}
+                      <span className="font-medium text-blue-600">
+                        {format(dateRange.to, 'dd MMM yyyy')}
+                      </span>
+                    </p>
+                    <Button
+                      onClick={handleClearFilter}
+                      variant="outline"
+                      className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                    >
+                      <X className="h-4 w-4 mr-2" />
+                      Hapus Filter
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Transaction Cards */}
+            {filteredHistoryData.length > 0 && (
+              <div className="grid gap-4">
+                {filteredHistoryData.map((transaction, index) => {
+                  const statusBadge = getStatusBadge(transaction.status)
+
+                  return (
+                    <div
+                      key={`${transaction.transactionCode}-${index}`}
+                      className="bg-white rounded-lg p-6 border border-gray-200 hover:shadow-md transition-shadow"
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <span className="font-mono text-lg font-medium text-gray-900">
+                            {transaction.transactionCode}
+                          </span>
+                          <Badge
+                            variant={statusBadge.variant}
+                            className={cn('text-sm px-3 py-1', statusBadge.color)}
+                          >
+                            {statusBadge.label}
+                          </Badge>
+                        </div>
+                        <span className="text-base font-medium text-gray-700">
+                          {transaction.quantity} item
+                        </span>
+                      </div>
+
+                      <div className="mt-3 text-sm text-gray-500 font-mono bg-gray-50 rounded p-3">
+                        {transaction.displayText}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
           </div>
         )}
       </main>

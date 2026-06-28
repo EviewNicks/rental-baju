@@ -3,6 +3,10 @@
  * Service layer for transaction history retrieval
  * NO CACHING: Direct database queries for accurate real-time data
  * PHASE 2: Aggregate all items by transaction code (no deduplication - root filter is sufficient)
+ *
+ * FIX (2024): Moved LIMIT application from Prisma query to after grouping
+ * - Previously: LIMIT applied at item level (take: limit) → incorrect aggregation
+ * - Now: LIMIT applied at transaction level (slice after grouping) → correct results
  */
 
 import { PrismaClient } from '@prisma/client'
@@ -48,6 +52,8 @@ export class TransactionHistoryService {
           ? { transaksi: { tglMulai: 'desc' as const } }
           : { transaksi: { tglMulai: 'asc' as const } }
 
+      // FIX: Remove 'take: limit' from here - we need ALL items to group correctly
+      // The limit will be applied AFTER grouping transactions
       const transaksiItems = await this.prisma.transaksiItem.findMany({
         where: {
           kondisiAwal: {
@@ -78,7 +84,7 @@ export class TransactionHistoryService {
           },
         },
         orderBy,
-        take: limit,
+        // ✅ REMOVED: take: limit - apply limit after grouping instead
       })
 
       // FILTER: Only keep items where productSizeId is at ROOT level (not in linkedSarung)
@@ -160,7 +166,20 @@ export class TransactionHistoryService {
         })
       }
 
-      return historyItems
+      // ✅ FIX: Apply limit AFTER grouping and sorting
+      // This ensures we limit TRANSACTIONS, not ITEMS
+      const limitedHistoryItems = historyItems.slice(0, limit)
+
+      console.log('[ItemHistoryService] Query results:', {
+        totalItemsFromDB: transaksiItems.length,
+        afterRootFilter: rootLevelItems.length,
+        afterGrouping: historyItems.length,
+        afterLimit: limitedHistoryItems.length,
+        limit,
+        productSizeId,
+      })
+
+      return limitedHistoryItems
     } catch (error) {
       console.error('[ItemHistoryService] Failed to fetch transaction history:', {
         productSizeId,
