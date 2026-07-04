@@ -83,6 +83,31 @@ export function useTransactions(options: UseTransactionsOptions = {}) {
     }
   }, [filters.dateFilter])
 
+  // Simplified debounce for date created filter - direct implementation
+  const [debouncedDateCreated, setDebouncedDateCreated] = useState(filters.dateCreated || '')
+  const [isDateCreatedFiltering, setIsDateCreatedFiltering] = useState(false)
+
+  useEffect(() => {
+    const dateCreatedValue = filters.dateCreated || ''
+
+    // If empty, clear immediately
+    if (!dateCreatedValue) {
+      setDebouncedDateCreated('')
+      setIsDateCreatedFiltering(false)
+      return
+    }
+
+    setIsDateCreatedFiltering(true)
+    const timer = setTimeout(() => {
+      setDebouncedDateCreated(dateCreatedValue)
+      setIsDateCreatedFiltering(false)
+    }, 500)
+
+    return () => {
+      clearTimeout(timer)
+    }
+  }, [filters.dateCreated])
+
   // Build query parameters from filters with debounced search and date filter
   const queryParams = useMemo((): TransaksiQueryParams => {
     const params: TransaksiQueryParams = {
@@ -103,8 +128,13 @@ export function useTransactions(options: UseTransactionsOptions = {}) {
       params.tglMulai = debouncedDateFilter
     }
 
+    // Add dateCreated parameter (new)
+    if (debouncedDateCreated) {
+      params.dateCreated = debouncedDateCreated
+    }
+
     return params
-  }, [currentPage, filters.status, debouncedSearch, debouncedDateFilter])
+  }, [currentPage, filters.status, debouncedSearch, debouncedDateFilter, debouncedDateCreated])
 
   // Generate cache key for current query (including date filter)
   const cacheKey = useMemo(() => {
@@ -114,6 +144,7 @@ export function useTransactions(options: UseTransactionsOptions = {}) {
       page: queryParams.page,
       limit: queryParams.limit,
       tglMulai: queryParams.tglMulai, // Include date filter in cache key
+      dateCreated: queryParams.dateCreated, // Include date created filter in cache key
     })
   }, [queryParams])
 
@@ -122,9 +153,10 @@ export function useTransactions(options: UseTransactionsOptions = {}) {
     return (
       !!(filters.status && filters.status !== 'all') ||
       !!(filters.search && filters.search.trim()) ||
-      !!(filters.dateFilter && filters.dateFilter.trim())
+      !!(filters.dateFilter && filters.dateFilter.trim()) ||
+      !!(filters.dateCreated && filters.dateCreated.trim())
     )
-  }, [filters.status, filters.search, filters.dateFilter])
+  }, [filters.status, filters.search, filters.dateFilter, filters.dateCreated])
 
   // Custom query function with simplified cache integration
   const queryFn = useCallback(async (): Promise<TransaksiListResponse> => {
@@ -132,7 +164,7 @@ export function useTransactions(options: UseTransactionsOptions = {}) {
     const apiData = await kasirApi.transaksi.getAll(queryParams)
 
     // Cache the result only for non-date queries to avoid stale data
-    if (!queryParams.tglMulai && !queryParams.search) {
+    if (!queryParams.tglMulai && !queryParams.dateCreated && !queryParams.search) {
       await cacheManager.set(cacheKey, apiData)
     }
 
@@ -319,5 +351,6 @@ export function useTransactions(options: UseTransactionsOptions = {}) {
     cacheStats: cacheManager.getStats(),
     isSearching, // Separate search loading state
     isDateFiltering, // Separate date filter loading state
+    isDateCreatedFiltering, // Separate date created filter loading state
   }
 }

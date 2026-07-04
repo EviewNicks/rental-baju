@@ -28,6 +28,7 @@ export function TransactionsDashboard() {
     error,
     refreshTransactions,
     isDateFiltering,
+    isDateCreatedFiltering,
     isSearching,
     pagination,
     currentPage,
@@ -135,6 +136,19 @@ export function TransactionsDashboard() {
     }
 
     updateFilters({ dateFilter: dateFilter || undefined }, { resetPage: false })
+  }
+
+  const handleDateCreatedChange = (dateCreated: string | null) => {
+    console.log('[PAGINATION_DEBUG] Date created filter changed:', dateCreated)
+
+    const previousDate = filters.dateCreated || null
+    const newDate = dateCreated || null
+
+    if (previousDate !== newDate) {
+      setPage(1)
+    }
+
+    updateFilters({ dateCreated: dateCreated || undefined }, { resetPage: false })
   }
 
   const handleResetFilters = () => {
@@ -320,10 +334,13 @@ export function TransactionsDashboard() {
             onSearchChange={handleSearchChange}
             dateValue={filters.dateFilter || null}
             onDateChange={handleDateChange}
+            dateCreatedValue={filters.dateCreated || null}
+            onDateCreatedChange={handleDateCreatedChange}
             onResetFilters={handleResetFilters}
             hasActiveFilters={hasActiveFilters}
             counts={counts}
             isLoading={isDateFiltering}
+            isDateCreatedLoading={isDateCreatedFiltering}
             isSearchLoading={isSearching}
           />
 

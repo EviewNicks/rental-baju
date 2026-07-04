@@ -62,6 +62,7 @@ export interface SearchParams {
   dateFrom?: string
   dateTo?: string
   tglMulai?: string // New: Single date filter for rental start date
+  dateCreated?: string // New: Single date filter for transaction created date
   page?: number
   limit?: number
   sortBy?: string

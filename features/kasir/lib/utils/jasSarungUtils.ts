@@ -29,6 +29,7 @@ export function getSarungCategoryId(): string {
   // Based on categories.json, sarung category ID
   // In production, this should be fetched from API or config
   return 'e03f730b-5290-4281-af43-f37bca6cb32e' // This is the categoryId from sarung.json
+  // return 'c75111d6-80d2-4370-9126-801191135022' // This is the categoryId from sarung.json
 }
 
 /**

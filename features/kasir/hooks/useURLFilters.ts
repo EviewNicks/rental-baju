@@ -55,6 +55,24 @@ export function useURLFilters() {
       }
     }
 
+    // Parse dateCreated filter with validation
+    const dateCreated = searchParams.get('dateCreated')
+    if (dateCreated) {
+      // Validate date format (YYYY-MM-DD)
+      const dateRegex = /^\d{4}-\d{2}-\d{2}$/
+      if (dateRegex.test(dateCreated)) {
+        // Validate if it's a valid date
+        const date = new Date(dateCreated)
+        if (!isNaN(date.getTime())) {
+          filters.dateCreated = dateCreated
+        } else {
+          console.warn('Invalid dateCreated in URL parameter:', dateCreated)
+        }
+      } else {
+        console.warn('Invalid dateCreated format in URL parameter:', dateCreated)
+      }
+    }
+
     // Parse page parameter
     const page = searchParams.get('page')
     if (page && !isNaN(Number(page)) && Number(page) > 0) {
@@ -82,6 +100,11 @@ export function useURLFilters() {
       // Add date filter parameter
       if (filters.dateFilter && filters.dateFilter.trim()) {
         params.set('tglMulai', filters.dateFilter.trim())
+      }
+
+      // Add dateCreated filter parameter
+      if (filters.dateCreated && filters.dateCreated.trim()) {
+        params.set('dateCreated', filters.dateCreated.trim())
       }
 
       // Add page parameter (only if not page 1)
@@ -117,6 +140,9 @@ export function useURLFilters() {
       // Note: We could add toast notification here if needed
       console.warn('Invalid date filter in URL, ignoring parameter')
     }
+    if (paramName === 'dateCreated') {
+      console.warn('Invalid dateCreated filter in URL, ignoring parameter')
+    }
   }, [])
 
   // Validate and sanitize URL parameters
@@ -138,6 +164,24 @@ export function useURLFilters() {
           currentParams.delete('tglMulai')
           hasInvalidParams = true
           handleURLError(new Error('Invalid date value'), 'tglMulai', tglMulai)
+        }
+      }
+    }
+
+    // Validate dateCreated parameter
+    const dateCreated = currentParams.get('dateCreated')
+    if (dateCreated) {
+      const dateRegex = /^\d{4}-\d{2}-\d{2}$/
+      if (!dateRegex.test(dateCreated)) {
+        currentParams.delete('dateCreated')
+        hasInvalidParams = true
+        handleURLError(new Error('Invalid date format'), 'dateCreated', dateCreated)
+      } else {
+        const date = new Date(dateCreated)
+        if (isNaN(date.getTime())) {
+          currentParams.delete('dateCreated')
+          hasInvalidParams = true
+          handleURLError(new Error('Invalid date value'), 'dateCreated', dateCreated)
         }
       }
     }

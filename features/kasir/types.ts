@@ -399,6 +399,7 @@ export interface TransactionFilters {
     end: string
   }
   dateFilter?: string // New: Single date filter for tglMulai (YYYY-MM-DD format)
+  dateCreated?: string // New: Single date filter for createdAt (YYYY-MM-DD format)
 }
 
 // Enhanced useTransactions Hook Return Type for Date Filter Feature
@@ -884,6 +885,7 @@ export interface TransaksiQueryParams {
   }
   penyewaId?: string
   tglMulai?: string // New: Single date filter for rental start date (YYYY-MM-DD format)
+  dateCreated?: string // New: Single date filter for transaction created date (YYYY-MM-DD format)
   [key: string]: unknown
 }
 

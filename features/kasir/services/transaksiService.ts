@@ -1419,7 +1419,7 @@ export class TransaksiService {
    * - Removes pembayaran and aktivitas (not needed for list view)
    */
   async getTransaksiList(params: TransaksiQueryParams): Promise<TransaksiListResponse> {
-    const { page, limit, status, search, penyewaId, dateStart, dateEnd, tglMulai } = params
+    const { page, limit, status, search, penyewaId, dateStart, dateEnd, tglMulai, dateCreated } = params
 
     // Build where clause for database filtering
     const whereClause: Record<string, unknown> = {}
@@ -1433,6 +1433,34 @@ export class TransaksiService {
       whereClause.createdAt = {}
       if (dateStart) (whereClause.createdAt as Record<string, Date>).gte = new Date(dateStart)
       if (dateEnd) (whereClause.createdAt as Record<string, Date>).lte = new Date(dateEnd)
+    }
+
+    // Handle single date filtering for dateCreated (new functionality)
+    if (dateCreated) {
+      const filterDate = new Date(dateCreated)
+      const startOfDay = new Date(
+        filterDate.getFullYear(),
+        filterDate.getMonth(),
+        filterDate.getDate(),
+        0,
+        0,
+        0,
+        0,
+      )
+      const endOfDay = new Date(
+        filterDate.getFullYear(),
+        filterDate.getMonth(),
+        filterDate.getDate(),
+        23,
+        59,
+        59,
+        999,
+      )
+
+      whereClause.createdAt = {
+        gte: startOfDay,
+        lte: endOfDay,
+      }
     }
 
     // Handle single date filtering for tglMulai (new functionality)

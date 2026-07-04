@@ -263,6 +263,7 @@ export const transaksiQuerySchema = z.object({
   dateStart: z.string().datetime().optional(),
   dateEnd: z.string().datetime().optional(),
   tglMulai: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Format tanggal harus YYYY-MM-DD').optional(), // New: Single date filter
+  dateCreated: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Format tanggal harus YYYY-MM-DD').optional(), // New: Single date filter for transaction created date
 }).refine((data) => {
   if (data.dateStart && data.dateEnd) {
     return new Date(data.dateEnd) >= new Date(data.dateStart)

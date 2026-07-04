@@ -26,9 +26,13 @@ interface TransactionTabsProps {
   // New date filter props
   dateValue: string | null
   onDateChange: (date: string | null) => void
+  // Date created filter props (new)
+  dateCreatedValue: string | null
+  onDateCreatedChange: (date: string | null) => void
   onResetFilters: () => void
   hasActiveFilters: boolean
   isLoading?: boolean
+  isDateCreatedLoading?: boolean
   isSearchLoading?: boolean
 }
 
@@ -146,16 +150,20 @@ export function TransactionTabs({
   counts,
   dateValue,
   onDateChange,
+  dateCreatedValue,
+  onDateCreatedChange,
   onResetFilters,
   hasActiveFilters,
   isLoading = false,
+  isDateCreatedLoading = false,
   isSearchLoading = false,
 }: TransactionTabsProps) {
   const tabConfigs = getTabConfiguration()
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+    <div className="space-y-4 w-full">
+      {/* Row 1: Status Navigation Tabs */}
+      <div className="w-full overflow-x-auto pb-1">
         <Tabs
           value={activeTab}
           onValueChange={(val) => onTabChange(val as TransactionStatus | 'all')}
@@ -173,27 +181,58 @@ export function TransactionTabs({
             ))}
           </TabsList>
         </Tabs>
-        
-        {/* Filter Controls */}
-        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+      </div>
+      
+      {/* Row 2: Search & Filter Row */}
+      <div className="flex flex-col md:flex-row gap-4 items-end w-full bg-white/50 p-4 rounded-xl border border-gray-200/50 backdrop-blur-sm shadow-sm">
+        {/* Search Input Box */}
+        <div className="flex flex-col gap-1.5 w-full md:flex-1 min-w-[240px]">
+          <label className="text-xs font-semibold text-gray-500 pl-1 uppercase tracking-wider">
+            Pencarian
+          </label>
           <SearchInput
             value={searchValue}
             onChange={onSearchChange}
-            placeholder="Cari transaksi..."
-            className="w-full sm:w-80"
+            placeholder="Cari kode transaksi, nama penyewa..."
+            className="w-full"
             isLoading={isSearchLoading}
           />
+        </div>
+
+        {/* Date Filter: Tanggal Pembuatan Transaksi */}
+        <div className="flex flex-col gap-1.5 w-full md:w-48 flex-shrink-0">
+          <label className="text-xs font-semibold text-gray-500 pl-1 uppercase tracking-wider">
+            Tanggal Dibuat
+          </label>
+          <DateFilter
+            value={dateCreatedValue}
+            onChange={onDateCreatedChange}
+            placeholder="Pilih tanggal..."
+            className="w-full"
+            isLoading={isDateCreatedLoading}
+          />
+        </div>
+
+        {/* Date Filter: Tanggal Mulai Sewa */}
+        <div className="flex flex-col gap-1.5 w-full md:w-48 flex-shrink-0">
+          <label className="text-xs font-semibold text-gray-500 pl-1 uppercase tracking-wider">
+            Tanggal Sewa
+          </label>
           <DateFilter
             value={dateValue}
             onChange={onDateChange}
-            placeholder="Filter tanggal..."
-            className="w-full sm:w-48"
+            placeholder="Pilih tanggal..."
+            className="w-full"
             isLoading={isLoading}
           />
+        </div>
+
+        {/* Reset Filter Action */}
+        <div className="w-full md:w-auto self-end flex-shrink-0">
           <ResetButton
             onReset={onResetFilters}
             hasActiveFilters={hasActiveFilters}
-            className="w-full sm:w-auto"
+            className="w-full md:w-auto"
           />
         </div>
       </div>

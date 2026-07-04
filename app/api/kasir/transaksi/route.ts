@@ -74,6 +74,7 @@ export async function GET(request: NextRequest) {
       dateStart: searchParams.get('dateStart') || undefined,
       dateEnd: searchParams.get('dateEnd') || undefined,
       tglMulai: searchParams.get('tglMulai') || undefined, // New: Single date filter for rental start date
+      dateCreated: searchParams.get('dateCreated') || undefined, // New: Single date filter for transaction created date
     }
 
     const validatedQuery = transaksiQuerySchema.parse(queryParams)
