@@ -3,3 +3,4 @@
 
 export { PengeluaranService } from './pengeluaranService'
 export { DanaSummaryService } from './danaSummaryService'
+export { TransactionExportService } from './transactionExportService'

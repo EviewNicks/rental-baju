@@ -35,9 +35,26 @@ import { formatWITADate, getCurrentWITADate } from '../utils/timezone'
 interface ExportDialogProps {
   isOpen: boolean
   onClose: () => void
+  /**
+   * Tipe export:
+   * - 'dana-kasir' (default): Export laporan keuangan (Pendapatan/Pengeluaran/Penalty)
+   * - 'transaksi': Export data transaksi + customer (No. HP, Alamat, Jumlah Item)
+   */
+  exportType?: 'dana-kasir' | 'transaksi'
 }
 
-export function ExportDialog({ isOpen, onClose }: ExportDialogProps) {
+export function ExportDialog({ isOpen, onClose, exportType = 'dana-kasir' }: ExportDialogProps) {
+  const isTransaksiExport = exportType === 'transaksi'
+
+  // Dynamic values berdasarkan tipe export
+  const dialogTitle = isTransaksiExport ? 'Export Data Transaksi' : 'Export Data CSV'
+  const dialogDescription = isTransaksiExport
+    ? 'Pilih rentang tanggal untuk mengekspor data transaksi dan informasi customer (No. HP, Alamat, Jumlah Item)'
+    : 'Pilih rentang tanggal untuk mengekspor data pendapatan dan pengeluaran'
+  const infoText = isTransaksiExport
+    ? 'File CSV akan berisi data transaksi lengkap dengan No. HP, alamat, dan jumlah item untuk periode yang dipilih'
+    : 'File CSV akan berisi data pendapatan dan pengeluaran untuk periode yang dipilih'
+
   const today = getCurrentWITADate()
   const [startDate, setStartDate] = useState(formatWITADate(today))
   const [endDate, setEndDate] = useState(formatWITADate(today))
@@ -94,10 +111,12 @@ export function ExportDialog({ isOpen, onClose }: ExportDialogProps) {
     setIsExporting(true)
 
     try {
-      // Call export API
-      const response = await fetch(
-        `/api/kasir/dana-export?startDate=${startDate}&endDate=${endDate}`
-      )
+      // Pilih endpoint berdasarkan exportType
+      const apiEndpoint = isTransaksiExport
+        ? `/api/kasir/transaksi-export?startDate=${startDate}&endDate=${endDate}`
+        : `/api/kasir/dana-export?startDate=${startDate}&endDate=${endDate}`
+
+      const response = await fetch(apiEndpoint)
 
       if (!response.ok) {
         const error = await response.json()
@@ -106,7 +125,10 @@ export function ExportDialog({ isOpen, onClose }: ExportDialogProps) {
 
       // Get filename from response headers or generate default
       const contentDisposition = response.headers.get('Content-Disposition')
-      let filename = `dana-kasir-${startDate}.csv`
+      const defaultFilename = isTransaksiExport
+        ? `transaksi-${startDate}.csv`
+        : `dana-kasir-${startDate}.csv`
+      let filename = defaultFilename
       
       if (contentDisposition) {
         // Match filename with or without quotes, properly handling both cases
@@ -150,10 +172,10 @@ export function ExportDialog({ isOpen, onClose }: ExportDialogProps) {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Download className="h-5 w-5 text-green-600" />
-            Export Data CSV
+            {dialogTitle}
           </DialogTitle>
           <DialogDescription>
-            Pilih rentang tanggal untuk mengekspor data pendapatan dan pengeluaran
+            {dialogDescription}
           </DialogDescription>
         </DialogHeader>
 
@@ -224,7 +246,7 @@ export function ExportDialog({ isOpen, onClose }: ExportDialogProps) {
           {/* Info */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
             <p className="text-sm text-blue-800">
-              File CSV akan berisi data pendapatan dan pengeluaran untuk periode yang dipilih
+              {infoText}
             </p>
           </div>
         </div>

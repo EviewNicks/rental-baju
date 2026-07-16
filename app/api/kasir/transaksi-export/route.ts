@@ -1,44 +1,36 @@
-// Dana Kasir Management - CSV Export API Endpoint
-// GET /api/kasir/dana-export - Export income and expense data to CSV
+// GET /api/kasir/transaksi-export
+// Export data transaksi + customer info ke CSV format
+//
+// BERBEDA dari /api/kasir/dana-export:
+//   dana-export        → laporan keuangan (Pendapatan/Pengeluaran/Penalty per event keuangan)
+//   transaksi-export   → data customer (1 baris per transaksi, ada No. HP, Alamat, Jumlah Item)
+//
+// Authorization: Owner only (sama dengan dana-export)
+//
+// Query Parameters:
+//   startDate: YYYY-MM-DD (required)
+//   endDate:   YYYY-MM-DD (required)
+//
+// Response: CSV file download
+// Content-Disposition: attachment; filename="transaksi-YYYY-MM-DD[-to-YYYY-MM-DD].csv"
 
 import { NextRequest, NextResponse } from 'next/server'
 import { requireDanaKasirExport } from '@/lib/auth-middleware'
 import { prisma } from '@/lib/prisma'
-import { CSVExportService } from '@/features/dana-kasir/services/csvExportService'
+import { TransactionExportService } from '@/features/dana-kasir/services/transactionExportService'
 import { ApiResponse } from '@/features/dana-kasir/types'
 
-/**
- * GET /api/kasir/dana-export
- *
- * Export income and expense data to CSV format
- *
- * Query Parameters:
- * - startDate: Start date in YYYY-MM-DD format (required)
- * - endDate: End date in YYYY-MM-DD format (required)
- *
- * Authorization:
- * - Owner role required (read-only access)
- *
- * Response:
- * - CSV file download with proper headers
- * - Filename format: dana-kasir-YYYY-MM-DD-to-YYYY-MM-DD.csv
- *
- * Requirements: 8.1, 8.2, 8.3, 8.4, 8.5, 6.4
- */
 export async function GET(request: NextRequest) {
   try {
-    // Authenticate and authorize user (Owner role required)
+    // Authorization: Owner only
     const authResult = await requireDanaKasirExport()
-    if (authResult.error) {
-      return authResult.error
-    }
+    if (authResult.error) return authResult.error
 
-    // Parse query parameters
     const searchParams = request.nextUrl.searchParams
     const startDateParam = searchParams.get('startDate')
     const endDateParam = searchParams.get('endDate')
 
-    // Validate required parameters
+    // Validate required params
     if (!startDateParam || !endDateParam) {
       return NextResponse.json<ApiResponse<null>>(
         {
@@ -52,7 +44,6 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Parse dates
     const startDate = new Date(startDateParam)
     const endDate = new Date(endDateParam)
 
@@ -70,7 +61,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Validate date range
+    // Validate date range order
     if (startDate > endDate) {
       return NextResponse.json<ApiResponse<null>>(
         {
@@ -84,7 +75,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Validate date range is not too large (max 1 year)
+    // Validate max range: 365 days
     const daysDiff = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
     if (daysDiff > 365) {
       return NextResponse.json<ApiResponse<null>>(
@@ -100,9 +91,9 @@ export async function GET(request: NextRequest) {
     }
 
     // Generate CSV
-    const csvService = new CSVExportService(prisma)
-    const csvContent = await csvService.generateCSV(startDate, endDate)
-    const filename = csvService.generateFilename(startDate, endDate)
+    const exportService = new TransactionExportService(prisma)
+    const csvContent = await exportService.generateCSV(startDate, endDate)
+    const filename = exportService.generateFilename(startDate, endDate)
 
     // Return CSV file with proper headers and UTF-8 BOM (\uFEFF)
     // BOM memberitahu Excel untuk menggunakan UTF-8 decoder secara otomatis
@@ -118,11 +109,11 @@ export async function GET(request: NextRequest) {
         Expires: '0',
       },
     })
-    //eslint-disable-next-line 
-  } catch (error: any) {
-    console.error('CSV Export Error:', error)
 
-    // Handle authorization errors
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    console.error('Transaction CSV Export Error:', error)
+
     if (error.message === 'Unauthorized' || error.message === 'Forbidden') {
       return NextResponse.json<ApiResponse<null>>(
         {
@@ -139,26 +130,11 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Handle database errors
-    if (error.code === 'P2002' || error.code === 'P2025') {
-      return NextResponse.json<ApiResponse<null>>(
-        {
-          success: false,
-          error: {
-            message: 'Terjadi kesalahan database',
-            code: 'DATABASE_ERROR',
-          },
-        },
-        { status: 500 },
-      )
-    }
-
-    // Generic error response
     return NextResponse.json<ApiResponse<null>>(
       {
         success: false,
         error: {
-          message: 'Terjadi kesalahan saat mengekspor data',
+          message: 'Terjadi kesalahan saat mengekspor data transaksi',
           code: 'INTERNAL_ERROR',
         },
       },

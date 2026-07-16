@@ -36,6 +36,7 @@ export function DanaKasirDashboard({ initialDate, userRole }: DanaKasirDashboard
   const [selectedKasirId, setSelectedKasirId] = useState<string | null>(null)
   const [showExpenseForm, setShowExpenseForm] = useState(false)
   const [showExportDialog, setShowExportDialog] = useState(false)
+  const [showTransaksiExportDialog, setShowTransaksiExportDialog] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [editingExpense, setEditingExpense] = useState<PengeluaranKasir | null>(null)
   const [deletingExpense, setDeletingExpense] = useState<PengeluaranKasir | null>(null)
@@ -117,7 +118,7 @@ export function DanaKasirDashboard({ initialDate, userRole }: DanaKasirDashboard
     refetch() // Refresh data
   }
 
-  // Handle export
+  // Handle export (Dana Kasir — laporan keuangan)
   const handleExport = () => {
     setShowExportDialog(true)
   }
@@ -125,6 +126,16 @@ export function DanaKasirDashboard({ initialDate, userRole }: DanaKasirDashboard
   // Handle export dialog close
   const handleExportDialogClose = () => {
     setShowExportDialog(false)
+  }
+
+  // Handle export transaksi (data customer — No. HP, Alamat, Jumlah Item)
+  const handleExportTransaksi = () => {
+    setShowTransaksiExportDialog(true)
+  }
+
+  // Handle export transaksi dialog close
+  const handleTransaksiExportDialogClose = () => {
+    setShowTransaksiExportDialog(false)
   }
 
   return (
@@ -142,6 +153,7 @@ export function DanaKasirDashboard({ initialDate, userRole }: DanaKasirDashboard
           onDateChange={handleDateChange}
           canExport={canExport}
           onExport={handleExport}
+          onExportTransaksi={handleExportTransaksi}
           income={data?.income || []}
           expenses={data?.expenses || []}
           selectedKasirId={selectedKasirId}
@@ -225,8 +237,15 @@ export function DanaKasirDashboard({ initialDate, userRole }: DanaKasirDashboard
         onSuccess={handleDeleteSuccess}
       />
 
-      {/* Export Dialog */}
+      {/* Export Dialog — Laporan Dana Kasir (Pendapatan/Pengeluaran/Penalty) */}
       <ExportDialog isOpen={showExportDialog} onClose={handleExportDialogClose} />
+
+      {/* Export Dialog — Data Transaksi Customer (No. HP, Alamat, Jumlah Item) */}
+      <ExportDialog
+        isOpen={showTransaksiExportDialog}
+        onClose={handleTransaksiExportDialogClose}
+        exportType="transaksi"
+      />
     </div>
   )
 }

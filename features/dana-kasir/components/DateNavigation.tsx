@@ -13,7 +13,7 @@
  */
 
 import { useState } from 'react'
-import { ChevronLeft, ChevronRight, Calendar, Download } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Calendar, Download, FileText } from 'lucide-react'
 import { formatWITADate, getCurrentWITADate } from '../utils/timezone'
 import { KasirFilter } from './KasirFilter'
 import { IncomeItem, PengeluaranKasir } from '../types'
@@ -23,6 +23,7 @@ interface DateNavigationProps {
   onDateChange: (date: Date) => void
   canExport?: boolean
   onExport?: () => void
+  onExportTransaksi?: () => void
   // New props for kasir filter
   income: IncomeItem[]
   expenses: PengeluaranKasir[]
@@ -37,6 +38,7 @@ export function DateNavigation({
   onDateChange,
   canExport = false,
   onExport,
+  onExportTransaksi,
   income,
   expenses,
   selectedKasirId,
@@ -156,15 +158,30 @@ export function DateNavigation({
         />
       </div>
 
-      {/* Export Button (Owner only) */}
-      {canExport && onExport && (
-        <button
-          onClick={onExport}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors text-sm font-medium"
-        >
-          <Download className="w-4 h-4" />
-          Export CSV
-        </button>
+      {/* Export Buttons (Owner only) */}
+      {canExport && (
+        <div className="flex items-center gap-2">
+          {/* Export Laporan Dana Kasir */}
+          {onExport && (
+            <button
+              onClick={onExport}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors text-sm font-medium"
+            >
+              <Download className="w-4 h-4" />
+              Export Dana Kasir
+            </button>
+          )}
+          {/* Export Data Transaksi — CSV customer-focused (No. HP, Alamat, Jumlah Item) */}
+          {onExportTransaksi && (
+            <button
+              onClick={onExportTransaksi}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors text-sm font-medium"
+            >
+              <FileText className="w-4 h-4" />
+              Export Transaksi
+            </button>
+          )}
+        </div>
       )}
     </div>
   )

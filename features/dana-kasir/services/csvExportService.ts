@@ -21,14 +21,20 @@ export class CSVExportService {
    *
    * CSV Columns:
    * - Tanggal (Date)
-   * - Tipe (Type: Pendapatan/Pengeluaran)
-   * - Kode Transaksi (Transaction Code - for income only)
-   * - Nama Customer (Customer Name - for income only)
+   * - Tipe (Type: Pendapatan / Pengeluaran / Penalty Kondisi)
+   * - Kode Transaksi (Transaction Code - for income/penalty only)
+   * - Nama Customer (Customer Name - for income/penalty only)
    * - Kategori (Category - for expenses only)
    * - Deskripsi (Description)
-   * - Jumlah (Amount)
+   * - Jumlah Rental (rental amount - income only)
+   * - Jumlah Penalty (flat late penalty - income only; condition penalty - penalty kondisi)
+   * - Total Jumlah (total per row)
    * - Kasir ID
    * - Nama Kasir (Kasir Name)
+   *
+   * Fix: Tambahkan query condition penalty (TransaksiItem.totalReturnPenalty)
+   * agar angka CSV konsisten dengan dashboard Summary Cards.
+   * Mirror logic dari danaSummaryService.getIncomeList() (filter by tglKembali).
    *
    * @param startDate - Start date of range
    * @param endDate - End date of range
@@ -39,7 +45,7 @@ export class CSVExportService {
     const startRange = getWITADayRange(startDate)
     const endRange = getWITADayRange(endDate)
 
-    // Query income data (transactions)
+    // Query income data (transactions) — filter by createdAt
     const transactions = await this.prisma.transaksi.findMany({
       where: {
         createdAt: {
@@ -62,6 +68,51 @@ export class CSVExportService {
       },
       orderBy: {
         createdAt: 'asc',
+      },
+    })
+
+    // Fix: Query condition penalty (TransaksiItem.totalReturnPenalty)
+    // Mirror dari danaSummaryService.getIncomeList() — filter by tglKembali
+    // Penalty kondisi dihitung di tanggal barang dikembalikan, bukan tanggal transaksi
+    const penaltyTransactions = await this.prisma.transaksi.findMany({
+      where: {
+        tglKembali: {
+          gte: startRange.start,
+          lte: endRange.end,
+        },
+        items: {
+          some: {
+            totalReturnPenalty: {
+              gt: 0,
+            },
+          },
+        },
+      },
+      include: {
+        penyewa: {
+          select: {
+            nama: true,
+          },
+        },
+        kasir: {
+          select: {
+            id: true,
+            nama: true,
+          },
+        },
+        items: {
+          where: {
+            totalReturnPenalty: {
+              gt: 0,
+            },
+          },
+          select: {
+            totalReturnPenalty: true,
+          },
+        },
+      },
+      orderBy: {
+        tglKembali: 'asc',
       },
     })
 
@@ -96,18 +147,18 @@ export class CSVExportService {
         'Tanggal',
         'Tipe',
         'Kode Transaksi',
+        'Status',
         'Nama Customer',
-        'Kategori',
-        'Deskripsi',
         'Jumlah Rental',
         'Jumlah Penalty',
         'Total Jumlah',
         'Kasir ID',
         'Nama Kasir',
+        'Deskripsi',
       ].join(','),
     )
 
-    // Add income rows (transactions)
+    // Add income rows (transactions) — Pendapatan Rental
     for (const transaction of transactions) {
       const rentalAmount = transaction.jumlahBayar.toNumber()
       const penaltyAmount = transaction.flatLatePenalty.toNumber()
@@ -118,14 +169,39 @@ export class CSVExportService {
           formatWITADate(transaction.createdAt),
           'Pendapatan',
           this.escapeCsvValue(transaction.kode),
+          this.escapeCsvValue(transaction.status),
           this.escapeCsvValue(transaction.penyewa.nama),
-          '', // No category for income
-          '', // No description for income
           rentalAmount.toString(),
           penaltyAmount.toString(),
           totalAmount.toString(),
           transaction.kasirId || '',
           this.escapeCsvValue(transaction.kasir?.nama || 'N/A'),
+          '', // No description for rental income
+        ].join(','),
+      )
+    }
+
+    // Fix: Add condition penalty rows — Penalty Kondisi Barang
+    // Ini sebelumnya tidak ada, menyebabkan gap data dengan dashboard Summary Cards
+    for (const transaction of penaltyTransactions) {
+      const conditionPenalty = transaction.items.reduce(
+        (sum, item) => sum + (item.totalReturnPenalty?.toNumber() || 0),
+        0,
+      )
+
+      csvRows.push(
+        [
+          formatWITADate(transaction.tglKembali || new Date()),
+          'Penalty Kondisi',
+          this.escapeCsvValue(transaction.kode),
+          this.escapeCsvValue(transaction.status),
+          this.escapeCsvValue(transaction.penyewa.nama),
+          '', // No rental amount
+          conditionPenalty.toString(),
+          conditionPenalty.toString(),
+          transaction.kasirId || '',
+          this.escapeCsvValue(transaction.kasir?.nama || 'N/A'),
+          'Penalty kondisi barang saat pengembalian',
         ].join(','),
       )
     }
@@ -133,20 +209,21 @@ export class CSVExportService {
     // Add expense rows
     for (const expense of expenses) {
       const amount = expense.harga.toNumber()
+      const combinedDescription = `[${expense.kategori}] ${expense.deskripsi || ''}`.trim()
 
       csvRows.push(
         [
           formatWITADate(expense.createdAt),
           'Pengeluaran',
           '', // No transaction code for expenses
+          '', // No status for expenses
           '', // No customer name for expenses
-          this.escapeCsvValue(expense.kategori),
-          this.escapeCsvValue(expense.deskripsi || ''),
           '', // No rental amount for expenses
           '', // No penalty amount for expenses
           amount.toString(),
           expense.kasirId,
           this.escapeCsvValue(expense.kasir.nama),
+          this.escapeCsvValue(combinedDescription),
         ].join(','),
       )
     }
@@ -168,17 +245,21 @@ export class CSVExportService {
   private escapeCsvValue(value: string): string {
     if (!value) return ''
 
-    // Check if value needs escaping
-    const needsEscaping = /[",\n\r]/.test(value)
+    // Bersihkan karakter newline/enter menjadi separator spasi ' | '
+    // agar data tidak terpecah baris baru di Excel/spreadsheet viewer
+    const cleanedValue = value.replace(/[\r\n]+/g, ' | ')
+
+    // Check if value needs escaping (contains comma or double quote)
+    const needsEscaping = /[",]/.test(cleanedValue)
 
     if (needsEscaping) {
       // Escape quotes by doubling them
-      const escaped = value.replace(/"/g, '""')
+      const escaped = cleanedValue.replace(/"/g, '""')
       // Wrap in quotes
       return `"${escaped}"`
     }
 
-    return value
+    return cleanedValue
   }
 
   /**
