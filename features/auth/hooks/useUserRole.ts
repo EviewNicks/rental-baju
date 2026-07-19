@@ -138,7 +138,7 @@ function useRoleNavigation() {
       getDashboardUrl: () => {
         switch (role) {
           case 'owner':
-            return '/owner'
+            return '/dashboard'
           case 'producer':
             return '/producer/manage-product'
           case 'kasir':
@@ -173,7 +173,7 @@ function useRoleNavigation() {
         const dashboardUrl = (() => {
           switch (role) {
             case 'owner':
-              return '/owner'
+              return '/dashboard'
             case 'producer':
               return '/producer/manage-product'
             case 'kasir':

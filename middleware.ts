@@ -61,7 +61,7 @@ const extractUserRole = (sessionClaims: any) => {
 const getRoleDashboardUrl = (role: string) => {
   switch (role) {
     case 'owner':
-      return '/owner'
+      return '/dashboard'
     case 'producer':
       return '/producer/manage-product'
     case 'admin':
