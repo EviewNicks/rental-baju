@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import { X, ShoppingCart, RefreshCw, AlertTriangle, Search } from 'lucide-react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { X, ShoppingCart, RefreshCw, AlertTriangle, Search, Loader2 } from 'lucide-react'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
@@ -30,6 +30,7 @@ import {
 } from '../../lib/validation/sarungValidation'
 import { toast } from '@/lib/notifications'
 import { useAvailableProducts } from '../../hooks/useProduk'
+import { useDebounce } from '../../hooks/optimization/useDebounce'
 import type { Product, ProductSize, SarungDistribution, ProductSelection } from '../../types'
 
 interface SarungSelectionModalProps {
@@ -92,6 +93,11 @@ export function SarungSelectionModal({
   const [searchQuery, setSearchQuery] = useState('') // Search state
   const [currentPage, setCurrentPage] = useState(1) // Pagination state
 
+  // ✅ OPTIMIZATION: Debounce search query (350ms) to prevent excessive API requests and UI flickering
+  const { debouncedValue: debouncedSearchQuery, isPending: isDebouncing } = useDebounce(searchQuery, {
+    delay: 350,
+  })
+
   // Pagination constants
   const ITEMS_PER_PAGE = 15
 
@@ -103,10 +109,11 @@ export function SarungSelectionModal({
   const {
     data: sarungProductsResponse,
     isLoading,
+    isFetching,
     error: apiError,
     refetch: refetchSarungProducts,
   } = useAvailableProducts({
-    search: searchQuery, // ✅ Server-side search for better performance
+    search: debouncedSearchQuery, // ✅ Debounced server-side search for optimal performance
     categoryId: getSarungCategoryId(), // Filter specifically for sarung category
     status: undefined, // No status filter
     sortBy: 'name',
@@ -268,10 +275,10 @@ export function SarungSelectionModal({
     }
   }, [isOpen, jasQuantity])
 
-  // ✅ Reset to page 1 when search changes
+  // ✅ Reset to page 1 only when debounced search changes
   useEffect(() => {
     setCurrentPage(1)
-  }, [searchQuery])
+  }, [debouncedSearchQuery])
 
   // Task 11: Enhanced sarung selection with comprehensive validation and real-time stock checking
   // Task 12: Added comprehensive input validation and security measures
@@ -562,323 +569,323 @@ export function SarungSelectionModal({
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent
-        className="min-w-[60vw] w-[95vw]  max-h-[95vh]  overflow-hidden z-50 "
+        className="min-w-[60vw] w-[95vw] max-h-[95vh] overflow-hidden z-50 flex flex-col"
         showCloseButton={false}
+        aria-describedby="sarung-selection-desc"
       >
         <DialogHeader>
           <div className="flex items-center justify-between">
-            <DialogTitle>Pilih Sarung</DialogTitle>
+            <div>
+              <DialogTitle className="text-xl font-bold text-gray-900">Pilih Sarung</DialogTitle>
+              <DialogDescription id="sarung-selection-desc" className="text-xs text-gray-500 mt-0.5">
+                Pilih produk sarung pasangan untuk jas <span className="font-semibold text-gray-700">{jasProduct.name}</span> ({jasQuantity} pcs)
+              </DialogDescription>
+            </div>
 
             <Button
               variant="ghost"
               size="sm"
               onClick={handleClose}
               disabled={isLoading || isSubmitting}
-              className="h-8 w-8 p-0"
+              className="h-8 w-8 p-0 rounded-full hover:bg-gray-100"
+              aria-label="Tutup modal"
             >
               <X className="h-4 w-4" />
             </Button>
           </div>
         </DialogHeader>
 
-        <div className="space-y-2">
-          {/* Sarung Selection */}
-          <div className="space-y-2">
-            {/* Search Bar & Pagination Row */}
-            {!isLoading && sarungProducts.length > 0 && (
-              <div className="flex flex-col sm:flex-row items-center gap-3">
-                {/* Search Bar */}
-                <div className="relative flex-1 w-full">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
-                  <Input
-                    type="text"
-                    placeholder="Cari sarung (nama, kode, warna)..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 pr-10 h-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                    disabled={isLoading || isSubmitting}
-                  />
-                  {searchQuery && (
-                    <button
-                      onClick={() => setSearchQuery('')}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                      aria-label="Clear search"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  )}
+        <div className="space-y-3 flex-1 overflow-y-auto pr-1">
+          {/* Search Bar & Pagination Row - ALWAYS MOUNTED to maintain focus and prevent layout shift */}
+          <div className="flex flex-col sm:flex-row items-center gap-3 pt-1">
+            {/* Search Bar */}
+            <div className="relative flex-1 w-full">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+              <Input
+                type="text"
+                placeholder="Cari sarung (nama, kode, warna)..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 pr-10 h-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                disabled={isSubmitting}
+                aria-label="Cari sarung berdasarkan nama, kode, atau warna"
+              />
+              {/* Spinner indicator when debouncing or fetching */}
+              {isDebouncing || (isFetching && !isLoading) ? (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                  <Loader2 className="h-4 w-4 text-blue-500 animate-spin" />
                 </div>
-
-                {/* Pagination Controls */}
-                {totalPages > 1 && (
-                  <Pagination className="w-auto">
-                    <PaginationContent>
-                      <PaginationItem>
-                        <PaginationPrevious
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault()
-                            if (currentPage > 1 && !isLoading) {
-                              setCurrentPage(currentPage - 1)
-                            }
-                          }}
-                          className={
-                            currentPage === 1 || isLoading
-                              ? 'pointer-events-none opacity-50'
-                              : 'cursor-pointer'
-                          }
-                          text="Prev"
-                        />
-                      </PaginationItem>
-
-                      {/* Page numbers */}
-                      {(() => {
-                        const pages: (number | 'ellipsis')[] = []
-                        const maxVisible = 3
-
-                        if (totalPages <= maxVisible + 2) {
-                          // Show all pages
-                          for (let i = 1; i <= totalPages; i++) pages.push(i)
-                        } else {
-                          // Always show first page
-                          pages.push(1)
-
-                          let start = Math.max(2, currentPage - 1)
-                          const end = Math.min(totalPages - 1, currentPage + 1)
-
-                          if (start > 2) pages.push('ellipsis')
-                          for (let i = start; i <= end; i++) pages.push(i)
-                          if (end < totalPages - 1) pages.push('ellipsis')
-
-                          // Always show last page
-                          pages.push(totalPages)
-                        }
-
-                        return pages.map((page, idx) => (
-                          <PaginationItem key={idx}>
-                            {page === 'ellipsis' ? (
-                              <PaginationEllipsis />
-                            ) : (
-                              <PaginationLink
-                                href="#"
-                                onClick={(e) => {
-                                  e.preventDefault()
-                                  if (!isLoading && page !== currentPage) {
-                                    setCurrentPage(page)
-                                  }
-                                }}
-                                isActive={currentPage === page}
-                                className={
-                                  isLoading ? 'pointer-events-none opacity-50' : 'cursor-pointer'
-                                }
-                              >
-                                {page}
-                              </PaginationLink>
-                            )}
-                          </PaginationItem>
-                        ))
-                      })()}
-
-                      <PaginationItem>
-                        <PaginationNext
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault()
-                            if (currentPage < totalPages && !isLoading) {
-                              setCurrentPage(currentPage + 1)
-                            }
-                          }}
-                          className={
-                            currentPage === totalPages || isLoading
-                              ? 'pointer-events-none opacity-50'
-                              : 'cursor-pointer'
-                          }
-                          text="Next"
-                        />
-                      </PaginationItem>
-                    </PaginationContent>
-                  </Pagination>
-                )}
-              </div>
-            )}
-
-            <div className="flex items-center justify-between mb-2">
-              {retryCount > 0 && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleRetry}
-                  disabled={isLoading}
-                  className="text-blue-600 hover:text-blue-700"
+              ) : searchQuery ? (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-full hover:bg-gray-100"
+                  aria-label="Hapus teks pencarian"
                 >
-                  <RefreshCw className="h-4 w-4 mr-1" />
-                  Coba Lagi
-                </Button>
-              )}
-              {/* Results info */}
-              {!isLoading && totalItems > 0 && (
-                <span className="text-sm text-gray-600 ml-auto">
-                  Menampilkan {sarungProducts.length} dari {totalItems} sarung
-                  {searchQuery && ` (pencarian: "${searchQuery}")`}
-                </span>
-              )}
+                  <X className="h-4 w-4" />
+                </button>
+              ) : null}
             </div>
 
-            {/* Task 11: Error display with retry information */}
-            {/* Task 12: Enhanced error display with validation errors */}
-            {(lastError || validationErrors.length > 0) && (
-              <div className="bg-orange-50 border border-orange-200 rounded-lg p-1 space-y-2">
-                <div className="flex items-center gap-2">
-                  <AlertTriangle className="h-4 w-4 text-orange-600" />
-                  <span className="text-sm font-medium text-orange-800">
-                    {validationErrors.length > 0 ? 'Kesalahan Validasi' : 'Kesalahan Sistem'}
-                  </span>
-                </div>
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <Pagination className="w-auto">
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        if (currentPage > 1 && !isFetching) {
+                          setCurrentPage(currentPage - 1)
+                        }
+                      }}
+                      className={
+                        currentPage === 1 || isFetching
+                          ? 'pointer-events-none opacity-50'
+                          : 'cursor-pointer'
+                      }
+                      text="Prev"
+                      aria-label="Halaman sebelumnya"
+                    />
+                  </PaginationItem>
 
-                {/* Display validation errors */}
-                {validationErrors.length > 0 && (
-                  <div className="space-y-1">
-                    {validationErrors.map((error, index) => (
-                      <div key={index} className="text-sm text-orange-800">
-                        • {error}
-                      </div>
-                    ))}
-                  </div>
-                )}
+                  {/* Page numbers */}
+                  {(() => {
+                    const pages: (number | 'ellipsis')[] = []
+                    const maxVisible = 3
 
-                {/* Display system errors */}
-                {lastError && !validationErrors.length && (
-                  <span className="text-sm text-orange-800">{lastError}</span>
-                )}
+                    if (totalPages <= maxVisible + 2) {
+                      for (let i = 1; i <= totalPages; i++) pages.push(i)
+                    } else {
+                      pages.push(1)
+                      const start = Math.max(2, currentPage - 1)
+                      const end = Math.min(totalPages - 1, currentPage + 1)
 
-                {retryCount > 0 && (
-                  <div className="mt-2 text-xs text-orange-600">
-                    Percobaan ke-{retryCount + 1} dari 3
-                  </div>
-                )}
-              </div>
-            )}
+                      if (start > 2) pages.push('ellipsis')
+                      for (let i = start; i <= end; i++) pages.push(i)
+                      if (end < totalPages - 1) pages.push('ellipsis')
 
-            {isLoading ? (
-              <div className="text-center py-8">
-                <RefreshCw className="h-8 w-8 animate-spin text-blue-500 mx-auto mb-2" />
-                <p className="text-gray-600">
-                  {retryCount > 0 ? `Mencoba lagi... (${retryCount + 1}/3)` : 'Memuat sarung...'}
-                </p>
-              </div>
-            ) : sarungProducts.length === 0 && searchQuery ? (
-              <div className="text-center py-12">
-                <div className="text-gray-500 space-y-3">
-                  <Search className="h-12 w-12 text-gray-300 mx-auto" />
-                  <p className="text-lg font-medium">
-                    Tidak ada hasil untuk &quot;{searchQuery}&quot;
-                  </p>
-                  <p className="text-sm text-gray-400">
-                    Coba kata kunci lain atau{' '}
-                    <button
-                      onClick={() => setSearchQuery('')}
-                      className="text-blue-600 hover:text-blue-700 underline"
-                    >
-                      hapus pencarian
-                    </button>
-                  </p>
-                </div>
-              </div>
-            ) : sarungProducts.length === 0 ? (
-              <div className="text-center py-8">
-                <div className="text-gray-500 space-y-2">
-                  <p>Tidak ada sarung yang tersedia saat ini</p>
-                  <p className="text-xs text-gray-400">
-                    Debug: API Response - Total products:{' '}
-                    {sarungProductsResponse?.data?.length || 0}
-                  </p>
-                  {sarungProductsResponse?.data && sarungProductsResponse.data.length > 0 && (
-                    <details className="text-left text-xs text-gray-400 mt-2">
-                      <summary className="cursor-pointer">Show API products (debug)</summary>
-                      <div className="mt-2 max-h-32 overflow-y-auto">
-                        {sarungProductsResponse.data.slice(0, 10).map((p) => (
-                          <div key={p.id}>
-                            {p.name} - Category: {p.category.name} (Type: {p.category.type})
-                          </div>
-                        ))}
-                        {sarungProductsResponse.data.length > 10 && (
-                          <div>... and {sarungProductsResponse.data.length - 10} more</div>
+                      pages.push(totalPages)
+                    }
+
+                    return pages.map((page, idx) => (
+                      <PaginationItem key={idx}>
+                        {page === 'ellipsis' ? (
+                          <PaginationEllipsis />
+                        ) : (
+                          <PaginationLink
+                            href="#"
+                            onClick={(e) => {
+                              e.preventDefault()
+                              if (!isFetching && page !== currentPage) {
+                                setCurrentPage(page)
+                              }
+                            }}
+                            isActive={currentPage === page}
+                            className={
+                              isFetching ? 'pointer-events-none opacity-50' : 'cursor-pointer'
+                            }
+                            aria-label={`Halaman ${page}`}
+                          >
+                            {page}
+                          </PaginationLink>
                         )}
-                      </div>
-                    </details>
-                  )}
-                  {(lastError || apiError) && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleRetry}
-                      className="text-blue-600 hover:text-blue-700"
-                    >
-                      <RefreshCw className="h-4 w-4 mr-1" />
-                      Muat Ulang
-                    </Button>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-h-[60vh] overflow-y-auto p-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-                {sarungProducts.map((product) => {
-                  const selectedQuantity = getSelectedSarungQuantity(product.id)
+                      </PaginationItem>
+                    ))
+                  })()}
 
-                  return (
-                    <div
-                      key={product.id}
-                      className={`relative transform transition-all duration-200 hover:scale-105 ${
-                        selectedQuantity > 0
-                          ? 'ring-4 ring-blue-500 ring-offset-4 shadow-xl'
-                          : 'hover:shadow-lg'
-                      }`}
-                    >
-                      <ProductCard
-                        product={product}
-                        onAddToCart={handleSarungSelection}
-                        selectedQuantity={selectedQuantity}
-                        onOpenHistory={onOpenHistory}
-                        className="h-full min-h-[450px] w-full"
-                        context="sarung-modal"
-                        buttonTextOverride="Pilih"
-                        showCustomBadge={{
-                          text: 'GRATIS',
-                          className: 'bg-green-500 text-white text-xs px-2 py-1 shadow-md',
-                        }}
-                      />
-                      {selectedQuantity > 0 && (
-                        <div className="absolute -top-2 -left-2 z-10">
-                          <Badge className="bg-blue-500 text-white shadow-lg text-sm px-3 py-1">
-                            ✓ {selectedQuantity}x
-                          </Badge>
-                        </div>
-                      )}
-                      {/* Task 11: Stock warning indicator */}
-                      {product.availableQuantity !== undefined &&
-                        product.availableQuantity <= 2 && (
-                          <div className="absolute -top-2 -right-2 z-10">
-                            <Badge className="bg-orange-500 text-white text-sm px-2 py-1 shadow-lg">
-                              Stok: {product.availableQuantity}
-                            </Badge>
-                          </div>
-                        )}
-                    </div>
-                  )
-                })}
-              </div>
+                  <PaginationItem>
+                    <PaginationNext
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        if (currentPage < totalPages && !isFetching) {
+                          setCurrentPage(currentPage + 1)
+                        }
+                      }}
+                      className={
+                        currentPage === totalPages || isFetching
+                          ? 'pointer-events-none opacity-50'
+                          : 'cursor-pointer'
+                      }
+                      text="Next"
+                      aria-label="Halaman berikutnya"
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
             )}
           </div>
+
+          {/* Results Info & Status Bar */}
+          <div className="flex items-center justify-between min-h-[24px]">
+            {retryCount > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleRetry}
+                disabled={isLoading || isFetching}
+                className="text-blue-600 hover:text-blue-700 text-xs h-7"
+              >
+                <RefreshCw className="h-3.5 w-3.5 mr-1" />
+                Coba Lagi
+              </Button>
+            )}
+
+            {/* Accessible Live status announcements */}
+            <span
+              role="status"
+              aria-live="polite"
+              className="text-xs text-gray-500 ml-auto flex items-center gap-1.5"
+            >
+              {isDebouncing || (isFetching && !isLoading) ? (
+                <span className="text-blue-600 font-medium flex items-center gap-1">
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" /> Memperbarui data...
+                </span>
+              ) : totalItems > 0 ? (
+                <span>
+                  Menampilkan {sarungProducts.length} dari {totalItems} sarung
+                  {debouncedSearchQuery && ` (pencarian: "${debouncedSearchQuery}")`}
+                </span>
+              ) : null}
+            </span>
+          </div>
+
+          {/* Error display */}
+          {(lastError || validationErrors.length > 0) && (
+            <div className="bg-orange-50 border border-orange-200 rounded-lg p-2 space-y-1.5" role="alert">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4 text-orange-600 shrink-0" />
+                <span className="text-sm font-medium text-orange-800">
+                  {validationErrors.length > 0 ? 'Kesalahan Validasi' : 'Kesalahan Sistem'}
+                </span>
+              </div>
+
+              {validationErrors.length > 0 && (
+                <div className="space-y-1 text-xs text-orange-800 pl-6">
+                  {validationErrors.map((error, index) => (
+                    <div key={index}>• {error}</div>
+                  ))}
+                </div>
+              )}
+
+              {lastError && !validationErrors.length && (
+                <span className="text-xs text-orange-800 pl-6 block">{lastError}</span>
+              )}
+
+              {retryCount > 0 && (
+                <div className="text-xs text-orange-600 pl-6">
+                  Percobaan ke-{retryCount + 1} dari 3
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Product Grid Content with Smooth Transitions */}
+          {isLoading && sarungProducts.length === 0 ? (
+            <div className="text-center py-12" role="status">
+              <Loader2 className="h-8 w-8 animate-spin text-blue-500 mx-auto mb-2" />
+              <p className="text-sm text-gray-600">
+                {retryCount > 0 ? `Mencoba lagi... (${retryCount + 1}/3)` : 'Memuat data sarung...'}
+              </p>
+            </div>
+          ) : sarungProducts.length === 0 && debouncedSearchQuery ? (
+            <div className="text-center py-12 bg-gray-50/50 rounded-xl border border-dashed border-gray-200">
+              <div className="text-gray-500 space-y-3">
+                <Search className="h-10 w-10 text-gray-300 mx-auto" />
+                <p className="text-base font-medium text-gray-700">
+                  Tidak ada sarung untuk &quot;{debouncedSearchQuery}&quot;
+                </p>
+                <p className="text-xs text-gray-500">
+                  Coba kata kunci lain atau{' '}
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery('')}
+                    className="text-blue-600 hover:text-blue-700 underline font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
+                  >
+                    hapus pencarian
+                  </button>
+                </p>
+              </div>
+            </div>
+          ) : sarungProducts.length === 0 ? (
+            <div className="text-center py-10 bg-gray-50/50 rounded-xl border border-dashed border-gray-200">
+              <div className="text-gray-500 space-y-2">
+                <p className="text-sm font-medium">Tidak ada sarung yang tersedia saat ini</p>
+                {(lastError || apiError) && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleRetry}
+                    className="text-blue-600 hover:text-blue-700 mt-2"
+                  >
+                    <RefreshCw className="h-4 w-4 mr-1" />
+                    Muat Ulang
+                  </Button>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div
+              className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 max-h-[58vh] overflow-y-auto p-1 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 ${
+                isFetching ? 'opacity-70 transition-opacity duration-200' : 'opacity-100 transition-opacity duration-200'
+              }`}
+            >
+              {sarungProducts.map((product) => {
+                const selectedQuantity = getSelectedSarungQuantity(product.id)
+
+                return (
+                  <div
+                    key={product.id}
+                    className={`relative transform transition-all duration-200 rounded-xl ${
+                      selectedQuantity > 0
+                        ? 'ring-4 ring-blue-500 ring-offset-2 shadow-lg'
+                        : 'hover:shadow-md'
+                    }`}
+                  >
+                    <ProductCard
+                      product={product}
+                      onAddToCart={handleSarungSelection}
+                      selectedQuantity={selectedQuantity}
+                      onOpenHistory={onOpenHistory}
+                      className="h-full min-h-[440px] w-full"
+                      context="sarung-modal"
+                      buttonTextOverride="Pilih"
+                      showCustomBadge={{
+                        text: 'GRATIS',
+                        className: 'bg-green-500 text-white text-xs px-2 py-1 shadow-sm font-semibold',
+                      }}
+                    />
+                    {selectedQuantity > 0 && (
+                      <div className="absolute -top-2 -left-2 z-10">
+                        <Badge className="bg-blue-600 text-white shadow-md text-xs px-2.5 py-0.5">
+                          ✓ {selectedQuantity}x
+                        </Badge>
+                      </div>
+                    )}
+                    {product.availableQuantity !== undefined && product.availableQuantity <= 2 && (
+                      <div className="absolute -top-2 -right-2 z-10">
+                        <Badge className="bg-orange-500 text-white text-xs px-2 py-0.5 shadow-md">
+                          Stok: {product.availableQuantity}
+                        </Badge>
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          )}
 
           {/* Task 18: Distribution Preview */}
           <DistributionPreview />
 
           {/* Legacy Selected Sarung Info - kept for backward compatibility */}
           {selectedSarung && sarungDistribution.sarungSelections.length === 0 && (
-            <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-2 border-2 border-green-200 shadow-sm">
-              <div className="flex items-center gap-3 flex-wrap">
-                <Badge className="bg-green-500 text-white shadow-md">✓ Sarung Terpilih</Badge>
-                <span className="font-semibold text-gray-900 text-lg">
+            <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-2.5 border border-green-200 shadow-sm">
+              <div className="flex items-center gap-3 flex-wrap text-sm">
+                <Badge className="bg-green-500 text-white shadow-sm">✓ Sarung Terpilih</Badge>
+                <span className="font-semibold text-gray-900">
                   {selectedSarung.product.name}
                 </span>
                 <Badge variant="outline" className="border-gray-400 text-gray-700 font-medium">
@@ -889,12 +896,12 @@ export function SarungSelectionModal({
           )}
 
           {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t-2 border-gray-100">
+          <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200">
             <Button
               onClick={handleConfirmWithoutSarung}
               variant="outline"
               disabled={isLoading || isSubmitting}
-              className="flex-1 h-12 text-base border-2 border-gray-300 hover:border-gray-400 hover:bg-gray-50"
+              className="flex-1 h-11 text-sm border-gray-300 hover:bg-gray-50"
             >
               Tanpa Sarung
             </Button>
@@ -903,19 +910,19 @@ export function SarungSelectionModal({
               disabled={
                 sarungDistribution.sarungSelections.length === 0 || isLoading || isSubmitting
               }
-              className="flex-1 h-12 text-base bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-xl transition-all duration-200"
+              className="flex-1 h-11 text-sm bg-blue-600 hover:bg-blue-700 text-white shadow-md transition-all duration-200 font-medium"
             >
-              <ShoppingCart className="h-5 w-5 mr-2" />
+              <ShoppingCart className="h-4 w-4 mr-2" />
               {isSubmitting ? (
                 <>
-                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   Memproses...
                 </>
               ) : (
                 <>
                   Konfirmasi Distribusi
                   {sarungDistribution.totalDistributed > 0 && (
-                    <span className="ml-2 text-xs bg-blue-500 px-2 py-1 rounded">
+                    <span className="ml-2 text-xs bg-blue-500 px-2 py-0.5 rounded">
                       {sarungDistribution.totalDistributed}/{jasQuantity}
                     </span>
                   )}

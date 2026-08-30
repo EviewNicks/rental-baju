@@ -1,6 +1,6 @@
 'use client'
 
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, keepPreviousData } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/react-query'
 import { kasirApi } from '../api'
 import type { ProductAvailabilityQueryParams } from '../types'
@@ -28,6 +28,7 @@ export function useAvailableProducts(params: ProductAvailabilityQueryParams = {}
 
       return result
     },
+    placeholderData: keepPreviousData,
     staleTime: 30 * 1000, // 30 seconds - optimized for fresh inventory data
     gcTime: 5 * 60 * 1000, // 5 minutes - extended cache time for better performance
   })
