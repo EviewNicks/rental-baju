@@ -100,6 +100,21 @@ export function RentalDurationSection({
           )}
         </div>
       </div>
+
+      {pickupDate && returnDate && (
+        <div className="p-3 bg-blue-50/80 border border-blue-200 rounded-lg flex items-center justify-between text-xs text-blue-900">
+          <div className="flex items-center gap-2">
+            <span className="font-semibold">📅 Periode Sewa:</span>
+            <span>
+              {DateCalculator.formatDateForDisplay(pickupDate)} s/d{' '}
+              {DateCalculator.formatDateForDisplay(returnDate)} ({duration} Hari)
+            </span>
+          </div>
+          <span className="text-[11px] bg-blue-100 px-2 py-0.5 rounded font-medium text-blue-800">
+            Jadwal Booking Terverifikasi
+          </span>
+        </div>
+      )}
     </div>
   )
 }

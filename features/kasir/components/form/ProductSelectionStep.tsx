@@ -11,6 +11,7 @@ import {
   ChevronLeft,
   ChevronRight,
   AlertTriangle,
+  Trash2,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -49,6 +50,7 @@ interface ProductSelectionStepProps {
   onAddProduct: (product: Product, quantity: number, productSizeId?: string, linkedSarung?: ProductSelection['linkedSarung']) => void
   onRemoveProduct: (productId: string, productSizeId?: string, linkedSarungProductId?: string) => void
   onUpdateQuantity: (productId: string, quantity: number, productSizeId?: string, linkedSarungProductId?: string) => void
+  onClearCart?: () => void
   onNext: () => void
   canProceed: boolean
 }
@@ -58,6 +60,7 @@ export function ProductSelectionStep({
   onAddProduct,
   onRemoveProduct,
   onUpdateQuantity,
+  onClearCart,
   onNext,
   canProceed,
 }: ProductSelectionStepProps) {
@@ -843,13 +846,27 @@ export function ProductSelectionStep({
               <ShoppingCart className="h-5 w-5 text-gray-700" />
               <h3 className="font-semibold text-gray-900">Keranjang</h3>
             </div>
-            <Badge
-              variant="secondary"
-              className="bg-yellow-100 text-yellow-800"
-              data-testid="cart-item-count"
-            >
-              {getTotalItems()} item
-            </Badge>
+            <div className="flex items-center gap-1.5">
+              <Badge
+                variant="secondary"
+                className="bg-yellow-100 text-yellow-800"
+                data-testid="cart-item-count"
+              >
+                {getTotalItems()} item
+              </Badge>
+              {selectedProducts.length > 0 && onClearCart && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onClearCart}
+                  className="text-muted-foreground hover:text-red-600 hover:bg-red-50 h-7 w-7 p-0 rounded-md transition-colors"
+                  title="Kosongkan seluruh keranjang"
+                  aria-label="Kosongkan keranjang"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </Button>
+              )}
+            </div>
           </div>
 
           {selectedProducts.length === 0 ? (
@@ -1024,6 +1041,36 @@ export function ProductSelectionStep({
           jasProductSizeId={sarungModal.jasProductSizeId}
           onConfirmSelection={handleSarungSelection}
         />
+      )}
+
+      {/* S3: Sticky Floating Bottom Cart Bar for Mobile & Tablet */}
+      {selectedProducts.length > 0 && (
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-gray-200 shadow-2xl p-3 px-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setShowCart(!showCart)}
+              className="relative p-2.5 bg-gray-100 rounded-xl text-gray-700 hover:bg-gray-200 transition-colors"
+              aria-label="Lihat Keranjang"
+            >
+              <ShoppingCart className="h-5 w-5" />
+              <span className="absolute -top-1 -right-1 bg-yellow-400 text-gray-900 text-[11px] font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-sm">
+                {getTotalItems()}
+              </span>
+            </button>
+            <div>
+              <p className="text-xs text-gray-500 font-medium">{getTotalItems()} item terpilih</p>
+              <p className="text-sm font-bold text-gray-900">{formatCurrency(getTotalPrice())}</p>
+            </div>
+          </div>
+          <Button
+            onClick={onNext}
+            disabled={!canProceed}
+            className="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-semibold px-5 text-sm shadow-sm"
+          >
+            Lanjut &rarr;
+          </Button>
+        </div>
       )}
     </div>
   )

@@ -279,6 +279,10 @@ export function TransactionFormPage() {
                 onAddProduct={handleAddProduct}
                 onRemoveProduct={removeProduct}
                 onUpdateQuantity={updateProductQuantity}
+                onClearCart={() => {
+                  updateFormData({ products: [] })
+                  showSuccessToast('Keranjang Dikosongkan - Seluruh produk telah dihapus dari keranjang')
+                }}
                 onNext={nextStep}
                 canProceed={validateStep(currentStep)}
               />

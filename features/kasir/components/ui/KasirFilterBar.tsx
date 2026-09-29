@@ -151,7 +151,7 @@ export function KasirFilterBar({
                 size="sm"
                 onClick={resetFilters}
                 disabled={isLoading}
-                className="text-sm"
+                className="text-sm self-start"
                 data-testid="reset-filters-button"
               >
                 Reset Filter
@@ -159,8 +159,43 @@ export function KasirFilterBar({
             )}
           </div>
 
+          {/* S1: Quick Category Chips for 1-click filtering */}
+          {categories.length > 0 && (
+            <div className="w-full flex items-center gap-1.5 overflow-x-auto pb-1 pt-1 scrollbar-thin">
+              <span className="text-xs font-medium text-gray-500 mr-1 shrink-0">Kategori:</span>
+              <button
+                type="button"
+                onClick={() => handleFilterChange('categoryId', '')}
+                className={`px-3 py-1 rounded-full text-xs font-medium transition-all shrink-0 ${
+                  !filters.categoryId
+                    ? 'bg-yellow-400 text-gray-900 font-semibold shadow-sm'
+                    : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                }`}
+              >
+                Semua
+              </button>
+              {categories.map((cat: { id: string; name: string }) => {
+                const isActive = filters.categoryId === cat.id
+                return (
+                  <button
+                    key={`chip-${cat.id}`}
+                    type="button"
+                    onClick={() => handleFilterChange('categoryId', cat.id)}
+                    className={`px-3 py-1 rounded-full text-xs font-medium transition-all shrink-0 ${
+                      isActive
+                        ? 'bg-yellow-400 text-gray-900 font-semibold shadow-sm'
+                        : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                    }`}
+                  >
+                    {cat.name}
+                  </button>
+                )
+              })}
+            </div>
+          )}
+
           {/* Filter Controls */}
-          <div className="flex flex-wrap gap-3 items-center" data-testid="filter-controls">
+          <div className="flex flex-wrap gap-3 items-center w-full" data-testid="filter-controls">
             {/* Category Filter */}
             <div className="flex items-center gap-2" data-testid="category-filter-section">
               <Filter className="w-4 h-4 text-muted-foreground" />
