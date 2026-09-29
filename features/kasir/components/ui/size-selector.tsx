@@ -94,7 +94,8 @@ export function SizeSelector({
             {categorySizes.map((size) => {
               const isSelected = selectedSizeId === size.id
               const isHovered = hoveredSizeId === size.id
-              const hasStock = (size.originalQuantity ?? 0) > 0
+              const sizeStock = size.originalQuantity ?? size.quantity ?? 0
+              const hasStock = sizeStock > 0
               const isDisabled = disabled || !hasStock
 
               return (
@@ -117,7 +118,7 @@ export function SizeSelector({
                     <div className="flex flex-col items-center gap-0.5">
                       <span className="font-semibold">{size.size}</span>
                       <span className="text-xs text-muted-foreground">
-                        {hasStock ? `${size.originalQuantity ?? 0} pcs` : 'Habis'}
+                        {hasStock ? `${sizeStock} pcs` : 'Habis'}
                       </span>
                     </div>
 

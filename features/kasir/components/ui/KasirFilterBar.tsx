@@ -12,7 +12,6 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { useCategories } from '@/features/manage-product/hooks/useCategories'
 import type { KasirFilters } from '../../types'
 
@@ -27,7 +26,6 @@ export function KasirFilterBar({
   filters,
   onFiltersChange,
   isLoading = false,
-  productCount = 0,
 }: KasirFilterBarProps) {
   // Local search state for debounced search
   const [localSearchValue, setLocalSearchValue] = useState(filters.search || '')

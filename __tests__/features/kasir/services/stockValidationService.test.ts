@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Stock Validation Service Tests - Bug Fix Verification
  *

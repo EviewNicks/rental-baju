@@ -310,10 +310,15 @@ export function SarungSelectionModal({
         return
       }
 
-      // Task 12: Comprehensive input validation
+      // Task 12: Comprehensive input validation against physical stock
+      const selectedSize = productSizeId ? product.sizes?.find((size) => size.id === productSizeId) : undefined
+      const sarungMaxStock = selectedSize
+        ? (selectedSize.originalQuantity ?? selectedSize.quantity ?? selectedSize.availableQuantity ?? 0)
+        : (product.totalInventory ?? product.availableQuantity ?? 0)
+
       const quantityValidation = validateQuantityInput(
         quantity,
-        product.availableQuantity || 0,
+        sarungMaxStock,
         jasQuantity,
       )
 
@@ -333,7 +338,6 @@ export function SarungSelectionModal({
 
       // Task 12: Size selection validation if applicable
       if (productSizeId) {
-        const selectedSize = product.sizes?.find((size) => size.id === productSizeId)
         const sizeValidation = validateProductSizeSelection(product, productSizeId, selectedSize)
 
         if (!sizeValidation.isValid) {
@@ -343,12 +347,12 @@ export function SarungSelectionModal({
         }
       }
 
-      // Real-time stock validation
-      if (product.availableQuantity !== undefined && product.availableQuantity < quantity) {
+      // Physical inventory validation
+      if (sarungMaxStock < quantity) {
         const pairingError = createSarungPairingError(
           SarungPairingErrorType.SARUNG_INSUFFICIENT_STOCK,
           {
-            available: product.availableQuantity,
+            available: sarungMaxStock,
             requested: quantity,
             sarungName: product.name,
             sarungProductId: product.id,

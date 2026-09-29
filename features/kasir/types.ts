@@ -149,12 +149,14 @@ export interface CustomerFormData {
 // ==========================================
 
 // Base Product interface - Core fields shared across all product contexts
+// Base Product interface - Core fields shared across all product contexts
 export interface ProductCore {
   id: string
   name: string
   code?: string
   description?: string
   imageUrl?: string
+  totalInventory?: number
 }
 
 // Product with category information
@@ -218,6 +220,7 @@ export interface Product {
   available: boolean
   description?: string
   availableQuantity?: number
+  totalInventory?: number
 
   // Size-aware fields (RPK-51) - Optional for backward compatibility
   sizes?: ProductSize[] // Available sizes for this product

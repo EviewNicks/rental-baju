@@ -73,7 +73,13 @@ export function showApiError(errorResponse: ApiErrorResponse | unknown): void {
     const errorMessage = String(errorResponse.message)
 
     // ✅ FIX: Check if this is a KasirApiError with category and actions
-    const error = errorResponse as any
+    const error = errorResponse as {
+      category?: string
+      actions?: string[]
+      details?: { errorDetails?: string; context?: string } | string
+      validationErrors?: Array<{ field: string; message: string }>
+      context?: string
+    }
 
     // ✅ NEW: Use category from KasirApiError if available
     const category = error.category || 'CRITICAL' // Default to CRITICAL for safety
@@ -90,14 +96,14 @@ export function showApiError(errorResponse: ApiErrorResponse | unknown): void {
       // Fallback: Extract additional error details for better UX
       if (typeof error.details === 'string') {
         description = error.details
-      } else if (error.details.errorDetails) {
+      } else if (typeof error.details === 'object' && error.details.errorDetails) {
         description = error.details.errorDetails
       } else if (Array.isArray(error.validationErrors)) {
         // Validation errors array
         description = error.validationErrors
           .map((e: { field: string; message: string }) => `• ${e.field}: ${e.message}`)
           .join('\n')
-      } else if (error.details.context) {
+      } else if (typeof error.details === 'object' && error.details.context) {
         description = error.details.context
       }
     } else if (error.context) {

@@ -120,7 +120,7 @@ export function useCancelTransaction(
       if (error && typeof error === 'object' && 'issues' in error) {
         console.error('Cancel transaction validation failed', {
           transactionCode: transactionCode,
-          validationErrors: (error as any).issues,
+          validationErrors: (error as { issues?: unknown }).issues,
           errorType: 'ZodValidationError',
         })
       } else {

@@ -371,10 +371,15 @@ export function ProductSelectionStep({
         return
       }
 
-      // Task 12: Quantity validation
+      // Task 12: Quantity validation against total physical stock
+      const selectedSize = productSizeId ? product.sizes?.find(size => size.id === productSizeId) : undefined
+      const maxAvailableStock = selectedSize 
+        ? (selectedSize.originalQuantity ?? selectedSize.quantity ?? selectedSize.availableQuantity ?? 0)
+        : (product.totalInventory ?? product.availableQuantity ?? 0)
+
       const quantityValidation = validateQuantityInput(
         quantity,
-        product.availableQuantity || 0,
+        maxAvailableStock,
         quantity // For non-jas products, jas quantity equals selected quantity
       )
       
@@ -389,7 +394,6 @@ export function ProductSelectionStep({
 
       // Task 12: Size validation if applicable
       if (productSizeId) {
-        const selectedSize = product.sizes?.find(size => size.id === productSizeId)
         const sizeValidation = validateProductSizeSelection(product, productSizeId, selectedSize)
         
         if (!sizeValidation.isValid) {
@@ -420,12 +424,12 @@ export function ProductSelectionStep({
       // Task 11: Enhanced product detection with error handling for free sarung eligibility
       if (isEligibleForFreeSarung(product)) {
         try {
-          // Validate jas product before opening modal
-          if (!product.availableQuantity || product.availableQuantity < quantity) {
+          // Validate jas product before opening modal against physical inventory
+          if (maxAvailableStock < quantity) {
             const pairingError = createSarungPairingError(
               SarungPairingErrorType.SARUNG_INSUFFICIENT_STOCK,
               {
-                available: product.availableQuantity || 0,
+                available: maxAvailableStock,
                 requested: quantity,
                 sarungName: product.name,
                 jasProductId: product.id

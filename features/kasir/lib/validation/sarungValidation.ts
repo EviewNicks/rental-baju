@@ -242,8 +242,10 @@ export function validateProductSizeSelection(
         errors.push('Data ukuran yang dipilih tidak konsisten')
       }
 
-      if (selectedSize.availableQuantity <= 0) {
-        errors.push('Ukuran yang dipilih tidak memiliki stok tersedia')
+      // Check total physical stock owned by the store (for date-based rental booking in Step 1)
+      const totalStock = selectedSize.originalQuantity ?? selectedSize.quantity ?? selectedSize.availableQuantity ?? 0
+      if (totalStock <= 0) {
+        errors.push('Ukuran yang dipilih tidak memiliki stok terdaftar di toko')
       }
     }
   }

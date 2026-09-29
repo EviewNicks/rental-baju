@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 /**
  * Integration Test: Pagination State Management
  *
@@ -323,13 +324,6 @@ describe('Pagination Integration Tests', () => {
       })
 
       // Step 3: Parse URL (simulating re-render)
-      const parsedFilters = urlResult.current.parseFiltersFromURL()
-
-      // Should only call replace once, not trigger circular updates
-      expect(mockReplace).toHaveBeenCalledTimes(1)
-      expect(parsedFilters.page).toBe(2)
-      expect(transactionResult.current.currentPage).toBe(2)
-    })
       const parsedFilters = urlResult.current.parseFiltersFromURL()
 
       // Should only call replace once, not trigger circular updates

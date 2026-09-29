@@ -46,13 +46,14 @@ export function ProductCard({
   // Check if product has size-aware inventory
   const hasSizes = (product.sizes?.length ?? 0) > 0
 
-  // Quantity validation - check against original quantity (total physical stock)
+  // Quantity validation - check against total physical stock owned by store
   const isQuantityAvailable = (requestedQuantity: number) => {
     if (hasSizes && selectedSize) {
-      return (selectedSize.originalQuantity ?? 0) >= requestedQuantity
+      const sizeStock = selectedSize.originalQuantity ?? selectedSize.quantity ?? selectedSize.availableQuantity ?? 0
+      return sizeStock >= requestedQuantity
     }
-    // For products without sizes, use first size's originalQuantity or fallback to availableQuantity
-    const totalStock = product.sizes?.[0]?.originalQuantity ?? product.availableQuantity ?? 0
+    // For products without sizes, use total inventory or first size stock
+    const totalStock = product.totalInventory ?? product.sizes?.[0]?.originalQuantity ?? product.availableQuantity ?? 0
     return totalStock >= requestedQuantity
   }
 
