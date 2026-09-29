@@ -147,6 +147,7 @@ export const productApi = {
     limit?: number
     sortBy?: 'date' | 'revenue'
     sortOrder?: 'asc' | 'desc'
+    productSizeId?: string
   }) => {
     const queryString = params ? buildQueryParams(params) : ''
     const url = `${API_BASE_URL}/products/${id}/history${queryString ? `?${queryString}` : ''}`

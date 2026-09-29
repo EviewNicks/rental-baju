@@ -116,6 +116,7 @@ export interface HistoryQueryParams {
   limit?: number // Default: 10 per page
   sortBy?: 'date' | 'revenue'
   sortOrder?: 'asc' | 'desc' // Default: desc (newest first)
+  productSizeId?: string // Optional filter by ProductSize ID
 }
 
 // Customer Data Masking Configuration
@@ -163,6 +164,7 @@ export interface ProductHistoryServiceResult {
 // Database Query Types (for service layer)
 export interface ProductHistoryQuery {
   productId: string
+  productSizeId?: string
   pagination: {
     page: number
     limit: number

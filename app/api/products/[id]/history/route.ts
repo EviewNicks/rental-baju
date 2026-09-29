@@ -143,12 +143,18 @@ function extractQueryParams(searchParams: URLSearchParams): HistoryQueryParams {
   const sortOrderParam = searchParams.get('sortOrder')
   const sortOrder = isValidSortOrder(sortOrderParam) ? sortOrderParam : 'desc'
 
+  const productSizeIdParam = searchParams.get('productSizeId')
+  const productSizeId = productSizeIdParam && productSizeIdParam.trim() !== '' && productSizeIdParam !== 'all'
+    ? productSizeIdParam.trim()
+    : undefined
+
   return {
     productId: '', // Will be set by caller
     page,
     limit,
     sortBy,
     sortOrder,
+    productSizeId,
   }
 }
 

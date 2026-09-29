@@ -48,7 +48,7 @@ export class ProductHistoryService {
       const query = this.buildHistoryQuery(productId, params)
 
       // Get total count for pagination
-      const totalCount = await this.getHistoryCount(productId)
+      const totalCount = await this.getHistoryCount(productId, query.productSizeId)
 
       // Execute optimized query
       const rawResults = await this.executeHistoryQuery(query)
@@ -117,6 +117,7 @@ export class ProductHistoryService {
 
     return {
       productId,
+      productSizeId: params.productSizeId,
       pagination: {
         page,
         limit,
@@ -132,7 +133,7 @@ export class ProductHistoryService {
   /**
    * Get total count of history entries for pagination
    */
-  private async getHistoryCount(productId: string): Promise<number> {
+  private async getHistoryCount(productId: string, productSizeId?: string): Promise<number> {
     return await this.prisma.transaksiItem.count({
       where: {
         produkId: productId,
@@ -141,6 +142,13 @@ export class ProductHistoryService {
             not: 'cancelled', // Exclude cancelled transactions
           },
         },
+        ...(productSizeId
+          ? {
+              kondisiAwal: {
+                contains: productSizeId,
+              },
+            }
+          : {}),
       },
     })
   }
@@ -167,6 +175,13 @@ export class ProductHistoryService {
             not: 'cancelled',
           },
         },
+        ...(query.productSizeId
+          ? {
+              kondisiAwal: {
+                contains: query.productSizeId,
+              },
+            }
+          : {}),
       },
       select: {
         id: true,

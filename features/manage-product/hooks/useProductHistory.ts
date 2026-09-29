@@ -38,6 +38,7 @@ export function useProductHistory(
     limit?: number
     sortBy?: 'date' | 'revenue'
     sortOrder?: 'asc' | 'desc'
+    productSizeId?: string
   }
 ) {
   // Build query parameters with defaults
@@ -46,6 +47,7 @@ export function useProductHistory(
     limit: params?.limit || DEFAULT_PAGE_SIZE,
     sortBy: params?.sortBy || DEFAULT_SORT_BY,
     sortOrder: params?.sortOrder || DEFAULT_SORT_ORDER,
+    productSizeId: params?.productSizeId,
   }
 
   return useQuery({
