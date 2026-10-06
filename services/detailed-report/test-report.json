@@ -1,33 +1,2967 @@
 {
-  "numTotalTests": 2,
-  "numPassedTests": 2,
+  "numTotalTests": 269,
+  "numPassedTests": 269,
   "numFailedTests": 0,
   "numPendingTests": 0,
-  "startTime": "2026-09-29T06:22:22.578Z",
-  "endTime": "2026-09-29T06:22:30.038Z",
+  "startTime": "2026-10-06T16:01:43.497Z",
+  "endTime": "2026-10-06T16:01:47.586Z",
   "testResults": [
     {
-      "testFilePath": "D:\\.work\\rental-software\\__tests__\\unit\\features\\manage-product\\productHistoryService.test.ts",
+      "testFilePath": "D:\\.work\\rental-software\\features\\kasir\\services\\__tests__\\returnService.hilang.test.ts",
       "testFileResults": [
         {
           "ancestorTitles": [
-            "ProductHistoryService - Product Size Filter"
+            "HILANG Penalty Calculation Logic"
           ],
-          "fullName": "ProductHistoryService - Product Size Filter should query without productSizeId filter when not specified",
+          "fullName": "HILANG Penalty Calculation Logic should calculate penalty for 1 lost item: manualPrice × 1",
           "status": "passed",
-          "title": "should query without productSizeId filter when not specified",
+          "title": "should calculate penalty for 1 lost item: manualPrice × 1",
           "failureMessages": [],
-          "duration": 21
+          "duration": 8
         },
         {
           "ancestorTitles": [
-            "ProductHistoryService - Product Size Filter"
+            "HILANG Penalty Calculation Logic"
           ],
-          "fullName": "ProductHistoryService - Product Size Filter should apply productSizeId filter to both count and findMany queries",
+          "fullName": "HILANG Penalty Calculation Logic should calculate penalty for 2 lost items: manualPrice × 2",
           "status": "passed",
-          "title": "should apply productSizeId filter to both count and findMany queries",
+          "title": "should calculate penalty for 2 lost items: manualPrice × 2",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "HILANG Penalty Calculation Logic"
+          ],
+          "fullName": "HILANG Penalty Calculation Logic should return 0 for HILANG without manualPrice",
+          "status": "passed",
+          "title": "should return 0 for HILANG without manualPrice",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "HILANG Penalty Calculation Logic"
+          ],
+          "fullName": "HILANG Penalty Calculation Logic should calculate penalty for RUSAK: manualPrice × jumlahKembali",
+          "status": "passed",
+          "title": "should calculate penalty for RUSAK: manualPrice × jumlahKembali",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "HILANG Penalty Calculation Logic"
+          ],
+          "fullName": "HILANG Penalty Calculation Logic should return 0 penalty for BAIK condition",
+          "status": "passed",
+          "title": "should return 0 penalty for BAIK condition",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "HILANG Penalty Calculation Logic"
+          ],
+          "fullName": "HILANG Penalty Calculation Logic should use totalQuantity for HILANG, not jumlahKembali (which is 0)",
+          "status": "passed",
+          "title": "should use totalQuantity for HILANG, not jumlahKembali (which is 0)",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "HILANG Penalty - Real World Scenarios"
+          ],
+          "fullName": "HILANG Penalty - Real World Scenarios Scenario: Customer loses 2 wedding dresses worth Rp 500k each",
+          "status": "passed",
+          "title": "Scenario: Customer loses 2 wedding dresses worth Rp 500k each",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "HILANG Penalty - Real World Scenarios"
+          ],
+          "fullName": "HILANG Penalty - Real World Scenarios Scenario: Customer loses 1 suit worth Rp 750k",
+          "status": "passed",
+          "title": "Scenario: Customer loses 1 suit worth Rp 750k",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "HILANG Penalty - Real World Scenarios"
+          ],
+          "fullName": "HILANG Penalty - Real World Scenarios Scenario: Mixed return - 2 BAIK, 1 HILANG",
+          "status": "passed",
+          "title": "Scenario: Mixed return - 2 BAIK, 1 HILANG",
+          "failureMessages": [],
+          "duration": 0
+        }
+      ],
+      "failureMessage": null
+    },
+    {
+      "testFilePath": "D:\\.work\\rental-software\\features\\kasir\\services\\__tests__\\returnService.partialAndPairing.test.ts",
+      "testFileResults": [
+        {
+          "ancestorTitles": [
+            "Return Service - Partial Return Status Logic"
+          ],
+          "fullName": "Return Service - Partial Return Status Logic should set statusKembali to \"sebagian\" when returned quantity is less than remaining",
+          "status": "passed",
+          "title": "should set statusKembali to \"sebagian\" when returned quantity is less than remaining",
           "failureMessages": [],
           "duration": 5
+        },
+        {
+          "ancestorTitles": [
+            "Return Service - Partial Return Status Logic"
+          ],
+          "fullName": "Return Service - Partial Return Status Logic should set statusKembali to \"lengkap\" when returned quantity equals remaining",
+          "status": "passed",
+          "title": "should set statusKembali to \"lengkap\" when returned quantity equals remaining",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "Return Service - Partial Return Status Logic"
+          ],
+          "fullName": "Return Service - Partial Return Status Logic should set statusKembali to \"lengkap\" across multi-session returns",
+          "status": "passed",
+          "title": "should set statusKembali to \"lengkap\" across multi-session returns",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "InventoryService - Paired Sarung Deduplication"
+          ],
+          "fullName": "InventoryService - Paired Sarung Deduplication should parse isPairedSarung flag correctly from JSON kondisiAwal",
+          "status": "passed",
+          "title": "should parse isPairedSarung flag correctly from JSON kondisiAwal",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "InventoryService - Paired Sarung Deduplication"
+          ],
+          "fullName": "InventoryService - Paired Sarung Deduplication should skip duplicate stock deduction during pickup for paired sarung items",
+          "status": "passed",
+          "title": "should skip duplicate stock deduction during pickup for paired sarung items",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "InventoryService - Paired Sarung Deduplication"
+          ],
+          "fullName": "InventoryService - Paired Sarung Deduplication should skip duplicate stock restoration during return for paired sarung items",
+          "status": "passed",
+          "title": "should skip duplicate stock restoration during return for paired sarung items",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "InventoryService - Paired Sarung Deduplication"
+          ],
+          "fullName": "InventoryService - Paired Sarung Deduplication should perform single deduction during pickup for standalone non-paired sarung",
+          "status": "passed",
+          "title": "should perform single deduction during pickup for standalone non-paired sarung",
+          "failureMessages": [],
+          "duration": 23
+        },
+        {
+          "ancestorTitles": [
+            "InventoryService - Paired Sarung Deduplication"
+          ],
+          "fullName": "InventoryService - Paired Sarung Deduplication should perform dual deduction for parent jas item with linkedSarung",
+          "status": "passed",
+          "title": "should perform dual deduction for parent jas item with linkedSarung",
+          "failureMessages": [],
+          "duration": 2
+        }
+      ],
+      "failureMessage": null
+    },
+    {
+      "testFilePath": "D:\\.work\\rental-software\\features\\kasir\\services\\transaksiService.refund.test.ts",
+      "testFileResults": [
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 369759",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 369759",
+          "failureMessages": [],
+          "duration": 13
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 235366",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 235366",
+          "failureMessages": [],
+          "duration": 5
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 953102",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 953102",
+          "failureMessages": [],
+          "duration": 3
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 873021",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 873021",
+          "failureMessages": [],
+          "duration": 2
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 432682",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 432682",
+          "failureMessages": [],
+          "duration": 15
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 204050",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 204050",
+          "failureMessages": [],
+          "duration": 2
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 245772",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 245772",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 375278",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 375278",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 119468",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 119468",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 836121",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 836121",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 794969",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 794969",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 583340",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 583340",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 187557",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 187557",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 780743",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 780743",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 806347",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 806347",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 365173",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 365173",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 968189",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 968189",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 284001",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 284001",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 170971",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 170971",
+          "failureMessages": [],
+          "duration": 2
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 611880",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 611880",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 109973",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 109973",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 954483",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 954483",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 422377",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 422377",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 800744",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 800744",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 677647",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 677647",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 207636",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 207636",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 537055",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 537055",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 618705",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 618705",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 564733",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 564733",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 606371",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 606371",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 505715",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 505715",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 865265",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 865265",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 80370",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 80370",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 217396",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 217396",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 882858",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 882858",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 324555",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 324555",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 781144",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 781144",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 636275",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 636275",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 878730",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 878730",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 296111",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 296111",
+          "failureMessages": [],
+          "duration": 3
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 37540",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 37540",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 963469",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 963469",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 522731",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 522731",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 843912",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 843912",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 927988",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 927988",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 391650",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 391650",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 236910",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 236910",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 766008",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 766008",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 514166",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 514166",
+          "failureMessages": [],
+          "duration": 4
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 857529",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 857529",
+          "failureMessages": [],
+          "duration": 2
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 951362",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 951362",
+          "failureMessages": [],
+          "duration": 2
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 633764",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 633764",
+          "failureMessages": [],
+          "duration": 2
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 295973",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 295973",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 38251",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 38251",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 628249",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 628249",
+          "failureMessages": [],
+          "duration": 2
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 278056",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 278056",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 850576",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 850576",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 987749",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 987749",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 687216",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 687216",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 982001",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 982001",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 975558",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 975558",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 505927",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 505927",
+          "failureMessages": [],
+          "duration": 2
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 983699",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 983699",
+          "failureMessages": [],
+          "duration": 2
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 167385",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 167385",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 209420",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 209420",
+          "failureMessages": [],
+          "duration": 2
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 709260",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 709260",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 905278",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 905278",
+          "failureMessages": [],
+          "duration": 2
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 679999",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 679999",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 622719",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 622719",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 269750",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 269750",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 590382",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 590382",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 235514",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 235514",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 523883",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 523883",
+          "failureMessages": [],
+          "duration": 2
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 723541",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 723541",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 625430",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 625430",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 128287",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 128287",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 681722",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 681722",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 747376",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 747376",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 265729",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 265729",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 358248",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 358248",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 230033",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 230033",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 134511",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 134511",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 419897",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 419897",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 690343",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 690343",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 209524",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 209524",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 961348",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 961348",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 679526",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 679526",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 397679",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 397679",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 742733",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 742733",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 342854",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 342854",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 896777",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 896777",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 938914",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 938914",
+          "failureMessages": [],
+          "duration": 2
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 64878",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 64878",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 422443",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 422443",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 49038",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 49038",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 675517",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 675517",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 664737",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 664737",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 717881",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 717881",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 345777",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 345777",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 672634",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should trigger refund for payment amount 672634",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 1: Refund Detection Accuracy"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 1: Refund Detection Accuracy Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should NOT trigger refund for zero payment",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should NOT trigger refund for zero payment",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 2: Atomic Refund Processing"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 2: Atomic Refund Processing Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 1 atomically",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 1 atomically",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 2: Atomic Refund Processing"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 2: Atomic Refund Processing Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 2 atomically",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 2 atomically",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 2: Atomic Refund Processing"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 2: Atomic Refund Processing Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 1 atomically",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 1 atomically",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 2: Atomic Refund Processing"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 2: Atomic Refund Processing Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 0 atomically",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 0 atomically",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 2: Atomic Refund Processing"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 2: Atomic Refund Processing Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 0 atomically",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 0 atomically",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 2: Atomic Refund Processing"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 2: Atomic Refund Processing Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 1 atomically",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 1 atomically",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 2: Atomic Refund Processing"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 2: Atomic Refund Processing Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 0 atomically",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 0 atomically",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 2: Atomic Refund Processing"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 2: Atomic Refund Processing Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 1 atomically",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 1 atomically",
+          "failureMessages": [],
+          "duration": 2
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 2: Atomic Refund Processing"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 2: Atomic Refund Processing Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 0 atomically",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 0 atomically",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 2: Atomic Refund Processing"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 2: Atomic Refund Processing Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 1 atomically",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 1 atomically",
+          "failureMessages": [],
+          "duration": 2
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 2: Atomic Refund Processing"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 2: Atomic Refund Processing Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 2 atomically",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 2 atomically",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 2: Atomic Refund Processing"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 2: Atomic Refund Processing Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 2 atomically",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 2 atomically",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 2: Atomic Refund Processing"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 2: Atomic Refund Processing Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 1 atomically",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 1 atomically",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 2: Atomic Refund Processing"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 2: Atomic Refund Processing Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 0 atomically",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 0 atomically",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 2: Atomic Refund Processing"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 2: Atomic Refund Processing Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 1 atomically",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 1 atomically",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 2: Atomic Refund Processing"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 2: Atomic Refund Processing Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 0 atomically",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 0 atomically",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 2: Atomic Refund Processing"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 2: Atomic Refund Processing Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 1 atomically",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 1 atomically",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 2: Atomic Refund Processing"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 2: Atomic Refund Processing Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 0 atomically",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 0 atomically",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 2: Atomic Refund Processing"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 2: Atomic Refund Processing Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 1 atomically",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 1 atomically",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 2: Atomic Refund Processing"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 2: Atomic Refund Processing Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 0 atomically",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 0 atomically",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 2: Atomic Refund Processing"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 2: Atomic Refund Processing Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 2 atomically",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 2 atomically",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 2: Atomic Refund Processing"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 2: Atomic Refund Processing Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 2 atomically",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 2 atomically",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 2: Atomic Refund Processing"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 2: Atomic Refund Processing Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 0 atomically",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 0 atomically",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 2: Atomic Refund Processing"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 2: Atomic Refund Processing Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 0 atomically",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 0 atomically",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 2: Atomic Refund Processing"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 2: Atomic Refund Processing Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 2 atomically",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 2 atomically",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 2: Atomic Refund Processing"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 2: Atomic Refund Processing Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 1 atomically",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 1 atomically",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 2: Atomic Refund Processing"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 2: Atomic Refund Processing Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 1 atomically",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 1 atomically",
+          "failureMessages": [],
+          "duration": 3
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 2: Atomic Refund Processing"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 2: Atomic Refund Processing Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 2 atomically",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 2 atomically",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 2: Atomic Refund Processing"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 2: Atomic Refund Processing Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 2 atomically",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 2 atomically",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 2: Atomic Refund Processing"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 2: Atomic Refund Processing Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 1 atomically",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 1 atomically",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 2: Atomic Refund Processing"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 2: Atomic Refund Processing Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 0 atomically",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 0 atomically",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 2: Atomic Refund Processing"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 2: Atomic Refund Processing Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 2 atomically",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 2 atomically",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 2: Atomic Refund Processing"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 2: Atomic Refund Processing Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 0 atomically",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 0 atomically",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 2: Atomic Refund Processing"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 2: Atomic Refund Processing Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 1 atomically",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 1 atomically",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 2: Atomic Refund Processing"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 2: Atomic Refund Processing Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 1 atomically",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 1 atomically",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 2: Atomic Refund Processing"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 2: Atomic Refund Processing Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 0 atomically",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 0 atomically",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 2: Atomic Refund Processing"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 2: Atomic Refund Processing Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 2 atomically",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 2 atomically",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 2: Atomic Refund Processing"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 2: Atomic Refund Processing Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 0 atomically",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 0 atomically",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 2: Atomic Refund Processing"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 2: Atomic Refund Processing Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 1 atomically",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 1 atomically",
+          "failureMessages": [],
+          "duration": 2
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 2: Atomic Refund Processing"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 2: Atomic Refund Processing Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 2 atomically",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 2 atomically",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 2: Atomic Refund Processing"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 2: Atomic Refund Processing Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 0 atomically",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 0 atomically",
+          "failureMessages": [],
+          "duration": 2
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 2: Atomic Refund Processing"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 2: Atomic Refund Processing Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 1 atomically",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 1 atomically",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 2: Atomic Refund Processing"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 2: Atomic Refund Processing Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 1 atomically",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 1 atomically",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 2: Atomic Refund Processing"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 2: Atomic Refund Processing Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 2 atomically",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 2 atomically",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 2: Atomic Refund Processing"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 2: Atomic Refund Processing Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 2 atomically",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 2 atomically",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 2: Atomic Refund Processing"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 2: Atomic Refund Processing Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 1 atomically",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 1 atomically",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 2: Atomic Refund Processing"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 2: Atomic Refund Processing Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 2 atomically",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 2 atomically",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 2: Atomic Refund Processing"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 2: Atomic Refund Processing Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 0 atomically",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 0 atomically",
+          "failureMessages": [],
+          "duration": 8
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 2: Atomic Refund Processing"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 2: Atomic Refund Processing Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 2 atomically",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 2 atomically",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 2: Atomic Refund Processing"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 2: Atomic Refund Processing Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 0 atomically",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 2: Atomic Refund Processing - should handle failure at step 0 atomically",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 26200",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 26200",
+          "failureMessages": [],
+          "duration": 2
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 983054",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 983054",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 686778",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 686778",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 422525",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 422525",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 194620",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 194620",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 680868",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 680868",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 609856",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 609856",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 228062",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 228062",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 934848",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 934848",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 148499",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 148499",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 918969",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 918969",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 586226",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 586226",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 833612",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 833612",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 508085",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 508085",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 614318",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 614318",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 478647",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 478647",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 941027",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 941027",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 179395",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 179395",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 873906",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 873906",
+          "failureMessages": [],
+          "duration": 2
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 652373",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 652373",
+          "failureMessages": [],
+          "duration": 3
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 639071",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 639071",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 647107",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 647107",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 106932",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 106932",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 903891",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 903891",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 17117",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 17117",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 579959",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 579959",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 115632",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 115632",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 84439",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 84439",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 986421",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 986421",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 21532",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 21532",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 7431",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 7431",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 928354",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 928354",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 431727",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 431727",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 280966",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 280966",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 885719",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 885719",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 231527",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 231527",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 165938",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 165938",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 385264",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 385264",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 90739",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 90739",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 254149",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 254149",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 96789",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 96789",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 582228",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 582228",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 160172",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 160172",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 377091",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 377091",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 715707",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 715707",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 346194",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 346194",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 319089",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 319089",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 41604",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 41604",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 980752",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 980752",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 474803",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 474803",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 314096",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 314096",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 444876",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 444876",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 819880",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 819880",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 889694",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 889694",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 886506",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 886506",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 43860",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 43860",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 954976",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 954976",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 366041",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 366041",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 575062",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 575062",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 39407",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 39407",
+          "failureMessages": [],
+          "duration": 2
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 887886",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 887886",
+          "failureMessages": [],
+          "duration": 2
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 923633",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 923633",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 322715",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 322715",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 172626",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 172626",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 368456",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 368456",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 474288",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 474288",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 252729",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 252729",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 240450",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 240450",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 975438",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 975438",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 104119",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 104119",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 542098",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 542098",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 563470",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 563470",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 422758",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 422758",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 719106",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 719106",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 160406",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 160406",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 220790",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 220790",
+          "failureMessages": [],
+          "duration": 2
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 481158",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 481158",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 405945",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 405945",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 737211",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 737211",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 752049",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 752049",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 572877",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 572877",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 391966",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 391966",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 878715",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 878715",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 422738",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 422738",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 765133",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 765133",
+          "failureMessages": [],
+          "duration": 2
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 28414",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 28414",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 584759",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 584759",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 30543",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 30543",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 28180",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 28180",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 758894",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 758894",
+          "failureMessages": [],
+          "duration": 0
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 669828",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 669828",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 34458",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 34458",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 312860",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 312860",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 888343",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 888343",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 709228",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 709228",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 206264",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 206264",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 770118",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 770118",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 149042",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 149042",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 805377",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 805377",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Property 3: Refund Amount Consistency"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Property 3: Refund Amount Consistency Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 121484",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 3: Refund Amount Consistency - payment and expense amounts should match for amount 121484",
+          "failureMessages": [],
+          "duration": 1
+        },
+        {
+          "ancestorTitles": [
+            "TransaksiService Refund Processing - Property-Based Tests",
+            "Edge Cases"
+          ],
+          "fullName": "TransaksiService Refund Processing - Property-Based Tests Edge Cases Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should handle missing kasirId gracefully",
+          "status": "passed",
+          "title": "Feature: cancel-transaction-refund, Property 1: Refund Detection Accuracy - should handle missing kasirId gracefully",
+          "failureMessages": [],
+          "duration": 1
         }
       ],
       "failureMessage": null

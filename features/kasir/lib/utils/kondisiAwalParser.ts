@@ -15,6 +15,8 @@ export interface ParsedKondisiAwal {
 
 // Enhanced interface for pairing integration
 export interface EnhancedKondisiAwalData extends ParsedKondisiAwal {
+  isPairedSarung?: boolean
+  parentJasProductId?: string
   linkedSarung?: {
     productId: string
     productSizeId: string
@@ -118,6 +120,8 @@ export function parseKondisiAwalEnhanced(kondisiAwal?: string | null): EnhancedK
         ageCategory: (jsonData.ageCategory as 'ADULT' | 'CHILD' | 'TODDLER') || undefined,
         condition: jsonData.condition || undefined,
         linkedSarung: jsonData.linkedSarung,
+        isPairedSarung: jsonData.isPairedSarung,
+        parentJasProductId: jsonData.parentJasProductId,
         isLegacyFormat: false,
       }
     }

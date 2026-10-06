@@ -189,12 +189,23 @@ export class InventoryService {
       quantity,
       parsingSuccess: !!kondisiData?.productSizeId,
       hasPairing,
+      isPairedSarung: !!kondisiData?.isPairedSarung,
       jasProductSizeId: kondisiData?.productSizeId || null,
       sarungProductSizeId: kondisiData?.linkedSarung?.productSizeId || null,
-      restorationStrategy: hasPairing ? 'DUAL_RESTORATION' : 'SINGLE_RESTORATION',
+      restorationStrategy: hasPairing ? 'DUAL_RESTORATION' : kondisiData?.isPairedSarung ? 'SKIP_PAIRED_SARUNG' : 'SINGLE_RESTORATION',
       processingStep: 'pairing_detection_complete',
       timestamp: new Date().toISOString(),
     })
+
+    // ✅ FIX: Paired sarung is already restored automatically via parent jas dual restoration
+    if (kondisiData?.isPairedSarung) {
+      logger?.info('Skipping stock restoration for paired sarung item (already restored via parent jas)', {
+        itemId,
+        productSizeId: kondisiData.productSizeId,
+        quantity,
+      })
+      return
+    }
 
     if (!kondisiData?.productSizeId) {
       logger?.warn('Could not extract productSizeId from kondisiAwal', {
@@ -297,6 +308,16 @@ export class InventoryService {
         reason: 'parsing_failed',
       })
       return // Skip stock deduction but continue pickup
+    }
+
+    // ✅ FIX: Paired sarung is already deducted automatically via parent jas dual deduction
+    if (kondisiData?.isPairedSarung) {
+      logger?.info('Skipping stock deduction for paired sarung item (already deducted via parent jas)', {
+        itemId,
+        productSizeId: kondisiData.productSizeId,
+        quantity,
+      })
+      return
     }
 
     try {

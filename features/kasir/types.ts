@@ -1353,7 +1353,7 @@ export interface EnhancedReturnProcessingResult {
     itemId: string
     penalty: number
     kondisiAkhir: string | 'multi-condition'
-    statusKembali: 'lengkap'
+    statusKembali: 'lengkap' | 'sebagian'
     conditionBreakdown?: Array<{
       kondisiAkhir: string
       jumlahKembali: number

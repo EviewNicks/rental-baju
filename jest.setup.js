@@ -2,6 +2,14 @@
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 require('@testing-library/jest-dom')
 
+// Polyfill web globals in JSDOM test environment
+if (typeof global.Request === 'undefined' && typeof globalThis.Request !== 'undefined') {
+  global.Request = globalThis.Request
+  global.Response = globalThis.Response
+  global.Headers = globalThis.Headers
+  global.FormData = globalThis.FormData
+}
+
 // Import React untuk mock components
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const React = require('react')
@@ -55,6 +63,18 @@ jest.mock('next/navigation', () => ({
     return new URLSearchParams()
   },
 }))
+
+// Mock next/server for unit testing in JSDOM
+jest.mock('next/server', () => {
+  return {
+    NextResponse: {
+      json: jest.fn((body, init) => ({
+        status: init?.status || 200,
+        json: async () => body,
+      })),
+    },
+  }
+})
 
 // Mock sessionStorage
 Object.defineProperty(window, 'sessionStorage', {

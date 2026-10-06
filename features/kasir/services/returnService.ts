@@ -93,7 +93,7 @@ interface UnifiedReturnProcessingResult {
     itemId: string
     penalty: number
     kondisiAkhir: string
-    statusKembali: 'lengkap'
+    statusKembali: 'lengkap' | 'sebagian'
     conditionBreakdown?: Array<{
       kondisiAkhir: string
       jumlahKembali: number
@@ -1090,8 +1090,6 @@ export class UnifiedReturnService {
       const returnRecords: any[] = []
       //eslint-disable-next-line @typescript-eslint/no-explicit-any
       const itemUpdates: any[] = []
-      const stockUpdates: Map<string, number> = new Map()
-      const sizeUpdates: Map<string, number> = new Map()
 
       // ✅ TASK 8: Enhanced concurrent operation protection with database transactions
 
@@ -1103,6 +1101,7 @@ export class UnifiedReturnService {
           const finalValidation = await this.validateAgainstCurrentDatabaseState(
             transaksiId,
             requestedQuantities,
+            tx,
           )
 
           if (!finalValidation.isValid) {
@@ -1180,52 +1179,30 @@ export class UnifiedReturnService {
               })
             }
 
+            // ✅ FIX: Calculate dynamic statusKembali based on remaining quantities
+            const remainingBefore = finalValidation.currentRemainingQuantities[item.itemId] ?? 0
+            const returnedInThisSession = item.conditions.reduce(
+              (sum, c) => sum + (c.jumlahKembali || 0),
+              0,
+            )
+            const remainingAfter = remainingBefore - returnedInThisSession
+            const isFullyReturned = remainingAfter <= 0
+            const statusKembali = isFullyReturned ? 'lengkap' : 'sebagian'
+
             // Prepare item update
             itemUpdates.push({
               id: item.itemId,
-              statusKembali: 'lengkap',
+              statusKembali,
               totalReturnPenalty: itemTotalPenalty,
               conditionCount: item.conditions.length,
             })
-
-            // Prepare stock updates (SKIP HILANG items)
-            // ✅ FIX: Only count non-HILANG items for stock update
-            // HILANG items should NOT update stock until resolution
-            const nonHilangReturned = calculateNonHilangQuantity(item.conditions)
-
-            if (nonHilangReturned > 0) {
-              const currentStock = stockUpdates.get(transactionItem.produkId) || 0
-              stockUpdates.set(transactionItem.produkId, currentStock + nonHilangReturned)
-            }
-
-            // Prepare size updates if applicable (SKIP HILANG items)
-            const parsedKondisi = parseKondisiAwalEnhanced(transactionItem.kondisiAwal)
-            if (parsedKondisi?.productSizeId && !parsedKondisi.isLegacyFormat) {
-              // ✅ FIX: Only count non-HILANG items for stock update
-              // HILANG items should NOT update stock until resolution
-              if (nonHilangReturned > 0) {
-                const currentSizeStock = sizeUpdates.get(parsedKondisi.productSizeId) || 0
-                sizeUpdates.set(parsedKondisi.productSizeId, currentSizeStock + nonHilangReturned)
-
-                // ✅ TASK 7: Handle dual stock restoration for jas-sarung pairings
-                // If this item has linkedSarung, also restore sarung stock
-                if (parsedKondisi.linkedSarung?.productSizeId) {
-                  const currentSarungStock =
-                    sizeUpdates.get(parsedKondisi.linkedSarung.productSizeId) || 0
-                  sizeUpdates.set(
-                    parsedKondisi.linkedSarung.productSizeId,
-                    currentSarungStock + nonHilangReturned,
-                  )
-                }
-              }
-            }
 
             processedItems.push({
               itemId: item.itemId,
               penalty: itemTotalPenalty,
               kondisiAkhir:
                 item.conditions.length === 1 ? item.conditions[0].kondisiAkhir : 'multi-condition',
-              statusKembali: 'lengkap',
+              statusKembali,
               conditionBreakdown,
             })
           }
@@ -1247,15 +1224,19 @@ export class UnifiedReturnService {
                 })
               : Promise.resolve(),
 
-            // 2. Update all transaction items in parallel
+            // 2. Update all transaction items in parallel with atomic increments
             Promise.all(
               itemUpdates.map((update) =>
                 tx.transaksiItem.update({
                   where: { id: update.id },
                   data: {
                     statusKembali: update.statusKembali,
-                    totalReturnPenalty: update.totalReturnPenalty,
-                    conditionCount: update.conditionCount,
+                    totalReturnPenalty: {
+                      increment: new Decimal(update.totalReturnPenalty),
+                    },
+                    conditionCount: {
+                      increment: update.conditionCount,
+                    },
                   },
                 }),
               ),
@@ -1267,7 +1248,11 @@ export class UnifiedReturnService {
           // ✅ PERFORMANCE FIX: Use transaction-scoped inventory service to avoid connection pool exhaustion
           // This ensures that if stock update fails, the entire return is rolled back
           // Prevents data inconsistency between return records and inventory
-          if (sizeUpdates.size > 0) {
+          const hasNonHilangReturns = request.items.some(
+            (item) => calculateNonHilangQuantity(item.conditions) > 0,
+          )
+
+          if (hasNonHilangReturns) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const txInventoryService = createInventoryService(tx as any as PrismaClient)
 
@@ -2225,6 +2210,7 @@ export class UnifiedReturnService {
   private async validateAgainstCurrentDatabaseState(
     transaksiId: string,
     requestedQuantities: Record<string, number>,
+    tx?: PrismaClient | Prisma.TransactionClient,
   ): Promise<{
     isValid: boolean
     errors: string[]
@@ -2233,8 +2219,9 @@ export class UnifiedReturnService {
     const errors: string[] = []
 
     try {
-      // Get fresh transaction data with all return records
-      const transactionWithReturns = await this.prisma.transaksi.findUnique({
+      // Get fresh transaction data with all return records using transaction context if available
+      const client = (tx || this.prisma) as PrismaClient
+      const transactionWithReturns = await client.transaksi.findUnique({
         where: { id: transaksiId },
         include: {
           items: {

@@ -69,7 +69,7 @@ export interface UnifiedProcessedItem {
   itemId: string
   penalty: number
   kondisiAkhir: string // Summary condition or 'multi-condition'
-  statusKembali: 'lengkap'
+  statusKembali: 'lengkap' | 'sebagian'
   conditionBreakdown?: UnifiedConditionBreakdown[]
 }
 
@@ -138,7 +138,7 @@ export interface LegacyEnhancedReturnProcessingResult {
     itemId: string
     penalty: number
     kondisiAkhir: string
-    statusKembali: 'lengkap'
+    statusKembali: 'lengkap' | 'sebagian'
     conditionBreakdown?: Array<{
       kondisiAkhir: string
       jumlahKembali: number
