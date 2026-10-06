@@ -1624,20 +1624,23 @@ export class TransaksiService {
         },
       })
 
+      let stockRestoredForCancelled = false
+
       // Handle stock restoration for cancelled or completed transactions
       if (data.status && data.status !== existingTransaksi.status) {
         if (data.status === 'cancelled' || data.status === 'selesai') {
           // Get transaction items to restore stock
-          const transaksiItems = await tx.transaksiItem.findMany({
-            where: { transaksiId: id },
-            select: {
-              id: true,
-              kondisiAwal: true,
-              jumlah: true,
-              jumlahDiambil: true,
-              statusKembali: true, // ✅ CRITICAL FIX: Add statusKembali to check if item already returned
-            },
-          })
+          const transaksiItems =
+            (await tx.transaksiItem.findMany({
+              where: { transaksiId: id },
+              select: {
+                id: true,
+                kondisiAwal: true,
+                jumlah: true,
+                jumlahDiambil: true,
+                statusKembali: true, // ✅ CRITICAL FIX: Add statusKembali to check if item already returned
+              },
+            })) || []
 
           // ✅ PERFORMANCE FIX: Use transaction-scoped inventory service
           const txInventoryService = createInventoryService(tx)
@@ -1650,42 +1653,34 @@ export class TransaksiService {
               // Items with statusKembali = 'lengkap' have already been processed by return service
               // and their stock has already been restored via dual/single restoration logic
               const isAlreadyReturned = item.statusKembali === 'lengkap'
+              const jumlahDiambil = item.jumlahDiambil || 0
 
-              // ✅ NEW FIX: Check if item was never picked up (sarung gratis case)
-              // Items with jumlahDiambil = 0 are sarung gratis that were never physically taken
-              // and should NOT be restored because they were restored via dual restoration
-              const wasNeverPickedUp = (item.jumlahDiambil || 0) === 0
+              let quantityToRestore = 0
 
-              // ✅ SIMPLE FIX: No stock restoration for cancelled transactions (pickup-based system)
-              // ✅ CRITICAL FIX: No stock restoration for already returned items (prevents double restoration)
-              // ✅ NEW FIX: No stock restoration for items never picked up (sarung gratis case)
-              const quantityToRestore =
-                data.status === 'cancelled'
-                  ? 0 // ❌ NO restoration for cancelled transactions
-                  : isAlreadyReturned
-                    ? 0 // ✅ CRITICAL FIX: Skip items already returned (prevents DOUBLE RESTORATION BUG)
-                    : wasNeverPickedUp
-                      ? 0 // ✅ NEW FIX: Skip sarung gratis (never picked up, already restored via dual restoration)
-                      : item.jumlah - (item.jumlahDiambil || 0) // ✅ Only restore unreturned items
+              if (data.status === 'cancelled') {
+                // ✅ CRITICAL FIX: In pickup-based inventory system, stock was deducted when items were picked up.
+                // When transaction is cancelled:
+                // - If item was never picked up (jumlahDiambil === 0), stock was never deducted -> restore 0
+                // - If item was already returned (isAlreadyReturned), stock was already restored -> restore 0
+                // - If item was picked up and not yet returned, restore jumlahDiambil back to inventory
+                quantityToRestore = !isAlreadyReturned && jumlahDiambil > 0 ? jumlahDiambil : 0
+              } else {
+                // data.status === 'selesai'
+                const wasNeverPickedUp = jumlahDiambil === 0
+                quantityToRestore =
+                  isAlreadyReturned || wasNeverPickedUp ? 0 : item.jumlah - jumlahDiambil
+              }
 
               if (quantityToRestore > 0 && item.kondisiAwal) {
-                // Parse productSizeId from kondisiAwal field (support both JSON and legacy formats)
-                let productSizeId: string | null = null
-
-                try {
-                  // Try parsing as JSON first (new format)
-                  const kondisiData = JSON.parse(item.kondisiAwal)
-                  productSizeId = kondisiData.productSizeId
-                } catch {
-                  // Fallback to legacy format: "productSizeId|size|ageCategory|condition"
-                  const kondisiParts = item.kondisiAwal.split('|')
-                  productSizeId = kondisiParts[0]
-                }
-
-                if (productSizeId) {
-                  // Use InventoryService for consistent stock management
-                  await txInventoryService.updateStockOnReturn(productSizeId, quantityToRestore)
-                }
+                stockRestoredForCancelled = true
+                // ✅ CRITICAL FIX: Use processStockForReturn which supports both single items
+                // and dual restoration for Jas + Sarung pairings
+                await txInventoryService.processStockForReturn(
+                  item.kondisiAwal,
+                  quantityToRestore,
+                  item.id,
+                  console,
+                )
               }
             }),
           )
@@ -1724,7 +1719,12 @@ export class TransaksiService {
                 refundData, // ✅ NEW: Pass refund calculation data
               })
 
-              actualRefundAmount = refundData?.isEligible ? refundData.refundAmount : 0
+              actualRefundAmount =
+                refundData !== null && refundData !== undefined
+                  ? refundData.isEligible
+                    ? refundData.refundAmount
+                    : 0
+                  : refundAmount
               refundProcessed = actualRefundAmount > 0
             } catch (error) {
               // Log error but don't fail the cancellation
@@ -1753,7 +1753,7 @@ export class TransaksiService {
                 amountPaid: existingTransaksi.jumlahBayar.toString(),
                 remainingAmount: existingTransaksi.sisaBayar.toString(),
                 itemsCount: itemsCount,
-                stockRestored: false, // ✅ UPDATED: No stock restoration for cancelled transactions
+                stockRestored: stockRestoredForCancelled, // ✅ UPDATED: Reflects whether stock was restored for cancelled transaction
                 cancelledAt: new Date().toISOString(),
                 // ✅ ENHANCED: Refund processing status with policy data
                 needsRefund: refundAmount > 0 && !refundProcessed,
@@ -2018,18 +2018,30 @@ export class TransaksiService {
       throw new Error('Kasir tidak ditemukan untuk pemrosesan refund')
     }
 
-    // ✅ NEW: Calculate actual refund amount based on policy
-    const actualRefundAmount = params.refundData?.isEligible ? params.refundData.refundAmount : 0
+    // ✅ NEW: Calculate actual refund amount based on policy (default to full refund if refundData not specified)
+    const actualRefundAmount =
+      params.refundData !== null && params.refundData !== undefined
+        ? params.refundData.isEligible
+          ? params.refundData.refundAmount
+          : 0
+        : params.refundAmount
 
     // Only process refund if eligible and amount > 0
     if (actualRefundAmount > 0) {
+      const percentageText = params.refundData
+        ? `(${params.refundData.refundPercentage}%): `
+        : ''
+      const expensePercentageText = params.refundData
+        ? ` (${params.refundData.refundPercentage}% dari Rp ${params.refundAmount.toLocaleString('id-ID')})`
+        : ''
+
       // Step 2: Create refund payment record (negative amount)
       await tx.pembayaran.create({
         data: {
           transaksiId: params.transaksiId,
           jumlah: new Decimal(-actualRefundAmount),
           metode: 'refund',
-          catatan: `Refund pembatalan transaksi (${params.refundData?.refundPercentage}%): ${params.cancellationReason}`,
+          catatan: `Refund pembatalan transaksi ${percentageText}${params.cancellationReason}`.trim(),
           createdBy: this.userId,
         },
       })
@@ -2040,7 +2052,7 @@ export class TransaksiService {
           kasirId: this.kasirId,
           harga: new Decimal(actualRefundAmount),
           kategori: 'Refund Pembatalan Transaksi',
-          deskripsi: `Refund pembatalan transaksi #${params.transactionCode} - ${params.customerName} (${params.refundData?.refundPercentage}% dari Rp ${params.refundAmount.toLocaleString('id-ID')})`,
+          deskripsi: `Refund pembatalan transaksi #${params.transactionCode} - ${params.customerName}${expensePercentageText}`,
           createdBy: this.userId,
           isActive: true,
         },

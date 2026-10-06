@@ -112,7 +112,7 @@ export const createTransaksiItemSchema = z.object({
       size: z.string().min(1, 'Ukuran tidak boleh kosong'),
       ageCategory: z.enum(['ADULT', 'TEEN', 'CHILD'], { message: 'Kategori usia tidak valid' }),
       quantity: z.number().int().min(0, 'Kuantitas tidak boleh negatif'),
-      availableQuantity: z.number().int().min(0, 'Kuantitas tersedia tidak boleh negatif'),
+      availableQuantity: z.number().int().default(0), // Informational only, defaults to 0 and allows negative values from legacy anomalies
       rentedStock: z.number().int().min(0, 'Stok tersewa tidak boleh negatif').optional(), // Optional - not always provided by frontend
       createdAt: z.string().datetime('Format tanggal tidak valid').optional(), // Optional - frontend may not provide
       updatedAt: z.string().datetime('Format tanggal tidak valid').optional(), // Optional - frontend may not provide

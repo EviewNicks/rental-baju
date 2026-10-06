@@ -112,6 +112,11 @@ export function useCancelTransaction(
         queryKey: queryKeys.kasir.dashboard.stats(),
       })
 
+      // Invalidate products to refresh available stock immediately
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.kasir.produk.all(),
+      })
+
       onSuccess?.()
     },
     onError: (error) => {
