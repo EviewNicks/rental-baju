@@ -44,14 +44,17 @@ interface SearchInputProps {
   isLoading?: boolean
 }
 
-// Dynamic tab configuration based on statusConfig
-const TAB_ORDER: (TransactionStatus | 'all')[] = ['all', 'active', 'diambil', 'selesai', 'terlambat', 'cancelled']
+import * as React from 'react'
+
+// Dynamic tab configuration: 'Semua' (all valid transactions) is default, followed by status filters, with 'Dibatalkan' separated at the end
+const TAB_ORDER: (TransactionStatus | 'all')[] = ['all', 'active', 'diambil', 'terlambat', 'selesai', 'cancelled']
 
 interface TabConfig {
   value: TransactionStatus | 'all'
   label: string
   countKey: keyof TransactionTabsProps['counts']
   testId: string
+  isArchive?: boolean
 }
 
 function getTabConfiguration(): TabConfig[] {
@@ -61,7 +64,7 @@ function getTabConfiguration(): TabConfig[] {
         value: 'all',
         label: 'Semua',
         countKey: 'total' as const,
-        testId: 'tab-all'
+        testId: 'tab-all',
       }
     }
 
@@ -79,7 +82,8 @@ function getTabConfiguration(): TabConfig[] {
       value: status,
       label: config?.label || status,
       countKey: countKeyMap[status],
-      testId: `tab-${status}`
+      testId: `tab-${status}`,
+      isArchive: status === 'cancelled',
     }
   })
 }
@@ -170,14 +174,32 @@ export function TransactionTabs({
           className="w-full"
           data-testid="transaction-tabs"
         >
-          <TabsList>
-            {tabConfigs.map(({ value, label, countKey, testId }) => (
-              <TabsTrigger key={value} value={value} data-testid={testId}>
-                {label}{' '}
-                <span className="ml-1 text-xs text-muted-foreground">
-                  ({counts[countKey]})
-                </span>
-              </TabsTrigger>
+          <TabsList className="bg-muted/70 p-1 rounded-xl h-auto flex-wrap sm:flex-nowrap gap-1">
+            {tabConfigs.map(({ value, label, countKey, testId, isArchive }) => (
+              <React.Fragment key={value}>
+                {/* Visual divider to isolate cancelled archive tab */}
+                {value === 'cancelled' && (
+                  <div className="hidden sm:block h-5 w-[1px] bg-gray-300 dark:bg-gray-700 mx-1 self-center" />
+                )}
+                <TabsTrigger
+                  key={value}
+                  value={value}
+                  data-testid={testId}
+                  className={cn(
+                    "px-3 py-1.5 text-xs sm:text-sm font-medium transition-all rounded-lg",
+                    isArchive && "text-muted-foreground",
+                    value === 'cancelled' && "data-[state=active]:bg-red-50 data-[state=active]:text-red-700 data-[state=active]:border-red-200"
+                  )}
+                >
+                  {label}{' '}
+                  <span className={cn(
+                    "ml-1 text-xs",
+                    activeTab === value ? "text-primary font-bold" : "text-muted-foreground"
+                  )}>
+                    ({counts[countKey]})
+                  </span>
+                </TabsTrigger>
+              </React.Fragment>
             ))}
           </TabsList>
         </Tabs>

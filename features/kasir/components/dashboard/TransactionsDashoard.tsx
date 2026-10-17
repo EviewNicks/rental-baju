@@ -50,7 +50,7 @@ export function TransactionsDashboard() {
       isInitialized,
     })
 
-    // Set active tab from URL status parameter
+    // Set active tab from URL status parameter or default to 'all'
     if (urlFilters.status) {
       setActiveTab(urlFilters.status)
     } else {

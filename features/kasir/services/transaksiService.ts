@@ -1500,6 +1500,15 @@ export class TransaksiService {
       ]
     }
 
+    // ✅ SQL PUSHDOWN OPTIMIZATION: Filter out cancelled transactions by default
+    // Tab 'Semua' and operational tabs show only valid transactions (825 items),
+    // skipping 549 cancelled transactions at database level unless tab 'cancelled' is explicitly requested
+    if (status === 'cancelled') {
+      whereClause.status = 'cancelled'
+    } else {
+      whereClause.status = { not: 'cancelled' }
+    }
+
     const [allTransactions, summary] = await Promise.all([
       this.prisma.transaksi.findMany({
         orderBy: { createdAt: 'desc' },

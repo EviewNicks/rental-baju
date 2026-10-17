@@ -21,7 +21,7 @@ export function useURLFilters() {
   const parseFiltersFromURL = useCallback((): TransactionFilters & { page?: number } => {
     const filters: TransactionFilters & { page?: number } = {}
 
-    // Parse status filter
+    // Parse status filter (defaults to undefined/'all' which shows all valid transactions)
     const status = searchParams.get('status')
     if (
       status &&
@@ -87,7 +87,7 @@ export function useURLFilters() {
     (filters: TransactionFilters, activeTab: TransactionStatus | 'all', page: number = 1) => {
       const params = new URLSearchParams()
 
-      // Add status parameter
+      // Add status parameter (only when not default 'all')
       if (activeTab && activeTab !== 'all') {
         params.set('status', activeTab)
       }

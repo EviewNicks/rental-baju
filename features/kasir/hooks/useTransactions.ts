@@ -262,12 +262,12 @@ export function useTransactions(options: UseTransactionsOptions = {}) {
       completed: summary?.totalSelesai || 0,
       overdue: summary?.totalTerlambat || 0,
       cancelled: summary?.totalCancelled || 0,
+      // Tab 'Semua' reflects all valid (non-cancelled) transactions: active + diambil + selesai + terlambat
       total:
         (summary?.totalActive || 0) +
         (summary?.totalDiambil || 0) +
         (summary?.totalSelesai || 0) +
-        (summary?.totalTerlambat || 0) +
-        (summary?.totalCancelled || 0),
+        (summary?.totalTerlambat || 0),
     }
   }, [transactionData])
 
@@ -296,7 +296,7 @@ export function useTransactions(options: UseTransactionsOptions = {}) {
     [],
   ) // Empty dependency array - this function should be stable
 
-  // Reset all filters function (Task 3.1)
+  // Reset all filters function (defaults back to 'Semua' clean view)
   const resetAllFilters = useCallback(() => {
     setFilters({})
     setCurrentPage(1)
