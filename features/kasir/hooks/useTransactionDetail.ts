@@ -37,9 +37,9 @@ export function useTransactionDetail(
     },
     enabled: enabled && !!transactionId,
     refetchInterval,
-    staleTime: 0, // Always consider payment data stale for real-time updates
+    staleTime: 2 * 60 * 1000, // 2 minutes in-memory cache to prevent redundant API calls
     gcTime: 10 * 60 * 1000, // 10 minutes
-    refetchOnMount: true, // Always refetch on mount for fresh payment data
+    refetchOnMount: false, // Serve from cache if fresh; mutations trigger explicit invalidation
     retry: (failureCount, error: unknown) => {
       // Don't retry on client errors (4xx)
       if (
@@ -119,9 +119,9 @@ export function useTransactionDetail(
       return transformed
     },
     enabled: !!apiData,
-    staleTime: 0, // Always consider transformed data stale for real-time updates
+    staleTime: 2 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
-    refetchOnMount: true, // Always refetch transformed data on mount
+    refetchOnMount: false,
     retry: (failureCount) => {
       // Retry transformation failures up to 2 times
       return failureCount < 2
@@ -174,9 +174,13 @@ export function useTransactionDetail(
     }
   }
 
+  // Only trigger full skeleton loading on initial fetch when no transaction data exists
+  // Stale-while-revalidate will update data smoothly without unmounting UI
+  const isInitialLoading = !transaction && (isLoading || isTransforming)
+
   return {
     transaction,
-    isLoading: isLoading || isRefetching || isTransforming,
+    isLoading: isInitialLoading,
     error,
     refreshTransaction,
     clearError,

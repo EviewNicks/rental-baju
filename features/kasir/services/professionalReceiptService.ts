@@ -310,7 +310,7 @@ export class ProfessionalReceiptService {
           productCode,
           productName: item.produk.name,
           sarungCode,
-          sarungName: item.linkedSarung?.product?.name || '-',
+          sarungName: this.extractSarungName(item),
           sizeQuantities: [],
           unitPrice,
           totalQuantity: 0,
@@ -1115,15 +1115,6 @@ export class ProfessionalReceiptService {
       const size = kondisiData.size || ''
       const ageCategory = kondisiData.ageCategory || ''
 
-      // Debug logging (remove in production)
-      console.log('formatSizeDisplay Debug:', {
-        kondisiAwal,
-        categoryType,
-        size,
-        ageCategory,
-        kondisiData,
-      })
-
       // Handle different category types
       switch (categoryType) {
         case 'clothing':
@@ -1226,9 +1217,19 @@ export class ProfessionalReceiptService {
    * @returns Sarung product code or "-"
    */
   private extractSarungCode(item: TransaksiWithDetails['items'][0]): string {
-    // Check if item has linkedSarung data from API response
-    if (item.linkedSarung && item.linkedSarung.product && item.linkedSarung.product.code) {
+    // 1. Check if item has linkedSarung data from API response
+    if (item.linkedSarung?.product?.code && item.linkedSarung.product.code !== '-') {
       return item.linkedSarung.product.code
+    }
+
+    // 2. Check if kondisiAwal has embedded linkedSarung product code
+    if (item.kondisiAwal && item.kondisiAwal.startsWith('{')) {
+      try {
+        const kondisi = JSON.parse(item.kondisiAwal)
+        if (kondisi.linkedSarung?.product?.code) {
+          return kondisi.linkedSarung.product.code
+        }
+      } catch {}
     }
 
     // No linked sarung found
@@ -1236,19 +1237,48 @@ export class ProfessionalReceiptService {
   }
 
   /**
-   * Load and encode logo for PDF
+   * Extract sarung name from transaction item
+   * Returns linked sarung product name if available, "-" otherwise
+   */
+  private extractSarungName(item: TransaksiWithDetails['items'][0]): string {
+    if (item.linkedSarung?.product?.name && item.linkedSarung.product.name !== 'Sarung') {
+      return item.linkedSarung.product.name
+    }
+
+    if (item.kondisiAwal && item.kondisiAwal.startsWith('{')) {
+      try {
+        const kondisi = JSON.parse(item.kondisiAwal)
+        if (kondisi.linkedSarung?.product?.name) {
+          return kondisi.linkedSarung.product.name
+        }
+      } catch {}
+    }
+
+    return item.linkedSarung?.product?.name || '-'
+  }
+
+  private static cachedLogoBase64: string | null | undefined = undefined
+
+  /**
+   * Load and encode logo for PDF (cached in memory)
    * @returns Base64 encoded logo or null if loading fails
    */
   private async loadLogo(): Promise<string | null> {
+    if (ProfessionalReceiptService.cachedLogoBase64 !== undefined) {
+      return ProfessionalReceiptService.cachedLogoBase64
+    }
     try {
       const logoPath = path.join(process.cwd(), 'public', 'logo.jpg')
       if (fs.existsSync(logoPath)) {
         const logoBuffer = fs.readFileSync(logoPath)
-        return `data:image/jpeg;base64,${logoBuffer.toString('base64')}`
+        ProfessionalReceiptService.cachedLogoBase64 = `data:image/jpeg;base64,${logoBuffer.toString('base64')}`
+        return ProfessionalReceiptService.cachedLogoBase64
       }
+      ProfessionalReceiptService.cachedLogoBase64 = null
       return null
     } catch (error) {
       console.warn('Failed to load logo for professional receipt:', error)
+      ProfessionalReceiptService.cachedLogoBase64 = null
       return null
     }
   }

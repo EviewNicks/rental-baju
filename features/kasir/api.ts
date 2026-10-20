@@ -41,7 +41,9 @@ import type {
   // API wrapper types
   ApiResponse,
 } from './types'
+import type { TukarItemRequest, UbahTanggalRequest, TukarSarungRequest } from './lib/validation/kasirSchema'
 import { kasirLogger } from './lib/logger'
+
 
 // Base API configuration
 const API_BASE_URL = '/api/kasir'
@@ -467,6 +469,48 @@ export class KasirApi {
       method: 'PUT',
       body: JSON.stringify(data),
     })
+  }
+
+  // Tukar Baju / Ukuran
+  static async tukarItem(
+    kode: string,
+    data: TukarItemRequest,
+  ): Promise<ApiResponse<{ success: boolean; transaksiId: string; kode: string }>> {
+    return apiRequest<ApiResponse<{ success: boolean; transaksiId: string; kode: string }>>(
+      `/transaksi/${kode}/tukar-item`,
+      {
+        method: 'POST',
+        body: JSON.stringify(data),
+      },
+    )
+  }
+
+  // Tukar Sarung Pairing (Sarung Gratis)
+  static async tukarSarung(
+    kode: string,
+    data: TukarSarungRequest,
+  ): Promise<ApiResponse<{ success: boolean; transaksiId: string; kode: string }>> {
+    return apiRequest<ApiResponse<{ success: boolean; transaksiId: string; kode: string }>>(
+      `/transaksi/${kode}/tukar-sarung`,
+      {
+        method: 'POST',
+        body: JSON.stringify(data),
+      },
+    )
+  }
+
+  // Ubah Tanggal Sewa (Reschedule)
+  static async ubahTanggalSewa(
+    kode: string,
+    data: UbahTanggalRequest,
+  ): Promise<ApiResponse<{ success: boolean; transaksiId: string; kode: string }>> {
+    return apiRequest<ApiResponse<{ success: boolean; transaksiId: string; kode: string }>>(
+      `/transaksi/${kode}/ubah-tanggal`,
+      {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+      },
+    )
   }
 
   // Process return for transaction (backward compatible)
@@ -962,6 +1006,16 @@ export const kasirApi = {
       }>
     },
   ) => KasirApi.processPickup(transactionId, pickupData),
+
+  // Swap item (Tukar Baju / Ukuran)
+  tukarItem: (kode: string, data: TukarItemRequest) => KasirApi.tukarItem(kode, data),
+
+  // Swap paired sarung (Tukar Sarung Pairing)
+  tukarSarung: (kode: string, data: TukarSarungRequest) => KasirApi.tukarSarung(kode, data),
+
+  // Ubah Tanggal Sewa (Reschedule)
+  ubahTanggalSewa: (kode: string, data: UbahTanggalRequest) =>
+    KasirApi.ubahTanggalSewa(kode, data),
 
   // Product shortcuts
   produk: {

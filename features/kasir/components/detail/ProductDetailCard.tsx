@@ -1,5 +1,6 @@
-import { Tag, Palette, Shirt, CheckCircle, Package, Users } from 'lucide-react'
+import { Tag, Palette, Shirt, CheckCircle, Package, Users, RefreshCw } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { formatCurrency } from '../../lib/utils/client'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
@@ -73,9 +74,11 @@ interface ProductDetailCardProps {
     jumlahDiambil: number // How many items have been picked up
     remainingQuantity: number // How many items are left to pick up
   }
+  canSwap?: boolean
+  onSwap?: () => void
 }
 
-export function ProductDetailCard({ item, pickupInfo }: ProductDetailCardProps) {
+export function ProductDetailCard({ item, pickupInfo, canSwap, onSwap }: ProductDetailCardProps) {
   // Parse size information from kondisiAwal (RPK-51 AgeSizes system)
   const sizeInfo = extractSizeInfo(item)
   const parsedKondisiAwal = parseKondisiAwal(item.kondisiAwal)
@@ -140,10 +143,21 @@ export function ProductDetailCard({ item, pickupInfo }: ProductDetailCardProps) 
         </div>
 
         <div className="flex-1 space-y-4">
-          <div>
+          <div className="flex items-center justify-between">
             <h3 className="text-xl font-semibold text-gray-900 leading-tight">
               {item.product.name}
             </h3>
+            {canSwap && onSwap && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={onSwap}
+                className="border-amber-300 text-amber-700 hover:bg-amber-50 h-8 text-xs font-semibold px-2.5 rounded-lg shadow-2xs transition-all"
+              >
+                <RefreshCw className="h-3.5 w-3.5 mr-1" />
+                Tukar
+              </Button>
+            )}
           </div>
 
           <div className="flex flex-wrap gap-2">

@@ -38,35 +38,44 @@ export function TransactionsDashboard() {
   // Initialize URL filters hook for state persistence
   const { parseFiltersFromURL, updateURL } = useURLFilters()
 
-  // Initialize filters from URL on component mount (ONLY ONCE)
+  // Initialize filters from URL or sessionStorage on component mount (ONLY ONCE)
   useEffect(() => {
     if (isInitialized) return // Skip if already initialized
 
     const urlFilters = parseFiltersFromURL()
+    const hasURLParams = typeof window !== 'undefined' && window.location.search.length > 1
 
-    console.log('[PAGINATION_DEBUG] Initializing from URL:', {
-      urlFilters,
-      currentPage,
-      isInitialized,
-    })
+    let initialFilters = urlFilters
+    let initialTab: TransactionStatus | 'all' = urlFilters.status || 'all'
+    let initialPage = urlFilters.page || 1
 
-    // Set active tab from URL status parameter or default to 'all'
-    if (urlFilters.status) {
-      setActiveTab(urlFilters.status)
-    } else {
-      setActiveTab('all')
+    // If no URL params present (e.g. direct /dashboard navigation), restore from sessionStorage
+    if (!hasURLParams && typeof window !== 'undefined') {
+      try {
+        const stored = sessionStorage.getItem('kasir_dashboard_state')
+        if (stored) {
+          const parsed = JSON.parse(stored)
+          // Data freshness check (valid for 2 hours)
+          if (parsed && (!parsed.timestamp || Date.now() - parsed.timestamp < 2 * 60 * 60 * 1000)) {
+            if (parsed.activeTab) initialTab = parsed.activeTab
+            if (parsed.currentPage) initialPage = parsed.currentPage
+            if (parsed.filters) initialFilters = { ...parsed.filters }
+          }
+        }
+      } catch {
+        // Fallback silently if storage unavailable
+      }
     }
 
-    // Set page from URL parameter
-    if (urlFilters.page) {
-      console.log('[PAGINATION_DEBUG] Setting page from URL:', urlFilters.page)
-      setPage(urlFilters.page)
+    setActiveTab(initialTab)
+
+    if (initialPage > 1) {
+      setPage(initialPage)
     }
 
-    // Update filters from URL parameters WITHOUT resetting page
-    if (Object.keys(urlFilters).length > 0) {
-      const { ...filtersWithoutPage } = urlFilters
-      console.log('[PAGINATION_DEBUG] Updating filters (no page reset):', filtersWithoutPage)
+    // Update filters WITHOUT resetting page
+    if (Object.keys(initialFilters).length > 0) {
+      const { ...filtersWithoutPage } = initialFilters
       updateFilters(filtersWithoutPage, { resetPage: false })
     }
 
@@ -74,18 +83,24 @@ export function TransactionsDashboard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []) // Empty deps - run only once on mount
 
-  // Update URL when filters, active tab, or page change (ONLY AFTER INITIALIZATION)
+  // Update URL & sessionStorage when filters, active tab, or page change (ONLY AFTER INITIALIZATION)
   useEffect(() => {
     if (!isInitialized) return // Skip until initialized
 
-    console.log('[PAGINATION_DEBUG] Updating URL:', {
-      filters,
-      activeTab,
-      currentPage,
-      isInitialized,
-    })
-
     updateURL(filters, activeTab, currentPage)
+
+    // Persist to sessionStorage so navigating to Detail and returning maintains filters
+    try {
+      const stateToSave = {
+        filters,
+        activeTab,
+        currentPage,
+        timestamp: Date.now(),
+      }
+      sessionStorage.setItem('kasir_dashboard_state', JSON.stringify(stateToSave))
+    } catch {
+      // Ignore storage errors
+    }
   }, [filters, activeTab, currentPage, updateURL, isInitialized])
 
   // Check for refresh parameter and trigger refresh if needed

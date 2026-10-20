@@ -438,3 +438,70 @@ export const pickupRequestSchema = z.object({
 
 export type PickupItemRequest = z.infer<typeof pickupItemSchema>
 export type PickupRequest = z.infer<typeof pickupRequestSchema>
+
+// Tukar Baju / Ukuran Validation Schemas
+export const tukarItemRequestSchema = z.object({
+  transaksiItemId: z.string().uuid('ID item transaksi tidak valid'),
+  newItem: z.object({
+    produkId: z.string().uuid('ID produk pengganti tidak valid'),
+    productSizeId: z.string().uuid('ID ukuran produk pengganti tidak valid'),
+    size: z.string().min(1, 'Ukuran harus diisi'),
+    ageCategory: z.string().min(1, 'Kategori usia harus diisi'),
+    hargaSewa: z.number().min(0, 'Harga sewa tidak boleh negatif'),
+    linkedSarung: z
+      .object({
+        productId: z.string().uuid(),
+        productSizeId: z.string().uuid(),
+        quantity: z.number().int().min(1),
+        selectedSize: z
+          .object({
+            id: z.string().uuid(),
+            size: z.string(),
+            ageCategory: z.string(),
+          })
+          .optional(),
+      })
+      .optional()
+      .nullable(),
+  }),
+  financialAdjustment: z.object({
+    priceDelta: z.number(),
+    action: z.enum(['none', 'pay_now', 'add_to_remaining', 'refund_cash', 'reduce_remaining']),
+    paymentMethod: z.enum(['tunai', 'qris', 'transfer', 'kartu_debit']).optional(),
+  }),
+  catatan: z.string().max(500).optional(),
+})
+
+export type TukarItemRequest = z.infer<typeof tukarItemRequestSchema>
+
+// Tukar Sarung Pairing Validation Schema
+export const tukarSarungRequestSchema = z.object({
+  parentTransaksiItemId: z.string().uuid('ID item baju pasangan tidak valid'),
+  newSarung: z.object({
+    produkId: z.string().uuid('ID produk sarung tidak valid'),
+    productSizeId: z.string().uuid('ID ukuran sarung tidak valid'),
+    size: z.string().min(1, 'Ukuran sarung harus diisi'),
+    ageCategory: z.string().min(1, 'Kategori usia sarung harus diisi'),
+  }),
+  catatan: z.string().max(500).optional(),
+})
+
+export type TukarSarungRequest = z.infer<typeof tukarSarungRequestSchema>
+
+// Ubah Tanggal Sewa Validation Schemas (Could-Have)
+export const ubahTanggalRequestSchema = z.object({
+  tglMulai: z.string().refine((val) => !isNaN(Date.parse(val)), {
+    message: 'Format tanggal mulai sewa tidak valid',
+  }),
+  tglSelesai: z
+    .string()
+    .refine((val) => !isNaN(Date.parse(val)), {
+      message: 'Format tanggal selesai sewa tidak valid',
+    })
+    .optional()
+    .nullable(),
+  durasi: z.number().int().min(1, 'Durasi sewa minimal 1 hari').optional(),
+  catatan: z.string().max(500).optional(),
+})
+
+export type UbahTanggalRequest = z.infer<typeof ubahTanggalRequestSchema>

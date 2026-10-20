@@ -196,43 +196,26 @@ jest.mock('@clerk/nextjs', () => ({
 }))
 
 // Mock Lucide React icons
-jest.mock('lucide-react', () => ({
-  User: () => <div data-testid="user-icon">User Icon</div>,
-  Users: () => <div data-testid="users-icon">Users Icon</div>,
-  Settings: () => <div data-testid="settings-icon">Settings Icon</div>,
-  BarChart3: () => <div data-testid="barchart-icon">BarChart Icon</div>,
-  TrendingUp: () => <div data-testid="trending-up-icon">TrendingUp Icon</div>,
-  DollarSign: () => <div data-testid="dollar-sign-icon">DollarSign Icon</div>,
-  Activity: () => <div data-testid="activity-icon">Activity Icon</div>,
-  Clock: () => <div data-testid="clock-icon">Clock Icon</div>,
-  Calendar: () => <div data-testid="calendar-icon">Calendar Icon</div>,
-  CheckCircle: () => <div data-testid="check-circle-icon">CheckCircle Icon</div>,
-  AlertCircle: () => <div data-testid="alert-circle-icon">AlertCircle Icon</div>,
-  RefreshCw: () => <div data-testid="refresh-icon">Refresh Icon</div>,
-  ArrowRight: () => <div data-testid="arrow-right-icon">ArrowRight Icon</div>,
-  Sparkles: () => <div data-testid="sparkles-icon">Sparkles Icon</div>,
-  Star: () => <div data-testid="star-icon">Star Icon</div>,
-  Play: () => <div data-testid="play-icon">Play Icon</div>,
-  Zap: () => <div data-testid="zap-icon">Zap Icon</div>,
-  Shield: () => <div data-testid="shield-icon">Shield Icon</div>,
-  Headphones: () => <div data-testid="headphones-icon">Headphones Icon</div>,
-  Trophy: () => <div data-testid="trophy-icon">Trophy Icon</div>,
-  BookOpen: () => <div data-testid="bookopen-icon">BookOpen Icon</div>,
-  Mail: () => <div data-testid="mail-icon">Mail Icon</div>,
-  Phone: () => <div data-testid="phone-icon">Phone Icon</div>,
-  MapPin: () => <div data-testid="map-pin-icon">MapPin Icon</div>,
-  Clock: () => <div data-testid="clock-icon">Clock Icon</div>,
-  Users: () => <div data-testid="users-icon">Users Icon</div>,
-  Settings: () => <div data-testid="settings-icon">Settings Icon</div>,
-  Menu: () => <div data-testid="menu-icon">Menu Icon</div>,
-  X: () => <div data-testid="x-icon">X Icon</div>,
-  TrendingUp: () => <div data-testid="trending-up-icon">TrendingUp Icon</div>,
-  Award: () => <div data-testid="award-icon">Award Icon</div>,
-  Quote: () => <div data-testid="quote-icon">Quote Icon</div>,
-  PenTool: () => <div data-testid="pen-tool-icon">PenTool Icon</div>,
-  Video: () => <div data-testid="video-icon">Video Icon</div>,
-  FileText: () => <div data-testid="file-text-icon">FileText Icon</div>,
-}))
+jest.mock('lucide-react', () => {
+  return new Proxy(
+    {},
+    {
+      get: (target, prop) => {
+        if (prop === '__esModule') return true
+        if (typeof prop === 'string') {
+          const MockIcon = (props) =>
+            React.createElement('span', {
+              'data-testid': `${prop.toLowerCase()}-icon`,
+              ...props,
+            })
+          MockIcon.displayName = prop
+          return MockIcon
+        }
+        return undefined
+      },
+    }
+  )
+})
 
 // Mock UI Components
 jest.mock('@/components/ui/button', () => ({

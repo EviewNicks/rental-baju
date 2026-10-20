@@ -65,6 +65,9 @@ export function useReceiptPrint(): UseReceiptPrintReturn {
       // Open PDF in new tab
       window.open(url, '_blank')
 
+      // Clean up blob URL after new tab loads
+      setTimeout(() => URL.revokeObjectURL(url), 60000)
+
       // Show success message
       toast.success('Struk berhasil dibuat')
 

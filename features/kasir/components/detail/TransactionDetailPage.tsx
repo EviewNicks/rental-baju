@@ -1,7 +1,8 @@
 'use client'
 
-import Link from 'next/link'
-import { ArrowLeft, AlertTriangle, RefreshCw, Printer, Loader2 } from 'lucide-react'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { ArrowLeft, AlertTriangle, RefreshCw, Printer, Loader2, Calendar } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { StatusBadge } from '@/features/kasir/components/ui/status-badge'
 import { CustomerInfoCard } from './CustomerInfoCard'
@@ -10,9 +11,13 @@ import { ProductDetailCard } from './ProductDetailCard'
 import { PaymentSummaryCard } from './PaymentSummaryCard'
 import { ActivityTimeline } from './ActivityTimeline'
 import { ActionButtonsPanel } from './ActionButtonPanel'
+import { SwapItemModal } from './swap/SwapItemModal'
+import { SwapSarungModal } from './swap/SwapSarungModal'
+import { RescheduleTransactionModal } from './reschedule/RescheduleTransactionModal'
 import { TransactionProgressSummary } from '../ui/return-progress-indicator'
 import { useTransactionDetail } from '../../hooks/useTransactionDetail'
 import { useReceiptPrint } from '../../hooks/useReceiptPrint'
+import type { TransactionDetail } from '../../types'
 import { formatDate } from '../../lib/utils/client'
 import { detectTransactionError } from '../../lib/utils/errorDetector'
 import { 
@@ -29,9 +34,36 @@ interface TransactionDetailPageProps {
 }
 
 export function TransactionDetailPage({ transactionId }: TransactionDetailPageProps) {
-  const { transaction, isLoading, error, refreshTransaction, clearError, updateCustomerInTransaction } =
-    useTransactionDetail(transactionId)
+  const router = useRouter()
+  const {
+    transaction,
+    isLoading,
+    isRefreshing,
+    error,
+    refreshTransaction,
+    clearError,
+    updateCustomerInTransaction,
+  } = useTransactionDetail(transactionId)
   const { printReceipt, isPrinting } = useReceiptPrint()
+  const [selectedSwapItem, setSelectedSwapItem] = useState<
+    TransactionDetail['products'][0] | null
+  >(null)
+  const [isInlineSwapModalOpen, setIsInlineSwapModalOpen] = useState(false)
+  const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false)
+  const [selectedSarungData, setSelectedSarungData] = useState<{
+    parentItem: TransactionDetail['products'][0]
+    currentSarung: SarungDisplayItem
+  } | null>(null)
+  const [isSwapSarungModalOpen, setIsSwapSarungModalOpen] = useState(false)
+
+  // Navigate back preserving history and filters
+  const handleBack = () => {
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      router.back()
+    } else {
+      router.push('/dashboard')
+    }
+  }
 
   // Handler for print receipt button
   const handlePrintReceipt = () => {
@@ -75,12 +107,10 @@ export function TransactionDetailPage({ transactionId }: TransactionDetailPagePr
                 Coba Lagi
               </Button>
             )}
-            <Link href="/dashboard">
-              <Button>
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Kembali ke Dashboard
-              </Button>
-            </Link>
+            <Button onClick={handleBack}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Kembali ke Dashboard
+            </Button>
           </div>
         </div>
       </div>
@@ -96,12 +126,10 @@ export function TransactionDetailPage({ transactionId }: TransactionDetailPagePr
           <p className="text-gray-600 mb-6">
             Transaksi dengan kode {transactionId} tidak dapat ditemukan.
           </p>
-          <Link href="/dashboard">
-            <Button>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Kembali ke Dashboard
-            </Button>
-          </Link>
+          <Button onClick={handleBack}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Kembali ke Dashboard
+          </Button>
         </div>
       </div>
     )
@@ -152,18 +180,22 @@ export function TransactionDetailPage({ transactionId }: TransactionDetailPagePr
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Link href="/dashboard">
-                <Button data-testid="back-button" variant="ghost" size="sm">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Kembali
-                </Button>
-              </Link>
+              <Button data-testid="back-button" variant="ghost" size="sm" onClick={handleBack}>
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Kembali
+              </Button>
               <div>
                 <h1 className="text-xl font-bold text-gray-900">Detail Transaksi</h1>
                 <p className="text-sm text-gray-600">{transaction.transactionCode}</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
+              {isRefreshing && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200/80 animate-pulse shadow-xs">
+                  <RefreshCw className="h-3 w-3 animate-spin text-amber-600" />
+                  Menyinkronkan...
+                </span>
+              )}
               <StatusBadge data-testid="status-badge" status={transaction.status} />
               <Button
                 data-testid="print-receipt-button"
@@ -205,7 +237,21 @@ export function TransactionDetailPage({ transactionId }: TransactionDetailPagePr
           <div className="lg:col-span-2 space-y-6">
             {/* Transaction Overview */}
             <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Informasi Transaksi</h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-gray-900">Informasi Transaksi</h2>
+                {transaction.status === 'active' && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsRescheduleModalOpen(true)}
+                    className="flex items-center gap-2 border-gray-300 hover:bg-gray-50 text-gray-700 shadow-2xs"
+                    data-testid="reschedule-transaction-button"
+                  >
+                    <Calendar className="h-4 w-4 text-amber-600" />
+                    Ubah Jadwal
+                  </Button>
+                )}
+              </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
                   <div className="text-sm text-gray-600">Kode Transaksi</div>
@@ -287,8 +333,47 @@ export function TransactionDetailPage({ transactionId }: TransactionDetailPagePr
                     linkedSarung: 'linkedSarung' in item ? item.linkedSarung : undefined
                   }
                   
+                  const isSarung = Boolean((item as SarungDisplayItem).isSarungGratis)
+                  const isItemSwapEligible =
+                    transaction.status === 'active' &&
+                    (item.jumlahDiambil || 0) === 0
+
                   return (
-                    <ProductDetailCard key={`${item.product?.id}-${index}`} item={transformedItem} />
+                    <ProductDetailCard
+                      key={`${item.product?.id}-${index}`}
+                      item={transformedItem}
+                      canSwap={isItemSwapEligible}
+                      onSwap={() => {
+                        if (isSarung) {
+                          const sarungItem = item as SarungDisplayItem
+                          const parentItem = transaction.products?.find(
+                            (p) =>
+                              (sarungItem.parentTransaksiItemId &&
+                                p.id === sarungItem.parentTransaksiItemId) ||
+                              p.product.id === sarungItem.pairedWithJasId,
+                          )
+                          if (parentItem) {
+                            setSelectedSarungData({
+                              parentItem,
+                              currentSarung: sarungItem,
+                            })
+                            setIsSwapSarungModalOpen(true)
+                          }
+                        } else {
+                          const currentItemId =
+                            'id' in item ? (item as { id: string }).id : undefined
+                          const originalItem = transaction.products?.find(
+                            (p) =>
+                              (currentItemId && p.id === currentItemId) ||
+                              p.product.id === item.product?.id,
+                          )
+                          if (originalItem) {
+                            setSelectedSwapItem(originalItem)
+                            setIsInlineSwapModalOpen(true)
+                          }
+                        }
+                      }}
+                    />
                   )
                 })
               })()}
@@ -317,6 +402,40 @@ export function TransactionDetailPage({ transactionId }: TransactionDetailPagePr
           </div>
         </div>
       </div>
+
+      {/* Inline Swap Modal from ProductDetailCard */}
+      {selectedSwapItem && (
+        <SwapItemModal
+          isOpen={isInlineSwapModalOpen}
+          onClose={() => {
+            setIsInlineSwapModalOpen(false)
+            setSelectedSwapItem(null)
+          }}
+          transaction={transaction}
+          initialSelectedItem={selectedSwapItem}
+        />
+      )}
+
+      {/* Swap Sarung Modal for Paired Free Sarung */}
+      {selectedSarungData && (
+        <SwapSarungModal
+          isOpen={isSwapSarungModalOpen}
+          onClose={() => {
+            setIsSwapSarungModalOpen(false)
+            setSelectedSarungData(null)
+          }}
+          transaction={transaction}
+          parentItem={selectedSarungData.parentItem}
+          currentSarung={selectedSarungData.currentSarung}
+        />
+      )}
+
+      {/* Reschedule Transaction Modal */}
+      <RescheduleTransactionModal
+        isOpen={isRescheduleModalOpen}
+        onClose={() => setIsRescheduleModalOpen(false)}
+        transaction={transaction}
+      />
     </div>
   )
 }

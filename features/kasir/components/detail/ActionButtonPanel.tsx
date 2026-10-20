@@ -18,6 +18,7 @@ import { PaymentModal } from './PaymentModal'
 import { PickupModal } from './PickupModal'
 import { CancelModal } from './CancelModal'
 import { LostItemResolutionModal } from './LostItemResolutionModal'
+import { SwapItemModal } from './swap/SwapItemModal'
 import type { TransactionDetail } from '../../types'
 import { isPickupAvailable, calculateTransactionPickupStatus } from '../../lib/utils/client'
 import {
@@ -38,6 +39,7 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
   const [isPickupModalOpen, setIsPickupModalOpen] = useState(false)
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false)
   const [isLostItemModalOpen, setIsLostItemModalOpen] = useState(false)
+  const [isSwapModalOpen, setIsSwapModalOpen] = useState(false)
   const router = useRouter()
   const queryClient = useQueryClient()
 
@@ -195,6 +197,9 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
   const canCancel =
     (transaction.status === 'active' || transaction.status === 'terlambat') &&
     transaction.products?.every((p) => (p.jumlahDiambil || 0) === 0)
+  const canSwap =
+    transaction.status === 'active' &&
+    transaction.products?.every((p) => (p.jumlahDiambil || 0) === 0)
 
   // ✅ FIX: Lost item resolution button visibility
   // Show button for 'pending_resolution' (new status) and 'selesai' (backward compatibility)
@@ -279,6 +284,17 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
           >
             <DollarSign className="h-4 w-4 mr-2" />
             Proses Pembayaran
+          </Button>
+        )}
+
+        {/* Tukar Baju / Ukuran (Must-Have) */}
+        {canSwap && (
+          <Button
+            onClick={() => setIsSwapModalOpen(true)}
+            className="w-full bg-amber-500 hover:bg-amber-600 text-white font-medium shadow-sm transition-all"
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Tukar Baju / Ukuran
           </Button>
         )}
 
@@ -443,6 +459,16 @@ export function ActionButtonsPanel({ transaction }: ActionButtonsPanelProps) {
         }}
         transaction={transaction}
         lostItems={lostItems}
+      />
+
+      {/* Swap Item / Reschedule Modal */}
+      <SwapItemModal
+        isOpen={isSwapModalOpen}
+        onClose={() => {
+          setIsSwapModalOpen(false)
+          setIsProcessing(null)
+        }}
+        transaction={transaction}
       />
     </div>
   )

@@ -85,6 +85,7 @@ interface SarungDisplayItem {
   isSarungGratis: boolean
   pairedWithJas: string
   pairedWithJasId: string
+  parentTransaksiItemId?: string
 }
 
 /**
@@ -96,15 +97,36 @@ export function createSarungDisplayItem(jasItem: TransactionItem): SarungDisplay
 
   const linkedSarung = jasItem.linkedSarung
   
+  // Extract sarung details from kondisiAwal if product object is incomplete
+  let embeddedSarung: { name?: string; imageUrl?: string; image?: string; code?: string } | undefined
+  try {
+    if (jasItem.kondisiAwal && jasItem.kondisiAwal.startsWith('{')) {
+      const parsed = JSON.parse(jasItem.kondisiAwal)
+      embeddedSarung = parsed.linkedSarung?.product
+    }
+  } catch {}
+
+  const sarungName =
+    (linkedSarung.product?.name && linkedSarung.product.name !== 'Sarung')
+      ? linkedSarung.product.name
+      : embeddedSarung?.name || linkedSarung.product?.name || 'Sarung'
+
+  const sarungImage =
+    linkedSarung.product?.imageUrl ||
+    linkedSarung.product?.image ||
+    embeddedSarung?.imageUrl ||
+    embeddedSarung?.image ||
+    '/products/sarung/accesories.png'
+
   return {
     product: {
       id: linkedSarung.product?.id || linkedSarung.productId,
-      name: linkedSarung.product?.name || 'Sarung',
+      name: sarungName,
       category: linkedSarung.product?.category || 'sarung',
       size: linkedSarung.selectedSize?.size || 'UNIVERSAL',
       color: '', // Sarung typically doesn't have color variants
-      image: linkedSarung.product?.imageUrl || linkedSarung.product?.image || '/products/sarung-default.png',
-      description: `Sarung gratis dari ${jasItem.product.name}`
+      image: sarungImage,
+      description: `Sarung gratis dari ${jasItem.product?.name || (jasItem as unknown as { produk?: { name?: string } }).produk?.name || 'Baju Pasangan'}`
     },
     quantity: linkedSarung.quantity,
     jumlahDiambil: jasItem.jumlahDiambil, // Same pickup status as jas initially
@@ -117,8 +139,9 @@ export function createSarungDisplayItem(jasItem: TransactionItem): SarungDisplay
     kondisiAwal: jasItem.kondisiAwal, // Reference to pairing data
     // Special sarung identification
     isSarungGratis: true,
-    pairedWithJas: jasItem.product.name,
-    pairedWithJasId: jasItem.product.id
+    pairedWithJas: jasItem.product?.name || (jasItem as unknown as { produk?: { name?: string } }).produk?.name || 'Baju Pasangan',
+    pairedWithJasId: jasItem.product?.id || (jasItem as unknown as { produk?: { id?: string } }).produk?.id || '',
+    parentTransaksiItemId: jasItem.id
   }
 }
 

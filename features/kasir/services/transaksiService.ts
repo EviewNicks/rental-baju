@@ -2127,6 +2127,19 @@ export class TransaksiService {
           linkedSarungData.productId as string,
         )
 
+        // Fallback to linkedSarungData.product so product info is never lost
+        const existingProductData = (linkedSarungData.product as Record<string, unknown>) || {}
+        const finalSarungProduct = sarungProduct || {
+          id: (linkedSarungData.productId as string) || (existingProductData.id as string) || '',
+          code: (existingProductData.code as string) || '-',
+          name: (existingProductData.name as string) || 'Sarung',
+          category: (existingProductData.category as string) || 'sarung',
+          imageUrl:
+            (existingProductData.imageUrl as string) ||
+            (existingProductData.image as string) ||
+            '/products/sarung/accesories.png',
+        }
+
         transformedItem = {
           ...transformedItem,
           linkedSarung: {
@@ -2134,7 +2147,7 @@ export class TransaksiService {
             productSizeId: linkedSarungData.productSizeId as string,
             quantity: linkedSarungData.quantity as number,
             selectedSize: linkedSarungData.selectedSize as ProductSize,
-            product: sarungProduct,
+            product: finalSarungProduct,
           },
         }
       }
@@ -2177,4 +2190,604 @@ export class TransaksiService {
 
     return undefined
   }
+
+  /**
+   * Tukar Baju / Ukuran tanpa membatalkan transaksi
+   * Syarat: status transaksi = 'active', item belum diambil fisik (jumlahDiambil = 0)
+   */
+  async tukarItemTransaksi(params: {
+    transactionCode: string
+    transaksiItemId: string
+    newItem: {
+      produkId: string
+      productSizeId: string
+      size: string
+      ageCategory: string
+      hargaSewa: number
+      linkedSarung?: {
+        productId: string
+        productSizeId: string
+        quantity: number
+        selectedSize?: {
+          id: string
+          size: string
+          ageCategory: string
+        }
+      } | null
+    }
+    financialAdjustment: {
+      priceDelta: number
+      action: 'none' | 'pay_now' | 'add_to_remaining' | 'refund_cash' | 'reduce_remaining'
+      paymentMethod?: 'tunai' | 'qris' | 'transfer' | 'kartu_debit'
+    }
+    kasirId: string
+    catatan?: string
+  }): Promise<{ success: boolean; transaksiId: string; kode: string }> {
+    return await this.prisma.$transaction(
+      async (tx) => {
+        // 1. Cari transaksi berdasarkan kode atau ID
+        const existingTransaksi = await tx.transaksi.findFirst({
+          where: {
+            OR: [{ kode: params.transactionCode }, { id: params.transactionCode }],
+          },
+          include: {
+            items: {
+              include: {
+                produk: true,
+              },
+            },
+            penyewa: true,
+          },
+        })
+
+        if (!existingTransaksi) {
+          throw new Error(`Transaksi dengan kode/ID ${params.transactionCode} tidak ditemukan`)
+        }
+
+        // 2. Guard validation: hanya transaksi 'active' dan barang belum diambil fisik
+        if (existingTransaksi.status !== 'active') {
+          throw new Error(
+            `Penukaran baju hanya dapat dilakukan pada transaksi berstatus 'active'. Status saat ini: '${existingTransaksi.status}'`,
+          )
+        }
+
+        const targetItem = existingTransaksi.items.find((i) => i.id === params.transaksiItemId)
+        if (!targetItem) {
+          throw new Error(`Item transaksi dengan ID ${params.transaksiItemId} tidak ditemukan`)
+        }
+
+        if ((targetItem.jumlahDiambil || 0) > 0) {
+          throw new Error(
+            `Item ${targetItem.produk.name} tidak dapat ditukar karena sudah diambil secara fisik (${targetItem.jumlahDiambil} item)`,
+          )
+        }
+
+        // 3. Validasi ketersediaan stok ukuran pengganti
+        const targetSize = await tx.productSize.findUnique({
+          where: { id: params.newItem.productSizeId },
+          include: { product: true },
+        })
+
+        if (!targetSize || !targetSize.isActive) {
+          throw new Error(`Ukuran produk pengganti tidak ditemukan atau sudah tidak aktif`)
+        }
+
+        // Cek irisan tanggal sewa dengan transaksi active/diambil lainnya (exclude transaksi ini)
+        const overlappingTransactions = await tx.transaksi.findMany({
+          where: {
+            id: { not: existingTransaksi.id },
+            status: { in: ['active', 'diambil'] },
+            tglMulai: { lte: existingTransaksi.tglSelesai || existingTransaksi.tglMulai },
+            OR: [
+              { tglSelesai: { gte: existingTransaksi.tglMulai } },
+              { tglSelesai: null },
+            ],
+          },
+          include: { items: true },
+        })
+
+        let reservedQty = 0
+        for (const tr of overlappingTransactions) {
+          for (const it of tr.items) {
+            if (it.kondisiAwal?.includes(params.newItem.productSizeId)) {
+              reservedQty += it.jumlah
+            }
+          }
+        }
+
+        const effectiveAvailable =
+          targetSize.originalQuantity - reservedQty - targetSize.lostQuantity
+        if (effectiveAvailable < targetItem.jumlah) {
+          throw new Error(
+            `Stok untuk ukuran ${params.newItem.size} tidak mencukupi untuk rentang tanggal sewa ini (tersedia: ${Math.max(0, effectiveAvailable)})`,
+          )
+        }
+
+        // 4. Hitung subtotal baru dan rekonsiliasi finansial
+        const oldSubtotal = new Decimal(targetItem.subtotal)
+        const subtotalDelta = new Decimal(params.financialAdjustment.priceDelta)
+        const newSubtotal = oldSubtotal.add(subtotalDelta)
+        const newHargaSewa = newSubtotal.div(targetItem.jumlah)
+
+        const newTotalHarga = new Decimal(existingTransaksi.totalHarga).add(subtotalDelta)
+        let newJumlahBayar = new Decimal(existingTransaksi.jumlahBayar)
+        let newSisaBayar = new Decimal(existingTransaksi.sisaBayar)
+
+        // Penanganan rekonsiliasi sesuai aksi finansial
+        if (params.financialAdjustment.action === 'pay_now' && subtotalDelta.greaterThan(0)) {
+          const paymentAmount = subtotalDelta
+          await tx.pembayaran.create({
+            data: {
+              transaksiId: existingTransaksi.id,
+              jumlah: paymentAmount,
+              metode: params.financialAdjustment.paymentMethod || 'tunai',
+              catatan: `Pembayaran selisih tukar baju: ${targetItem.produk.name} -> ${targetSize.product.name} (${params.newItem.size})`,
+              createdBy: params.kasirId,
+            },
+          })
+          newJumlahBayar = newJumlahBayar.add(paymentAmount)
+          newSisaBayar = newTotalHarga.sub(newJumlahBayar)
+          if (newSisaBayar.lessThan(0)) newSisaBayar = new Decimal(0)
+        } else if (params.financialAdjustment.action === 'add_to_remaining') {
+          newSisaBayar = newTotalHarga.sub(newJumlahBayar)
+          if (newSisaBayar.lessThan(0)) newSisaBayar = new Decimal(0)
+        } else if (params.financialAdjustment.action === 'reduce_remaining') {
+          newSisaBayar = newTotalHarga.sub(newJumlahBayar)
+          if (newSisaBayar.lessThan(0)) newSisaBayar = new Decimal(0)
+        } else if (params.financialAdjustment.action === 'refund_cash') {
+          if (newJumlahBayar.greaterThan(newTotalHarga)) {
+            newJumlahBayar = newTotalHarga
+            newSisaBayar = new Decimal(0)
+          } else {
+            newSisaBayar = newTotalHarga.sub(newJumlahBayar)
+            if (newSisaBayar.lessThan(0)) newSisaBayar = new Decimal(0)
+          }
+        } else {
+          newSisaBayar = newTotalHarga.sub(newJumlahBayar)
+          if (newSisaBayar.lessThan(0)) newSisaBayar = new Decimal(0)
+        }
+
+        // 5. Perbarui kondisiAwal TransaksiItem
+        let existingKondisiData: Record<string, unknown> = {}
+        try {
+          if (targetItem.kondisiAwal && targetItem.kondisiAwal.startsWith('{')) {
+            existingKondisiData = JSON.parse(targetItem.kondisiAwal)
+          }
+        } catch {
+          // ignore parsing error
+        }
+
+        const oldSize = (existingKondisiData.size as string) || targetItem.produk.size || '-'
+        const newKondisiAwalData = {
+          ...existingKondisiData,
+          productSizeId: params.newItem.productSizeId,
+          size: params.newItem.size,
+          ageCategory: params.newItem.ageCategory,
+          condition: (existingKondisiData.condition as string) || 'baik',
+          linkedSarung: params.newItem.linkedSarung || existingKondisiData.linkedSarung || null,
+        }
+
+        await tx.transaksiItem.update({
+          where: { id: targetItem.id },
+          data: {
+            produkId: params.newItem.produkId,
+            hargaSewa: newHargaSewa,
+            subtotal: newSubtotal,
+            kondisiAwal: JSON.stringify(newKondisiAwalData),
+          },
+        })
+
+        // 6. Update Transaksi utama
+        await tx.transaksi.update({
+          where: { id: existingTransaksi.id },
+          data: {
+            totalHarga: newTotalHarga,
+            jumlahBayar: newJumlahBayar,
+            sisaBayar: newSisaBayar,
+          },
+        })
+
+        // 7. Catat Aktivitas Transaksi (Audit Log)
+        const deltaFormatted = subtotalDelta.greaterThan(0)
+          ? `+Rp ${subtotalDelta.toNumber().toLocaleString('id-ID')}`
+          : subtotalDelta.lessThan(0)
+            ? `-Rp ${Math.abs(subtotalDelta.toNumber()).toLocaleString('id-ID')}`
+            : 'Rp 0'
+
+        await tx.aktivitasTransaksi.create({
+          data: {
+            transaksiId: existingTransaksi.id,
+            tipe: 'tukar_item',
+            deskripsi: `Menukar ${targetItem.produk.name} (${oldSize}) ke ${targetSize.product.name} (${params.newItem.size}). Selisih: ${deltaFormatted}.`,
+            data: {
+              transaksiItemId: targetItem.id,
+              oldItem: {
+                produkId: targetItem.produkId,
+                name: targetItem.produk.name,
+                size: oldSize,
+                hargaSewa: targetItem.hargaSewa.toNumber(),
+                subtotal: targetItem.subtotal.toNumber(),
+              },
+              newItem: {
+                produkId: params.newItem.produkId,
+                name: targetSize.product.name,
+                size: params.newItem.size,
+                hargaSewa: params.newItem.hargaSewa,
+                subtotal: newSubtotal.toNumber(),
+              },
+              priceDelta: subtotalDelta.toNumber(),
+              financialAction: params.financialAdjustment.action,
+              paymentMethod: params.financialAdjustment.paymentMethod || null,
+              catatan: params.catatan || null,
+            },
+            createdBy: params.kasirId,
+          },
+        })
+
+        return {
+          success: true,
+          transaksiId: existingTransaksi.id,
+          kode: existingTransaksi.kode,
+        }
+      },
+      {
+        timeout: 15000,
+      },
+    )
+  }
+
+  /**
+   * Ubah Tanggal Sewa Transaksi (Reschedule)
+   * Syarat: status transaksi = 'active', seluruh barang belum diambil fisik (jumlahDiambil = 0)
+   */
+  async ubahTanggalSewaTransaksi(params: {
+    transactionCode: string
+    tglMulai: string | Date
+    tglSelesai?: string | Date | null
+    durasi?: number
+    kasirId: string
+    catatan?: string
+  }): Promise<{ success: boolean; transaksiId: string; kode: string }> {
+    return await this.prisma.$transaction(
+      async (tx) => {
+        const existingTransaksi = await tx.transaksi.findFirst({
+          where: {
+            OR: [{ kode: params.transactionCode }, { id: params.transactionCode }],
+          },
+          include: {
+            items: {
+              include: {
+                produk: true,
+              },
+            },
+          },
+        })
+
+        if (!existingTransaksi) {
+          throw new Error(`Transaksi dengan kode/ID ${params.transactionCode} tidak ditemukan`)
+        }
+
+        if (existingTransaksi.status !== 'active') {
+          throw new Error(
+            `Jadwal sewa hanya dapat diubah pada transaksi berstatus 'active'. Status saat ini: '${existingTransaksi.status}'`,
+          )
+        }
+
+        const hasPickedUp = existingTransaksi.items.some((i) => (i.jumlahDiambil || 0) > 0)
+        if (hasPickedUp) {
+          throw new Error(
+            'Jadwal sewa tidak dapat diubah karena sebagian/seluruh barang sudah diambil fisik',
+          )
+        }
+
+        const newStartDate = new Date(params.tglMulai)
+        const duration = params.durasi || existingTransaksi.items[0]?.durasi || 3
+        const newEndDate = params.tglSelesai
+          ? new Date(params.tglSelesai)
+          : new Date(newStartDate.getTime() + (duration - 1) * 24 * 60 * 60 * 1000)
+
+        // Validasi ketersediaan stok untuk seluruh item pada rentang tanggal baru
+        const overlappingTransactions = await tx.transaksi.findMany({
+          where: {
+            id: { not: existingTransaksi.id },
+            status: { in: ['active', 'diambil'] },
+            tglMulai: { lte: newEndDate },
+            OR: [{ tglSelesai: { gte: newStartDate } }, { tglSelesai: null }],
+          },
+          include: { items: true },
+        })
+
+        for (const item of existingTransaksi.items) {
+          let productSizeId: string | null = null
+          try {
+            if (item.kondisiAwal?.startsWith('{')) {
+              const parsed = JSON.parse(item.kondisiAwal)
+              productSizeId = parsed.productSizeId
+            }
+          } catch {
+            // ignore
+          }
+
+          if (productSizeId) {
+            const sizeRecord = await tx.productSize.findUnique({
+              where: { id: productSizeId },
+            })
+            if (sizeRecord) {
+              let reserved = 0
+              for (const tr of overlappingTransactions) {
+                for (const it of tr.items) {
+                  if (it.kondisiAwal?.includes(productSizeId)) {
+                    reserved += it.jumlah
+                  }
+                }
+              }
+              const available = sizeRecord.originalQuantity - reserved - sizeRecord.lostQuantity
+              if (available < item.jumlah) {
+                throw new Error(
+                  `Item ${item.produk.name} (${sizeRecord.size}) tidak tersedia untuk rentang tanggal baru (tersedia: ${Math.max(0, available)}, dibutuhkan: ${item.jumlah})`,
+                )
+              }
+            }
+          }
+        }
+
+        // Update tanggal transaksi
+        const oldStartDateStr = new Date(existingTransaksi.tglMulai).toLocaleDateString('id-ID')
+        const oldEndDateStr = existingTransaksi.tglSelesai
+          ? new Date(existingTransaksi.tglSelesai).toLocaleDateString('id-ID')
+          : '-'
+        const newStartDateStr = newStartDate.toLocaleDateString('id-ID')
+        const newEndDateStr = newEndDate.toLocaleDateString('id-ID')
+
+        await tx.transaksi.update({
+          where: { id: existingTransaksi.id },
+          data: {
+            tglMulai: newStartDate,
+            tglSelesai: newEndDate,
+          },
+        })
+
+        // Audit log
+        await tx.aktivitasTransaksi.create({
+          data: {
+            transaksiId: existingTransaksi.id,
+            tipe: 'ubah_tanggal',
+            deskripsi: `Mengubah jadwal sewa dari ${oldStartDateStr} - ${oldEndDateStr} menjadi ${newStartDateStr} - ${newEndDateStr}`,
+            data: {
+              oldTglMulai: existingTransaksi.tglMulai,
+              oldTglSelesai: existingTransaksi.tglSelesai,
+              newTglMulai: newStartDate,
+              newTglSelesai: newEndDate,
+              catatan: params.catatan || null,
+            },
+            createdBy: params.kasirId,
+          },
+        })
+
+        return {
+          success: true,
+          transaksiId: existingTransaksi.id,
+          kode: existingTransaksi.kode,
+        }
+      },
+      {
+        timeout: 15000,
+      },
+    )
+  }
+
+  /**
+   * Tukar Sarung Pairing (Sarung Gratis)
+   * Mengganti motif/ukuran sarung gratis pasangan jas tanpa biaya tambahan (Rp 0)
+   */
+  async tukarSarungPairingTransaksi(params: {
+    transactionCode: string
+    parentTransaksiItemId: string
+    newSarung: {
+      produkId: string
+      productSizeId: string
+      size: string
+      ageCategory: string
+    }
+    kasirId: string
+    catatan?: string
+  }): Promise<{ success: boolean; transaksiId: string; kode: string }> {
+    return await this.prisma.$transaction(
+      async (tx) => {
+        // 1. Cari transaksi
+        const existingTransaksi = await tx.transaksi.findFirst({
+          where: {
+            OR: [{ kode: params.transactionCode }, { id: params.transactionCode }],
+          },
+          include: {
+            items: {
+              include: { produk: true },
+            },
+          },
+        })
+
+        if (!existingTransaksi) {
+          throw new Error(`Transaksi dengan kode/ID ${params.transactionCode} tidak ditemukan`)
+        }
+
+        // 2. Guard validation: hanya transaksi 'active' dan belum diambil fisik
+        if (existingTransaksi.status !== 'active') {
+          throw new Error(
+            `Penukaran sarung hanya dapat dilakukan pada transaksi berstatus 'active'. Status saat ini: '${existingTransaksi.status}'`,
+          )
+        }
+
+        const parentItem = existingTransaksi.items.find((i) => i.id === params.parentTransaksiItemId)
+        if (!parentItem) {
+          throw new Error(
+            `Item baju pasangan dengan ID ${params.parentTransaksiItemId} tidak ditemukan`,
+          )
+        }
+
+        if ((parentItem.jumlahDiambil || 0) > 0) {
+          throw new Error(
+            `Sarung pasangan untuk ${parentItem.produk.name} tidak dapat ditukar karena sudah diambil secara fisik`,
+          )
+        }
+
+        // 3. Pastikan parent item memang memiliki sarung pasangan (linkedSarung)
+        let existingKondisiData: Record<string, unknown> = {}
+        try {
+          if (parentItem.kondisiAwal && parentItem.kondisiAwal.startsWith('{')) {
+            existingKondisiData = JSON.parse(parentItem.kondisiAwal)
+          }
+        } catch {
+          // ignore parsing error
+        }
+
+        if (!existingKondisiData.linkedSarung) {
+          throw new Error('Item baju ini tidak memiliki sarung pasangan (pairing)')
+        }
+
+        // 4. Validasi ukuran sarung baru
+        const targetSarungSize = await tx.productSize.findUnique({
+          where: { id: params.newSarung.productSizeId },
+          include: { product: true },
+        })
+
+        if (!targetSarungSize || targetSarungSize.isActive === false) {
+          throw new Error(`Ukuran sarung pengganti tidak ditemukan atau sudah tidak aktif`)
+        }
+
+        // 5. Validasi stok sarung pengganti pada tanggal sewa transaksi
+        const activeRentals = await tx.transaksi.findMany({
+          where: {
+            id: { not: existingTransaksi.id },
+            status: { in: ['active', 'diambil'] },
+            tglMulai: { lte: existingTransaksi.tglSelesai || existingTransaksi.tglMulai },
+            tglSelesai: { gte: existingTransaksi.tglMulai },
+          },
+          include: {
+            items: true,
+          },
+        })
+
+        let rentedCount = 0
+        for (const tr of activeRentals) {
+          for (const itm of tr.items) {
+            if (itm.kondisiAwal && itm.kondisiAwal.includes(targetSarungSize.id)) {
+              rentedCount += itm.jumlah || 1
+            }
+          }
+        }
+
+        const availableStock = targetSarungSize.originalQuantity - rentedCount - (targetSarungSize.lostQuantity || 0)
+        if (availableStock < parentItem.jumlah) {
+          throw new Error('Stok sarung pengganti tidak mencukupi untuk rentang tanggal sewa ini')
+        }
+
+        const oldSarung = existingKondisiData.linkedSarung as {
+          productId?: string
+          productSizeId?: string
+          product?: { name?: string; code?: string }
+          selectedSize?: { size?: string }
+        } | null
+
+        const oldSarungName = oldSarung?.product?.name || 'Sarung Sebelumnya'
+        const sarungImage = targetSarungSize.product.imageUrl || '/products/sarung/accesories.png'
+
+        const newLinkedSarung = {
+          productId: targetSarungSize.product.id,
+          productSizeId: targetSarungSize.id,
+          quantity: parentItem.jumlah,
+          selectedSize: {
+            id: targetSarungSize.id,
+            size: params.newSarung.size,
+            ageCategory: params.newSarung.ageCategory,
+          },
+          product: {
+            id: targetSarungSize.product.id,
+            code: targetSarungSize.product.code,
+            name: targetSarungSize.product.name,
+            category: 'sarung',
+            image: sarungImage,
+            imageUrl: sarungImage,
+          },
+        }
+
+        const updatedKondisiAwal = {
+          ...existingKondisiData,
+          linkedSarung: newLinkedSarung,
+        }
+
+        await tx.transaksiItem.update({
+          where: { id: parentItem.id },
+          data: {
+            kondisiAwal: JSON.stringify(updatedKondisiAwal),
+          },
+        })
+
+        // Also update corresponding standalone paired sarung item in database
+        const pairedSarungItem = existingTransaksi.items.find((item) => {
+          if (!item.kondisiAwal?.includes('isPairedSarung')) return false
+          try {
+            const parsed = JSON.parse(item.kondisiAwal)
+            if (!parsed.isPairedSarung) return false
+            if (oldSarung?.productSizeId && parsed.productSizeId === oldSarung.productSizeId) {
+              return true
+            }
+            if (oldSarung?.productId && item.produkId === oldSarung.productId) {
+              return true
+            }
+            if (parsed.parentJasProductId === parentItem.produkId) {
+              return true
+            }
+          } catch {}
+          return false
+        })
+
+        if (pairedSarungItem) {
+          const updatedSarungKondisiAwal = {
+            productSizeId: targetSarungSize.id,
+            size: params.newSarung.size,
+            ageCategory: params.newSarung.ageCategory,
+            condition: 'baik',
+            isPairedSarung: true,
+            parentJasProductId: parentItem.produkId,
+          }
+
+          await tx.transaksiItem.update({
+            where: { id: pairedSarungItem.id },
+            data: {
+              produkId: targetSarungSize.product.id,
+              kondisiAwal: JSON.stringify(updatedSarungKondisiAwal),
+            },
+          })
+        }
+
+        // 5. Catat Aktivitas Transaksi (Audit Log)
+        await tx.aktivitasTransaksi.create({
+          data: {
+            transaksiId: existingTransaksi.id,
+            tipe: 'tukar_item',
+            deskripsi: `Menukar sarung pasangan untuk ${parentItem.produk.name}: ${oldSarungName} -> ${targetSarungSize.product.name} (${params.newSarung.size}). Biaya: Rp 0 (Tetap GRATIS).`,
+            data: {
+              transaksiItemId: parentItem.id,
+              isSarungSwap: true,
+              parentProductName: parentItem.produk.name,
+              sarungBaru: targetSarungSize.product.name,
+              sizeBaru: params.newSarung.size,
+              catatan: params.catatan || 'Tukar sarung pasangan',
+            },
+            createdBy: params.kasirId,
+          },
+        })
+
+        return {
+          success: true,
+          transaksiId: existingTransaksi.id,
+          kode: existingTransaksi.kode,
+        }
+      },
+      {
+        timeout: 15000,
+      },
+    )
+  }
 }
+

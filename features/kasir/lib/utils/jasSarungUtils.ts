@@ -28,8 +28,8 @@ export const SARUNG_CATEGORY_TYPE = SARUNG_PAIRING_DISPLAY.freeItemCategoryType
 export function getSarungCategoryId(): string {
   // Based on categories.json, sarung category ID
   // In production, this should be fetched from API or config
-  return 'e03f730b-5290-4281-af43-f37bca6cb32e' // This is the categoryId from sarung.json
-  // return 'c75111d6-80d2-4370-9126-801191135022' // This is the categoryId from sarung.json
+  // return 'e03f730b-5290-4281-af43-f37bca6cb32e' // This is the categoryId from sarung.json
+  return 'd50fbc08-26f9-499f-bce1-189c7e18a171' // This is the categoryId from sarung.json
 }
 
 /**
