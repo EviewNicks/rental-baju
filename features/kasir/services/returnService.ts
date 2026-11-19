@@ -281,6 +281,15 @@ export class UnifiedReturnService {
         subtotal: Number(item.subtotal), // Convert Decimal to number
         kondisiAwal: item.kondisiAwal || undefined, // Convert null to undefined
         statusKembali: item.statusKembali as ReturnStatus, // Cast to ReturnStatus
+        ...(item.returnConditions && {
+          conditionBreakdown: item.returnConditions.map((rc) => ({
+            id: rc.id,
+            kondisiAkhir: rc.kondisiAkhir,
+            jumlahKembali: rc.jumlahKembali,
+            penaltyAmount: Number(rc.penaltyAmount || 0),
+            resolutionStatus: rc.resolutionStatus || null,
+          })),
+        }),
       })),
       pembayaran: [], // Empty for validation
       aktivitas: [], // Empty for validation
@@ -525,7 +534,8 @@ export class UnifiedReturnService {
       if (
         transaction.status !== 'active' &&
         transaction.status !== 'terlambat' &&
-        transaction.status !== 'diambil'
+        transaction.status !== 'diambil' &&
+        transaction.status !== 'pending_resolution'
       ) {
         return {
           isValid: false,
@@ -1338,6 +1348,49 @@ export class UnifiedReturnService {
             })
           }
 
+          // ✅ M1 FIX: Atomically persist transaction status inside the same DB transaction
+          // Evaluates remaining returnable quantities across ALL items (items with jumlahDiambil=0
+          // already have remaining=0) plus unresolved HILANG conditions.
+          const hasNewUnresolvedLostItems = request.items.some((item) =>
+            item.conditions.some(
+              (condition) =>
+                condition.conditionCategory === 'HILANG' ||
+                condition.kondisiAkhir.toLowerCase().includes('hilang'),
+            ),
+          )
+          const hasAnyUnresolvedLostItems =
+            finalValidation.hasExistingUnresolvedLostItems || hasNewUnresolvedLostItems
+
+          const remainingAfterSession: Record<string, number> = {}
+          for (const [itemId, remainingBefore] of Object.entries(
+            finalValidation.currentRemainingQuantities,
+          )) {
+            const returnedNow = requestedQuantities[itemId] || 0
+            remainingAfterSession[itemId] = Math.max(0, remainingBefore - returnedNow)
+          }
+
+          const allItemsFullyReturned =
+            Object.keys(remainingAfterSession).length === 0 ||
+            Object.values(remainingAfterSession).every((qty) => qty === 0)
+
+          const currentDbStatus = finalValidation.currentDbStatus
+          let nextStatus = currentDbStatus
+          if (hasAnyUnresolvedLostItems) {
+            nextStatus = 'pending_resolution'
+          } else if (allItemsFullyReturned) {
+            nextStatus = 'selesai'
+          }
+
+          if (nextStatus && nextStatus !== currentDbStatus) {
+            await tx.transaksi.update({
+              where: { id: transaksiId },
+              data: {
+                status: nextStatus,
+                ...(nextStatus === 'selesai' ? { tglKembali: returnDate } : {}),
+              },
+            })
+          }
+
           return {
             success: true,
             transactionId: transaksiId,
@@ -1628,32 +1681,26 @@ export class UnifiedReturnService {
     const backgroundStart = Date.now()
 
     try {
-      // ✅ TASK 4: Enhanced transaction status logic for partial completion scenarios
-      // Requirements: 6.1, 6.2, 6.3, 6.4
-      // Check for unresolved HILANG items before setting status
-      // If any HILANG items exist, set status to 'pending_resolution'
-      // Otherwise, check if all items are fully returned before setting to 'selesai'
-      const hasUnresolvedLostItems = request.items.some((item) =>
-        item.conditions.some(
-          (condition) =>
-            condition.conditionCategory === 'HILANG' ||
-            condition.kondisiAkhir.toLowerCase().includes('hilang'),
-        ),
-      )
-
-      // ✅ TASK 4: Check if all items are fully returned using partial return utilities
-      // CRITICAL FIX: Refresh transaction data to include newly created return records
-      // The original transaction object is stale and doesn't include the return records we just created
+      // ✅ M1 FIX: Transaction status was already updated atomically inside processUnifiedReturn().
+      // Keep this check as an idempotent safeguard using fresh transaction data (now with returnConditions).
       const freshTransaction = await this.transaksiService.getTransaksiForValidation(transaksiId)
+      const hasUnresolvedLostItems =
+        request.items.some((item) =>
+          item.conditions.some(
+            (condition) =>
+              condition.conditionCategory === 'HILANG' ||
+              condition.kondisiAkhir.toLowerCase().includes('hilang'),
+          ),
+        ) ||
+        freshTransaction.items.some((item) =>
+          item.returnConditions?.some(
+            (rc) => rc.kondisiAkhir.toLowerCase().includes('hilang') && !rc.resolutionStatus,
+          ),
+        )
+
       const adaptedTransaction = this.adaptTransactionForPartialReturn(freshTransaction)
       const currentRemainingQuantities = calculateRemainingQuantities(adaptedTransaction)
 
-      // Since we're using fresh transaction data, currentRemainingQuantities already reflects
-      // the state AFTER the current return session
-      // ✅ FIXED: Enhanced completion check - handle both empty and populated remaining quantities
-      // Case 1: No remaining quantities (all items returned) -> true
-      // Case 2: Has remaining quantities but all are 0 -> true
-      // Case 3: Has remaining quantities with some > 0 -> false
       const allItemsFullyReturned =
         Object.keys(currentRemainingQuantities).length === 0 ||
         Object.values(currentRemainingQuantities).every((qty) => qty === 0)
@@ -1668,9 +1715,8 @@ export class UnifiedReturnService {
       if (hasUnresolvedLostItems) {
         newStatus = 'pending_resolution'
       } else if (allItemsFullyReturned) {
-        newStatus = 'selesai' // ✅ FIXED: Always set to selesai when all items returned
+        newStatus = 'selesai'
       } else {
-        // Maintain current status for partial returns
         newStatus = freshTransaction.status as
           | 'active'
           | 'terlambat'
@@ -1680,22 +1726,15 @@ export class UnifiedReturnService {
           | 'cancelled'
       }
 
-      // ✅ TASK 4: Only update status if it needs to change (Requirements: 6.4)
-      if (newStatus !== freshTransaction.status) {
+      if (
+        newStatus !== freshTransaction.status &&
+        freshTransaction.status !== 'selesai' &&
+        freshTransaction.status !== 'cancelled'
+      ) {
         await this.transaksiService.updateTransaksiStatus(transaksiId, {
           status: newStatus,
           tglKembali: request.tglKembali || new Date().toISOString(),
         })
-      } else {
-        kasirLogger.returnProcess.warn(
-          'processBackgroundActivities',
-          'Transaction status maintained for partial return',
-          {
-            transaksiId,
-            status: newStatus,
-            reason: 'partial_return_in_progress',
-          },
-        )
       }
 
       // Build unified activity data with full breakdown
@@ -2215,6 +2254,8 @@ export class UnifiedReturnService {
     isValid: boolean
     errors: string[]
     currentRemainingQuantities: Record<string, number>
+    currentDbStatus: string
+    hasExistingUnresolvedLostItems: boolean
   }> {
     const errors: string[] = []
 
@@ -2229,7 +2270,9 @@ export class UnifiedReturnService {
               returnConditions: {
                 select: {
                   id: true,
+                  kondisiAkhir: true,
                   jumlahKembali: true,
+                  resolutionStatus: true,
                   createdAt: true,
                 },
                 orderBy: {
@@ -2243,20 +2286,37 @@ export class UnifiedReturnService {
 
       if (!transactionWithReturns) {
         errors.push('Transaction not found in current database state')
-        return { isValid: false, errors, currentRemainingQuantities: {} }
+        return {
+          isValid: false,
+          errors,
+          currentRemainingQuantities: {},
+          currentDbStatus: 'unknown',
+          hasExistingUnresolvedLostItems: false,
+        }
       }
 
-      // Calculate current remaining quantities from fresh database data
+      // Calculate current remaining quantities and check unresolved lost items from fresh DB data
       const currentRemainingQuantities: Record<string, number> = {}
+      let hasExistingUnresolvedLostItems = false
 
       for (const item of transactionWithReturns.items) {
-        const totalReturned = item.returnConditions.reduce(
+        const returnConditions = item.returnConditions || []
+        const totalReturned = returnConditions.reduce(
           (sum: number, returnRecord: { jumlahKembali: number }) =>
             sum + returnRecord.jumlahKembali,
           0,
         )
         const remainingQuantity = Math.max(0, (item.jumlahDiambil || 0) - totalReturned)
         currentRemainingQuantities[item.id] = remainingQuantity
+
+        if (
+          returnConditions.some(
+            (rc: { kondisiAkhir?: string | null; resolutionStatus?: string | null }) =>
+              (rc.kondisiAkhir?.toLowerCase().includes('hilang') ?? false) && !rc.resolutionStatus,
+          )
+        ) {
+          hasExistingUnresolvedLostItems = true
+        }
       }
 
       // Validate requested quantities against current remaining quantities
@@ -2278,12 +2338,20 @@ export class UnifiedReturnService {
         isValid: errors.length === 0,
         errors,
         currentRemainingQuantities,
+        currentDbStatus: transactionWithReturns.status,
+        hasExistingUnresolvedLostItems,
       }
     } catch (error) {
       errors.push(
         `Database state validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
       )
-      return { isValid: false, errors, currentRemainingQuantities: {} }
+      return {
+        isValid: false,
+        errors,
+        currentRemainingQuantities: {},
+        currentDbStatus: 'unknown',
+        hasExistingUnresolvedLostItems: false,
+      }
     }
   }
 }

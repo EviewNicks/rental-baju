@@ -27,7 +27,7 @@
  */
 
 import React, { useState, useCallback, useEffect } from 'react'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -37,6 +37,8 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Textarea } from '@/components/ui/textarea'
 import { ArrowLeft, CheckCircle, AlertCircle, Calculator, Package, Info } from 'lucide-react'
 import { UnifiedConditionForm } from './UnifiedConditionForm'
+import { StatusBadge } from '../ui/status-badge'
+import { queryKeys } from '@/lib/react-query'
 import type { EnhancedItemCondition } from '../../types'
 import { ConditionCategory } from '../../types'
 import { kasirApi } from '../../api'
@@ -80,6 +82,7 @@ interface SimpleFormState {
 
 export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
   const router = useRouter()
+  const queryClient = useQueryClient()
 
   // Simple form state - replacing complex useMultiConditionReturn hook
   const [formState, setFormState] = useState<SimpleFormState>({
@@ -519,12 +522,20 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
         throw error
       }
     },
-    onSuccess: (result) => {
+    onSuccess: async (result) => {
       kasirLogger.returnProcess.info('SimpleReturnForm', 'Return processed successfully', {
         transactionId: kode,
         totalPenalty: result.totalPenalty,
         itemsProcessed: result.itemsProcessed,
       })
+
+      // ✅ S3 FIX: Invalidate transaction detail, list, and dashboard stats caches
+      // so Detail Page and Dashboard immediately reflect the updated status badge
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['transaction-detail', kode] }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.kasir.transaksi.all() }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.kasir.dashboard.all() }),
+      ])
 
       toast.success('Pengembalian berhasil diproses!')
 
@@ -830,9 +841,7 @@ export function SimpleReturnForm({ kode, onClose }: SimpleReturnFormProps) {
               </div>
               <div>
                 <span className="font-medium">Status:</span>
-                <Badge variant="outline" className="ml-2">
-                  {transaction.status}
-                </Badge>
+                <StatusBadge status={transaction.status} className="ml-2" />
               </div>
             </div>
           </CardContent>

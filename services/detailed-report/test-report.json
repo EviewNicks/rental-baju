@@ -1,611 +1,187 @@
 {
-  "numTotalTests": 51,
-  "numPassedTests": 40,
-  "numFailedTests": 11,
+  "numTotalTests": 15,
+  "numPassedTests": 15,
+  "numFailedTests": 0,
   "numPendingTests": 0,
-  "startTime": "2026-10-20T13:24:00.664Z",
-  "endTime": "2026-10-20T13:24:05.000Z",
+  "startTime": "2026-11-19T14:04:41.999Z",
+  "endTime": "2026-11-19T14:04:47.296Z",
   "testResults": [
     {
-      "testFilePath": "D:\\.work\\rental-software\\features\\kasir\\lib\\validation\\pickupValidation.test.ts",
+      "testFilePath": "D:\\.work\\rental-software\\__tests__\\integration\\kasir\\tukarItem.integration.test.ts",
       "testFileResults": [
         {
           "ancestorTitles": [
-            "PickupBusinessRules",
-            "validateTransactionStatus"
+            "Integration Tests: API Tukar Baju & Ubah Tanggal",
+            "MUST-HAVE: Penukaran Ukuran Baju (Same Model)"
           ],
-          "fullName": "PickupBusinessRules validateTransactionStatus should validate active transaction status",
+          "fullName": "Integration Tests: API Tukar Baju & Ubah Tanggal MUST-HAVE: Penukaran Ukuran Baju (Same Model) 1.1 Harus berhasil menukar ukuran dengan harga sewa sama (Rp 0)",
           "status": "passed",
-          "title": "should validate active transaction status",
+          "title": "1.1 Harus berhasil menukar ukuran dengan harga sewa sama (Rp 0)",
           "failureMessages": [],
-          "duration": 9
+          "duration": 16
         },
         {
           "ancestorTitles": [
-            "PickupBusinessRules",
-            "validateTransactionStatus"
+            "Integration Tests: API Tukar Baju & Ubah Tanggal",
+            "MUST-HAVE: Penukaran Ukuran Baju (Same Model)"
           ],
-          "fullName": "PickupBusinessRules validateTransactionStatus should reject non-active transaction status",
+          "fullName": "Integration Tests: API Tukar Baju & Ubah Tanggal MUST-HAVE: Penukaran Ukuran Baju (Same Model) 1.2 Harus berhasil menukar baju lebih mahal (+Delta) dan mencatat pembayaran jika pay_now",
           "status": "passed",
-          "title": "should reject non-active transaction status",
+          "title": "1.2 Harus berhasil menukar baju lebih mahal (+Delta) dan mencatat pembayaran jika pay_now",
           "failureMessages": [],
-          "duration": 1
+          "duration": 36
         },
         {
           "ancestorTitles": [
-            "PickupBusinessRules",
-            "validatePickupQuantity"
+            "Integration Tests: API Tukar Baju & Ubah Tanggal",
+            "MUST-HAVE: Penukaran Ukuran Baju (Same Model)"
           ],
-          "fullName": "PickupBusinessRules validatePickupQuantity should reject zero or negative quantity",
+          "fullName": "Integration Tests: API Tukar Baju & Ubah Tanggal MUST-HAVE: Penukaran Ukuran Baju (Same Model) 1.3 Harus berhasil menukar baju lebih mahal (+Delta) dan menambahkan ke sisa bayar jika add_to_remaining",
           "status": "passed",
-          "title": "should reject zero or negative quantity",
+          "title": "1.3 Harus berhasil menukar baju lebih mahal (+Delta) dan menambahkan ke sisa bayar jika add_to_remaining",
           "failureMessages": [],
-          "duration": 1
+          "duration": 3
         },
         {
           "ancestorTitles": [
-            "PickupBusinessRules",
-            "validatePickupQuantity"
+            "Integration Tests: API Tukar Baju & Ubah Tanggal",
+            "MUST-HAVE: Penukaran Ukuran Baju (Same Model)"
           ],
-          "fullName": "PickupBusinessRules validatePickupQuantity should reject quantity exceeding available",
+          "fullName": "Integration Tests: API Tukar Baju & Ubah Tanggal MUST-HAVE: Penukaran Ukuran Baju (Same Model) 1.4 Guard: Harus menolak jika status transaksi bukan active",
           "status": "passed",
-          "title": "should reject quantity exceeding available",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PickupBusinessRules",
-            "validatePickupQuantity"
-          ],
-          "fullName": "PickupBusinessRules validatePickupQuantity should warn for partial pickup",
-          "status": "passed",
-          "title": "should warn for partial pickup",
+          "title": "1.4 Guard: Harus menolak jika status transaksi bukan active",
           "failureMessages": [],
           "duration": 2
         },
         {
           "ancestorTitles": [
-            "PickupBusinessRules",
-            "validateItemNotFullyPickedUp"
+            "Integration Tests: API Tukar Baju & Ubah Tanggal",
+            "MUST-HAVE: Penukaran Ukuran Baju (Same Model)"
           ],
-          "fullName": "PickupBusinessRules validateItemNotFullyPickedUp should allow pickup for available items",
+          "fullName": "Integration Tests: API Tukar Baju & Ubah Tanggal MUST-HAVE: Penukaran Ukuran Baju (Same Model) 1.5 Guard: Harus menolak jika barang sudah diambil fisik (jumlahDiambil > 0)",
           "status": "passed",
-          "title": "should allow pickup for available items",
+          "title": "1.5 Guard: Harus menolak jika barang sudah diambil fisik (jumlahDiambil > 0)",
+          "failureMessages": [],
+          "duration": 3
+        },
+        {
+          "ancestorTitles": [
+            "Integration Tests: API Tukar Baju & Ubah Tanggal",
+            "MUST-HAVE: Penukaran Ukuran Baju (Same Model)"
+          ],
+          "fullName": "Integration Tests: API Tukar Baju & Ubah Tanggal MUST-HAVE: Penukaran Ukuran Baju (Same Model) 1.6 Guard: Harus menolak jika stok ukuran pengganti habis (availableQuantity = 0)",
+          "status": "passed",
+          "title": "1.6 Guard: Harus menolak jika stok ukuran pengganti habis (availableQuantity = 0)",
           "failureMessages": [],
           "duration": 1
         },
         {
           "ancestorTitles": [
-            "PickupBusinessRules",
-            "validateItemNotFullyPickedUp"
+            "Integration Tests: API Tukar Baju & Ubah Tanggal",
+            "SHOULD-HAVE: Ganti Model Lain & Audit Log"
           ],
-          "fullName": "PickupBusinessRules validateItemNotFullyPickedUp should reject pickup for fully picked up items",
+          "fullName": "Integration Tests: API Tukar Baju & Ubah Tanggal SHOULD-HAVE: Ganti Model Lain & Audit Log 2.1 Harus berhasil menukar ke model jas yang berbeda (Different Product)",
           "status": "passed",
-          "title": "should reject pickup for fully picked up items",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PickupBusinessRules",
-            "validatePickupBatchLimits"
-          ],
-          "fullName": "PickupBusinessRules validatePickupBatchLimits should validate normal batch size",
-          "status": "passed",
-          "title": "should validate normal batch size",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PickupBusinessRules",
-            "validatePickupBatchLimits"
-          ],
-          "fullName": "PickupBusinessRules validatePickupBatchLimits should warn for large batches",
-          "status": "passed",
-          "title": "should warn for large batches",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PickupBusinessRules",
-            "validatePickupBatchLimits"
-          ],
-          "fullName": "PickupBusinessRules validatePickupBatchLimits should reject batches exceeding item limit",
-          "status": "passed",
-          "title": "should reject batches exceeding item limit",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PickupBusinessRules",
-            "validatePickupBatchLimits"
-          ],
-          "fullName": "PickupBusinessRules validatePickupBatchLimits should reject batches exceeding quantity limit",
-          "status": "passed",
-          "title": "should reject batches exceeding quantity limit",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PickupBusinessRules",
-            "validateNoDuplicateItems"
-          ],
-          "fullName": "PickupBusinessRules validateNoDuplicateItems should validate unique items",
-          "status": "passed",
-          "title": "should validate unique items",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PickupBusinessRules",
-            "validateNoDuplicateItems"
-          ],
-          "fullName": "PickupBusinessRules validateNoDuplicateItems should reject duplicate items",
-          "status": "passed",
-          "title": "should reject duplicate items",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PickupBusinessRules",
-            "validateBusinessHours"
-          ],
-          "fullName": "PickupBusinessRules validateBusinessHours should validate normal business hours",
-          "status": "passed",
-          "title": "should validate normal business hours",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PickupBusinessRules",
-            "validateBusinessHours"
-          ],
-          "fullName": "PickupBusinessRules validateBusinessHours should warn for weekend pickup",
-          "status": "passed",
-          "title": "should warn for weekend pickup",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PickupBusinessRules",
-            "validateBusinessHours"
-          ],
-          "fullName": "PickupBusinessRules validateBusinessHours should warn for outside business hours",
-          "status": "passed",
-          "title": "should warn for outside business hours",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PickupBusinessRules",
-            "validateConcurrentPickup"
-          ],
-          "fullName": "PickupBusinessRules validateConcurrentPickup should validate when no concurrent pickup detected",
-          "status": "passed",
-          "title": "should validate when no concurrent pickup detected",
-          "failureMessages": [],
-          "duration": 0
-        },
-        {
-          "ancestorTitles": [
-            "PickupBusinessRules",
-            "validateConcurrentPickup"
-          ],
-          "fullName": "PickupBusinessRules validateConcurrentPickup should detect potential concurrent pickup",
-          "status": "passed",
-          "title": "should detect potential concurrent pickup",
-          "failureMessages": [],
-          "duration": 0
-        },
-        {
-          "ancestorTitles": [
-            "PickupValidator",
-            "validatePickupRequest"
-          ],
-          "fullName": "PickupValidator validatePickupRequest should perform comprehensive validation and return valid result",
-          "status": "passed",
-          "title": "should perform comprehensive validation and return valid result",
+          "title": "2.1 Harus berhasil menukar ke model jas yang berbeda (Different Product)",
           "failureMessages": [],
           "duration": 2
         },
         {
           "ancestorTitles": [
-            "PickupValidator",
-            "validatePickupRequest"
+            "Integration Tests: API Tukar Baju & Ubah Tanggal",
+            "SHOULD-HAVE: Ganti Model Lain & Audit Log"
           ],
-          "fullName": "PickupValidator validatePickupRequest should detect multiple validation errors",
+          "fullName": "Integration Tests: API Tukar Baju & Ubah Tanggal SHOULD-HAVE: Ganti Model Lain & Audit Log 2.2 Harus mempertahankan relasi linkedSarung pada penukaran Jas",
           "status": "passed",
-          "title": "should detect multiple validation errors",
-          "failureMessages": [],
-          "duration": 9
-        },
-        {
-          "ancestorTitles": [
-            "PickupValidator",
-            "validatePickupRequest"
-          ],
-          "fullName": "PickupValidator validatePickupRequest should categorize validation results correctly",
-          "status": "passed",
-          "title": "should categorize validation results correctly",
+          "title": "2.2 Harus mempertahankan relasi linkedSarung pada penukaran Jas",
           "failureMessages": [],
           "duration": 2
         },
         {
           "ancestorTitles": [
-            "PickupValidator",
-            "generateValidationReport"
+            "Integration Tests: API Tukar Baju & Ubah Tanggal",
+            "COULD-HAVE: Ubah Tanggal Sewa (Reschedule)"
           ],
-          "fullName": "PickupValidator generateValidationReport should generate comprehensive validation report",
+          "fullName": "Integration Tests: API Tukar Baju & Ubah Tanggal COULD-HAVE: Ubah Tanggal Sewa (Reschedule) 3.1 Harus berhasil menggeser jadwal sewa via PATCH endpoint",
           "status": "passed",
-          "title": "should generate comprehensive validation report",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "PickupValidator",
-            "generateValidationReport"
-          ],
-          "fullName": "PickupValidator generateValidationReport should generate valid status report",
-          "status": "passed",
-          "title": "should generate valid status report",
-          "failureMessages": [],
-          "duration": 1
-        }
-      ],
-      "failureMessage": null
-    },
-    {
-      "testFilePath": "D:\\.work\\rental-software\\features\\kasir\\services\\penyewaService.test.ts",
-      "testFileResults": [
-        {
-          "ancestorTitles": [
-            "PenyewaService",
-            "createPenyewa"
-          ],
-          "fullName": "PenyewaService createPenyewa should create penyewa successfully",
-          "status": "passed",
-          "title": "should create penyewa successfully",
+          "title": "3.1 Harus berhasil menggeser jadwal sewa via PATCH endpoint",
           "failureMessages": [],
           "duration": 11
-        },
-        {
-          "ancestorTitles": [
-            "PenyewaService",
-            "createPenyewa"
-          ],
-          "fullName": "PenyewaService createPenyewa should throw error if phone number already exists",
-          "status": "passed",
-          "title": "should throw error if phone number already exists",
-          "failureMessages": [],
-          "duration": 22
-        },
-        {
-          "ancestorTitles": [
-            "PenyewaService",
-            "createPenyewa"
-          ],
-          "fullName": "PenyewaService createPenyewa should handle database errors",
-          "status": "passed",
-          "title": "should handle database errors",
-          "failureMessages": [],
-          "duration": 4
-        },
-        {
-          "ancestorTitles": [
-            "PenyewaService",
-            "getPenyewaById"
-          ],
-          "fullName": "PenyewaService getPenyewaById should return penyewa by ID",
-          "status": "passed",
-          "title": "should return penyewa by ID",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PenyewaService",
-            "getPenyewaById"
-          ],
-          "fullName": "PenyewaService getPenyewaById should throw error if penyewa not found",
-          "status": "passed",
-          "title": "should throw error if penyewa not found",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PenyewaService",
-            "getPenyewaList"
-          ],
-          "fullName": "PenyewaService getPenyewaList should return paginated penyewa list",
-          "status": "passed",
-          "title": "should return paginated penyewa list",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "PenyewaService",
-            "getPenyewaList"
-          ],
-          "fullName": "PenyewaService getPenyewaList should search penyewa by name or phone",
-          "status": "passed",
-          "title": "should search penyewa by name or phone",
-          "failureMessages": [],
-          "duration": 0
-        },
-        {
-          "ancestorTitles": [
-            "PenyewaService",
-            "getPenyewaList"
-          ],
-          "fullName": "PenyewaService getPenyewaList should handle empty results",
-          "status": "passed",
-          "title": "should handle empty results",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PenyewaService",
-            "updatePenyewa"
-          ],
-          "fullName": "PenyewaService updatePenyewa should update penyewa successfully",
-          "status": "passed",
-          "title": "should update penyewa successfully",
-          "failureMessages": [],
-          "duration": 26
-        },
-        {
-          "ancestorTitles": [
-            "PenyewaService",
-            "updatePenyewa"
-          ],
-          "fullName": "PenyewaService updatePenyewa should throw error if penyewa not found",
-          "status": "passed",
-          "title": "should throw error if penyewa not found",
-          "failureMessages": [],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "PenyewaService",
-            "updatePenyewa"
-          ],
-          "fullName": "PenyewaService updatePenyewa should validate phone uniqueness when updating phone",
-          "status": "passed",
-          "title": "should validate phone uniqueness when updating phone",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PenyewaService",
-            "findPenyewaByPhone"
-          ],
-          "fullName": "PenyewaService findPenyewaByPhone should find penyewa by phone number",
-          "status": "passed",
-          "title": "should find penyewa by phone number",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "PenyewaService",
-            "findPenyewaByPhone"
-          ],
-          "fullName": "PenyewaService findPenyewaByPhone should return null if penyewa not found",
-          "status": "passed",
-          "title": "should return null if penyewa not found",
-          "failureMessages": [],
-          "duration": 1
         }
       ],
       "failureMessage": null
     },
     {
-      "testFilePath": "D:\\.work\\rental-software\\features\\kasir\\services\\transaksiService.test.ts",
+      "testFilePath": "D:\\.work\\rental-software\\__tests__\\integration\\kasir\\transactionStatusBadge.integration.test.ts",
       "testFileResults": [
         {
           "ancestorTitles": [
-            "TransaksiService",
-            "createTransaksi"
+            "Integration Tests: Transaction Status & Badge Single Source of Truth",
+            "M1: UnifiedReturnService persists status=selesai / pending_resolution atomically"
           ],
-          "fullName": "TransaksiService createTransaksi should create transaksi successfully with auto-generated code",
-          "status": "failed",
-          "title": "should create transaksi successfully with auto-generated code",
-          "failureMessages": [
-            "TypeError: transaksiService.createTransaksi is not a function\n    at Object.createTransaksi (D:\\.work\\rental-software\\features\\kasir\\services\\transaksiService.test.ts:168:45)\n    at Promise.finally.completed (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1556:28)\n    at new Promise (<anonymous>)\n    at callAsyncCircusFn (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1496:10)\n    at _callCircusTest (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1006:40)\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at _runTest (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:946:3)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:839:13)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at run (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:757:3)\n    at runAndTransformResultsToJestFormat (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1917:21)\n    at jestAdapter (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\runner.js:101:19)\n    at runTestInternal (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:275:16)\n    at runTest (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:343:7)\n    at Object.worker (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:497:12)"
-          ],
-          "duration": 6
-        },
-        {
-          "ancestorTitles": [
-            "TransaksiService",
-            "createTransaksi"
-          ],
-          "fullName": "TransaksiService createTransaksi should throw error if penyewa not found",
-          "status": "failed",
-          "title": "should throw error if penyewa not found",
-          "failureMessages": [
-            "TypeError: transaksiService.createTransaksi is not a function\n    at Object.createTransaksi (D:\\.work\\rental-software\\features\\kasir\\services\\transaksiService.test.ts:186:37)\n    at Promise.finally.completed (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1556:28)\n    at new Promise (<anonymous>)\n    at callAsyncCircusFn (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1496:10)\n    at _callCircusTest (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1006:40)\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at _runTest (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:946:3)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:839:13)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at run (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:757:3)\n    at runAndTransformResultsToJestFormat (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1917:21)\n    at jestAdapter (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\runner.js:101:19)\n    at runTestInternal (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:275:16)\n    at runTest (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:343:7)\n    at Object.worker (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:497:12)"
-          ],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "TransaksiService",
-            "createTransaksi"
-          ],
-          "fullName": "TransaksiService createTransaksi should throw error if product not available",
-          "status": "failed",
-          "title": "should throw error if product not available",
-          "failureMessages": [
-            "TypeError: transaksiService.createTransaksi is not a function\n    at Object.createTransaksi (D:\\.work\\rental-software\\features\\kasir\\services\\transaksiService.test.ts:198:37)\n    at Promise.finally.completed (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1556:28)\n    at new Promise (<anonymous>)\n    at callAsyncCircusFn (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1496:10)\n    at _callCircusTest (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1006:40)\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at _runTest (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:946:3)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:839:13)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at run (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:757:3)\n    at runAndTransformResultsToJestFormat (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1917:21)\n    at jestAdapter (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\runner.js:101:19)\n    at runTestInternal (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:275:16)\n    at runTest (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:343:7)\n    at Object.worker (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:497:12)"
-          ],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "TransaksiService",
-            "createTransaksi"
-          ],
-          "fullName": "TransaksiService createTransaksi should throw error if insufficient product quantity",
-          "status": "failed",
-          "title": "should throw error if insufficient product quantity",
-          "failureMessages": [
-            "TypeError: transaksiService.createTransaksi is not a function\n    at Object.createTransaksi (D:\\.work\\rental-software\\features\\kasir\\services\\transaksiService.test.ts:215:37)\n    at Promise.finally.completed (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1556:28)\n    at new Promise (<anonymous>)\n    at callAsyncCircusFn (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1496:10)\n    at _callCircusTest (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1006:40)\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at _runTest (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:946:3)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:839:13)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at _runTestsForDescribeBlock (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:829:11)\n    at run (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:757:3)\n    at runAndTransformResultsToJestFormat (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\jestAdapterInit.js:1917:21)\n    at jestAdapter (D:\\.work\\rental-software\\node_modules\\jest-circus\\build\\runner.js:101:19)\n    at runTestInternal (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:275:16)\n    at runTest (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:343:7)\n    at Object.worker (D:\\.work\\rental-software\\node_modules\\jest-runner\\build\\testWorker.js:497:12)"
-          ],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "TransaksiService",
-            "getTransaksiById"
-          ],
-          "fullName": "TransaksiService getTransaksiById should return transaksi by ID",
-          "status": "failed",
-          "title": "should return transaksi by ID",
-          "failureMessages": [
-            "Error: expect(jest.fn()).toHaveBeenCalledWith(...expected)\n\n- Expected\n+ Received\n\n@@ -7,28 +7,68 @@\n      },\n      \"items\": Object {\n        \"include\": Object {\n          \"produk\": Object {\n            \"select\": Object {\n+             \"category\": Object {\n+               \"select\": Object {\n+                 \"id\": true,\n+                 \"name\": true,\n+               },\n+             },\n              \"code\": true,\n              \"id\": true,\n              \"imageUrl\": true,\n+             \"modalAwal\": true,\n              \"name\": true,\n+             \"size\": true,\n+           },\n+         },\n+         \"returnConditions\": Object {\n+           \"orderBy\": Object {\n+             \"createdAt\": \"asc\",\n+           },\n+           \"select\": Object {\n+             \"createdAt\": true,\n+             \"createdBy\": true,\n+             \"id\": true,\n+             \"jumlahKembali\": true,\n+             \"kondisiAkhir\": true,\n+             \"modalAwalUsed\": true,\n+             \"penaltyAmount\": true,\n+             \"resolutionDate\": true,\n+             \"resolutionStatus\": true,\n            },\n          },\n        },\n+       \"orderBy\": Array [\n+         Object {\n+           \"id\": \"asc\",\n+         },\n+       ],\n      },\n+     \"kasir\": Object {\n+       \"select\": Object {\n+         \"createdAt\": true,\n+         \"id\": true,\n+         \"isActive\": true,\n+         \"nama\": true,\n+         \"updatedAt\": true,\n+       },\n+     },\n      \"pembayaran\": Object {\n        \"orderBy\": Object {\n          \"createdAt\": \"desc\",\n        },\n      },\n      \"penyewa\": Object {\n        \"select\": Object {\n          \"alamat\": true,\n+         \"email\": true,\n          \"id\": true,\n          \"nama\": true,\n+         \"nik\": true,\n          \"telepon\": true,\n        },\n      },\n    },\n    \"where\": Object {,\n\nNumber of calls: 1\n    at Object.toHaveBeenCalledWith (D:\\.work\\rental-software\\features\\kasir\\services\\transaksiService.test.ts:251:47)\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)"
-          ],
-          "duration": 14
-        },
-        {
-          "ancestorTitles": [
-            "TransaksiService",
-            "getTransaksiById"
-          ],
-          "fullName": "TransaksiService getTransaksiById should throw error if transaksi not found",
+          "fullName": "Integration Tests: Transaction Status & Badge Single Source of Truth M1: UnifiedReturnService persists status=selesai / pending_resolution atomically 1.1 Returning all picked-up items (even when late & with unpicked item jumlahDiambil=0) updates DB transaksi.status to selesai",
           "status": "passed",
-          "title": "should throw error if transaksi not found",
+          "title": "1.1 Returning all picked-up items (even when late & with unpicked item jumlahDiambil=0) updates DB transaksi.status to selesai",
           "failureMessages": [],
-          "duration": 20
+          "duration": 123
         },
         {
           "ancestorTitles": [
-            "TransaksiService",
-            "getTransaksiByCode"
+            "Integration Tests: Transaction Status & Badge Single Source of Truth",
+            "M1: UnifiedReturnService persists status=selesai / pending_resolution atomically"
           ],
-          "fullName": "TransaksiService getTransaksiByCode should return transaksi by code",
-          "status": "failed",
-          "title": "should return transaksi by code",
-          "failureMessages": [
-            "Error: Failed to retrieve transaction: Cannot read properties of undefined (reading 'map')\n    at TransaksiService.getTransaksiByIdentifier (D:\\.work\\rental-software\\features\\kasir\\services\\transaksiService.ts:444:15)\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)"
-          ],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "TransaksiService",
-            "getTransaksiList"
-          ],
-          "fullName": "TransaksiService getTransaksiList should return paginated transaksi list",
-          "status": "failed",
-          "title": "should return paginated transaksi list",
-          "failureMessages": [
-            "TypeError: Cannot read properties of undefined (reading 'items')\n    at items (D:\\.work\\rental-software\\features\\kasir\\services\\transaksiService.ts:1575:39)\n    at Array.map (<anonymous>)\n    at TransaksiService.map [as getTransaksiList] (D:\\.work\\rental-software\\features\\kasir\\services\\transaksiService.ts:1564:50)\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at Object.<anonymous> (D:\\.work\\rental-software\\features\\kasir\\services\\transaksiService.test.ts:340:22)"
-          ],
-          "duration": 2
-        },
-        {
-          "ancestorTitles": [
-            "TransaksiService",
-            "getTransaksiList"
-          ],
-          "fullName": "TransaksiService getTransaksiList should filter by status",
-          "status": "failed",
-          "title": "should filter by status",
-          "failureMessages": [
-            "TypeError: Cannot read properties of undefined (reading 'items')\n    at items (D:\\.work\\rental-software\\features\\kasir\\services\\transaksiService.ts:1575:39)\n    at Array.map (<anonymous>)\n    at TransaksiService.map [as getTransaksiList] (D:\\.work\\rental-software\\features\\kasir\\services\\transaksiService.ts:1564:50)\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at Object.<anonymous> (D:\\.work\\rental-software\\features\\kasir\\services\\transaksiService.test.ts:362:7)"
-          ],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "TransaksiService",
-            "getTransaksiList"
-          ],
-          "fullName": "TransaksiService getTransaksiList should search by code or penyewa name",
-          "status": "failed",
-          "title": "should search by code or penyewa name",
-          "failureMessages": [
-            "TypeError: Cannot read properties of undefined (reading 'items')\n    at items (D:\\.work\\rental-software\\features\\kasir\\services\\transaksiService.ts:1575:39)\n    at Array.map (<anonymous>)\n    at TransaksiService.map [as getTransaksiList] (D:\\.work\\rental-software\\features\\kasir\\services\\transaksiService.ts:1564:50)\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at Object.<anonymous> (D:\\.work\\rental-software\\features\\kasir\\services\\transaksiService.test.ts:382:7)"
-          ],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "TransaksiService",
-            "getTransaksiList"
-          ],
-          "fullName": "TransaksiService getTransaksiList should filter transactions by tglMulai date",
-          "status": "failed",
-          "title": "should filter transactions by tglMulai date",
-          "failureMessages": [
-            "TypeError: Cannot read properties of undefined (reading 'items')\n    at items (D:\\.work\\rental-software\\features\\kasir\\services\\transaksiService.ts:1575:39)\n    at Array.map (<anonymous>)\n    at TransaksiService.map [as getTransaksiList] (D:\\.work\\rental-software\\features\\kasir\\services\\transaksiService.ts:1564:50)\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at Object.<anonymous> (D:\\.work\\rental-software\\features\\kasir\\services\\transaksiService.test.ts:410:7)"
-          ],
-          "duration": 0
-        },
-        {
-          "ancestorTitles": [
-            "TransaksiService",
-            "updateTransaksiStatus"
-          ],
-          "fullName": "TransaksiService updateTransaksiStatus should update transaksi status successfully",
+          "fullName": "Integration Tests: Transaction Status & Badge Single Source of Truth M1: UnifiedReturnService persists status=selesai / pending_resolution atomically 1.2 Partial return (1 of 2 picked-up items returned) must NOT update transaksi.status to selesai",
           "status": "passed",
-          "title": "should update transaksi status successfully",
+          "title": "1.2 Partial return (1 of 2 picked-up items returned) must NOT update transaksi.status to selesai",
           "failureMessages": [],
-          "duration": 2
+          "duration": 3
         },
         {
           "ancestorTitles": [
-            "TransaksiService",
-            "updateTransaksiStatus"
+            "Integration Tests: Transaction Status & Badge Single Source of Truth",
+            "M1: UnifiedReturnService persists status=selesai / pending_resolution atomically"
           ],
-          "fullName": "TransaksiService updateTransaksiStatus should throw error if transaksi not found",
+          "fullName": "Integration Tests: Transaction Status & Badge Single Source of Truth M1: UnifiedReturnService persists status=selesai / pending_resolution atomically 1.3 Return with HILANG item from diambil/terlambat updates transaksi.status to pending_resolution",
           "status": "passed",
-          "title": "should throw error if transaksi not found",
+          "title": "1.3 Return with HILANG item from diambil/terlambat updates transaksi.status to pending_resolution",
           "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "TransaksiService",
-            "updateTransaksiStatus"
-          ],
-          "fullName": "TransaksiService updateTransaksiStatus should validate status transitions",
-          "status": "passed",
-          "title": "should validate status transitions",
-          "failureMessages": [],
-          "duration": 1
-        },
-        {
-          "ancestorTitles": [
-            "TransaksiService",
-            "getTransaksiStats"
-          ],
-          "fullName": "TransaksiService getTransaksiStats should return transaction statistics with enhanced status calculation",
-          "status": "failed",
-          "title": "should return transaction statistics with enhanced status calculation",
-          "failureMessages": [
-            "Error: expect(received).toEqual(expected) // deep equality\n\n- Expected  - 2\n+ Received  + 2\n\n  Object {\n-   \"totalActive\": 2,\n+   \"totalActive\": 5,\n    \"totalCancelled\": 1,\n-   \"totalDiambil\": 3,\n+   \"totalDiambil\": 0,\n    \"totalSelesai\": 1,\n    \"totalTerlambat\": 1,\n  }\n    at Object.toEqual (D:\\.work\\rental-software\\features\\kasir\\services\\transaksiService.test.ts:517:22)\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)"
-          ],
           "duration": 4
+        },
+        {
+          "ancestorTitles": [
+            "Integration Tests: Transaction Status & Badge Single Source of Truth",
+            "M3: GET /api/kasir/transaksi/[kode] self-heals stuck terlambat transactions (TXN-20261115-006)"
+          ],
+          "fullName": "Integration Tests: Transaction Status & Badge Single Source of Truth M3: GET /api/kasir/transaksi/[kode] self-heals stuck terlambat transactions (TXN-20261115-006) 2.1 Returns status=selesai AND persists status=selesai to DB when TXN-20261115-006 was stuck in terlambat/diambil",
+          "status": "passed",
+          "title": "2.1 Returns status=selesai AND persists status=selesai to DB when TXN-20261115-006 was stuck in terlambat/diambil",
+          "failureMessages": [],
+          "duration": 13
+        },
+        {
+          "ancestorTitles": [
+            "Integration Tests: Transaction Status & Badge Single Source of Truth",
+            "M4, S1, S2: Dashboard List vs Stats consistency (no take: 2 bug, S1 overdue rule, S2 pickup rule)"
+          ],
+          "fullName": "Integration Tests: Transaction Status & Badge Single Source of Truth M4, S1, S2: Dashboard List vs Stats consistency (no take: 2 bug, S1 overdue rule, S2 pickup rule) 3.1 List (?status=terlambat) and Summary stats agree on 3-item transaction, returned TXN-20261115-006, and unpicked booking",
+          "status": "passed",
+          "title": "3.1 List (?status=terlambat) and Summary stats agree on 3-item transaction, returned TXN-20261115-006, and unpicked booking",
+          "failureMessages": [],
+          "duration": 8
+        },
+        {
+          "ancestorTitles": [
+            "Integration Tests: Transaction Status & Badge Single Source of Truth",
+            "M4, S1, S2: Dashboard List vs Stats consistency (no take: 2 bug, S1 overdue rule, S2 pickup rule)"
+          ],
+          "fullName": "Integration Tests: Transaction Status & Badge Single Source of Truth M4, S1, S2: Dashboard List vs Stats consistency (no take: 2 bug, S1 overdue rule, S2 pickup rule) 3.2 TransaksiService.getTransaksiStats matches getTransaksiList counts exactly",
+          "status": "passed",
+          "title": "3.2 TransaksiService.getTransaksiStats matches getTransaksiList counts exactly",
+          "failureMessages": [],
+          "duration": 1
         }
       ],
-      "failureMessage": "  ● TransaksiService › createTransaksi › should create transaksi successfully with auto-generated code\n\n    TypeError: transaksiService.createTransaksi is not a function\n\n    \u001b[0m \u001b[90m 166 |\u001b[39m       mockPrisma\u001b[33m.\u001b[39maktivitasTransaksi\u001b[33m.\u001b[39mcreate\u001b[33m.\u001b[39mmockResolvedValue({} \u001b[36mas\u001b[39m never)\n     \u001b[90m 167 |\u001b[39m\n    \u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 168 |\u001b[39m       \u001b[36mconst\u001b[39m result \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m transaksiService\u001b[33m.\u001b[39mcreateTransaksi(validCreateRequest)\n     \u001b[90m     |\u001b[39m                                             \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n     \u001b[90m 169 |\u001b[39m\n     \u001b[90m 170 |\u001b[39m       expect(mockPrisma\u001b[33m.\u001b[39mpenyewa\u001b[33m.\u001b[39mfindUnique)\u001b[33m.\u001b[39mtoHaveBeenCalledWith({\n     \u001b[90m 171 |\u001b[39m         where\u001b[33m:\u001b[39m { id\u001b[33m:\u001b[39m validCreateRequest\u001b[33m.\u001b[39mpenyewaId }\u001b[0m\n\n      at Object.createTransaksi (features/kasir/services/transaksiService.test.ts:168:45)\n\n  ● TransaksiService › createTransaksi › should throw error if penyewa not found\n\n    TypeError: transaksiService.createTransaksi is not a function\n\n    \u001b[0m \u001b[90m 184 |\u001b[39m       mockPrisma\u001b[33m.\u001b[39mpenyewa\u001b[33m.\u001b[39mfindUnique\u001b[33m.\u001b[39mmockResolvedValue(\u001b[36mnull\u001b[39m)\n     \u001b[90m 185 |\u001b[39m\n    \u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 186 |\u001b[39m       \u001b[36mawait\u001b[39m expect(transaksiService\u001b[33m.\u001b[39mcreateTransaksi(validCreateRequest))\n     \u001b[90m     |\u001b[39m                                     \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n     \u001b[90m 187 |\u001b[39m         \u001b[33m.\u001b[39mrejects\u001b[33m.\u001b[39mtoThrow(\u001b[32m'Penyewa tidak ditemukan'\u001b[39m)\n     \u001b[90m 188 |\u001b[39m     })\n     \u001b[90m 189 |\u001b[39m\u001b[0m\n\n      at Object.createTransaksi (features/kasir/services/transaksiService.test.ts:186:37)\n\n  ● TransaksiService › createTransaksi › should throw error if product not available\n\n    TypeError: transaksiService.createTransaksi is not a function\n\n    \u001b[0m \u001b[90m 196 |\u001b[39m       })\n     \u001b[90m 197 |\u001b[39m\n    \u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 198 |\u001b[39m       \u001b[36mawait\u001b[39m expect(transaksiService\u001b[33m.\u001b[39mcreateTransaksi(validCreateRequest))\n     \u001b[90m     |\u001b[39m                                     \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n     \u001b[90m 199 |\u001b[39m         \u001b[33m.\u001b[39mrejects\u001b[33m.\u001b[39mtoThrow(\u001b[32m'Produk dengan ID produk-1 tidak tersedia'\u001b[39m)\n     \u001b[90m 200 |\u001b[39m     })\n     \u001b[90m 201 |\u001b[39m\u001b[0m\n\n      at Object.createTransaksi (features/kasir/services/transaksiService.test.ts:198:37)\n\n  ● TransaksiService › createTransaksi › should throw error if insufficient product quantity\n\n    TypeError: transaksiService.createTransaksi is not a function\n\n    \u001b[0m \u001b[90m 213 |\u001b[39m       })\n     \u001b[90m 214 |\u001b[39m\n    \u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 215 |\u001b[39m       \u001b[36mawait\u001b[39m expect(transaksiService\u001b[33m.\u001b[39mcreateTransaksi(validCreateRequest))\n     \u001b[90m     |\u001b[39m                                     \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n     \u001b[90m 216 |\u001b[39m         \u001b[33m.\u001b[39mrejects\u001b[33m.\u001b[39mtoThrow(\u001b[32m'Stok produk Baju Test tidak mencukupi. Tersedia: 1, Diminta: 2'\u001b[39m)\n     \u001b[90m 217 |\u001b[39m     })\n     \u001b[90m 218 |\u001b[39m   })\u001b[0m\n\n      at Object.createTransaksi (features/kasir/services/transaksiService.test.ts:215:37)\n\n  ● TransaksiService › getTransaksiById › should return transaksi by ID\n\n    expect(jest.fn()).toHaveBeenCalledWith(...expected)\n\n    - Expected\n    + Received\n\n    @@ -7,28 +7,68 @@\n          },\n          \"items\": Object {\n            \"include\": Object {\n              \"produk\": Object {\n                \"select\": Object {\n    +             \"category\": Object {\n    +               \"select\": Object {\n    +                 \"id\": true,\n    +                 \"name\": true,\n    +               },\n    +             },\n                  \"code\": true,\n                  \"id\": true,\n                  \"imageUrl\": true,\n    +             \"modalAwal\": true,\n                  \"name\": true,\n    +             \"size\": true,\n    +           },\n    +         },\n    +         \"returnConditions\": Object {\n    +           \"orderBy\": Object {\n    +             \"createdAt\": \"asc\",\n    +           },\n    +           \"select\": Object {\n    +             \"createdAt\": true,\n    +             \"createdBy\": true,\n    +             \"id\": true,\n    +             \"jumlahKembali\": true,\n    +             \"kondisiAkhir\": true,\n    +             \"modalAwalUsed\": true,\n    +             \"penaltyAmount\": true,\n    +             \"resolutionDate\": true,\n    +             \"resolutionStatus\": true,\n                },\n              },\n            },\n    +       \"orderBy\": Array [\n    +         Object {\n    +           \"id\": \"asc\",\n    +         },\n    +       ],\n          },\n    +     \"kasir\": Object {\n    +       \"select\": Object {\n    +         \"createdAt\": true,\n    +         \"id\": true,\n    +         \"isActive\": true,\n    +         \"nama\": true,\n    +         \"updatedAt\": true,\n    +       },\n    +     },\n          \"pembayaran\": Object {\n            \"orderBy\": Object {\n              \"createdAt\": \"desc\",\n            },\n          },\n          \"penyewa\": Object {\n            \"select\": Object {\n              \"alamat\": true,\n    +         \"email\": true,\n              \"id\": true,\n              \"nama\": true,\n    +         \"nik\": true,\n              \"telepon\": true,\n            },\n          },\n        },\n        \"where\": Object {,\n\n    Number of calls: 1\n\n    \u001b[0m \u001b[90m 249 |\u001b[39m       \u001b[36mconst\u001b[39m result \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m transaksiService\u001b[33m.\u001b[39mgetTransaksiById(transaksiId)\n     \u001b[90m 250 |\u001b[39m\n    \u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 251 |\u001b[39m       expect(mockPrisma\u001b[33m.\u001b[39mtransaksi\u001b[33m.\u001b[39mfindUnique)\u001b[33m.\u001b[39mtoHaveBeenCalledWith({\n     \u001b[90m     |\u001b[39m                                               \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n     \u001b[90m 252 |\u001b[39m         where\u001b[33m:\u001b[39m { id\u001b[33m:\u001b[39m transaksiId }\u001b[33m,\u001b[39m\n     \u001b[90m 253 |\u001b[39m         include\u001b[33m:\u001b[39m {\n     \u001b[90m 254 |\u001b[39m           penyewa\u001b[33m:\u001b[39m {\u001b[0m\n\n      at Object.toHaveBeenCalledWith (features/kasir/services/transaksiService.test.ts:251:47)\n\n  ● TransaksiService › getTransaksiByCode › should return transaksi by code\n\n    Failed to retrieve transaction: Cannot read properties of undefined (reading 'map')\n\n    \u001b[0m \u001b[90m 442 |\u001b[39m\n     \u001b[90m 443 |\u001b[39m         \u001b[90m// For other database errors, throw with more context\u001b[39m\n    \u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 444 |\u001b[39m         \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\u001b[32m`Failed to retrieve transaction: ${error.message}`\u001b[39m)\n     \u001b[90m     |\u001b[39m               \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n     \u001b[90m 445 |\u001b[39m       }\n     \u001b[90m 446 |\u001b[39m\n     \u001b[90m 447 |\u001b[39m       \u001b[90m// Handle unknown errors\u001b[39m\u001b[0m\n\n      at TransaksiService.getTransaksiByIdentifier (features/kasir/services/transaksiService.ts:444:15)\n\n  ● TransaksiService › getTransaksiList › should return paginated transaksi list\n\n    TypeError: Cannot read properties of undefined (reading 'items')\n\n    \u001b[0m \u001b[90m 1573 |\u001b[39m         \u001b[33m...\u001b[39mtransaction\u001b[33m,\u001b[39m\n     \u001b[90m 1574 |\u001b[39m         status\u001b[33m:\u001b[39m enhancedStatus\u001b[33m,\u001b[39m\n    \u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 1575 |\u001b[39m         itemCount\u001b[33m:\u001b[39m transaction\u001b[33m.\u001b[39m_count\u001b[33m.\u001b[39mitems\u001b[33m,\u001b[39m \u001b[90m// Total item count\u001b[39m\n     \u001b[90m      |\u001b[39m                                       \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n     \u001b[90m 1576 |\u001b[39m         hasPickup\u001b[33m:\u001b[39m transaction\u001b[33m.\u001b[39mitems\u001b[33m.\u001b[39msome((item) \u001b[33m=>\u001b[39m item\u001b[33m.\u001b[39mjumlahDiambil \u001b[33m>\u001b[39m \u001b[35m0\u001b[39m)\u001b[33m,\u001b[39m \u001b[90m// Computed from items\u001b[39m\n     \u001b[90m 1577 |\u001b[39m         pembayaran\u001b[33m:\u001b[39m []\u001b[33m,\u001b[39m \u001b[90m// Empty for list view\u001b[39m\n     \u001b[90m 1578 |\u001b[39m         aktivitas\u001b[33m:\u001b[39m []\u001b[33m,\u001b[39m \u001b[90m// Empty for list view\u001b[39m\u001b[0m\n\n      at items (features/kasir/services/transaksiService.ts:1575:39)\n          at Array.map (<anonymous>)\n      at TransaksiService.map [as getTransaksiList] (features/kasir/services/transaksiService.ts:1564:50)\n      at Object.<anonymous> (features/kasir/services/transaksiService.test.ts:340:22)\n\n  ● TransaksiService › getTransaksiList › should filter by status\n\n    TypeError: Cannot read properties of undefined (reading 'items')\n\n    \u001b[0m \u001b[90m 1573 |\u001b[39m         \u001b[33m...\u001b[39mtransaction\u001b[33m,\u001b[39m\n     \u001b[90m 1574 |\u001b[39m         status\u001b[33m:\u001b[39m enhancedStatus\u001b[33m,\u001b[39m\n    \u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 1575 |\u001b[39m         itemCount\u001b[33m:\u001b[39m transaction\u001b[33m.\u001b[39m_count\u001b[33m.\u001b[39mitems\u001b[33m,\u001b[39m \u001b[90m// Total item count\u001b[39m\n     \u001b[90m      |\u001b[39m                                       \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n     \u001b[90m 1576 |\u001b[39m         hasPickup\u001b[33m:\u001b[39m transaction\u001b[33m.\u001b[39mitems\u001b[33m.\u001b[39msome((item) \u001b[33m=>\u001b[39m item\u001b[33m.\u001b[39mjumlahDiambil \u001b[33m>\u001b[39m \u001b[35m0\u001b[39m)\u001b[33m,\u001b[39m \u001b[90m// Computed from items\u001b[39m\n     \u001b[90m 1577 |\u001b[39m         pembayaran\u001b[33m:\u001b[39m []\u001b[33m,\u001b[39m \u001b[90m// Empty for list view\u001b[39m\n     \u001b[90m 1578 |\u001b[39m         aktivitas\u001b[33m:\u001b[39m []\u001b[33m,\u001b[39m \u001b[90m// Empty for list view\u001b[39m\u001b[0m\n\n      at items (features/kasir/services/transaksiService.ts:1575:39)\n          at Array.map (<anonymous>)\n      at TransaksiService.map [as getTransaksiList] (features/kasir/services/transaksiService.ts:1564:50)\n      at Object.<anonymous> (features/kasir/services/transaksiService.test.ts:362:7)\n\n  ● TransaksiService › getTransaksiList › should search by code or penyewa name\n\n    TypeError: Cannot read properties of undefined (reading 'items')\n\n    \u001b[0m \u001b[90m 1573 |\u001b[39m         \u001b[33m...\u001b[39mtransaction\u001b[33m,\u001b[39m\n     \u001b[90m 1574 |\u001b[39m         status\u001b[33m:\u001b[39m enhancedStatus\u001b[33m,\u001b[39m\n    \u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 1575 |\u001b[39m         itemCount\u001b[33m:\u001b[39m transaction\u001b[33m.\u001b[39m_count\u001b[33m.\u001b[39mitems\u001b[33m,\u001b[39m \u001b[90m// Total item count\u001b[39m\n     \u001b[90m      |\u001b[39m                                       \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n     \u001b[90m 1576 |\u001b[39m         hasPickup\u001b[33m:\u001b[39m transaction\u001b[33m.\u001b[39mitems\u001b[33m.\u001b[39msome((item) \u001b[33m=>\u001b[39m item\u001b[33m.\u001b[39mjumlahDiambil \u001b[33m>\u001b[39m \u001b[35m0\u001b[39m)\u001b[33m,\u001b[39m \u001b[90m// Computed from items\u001b[39m\n     \u001b[90m 1577 |\u001b[39m         pembayaran\u001b[33m:\u001b[39m []\u001b[33m,\u001b[39m \u001b[90m// Empty for list view\u001b[39m\n     \u001b[90m 1578 |\u001b[39m         aktivitas\u001b[33m:\u001b[39m []\u001b[33m,\u001b[39m \u001b[90m// Empty for list view\u001b[39m\u001b[0m\n\n      at items (features/kasir/services/transaksiService.ts:1575:39)\n          at Array.map (<anonymous>)\n      at TransaksiService.map [as getTransaksiList] (features/kasir/services/transaksiService.ts:1564:50)\n      at Object.<anonymous> (features/kasir/services/transaksiService.test.ts:382:7)\n\n  ● TransaksiService › getTransaksiList › should filter transactions by tglMulai date\n\n    TypeError: Cannot read properties of undefined (reading 'items')\n\n    \u001b[0m \u001b[90m 1573 |\u001b[39m         \u001b[33m...\u001b[39mtransaction\u001b[33m,\u001b[39m\n     \u001b[90m 1574 |\u001b[39m         status\u001b[33m:\u001b[39m enhancedStatus\u001b[33m,\u001b[39m\n    \u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 1575 |\u001b[39m         itemCount\u001b[33m:\u001b[39m transaction\u001b[33m.\u001b[39m_count\u001b[33m.\u001b[39mitems\u001b[33m,\u001b[39m \u001b[90m// Total item count\u001b[39m\n     \u001b[90m      |\u001b[39m                                       \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n     \u001b[90m 1576 |\u001b[39m         hasPickup\u001b[33m:\u001b[39m transaction\u001b[33m.\u001b[39mitems\u001b[33m.\u001b[39msome((item) \u001b[33m=>\u001b[39m item\u001b[33m.\u001b[39mjumlahDiambil \u001b[33m>\u001b[39m \u001b[35m0\u001b[39m)\u001b[33m,\u001b[39m \u001b[90m// Computed from items\u001b[39m\n     \u001b[90m 1577 |\u001b[39m         pembayaran\u001b[33m:\u001b[39m []\u001b[33m,\u001b[39m \u001b[90m// Empty for list view\u001b[39m\n     \u001b[90m 1578 |\u001b[39m         aktivitas\u001b[33m:\u001b[39m []\u001b[33m,\u001b[39m \u001b[90m// Empty for list view\u001b[39m\u001b[0m\n\n      at items (features/kasir/services/transaksiService.ts:1575:39)\n          at Array.map (<anonymous>)\n      at TransaksiService.map [as getTransaksiList] (features/kasir/services/transaksiService.ts:1564:50)\n      at Object.<anonymous> (features/kasir/services/transaksiService.test.ts:410:7)\n\n  ● TransaksiService › getTransaksiStats › should return transaction statistics with enhanced status calculation\n\n    expect(received).toEqual(expected) // deep equality\n\n    - Expected  - 2\n    + Received  + 2\n\n      Object {\n    -   \"totalActive\": 2,\n    +   \"totalActive\": 5,\n        \"totalCancelled\": 1,\n    -   \"totalDiambil\": 3,\n    +   \"totalDiambil\": 0,\n        \"totalSelesai\": 1,\n        \"totalTerlambat\": 1,\n      }\n\n    \u001b[0m \u001b[90m 515 |\u001b[39m       \u001b[90m// 1 terlambat (unchanged)\u001b[39m\n     \u001b[90m 516 |\u001b[39m       \u001b[90m// 1 cancelled (unchanged)\u001b[39m\n    \u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 517 |\u001b[39m       expect(result)\u001b[33m.\u001b[39mtoEqual({\n     \u001b[90m     |\u001b[39m                      \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n     \u001b[90m 518 |\u001b[39m         totalActive\u001b[33m:\u001b[39m \u001b[35m2\u001b[39m\u001b[33m,\u001b[39m\n     \u001b[90m 519 |\u001b[39m         totalDiambil\u001b[33m:\u001b[39m \u001b[35m3\u001b[39m\u001b[33m,\u001b[39m\n     \u001b[90m 520 |\u001b[39m         totalSelesai\u001b[33m:\u001b[39m \u001b[35m1\u001b[39m\u001b[33m,\u001b[39m\u001b[0m\n\n      at Object.toEqual (features/kasir/services/transaksiService.test.ts:517:22)\n"
+      "failureMessage": null
     }
   ]
 }

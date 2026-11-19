@@ -17,6 +17,7 @@ import { TransactionCodeGenerator } from '../lib/utils/codeGenerator'
 import { PriceCalculator } from '../lib/utils/server'
 import { createInventoryService } from './inventoryService'
 import type { TransactionStatus } from '../types'
+import { resolveTransactionStatus } from '../lib/utils/statusUtils'
 import { DateCalculator } from '../lib/utils/dateCalculator'
 import { sarungPairingService } from './pairingService'
 // TASK 2: Performance monitoring
@@ -31,6 +32,8 @@ import { RetryHandler } from '../lib/resilience/RetryHandler'
 import { ErrorService, ErrorCode } from '../lib/errors/ErrorService'
 
 export interface TransaksiWithDetails extends Transaksi {
+  /** Original status stored in database before runtime status resolution (for self-healing) */
+  rawStatus?: string
   penyewa: {
     id: string
     nama: string
@@ -153,6 +156,13 @@ export interface TransaksiForValidation {
     subtotal: Decimal
     kondisiAwal?: string | null
     statusKembali: string
+    returnConditions?: Array<{
+      id: string
+      kondisiAkhir: string
+      jumlahKembali: number
+      penaltyAmount: Decimal
+      resolutionStatus?: string | null
+    }>
   }>
   pembayaran: never[] // Empty for validation
   aktivitas: never[] // Empty for validation
@@ -173,90 +183,6 @@ export interface TransaksiListResponse {
     totalTerlambat: number
     totalCancelled: number
   }
-}
-
-/**
- * Calculate enhanced transaction status based on pickup status and business rules
- * ✅ STATUS MISMATCH FIX: Moved from frontend to backend for single source of truth
- * Priority: terlambat > cancelled > selesai > diambil > active
- *
- * @param baseStatus - Original status from database
- * @param items - Transaction items array to check pickup status
- * @param endDate - Optional end date to check for overdue status
- * @param hasPickup - Optional server-provided pickup flag for performance
- * @returns Enhanced status based on business logic
- */
-function calculateEnhancedStatus(
-  baseStatus: TransactionStatus,
-  items: Array<{ jumlah: number; jumlahDiambil: number; statusKembali?: string }> | undefined,
-  endDate?: string | Date,
-): TransactionStatus {
-  // Priority 1: Check if explicit overdue status (terlambat)
-  if (baseStatus === 'terlambat') {
-    return 'terlambat'
-  }
-
-  // Priority 2: Check if cancelled
-  if (baseStatus === 'cancelled') {
-    return 'cancelled'
-  }
-
-  // Priority 3: Check if explicit completed status (selesai)
-  if (baseStatus === 'selesai') {
-    return 'selesai'
-  }
-
-  // Priority 4: Check if all items have been returned (auto-complete logic)
-  // This runs BEFORE overdue check to prioritize completion over timing
-  // ✅ FIX: Exclude pending_resolution from auto-complete - it should only transition via resolveLostItem()
-  if (baseStatus === 'active' || baseStatus === 'diambil') {
-    if (items && items.length > 0) {
-      const allItemsReturned = items.every((item) => {
-        // Check if this item has been fully returned using statusKembali
-        return item.statusKembali === 'lengkap'
-      })
-
-      if (allItemsReturned) {
-        return 'selesai'
-      }
-    }
-  }
-
-  // Priority 5: Check if current date is past end date (manual overdue check)
-  // This runs AFTER completion check to allow completed transactions to show as 'selesai'
-  // ✅ FIX: Normalize dates to compare only date (not time) to prevent same-day returns from being marked late
-  if (endDate && (baseStatus === 'active' || baseStatus === 'diambil')) {
-    const now = new Date()
-    const dueDate = typeof endDate === 'string' ? new Date(endDate) : endDate
-
-    // ✅ Normalize to date only (remove hours/minutes/seconds)
-    // This ensures returns on the same day are not considered late
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-    const dueDay = new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate())
-
-    // Only mark as late if current date is AFTER due date (not same day)
-    const isOverdue = today > dueDay
-
-    if (isOverdue && !isNaN(dueDate.getTime())) {
-      return 'terlambat'
-    }
-  }
-
-  // ✅ STATUS MISMATCH FIX: Priority 6 - Check if ALL items are fully picked up (not just ANY)
-  // This aligns with the backend pickup logic in pickupService.ts
-  if (baseStatus === 'active' && items && items.length > 0) {
-    // Check if ALL items are fully picked up (same logic as pickupService)
-    const allItemsPickedUp = items.every((item) => item.jumlahDiambil >= item.jumlah)
-
-    if (allItemsPickedUp) {
-      return 'diambil'
-    }
-
-    // If some items are picked up but not all, stay as 'active'
-    // This prevents the mismatch where frontend shows 'diambil' but backend shows 'active'
-  }
-
-  return baseStatus
 }
 
 export class TransaksiService {
@@ -388,7 +314,7 @@ export class TransaksiService {
         ;(transaksi as TransaksiWithDetails).kasir = null
       }
 
-      const enhancedStatus = calculateEnhancedStatus(
+      const enhancedStatus = resolveTransactionStatus(
         transaksi.status as TransactionStatus,
         transaksi.items,
         transaksi.tglSelesai?.toISOString(),
@@ -397,7 +323,8 @@ export class TransaksiService {
       // TSK-24: Transform items with multi-condition return data
       const enhancedTransaksi = {
         ...transaksi,
-        status: enhancedStatus, // ✅ Enhanced status calculated on backend
+        rawStatus: transaksi.status,
+        status: enhancedStatus, // ✅ Single Source of Truth status calculated on backend
         //eslint-disable-next-line
         items: this.transformItemsWithMultiCondition(transaksi.items as any),
       }
@@ -1019,7 +946,7 @@ export class TransaksiService {
       })
 
       // Apply enhanced status calculation
-      const enhancedStatus = calculateEnhancedStatus(
+      const enhancedStatus = resolveTransactionStatus(
         fullTransaksi.status as TransactionStatus,
         fullTransaksi.items,
         fullTransaksi.tglSelesai?.toISOString(),
@@ -1331,6 +1258,15 @@ export class TransaksiService {
             subtotal: true,
             kondisiAwal: true,
             statusKembali: true,
+            returnConditions: {
+              select: {
+                id: true,
+                kondisiAkhir: true,
+                jumlahKembali: true,
+                penaltyAmount: true,
+                resolutionStatus: true,
+              },
+            },
           },
         },
         // Minimal required fields for validation only
@@ -1536,7 +1472,6 @@ export class TransaksiService {
             },
           },
           items: {
-            take: 2,
             select: {
               id: true,
               jumlah: true,
@@ -1545,6 +1480,12 @@ export class TransaksiService {
               produk: {
                 select: {
                   name: true,
+                },
+              },
+              returnConditions: {
+                select: {
+                  kondisiAkhir: true,
+                  resolutionStatus: true,
                 },
               },
             },
@@ -1560,9 +1501,9 @@ export class TransaksiService {
       this.getTransaksiStats(),
     ])
 
-    // Apply enhanced status calculation and filtering
+    // Apply Single Source of Truth status calculation on ALL items (never truncated)
     const enhancedTransactions = allTransactions.map((transaction) => {
-      const enhancedStatus = calculateEnhancedStatus(
+      const enhancedStatus = resolveTransactionStatus(
         transaction.status as TransactionStatus,
         transaction.items,
         transaction.tglSelesai?.toISOString(),
@@ -1572,7 +1513,7 @@ export class TransaksiService {
       return {
         ...transaction,
         status: enhancedStatus,
-        itemCount: transaction._count.items, // Total item count
+        itemCount: transaction._count?.items ?? transaction.items.length, // Total item count
         hasPickup: transaction.items.some((item) => item.jumlahDiambil > 0), // Computed from items
         pembayaran: [], // Empty for list view
         aktivitas: [], // Empty for list view
@@ -1830,6 +1771,12 @@ export class TransaksiService {
             jumlah: true, // ✅ Added for enhanced status calculation
             jumlahDiambil: true,
             statusKembali: true,
+            returnConditions: {
+              select: {
+                kondisiAkhir: true,
+                resolutionStatus: true,
+              },
+            },
           },
         },
       },
@@ -1843,9 +1790,9 @@ export class TransaksiService {
       totalCancelled: 0,
     }
 
-    // Apply enhanced status calculation to each transaction
+    // Apply Single Source of Truth status calculation to each transaction
     transactions.forEach((transaction) => {
-      const enhancedStatus = calculateEnhancedStatus(
+      const enhancedStatus = resolveTransactionStatus(
         transaction.status as TransactionStatus,
         transaction.items,
         transaction.tglSelesai?.toISOString(),
@@ -1878,10 +1825,10 @@ export class TransaksiService {
    */
   private validateStatusTransition(currentStatus: string, newStatus: string): void {
     const validTransitions: Record<string, string[]> = {
-      active: ['selesai', 'terlambat', 'cancelled', 'diambil', 'pending_resolution'], // ✅ FIX: Allow transition to pending_resolution for HILANG items
-      diambil: ['selesai', 'cancelled'],
-      terlambat: ['selesai', 'cancelled'],
-      pending_resolution: ['selesai', 'cancelled'], // ✅ FIX: Allow transition after lost items resolved
+      active: ['selesai', 'terlambat', 'cancelled', 'diambil', 'pending_resolution'],
+      diambil: ['selesai', 'cancelled', 'pending_resolution'],
+      terlambat: ['selesai', 'cancelled', 'pending_resolution'],
+      pending_resolution: ['selesai', 'cancelled'],
       // 'selesai' and 'cancelled' are final states
       selesai: [],
       cancelled: [],
