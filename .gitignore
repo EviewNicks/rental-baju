@@ -65,3 +65,6 @@ services/*.log
 #public data image 
 /public/products
 !public/products/accesories.png
+
+# local database cleanup backups
+/backups
